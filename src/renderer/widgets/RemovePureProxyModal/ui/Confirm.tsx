@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { useUnit } from 'effector-react';
 
 import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
@@ -10,14 +10,13 @@ import { proxyUtils } from '@entities/proxy';
 import { confirmModel } from '../model/confirm-model';
 import { toAddress } from '@shared/lib/utils';
 import { ProxyType } from '@shared/core';
-import { removePureProxyModel } from '../model/remove-pure-proxy-model';
-import { basketUtils } from '@features/basket';
 
 type Props = {
+  secondaryActionButton?: ReactNode;
   onGoBack: () => void;
 };
 
-export const Confirmation = ({ onGoBack }: Props) => {
+export const Confirmation = ({ secondaryActionButton, onGoBack }: Props) => {
   const { t } = useI18n();
 
   const confirmStore = useUnit(confirmModel.$confirmStore);
@@ -151,11 +150,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
         </Button>
 
         <div className="flex gap-4">
-          {basketUtils.isBasketAvailable(initiatorWallet) && (
-            <Button pallet="secondary" onClick={() => removePureProxyModel.events.txSaved()}>
-              {t('operation.saveToBasket')}
-            </Button>
-          )}
+          {secondaryActionButton}
 
           <SignButton
             disabled={isFeeLoading}

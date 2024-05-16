@@ -71,7 +71,7 @@ export { NotificationType } from './types/notification';
 
 export { XcmPallets } from './types/substrate';
 
-export { TransactionType, MultisigTxInitStatus, MultisigTxFinalStatus } from './types/transaction';
+export { TransactionType, MultisigTxInitStatus, MultisigTxFinalStatus, WrapperKind } from './types/transaction';
 export type {
   Transaction,
   SigningStatus,
@@ -80,6 +80,11 @@ export type {
   MultisigEvent,
   MultisigTransaction,
   MultisigTransactionKey,
+  TxWrapper,
+  TxWrappers_OLD,
+  MultisigTxWrapper,
+  ProxyTxWrapper,
+  WrapAsMulti,
 } from './types/transaction';
 
 export type { BasketTransaction } from './types/basket';

@@ -3,7 +3,6 @@ import { combineEvents, delay, spread } from 'patronum';
 import { ApiPromise } from '@polkadot/api';
 import { UnsubscribePromise } from '@polkadot/api/types';
 
-import { Transaction, transactionService } from '@entities/transaction';
 import { toAddress } from '@shared/lib/utils';
 import { walletSelectModel } from '@features/wallets';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
@@ -17,6 +16,7 @@ import {
   Timepoint,
   Account,
   BasketTransaction,
+  Transaction,
 } from '@shared/core';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { networkModel } from '@entities/network';
@@ -30,6 +30,7 @@ import { subscriptionService } from '@entities/chain';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { basketModel } from '@entities/basket/model/basket-model';
+import { transactionService } from '@entities/transaction';
 
 const stepChanged = createEvent<Step>();
 
@@ -73,6 +74,19 @@ const $txWrappers = combine(
       signatories,
     });
   },
+);
+
+const $initiatorWallet = combine(
+  {
+    store: $addProxyStore,
+    wallets: walletModel.$wallets,
+  },
+  ({ store, wallets }) => {
+    if (!store) return undefined;
+
+    return walletUtils.getWalletById(wallets, store.account.walletId);
+  },
+  { skipVoid: false },
 );
 
 type GetPureProxyParams = {
@@ -369,6 +383,8 @@ sample({
 export const addPureProxiedModel = {
   $step,
   $chain: $addProxyStore.map((store) => store?.chain, { skipVoid: false }),
+  $initiatorWallet,
+
   events: {
     flowStarted,
     stepChanged,

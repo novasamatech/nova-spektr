@@ -4,17 +4,7 @@ import { Weight } from '@polkadot/types/interfaces';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { AnyJson } from '@polkadot/types/types';
 
-import type {
-  Address,
-  CallData,
-  HexString,
-  Timepoint,
-  AccountId,
-  ChainId,
-  MultisigAccount,
-  ProxiedAccount,
-  Account,
-} from '@shared/core';
+import type { Address, CallData, HexString, Timepoint, AccountId, ChainId, TxWrappers_OLD } from '@shared/core';
 import { DecodedTransaction, Transaction, TransactionType } from '@shared/core';
 
 // =====================================================
@@ -87,30 +77,3 @@ export interface XTokenPalletTransferArgs extends Args {
   destWeightLimit?: AnyJson;
   destWeight?: number;
 }
-
-export const enum WrapperKind {
-  MULTISIG = 'multisig',
-  PROXY = 'proxy',
-}
-
-export type MultisigTxWrapper = {
-  kind: WrapperKind.MULTISIG;
-  multisigAccount: MultisigAccount;
-  signatories: Account[];
-  signer: Account;
-};
-
-export type ProxyTxWrapper = {
-  kind: WrapperKind.PROXY;
-  proxyAccount: Account;
-  proxiedAccount: ProxiedAccount;
-};
-
-export type TxWrapper = MultisigTxWrapper | ProxyTxWrapper;
-
-export type WrapAsMulti = {
-  account: MultisigAccount;
-  signatoryId: AccountId;
-};
-
-export type TxWrappers_OLD = WrapAsMulti;

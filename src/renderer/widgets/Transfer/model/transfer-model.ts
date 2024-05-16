@@ -2,7 +2,6 @@ import { createEvent, createStore, sample, restore, combine, createApi, attach }
 import { spread, delay } from 'patronum';
 import { NavigateFunction } from 'react-router-dom';
 
-import { Transaction } from '@entities/transaction';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { Paths } from '@shared/routes';
@@ -10,8 +9,9 @@ import { Step, TransferStore, NetworkStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
 import { transferUtils } from '../lib/transfer-utils';
-import { BasketTransaction } from '@/src/renderer/shared/core';
-import { basketModel } from '@/src/renderer/entities/basket/model/basket-model';
+import { BasketTransaction, Transaction } from '@shared/core';
+import { basketModel } from '@entities/basket';
+import { walletModel, walletUtils } from '@entities/wallet';
 
 const $navigation = createStore<{ navigate: NavigateFunction } | null>(null);
 const navigationApi = createApi($navigation, {
@@ -42,6 +42,19 @@ const $xcmChain = combine(
     if (!network || !transferStore) return undefined;
 
     return transferStore.xcmChain.chainId === network.chain.chainId ? undefined : transferStore.xcmChain;
+  },
+  { skipVoid: false },
+);
+
+const $initiatorWallet = combine(
+  {
+    store: $transferStore,
+    wallets: walletModel.$wallets,
+  },
+  ({ store, wallets }) => {
+    if (!store) return undefined;
+
+    return walletUtils.getWalletById(wallets, store.account.walletId);
   },
   { skipVoid: false },
 );
@@ -194,6 +207,8 @@ sample({
 export const transferModel = {
   $step,
   $xcmChain,
+  $initiatorWallet,
+
   events: {
     flowStarted,
     txSaved,

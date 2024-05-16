@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { ReactNode } from 'react';
 
 import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
 import { useI18n } from '@app/providers';
@@ -9,14 +10,13 @@ import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { ChainTitle } from '@entities/chain';
 import { confirmModel } from '../model/confirm-model';
-import { transferModel } from '../model/transfer-model';
-import { basketUtils } from '@features/basket';
 
 type Props = {
+  secondaryActionButton?: ReactNode;
   onGoBack: () => void;
 };
 
-export const Confirmation = ({ onGoBack }: Props) => {
+export const Confirmation = ({ secondaryActionButton, onGoBack }: Props) => {
   const { t } = useI18n();
 
   const isXcm = useUnit(confirmModel.$isXcm);
@@ -191,12 +191,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
         </Button>
 
         <div className="flex gap-4">
-          {basketUtils.isBasketAvailable(initiatorWallet) && (
-            <Button pallet="secondary" onClick={() => transferModel.events.txSaved()}>
-              {t('operation.saveToBasket')}
-            </Button>
-          )}
-
+          {secondaryActionButton}
           <SignButton type={(signerWallet || initiatorWallet).type} onClick={confirmModel.output.formSubmitted} />
         </div>
       </div>

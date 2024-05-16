@@ -1,7 +1,6 @@
-import { createEvent, createStore, sample, restore } from 'effector';
+import { createEvent, createStore, sample, restore, combine } from 'effector';
 import { spread, delay } from 'patronum';
 
-import { Transaction } from '@entities/transaction';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { Step, UnstakeStore, NetworkStore } from '../lib/types';
@@ -9,8 +8,9 @@ import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
 import { nonNullable, getRelaychainAsset } from '@shared/lib/utils';
 import { unstakeUtils } from '../lib/unstake-utils';
-import { BasketTransaction } from '@/src/renderer/shared/core';
-import { basketModel } from '@/src/renderer/entities/basket/model/basket-model';
+import { BasketTransaction, Transaction } from '@shared/core';
+import { basketModel } from '@entities/basket';
+import { walletModel, walletUtils } from '@entities/wallet';
 
 const stepChanged = createEvent<Step>();
 
@@ -26,6 +26,19 @@ const $networkStore = restore<NetworkStore | null>(flowStarted, null);
 const $wrappedTxs = createStore<Transaction[] | null>(null);
 const $multisigTxs = createStore<Transaction[] | null>(null);
 const $coreTxs = createStore<Transaction[] | null>(null);
+
+const $initiatorWallet = combine(
+  {
+    store: $unstakeStore,
+    wallets: walletModel.$wallets,
+  },
+  ({ store, wallets }) => {
+    if (!store) return undefined;
+
+    return walletUtils.getWalletById(wallets, store.shards[0].walletId);
+  },
+  { skipVoid: false },
+);
 
 sample({ clock: stepChanged, target: $step });
 
@@ -177,6 +190,8 @@ sample({
 export const unstakeModel = {
   $step,
   $networkStore,
+  $initiatorWallet,
+
   events: {
     flowStarted,
     stepChanged,

@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { ReactNode } from 'react';
 
 import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
 import { useI18n } from '@app/providers';
@@ -7,14 +8,13 @@ import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { confirmModel } from '../model/confirm-model';
 import { SignButton } from '@entities/operations';
-import { addPureProxiedModel } from '../model/add-pure-proxied-model';
-import { basketUtils } from '@features/basket';
 
 type Props = {
+  secondaryActionButton?: ReactNode;
   onGoBack: () => void;
 };
 
-export const Confirm = ({ onGoBack }: Props) => {
+export const Confirm = ({ secondaryActionButton, onGoBack }: Props) => {
   const { t } = useI18n();
 
   const confirmStore = useUnit(confirmModel.$confirmStore);
@@ -143,11 +143,7 @@ export const Confirm = ({ onGoBack }: Props) => {
         </Button>
 
         <div className="flex gap-4">
-          {basketUtils.isBasketAvailable(initiatorWallet) && (
-            <Button pallet="secondary" onClick={() => addPureProxiedModel.events.txSaved()}>
-              {t('operation.saveToBasket')}
-            </Button>
-          )}
+          {secondaryActionButton}
 
           <SignButton type={(signerWallet || initiatorWallet).type} onClick={confirmModel.output.formSubmitted} />
         </div>

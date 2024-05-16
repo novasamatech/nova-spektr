@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { ReactNode } from 'react';
 
 import { Button, DetailRow, FootnoteText, Icon, Tooltip, CaptionText } from '@shared/ui';
 import { useI18n } from '@app/providers';
@@ -10,14 +11,13 @@ import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { confirmModel } from '../model/confirm-model';
 import { AccountsModal, StakingPopover } from '@entities/staking';
 import { useToggle } from '@shared/lib/hooks';
-import { restakeModel } from '../model/restake-model';
-import { basketUtils } from '@features/basket';
 
 type Props = {
+  secondaryActionButton?: ReactNode;
   onGoBack: () => void;
 };
 
-export const Confirmation = ({ onGoBack }: Props) => {
+export const Confirmation = ({ onGoBack, secondaryActionButton }: Props) => {
   const { t } = useI18n();
 
   const confirmStore = useUnit(confirmModel.$confirmStore);
@@ -193,11 +193,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
           </Button>
 
           <div className="flex gap-4">
-            {basketUtils.isBasketAvailable(initiatorWallet) && (
-              <Button pallet="secondary" onClick={() => restakeModel.events.txSaved()}>
-                {t('operation.saveToBasket')}
-              </Button>
-            )}
+            {secondaryActionButton}
 
             <SignButton type={(signerWallet || initiatorWallet).type} onClick={confirmModel.output.formSubmitted} />
           </div>

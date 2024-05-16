@@ -1,13 +1,12 @@
-// TODO: Fix imports
-import { Transaction, TxWrapper } from '@entities/transaction';
 import { ID } from './general';
+import { Transaction, TxWrapper } from './transaction';
 
 export type BasketTransaction = {
   id: ID;
   initiatorWallet: ID;
   coreTx: Transaction;
   txWrappers: TxWrapper[];
-  error?: Error;
+  error?: BasketError;
   groupId?: number;
 };
 
@@ -16,15 +15,16 @@ const enum ErrorType {
   CHAIN = 'chain',
 }
 
-type ChainError = {
+interface BasketError {
   type: ErrorType;
   message: string;
-};
+}
 
-type ClientError = {
-  type: ErrorType;
-  message: string;
+export interface ChainError extends BasketError {
+  type: ErrorType.CHAIN;
+}
+
+export interface ClientError extends BasketError {
+  type: ErrorType.CLIENT;
   args?: Record<string, any>;
-};
-
-type Error = ChainError | ClientError;
+}

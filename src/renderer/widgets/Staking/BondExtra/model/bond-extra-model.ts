@@ -8,21 +8,21 @@ import { getRelaychainAsset, nonNullable } from '@shared/lib/utils';
 import { networkModel } from '@entities/network';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { Account, BasketTransaction } from '@shared/core';
+import {
+  Account,
+  BasketTransaction,
+  TxWrapper,
+  Transaction,
+  WrapperKind,
+  MultisigTxWrapper,
+  ProxyTxWrapper,
+} from '@shared/core';
 import { Step, BondExtraData, WalletData, FeeData } from '../lib/types';
 import { bondExtraUtils } from '../lib/bond-extra-utils';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
-import {
-  TxWrapper,
-  Transaction,
-  transactionBuilder,
-  transactionService,
-  WrapperKind,
-  MultisigTxWrapper,
-  ProxyTxWrapper,
-} from '@entities/transaction';
-import { basketModel } from '@/src/renderer/entities/basket/model/basket-model';
+import { transactionBuilder, transactionService } from '@entities/transaction';
+import { basketModel } from '@entities/basket/model/basket-model';
 
 const stepChanged = createEvent<Step>();
 
@@ -361,6 +361,8 @@ sample({
 export const bondExtraModel = {
   $step,
   $walletData,
+  $initiatorWallet: $walletData.map((data) => data?.wallet),
+
   events: {
     flowStarted,
     stepChanged,

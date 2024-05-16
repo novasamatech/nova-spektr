@@ -1,19 +1,18 @@
-import { createEvent, createStore, sample } from 'effector';
+import { combine, createEvent, createStore, sample } from 'effector';
 import { spread, delay } from 'patronum';
 
-import { Transaction } from '@entities/transaction';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { walletSelectModel } from '@features/wallets';
 import { proxiesModel } from '@features/proxies';
-import { walletModel } from '@entities/wallet';
+import { walletModel, walletUtils } from '@entities/wallet';
 import { balanceSubModel } from '@features/balances';
 import { Step, AddProxyStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
 import { addProxyUtils } from '../lib/add-proxy-utils';
-import { BasketTransaction } from '@shared/core';
-import { basketModel } from '@entities/basket/model/basket-model';
+import { BasketTransaction, Transaction } from '@shared/core';
+import { basketModel } from '@entities/basket';
 
 const stepChanged = createEvent<Step>();
 
@@ -28,6 +27,19 @@ const $addProxyStore = createStore<AddProxyStore | null>(null).reset(flowFinishe
 const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
+
+const $initiatorWallet = combine(
+  {
+    store: $addProxyStore,
+    wallets: walletModel.$wallets,
+  },
+  ({ store, wallets }) => {
+    if (!store) return undefined;
+
+    return walletUtils.getWalletById(wallets, store.account.walletId);
+  },
+  { skipVoid: false },
+);
 
 sample({ clock: stepChanged, target: $step });
 
@@ -198,6 +210,8 @@ sample({
 export const addProxyModel = {
   $step,
   $chain: $addProxyStore.map((store) => store?.chain, { skipVoid: false }),
+  $initiatorWallet,
+
   events: {
     flowStarted,
     stepChanged,
