@@ -43,6 +43,7 @@ export const basketModel = {
   $basket,
 
   events: {
+    basketStarted,
     transactionsCreated,
   },
 };

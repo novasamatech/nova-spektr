@@ -173,6 +173,7 @@ sample({
           initiatorWallet: store!.shards[0].walletId,
           coreTx,
           txWrappers,
+          groupId: Date.now(),
         } as BasketTransaction),
     );
 

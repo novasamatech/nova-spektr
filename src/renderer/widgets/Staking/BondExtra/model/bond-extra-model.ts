@@ -344,6 +344,7 @@ sample({
           initiatorWallet: store!.wallet.id,
           coreTx,
           txWrappers,
+          groupId: Date.now(),
         } as BasketTransaction),
     );
 
