@@ -81,7 +81,7 @@ describe('features/multisigs/model/multisigs-model', () => {
         }),
     });
 
-    allSettled(networkModel.$connections, {
+    await allSettled(networkModel.$connections, {
       scope,
       params: {
         '0x01': {
@@ -115,7 +115,7 @@ describe('features/multisigs/model/multisigs-model', () => {
         }),
     });
 
-    allSettled(networkModel.$connections, {
+    await allSettled(networkModel.$connections, {
       scope,
       params: {
         '0x01': {

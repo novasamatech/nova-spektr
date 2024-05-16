@@ -72,7 +72,6 @@ const getMultisigsFx = createEffect(({ chains, wallets }: GetMultisigsParams) =>
 });
 
 const saveMultisigFx = createEffect((multisigsToSave: SaveMultisigParams[]) => {
-  console.log('multisigsToAdd--> ', multisigsToSave);
   multisigsToSave.forEach((multisig) => {
     walletModel.events.multisigCreated(multisig);
 
@@ -86,18 +85,13 @@ const saveMultisigFx = createEffect((multisigsToSave: SaveMultisigParams[]) => {
   });
 });
 
-sample({
-  clock: once(networkModel.$connections),
-  target: multisigsDiscoveryStarted,
-});
-
 const { tick: multisigsDiscoveryTriggered } = interval({
   start: multisigsDiscoveryStarted,
   timeout: MULTISIG_DISCOVERY_TIMEOUT,
 });
 
 sample({
-  clock: multisigsDiscoveryTriggered,
+  clock: [multisigsDiscoveryTriggered, once(networkModel.$connections)],
   source: {
     chains: $multisigChains,
     wallets: walletModel.$wallets,
