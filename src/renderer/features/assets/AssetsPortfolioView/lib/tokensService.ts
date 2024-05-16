@@ -43,6 +43,7 @@ function getSelectedAccountIds(accounts: Account[], chainId: ChainId): AccountId
     return acc;
   }, []);
 }
+
 function getChainWithBalance(
   balances: Balance[],
   chains: AssetChain[],
@@ -51,7 +52,7 @@ function getChainWithBalance(
 ): [AssetChain[], AssetBalance] {
   let totalBalance = {} as AssetBalance;
 
-  const chainsWithBalance = chains.reduce((acc, chain) => {
+  const chainsWithBalance = chains.reduce<AssetChain[]>((acc, chain) => {
     const selectedAccountIds = getSelectedAccountIds(accounts, chain.chainId);
 
     const accountsBalance = balanceUtils.getAssetBalances(
@@ -63,7 +64,7 @@ function getChainWithBalance(
 
     const assetBalance = accountsBalance.reduce<AssetBalance>((acc, balance) => {
       return sumTokenBalances(balance, acc);
-    }, {} as Balance);
+    }, {});
 
     totalBalance = sumTokenBalances(assetBalance, totalBalance);
 

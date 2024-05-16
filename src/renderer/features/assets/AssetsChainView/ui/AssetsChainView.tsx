@@ -20,8 +20,6 @@ type Props = {
   assetsView: AssetsListView;
 };
 export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsView }: Props) => {
-  if (assetsView !== AssetsListView.CHAIN_CENTRIC) return null;
-
   const { t } = useI18n();
 
   const activeWallet = useUnit(walletModel.$activeWallet);
@@ -36,7 +34,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
   const [sortedChains, setSortedChains] = useState<Chain[]>([]);
 
   useEffect(() => {
-    if (!activeWallet) return;
+    if (!activeWallet || assetsView !== AssetsListView.CHAIN_CENTRIC) return;
 
     const isMultisig = walletUtils.isMultisig(activeWallet);
 
@@ -68,6 +66,8 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
 
     setSortedChains(sortedChains);
   }, [activeWallet, balances, assetsPrices]);
+
+  if (assetsView !== AssetsListView.CHAIN_CENTRIC) return null;
 
   const searchSymbolOnly = sortedChains.some((chain) => {
     return chain.assets.some((asset) => isStringsMatchQuery(query, [asset.symbol, asset.name]));

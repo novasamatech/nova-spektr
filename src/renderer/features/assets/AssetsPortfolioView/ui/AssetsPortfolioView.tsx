@@ -10,15 +10,14 @@ import { TokenBalanceList } from './TokenBalanceList';
 import { TokenBalance } from './TokenBalance';
 import { portfolioModel } from '../model/portfolio-model';
 
-const getColStyle = (wallet?: Wallet) => {
-  switch (wallet?.type) {
-    case WalletType.WATCH_ONLY:
-      return 'grid-cols-[1fr,100px,105px]';
-    case WalletType.PROXIED:
-      return 'grid-cols-[1fr,100px,105px,30px]';
-    default:
-      return 'grid-cols-[1fr,100px,105px,50px]';
-  }
+const getColStyle = (wallet?: Wallet): string => {
+  if (!wallet) return '';
+  const colStyleMap: Partial<Record<WalletType, string>> = {
+    [WalletType.WATCH_ONLY]: 'grid-cols-[1fr,100px,105px]',
+    [WalletType.PROXIED]: 'grid-cols-[1fr,100px,105px,30px]',
+  };
+
+  return colStyleMap[wallet.type] || 'grid-cols-[1fr,100px,105px,30px]';
 };
 
 export const AssetsPortfolioView = () => {

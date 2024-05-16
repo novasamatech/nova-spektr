@@ -2,7 +2,6 @@ import { createEffect, createEvent, createStore, sample } from 'effector';
 
 import { localStorageService } from '@shared/api/local-storage';
 import { AssetsListView } from '@entities/asset';
-import { priceProviderModel } from '@entities/price';
 import { ASSETS_PAGE_VIEW, HIDE_ZERO_BALANCES } from '../lib/constants';
 
 const hideZeroBalancesChanged = createEvent<boolean>();
@@ -31,12 +30,6 @@ const saveHideZeroBalancesFx = createEffect((value: boolean): boolean => {
 sample({
   clock: assetsStarted,
   target: [getHideZeroBalancesFx, getAssetsViewFx],
-});
-
-sample({
-  clock: assetsStarted,
-  fn: () => ({ includeRates: true }),
-  target: priceProviderModel.events.assetsPricesRequested,
 });
 
 sample({
