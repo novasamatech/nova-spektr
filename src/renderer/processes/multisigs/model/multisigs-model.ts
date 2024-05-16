@@ -76,8 +76,7 @@ const saveMultisigFx = createEffect((multisigsToSave: SaveMultisigParams[]) => {
   multisigsToSave.forEach((multisig) => {
     walletModel.events.multisigCreated(multisig);
 
-    const signatories = multisig.accounts.map((account) => account.accountId);
-
+    const signatories = multisig.accounts[0].signatories.map((signatory) => signatory.accountId);
     notificationModel.events.notificationsAdded([
       {
         read: false,
@@ -85,7 +84,7 @@ const saveMultisigFx = createEffect((multisigsToSave: SaveMultisigParams[]) => {
         dateCreated: Date.now(),
         multisigAccountId: multisig.accounts[0].accountId,
         multisigAccountName: multisig.wallet.name,
-        network: multisig.accounts[0].chainId,
+        chainId: multisig.accounts[0].chainId,
         signatories,
         threshold: multisig.accounts[0].threshold,
       } as NoID<MultisigCreated>,
