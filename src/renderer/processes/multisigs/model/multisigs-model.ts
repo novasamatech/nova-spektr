@@ -32,9 +32,12 @@ const MULTISIG_DISCOVERY_TIMEOUT = 30000;
 const multisigsDiscoveryStarted = createEvent();
 const multisigSaved = createEvent<GetMultisigsResult>();
 
-const $chainsSupportingMultisigDiscovery = combine(networkModel.$chains, (chains) => {
+const $multisigChains = combine(networkModel.$chains, (chains) => {
   return Object.values(chains).filter((chain) => {
-    return multisigUtils.isMultisigSupported(chain) && Boolean(chain.externalApi?.[ExternalType.MULTISIG]?.[0]?.url);
+    const isMultisigSupported = multisigUtils.isMultisigSupported(chain);
+    const hasIndexerUrl = chain.externalApi?.[ExternalType.MULTISIG]?.[0]?.url;
+
+    return isMultisigSupported && hasIndexerUrl;
   });
 });
 
@@ -48,37 +51,33 @@ type GetMultisigsResult = {
   indexedMultisigs: MultisigResult[];
 };
 
-const getMultisigsFx = createEffect(({ chains, wallets }: GetMultisigsParams): void => {
+const getMultisigsFx = createEffect(({ chains, wallets }: GetMultisigsParams) => {
   chains.forEach((chain) => {
     const accounts = walletUtils.getAccountsBy(wallets, (a) => accountUtils.isChainIdMatch(a, chain.chainId));
     const multisigIndexerUrl = chain.externalApi?.[ExternalType.MULTISIG]?.[0]?.url;
 
-    if (multisigIndexerUrl && accounts.length) {
-      const client = new GraphQLClient(multisigIndexerUrl);
+    if (!multisigIndexerUrl || !accounts.length) {
+      return;
+    }
 
-      multisigService
-        .filterMultisigsAccounts(
-          client,
-          accounts.map((account) => account.accountId),
-        )
-        .then((indexedMultisigs) => {
-          const multisigsToSave = indexedMultisigs.filter((multisigrResult) => {
-            // we filter out the multisigs that we already have
-            const sameWallet = walletUtils.getWalletFilteredAccounts(wallets, {
-              accountFn: (account) => {
-                return account.accountId === multisigrResult.accountId;
-              },
-            });
+    const client = new GraphQLClient(multisigIndexerUrl);
+    const accountIds = accounts.map((account) => account.accountId);
 
-            const walletAllreadyExist = Boolean(sameWallet);
-
-            return !walletAllreadyExist;
+    multisigService
+      .filterMultisigsAccounts(client, accountIds)
+      .then((indexedMultisigs) => {
+        const multisigsToSave = indexedMultisigs.filter((multisigrResult) => {
+          // we filter out the multisigs that we already have
+          const existingWallet = walletUtils.getWalletFilteredAccounts(wallets, {
+            accountFn: (account) => account.accountId === multisigrResult.accountId,
           });
 
-          multisigsToSave.length > 0 && multisigSaved({ indexedMultisigs: multisigsToSave, chain });
-        })
-        .catch(console.error);
-    }
+          return !existingWallet;
+        });
+
+        multisigsToSave.length > 0 && multisigSaved({ indexedMultisigs: multisigsToSave, chain });
+      })
+      .catch(console.error);
   });
 });
 
@@ -104,15 +103,17 @@ const { tick: multisigDiscoveryTriggered } = interval({
 sample({
   clock: [multisigDiscoveryTriggered, once(networkModel.$connections)],
   source: {
-    chains: $chainsSupportingMultisigDiscovery,
+    chains: $multisigChains,
     wallets: walletModel.$wallets,
     connections: networkModel.$connections,
   },
   fn: ({ chains, wallets, connections }) => {
+    const filteredChains = chains.filter(
+      (chain) => connections[chain.chainId] && !networkUtils.isDisabledConnection(connections[chain.chainId]),
+    );
+
     return {
-      chains: chains.filter(
-        (chain) => connections[chain.chainId] && !networkUtils.isDisabledConnection(connections[chain.chainId]),
-      ),
+      chains: filteredChains,
       wallets,
     };
   },
@@ -122,7 +123,7 @@ sample({
 sample({
   clock: multisigSaved,
   fn: ({ indexedMultisigs, chain }) => {
-    const walletsToSave = indexedMultisigs.map(
+    return indexedMultisigs.map(
       ({ threshold, accountId, signatories }) =>
         ({
           wallet: {
@@ -147,8 +148,6 @@ sample({
           ],
         } as SaveMultisigParams),
     );
-
-    return walletsToSave;
   },
   target: saveMultisigFx,
 });
