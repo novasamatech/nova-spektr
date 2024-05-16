@@ -16,7 +16,7 @@ export const Governance = () => {
   const { t } = useI18n();
 
   useEffect(() => {
-    governanceModel.events.requestStarted();
+    governanceModel.events.componentMounted();
   }, []);
 
   return (
@@ -29,8 +29,8 @@ export const Governance = () => {
         <section className="flex flex-col h-full w-[736px] mx-auto">
           <div className="flex gap-x-3">
             <ChainSelector />
-            <Locks />
-            <Delegations />
+            <Locks onClick={() => console.log('Go to Unlock')} />
+            <Delegations onClick={() => console.log('Go to Delegate')} />
           </div>
 
           {/* TODO: Tracks - Vote filter */}

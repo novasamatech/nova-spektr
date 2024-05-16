@@ -17,7 +17,7 @@ const $governanceApi = restore(governanceApiChanged, subsquareService);
 
 const $referendumsList = createStore<ReferendumInfo[]>([]);
 const $referendumsDetails = createStore<Record<string, string> | null>(null);
-const $referendumsRequested = createStore<boolean>(false);
+const $referendumsRequested = createStore<boolean>(false).reset(chainIdChanged);
 
 const requestOnChainReferendumsFx = createEffect(async (api: ApiPromise): Promise<ReferendumInfo[]> => {
   const { ongoing } = await governanceService.getReferendums(api);
@@ -36,7 +36,8 @@ const requestOffChainReferendumsFx = createEffect(
 );
 
 const getVotesFx = createEffect((api: ApiPromise): Promise<any[]> => {
-  return governanceService.getVotesFor(api, '12mP4sjCfKbDyMRAEyLpkeHeoYtS5USY4x34n9NMwQrcEyoh');
+  return governanceService.getVotingFor(api, '12mP4sjCfKbDyMRAEyLpkeHeoYtS5USY4x34n9NMwQrcEyoh');
+  // return governanceService.getVotingFor(api, '153YD8ZHD9dRh82U419bSCB5SzWhbdAFzjj4NtA5pMazR2yC');
 });
 
 const $api = combine(
@@ -48,15 +49,6 @@ const $api = combine(
     return (chainId && apis[chainId]) || null;
   },
 );
-
-sample({
-  clock: chainIdChanged,
-  fn: (chainId) => ({ chainId, requested: false }),
-  target: spread({
-    chainId: $chainId,
-    requested: $referendumsRequested,
-  }),
-});
 
 sample({
   clock: $api.updates,

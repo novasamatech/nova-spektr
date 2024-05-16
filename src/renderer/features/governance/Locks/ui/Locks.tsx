@@ -1,11 +1,25 @@
-import { Icon, FootnoteText } from '@shared/ui';
+import { useUnit } from 'effector-react';
 
-export const Locks = () => {
+import { Icon, FootnoteText, Shimmering } from '@shared/ui';
+import { locksModel } from '../model/locks-model';
+import { AssetBalance } from '@entities/asset';
+
+type Props = {
+  onClick: () => void;
+};
+export const Locks = ({ onClick }: Props) => {
+  const asset = useUnit(locksModel.$asset);
+  const maxLock = useUnit(locksModel.$maxLock);
+  const isLoading = useUnit(locksModel.$isLoading);
+
   return (
-    <div className="flex flex-col gap-y-1">
-      <Icon name="opengovLock" />
-      <FootnoteText>Lock</FootnoteText>
-      {/*<AssetBalance value="1111" />*/}
-    </div>
+    <button className="border border-gray-200 rounded-sm" onClick={onClick}>
+      <div className="flex flex-col gap-y-1 p-2">
+        <Icon name="opengovLock" />
+        <FootnoteText>Lock</FootnoteText>
+        {isLoading && <Shimmering width={100} height={20} />}
+        {!isLoading && asset && <AssetBalance value={maxLock.toString()} asset={asset} />}
+      </div>
+    </button>
   );
 };

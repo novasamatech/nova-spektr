@@ -33,6 +33,11 @@ export const enum VotingType {
   SplitAbstain = 'split_abstain',
 }
 
+export type TrackLock = {
+  track: number;
+  lock: BN;
+};
+
 export const enum Conviction {
   None = 'None',
   Locked1x = 'locked_1x',

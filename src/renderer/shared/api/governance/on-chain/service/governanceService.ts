@@ -1,7 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 import { BN_ZERO } from '@polkadot/util';
 
-import { ReferendumType, VotingType } from '@shared/core';
 import type {
   OngoingReferendum,
   RejectedReferendum,
@@ -11,11 +10,14 @@ import type {
   AccountVote,
   SplitVote,
   SplitAbstainVote,
+  TrackLock,
 } from '@shared/core';
+import { ReferendumType, VotingType } from '@shared/core';
 
 export const governanceService = {
   getReferendums,
-  getVotesFor,
+  getVotingFor,
+  getClassLocks,
 };
 
 type ReferendumsResult = {
@@ -113,7 +115,7 @@ async function getReferendums(api: ApiPromise): Promise<ReferendumsResult> {
   }
 }
 
-async function getVotesFor(api: ApiPromise, address: Address): Promise<AccountVote[]> {
+async function getVotingFor(api: ApiPromise, address: Address): Promise<AccountVote[]> {
   const votingEntries = await api.query.convictionVoting.votingFor.entries(address);
 
   return votingEntries.reduce<AccountVote[]>((acc, [_, convictionVoting]) => {
@@ -160,4 +162,13 @@ async function getVotesFor(api: ApiPromise, address: Address): Promise<AccountVo
 
     return acc;
   }, []);
+}
+
+async function getClassLocks(api: ApiPromise, address: Address): Promise<TrackLock[]> {
+  const locks = await api.query.convictionVoting.classLocksFor(address);
+
+  return locks.map((tuple) => ({
+    track: tuple[0].toNumber(),
+    lock: tuple[1].toBn(),
+  }));
 }

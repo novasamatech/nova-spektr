@@ -67,7 +67,7 @@ describe('pages/Assets/Assets/components/NetworkAssets', () => {
     await act(async () => {
       render(
         <Provider value={scope}>
-          <NetworkAssets chain={testChain} accounts={accounts} />
+          <NetworkAssets chain={testChain} accounts={accounts} hideZeroBalances query="" />
         </Provider>,
       );
     });

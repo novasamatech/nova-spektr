@@ -75,4 +75,4 @@ export { ReferendumType } from './types/referendum';
 export type { ReferendumInfo, ApprovedReferendum, RejectedReferendum, OngoingReferendum } from './types/referendum';
 
 export { VotingType, Conviction } from './types/voting';
-export type { AccountVote, StandardVote, SplitVote, SplitAbstainVote } from './types/voting';
+export type { AccountVote, StandardVote, SplitVote, SplitAbstainVote, TrackLock } from './types/voting';

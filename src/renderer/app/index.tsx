@@ -10,10 +10,10 @@ import { proxyModel } from '@entities/proxy';
 import { notificationModel } from '@entities/notification';
 import { proxiesModel } from '@features/proxies';
 import { assetsSettingsModel } from '@features/assets';
+import '@features/balances';
 import './i18n';
 import './index.css';
 import './styles/theme/default.css';
-import '@features/balances';
 
 log.variables.version = process.env.VERSION;
 log.variables.env = process.env.NODE_ENV;
