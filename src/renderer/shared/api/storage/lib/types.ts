@@ -4,7 +4,9 @@ import { MultisigEvent, MultisigTransaction, MultisigTransactionKey } from '@sha
 import type {
   ChainMetadata,
   Contact,
+  Account,
   AccountId,
+  BasketTransaction,
   CallHash,
   ChainId,
   Balance,
@@ -14,8 +16,6 @@ import type {
   ProxyGroup,
   Wallet,
 } from '@shared/core';
-import { Account } from '../../../core/types/account';
-import { BasketTransaction } from '../../../core/types/basket';
 
 // =====================================================
 // ================ Storage interface ==================
