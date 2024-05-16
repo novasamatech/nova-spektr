@@ -21,13 +21,13 @@ type BaseNotification = {
 
 type MultisigBaseNotification = BaseNotification & {
   multisigAccountId: AccountId;
-  originatorAccountId: AccountId;
 };
 
-export type MultisigInvite = MultisigBaseNotification & {
+export type MultisigCreated = MultisigBaseNotification & {
   signatories: AccountId[];
   threshold: number;
   multisigAccountName: string;
+  network: ChainId;
 };
 
 export type MultisigOperation = MultisigBaseNotification & {
@@ -47,4 +47,4 @@ export type ProxyAction = BaseNotification & {
   proxiedWalletName: string;
 };
 
-export type Notification = MultisigInvite | MultisigOperation | ProxyAction;
+export type Notification = MultisigCreated | MultisigOperation | ProxyAction;
