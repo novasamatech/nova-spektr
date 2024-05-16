@@ -58,6 +58,7 @@
     "storybook": "start-storybook -p 6006",
     "build:storybook": "build-storybook",
     "update:chains-file": "node scripts/buildChainsJson.js",
+    "update:tokens-file": "node scripts/buildTokensJson.js",
     "githook:pre-commit": "cross-env NODE_ENV=production lint-staged && tsc -p tsconfig.json",
     "githook:pre-push": "cross-env pnpm test -- --changedSince=dev",
     "prepare": "husky install",

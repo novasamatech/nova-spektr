@@ -9,7 +9,7 @@ import type { ChainAccount, ChainId, ShardAccount, Wallet, Address, BaseAccount,
 import { CryptoType, Transaction } from '@shared/core';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
 import { QrTxGenerator } from '../QrCode/QrGenerator/QrTxGenerator';
-import { useTransaction } from '../../lib';
+import { transactionService } from '../../lib';
 
 type Props = {
   api: ApiPromise;
@@ -37,7 +37,6 @@ export const ScanSingleframeQr = ({
   onResult,
 }: Props) => {
   const { t } = useI18n();
-  const { createPayload } = useTransaction();
 
   const [txPayload, setTxPayload] = useState<Uint8Array>();
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
@@ -50,7 +49,7 @@ export const ScanSingleframeQr = ({
 
   const setupTransaction = async (): Promise<void> => {
     try {
-      const { payload, unsigned } = await createPayload(transaction, api);
+      const { payload, unsigned } = await transactionService.createPayload(transaction, api);
 
       setTxPayload(payload);
       setUnsignedTx(unsigned);
