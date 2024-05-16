@@ -8,6 +8,7 @@ import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { MultisigResult, multisigService } from '@entities/multisig';
 import { notificationModel } from '@entities/notification';
 import { multisigUtils } from '../lib/mulitisigs-utils';
+import { MultisigCreated } from '@/src/renderer/shared/core/types/notification';
 
 type SaveMultisigParams = {
   wallet: Omit<NoID<Wallet>, 'isActive' | 'accounts'>;
@@ -75,12 +76,19 @@ const saveMultisigFx = createEffect((multisigsToSave: SaveMultisigParams[]) => {
   multisigsToSave.forEach((multisig) => {
     walletModel.events.multisigCreated(multisig);
 
+    const signatories = multisig.accounts.map((account) => account.accountId);
+
     notificationModel.events.notificationsAdded([
       {
         read: false,
         type: NotificationType.MULTISIG_CREATED,
         dateCreated: Date.now(),
-      },
+        multisigAccountId: multisig.accounts[0].accountId,
+        multisigAccountName: multisig.wallet.name,
+        network: multisig.accounts[0].chainId,
+        signatories,
+        threshold: multisig.accounts[0].threshold,
+      } as NoID<MultisigCreated>,
     ]);
   });
 });
