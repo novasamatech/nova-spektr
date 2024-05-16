@@ -8,18 +8,22 @@ import noop from 'lodash/noop';
 import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';
-import type { Account, PartialBy, ProxiedAccount, Chain, Asset, Address, ChainId } from '@shared/core';
+import type {
+  Account,
+  PartialBy,
+  ProxiedAccount,
+  Chain,
+  Asset,
+  Address,
+  ChainId,
+  Transaction,
+  MultisigTxWrapper,
+  ProxyTxWrapper,
+} from '@shared/core';
 import { useStakingData, StakingMap } from '@entities/staking';
 import { transferableAmount, getRelaychainAsset, toAddress, formatAmount, ZERO_BALANCE } from '@shared/lib/utils';
 import { NetworkStore } from '../lib/types';
-import {
-  Transaction,
-  transactionBuilder,
-  transactionService,
-  MultisigTxWrapper,
-  ProxyTxWrapper,
-  DESCRIPTION_LENGTH,
-} from '@entities/transaction';
+import { transactionBuilder, transactionService, DESCRIPTION_LENGTH } from '@entities/transaction';
 
 type BalanceMap = { balance: string; stake: string };
 

@@ -4,9 +4,9 @@ import { AccountId32 } from '@polkadot/types/interfaces';
 
 import { PendingMultisigTransaction } from './types';
 import { getCreatedDate, toAccountId } from '@shared/lib/utils';
-import { type DecodedTransaction, type ExtrinsicResultParams, TransactionType } from '@entities/transaction';
-import type { MultisigAccount, Address, ChainId } from '@shared/core';
-import { MultisigEvent, MultisigTransaction, MultisigTxInitStatus, Transaction } from '@shared/core';
+import type { ExtrinsicResultParams } from '@entities/transaction';
+import type { MultisigAccount, Address, ChainId, DecodedTransaction } from '@shared/core';
+import { MultisigEvent, MultisigTransaction, MultisigTxInitStatus, Transaction, TransactionType } from '@shared/core';
 
 type MultisigTxResult = {
   transaction: MultisigTransaction;

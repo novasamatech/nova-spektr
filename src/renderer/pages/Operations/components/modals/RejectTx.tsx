@@ -17,16 +17,10 @@ import { SigningSwitch } from '@features/operations';
 import { OperationTitle } from '@entities/chain';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
-import type { Address, HexString, Timepoint, MultisigAccount, Account } from '@shared/core';
+import type { Address, HexString, Timepoint, MultisigAccount, Account, Transaction } from '@shared/core';
+import { TransactionType } from '@shared/core';
 import { balanceModel, balanceUtils } from '@entities/balance';
-import {
-  Transaction,
-  TransactionType,
-  OperationResult,
-  validateBalance,
-  isXcmTransaction,
-  transactionService,
-} from '@entities/transaction';
+import { OperationResult, validateBalance, isXcmTransaction, transactionService } from '@entities/transaction';
 
 type Props = {
   tx: MultisigTransactionDS;

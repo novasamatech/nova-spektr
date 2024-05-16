@@ -8,15 +8,19 @@ import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';
 import { xcmTransferModel } from './xcm-transfer-model';
 import { NetworkStore } from '../lib/types';
-import type { Chain, Account, Address, PartialBy, ChainId, ProxiedAccount, AccountId } from '@shared/core';
-import {
+import type {
+  Chain,
+  Account,
+  Address,
+  PartialBy,
+  ChainId,
+  ProxiedAccount,
+  AccountId,
   Transaction,
-  transactionBuilder,
-  transactionService,
   MultisigTxWrapper,
   ProxyTxWrapper,
-  DESCRIPTION_LENGTH,
-} from '@entities/transaction';
+} from '@shared/core';
+import { transactionBuilder, transactionService, DESCRIPTION_LENGTH } from '@entities/transaction';
 import {
   transferableAmount,
   getAssetId,

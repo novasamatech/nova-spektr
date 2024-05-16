@@ -4,20 +4,25 @@ import { createForm } from 'effector-forms';
 import { BN } from '@polkadot/util';
 import { spread } from 'patronum';
 
-import { Address, ProxyType, Chain, BaseAccount, PartialBy, ProxiedAccount, Account } from '@shared/core';
+import {
+  Address,
+  ProxyType,
+  Chain,
+  BaseAccount,
+  PartialBy,
+  ProxiedAccount,
+  Account,
+  TransactionType,
+  Transaction,
+  ProxyTxWrapper,
+  MultisigTxWrapper,
+} from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { walletSelectModel } from '@features/wallets';
 import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
 import { walletUtils, accountUtils, walletModel, permissionUtils } from '@entities/wallet';
 import { proxyService } from '@shared/api/proxy';
-import {
-  TransactionType,
-  Transaction,
-  ProxyTxWrapper,
-  MultisigTxWrapper,
-  transactionService,
-  DESCRIPTION_LENGTH,
-} from '@entities/transaction';
+import { transactionService, DESCRIPTION_LENGTH } from '@entities/transaction';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import {
   getProxyTypes,

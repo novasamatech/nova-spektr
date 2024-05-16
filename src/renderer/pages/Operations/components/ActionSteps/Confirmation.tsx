@@ -5,7 +5,7 @@ import { TransactionAmount } from '@pages/Operations/components/TransactionAmoun
 import { DetailRow, FootnoteText, Icon } from '@shared/ui';
 import { ExtendedChain } from '@entities/network';
 import { useI18n } from '@app/providers';
-import { type MultisigAccount, Account } from '@shared/core';
+import { type MultisigAccount, Account, type MultisigTransaction, type Transaction } from '@shared/core';
 import { getAssetById } from '@shared/lib/utils';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
 import { xcmTransferModel } from '@widgets/Transfer';
@@ -14,15 +14,7 @@ import { walletModel } from '@entities/wallet';
 import { getIconName } from '@entities/transaction/lib/transactionConfirmIcon';
 import { priceProviderModel } from '@entities/price';
 import { Details } from '../Details';
-import {
-  MultisigTransaction,
-  Transaction,
-  Fee,
-  MultisigDepositWithLabel,
-  isXcmTransaction,
-  XcmFee,
-  FeeLoader,
-} from '@entities/transaction';
+import { Fee, MultisigDepositWithLabel, isXcmTransaction, XcmFee, FeeLoader } from '@entities/transaction';
 
 type Props = {
   tx: MultisigTransaction;
