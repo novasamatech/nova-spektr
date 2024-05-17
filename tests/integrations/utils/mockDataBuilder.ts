@@ -67,7 +67,6 @@ export class MockDataBuilder {
 
   buildMultisigAccount(threshold: number, signatoryNumber: number) {
     const baseAccount = this.buildAccount(false, false, 'signing_ms');
-    baseAccount['creatorAccountId'] = accountIds[0];
     baseAccount['threshold'] = threshold;
     baseAccount['signatories'] = this.generateSignatories(signatoryNumber);
 
