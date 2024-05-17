@@ -9,7 +9,7 @@ const notifications = [
     id: 1,
     read: true,
     dateCreated: Date.now(),
-    type: NotificationType.MULTISIG_INVITE,
+    type: NotificationType.MULTISIG_CREATED,
   },
 ] as Notification[];
 
@@ -18,7 +18,7 @@ const newNotifications = [
     id: 2,
     read: true,
     dateCreated: Date.now(),
-    type: NotificationType.MULTISIG_INVITE,
+    type: NotificationType.MULTISIG_CREATED,
   },
 ] as Notification[];
 

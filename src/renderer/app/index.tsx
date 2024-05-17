@@ -10,6 +10,7 @@ import { proxyModel } from '@entities/proxy';
 import { notificationModel } from '@entities/notification';
 import { proxiesModel } from '@features/proxies';
 import { assetsSettingsModel } from '@features/assets';
+import { multisigsModel } from '../processes/multisigs';
 import './i18n';
 import './index.css';
 import './styles/theme/default.css';
@@ -42,6 +43,7 @@ proxyModel.events.proxyStarted();
 assetsSettingsModel.events.assetsStarted();
 notificationModel.events.notificationsStarted();
 basketModel.events.basketStarted();
+multisigsModel.events.multisigsDiscoveryStarted();
 
 createRoot(container).render(
   <HashRouter>

@@ -282,8 +282,8 @@
   },
   "notifications": {
     "details": {
-      "multisigInviteDescription": "<strong>{name}</strong>  with threshold { threshold } out of { signatories } signatories",
-      "multisigInviteTitle": "New multisig wallet added",
+      "multisigCreatedDescription": "<strong>{name}</strong>  with threshold { threshold } out of { signatoriesLength } available on  <chain />",
+      "multisigCreatedTitle": "New multisig wallet added",
       "proxyCreatedDetails": "<chain />  is now available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",
       "proxyCreatedTitle": "New delegated authority wallet added",
       "proxyRemovedDetails": "<chain />  is no longer available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",

@@ -1,16 +1,7 @@
 import { combine, createApi, createEffect, createEvent, createStore, sample } from 'effector';
 import sortBy from 'lodash/sortBy';
 
-import {
-  AccountId,
-  AccountType,
-  ChainId,
-  ChainType,
-  CryptoType,
-  Signatory,
-  SigningType,
-  WalletType,
-} from '@shared/core';
+import { AccountType, ChainId, ChainType, CryptoType, Signatory, SigningType, WalletType } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
 
@@ -75,7 +66,6 @@ const createWalletFx = createEffect(
           name: name.trim(),
           accountId: accountId,
           threshold: threshold,
-          creatorAccountId: creatorId as AccountId,
           cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
           chainType: isEthereumChain ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
           type: AccountType.MULTISIG,

@@ -48,6 +48,7 @@ module.exports = {
           ['@renderer', './src/renderer/'],
           ['@app', './src/renderer/app/'],
           ['@pages', './src/renderer/pages/'],
+          ['@processes', './src/renderer/processes/'],
           ['@widgets', './src/renderer/widgets/'],
           ['@features', './src/renderer/features/'],
           ['@entities', './src/renderer/entities/'],
