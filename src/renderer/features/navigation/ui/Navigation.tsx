@@ -7,10 +7,12 @@ import { Paths } from '@shared/routes';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { BodyText } from '@shared/ui';
 import { MultisigTxInitStatus } from '@shared/core';
+import { basketModel } from '@entities/basket';
 
 export const Navigation = () => {
   const chains = useUnit(networkModel.$chains);
   const wallet = useUnit(walletModel.$activeWallet);
+  const basket = useUnit(basketModel.$basket);
 
   const { getLiveAccountMultisigTxs } = useMultisigTx({});
 
@@ -41,6 +43,20 @@ export const Navigation = () => {
           </li>
         ))}
         <li className="mt-auto">
+          <NavItem
+            icon="operations"
+            title="navigation.basketLabel"
+            link={Paths.BASKET}
+            badge={
+              Boolean(basket.length) && (
+                <BodyText className="ml-auto text-text-tertiary">
+                  {basket.filter((tx) => tx.initiatorWallet === wallet?.id).length}
+                </BodyText>
+              )
+            }
+          />
+        </li>
+        <li>
           <NavItem icon="notification" title="navigation.notificationsLabel" link={Paths.NOTIFICATIONS} />
         </li>
         <li>

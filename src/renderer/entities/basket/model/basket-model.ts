@@ -5,6 +5,7 @@ import { storageService } from '@shared/api/storage';
 
 const basketStarted = createEvent();
 const transactionsCreated = createEvent<BasketTransaction[]>();
+const transactionsRemoved = createEvent<BasketTransaction[]>();
 
 const $basket = createStore<BasketTransaction[]>([]);
 
@@ -15,6 +16,10 @@ const addBasketTxsFx = createEffect(
     return storageService.basketTransactions.createAll(transactions);
   },
 );
+
+const removeBasketTxsFx = createEffect(async (transactions: BasketTransaction[]): Promise<number[] | undefined> => {
+  return storageService.basketTransactions.deleteAll(transactions.map((t) => t.id));
+});
 
 sample({
   clock: basketStarted,
@@ -39,11 +44,25 @@ sample({
   target: $basket,
 });
 
+sample({
+  clock: transactionsRemoved,
+  target: removeBasketTxsFx,
+});
+
+sample({
+  clock: removeBasketTxsFx.doneData,
+  source: $basket,
+  filter: (_, transactionIds) => Boolean(transactionIds),
+  fn: (basket, transactionIds) => basket.filter((t) => !transactionIds!.includes(t.id)),
+  target: $basket,
+});
+
 export const basketModel = {
   $basket,
 
   events: {
     basketStarted,
     transactionsCreated,
+    transactionsRemoved,
   },
 };
