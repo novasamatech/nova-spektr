@@ -4,10 +4,10 @@ import { methods as ormlMethods } from '@substrate/txwrapper-orml';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import sortBy from 'lodash/sortBy';
 
-import { Transaction, TransactionType } from '@entities/transaction/model/transaction';
+import { Transaction, TransactionType, MultisigTxWrapper, ProxyTxWrapper } from '@shared/core';
 import { getMaxWeight, hasDestWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
 import * as xcmMethods from '@entities/transaction/lib/common/xcmMethods';
-import { DEFAULT_FEE_ASSET_ITEM, MultisigTxWrapper, ProxyTxWrapper } from '@entities/transaction';
+import { DEFAULT_FEE_ASSET_ITEM } from '@entities/transaction';
 import { toAddress } from '@shared/lib/utils';
 
 type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];

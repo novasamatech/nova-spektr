@@ -4,7 +4,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { ExtendedChain } from '@entities/network';
-import { MultisigEvent, SigningStatus } from '@entities/transaction/model/transaction';
+import { MultisigEvent, SigningStatus } from '@shared/core';
 import { TransactionTitle } from './TransactionTitle/TransactionTitle';
 import OperationStatus from './OperationStatus';
 import { getSignatoryName, getTransactionAmount } from '../common/utils';

@@ -10,12 +10,14 @@ import { Confirmation } from './Confirmation';
 import { withdrawUtils } from '../lib/withdraw-utils';
 import { withdrawModel } from '../model/withdraw-model';
 import { Step } from '../lib/types';
+import { AddToBasketButton } from '@features/operations/OperationsConfirm';
 
 export const Withdraw = () => {
   const { t } = useI18n();
 
   const step = useUnit(withdrawModel.$step);
   const networkStore = useUnit(withdrawModel.$networkStore);
+  const initiatorWallet = useUnit(withdrawModel.$initiatorWallet);
 
   const [isModalOpen, closeModal] = useModalClose(!withdrawUtils.isNoneStep(step), withdrawModel.output.flowFinished);
 
@@ -38,7 +40,12 @@ export const Withdraw = () => {
     >
       {withdrawUtils.isInitStep(step) && <WithdrawForm onGoBack={closeModal} />}
       {withdrawUtils.isConfirmStep(step) && (
-        <Confirmation onGoBack={() => withdrawModel.events.stepChanged(Step.INIT)} />
+        <Confirmation
+          secondaryActionButton={
+            <AddToBasketButton wallet={initiatorWallet} onTxSaved={() => withdrawModel.events.txSaved()} />
+          }
+          onGoBack={() => withdrawModel.events.stepChanged(Step.INIT)}
+        />
       )}
       {withdrawUtils.isSignStep(step) && (
         <OperationSign onGoBack={() => withdrawModel.events.stepChanged(Step.CONFIRM)} />

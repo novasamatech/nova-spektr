@@ -1,12 +1,7 @@
-import {
-  MultisigTransaction,
-  MultisigTxFinalStatus,
-  MultisigTxInitStatus,
-  MultisigTxStatus,
-} from '@entities/transaction';
 import { CaptionText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { cnTw } from '@shared/lib/utils';
+import { MultisigTransaction, MultisigTxFinalStatus, MultisigTxInitStatus, MultisigTxStatus } from '@shared/core';
 
 const StatusTitle: Record<MultisigTxStatus, string> = {
   [MultisigTxInitStatus.SIGNING]: 'operation.status.signing',

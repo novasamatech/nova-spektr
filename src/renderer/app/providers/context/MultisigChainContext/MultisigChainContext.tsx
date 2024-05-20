@@ -5,11 +5,10 @@ import { useUnit } from 'effector-react';
 
 import { subscriptionService } from '@entities/chain';
 import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
-import { MultisigTxFinalStatus, SigningStatus } from '@entities/transaction';
 import { toAddress, getCreatedDateFromApi } from '@shared/lib/utils';
 import { useDebounce, useTaskQueue } from '@shared/lib/hooks';
 import { Task } from '@shared/lib/hooks/useTaskQueue';
-import type { MultisigAccount, ChainId } from '@shared/core';
+import { MultisigAccount, ChainId, MultisigTxFinalStatus, SigningStatus } from '@shared/core';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
 

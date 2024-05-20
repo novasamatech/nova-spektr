@@ -3,19 +3,22 @@ import { createForm } from 'effector-forms';
 import { BN } from '@polkadot/util';
 import { spread } from 'patronum';
 
-import { ProxyType, Chain, Account, PartialBy, ProxiedAccount } from '@shared/core';
-import { networkModel, networkUtils } from '@entities/network';
-import { walletSelectModel } from '@features/wallets';
-import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
-import { walletUtils, accountUtils, walletModel, permissionUtils } from '@entities/wallet';
 import {
+  ProxyType,
+  Chain,
+  Account,
+  PartialBy,
+  ProxiedAccount,
   TransactionType,
   Transaction,
   ProxyTxWrapper,
   MultisigTxWrapper,
-  transactionService,
-  DESCRIPTION_LENGTH,
-} from '@entities/transaction';
+} from '@shared/core';
+import { networkModel, networkUtils } from '@entities/network';
+import { walletSelectModel } from '@features/wallets';
+import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
+import { walletUtils, accountUtils, walletModel, permissionUtils } from '@entities/wallet';
+import { transactionService, DESCRIPTION_LENGTH } from '@entities/transaction';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import {
   getProxyTypes,
@@ -538,6 +541,7 @@ export const formModel = {
   $proxyTypes,
   $proxyQuery,
   $proxyWallet,
+  $txWrappers,
 
   $oldProxyDeposit,
   $newProxyDeposit,

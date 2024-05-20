@@ -15,14 +15,12 @@ import {
   ProxyType,
   Chain,
   Account,
-} from '@shared/core';
-import {
   DecodedTransaction,
   MultisigEvent,
   MultisigTransaction,
   Transaction,
   TransactionType,
-} from '@entities/transaction/model/transaction';
+} from '@shared/core';
 
 export const TRANSACTION_UNKNOWN = 'operations.titles.unknown';
 

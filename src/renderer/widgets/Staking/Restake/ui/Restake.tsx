@@ -10,12 +10,14 @@ import { Confirmation } from './Confirmation';
 import { restakeUtils } from '../lib/restake-utils';
 import { restakeModel } from '../model/restake-model';
 import { Step } from '../lib/types';
+import { AddToBasketButton } from '@features/operations/OperationsConfirm';
 
 export const Restake = () => {
   const { t } = useI18n();
 
   const step = useUnit(restakeModel.$step);
   const networkStore = useUnit(restakeModel.$networkStore);
+  const initiatorWallet = useUnit(restakeModel.$initiatorWallet);
 
   const [isModalOpen, closeModal] = useModalClose(!restakeUtils.isNoneStep(step), restakeModel.output.flowFinished);
 
@@ -37,7 +39,14 @@ export const Restake = () => {
       onClose={closeModal}
     >
       {restakeUtils.isInitStep(step) && <ReturnToStakeForm onGoBack={closeModal} />}
-      {restakeUtils.isConfirmStep(step) && <Confirmation onGoBack={() => restakeModel.events.stepChanged(Step.INIT)} />}
+      {restakeUtils.isConfirmStep(step) && (
+        <Confirmation
+          secondaryActionButton={
+            <AddToBasketButton wallet={initiatorWallet} onTxSaved={() => restakeModel.events.txSaved()} />
+          }
+          onGoBack={() => restakeModel.events.stepChanged(Step.INIT)}
+        />
+      )}
       {restakeUtils.isSignStep(step) && (
         <OperationSign onGoBack={() => restakeModel.events.stepChanged(Step.CONFIRM)} />
       )}

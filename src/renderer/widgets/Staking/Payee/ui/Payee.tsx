@@ -10,12 +10,14 @@ import { Confirmation } from './Confirmation';
 import { payeeUtils } from '../lib/payee-utils';
 import { payeeModel } from '../model/payee-model';
 import { Step } from '../lib/types';
+import { AddToBasketButton } from '@features/operations/OperationsConfirm';
 
 export const Payee = () => {
   const { t } = useI18n();
 
   const step = useUnit(payeeModel.$step);
   const walletData = useUnit(payeeModel.$walletData);
+  const initiatorWallet = useUnit(payeeModel.$initiatorWallet);
 
   const [isModalOpen, closeModal] = useModalClose(!payeeUtils.isNoneStep(step), payeeModel.output.flowFinished);
 
@@ -38,7 +40,14 @@ export const Payee = () => {
       onClose={closeModal}
     >
       {payeeUtils.isInitStep(step) && <PayeeForm onGoBack={closeModal} />}
-      {payeeUtils.isConfirmStep(step) && <Confirmation onGoBack={() => payeeModel.events.stepChanged(Step.INIT)} />}
+      {payeeUtils.isConfirmStep(step) && (
+        <Confirmation
+          secondaryActionButton={
+            <AddToBasketButton wallet={initiatorWallet} onTxSaved={() => payeeModel.events.txSaved()} />
+          }
+          onGoBack={() => payeeModel.events.stepChanged(Step.INIT)}
+        />
+      )}
       {payeeUtils.isSignStep(step) && <OperationSign onGoBack={() => payeeModel.events.stepChanged(Step.CONFIRM)} />}
     </BaseModal>
   );

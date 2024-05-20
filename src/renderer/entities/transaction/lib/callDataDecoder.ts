@@ -4,7 +4,7 @@ import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { HexString } from '@polkadot/util/types';
 import { Type } from '@polkadot/types';
 
-import { DecodedTransaction, TransactionType } from '@entities/transaction/model/transaction';
+import { DecodedTransaction, TransactionType } from '@shared/core';
 import type { Address, CallData, ChainId } from '@shared/core';
 import { ICallDataDecoder } from './common/types';
 import { xcmService } from '@shared/api/xcm';

@@ -1,7 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { SpRuntimeDispatchError } from '@polkadot/types/lookup';
 
-import { Transaction, DecodedTransaction, TransactionType } from '@entities/transaction/model/transaction';
+import { Transaction, DecodedTransaction, TransactionType } from '@shared/core';
 import {
   MAX_WEIGHT,
   OLD_MULTISIG_ARGS_AMOUNT,

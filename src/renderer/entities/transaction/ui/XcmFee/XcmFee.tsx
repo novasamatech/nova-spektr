@@ -4,10 +4,10 @@ import { ApiPromise } from '@polkadot/api';
 import { useUnit } from 'effector-react';
 
 import { AssetBalance } from '@entities/asset';
-import { DecodedTransaction, FeeLoader, Transaction } from '@entities/transaction';
+import { FeeLoader } from '@entities/transaction';
 import { XcmConfig, xcmService } from '@shared/api/xcm';
 import { toLocalChainId } from '@shared/lib/utils';
-import type { Asset } from '@shared/core';
+import type { Asset, DecodedTransaction, Transaction } from '@shared/core';
 import { priceProviderModel } from '@entities/price';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 

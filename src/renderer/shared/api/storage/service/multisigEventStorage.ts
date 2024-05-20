@@ -1,4 +1,4 @@
-import { MultisigEvent, MultisigTransactionKey } from '@entities/transaction/model/transaction';
+import { MultisigEvent, MultisigTransactionKey } from '@shared/core';
 import { TMultisigEvent, IMultisigEventStorage, MultisigEventDS, ID } from '../lib/types';
 
 export const useMultisigEventStorage = (db: TMultisigEvent): IMultisigEventStorage => ({
