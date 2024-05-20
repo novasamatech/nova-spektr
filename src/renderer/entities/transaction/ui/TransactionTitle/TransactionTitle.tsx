@@ -3,9 +3,9 @@ import { PropsWithChildren } from 'react';
 import { Icon, BodyText, FootnoteText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { DecodedTransaction, Transaction } from '@shared/core';
-import { getTransactionTitle } from '../../common/utils';
 import { cnTw } from '@shared/lib/utils';
 import { getIconName } from '@entities/transaction/lib/transactionIcon';
+import { getTransactionTitle } from '../../lib';
 
 type Props = {
   tx?: Transaction | DecodedTransaction;

@@ -5,9 +5,8 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@app/providers';
 import { ExtendedChain } from '@entities/network';
 import { MultisigEvent, SigningStatus } from '@shared/core';
-import { TransactionTitle } from './TransactionTitle/TransactionTitle';
 import OperationStatus from './OperationStatus';
-import { getSignatoryName, getTransactionAmount } from '../common/utils';
+import { getSignatoryName } from '../common/utils';
 import { BaseModal, BodyText, FootnoteText, Identicon, ContextMenu, ExplorerLink, IconButton } from '@shared/ui';
 import { getAssetById, SS58_DEFAULT_PREFIX, toAddress, getExtrinsicExplorer, sortByDateAsc } from '@shared/lib/utils';
 import { useMultisigEvent } from '@entities/multisig';
@@ -16,6 +15,7 @@ import { AssetBalance } from '@entities/asset';
 import type { Contact, MultisigAccount, Wallet, AccountId, WalletsMap, Account } from '@shared/core';
 import { WalletIcon, walletModel, walletUtils } from '@entities/wallet';
 import { chainsService } from '@shared/api/network';
+import { TransactionTitle, getTransactionAmount } from '@entities/transaction';
 
 type Props = {
   tx: MultisigTransactionDS;

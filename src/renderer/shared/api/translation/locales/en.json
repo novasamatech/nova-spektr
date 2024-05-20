@@ -74,6 +74,13 @@
   "basemodal": {
     "closeButton": "Close modal window"
   },
+  "basket": {
+    "noOperationsDescription": "There are no operations in the basket yet",
+    "noOperationsLabel": "No operations",
+    "searchPlaceholder": "Search",
+    "selectAll": "Select all",
+    "title": "Basket"
+  },
   "createMultisigAccount": {
     "accountsAlertText": "Add signatory wallet before creating Multisig wallet",
     "accountsTab": "Accounts",
@@ -269,6 +276,7 @@
   "navigation": {
     "addressBookLabel": "Address Book",
     "balancesLabel": "Portfolio",
+    "basketLabel": "Basket",
     "governance": "Governance",
     "historyLabel": "History",
     "mstOperationLabel": "Operations",
