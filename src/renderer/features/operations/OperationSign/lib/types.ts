@@ -1,9 +1,8 @@
 import { ApiPromise } from '@polkadot/api';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
-import { Transaction } from '@entities/transaction';
 import { ValidationErrors } from '@shared/lib/utils';
-import type { Account, ChainId, HexString, Wallet } from '@shared/core';
+import type { Account, ChainId, HexString, Wallet, Transaction } from '@shared/core';
 
 export const enum ReconnectStep {
   NOT_STARTED,

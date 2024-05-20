@@ -1,10 +1,12 @@
 import { Table } from 'dexie';
 
-import { MultisigEvent, MultisigTransaction, MultisigTransactionKey } from '@entities/transaction/model/transaction';
+import { MultisigEvent, MultisigTransaction, MultisigTransactionKey } from '@shared/core';
 import type {
   ChainMetadata,
   Contact,
+  Account,
   AccountId,
+  BasketTransaction,
   CallHash,
   ChainId,
   Balance,
@@ -14,7 +16,6 @@ import type {
   ProxyGroup,
   Wallet,
 } from '@shared/core';
-import { Account } from '../../../core/types/account';
 
 // =====================================================
 // ================ Storage interface ==================
@@ -81,3 +82,4 @@ export type TMultisigTransaction = Table<MultisigTransaction, ID[]>;
 export type TMultisigEvent = Table<MultisigEvent, ID>;
 export type TNotification = Table<Notification, Notification['id']>;
 export type TMetadata = Table<ChainMetadata, ChainMetadata['id']>;
+export type TBasketTransaction = Table<BasketTransaction, BasketTransaction['id']>;

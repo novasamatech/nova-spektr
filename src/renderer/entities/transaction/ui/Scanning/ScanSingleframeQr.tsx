@@ -6,10 +6,9 @@ import { useI18n } from '@app/providers';
 import { Button, FootnoteText } from '@shared/ui';
 import { WalletIcon } from '@entities/wallet'; // TODO: cross import
 import type { ChainAccount, ChainId, ShardAccount, Wallet, Address, BaseAccount, Account } from '@shared/core';
-import { CryptoType } from '@shared/core';
+import { CryptoType, Transaction } from '@shared/core';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
 import { QrTxGenerator } from '../QrCode/QrGenerator/QrTxGenerator';
-import { Transaction } from '../../model/transaction';
 import { transactionService } from '../../lib';
 
 type Props = {

@@ -7,7 +7,7 @@ import { Weight } from '@polkadot/types/interfaces';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 import type { Signer, SignerResult } from '@polkadot/api/types';
 
-import { Transaction, TransactionType } from '@entities/transaction/model/transaction';
+import { Transaction, TransactionType, WrapperKind } from '@shared/core';
 import { createTxMetadata, toAccountId, dictionary } from '@shared/lib/utils';
 import { getExtrinsic, getUnsignedTransaction, wrapAsMulti, wrapAsProxy } from './extrinsicService';
 import { decodeDispatchError } from './common/utils';
@@ -23,17 +23,13 @@ import type {
   MultisigAccount,
   ProxiedAccount,
   Account,
-} from '@shared/core';
-import {
-  ITransactionService,
-  HashData,
-  WrapAsMulti,
   TxWrappers_OLD,
+  WrapAsMulti,
   TxWrapper,
   MultisigTxWrapper,
   ProxyTxWrapper,
-  WrapperKind,
-} from './common/types';
+} from '@shared/core';
+import { HashData, ITransactionService } from './common/types';
 
 export const transactionService = {
   hasMultisig,

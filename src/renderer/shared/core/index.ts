@@ -71,6 +71,24 @@ export { NotificationType } from './types/notification';
 
 export { XcmPallets } from './types/substrate';
 
+export { TransactionType, MultisigTxInitStatus, MultisigTxFinalStatus, WrapperKind } from './types/transaction';
+export type {
+  Transaction,
+  SigningStatus,
+  MultisigTxStatus,
+  DecodedTransaction,
+  MultisigEvent,
+  MultisigTransaction,
+  MultisigTransactionKey,
+  TxWrapper,
+  TxWrappers_OLD,
+  MultisigTxWrapper,
+  ProxyTxWrapper,
+  WrapAsMulti,
+} from './types/transaction';
+
+export type { BasketTransaction } from './types/basket';
+
 export { ReferendumType } from './types/referendum';
 export type { ReferendumInfo, ApprovedReferendum, RejectedReferendum, OngoingReferendum } from './types/referendum';
 

@@ -3,8 +3,7 @@ import { allSettled, fork } from 'effector';
 import { confirmModel } from '../confirm-model';
 import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
-import { Account, Chain, ProxyType } from '@shared/core';
-import { Transaction } from '@entities/transaction';
+import { Account, Chain, ProxyType, Transaction } from '@shared/core';
 import { TEST_ADDRESS } from '@shared/lib/utils';
 import { initiatorWallet, signerWallet, testApi } from './mock';
 
