@@ -17,7 +17,7 @@ const addBasketTxsFx = createEffect(
   },
 );
 
-const removeBasketTxsFx = createEffect(async (transactions: BasketTransaction[]): Promise<number[] | undefined> => {
+const removeBasketTxsFx = createEffect((transactions: BasketTransaction[]): Promise<number[] | undefined> => {
   return storageService.basketTransactions.deleteAll(transactions.map((t) => t.id));
 });
 

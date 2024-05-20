@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { Button, Header, SearchInput } from '@shared/ui';
-import Operation from './Operation';
+import { Operation } from './Operation';
 import { basketPageModel } from '../model/basket-page-model';
 import { EmptyBasket } from './EmptyBasket';
 
@@ -36,7 +36,7 @@ export const Basket = () => {
                 <Operation
                   selected={selectedTxs.includes(tx.id)}
                   tx={tx}
-                  onSelect={(value) => basketPageModel.events.txSelected(tx.id)}
+                  onSelect={() => basketPageModel.events.txSelected(tx.id)}
                 />
               </li>
             ))}

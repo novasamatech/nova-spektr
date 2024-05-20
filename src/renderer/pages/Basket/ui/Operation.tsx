@@ -13,7 +13,7 @@ type Props = {
   onSelect: (value: boolean) => void;
 };
 
-const Operation = ({ tx, selected, onSelect }: Props) => {
+export const Operation = ({ tx, selected, onSelect }: Props) => {
   const asset = getAssetById(tx.coreTx.args.asset, chainsService.getChainById(tx.coreTx.chainId)?.assets);
   const amount = getTransactionAmount(tx.coreTx);
 
@@ -38,5 +38,3 @@ const Operation = ({ tx, selected, onSelect }: Props) => {
     </div>
   );
 };
-
-export default Operation;

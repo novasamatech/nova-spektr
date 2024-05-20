@@ -3,14 +3,14 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { walletModel } from '@entities/wallet';
 import { basketModel } from '@entities/basket';
 import { includes } from '@shared/lib/utils';
-import { BasketTransaction } from '@shared/core';
-import { getTransactionTitle } from '../../Operations/common/utils';
+import { ID } from '@shared/core';
+import { getTransactionTitle } from '@entities/transaction';
 
 const queryChanged = createEvent<string>();
-const txSelected = createEvent<BasketTransaction['id']>();
+const txSelected = createEvent<ID>();
 const allSelected = createEvent();
 
-const $selectedTxs = createStore<BasketTransaction['id'][]>([]);
+const $selectedTxs = createStore<ID[]>([]);
 const $query = restore(queryChanged, '');
 
 const $basketTransactions = combine(
@@ -20,17 +20,18 @@ const $basketTransactions = combine(
     query: $query,
   },
   ({ wallet, basket, query }) => {
-    return basket.filter(
-      (tx) =>
-        tx.initiatorWallet === wallet?.id &&
-        (!query ||
-          includes(tx.coreTx.address, query) ||
-          includes(tx.coreTx.chainId, query) ||
-          // TODO: Add search by translated name
-          includes(getTransactionTitle(tx.coreTx), query)),
-    );
+    return basket.filter((tx) => {
+      const isSameWallet = tx.initiatorWallet === wallet?.id;
+      const isMatchQuery =
+        !query ||
+        includes(tx.coreTx.address, query) ||
+        includes(tx.coreTx.chainId, query) ||
+        // TODO: Add search by translated name
+        includes(getTransactionTitle(tx.coreTx), query);
+
+      return isSameWallet && isMatchQuery;
+    });
   },
-  { skipVoid: false },
 );
 
 sample({

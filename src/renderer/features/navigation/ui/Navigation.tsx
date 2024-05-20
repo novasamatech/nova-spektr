@@ -48,11 +48,9 @@ export const Navigation = () => {
             title="navigation.basketLabel"
             link={Paths.BASKET}
             badge={
-              Boolean(basket.length) && (
-                <BodyText className="ml-auto text-text-tertiary">
-                  {basket.filter((tx) => tx.initiatorWallet === wallet?.id).length}
-                </BodyText>
-              )
+              <BodyText className="ml-auto text-text-tertiary">
+                {basket.filter((tx) => tx.initiatorWallet === wallet?.id).length || ''}
+              </BodyText>
             }
           />
         </li>
