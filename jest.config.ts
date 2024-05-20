@@ -45,6 +45,7 @@ const config: Config = {
     '^@renderer(.*)$': '<rootDir>/src/renderer/$1',
     '^@app(.*)$': '<rootDir>/src/renderer/app/$1',
     '^@pages(.*)$': '<rootDir>/src/renderer/pages/$1',
+    '^@processes(.*)$': '<rootDir>/src/renderer/processes/$1',
     '^@widgets(.*)$': '<rootDir>/src/renderer/widgets/$1',
     '^@features(.*)$': '<rootDir>/src/renderer/features/$1',
     '^@entities(.*)$': '<rootDir>/src/renderer/entities/$1',

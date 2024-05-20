@@ -58,12 +58,12 @@ const startWorkerFx = createEffect(() => {
   });
 });
 
-type StartChainsProps = {
+type StartChainsParams = {
   chains: Chain[];
   connections: Record<ChainId, Connection>;
   endpoint: Endpoint<any>;
 };
-const startChainsFx = createEffect(({ chains, connections, endpoint }: StartChainsProps) => {
+const startChainsFx = createEffect(({ chains, connections, endpoint }: StartChainsParams) => {
   const boundConnected = scopeBind(connected, { safe: true });
 
   chains.forEach((chain) => {
