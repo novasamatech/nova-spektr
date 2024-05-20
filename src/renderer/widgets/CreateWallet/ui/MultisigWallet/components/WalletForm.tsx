@@ -42,7 +42,7 @@ type Props = {
   isLoading: boolean;
   withChain?: boolean;
   onContinue: () => void;
-  onGoBack: () => void;
+  // onGoBack: () => void;
   onChainChange?: (chainId: ChainId) => void;
   onSubmit: ({ name, threshold, creatorId }: { name: string; threshold: number; creatorId: AccountId }) => void;
 };
@@ -54,7 +54,7 @@ export const WalletForm = ({
   isActive,
   isLoading,
   onChainChange,
-  onGoBack,
+  // onGoBack,
   onSubmit,
 }: Props) => {
   const { t } = useI18n();
@@ -224,9 +224,9 @@ export const WalletForm = ({
         </Alert>
 
         <div className="flex justify-between items-center mt-auto">
-          <Button variant="text" onClick={onGoBack}>
+          {/* <Button variant="text" onClick={onGoBack}>
             {t('createMultisigAccount.backButton')}
-          </Button>
+          </Button> */}
           {isActive ? (
             // without key continue button triggers form submit
             <Button key="continue" disabled={!canContinue} onClick={onContinue}>

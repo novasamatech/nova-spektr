@@ -6,7 +6,7 @@ import WatchOnly from '@pages/Onboarding/WatchOnly/WatchOnly';
 import { Vault } from '@pages/Onboarding/Vault/Vault';
 import { NovaWallet } from '@pages/Onboarding/WalletConnect/NovaWallet';
 import { WalletConnect } from '@pages/Onboarding/WalletConnect/WalletConnect';
-import { MultisigWallet } from './MultisigWallet/MultisigWallet';
+import { MultisigWallet } from './MultisigWallet/MultisigWalletWizard';
 import { WalletType, WalletFamily } from '@shared/core';
 import { walletPairingModel } from '@features/wallets';
 import { proxiesModel } from '@features/proxies';

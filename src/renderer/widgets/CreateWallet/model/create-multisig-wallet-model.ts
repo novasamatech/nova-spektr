@@ -4,26 +4,28 @@ import sortBy from 'lodash/sortBy';
 import { AccountType, ChainId, ChainType, CryptoType, Signatory, SigningType, WalletType } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
+import { Step } from '../lib/types';
 
 const reset = createEvent();
+const stepChanged = createEvent<Step>();
 
 export type Callbacks = {
   onComplete: () => void;
 };
-
-const $callbacks = createStore<Callbacks | null>(null).reset(reset);
-const callbacksApi = createApi($callbacks, {
-  callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
-});
 
 const walletCreated = createEvent<{
   name: string;
   threshold: number;
   creatorId: string;
 }>();
+const $step = createStore<Step>(Step.INIT);
 const chainSelected = createEvent<ChainId>();
 const signatoriesChanged = createEvent<Signatory[]>();
 
+const $callbacks = createStore<Callbacks | null>(null).reset(reset);
+const callbacksApi = createApi($callbacks, {
+  callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
+});
 const $chain = createStore<ChainId | null>(null).reset(reset);
 const $signatories = createStore<Signatory[]>([]).reset(reset);
 const $error = createStore('').reset(reset);
@@ -134,11 +136,13 @@ export const createMultisigWalletModel = {
   $chain,
   $isLoading: createWalletFx.pending,
   $error,
+  $step,
   events: {
     reset,
     callbacksChanged: callbacksApi.callbacksChanged,
     walletCreated,
     chainSelected,
     signatoriesChanged,
+    stepChanged,
   },
 };
