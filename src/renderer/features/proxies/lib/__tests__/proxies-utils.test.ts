@@ -1,7 +1,7 @@
 import { Chain, ChainOptions, Wallet, WalletType } from '@shared/core';
 import { proxiesUtils } from '../proxies-utils';
 
-describe('features/proxies/lib/proxies-utils', () => {
+describe('features/proxies/lib/proxies-onChainUtils', () => {
   test('should return true if "regular_proxy" is included in chain options', () => {
     const chainWithRegularProxy = { options: [ChainOptions.REGULAR_PROXY] } as Chain;
     const result = proxiesUtils.isRegularProxy(chainWithRegularProxy);

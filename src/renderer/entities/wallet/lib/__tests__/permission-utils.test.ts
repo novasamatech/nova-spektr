@@ -1,7 +1,7 @@
 import { permissionUtils } from '../permission-utils';
 import { permissionMocks } from './mocks/permission-mock';
 
-describe('shared/api/permission/permission-utils', () => {
+describe('shared/api/permission/permission-onChainUtils', () => {
   const { wallets, accounts } = permissionMocks;
 
   describe('#canTransfer', () => {

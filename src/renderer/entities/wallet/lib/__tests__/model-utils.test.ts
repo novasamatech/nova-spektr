@@ -38,7 +38,7 @@ const accounts = [
   },
 ];
 
-describe('entities/wallet/lib/model-utils#groupAccounts', () => {
+describe('entities/wallet/lib/model-onChainUtils#groupAccounts', () => {
   test('should create groups of base & chains accounts', () => {
     const { base, chains } = modelUtils.groupAccounts(accounts as (BaseAccount | ChainAccount)[]);
 

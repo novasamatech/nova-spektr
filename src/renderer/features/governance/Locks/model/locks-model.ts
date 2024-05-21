@@ -3,7 +3,7 @@ import { ApiPromise } from '@polkadot/api';
 import { BN, BN_ZERO } from '@polkadot/util';
 import { spread } from 'patronum';
 
-import { TrackLock, ChainId } from '@shared/core';
+import type { ChainId, TrackId } from '@shared/core';
 import { governanceService } from '@shared/api/governance';
 import { networkModel } from '@entities/network';
 
@@ -14,9 +14,9 @@ const $chainId = restore(chainIdChanged, null);
 const $isLocksRequested = createStore(false).reset(chainIdChanged);
 const $isLoading = createStore(true).reset(chainIdChanged);
 
-const getClassLocksFx = createEffect((api: ApiPromise): Promise<TrackLock[]> => {
-  // return governanceService.getClassLocks(api, '12mP4sjCfKbDyMRAEyLpkeHeoYtS5USY4x34n9NMwQrcEyoh');
-  return governanceService.getClassLocks(api, '153YD8ZHD9dRh82U419bSCB5SzWhbdAFzjj4NtA5pMazR2yC');
+const getClassLocksFx = createEffect((api: ApiPromise): Promise<Record<TrackId, BN>> => {
+  // return governanceService.getTrackLocks(api, '12mP4sjCfKbDyMRAEyLpkeHeoYtS5USY4x34n9NMwQrcEyoh');
+  return governanceService.getTrackLocks(api, '153YD8ZHD9dRh82U419bSCB5SzWhbdAFzjj4NtA5pMazR2yC');
 });
 
 const $asset = combine(
@@ -50,7 +50,7 @@ sample({
 sample({
   clock: getClassLocksFx.doneData,
   fn: (trackLocks) => {
-    const locks = trackLocks.reduce<BN>((acc, { lock }) => (lock.gt(acc) ? lock : acc), BN_ZERO);
+    const locks = Object.values(trackLocks).reduce<BN>((acc, lock) => (lock.gt(acc) ? lock : acc), BN_ZERO);
 
     return { locks, requested: true };
   },

@@ -71,8 +71,27 @@ export { NotificationType } from './types/notification';
 
 export { XcmPallets } from './types/substrate';
 
-export { ReferendumType } from './types/referendum';
-export type { ReferendumInfo, ApprovedReferendum, RejectedReferendum, OngoingReferendum } from './types/referendum';
+export type { TrackId, TrackInfo } from './types/track';
 
-export { VotingType, Conviction } from './types/voting';
-export type { AccountVote, StandardVote, SplitVote, SplitAbstainVote, TrackLock } from './types/voting';
+export { ReferendumType } from './types/referendum';
+export type {
+  ReferendumId,
+  ReferendumInfo,
+  ApprovedReferendum,
+  RejectedReferendum,
+  OngoingReferendum,
+  TimedOutReferendum,
+  KilledReferendum,
+  CancelledReferendum
+} from './types/referendum';
+
+export { VotingType, VoteType, Conviction } from './types/voting';
+export type {
+  Voting,
+  CastingVoting,
+  DelegatingVoting,
+  AccountVote,
+  StandardVote,
+  SplitVote,
+  SplitAbstainVote,
+} from './types/voting';
