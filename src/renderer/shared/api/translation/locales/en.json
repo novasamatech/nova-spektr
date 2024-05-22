@@ -131,7 +131,6 @@
     "thresholdName": "Threshold",
     "thresholdPlaceholder": "Select threshold",
     "title": "Create Multisig Wallet",
-    "walletAlertText": "To create a multisig wallet, you need to select at least one of your wallet",
     "walletAlertTitle": "Select wallet",
     "walletFormTitle": "Set up your wallet",
     "walletNameLabel": "Wallet name",

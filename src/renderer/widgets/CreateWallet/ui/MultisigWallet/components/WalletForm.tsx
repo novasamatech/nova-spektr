@@ -9,7 +9,7 @@ import { networkModel, networkUtils } from '@entities/network';
 import { ChainTitle } from '@entities/chain';
 import { Signatory, type Chain, type ChainId } from '@shared/core';
 import { formModel } from '../../../model/create-multisig-form-model';
-import { createMultisigWalletModel } from '../../../model/create-multisig-wallet-model';
+import { flowModel } from '../../../model/create-multisig-flow-model';
 
 const getThresholdOptions = (optionsAmount: number): DropdownOption<number>[] => {
   if (optionsAmount === 0) return [];
@@ -37,28 +37,23 @@ const getChainOptions = (chains: Chain[]): DropdownOption<ChainId>[] => {
 
 type Props = {
   signatories: Signatory[];
-  isActive: boolean;
-  isLoading: boolean;
-  onContinue: () => void;
   // onGoBack: () => void;
-  onSubmit: ({ name, threshold }: { name: string; threshold: number }) => void;
 };
 
 export const WalletForm = ({
   signatories,
-  onContinue,
-  isActive,
-  isLoading,
 }: // onGoBack,
 Props) => {
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
 
-  const { fields, isValid, submit } = useForm(formModel.$createMultisigForm);
+  const { fields, submit } = useForm(formModel.$createMultisigForm);
   const multisigAlreadyExists = useUnit(formModel.$multisigAlreadyExists);
-  const hasOwnSignatory = useUnit(createMultisigWalletModel.$hasOwnSignatory);
+  const hasOwnSignatory = useUnit(flowModel.$hasOwnSignatory);
 
+  //fixme this is now how we do it
+  // probably put that in the model
   const canContinue = () => {
     const hasEnoughSignatories = signatories.length >= 2;
 
@@ -84,7 +79,6 @@ Props) => {
             label={t('createMultisigAccount.walletNameLabel')}
             invalid={!!fields.name.hasError()}
             value={fields.name.value}
-            disabled={!isActive}
             onChange={fields.name.onChange}
           />
           <InputHint variant="error" active={fields.name.hasError()}>
@@ -98,7 +92,6 @@ Props) => {
             className="w-[204px]"
             selectedId={fields.chain.value}
             options={chainOptions}
-            disabled={!isActive}
             onChange={({ id }) => fields.chain.onChange(id as ChainId)}
           />
         </div>
@@ -108,22 +101,14 @@ Props) => {
             label={t('createMultisigAccount.thresholdName')}
             className="w-[204px]"
             selectedId={fields.threshold.value.toString()}
-            disabled={fields.threshold.hasError() || !isActive}
             options={thresholdOptions}
+            invalid={fields.threshold.hasError()}
             onChange={({ value }) => fields.threshold.onChange(value)}
           />
           <InputHint className="flex-1" active>
             {t('createMultisigAccount.thresholdHint')}
           </InputHint>
         </div>
-
-        <Alert
-          active={Boolean(signatories.length) && !hasOwnSignatory}
-          title={t('createMultisigAccount.walletAlertTitle')}
-          variant="warn"
-        >
-          <Alert.Item withDot={false}>{t('createMultisigAccount.walletAlertText')}</Alert.Item>
-        </Alert>
 
         <Alert
           active={Boolean(multisigAlreadyExists)}
@@ -133,7 +118,11 @@ Props) => {
           <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
         </Alert>
 
-        <Alert active={!hasOwnSignatory} title={t('createMultisigAccount.walletAlertTitle')} variant="warn">
+        <Alert
+          active={!hasOwnSignatory && Boolean(signatories.length)}
+          title={t('createMultisigAccount.walletAlertTitle')}
+          variant="error"
+        >
           <Alert.Item withDot={false}>{t('createMultisigAccount.noOwnSignatory')}</Alert.Item>
         </Alert>
 
@@ -141,16 +130,16 @@ Props) => {
           {/* <Button variant="text" onClick={onGoBack}>
             {t('createMultisigAccount.backButton')}
           </Button> */}
-          {isActive ? (
+          {/* {isActive ? (
             // without key continue button triggers form submit
             <Button key="continue" disabled={!canContinue} onClick={onContinue}>
               {t('createMultisigAccount.continueButton')}
             </Button>
-          ) : (
-            <Button key="create" disabled={!canContinue || isLoading} type="submit">
-              {t('createMultisigAccount.create')}
-            </Button>
-          )}
+          ) : ( */}
+          <Button key="create" disabled={!canContinue} type="submit">
+            {t('createMultisigAccount.continueButton')}
+          </Button>
+          {/* )} */}
         </div>
       </form>
     </section>

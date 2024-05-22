@@ -1,4 +1,4 @@
-import { combine, createApi, createEffect, createEvent, createStore, sample } from 'effector';
+import { combine, createApi, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import sortBy from 'lodash/sortBy';
 
 import { AccountType, ChainId, ChainType, CryptoType, Signatory, SigningType, WalletType } from '@shared/core';
@@ -18,7 +18,7 @@ const walletCreated = createEvent<{
   name: string;
   threshold: number;
 }>();
-const $step = createStore<Step>(Step.INIT);
+const $step = restore(stepChanged, Step.INIT);
 
 const $callbacks = createStore<Callbacks | null>(null).reset(reset);
 const callbacksApi = createApi($callbacks, {
@@ -83,6 +83,12 @@ const $hasOwnSignatory = combine(
 );
 
 sample({
+  clock: formModel.$createMultisigForm.submit,
+  fn: () => Step.CONFIRM,
+  target: stepChanged,
+});
+
+sample({
   clock: walletCreated,
   source: {
     signatories: formModel.$signatories,
@@ -104,7 +110,7 @@ sample({
   target: $error,
 });
 
-export const createMultisigWalletModel = {
+export const flowModel = {
   $isLoading: createWalletFx.pending,
   $error,
   $step,

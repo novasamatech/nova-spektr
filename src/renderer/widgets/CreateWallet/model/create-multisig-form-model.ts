@@ -5,7 +5,7 @@ import { combine, createEvent, restore } from 'effector';
 import { ChainId, CryptoType, MultisigAccount } from '@shared/core';
 import chains from '@shared/config/chains/chains.json';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { networkModel, networkUtils } from '@/src/renderer/entities/network';
+import { networkModel, networkUtils } from '@entities/network';
 import { ExtendedAccount, ExtendedContact } from '../ui/MultisigWallet/common/types';
 
 type FormParams = {
@@ -20,10 +20,8 @@ const $createMultisigForm = createForm<FormParams>({
       init: 0,
       rules: [
         {
-          name: 'notNull',
-          // fixme actual check
-          validator: (threshold) => threshold > 2,
-          errorText: '',
+          name: 'moreOrEqualToTwo',
+          validator: (threshold) => threshold >= 2,
         },
       ],
     },
@@ -35,7 +33,7 @@ const $createMultisigForm = createForm<FormParams>({
       rules: [
         {
           name: 'notEmpty',
-          validator: (name) => Boolean(name),
+          validator: (name) => name !== '',
           errorText: t('createMultisigAccount.disabledError.emptyName'),
         },
       ],
@@ -58,6 +56,7 @@ const $signatories = combine(
   },
   ({ accountSignatories, contactSignatories }) => [...accountSignatories, ...contactSignatories],
 );
+
 const $multisigAccountId = combine(
   {
     formValues: $createMultisigForm.$values,

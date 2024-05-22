@@ -11,7 +11,7 @@ import { SelectSignatories, ConfirmSignatories, WalletForm } from './components'
 import { contactModel } from '@entities/contact';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { walletModel } from '@entities/wallet';
-import { createMultisigWalletModel } from '../../model/create-multisig-wallet-model';
+import { flowModel } from '../../model/create-multisig-flow-model';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -32,8 +32,8 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
   const wallets = useUnit(walletModel.$wallets);
   const contacts = useUnit(contactModel.$contacts);
 
-  const isLoading = useUnit(createMultisigWalletModel.$isLoading);
-  const error = useUnit(createMultisigWalletModel.$error);
+  const isLoading = useUnit(flowModel.$isLoading);
+  const error = useUnit(flowModel.$error);
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
   const [isResultModalOpen, toggleResultModal] = useToggle();
@@ -49,7 +49,7 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
   useEffect(() => {
     if (isOpen && !isModalOpen) {
       toggleIsModalOpen();
-      createMultisigWalletModel.events.reset();
+      flowModel.events.reset();
       setName('');
     }
 
@@ -59,7 +59,7 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
   }, [isOpen]);
 
   useEffect(() => {
-    createMultisigWalletModel.events.callbacksChanged({ onComplete });
+    flowModel.events.callbacksChanged({ onComplete });
   }, [onComplete]);
 
   // const goToPrevStep = () => {
@@ -76,12 +76,12 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
     setTimeout(params?.complete ? onComplete : params?.closeAll ? onClose : noop, DEFAULT_TRANSITION);
   };
 
-  const submitHandler = (args: any) => {
-    toggleResultModal();
-    setName(args.name);
+  // const submitHandler = (args: any) => {
+  //   toggleResultModal();
+  //   setName(args.name);
 
-    createMultisigWalletModel.events.walletCreated(args);
-  };
+  //   flowModel.events.walletCreated(args);
+  // };
 
   const getResultProps = (): OperationResultProps => {
     if (isLoading) return { variant: 'loading' };
@@ -107,12 +107,8 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
         onClose={closeMultisigModal}
       >
         <WalletForm
-          isActive={activeStep === Step.INIT}
           signatories={signatories}
-          isLoading={isLoading}
           // onGoBack={goToPrevStep}
-          onContinue={() => setActiveStep(Step.CONFIRMATION)}
-          onSubmit={submitHandler}
         />
 
         <section className="relative flex flex-col px-5 py-4 flex-1 bg-input-background-disabled h-full">

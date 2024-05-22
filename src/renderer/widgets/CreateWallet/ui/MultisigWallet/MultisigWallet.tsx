@@ -10,7 +10,7 @@ import { OperationResult } from '@entities/transaction';
 import { ConfirmSignatories, WalletForm } from './components';
 import { contactModel } from '@entities/contact';
 import { DEFAULT_TRANSITION, dictionary } from '@shared/lib/utils';
-import { createMultisigWalletModel } from '../../model/create-multisig-wallet-model';
+import { flowModel } from '../../model/create-multisig-flow-model';
 import { SelectSignatories } from './components/SelectAccountSignatories';
 import { walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
@@ -37,20 +37,18 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
     fields: { chain },
   } = useForm(formModel.$createMultisigForm);
   const chains = useUnit(networkModel.$chains);
-  const isLoading = useUnit(createMultisigWalletModel.$isLoading);
-  const error = useUnit(createMultisigWalletModel.$error);
-  const activeStep = useUnit(createMultisigWalletModel.$step);
+  const isLoading = useUnit(flowModel.$isLoading);
+  const error = useUnit(flowModel.$error);
+  const activeStep = useUnit(flowModel.$step);
   const accountSignatories = useUnit(formModel.$accountSignatories);
   const contactSignatories = useUnit(formModel.$contactSignatories);
   const signatories = useUnit(formModel.$signatories);
-
-  const { submit } = useForm(formModel.$createMultisigForm);
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
   const [isResultModalOpen, toggleResultModal] = useToggle();
 
   useEffect(() => {
-    createMultisigWalletModel.events.callbacksChanged({ onComplete });
+    flowModel.events.callbacksChanged({ onComplete });
   }, [onComplete]);
 
   useEffect(() => {
@@ -90,11 +88,11 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
     </div>
   );
 
-  const submitHandler = (args: any) => {
-    toggleResultModal();
-    submit();
-    createMultisigWalletModel.events.walletCreated(args);
-  };
+  // const submitHandler = (args: any) => {
+  //   toggleResultModal();
+  //   submit();
+  //   createMultisigWalletModel.events.walletCreated(args);
+  // };
 
   return (
     <>
@@ -106,14 +104,12 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
         contentClass="flex h-[524px]"
         onClose={closeMultisigModal}
       >
-        <WalletForm
-          isActive={createMultisigUtils.isInitStep(activeStep)}
-          signatories={signatories}
-          isLoading={isLoading}
-          // onGoBack={goToPrevStep}
-          onContinue={() => createMultisigWalletModel.events.stepChanged(Step.CONFIRM)}
-          onSubmit={submitHandler}
-        />
+        {createMultisigUtils.isInitStep(activeStep) && (
+          <WalletForm
+            signatories={signatories}
+            // onGoBack={goToPrevStep}
+          />
+        )}
 
         <section className="relative flex flex-col px-5 py-4 flex-1 bg-input-background-disabled h-full">
           <IconButton
