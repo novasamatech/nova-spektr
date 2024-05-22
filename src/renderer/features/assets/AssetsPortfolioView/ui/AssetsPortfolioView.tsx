@@ -17,7 +17,7 @@ const getColStyle = (wallet?: Wallet): string => {
     [WalletType.PROXIED]: 'grid-cols-[1fr,100px,105px,30px]',
   };
 
-  return colStyleMap[wallet.type] || 'grid-cols-[1fr,100px,105px,30px]';
+  return colStyleMap[wallet.type] || 'grid-cols-[1fr,100px,110px,50px]';
 };
 
 export const AssetsPortfolioView = () => {
