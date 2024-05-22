@@ -4,13 +4,21 @@ import { createForm } from 'effector-forms';
 import { BN } from '@polkadot/util';
 import { spread } from 'patronum';
 
-import { Address, ProxyType, Account, PartialBy, Chain, ProxiedAccount } from '@shared/core';
+import {
+  Address,
+  ProxyType,
+  Account,
+  PartialBy,
+  Chain,
+  ProxiedAccount,
+  TransactionType,
+  Transaction,
+} from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { walletSelectModel } from '@features/wallets';
 import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
 import { walletUtils, accountUtils, walletModel } from '@entities/wallet';
 import { proxyService } from '@shared/api/proxy';
-import { TransactionType, Transaction } from '@entities/transaction';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { getProxyTypes, isStringsMatchQuery, toAddress, TEST_ACCOUNTS, transferableAmount } from '@shared/lib/utils';
 

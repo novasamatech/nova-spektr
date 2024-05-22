@@ -1,15 +1,7 @@
 import { combine, createEvent, createStore, sample, split } from 'effector';
 import { spread, delay } from 'patronum';
 
-import {
-  Transaction,
-  TransactionType,
-  MultisigTxWrapper,
-  ProxyTxWrapper,
-  TxWrapper,
-  WrapperKind,
-  transactionService,
-} from '@entities/transaction';
+import { transactionService } from '@entities/transaction';
 import { toAccountId, toAddress, transferableAmount } from '@shared/lib/utils';
 import { walletSelectModel } from '@features/wallets';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
@@ -19,13 +11,28 @@ import { Step, RemoveProxyStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
 import { walletProviderModel } from '../../WalletDetails/model/wallet-provider-model';
-import { Account, Chain, ProxiedAccount, ProxyAccount, ProxyType, ProxyVariant } from '@shared/core';
+import {
+  Account,
+  BasketTransaction,
+  Chain,
+  ProxiedAccount,
+  ProxyAccount,
+  ProxyType,
+  ProxyVariant,
+  Transaction,
+  TransactionType,
+  MultisigTxWrapper,
+  ProxyTxWrapper,
+  TxWrapper,
+  WrapperKind,
+} from '@shared/core';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { proxiesModel } from '@features/proxies';
 import { proxyModel } from '@entities/proxy';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { removeProxyUtils } from '../lib/remove-proxy-utils';
+import { basketModel } from '@entities/basket/model/basket-model';
 
 const stepChanged = createEvent<Step>();
 const wentBackFromConfirm = createEvent();
@@ -37,6 +44,7 @@ type Input = {
 };
 const flowStarted = createEvent<Input>();
 const flowFinished = createEvent();
+const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
@@ -143,6 +151,19 @@ const $signatories = combine(
       return acc;
     }, []);
   },
+);
+
+const $initiatorWallet = combine(
+  {
+    store: $removeProxyStore,
+    wallets: walletModel.$wallets,
+  },
+  ({ store, wallets }) => {
+    if (!store) return undefined;
+
+    return walletUtils.getWalletById(wallets, store.account.walletId);
+  },
+  { skipVoid: false },
 );
 
 sample({
@@ -361,7 +382,8 @@ sample({
       account: proxyData.removeProxyStore!.account,
       signatory: proxyData.removeProxyStore!.signatory,
       description: proxyData.removeProxyStore!.description,
-      transactions: [proxyData.coreTx!],
+      wrappedTxs: [proxyData.wrappedTx!],
+      coreTxs: [proxyData.coreTx!],
       multisigTxs: proxyData.multisigTx ? [proxyData.multisigTx] : [],
     },
     step: Step.SUBMIT,
@@ -391,6 +413,33 @@ sample({
     return proxy ? [proxy] : [];
   },
   target: proxyModel.events.proxiesRemoved,
+});
+
+sample({
+  clock: txSaved,
+  source: {
+    store: $removeProxyStore,
+    coreTx: $coreTx,
+    txWrappers: $txWrappers,
+  },
+  filter: ({ store, coreTx, txWrappers }: any) => {
+    return Boolean(store) && Boolean(coreTx) && Boolean(txWrappers);
+  },
+  fn: ({ store, coreTx, txWrappers }) => {
+    const tx = {
+      initiatorWallet: store!.account.walletId,
+      coreTx,
+      txWrappers,
+    } as BasketTransaction;
+
+    return [tx];
+  },
+  target: basketModel.events.transactionsCreated,
+});
+
+sample({
+  clock: txSaved,
+  target: flowFinished,
 });
 
 sample({
@@ -435,11 +484,13 @@ export const removeProxyModel = {
   $isMultisig,
   $isProxy,
   $signatories,
+  $initiatorWallet,
 
   events: {
     flowStarted,
     stepChanged,
     wentBackFromConfirm,
+    txSaved,
   },
   output: {
     flowFinished,

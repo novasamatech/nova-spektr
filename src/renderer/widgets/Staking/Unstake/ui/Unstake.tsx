@@ -10,12 +10,14 @@ import { Confirmation } from './Confirmation';
 import { unstakeUtils } from '../lib/unstake-utils';
 import { unstakeModel } from '../model/unstake-model';
 import { Step } from '../lib/types';
+import { AddToBasketButton } from '@features/operations/OperationsConfirm';
 
 export const Unstake = () => {
   const { t } = useI18n();
 
   const step = useUnit(unstakeModel.$step);
   const networkStore = useUnit(unstakeModel.$networkStore);
+  const initiatorWallet = useUnit(unstakeModel.$initiatorWallet);
 
   const [isModalOpen, closeModal] = useModalClose(!unstakeUtils.isNoneStep(step), unstakeModel.output.flowFinished);
 
@@ -37,7 +39,14 @@ export const Unstake = () => {
       onClose={closeModal}
     >
       {unstakeUtils.isInitStep(step) && <UnstakeForm onGoBack={closeModal} />}
-      {unstakeUtils.isConfirmStep(step) && <Confirmation onGoBack={() => unstakeModel.events.stepChanged(Step.INIT)} />}
+      {unstakeUtils.isConfirmStep(step) && (
+        <Confirmation
+          secondaryActionButton={
+            <AddToBasketButton wallet={initiatorWallet} onTxSaved={() => unstakeModel.events.txSaved()} />
+          }
+          onGoBack={() => unstakeModel.events.stepChanged(Step.INIT)}
+        />
+      )}
       {unstakeUtils.isSignStep(step) && (
         <OperationSign onGoBack={() => unstakeModel.events.stepChanged(Step.CONFIRM)} />
       )}

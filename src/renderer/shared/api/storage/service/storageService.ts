@@ -141,4 +141,5 @@ export const storageService = {
   notifications: new StorageService(dexieStorage.notifications),
   metadata: new StorageService(dexieStorage.metadata),
   balances: new StorageService(dexieStorage.balances),
+  basketTransactions: new StorageService(dexieStorage.basketTransactions),
 };

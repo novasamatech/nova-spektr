@@ -1,9 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
-import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
-import { Transaction } from '@entities/transaction';
 import { ValidationErrors } from '@shared/lib/utils';
-import type { Account, ChainId, HexString, Wallet } from '@shared/core';
+import type { Account, ChainId, HexString, Wallet, Transaction } from '@shared/core';
 
 export const enum ReconnectStep {
   NOT_STARTED,
@@ -23,7 +21,7 @@ export type SigningProps = {
   transactions: Transaction[];
   validateBalance?: () => Promise<ValidationErrors | undefined>;
   onGoBack: () => void;
-  onResult: (signatures: HexString[], unsignedTxs: UnsignedTransaction[]) => void;
+  onResult: (signatures: HexString[], txPayloads: Uint8Array[]) => void;
 };
 
 export type InnerSigningProps = SigningProps & { wallet: Wallet };

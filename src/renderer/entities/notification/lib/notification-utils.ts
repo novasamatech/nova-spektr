@@ -1,5 +1,5 @@
 import { NotificationType } from '@shared/core';
-import type { Notification, MultisigInvite, MultisigOperation, ProxyAction } from '@shared/core';
+import type { Notification, MultisigCreated, MultisigOperation, ProxyAction } from '@shared/core';
 
 export const notificationUtils = {
   isMultisigInvite,
@@ -7,8 +7,8 @@ export const notificationUtils = {
   isProxyCreation,
 };
 
-function isMultisigInvite(notification: Notification): notification is MultisigInvite {
-  return notification.type === NotificationType.MULTISIG_INVITE;
+function isMultisigInvite(notification: Notification): notification is MultisigCreated {
+  return notification.type === NotificationType.MULTISIG_CREATED;
 }
 
 function isMultisigOperation(notification: Notification): notification is MultisigOperation {

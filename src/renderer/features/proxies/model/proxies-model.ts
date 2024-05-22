@@ -58,12 +58,12 @@ const startWorkerFx = createEffect(() => {
   });
 });
 
-type StartChainsProps = {
+type StartChainsParams = {
   chains: Chain[];
   connections: Record<ChainId, Connection>;
   endpoint: Endpoint<any>;
 };
-const startChainsFx = createEffect(({ chains, connections, endpoint }: StartChainsProps) => {
+const startChainsFx = createEffect(({ chains, connections, endpoint }: StartChainsParams) => {
   const boundConnected = scopeBind(connected, { safe: true });
 
   chains.forEach((chain) => {
@@ -315,7 +315,8 @@ sample({
   filter: (_, data) => Boolean(data && data.wallets.length && data.accounts.length),
   fn: (wallets, data) => {
     const accountsMap = dictionary(data.accounts, 'walletId');
-    const newWallets = data.wallets.map((wallet) => ({ ...wallet, accounts: accountsMap[wallet.id] } as Wallet));
+
+    const newWallets = data.wallets.map((wallet) => ({ ...wallet, accounts: [accountsMap[wallet.id]] } as Wallet));
 
     return wallets.concat(newWallets);
   },

@@ -11,13 +11,11 @@ import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common
 import { ChainTitle } from '@entities/chain';
 import { Wallet, Account } from '@shared/core';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
-import type { Address, MultisigAccount, Validator } from '@shared/core';
+import type { Address, MultisigAccount, Validator, MultisigTransaction, Transaction } from '@shared/core';
 import { useValidatorsMap, SelectedValidatorsModal } from '@entities/staking';
 import { proxyUtils } from '@entities/proxy';
 import { getDestination, getPayee, getDelegate, getProxyType, getDestinationChain, getSpawner } from '../common/utils';
 import {
-  MultisigTransaction,
-  Transaction,
   isXcmTransaction,
   isTransferTransaction,
   isManageProxyTransaction,

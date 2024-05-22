@@ -1,15 +1,14 @@
 import { ApiPromise } from '@polkadot/api';
 import { u8aConcat } from '@polkadot/util';
-import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import init, { Encoder } from 'raptorq';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-import { Transaction, transactionService } from '@entities/transaction';
+import { transactionService } from '@entities/transaction';
 import { toAddress } from '@shared/lib/utils';
 import { Button, FootnoteText } from '@shared/ui';
 import type { ChainId, ShardAccount, Account, BaseAccount } from '@shared/core';
-import { SigningType, Wallet } from '@shared/core';
+import { SigningType, Wallet, Transaction } from '@shared/core';
 import { createSubstrateSignPayload, createMultipleSignPayload } from '../QrCode/QrGenerator/common/utils';
 import { TRANSACTION_BULK } from '../QrCode/common/constants';
 import { QrMultiframeGenerator } from '../QrCode/QrGenerator/QrMultiframeTxGenerator';
@@ -27,7 +26,7 @@ type Props = {
   signerWallet: Wallet;
   onGoBack: () => void;
   onResetCountdown: () => void;
-  onResult: (unsigned: UnsignedTransaction[], txPayloads: Uint8Array[]) => void;
+  onResult: (txPayloads: Uint8Array[]) => void;
 };
 
 export const ScanMultiframeQr = ({
@@ -47,11 +46,10 @@ export const ScanMultiframeQr = ({
 
   const [encoder, setEncoder] = useState<Encoder>();
   const [bulkTransactions, setBulkTransactions] = useState<Uint8Array>();
-  const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
   const [txPayloads, setTxPayloads] = useState<Uint8Array[]>([]);
 
   useEffect(() => {
-    if (unsignedTransactions.length) return;
+    if (txPayloads.length) return;
 
     setupTransactions().catch(() => console.warn('ScanMultiQr | setupTransactions() failed'));
   }, []);
@@ -61,7 +59,7 @@ export const ScanMultiframeQr = ({
       const address = toAddress(account.accountId, { prefix: addressPrefix });
 
       return (async () => {
-        const { payload, unsigned } = await transactionService.createPayload(transactions[index], api);
+        const { payload } = await transactionService.createPayload(transactions[index], api);
 
         const signPayload = createSubstrateSignPayload(
           signerWallet.signingType === SigningType.POLKADOT_VAULT ? rootAddress! : address,
@@ -73,7 +71,6 @@ export const ScanMultiframeQr = ({
         );
 
         return {
-          unsigned,
           signPayload,
           transactionData: transactions[index],
         };
@@ -92,7 +89,6 @@ export const ScanMultiframeQr = ({
     const bulk = createMultipleSignPayload(transactionsEncoded);
 
     setBulkTransactions(createMultipleSignPayload(transactionsEncoded));
-    setUnsignedTransactions(txRequests.map((t) => t.unsigned));
     setTxPayloads(txRequests.map((t) => t.signPayload));
     setEncoder(Encoder.with_defaults(bulk, 128));
   };
@@ -124,7 +120,7 @@ export const ScanMultiframeQr = ({
         <Button variant="text" onClick={onGoBack}>
           {t('operation.goBackButton')}
         </Button>
-        <Button disabled={!bulkTxExist || countdown === 0} onClick={() => onResult(unsignedTransactions, txPayloads)}>
+        <Button disabled={!bulkTxExist || countdown === 0} onClick={() => onResult(txPayloads)}>
           {t('signing.continueButton')}
         </Button>
       </div>

@@ -1,4 +1,4 @@
-import { DecodedTransaction, Transaction, TransactionType } from '@entities/transaction/model/transaction';
+import { DecodedTransaction, Transaction, TransactionType } from '@shared/core';
 import { IconNames } from '@shared/ui/Icon/data';
 
 const TransactionIcons: Record<TransactionType, IconNames> = {

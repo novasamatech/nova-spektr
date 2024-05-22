@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
 import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
@@ -10,7 +9,7 @@ import { MultisigTransactionDS } from '@shared/api/storage';
 import { useToggle } from '@shared/lib/hooks';
 import { ExtendedChain } from '@entities/network';
 import { TEST_ADDRESS, toAddress, transferableAmount, getAssetById } from '@shared/lib/utils';
-import { getMultisigSignOperationTitle, getSignatoryAccounts } from '../../common/utils';
+import { getSignatoryAccounts } from '../../common/utils';
 import { Submit } from '../ActionSteps/Submit';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { SignatorySelectModal } from './SignatorySelectModal';
@@ -18,19 +17,19 @@ import { useMultisigEvent } from '@entities/multisig';
 import { SigningSwitch } from '@features/operations';
 import { permissionUtils, walletModel } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
-import type { Address, HexString, Timepoint, MultisigAccount, Account } from '@shared/core';
+import type { Address, HexString, Timepoint, MultisigAccount, Account, Transaction } from '@shared/core';
+import { TransactionType } from '@shared/core';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { OperationTitle } from '@entities/chain';
 import {
   isXcmTransaction,
   MAX_WEIGHT,
   OperationResult,
-  Transaction,
-  TransactionType,
   useCallDataDecoder,
   useTransaction,
   validateBalance,
   transactionService,
+  getMultisigSignOperationTitle,
 } from '@entities/transaction';
 
 type Props = {
@@ -66,7 +65,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
   const [feeTx, setFeeTx] = useState<Transaction>();
   const [approveTx, setApproveTx] = useState<Transaction>();
-  const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
+  const [txPayload, setTxPayload] = useState<Uint8Array>();
 
   const [txWeight, setTxWeight] = useState<Weight>();
   const [signature, setSignature] = useState<HexString>();
@@ -125,9 +124,9 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     setActiveStep(AllSteps.indexOf(activeStep) - 1);
   };
 
-  const onSignResult = (signature: HexString[], unsigned: UnsignedTransaction[]) => {
+  const onSignResult = (signature: HexString[], payload: Uint8Array[]) => {
     setSignature(signature[0]);
-    setUnsignedTx(unsigned[0]);
+    setTxPayload(payload[0]);
     setIsModalOpen(false);
     setActiveStep(Step.SUBMIT);
   };
@@ -162,7 +161,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
           height: tx.blockCreated,
           index: tx.indexCreated,
         } as Timepoint,
-        callData: tx.callData,
+        callData: tx.callData || undefined,
         callHash: tx.callHash,
       },
     };
@@ -224,7 +223,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
   if (!readyForFinalSign && !readyForNonFinalSign) return null;
 
-  const isSubmitStep = activeStep === Step.SUBMIT && approveTx && signAccount && signature && unsignedTx;
+  const isSubmitStep = activeStep === Step.SUBMIT && approveTx && signAccount && signature && txPayload;
 
   return (
     <>
@@ -292,7 +291,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
           api={connection.api}
           multisigTx={tx}
           account={signAccount}
-          unsignedTx={unsignedTx}
+          txPayload={txPayload}
           signature={signature}
           onClose={handleClose}
         />

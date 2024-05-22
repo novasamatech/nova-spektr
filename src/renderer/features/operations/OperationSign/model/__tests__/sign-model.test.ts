@@ -3,8 +3,7 @@ import { ApiPromise } from '@polkadot/api';
 
 import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
-import { Account, Chain, SigningType, Wallet, WalletType } from '@shared/core';
-import { Transaction } from '@entities/transaction';
+import { Account, Chain, SigningType, Transaction, Wallet, WalletType } from '@shared/core';
 import { signModel } from '../sign-model';
 
 const testApi = {
