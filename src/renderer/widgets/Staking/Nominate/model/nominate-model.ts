@@ -10,25 +10,27 @@ import { validatorsService } from '@entities/staking';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { validatorsModel } from '@features/staking';
-import type { Account } from '@shared/core';
+import {
+  MultisigTxWrapper,
+  ProxyTxWrapper,
+  WrapperKind,
+  type Account,
+  type BasketTransaction,
+  type Transaction,
+  type TxWrapper,
+} from '@shared/core';
 import { Step, NominateData, WalletData, FeeData } from '../lib/types';
 import { nominateUtils } from '../lib/nominate-utils';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
-import {
-  TxWrapper,
-  Transaction,
-  transactionBuilder,
-  transactionService,
-  WrapperKind,
-  MultisigTxWrapper,
-  ProxyTxWrapper,
-} from '@entities/transaction';
+import { transactionBuilder, transactionService } from '@entities/transaction';
+import { basketModel } from '@entities/basket/model/basket-model';
 
 const stepChanged = createEvent<Step>();
 
 const flowStarted = createEvent<WalletData>();
 const flowFinished = createEvent();
+const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
@@ -355,7 +357,8 @@ sample({
       account: nominateFlowData.nominateData!.shards[0],
       signatory: nominateFlowData.nominateData!.signatory,
       description: nominateFlowData.nominateData!.description,
-      transactions: nominateFlowData.transactions!.map((tx) => tx.coreTx),
+      coreTxs: nominateFlowData.transactions!.map((tx) => tx.coreTx),
+      wrappedTxs: nominateFlowData.transactions!.map((tx) => tx.wrappedTx),
       multisigTxs: nominateFlowData.transactions!.map((tx) => tx.multisigTx).filter(nonNullable),
     },
     step: Step.SUBMIT,
@@ -379,12 +382,47 @@ sample({
   target: [stepChanged, formModel.events.formCleared, validatorsModel.events.formCleared],
 });
 
+sample({
+  clock: txSaved,
+  source: {
+    store: $walletData,
+    coreTxs: $pureTxs,
+    txWrappers: $txWrappers,
+  },
+  filter: ({ store, coreTxs, txWrappers }: any) => {
+    return Boolean(store) && Boolean(coreTxs) && Boolean(txWrappers);
+  },
+  fn: ({ store, coreTxs, txWrappers }) => {
+    const txs = coreTxs!.map(
+      (coreTx) =>
+        ({
+          initiatorWallet: store!.wallet.id,
+          coreTx,
+          txWrappers,
+          groupId: Date.now(),
+        } as BasketTransaction),
+    );
+
+    return txs;
+  },
+  target: basketModel.events.transactionsCreated,
+});
+
+sample({
+  clock: txSaved,
+  fn: () => Step.NONE,
+  target: [stepChanged, formModel.events.formCleared],
+});
+
 export const nominateModel = {
   $step,
   $walletData,
+  $initiatorWallet: $walletData.map((data) => data?.wallet),
+
   events: {
     flowStarted,
     stepChanged,
+    txSaved,
   },
   output: {
     flowFinished,

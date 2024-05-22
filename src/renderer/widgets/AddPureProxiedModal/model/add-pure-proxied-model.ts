@@ -3,7 +3,6 @@ import { combineEvents, delay, spread } from 'patronum';
 import { ApiPromise } from '@polkadot/api';
 import { UnsubscribePromise } from '@polkadot/api/types';
 
-import { Transaction, transactionService } from '@entities/transaction';
 import { toAddress } from '@shared/lib/utils';
 import { walletSelectModel } from '@features/wallets';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
@@ -16,6 +15,8 @@ import {
   ProxyVariant,
   Timepoint,
   Account,
+  BasketTransaction,
+  Transaction,
 } from '@shared/core';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { networkModel } from '@entities/network';
@@ -28,11 +29,14 @@ import { confirmModel } from './confirm-model';
 import { subscriptionService } from '@entities/chain';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
+import { basketModel } from '@entities/basket/model/basket-model';
+import { transactionService } from '@entities/transaction';
 
 const stepChanged = createEvent<Step>();
 
 const flowStarted = createEvent();
 const flowFinished = createEvent();
+const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
@@ -70,6 +74,19 @@ const $txWrappers = combine(
       signatories,
     });
   },
+);
+
+const $initiatorWallet = combine(
+  {
+    store: $addProxyStore,
+    wallets: walletModel.$wallets,
+  },
+  ({ store, wallets }) => {
+    if (!store) return undefined;
+
+    return walletUtils.getWalletById(wallets, store.account.walletId);
+  },
+  { skipVoid: false },
 );
 
 type GetPureProxyParams = {
@@ -196,12 +213,13 @@ sample({
   clock: signModel.output.formSubmitted,
   source: {
     addProxyStore: $addProxyStore,
+    wrappedTx: $wrappedTx,
     coreTx: $coreTx,
     multisigTx: $multisigTx,
     txWrappers: $txWrappers,
   },
   filter: (proxyData) => {
-    return Boolean(proxyData.addProxyStore) && Boolean(proxyData.coreTx);
+    return Boolean(proxyData.addProxyStore) && Boolean(proxyData.wrappedTx);
   },
   fn: (proxyData, signParams) => ({
     event: {
@@ -210,7 +228,8 @@ sample({
       account: proxyData.addProxyStore!.account,
       signatory: proxyData.addProxyStore!.signatory,
       description: proxyData.addProxyStore!.description,
-      transactions: [proxyData.coreTx!],
+      wrappedTxs: [proxyData.wrappedTx!],
+      coreTxs: [proxyData.coreTx!],
       multisigTxs: proxyData.multisigTx ? [proxyData.multisigTx] : [],
     },
     step: Step.SUBMIT,
@@ -311,6 +330,33 @@ sample({
 });
 
 sample({
+  clock: txSaved,
+  source: {
+    store: $addProxyStore,
+    coreTx: $coreTx,
+    txWrappers: formModel.$txWrappers,
+  },
+  filter: ({ store, coreTx, txWrappers }: any) => {
+    return Boolean(store) && Boolean(coreTx) && Boolean(txWrappers);
+  },
+  fn: ({ store, coreTx, txWrappers }) => {
+    const tx = {
+      initiatorWallet: store!.account.walletId,
+      coreTx,
+      txWrappers,
+    } as BasketTransaction;
+
+    return [tx];
+  },
+  target: basketModel.events.transactionsCreated,
+});
+
+sample({
+  clock: txSaved,
+  target: flowFinished,
+});
+
+sample({
   clock: delay(getPureProxyFx.doneData, 2000),
   target: flowFinished,
 });
@@ -339,9 +385,12 @@ sample({
 export const addPureProxiedModel = {
   $step,
   $chain: $addProxyStore.map((store) => store?.chain, { skipVoid: false }),
+  $initiatorWallet,
+
   events: {
     flowStarted,
     stepChanged,
+    txSaved,
   },
   output: {
     flowFinished,

@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { ReactNode } from 'react';
 
 import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
 import { useI18n } from '@app/providers';
@@ -11,10 +12,11 @@ import { ChainTitle } from '@entities/chain';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
+  secondaryActionButton?: ReactNode;
   onGoBack: () => void;
 };
 
-export const Confirmation = ({ onGoBack }: Props) => {
+export const Confirmation = ({ secondaryActionButton, onGoBack }: Props) => {
   const { t } = useI18n();
 
   const isXcm = useUnit(confirmModel.$isXcm);
@@ -188,7 +190,10 @@ export const Confirmation = ({ onGoBack }: Props) => {
           {t('operation.goBackButton')}
         </Button>
 
-        <SignButton type={(signerWallet || initiatorWallet).type} onClick={confirmModel.output.formSubmitted} />
+        <div className="flex gap-4">
+          {secondaryActionButton}
+          <SignButton type={(signerWallet || initiatorWallet).type} onClick={confirmModel.output.formSubmitted} />
+        </div>
       </div>
     </div>
   );

@@ -186,7 +186,7 @@ const initConnectFx = createEffect(
 
       return { uri, approval };
     } catch (e) {
-      console.log(`Failed to init connection`, e);
+      console.error(`Failed to init connection`, e);
     }
   },
 );
@@ -280,7 +280,7 @@ sample({
 
 sample({
   clock: createClientFx.failData,
-  fn: (e) => console.log('Failed to create WalletConnect client', e),
+  fn: (e) => console.error('Failed to create WalletConnect client', e),
   target: createClientFx,
 });
 
