@@ -1,6 +1,6 @@
 import { useToggle } from '@shared/lib/hooks';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
-import { SingleChainMultisigWallet } from './MultisigWallet';
+import { MultisigWallet } from './MultisigWallet';
 
 type Props = {
   isOpen: boolean;
@@ -13,7 +13,7 @@ type Props = {
 //   CREATE_WALLET,
 // }
 
-export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
+export const MultisigWalletWizard = ({ isOpen, onClose, onComplete }: Props) => {
   const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
   // const [step, setStep] = useState(Step.CREATE_WALLET);
   // const [walletType, setWalletType] = useState<MultisigWalletType>(MultisigWalletType.SINGLE_CHAIN);
@@ -43,7 +43,7 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
         onContinue={selectWalletType}
       /> */}
 
-      <SingleChainMultisigWallet
+      <MultisigWallet
         isOpen={
           isModalOpen
           // && step === Step.CREATE_WALLET

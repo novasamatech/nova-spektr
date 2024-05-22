@@ -75,7 +75,7 @@
     "closeButton": "Close modal window"
   },
   "createMultisigAccount": {
-    "accountsAlertText": "Add signatory wallet before creating Multisig wallet",
+    "noOwnSignatory": "You need at least one owned account as part of the signatories",
     "accountsTab": "Accounts",
     "addContact": "Add new",
     "addContactsButton": "Add selected",
@@ -83,16 +83,17 @@
     "alertTitle": "Select wallet",
     "availableLabel": "Available",
     "backButton": "Back",
-    "chainHint": "Multisig will work only in this network, if you want to use different network, you need to create a new multisig",
     "chainName": "Network",
     "chainPlaceholder": "Select network",
     "closeButton": "Close",
     "contactsTab": "Contacts",
     "continueButton": "Continue",
     "create": "Create",
+    "createionStatusTitle": "Mulitisig creation",
     "disabledError": {
       "differentAccounts": "Wallets with different accounts for chains are not supported",
-      "unsupportedType": "This type of wallet is not supported for the Multisig wallet creation"
+      "unsupportedType": "This type of wallet is not supported for the Multisig wallet creation",
+      "emptyName": "A name is required"
     },
     "disabledLabel": "Not supported",
     "errorMessage": "Something went wrong",

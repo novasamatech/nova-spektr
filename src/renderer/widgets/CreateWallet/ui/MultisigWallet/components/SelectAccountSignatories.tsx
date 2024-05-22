@@ -38,7 +38,7 @@ type Props = {
   onSelect: (accounts: ExtendedAccount[], contacts: ExtendedContact[]) => void;
 };
 
-export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts, chain, onSelect }: Props) => {
+export const SelectSignatories = ({ isActive, accounts, wallets, contacts, chain, onSelect }: Props) => {
   const { t } = useI18n();
 
   const [query, setQuery] = useState('');

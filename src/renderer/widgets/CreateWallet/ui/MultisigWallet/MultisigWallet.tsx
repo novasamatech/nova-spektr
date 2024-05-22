@@ -1,4 +1,5 @@
-import { ComponentProps, useState, useEffect } from 'react';
+import { useForm } from 'effector-forms';
+import { ComponentProps, useEffect } from 'react';
 import { useUnit } from 'effector-react';
 import noop from 'lodash/noop';
 
@@ -6,16 +7,16 @@ import { BaseModal, HeaderTitleText, Button, IconButton } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { OperationResult } from '@entities/transaction';
-import { ExtendedAccount, ExtendedContact } from './common/types';
 import { ConfirmSignatories, WalletForm } from './components';
 import { contactModel } from '@entities/contact';
 import { DEFAULT_TRANSITION, dictionary } from '@shared/lib/utils';
 import { createMultisigWalletModel } from '../../model/create-multisig-wallet-model';
-import { SelectAccountSignatories } from './components/SelectAccountSignatories';
+import { SelectSignatories } from './components/SelectAccountSignatories';
 import { walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { createMultisigUtils } from '../../lib/create-multisig-utils';
 import { Step } from '../../lib/types';
+import { formModel } from '../../model/create-multisig-form-model';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -26,31 +27,27 @@ type Props = {
   // onBack: () => void;
 };
 
-export const SingleChainMultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
+export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
 
-  const accounts = useUnit(createMultisigWalletModel.$availableAccounts);
+  const accounts = useUnit(formModel.$availableAccounts);
   const wallets = useUnit(walletModel.$wallets);
   const contacts = useUnit(contactModel.$contacts);
-  const chain = useUnit(createMultisigWalletModel.$chain);
+  const {
+    fields: { chain },
+  } = useForm(formModel.$createMultisigForm);
   const chains = useUnit(networkModel.$chains);
   const isLoading = useUnit(createMultisigWalletModel.$isLoading);
   const error = useUnit(createMultisigWalletModel.$error);
   const activeStep = useUnit(createMultisigWalletModel.$step);
+  const accountSignatories = useUnit(formModel.$accountSignatories);
+  const contactSignatories = useUnit(formModel.$contactSignatories);
+  const signatories = useUnit(formModel.$signatories);
+
+  const { submit } = useForm(formModel.$createMultisigForm);
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
   const [isResultModalOpen, toggleResultModal] = useToggle();
-
-  const [name, setName] = useState('');
-
-  const [signatoryAccounts, setSignatoryAccounts] = useState<ExtendedAccount[]>([]);
-  const [signatoryContacts, setSignatoryContacts] = useState<ExtendedContact[]>([]);
-
-  const signatories = (signatoryAccounts as ExtendedContact[]).concat(signatoryContacts);
-
-  useEffect(() => {
-    createMultisigWalletModel.events.signatoriesChanged(signatories);
-  }, [signatories.length]);
 
   useEffect(() => {
     createMultisigWalletModel.events.callbacksChanged({ onComplete });
@@ -95,8 +92,7 @@ export const SingleChainMultisigWallet = ({ isOpen, onClose, onComplete }: Props
 
   const submitHandler = (args: any) => {
     toggleResultModal();
-    setName(args.name);
-
+    submit();
     createMultisigWalletModel.events.walletCreated(args);
   };
 
@@ -114,10 +110,8 @@ export const SingleChainMultisigWallet = ({ isOpen, onClose, onComplete }: Props
           isActive={createMultisigUtils.isInitStep(activeStep)}
           signatories={signatories}
           isLoading={isLoading}
-          withChain
           // onGoBack={goToPrevStep}
           onContinue={() => createMultisigWalletModel.events.stepChanged(Step.CONFIRM)}
-          onChainChange={createMultisigWalletModel.events.chainSelected}
           onSubmit={submitHandler}
         />
 
@@ -129,27 +123,31 @@ export const SingleChainMultisigWallet = ({ isOpen, onClose, onComplete }: Props
             onClick={() => closeMultisigModal()}
           />
 
-          <SelectAccountSignatories
+          <SelectSignatories
             isActive={activeStep === Step.INIT}
             accounts={accounts}
             wallets={dictionary(wallets, 'id')}
             contacts={contacts}
-            chain={chains[chain!]}
+            chain={chains[chain.value]}
             onSelect={(accounts, contacts) => {
-              setSignatoryAccounts(accounts);
-              setSignatoryContacts(contacts);
+              formModel.events.accountSignatoriesChanged(accounts);
+              formModel.events.contactSignatoriesChanged(contacts);
             }}
           />
 
           {createMultisigUtils.isConfirmStep(activeStep) && (
-            <ConfirmSignatories chain={chains[chain!]} accounts={signatoryAccounts} contacts={signatoryContacts} />
+            <ConfirmSignatories
+              chain={chains[chain.value]}
+              accounts={accountSignatories}
+              contacts={contactSignatories}
+            />
           )}
         </section>
       </BaseModal>
 
       <OperationResult
         {...getResultProps()}
-        title={name}
+        title={t('createMultisigAccount.createionStatusTitle')}
         isOpen={isModalOpen && isResultModalOpen}
         onClose={() => closeMultisigModal({ complete: true })}
       >

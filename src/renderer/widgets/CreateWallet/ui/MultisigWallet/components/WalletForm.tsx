@@ -1,29 +1,28 @@
-import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 import { useUnit } from 'effector-react';
-import { useEffect } from 'react';
+import { useForm } from 'effector-forms';
+import { FormEvent } from 'react';
 
 import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { DropdownOption, DropdownResult } from '@shared/ui/types';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { DropdownOption } from '@shared/ui/types';
 import { networkModel, networkUtils } from '@entities/network';
 import { ChainTitle } from '@entities/chain';
-import { CryptoType, Signatory, type AccountId, type Chain, type ChainId, type MultisigAccount } from '@shared/core';
-
-type MultisigAccountForm = {
-  name: string;
-  threshold: DropdownResult<number> | undefined;
-  chain?: ChainId;
-};
+import { Signatory, type Chain, type ChainId } from '@shared/core';
+import { formModel } from '../../../model/create-multisig-form-model';
+import { createMultisigWalletModel } from '../../../model/create-multisig-wallet-model';
 
 const getThresholdOptions = (optionsAmount: number): DropdownOption<number>[] => {
   if (optionsAmount === 0) return [];
 
-  return Array.from({ length: optionsAmount }, (_, index) => ({
-    id: index.toString(),
-    element: index + 2,
-    value: index + 2,
-  }));
+  return Array.from({ length: optionsAmount }, (_, index) => {
+    const value = index + 2;
+
+    return {
+      id: value.toString(),
+      element: value,
+      value,
+    };
+  });
 };
 
 const getChainOptions = (chains: Chain[]): DropdownOption<ChainId>[] => {
@@ -40,167 +39,78 @@ type Props = {
   signatories: Signatory[];
   isActive: boolean;
   isLoading: boolean;
-  withChain?: boolean;
   onContinue: () => void;
   // onGoBack: () => void;
-  onChainChange?: (chainId: ChainId) => void;
-  onSubmit: ({ name, threshold, creatorId }: { name: string; threshold: number; creatorId: AccountId }) => void;
+  onSubmit: ({ name, threshold }: { name: string; threshold: number }) => void;
 };
 
 export const WalletForm = ({
   signatories,
   onContinue,
-  withChain = false,
   isActive,
   isLoading,
-  onChainChange,
-  // onGoBack,
-  onSubmit,
-}: Props) => {
+}: // onGoBack,
+Props) => {
   const { t } = useI18n();
 
-  const wallets = useUnit(walletModel.$wallets);
   const chains = useUnit(networkModel.$chains);
 
-  const {
-    control,
-    handleSubmit,
-    watch,
-    formState: { isValid },
-  } = useForm<MultisigAccountForm>({
-    mode: 'onChange',
-    defaultValues: {
-      name: '',
-      threshold: undefined,
-      chain: withChain ? (Object.keys(chains)[0] as ChainId) : undefined,
-    },
-  });
+  const { fields, isValid, submit } = useForm(formModel.$createMultisigForm);
+  const multisigAlreadyExists = useUnit(formModel.$multisigAlreadyExists);
+  const hasOwnSignatory = useUnit(createMultisigWalletModel.$hasOwnSignatory);
 
-  const threshold = watch('threshold');
-  const chain = watch('chain');
+  const canContinue = () => {
+    const hasEnoughSignatories = signatories.length >= 2;
 
-  useEffect(() => {
-    if (withChain && chain) {
-      onChainChange?.(chain);
-    }
-  }, [chain]);
+    return hasOwnSignatory && hasEnoughSignatories && !multisigAlreadyExists;
+  };
 
   const thresholdOptions = getThresholdOptions(signatories.length - 1);
   const chainOptions = getChainOptions(Object.values(chains));
-  const cryptoType =
-    withChain && chain && networkUtils.isEthereumBased(chains[chain].options)
-      ? CryptoType.ETHEREUM
-      : CryptoType.SR25519;
 
-  const multisigAccountId =
-    threshold &&
-    accountUtils.getMultisigAccountId(
-      signatories.map((s) => s.accountId),
-      threshold.value,
-      cryptoType,
-    );
-
-  const ownedSignatories = signatories.filter((s) => {
-    return walletUtils.getAccountsBy(wallets, (account) => account.accountId === s.accountId);
-  });
-
-  const hasOwnSignatory = ownedSignatories.length > 0;
-
-  const submitMstAccount: SubmitHandler<MultisigAccountForm> = ({ name, threshold }) => {
-    const creator = hasOwnSignatory && ownedSignatories[0];
-
-    if (!threshold || !creator) return;
-
-    onSubmit({ name, threshold: threshold.value, creatorId: creator.accountId });
+  const submitForm = (event: FormEvent) => {
+    event.preventDefault();
+    submit();
   };
-
-  const noSignatoryWallet = wallets.every(
-    (wallet) => !walletUtils.isWatchOnly(wallet) || !walletUtils.isMultisig(wallet),
-  );
-
-  const signatoriesWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
-    walletFn: (w) => !walletUtils.isWatchOnly(w) && !walletUtils.isMultisig(w),
-    accountFn: (a) => signatories.some((s) => s.accountId === a.accountId),
-  });
-
-  const existingWallet = walletUtils.getWalletFilteredAccounts(wallets, {
-    walletFn: (w) => walletUtils.isMultisig(w),
-    accountFn: (a) => {
-      const multisigAccount = a as MultisigAccount;
-      const isSameAccountId = a.accountId === multisigAccountId;
-      const isSameChainId = !multisigAccount.chainId || multisigAccount.chainId === chain;
-
-      return isSameAccountId && isSameChainId;
-    },
-  });
-
-  const hasTwoSignatories = signatories.length > 1;
-
-  const signatoriesAreValid = signatoriesWallets && hasTwoSignatories && !existingWallet;
-
-  const canContinue = isValid && signatoriesAreValid;
 
   return (
     <section className="flex flex-col gap-y-4 px-3 py-4 flex-1 h-full">
       <SmallTitleText className="py-2 px-2">{t('createMultisigAccount.walletFormTitle')}</SmallTitleText>
 
-      <form id="multisigForm" className="flex flex-col px-2 gap-y-4 h-full" onSubmit={handleSubmit(submitMstAccount)}>
-        <Controller
-          name="name"
-          control={control}
-          rules={{ required: true }}
-          render={({ field: { value, onChange }, fieldState: { error } }) => (
-            <Input
-              placeholder={t('createMultisigAccount.namePlaceholder')}
-              label={t('createMultisigAccount.walletNameLabel')}
-              invalid={!!error}
-              value={value}
-              disabled={!isActive}
-              onChange={onChange}
-            />
-          )}
-        />
-        {withChain && (
-          <div className="flex gap-x-4 items-end">
-            <Controller
-              name="chain"
-              control={control}
-              rules={{ required: true }}
-              render={({ field: { value, onChange } }) => (
-                <>
-                  <Select
-                    placeholder={t('createMultisigAccount.chainPlaceholder')}
-                    label={t('createMultisigAccount.chainName')}
-                    className="w-[204px]"
-                    selectedId={value}
-                    options={chainOptions}
-                    disabled={!isActive}
-                    onChange={({ id }) => onChange(id)}
-                  />
-                </>
-              )}
-            />
-            <InputHint className="flex-1" active>
-              {t('createMultisigAccount.chainHint')}
-            </InputHint>
-          </div>
-        )}
+      <form id="multisigForm" className="flex flex-col px-2 gap-y-4 h-full" onSubmit={submitForm}>
         <div className="flex gap-x-4 items-end">
-          <Controller
-            name="threshold"
-            control={control}
-            rules={{ required: true }}
-            render={({ field: { value, onChange } }) => (
-              <Select
-                placeholder={t('createMultisigAccount.thresholdPlaceholder')}
-                label={t('createMultisigAccount.thresholdName')}
-                className="w-[204px]"
-                selectedId={value?.id.toString()}
-                disabled={signatories.length < 2 || !isActive}
-                options={thresholdOptions}
-                onChange={onChange}
-              />
-            )}
+          <Input
+            placeholder={t('createMultisigAccount.namePlaceholder')}
+            label={t('createMultisigAccount.walletNameLabel')}
+            invalid={!!fields.name.hasError()}
+            value={fields.name.value}
+            disabled={!isActive}
+            onChange={fields.name.onChange}
+          />
+          <InputHint variant="error" active={fields.name.hasError()}>
+            {fields.name.errorText()}
+          </InputHint>
+        </div>
+        <div className="flex gap-x-4 items-end">
+          <Select
+            placeholder={t('createMultisigAccount.chainPlaceholder')}
+            label={t('createMultisigAccount.chainName')}
+            className="w-[204px]"
+            selectedId={fields.chain.value}
+            options={chainOptions}
+            disabled={!isActive}
+            onChange={({ id }) => fields.chain.onChange(id as ChainId)}
+          />
+        </div>
+        <div className="flex gap-x-4 items-end">
+          <Select
+            placeholder={t('createMultisigAccount.thresholdPlaceholder')}
+            label={t('createMultisigAccount.thresholdName')}
+            className="w-[204px]"
+            selectedId={fields.threshold.value.toString()}
+            disabled={fields.threshold.hasError() || !isActive}
+            options={thresholdOptions}
+            onChange={({ value }) => fields.threshold.onChange(value)}
           />
           <InputHint className="flex-1" active>
             {t('createMultisigAccount.thresholdHint')}
@@ -208,19 +118,23 @@ export const WalletForm = ({
         </div>
 
         <Alert
-          active={Boolean(signatories.length) && !signatoriesWallets}
+          active={Boolean(signatories.length) && !hasOwnSignatory}
           title={t('createMultisigAccount.walletAlertTitle')}
           variant="warn"
         >
           <Alert.Item withDot={false}>{t('createMultisigAccount.walletAlertText')}</Alert.Item>
         </Alert>
 
-        <Alert active={Boolean(existingWallet)} title={t('createMultisigAccount.multisigExistTitle')} variant="warn">
+        <Alert
+          active={Boolean(multisigAlreadyExists)}
+          title={t('createMultisigAccount.multisigExistTitle')}
+          variant="warn"
+        >
           <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
         </Alert>
 
-        <Alert active={noSignatoryWallet} title={t('createMultisigAccount.walletAlertTitle')} variant="warn">
-          <Alert.Item withDot={false}>{t('createMultisigAccount.accountsAlertText')}</Alert.Item>
+        <Alert active={!hasOwnSignatory} title={t('createMultisigAccount.walletAlertTitle')} variant="warn">
+          <Alert.Item withDot={false}>{t('createMultisigAccount.noOwnSignatory')}</Alert.Item>
         </Alert>
 
         <div className="flex justify-between items-center mt-auto">

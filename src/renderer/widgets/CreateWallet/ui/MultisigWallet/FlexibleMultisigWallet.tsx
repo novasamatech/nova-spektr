@@ -59,20 +59,16 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
   }, [isOpen]);
 
   useEffect(() => {
-    createMultisigWalletModel.events.signatoriesChanged(signatories);
-  }, [signatories.length]);
-
-  useEffect(() => {
     createMultisigWalletModel.events.callbacksChanged({ onComplete });
   }, [onComplete]);
 
-  const goToPrevStep = () => {
-    if (activeStep === Step.INIT) {
-      onBack();
-    } else {
-      setActiveStep((prev) => prev - 1);
-    }
-  };
+  // const goToPrevStep = () => {
+  //   if (activeStep === Step.INIT) {
+  //     onBack();
+  //   } else {
+  //     setActiveStep((prev) => prev - 1);
+  //   }
+  // };
 
   const closeMultisigModal = (params: { complete?: boolean; closeAll?: boolean } = { closeAll: true }) => {
     toggleIsModalOpen();
@@ -114,7 +110,7 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
           isActive={activeStep === Step.INIT}
           signatories={signatories}
           isLoading={isLoading}
-          onGoBack={goToPrevStep}
+          // onGoBack={goToPrevStep}
           onContinue={() => setActiveStep(Step.CONFIRMATION)}
           onSubmit={submitHandler}
         />

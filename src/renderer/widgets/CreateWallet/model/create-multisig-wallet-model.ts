@@ -5,6 +5,7 @@ import { AccountType, ChainId, ChainType, CryptoType, Signatory, SigningType, Wa
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
 import { Step } from '../lib/types';
+import { formModel } from './create-multisig-form-model';
 
 const reset = createEvent();
 const stepChanged = createEvent<Step>();
@@ -16,41 +17,36 @@ export type Callbacks = {
 const walletCreated = createEvent<{
   name: string;
   threshold: number;
-  creatorId: string;
 }>();
 const $step = createStore<Step>(Step.INIT);
-const chainSelected = createEvent<ChainId>();
-const signatoriesChanged = createEvent<Signatory[]>();
 
 const $callbacks = createStore<Callbacks | null>(null).reset(reset);
 const callbacksApi = createApi($callbacks, {
   callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
 });
-const $chain = createStore<ChainId | null>(null).reset(reset);
-const $signatories = createStore<Signatory[]>([]).reset(reset);
-const $error = createStore('').reset(reset);
 
-const $isEthereumChain = combine(
+const $error = createStore('').reset(reset);
+const $api = combine(
   {
-    chainId: $chain,
-    chains: networkModel.$chains,
+    apis: networkModel.$apis,
+    chainId: formModel.$createMultisigForm.fields.chain.$value,
   },
-  ({ chainId, chains }) => {
-    return !!chainId && networkUtils.isEthereumBased(chains[chainId].options);
+  ({ apis, chainId }) => {
+    return chainId ? apis[chainId] : undefined;
   },
+  { skipVoid: false },
 );
 
 type CreateWalletParams = {
   name: string;
   threshold: number;
-  creatorId: string;
   signatories: Signatory[];
   chainId: ChainId | null;
   isEthereumChain: boolean;
 };
 
 const createWalletFx = createEffect(
-  async ({ name, threshold, creatorId, signatories, chainId, isEthereumChain }: CreateWalletParams) => {
+  async ({ name, threshold, signatories, chainId, isEthereumChain }: CreateWalletParams) => {
     const cryptoType = isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519;
     const accountIds = signatories.map((s) => s.accountId);
     const accountId = accountUtils.getMultisigAccountId(accountIds, threshold, cryptoType);
@@ -77,50 +73,27 @@ const createWalletFx = createEffect(
   },
 );
 
-const $availableAccounts = combine(
-  {
-    wallets: walletModel.$wallets,
-    chains: networkModel.$chains,
-    chain: $chain,
-  },
-  ({ chain, wallets, chains }) => {
-    if (!chain) return [];
-
-    const filteredAccounts = walletUtils.getAccountsBy(wallets, (a, w) => {
-      const isValidWallet = !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w);
-      const isChainMatch = accountUtils.isChainAndCryptoMatch(a, chains[chain]);
-
-      return isValidWallet && isChainMatch;
-    });
-
-    const baseAccounts = filteredAccounts.filter((a) => accountUtils.isBaseAccount(a) && a.name);
-
-    return [...accountUtils.getAccountsAndShardGroups(filteredAccounts), ...baseAccounts];
-  },
-  { skipVoid: false },
+const $hasOwnSignatory = combine(
+  { wallets: walletModel.$wallets, signatories: formModel.$signatories },
+  ({ wallets, signatories }) =>
+    walletUtils.getWalletsFilteredAccounts(wallets, {
+      walletFn: (w) => !walletUtils.isWatchOnly(w) && !walletUtils.isMultisig(w),
+      accountFn: (a) => signatories.some((s) => s.accountId === a.accountId),
+    }),
 );
-
-sample({
-  clock: chainSelected,
-  target: $chain,
-});
-
-sample({
-  clock: signatoriesChanged,
-  target: $signatories,
-});
 
 sample({
   clock: walletCreated,
   source: {
-    signatories: $signatories,
-    chainId: $chain,
-    isEthereumChain: $isEthereumChain,
+    signatories: formModel.$signatories,
+    chainId: formModel.$createMultisigForm.fields.chain.$value,
+    chains: networkModel.$chains,
   },
-  fn: ({ signatories, ...rest }, resultValues) => ({
-    ...rest,
+  fn: ({ signatories, chains, chainId }, resultValues) => ({
     ...resultValues,
+    chainId,
     signatories: sortBy(signatories, 'accountId'),
+    isEthereumChain: networkUtils.isEthereumBased(chains[chainId].options),
   }),
   target: createWalletFx,
 });
@@ -132,17 +105,14 @@ sample({
 });
 
 export const createMultisigWalletModel = {
-  $availableAccounts,
-  $chain,
   $isLoading: createWalletFx.pending,
   $error,
   $step,
+  $hasOwnSignatory,
   events: {
     reset,
     callbacksChanged: callbacksApi.callbacksChanged,
     walletCreated,
-    chainSelected,
-    signatoriesChanged,
     stepChanged,
   },
 };
