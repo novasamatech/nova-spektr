@@ -1,5 +1,4 @@
 import { allSettled, fork } from 'effector';
-import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { ApiPromise } from '@polkadot/api';
 
 import { Account, Chain, WalletType, SigningType, Wallet, Transaction } from '@shared/core';
@@ -35,8 +34,9 @@ describe('widgets/AddPureProxyModal/model/submit-model', () => {
     const store = {
       chain: { chainId: '0x00' } as unknown as Chain,
       account: { walletId: 1 } as unknown as Account,
-      transactions: [{}] as Transaction[],
-      unsignedTxs: [{}] as UnsignedTransaction[],
+      coreTxs: [{}] as Transaction[],
+      wrappedTxs: [{}] as Transaction[],
+      txPayloads: [{}] as Uint8Array[],
       signatures: ['0x00'],
       description: '',
     };

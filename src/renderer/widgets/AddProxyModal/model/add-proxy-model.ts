@@ -124,10 +124,11 @@ sample({
   source: {
     addProxyStore: $addProxyStore,
     coreTx: $coreTx,
+    wrappedTx: $wrappedTx,
     multisigTx: $multisigTx,
   },
   filter: (proxyData) => {
-    return Boolean(proxyData.addProxyStore) && Boolean(proxyData.coreTx);
+    return Boolean(proxyData.addProxyStore) && Boolean(proxyData.wrappedTx) && Boolean(proxyData.coreTx);
   },
   fn: (proxyData, signParams) => ({
     event: {
@@ -136,7 +137,8 @@ sample({
       account: proxyData.addProxyStore!.account,
       signatory: proxyData.addProxyStore!.signatory,
       description: proxyData.addProxyStore!.description,
-      transactions: [proxyData.coreTx!],
+      coreTxs: [proxyData.coreTx!],
+      wrappedTxs: [proxyData.wrappedTx!],
       multisigTxs: proxyData.multisigTx ? [proxyData.multisigTx] : [],
     },
     step: Step.SUBMIT,

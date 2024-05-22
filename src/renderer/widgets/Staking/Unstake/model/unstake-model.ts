@@ -120,10 +120,16 @@ sample({
     unstakeStore: $unstakeStore,
     networkStore: $networkStore,
     multisigTxs: $multisigTxs,
+    wrappedTxs: $wrappedTxs,
     coreTxs: $coreTxs,
   },
   filter: (transferData) => {
-    return Boolean(transferData.unstakeStore) && Boolean(transferData.coreTxs) && Boolean(transferData.networkStore);
+    return (
+      Boolean(transferData.unstakeStore) &&
+      Boolean(transferData.wrappedTxs) &&
+      Boolean(transferData.coreTxs) &&
+      Boolean(transferData.networkStore)
+    );
   },
   fn: (transferData, signParams) => ({
     event: {
@@ -132,7 +138,8 @@ sample({
       account: transferData.unstakeStore!.shards[0],
       signatory: transferData.unstakeStore!.signatory,
       description: transferData.unstakeStore!.description,
-      transactions: transferData.coreTxs!,
+      wrappedTxs: transferData.wrappedTxs!,
+      coreTxs: transferData.coreTxs!,
       multisigTxs: transferData.multisigTxs || [],
     },
     step: Step.SUBMIT,
