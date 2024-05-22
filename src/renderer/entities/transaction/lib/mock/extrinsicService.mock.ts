@@ -12,7 +12,8 @@ export const extrinsicTests = [
       threshold: 2,
     },
     transactionType: TransactionType.MULTISIG_AS_MULTI,
-    callData: '0x1f0102000483e0844510ede3aea6953c9886d9a51abdd944b6395de7b83bbce6dffce0c765000000000000',
+    callData:
+      '0x1f0102000483e0844510ede3aea6953c9886d9a51abdd944b6395de7b83bbce6dffce0c765001e0100379b3f5dc547e92c7bf2b9837b8801954b9a68f7deadb3411400511f66adbe1400000000000000',
   },
   {
     testName: 'should create extrinsic for approve tx and get call data',

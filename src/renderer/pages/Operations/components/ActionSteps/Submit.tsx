@@ -1,5 +1,4 @@
 import { ApiPromise } from '@polkadot/api';
-import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useEffect, useState, ComponentProps } from 'react';
 
 import { useI18n, useMultisigChainContext } from '@app/providers';
@@ -26,7 +25,7 @@ type Props = {
   account?: Account;
   tx: Transaction;
   multisigTx?: MultisigTransaction;
-  unsignedTx: UnsignedTransaction;
+  txPayload: Uint8Array;
   signature: HexString;
   rejectReason?: string;
   isReject?: boolean;
@@ -38,7 +37,7 @@ export const Submit = ({
   tx,
   multisigTx,
   account,
-  unsignedTx,
+  txPayload,
   signature,
   rejectReason,
   isReject,
@@ -59,7 +58,7 @@ export const Submit = ({
   }, []);
 
   const submitExtrinsic = async (signature: HexString) => {
-    transactionService.signAndSubmit(tx, signature, unsignedTx, api, async (executed, params) => {
+    transactionService.signAndSubmit(tx, signature, txPayload, api, async (executed, params) => {
       if (executed) {
         const typedParams = params as ExtrinsicResultParams;
 

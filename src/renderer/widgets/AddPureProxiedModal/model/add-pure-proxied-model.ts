@@ -196,12 +196,13 @@ sample({
   clock: signModel.output.formSubmitted,
   source: {
     addProxyStore: $addProxyStore,
+    wrappedTx: $wrappedTx,
     coreTx: $coreTx,
     multisigTx: $multisigTx,
     txWrappers: $txWrappers,
   },
   filter: (proxyData) => {
-    return Boolean(proxyData.addProxyStore) && Boolean(proxyData.coreTx);
+    return Boolean(proxyData.addProxyStore) && Boolean(proxyData.wrappedTx);
   },
   fn: (proxyData, signParams) => ({
     event: {
@@ -210,7 +211,8 @@ sample({
       account: proxyData.addProxyStore!.account,
       signatory: proxyData.addProxyStore!.signatory,
       description: proxyData.addProxyStore!.description,
-      transactions: [proxyData.coreTx!],
+      wrappedTxs: [proxyData.wrappedTx!],
+      coreTxs: [proxyData.coreTx!],
       multisigTxs: proxyData.multisigTx ? [proxyData.multisigTx] : [],
     },
     step: Step.SUBMIT,

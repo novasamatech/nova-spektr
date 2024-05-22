@@ -1,5 +1,4 @@
 import { createEvent, createEffect, restore, sample, scopeBind, createStore, createApi } from 'effector';
-import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { ApiPromise } from '@polkadot/api';
 
 import type { Chain, Account, HexString, MultisigAccount } from '@shared/core';
@@ -19,11 +18,12 @@ type Input = {
   account: Account;
   signatory?: Account;
   description: string;
-  transactions: Transaction[];
+  coreTxs: Transaction[];
+  wrappedTxs: Transaction[];
   multisigTxs: Transaction[];
 
   signatures: HexString[];
-  unsignedTxs: UnsignedTransaction[];
+  txPayloads: Uint8Array[];
 };
 
 const formInitiated = createEvent<Input>();
@@ -48,17 +48,17 @@ const $hooksApi = createApi($hooks, {
 
 type SignAndSubmitExtrinsicParams = {
   api: ApiPromise;
-  transactions: Transaction[];
-  unsignedTxs: UnsignedTransaction[];
+  wrappedTxs: Transaction[];
+  txPayloads: Uint8Array[];
   signatures: HexString[];
 };
 const signAndSubmitExtrinsicsFx = createEffect(
-  ({ api, transactions, unsignedTxs, signatures }: SignAndSubmitExtrinsicParams): void => {
+  ({ api, wrappedTxs, txPayloads, signatures }: SignAndSubmitExtrinsicParams): void => {
     const boundExtrinsicSucceeded = scopeBind(extrinsicSucceeded, { safe: true });
     const boundExtrinsicFailed = scopeBind(extrinsicFailed, { safe: true });
 
-    transactions.forEach((transaction, index) => {
-      transactionService.signAndSubmit(transaction, signatures[index], unsignedTxs[index], api, (executed, params) => {
+    wrappedTxs.forEach((transaction, index) => {
+      transactionService.signAndSubmit(transaction, signatures[index], txPayloads[index], api, (executed, params) => {
         if (executed) {
           boundExtrinsicSucceeded(params as ExtrinsicResultParams);
         } else {
@@ -122,8 +122,9 @@ sample({
   fn: ({ apis, params }) => ({
     api: apis[params!.chain.chainId],
     signatures: params!.signatures,
-    transactions: params!.transactions,
-    unsignedTxs: params!.unsignedTxs,
+    wrappedTxs: params!.wrappedTxs,
+    coreTxs: params!.coreTxs,
+    txPayloads: params!.txPayloads,
   }),
   target: signAndSubmitExtrinsicsFx,
 });
@@ -146,7 +147,7 @@ sample({
   fn: ({ submitStore, hooks }, params) => ({
     params,
     hooks: hooks!,
-    transactions: submitStore!.transactions,
+    transactions: submitStore!.coreTxs,
     multisigTxs: submitStore!.multisigTxs,
     multisigAccount: submitStore!.account as MultisigAccount,
     description: submitStore!.description,

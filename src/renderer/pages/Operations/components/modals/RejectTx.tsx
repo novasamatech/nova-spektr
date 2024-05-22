@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 
@@ -9,7 +8,6 @@ import { MultisigTransactionDS } from '@shared/api/storage';
 import { useToggle } from '@shared/lib/hooks';
 import { ExtendedChain } from '@entities/network';
 import { toAddress, transferableAmount, getAssetById } from '@shared/lib/utils';
-import { getMultisigSignOperationTitle } from '../../common/utils';
 import RejectReasonModal from './RejectReasonModal';
 import { Submit } from '../ActionSteps/Submit';
 import { Confirmation } from '../ActionSteps/Confirmation';
@@ -27,6 +25,7 @@ import {
   isXcmTransaction,
   transactionService,
 } from '@entities/transaction';
+import { getMultisigSignOperationTitle } from '../../common/utils';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -55,7 +54,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
 
   const [rejectTx, setRejectTx] = useState<Transaction>();
-  const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
+  const [txPayload, setTxPayload] = useState<Uint8Array>();
 
   const [rejectReason, setRejectReason] = useState('');
   const [signature, setSignature] = useState<HexString>();
@@ -99,8 +98,8 @@ const RejectTx = ({ tx, account, connection }: Props) => {
     setActiveStep(AllSteps.indexOf(activeStep) - 1);
   };
 
-  const onSignResult = (signature: HexString[], unsigned: UnsignedTransaction[]) => {
-    setUnsignedTx(unsigned[0]);
+  const onSignResult = (signature: HexString[], payload: Uint8Array[]) => {
+    setTxPayload(payload[0]);
     setSignature(signature[0]);
     setIsModalOpen(false);
     setActiveStep(Step.SUBMIT);
@@ -170,7 +169,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
     }
   };
 
-  const isSubmitStep = activeStep === Step.SUBMIT && rejectTx && signAccount && signature && unsignedTx;
+  const isSubmitStep = activeStep === Step.SUBMIT && rejectTx && signAccount && signature && txPayload;
 
   return (
     <>
@@ -237,7 +236,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
           api={connection.api}
           multisigTx={tx}
           account={signAccount}
-          unsignedTx={unsignedTx}
+          txPayload={txPayload}
           signature={signature}
           rejectReason={rejectReason}
           onClose={handleClose}

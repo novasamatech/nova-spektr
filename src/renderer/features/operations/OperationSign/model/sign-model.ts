@@ -1,5 +1,4 @@
 import { createEvent, restore, combine, sample } from 'effector';
-import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { once } from 'patronum';
 
 import type { Chain, Account, HexString } from '@shared/core';
@@ -16,7 +15,7 @@ type Input = {
 
 type SignatureData = {
   signatures: HexString[];
-  unsignedTxs: UnsignedTransaction[];
+  txPayloads: Uint8Array[];
 };
 
 const formInitiated = createEvent<Input>();
