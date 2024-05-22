@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { ApiPromise } from '@polkadot/api';
-import { SubmittableExtrinsic, SignerOptions } from '@polkadot/api/types';
+import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { hexToU8a } from '@polkadot/util';
 import { construct, UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
-import type { Signer, SignerResult } from '@polkadot/api/types';
 
 import { Transaction, TransactionType, WrapperKind } from '@shared/core';
 import { createTxMetadata, toAccountId, dictionary } from '@shared/lib/utils';
@@ -45,14 +44,6 @@ export const transactionService = {
   getWrappedTransaction,
 };
 
-function createRawSigner(signature: HexString): Signer {
-  return {
-    signRaw: async (data: any): Promise<SignerResult> => {
-      return { id: 1, signature };
-    },
-  };
-}
-
 const shouldWrapAsMulti = (wrapper: TxWrappers_OLD): wrapper is WrapAsMulti =>
   'signatoryId' in wrapper && 'account' in wrapper;
 
@@ -66,25 +57,19 @@ async function getTransactionFee(transaction: Transaction, api: ApiPromise): Pro
 async function signAndSubmit(
   transaction: Transaction,
   signature: HexString,
-  unsigned: UnsignedTransaction,
+  payload: Uint8Array,
   api: ApiPromise,
   callback: (executed: any, params: any) => void,
 ) {
   const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
   const accountId = toAccountId(transaction.address);
 
-  const options: Partial<SignerOptions> = {
-    era: api.registry.createType('ExtrinsicEra', unsigned.era),
-    signer: createRawSigner(signature),
-    assetId: unsigned.assetId,
-    tip: unsigned.tip,
-    nonce: unsigned.nonce,
-    blockHash: unsigned.blockHash,
-  };
+  extrinsic.addSignature(accountId, hexToU8a(signature), payload);
 
   extrinsic
-    .signAndSend(accountId, options, (result) => {
+    .send((result) => {
       const { status, events, txHash, txIndex, blockNumber } = result as any;
+
       let actualTxHash = txHash.toHex();
       let isFinalApprove = false;
       let multisigError = '';
@@ -285,6 +270,7 @@ async function createPayload(
   if (options.signedExtensions?.includes('ChargeAssetTxPayment')) {
     unsigned.assetId = undefined;
   }
+
   const signingPayloadHex = construct.signingPayload(unsigned, { registry });
 
   return {

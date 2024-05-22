@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
 import { useCountdown } from '@shared/lib/hooks';
 import { ValidationErrors, toAddress } from '@shared/lib/utils';
@@ -24,11 +23,10 @@ export const Vault = ({
   const { verifySignature } = useTransaction();
 
   const [countdown, resetCountdown] = useCountdown(api);
-  const [unsignedTxs, setUnsignedTxs] = useState<UnsignedTransaction[]>([]);
   const [txPayloads, setTxPayloads] = useState<Uint8Array[]>([]);
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
-  const isScanStep = !unsignedTxs.length && !txPayloads.length;
+  const isScanStep = !txPayloads.length;
   const isMultiframe = transactions.length > 1;
 
   useEffect(() => {
@@ -68,7 +66,7 @@ export const Vault = ({
     if (!isVerified || balanceValidationError) {
       setValidationError(balanceValidationError || ValidationErrors.INVALID_SIGNATURE);
     } else {
-      onResult(signatures, unsignedTxs);
+      onResult(signatures, txPayloads);
     }
   };
 
@@ -81,7 +79,6 @@ export const Vault = ({
   };
 
   const scanAgain = () => {
-    setUnsignedTxs([]);
     setTxPayloads([]);
   };
 
@@ -100,10 +97,7 @@ export const Vault = ({
             transactions={transactions}
             onGoBack={onGoBack}
             onResetCountdown={resetCountdown}
-            onResult={(unsignedTx, payloads) => {
-              setUnsignedTxs(unsignedTx);
-              setTxPayloads(payloads);
-            }}
+            onResult={(payloads) => setTxPayloads(payloads)}
           />
         ) : (
           <ScanSingleframeQr
@@ -116,10 +110,7 @@ export const Vault = ({
             transaction={transactions[0]}
             onGoBack={onGoBack}
             onResetCountdown={resetCountdown}
-            onResult={(unsignedTx, payload) => {
-              setUnsignedTxs([unsignedTx]);
-              setTxPayloads([payload]);
-            }}
+            onResult={(payload) => setTxPayloads([payload])}
           />
         )}
       </div>
