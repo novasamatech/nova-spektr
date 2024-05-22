@@ -146,6 +146,7 @@ sample({
 export const portfolioModel = {
   $activeTokens,
   $activeView,
+  $accounts,
   events: {
     activeViewChanged,
     accountsChanged,

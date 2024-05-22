@@ -34,7 +34,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
   const [sortedChains, setSortedChains] = useState<Chain[]>([]);
 
   useEffect(() => {
-    if (!activeWallet || assetsView !== AssetsListView.CHAIN_CENTRIC) return;
+    if (!activeWallet || assetsView !== AssetsListView.CHAIN_CENTRIC || !activeShards.length) return;
 
     const isMultisig = walletUtils.isMultisig(activeWallet);
 
@@ -67,7 +67,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
     setSortedChains(sortedChains);
   }, [activeWallet, balances, assetsPrices]);
 
-  if (assetsView !== AssetsListView.CHAIN_CENTRIC) return null;
+  if (assetsView !== AssetsListView.CHAIN_CENTRIC || activeShards.length === 0) return null;
 
   const searchSymbolOnly = sortedChains.some((chain) => {
     return chain.assets.some((asset) => isStringsMatchQuery(query, [asset.symbol, asset.name]));

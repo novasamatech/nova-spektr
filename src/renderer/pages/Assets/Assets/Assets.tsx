@@ -33,17 +33,13 @@ export const Assets = () => {
         </Header>
         <ShardSelectorButton />
         <div className="flex flex-col gap-y-4 w-full h-full overflow-y-scroll">
-          {activeShards.length > 0 && (
-            <>
-              <AssetsPortfolioView />
-              <AssetsChainView
-                query={query}
-                activeShards={activeShards}
-                hideZeroBalances={hideZeroBalances}
-                assetsView={assetsView}
-              />
-            </>
-          )}
+          <AssetsPortfolioView />
+          <AssetsChainView
+            query={query}
+            activeShards={activeShards}
+            hideZeroBalances={hideZeroBalances}
+            assetsView={assetsView}
+          />
         </div>
       </section>
 

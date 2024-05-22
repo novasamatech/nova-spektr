@@ -24,27 +24,27 @@ export const AssetsPortfolioView = () => {
   const { t } = useI18n();
 
   const activeView = useUnit(portfolioModel.$activeView);
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const activeTokens = useUnit(portfolioModel.$activeTokens);
+  const accounts = useUnit(portfolioModel.$accounts);
+  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const wallet = useUnit(walletModel.$activeWallet);
 
-  if (activeView !== AssetsListView.TOKEN_CENTRIC) return null;
+  if (activeView !== AssetsListView.TOKEN_CENTRIC || accounts.length === 0) return null;
 
   const colStyle = getColStyle(wallet);
 
   return (
     <div className="flex flex-col gap-y-2 items-center w-full py-4">
-      {!!activeTokens.length && (
-        <div className={`grid items-center w-[548px] pl-[35px] pr-4 ${colStyle}`}>
-          <FootnoteText className="text-text-tertiary">{t('balances.token')}</FootnoteText>
-          <FootnoteText className="text-text-tertiary" align="right">
-            {fiatFlag && t('balances.price')}
-          </FootnoteText>
-          <FootnoteText className="text-text-tertiary col-end-4" align="right">
-            {t('balances.balance')}
-          </FootnoteText>
-        </div>
-      )}
+      <div className={`grid items-center w-[548px] pl-[35px] pr-4 ${colStyle}`}>
+        <FootnoteText className="text-text-tertiary">{t('balances.token')}</FootnoteText>
+        <FootnoteText className="text-text-tertiary" align="right">
+          {fiatFlag && t('balances.price')}
+        </FootnoteText>
+        <FootnoteText className="text-text-tertiary col-end-4" align="right">
+          {t('balances.balance')}
+        </FootnoteText>
+      </div>
+
       <ul className="flex flex-col gap-y-4 items-center w-full">
         {activeTokens.map((asset) => (
           <li key={asset.priceId || asset.symbol} className="w-[548px]">
