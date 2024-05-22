@@ -121,9 +121,15 @@ sample({
     networkStore: $networkStore,
     multisigTxs: $multisigTxs,
     coreTxs: $coreTxs,
+    wrappedTxs: $wrappedTxs,
   },
   filter: (withdrawData) => {
-    return Boolean(withdrawData.withdrawData) && Boolean(withdrawData.coreTxs) && Boolean(withdrawData.networkStore);
+    return (
+      Boolean(withdrawData.withdrawData) &&
+      Boolean(withdrawData.wrappedTxs) &&
+      Boolean(withdrawData.coreTxs) &&
+      Boolean(withdrawData.networkStore)
+    );
   },
   fn: (withdrawData, signParams) => ({
     event: {
@@ -132,7 +138,8 @@ sample({
       account: withdrawData.withdrawData!.shards[0],
       signatory: withdrawData.withdrawData!.signatory,
       description: withdrawData.withdrawData!.description,
-      transactions: withdrawData.coreTxs!,
+      coreTxs: withdrawData.coreTxs!,
+      wrappedTxs: withdrawData.wrappedTxs!,
       multisigTxs: withdrawData.multisigTxs || [],
     },
     step: Step.SUBMIT,
