@@ -39,7 +39,7 @@ export const NominatorsItem = ({
 
   return (
     <Plate className="grid grid-cols-[1fr,104px,104px,20px] items-center gap-x-6">
-      {!walletUtils.isWatchOnly(activeWallet) && nominatorsLength > 1 ? (
+      {activeWallet && !walletUtils.isWatchOnly(activeWallet) && nominatorsLength > 1 ? (
         <Checkbox
           disabled={isStakingLoading}
           checked={stake.isSelected}

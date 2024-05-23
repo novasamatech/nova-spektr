@@ -1,17 +1,15 @@
 import { allSettled, fork } from 'effector';
-import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { ApiPromise } from '@polkadot/api';
 
-import { Account, Chain, WalletType, SigningType, Wallet } from '@shared/core';
-import { Transaction, transactionService } from '@entities/transaction';
+import { Account, Chain, WalletType, SigningType, Wallet, Transaction } from '@shared/core';
+import { transactionService } from '@entities/transaction';
 import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
 import { submitModel } from '../submit-model';
 
 jest.mock('@entities/transaction', () => ({
   transactionService: {
-    getSignedExtrinsic: jest.fn(),
-    submitAndWatchExtrinsic: jest.fn(),
+    signAndSubmit: jest.fn(),
   },
 }));
 
@@ -36,8 +34,9 @@ describe('widgets/AddPureProxyModal/model/submit-model', () => {
     const store = {
       chain: { chainId: '0x00' } as unknown as Chain,
       account: { walletId: 1 } as unknown as Account,
-      transactions: [{}] as Transaction[],
-      unsignedTxs: [{}] as UnsignedTransaction[],
+      coreTxs: [{}] as Transaction[],
+      wrappedTxs: [{}] as Transaction[],
+      txPayloads: [{}] as Uint8Array[],
       signatures: ['0x00'],
       description: '',
     };
@@ -45,7 +44,6 @@ describe('widgets/AddPureProxyModal/model/submit-model', () => {
     await allSettled(submitModel.events.formInitiated, { scope, params: store });
     await allSettled(submitModel.events.submitStarted, { scope });
 
-    expect(transactionService.getSignedExtrinsic).toHaveBeenCalled();
-    expect(transactionService.submitAndWatchExtrinsic).toHaveBeenCalled();
+    expect(transactionService.signAndSubmit).toHaveBeenCalled();
   });
 });

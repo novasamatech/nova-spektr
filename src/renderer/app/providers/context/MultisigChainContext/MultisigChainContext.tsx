@@ -5,11 +5,10 @@ import { useUnit } from 'effector-react';
 
 import { subscriptionService } from '@entities/chain';
 import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
-import { MultisigTxFinalStatus, SigningStatus } from '@entities/transaction';
 import { toAddress, getCreatedDateFromApi } from '@shared/lib/utils';
 import { useDebounce, useTaskQueue } from '@shared/lib/hooks';
 import { Task } from '@shared/lib/hooks/useTaskQueue';
-import type { MultisigAccount, ChainId } from '@shared/core';
+import { MultisigAccount, ChainId, MultisigTxFinalStatus, SigningStatus } from '@shared/core';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
 
@@ -32,7 +31,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     updateCallData,
     updateCallDataFromChain,
   } = useMultisigTx({ addTask });
-  const activeAccounts = useUnit(walletModel.$activeAccounts);
+  const activeWallet = useUnit(walletModel.$activeWallet);
   const apis = useUnit(networkModel.$apis);
   const chains = useUnit(networkModel.$chains);
   const connectionStatuses = useUnit(networkModel.$connectionStatuses);
@@ -42,7 +41,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
   const debouncedApis = useDebounce(apis, 1000);
   const debouncedConnectionStatuses = useDebounce(connectionStatuses, 1000);
 
-  const activeAccount = activeAccounts.at(0);
+  const activeAccount = activeWallet?.accounts[0];
   const account = activeAccount && accountUtils.isMultisigAccount(activeAccount) ? activeAccount : undefined;
 
   const txs = getLiveAccountMultisigTxs(account?.accountId ? [account.accountId] : []);

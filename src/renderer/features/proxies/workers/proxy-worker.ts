@@ -4,6 +4,7 @@ import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { ApiPromise } from '@polkadot/api';
 import * as Sc from '@substrate/connect';
 
+import { proxyWorkerUtils } from '../lib/worker-utils';
 import {
   Chain,
   ChainId,
@@ -11,14 +12,13 @@ import {
   ConnectionType,
   ProxyAccount,
   ProxiedAccount,
-  Account,
+  BaseAccount,
   AccountId,
   NoID,
   PartialProxiedAccount,
   ProxyVariant,
   ProxyDeposits,
 } from '@shared/core';
-import { proxyWorkerUtils } from '../lib/worker-utils';
 
 export const proxyWorker = {
   initConnection,
@@ -98,8 +98,8 @@ async function disconnect(chainId: ChainId) {
 
 type GetProxiesParams = {
   chainId: ChainId;
-  accountsForProxy: Record<AccountId, Account>;
-  accountsForProxied: Record<AccountId, Account>;
+  accountsForProxy: Record<AccountId, BaseAccount>;
+  accountsForProxied: Record<AccountId, BaseAccount>;
   proxiedAccounts: ProxiedAccount[];
   proxies: ProxyAccount[];
 };
@@ -129,15 +129,13 @@ async function getProxies({
   }
 
   try {
-    const keys = await api.query.proxy.proxies.keys();
-
-    const proxiesRequests = keys.map(async (key) => {
+    const entries = await api.query.proxy.proxies.entries();
+    entries.forEach(([key, value]) => {
       try {
-        const proxyData = (await api.rpc.state.queryStorageAt([key])) as any;
-
+        const proxyData = value.toHuman() as any;
         const proxiedAccountId = key.args[0].toHex();
 
-        proxyData[0][0].toHuman().forEach((account: any) => {
+        proxyData[0].forEach((account: any) => {
           const newProxy: NoID<ProxyAccount> = {
             chainId,
             proxiedAccountId,
@@ -171,11 +169,11 @@ async function getProxies({
           }
 
           if (needToAddProxiedAccount) {
-            deposits.deposits[proxiedAccountId] = proxyData[0][1].toHuman();
+            deposits.deposits[proxiedAccountId] = proxyData[1];
           }
         });
 
-        proxyData[0][0].toHuman().forEach((account: any) => {
+        proxyData[0].forEach((account: any) => {
           const newProxy: NoID<ProxyAccount> = {
             chainId,
             proxiedAccountId,
@@ -199,15 +197,13 @@ async function getProxies({
           }
 
           if (needToAddProxyAccount) {
-            deposits.deposits[proxiedAccountId] = proxyData[0][1].toHuman();
+            deposits.deposits[proxiedAccountId] = proxyData[1];
           }
         });
       } catch (e) {
         console.log(`proxy-worker ${api.genesisHash}: proxy error`, e);
       }
     });
-
-    await Promise.all(proxiesRequests);
   } catch (e) {
     console.log(`proxy-worker ${api.genesisHash}: error in getProxies`, e);
   }

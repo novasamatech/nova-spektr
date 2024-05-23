@@ -3,7 +3,7 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useGate, useUnit } from 'effector-react';
 
 import { ValidationErrors } from '@shared/lib/utils';
-import { useTransaction } from '@entities/transaction';
+import { transactionService, useTransaction } from '@entities/transaction';
 import { useI18n } from '@app/providers';
 import { Button, ConfirmModal, Countdown, FootnoteText, SmallTitleText, StatusModal } from '@shared/ui';
 import { walletConnectModel, DEFAULT_POLKADOT_METHODS, walletConnectUtils } from '@entities/walletConnect';
@@ -13,11 +13,11 @@ import wallet_connect_confirm from '@shared/assets/video/wallet_connect_confirm.
 import wallet_connect_confirm_webm from '@shared/assets/video/wallet_connect_confirm.webm';
 import { HexString } from '@shared/core';
 import { Animation } from '@shared/ui/Animation/Animation';
-import { walletModel } from '@entities/wallet';
 import { InnerSigningProps } from '../lib/types';
 import { signWcModel } from '../model/sign-wc-model';
 import { operationSignModel } from '../model/operation-sign-model';
 import { operationSignUtils } from '../lib/operation-sign-utils';
+import { walletModel, walletUtils } from '@entities/wallet';
 
 export const WalletConnect = ({
   api,
@@ -29,16 +29,16 @@ export const WalletConnect = ({
   onResult,
 }: InnerSigningProps) => {
   const { t } = useI18n();
-  const { verifySignature, createPayload } = useTransaction();
+  const { verifySignature } = useTransaction();
   const [countdown, resetCountdown] = useCountdown(api);
 
+  const wallets = useUnit(walletModel.$wallets);
   const session = useUnit(walletConnectModel.$session);
   const client = useUnit(walletConnectModel.$client);
   const reconnectStep = useUnit(signWcModel.$reconnectStep);
   const isSigningRejected = useUnit(signWcModel.$isSigningRejected);
   const signature = useUnit(signWcModel.$signature);
   const isStatusShown = useUnit(signWcModel.$isStatusShown);
-  const storedAccounts = useUnit(walletModel.$accounts);
 
   const chains = chainsService.getChainsData();
 
@@ -55,8 +55,7 @@ export const WalletConnect = ({
     if (txPayload || !client) return;
 
     const sessions = client.session.getAll();
-    const storedAccount = storedAccounts.find((a) => a.walletId === account.walletId);
-
+    const storedAccount = walletUtils.getAccountsBy(wallets, (a) => a.walletId === account.walletId)[0];
     const storedSession = sessions.find((s) => s.topic === storedAccount?.signingExtras?.sessionTopic);
 
     if (storedSession) {
@@ -88,7 +87,7 @@ export const WalletConnect = ({
 
   const setupTransaction = async (): Promise<void> => {
     try {
-      const { payload, unsigned } = await createPayload(transaction, api);
+      const { payload, unsigned } = await transactionService.createPayload(transaction, api);
 
       setTxPayload(payload);
       setUnsignedTx(unsigned);
@@ -135,8 +134,8 @@ export const WalletConnect = ({
 
     if (isVerified && balanceValidationError) {
       setValidationError(balanceValidationError || ValidationErrors.INVALID_SIGNATURE);
-    } else if (unsignedTx) {
-      onResult([signature], [unsignedTx]);
+    } else if (txPayload) {
+      onResult([signature], [txPayload]);
     }
   };
 

@@ -1,8 +1,8 @@
 import { createEvent, combine, restore } from 'effector';
 
-import { Chain, Account, ProxyType, Address, ProxiedAccount } from '@shared/core';
+import type { Chain, Address, ProxiedAccount, Account, Transaction } from '@shared/core';
+import { ProxyType } from '@shared/core';
 import { networkModel } from '@entities/network';
-import { Transaction } from '@entities/transaction';
 import { walletModel, walletUtils } from '@entities/wallet';
 
 type Input = {
@@ -30,8 +30,9 @@ const $api = combine(
     store: $confirmStore,
   },
   ({ apis, store }) => {
-    return store ? apis[store.chain.chainId] : null;
+    return store?.chain ? apis[store.chain.chainId] : undefined;
   },
+  { skipVoid: false },
 );
 
 const $initiatorWallet = combine(

@@ -9,26 +9,28 @@ import { networkModel } from '@entities/network';
 import { validatorsService } from '@entities/staking';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { Account } from '@shared/core';
+import { validatorsModel } from '@features/staking';
+import {
+  MultisigTxWrapper,
+  ProxyTxWrapper,
+  WrapperKind,
+  type Account,
+  type BasketTransaction,
+  type Transaction,
+  type TxWrapper,
+} from '@shared/core';
 import { Step, NominateData, WalletData, FeeData } from '../lib/types';
 import { nominateUtils } from '../lib/nominate-utils';
 import { formModel } from './form-model';
-import { validatorsModel } from './validators-model';
 import { confirmModel } from './confirm-model';
-import {
-  TxWrapper,
-  Transaction,
-  transactionBuilder,
-  transactionService,
-  WrapperKind,
-  MultisigTxWrapper,
-  ProxyTxWrapper,
-} from '@entities/transaction';
+import { transactionBuilder, transactionService } from '@entities/transaction';
+import { basketModel } from '@entities/basket/model/basket-model';
 
 const stepChanged = createEvent<Step>();
 
 const flowStarted = createEvent<WalletData>();
 const flowFinished = createEvent();
+const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
@@ -67,9 +69,7 @@ const $api = combine(
     walletData: $walletData,
   },
   ({ apis, walletData }) => {
-    if (!walletData) return undefined;
-
-    return apis[walletData.chain.chainId];
+    return walletData ? apis[walletData.chain.chainId] : undefined;
   },
   { skipVoid: false },
 );
@@ -118,10 +118,9 @@ sample({
   source: {
     walletData: $walletData,
     wallets: walletModel.$wallets,
-    accounts: walletModel.$accounts,
   },
   filter: ({ walletData }) => Boolean(walletData),
-  fn: ({ walletData, wallets, accounts }, data) => {
+  fn: ({ walletData, wallets }, data) => {
     const signatories = 'signatory' in data && data.signatory ? [data.signatory] : [];
 
     return nominateUtils.getTxWrappers({
@@ -129,7 +128,6 @@ sample({
       wallet: walletData!.wallet,
       wallets,
       account: walletData!.shards[0],
-      accounts,
       signatories,
     });
   },
@@ -159,9 +157,14 @@ sample({
 
 sample({
   clock: [$maxValidators.updates, formModel.output.formChanged, validatorsModel.output.formSubmitted],
-  source: $nominateData,
-  filter: (nominateData, data) => Boolean(nominateData) || typeof data !== 'number',
-  fn: (nominateData, data) => {
+  source: {
+    step: $step,
+    nominateData: $nominateData,
+  },
+  filter: ({ step, nominateData }, data) => {
+    return (!nominateUtils.isNoneStep(step) && Boolean(nominateData)) || typeof data !== 'number';
+  },
+  fn: ({ nominateData }, data) => {
     if (typeof data === 'number') {
       return { ...(nominateData || ({} as NominateData)), validators: Array(data).fill({ address: TEST_ADDRESS }) };
     }
@@ -354,7 +357,8 @@ sample({
       account: nominateFlowData.nominateData!.shards[0],
       signatory: nominateFlowData.nominateData!.signatory,
       description: nominateFlowData.nominateData!.description,
-      transactions: nominateFlowData.transactions!.map((tx) => tx.coreTx),
+      coreTxs: nominateFlowData.transactions!.map((tx) => tx.coreTx),
+      wrappedTxs: nominateFlowData.transactions!.map((tx) => tx.wrappedTx),
       multisigTxs: nominateFlowData.transactions!.map((tx) => tx.multisigTx).filter(nonNullable),
     },
     step: Step.SUBMIT,
@@ -367,6 +371,8 @@ sample({
 
 sample({
   clock: delay(submitModel.output.formSubmitted, 2000),
+  source: $step,
+  filter: (step) => nominateUtils.isSubmitStep(step),
   target: flowFinished,
 });
 
@@ -376,12 +382,47 @@ sample({
   target: [stepChanged, formModel.events.formCleared, validatorsModel.events.formCleared],
 });
 
+sample({
+  clock: txSaved,
+  source: {
+    store: $walletData,
+    coreTxs: $pureTxs,
+    txWrappers: $txWrappers,
+  },
+  filter: ({ store, coreTxs, txWrappers }: any) => {
+    return Boolean(store) && Boolean(coreTxs) && Boolean(txWrappers);
+  },
+  fn: ({ store, coreTxs, txWrappers }) => {
+    const txs = coreTxs!.map(
+      (coreTx) =>
+        ({
+          initiatorWallet: store!.wallet.id,
+          coreTx,
+          txWrappers,
+          groupId: Date.now(),
+        } as BasketTransaction),
+    );
+
+    return txs;
+  },
+  target: basketModel.events.transactionsCreated,
+});
+
+sample({
+  clock: txSaved,
+  fn: () => Step.NONE,
+  target: [stepChanged, formModel.events.formCleared],
+});
+
 export const nominateModel = {
   $step,
   $walletData,
+  $initiatorWallet: $walletData.map((data) => data?.wallet),
+
   events: {
     flowStarted,
     stepChanged,
+    txSaved,
   },
   output: {
     flowFinished,

@@ -4,24 +4,23 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { ExtendedChain } from '@entities/network';
-import { MultisigEvent, SigningStatus } from '@entities/transaction/model/transaction';
-import { TransactionTitle } from './TransactionTitle/TransactionTitle';
+import { MultisigEvent, SigningStatus } from '@shared/core';
 import OperationStatus from './OperationStatus';
-import { getSignatoryName, getTransactionAmount } from '../common/utils';
+import { getSignatoryName } from '../common/utils';
 import { BaseModal, BodyText, FootnoteText, Identicon, ContextMenu, ExplorerLink, IconButton } from '@shared/ui';
 import { getAssetById, SS58_DEFAULT_PREFIX, toAddress, getExtrinsicExplorer, sortByDateAsc } from '@shared/lib/utils';
 import { useMultisigEvent } from '@entities/multisig';
 import { MultisigTransactionDS } from '@shared/api/storage';
 import { AssetBalance } from '@entities/asset';
-import type { Account, Contact, MultisigAccount, Wallet, AccountId, WalletsMap } from '@shared/core';
+import type { Contact, MultisigAccount, Wallet, AccountId, WalletsMap, Account } from '@shared/core';
 import { WalletIcon, walletModel, walletUtils } from '@entities/wallet';
 import { chainsService } from '@shared/api/network';
+import { TransactionTitle, getTransactionAmount } from '@entities/transaction';
 
 type Props = {
   tx: MultisigTransactionDS;
   account?: MultisigAccount;
   connection?: ExtendedChain;
-  accounts: Account[];
   contacts: Contact[];
   isOpen: boolean;
   onClose: () => void;
@@ -37,11 +36,7 @@ const EventMessage: Partial<Record<SigningStatus | 'INITIATED', string>> = {
 
 const getFilteredWalletsMap = (wallets: Wallet[]): WalletsMap => {
   return wallets.reduce<WalletsMap>((acc, wallet) => {
-    if (
-      walletUtils.isValidSignatory(wallet) ||
-      walletUtils.isPolkadotVault(wallet) ||
-      walletUtils.isMultiShard(wallet)
-    ) {
+    if (walletUtils.isValidSignSignatory(wallet)) {
       acc[wallet.id] = wallet;
     }
 
@@ -49,20 +44,24 @@ const getFilteredWalletsMap = (wallets: Wallet[]): WalletsMap => {
   }, {});
 };
 
-const getFilteredAccountsMap = (accounts: Account[], walletsMap: WalletsMap) =>
-  accounts.reduce<Record<AccountId, Account>>((acc, account) => {
-    if (walletsMap[account.walletId]) {
+const getFilteredAccountsMap = (walletsMap: WalletsMap) => {
+  return Object.values(walletsMap).reduce<Record<AccountId, Account>>((acc, wallet) => {
+    wallet.accounts.forEach((account) => {
       acc[account.accountId] = account;
-    }
+    });
 
     return acc;
   }, {});
+};
 
-const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts }: Props) => {
+const LogModal = ({ isOpen, onClose, tx, account, connection, contacts }: Props) => {
   const { t, dateLocale } = useI18n();
+
+  const wallets = useUnit(walletModel.$wallets);
+
   const { getLiveTxEvents } = useMultisigEvent({});
-  const filteredWalletsMap = getFilteredWalletsMap(useUnit(walletModel.$wallets));
-  const filteredAccountMap = getFilteredAccountsMap(accounts, filteredWalletsMap);
+  const filteredWalletsMap = getFilteredWalletsMap(wallets);
+  const filteredAccountMap = getFilteredAccountsMap(filteredWalletsMap);
   const events = getLiveTxEvents(tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated);
 
   const { transaction, description, status } = tx;
@@ -86,7 +85,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts
       event.accountId,
       tx.signatories,
       contacts,
-      accounts,
+      wallets,
       connection?.addressPrefix,
     );
     const eventType = isCreatedEvent ? 'INITIATED' : event.status;

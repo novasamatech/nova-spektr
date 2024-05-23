@@ -7,8 +7,7 @@ import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { storageService } from '@shared/api/storage';
 import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
-import { Transaction } from '@entities/transaction';
-import { Account, ConnectionStatus, ProxyType } from '@shared/core';
+import { BaseAccount, ConnectionStatus, ProxyType, Transaction } from '@shared/core';
 import { Step } from '../../lib/types';
 import { formModel } from '../form-model';
 import { confirmModel } from '../confirm-model';
@@ -55,7 +54,7 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
         },
         formData: {
           chain: testChain,
-          account: { accountId: '0x00' } as unknown as Account,
+          account: { accountId: '0x00' } as unknown as BaseAccount,
           delegate: '0x00',
           proxyType: ProxyType.ANY,
           description: '',

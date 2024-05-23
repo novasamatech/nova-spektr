@@ -5,18 +5,20 @@ import { useModalClose } from '@shared/lib/hooks';
 import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
 import { OperationSign, OperationSubmit } from '@features/operations';
+import { Validators } from '@features/staking';
 import { BondForm } from './BondForm';
-import { Validators } from './Validators';
 import { Confirmation } from './Confirmation';
 import { bondUtils } from '../lib/bond-utils';
 import { bondNominateModel } from '../model/bond-nominate-model';
 import { Step } from '../lib/types';
+import { AddToBasketButton } from '@features/operations/OperationsConfirm';
 
 export const BondNominate = () => {
   const { t } = useI18n();
 
   const step = useUnit(bondNominateModel.$step);
   const walletData = useUnit(bondNominateModel.$walletData);
+  const initiatorWallet = useUnit(bondNominateModel.$initiatorWallet);
 
   const [isModalOpen, closeModal] = useModalClose(!bondUtils.isNoneStep(step), bondNominateModel.output.flowFinished);
 
@@ -43,7 +45,12 @@ export const BondNominate = () => {
         <Validators onGoBack={() => bondNominateModel.events.stepChanged(Step.INIT)} />
       )}
       {bondUtils.isConfirmStep(step) && (
-        <Confirmation onGoBack={() => bondNominateModel.events.stepChanged(Step.VALIDATORS)} />
+        <Confirmation
+          secondaryActionButton={
+            <AddToBasketButton wallet={initiatorWallet} onTxSaved={() => bondNominateModel.events.txSaved()} />
+          }
+          onGoBack={() => bondNominateModel.events.stepChanged(Step.VALIDATORS)}
+        />
       )}
       {bondUtils.isSignStep(step) && (
         <OperationSign onGoBack={() => bondNominateModel.events.stepChanged(Step.CONFIRM)} />

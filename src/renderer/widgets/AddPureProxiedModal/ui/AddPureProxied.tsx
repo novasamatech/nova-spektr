@@ -11,16 +11,18 @@ import { AddPureProxiedForm } from './AddPureProxiedForm';
 import { Confirm } from './Confirm';
 import { addPureProxiedUtils } from '../lib/add-pure-proxied-utils';
 import { addPureProxiedModel } from '../model/add-pure-proxied-model';
+import { AddToBasketButton } from '@features/operations/OperationsConfirm';
 
 export const AddPureProxied = () => {
   const { t } = useI18n();
 
   const step = useUnit(addPureProxiedModel.$step);
   const chain = useUnit(addPureProxiedModel.$chain);
+  const initiatorWallet = useUnit(addPureProxiedModel.$initiatorWallet);
 
   const [isModalOpen, closeModal] = useModalClose(
     !addPureProxiedUtils.isNoneStep(step),
-    addPureProxiedModel.outputs.flowFinished,
+    addPureProxiedModel.output.flowFinished,
   );
 
   const getModalTitle = (step: Step, chain?: Chain) => {
@@ -35,7 +37,12 @@ export const AddPureProxied = () => {
     <BaseModal closeButton contentClass="" isOpen={isModalOpen} title={getModalTitle(step, chain)} onClose={closeModal}>
       {addPureProxiedUtils.isInitStep(step) && <AddPureProxiedForm onGoBack={closeModal} />}
       {addPureProxiedUtils.isConfirmStep(step) && (
-        <Confirm onGoBack={() => addPureProxiedModel.events.stepChanged(Step.INIT)} />
+        <Confirm
+          secondaryActionButton={
+            <AddToBasketButton wallet={initiatorWallet} onTxSaved={addPureProxiedModel.events.txSaved} />
+          }
+          onGoBack={() => addPureProxiedModel.events.stepChanged(Step.INIT)}
+        />
       )}
       {addPureProxiedUtils.isSignStep(step) && (
         <OperationSign onGoBack={() => addPureProxiedModel.events.stepChanged(Step.CONFIRM)} />

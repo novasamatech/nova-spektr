@@ -10,13 +10,13 @@ import { ExtendedChain, networkUtils, networkModel } from '@entities/network';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { AssetBalance } from '@entities/asset';
 import { ChainTitle } from '@entities/chain';
-import type { Address, MultisigAccount, Validator } from '@shared/core';
+import type { Address, MultisigAccount, Validator, MultisigTransaction, Transaction } from '@shared/core';
+import { TransactionType } from '@shared/core';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
 import { useValidatorsMap, ValidatorsModal } from '@entities/staking';
 import { singnatoryUtils } from '@entities/signatory';
 import { chainsService } from '@shared/api/network';
 import { proxyUtils } from '@entities/proxy';
-import { matrixModel } from '@entities/matrix';
 import {
   getMultisigExtrinsicLink,
   getDestination,
@@ -27,9 +27,6 @@ import {
   getSender,
 } from '../common/utils';
 import {
-  MultisigTransaction,
-  Transaction,
-  TransactionType,
   isAddProxyTransaction,
   isManageProxyTransaction,
   isRemoveProxyTransaction,
@@ -45,11 +42,9 @@ type Props = {
 
 export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const { t } = useI18n();
-  const matrix = useUnit(matrixModel.$matrix);
 
   const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);
-  const accounts = useUnit(walletModel.$accounts);
   const chains = useUnit(networkModel.$chains);
 
   const payee = getPayee(tx);
@@ -93,7 +88,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
 
   const valueClass = 'text-text-secondary';
   const depositorWallet =
-    depositorSignatory && singnatoryUtils.getSignatoryWallet(wallets, accounts, depositorSignatory.accountId);
+    depositorSignatory && singnatoryUtils.getSignatoryWallet(wallets, depositorSignatory.accountId);
 
   return (
     <dl className="flex flex-col gap-y-1 w-full">
@@ -315,7 +310,6 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
                   name={depositorSignatory.name}
                   addressFont={AddressStyle}
                   addressPrefix={addressPrefix}
-                  matrixId={matrix.userId}
                   wrapperClassName="-mr-2 min-w-min"
                   type="short"
                 />

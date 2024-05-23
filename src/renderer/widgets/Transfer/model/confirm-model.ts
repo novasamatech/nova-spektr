@@ -253,7 +253,6 @@ export const confirmModel = {
   $proxiedWallet,
   $signerWallet,
 
-  $api,
   $isXcm,
   events: {
     formInitiated,

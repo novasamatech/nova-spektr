@@ -1,18 +1,22 @@
-import { createEvent, createStore, sample, restore } from 'effector';
+import { createEvent, createStore, sample, restore, combine } from 'effector';
 import { spread, delay } from 'patronum';
 
-import { Transaction } from '@entities/transaction';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { Step, UnstakeStore, NetworkStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
 import { nonNullable, getRelaychainAsset } from '@shared/lib/utils';
+import { unstakeUtils } from '../lib/unstake-utils';
+import { BasketTransaction, Transaction } from '@shared/core';
+import { basketModel } from '@entities/basket';
+import { walletModel, walletUtils } from '@entities/wallet';
 
 const stepChanged = createEvent<Step>();
 
 const flowStarted = createEvent<NetworkStore>();
 const flowFinished = createEvent();
+const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
@@ -22,6 +26,19 @@ const $networkStore = restore<NetworkStore | null>(flowStarted, null);
 const $wrappedTxs = createStore<Transaction[] | null>(null);
 const $multisigTxs = createStore<Transaction[] | null>(null);
 const $coreTxs = createStore<Transaction[] | null>(null);
+
+const $initiatorWallet = combine(
+  {
+    store: $unstakeStore,
+    wallets: walletModel.$wallets,
+  },
+  ({ store, wallets }) => {
+    if (!store) return undefined;
+
+    return walletUtils.getWalletById(wallets, store.shards[0].walletId);
+  },
+  { skipVoid: false },
+);
 
 sample({ clock: stepChanged, target: $step });
 
@@ -103,10 +120,16 @@ sample({
     unstakeStore: $unstakeStore,
     networkStore: $networkStore,
     multisigTxs: $multisigTxs,
+    wrappedTxs: $wrappedTxs,
     coreTxs: $coreTxs,
   },
   filter: (transferData) => {
-    return Boolean(transferData.unstakeStore) && Boolean(transferData.coreTxs) && Boolean(transferData.networkStore);
+    return (
+      Boolean(transferData.unstakeStore) &&
+      Boolean(transferData.wrappedTxs) &&
+      Boolean(transferData.coreTxs) &&
+      Boolean(transferData.networkStore)
+    );
   },
   fn: (transferData, signParams) => ({
     event: {
@@ -115,7 +138,8 @@ sample({
       account: transferData.unstakeStore!.shards[0],
       signatory: transferData.unstakeStore!.signatory,
       description: transferData.unstakeStore!.description,
-      transactions: transferData.coreTxs!,
+      wrappedTxs: transferData.wrappedTxs!,
+      coreTxs: transferData.coreTxs!,
       multisigTxs: transferData.multisigTxs || [],
     },
     step: Step.SUBMIT,
@@ -128,6 +152,8 @@ sample({
 
 sample({
   clock: delay(submitModel.output.formSubmitted, 2000),
+  source: $step,
+  filter: (step) => unstakeUtils.isSubmitStep(step),
   target: flowFinished,
 });
 
@@ -137,12 +163,47 @@ sample({
   target: [stepChanged, formModel.events.formCleared],
 });
 
+sample({
+  clock: txSaved,
+  source: {
+    store: $unstakeStore,
+    coreTxs: $coreTxs,
+    txWrappers: formModel.$txWrappers,
+  },
+  filter: ({ store, coreTxs, txWrappers }: any) => {
+    return Boolean(store) && Boolean(coreTxs) && Boolean(txWrappers);
+  },
+  fn: ({ store, coreTxs, txWrappers }) => {
+    const txs = coreTxs!.map(
+      (coreTx) =>
+        ({
+          initiatorWallet: store!.shards[0].walletId,
+          coreTx,
+          txWrappers,
+          groupId: Date.now(),
+        } as BasketTransaction),
+    );
+
+    return txs;
+  },
+  target: basketModel.events.transactionsCreated,
+});
+
+sample({
+  clock: txSaved,
+  fn: () => Step.NONE,
+  target: [stepChanged, formModel.events.formCleared],
+});
+
 export const unstakeModel = {
   $step,
   $networkStore,
+  $initiatorWallet,
+
   events: {
     flowStarted,
     stepChanged,
+    txSaved,
   },
   output: {
     flowFinished,

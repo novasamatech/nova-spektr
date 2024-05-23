@@ -18,8 +18,7 @@ jest.mock('@entities/transaction', () => ({
   }),
 }));
 
-jest.mock('@entities/asset', () => ({
-  ...jest.requireActual('@entities/asset'),
+jest.mock('@entities/asset/ui', () => ({
   AssetBalance: ({ value }: any) => <div>{value}</div>,
 }));
 

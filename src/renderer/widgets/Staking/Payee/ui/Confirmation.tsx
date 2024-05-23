@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { ReactNode } from 'react';
 
 import { Button, DetailRow, FootnoteText, Icon, Tooltip, CaptionText } from '@shared/ui';
 import { useI18n } from '@app/providers';
@@ -13,13 +14,13 @@ import { FeeLoader } from '@entities/transaction';
 import { priceProviderModel } from '@entities/price';
 
 type Props = {
+  secondaryActionButton?: ReactNode;
+
   onGoBack: () => void;
 };
 
-export const Confirmation = ({ onGoBack }: Props) => {
+export const Confirmation = ({ onGoBack, secondaryActionButton }: Props) => {
   const { t } = useI18n();
-
-  const api = useUnit(confirmModel.$api);
 
   const confirmStore = useUnit(confirmModel.$confirmStore);
   const initiatorWallet = useUnit(confirmModel.$initiatorWallet);
@@ -28,13 +29,12 @@ export const Confirmation = ({ onGoBack }: Props) => {
 
   const feeData = useUnit(confirmModel.$feeData);
   const isFeeLoading = useUnit(confirmModel.$isFeeLoading);
-  const eraLength = useUnit(confirmModel.$eraLength);
 
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
 
-  if (!confirmStore || !api || !initiatorWallet || !eraLength) return null;
+  if (!confirmStore || !initiatorWallet) return null;
 
   return (
     <>
@@ -204,11 +204,15 @@ export const Confirmation = ({ onGoBack }: Props) => {
             {t('operation.goBackButton')}
           </Button>
 
-          <SignButton
-            disabled={isFeeLoading}
-            type={(signerWallet || initiatorWallet).type}
-            onClick={confirmModel.output.formSubmitted}
-          />
+          <div className="flex gap-4">
+            {secondaryActionButton}
+
+            <SignButton
+              disabled={isFeeLoading}
+              type={(signerWallet || initiatorWallet).type}
+              onClick={confirmModel.output.formSubmitted}
+            />
+          </div>
         </div>
       </div>
 

@@ -4,10 +4,10 @@ import { methods as ormlMethods } from '@substrate/txwrapper-orml';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import sortBy from 'lodash/sortBy';
 
-import { Transaction, TransactionType } from '@entities/transaction/model/transaction';
+import { Transaction, TransactionType, MultisigTxWrapper, ProxyTxWrapper } from '@shared/core';
 import { getMaxWeight, hasDestWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
 import * as xcmMethods from '@entities/transaction/lib/common/xcmMethods';
-import { DEFAULT_FEE_ASSET_ITEM, MultisigTxWrapper, ProxyTxWrapper } from '@entities/transaction';
+import { DEFAULT_FEE_ASSET_ITEM } from '@entities/transaction';
 import { toAddress } from '@shared/lib/utils';
 
 type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
@@ -376,11 +376,11 @@ export const getExtrinsic: Record<
   [TransactionType.ASSET_TRANSFER]: ({ dest, value, asset }, api) => api.tx.assets.transfer(asset, dest, value),
   [TransactionType.ORML_TRANSFER]: ({ dest, value, asset }, api) =>
     api.tx.currencies ? api.tx.currencies.transfer(dest, asset, value) : api.tx.tokens.transfer(dest, asset, value),
-  [TransactionType.MULTISIG_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, call, maxWeight }, api) => {
+  [TransactionType.MULTISIG_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, callData, maxWeight }, api) => {
     return isOldMultisigPallet(api)
       ? // @ts-ignore
-        api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, call, false, maxWeight)
-      : api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, call, maxWeight);
+        api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, callData, false, maxWeight)
+      : api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, callData, maxWeight);
   },
   [TransactionType.MULTISIG_APPROVE_AS_MULTI]: (
     { threshold, otherSignatories, maybeTimepoint, callHash, maxWeight },
@@ -470,7 +470,7 @@ export const wrapAsMulti = ({ api, addressPrefix, transaction, txWrapper }: Wrap
     console.log(`🟡 ${transaction.type} - not enough data to construct Extrinsic`);
   }
 
-  const otherSignatories = sortBy(txWrapper.signatories, 'accountId')
+  const otherSignatories = sortBy(txWrapper.multisigAccount.signatories, 'accountId')
     .filter(({ accountId }) => accountId !== txWrapper.signer.accountId)
     .map(({ accountId }) => toAddress(accountId, { prefix: addressPrefix }));
 

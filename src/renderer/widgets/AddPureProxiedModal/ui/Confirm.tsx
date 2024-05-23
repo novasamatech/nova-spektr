@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { ReactNode } from 'react';
 
 import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
 import { useI18n } from '@app/providers';
@@ -9,20 +10,19 @@ import { confirmModel } from '../model/confirm-model';
 import { SignButton } from '@entities/operations';
 
 type Props = {
+  secondaryActionButton?: ReactNode;
   onGoBack: () => void;
 };
 
-export const Confirm = ({ onGoBack }: Props) => {
+export const Confirm = ({ secondaryActionButton, onGoBack }: Props) => {
   const { t } = useI18n();
-
-  const api = useUnit(confirmModel.$api);
 
   const confirmStore = useUnit(confirmModel.$confirmStore);
   const initiatorWallet = useUnit(confirmModel.$initiatorWallet);
   const signerWallet = useUnit(confirmModel.$signerWallet);
   const proxiedWallet = useUnit(confirmModel.$proxiedWallet);
 
-  if (!confirmStore || !api || !initiatorWallet) return null;
+  if (!confirmStore || !initiatorWallet) return null;
 
   return (
     <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5">
@@ -142,7 +142,11 @@ export const Confirm = ({ onGoBack }: Props) => {
           {t('operation.goBackButton')}
         </Button>
 
-        <SignButton type={(signerWallet || initiatorWallet).type} onClick={confirmModel.output.formSubmitted} />
+        <div className="flex gap-4">
+          {secondaryActionButton}
+
+          <SignButton type={(signerWallet || initiatorWallet).type} onClick={confirmModel.output.formSubmitted} />
+        </div>
       </div>
     </div>
   );

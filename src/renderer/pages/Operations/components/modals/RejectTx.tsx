@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
-import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
-import keyBy from 'lodash/keyBy';
 
 import { BaseModal, Button } from '@shared/ui';
 import { useI18n } from '@app/providers';
@@ -10,7 +8,6 @@ import { MultisigTransactionDS } from '@shared/api/storage';
 import { useToggle } from '@shared/lib/hooks';
 import { ExtendedChain } from '@entities/network';
 import { toAddress, transferableAmount, getAssetById } from '@shared/lib/utils';
-import { getMultisigSignOperationTitle } from '../../common/utils';
 import RejectReasonModal from './RejectReasonModal';
 import { Submit } from '../ActionSteps/Submit';
 import { Confirmation } from '../ActionSteps/Confirmation';
@@ -18,15 +15,15 @@ import { SigningSwitch } from '@features/operations';
 import { OperationTitle } from '@entities/chain';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
-import type { Address, HexString, Timepoint, MultisigAccount, Account } from '@shared/core';
+import type { Address, HexString, Timepoint, MultisigAccount, Account, Transaction } from '@shared/core';
+import { TransactionType } from '@shared/core';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import {
-  Transaction,
-  TransactionType,
   OperationResult,
   validateBalance,
   isXcmTransaction,
   transactionService,
+  getMultisigSignOperationTitle,
 } from '@entities/transaction';
 
 type Props = {
@@ -45,9 +42,8 @@ const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 
 const RejectTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
-  const accounts = useUnit(walletModel.$accounts);
-  const wallets = keyBy(useUnit(walletModel.$wallets), 'id');
 
+  const wallets = useUnit(walletModel.$wallets);
   const balances = useUnit(balanceModel.$balances);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -57,7 +53,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
 
   const [rejectTx, setRejectTx] = useState<Transaction>();
-  const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
+  const [txPayload, setTxPayload] = useState<Uint8Array>();
 
   const [rejectReason, setRejectReason] = useState('');
   const [signature, setSignature] = useState<HexString>();
@@ -72,13 +68,10 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const nativeAsset = connection.assets[0];
   const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);
 
-  const signAccount = accounts.find((a) => {
-    const isDepositor = a.accountId === tx.depositor;
-    const wallet = wallets[a.walletId];
-    const isWatchOnly = walletUtils.isWatchOnly(wallet);
-
-    return isDepositor && wallet && !isWatchOnly;
-  });
+  const signAccount = walletUtils.getWalletFilteredAccounts(wallets, {
+    walletFn: (wallet) => !walletUtils.isWatchOnly(wallet),
+    accountFn: (account) => account.accountId === tx.depositor,
+  })?.accounts[0];
 
   const checkBalance = () =>
     validateBalance({
@@ -104,8 +97,8 @@ const RejectTx = ({ tx, account, connection }: Props) => {
     setActiveStep(AllSteps.indexOf(activeStep) - 1);
   };
 
-  const onSignResult = (signature: HexString[], unsigned: UnsignedTransaction[]) => {
-    setUnsignedTx(unsigned[0]);
+  const onSignResult = (signature: HexString[], payload: Uint8Array[]) => {
+    setTxPayload(payload[0]);
     setSignature(signature[0]);
     setIsModalOpen(false);
     setActiveStep(Step.SUBMIT);
@@ -175,7 +168,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
     }
   };
 
-  const isSubmitStep = activeStep === Step.SUBMIT && rejectTx && signAccount && signature && unsignedTx;
+  const isSubmitStep = activeStep === Step.SUBMIT && rejectTx && signAccount && signature && txPayload;
 
   return (
     <>
@@ -241,9 +234,8 @@ const RejectTx = ({ tx, account, connection }: Props) => {
           tx={rejectTx}
           api={connection.api}
           multisigTx={tx}
-          matrixRoomId={account.matrixRoomId}
           account={signAccount}
-          unsignedTx={unsignedTx}
+          txPayload={txPayload}
           signature={signature}
           rejectReason={rejectReason}
           onClose={handleClose}

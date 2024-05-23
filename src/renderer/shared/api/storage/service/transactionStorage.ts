@@ -1,6 +1,5 @@
-import { MultisigTransaction } from '@entities/transaction/model/transaction';
+import { MultisigTransaction, AccountId, CallHash, ChainId } from '@shared/core';
 import { MultisigTransactionDS, IMultisigTransactionStorage, TMultisigTransaction } from '../lib/types';
-import { AccountId, CallHash, ChainId } from '@shared/core';
 
 export const useTransactionStorage = (db: TMultisigTransaction): IMultisigTransactionStorage => ({
   getMultisigTx: (

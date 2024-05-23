@@ -3,8 +3,7 @@ import { allSettled, fork } from 'effector';
 import { confirmModel } from '../confirm-model';
 import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
-import { Account, Chain } from '@shared/core';
-import { Transaction } from '@entities/transaction';
+import { Account, Chain, Transaction } from '@shared/core';
 import { initiatorWallet, signerWallet, testApi } from './mock';
 
 describe('widgets/AddPureProxyModal/model/confirm-model', () => {
@@ -30,7 +29,6 @@ describe('widgets/AddPureProxyModal/model/confirm-model', () => {
 
     await allSettled(confirmModel.events.formInitiated, { scope, params: store });
 
-    expect(scope.getState(confirmModel.$api)).toEqual(testApi);
     expect(scope.getState(confirmModel.$confirmStore)).toEqual(store);
     expect(scope.getState(confirmModel.$initiatorWallet)).toEqual(initiatorWallet);
     expect(scope.getState(confirmModel.$signerWallet)).toEqual(signerWallet);
@@ -52,7 +50,6 @@ describe('widgets/AddPureProxyModal/model/confirm-model', () => {
 
     await allSettled(confirmModel.events.formInitiated, { scope, params: store });
 
-    expect(scope.getState(confirmModel.$api)).toEqual(testApi);
     expect(scope.getState(confirmModel.$confirmStore)).toEqual(store);
     expect(scope.getState(confirmModel.$initiatorWallet)).toEqual(initiatorWallet);
     expect(scope.getState(confirmModel.$signerWallet)).toEqual(initiatorWallet);
