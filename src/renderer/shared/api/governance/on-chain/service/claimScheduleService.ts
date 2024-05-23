@@ -315,16 +315,21 @@ function voteMaxLockDuration(vote: AccountVote, lockPeriod: BlockHeight): BlockH
 
 // Step 2
 function combineSameUnlockAt(claimableLocks: ClaimableLock[]): Record<string, ClaimableLock> {
-  const claimGroups = groupBy(claimableLocks, (lock) => lock.claimAt);
+  const claimGroups = groupBy(claimableLocks, (lock) => {
+    return onChainUtils.isClaimAt(lock.claimAt)
+      ? `${lock.claimAt.type}_${lock.claimAt.block || '0'}`
+      : lock.claimAt.type;
+  });
 
   return Object.entries(claimGroups).reduce<Record<string, ClaimableLock>>((acc, [claimAt, locks]) => {
-    acc[claimAt] = locks.reduce((acc, lock) => {
-      return {
+    acc[claimAt] = locks.reduce<ClaimableLock>(
+      (total, lock) => ({
         claimAt: lock.claimAt,
-        amount: BN.max(acc.amount, lock.amount),
-        affected: uniqWith(acc.affected.concat(lock.affected), isEqual),
-      };
-    }, {} as ClaimableLock);
+        amount: BN.max(total.amount, lock.amount),
+        affected: uniqWith(total.affected.concat(lock.affected), isEqual),
+      }),
+      { claimAt: { type: ClaimTimeType.Until }, amount: BN_ZERO, affected: [] },
+    );
 
     return acc;
   }, {});
@@ -373,7 +378,7 @@ function getUnlockChunks(locks: ClaimableLock[], currentBlockNumber: BlockHeight
   const chunks = locks.map((item) => toUnlockChunk(item, currentBlockNumber));
 
   const claimable = chunks.filter((chunk): chunk is ClaimableChunk => chunk.type === 'claimable');
-  const nonClaimable = chunks.filter((chunk): chunk is PendingChunk => chunk.type !== 'pending');
+  const nonClaimable = chunks.filter((chunk): chunk is PendingChunk => chunk.type === 'pending');
 
   // Fold all claimable chunks into a single one
   const claimableChunk = claimable.reduce<ClaimableChunk>(
