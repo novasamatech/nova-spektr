@@ -2,17 +2,17 @@ import { useUnit } from 'effector-react';
 import { Link } from 'react-router-dom';
 
 import { useI18n } from '@app/providers';
-import { Icon, Tooltip, Accordion, BodyText, Shimmering, FootnoteText, Plate, HelpText } from '@shared/ui';
-import { cnTw, totalAmount } from '@shared/lib/utils';
+import { Icon, Tooltip, Accordion, BodyText, FootnoteText, Plate, HelpText } from '@shared/ui';
+import { cnTw } from '@shared/lib/utils';
 import type { AssetByChains } from '@shared/core';
 import { Paths, createLink } from '@shared/routes';
 import { CheckPermission, OperationType, walletModel } from '@entities/wallet';
-import { priceProviderModel, AssetFiatBalance, TokenPrice } from '@entities/price';
-import { AssetBalance, AssetIcon } from '@entities/asset';
+import { TokenPrice } from '@entities/price';
+import { AssetIcon } from '@entities/asset';
 import { networkModel } from '@entities/network';
 import { ChainIcon } from '@entities/chain';
 import { NetworkCard } from './NetworkCard';
-import { AssetBalanceTooltip } from './AssetBalanceTooltip';
+import { AssembledAssetAmount } from './AssembledAssetAmount';
 
 type Props = {
   asset: AssetByChains;
@@ -21,7 +21,6 @@ type Props = {
 export const TokenBalanceList = ({ asset }: Props) => {
   const { t } = useI18n();
 
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const activeWallet = useUnit(walletModel.$activeWallet);
   const chains = useUnit(networkModel.$chains);
 
@@ -73,19 +72,7 @@ export const TokenBalanceList = ({ asset }: Props) => {
               className="text-text-primar text-right"
             />
             <div className="flex flex-col items-end w-[100px]">
-              {asset.totalBalance?.free ? (
-                <>
-                  <AssetBalanceTooltip asset={asset} balance={asset.totalBalance}>
-                    <AssetBalance value={totalAmount(asset.totalBalance)} asset={asset} showSymbol={false} />
-                  </AssetBalanceTooltip>
-                  <AssetFiatBalance amount={totalAmount(asset.totalBalance)} asset={asset} />
-                </>
-              ) : (
-                <div className="flex flex-col gap-y-1 items-end">
-                  <Shimmering width={82} height={20} />
-                  {fiatFlag && <Shimmering width={56} height={18} />}
-                </div>
-              )}
+              <AssembledAssetAmount asset={asset} balance={asset.totalBalance} />
             </div>
 
             <div className="flex gap-x-2 ml-3">
