@@ -20,6 +20,7 @@ import {
   KilledReferendum,
   Conviction,
 } from '@shared/core';
+import { ClaimTime, ClaimTimeAt, ClaimTimeType, ClaimTimeUntil } from './types';
 
 export const onChainUtils = {
   isCasting,
@@ -28,6 +29,9 @@ export const onChainUtils = {
   getLockPeriods,
 
   isStandardVote,
+
+  isClaimAt,
+  isClaimUntil,
 
   isOngoing,
   isRejected,
@@ -80,6 +84,16 @@ function isDelegating(voting: Voting): voting is DelegatingVoting {
 
 function isStandardVote(vote: AccountVote): vote is StandardVote {
   return vote.type === VoteType.Standard;
+}
+
+// Claim time types
+
+function isClaimAt(claim: ClaimTime): claim is ClaimTimeAt {
+  return claim.type === ClaimTimeType.At;
+}
+
+function isClaimUntil(claim: ClaimTime): claim is ClaimTimeUntil {
+  return claim.type === ClaimTimeType.Until;
 }
 
 // Referendum statuses
