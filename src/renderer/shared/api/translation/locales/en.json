@@ -60,6 +60,7 @@
     "assetsOnLabel": "Your assets on:",
     "availableNetworks": "{count} networks",
     "balance": "Balance",
+    "balanceTooltip": "Transferable: <amountFree /><br />Locked: <amountLocked /><br />Reserved: <amountReserved />",
     "chainCentric": "Chain-centric",
     "emptyStateDescription": "Update the search or cancel filtering",
     "emptyStateLabel": "Nothing was found",

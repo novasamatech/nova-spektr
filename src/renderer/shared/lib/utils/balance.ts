@@ -102,7 +102,7 @@ export const lockedAmount = ({ locked = [] }: Balance): string => {
   return bnFrozen.toString();
 };
 
-export const transferableAmount = (balance?: Balance): string => {
+export const transferableAmount = <T extends AssetBalance>(balance?: T): string => {
   if (!balance) return ZERO_BALANCE;
 
   const bnFree = new BN(balance.free || ZERO_BALANCE);

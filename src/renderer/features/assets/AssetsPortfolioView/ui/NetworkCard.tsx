@@ -9,6 +9,7 @@ import { ChainIcon } from '@entities/chain';
 import { AssetBalance, AssetLinks } from '@entities/asset';
 import { networkModel } from '@entities/network';
 import { AssetChain } from '../lib/types';
+import { AssetBalanceTooltip } from './AssetBalanceTooltip';
 
 type Props = {
   chain: AssetChain;
@@ -32,8 +33,10 @@ export const NetworkCard = ({ chain, asset }: Props) => {
         <div className="flex flex-col items-end">
           {chain.balance?.free ? (
             <>
-              <AssetBalance value={totalAmount(chain?.balance)} asset={asset} showSymbol={false} />
-              <AssetFiatBalance amount={totalAmount(chain?.balance)} asset={asset} />
+              <AssetBalanceTooltip asset={asset} balance={chain.balance}>
+                <AssetBalance value={totalAmount(chain.balance)} asset={asset} showSymbol={false} />
+              </AssetBalanceTooltip>
+              <AssetFiatBalance amount={totalAmount(chain.balance)} asset={asset} />
             </>
           ) : (
             <div className="flex flex-col gap-y-1 items-end">
