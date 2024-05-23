@@ -8,6 +8,7 @@ import { priceProviderModel, AssetFiatBalance, TokenPrice } from '@entities/pric
 import { AssetBalance, AssetIcon, AssetLinks } from '@entities/asset';
 import { networkModel } from '@entities/network';
 import { ChainIcon } from '@entities/chain';
+import { AssetBalanceTooltip } from './AssetBalanceTooltip';
 
 type Props = {
   asset: AssetByChains;
@@ -51,7 +52,9 @@ export const TokenBalance = ({ asset }: Props) => {
       <div className="flex flex-col items-end w-[100px]">
         {chain.balance?.free ? (
           <>
-            <AssetBalance value={totalAmount(chain.balance)} asset={asset} showSymbol={false} />
+            <AssetBalanceTooltip asset={asset} balance={chain.balance}>
+              <AssetBalance value={totalAmount(chain.balance)} asset={asset} showSymbol={false} />
+            </AssetBalanceTooltip>
             <AssetFiatBalance amount={totalAmount(chain.balance)} asset={asset} />
           </>
         ) : (

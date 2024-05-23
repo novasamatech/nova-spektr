@@ -12,6 +12,7 @@ import { AssetBalance, AssetIcon } from '@entities/asset';
 import { networkModel } from '@entities/network';
 import { ChainIcon } from '@entities/chain';
 import { NetworkCard } from './NetworkCard';
+import { AssetBalanceTooltip } from './AssetBalanceTooltip';
 
 type Props = {
   asset: AssetByChains;
@@ -74,7 +75,9 @@ export const TokenBalanceList = ({ asset }: Props) => {
             <div className="flex flex-col items-end w-[100px]">
               {asset.totalBalance?.free ? (
                 <>
-                  <AssetBalance value={totalAmount(asset.totalBalance)} asset={asset} showSymbol={false} />
+                  <AssetBalanceTooltip asset={asset} balance={asset.totalBalance}>
+                    <AssetBalance value={totalAmount(asset.totalBalance)} asset={asset} showSymbol={false} />
+                  </AssetBalanceTooltip>
                   <AssetFiatBalance amount={totalAmount(asset.totalBalance)} asset={asset} />
                 </>
               ) : (
