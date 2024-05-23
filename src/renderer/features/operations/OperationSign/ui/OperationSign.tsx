@@ -1,5 +1,4 @@
 import { useUnit } from 'effector-react';
-import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
 import type { HexString } from '@shared/core';
 import { SigningSwitch } from './SigningSwitch';
@@ -16,8 +15,8 @@ export const OperationSign = ({ onGoBack }: Props) => {
 
   if (!api || !signStore || !signerWallet) return null;
 
-  const onSignResult = (signatures: HexString[], unsignedTxs: UnsignedTransaction[]) => {
-    signModel.events.dataReceived({ signatures, unsignedTxs });
+  const onSignResult = (signatures: HexString[], txPayloads: Uint8Array[]) => {
+    signModel.events.dataReceived({ signatures, txPayloads });
   };
 
   return (

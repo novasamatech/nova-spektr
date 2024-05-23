@@ -74,6 +74,13 @@
   "basemodal": {
     "closeButton": "Close modal window"
   },
+  "basket": {
+    "noOperationsDescription": "There are no operations in the basket yet",
+    "noOperationsLabel": "No operations",
+    "searchPlaceholder": "Search",
+    "selectAll": "Select all",
+    "title": "Basket"
+  },
   "createMultisigAccount": {
     "noOwnSignatory": "You need at least one owned account as part of the signatories",
     "accountsTab": "Accounts",
@@ -269,6 +276,7 @@
   "navigation": {
     "addressBookLabel": "Address Book",
     "balancesLabel": "Portfolio",
+    "basketLabel": "Basket",
     "governance": "Governance",
     "historyLabel": "History",
     "mstOperationLabel": "Operations",
@@ -479,6 +487,7 @@
       "placeholder": "Reason...",
       "title": "Enter reject reason"
     },
+    "saveToBasket": "Save to basket",
     "selectAccount": "Select account",
     "selectAccountLabel": "Account",
     "selectSignatory": "Select signatory",

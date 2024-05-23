@@ -10,12 +10,14 @@ import { Confirmation } from './Confirmation';
 import { bondExtraUtils } from '../lib/bond-extra-utils';
 import { bondExtraModel } from '../model/bond-extra-model';
 import { Step } from '../lib/types';
+import { AddToBasketButton } from '@features/operations/OperationsConfirm';
 
 export const BondExtra = () => {
   const { t } = useI18n();
 
   const step = useUnit(bondExtraModel.$step);
   const walletData = useUnit(bondExtraModel.$walletData);
+  const initiatorWallet = useUnit(bondExtraModel.$initiatorWallet);
 
   const [isModalOpen, closeModal] = useModalClose(!bondExtraUtils.isNoneStep(step), bondExtraModel.output.flowFinished);
 
@@ -39,7 +41,12 @@ export const BondExtra = () => {
     >
       {bondExtraUtils.isInitStep(step) && <BondForm onGoBack={closeModal} />}
       {bondExtraUtils.isConfirmStep(step) && (
-        <Confirmation onGoBack={() => bondExtraModel.events.stepChanged(Step.INIT)} />
+        <Confirmation
+          secondaryActionButton={
+            <AddToBasketButton wallet={initiatorWallet} onTxSaved={() => bondExtraModel.events.txSaved()} />
+          }
+          onGoBack={() => bondExtraModel.events.stepChanged(Step.INIT)}
+        />
       )}
       {bondExtraUtils.isSignStep(step) && (
         <OperationSign onGoBack={() => bondExtraModel.events.stepChanged(Step.CONFIRM)} />

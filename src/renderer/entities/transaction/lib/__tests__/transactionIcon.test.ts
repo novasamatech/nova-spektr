@@ -1,6 +1,6 @@
 import { TEST_ADDRESS } from '@shared/lib/utils';
 import { getIconName } from '../transactionIcon';
-import { TransactionType } from '../../model/transaction';
+import { TransactionType } from '@shared/core';
 
 describe('entities/transaction/lib/transactionIcon', () => {
   test('should get transfer icon for transfer transaction', () => {

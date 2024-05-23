@@ -1,8 +1,7 @@
 import { createEvent, combine, restore } from 'effector';
 
-import { Account, AccountId, Chain, ProxiedAccount, ProxyType } from '@shared/core';
+import { Account, AccountId, Chain, ProxiedAccount, ProxyType, Transaction } from '@shared/core';
 import { networkModel } from '@entities/network';
-import { Transaction } from '@entities/transaction';
 import { walletModel, walletUtils } from '@entities/wallet';
 
 type Input = {

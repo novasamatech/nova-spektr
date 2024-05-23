@@ -4,7 +4,7 @@ import { useI18n } from '@app/providers';
 import { MultisigTransactionDS } from '@shared/api/storage';
 import { DropdownOption, DropdownResult } from '@shared/ui/types';
 import { Button, MultiSelect } from '@shared/ui';
-import { MultisigTransaction, Transaction, TransactionType } from '@entities/transaction/model/transaction';
+import { MultisigTransaction, Transaction, TransactionType } from '@shared/core';
 import { TransferTypes, XcmTypes } from '@entities/transaction/lib/common/constants';
 import { getStatusOptions, getTransactionOptions } from '../lib/utils';
 import { UNKNOWN_TYPE } from '../lib/constants';
