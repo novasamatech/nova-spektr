@@ -59,7 +59,7 @@ function estimateClaimSchedule({
   votingByTrack,
   undecidingTimeout,
   voteLockingPeriod,
-}: ClaimParams): any {
+}: ClaimParams): UnlockChunk[] {
   // step 1 - determine/estimate individual unlocks for all priors and votes
   // result example: [(1500, 1 KSM), (1200, 2 KSM), (1000, 1 KSM)]
   const claimableLocks = individualClaimableLocks(
@@ -81,11 +81,7 @@ function estimateClaimSchedule({
   const unlockSchedule = constructUnlockSchedule(maxUnlockedByTime);
 
   // step 4 - convert locks affects to claim actions
-  const chunks = getUnlockChunks(unlockSchedule, currentBlockNumber);
-  console.log('=== chunks', chunks);
-
-  // return ClaimSchedule(chunks);
-  return 1;
+  return getUnlockChunks(unlockSchedule, currentBlockNumber);
 }
 
 // Step 1
@@ -144,7 +140,7 @@ type GapLockParams = {
 function gapClaimableLock({ trackId, voting, gap, currentBlockNumber }: GapLockParams): ClaimableLock[] {
   const trackGap = gap[trackId] || BN_ZERO;
 
-  if (trackGap.isNeg()) return [];
+  if (trackGap.isZero()) return [];
 
   return [
     {
@@ -194,7 +190,7 @@ function castingClaimableLocks(
     } as ClaimableLock;
   });
 
-  return priorLock.amount.isNeg() ? standardVoteLocks : [priorLock, ...standardVoteLocks];
+  return priorLock.amount.isZero() ? standardVoteLocks : [priorLock, ...standardVoteLocks];
 }
 
 function delegatingClaimableLocks(trackId: TrackId, voting: Voting): ClaimableLock[] {
@@ -352,7 +348,7 @@ function constructUnlockSchedule(maxUnlockedByTime: Record<string, ClaimableLock
       currentMaxLockAt = claimAt;
     }
 
-    if (unlockedAmount.isNeg()) {
+    if (unlockedAmount.isZero()) {
       // this lock is completely shadowed by later (in time) lock with greater value
       delete result[claimAt];
 
@@ -390,7 +386,7 @@ function getUnlockChunks(locks: ClaimableLock[], currentBlockNumber: BlockHeight
     { type: 'claimable', amount: BN_ZERO, actions: [] },
   );
 
-  return claimableChunk.amount.isNeg() ? nonClaimable : [claimableChunk, ...nonClaimable];
+  return claimableChunk.amount.isZero() ? nonClaimable : [claimableChunk, ...nonClaimable];
 }
 
 function toUnlockChunk(lock: ClaimableLock, currentBlockNumber: BlockHeight): UnlockChunk {

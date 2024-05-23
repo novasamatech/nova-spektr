@@ -20,7 +20,7 @@ describe('shared/api/governance/claimScheduleService', () => {
       currentBlockNumber: 0,
     });
 
-    expect(result).toEqual(1);
+    expect(result).toEqual([]);
   });
 
   test('should handle single claimable', () => {
