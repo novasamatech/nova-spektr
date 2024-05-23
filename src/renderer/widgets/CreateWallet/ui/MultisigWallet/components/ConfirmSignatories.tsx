@@ -1,10 +1,12 @@
 import { cnTw, RootExplorers } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
-import { FootnoteText, SmallTitleText } from '@shared/ui';
+import { Button, FootnoteText, SmallTitleText } from '@shared/ui';
 import { ExtendedWallet, ExtendedContact, ExtendedAccount } from '../common/types';
 import { WalletItem } from './WalletItem';
 import { ContactItem, ExplorersPopover } from '@entities/wallet';
 import { Chain, WalletType } from '@shared/core';
+import { flowModel } from '../../../model/create-multisig-flow-model';
+import { Step } from '../../../lib/types';
 
 type Props = {
   wallets?: ExtendedWallet[];
@@ -37,7 +39,6 @@ export const ConfirmSignatories = ({ chain, wallets = [], accounts = [], contact
             </ul>
           </>
         )}
-
         {accounts.length > 0 && (
           <>
             <FootnoteText className="text-text-tertiary">
@@ -56,7 +57,6 @@ export const ConfirmSignatories = ({ chain, wallets = [], accounts = [], contact
             </ul>
           </>
         )}
-
         {contacts.length > 0 && (
           <>
             <FootnoteText className="text-text-tertiary">
@@ -75,6 +75,14 @@ export const ConfirmSignatories = ({ chain, wallets = [], accounts = [], contact
             </ul>
           </>
         )}
+        <div className="flex justify-between items-center mt-auto">
+          <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.INIT)}>
+            {t('createMultisigAccount.backButton')}
+          </Button>
+          <Button key="continue" onClick={() => flowModel.events.stepChanged(Step.SIGN)}>
+            {t('createMultisigAccount.continueButton')}
+          </Button>
+        </div>
       </div>
     </div>
   );

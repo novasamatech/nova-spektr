@@ -7,16 +7,16 @@ import { BaseModal, HeaderTitleText, Button, IconButton } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { OperationResult } from '@entities/transaction';
-import { ConfirmSignatories, WalletForm } from './components';
-import { contactModel } from '@entities/contact';
-import { DEFAULT_TRANSITION, dictionary } from '@shared/lib/utils';
+import { ConfirmSignatories, NameThreshold } from './components';
+import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { flowModel } from '../../model/create-multisig-flow-model';
-import { SelectSignatories } from './components/SelectAccountSignatories';
-import { walletModel } from '@entities/wallet';
+// import { SelectSignatories } from './components/SelectAccountSignatories';
+// import { walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { createMultisigUtils } from '../../lib/create-multisig-utils';
-import { Step } from '../../lib/types';
+// import { Step } from '../../lib/types';
 import { formModel } from '../../model/create-multisig-form-model';
+import { SelectSignatoriesForm } from './components/SelectSignatoriesForm';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -30,9 +30,9 @@ type Props = {
 export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
 
-  const accounts = useUnit(formModel.$availableAccounts);
-  const wallets = useUnit(walletModel.$wallets);
-  const contacts = useUnit(contactModel.$contacts);
+  // const accounts = useUnit(formModel.$availableAccounts);
+  // const wallets = useUnit(walletModel.$wallets);
+  // const contacts = useUnit(contactModel.$contacts);
   const {
     fields: { chain },
   } = useForm(formModel.$createMultisigForm);
@@ -83,7 +83,7 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
   };
 
   const modalTitle = (
-    <div className="flex justify-between items-center px-5 py-3 w-[464px] bg-white rounded-tl-lg">
+    <div className="flex justify-between items-center px-5 py-3 w-[464px] bg-white rounded-tl-lg rounded-tr-lg">
       <HeaderTitleText className="py-[3px]">{t('createMultisigAccount.title')}</HeaderTitleText>
     </div>
   );
@@ -100,55 +100,37 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
         title={modalTitle}
         isOpen={isModalOpen && !isResultModalOpen}
         headerClass="bg-input-background-disabled"
-        panelClass="w-[944px] h-[576px]"
+        panelClass="w-[440px]"
         contentClass="flex h-[524px]"
         onClose={closeMultisigModal}
       >
-        {createMultisigUtils.isInitStep(activeStep) && (
-          <WalletForm
-            signatories={signatories}
-            // onGoBack={goToPrevStep}
-          />
-        )}
-
-        <section className="relative flex flex-col px-5 py-4 flex-1 bg-input-background-disabled h-full">
-          <IconButton
-            name="close"
-            size={20}
-            className="absolute right-3 -top-10 m-1"
-            onClick={() => closeMultisigModal()}
-          />
-
-          <SelectSignatories
-            isActive={activeStep === Step.INIT}
-            accounts={accounts}
-            wallets={dictionary(wallets, 'id')}
-            contacts={contacts}
-            chain={chains[chain.value]}
-            onSelect={(accounts, contacts) => {
-              formModel.events.accountSignatoriesChanged(accounts);
-              formModel.events.contactSignatoriesChanged(contacts);
-            }}
-          />
-
-          {createMultisigUtils.isConfirmStep(activeStep) && (
+        {createMultisigUtils.isInitStep(activeStep) && <SelectSignatoriesForm />}
+        {createMultisigUtils.isNameThresholdStep(activeStep) && <NameThreshold signatories={signatories} />}
+        {createMultisigUtils.isConfirmStep(activeStep) && (
+          <section className="relative flex flex-col px-5 py-4 flex-1 bg-input-background-disabled h-full">
             <ConfirmSignatories
               chain={chains[chain.value]}
               accounts={accountSignatories}
               contacts={contactSignatories}
             />
-          )}
-        </section>
-      </BaseModal>
+          </section>
+        )}
 
-      <OperationResult
-        {...getResultProps()}
-        title={t('createMultisigAccount.createionStatusTitle')}
-        isOpen={isModalOpen && isResultModalOpen}
-        onClose={() => closeMultisigModal({ complete: true })}
-      >
-        {error && <Button onClick={toggleResultModal}>{t('createMultisigAccount.closeButton')}</Button>}
-      </OperationResult>
+        <OperationResult
+          {...getResultProps()}
+          title={t('createMultisigAccount.createionStatusTitle')}
+          isOpen={isModalOpen && isResultModalOpen}
+          onClose={() => closeMultisigModal({ complete: true })}
+        >
+          {error && <Button onClick={toggleResultModal}>{t('createMultisigAccount.closeButton')}</Button>}
+        </OperationResult>
+        <IconButton
+          name="close"
+          size={20}
+          className="absolute right-3 -top-10 m-1"
+          onClick={() => closeMultisigModal()}
+        />
+      </BaseModal>
     </>
   );
 };

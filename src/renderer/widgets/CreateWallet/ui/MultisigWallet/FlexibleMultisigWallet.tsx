@@ -7,7 +7,7 @@ import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { OperationResult } from '@entities/transaction';
 import { ExtendedContact, ExtendedWallet } from './common/types';
-import { SelectSignatories, ConfirmSignatories, WalletForm } from './components';
+import { SelectSignatories, ConfirmSignatories, NameThreshold } from './components';
 import { contactModel } from '@entities/contact';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { walletModel } from '@entities/wallet';
@@ -106,7 +106,7 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
         contentClass="flex h-[524px]"
         onClose={closeMultisigModal}
       >
-        <WalletForm
+        <NameThreshold
           signatories={signatories}
           // onGoBack={goToPrevStep}
         />

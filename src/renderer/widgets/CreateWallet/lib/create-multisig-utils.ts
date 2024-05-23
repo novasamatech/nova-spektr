@@ -8,10 +8,15 @@ export const createMultisigUtils = {
   isConfirmStep,
   isInitStep,
   noSignatoryWallet,
+  isNameThresholdStep,
 };
 
 function isConfirmStep(step: Step) {
   return step === Step.CONFIRM;
+}
+
+function isNameThresholdStep(step: Step) {
+  return step === Step.NAMETHRESHOLD;
 }
 
 function isInitStep(step: Step) {
