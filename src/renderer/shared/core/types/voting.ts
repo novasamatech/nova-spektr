@@ -18,7 +18,7 @@ export interface CastingVoting extends Voting {
 export interface DelegatingVoting extends Voting {
   type: VotingType.DELEGATING;
   delegating: {
-    amount: BN;
+    balance: BN;
     target: Address;
     conviction: Conviction;
     prior: PriorLock;

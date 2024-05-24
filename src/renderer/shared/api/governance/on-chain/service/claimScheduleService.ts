@@ -1,10 +1,9 @@
 import { BN, BN_ZERO } from '@polkadot/util';
-import groupBy from 'lodash/groupBy';
 import uniqWith from 'lodash/uniqWith';
 import isEqual from 'lodash/isEqual';
 import orderBy from 'lodash/orderBy';
-import cloneDeep from 'lodash/cloneDeep';
 import sortBy from 'lodash/sortBy';
+import clone from 'lodash/clone';
 
 import { onChainUtils } from '../lib/on-chain-utils';
 import {
@@ -23,6 +22,7 @@ import {
   UnlockChunk,
   PendingChunk,
   ClaimableChunk,
+  ClaimTimeUntil,
 } from '../lib/types';
 import type {
   BlockHeight,
@@ -36,6 +36,7 @@ import type {
   TimedOutReferendum,
   OngoingReferendum,
   StandardVote,
+  DelegatingVoting,
 } from '@shared/core';
 
 export const claimScheduleService = {
@@ -81,7 +82,7 @@ function estimateClaimSchedule({
   const unlockSchedule = constructUnlockSchedule(maxUnlockedByTime);
 
   // step 4 - convert locks affects to claim actions
-  return getUnlockChunks(unlockSchedule, currentBlockNumber);
+  return toUnlockChunks(unlockSchedule, currentBlockNumber);
 }
 
 // Step 1
@@ -193,22 +194,20 @@ function castingClaimableLocks(
   return priorLock.amount.isZero() ? standardVoteLocks : [priorLock, ...standardVoteLocks];
 }
 
-function delegatingClaimableLocks(trackId: TrackId, voting: Voting): ClaimableLock[] {
-  // val delegationLock = ClaimableLock(
-  //   claimAt = ClaimTime.UntilAction,
-  //   amount = voting.amount,
-  //   affected = emptySet()
-  // )
-  // val priorLock = ClaimableLock(
-  //   claimAt = ClaimTime.At(voting.prior.unlockAt),
-  //   amount = voting.prior.amount,
-  //   affected = setOf(ClaimAffect.Track(trackId))
-  // )
-  //
-  // add(delegationLock)
-  // if (priorLock.reasonableToClaim()) add(priorLock)
+function delegatingClaimableLocks(trackId: TrackId, voting: DelegatingVoting): ClaimableLock[] {
+  const delegationLock = {
+    claimAt: { type: ClaimTimeType.Until } as ClaimTimeUntil,
+    amount: voting.delegating.balance,
+    affected: [],
+  } as ClaimableLock;
 
-  return [];
+  const priorLock = {
+    claimAt: { type: ClaimTimeType.At, block: voting.delegating.prior.unlockAt } as ClaimTimeAt,
+    amount: voting.delegating.prior.amount,
+    affected: [{ type: ClaimAffectType.Track, trackId } as AffectTrack],
+  } as ClaimableLock;
+
+  return priorLock.amount.isZero() ? [delegationLock] : [delegationLock, priorLock];
 }
 
 function maxConvictionEndOf(
@@ -314,15 +313,23 @@ function voteMaxLockDuration(vote: AccountVote, lockPeriod: BlockHeight): BlockH
 }
 
 // Step 2
-function combineSameUnlockAt(claimableLocks: ClaimableLock[]): Record<string, ClaimableLock> {
-  const claimGroups = groupBy(claimableLocks, (lock) => {
-    return onChainUtils.isClaimAt(lock.claimAt)
+function combineSameUnlockAt(claimableLocks: ClaimableLock[]): [ClaimTime, ClaimableLock][] {
+  const claimGroups = claimableLocks.reduce<Map<string, ClaimableLock[]>>((acc, lock) => {
+    const key = onChainUtils.isClaimAt(lock.claimAt)
       ? `${lock.claimAt.type}_${lock.claimAt.block || '0'}`
       : lock.claimAt.type;
-  });
 
-  return Object.entries(claimGroups).reduce<Record<string, ClaimableLock>>((acc, [claimAt, locks]) => {
-    acc[claimAt] = locks.reduce<ClaimableLock>(
+    if (acc.has(key)) {
+      acc.get(key)!.push(lock);
+    } else {
+      acc.set(key, [lock]);
+    }
+
+    return acc;
+  }, new Map());
+
+  return Array.from(claimGroups.entries()).reduce<[ClaimTime, ClaimableLock][]>((acc, [_, locks]) => {
+    const combinedLock = locks.reduce<ClaimableLock>(
       (total, lock) => ({
         claimAt: lock.claimAt,
         amount: BN.max(total.amount, lock.amount),
@@ -331,17 +338,19 @@ function combineSameUnlockAt(claimableLocks: ClaimableLock[]): Record<string, Cl
       { claimAt: { type: ClaimTimeType.Until }, amount: BN_ZERO, affected: [] },
     );
 
+    acc.push([locks[0].claimAt, combinedLock]);
+
     return acc;
-  }, {});
+  }, []);
 }
 
 // Step 3
-function constructUnlockSchedule(maxUnlockedByTime: Record<string, ClaimableLock>): ClaimableLock[] {
+function constructUnlockSchedule(maxUnlockedByTime: [ClaimTime, ClaimableLock][]): ClaimableLock[] {
   let currentMaxLock = BN_ZERO;
-  let currentMaxLockAt: string | null = null;
+  let currentMaxLockAt: ClaimTime | null = null;
 
-  const result = cloneDeep(maxUnlockedByTime);
-  const sortedMaxUnlock = orderBy(Object.entries(maxUnlockedByTime), ([key]) => key, 'desc');
+  const result = new Map(clone(maxUnlockedByTime));
+  const sortedMaxUnlock = orderBy(maxUnlockedByTime, ([claimTime]) => getClaimTimeSortKey(claimTime), 'desc');
 
   sortedMaxUnlock.forEach(([claimAt, lock]) => {
     const newMaxLock = BN.max(currentMaxLock, lock.amount);
@@ -353,28 +362,32 @@ function constructUnlockSchedule(maxUnlockedByTime: Record<string, ClaimableLock
       currentMaxLockAt = claimAt;
     }
 
-    if (unlockedAmount.isZero()) {
+    if (unlockedAmount.isNeg()) {
       // this lock is completely shadowed by later (in time) lock with greater value
-      delete result[claimAt];
+      result.delete(claimAt);
 
       // but we want to keep its actions, so we move it to the current known maximum that goes later in time
-      if (currentMaxLockAt && result[currentMaxLockAt]) {
-        result[currentMaxLockAt] = {
-          ...result[currentMaxLockAt],
-          affected: uniqWith(result[currentMaxLockAt].affected.concat(lock.affected), isEqual),
-        };
+      if (currentMaxLockAt && result.has(currentMaxLockAt)) {
+        const maxLockItem = result.get(currentMaxLockAt)!;
+        maxLockItem.affected = uniqWith(maxLockItem.affected.concat(lock.affected), isEqual);
       }
     } else {
       // there is something to unlock at this point
-      result[claimAt] = { ...lock, amount: unlockedAmount };
+      result.get(claimAt)!.amount = unlockedAmount;
     }
   });
 
-  return sortBy(Object.entries(result), ([key]) => key).map(([_, claim]) => claim);
+  return sortBy(Array.from(result.entries()), ([claimTime]) => getClaimTimeSortKey(claimTime)).map(
+    ([_, claim]) => claim,
+  );
+}
+
+function getClaimTimeSortKey(claimTime: ClaimTime): string {
+  return onChainUtils.isClaimAt(claimTime) ? `at-${claimTime.block}` : 'until';
 }
 
 // Step 4
-function getUnlockChunks(locks: ClaimableLock[], currentBlockNumber: BlockHeight): UnlockChunk[] {
+function toUnlockChunks(locks: ClaimableLock[], currentBlockNumber: BlockHeight): UnlockChunk[] {
   const chunks = locks.map((item) => toUnlockChunk(item, currentBlockNumber));
 
   const claimable = chunks.filter((chunk): chunk is ClaimableChunk => chunk.type === 'claimable');
@@ -410,10 +423,7 @@ function toClaimActions(claimAffects: ClaimAffect[]): ClaimAction[] {
   return groupByTrack(claimAffects).reduce<ClaimAction[]>((acc, trackAffects) => {
     if (trackAffects.hasPriorAffect) {
       if (trackAffects.votes.length === 0) {
-        acc.push({
-          type: 'unlock',
-          trackId: trackAffects.trackId,
-        } as Unlock);
+        acc.push({ type: 'unlock', trackId: trackAffects.trackId } as Unlock);
       }
     }
 
@@ -426,10 +436,7 @@ function toClaimActions(claimAffects: ClaimAffect[]): ClaimAction[] {
         } as RemoveVote);
       });
 
-      acc.push({
-        type: 'unlock',
-        trackId: trackAffects.votes[0].trackId,
-      } as Unlock);
+      acc.push({ type: 'unlock', trackId: trackAffects.votes[0].trackId } as Unlock);
     }
 
     return acc;
@@ -437,9 +444,17 @@ function toClaimActions(claimAffects: ClaimAffect[]): ClaimAction[] {
 }
 
 function groupByTrack(claimAffects: ClaimAffect[]): GroupedClaimAffects[] {
-  const groupedClaims = groupBy(claimAffects, (claimAffect) => claimAffect.trackId);
+  const groupedClaims = claimAffects.reduce<Map<TrackId, ClaimAffect[]>>((acc, claimAffect) => {
+    if (acc.has(claimAffect.trackId)) {
+      acc.get(claimAffect.trackId)!.push(claimAffect);
+    } else {
+      acc.set(claimAffect.trackId, [claimAffect]);
+    }
 
-  return Object.entries(groupedClaims).map(([trackId, trackAffects]) => {
+    return acc;
+  }, new Map());
+
+  return Array.from(groupedClaims.entries()).map(([trackId, trackAffects]) => {
     return {
       trackId,
       hasPriorAffect: trackAffects.some((t) => t.type === ClaimAffectType.Track),

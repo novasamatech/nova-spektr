@@ -68,7 +68,7 @@ export interface RemoveVote extends ClaimAction {
   referendumId: ReferendumId;
 }
 
-// UnlockChunk
+// Unlock chunk
 export interface UnlockChunk {
   type: 'claimable' | 'pending';
 }

@@ -143,7 +143,7 @@ function getTotalLock(voting: Voting): BN {
     return BN.max(maxVote, voting.casting.prior.amount);
   }
   if (isDelegating(voting)) {
-    return BN.max(voting.delegating.amount, voting.delegating.prior.amount);
+    return BN.max(voting.delegating.balance, voting.delegating.prior.amount);
   }
 
   return BN_ZERO;

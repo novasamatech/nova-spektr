@@ -14,6 +14,7 @@ import type {
   AccountVote,
   ReferendumId,
   ReferendumInfo,
+  DelegatingVoting,
 } from '@shared/core';
 import { ReferendumType, VoteType, TrackId, CastingVoting, VotingType } from '@shared/core';
 import { CancelledReferendum, TimedOutReferendum, KilledReferendum } from '../../../../core/types/referendum';
@@ -123,52 +124,69 @@ async function getVotingFor(api: ApiPromise, address: Address): Promise<Record<T
 
   const result: Record<TrackId, Voting> = {};
   for (const [misc, convictionVoting] of votingEntries) {
-    if (convictionVoting.isDelegating) continue; // TODO: support delegating
+    if (convictionVoting.isDelegating) {
+      const delegation = convictionVoting.asDelegating;
 
-    const votes: Record<ReferendumId, AccountVote> = {};
-    for (const [referendumIndex, vote] of convictionVoting.asCasting.votes) {
-      if (vote.isStandard) {
-        const standardVote = vote.asStandard;
-        votes[referendumIndex.toString()] = {
-          type: VoteType.Standard,
-          vote: {
-            type: standardVote.vote.isAye ? 'aye' : 'nay',
-            conviction: standardVote.vote.conviction.type,
+      result[misc[1].toString()] = {
+        type: VotingType.DELEGATING,
+        delegating: {
+          balance: delegation.balance.toBn(),
+          conviction: delegation.conviction.type,
+          target: delegation.target.toString(),
+          prior: {
+            unlockAt: convictionVoting.asCasting.prior[0].toNumber(),
+            amount: convictionVoting.asCasting.prior[0].toBn(),
           },
-          balance: standardVote.balance.toBn(),
-        } as StandardVote;
-      }
-
-      if (vote.isSplit) {
-        const splitVote = vote.asSplit;
-        votes[referendumIndex.toString()] = {
-          type: VoteType.Split,
-          aye: splitVote.aye.toBn(),
-          nay: splitVote.nay.toBn(),
-        } as SplitVote;
-      }
-
-      if (vote.isSplitAbstain) {
-        const splitAbstainVote = vote.asSplitAbstain;
-        votes[referendumIndex.toString()] = {
-          type: VoteType.SplitAbstain,
-          aye: splitAbstainVote.aye.toBn(),
-          nay: splitAbstainVote.nay.toBn(),
-          abstain: splitAbstainVote.abstain.toBn(),
-        } as SplitAbstainVote;
-      }
+        },
+      } as DelegatingVoting;
     }
 
-    result[misc[1].toString()] = {
-      type: VotingType.CASTING,
-      casting: {
-        votes,
-        prior: {
-          unlockAt: convictionVoting.asCasting.prior[0].toNumber(),
-          amount: convictionVoting.asCasting.prior[0].toBn(),
+    if (convictionVoting.isCasting) {
+      const votes: Record<ReferendumId, AccountVote> = {};
+      for (const [referendumIndex, vote] of convictionVoting.asCasting.votes) {
+        if (vote.isStandard) {
+          const standardVote = vote.asStandard;
+          votes[referendumIndex.toString()] = {
+            type: VoteType.Standard,
+            vote: {
+              type: standardVote.vote.isAye ? 'aye' : 'nay',
+              conviction: standardVote.vote.conviction.type,
+            },
+            balance: standardVote.balance.toBn(),
+          } as StandardVote;
+        }
+
+        if (vote.isSplit) {
+          const splitVote = vote.asSplit;
+          votes[referendumIndex.toString()] = {
+            type: VoteType.Split,
+            aye: splitVote.aye.toBn(),
+            nay: splitVote.nay.toBn(),
+          } as SplitVote;
+        }
+
+        if (vote.isSplitAbstain) {
+          const splitAbstainVote = vote.asSplitAbstain;
+          votes[referendumIndex.toString()] = {
+            type: VoteType.SplitAbstain,
+            aye: splitAbstainVote.aye.toBn(),
+            nay: splitAbstainVote.nay.toBn(),
+            abstain: splitAbstainVote.abstain.toBn(),
+          } as SplitAbstainVote;
+        }
+      }
+
+      result[misc[1].toString()] = {
+        type: VotingType.CASTING,
+        casting: {
+          votes,
+          prior: {
+            unlockAt: convictionVoting.asCasting.prior[0].toNumber(),
+            amount: convictionVoting.asCasting.prior[0].toBn(),
+          },
         },
-      },
-    } as CastingVoting;
+      } as CastingVoting;
+    }
   }
 
   return result;
