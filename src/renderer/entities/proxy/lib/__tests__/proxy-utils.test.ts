@@ -3,7 +3,7 @@ import { TEST_ACCOUNTS } from '@shared/lib/utils';
 import { proxyUtils } from '../proxy-utils';
 import { proxyMock } from './mocks/proxy-mocks';
 
-describe('entities/proxy/lib/proxy-onChainUtils', () => {
+describe('entities/proxy/lib/proxy-utils', () => {
   test('should return true for identical proxies', () => {
     const { oldProxy } = proxyMock;
     const result = proxyUtils.isSameProxy(oldProxy, oldProxy);

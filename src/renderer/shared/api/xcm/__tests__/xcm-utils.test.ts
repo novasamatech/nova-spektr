@@ -1,7 +1,7 @@
 import { CONFIG } from './mock/xcmData';
 import { xcmUtils } from '../lib/xcm-utils';
 
-describe('shared/api/xcm/lib/xcm-onChainUtils', () => {
+describe('shared/api/xcm/lib/xcm-utils', () => {
   test('should calculate correct fee for ACA from Acala to Parallel ', () => {
     const fee = xcmUtils.getEstimatedFeeFromConfig(
       CONFIG,

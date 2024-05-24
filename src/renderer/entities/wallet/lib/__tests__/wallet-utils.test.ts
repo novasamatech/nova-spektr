@@ -1,7 +1,7 @@
 import { Wallet, WalletType } from '@shared/core';
 import { walletUtils } from '../wallet-utils';
 
-describe('entities/wallet/lib/wallet-onChainUtils', () => {
+describe('entities/wallet/lib/wallet-utils', () => {
   test('isPolkadotVault should return true if wallet type is PolkadotVault', () => {
     const wallet = { type: WalletType.POLKADOT_VAULT } as Wallet;
 

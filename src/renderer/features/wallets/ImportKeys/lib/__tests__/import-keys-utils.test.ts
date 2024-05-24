@@ -8,20 +8,20 @@ Object.defineProperty(global.self, 'crypto', {
   value: webcrypto,
 });
 
-describe('entities/dynamicDerivations/import-keys-onChainUtils', () => {
-  describe('entities/dynamicDerivations/import-keys-onChainUtils/validateDerivation', () => {
+describe('entities/dynamicDerivations/import-keys-utils', () => {
+  describe('entities/dynamicDerivations/import-keys-utils/validateDerivation', () => {
     test.each(importKeysMocks.validationTestData)('$testName', ({ derivation, isValid }) => {
       expect(!importKeysUtils.getDerivationError(derivation)).toEqual(isValid);
     });
   });
 
-  describe('entities/dynamicDerivations/import-keys-onChainUtils/shouldIgnoreDerivation', () => {
+  describe('entities/dynamicDerivations/import-keys-utils/shouldIgnoreDerivation', () => {
     test.each(importKeysMocks.shouldIgnoreDerivationTestData)('$testName', ({ derivation, shouldIgnore }) => {
       expect(importKeysUtils.shouldIgnoreDerivation(derivation)).toEqual(shouldIgnore);
     });
   });
 
-  describe('entities/dynamicDerivations/import-keys-onChainUtils/mergeChainDerivations', () => {
+  describe('entities/dynamicDerivations/import-keys-utils/mergeChainDerivations', () => {
     test('should add new derivations', () => {
       const importedDerivations = [
         {

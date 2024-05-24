@@ -105,7 +105,7 @@ const accounts: Array<ChainAccount | ShardAccount> = [
   },
 ];
 
-describe('entities/wallet/lib/account-onChainUtils#getAccountsAndShardGroups', () => {
+describe('entities/wallet/lib/account-utils#getAccountsAndShardGroups', () => {
   test('should construct groups', () => {
     const groupedAccount = accountUtils.getAccountsAndShardGroups(accounts);
 
@@ -120,7 +120,7 @@ describe('entities/wallet/lib/account-onChainUtils#getAccountsAndShardGroups', (
   });
 });
 
-describe('entities/wallet/lib/account-onChainUtils#getDerivationPath', () => {
+describe('entities/wallet/lib/account-utils#getDerivationPath', () => {
   // Array<[argument, result]>
   const cases_1: [{ derivationPath: string }, string][] = [
     [{ derivationPath: '//westend' }, '//westend'],
@@ -192,7 +192,7 @@ describe('entities/wallet/lib/account-onChainUtils#getDerivationPath', () => {
   });
 });
 
-describe('entities/wallet/lib/account-onChainUtils#isChainDependant', () => {
+describe('entities/wallet/lib/account-utils#isChainDependant', () => {
   test.each([
     [{ type: AccountType.BASE }, false], // BaseAccount
     [{ type: AccountType.CHAIN, chainId: '0x00' }, true], // ChainAccount

@@ -20,7 +20,7 @@ const defaultNetwork: ExtendedChain = {
   },
 };
 
-describe('features/network/NetworkSelector/lib/network-selector-onChainUtils', () => {
+describe('features/network/NetworkSelector/lib/network-selector-utils', () => {
   test('should return correct ConnectionList array for defaultNetwork', () => {
     const expected = [
       { type: ConnectionType.AUTO_BALANCE },

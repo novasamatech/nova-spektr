@@ -3,7 +3,7 @@ import type { NoID, PartialProxiedAccount, ProxyAccount } from '@shared/core';
 import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
 import { proxyWorkerUtils } from '../worker-utils';
 
-describe('features/proxies/lib/worker-onChainUtils', () => {
+describe('features/proxies/lib/worker-utils', () => {
   test('should return true when oldProxy and newProxy have the same properties', () => {
     const oldProxy = {
       id: 1,
