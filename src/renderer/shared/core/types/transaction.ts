@@ -1,4 +1,16 @@
-import type { Address, ChainId, HexString, AccountId, CallData, CallHash, PartialBy, Signatory } from '@shared/core';
+import type {
+  Address,
+  ChainId,
+  HexString,
+  AccountId,
+  CallData,
+  CallHash,
+  PartialBy,
+  Signatory,
+  MultisigAccount,
+  Account,
+  ProxiedAccount,
+} from '@shared/core';
 
 export const enum TransactionType {
   TRANSFER = 'transfer',
@@ -104,3 +116,30 @@ export type MultisigTransactionKey = Pick<
   MultisigTransaction,
   'accountId' | 'callHash' | 'chainId' | 'indexCreated' | 'blockCreated'
 >;
+
+export const enum WrapperKind {
+  MULTISIG = 'multisig',
+  PROXY = 'proxy',
+}
+
+export type MultisigTxWrapper = {
+  kind: WrapperKind.MULTISIG;
+  multisigAccount: MultisigAccount;
+  signatories: Account[];
+  signer: Account;
+};
+
+export type ProxyTxWrapper = {
+  kind: WrapperKind.PROXY;
+  proxyAccount: Account;
+  proxiedAccount: ProxiedAccount;
+};
+
+export type TxWrapper = MultisigTxWrapper | ProxyTxWrapper;
+
+export type WrapAsMulti = {
+  account: MultisigAccount;
+  signatoryId: AccountId;
+};
+
+export type TxWrappers_OLD = WrapAsMulti;

@@ -1,11 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { useLiveQuery } from 'dexie-react-hooks';
 
-import {
-  MultisigTransaction,
-  MultisigTxFinalStatus,
-  MultisigTxInitStatus,
-} from '@entities/transaction/model/transaction';
+import { MultisigTransaction, MultisigTxFinalStatus, MultisigTxInitStatus } from '@shared/core';
 import { storage, MultisigTransactionDS } from '@shared/api/storage';
 import { DEFAULT_BLOCK_HASH, MULTISIG_EXTRINSIC_CALL_INDEX, QUERY_INTERVAL } from './common/consts';
 import { IMultisigTxService } from './common/types';

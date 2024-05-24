@@ -9,7 +9,6 @@ assignees: pgolovkin
 
 Certainly, here is an example feature request template that you can use on GitHub:
 
-```
 ## Description
 
 [Description of the feature you are requesting]

@@ -12,6 +12,7 @@ import { removePureProxyUtils } from '../lib/remove-pure-proxy-utils';
 import { removePureProxyModel } from '../model/remove-pure-proxy-model';
 import { Warning } from './Warning';
 import { OperationSign, OperationSubmit } from '@features/operations';
+import { AddToBasketButton } from '@features/operations/OperationsConfirm';
 
 export const RemovePureProxy = () => {
   const { t } = useI18n();
@@ -19,6 +20,7 @@ export const RemovePureProxy = () => {
   const step = useUnit(removePureProxyModel.$step);
   const chain = useUnit(removePureProxyModel.$chain);
   const shouldRemovePureProxy = useUnit(removePureProxyModel.$shouldRemovePureProxy);
+  const initiatorWallet = useUnit(removePureProxyModel.$initiatorWallet);
 
   const [isModalOpen, closeModal] = useModalClose(
     !removePureProxyUtils.isNoneStep(step),
@@ -46,7 +48,12 @@ export const RemovePureProxy = () => {
       {removePureProxyUtils.isWarningStep(step) && <Warning onGoBack={closeModal} />}
       {removePureProxyUtils.isInitStep(step) && <RemovePureProxyForm onGoBack={closeModal} />}
       {removePureProxyUtils.isConfirmStep(step) && (
-        <Confirmation onGoBack={() => removePureProxyModel.events.wentBackFromConfirm()} />
+        <Confirmation
+          secondaryActionButton={
+            <AddToBasketButton wallet={initiatorWallet} onTxSaved={() => removePureProxyModel.events.txSaved()} />
+          }
+          onGoBack={() => removePureProxyModel.events.wentBackFromConfirm()}
+        />
       )}
       {removePureProxyUtils.isSignStep(step) && (
         <OperationSign onGoBack={() => removePureProxyModel.events.stepChanged(Step.CONFIRM)} />

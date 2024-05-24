@@ -39,7 +39,6 @@ export interface ShardAccount extends Account {
 export interface MultisigAccount extends Account {
   signatories: Signatory[];
   threshold: Threshold;
-  creatorAccountId: AccountId;
   chainId?: ChainId;
   cryptoType: CryptoType;
   type: AccountType.MULTISIG;

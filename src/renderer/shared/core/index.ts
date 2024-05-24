@@ -66,12 +66,30 @@ export type {
 } from './types/proxy';
 export { ProxyType, ProxyVariant } from './types/proxy';
 
-export type { Notification, MultisigInvite, MultisigOperation, ProxyAction } from './types/notification';
+export type { Notification, MultisigCreated, MultisigOperation, ProxyAction } from './types/notification';
 export { NotificationType } from './types/notification';
 
 export { XcmPallets } from './types/substrate';
 
 export type { TrackId, TrackInfo } from './types/track';
+
+export { TransactionType, MultisigTxInitStatus, MultisigTxFinalStatus, WrapperKind } from './types/transaction';
+export type {
+  Transaction,
+  SigningStatus,
+  MultisigTxStatus,
+  DecodedTransaction,
+  MultisigEvent,
+  MultisigTransaction,
+  MultisigTransactionKey,
+  TxWrapper,
+  TxWrappers_OLD,
+  MultisigTxWrapper,
+  ProxyTxWrapper,
+  WrapAsMulti,
+} from './types/transaction';
+
+export type { BasketTransaction } from './types/basket';
 
 export { ReferendumType } from './types/referendum';
 export type {
@@ -82,7 +100,7 @@ export type {
   OngoingReferendum,
   TimedOutReferendum,
   KilledReferendum,
-  CancelledReferendum
+  CancelledReferendum,
 } from './types/referendum';
 
 export { VotingType, VoteType, Conviction } from './types/voting';

@@ -8,6 +8,8 @@ import { walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { proxyModel } from '@entities/proxy';
 import { notificationModel } from '@entities/notification';
+import { basketModel } from '@entities/basket';
+import { multisigsModel } from '@processes/multisigs';
 import { proxiesModel } from '@features/proxies';
 import { assetsSettingsModel } from '@features/assets';
 import '@features/balances';
@@ -40,6 +42,8 @@ networkModel.events.networkStarted();
 proxyModel.events.proxyStarted();
 assetsSettingsModel.events.assetsStarted();
 notificationModel.events.notificationsStarted();
+basketModel.events.basketStarted();
+multisigsModel.events.multisigsDiscoveryStarted();
 
 createRoot(container).render(
   <HashRouter>

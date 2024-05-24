@@ -9,12 +9,12 @@ import Operation from './components/Operation';
 import { FootnoteText, Header } from '@shared/ui';
 import { MultisigTransactionDS } from '@shared/api/storage';
 import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
-import { MultisigEvent, MultisigTransactionKey } from '@entities/transaction';
 import { OperationsFilter } from '@features/operations';
 import { walletModel, accountUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { networkModel } from '@entities/network';
 import { sortByDateDesc } from '@shared/lib/utils';
+import { MultisigEvent, MultisigTransactionKey } from '@shared/core';
 
 export const Operations = () => {
   const { t, dateLocale } = useI18n();
