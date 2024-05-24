@@ -20,7 +20,10 @@ export const TokenBalance = ({ asset }: Props) => {
   const chains = useUnit(networkModel.$chains);
 
   return (
-    <Plate className="p-0 z-10 h-[52px] w-full items-center flex pl-[30px] pr-2">
+    <Plate
+      className="p-0 z-10 h-[52px] w-full items-center flex pl-[30px] pr-2 
+    transition-shadow hover:shadow-card-shadow focus:shadow-card-shadow"
+    >
       <div className="flex gap-x-2 flex-1">
         <div className="flex items-center gap-x-2">
           <AssetIcon src={asset.icon} name={asset.name} />

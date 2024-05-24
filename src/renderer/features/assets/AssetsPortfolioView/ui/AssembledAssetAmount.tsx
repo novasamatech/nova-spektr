@@ -51,9 +51,14 @@ export const AssembledAssetAmount = ({ balance, asset }: Props) => {
             }}
           />
         }
-        offsetPx={-60}
+        offsetPx={-75}
       >
-        <AssetBalance value={totalAmount(balance)} asset={asset} showSymbol={false} />
+        <AssetBalance
+          value={totalAmount(balance)}
+          asset={asset}
+          showSymbol={false}
+          className="border-b border-filter-border hover:bg-switch-background-inactive"
+        />
       </Tooltip>
       <AssetFiatBalance amount={totalAmount(balance)} asset={asset} />
     </>
