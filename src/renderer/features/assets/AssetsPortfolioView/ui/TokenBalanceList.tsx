@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 
 import { useI18n } from '@app/providers';
 import { Icon, Tooltip, Accordion, BodyText, FootnoteText, Plate, HelpText } from '@shared/ui';
-import { cnTw } from '@shared/lib/utils';
 import type { AssetByChains } from '@shared/core';
 import { Paths, createLink } from '@shared/routes';
 import { CheckPermission, OperationType, walletModel } from '@entities/wallet';
@@ -30,10 +29,8 @@ export const TokenBalanceList = ({ asset }: Props) => {
         <Accordion.Button
           iconOpened="shelfDown"
           iconClosed="shelfRight"
-          buttonClass={cnTw(
-            'sticky top-0 px-2 py-1.5 z-10 justify-end flex-row-reverse bg-white',
-            'transition-colors rounded hover:bg-block-background-hover focus-visible:bg-block-background-hover h-[52px]',
-          )}
+          buttonClass="sticky top-0 px-2 py-1.5 z-10 justify-end flex-row-reverse bg-white hover:bg-token-container-background 
+          rounded h-[52px] transition-shadow hover:shadow-card-shadow focus:shadow-card-shadow"
         >
           <div className="w-full items-center flex">
             <div className="flex items-center gap-x-2 flex-1">
