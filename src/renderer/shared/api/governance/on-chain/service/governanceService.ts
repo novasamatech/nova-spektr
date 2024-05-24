@@ -1,6 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { BN_ZERO, BN } from '@polkadot/util';
 
+import { ReferendumType, VoteType, TrackId, CastingVoting, VotingType } from '@shared/core';
 import type {
   OngoingReferendum,
   RejectedReferendum,
@@ -15,9 +16,10 @@ import type {
   ReferendumId,
   ReferendumInfo,
   DelegatingVoting,
+  CancelledReferendum,
+  TimedOutReferendum,
+  KilledReferendum,
 } from '@shared/core';
-import { ReferendumType, VoteType, TrackId, CastingVoting, VotingType } from '@shared/core';
-import { CancelledReferendum, TimedOutReferendum, KilledReferendum } from '../../../../core/types/referendum';
 
 export const governanceService = {
   getReferendums,

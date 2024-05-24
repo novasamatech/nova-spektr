@@ -5,45 +5,35 @@ import type { BlockHeight, ReferendumId, TrackId } from '@shared/core';
 export type ClaimableLock = {
   claimAt: ClaimTime;
   amount: BN;
-  // no duplicates
+  // contains no duplicates
   affected: ClaimAffect[];
 };
 
 export interface ClaimAffect {
   trackId: TrackId;
-  type: ClaimAffectType;
+  type: 'track' | 'vote';
 }
 
 export interface AffectTrack extends ClaimAffect {
-  type: ClaimAffectType.Track;
+  type: 'track';
 }
 
 export interface AffectVote extends ClaimAffect {
-  type: ClaimAffectType.Vote;
+  type: 'vote';
   referendumId: ReferendumId;
 }
 
-export const enum ClaimAffectType {
-  Track = 'track',
-  Vote = 'vote',
-}
-
 export interface ClaimTime {
-  type: ClaimTimeType;
+  type: 'at' | 'until';
 }
 
 export interface ClaimTimeAt extends ClaimTime {
   block: BlockHeight;
-  type: ClaimTimeType.At;
+  type: 'at';
 }
 
 export interface ClaimTimeUntil extends ClaimTime {
-  type: ClaimTimeType.Until;
-}
-
-export const enum ClaimTimeType {
-  At = 'at',
-  Until = 'until',
+  type: 'until';
 }
 
 export type GroupedClaimAffects = {

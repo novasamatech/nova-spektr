@@ -1,26 +1,20 @@
 import { BN_ZERO, BN } from '@polkadot/util';
 
-import {
+import type { ClaimTime, ClaimTimeAt } from './types';
+import { VotingType, VoteType, ReferendumType, Conviction } from '@shared/core';
+import type {
   Voting,
   CastingVoting,
   DelegatingVoting,
-  VotingType,
-  VoteType,
   StandardVote,
   SplitVote,
   SplitAbstainVote,
   ReferendumInfo,
   OngoingReferendum,
-  ReferendumType,
   RejectedReferendum,
   ApprovedReferendum,
   AccountVote,
-  CancelledReferendum,
-  TimedOutReferendum,
-  KilledReferendum,
-  Conviction,
 } from '@shared/core';
-import { ClaimTime, ClaimTimeAt, ClaimTimeType, ClaimTimeUntil } from './types';
 
 export const onChainUtils = {
   isCasting,
@@ -29,16 +23,11 @@ export const onChainUtils = {
   getLockPeriods,
 
   isStandardVote,
-
   isClaimAt,
-  isClaimUntil,
 
   isOngoing,
   isRejected,
   isApproved,
-  isCancelled,
-  isTimedOut,
-  isKilled,
 
   test,
 };
@@ -89,11 +78,7 @@ function isStandardVote(vote: AccountVote): vote is StandardVote {
 // Claim time types
 
 function isClaimAt(claim: ClaimTime): claim is ClaimTimeAt {
-  return claim.type === ClaimTimeType.At;
-}
-
-function isClaimUntil(claim: ClaimTime): claim is ClaimTimeUntil {
-  return claim.type === ClaimTimeType.Until;
+  return claim.type === 'at';
 }
 
 // Referendum statuses
@@ -108,18 +93,6 @@ function isRejected(referendum: ReferendumInfo): referendum is RejectedReferendu
 
 function isApproved(referendum: ReferendumInfo): referendum is ApprovedReferendum {
   return referendum.type === ReferendumType.Approved;
-}
-
-function isCancelled(referendum: ReferendumInfo): referendum is CancelledReferendum {
-  return referendum.type === ReferendumType.Cancelled;
-}
-
-function isTimedOut(referendum: ReferendumInfo): referendum is TimedOutReferendum {
-  return referendum.type === ReferendumType.TimedOut;
-}
-
-function isKilled(referendum: ReferendumInfo): referendum is KilledReferendum {
-  return referendum.type === ReferendumType.Killed;
 }
 
 function getTotalLock(voting: Voting): BN {

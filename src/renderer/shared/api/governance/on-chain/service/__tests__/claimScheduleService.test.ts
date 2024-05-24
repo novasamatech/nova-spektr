@@ -1,18 +1,16 @@
 import { BN, BN_ZERO, BN_ONE, BN_TWO, BN_TEN, BN_NINE, BN_FIVE, BN_THREE, BN_FOUR, BN_EIGHT } from '@polkadot/util';
 
 import { claimScheduleService } from '../claimScheduleService';
-import { RemoveVote, Unlock, ClaimTimeType, ClaimTimeAt, ClaimTimeUntil } from '../../lib/types';
-import {
+import type { RemoveVote, Unlock, ClaimTimeAt, ClaimTimeUntil } from '../../lib/types';
+import { ReferendumType, VotingType, Conviction } from '@shared/core';
+import type {
   ReferendumId,
   TrackId,
   TrackInfo,
   Voting,
-  ReferendumType,
   OngoingReferendum,
-  VotingType,
   CastingVoting,
   StandardVote,
-  Conviction,
   ApprovedReferendum,
   DelegatingVoting,
 } from '@shared/core';
@@ -118,7 +116,7 @@ describe('shared/api/governance/claimScheduleService', () => {
       {
         type: 'pending',
         amount: BN_ONE,
-        claimableAt: { block: 1100, type: ClaimTimeType.At },
+        claimableAt: { block: 1100, type: 'at' },
       },
     ]);
   });
@@ -155,7 +153,7 @@ describe('shared/api/governance/claimScheduleService', () => {
       {
         type: 'pending',
         amount: BN_TWO,
-        claimableAt: { block: 1100, type: ClaimTimeType.At },
+        claimableAt: { block: 1100, type: 'at' },
       },
     ]);
   });
@@ -499,7 +497,7 @@ describe('shared/api/governance/claimScheduleService', () => {
       {
         type: 'pending',
         amount: BN_ONE,
-        claimableAt: { type: ClaimTimeType.At, block: 1100 } as ClaimTimeAt,
+        claimableAt: { type: 'at', block: 1100 } as ClaimTimeAt,
       },
     ]);
   });
@@ -529,7 +527,7 @@ describe('shared/api/governance/claimScheduleService', () => {
       {
         type: 'pending',
         amount: BN_TEN,
-        claimableAt: { type: ClaimTimeType.At, block: 1100 } as ClaimTimeAt,
+        claimableAt: { type: 'at', block: 1100 } as ClaimTimeAt,
       },
     ]);
   });
@@ -616,17 +614,17 @@ describe('shared/api/governance/claimScheduleService', () => {
       {
         type: 'pending',
         amount: BN_ONE,
-        claimableAt: { type: ClaimTimeType.At, block: 1100 } as ClaimTimeAt,
+        claimableAt: { type: 'at', block: 1100 } as ClaimTimeAt,
       },
       {
         type: 'pending',
         amount: BN_ONE,
-        claimableAt: { type: ClaimTimeType.At, block: 1200 } as ClaimTimeAt,
+        claimableAt: { type: 'at', block: 1200 } as ClaimTimeAt,
       },
       {
         type: 'pending',
         amount: BN_ONE,
-        claimableAt: { type: ClaimTimeType.At, block: 1300 } as ClaimTimeAt,
+        claimableAt: { type: 'at', block: 1300 } as ClaimTimeAt,
       },
     ]);
   });
@@ -688,12 +686,12 @@ describe('shared/api/governance/claimScheduleService', () => {
       {
         type: 'pending',
         amount: BN_NINE,
-        claimableAt: { type: ClaimTimeType.At, block: 1500 } as ClaimTimeAt,
+        claimableAt: { type: 'at', block: 1500 } as ClaimTimeAt,
       },
       {
         type: 'pending',
         amount: BN_ONE,
-        claimableAt: { type: ClaimTimeType.At, block: 2000 } as ClaimTimeAt,
+        claimableAt: { type: 'at', block: 2000 } as ClaimTimeAt,
       },
     ]);
   });
@@ -725,7 +723,7 @@ describe('shared/api/governance/claimScheduleService', () => {
       {
         type: 'pending',
         amount: BN_ONE,
-        claimableAt: { type: ClaimTimeType.Until } as ClaimTimeUntil,
+        claimableAt: { type: 'until' } as ClaimTimeUntil,
       },
     ]);
   });
@@ -757,12 +755,12 @@ describe('shared/api/governance/claimScheduleService', () => {
       {
         type: 'pending',
         amount: BN_NINE,
-        claimableAt: { type: ClaimTimeType.At, block: 1100 } as ClaimTimeAt,
+        claimableAt: { type: 'at', block: 1100 } as ClaimTimeAt,
       },
       {
         type: 'pending',
         amount: BN_ONE,
-        claimableAt: { type: ClaimTimeType.Until } as ClaimTimeUntil,
+        claimableAt: { type: 'until' } as ClaimTimeUntil,
       },
     ]);
   });
@@ -799,7 +797,7 @@ describe('shared/api/governance/claimScheduleService', () => {
       {
         type: 'pending',
         amount: BN_ONE,
-        claimableAt: { type: ClaimTimeType.Until } as ClaimTimeUntil,
+        claimableAt: { type: 'until' } as ClaimTimeUntil,
       },
     ]);
   });
@@ -856,13 +854,13 @@ describe('shared/api/governance/claimScheduleService', () => {
       {
         type: 'pending',
         amount: BN_FOUR,
-        claimableAt: { type: ClaimTimeType.At, block: 1100 } as ClaimTimeAt,
+        claimableAt: { type: 'at', block: 1100 } as ClaimTimeAt,
       },
       // 1 is delayed indefinitely because of track 1 delegation
       {
         type: 'pending',
         amount: BN_ONE,
-        claimableAt: { type: ClaimTimeType.Until } as ClaimTimeUntil,
+        claimableAt: { type: 'until' } as ClaimTimeUntil,
       },
     ]);
   });

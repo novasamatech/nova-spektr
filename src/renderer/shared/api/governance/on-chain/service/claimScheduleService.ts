@@ -8,10 +8,8 @@ import clone from 'lodash/clone';
 import { onChainUtils } from '../lib/on-chain-utils';
 import {
   type ClaimableLock,
-  ClaimAffectType,
   AffectVote,
   AffectTrack,
-  ClaimTimeType,
   ClaimTime,
   ClaimTimeAt,
   GroupedClaimAffects,
@@ -145,9 +143,9 @@ function gapClaimableLock({ trackId, voting, gap, currentBlockNumber }: GapLockP
 
   return [
     {
-      claimAt: { type: ClaimTimeType.At, block: currentBlockNumber } as ClaimTime,
+      claimAt: { type: 'at', block: currentBlockNumber } as ClaimTime,
       amount: trackGap.add(onChainUtils.getTotalLock(voting)),
-      affected: [{ trackId, type: ClaimAffectType.Track } as AffectTrack],
+      affected: [{ trackId, type: 'track' } as AffectTrack],
     },
   ];
 }
@@ -162,9 +160,9 @@ function castingClaimableLocks(
   undecidingTimeout: BlockHeight,
 ): ClaimableLock[] {
   const priorLock: ClaimableLock = {
-    claimAt: { type: ClaimTimeType.At, block: voting.casting.prior.unlockAt } as ClaimTime,
+    claimAt: { type: 'at', block: voting.casting.prior.unlockAt } as ClaimTime,
     amount: voting.casting.prior.amount,
-    affected: [{ trackId, type: ClaimAffectType.Track } as AffectTrack],
+    affected: [{ trackId, type: 'track' } as AffectTrack],
   };
 
   const standardVotes = Object.entries(voting.casting.votes) as [string, StandardVote][];
@@ -183,11 +181,11 @@ function castingClaimableLocks(
     return {
       // we estimate whether prior will affect the vote when performing `removeVote`
       claimAt: {
-        type: ClaimTimeType.At,
+        type: 'at',
         block: Math.max(estimatedEnd, (priorLock.claimAt as ClaimTimeAt).block),
       } as ClaimTime,
       amount: standardVote.balance,
-      affected: [{ trackId, type: ClaimAffectType.Vote, referendumId } as AffectVote],
+      affected: [{ trackId, type: 'vote', referendumId } as AffectVote],
     } as ClaimableLock;
   });
 
@@ -196,15 +194,15 @@ function castingClaimableLocks(
 
 function delegatingClaimableLocks(trackId: TrackId, voting: DelegatingVoting): ClaimableLock[] {
   const delegationLock = {
-    claimAt: { type: ClaimTimeType.Until } as ClaimTimeUntil,
+    claimAt: { type: 'until' } as ClaimTimeUntil,
     amount: voting.delegating.balance,
     affected: [],
   } as ClaimableLock;
 
   const priorLock = {
-    claimAt: { type: ClaimTimeType.At, block: voting.delegating.prior.unlockAt } as ClaimTimeAt,
+    claimAt: { type: 'at', block: voting.delegating.prior.unlockAt } as ClaimTimeAt,
     amount: voting.delegating.prior.amount,
-    affected: [{ type: ClaimAffectType.Track, trackId } as AffectTrack],
+    affected: [{ type: 'track', trackId } as AffectTrack],
   } as ClaimableLock;
 
   return priorLock.amount.isZero() ? [delegationLock] : [delegationLock, priorLock];
@@ -335,7 +333,7 @@ function combineSameUnlockAt(claimableLocks: ClaimableLock[]): [ClaimTime, Claim
         amount: BN.max(total.amount, lock.amount),
         affected: uniqWith(total.affected.concat(lock.affected), isEqual),
       }),
-      { claimAt: { type: ClaimTimeType.Until }, amount: BN_ZERO, affected: [] },
+      { claimAt: { type: 'until' }, amount: BN_ZERO, affected: [] },
     );
 
     acc.push([locks[0].claimAt, combinedLock]);
@@ -457,8 +455,8 @@ function groupByTrack(claimAffects: ClaimAffect[]): GroupedClaimAffects[] {
   return Array.from(groupedClaims.entries()).map(([trackId, trackAffects]) => {
     return {
       trackId,
-      hasPriorAffect: trackAffects.some((t) => t.type === ClaimAffectType.Track),
-      votes: trackAffects.filter((t) => t.type === ClaimAffectType.Vote) as AffectVote[],
+      hasPriorAffect: trackAffects.some((t) => t.type === 'track'),
+      votes: trackAffects.filter((t) => t.type === 'vote') as AffectVote[],
     } as GroupedClaimAffects;
   });
 }
