@@ -196,7 +196,7 @@ sample({
   filter: ({ addProxyStore, wrappedTx }) => Boolean(addProxyStore) && Boolean(wrappedTx),
   fn: ({ addProxyStore, wrappedTx }) => ({
     event: {
-      chain: addProxyStore!.chain,
+      chainId: addProxyStore!.chain.chainId,
       accounts: [addProxyStore!.account],
       signatory: addProxyStore!.signatory,
       transactions: [wrappedTx!],
@@ -224,7 +224,7 @@ sample({
   fn: (proxyData, signParams) => ({
     event: {
       ...signParams,
-      chain: proxyData.addProxyStore!.chain,
+      chainId: proxyData.addProxyStore!.chain.chainId,
       account: proxyData.addProxyStore!.account,
       signatory: proxyData.addProxyStore!.signatory,
       description: proxyData.addProxyStore!.description,

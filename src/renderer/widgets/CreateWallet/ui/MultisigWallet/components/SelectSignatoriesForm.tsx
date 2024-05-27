@@ -22,7 +22,7 @@ export const SelectSignatoriesForm = () => {
 
   const chains = useUnit(networkModel.$chains);
   const {
-    fields: { chain },
+    fields: { chainId: chain },
   } = useForm(formModel.$createMultisigForm);
   const multisigAlreadyExists = useUnit(formModel.$multisigAlreadyExists);
   const hasOwnSignatory = useUnit(flowModel.$hasOwnSignatory);

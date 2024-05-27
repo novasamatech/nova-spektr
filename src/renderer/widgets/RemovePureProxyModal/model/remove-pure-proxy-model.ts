@@ -379,7 +379,7 @@ sample({
   },
   fn: ({ removeProxyStore, signatories, wrappedTx, realAccount }) => ({
     event: {
-      chain: removeProxyStore!.chain,
+      chainId: removeProxyStore!.chain.chainId,
       accounts: [realAccount!],
       signatory: signatories?.[0],
       transactions: [wrappedTx!],
@@ -407,7 +407,7 @@ sample({
   fn: (proxyData, signParams) => ({
     event: {
       ...signParams,
-      chain: proxyData.removeProxyStore!.chain,
+      chainId: proxyData.removeProxyStore!.chain.chainId,
       account: proxyData.removeProxyStore!.account,
       signatory: proxyData.removeProxyStore!.signatory,
       description: proxyData.removeProxyStore!.description,

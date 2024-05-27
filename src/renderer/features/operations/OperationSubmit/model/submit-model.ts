@@ -2,7 +2,7 @@ import { createEvent, createEffect, restore, sample, scopeBind, createStore, cre
 import { ApiPromise } from '@polkadot/api';
 
 import type {
-  Chain,
+  ChainId,
   Account,
   HexString,
   MultisigAccount,
@@ -16,7 +16,7 @@ import { SubmitStep } from '../lib/types';
 import { ExtrinsicResultParams, transactionService } from '@entities/transaction';
 
 type Input = {
-  chain: Chain;
+  chainId: ChainId;
   account: Account;
   signatory?: Account;
   description: string;
@@ -122,7 +122,7 @@ sample({
   },
   filter: ({ params }) => Boolean(params),
   fn: ({ apis, params }) => ({
-    api: apis[params!.chain.chainId],
+    api: apis[params!.chainId],
     signatures: params!.signatures,
     wrappedTxs: params!.wrappedTxs,
     coreTxs: params!.coreTxs,

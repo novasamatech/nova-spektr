@@ -34,7 +34,7 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
   // const wallets = useUnit(walletModel.$wallets);
   // const contacts = useUnit(contactModel.$contacts);
   const {
-    fields: { chain },
+    fields: { chainId: chain },
   } = useForm(formModel.$createMultisigForm);
   const chains = useUnit(networkModel.$chains);
   const isLoading = useUnit(flowModel.$isLoading);

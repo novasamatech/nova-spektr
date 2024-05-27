@@ -114,7 +114,7 @@ sample({
   },
   fn: ({ transferStore, networkStore, wrappedTx }) => ({
     event: {
-      chain: networkStore!.chain,
+      chainId: networkStore!.chain.chainId,
       accounts: [transferStore!.account],
       signatory: transferStore!.signatory,
       transactions: [wrappedTx!],
@@ -147,7 +147,7 @@ sample({
   fn: (transferData, signParams) => ({
     event: {
       ...signParams,
-      chain: transferData.networkStore!.chain,
+      chainId: transferData.networkStore!.chain.chainId,
       account: transferData.transferStore!.account,
       signatory: transferData.transferStore!.signatory,
       description: transferData.transferStore!.description,

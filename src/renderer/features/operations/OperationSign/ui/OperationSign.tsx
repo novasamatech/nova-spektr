@@ -22,8 +22,8 @@ export const OperationSign = ({ onGoBack }: Props) => {
   return (
     <SigningSwitch
       api={api}
-      chainId={signStore.chain.chainId}
-      addressPrefix={signStore.chain.addressPrefix}
+      chainId={signStore.chainId.chainId}
+      addressPrefix={signStore.chainId.addressPrefix}
       signerWaller={signerWallet}
       accounts={signStore.accounts}
       signatory={signStore.signatory || undefined}

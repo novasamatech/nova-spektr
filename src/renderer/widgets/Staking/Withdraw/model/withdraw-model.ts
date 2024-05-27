@@ -101,7 +101,7 @@ sample({
   },
   fn: ({ withdrawData, networkStore, wrappedTxs }) => ({
     event: {
-      chain: networkStore!.chain,
+      chainId: networkStore!.chain.chainId,
       accounts: withdrawData!.shards,
       signatory: withdrawData!.signatory,
       transactions: wrappedTxs!,
@@ -134,7 +134,7 @@ sample({
   fn: (withdrawData, signParams) => ({
     event: {
       ...signParams,
-      chain: withdrawData.networkStore!.chain,
+      chainId: withdrawData.networkStore!.chain.chainId,
       account: withdrawData.withdrawData!.shards[0],
       signatory: withdrawData.withdrawData!.signatory,
       description: withdrawData.withdrawData!.description,

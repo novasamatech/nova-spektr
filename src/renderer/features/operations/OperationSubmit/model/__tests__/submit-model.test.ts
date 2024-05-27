@@ -1,7 +1,7 @@
 import { allSettled, fork } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 
-import { Account, Chain, WalletType, SigningType, Wallet, Transaction } from '@shared/core';
+import { Account, WalletType, SigningType, Wallet, Transaction, ChainId } from '@shared/core';
 import { transactionService } from '@entities/transaction';
 import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
@@ -32,7 +32,7 @@ describe('widgets/AddPureProxyModal/model/submit-model', () => {
     });
 
     const store = {
-      chain: { chainId: '0x00' } as unknown as Chain,
+      chainId: '0x00' as unknown as ChainId,
       account: { walletId: 1 } as unknown as Account,
       coreTxs: [{}] as Transaction[],
       wrappedTxs: [{}] as Transaction[],

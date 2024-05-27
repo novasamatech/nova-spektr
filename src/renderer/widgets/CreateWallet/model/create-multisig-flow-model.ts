@@ -1,5 +1,6 @@
 import { combine, createApi, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import sortBy from 'lodash/sortBy';
+import { delay, spread } from 'patronum';
 
 import {
   Account,
@@ -7,8 +8,6 @@ import {
   ChainId,
   ChainType,
   CryptoType,
-  MultisigTxWrapper,
-  ProxyTxWrapper,
   Signatory,
   SigningType,
   Transaction,
@@ -17,11 +16,15 @@ import {
 } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
-import { FormSubmitEvent, Step } from '../lib/types';
+import { AddMultisigStore, FormSubmitEvent, Step } from '../lib/types';
 import { formModel } from './create-multisig-form-model';
 import { walletSelectModel } from '@features/wallets';
 import { transactionService } from '@entities/transaction';
 import { TEST_ACCOUNTS, ZERO_BALANCE, toAddress } from '@shared/lib/utils';
+import { confirmModel } from './confirm-model';
+import { signModel } from '@features/operations/OperationSign/model/sign-model';
+import { submitModel } from '@features/operations/OperationSubmit';
+import { createMultisigUtils } from '../lib/create-multisig-utils';
 
 const reset = createEvent();
 const stepChanged = createEvent<Step>();
@@ -29,6 +32,7 @@ const feeChanged = createEvent<string>();
 const multisigDepositChanged = createEvent<string>();
 const isFeeLoadingChanged = createEvent<boolean>();
 const formSubmitted = createEvent<FormSubmitEvent>();
+const flowFinished = createEvent();
 
 export type Callbacks = {
   onComplete: () => void;
@@ -49,6 +53,11 @@ const callbacksApi = createApi($callbacks, {
 
 const $error = createStore('').reset(reset);
 
+const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
+const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
+const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
+const $addMultisigStore = createStore<AddMultisigStore | null>(null).reset(flowFinished);
+
 // Options for selectors
 
 const $txWrappers = combine(
@@ -57,7 +66,7 @@ const $txWrappers = combine(
     wallets: walletModel.$wallets,
     threshold: formModel.$createMultisigForm.fields.threshold.$value,
     chains: networkModel.$chains,
-    chain: formModel.$createMultisigForm.fields.chain.$value,
+    chain: formModel.$createMultisigForm.fields.chainId.$value,
     accountSignatories: formModel.$accountSignatories,
     constactSignatories: formModel.$contactSignatories,
   },
@@ -89,13 +98,15 @@ const $signer = combine(
     accounts: formModel.$accountSignatories,
   },
   ({ txWrappers, accounts }) => {
-    if (txWrappers.length === 0) return accounts[0];
+    // fixme this should be dynamic depending on if the signer is a proxy
+    return accounts[0] as unknown as Account;
+    // if (txWrappers.length === 0) return accounts[0];
 
-    if (transactionService.hasMultisig([txWrappers[0]])) {
-      return (txWrappers[0] as MultisigTxWrapper).multisigAccount;
-    }
+    // if (transactionService.hasMultisig([txWrappers[0]])) {
+    //   return (txWrappers[0] as MultisigTxWrapper).multisigAccount;
+    // }
 
-    return (txWrappers[0] as ProxyTxWrapper).proxyAccount;
+    // return (txWrappers[0] as ProxyTxWrapper).proxyAccount;
   },
 );
 
@@ -103,7 +114,7 @@ const $signer = combine(
 
 const $isChainConnected = combine(
   {
-    chain: formModel.$createMultisigForm.fields.chain.$value,
+    chain: formModel.$createMultisigForm.fields.chainId.$value,
     statuses: networkModel.$connectionStatuses,
   },
   ({ chain, statuses }) => {
@@ -121,11 +132,11 @@ const $remarkTx = combine(
     isConnected: $isChainConnected,
   },
   ({ chains, form, account, isConnected }): Transaction | undefined => {
-    if (!isConnected || !account || !form.chain || !form.threshold) return undefined;
+    if (!isConnected || !account || !form.chainId || !form.threshold) return undefined;
 
     return {
-      chainId: form.chain,
-      address: toAddress(account.accountId, { prefix: chains[form.chain].addressPrefix }),
+      chainId: form.chainId,
+      address: toAddress(account.accountId, { prefix: chains[form.chainId].addressPrefix }),
       type: TransactionType.REMARK,
       args: {
         remark: 'Multisig created with Nova Spektr',
@@ -139,7 +150,7 @@ const $transaction = combine(
   {
     apis: networkModel.$apis,
     chains: networkModel.$chains,
-    chain: formModel.$createMultisigForm.fields.chain.$value,
+    chain: formModel.$createMultisigForm.fields.chainId.$value,
     remarkTx: $remarkTx,
     txWrappers: $txWrappers,
   },
@@ -159,7 +170,7 @@ const $transaction = combine(
 const $api = combine(
   {
     apis: networkModel.$apis,
-    chainId: formModel.$createMultisigForm.fields.chain.$value,
+    chainId: formModel.$createMultisigForm.fields.chainId.$value,
   },
   ({ apis, chainId }) => {
     return chainId ? apis[chainId] : undefined;
@@ -214,7 +225,7 @@ const $hasOwnSignatory = combine(
 
 const $fakeTx = combine(
   {
-    chain: formModel.$createMultisigForm.fields.chain.$value,
+    chain: formModel.$createMultisigForm.fields.chainId.$value,
     isConnected: $isChainConnected,
   },
   ({ isConnected, chain }): Transaction | undefined => {
@@ -242,7 +253,7 @@ sample({
   clock: walletCreated,
   source: {
     signatories: formModel.$signatories,
-    chainId: formModel.$createMultisigForm.fields.chain.$value,
+    chainId: formModel.$createMultisigForm.fields.chainId.$value,
     chains: networkModel.$chains,
   },
   fn: ({ signatories, chains, chainId }, resultValues) => ({
@@ -282,6 +293,7 @@ sample({
       },
       formData: {
         ...formData,
+        signer,
         fee,
         account: signer,
         multisigDeposit,
@@ -289,6 +301,93 @@ sample({
     };
   },
   target: formSubmitted,
+});
+
+sample({
+  clock: formSubmitted,
+  fn: ({ transactions, formData }) => ({
+    wrappedTx: transactions.wrappedTx,
+    multisigTx: transactions.multisigTx || null,
+    coreTx: transactions.coreTx,
+    store: formData,
+  }),
+  target: spread({
+    wrappedTx: $wrappedTx,
+    multisigTx: $multisigTx,
+    coreTx: $coreTx,
+    store: $addMultisigStore,
+  }),
+});
+
+sample({
+  clock: formSubmitted,
+  fn: ({ formData, transactions }) => ({
+    event: { ...formData, transaction: transactions.wrappedTx },
+    step: Step.CONFIRM,
+  }),
+  target: spread({
+    event: confirmModel.events.formInitiated,
+    step: stepChanged,
+  }),
+});
+
+sample({
+  clock: confirmModel.output.formSubmitted,
+  source: {
+    addMultisigStore: $addMultisigStore,
+    wrappedTx: $wrappedTx,
+    signer: $signer,
+  },
+  filter: ({ addMultisigStore, wrappedTx }) => Boolean(addMultisigStore) && Boolean(wrappedTx),
+  fn: ({ addMultisigStore, wrappedTx, signer }) => ({
+    event: {
+      chainId: addMultisigStore!.chainId,
+      accounts: [signer as unknown as Account],
+      transactions: [wrappedTx!],
+    },
+    step: Step.SIGN,
+  }),
+  target: spread({
+    event: signModel.events.formInitiated,
+    step: stepChanged,
+  }),
+});
+
+sample({
+  clock: signModel.output.formSubmitted,
+  source: {
+    addMultisigStore: $addMultisigStore,
+    coreTx: $coreTx,
+    wrappedTx: $wrappedTx,
+    multisigTx: $multisigTx,
+    signer: $signer,
+  },
+  filter: ({ addMultisigStore, coreTx, wrappedTx }) => {
+    return Boolean(addMultisigStore) && Boolean(wrappedTx) && Boolean(coreTx);
+  },
+  fn: ({ addMultisigStore, coreTx, wrappedTx, multisigTx, signer }, signParams) => ({
+    event: {
+      ...signParams,
+      chainId: addMultisigStore!.chainId,
+      account: signer as unknown as Account,
+      coreTxs: [coreTx!],
+      wrappedTxs: [wrappedTx!],
+      multisigTxs: multisigTx ? [multisigTx] : [],
+      description: '',
+    },
+    step: Step.SUBMIT,
+  }),
+  target: spread({
+    event: submitModel.events.formInitiated,
+    step: stepChanged,
+  }),
+});
+
+sample({
+  clock: delay(submitModel.output.formSubmitted, 2000),
+  source: $step,
+  filter: (step) => createMultisigUtils.isSubmitStep(step),
+  target: flowFinished,
 });
 
 export const flowModel = {
@@ -308,8 +407,5 @@ export const flowModel = {
     feeChanged,
     multisigDepositChanged,
     isFeeLoadingChanged,
-  },
-  output: {
-    formSubmitted,
   },
 };

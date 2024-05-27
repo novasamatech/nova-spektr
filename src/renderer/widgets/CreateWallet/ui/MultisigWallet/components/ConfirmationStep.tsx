@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 
 import { cnTw, RootExplorers } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
-import { Button, FootnoteText, SmallTitleText } from '@shared/ui';
+import { BodyText, Button, FootnoteText, SmallTitleText } from '@shared/ui';
 import { ExtendedWallet, ExtendedContact, ExtendedAccount } from '../common/types';
 import { WalletItem } from './WalletItem';
 import { ContactItem, ExplorersPopover } from '@entities/wallet';
@@ -33,15 +33,15 @@ export const ConfirmationStep = ({ chain, wallets = [], accounts = [], contacts 
 
   return (
     <div className={cnTw('max-h-full flex flex-col flex-1')}>
-      <SmallTitleText className="py-2 mb-4">{t('createMultisigAccount.newMultisigTitle')}</SmallTitleText>
+      <SmallTitleText className="py-2">{t('createMultisigAccount.newMultisigTitle')}</SmallTitleText>
       <WalletItem className="py-2 mb-4" name={name.value} type={WalletType.MULTISIG} />
 
-      <SmallTitleText className="py-2 mb-4">{t('createMultisigAccount.thresholdName')}</SmallTitleText>
-      <div>
+      <SmallTitleText className="py-2">{t('createMultisigAccount.thresholdName')}</SmallTitleText>
+      <BodyText as="span" className="text-text-secondary tracking-tight truncate mb-4">
         {threshold.value}/{signatories.length}
-      </div>
+      </BodyText>
 
-      <SmallTitleText className="py-2 mb-4">{t('createMultisigAccount.selectedSignatoriesTitle')}</SmallTitleText>
+      <SmallTitleText className="py-2">{t('createMultisigAccount.selectedSignatoriesTitle')}</SmallTitleText>
       <div className="flex flex-col gap-y-2 flex-1 overflow-y-auto">
         {wallets.length > 0 && (
           <>
@@ -107,14 +107,14 @@ export const ConfirmationStep = ({ chain, wallets = [], accounts = [], contacts 
           onFeeChange={flowModel.events.feeChanged}
           onFeeLoading={flowModel.events.isFeeLoadingChanged}
         />
-        <div className="flex justify-between items-center mt-auto">
-          <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.INIT)}>
-            {t('createMultisigAccount.backButton')}
-          </Button>
-          <Button key="continue" onClick={() => flowModel.events.stepChanged(Step.SIGN)}>
-            {t('createMultisigAccount.continueButton')}
-          </Button>
-        </div>
+      </div>
+      <div className="flex justify-between items-center mt-auto">
+        <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.INIT)}>
+          {t('createMultisigAccount.backButton')}
+        </Button>
+        <Button key="continue" onClick={() => flowModel.events.stepChanged(Step.SIGN)}>
+          {t('createMultisigAccount.continueButton')}
+        </Button>
       </div>
     </div>
   );

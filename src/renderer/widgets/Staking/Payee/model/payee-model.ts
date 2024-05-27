@@ -271,7 +271,7 @@ sample({
 
     return {
       event: {
-        chain: walletData!.chain,
+        chainId: walletData!.chain.chainId,
         accounts: wrapper ? [wrapper.proxyAccount] : payeeData!.shards,
         signatory: payeeData!.signatory,
         transactions: transactions!.map((tx) => tx.wrappedTx),
@@ -298,7 +298,7 @@ sample({
   fn: (payeeFlowData, signParams) => ({
     event: {
       ...signParams,
-      chain: payeeFlowData.walletData!.chain,
+      chainId: payeeFlowData.walletData!.chain.chainId,
       account: payeeFlowData.payeeData!.shards[0],
       signatory: payeeFlowData.payeeData!.signatory,
       description: payeeFlowData.payeeData!.description,

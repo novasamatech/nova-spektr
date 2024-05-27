@@ -1,4 +1,4 @@
-import { ChainId, Transaction } from '@shared/core';
+import { Account, ChainId, Transaction } from '@shared/core';
 
 export const enum Step {
   INIT,
@@ -10,7 +10,7 @@ export const enum Step {
 
 export type FormParams = {
   threshold: number;
-  chain: ChainId;
+  chainId: ChainId;
   name: string;
 };
 
@@ -21,7 +21,10 @@ export type FormSubmitEvent = {
     coreTx: Transaction;
   };
   formData: FormParams & {
+    signer: Account;
     fee: string;
     multisigDeposit: string;
   };
 };
+
+export type AddMultisigStore = FormSubmitEvent['formData'];
