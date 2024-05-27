@@ -7,12 +7,7 @@ import chains from '@shared/config/chains/chains.json';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
 import { ExtendedAccount, ExtendedContact } from '../ui/MultisigWallet/common/types';
-
-type FormParams = {
-  threshold: number;
-  chain: ChainId;
-  name: string;
-};
+import { FormParams } from '../lib/types';
 
 const $createMultisigForm = createForm<FormParams>({
   fields: {

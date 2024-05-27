@@ -363,6 +363,16 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
+
+  [TransactionType.REMARK]: (transaction, info, options) => {
+    return methods.system.remark(
+      {
+        remark: transaction.args.remark,
+      },
+      info,
+      options,
+    );
+  },
 };
 
 export const getExtrinsic: Record<
@@ -451,6 +461,7 @@ export const getExtrinsic: Record<
   [TransactionType.CREATE_PURE_PROXY]: ({ proxyType, delay, index }, api) => {
     return api.tx.proxy.createPure(proxyType, delay, index);
   },
+  [TransactionType.REMARK]: ({ remark }, api) => api.tx.system.remark(remark),
 };
 
 type WrapAsMultiParams = {

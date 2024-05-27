@@ -7,7 +7,7 @@ import { BaseModal, HeaderTitleText, Button, IconButton } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { OperationResult } from '@entities/transaction';
-import { ConfirmSignatories, NameThreshold } from './components';
+import { ConfirmationStep, NameThresholdStep } from './components';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { flowModel } from '../../model/create-multisig-flow-model';
 // import { SelectSignatories } from './components/SelectAccountSignatories';
@@ -105,14 +105,10 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
         onClose={closeMultisigModal}
       >
         {createMultisigUtils.isInitStep(activeStep) && <SelectSignatoriesForm />}
-        {createMultisigUtils.isNameThresholdStep(activeStep) && <NameThreshold signatories={signatories} />}
+        {createMultisigUtils.isNameThresholdStep(activeStep) && <NameThresholdStep signatories={signatories} />}
         {createMultisigUtils.isConfirmStep(activeStep) && (
           <section className="relative flex flex-col px-5 py-4 flex-1 bg-input-background-disabled h-full">
-            <ConfirmSignatories
-              chain={chains[chain.value]}
-              accounts={accountSignatories}
-              contacts={contactSignatories}
-            />
+            <ConfirmationStep chain={chains[chain.value]} accounts={accountSignatories} contacts={contactSignatories} />
           </section>
         )}
 

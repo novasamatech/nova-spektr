@@ -361,6 +361,9 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
         call: decoded.args[2].toHex(),
       };
     },
+    [TransactionType.REMARK]: (decoded): Record<string, any> => {
+      return { remark: decoded.args[0].toString() };
+    },
   };
 
   const isBatchExtrinsic = (method: string, section: string): boolean => {

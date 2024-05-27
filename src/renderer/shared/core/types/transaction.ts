@@ -42,6 +42,8 @@ export const enum TransactionType {
   PROXY = 'proxy',
   CREATE_PURE_PROXY = 'create_pure_proxy',
   REMOVE_PURE_PROXY = 'kill_pure_proxy',
+
+  REMARK = 'remark',
 }
 
 export type SigningStatus =

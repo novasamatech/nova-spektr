@@ -1,3 +1,6 @@
+import { useForm } from 'effector-forms';
+import { useUnit } from 'effector-react';
+
 import { cnTw, RootExplorers } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
 import { Button, FootnoteText, SmallTitleText } from '@shared/ui';
@@ -7,6 +10,8 @@ import { ContactItem, ExplorersPopover } from '@entities/wallet';
 import { Chain, WalletType } from '@shared/core';
 import { flowModel } from '../../../model/create-multisig-flow-model';
 import { Step } from '../../../lib/types';
+import { formModel } from '../../../model/create-multisig-form-model';
+import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
 
 type Props = {
   wallets?: ExtendedWallet[];
@@ -15,15 +20,28 @@ type Props = {
   chain?: Chain;
 };
 
-export const ConfirmSignatories = ({ chain, wallets = [], accounts = [], contacts }: Props) => {
+export const ConfirmationStep = ({ chain, wallets = [], accounts = [], contacts }: Props) => {
   const { t } = useI18n();
+  const {
+    fields: { name, threshold },
+  } = useForm(formModel.$createMultisigForm);
+  const signatories = useUnit(formModel.$signatories);
+  const api = useUnit(flowModel.$api);
+  const fakeTx = useUnit(flowModel.$fakeTx);
 
   const explorers = chain ? chain.explorers : RootExplorers;
 
   return (
     <div className={cnTw('max-h-full flex flex-col flex-1')}>
-      <SmallTitleText className="py-2 mb-4">{t('createMultisigAccount.selectedSignatoriesTitle')}</SmallTitleText>
+      <SmallTitleText className="py-2 mb-4">{t('createMultisigAccount.newMultisigTitle')}</SmallTitleText>
+      <WalletItem className="py-2 mb-4" name={name.value} type={WalletType.MULTISIG} />
 
+      <SmallTitleText className="py-2 mb-4">{t('createMultisigAccount.thresholdName')}</SmallTitleText>
+      <div>
+        {threshold.value}/{signatories.length}
+      </div>
+
+      <SmallTitleText className="py-2 mb-4">{t('createMultisigAccount.selectedSignatoriesTitle')}</SmallTitleText>
       <div className="flex flex-col gap-y-2 flex-1 overflow-y-auto">
         {wallets.length > 0 && (
           <>
@@ -75,6 +93,20 @@ export const ConfirmSignatories = ({ chain, wallets = [], accounts = [], contact
             </ul>
           </>
         )}
+
+        <MultisigDepositWithLabel
+          api={api}
+          asset={chain!.assets[0]}
+          threshold={threshold.value}
+          onDepositChange={flowModel.events.multisigDepositChanged}
+        />
+        <FeeWithLabel
+          api={api}
+          asset={chain!.assets[0]}
+          transaction={fakeTx}
+          onFeeChange={flowModel.events.feeChanged}
+          onFeeLoading={flowModel.events.isFeeLoadingChanged}
+        />
         <div className="flex justify-between items-center mt-auto">
           <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.INIT)}>
             {t('createMultisigAccount.backButton')}

@@ -6,7 +6,7 @@ import { construct, UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 
-import { Transaction, TransactionType, WrapperKind } from '@shared/core';
+import { Transaction, WrapperKind } from '@shared/core';
 import { createTxMetadata, toAccountId, dictionary } from '@shared/lib/utils';
 import { getExtrinsic, getUnsignedTransaction, wrapAsMulti, wrapAsProxy } from './extrinsicService';
 import { decodeDispatchError } from './common/utils';
@@ -14,8 +14,6 @@ import { useCallDataDecoder } from './callDataDecoder';
 import { walletUtils } from '../../wallet';
 import type {
   AccountId,
-  Address,
-  ChainId,
   HexString,
   Threshold,
   Wallet,
@@ -40,6 +38,7 @@ export const transactionService = {
   createPayload,
   signAndSubmit,
 
+  getMultisigWrapper,
   getTxWrappers,
   getWrappedTransaction,
 };
@@ -333,20 +332,6 @@ export const useTransaction = (): ITransactionService => {
     return transaction;
   };
 
-  const buildTransaction = (
-    type: TransactionType,
-    address: Address,
-    chainId: ChainId,
-    args: Record<string, any>,
-  ): Transaction => {
-    return {
-      type: type,
-      address: address,
-      chainId: chainId,
-      args: args,
-    };
-  };
-
   return {
     getExtrinsicWeight,
     getTxWeight,
@@ -357,6 +342,5 @@ export const useTransaction = (): ITransactionService => {
     setTxs,
     setWrappers,
     wrapTx,
-    buildTransaction,
   };
 };

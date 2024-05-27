@@ -120,7 +120,8 @@
     "noWallets": "Looks like you don't have any non-watch only wallets",
     "noWalletsLabel": "The wallet list is empty",
     "searchContactPlaceholder": "Search",
-    "selectedSignatoriesTitle": "Check your signatories and proceed",
+    "newMultisigTitle": "New multisig",
+    "selectedSignatoriesTitle": "Selected signatories",
     "signatoriesDescription": "Add signatories to your multisig account",
     "signatoriesLabel": "Signatories",
     "signatoryTitle": "Select signatories",
@@ -569,7 +570,8 @@
       "transferFrom": "Transfer { asset } from",
       "transferOn": "Transfer { asset } on",
       "unknownOn": "Unknown Operation on",
-      "unstakeOn": "Unstake { asset } on"
+      "unstakeOn": "Unstake { asset } on",
+      "remark": "System Remark"
     },
     "noOperationsDescription": "Your operation history will appear here",
     "noOperationsFilters": "Nothing was found for the filters. Try changing filters or canceling filtering.",
@@ -591,7 +593,8 @@
       "startStaking": "Start Staking",
       "transfer": "Transfer",
       "unknown": "Unknown Operation",
-      "unstake": "Unstake"
+      "unstake": "Unstake",
+      "remark": "Remark"
     }
   },
   "price": {

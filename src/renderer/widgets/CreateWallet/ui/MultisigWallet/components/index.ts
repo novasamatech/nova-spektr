@@ -1,3 +1,3 @@
-export { SelectSignatories } from './SelectSignatories';
-export { ConfirmSignatories } from './ConfirmSignatories';
-export { NameThreshold } from './NameThreshold';
+export { SelectSignatoriesStep } from './SelectSignatoriesStep';
+export { ConfirmationStep } from './ConfirmationStep';
+export { NameThresholdStep } from './NameThresholdStep';

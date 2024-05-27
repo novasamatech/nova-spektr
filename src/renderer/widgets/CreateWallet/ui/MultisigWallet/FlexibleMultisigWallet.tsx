@@ -7,7 +7,7 @@ import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { OperationResult } from '@entities/transaction';
 import { ExtendedContact, ExtendedWallet } from './common/types';
-import { SelectSignatories, ConfirmSignatories, NameThreshold } from './components';
+import { SelectSignatoriesStep, ConfirmationStep, NameThresholdStep } from './components';
 import { contactModel } from '@entities/contact';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { walletModel } from '@entities/wallet';
@@ -106,7 +106,7 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
         contentClass="flex h-[524px]"
         onClose={closeMultisigModal}
       >
-        <NameThreshold
+        <NameThresholdStep
           signatories={signatories}
           // onGoBack={goToPrevStep}
         />
@@ -121,10 +121,10 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
 
           {/* Should be before SelectSignatories to avoid hidden nova wallet icon */}
           {activeStep === Step.CONFIRMATION && (
-            <ConfirmSignatories wallets={signatoryWallets} contacts={signatoryContacts} />
+            <ConfirmationStep wallets={signatoryWallets} contacts={signatoryContacts} />
           )}
 
-          <SelectSignatories
+          <SelectSignatoriesStep
             isActive={activeStep === Step.INIT}
             wallets={wallets}
             accounts={wallets.map((wallet) => wallet.accounts).flat()}

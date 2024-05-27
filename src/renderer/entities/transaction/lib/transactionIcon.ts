@@ -32,6 +32,8 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.REMOVE_PROXY]: 'proxyMst',
   [TransactionType.REMOVE_PURE_PROXY]: 'proxyMst',
   [TransactionType.PROXY]: 'unknownMst',
+  // Remark
+  [TransactionType.REMARK]: 'unknownMst',
 };
 
 export const getIconName = (transaction?: Transaction | DecodedTransaction): IconNames => {

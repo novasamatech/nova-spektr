@@ -4,8 +4,8 @@ import { Weight } from '@polkadot/types/interfaces';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { AnyJson } from '@polkadot/types/types';
 
-import type { Address, CallData, HexString, Timepoint, AccountId, ChainId, TxWrappers_OLD } from '@shared/core';
-import { DecodedTransaction, Transaction, TransactionType } from '@shared/core';
+import type { Address, CallData, HexString, Timepoint, AccountId, TxWrappers_OLD } from '@shared/core';
+import { DecodedTransaction, Transaction } from '@shared/core';
 
 // =====================================================
 // =========== ITransactionService interface ===========
@@ -21,12 +21,6 @@ export type ITransactionService = {
   txs: Transaction[];
   setWrappers: (wrappers: TxWrappers_OLD[]) => void;
   wrapTx: (tx: Transaction, api: ApiPromise, addressPrefix: number) => Transaction;
-  buildTransaction: (
-    type: TransactionType,
-    address: Address,
-    chainId: ChainId,
-    args: Record<string, any>,
-  ) => Transaction;
 };
 
 // =====================================================

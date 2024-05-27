@@ -32,6 +32,8 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.REMOVE_PROXY]: 'proxyConfirm',
   [TransactionType.REMOVE_PURE_PROXY]: 'proxyConfirm',
   [TransactionType.PROXY]: 'unknownConfirm',
+  // Remark
+  [TransactionType.REMARK]: 'unknownConfirm',
 };
 
 export const getIconName = (transaction?: Transaction | DecodedTransaction): IconNames => {

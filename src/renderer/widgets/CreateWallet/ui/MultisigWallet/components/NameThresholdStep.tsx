@@ -10,8 +10,6 @@ import { ChainTitle } from '@entities/chain';
 import { Signatory, type Chain, type ChainId } from '@shared/core';
 import { formModel } from '../../../model/create-multisig-form-model';
 import { flowModel } from '../../../model/create-multisig-flow-model';
-import { walletModel } from '@entities/wallet';
-import { contactModel } from '@entities/contact';
 
 const getThresholdOptions = (optionsAmount: number): DropdownOption<number>[] => {
   if (optionsAmount === 0) return [];
@@ -42,22 +40,16 @@ type Props = {
   // onGoBack: () => void;
 };
 
-export const NameThreshold = ({
+export const NameThresholdStep = ({
   signatories,
 }: // onGoBack,
 Props) => {
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
-  const {
-    fields: { chain },
-  } = useForm(formModel.$createMultisigForm);
   const { fields, submit } = useForm(formModel.$createMultisigForm);
   const multisigAlreadyExists = useUnit(formModel.$multisigAlreadyExists);
   const hasOwnSignatory = useUnit(flowModel.$hasOwnSignatory);
-  const accounts = useUnit(formModel.$availableAccounts);
-  const wallets = useUnit(walletModel.$wallets);
-  const contacts = useUnit(contactModel.$contacts);
 
   //fixme this is now how we do it
   // probably put that in the model
