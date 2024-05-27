@@ -19,11 +19,6 @@ jest.mock('@app/providers', () => ({
   }),
 }));
 
-jest.mock('@shared/lib/hooks', () => ({
-  ...jest.requireActual('@shared/lib/hooks'),
-  useThrottle: jest.fn().mockImplementation((value: any) => value),
-}));
-
 const testBalances = [
   {
     assetId: testAsset.assetId.toString(),
@@ -58,7 +53,7 @@ const accounts = [
   },
 ] as Array<BaseAccount | ChainAccount | ShardAccount>;
 
-describe('pages/Assets/Assets/components/NetworkAssets', () => {
+describe('features/AssetsChainView/ui/NetworkAssets', () => {
   const scope = fork({
     values: new Map().set(balanceModel.$balances, testBalances),
   });
@@ -67,7 +62,7 @@ describe('pages/Assets/Assets/components/NetworkAssets', () => {
     await act(async () => {
       render(
         <Provider value={scope}>
-          <NetworkAssets chain={testChain} accounts={accounts} hideZeroBalances query="" />
+          <NetworkAssets chain={testChain} accounts={accounts} hideZeroBalances={false} query="" />
         </Provider>,
       );
     });
