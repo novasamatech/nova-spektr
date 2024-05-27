@@ -65,9 +65,9 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
     );
 
     setSortedChains(sortedChains);
-  }, [activeWallet, balances, assetsPrices]);
+  }, [activeWallet, balances, assetsPrices, assetsView, activeShards]);
 
-  if (assetsView !== AssetsListView.CHAIN_CENTRIC || activeShards.length === 0) return null;
+  if (assetsView !== AssetsListView.CHAIN_CENTRIC || !activeShards.length) return null;
 
   const searchSymbolOnly = sortedChains.some((chain) => {
     return chain.assets.some((asset) => isStringsMatchQuery(query, [asset.symbol, asset.name]));

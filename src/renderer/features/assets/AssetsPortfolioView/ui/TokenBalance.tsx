@@ -1,13 +1,13 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { Icon, Tooltip, BodyText, Plate, Shimmering, FootnoteText, CaptionText } from '@shared/ui';
+import { Icon, Tooltip, BodyText, Plate, FootnoteText, CaptionText } from '@shared/ui';
 import type { AssetByChains } from '@shared/core';
-import { totalAmount } from '@shared/lib/utils';
-import { priceProviderModel, AssetFiatBalance, TokenPrice } from '@entities/price';
-import { AssetBalance, AssetIcon, AssetLinks } from '@entities/asset';
+import { TokenPrice } from '@entities/price';
+import { AssetIcon, AssetLinks } from '@entities/asset';
 import { networkModel } from '@entities/network';
 import { ChainIcon } from '@entities/chain';
+import { AssembledAssetAmount } from './AssembledAssetAmount';
 
 type Props = {
   asset: AssetByChains;
@@ -17,11 +17,13 @@ export const TokenBalance = ({ asset }: Props) => {
   const { t } = useI18n();
   const chain = asset.chains[0];
 
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const chains = useUnit(networkModel.$chains);
 
   return (
-    <Plate className="p-0 z-10 h-[52px] w-full items-center flex pl-[30px] pr-2">
+    <Plate
+      className="p-0 z-10 h-[52px] w-full items-center flex pl-[30px] pr-2 
+    transition-shadow hover:shadow-card-shadow focus:shadow-card-shadow"
+    >
       <div className="flex gap-x-2 flex-1">
         <div className="flex items-center gap-x-2">
           <AssetIcon src={asset.icon} name={asset.name} />
@@ -49,17 +51,7 @@ export const TokenBalance = ({ asset }: Props) => {
         className="text-text-primar text-right"
       />
       <div className="flex flex-col items-end w-[100px]">
-        {chain.balance?.free ? (
-          <>
-            <AssetBalance value={totalAmount(chain.balance)} asset={asset} showSymbol={false} />
-            <AssetFiatBalance amount={totalAmount(chain.balance)} asset={asset} />
-          </>
-        ) : (
-          <div className="flex flex-col gap-y-1 items-end">
-            <Shimmering width={82} height={20} />
-            {fiatFlag && <Shimmering width={56} height={18} />}
-          </div>
-        )}
+        <AssembledAssetAmount asset={asset} balance={chain.balance} />
       </div>
       <AssetLinks assetId={asset.chains[0].assetId} chainId={chain.chainId} />
     </Plate>
