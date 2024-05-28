@@ -11,7 +11,7 @@ import { SelectSignatoriesStep, ConfirmationStep, NameThresholdStep } from './co
 import { contactModel } from '@entities/contact';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { walletModel } from '@entities/wallet';
-import { flowModel } from '../../model/create-multisig-flow-model';
+import { flowModel } from '../../model/flow-model';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 

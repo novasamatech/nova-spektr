@@ -17,7 +17,7 @@ import {
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
 import { AddMultisigStore, FormSubmitEvent, Step } from '../lib/types';
-import { formModel } from './create-multisig-form-model';
+import { formModel } from './form-model';
 import { walletSelectModel } from '@features/wallets';
 import { transactionService } from '@entities/transaction';
 import { TEST_ACCOUNTS, ZERO_BALANCE, toAddress } from '@shared/lib/utils';
@@ -60,7 +60,28 @@ const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $addMultisigStore = createStore<AddMultisigStore | null>(null).reset(flowFinished);
 
-// Options for selectors
+// $selected signer will be taken into account in case we have
+// several accountSignatories. Otherwise it is the first accountSignatory
+const $signer = combine(
+  {
+    accountSignatories: formModel.$accountSignatories,
+    selectedSigner: $selectedSigner,
+    wallets: walletModel.$wallets,
+  },
+  ({ accountSignatories, selectedSigner, wallets }) => {
+    // fixme this should be dynamic depending on if the signer is a proxy
+    return accountSignatories.length > 1 && selectedSigner
+      ? selectedSigner
+      : walletUtils.getAccountsBy(wallets, ({ accountId }) => accountId === accountSignatories[0].accountId)[0];
+    // if (txWrappers.length === 0) return accounts[0];
+
+    // if (transactionService.hasMultisig([txWrappers[0]])) {
+    //   return (txWrappers[0] as MultisigTxWrapper).multisigAccount;
+    // }
+
+    // return (txWrappers[0] as ProxyTxWrapper).proxyAccount;
+  },
+);
 
 const $txWrappers = combine(
   {
@@ -71,8 +92,9 @@ const $txWrappers = combine(
     chain: formModel.$createMultisigForm.fields.chainId.$value,
     accountSignatories: formModel.$accountSignatories,
     constactSignatories: formModel.$contactSignatories,
+    signer: $signer,
   },
-  ({ wallet, threshold, chains, chain, wallets, accountSignatories, constactSignatories }) => {
+  ({ wallet, threshold, chains, chain, wallets, accountSignatories, constactSignatories, signer }) => {
     if (!wallet || !chain || !threshold || !accountSignatories.length) return [];
 
     const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
@@ -88,34 +110,23 @@ const $txWrappers = combine(
     // fixme see if we can remove  the type casting
     return transactionService.getMultisigWrapper({
       wallets: filteredWallets || [],
-      account: accountSignatories[0] as unknown as Account,
+      account: signer,
       signatories: [...constactSignatories, ...accountSignatories] as unknown as Account[],
     });
   },
 );
 
-// $selected signer will be taken into account in case we have
-// several accountSignatories. Otherwise it is the first accountSignatory
-const $signer = combine(
-  {
-    txWrappers: $txWrappers,
-    accountSignatories: formModel.$accountSignatories,
-    selectedSigner: $selectedSigner,
-  },
-  ({ txWrappers, accountSignatories, selectedSigner }) => {
-    // fixme this should be dynamic depending on if the signer is a proxy
-    return accountSignatories.length > 1 && selectedSigner
-      ? selectedSigner
-      : (accountSignatories[0] as unknown as Account);
-    // if (txWrappers.length === 0) return accounts[0];
+$txWrappers.watch((txWrappers) => {
+  console.log('<><><>txWrappers', txWrappers);
+});
 
-    // if (transactionService.hasMultisig([txWrappers[0]])) {
-    //   return (txWrappers[0] as MultisigTxWrapper).multisigAccount;
-    // }
+$signer.watch((signer) => {
+  console.log('<><><>signer', signer);
+});
 
-    // return (txWrappers[0] as ProxyTxWrapper).proxyAccount;
-  },
-);
+const $signerWallet = combine({ signer: $signer, wallets: walletModel.$wallets }, ({ signer, wallets }) => {
+  return walletUtils.getWalletFilteredAccounts(wallets, { accountFn: (w) => w.accountId === signer.accountId });
+});
 
 // Miscellaneous
 
@@ -349,7 +360,7 @@ sample({
   fn: ({ addMultisigStore, wrappedTx, signer }) => ({
     event: {
       chainId: addMultisigStore!.chainId,
-      accounts: [signer as unknown as Account],
+      accounts: [signer],
       transactions: [wrappedTx!],
     },
     step: Step.SIGN,
@@ -376,7 +387,7 @@ sample({
     event: {
       ...signParams,
       chainId: addMultisigStore!.chainId,
-      account: signer as unknown as Account,
+      account: signer,
       coreTxs: [coreTx!],
       wrappedTxs: [wrappedTx!],
       multisigTxs: multisigTx ? [multisigTx] : [],
@@ -408,6 +419,7 @@ export const flowModel = {
   $isFeeLoading,
   $selectedSigner,
   $signer,
+  $signerWallet,
   events: {
     reset,
     callbacksChanged: callbacksApi.callbacksChanged,

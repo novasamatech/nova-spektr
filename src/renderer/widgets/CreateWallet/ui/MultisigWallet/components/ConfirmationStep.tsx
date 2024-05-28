@@ -8,10 +8,12 @@ import { ExtendedWallet, ExtendedContact, ExtendedAccount } from '../common/type
 import { WalletItem } from './WalletItem';
 import { AccountAddress, ContactItem, ExplorersPopover, walletModel, walletUtils } from '@entities/wallet';
 import { Chain, WalletType } from '@shared/core';
-import { flowModel } from '../../../model/create-multisig-flow-model';
+import { flowModel } from '../../../model/flow-model';
 import { Step } from '../../../lib/types';
-import { formModel } from '../../../model/create-multisig-form-model';
+import { formModel } from '../../../model/form-model';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
+import { SignButton } from '@entities/operations';
+import { confirmModel } from '../../../model/confirm-model';
 
 type Props = {
   wallets?: ExtendedWallet[];
@@ -29,6 +31,7 @@ export const ConfirmationStep = ({ chain, wallets = [], accounts = [], contacts 
   const signatories = useUnit(formModel.$signatories);
   const api = useUnit(flowModel.$api);
   const fakeTx = useUnit(flowModel.$fakeTx);
+  const signerWallet = useUnit(flowModel.$signerWallet);
 
   const explorers = chain ? chain.explorers : RootExplorers;
 
@@ -118,12 +121,10 @@ export const ConfirmationStep = ({ chain, wallets = [], accounts = [], contacts 
         />
       </div>
       <div className="flex justify-between items-center mt-auto">
-        <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.INIT)}>
+        <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.NAMETHRESHOLD)}>
           {t('createMultisigAccount.backButton')}
         </Button>
-        <Button key="continue" onClick={() => flowModel.events.stepChanged(Step.SIGN)}>
-          {t('createMultisigAccount.continueButton')}
-        </Button>
+        <SignButton type={signerWallet!.type} onClick={confirmModel.output.formSubmitted} />
       </div>
     </div>
   );

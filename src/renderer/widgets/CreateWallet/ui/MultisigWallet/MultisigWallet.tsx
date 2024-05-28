@@ -9,14 +9,15 @@ import { useToggle } from '@shared/lib/hooks';
 import { OperationResult } from '@entities/transaction';
 import { ConfirmationStep, NameThresholdStep } from './components';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
-import { flowModel } from '../../model/create-multisig-flow-model';
+import { flowModel } from '../../model/flow-model';
 // import { SelectSignatories } from './components/SelectAccountSignatories';
 // import { walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { createMultisigUtils } from '../../lib/create-multisig-utils';
-// import { Step } from '../../lib/types';
-import { formModel } from '../../model/create-multisig-form-model';
+import { formModel } from '../../model/form-model';
 import { SelectSignatoriesForm } from './components/SelectSignatoriesForm';
+import { Step } from '../../lib/types';
+import { OperationSign } from '@features/operations';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -110,6 +111,9 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
           <section className="relative flex flex-col px-5 py-4 flex-1 bg-input-background-disabled h-full">
             <ConfirmationStep chain={chains[chain.value]} accounts={accountSignatories} contacts={contactSignatories} />
           </section>
+        )}
+        {createMultisigUtils.isSignStep(activeStep) && (
+          <OperationSign onGoBack={() => flowModel.events.stepChanged(Step.CONFIRM)} />
         )}
 
         <OperationResult

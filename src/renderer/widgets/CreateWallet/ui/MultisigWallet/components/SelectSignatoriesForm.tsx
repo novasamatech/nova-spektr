@@ -4,8 +4,8 @@ import { useForm } from 'effector-forms';
 import { Alert, Button, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { networkModel } from '@entities/network';
-import { formModel } from '../../../model/create-multisig-form-model';
-import { flowModel } from '../../../model/create-multisig-flow-model';
+import { formModel } from '../../../model/form-model';
+import { flowModel } from '../../../model/flow-model';
 import { walletModel } from '@entities/wallet';
 import { contactModel } from '@entities/contact';
 import { SelectSignatories } from './SelectAccountSignatories';
@@ -64,19 +64,9 @@ export const SelectSignatoriesForm = () => {
         </Alert>
       </div>
       <div className="flex justify-between items-center mt-auto">
-        {/* <Button variant="text" onClick={onGoBack}>
-            {t('createMultisigAccount.backButton')}
-          </Button> */}
-        {/* {isActive ? (
-            // without key continue button triggers form submit
-            <Button key="continue" disabled={!canContinue} onClick={onContinue}>
-              {t('createMultisigAccount.continueButton')}
-            </Button>
-          ) : ( */}
         <Button key="create" disabled={!canContinue} onClick={() => flowModel.events.stepChanged(Step.NAMETHRESHOLD)}>
           {t('createMultisigAccount.continueButton')}
         </Button>
-        {/* )} */}
       </div>
     </section>
   );

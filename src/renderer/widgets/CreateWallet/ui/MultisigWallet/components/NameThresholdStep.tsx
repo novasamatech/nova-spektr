@@ -8,8 +8,9 @@ import { DropdownOption } from '@shared/ui/types';
 import { networkModel, networkUtils } from '@entities/network';
 import { ChainTitle } from '@entities/chain';
 import { Signatory, type Chain, type ChainId } from '@shared/core';
-import { formModel } from '../../../model/create-multisig-form-model';
-import { flowModel } from '../../../model/create-multisig-flow-model';
+import { formModel } from '../../../model/form-model';
+import { flowModel } from '../../../model/flow-model';
+import { Step } from '../../../lib/types';
 
 const getThresholdOptions = (optionsAmount: number): DropdownOption<number>[] => {
   if (optionsAmount === 0) return [];
@@ -126,15 +127,9 @@ Props) => {
         </Alert>
 
         <div className="flex justify-between items-center mt-auto">
-          {/* <Button variant="text" onClick={onGoBack}>
+          <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.INIT)}>
             {t('createMultisigAccount.backButton')}
-          </Button> */}
-          {/* {isActive ? (
-            // without key continue button triggers form submit
-            <Button key="continue" disabled={!canContinue} onClick={onContinue}>
-              {t('createMultisigAccount.continueButton')}
-            </Button>
-          ) : ( */}
+          </Button>
           <Button key="create" disabled={!canContinue} type="submit">
             {t('createMultisigAccount.continueButton')}
           </Button>
