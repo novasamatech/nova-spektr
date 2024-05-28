@@ -8,14 +8,14 @@ import { walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { proxyModel } from '@entities/proxy';
 import { notificationModel } from '@entities/notification';
+import { basketModel } from '@entities/basket';
+import { multisigsModel } from '@processes/multisigs';
 import { proxiesModel } from '@features/proxies';
 import { assetsSettingsModel } from '@features/assets';
-import { multisigsModel } from '../processes/multisigs';
+import '@features/balances';
 import './i18n';
 import './index.css';
 import './styles/theme/default.css';
-import '@features/balances';
-import { basketModel } from '../entities/basket';
 
 log.variables.version = process.env.VERSION;
 log.variables.env = process.env.NODE_ENV;

@@ -1,6 +1,6 @@
 import { formatSectionAndMethod, splitCamelCaseString } from '../strings';
 
-describe('shared/lib/utils/strings', () => {
+describe('shared/lib/onChainUtils/strings', () => {
   describe('formatSectionAndMethod', () => {
     test('should make capital and add :', () => {
       expect(formatSectionAndMethod('system', 'remark')).toEqual('System: Remark');

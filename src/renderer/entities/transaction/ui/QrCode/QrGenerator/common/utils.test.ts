@@ -5,7 +5,7 @@ import { createFrames, createSignPayload, encodeNumber, getSvgString, createSubs
 import { SigningType } from '@shared/core';
 import { SUBSTRATE_ID } from './constants';
 
-describe('QrCode/QrGenerator/utils', () => {
+describe('QrCode/QrGenerator/onChainUtils', () => {
   test('should encodes 1 correctly', () => {
     expect(encodeNumber(1)).toEqual(new Uint8Array([0, 1]));
   });

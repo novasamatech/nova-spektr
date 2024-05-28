@@ -2,27 +2,44 @@ import { useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
 import { Header } from '@shared/ui';
-import { ReferendumList, ReferendumFilter, ReferendumDetails } from '@features/governance';
 import { governanceModel } from '../model/governance-model';
+import {
+  ReferendumList,
+  ReferendumFilter,
+  ReferendumDetails,
+  ChainSelector,
+  Locks,
+  Delegations,
+} from '@features/governance';
 
 export const Governance = () => {
   const { t } = useI18n();
 
   useEffect(() => {
-    governanceModel.events.requestStarted();
+    governanceModel.events.componentMounted();
   }, []);
 
   return (
-    <section className="h-full flex flex-col">
+    <div className="h-full flex flex-col">
       <Header title={t('governance.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
         <ReferendumFilter />
       </Header>
 
-      {/* TODO: Network - Locked - Delegations */}
-      {/* TODO: Tracks - Vote filter */}
+      <div className="overflow-y-auto w-full h-full py-6">
+        <section className="flex flex-col h-full w-[736px] mx-auto">
+          <div className="flex gap-x-3">
+            <ChainSelector />
+            <Locks onClick={() => console.log('Go to Unlock')} />
+            <Delegations onClick={() => console.log('Go to Delegate')} />
+          </div>
 
-      <ReferendumList />
+          {/* TODO: Tracks - Vote filter */}
+
+          <ReferendumList />
+        </section>
+      </div>
+
       <ReferendumDetails />
-    </section>
+    </div>
   );
 };
