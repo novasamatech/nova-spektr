@@ -8,17 +8,18 @@ import {
   ChainId,
   ChainType,
   CryptoType,
+  MultisigAccount,
   Signatory,
   SigningType,
   Transaction,
   TransactionType,
   WalletType,
+  WrapperKind,
 } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
 import { AddMultisigStore, FormSubmitEvent, Step } from '../lib/types';
 import { formModel } from './form-model';
-import { walletSelectModel } from '@features/wallets';
 import { transactionService } from '@entities/transaction';
 import { TEST_ACCOUNTS, ZERO_BALANCE, toAddress } from '@shared/lib/utils';
 import { confirmModel } from './confirm-model';
@@ -66,13 +67,12 @@ const $signer = combine(
   {
     accountSignatories: formModel.$accountSignatories,
     selectedSigner: $selectedSigner,
-    wallets: walletModel.$wallets,
   },
-  ({ accountSignatories, selectedSigner, wallets }) => {
+  ({ accountSignatories, selectedSigner }) => {
     // fixme this should be dynamic depending on if the signer is a proxy
     return accountSignatories.length > 1 && selectedSigner
       ? selectedSigner
-      : walletUtils.getAccountsBy(wallets, ({ accountId }) => accountId === accountSignatories[0].accountId)[0];
+      : (accountSignatories[0] as unknown as Account);
     // if (txWrappers.length === 0) return accounts[0];
 
     // if (transactionService.hasMultisig([txWrappers[0]])) {
@@ -81,51 +81,14 @@ const $signer = combine(
 
     // return (txWrappers[0] as ProxyTxWrapper).proxyAccount;
   },
+  { skipVoid: false },
 );
-
-const $txWrappers = combine(
-  {
-    wallet: walletSelectModel.$walletForDetails,
-    wallets: walletModel.$wallets,
-    threshold: formModel.$createMultisigForm.fields.threshold.$value,
-    chains: networkModel.$chains,
-    chain: formModel.$createMultisigForm.fields.chainId.$value,
-    accountSignatories: formModel.$accountSignatories,
-    constactSignatories: formModel.$contactSignatories,
-    signer: $signer,
-  },
-  ({ wallet, threshold, chains, chain, wallets, accountSignatories, constactSignatories, signer }) => {
-    if (!wallet || !chain || !threshold || !accountSignatories.length) return [];
-
-    const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
-      walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
-      accountFn: (a, w) => {
-        const isBase = accountUtils.isBaseAccount(a);
-        const isPolkadotVault = walletUtils.isPolkadotVault(w);
-
-        return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, chains[chain]);
-      },
-    });
-
-    // fixme see if we can remove  the type casting
-    return transactionService.getMultisigWrapper({
-      wallets: filteredWallets || [],
-      account: signer,
-      signatories: [...constactSignatories, ...accountSignatories] as unknown as Account[],
-    });
-  },
-);
-
-$txWrappers.watch((txWrappers) => {
-  console.log('<><><>txWrappers', txWrappers);
-});
-
-$signer.watch((signer) => {
-  console.log('<><><>signer', signer);
-});
 
 const $signerWallet = combine({ signer: $signer, wallets: walletModel.$wallets }, ({ signer, wallets }) => {
-  return walletUtils.getWalletFilteredAccounts(wallets, { accountFn: (w) => w.accountId === signer.accountId });
+  return walletUtils.getWalletFilteredAccounts(wallets, {
+    accountFn: (a) => a.accountId === signer.accountId,
+    walletFn: (w) => walletUtils.isValidSignatory(w),
+  });
 });
 
 // Miscellaneous
@@ -170,16 +133,26 @@ const $transaction = combine(
     chains: networkModel.$chains,
     chain: formModel.$createMultisigForm.fields.chainId.$value,
     remarkTx: $remarkTx,
-    txWrappers: $txWrappers,
+    signatories: formModel.$signatories,
+    signer: $signer,
+    threshold: formModel.$createMultisigForm.fields.threshold.$value,
+    multisigAccountId: formModel.$multisigAccountId,
   },
-  ({ apis, chain, chains, remarkTx, txWrappers }) => {
+  ({ apis, chain, chains, remarkTx, signatories, signer, threshold, multisigAccountId }) => {
     if (!chain || !remarkTx) return undefined;
 
     return transactionService.getWrappedTransaction({
       api: apis[chain],
       addressPrefix: chains[chain].addressPrefix,
       transaction: remarkTx,
-      txWrappers,
+      txWrappers: [
+        {
+          kind: WrapperKind.MULTISIG,
+          multisigAccount: { accountId: multisigAccountId, signatories, threshold } as unknown as MultisigAccount,
+          signatories: signatories.map((s) => ({ accountId: s.accountId })) as Account[],
+          signer,
+        },
+      ],
     });
   },
   { skipVoid: false },

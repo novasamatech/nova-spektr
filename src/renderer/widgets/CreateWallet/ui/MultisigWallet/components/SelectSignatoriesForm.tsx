@@ -12,11 +12,6 @@ import { SelectSignatories } from './SelectAccountSignatories';
 import { dictionary } from '@shared/lib/utils';
 import { Step } from '../../../lib/types';
 
-type Props = {
-  // signatories: Signatory[];
-  // onGoBack: () => void;
-};
-
 export const SelectSignatoriesForm = () => {
   const { t } = useI18n();
 
@@ -31,7 +26,7 @@ export const SelectSignatoriesForm = () => {
   const wallets = useUnit(walletModel.$wallets);
   const contacts = useUnit(contactModel.$contacts);
 
-  //fixme this is now how we do it
+  // fixme this is now how we do it
   // probably put that in the model
   const canContinue = () => {
     const hasEnoughSignatories = signatories.length >= 2;

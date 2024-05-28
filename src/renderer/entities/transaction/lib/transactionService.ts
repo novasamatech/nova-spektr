@@ -38,7 +38,6 @@ export const transactionService = {
   createPayload,
   signAndSubmit,
 
-  getMultisigWrapper,
   getTxWrappers,
   getWrappedTransaction,
 };
