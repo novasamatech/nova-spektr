@@ -1,19 +1,16 @@
 import { useEffect } from 'react';
+import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { Header } from '@shared/ui';
 import { governanceModel } from '../model/governance-model';
-import {
-  ReferendumList,
-  ReferendumFilter,
-  ReferendumDetails,
-  ChainSelector,
-  Locks,
-  Delegations,
-} from '@features/governance';
+import { ReferendumList, ReferendumFilter, ReferendumDetails } from '@features/governance';
 
 export const Governance = () => {
   const { t } = useI18n();
+
+  const ongoing = useUnit(governanceModel.$ongoing);
+  const completed = useUnit(governanceModel.$completed);
 
   useEffect(() => {
     governanceModel.events.componentMounted();
@@ -27,15 +24,15 @@ export const Governance = () => {
 
       <div className="overflow-y-auto w-full h-full py-6">
         <section className="flex flex-col h-full w-[736px] mx-auto">
-          <div className="flex gap-x-3">
-            <ChainSelector />
-            <Locks onClick={() => console.log('Go to Unlock')} />
-            <Delegations onClick={() => console.log('Go to Delegate')} />
-          </div>
+          {/*<div className="flex gap-x-3">*/}
+          {/*  <ChainSelector />*/}
+          {/*  <Locks onClick={() => console.log('Go to Unlock')} />*/}
+          {/*  <Delegations onClick={() => console.log('Go to Delegate')} />*/}
+          {/*</div>*/}
 
           {/* TODO: Tracks - Vote filter */}
 
-          <ReferendumList />
+          <ReferendumList ongoing={ongoing} completed={completed} onSelected={console.log} />
         </section>
       </div>
 
