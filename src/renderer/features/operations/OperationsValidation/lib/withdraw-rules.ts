@@ -1,7 +1,6 @@
 import { Store } from 'effector';
 import { BN } from '@polkadot/util';
 
-import { formatAmount } from '@shared/lib/utils';
 import { balanceValidation, descriptionValidation } from '@shared/lib/validation';
 import { Account } from '@shared/core';
 import { NetworkStore } from '../../../../widgets/Transfer/lib/types';
@@ -31,18 +30,6 @@ export const WithdrawRules = {
         if (!isProxy) return true;
 
         return new BN(feeData.fee).lte(new BN(proxyBalance));
-      },
-    }),
-    noBondBalance: (source: Store<ShardsBondBalanceStore>) => ({
-      name: 'noBondBalance',
-      errorText: 'staking.bond.noBondBalanceError',
-      source,
-      validator: (shards: any[], form: any, { isProxy, network, accountsBalances }: ShardsBondBalanceStore) => {
-        if (isProxy || shards.length === 1) return true;
-
-        const amountBN = new BN(formatAmount(form.amount, network.asset.precision));
-
-        return shards.every((_, index) => amountBN.lte(new BN(accountsBalances[index])));
       },
     }),
   },
@@ -86,7 +73,7 @@ export const WithdrawRules = {
       name: 'insufficientBalanceForFee',
       errorText: 'transfer.notEnoughBalanceForFeeError',
       source,
-      validator: (amount: string, form: any, { feeData, isMultisig, accountsBalances }: AmountFeeStore) => {
+      validator: (_v: string, form: any, { feeData, isMultisig, accountsBalances }: AmountFeeStore) => {
         if (isMultisig) return true;
 
         const feeBN = new BN(feeData.fee);

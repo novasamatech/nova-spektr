@@ -18,7 +18,7 @@ import {
   unstakeValidateModel,
   withdrawValidateModel,
 } from '@features/operations/OperationsValidation';
-import { networkModel } from '@/src/renderer/entities/network';
+import { networkModel } from '@entities/network';
 
 const txSelected = createEvent<ID>();
 const allSelected = createEvent();

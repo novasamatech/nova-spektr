@@ -6,8 +6,9 @@ import { getAssetById, stakeableAmount, toAccountId } from '@shared/lib/utils';
 import { balanceModel } from '@entities/balance';
 import { ValidationResult, applyValidationRules } from '@features/operations/OperationsValidation';
 import { networkModel } from '@entities/network';
+import { ShardsBondBalanceStore } from '../lib/bond-nominate-rules';
+import { PayeeRules } from '../lib/payee-rules';
 import { transactionService } from '@entities/transaction';
-import { BondNominateRules, ShardsBondBalanceStore } from '../lib/bond-nominate-rules';
 
 const validationStarted = createEvent<{ id: ID; transaction: Transaction }>();
 const txValidated = createEvent<{ id: ID; result: ValidationResult }>();
@@ -35,7 +36,7 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
       form: {
         amount: transaction.args.amount,
       },
-      ...BondNominateRules.shards.noBondBalance({} as Store<ShardsBondBalanceStore>),
+      ...PayeeRules.shards.noBondBalance({} as Store<ShardsBondBalanceStore>),
       source: {
         isProxy: false,
         network: { chain, asset },

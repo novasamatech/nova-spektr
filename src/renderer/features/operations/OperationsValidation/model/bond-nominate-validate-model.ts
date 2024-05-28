@@ -2,12 +2,12 @@ import { Store, createEffect, createEvent, sample } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 
 import { Asset, Balance, Chain, ID, Transaction } from '@shared/core';
-import { getAssetById, stakeableAmount, toAccountId } from '@shared/lib/utils';
+import { getAssetById, stakeableAmount, toAccountId, transferableAmount } from '@shared/lib/utils';
 import { balanceModel } from '@entities/balance';
 import { ValidationResult, applyValidationRules } from '@features/operations/OperationsValidation';
 import { networkModel } from '@entities/network';
+import { AmountFeeStore, BondNominateRules, ShardsBondBalanceStore } from '../lib/bond-nominate-rules';
 import { transactionService } from '@entities/transaction';
-import { BondNominateRules, ShardsBondBalanceStore } from '../lib/bond-nominate-rules';
 
 const validationStarted = createEvent<{ id: ID; transaction: Transaction }>();
 const txValidated = createEvent<{ id: ID; result: ValidationResult }>();
@@ -41,6 +41,19 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
         network: { chain, asset },
         accountsBalances: [stakeableAmount(shardBalance)],
       } as ShardsBondBalanceStore,
+    },
+    {
+      value: [{ accountId }],
+      form: {
+        amount: transaction.args.amount,
+      },
+      ...BondNominateRules.amount.insufficientBalanceForFee({} as Store<AmountFeeStore>),
+      source: {
+        isMultisig: false,
+        network: { chain, asset },
+        feeData: { fee },
+        accountsBalances: [transferableAmount(shardBalance)],
+      } as AmountFeeStore,
     },
   ];
 
