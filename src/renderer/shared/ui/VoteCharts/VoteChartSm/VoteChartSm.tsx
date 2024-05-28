@@ -18,15 +18,9 @@ export const VoteChartSm = ({ aye, nay, pass, bgColor = 'background-default' }: 
       offsetPx={-56}
       content={
         <div className="flex flex-col">
-          <HelpText className="text-text-white">
-            {t('voteChart.toPass')} {pass.toFixed(2)}%
-          </HelpText>
-          <HelpText className="text-text-white">
-            {t('voteChart.aye')} {aye.toFixed(2)}%
-          </HelpText>
-          <HelpText className="text-text-white ">
-            {t('voteChart.nay')} {nay.toFixed(2)}
-          </HelpText>
+          <HelpText className="text-text-white">{`${t('voteChart.toPass')} ${pass.toFixed(2)}%`}</HelpText>
+          <HelpText className="text-text-white">{`${t('voteChart.aye')} ${aye.toFixed(2)}%`}</HelpText>
+          <HelpText className="text-text-white ">{`${t('voteChart.nay')} ${nay.toFixed(2)}%`}</HelpText>
         </div>
       }
     >
