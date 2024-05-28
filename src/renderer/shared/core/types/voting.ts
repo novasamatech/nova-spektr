@@ -1,12 +1,48 @@
 import { BN } from '@polkadot/util';
 
-export interface AccountVote {
-  index: string;
+import type { BlockHeight, Address } from './general';
+import type { ReferendumId } from './referendum';
+
+export interface Voting {
   type: VotingType;
 }
 
+export interface CastingVoting extends Voting {
+  type: VotingType.CASTING;
+  casting: {
+    votes: Record<ReferendumId, AccountVote>;
+    prior: PriorLock;
+  };
+}
+
+export interface DelegatingVoting extends Voting {
+  type: VotingType.DELEGATING;
+  delegating: {
+    balance: BN;
+    target: Address;
+    conviction: Conviction;
+    prior: PriorLock;
+  };
+}
+
+export const enum VotingType {
+  CASTING = 'casting',
+  DELEGATING = 'delegating',
+}
+
+export type PriorLock = {
+  amount: BN;
+  unlockAt: BlockHeight;
+};
+
+export interface AccountVote {
+  track: string;
+  referendumIndex: string;
+  type: VoteType;
+}
+
 export interface StandardVote extends AccountVote {
-  type: VotingType.Standard;
+  type: VoteType.Standard;
   vote: {
     type: 'aye' | 'nay';
     conviction: Conviction;
@@ -15,19 +51,19 @@ export interface StandardVote extends AccountVote {
 }
 
 export interface SplitVote extends AccountVote {
-  type: VotingType.Split;
+  type: VoteType.Split;
   aye: BN;
   nay: BN;
 }
 
 export interface SplitAbstainVote extends AccountVote {
-  type: VotingType.SplitAbstain;
+  type: VoteType.SplitAbstain;
   aye: BN;
   nay: BN;
   abstain: BN;
 }
 
-export const enum VotingType {
+export const enum VoteType {
   Standard = 'standard',
   Split = 'split',
   SplitAbstain = 'split_abstain',

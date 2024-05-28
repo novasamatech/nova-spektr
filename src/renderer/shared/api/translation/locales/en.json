@@ -1079,7 +1079,7 @@
       "accountTabTitle": "Accounts",
       "addProxyAction": "Add delegated authority",
       "addProxyButton": "Add delegated authority",
-      "addPureProxiedAction": "Add pure proxy",
+      "addPureProxiedAction": "Create pure proxy",
       "cancelButton": "Cancel",
       "confirmRemoveProxyCancel": "Cancel",
       "confirmRemoveProxyDescription": "The account will lose access to your wallet. Are you sure?",

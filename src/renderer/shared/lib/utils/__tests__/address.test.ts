@@ -1,7 +1,7 @@
 import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
 import { toAddress, validateAddress } from '../address';
 
-describe('shared/lib/utils/address', () => {
+describe('shared/lib/onChainUtils/address', () => {
   test('should convert address to Polkadot', () => {
     const address = toAddress(TEST_ACCOUNTS[0], { prefix: 0 });
     expect(address).toEqual(TEST_ADDRESS);

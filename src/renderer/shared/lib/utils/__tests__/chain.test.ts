@@ -7,7 +7,7 @@ const explorers = [
   { name: 'Subscan', unknown: '' },
 ];
 
-describe('shared/lib/utils/chain/getAccountExplorer', () => {
+describe('shared/lib/onChainUtils/chain/getAccountExplorer', () => {
   test('should return correct url from address', () => {
     const url = getAccountExplorer(explorers[0], { address: TEST_ADDRESS });
     expect(url).toEqual(`https://polkadot.subscan.io/account/${TEST_ADDRESS}`);
@@ -29,7 +29,7 @@ describe('shared/lib/utils/chain/getAccountExplorer', () => {
   });
 });
 
-describe('shared/lib/utils/chain/getExtrinsicExplorer', () => {
+describe('shared/lib/onChainUtils/chain/getExtrinsicExplorer', () => {
   test('should return correct url with hash', () => {
     const url = getExtrinsicExplorer(explorers[1], TEST_HASH);
     expect(url).toEqual(`https://polkadot.subscan.io/extrinsic/${TEST_HASH}`);

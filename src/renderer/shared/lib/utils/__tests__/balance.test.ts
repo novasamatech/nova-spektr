@@ -1,6 +1,6 @@
 import { formatBalance } from '../balance';
 
-describe('shared/lib/utils/balance', () => {
+describe('shared/lib/onChainUtils/balance', () => {
   describe('formatBalance', () => {
     test('should calculate amount without without float part', () => {
       const { value, suffix, decimalPlaces } = formatBalance('50000000000000', 12);
