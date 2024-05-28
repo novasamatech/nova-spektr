@@ -13,7 +13,7 @@
     "start:dev": "pnpm clean:build && concurrently \"pnpm start:renderer:dev\" \"pnpm start:main:dev\" && watch",
     "start:electron": "electron .",
     "start:renderer": "cross-env NODE_ENV=stage CHAINS_FILE=chains pnpm webpack:renderer:stage",
-    "start:renderer:dev": "cross-env NODE_ENV=development CHAINS_FILE=chains-dev pnpm webpack:renderer:dev",
+    "start:renderer:dev": "cross-env NODE_ENV=development CHAINS_FILE=chains-dev LOGGER=false pnpm webpack:renderer:dev",
     "start:main": "cross-env NODE_ENV=stage pnpm r webpack:main:stage start:electron",
     "start:main:dev": "cross-env NODE_ENV=development pnpm r webpack:main:dev start:electron",
     "watch": "nodemon --watch src/main --ignore src/main/resources --ext \"*\" --exec",
