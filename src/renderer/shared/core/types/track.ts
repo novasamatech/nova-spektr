@@ -10,6 +10,4 @@ export type TrackInfo = {
   decisionDeposit: BN;
   preparePeriod: BlockHeight;
   decisionPeriod: BlockHeight;
-  // minApproval?: VotingCurve?;
-  // minSupport?: VotingCurve;
 };
