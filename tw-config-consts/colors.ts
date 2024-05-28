@@ -80,6 +80,7 @@ export default {
   'block-background-hover': 'var(--block-background-hover)',
   'block-background': 'var(--block-background)',
   'badge-background': 'var(--badge-background)',
+  'badge-red-background-default': 'var(--badge-red-background-default)',
   'extended-block-background': 'var(--extended-block-background)',
   'negative-action-background': 'var(--negative-action-background)',
   'dim-background': 'var(--dim-background)',

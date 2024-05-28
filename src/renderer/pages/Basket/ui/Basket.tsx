@@ -11,6 +11,7 @@ export const Basket = () => {
 
   const basketTxs = useUnit(basketPageModel.$basketTransactions);
   const selectedTxs = useUnit(basketPageModel.$selectedTxs);
+  const invalidTxs = useUnit(basketPageModel.$invalidTxs);
 
   return (
     <section className="flex flex-col items-center relative h-full">
@@ -30,6 +31,7 @@ export const Basket = () => {
                 <Operation
                   selected={selectedTxs.includes(tx.id)}
                   tx={tx}
+                  invalid={invalidTxs.has(tx.id)}
                   onSelect={() => basketPageModel.events.txSelected(tx.id)}
                 />
               </li>

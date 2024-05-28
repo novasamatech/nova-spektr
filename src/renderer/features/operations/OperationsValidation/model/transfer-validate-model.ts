@@ -29,6 +29,7 @@ type ValidateParams = {
 
 const validateFx = createEffect(async ({ id, api, chain, asset, transaction, balances }: ValidateParams) => {
   const accountId = toAccountId(transaction.address);
+
   const fee = await transactionService.getTransactionFee(transaction, api);
 
   const rules = [

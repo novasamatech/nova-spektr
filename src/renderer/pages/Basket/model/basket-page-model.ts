@@ -18,6 +18,7 @@ import {
   unstakeValidateModel,
   withdrawValidateModel,
 } from '@features/operations/OperationsValidation';
+import { networkModel } from '@/src/renderer/entities/network';
 
 const txSelected = createEvent<ID>();
 const allSelected = createEvent();
@@ -130,7 +131,19 @@ sample({
 });
 
 sample({
-  clock: $basketTransactions,
+  clock: [$basketTransactions, networkModel.$apis],
+  source: {
+    transactions: $basketTransactions,
+    apis: networkModel.$apis,
+  },
+  filter: ({ transactions, apis }) => {
+    const chains = new Set(transactions.map((t) => t.coreTx.chainId));
+
+    return [...chains].some((chainId) => apis[chainId]);
+  },
+  fn: ({ transactions }) => {
+    return transactions;
+  },
   target: validateFx,
 });
 
@@ -165,6 +178,7 @@ sample({
 export const basketPageModel = {
   $basketTransactions,
   $selectedTxs,
+  $invalidTxs,
 
   events: {
     txSelected,
