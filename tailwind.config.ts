@@ -1,11 +1,11 @@
 import type { Config } from 'tailwindcss';
+import defaultTheme from 'tailwindcss/defaultTheme';
+import headlessPlugin from '@headlessui/tailwindcss';
 
 import fontSizes from './tw-config-consts/font-sizes';
 import colors from './tw-config-consts/colors';
 
-const defaultTheme = require('tailwindcss/defaultTheme');
-
-export default {
+const tailwindConfig: Config = {
   mode: 'jit',
   content: ['./src/renderer/index.html', './src/renderer/**/*.{js,ts,tsx}'],
   darkMode: 'class',
@@ -109,5 +109,7 @@ export default {
       },
     },
   },
-  plugins: [require('@headlessui/tailwindcss')],
-} satisfies Config;
+  plugins: [headlessPlugin],
+};
+
+export default tailwindConfig;

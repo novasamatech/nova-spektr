@@ -1069,6 +1069,11 @@
     "title": "Send",
     "wallet": "Wallet"
   },
+  "voteChart": {
+    "aye": "Aye",
+    "nay": "Nay",
+    "toPass": "To pass"
+  },
   "walletDetails": {
     "common": {
       "accountTabTitle": "Accounts",
