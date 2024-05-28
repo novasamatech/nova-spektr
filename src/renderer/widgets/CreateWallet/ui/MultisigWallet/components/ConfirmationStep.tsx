@@ -1,12 +1,12 @@
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 
-import { cnTw, RootExplorers } from '@shared/lib/utils';
+import { cnTw, RootExplorers, toAddress } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
-import { BodyText, Button, FootnoteText, SmallTitleText } from '@shared/ui';
+import { BodyText, Button, FootnoteText, Select, SmallTitleText } from '@shared/ui';
 import { ExtendedWallet, ExtendedContact, ExtendedAccount } from '../common/types';
 import { WalletItem } from './WalletItem';
-import { ContactItem, ExplorersPopover } from '@entities/wallet';
+import { AccountAddress, ContactItem, ExplorersPopover, walletModel, walletUtils } from '@entities/wallet';
 import { Chain, WalletType } from '@shared/core';
 import { flowModel } from '../../../model/create-multisig-flow-model';
 import { Step } from '../../../lib/types';
@@ -25,6 +25,7 @@ export const ConfirmationStep = ({ chain, wallets = [], accounts = [], contacts 
   const {
     fields: { name, threshold },
   } = useForm(formModel.$createMultisigForm);
+  const accountSignatories = useUnit(formModel.$accountSignatories);
   const signatories = useUnit(formModel.$signatories);
   const api = useUnit(flowModel.$api);
   const fakeTx = useUnit(flowModel.$fakeTx);
@@ -33,6 +34,13 @@ export const ConfirmationStep = ({ chain, wallets = [], accounts = [], contacts 
 
   return (
     <div className={cnTw('max-h-full flex flex-col flex-1')}>
+      {accountSignatories.length > 1 && (
+        <>
+          <SmallTitleText className="py-2">{t('createMultisigAccount.signingWith')}</SmallTitleText>
+          <AccountSelector chain={chain} />
+        </>
+      )}
+
       <SmallTitleText className="py-2">{t('createMultisigAccount.newMultisigTitle')}</SmallTitleText>
       <WalletItem className="py-2 mb-4" name={name.value} type={WalletType.MULTISIG} />
 
@@ -93,7 +101,8 @@ export const ConfirmationStep = ({ chain, wallets = [], accounts = [], contacts 
             </ul>
           </>
         )}
-
+      </div>
+      <div className="flex flex-col gap-y-2 my-2 flex-1">
         <MultisigDepositWithLabel
           api={api}
           asset={chain!.assets[0]}
@@ -116,6 +125,59 @@ export const ConfirmationStep = ({ chain, wallets = [], accounts = [], contacts 
           {t('createMultisigAccount.continueButton')}
         </Button>
       </div>
+    </div>
+  );
+};
+
+const AccountSelector = ({ chain }: { chain?: Chain }) => {
+  const { t } = useI18n();
+
+  const selectedSigner = useUnit(flowModel.$selectedSigner);
+  const accountSignatories = useUnit(formModel.$accountSignatories);
+  const wallets = useUnit(walletModel.$wallets);
+  // const proxiedAccounts = useUnit(formModel.$proxiedAccounts);
+
+  // if (proxiedAccounts.length <= 1) return null;
+
+  if (!chain) return null;
+
+  const options = accountSignatories.map(({ accountId, name }) => {
+    //   const isShard = accountUtils.isShardAccount(account);
+    const address = toAddress(accountId, { prefix: chain.addressPrefix });
+
+    return {
+      id: accountId,
+      value: accountId,
+      element: (
+        <div className="flex justify-between w-full" key={accountId}>
+          <AccountAddress
+            size={20}
+            type="short"
+            address={address}
+            // name={isShard ? toShortAddress(address, 16) : account.name}
+            name={name}
+            canCopy={false}
+          />
+          {/* <AssetBalance value={balance} asset={chain.value.assets[0]} /> */}
+        </div>
+      ),
+    };
+  });
+
+  return (
+    <div className="flex flex-col gap-y-2">
+      <Select
+        label={t('proxy.addProxy.accountLabel')}
+        placeholder={t('proxy.addProxy.accountPlaceholder')}
+        selectedId={selectedSigner?.accountId}
+        options={options}
+        disabled={options.length === 1}
+        onChange={({ value }) => {
+          const selected = walletUtils.getAccountsBy(wallets, (account) => account.accountId === value)[0];
+
+          flowModel.events.selectedSignerChanged(selected!);
+        }}
+      />
     </div>
   );
 };

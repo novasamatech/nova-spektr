@@ -120,6 +120,7 @@
     "noWallets": "Looks like you don't have any non-watch only wallets",
     "noWalletsLabel": "The wallet list is empty",
     "searchContactPlaceholder": "Search",
+    "signingWith": "Signing with",
     "newMultisigTitle": "New multisig",
     "selectedSignatoriesTitle": "Selected signatories",
     "signatoriesDescription": "Add signatories to your multisig account",

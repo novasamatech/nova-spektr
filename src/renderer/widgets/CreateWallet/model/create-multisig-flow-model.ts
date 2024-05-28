@@ -33,6 +33,7 @@ const multisigDepositChanged = createEvent<string>();
 const isFeeLoadingChanged = createEvent<boolean>();
 const formSubmitted = createEvent<FormSubmitEvent>();
 const flowFinished = createEvent();
+const selectedSignerChanged = createEvent<Account>();
 
 export type Callbacks = {
   onComplete: () => void;
@@ -42,6 +43,7 @@ const walletCreated = createEvent<{
   name: string;
   threshold: number;
 }>();
+const $selectedSigner = restore(selectedSignerChanged, null);
 const $step = restore(stepChanged, Step.INIT);
 const $fee = restore(feeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
@@ -92,14 +94,19 @@ const $txWrappers = combine(
   },
 );
 
+// $selected signer will be taken into account in case we have
+// several accountSignatories. Otherwise it is the first accountSignatory
 const $signer = combine(
   {
     txWrappers: $txWrappers,
-    accounts: formModel.$accountSignatories,
+    accountSignatories: formModel.$accountSignatories,
+    selectedSigner: $selectedSigner,
   },
-  ({ txWrappers, accounts }) => {
+  ({ txWrappers, accountSignatories, selectedSigner }) => {
     // fixme this should be dynamic depending on if the signer is a proxy
-    return accounts[0] as unknown as Account;
+    return accountSignatories.length > 1 && selectedSigner
+      ? selectedSigner
+      : (accountSignatories[0] as unknown as Account);
     // if (txWrappers.length === 0) return accounts[0];
 
     // if (transactionService.hasMultisig([txWrappers[0]])) {
@@ -399,6 +406,8 @@ export const flowModel = {
   $fakeTx,
   $api,
   $isFeeLoading,
+  $selectedSigner,
+  $signer,
   events: {
     reset,
     callbacksChanged: callbacksApi.callbacksChanged,
@@ -407,5 +416,6 @@ export const flowModel = {
     feeChanged,
     multisigDepositChanged,
     isFeeLoadingChanged,
+    selectedSignerChanged,
   },
 };
