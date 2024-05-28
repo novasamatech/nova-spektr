@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { Button, Header, SearchInput } from '@shared/ui';
+import { Button, Header } from '@shared/ui';
 import { Operation } from './Operation';
 import { basketPageModel } from '../model/basket-page-model';
 import { EmptyBasket } from './EmptyBasket';
@@ -14,13 +14,7 @@ export const Basket = () => {
 
   return (
     <section className="flex flex-col items-center relative h-full">
-      <Header title={t('basket.title')}>
-        <SearchInput
-          className="w-[230px]"
-          placeholder={t('basket.searchPlaceholder')}
-          onChange={basketPageModel.events.queryChanged}
-        />
-      </Header>
+      <Header title={t('basket.title')} />
 
       {basketTxs.length > 0 && (
         <div className="overflow-y-auto w-full mt-4 h-full flex flex-col items-center">

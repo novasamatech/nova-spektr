@@ -29,7 +29,7 @@ import {
   toAddress,
   ZERO_BALANCE,
 } from '@shared/lib/utils';
-import { TransferRules } from '../lib/transfer-rules';
+import { TransferRules } from '../../../features/operations/OperationsValidation/lib/transfer-rules';
 
 type BalanceMap = Record<'balance' | 'native', string>;
 

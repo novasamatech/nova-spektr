@@ -1,12 +1,17 @@
 import { createEvent, combine, restore, createEffect, Store, sample } from 'effector';
 
 import { Chain, Account, Address, Asset, type ProxiedAccount, Balance } from '@shared/core';
-import { networkModel } from '@entities/network';
 import { walletModel, walletUtils } from '@entities/wallet';
-import { AccountStore, TransferRules, applyValidationRules } from '../lib/transfer-rules';
+import {
+  AccountStore,
+  AmountFeeStore,
+  SignatoryFeeStore,
+  TransferRules,
+} from '@features/operations/OperationsValidation/lib/transfer-rules';
 import { BalanceMap, NetworkStore } from '../lib/types';
-import { balanceModel, balanceUtils } from '@/src/renderer/entities/balance';
-import { transferableAmount } from '@/src/renderer/shared/lib/utils';
+import { balanceModel, balanceUtils } from '@entities/balance';
+import { transferableAmount } from '@shared/lib/utils';
+import { applyValidationRules } from '@features/operations/OperationsValidation';
 
 type Input = {
   xcmChain: Chain;
@@ -40,6 +45,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
   const rules = [
     {
       value: store.account,
+      form: {},
       ...TransferRules.account.noProxyFee({} as Store<AccountStore>),
       source: {
         fee: store.fee,
@@ -58,9 +64,8 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
     },
     {
       value: undefined,
-      ...TransferRules.signatory.notEnoughTokens(
-        {} as Store<{ fee: string; isMultisig: boolean; multisigDeposit: string; balance: string }>,
-      ),
+      form: {},
+      ...TransferRules.signatory.notEnoughTokens({} as Store<SignatoryFeeStore>),
       source: {
         fee: store.fee,
         isMultisig: !!store.signatory,
@@ -75,10 +80,11 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
               store.asset.assetId.toFixed(),
             ),
           ),
-      } as { fee: string; isMultisig: boolean; multisigDeposit: string; balance: string },
+      } as SignatoryFeeStore,
     },
     {
       value: store.amount,
+      form: {},
       ...TransferRules.amount.notEnoughBalance({} as Store<{ network: NetworkStore | null; balance: BalanceMap }>, {
         withFormatAmount: false,
       }),
@@ -106,21 +112,10 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
     },
     {
       value: store.amount,
-      ...TransferRules.amount.insufficientBalanceForFee(
-        {} as Store<{
-          fee: string;
-          balance: BalanceMap;
-          network: NetworkStore | null;
-          isXcm: boolean;
-          isNative: boolean;
-          isMultisig: boolean;
-          isProxy: boolean;
-          xcmFee: string;
-        }>,
-        {
-          withFormatAmount: false,
-        },
-      ),
+      form: {},
+      ...TransferRules.amount.insufficientBalanceForFee({} as Store<AmountFeeStore>, {
+        withFormatAmount: false,
+      }),
       source: {
         network: { chain: store.chain, asset: store.asset },
         isMultisig: !!store.signatory,
@@ -148,16 +143,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
             ),
           ),
         },
-      } as {
-        fee: string;
-        balance: BalanceMap;
-        network: NetworkStore | null;
-        isXcm: boolean;
-        isNative: boolean;
-        isMultisig: boolean;
-        isProxy: boolean;
-        xcmFee: string;
-      },
+      } as AmountFeeStore,
     },
   ];
 
@@ -167,16 +153,6 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
 
   throw new Error(result.errorText);
 });
-
-const $api = combine(
-  {
-    apis: networkModel.$apis,
-    store: $confirmStore,
-  },
-  ({ apis, store }) => {
-    return store ? apis[store.chain.chainId] : null;
-  },
-);
 
 const $initiatorWallet = combine(
   {

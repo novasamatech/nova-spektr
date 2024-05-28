@@ -4,9 +4,20 @@ import { BN } from '@polkadot/util';
 import { formatAmount, validateAddress } from '@shared/lib/utils';
 import { balanceValidation, descriptionValidation } from '@shared/lib/validation';
 import { Account } from '@shared/core';
-import { BalanceMap, NetworkStore } from './types';
+import { BalanceMap, NetworkStore } from '../../../../widgets/Transfer/lib/types';
 
 export type AccountStore = { fee: string; isProxy: boolean; proxyBalance: BalanceMap };
+export type SignatoryFeeStore = { fee: string; isMultisig: boolean; multisigDeposit: string; balance: string };
+export type AmountFeeStore = {
+  fee: string;
+  balance: BalanceMap;
+  network: NetworkStore | null;
+  isXcm: boolean;
+  isNative: boolean;
+  isMultisig: boolean;
+  isProxy: boolean;
+  xcmFee: string;
+};
 
 export const TransferRules = {
   account: {
@@ -32,22 +43,11 @@ export const TransferRules = {
         return Object.keys(signatory).length > 0;
       },
     }),
-    notEnoughTokens: (
-      source: Store<{ fee: string; isMultisig: boolean; multisigDeposit: string; balance: string }>,
-    ) => ({
+    notEnoughTokens: (source: Store<SignatoryFeeStore>) => ({
       name: 'notEnoughTokens',
       errorText: 'proxy.addProxy.notEnoughMultisigTokens',
       source,
-      validator: (
-        _s: any,
-        _f: any,
-        {
-          fee,
-          isMultisig,
-          multisigDeposit,
-          balance,
-        }: { fee: string; isMultisig: boolean; multisigDeposit: string; balance: string },
-      ) => {
+      validator: (_s: any, _f: any, { fee, isMultisig, multisigDeposit, balance }: SignatoryFeeStore) => {
         if (!isMultisig) return true;
 
         const value = new BN(multisigDeposit).add(new BN(fee));
@@ -101,16 +101,7 @@ export const TransferRules = {
       },
     }),
     insufficientBalanceForFee: (
-      source: Store<{
-        fee: string;
-        balance: BalanceMap;
-        network: NetworkStore | null;
-        isXcm: boolean;
-        isNative: boolean;
-        isMultisig: boolean;
-        isProxy: boolean;
-        xcmFee: string;
-      }>,
+      source: Store<AmountFeeStore>,
       config: { withFormatAmount: boolean } = { withFormatAmount: true },
     ) => ({
       name: 'insufficientBalanceForFee',
@@ -119,25 +110,7 @@ export const TransferRules = {
       validator: (
         amount: string,
         _: any,
-        {
-          network,
-          isNative,
-          isProxy,
-          isMultisig,
-          isXcm,
-          balance,
-          fee,
-          xcmFee,
-        }: {
-          fee: string;
-          balance: BalanceMap;
-          network: NetworkStore | null;
-          isXcm: boolean;
-          isNative: boolean;
-          isMultisig: boolean;
-          isProxy: boolean;
-          xcmFee: string;
-        },
+        { network, isNative, isProxy, isMultisig, isXcm, balance, fee, xcmFee }: AmountFeeStore,
       ) => {
         if (!network) return false;
 
@@ -165,40 +138,4 @@ export const TransferRules = {
       validator: descriptionValidation.isMaxLength,
     },
   },
-};
-
-type Validation = {
-  value: any;
-  name: string;
-  errorText: string;
-  source: any;
-  validator: (...args: any) => boolean;
-};
-
-export const applyValidationRule = ({
-  value,
-  source,
-  name,
-  errorText,
-  validator,
-}: Validation): { name: string; errorText: string } | undefined => {
-  // TODO: find another way to get state from source
-  // eslint-disable-next-line effector/no-getState
-  const sourceData = source.getState ? source.getState() : source;
-
-  const isValid = validator(value, undefined, sourceData);
-
-  if (!isValid) {
-    return { name, errorText };
-  }
-};
-
-export const applyValidationRules = (validation: Validation[]): { name: string; errorText: string } | undefined => {
-  for (const rule of validation) {
-    const result = applyValidationRule(rule);
-
-    if (result) {
-      return result;
-    }
-  }
 };

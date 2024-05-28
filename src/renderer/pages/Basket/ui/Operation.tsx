@@ -34,6 +34,8 @@ export const Operation = ({ tx, selected, onSelect }: Props) => {
         <ChainTitle chainId={tx.coreTx.chainId} className="w-[114px]" />
       )}
 
+      <div className="w-[160px]"></div>
+
       <IconButton name="delete" onClick={() => basketModel.events.transactionsRemoved([tx])} />
     </div>
   );
