@@ -505,7 +505,7 @@ sample({
     const proxiedAddress = toAddress(formData.account.accountId, {
       prefix: formData.chain.addressPrefix,
     });
-    const multisigDescription = `Add pure proxy for ${toShortAddress(proxiedAddress)}`; // TODO: update after i18n effector integration
+    const multisigDescription = `Create pure proxy for ${toShortAddress(proxiedAddress)}`; // TODO: update after i18n effector integration
     const description = signatory ? formData.description || multisigDescription : '';
 
     return {
