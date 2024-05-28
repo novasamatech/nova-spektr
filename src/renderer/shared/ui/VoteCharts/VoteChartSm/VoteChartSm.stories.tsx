@@ -1,10 +1,10 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import { VoteChart } from './VoteChart';
+import { VoteChartSm } from './VoteChartSm';
 
 export default {
   title: 'VoteChart',
-  component: VoteChart,
+  component: VoteChartSm,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [
     (Story) => (
@@ -13,9 +13,9 @@ export default {
       </div>
     ),
   ],
-} as ComponentMeta<typeof VoteChart>;
+} as ComponentMeta<typeof VoteChartSm>;
 
-const Template: ComponentStory<typeof VoteChart> = (args) => <VoteChart {...args} />;
+const Template: ComponentStory<typeof VoteChartSm> = (args) => <VoteChartSm {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {
@@ -27,5 +27,4 @@ export const Large = Template.bind({});
 Large.args = {
   aye: 1,
   nay: 99,
-  size: 'lg',
 };

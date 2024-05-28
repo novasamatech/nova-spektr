@@ -8,7 +8,7 @@ export { Popover, Tooltip, MenuPopover, useParentScrollLock } from './Popovers';
 
 export { Input, AmountInput, PasswordInput, SearchInput, InputArea, InputFile } from './Inputs';
 
-export { VoteChart } from './VoteChart/VoteChart';
+export { VoteChartLg, VoteChartSm } from './VoteCharts';
 
 export {
   LargeTitleText,
