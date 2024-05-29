@@ -170,6 +170,7 @@ export const Confirmation = ({ onGoBack, secondaryActionButton }: Props) => {
         <div className="flex gap-4">
           {secondaryActionButton}
           <SignButton
+            isDefault={Boolean(secondaryActionButton)}
             disabled={isFeeLoading}
             type={(signerWallet || initiatorWallet).type}
             onClick={confirmModel.output.formSubmitted}

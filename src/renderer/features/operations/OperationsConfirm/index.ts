@@ -1,1 +1,1 @@
-export { AddToBasketButton } from './ui/AddToBasketButton';
+export { basketUtils } from './lib/basket-utils';

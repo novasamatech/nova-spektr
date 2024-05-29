@@ -191,8 +191,7 @@ sample({
 
 sample({
   clock: txSaved,
-  fn: () => Step.NONE,
-  target: [stepChanged, formModel.events.formCleared],
+  target: flowFinished,
 });
 
 export const unstakeModel = {
