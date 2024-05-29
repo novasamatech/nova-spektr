@@ -10,7 +10,6 @@ import { proxyUtils } from '@entities/proxy';
 import { confirmModel } from '../model/confirm-model';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
-import { isEmptyComponent } from '@shared/lib/utils';
 
 type Props = {
   secondaryActionButton?: ReactNode;
@@ -171,7 +170,7 @@ export const Confirmation = ({ onGoBack, secondaryActionButton }: Props) => {
         <div className="flex gap-4">
           {secondaryActionButton}
           <SignButton
-            isDefault={!isEmptyComponent(secondaryActionButton)}
+            isDefault={Boolean(secondaryActionButton)}
             disabled={isFeeLoading}
             type={(signerWallet || initiatorWallet).type}
             onClick={confirmModel.output.formSubmitted}

@@ -21,7 +21,3 @@ Object.defineProperty(global, 'crypto', {
 });
 
 global.TextDecoder = TextDecoder;
-
-jest.mock('react-dom/server', () => ({
-  renderToStaticMarkup: () => '',
-}));

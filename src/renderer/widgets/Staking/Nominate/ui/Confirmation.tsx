@@ -12,7 +12,6 @@ import { StakingPopover, SelectedValidatorsModal, AccountsModal } from '@entitie
 import { useToggle } from '@shared/lib/hooks';
 import { FeeLoader } from '@entities/transaction';
 import { priceProviderModel } from '@entities/price';
-import { isEmptyComponent } from '@shared/lib/utils';
 
 type Props = {
   secondaryActionButton?: ReactNode;
@@ -213,7 +212,7 @@ export const Confirmation = ({ secondaryActionButton, onGoBack }: Props) => {
             {secondaryActionButton}
 
             <SignButton
-              isDefault={!isEmptyComponent(secondaryActionButton)}
+              isDefault={Boolean(secondaryActionButton)}
               disabled={isFeeLoading}
               type={(signerWallet || initiatorWallet).type}
               onClick={confirmModel.output.formSubmitted}

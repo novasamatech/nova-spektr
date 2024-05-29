@@ -8,7 +8,6 @@ import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { confirmModel } from '../model/confirm-model';
 import { SignButton } from '@entities/operations';
-import { isEmptyComponent } from '@shared/lib/utils';
 
 type Props = {
   secondaryActionButton?: ReactNode;
@@ -147,7 +146,7 @@ export const Confirm = ({ secondaryActionButton, onGoBack }: Props) => {
           {secondaryActionButton}
 
           <SignButton
-            isDefault={!isEmptyComponent(secondaryActionButton)}
+            isDefault={Boolean(secondaryActionButton)}
             type={(signerWallet || initiatorWallet).type}
             onClick={confirmModel.output.formSubmitted}
           />

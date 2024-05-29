@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { BaseModal } from '@shared/ui';
+import { BaseModal, Button } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
@@ -11,7 +11,7 @@ import { Confirmation } from './Confirmation';
 import { nominateUtils } from '../lib/nominate-utils';
 import { nominateModel } from '../model/nominate-model';
 import { Step } from '../lib/types';
-import { AddToBasketButton } from '@features/operations/OperationsConfirm';
+import { basketUtils } from '@features/operations/OperationsConfirm';
 
 export const Nominate = () => {
   const { t } = useI18n();
@@ -42,7 +42,12 @@ export const Nominate = () => {
       {nominateUtils.isConfirmStep(step) && (
         <Confirmation
           secondaryActionButton={
-            <AddToBasketButton wallet={initiatorWallet} onTxSaved={() => nominateModel.events.txSaved()} />
+            initiatorWallet &&
+            !basketUtils.isBasketAvailable(initiatorWallet) && (
+              <Button pallet="secondary" onClick={() => nominateModel.events.txSaved()}>
+                {t('operation.addToBasket')}
+              </Button>
+            )
           }
           onGoBack={() => nominateModel.events.stepChanged(Step.VALIDATORS)}
         />

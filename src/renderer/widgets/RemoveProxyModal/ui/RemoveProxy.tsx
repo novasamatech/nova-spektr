@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { BaseModal } from '@shared/ui';
+import { BaseModal, Button } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
@@ -11,7 +11,7 @@ import { Confirmation } from './Confirm';
 import { removeProxyUtils } from '../lib/remove-proxy-utils';
 import { removeProxyModel } from '../model/remove-proxy-model';
 import { OperationSign, OperationSubmit } from '@features/operations';
-import { AddToBasketButton } from '@features/operations/OperationsConfirm';
+import { basketUtils } from '@features/operations/OperationsConfirm';
 
 export const RemoveProxy = () => {
   const { t } = useI18n();
@@ -39,7 +39,12 @@ export const RemoveProxy = () => {
       {removeProxyUtils.isConfirmStep(step) && (
         <Confirmation
           secondaryActionButton={
-            <AddToBasketButton wallet={initiatorWallet} onTxSaved={() => removeProxyModel.events.txSaved()} />
+            initiatorWallet &&
+            !basketUtils.isBasketAvailable(initiatorWallet) && (
+              <Button pallet="secondary" onClick={() => removeProxyModel.events.txSaved()}>
+                {t('operation.addToBasket')}
+              </Button>
+            )
           }
           onGoBack={() => removeProxyModel.events.wentBackFromConfirm()}
         />

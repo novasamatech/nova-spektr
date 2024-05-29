@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { BaseModal } from '@shared/ui';
+import { BaseModal, Button } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
@@ -10,7 +10,7 @@ import { Confirmation } from './Confirmation';
 import { payeeUtils } from '../lib/payee-utils';
 import { payeeModel } from '../model/payee-model';
 import { Step } from '../lib/types';
-import { AddToBasketButton } from '@features/operations/OperationsConfirm';
+import { basketUtils } from '@features/operations/OperationsConfirm';
 
 export const Payee = () => {
   const { t } = useI18n();
@@ -43,7 +43,12 @@ export const Payee = () => {
       {payeeUtils.isConfirmStep(step) && (
         <Confirmation
           secondaryActionButton={
-            <AddToBasketButton wallet={initiatorWallet} onTxSaved={() => payeeModel.events.txSaved()} />
+            initiatorWallet &&
+            !basketUtils.isBasketAvailable(initiatorWallet) && (
+              <Button pallet="secondary" onClick={() => payeeModel.events.txSaved()}>
+                {t('operation.addToBasket')}
+              </Button>
+            )
           }
           onGoBack={() => payeeModel.events.stepChanged(Step.INIT)}
         />

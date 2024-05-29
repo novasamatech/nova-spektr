@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { BaseModal } from '@shared/ui';
+import { BaseModal, Button } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
@@ -10,7 +10,7 @@ import { Confirmation } from './Confirmation';
 import { bondExtraUtils } from '../lib/bond-extra-utils';
 import { bondExtraModel } from '../model/bond-extra-model';
 import { Step } from '../lib/types';
-import { AddToBasketButton } from '@features/operations/OperationsConfirm';
+import { basketUtils } from '@features/operations/OperationsConfirm';
 
 export const BondExtra = () => {
   const { t } = useI18n();
@@ -43,7 +43,12 @@ export const BondExtra = () => {
       {bondExtraUtils.isConfirmStep(step) && (
         <Confirmation
           secondaryActionButton={
-            <AddToBasketButton wallet={initiatorWallet} onTxSaved={() => bondExtraModel.events.txSaved()} />
+            initiatorWallet &&
+            !basketUtils.isBasketAvailable(initiatorWallet) && (
+              <Button pallet="secondary" onClick={() => bondExtraModel.events.txSaved()}>
+                {t('operation.addToBasket')}
+              </Button>
+            )
           }
           onGoBack={() => bondExtraModel.events.stepChanged(Step.INIT)}
         />

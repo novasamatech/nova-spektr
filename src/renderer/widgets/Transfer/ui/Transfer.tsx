@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { ReactNode, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { BaseModal } from '@shared/ui';
+import { BaseModal, Button } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
@@ -13,7 +13,7 @@ import { Confirmation } from './Confirmation';
 import { transferUtils } from '../lib/transfer-utils';
 import { transferModel } from '../model/transfer-model';
 import { Step } from '../lib/types';
-import { AddToBasketButton } from '@features/operations/OperationsConfirm';
+import { basketUtils } from '@features/operations/OperationsConfirm';
 
 type Props = {
   chain: Chain;
@@ -59,7 +59,12 @@ export const Transfer = ({ chain, asset }: Props) => {
       {transferUtils.isConfirmStep(step) && (
         <Confirmation
           secondaryActionButton={
-            <AddToBasketButton wallet={initiatorWallet} onTxSaved={transferModel.events.txSaved} />
+            initiatorWallet &&
+            !basketUtils.isBasketAvailable(initiatorWallet) && (
+              <Button pallet="secondary" onClick={() => transferModel.events.txSaved()}>
+                {t('operation.addToBasket')}
+              </Button>
+            )
           }
           onGoBack={() => transferModel.events.stepChanged(Step.INIT)}
         />

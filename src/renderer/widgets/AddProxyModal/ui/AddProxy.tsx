@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { BaseModal } from '@shared/ui';
+import { BaseModal, Button } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
@@ -11,7 +11,7 @@ import { AddProxyForm } from './AddProxyForm';
 import { Confirmation } from './Confirmation';
 import { addProxyUtils } from '../lib/add-proxy-utils';
 import { addProxyModel } from '../model/add-proxy-model';
-import { AddToBasketButton } from '@features/operations/OperationsConfirm';
+import { basketUtils } from '@/src/renderer/features/operations/OperationsConfirm';
 
 export const AddProxy = () => {
   const { t } = useI18n();
@@ -43,7 +43,12 @@ export const AddProxy = () => {
       {addProxyUtils.isConfirmStep(step) && (
         <Confirmation
           secondaryActionButton={
-            <AddToBasketButton wallet={initiatorWallet} onTxSaved={() => addProxyModel.events.txSaved()} />
+            initiatorWallet &&
+            !basketUtils.isBasketAvailable(initiatorWallet) && (
+              <Button pallet="secondary" onClick={() => addProxyModel.events.txSaved()}>
+                {t('operation.addToBasket')}
+              </Button>
+            )
           }
           onGoBack={() => addProxyModel.events.stepChanged(Step.INIT)}
         />
