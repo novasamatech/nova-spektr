@@ -1,11 +1,12 @@
 import { useForm } from 'effector-forms';
-import { useEffect } from 'react';
+import { ComponentProps, useEffect } from 'react';
 import { useUnit } from 'effector-react';
 import noop from 'lodash/noop';
 
 import { BaseModal, HeaderTitleText, IconButton } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
+import { OperationResult } from '@entities/transaction';
 import { ConfirmationStep, NameThresholdStep } from './components';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { flowModel } from '../../model/flow-model';
@@ -15,7 +16,7 @@ import { SelectSignatoriesForm } from './components/SelectSignatoriesForm';
 import { Step } from '../../lib/types';
 import { OperationSign } from '@features/operations';
 
-// type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
+type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
 type Props = {
   isOpen: boolean;
@@ -30,8 +31,8 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
   const {
     fields: { chain },
   } = useForm(formModel.$createMultisigForm);
-  // const isLoading = useUnit(flowModel.$isLoading);
-  // const error = useUnit(flowModel.$error);
+  const isLoading = useUnit(flowModel.$isLoading);
+  const error = useUnit(flowModel.$error);
   const activeStep = useUnit(flowModel.$step);
   const accountSignatories = useUnit(formModel.$accountSignatories);
   const contactSignatories = useUnit(formModel.$contactSignatories);
