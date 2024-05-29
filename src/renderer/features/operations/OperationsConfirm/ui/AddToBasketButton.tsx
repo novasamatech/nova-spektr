@@ -11,11 +11,11 @@ type Props = {
 export const AddToBasketButton = ({ wallet, onTxSaved }: Props) => {
   const { t } = useI18n();
 
-  if (wallet && !basketUtils.isBasketAvailable(wallet)) return <></>;
+  if (wallet && !basketUtils.isBasketAvailable(wallet)) return null;
 
   return (
     <Button pallet="secondary" onClick={onTxSaved}>
-      {t('operation.saveToBasket')}
+      {t('operation.addToBasket')}
     </Button>
   );
 };

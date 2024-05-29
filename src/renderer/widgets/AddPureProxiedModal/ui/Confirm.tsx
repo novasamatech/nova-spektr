@@ -8,6 +8,7 @@ import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { confirmModel } from '../model/confirm-model';
 import { SignButton } from '@entities/operations';
+import { isEmptyComponent } from '@/src/renderer/shared/lib/utils';
 
 type Props = {
   secondaryActionButton?: ReactNode;
@@ -145,7 +146,11 @@ export const Confirm = ({ secondaryActionButton, onGoBack }: Props) => {
         <div className="flex gap-4">
           {secondaryActionButton}
 
-          <SignButton type={(signerWallet || initiatorWallet).type} onClick={confirmModel.output.formSubmitted} />
+          <SignButton
+            isDefault={!isEmptyComponent(secondaryActionButton)}
+            type={(signerWallet || initiatorWallet).type}
+            onClick={confirmModel.output.formSubmitted}
+          />
         </div>
       </div>
     </div>

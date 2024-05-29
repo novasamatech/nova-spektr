@@ -5,7 +5,7 @@ import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { SignButton } from '@entities/operations';
 import { AddressWithExplorers, WalletIcon, ExplorersPopover, WalletCardSm, accountUtils } from '@entities/wallet';
-import { cnTw } from '@shared/lib/utils';
+import { cnTw, isEmptyComponent } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { ChainTitle } from '@entities/chain';
@@ -192,7 +192,12 @@ export const Confirmation = ({ secondaryActionButton, onGoBack }: Props) => {
 
         <div className="flex gap-4">
           {secondaryActionButton}
-          <SignButton type={(signerWallet || initiatorWallet).type} onClick={confirmModel.output.formSubmitted} />
+
+          <SignButton
+            isDefault={!isEmptyComponent(secondaryActionButton)}
+            type={(signerWallet || initiatorWallet).type}
+            onClick={confirmModel.output.formSubmitted}
+          />
         </div>
       </div>
     </div>

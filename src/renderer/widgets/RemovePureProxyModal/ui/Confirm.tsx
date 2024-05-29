@@ -8,7 +8,7 @@ import { SignButton } from '@entities/operations';
 import { AddressWithExplorers, WalletIcon, accountUtils, ExplorersPopover, WalletCardSm } from '@entities/wallet';
 import { proxyUtils } from '@entities/proxy';
 import { confirmModel } from '../model/confirm-model';
-import { toAddress } from '@shared/lib/utils';
+import { isEmptyComponent, toAddress } from '@shared/lib/utils';
 import { ProxyType } from '@shared/core';
 
 type Props = {
@@ -153,6 +153,7 @@ export const Confirmation = ({ secondaryActionButton, onGoBack }: Props) => {
           {secondaryActionButton}
 
           <SignButton
+            isDefault={!isEmptyComponent(secondaryActionButton)}
             disabled={isFeeLoading}
             type={(signerWallet || initiatorWallet)?.type}
             onClick={confirmModel.output.formSubmitted}

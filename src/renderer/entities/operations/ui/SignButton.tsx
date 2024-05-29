@@ -21,17 +21,20 @@ const WalletText: Record<SignableWalletFamily, string> = {
   [WalletType.SINGLE_PARITY_SIGNER]: 'operation.sign.polkadotVault',
 };
 
-const UnkownWalletText = 'operation.sign.unknown';
+const DefaultSignButton = 'operation.sign.default';
 
 type Props = {
   type?: WalletType; // TODO: should not be undefined
+  isDefault?: boolean;
   disabled?: boolean;
   className?: string;
   onClick?: () => void;
 };
 
-export const SignButton = ({ disabled, type, className, onClick }: Props) => {
+export const SignButton = ({ disabled, isDefault, type, className, onClick }: Props) => {
   const { t } = useI18n();
+
+  console.log('xcm', isDefault);
 
   return (
     <Button
@@ -42,7 +45,7 @@ export const SignButton = ({ disabled, type, className, onClick }: Props) => {
       }
       onClick={onClick}
     >
-      {t(type ? WalletText[type as SignableWalletFamily] : UnkownWalletText)}
+      {t(type && !isDefault ? WalletText[type as SignableWalletFamily] : DefaultSignButton)}
     </Button>
   );
 };

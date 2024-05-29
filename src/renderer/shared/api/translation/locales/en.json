@@ -437,6 +437,7 @@
   },
   "operation": {
     "addCallDataButton": "Add call data",
+    "addToBasket": "Add to basket",
     "advanced": "Advanced",
     "approveButton": "Approve",
     "cancelTitle": "Reject",
@@ -487,16 +488,15 @@
       "placeholder": "Reason...",
       "title": "Enter reject reason"
     },
-    "saveToBasket": "Save to basket",
     "selectAccount": "Select account",
     "selectAccountLabel": "Account",
     "selectSignatory": "Select signatory",
     "selectSignatoryLabel": "Signatory",
     "selectSignatoryTitle": "Select signatory",
     "sign": {
+      "default": "Sign",
       "novaWallet": "Sign with Nova Wallet",
       "polkadotVault": "Sign with Polkadot Vault",
-      "unknown": "Sign",
       "walletConnect": "Sign with WalletConnect"
     },
     "signatoriesTitle": "Signatories",

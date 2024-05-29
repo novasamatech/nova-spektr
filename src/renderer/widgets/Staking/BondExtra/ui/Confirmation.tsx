@@ -5,7 +5,7 @@ import { Button, DetailRow, FootnoteText, Icon, Tooltip, CaptionText } from '@sh
 import { useI18n } from '@app/providers';
 import { SignButton } from '@entities/operations';
 import { AddressWithExplorers, WalletIcon, ExplorersPopover, WalletCardSm, accountUtils } from '@entities/wallet';
-import { cnTw, formatAmount } from '@shared/lib/utils';
+import { cnTw, formatAmount, isEmptyComponent } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { confirmModel } from '../model/confirm-model';
@@ -211,6 +211,7 @@ export const Confirmation = ({ secondaryActionButton, onGoBack }: Props) => {
             {secondaryActionButton}
 
             <SignButton
+              isDefault={!isEmptyComponent(secondaryActionButton)}
               disabled={isFeeLoading}
               type={(signerWallet || initiatorWallet).type}
               onClick={confirmModel.output.formSubmitted}
