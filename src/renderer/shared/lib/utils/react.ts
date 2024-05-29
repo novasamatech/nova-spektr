@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import { ReactNode, isValidElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 export function isEmptyComponent(node: ReactNode): boolean {
@@ -6,7 +6,7 @@ export function isEmptyComponent(node: ReactNode): boolean {
     return true;
   }
 
-  if (React.isValidElement(node)) {
+  if (isValidElement(node)) {
     try {
       return !renderToStaticMarkup(node);
     } catch (e) {
