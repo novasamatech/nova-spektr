@@ -12,7 +12,7 @@ import { StakingPopover, SelectedValidatorsModal, AccountsModal } from '@entitie
 import { useToggle } from '@shared/lib/hooks';
 import { FeeLoader } from '@entities/transaction';
 import { priceProviderModel } from '@entities/price';
-import { isEmptyComponent } from '@/src/renderer/shared/lib/utils';
+import { isEmptyComponent } from '@shared/lib/utils';
 
 type Props = {
   secondaryActionButton?: ReactNode;

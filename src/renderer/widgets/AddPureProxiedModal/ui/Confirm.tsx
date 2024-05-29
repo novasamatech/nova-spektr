@@ -8,7 +8,7 @@ import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { confirmModel } from '../model/confirm-model';
 import { SignButton } from '@entities/operations';
-import { isEmptyComponent } from '@/src/renderer/shared/lib/utils';
+import { isEmptyComponent } from '@shared/lib/utils';
 
 type Props = {
   secondaryActionButton?: ReactNode;
