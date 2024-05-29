@@ -55,7 +55,6 @@ const callbacksApi = createApi($callbacks, {
 });
 
 const $error = createStore('').reset(reset);
-
 const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
@@ -138,7 +137,7 @@ const $transaction = combine(
     threshold: formModel.$createMultisigForm.fields.threshold.$value,
     multisigAccountId: formModel.$multisigAccountId,
   },
-  ({ apis, chain, chains, remarkTx, signatories, signer, threshold, multisigAccountId }) => {
+  ({ apis, chain, remarkTx, signatories, signer, threshold, multisigAccountId }) => {
     if (!chain || !remarkTx) return undefined;
 
     return transactionService.getWrappedTransaction({
@@ -182,6 +181,8 @@ const createWalletFx = createEffect(
     const cryptoType = isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519;
     const accountIds = signatories.map((s) => s.accountId);
     const accountId = accountUtils.getMultisigAccountId(accountIds, threshold, cryptoType);
+
+    console.log('<><>Multisig wallet creation', accountId, name, threshold, signatories, chainId, cryptoType);
 
     walletModel.events.multisigCreated({
       wallet: {
@@ -249,13 +250,16 @@ sample({
 });
 
 sample({
-  clock: walletCreated,
+  clock: submitModel.output.extrinsicSucceeded,
   source: {
+    name: formModel.$createMultisigForm.fields.name.$value,
+    threshold: formModel.$createMultisigForm.fields.threshold.$value,
     signatories: formModel.$signatories,
     chain: formModel.$createMultisigForm.fields.chain.$value,
   },
-  fn: ({ signatories, chain }, resultValues) => ({
-    ...resultValues,
+  fn: ({ signatories, chain, name, threshold }) => ({
+    name,
+    threshold,
     chainId: chain.chainId,
     signatories: sortBy(signatories, 'accountId'),
     isEthereumChain: networkUtils.isEthereumBased(chain.options),
