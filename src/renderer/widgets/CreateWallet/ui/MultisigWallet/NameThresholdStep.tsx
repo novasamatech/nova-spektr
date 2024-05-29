@@ -38,13 +38,9 @@ const getChainOptions = (chains: Chain[]): DropdownOption<Chain>[] => {
 
 type Props = {
   signatories: Signatory[];
-  // onGoBack: () => void;
 };
 
-export const NameThresholdStep = ({
-  signatories,
-}: // onGoBack,
-Props) => {
+export const NameThresholdStep = ({ signatories }: Props) => {
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
