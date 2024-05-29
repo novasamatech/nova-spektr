@@ -60,6 +60,7 @@ const signAndSubmitExtrinsicsFx = createEffect(
     const boundExtrinsicFailed = scopeBind(extrinsicFailed, { safe: true });
 
     wrappedTxs.forEach((transaction, index) => {
+      console.log('<><> go', index, transaction, signatures[index], txPayloads[index]);
       transactionService.signAndSubmit(transaction, signatures[index], txPayloads[index], api, (executed, params) => {
         if (executed) {
           boundExtrinsicSucceeded(params as ExtrinsicResultParams);

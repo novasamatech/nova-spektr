@@ -1,12 +1,11 @@
 import { useForm } from 'effector-forms';
-import { ComponentProps, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useUnit } from 'effector-react';
 import noop from 'lodash/noop';
 
-import { BaseModal, HeaderTitleText, IconButton } from '@shared/ui';
+import { BaseModal, HeaderTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
-import { OperationResult } from '@entities/transaction';
 import { ConfirmationStep, NameThresholdStep } from './components';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { flowModel } from '../../model/flow-model';
@@ -14,9 +13,7 @@ import { createMultisigUtils } from '../../lib/create-multisig-utils';
 import { formModel } from '../../model/form-model';
 import { SelectSignatoriesForm } from './components/SelectSignatoriesForm';
 import { Step } from '../../lib/types';
-import { OperationSign } from '@features/operations';
-
-type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
+import { OperationSign, OperationSubmit } from '@features/operations';
 
 type Props = {
   isOpen: boolean;
@@ -31,8 +28,6 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
   const {
     fields: { chain },
   } = useForm(formModel.$createMultisigForm);
-  const isLoading = useUnit(flowModel.$isLoading);
-  const error = useUnit(flowModel.$error);
   const activeStep = useUnit(flowModel.$step);
   const accountSignatories = useUnit(formModel.$accountSignatories);
   const contactSignatories = useUnit(formModel.$contactSignatories);
@@ -61,12 +56,8 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
     setTimeout(params?.complete ? onComplete : params?.closeAll ? onClose : noop, DEFAULT_TRANSITION);
   };
 
-  // const getResultProps = (): OperationResultProps => {
-  //   if (isLoading) return { variant: 'loading' };
-  //   if (error) return { variant: 'error', description: error };
-
-  //   return { variant: 'success', description: t('createMultisigAccount.successMessage') };
-  // };
+  if (createMultisigUtils.isSubmitStep(activeStep))
+    return <OperationSubmit isOpen={isModalOpen} onClose={closeMultisigModal} />;
 
   const modalTitle = (
     <div className="flex justify-between items-center px-5 py-3 w-[464px] bg-white rounded-tl-lg rounded-tr-lg">
@@ -76,14 +67,7 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
 
   return (
     <>
-      <BaseModal
-        title={modalTitle}
-        isOpen={isModalOpen && !isResultModalOpen}
-        headerClass="bg-input-background-disabled"
-        panelClass="w-[440px]"
-        contentClass="flex h-[524px]"
-        onClose={closeMultisigModal}
-      >
+      <BaseModal closeButton title={modalTitle} isOpen={isModalOpen && !isResultModalOpen} onClose={closeMultisigModal}>
         {createMultisigUtils.isInitStep(activeStep) && <SelectSignatoriesForm />}
         {createMultisigUtils.isNameThresholdStep(activeStep) && <NameThresholdStep signatories={signatories} />}
         {createMultisigUtils.isConfirmStep(activeStep) && (
@@ -94,21 +78,6 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
         {createMultisigUtils.isSignStep(activeStep) && (
           <OperationSign onGoBack={() => flowModel.events.stepChanged(Step.CONFIRM)} />
         )}
-
-        {/* <OperationResult
-          {...getResultProps()}
-          title={t('createMultisigAccount.createionStatusTitle')}
-          isOpen={isModalOpen && isResultModalOpen}
-          onClose={() => closeMultisigModal({ complete: true })}
-        >
-          {error && <Button onClick={toggleResultModal}>{t('createMultisigAccount.closeButton')}</Button>}
-        </OperationResult> */}
-        <IconButton
-          name="close"
-          size={20}
-          className="absolute right-3 top-2 m-1"
-          onClick={() => closeMultisigModal()}
-        />
       </BaseModal>
     </>
   );

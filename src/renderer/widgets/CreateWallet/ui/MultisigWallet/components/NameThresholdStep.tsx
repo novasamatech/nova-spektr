@@ -7,7 +7,7 @@ import { useI18n } from '@app/providers';
 import { DropdownOption } from '@shared/ui/types';
 import { networkModel, networkUtils } from '@entities/network';
 import { ChainTitle } from '@entities/chain';
-import { Signatory, type Chain, type ChainId } from '@shared/core';
+import { Signatory, type Chain } from '@shared/core';
 import { formModel } from '../../../model/form-model';
 import { flowModel } from '../../../model/flow-model';
 import { Step } from '../../../lib/types';
@@ -26,13 +26,13 @@ const getThresholdOptions = (optionsAmount: number): DropdownOption<number>[] =>
   });
 };
 
-const getChainOptions = (chains: Chain[]): DropdownOption<ChainId>[] => {
+const getChainOptions = (chains: Chain[]): DropdownOption<Chain>[] => {
   return chains
     .filter((c) => networkUtils.isMultisigSupported(c.options))
     .map((chain) => ({
       id: chain.chainId.toString(),
       element: <ChainTitle chain={chain} />,
-      value: chain.chainId,
+      value: chain,
     }));
 };
 
@@ -133,7 +133,6 @@ Props) => {
           <Button key="create" disabled={!canContinue} type="submit">
             {t('createMultisigAccount.continueButton')}
           </Button>
-          {/* )} */}
         </div>
       </form>
     </section>
