@@ -43,7 +43,7 @@ export const Nominate = () => {
         <Confirmation
           secondaryActionButton={
             initiatorWallet &&
-            !basketUtils.isBasketAvailable(initiatorWallet) && (
+            basketUtils.isBasketAvailable(initiatorWallet) && (
               <Button pallet="secondary" onClick={() => nominateModel.events.txSaved()}>
                 {t('operation.addToBasket')}
               </Button>

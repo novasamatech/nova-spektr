@@ -43,7 +43,7 @@ export const Unstake = () => {
         <Confirmation
           secondaryActionButton={
             initiatorWallet &&
-            !basketUtils.isBasketAvailable(initiatorWallet) && (
+            basketUtils.isBasketAvailable(initiatorWallet) && (
               <Button pallet="secondary" onClick={() => unstakeModel.events.txSaved()}>
                 {t('operation.addToBasket')}
               </Button>

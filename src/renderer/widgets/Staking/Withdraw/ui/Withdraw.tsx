@@ -43,7 +43,7 @@ export const Withdraw = () => {
         <Confirmation
           secondaryActionButton={
             initiatorWallet &&
-            !basketUtils.isBasketAvailable(initiatorWallet) && (
+            basketUtils.isBasketAvailable(initiatorWallet) && (
               <Button pallet="secondary" onClick={() => withdrawModel.events.txSaved()}>
                 {t('operation.addToBasket')}
               </Button>

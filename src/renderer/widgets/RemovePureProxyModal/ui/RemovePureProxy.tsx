@@ -51,7 +51,7 @@ export const RemovePureProxy = () => {
         <Confirmation
           secondaryActionButton={
             initiatorWallet &&
-            !basketUtils.isBasketAvailable(initiatorWallet) && (
+            basketUtils.isBasketAvailable(initiatorWallet) && (
               <Button pallet="secondary" onClick={() => removePureProxyModel.events.txSaved()}>
                 {t('operation.addToBasket')}
               </Button>

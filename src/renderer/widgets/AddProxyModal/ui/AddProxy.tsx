@@ -44,7 +44,7 @@ export const AddProxy = () => {
         <Confirmation
           secondaryActionButton={
             initiatorWallet &&
-            !basketUtils.isBasketAvailable(initiatorWallet) && (
+            basketUtils.isBasketAvailable(initiatorWallet) && (
               <Button pallet="secondary" onClick={() => addProxyModel.events.txSaved()}>
                 {t('operation.addToBasket')}
               </Button>

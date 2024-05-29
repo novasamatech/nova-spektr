@@ -40,7 +40,7 @@ export const AddPureProxied = () => {
         <Confirm
           secondaryActionButton={
             initiatorWallet &&
-            !basketUtils.isBasketAvailable(initiatorWallet) && (
+            basketUtils.isBasketAvailable(initiatorWallet) && (
               <Button pallet="secondary" onClick={() => addPureProxiedModel.events.txSaved()}>
                 {t('operation.addToBasket')}
               </Button>

@@ -43,7 +43,7 @@ export const Restake = () => {
         <Confirmation
           secondaryActionButton={
             initiatorWallet &&
-            !basketUtils.isBasketAvailable(initiatorWallet) && (
+            basketUtils.isBasketAvailable(initiatorWallet) && (
               <Button pallet="secondary" onClick={() => restakeModel.events.txSaved()}>
                 {t('operation.addToBasket')}
               </Button>

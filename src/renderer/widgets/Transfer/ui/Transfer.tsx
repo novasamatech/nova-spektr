@@ -60,7 +60,7 @@ export const Transfer = ({ chain, asset }: Props) => {
         <Confirmation
           secondaryActionButton={
             initiatorWallet &&
-            !basketUtils.isBasketAvailable(initiatorWallet) && (
+            basketUtils.isBasketAvailable(initiatorWallet) && (
               <Button pallet="secondary" onClick={() => transferModel.events.txSaved()}>
                 {t('operation.addToBasket')}
               </Button>
