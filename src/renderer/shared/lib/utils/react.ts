@@ -10,7 +10,8 @@ export function isEmptyComponent(node: ReactNode): boolean {
     try {
       return !renderToStaticMarkup(node);
     } catch (e) {
-      // Can throw error for custom components and it means we have content inside
+      // Can throw error for custom components and it means we have component inside
+      // (but component may be empty inside)
       return false;
     }
   }
