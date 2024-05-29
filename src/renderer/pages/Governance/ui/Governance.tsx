@@ -4,12 +4,12 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@app/providers';
 import { Header } from '@shared/ui';
 import { governanceModel } from '../model/governance-model';
-import { ReferendumList, ReferendumFilter, ReferendumDetails } from '@features/governance';
+import { ReferendumFilter, ReferendumDetails, CompletedReferendums } from '@features/governance';
 
 export const Governance = () => {
   const { t } = useI18n();
 
-  const ongoing = useUnit(governanceModel.$ongoing);
+  // const ongoing = useUnit(governanceModel.$ongoing);
   const completed = useUnit(governanceModel.$completed);
 
   useEffect(() => {
@@ -30,9 +30,10 @@ export const Governance = () => {
           {/*  <Delegations onClick={() => console.log('Go to Delegate')} />*/}
           {/*</div>*/}
 
-          {/* TODO: Tracks - Vote filter */}
+          {/* TODO: Tracks - Voted filter */}
 
-          <ReferendumList ongoing={ongoing} completed={completed} onSelected={console.log} />
+          {/*<OngoingReferendums referendums={ongoing} onSelected={governanceModel.events.referendumSelected} />*/}
+          <CompletedReferendums referendums={completed} onSelected={governanceModel.events.referendumSelected} />
         </section>
       </div>
 

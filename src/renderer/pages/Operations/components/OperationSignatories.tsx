@@ -94,7 +94,7 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
           pallet="secondary"
           variant="fill"
           size="sm"
-          prefixElement={<Icon name="chatRedesign" size={16} />}
+          prefixElement={<Icon name="chat" size={16} />}
           suffixElement={
             <CaptionText className="!text-white bg-chip-icon rounded-full pt-[1px] pb-[2px] px-1.5">
               {events.length}

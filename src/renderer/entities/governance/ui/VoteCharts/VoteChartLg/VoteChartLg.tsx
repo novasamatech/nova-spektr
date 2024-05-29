@@ -1,5 +1,5 @@
 import { useI18n } from '@app/providers';
-import { FootnoteText } from '../../Typography';
+import { FootnoteText } from '@shared/ui/Typography';
 import '../common/styles.css';
 
 type Props = {

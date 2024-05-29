@@ -69,7 +69,7 @@ function isDelegating(voting: Voting): voting is DelegatingVoting {
   return voting.type === VotingType.DELEGATING;
 }
 
-// Vote types
+// Voted types
 
 function isStandardVote(vote: AccountVote): vote is StandardVote {
   return vote.type === VoteType.Standard;

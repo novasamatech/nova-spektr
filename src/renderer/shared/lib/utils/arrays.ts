@@ -40,3 +40,9 @@ export function dictionary<T extends Record<K, PropertyKey>, K extends KeysOfTyp
 export function getRepeatedIndex(index: number, base: number): number {
   return Math.floor(index / base);
 }
+
+export const sortByDateDesc = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]): number =>
+  new Date(dateA) < new Date(dateB) ? 1 : -1;
+
+export const sortByDateAsc = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]): number =>
+  new Date(dateA) > new Date(dateB) ? 1 : -1;

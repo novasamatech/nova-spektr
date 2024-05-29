@@ -257,7 +257,12 @@
     }
   },
   "governance": {
-    "title": "Governance"
+    "referendums": {
+      "completed": "Completed",
+      "ongoing": "Ongoing"
+    },
+    "title": "Governance",
+    "voted": "Voted"
   },
   "log": {
     "cancelledMessage": "rejected this operation",

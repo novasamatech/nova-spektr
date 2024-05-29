@@ -1,6 +1,5 @@
-import { CaptionText } from '@shared/ui';
+import { OperationStatus } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { cnTw } from '@shared/lib/utils';
 import { MultisigTransaction, MultisigTxFinalStatus, MultisigTxInitStatus, MultisigTxStatus } from '@shared/core';
 
 const StatusTitle: Record<MultisigTxStatus, string> = {
@@ -11,12 +10,12 @@ const StatusTitle: Record<MultisigTxStatus, string> = {
   [MultisigTxFinalStatus.EXECUTED]: 'operation.status.executed',
 };
 
-const StatusColor: Record<MultisigTxStatus, string> = {
-  [MultisigTxInitStatus.SIGNING]: 'text-text-tertiary',
-  [MultisigTxFinalStatus.CANCELLED]: 'text-text-negative',
-  [MultisigTxFinalStatus.ERROR]: 'text-text-negative',
-  [MultisigTxFinalStatus.ESTABLISHED]: 'text-text-tertiary',
-  [MultisigTxFinalStatus.EXECUTED]: 'text-text-positive',
+const StatusColor: Record<MultisigTxStatus, 'default' | 'success' | 'error'> = {
+  [MultisigTxInitStatus.SIGNING]: 'default',
+  [MultisigTxFinalStatus.ESTABLISHED]: 'default',
+  [MultisigTxFinalStatus.EXECUTED]: 'success',
+  [MultisigTxFinalStatus.CANCELLED]: 'error',
+  [MultisigTxFinalStatus.ERROR]: 'error',
 };
 
 type Props = {
@@ -26,24 +25,15 @@ type Props = {
   className?: string;
 };
 
-const OperationStatus = ({ status, signed, threshold, className }: Props) => {
+export const Status = ({ status, signed, threshold, className }: Props) => {
   const { t } = useI18n();
 
   const text =
     status === 'SIGNING' ? t('operation.signing', { signed, threshold: threshold || 0 }) : t(StatusTitle[status]);
 
   return (
-    <CaptionText
-      align="center"
-      className={cnTw(
-        'py-1 px-2.5 rounded-[20px] border border-redesign-shade-8 uppercase',
-        StatusColor[status],
-        className,
-      )}
-    >
+    <OperationStatus pallet={StatusColor[status]} className={className}>
       {text}
-    </CaptionText>
+    </OperationStatus>
   );
 };
-
-export default OperationStatus;
