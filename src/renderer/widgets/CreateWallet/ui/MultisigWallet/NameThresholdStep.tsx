@@ -8,9 +8,9 @@ import { DropdownOption } from '@shared/ui/types';
 import { networkModel, networkUtils } from '@entities/network';
 import { ChainTitle } from '@entities/chain';
 import { Signatory, type Chain } from '@shared/core';
-import { formModel } from '../../../model/form-model';
-import { flowModel } from '../../../model/flow-model';
-import { Step } from '../../../lib/types';
+import { formModel } from '../../model/form-model';
+import { flowModel } from '../../model/flow-model';
+import { Step } from '../../lib/types';
 
 const getThresholdOptions = (optionsAmount: number): DropdownOption<number>[] => {
   if (optionsAmount === 0) return [];
@@ -50,15 +50,6 @@ Props) => {
   const chains = useUnit(networkModel.$chains);
   const { fields, submit } = useForm(formModel.$createMultisigForm);
   const multisigAlreadyExists = useUnit(formModel.$multisigAlreadyExists);
-  const hasOwnSignatory = useUnit(flowModel.$hasOwnSignatory);
-
-  //fixme this is now how we do it
-  // probably put that in the model
-  const canContinue = () => {
-    const hasEnoughSignatories = signatories.length >= 2;
-
-    return hasOwnSignatory && hasEnoughSignatories && !multisigAlreadyExists;
-  };
 
   const thresholdOptions = getThresholdOptions(signatories.length - 1);
   const chainOptions = getChainOptions(Object.values(chains));
@@ -81,7 +72,7 @@ Props) => {
             value={fields.name.value}
             onChange={fields.name.onChange}
           />
-          <InputHint variant="error" active={fields.name.hasError()}>
+          <InputHint variant="error" active={!!fields.name.hasError()}>
             {fields.name.errorText()}
           </InputHint>
         </div>
@@ -113,24 +104,16 @@ Props) => {
         <Alert
           active={Boolean(multisigAlreadyExists)}
           title={t('createMultisigAccount.multisigExistTitle')}
-          variant="warn"
-        >
-          <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
-        </Alert>
-
-        <Alert
-          active={!hasOwnSignatory && Boolean(signatories.length)}
-          title={t('createMultisigAccount.walletAlertTitle')}
           variant="error"
         >
-          <Alert.Item withDot={false}>{t('createMultisigAccount.noOwnSignatory')}</Alert.Item>
+          <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
         </Alert>
 
         <div className="flex justify-between items-center mt-auto">
           <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.INIT)}>
             {t('createMultisigAccount.backButton')}
           </Button>
-          <Button key="create" disabled={!canContinue} type="submit">
+          <Button key="create" type="submit">
             {t('createMultisigAccount.continueButton')}
           </Button>
         </div>

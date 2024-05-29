@@ -6,12 +6,13 @@ import noop from 'lodash/noop';
 import { BaseModal, HeaderTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
-import { ConfirmationStep, NameThresholdStep } from './components';
+import { ConfirmationStep } from './ConfirmationStep';
+import { NameThresholdStep } from './NameThresholdStep';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { flowModel } from '../../model/flow-model';
 import { createMultisigUtils } from '../../lib/create-multisig-utils';
 import { formModel } from '../../model/form-model';
-import { SelectSignatoriesForm } from './components/SelectSignatoriesForm';
+import { SelectSignatoriesStep } from './SelectSignatoriesStep';
 import { Step } from '../../lib/types';
 import { OperationSign, OperationSubmit } from '@features/operations';
 
@@ -19,7 +20,6 @@ type Props = {
   isOpen: boolean;
   onClose: () => void;
   onComplete: () => void;
-  // onBack: () => void;
 };
 
 export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
@@ -34,7 +34,6 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
   const signatories = useUnit(formModel.$signatories);
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
-  const [isResultModalOpen, toggleResultModal] = useToggle();
 
   useEffect(() => {
     flowModel.events.callbacksChanged({ onComplete });
@@ -67,13 +66,17 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
 
   return (
     <>
-      <BaseModal closeButton title={modalTitle} isOpen={isModalOpen && !isResultModalOpen} onClose={closeMultisigModal}>
-        {createMultisigUtils.isInitStep(activeStep) && <SelectSignatoriesForm />}
+      <BaseModal
+        closeButton
+        title={modalTitle}
+        isOpen={isModalOpen}
+        panelClass="w-[480px]"
+        onClose={closeMultisigModal}
+      >
+        {createMultisigUtils.isInitStep(activeStep) && <SelectSignatoriesStep />}
         {createMultisigUtils.isNameThresholdStep(activeStep) && <NameThresholdStep signatories={signatories} />}
         {createMultisigUtils.isConfirmStep(activeStep) && (
-          <section className="relative flex flex-col px-5 py-4 flex-1 bg-input-background-disabled h-full">
-            <ConfirmationStep chain={chain.value} accounts={accountSignatories} contacts={contactSignatories} />
-          </section>
+          <ConfirmationStep chain={chain.value} accounts={accountSignatories} contacts={contactSignatories} />
         )}
         {createMultisigUtils.isSignStep(activeStep) && (
           <OperationSign onGoBack={() => flowModel.events.stepChanged(Step.CONFIRM)} />

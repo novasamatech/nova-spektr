@@ -171,14 +171,13 @@ export const SelectSignatories = ({ isActive, accounts, wallets, contacts, chain
 
   const AccountsTab = hasAccounts ? (
     <div className="flex flex-col gap-2">
-      <ul className="flex flex-col gap-y-2">
-        <SearchInput
-          wrapperClass="mx-2"
-          placeholder={t('createMultisigAccount.searchContactPlaceholder')}
-          value={accountsQuery}
-          onChange={setAccountsQuery}
-        />
-
+      <SearchInput
+        wrapperClass="mx-2"
+        placeholder={t('createMultisigAccount.searchContactPlaceholder')}
+        value={accountsQuery}
+        onChange={setAccountsQuery}
+      />
+      <ul className="flex flex-col gap-y-2 overflow-auto max-h-40">
         {Object.entries(accountsList).map(([walletId, accounts]) => {
           const wallet = wallets[Number(walletId)];
 

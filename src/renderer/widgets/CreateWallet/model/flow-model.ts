@@ -182,8 +182,6 @@ const createWalletFx = createEffect(
     const accountIds = signatories.map((s) => s.accountId);
     const accountId = accountUtils.getMultisigAccountId(accountIds, threshold, cryptoType);
 
-    console.log('<><>Multisig wallet creation', accountId, name, threshold, signatories, chainId, cryptoType);
-
     walletModel.events.multisigCreated({
       wallet: {
         name,
@@ -204,15 +202,6 @@ const createWalletFx = createEffect(
       ],
     });
   },
-);
-
-const $hasOwnSignatory = combine(
-  { wallets: walletModel.$wallets, signatories: formModel.$signatories },
-  ({ wallets, signatories }) =>
-    walletUtils.getWalletsFilteredAccounts(wallets, {
-      walletFn: (w) => !walletUtils.isWatchOnly(w) && !walletUtils.isMultisig(w),
-      accountFn: (a) => signatories.some((s) => s.accountId === a.accountId),
-    }),
 );
 
 const $fakeTx = combine(
@@ -237,6 +226,8 @@ const $fakeTx = combine(
 
 sample({
   clock: formModel.$createMultisigForm.submit,
+  source: formModel.$createMultisigForm.$isValid,
+  filter: (isValid) => isValid,
   fn: () => Step.CONFIRM,
   target: stepChanged,
 });
@@ -393,10 +384,8 @@ sample({
 });
 
 export const flowModel = {
-  $isLoading: createWalletFx.pending,
   $error,
   $step,
-  $hasOwnSignatory,
   $fee,
   $fakeTx,
   $api,

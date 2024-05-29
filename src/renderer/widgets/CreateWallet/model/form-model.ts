@@ -58,7 +58,7 @@ const $multisigAccountId = combine(
     chains: networkModel.$chains,
     signatories: $signatories,
   },
-  ({ chains, formValues: { threshold, chain }, signatories }) => {
+  ({ formValues: { threshold, chain }, signatories }) => {
     if (!threshold) return null;
 
     const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
@@ -89,10 +89,9 @@ const $multisigAlreadyExists = combine(
 const $availableAccounts = combine(
   {
     wallets: walletModel.$wallets,
-    chains: networkModel.$chains,
     formValues: $createMultisigForm.$values,
   },
-  ({ formValues: { chain }, wallets, chains }) => {
+  ({ formValues: { chain }, wallets }) => {
     if (!chain) return [];
 
     const filteredAccounts = walletUtils.getAccountsBy(wallets, (a, w) => {
@@ -109,6 +108,15 @@ const $availableAccounts = combine(
   { skipVoid: false },
 );
 
+const $hasOwnSignatory = combine(
+  { wallets: walletModel.$wallets, signatories: $signatories },
+  ({ wallets, signatories }) =>
+    !!walletUtils.getWalletsFilteredAccounts(wallets, {
+      walletFn: (w) => !walletUtils.isWatchOnly(w) && !walletUtils.isMultisig(w),
+      accountFn: (a) => signatories.some((s) => s.accountId === a.accountId),
+    })?.length,
+);
+
 export const formModel = {
   $createMultisigForm,
   $multisigAccountId,
@@ -117,6 +125,7 @@ export const formModel = {
   $signatories,
   $accountSignatories,
   $contactSignatories,
+  $hasOwnSignatory,
   events: {
     contactSignatoriesChanged,
     accountSignatoriesChanged,
