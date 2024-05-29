@@ -82,7 +82,6 @@
     "title": "Basket"
   },
   "createMultisigAccount": {
-    "noOwnSignatory": "You need at least one owned account as part of the signatories",
     "accountsTab": "Accounts",
     "addContact": "Add new",
     "addContactsButton": "Add selected",
@@ -99,8 +98,8 @@
     "createionStatusTitle": "Mulitisig creation",
     "disabledError": {
       "differentAccounts": "Wallets with different accounts for chains are not supported",
-      "unsupportedType": "This type of wallet is not supported for the Multisig wallet creation",
-      "emptyName": "A name is required"
+      "emptyName": "A name is required",
+      "unsupportedType": "This type of wallet is not supported for the Multisig wallet creation"
     },
     "disabledLabel": "Not supported",
     "errorMessage": "Something went wrong",
@@ -117,15 +116,16 @@
     "nameDescription": "Give a name to your multisig account",
     "nameLabel": "Account",
     "namePlaceholder": "Choose wallet name",
+    "newMultisigTitle": "New multisig",
+    "noOwnSignatory": "You need at least one owned account as part of the signatories",
     "noWallets": "Looks like you don't have any non-watch only wallets",
     "noWalletsLabel": "The wallet list is empty",
     "searchContactPlaceholder": "Search",
-    "signingWith": "Signing with",
-    "newMultisigTitle": "New multisig",
     "selectedSignatoriesTitle": "Selected signatories",
     "signatoriesDescription": "Add signatories to your multisig account",
     "signatoriesLabel": "Signatories",
     "signatoryTitle": "Select signatories",
+    "signingWith": "Signing with",
     "singleChain": {
       "description": "Creation is free, the wallet can work on one network only",
       "featureFour": "Custom voting threshold",
@@ -561,6 +561,7 @@
       "proxy": "Proxy",
       "redeemOn": "Withdraw Unstaked { asset } on",
       "reject": "Reject",
+      "remark": "System Remark",
       "removeProxy": "Revoke delegated authority (proxy)",
       "removeProxyOn": "Revoke delegated authority (proxy) on",
       "removePureProxy": "Revoke delegated authority (pure proxy)",
@@ -571,8 +572,7 @@
       "transferFrom": "Transfer { asset } from",
       "transferOn": "Transfer { asset } on",
       "unknownOn": "Unknown Operation on",
-      "unstakeOn": "Unstake { asset } on",
-      "remark": "System Remark"
+      "unstakeOn": "Unstake { asset } on"
     },
     "noOperationsDescription": "Your operation history will appear here",
     "noOperationsFilters": "Nothing was found for the filters. Try changing filters or canceling filtering.",
@@ -587,6 +587,7 @@
       "nominate": "Change Validators",
       "proxy": "Proxy",
       "redeem": "Withdraw Unstaked",
+      "remark": "Remark",
       "removeProxy": "Revoke delegated authority (proxy)",
       "removePureProxy": "Revoke delegated authority (pure proxy)",
       "restake": "Restake",
@@ -594,8 +595,7 @@
       "startStaking": "Start Staking",
       "transfer": "Transfer",
       "unknown": "Unknown Operation",
-      "unstake": "Unstake",
-      "remark": "Remark"
+      "unstake": "Unstake"
     }
   },
   "price": {
