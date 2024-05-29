@@ -2,7 +2,7 @@ import { createForm } from 'effector-forms';
 import { t } from 'i18next';
 import { combine, createEvent, restore } from 'effector';
 
-import { ChainId, CryptoType, MultisigAccount } from '@shared/core';
+import { Chain, CryptoType, MultisigAccount } from '@shared/core';
 import chains from '@shared/config/chains/chains.json';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
@@ -20,8 +20,8 @@ const $createMultisigForm = createForm<FormParams>({
         },
       ],
     },
-    chainId: {
-      init: chains[0].chainId as ChainId,
+    chain: {
+      init: chains[0] as Chain,
     },
     name: {
       init: '',
@@ -58,10 +58,10 @@ const $multisigAccountId = combine(
     chains: networkModel.$chains,
     signatories: $signatories,
   },
-  ({ chains, formValues: { threshold, chainId: chain }, signatories }) => {
+  ({ chains, formValues: { threshold, chain }, signatories }) => {
     if (!threshold) return null;
 
-    const cryptoType = networkUtils.isEthereumBased(chains[chain].options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
+    const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
 
     return accountUtils.getMultisigAccountId(
       signatories.map((s) => s.accountId),
@@ -73,13 +73,13 @@ const $multisigAccountId = combine(
 
 const $multisigAlreadyExists = combine(
   { wallets: walletModel.$wallets, multisigAccountId: $multisigAccountId, formValues: $createMultisigForm.$values },
-  ({ multisigAccountId, wallets, formValues: { chainId: chain } }) =>
+  ({ multisigAccountId, wallets, formValues: { chain } }) =>
     walletUtils.getWalletFilteredAccounts(wallets, {
       walletFn: (w) => walletUtils.isMultisig(w),
       accountFn: (multisigAccount) => {
         const isSameAccountId = multisigAccount.accountId === multisigAccountId;
         const chainId = (multisigAccount as MultisigAccount).chainId;
-        const isSameChainId = !chainId || chainId === chain;
+        const isSameChainId = !chainId || chainId === chain.chainId;
 
         return isSameAccountId && isSameChainId;
       },
@@ -92,12 +92,12 @@ const $availableAccounts = combine(
     chains: networkModel.$chains,
     formValues: $createMultisigForm.$values,
   },
-  ({ formValues: { chainId: chain }, wallets, chains }) => {
+  ({ formValues: { chain }, wallets, chains }) => {
     if (!chain) return [];
 
     const filteredAccounts = walletUtils.getAccountsBy(wallets, (a, w) => {
       const isValidWallet = !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w);
-      const isChainMatch = accountUtils.isChainAndCryptoMatch(a, chains[chain]);
+      const isChainMatch = accountUtils.isChainAndCryptoMatch(a, chain);
 
       return isValidWallet && isChainMatch;
     });

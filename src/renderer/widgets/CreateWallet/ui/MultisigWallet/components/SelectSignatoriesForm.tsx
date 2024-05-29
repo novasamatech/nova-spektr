@@ -17,7 +17,7 @@ export const SelectSignatoriesForm = () => {
 
   const chains = useUnit(networkModel.$chains);
   const {
-    fields: { chainId: chain },
+    fields: { chain },
   } = useForm(formModel.$createMultisigForm);
   const multisigAlreadyExists = useUnit(formModel.$multisigAlreadyExists);
   const hasOwnSignatory = useUnit(flowModel.$hasOwnSignatory);
@@ -43,7 +43,7 @@ export const SelectSignatoriesForm = () => {
         accounts={accounts}
         wallets={dictionary(wallets, 'id')}
         contacts={contacts}
-        chain={chains[chain.value]}
+        chain={chain.value}
         onSelect={(accounts, contacts) => {
           formModel.events.accountSignatoriesChanged(accounts);
           formModel.events.contactSignatoriesChanged(contacts);

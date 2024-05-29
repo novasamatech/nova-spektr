@@ -1,12 +1,12 @@
 import { createEvent, restore, combine, sample } from 'effector';
 import { once } from 'patronum';
 
-import type { Account, HexString, Transaction, ChainId } from '@shared/core';
+import type { Account, HexString, Transaction, Chain } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { walletModel, walletUtils } from '@entities/wallet';
 
 type Input = {
-  chainId: ChainId;
+  chain: Chain;
   accounts: Account[];
   signatory?: Account;
   transactions: Transaction[];
@@ -29,7 +29,7 @@ const $api = combine(
     store: $signStore,
   },
   ({ apis, store }) => {
-    return store?.chainId ? apis[store.chainId] : undefined;
+    return store?.chain ? apis[store.chain.chainId] : undefined;
   },
   { skipVoid: false },
 );

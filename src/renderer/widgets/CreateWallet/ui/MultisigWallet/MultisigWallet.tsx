@@ -10,9 +10,6 @@ import { OperationResult } from '@entities/transaction';
 import { ConfirmationStep, NameThresholdStep } from './components';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { flowModel } from '../../model/flow-model';
-// import { SelectSignatories } from './components/SelectAccountSignatories';
-// import { walletModel } from '@entities/wallet';
-import { networkModel } from '@entities/network';
 import { createMultisigUtils } from '../../lib/create-multisig-utils';
 import { formModel } from '../../model/form-model';
 import { SelectSignatoriesForm } from './components/SelectSignatoriesForm';
@@ -31,13 +28,9 @@ type Props = {
 export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
 
-  // const accounts = useUnit(formModel.$availableAccounts);
-  // const wallets = useUnit(walletModel.$wallets);
-  // const contacts = useUnit(contactModel.$contacts);
   const {
-    fields: { chainId: chain },
+    fields: { chain },
   } = useForm(formModel.$createMultisigForm);
-  const chains = useUnit(networkModel.$chains);
   const isLoading = useUnit(flowModel.$isLoading);
   const error = useUnit(flowModel.$error);
   const activeStep = useUnit(flowModel.$step);
@@ -62,14 +55,6 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
     }
   }, [isOpen]);
 
-  // const goToPrevStep = () => {
-  //   if (activeStep === Step.INIT) {
-  //     onBack();
-  //   } else {
-  //     setActiveStep((prev) => prev - 1);
-  //   }
-  // };
-
   const closeMultisigModal = (params: { complete?: boolean; closeAll?: boolean } = { closeAll: true }) => {
     toggleIsModalOpen();
 
@@ -89,12 +74,6 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
     </div>
   );
 
-  // const submitHandler = (args: any) => {
-  //   toggleResultModal();
-  //   submit();
-  //   createMultisigWalletModel.events.walletCreated(args);
-  // };
-
   return (
     <>
       <BaseModal
@@ -109,7 +88,7 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
         {createMultisigUtils.isNameThresholdStep(activeStep) && <NameThresholdStep signatories={signatories} />}
         {createMultisigUtils.isConfirmStep(activeStep) && (
           <section className="relative flex flex-col px-5 py-4 flex-1 bg-input-background-disabled h-full">
-            <ConfirmationStep chain={chains[chain.value]} accounts={accountSignatories} contacts={contactSignatories} />
+            <ConfirmationStep chain={chain.value} accounts={accountSignatories} contacts={contactSignatories} />
           </section>
         )}
         {createMultisigUtils.isSignStep(activeStep) && (
@@ -127,7 +106,7 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
         <IconButton
           name="close"
           size={20}
-          className="absolute right-3 -top-10 m-1"
+          className="absolute right-3 top-2 m-1"
           onClick={() => closeMultisigModal()}
         />
       </BaseModal>

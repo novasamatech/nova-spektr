@@ -196,7 +196,7 @@ sample({
   filter: ({ addProxyStore, wrappedTx }) => Boolean(addProxyStore) && Boolean(wrappedTx),
   fn: ({ addProxyStore, wrappedTx }) => ({
     event: {
-      chainId: addProxyStore!.chain.chainId,
+      chain: addProxyStore!.chain,
       accounts: [addProxyStore!.account],
       signatory: addProxyStore!.signatory,
       transactions: [wrappedTx!],

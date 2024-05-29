@@ -90,9 +90,9 @@ Props) => {
             placeholder={t('createMultisigAccount.chainPlaceholder')}
             label={t('createMultisigAccount.chainName')}
             className="w-[204px]"
-            selectedId={fields.chainId.value}
+            selectedId={fields.chain.value.chainId.toString()}
             options={chainOptions}
-            onChange={({ id }) => fields.chainId.onChange(id as ChainId)}
+            onChange={({ value }) => fields.chain.onChange(value)}
           />
         </div>
         <div className="flex gap-x-4 items-end">

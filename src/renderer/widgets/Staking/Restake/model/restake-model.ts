@@ -101,7 +101,7 @@ sample({
   },
   fn: ({ restakeStore, networkStore, wrappedTxs }) => ({
     event: {
-      chainId: networkStore!.chain.chainId,
+      chain: networkStore!.chain,
       accounts: restakeStore!.shards,
       signatory: restakeStore!.signatory,
       transactions: wrappedTxs!,

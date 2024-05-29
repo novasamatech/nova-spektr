@@ -138,8 +138,6 @@ const AccountSelector = ({ chain }: { chain?: Chain }) => {
   const wallets = useUnit(walletModel.$wallets);
   // const proxiedAccounts = useUnit(formModel.$proxiedAccounts);
 
-  // if (proxiedAccounts.length <= 1) return null;
-
   if (!chain) return null;
 
   const options = accountSignatories.map(({ accountId, name }) => {
@@ -151,15 +149,7 @@ const AccountSelector = ({ chain }: { chain?: Chain }) => {
       value: accountId,
       element: (
         <div className="flex justify-between w-full" key={accountId}>
-          <AccountAddress
-            size={20}
-            type="short"
-            address={address}
-            // name={isShard ? toShortAddress(address, 16) : account.name}
-            name={name}
-            canCopy={false}
-          />
-          {/* <AssetBalance value={balance} asset={chain.value.assets[0]} /> */}
+          <AccountAddress size={20} type="short" address={address} name={name} canCopy={false} />
         </div>
       ),
     };

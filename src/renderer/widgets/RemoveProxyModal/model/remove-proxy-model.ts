@@ -348,7 +348,7 @@ sample({
   filter: ({ removeProxyStore, wrappedTx }) => Boolean(removeProxyStore) && Boolean(wrappedTx),
   fn: ({ removeProxyStore, signatories, wrappedTx }) => ({
     event: {
-      chainId: removeProxyStore!.chain.chainId,
+      chain: removeProxyStore!.chain,
       accounts: [removeProxyStore!.account],
       signatory: signatories?.[0],
       transactions: [wrappedTx!],

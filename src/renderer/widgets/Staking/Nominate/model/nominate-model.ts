@@ -326,7 +326,7 @@ sample({
 
     return {
       event: {
-        chainId: walletData!.chain.chainId,
+        chain: walletData!.chain,
         accounts: wrapper ? [wrapper.proxyAccount] : nominateData!.shards,
         signatory: nominateData!.signatory,
         transactions: transactions!.map((tx) => tx.wrappedTx),

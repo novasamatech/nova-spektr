@@ -101,7 +101,7 @@ sample({
   },
   fn: ({ withdrawData, networkStore, wrappedTxs }) => ({
     event: {
-      chainId: networkStore!.chain.chainId,
+      chain: networkStore!.chain,
       accounts: withdrawData!.shards,
       signatory: withdrawData!.signatory,
       transactions: wrappedTxs!,

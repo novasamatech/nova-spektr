@@ -7,7 +7,7 @@ import { AddMultisigStore } from '../lib/types';
 const formInitiated = createEvent<AddMultisigStore>();
 const formSubmitted = createEvent();
 
-const $confirmStore = restore<AddMultisigStore>(formInitiated, null).reset(formSubmitted);
+const $confirmStore = restore(formInitiated, null).reset(formSubmitted);
 
 const $api = combine(
   {
@@ -15,7 +15,7 @@ const $api = combine(
     store: $confirmStore,
   },
   ({ apis, store }) => {
-    return store?.chainId ? apis[store.chainId] : undefined;
+    return store?.chain ? apis[store.chain.chainId] : undefined;
   },
   { skipVoid: false },
 );
@@ -33,20 +33,19 @@ const $initiatorWallet = combine(
   { skipVoid: false },
 );
 
-const $proxiedWallet = combine(
-  {
-    store: $confirmStore,
-    wallets: walletModel.$wallets,
-  },
-  ({ store, wallets }) => {
-    //fixme no support for proxiy
-    return undefined;
-    // if (!store || !store.proxiedAccount) return undefined;
+// const $proxiedWallet = combine(
+//   {
+//     store: $confirmStore,
+//     wallets: walletModel.$wallets,
+//   },
+//   ({ store, wallets }) => {
 
-    // return walletUtils.getWalletById(wallets, store.proxiedAccount.walletId);
-  },
-  { skipVoid: false },
-);
+//     if (!store || !store.proxiedAccount) return undefined;
+
+//     return walletUtils.getWalletById(wallets, store.proxiedAccount.walletId);
+//   },
+//   { skipVoid: false },
+// );
 
 const $signerWallet = combine(
   {
@@ -65,7 +64,7 @@ export const confirmModel = {
   $confirmStore,
   $initiatorWallet,
   $signerWallet,
-  $proxiedWallet,
+  // $proxiedWallet,
   $api,
   events: {
     formInitiated,
