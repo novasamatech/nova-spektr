@@ -34,8 +34,6 @@ type Props = {
 export const SignButton = ({ disabled, isDefault, type, className, onClick }: Props) => {
   const { t } = useI18n();
 
-  console.log('xcm', isDefault);
-
   return (
     <Button
       className={className}
