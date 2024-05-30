@@ -7,10 +7,10 @@ import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { OperationResult } from '@entities/transaction';
 import { ExtendedContact, ExtendedWallet } from './common/types';
-import { SelectSignatoriesStep, ConfirmationStep, NameThresholdStep } from './components';
-import { contactModel } from '@entities/contact';
+import { ConfirmationStep } from './ConfirmationStep';
+import { NameThresholdStep } from './NameThresholdStep';
+import { SelectSignatoriesStep } from './SelectSignatoriesStep';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
-import { walletModel } from '@entities/wallet';
 import { flowModel } from '../../model/flow-model';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
@@ -29,10 +29,7 @@ type Props = {
 
 export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }: Props) => {
   const { t } = useI18n();
-  const wallets = useUnit(walletModel.$wallets);
-  const contacts = useUnit(contactModel.$contacts);
 
-  const isLoading = useUnit(flowModel.$isLoading);
   const error = useUnit(flowModel.$error);
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
@@ -62,29 +59,13 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
     flowModel.events.callbacksChanged({ onComplete });
   }, [onComplete]);
 
-  // const goToPrevStep = () => {
-  //   if (activeStep === Step.INIT) {
-  //     onBack();
-  //   } else {
-  //     setActiveStep((prev) => prev - 1);
-  //   }
-  // };
-
   const closeMultisigModal = (params: { complete?: boolean; closeAll?: boolean } = { closeAll: true }) => {
     toggleIsModalOpen();
 
     setTimeout(params?.complete ? onComplete : params?.closeAll ? onClose : noop, DEFAULT_TRANSITION);
   };
 
-  // const submitHandler = (args: any) => {
-  //   toggleResultModal();
-  //   setName(args.name);
-
-  //   flowModel.events.walletCreated(args);
-  // };
-
   const getResultProps = (): OperationResultProps => {
-    if (isLoading) return { variant: 'loading' };
     if (error) return { variant: 'error', description: error };
 
     return { variant: 'success', description: t('createMultisigAccount.successMessage') };
@@ -124,16 +105,7 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
             <ConfirmationStep wallets={signatoryWallets} contacts={signatoryContacts} />
           )}
 
-          <SelectSignatoriesStep
-            isActive={activeStep === Step.INIT}
-            wallets={wallets}
-            accounts={wallets.map((wallet) => wallet.accounts).flat()}
-            contacts={contacts}
-            onSelect={(wallets, contacts) => {
-              setSignatoryWallets(wallets);
-              setSignatoryContacts(contacts);
-            }}
-          />
+          <SelectSignatoriesStep />
         </section>
       </BaseModal>
 

@@ -27,9 +27,6 @@ export const SelectSignatoriesStep = () => {
   const hasEnoughSignatories = signatories.length >= 2;
   const canContinue = hasOwnSignatory && hasEnoughSignatories && !multisigAlreadyExists;
 
-  console.log('<><> canContinue', canContinue);
-  console.log('<><> hasOwnSignatory', hasOwnSignatory);
-
   return (
     <section className="flex flex-col gap-y-4 px-3 py-4 flex-1 h-full">
       <SelectSignatories
