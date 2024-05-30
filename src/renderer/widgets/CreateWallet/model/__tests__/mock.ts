@@ -46,7 +46,7 @@ export const signerWallet = {
       type: AccountType.WALLET_CONNECT,
       accountId: '0x04dd9807d3f7008abfcbffc8cb96e8e26a71a839c7c18d471b0eea782c1b8521',
       chainType: ChainType.SUBSTRATE,
-      chain: '0x00',
+      chainId: '0x00',
     } as unknown as ChainAccount,
   ],
 } as Wallet;
@@ -65,7 +65,7 @@ export const initiatorWallet = {
       type: AccountType.WALLET_CONNECT,
       accountId: '0x960d75eab8e58bffcedf1fa51d85e2acb37d107e9bd7009a3473d3809122493c',
       chainType: ChainType.SUBSTRATE,
-      chain: '0x00',
+      chainId: '0x00',
     } as unknown as ChainAccount,
   ],
 } as Wallet;
@@ -84,7 +84,7 @@ export const wrongChainWallet = {
       type: AccountType.WALLET_CONNECT,
       accountId: '0x00',
       chainType: ChainType.SUBSTRATE,
-      chain: '0x01',
+      chainId: '0x01',
     } as unknown as ChainAccount,
   ],
 } as Wallet;
