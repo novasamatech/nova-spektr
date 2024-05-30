@@ -4,7 +4,14 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@app/providers';
 import { Header } from '@shared/ui';
 import { governanceModel } from '../model/governance-model';
-import { ReferendumFilter, ReferendumDetails, CompletedReferendums } from '@features/governance';
+import {
+  ReferendumFilter,
+  ReferendumDetails,
+  CompletedReferendums,
+  EmptyResults,
+  LoadingReferendums,
+  InactiveNetwork,
+} from '@features/governance';
 
 export const Governance = () => {
   const { t } = useI18n();
@@ -34,6 +41,10 @@ export const Governance = () => {
 
           {/*<OngoingReferendums referendums={ongoing} onSelected={governanceModel.events.referendumSelected} />*/}
           <CompletedReferendums referendums={completed} onSelected={governanceModel.events.referendumSelected} />
+          <LoadingReferendums />
+
+          <EmptyResults />
+          <InactiveNetwork className="flex-grow mb-28" />
         </section>
       </div>
 

@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { Voted, ReferendumTimer } from '@entities/governance';
-import { FootnoteText, Accordion, Plate, CaptionText, OperationStatus } from '@shared/ui';
+import { FootnoteText, Accordion, Plate, CaptionText, OperationStatus, HeadlineText } from '@shared/ui';
 import type { ReferendumId, ReferendumInfo } from '@shared/core';
 import { referendumListModel } from '../model/referendum-list-model';
 
@@ -35,7 +35,7 @@ export const CompletedReferendums = ({ referendums, onSelected }: Props) => {
               <ReferendumTimer status="reject" time={600000} />
               <FootnoteText className="ml-auto text-text-secondary">#{index}</FootnoteText>
             </div>
-            <div>{referendumsDetails[index] || `Referendum #${index}`}</div>
+            <HeadlineText>{referendumsDetails[index] || `Referendum #${index}`}</HeadlineText>
           </Plate>
         ))}
       </Accordion.Content>

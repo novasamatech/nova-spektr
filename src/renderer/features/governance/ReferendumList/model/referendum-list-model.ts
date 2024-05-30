@@ -42,6 +42,10 @@ const $api = combine(
   },
 );
 
+const $isApiActive = combine($api, (api) => {
+  return Boolean(api?.isConnected);
+});
+
 sample({
   clock: $api.updates,
   source: $referendumsRequested,
@@ -98,6 +102,7 @@ export const referendumListModel = {
   $ongoingReferendums,
   $completedReferendums,
   $referendumsDetails,
+  $isApiActive,
 
   events: {
     chainIdChanged,

@@ -30,6 +30,7 @@ export const governanceService = {
 
 async function getReferendums(api: ApiPromise): Promise<Record<ReferendumId, ReferendumInfo>> {
   const referendums = await api.query.referenda.referendumInfoFor.entries();
+  console.log('=== re', referendums);
 
   const result: Record<ReferendumId, ReferendumInfo> = {};
 
