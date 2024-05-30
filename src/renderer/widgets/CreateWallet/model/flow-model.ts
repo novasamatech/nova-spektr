@@ -83,12 +83,16 @@ const $signer = combine(
   { skipVoid: false },
 );
 
-const $signerWallet = combine({ signer: $signer, wallets: walletModel.$wallets }, ({ signer, wallets }) => {
-  return walletUtils.getWalletFilteredAccounts(wallets, {
-    accountFn: (a) => a.accountId === signer.accountId,
-    walletFn: (w) => walletUtils.isValidSignatory(w),
-  });
-});
+const $signerWallet = combine(
+  { signer: $signer, wallets: walletModel.$wallets },
+  ({ signer, wallets }) => {
+    return walletUtils.getWalletFilteredAccounts(wallets, {
+      accountFn: (a) => a.accountId === signer.accountId,
+      walletFn: (w) => walletUtils.isValidSignatory(w),
+    });
+  },
+  { skipVoid: false },
+);
 
 // Miscellaneous
 
@@ -402,5 +406,7 @@ export const flowModel = {
     multisigDepositChanged,
     isFeeLoadingChanged,
     selectedSignerChanged,
+    //for tests
+    formSubmitted,
   },
 };
