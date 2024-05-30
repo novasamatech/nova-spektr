@@ -124,6 +124,7 @@ const sharedConfig: Configuration = {
       'process.env.BUILD_SOURCE': JSON.stringify(process.env.BUILD_SOURCE),
       'process.env.CHAINS_FILE': JSON.stringify(process.env.CHAINS_FILE),
       'process.env.TOKENS_FILE': JSON.stringify(process.env.TOKENS_FILE),
+      'process.env.LOGGER': JSON.stringify(process.env.LOGGER),
     }),
   ],
 };

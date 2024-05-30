@@ -17,6 +17,7 @@ export const PureProxyPopover = ({ children }: PropsWithChildren) => {
       offsetPx={4}
       contentClass="p-4"
       panelClass="w-[360px]"
+      wrapperClass="w-max"
       content={
         <div className="flex flex-col gap-y-4">
           <section className="flex flex-col gap-y-2">

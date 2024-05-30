@@ -6,7 +6,7 @@ import { DEFAULT_TIME, THRESHOLD } from '../constants';
 import { XcmTransferType } from '../../../api/xcm';
 import { XcmPallets } from '../../../core';
 
-describe('shared/lib/utils/substrate', () => {
+describe('shared/lib/onChainUtils/substrate', () => {
   const blockTime = new BN(10_000);
 
   const getTime = (params: any): BN => {
