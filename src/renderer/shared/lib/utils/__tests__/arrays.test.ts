@@ -1,6 +1,6 @@
 import { splice } from '../arrays';
 
-describe('shared/lib/utils/arrays', () => {
+describe('shared/lib/onChainUtils/arrays', () => {
   test('should insert element in the beginning', () => {
     const array = splice([1, 2, 3], 100, 0);
     expect(array).toEqual([100, 2, 3]);

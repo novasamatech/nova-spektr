@@ -80,6 +80,7 @@ export const confirmModel = {
   $signerWallet,
   $proxiedWallet,
   $api,
+
   events: {
     formInitiated,
   },

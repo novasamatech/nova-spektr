@@ -1,8 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { act, render, screen } from '@testing-library/react';
 
-import { Transaction } from '@entities/transaction';
-import type { Asset } from '@shared/core';
+import type { Asset, Transaction } from '@shared/core';
 import { Fee } from './Fee';
 
 jest.mock('@app/providers', () => ({

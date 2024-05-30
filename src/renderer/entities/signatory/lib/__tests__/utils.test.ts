@@ -1,7 +1,7 @@
 import { WalletType, Wallet } from '@shared/core';
 import { singnatoryUtils } from '../utils';
 
-describe('entities/signatory/lib/utils', () => {
+describe('entities/signatory/lib/onChainUtils', () => {
   test('should get signatory wallet', () => {
     const wallets = [
       {

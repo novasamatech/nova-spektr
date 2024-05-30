@@ -1,5 +1,4 @@
 import { allSettled, fork } from 'effector';
-import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
 import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
@@ -76,7 +75,7 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
       scope,
       params: {
         signatures: ['0x00'],
-        unsignedTxs: [{}] as unknown as UnsignedTransaction[],
+        txPayloads: [{}] as unknown as Uint8Array[],
       },
     });
 

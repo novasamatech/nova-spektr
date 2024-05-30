@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { BaseModal } from '@shared/ui';
+import { BaseModal, Button } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
@@ -10,7 +10,7 @@ import { Confirmation } from './Confirmation';
 import { withdrawUtils } from '../lib/withdraw-utils';
 import { withdrawModel } from '../model/withdraw-model';
 import { Step } from '../lib/types';
-import { AddToBasketButton } from '@features/operations/OperationsConfirm';
+import { basketUtils } from '@features/operations/OperationsConfirm';
 
 export const Withdraw = () => {
   const { t } = useI18n();
@@ -42,7 +42,12 @@ export const Withdraw = () => {
       {withdrawUtils.isConfirmStep(step) && (
         <Confirmation
           secondaryActionButton={
-            <AddToBasketButton wallet={initiatorWallet} onTxSaved={() => withdrawModel.events.txSaved()} />
+            initiatorWallet &&
+            basketUtils.isBasketAvailable(initiatorWallet) && (
+              <Button pallet="secondary" onClick={() => withdrawModel.events.txSaved()}>
+                {t('operation.addToBasket')}
+              </Button>
+            )
           }
           onGoBack={() => withdrawModel.events.stepChanged(Step.INIT)}
         />

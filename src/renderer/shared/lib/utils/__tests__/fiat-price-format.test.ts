@@ -1,6 +1,6 @@
 import { formatFiatBalance, getRoundedValue } from '../balance';
 
-describe('shared/lib/utils/balance', () => {
+describe('shared/lib/onChainUtils/balance', () => {
   describe('formatFiatBalance', () => {
     test.each([
       ['1343', 13, '0.000000000134'], // 0.0000000001343 => "0.000000000134"

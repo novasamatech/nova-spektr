@@ -23,6 +23,7 @@ type Props = {
   offsetPx?: number;
   panelClass?: string;
   contentClass?: string;
+  wrapperClass?: string;
   horizontal?: Horizontal;
   vertical?: Vertical;
   role?: AriaRole;
@@ -36,6 +37,7 @@ export const Popover = ({
   horizontal = 'center',
   vertical = 'down',
   contentClass,
+  wrapperClass,
   role,
   tabIndex = 0,
   children,
@@ -60,9 +62,8 @@ export const Popover = ({
   };
 
   return (
-    <Popup className="relative" role={role}>
+    <Popup className={cnTw('relative', wrapperClass)} role={role}>
       <div
-        className="w-fit"
         ref={ref}
         tabIndex={tabIndex}
         aria-details={id}

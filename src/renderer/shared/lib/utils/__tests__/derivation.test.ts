@@ -1,6 +1,6 @@
 import { validateDerivation, derivationHasPassword } from '@shared/lib/utils';
 
-describe('shared/lib/utils/derivation#validateDerivation', () => {
+describe('shared/lib/onChainUtils/derivation#validateDerivation', () => {
   // Array<[argument, result]>
   const cases: [string, boolean][] = [
     ['//', false],
@@ -22,7 +22,7 @@ describe('shared/lib/utils/derivation#validateDerivation', () => {
   });
 });
 
-describe('shared/lib/utils/derivation#derivationHasPassword', () => {
+describe('shared/lib/onChainUtils/derivation#derivationHasPassword', () => {
   // Array<[argument, result]>
   const cases: [string, boolean][] = [
     ['/', false],

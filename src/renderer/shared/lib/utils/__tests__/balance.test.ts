@@ -1,7 +1,15 @@
 import { formatBalance } from '../balance';
 
-describe('shared/lib/utils/balance', () => {
+describe('shared/lib/onChainUtils/balance', () => {
   describe('formatBalance', () => {
+    test('should calculate amount without without float part', () => {
+      const { value, suffix, decimalPlaces } = formatBalance('50000000000000', 12);
+
+      expect(value).toEqual('50');
+      expect(suffix).toEqual('');
+      expect(decimalPlaces).toEqual(2);
+    });
+
     test('should calculate small amount', () => {
       const { value, suffix, decimalPlaces } = formatBalance('5923210799282', 12);
 

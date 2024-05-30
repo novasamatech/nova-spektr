@@ -253,6 +253,7 @@ export const Confirmation = ({ secondaryActionButton, onGoBack }: Props) => {
             {secondaryActionButton}
 
             <SignButton
+              isDefault={Boolean(secondaryActionButton)}
               disabled={isFeeLoading}
               type={(signerWallet || initiatorWallet).type}
               onClick={confirmModel.output.formSubmitted}
