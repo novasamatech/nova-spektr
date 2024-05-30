@@ -72,7 +72,7 @@ const $multisigAccountId = combine(
 const $multisigAlreadyExists = combine(
   { wallets: walletModel.$wallets, multisigAccountId: $multisigAccountId, formValues: $createMultisigForm.$values },
   ({ multisigAccountId, wallets, formValues: { chain } }) =>
-    walletUtils.getWalletFilteredAccounts(wallets, {
+    !!walletUtils.getWalletFilteredAccounts(wallets, {
       walletFn: (w) => walletUtils.isMultisig(w),
       accountFn: (multisigAccount) => {
         const isSameAccountId = multisigAccount.accountId === multisigAccountId;

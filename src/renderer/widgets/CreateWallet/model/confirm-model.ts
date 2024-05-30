@@ -20,18 +20,18 @@ const $api = combine(
   { skipVoid: false },
 );
 
-const $initiatorWallet = combine(
-  {
-    store: $confirmStore,
-    wallets: walletModel.$wallets,
-  },
-  ({ store, wallets }) => {
-    if (!store) return null;
+// const $initiatorWallet = combine(
+//   {
+//     store: $confirmStore,
+//     wallets: walletModel.$wallets,
+//   },
+//   ({ store, wallets }) => {
+//     if (!store) return null;
 
-    return walletUtils.getWalletById(wallets, store.signer.walletId);
-  },
-  { skipVoid: false },
-);
+//     return walletUtils.getWalletById(wallets, store.signer.walletId);
+//   },
+//   { skipVoid: false },
+// );
 
 // const $proxiedWallet = combine(
 //   {
@@ -55,15 +55,15 @@ const $signerWallet = combine(
   ({ store, wallets }) => {
     if (!store) return null;
 
-    return walletUtils.getWalletById(wallets, store.signer.walletId || store.signer.walletId);
+    return walletUtils.getWalletById(wallets, store.signer.walletId);
   },
   { skipVoid: false },
 );
 
 export const confirmModel = {
   $confirmStore,
-  $initiatorWallet,
   $signerWallet,
+  // $initiatorWallet,
   // $proxiedWallet,
   $api,
   events: {
