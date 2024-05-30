@@ -1,11 +1,10 @@
 import { createForm } from 'effector-forms';
-import { t } from 'i18next';
 import { combine, createEvent, restore } from 'effector';
 
 import { Chain, CryptoType, MultisigAccount } from '@shared/core';
 import chains from '@shared/config/chains/chains.json';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { networkModel, networkUtils } from '@entities/network';
+import { networkUtils } from '@entities/network';
 import { ExtendedAccount, ExtendedContact } from '../ui/MultisigWallet/common/types';
 import { FormParams } from '../lib/types';
 
@@ -29,7 +28,7 @@ const $createMultisigForm = createForm<FormParams>({
         {
           name: 'notEmpty',
           validator: (name) => name !== '',
-          errorText: t('createMultisigAccount.disabledError.emptyName'),
+          errorText: 'createMultisigAccount.disabledError.emptyName',
         },
       ],
     },
@@ -55,7 +54,6 @@ const $signatories = combine(
 const $multisigAccountId = combine(
   {
     formValues: $createMultisigForm.$values,
-    chains: networkModel.$chains,
     signatories: $signatories,
   },
   ({ formValues: { threshold, chain }, signatories }) => {
@@ -84,6 +82,7 @@ const $multisigAlreadyExists = combine(
         return isSameAccountId && isSameChainId;
       },
     }),
+  { skipVoid: false },
 );
 
 const $availableAccounts = combine(
@@ -105,7 +104,6 @@ const $availableAccounts = combine(
 
     return [...accountUtils.getAccountsAndShardGroups(filteredAccounts), ...baseAccounts];
   },
-  { skipVoid: false },
 );
 
 const $hasOwnSignatory = combine(
