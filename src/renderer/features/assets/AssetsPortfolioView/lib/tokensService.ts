@@ -10,7 +10,7 @@ import { isKusama, isNameStartsWithNumber, isPolkadot } from '@shared/api/networ
 import { PriceObject } from '@shared/api/price-provider';
 import { balanceUtils } from '@entities/balance';
 import { accountUtils } from '@entities/wallet';
-import { AssetByChainsWithFiatBalance, AssetChain } from './types';
+import { AssetByChainsWithBalance, AssetByChainsWithFiatBalance, AssetChain } from './types';
 
 const TOKENS: Record<string, any> = {
   tokens: tokensProd,
@@ -89,10 +89,9 @@ function sortTokensByBalance(
   assetsPrices: PriceObject | null,
   currency?: string,
 ): AssetByChains[] {
-  const tokensWithFiatBalance = [] as AssetByChainsWithFiatBalance[];
-
+  const tokensWithFiatBalance: AssetByChainsWithFiatBalance[] = [];
   const relaychains = { withBalance: [], noBalance: [] };
-  const parachains = { withBalance: [], noBalance: [] };
+  const parachains = { withBalance: [] as AssetByChainsWithBalance[], noBalance: [] };
   const numberchains = { withBalance: [], noBalance: [] };
   const testnets = { withBalance: [], noBalance: [] };
 
@@ -103,7 +102,7 @@ function sortTokensByBalance(
     const fiatBalance = new BigNumber(tokenAssetPrice || 0).multipliedBy(tokenBalance);
 
     const hasBalance = tokenTotal !== ZERO_BALANCE;
-    let collection: AssetByChains[] = [];
+    let collection: AssetByChainsWithBalance[] = [];
 
     token.chains.sort((a, b) => chainBalanceSorter(a, b, assetsPrices, token, currency));
 
@@ -128,19 +127,19 @@ function sortTokensByBalance(
       collection = hasBalance ? parachains.withBalance : parachains.noBalance;
     }
 
-    collection.push(token);
+    collection.push({ ...token, tokenBalance });
   });
 
-  return concat(
+  return concat<AssetByChainsWithBalance>(
     orderBy(relaychains.withBalance, 'name', ['desc']),
     orderBy(relaychains.noBalance, 'name', ['desc']),
     tokensWithFiatBalance.sort((a, b) => (new BigNumber(b.fiatBalance).lt(new BigNumber(a.fiatBalance)) ? -1 : 1)),
-    sortBy(parachains.withBalance, 'name'),
-    sortBy(parachains.noBalance, 'name'),
-    sortBy(numberchains.withBalance, 'name'),
-    sortBy(numberchains.noBalance, 'name'),
-    sortBy(testnets.withBalance, 'name'),
-    sortBy(testnets.noBalance, 'name'),
+    parachains.withBalance.sort((a, b) => (b.tokenBalance!.lt(a.tokenBalance!) ? -1 : 1)),
+    sortBy(parachains.noBalance, 'symbol'),
+    sortBy(numberchains.withBalance, 'symbol'),
+    sortBy(numberchains.noBalance, 'symbol'),
+    sortBy(testnets.withBalance, 'symbol'),
+    sortBy(testnets.noBalance, 'symbol'),
   );
 }
 
