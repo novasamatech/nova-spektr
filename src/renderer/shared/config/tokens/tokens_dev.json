@@ -5,6 +5,7 @@
     "priceId": "polkadot",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
     "symbol": "DOT",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
@@ -96,19 +97,6 @@
         "assetSymbol": "DOT"
       },
       {
-        "chainId": "0x6811a339673c9daa897944dcdac99c6e2939cc88245ed21951a0a3c9a2be75bc",
-        "name": "Picasso",
-        "assetId": 1,
-        "assetSymbol": "DOT",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x06000000000000000000000000000000",
-          "currencyIdType": "u128",
-          "existentialDeposit": "21430000",
-          "transfersEnabled": true
-        }
-      },
-      {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
         "name": "HydraDX",
         "assetId": 1,
@@ -132,29 +120,6 @@
           "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0xdaab8df776eb52ec604a5df5d388bb62a050a0aaec4556a64265b9d42755552d",
-        "name": "Composable Finance",
-        "assetId": 1,
-        "assetSymbol": "DOT",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x06000000000000000000000000000000",
-          "currencyIdType": "u128",
-          "existentialDeposit": "21430000",
-          "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0x3920bcb4960a1eef5580cd5367ff3f430eef052774f78468852f7b9cb39f8a3c",
-        "name": "Polkadex",
-        "assetId": 1,
-        "assetSymbol": "DOT",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "95930534000017180603917534864279132680"
         }
       },
       {
@@ -196,29 +161,6 @@
         "assetSymbol": "DOT"
       },
       {
-        "chainId": "0x418ae94c9fce02b1ab3b5bc211cd2f2133426f2861d97482bbdfdac1bbb0fb92",
-        "name": "Interlay Testnet",
-        "assetId": 2,
-        "assetSymbol": "DOT",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0000",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0xf3c7ad88f6a80f366c4be216691411ef0622e8b809b1046ea297ef106058d4eb",
-        "name": "Manta Atlantic",
-        "assetId": 1,
-        "assetSymbol": "DOT",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "8"
-        }
-      },
-      {
         "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
         "name": "Moonbeam",
         "assetId": 1,
@@ -236,6 +178,7 @@
     "priceId": "kusama",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Kusama_(KSM).svg",
     "symbol": "KSM",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -332,16 +275,6 @@
         }
       },
       {
-        "chainId": "0x4ac80c99289841dd946ef92765bf659a307d39189b3ce374a92b5f0415ee17a1",
-        "name": "Calamari",
-        "assetId": 2,
-        "assetSymbol": "KSM",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "12"
-        }
-      },
-      {
         "chainId": "0x631ccc82a078481584041656af292834e1ae6daab61d2875b4dd0c14bb9b17bc",
         "name": "Robonomics",
         "assetId": 1,
@@ -349,25 +282,6 @@
         "type": "statemine",
         "typeExtras": {
           "assetId": "4294967295"
-        }
-      },
-      {
-        "chainId": "0x7dd99936c1e9e6d1ce7d90eb6f33bea8393b4bf87677d675aa63c9cb3e8c5b5b",
-        "name": "Encointer",
-        "assetId": 0,
-        "assetSymbol": "KSM"
-      },
-      {
-        "chainId": "0x6811a339673c9daa897944dcdac99c6e2939cc88245ed21951a0a3c9a2be75bc",
-        "name": "Picasso",
-        "assetId": 2,
-        "assetSymbol": "KSM",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x04000000000000000000000000000000",
-          "currencyIdType": "u128",
-          "existentialDeposit": "375000000",
-          "transfersEnabled": true
         }
       },
       {
@@ -393,19 +307,6 @@
           "currencyIdScale": "0x01000000",
           "currencyIdType": "u32",
           "existentialDeposit": "100000000",
-          "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0xdaab8df776eb52ec604a5df5d388bb62a050a0aaec4556a64265b9d42755552d",
-        "name": "Composable Finance",
-        "assetId": 2,
-        "assetSymbol": "KSM",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x04000000000000000000000000000000",
-          "currencyIdType": "u128",
-          "existentialDeposit": "375000000",
           "transfersEnabled": true
         }
       },
@@ -442,19 +343,6 @@
         "assetSymbol": "KSM"
       },
       {
-        "chainId": "0x418ae94c9fce02b1ab3b5bc211cd2f2133426f2861d97482bbdfdac1bbb0fb92",
-        "name": "Interlay Testnet",
-        "assetId": 5,
-        "assetSymbol": "KSM",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x000a",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": true
-        }
-      },
-      {
         "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
         "name": "Moonriver",
         "assetId": 2,
@@ -463,6 +351,12 @@
         "typeExtras": {
           "assetId": "42259045809535163221576417993425387648"
         }
+      },
+      {
+        "chainId": "0xc1af4cb4eb3918e5db15086c0cc5ec17fb334f728b7c65dd44bfe1e174ff8b3f",
+        "name": "Kusama People",
+        "assetId": 0,
+        "assetSymbol": "KSM"
       }
     ]
   },
@@ -471,6 +365,7 @@
     "precision": 12,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Westend_(WND).svg",
     "symbol": "WND",
+    "isTestToken": true,
     "chains": [
       {
         "chainId": "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
@@ -489,6 +384,12 @@
         "name": "Westend Bridge Hub",
         "assetId": 0,
         "assetSymbol": "WND"
+      },
+      {
+        "chainId": "0xd67c91ca75c199ff1ee9555567dfad21b9033165c39977170ec8d3f6c1fa433c",
+        "name": "Ledger Novasama Testnet",
+        "assetId": 0,
+        "assetSymbol": "WND"
       }
     ]
   },
@@ -497,6 +398,7 @@
     "precision": 10,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
     "symbol": "SIRI",
+    "isTestToken": true,
     "chains": [
       {
         "chainId": "0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9",
@@ -515,6 +417,7 @@
     "precision": 3,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
     "symbol": "JOE",
+    "isTestToken": true,
     "chains": [
       {
         "chainId": "0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9",
@@ -534,6 +437,7 @@
     "priceId": "rmrk",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/RMRK.svg",
     "symbol": "RMRK (old)",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
@@ -601,6 +505,7 @@
     "precision": 10,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/CHAOS.svg",
     "symbol": "CHAOS",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
@@ -619,6 +524,7 @@
     "precision": 10,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/CHRWNA.svg",
     "symbol": "CHRWNA",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
@@ -637,6 +543,7 @@
     "precision": 0,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
     "symbol": "SHIBATALES",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
@@ -655,6 +562,7 @@
     "precision": 8,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/BILLCOIN.svg",
     "symbol": "BILLCOIN",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
@@ -674,6 +582,7 @@
     "priceId": "tether",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
     "symbol": "USDT",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
@@ -771,16 +680,6 @@
         }
       },
       {
-        "chainId": "0x4ac80c99289841dd946ef92765bf659a307d39189b3ce374a92b5f0415ee17a1",
-        "name": "Calamari",
-        "assetId": 4,
-        "assetSymbol": "USDT",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "14"
-        }
-      },
-      {
         "chainId": "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
         "name": "Acala",
         "assetId": 14,
@@ -834,19 +733,6 @@
         }
       },
       {
-        "chainId": "0x6811a339673c9daa897944dcdac99c6e2939cc88245ed21951a0a3c9a2be75bc",
-        "name": "Picasso",
-        "assetId": 3,
-        "assetSymbol": "USDT",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x82000000000000000000000000000000",
-          "currencyIdType": "u128",
-          "existentialDeposit": "1500",
-          "transfersEnabled": true
-        }
-      },
-      {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
         "name": "HydraDX",
         "assetId": 9,
@@ -883,29 +769,6 @@
           "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0xdaab8df776eb52ec604a5df5d388bb62a050a0aaec4556a64265b9d42755552d",
-        "name": "Composable Finance",
-        "assetId": 3,
-        "assetSymbol": "USDT",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x82000000000000000000000000000000",
-          "currencyIdType": "u128",
-          "existentialDeposit": "1500",
-          "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0x3920bcb4960a1eef5580cd5367ff3f430eef052774f78468852f7b9cb39f8a3c",
-        "name": "Polkadex",
-        "assetId": 2,
-        "assetSymbol": "USDT",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "3496813586714279103986568049643838918"
         }
       },
       {
@@ -948,19 +811,6 @@
         }
       },
       {
-        "chainId": "0x418ae94c9fce02b1ab3b5bc211cd2f2133426f2861d97482bbdfdac1bbb0fb92",
-        "name": "Interlay Testnet",
-        "assetId": 7,
-        "assetSymbol": "USDT",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0102000000",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": true
-        }
-      },
-      {
         "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
         "name": "Moonriver",
         "assetId": 7,
@@ -998,6 +848,7 @@
     "priceId": "karura",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Karura_(KAR).svg",
     "symbol": "KAR",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
@@ -1049,16 +900,6 @@
         }
       },
       {
-        "chainId": "0x4ac80c99289841dd946ef92765bf659a307d39189b3ce374a92b5f0415ee17a1",
-        "name": "Calamari",
-        "assetId": 1,
-        "assetSymbol": "KAR",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "8"
-        }
-      },
-      {
         "chainId": "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
         "name": "Turing",
         "assetId": 3,
@@ -1089,6 +930,7 @@
     "priceId": "ausd-seed-karura",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
     "symbol": "aSEED",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
@@ -1203,6 +1045,7 @@
     "priceId": "bifrost-native-coin",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Bifrost_(BNC).svg",
     "symbol": "BNC",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
@@ -1267,6 +1110,19 @@
         }
       },
       {
+        "chainId": "0xbf88efe70e9e0e916416e8bed61f2b45717f517d7f3523e33c7b001e5ffcbc72",
+        "name": "Interlay",
+        "assetId": 14,
+        "assetSymbol": "BNC",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x010b000000",
+          "currencyIdType": "InterbtcPrimitivesCurrencyId",
+          "existentialDeposit": "0",
+          "transfersEnabled": false
+        }
+      },
+      {
         "chainId": "0x262e1b2ad728475fd6fe88e62d34c200abe6fd693931ddad144059b1eb884e5b",
         "name": "Bifrost Polkadot",
         "assetId": 0,
@@ -1313,6 +1169,7 @@
     "priceId": "liquid-ksm",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/lKSM.svg",
     "symbol": "LKSM",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
@@ -1381,6 +1238,7 @@
     "priceId": "pha",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Phala_(PHA).svg",
     "symbol": "PHA",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
@@ -1487,16 +1345,6 @@
         }
       },
       {
-        "chainId": "0x3920bcb4960a1eef5580cd5367ff3f430eef052774f78468852f7b9cb39f8a3c",
-        "name": "Polkadex",
-        "assetId": 4,
-        "assetSymbol": "PHA",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "193492391581201937291053139015355410612"
-        }
-      },
-      {
         "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
         "name": "Moonriver",
         "assetId": 10,
@@ -1524,6 +1372,7 @@
     "priceId": "kintsugi",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Kintsugi_(KINT).svg",
     "symbol": "KINT",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
@@ -1585,19 +1434,6 @@
         }
       },
       {
-        "chainId": "0x418ae94c9fce02b1ab3b5bc211cd2f2133426f2861d97482bbdfdac1bbb0fb92",
-        "name": "Interlay Testnet",
-        "assetId": 3,
-        "assetSymbol": "KINT",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x000c",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": true
-        }
-      },
-      {
         "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
         "name": "Moonriver",
         "assetId": 3,
@@ -1615,6 +1451,7 @@
     "priceId": "bitcoin",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/kBTC.svg",
     "symbol": "kBTC",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
@@ -1748,42 +1585,6 @@
         }
       },
       {
-        "chainId": "0x3920bcb4960a1eef5580cd5367ff3f430eef052774f78468852f7b9cb39f8a3c",
-        "name": "Polkadex",
-        "assetId": 5,
-        "assetSymbol": "iBTC",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "226557799181424065994173367616174607641"
-        }
-      },
-      {
-        "chainId": "0x418ae94c9fce02b1ab3b5bc211cd2f2133426f2861d97482bbdfdac1bbb0fb92",
-        "name": "Interlay Testnet",
-        "assetId": 1,
-        "assetSymbol": "iBTC",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0001",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0x418ae94c9fce02b1ab3b5bc211cd2f2133426f2861d97482bbdfdac1bbb0fb92",
-        "name": "Interlay Testnet",
-        "assetId": 4,
-        "assetSymbol": "kBTC",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x000b",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": true
-        }
-      },
-      {
         "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
         "name": "Moonriver",
         "assetId": 6,
@@ -1810,6 +1611,7 @@
     "precision": 12,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Taiga_(TAI).svg",
     "symbol": "TAI",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
@@ -1831,6 +1633,7 @@
     "precision": 12,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vsKSM.svg",
     "symbol": "vsKSM",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
@@ -1878,6 +1681,7 @@
     "precision": 12,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/taiKSM.svg",
     "symbol": "taiKSM",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
@@ -1900,6 +1704,7 @@
     "priceId": "quartz",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Quartz_(QTZ).svg",
     "symbol": "QTZ",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
@@ -1928,6 +1733,7 @@
     "priceId": "moonriver",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Moonriver_(MOVR).svg",
     "symbol": "MOVR",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
@@ -1986,16 +1792,6 @@
         }
       },
       {
-        "chainId": "0x4ac80c99289841dd946ef92765bf659a307d39189b3ce374a92b5f0415ee17a1",
-        "name": "Calamari",
-        "assetId": 3,
-        "assetSymbol": "MOVR",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "11"
-        }
-      },
-      {
         "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
         "name": "Moonriver",
         "assetId": 0,
@@ -2008,6 +1804,7 @@
     "precision": 12,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/HKO.svg",
     "symbol": "HKO",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
@@ -2059,6 +1856,7 @@
     "priceId": "crust-storage-market",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Crust_Shadow_(CSM).svg",
     "symbol": "CSM",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
@@ -2084,12 +1882,6 @@
         }
       },
       {
-        "chainId": "0xd4c0c08ca49dc7c680c3dac71a7c0703e5b222f4b6c03fe4c5219bb8f22c18dc",
-        "name": "Crust Shadow",
-        "assetId": 0,
-        "assetSymbol": "CSM"
-      },
-      {
         "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
         "name": "Moonriver",
         "assetId": 9,
@@ -2107,6 +1899,7 @@
     "priceId": "calamari-network",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Calamari_(KMA).svg",
     "symbol": "KMA",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
@@ -2132,12 +1925,6 @@
         }
       },
       {
-        "chainId": "0x4ac80c99289841dd946ef92765bf659a307d39189b3ce374a92b5f0415ee17a1",
-        "name": "Calamari",
-        "assetId": 0,
-        "assetSymbol": "KMA"
-      },
-      {
         "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
         "name": "Moonriver",
         "assetId": 12,
@@ -2155,6 +1942,7 @@
     "priceId": "integritee",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Integritee_Parachain_(TEER).svg",
     "symbol": "TEER",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
@@ -2192,6 +1980,7 @@
     "precision": 14,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/KICO_(KICO).svg",
     "symbol": "KICO",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
@@ -2214,6 +2003,7 @@
     "priceId": "metaverse-network-pioneer",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Bit.Country_Pioneer_(NEER).svg",
     "symbol": "NEER",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
@@ -2237,12 +2027,6 @@
         "typeExtras": {
           "assetId": "13"
         }
-      },
-      {
-        "chainId": "0xf22b7850cdd5a7657bbfd90ac86441275bbc57ace3d2698a740c7b0ec4de5ec3",
-        "name": "Bit.Country Pioneer",
-        "assetId": 0,
-        "assetSymbol": "NEER"
       }
     ]
   },
@@ -2252,6 +2036,7 @@
     "priceId": "basilisk",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Basilisk_(BSX).svg",
     "symbol": "BSX",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
@@ -2290,6 +2075,7 @@
     "priceId": "altair",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Altair_(AIR).svg",
     "symbol": "AIR",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
@@ -2318,6 +2104,7 @@
     "priceId": "genshiro",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Genshiro_(GENS).svg",
     "symbol": "GENS",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
@@ -2350,6 +2137,7 @@
     "priceId": "darwinia-crab-network",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Crab_(CRAB).svg",
     "symbol": "CRAB",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
@@ -2382,6 +2170,7 @@
     "priceId": "shiden",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Shiden_(SDN).svg",
     "symbol": "SDN",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xf1cf9022c7ebb34b162d5b5e34e705a5a740b2d0ecc1009fb89023e62a488108",
@@ -2417,6 +2206,7 @@
     "priceId": "voucher-ksm",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vKSM.svg",
     "symbol": "vKSM",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xf1cf9022c7ebb34b162d5b5e34e705a5a740b2d0ecc1009fb89023e62a488108",
@@ -2472,6 +2262,7 @@
     "priceId": "zenlink-network-token",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Zenlink_(ZLK).svg",
     "symbol": "ZLK",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x9f28c6a68e0fc9646eff64935684f6eeeece527e37bbe1f213d22caa1d9d6bed",
@@ -2516,6 +2307,7 @@
     "precision": 12,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vBNC.svg",
     "symbol": "vBNC",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x9f28c6a68e0fc9646eff64935684f6eeeece527e37bbe1f213d22caa1d9d6bed",
@@ -2537,6 +2329,7 @@
     "precision": 18,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vMOVR.svg",
     "symbol": "vMOVR",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x9f28c6a68e0fc9646eff64935684f6eeeece527e37bbe1f213d22caa1d9d6bed",
@@ -2558,24 +2351,12 @@
     "precision": 18,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/KSM-kBTC.svg",
     "symbol": "LP KSM-kBTC",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x9af9a64e6e4da8e3073901c3ff0cc4c3aad9563786d89daf6ad820b6e14a0b8b",
         "name": "Kintsugi",
         "assetId": 6,
-        "assetSymbol": "LP KSM-kBTC",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x03000a000b",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": false
-        }
-      },
-      {
-        "chainId": "0x3a5a5cd27eb15fd26c37315a0f0b938733bb798c897428448efac5e6150cad06",
-        "name": "Kintsugi Testnet",
-        "assetId": 7,
         "assetSymbol": "LP KSM-kBTC",
         "type": "orml",
         "typeExtras": {
@@ -2592,6 +2373,7 @@
     "precision": 18,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/kBTC-USDT.svg",
     "symbol": "LP kBTC-USDT",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x9af9a64e6e4da8e3073901c3ff0cc4c3aad9563786d89daf6ad820b6e14a0b8b",
@@ -2605,19 +2387,6 @@
           "existentialDeposit": "0",
           "transfersEnabled": false
         }
-      },
-      {
-        "chainId": "0x3a5a5cd27eb15fd26c37315a0f0b938733bb798c897428448efac5e6150cad06",
-        "name": "Kintsugi Testnet",
-        "assetId": 8,
-        "assetSymbol": "LP kBTC-USDT",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x03000b0101000000",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": false
-        }
       }
     ]
   },
@@ -2626,24 +2395,12 @@
     "precision": 18,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/KSM-KINT.svg",
     "symbol": "LP KSM-KINT",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x9af9a64e6e4da8e3073901c3ff0cc4c3aad9563786d89daf6ad820b6e14a0b8b",
         "name": "Kintsugi",
         "assetId": 8,
-        "assetSymbol": "LP KSM-KINT",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x03000a000c",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": false
-        }
-      },
-      {
-        "chainId": "0x3a5a5cd27eb15fd26c37315a0f0b938733bb798c897428448efac5e6150cad06",
-        "name": "Kintsugi Testnet",
-        "assetId": 9,
         "assetSymbol": "LP KSM-KINT",
         "type": "orml",
         "typeExtras": {
@@ -2660,24 +2417,12 @@
     "precision": 8,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/kBTC.svg",
     "symbol": "qkBTC",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x9af9a64e6e4da8e3073901c3ff0cc4c3aad9563786d89daf6ad820b6e14a0b8b",
         "name": "Kintsugi",
         "assetId": 9,
-        "assetSymbol": "qkBTC",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0201000000",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": false
-        }
-      },
-      {
-        "chainId": "0x3a5a5cd27eb15fd26c37315a0f0b938733bb798c897428448efac5e6150cad06",
-        "name": "Kintsugi Testnet",
-        "assetId": 10,
         "assetSymbol": "qkBTC",
         "type": "orml",
         "typeExtras": {
@@ -2694,24 +2439,12 @@
     "precision": 12,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Kusama_(KSM).svg",
     "symbol": "qKSM",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x9af9a64e6e4da8e3073901c3ff0cc4c3aad9563786d89daf6ad820b6e14a0b8b",
         "name": "Kintsugi",
         "assetId": 10,
-        "assetSymbol": "qKSM",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0202000000",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": false
-        }
-      },
-      {
-        "chainId": "0x3a5a5cd27eb15fd26c37315a0f0b938733bb798c897428448efac5e6150cad06",
-        "name": "Kintsugi Testnet",
-        "assetId": 11,
         "assetSymbol": "qKSM",
         "type": "orml",
         "typeExtras": {
@@ -2728,6 +2461,7 @@
     "precision": 6,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
     "symbol": "qUSDT",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x9af9a64e6e4da8e3073901c3ff0cc4c3aad9563786d89daf6ad820b6e14a0b8b",
@@ -2754,47 +2488,6 @@
           "existentialDeposit": "0",
           "transfersEnabled": false
         }
-      },
-      {
-        "chainId": "0x3a5a5cd27eb15fd26c37315a0f0b938733bb798c897428448efac5e6150cad06",
-        "name": "Kintsugi Testnet",
-        "assetId": 12,
-        "assetSymbol": "qUSDT",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0203000000",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": false
-        }
-      },
-      {
-        "chainId": "0x418ae94c9fce02b1ab3b5bc211cd2f2133426f2861d97482bbdfdac1bbb0fb92",
-        "name": "Interlay Testnet",
-        "assetId": 12,
-        "assetSymbol": "qUSDT",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0203000000",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": false
-        }
-      }
-    ]
-  },
-  {
-    "name": "Edgeware",
-    "precision": 18,
-    "priceId": "edgeware",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Edgeware_(EDG).svg",
-    "symbol": "EDG",
-    "chains": [
-      {
-        "chainId": "0x742a2ca70c2fda6cee4f8df98d64c4c670a052d9568058982dad9d5a7a135c5b",
-        "name": "Edgeware",
-        "assetId": 0,
-        "assetSymbol": "EDG"
       }
     ]
   },
@@ -2803,6 +2496,7 @@
     "precision": 12,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/sKSM.svg",
     "symbol": "sKSM",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x64a1c658a48b2e70a7fb1ad4c39eea35022568c20fc44a6e2e3d0a57aee6053b",
@@ -2834,6 +2528,7 @@
     "precision": 12,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Tinkernet_(TNKR).svg",
     "symbol": "TNKR",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xa85cfb9b9fd4d622a5b28289a02347af987d8f73fa3108450e2b4a11c1ce5755",
@@ -2862,6 +2557,7 @@
     "priceId": "robonomics-network",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Robonomics_(XRT).svg",
     "symbol": "XRT",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xa85cfb9b9fd4d622a5b28289a02347af987d8f73fa3108450e2b4a11c1ce5755",
@@ -2900,6 +2596,7 @@
     "priceId": "turing-network",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Turing_(TUR).svg",
     "symbol": "TUR",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
@@ -2938,6 +2635,7 @@
     "priceId": "darwinia-network-native-token",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Crab_(CRAB).svg",
     "symbol": "CRAB",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
@@ -2966,6 +2664,7 @@
     "precision": 18,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/BIT.svg",
     "symbol": "BIT",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
@@ -2976,19 +2675,6 @@
         "typeExtras": {
           "assetId": "14"
         }
-      },
-      {
-        "chainId": "0xf22b7850cdd5a7657bbfd90ac86441275bbc57ace3d2698a740c7b0ec4de5ec3",
-        "name": "Bit.Country Pioneer",
-        "assetId": 1,
-        "assetSymbol": "BIT",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x030000000000000000",
-          "currencyIdType": "BitCountryPrimitivesFungibleTokenId",
-          "existentialDeposit": "0",
-          "transfersEnabled": true
-        }
       }
     ]
   },
@@ -2998,6 +2684,7 @@
     "priceId": "picasso",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Picasso_(PICA).svg",
     "symbol": "PICA",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
@@ -3008,12 +2695,6 @@
         "typeExtras": {
           "assetId": "15"
         }
-      },
-      {
-        "chainId": "0x6811a339673c9daa897944dcdac99c6e2939cc88245ed21951a0a3c9a2be75bc",
-        "name": "Picasso",
-        "assetId": 0,
-        "assetSymbol": "PICA"
       }
     ]
   },
@@ -3023,148 +2704,25 @@
     "priceId": "kilt-protocol",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Kilt_(KILT).svg",
     "symbol": "KILT",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x411f057b9107718c9624d6aa4a3f23c1653898297f3d4d529d9bb6511a39dd21",
         "name": "KILT",
         "assetId": 0,
         "assetSymbol": "KILT"
-      }
-    ]
-  },
-  {
-    "name": "KILT Peregrine",
-    "precision": 15,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
-    "symbol": "PILT",
-    "chains": [
-      {
-        "chainId": "0xa0c6e3bac382b316a68bca7141af1fba507207594c761076847ce358aeedcc21",
-        "name": "KILT Peregrine",
-        "assetId": 0,
-        "assetSymbol": "PILT"
-      }
-    ]
-  },
-  {
-    "name": "DAI-Karura",
-    "precision": 18,
-    "priceId": "dai",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/DAI.svg",
-    "symbol": "DAI-Karura",
-    "chains": [
-      {
-        "chainId": "0x4ac80c99289841dd946ef92765bf659a307d39189b3ce374a92b5f0415ee17a1",
-        "name": "Calamari",
-        "assetId": 5,
-        "assetSymbol": "DAI-Karura",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "15"
-        }
-      },
-      {
-        "chainId": "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
-        "name": "Acala",
-        "assetId": 13,
-        "assetSymbol": "DAI",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0254a37a01cd75b616d63e0ab665bffdb0143c52ae",
-          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
-          "existentialDeposit": "10000000000000000",
-          "transfersEnabled": true
-        }
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
         "name": "HydraDX",
-        "assetId": 2,
-        "assetSymbol": "DAI-Acala",
+        "assetId": 34,
+        "assetSymbol": "KILT",
         "type": "orml",
         "typeExtras": {
-          "currencyIdScale": "0x02000000",
+          "currencyIdScale": "0x1c000000",
           "currencyIdType": "u32",
-          "existentialDeposit": "10000000000000000",
+          "existentialDeposit": "21358393848783",
           "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
-        "assetId": 12,
-        "assetSymbol": "DAI-Moonbeam",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x12000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "10000000000000000",
-          "transfersEnabled": true
-        }
-      }
-    ]
-  },
-  {
-    "name": "USDC-Karura",
-    "precision": 6,
-    "priceId": "usd-coin",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDC.svg",
-    "symbol": "USDC-Karura",
-    "chains": [
-      {
-        "chainId": "0x4ac80c99289841dd946ef92765bf659a307d39189b3ce374a92b5f0415ee17a1",
-        "name": "Calamari",
-        "assetId": 6,
-        "assetSymbol": "USDC-Karura",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "16"
-        }
-      },
-      {
-        "chainId": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
-        "name": "Polkadot Asset Hub",
-        "assetId": 2,
-        "assetSymbol": "USDC",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "1337"
-        }
-      },
-      {
-        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
-        "assetId": 15,
-        "assetSymbol": "USDC",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x16000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "10000",
-          "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
-        "assetId": 21,
-        "assetSymbol": "USDC-Moonbeam",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x15000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "10000",
-          "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-        "name": "Moonbeam",
-        "assetId": 23,
-        "assetSymbol": "xcUSDC",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "166377000701797186346254371275954761085"
         }
       }
     ]
@@ -3175,6 +2733,7 @@
     "priceId": "acala",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Acala_(ACA).svg",
     "symbol": "ACA",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
@@ -3220,6 +2779,7 @@
     "priceId": "liquid-staking-dot",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/lDOT.svg",
     "symbol": "LDOT",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
@@ -3266,19 +2826,6 @@
           "existentialDeposit": "0",
           "transfersEnabled": true
         }
-      },
-      {
-        "chainId": "0x418ae94c9fce02b1ab3b5bc211cd2f2133426f2861d97482bbdfdac1bbb0fb92",
-        "name": "Interlay Testnet",
-        "assetId": 6,
-        "assetSymbol": "LDOT",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0101000000",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": true
-        }
       }
     ]
   },
@@ -3288,6 +2835,7 @@
     "priceId": "ausd-seed-acala",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
     "symbol": "aSEED",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
@@ -3340,6 +2888,7 @@
     "priceId": "moonbeam",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Moonbeam_(GLMR).svg",
     "symbol": "GLMR",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
@@ -3401,6 +2950,32 @@
         }
       },
       {
+        "chainId": "0xcceae7f3b9947cdb67369c026ef78efa5f34a08fe5808d373c04421ecf4f1aaf",
+        "name": "Amplitude",
+        "assetId": 10,
+        "assetSymbol": "GLMR",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x0106",
+          "currencyIdType": "SpacewalkPrimitivesCurrencyId",
+          "existentialDeposit": "1000",
+          "transfersEnabled": true
+        }
+      },
+      {
+        "chainId": "0x5d3c298622d5634ed019bf61ea4b71655030015bde9beb0d6a24743714462c86",
+        "name": "Pendulum",
+        "assetId": 11,
+        "assetSymbol": "GLMR",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x0106",
+          "currencyIdType": "SpacewalkPrimitivesCurrencyId",
+          "existentialDeposit": "1000",
+          "transfersEnabled": true
+        }
+      },
+      {
         "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
         "name": "Moonbeam",
         "assetId": 0,
@@ -3414,6 +2989,7 @@
     "priceId": "parallel-finance",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/PARA.svg",
     "symbol": "PARA",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
@@ -3451,6 +3027,7 @@
     "precision": 12,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Tapio_(TAP).svg",
     "symbol": "TAP",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
@@ -3472,6 +3049,7 @@
     "precision": 10,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/tDOT.svg",
     "symbol": "tDOT",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
@@ -3494,6 +3072,7 @@
     "priceId": "interlay",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Interlay_(INTR).svg",
     "symbol": "INTR",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
@@ -3555,19 +3134,6 @@
         }
       },
       {
-        "chainId": "0x418ae94c9fce02b1ab3b5bc211cd2f2133426f2861d97482bbdfdac1bbb0fb92",
-        "name": "Interlay Testnet",
-        "assetId": 0,
-        "assetSymbol": "INTR",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0002",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": true
-        }
-      },
-      {
         "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
         "name": "Moonbeam",
         "assetId": 5,
@@ -3585,6 +3151,7 @@
     "priceId": "astar",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Astar_(ASTR).svg",
     "symbol": "ASTR",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
@@ -3629,16 +3196,6 @@
         }
       },
       {
-        "chainId": "0x3920bcb4960a1eef5580cd5367ff3f430eef052774f78468852f7b9cb39f8a3c",
-        "name": "Polkadex",
-        "assetId": 3,
-        "assetSymbol": "ASTR",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "222121451965151777636299756141619631150"
-        }
-      },
-      {
         "chainId": "0x262e1b2ad728475fd6fe88e62d34c200abe6fd693931ddad144059b1eb884e5b",
         "name": "Bifrost Polkadot",
         "assetId": 4,
@@ -3669,6 +3226,7 @@
     "priceId": "equilibrium-token",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Equilibrium_(EQ).svg",
     "symbol": "EQ",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
@@ -3696,11 +3254,106 @@
     ]
   },
   {
+    "name": "DAI",
+    "precision": 18,
+    "priceId": "dai",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/DAI.svg",
+    "symbol": "DAI",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
+        "name": "Acala",
+        "assetId": 13,
+        "assetSymbol": "DAI",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x0254a37a01cd75b616d63e0ab665bffdb0143c52ae",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "10000000000000000",
+          "transfersEnabled": true
+        }
+      },
+      {
+        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
+        "name": "HydraDX",
+        "assetId": 2,
+        "assetSymbol": "DAI-Acala",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x02000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "10000000000000000",
+          "transfersEnabled": true
+        }
+      },
+      {
+        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
+        "name": "HydraDX",
+        "assetId": 12,
+        "assetSymbol": "DAI-Moonbeam",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x12000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "10000000000000000",
+          "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
+    "name": "PINK",
+    "precision": 10,
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Pink.svg",
+    "symbol": "PINK",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
+        "name": "Acala",
+        "assetId": 15,
+        "assetSymbol": "PINK",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x050d00",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "1000000000",
+          "transfersEnabled": true
+        }
+      },
+      {
+        "chainId": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
+        "name": "Polkadot Asset Hub",
+        "assetId": 4,
+        "assetSymbol": "PINK",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "23"
+        }
+      },
+      {
+        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
+        "name": "HydraDX",
+        "assetId": 30,
+        "assetSymbol": "PINK",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x55420f00",
+          "currencyIdType": "u32",
+          "existentialDeposit": "1",
+          "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
     "name": "UNIQUE",
     "precision": 18,
     "priceId": "unique-network",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Unique_(UNQ).svg",
     "symbol": "UNQ",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x9eb76c5184c4ab8679d2d5d819fdf90b9c001403e9e17da2e14b6d8aec4029c6",
@@ -3724,12 +3377,6 @@
           "existentialDeposit": "1224384348939740000",
           "transfersEnabled": true
         }
-      },
-      {
-        "chainId": "0x84322d9cddbf35088f1e54e9a85c967a41a56a4f43445768125e61af166c7d31",
-        "name": "UNIQUE",
-        "assetId": 0,
-        "assetSymbol": "UNQ"
       }
     ]
   },
@@ -3739,6 +3386,7 @@
     "priceId": "voucher-dot",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vDOT.svg",
     "symbol": "vDOT",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x9eb76c5184c4ab8679d2d5d819fdf90b9c001403e9e17da2e14b6d8aec4029c6",
@@ -3793,6 +3441,7 @@
     "precision": 10,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
     "symbol": "cDOT-7/14",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
@@ -3811,6 +3460,7 @@
     "precision": 10,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
     "symbol": "cDOT-8/15",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
@@ -3829,6 +3479,7 @@
     "precision": 10,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
     "symbol": "cDOT-9/16",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
@@ -3847,6 +3498,7 @@
     "precision": 10,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
     "symbol": "cDOT-10/17",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
@@ -3865,6 +3517,7 @@
     "precision": 18,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/CLV_(CLV).svg",
     "symbol": "CLV",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
@@ -3879,25 +3532,81 @@
     ]
   },
   {
-    "name": "Clover Finance",
-    "precision": 18,
-    "priceId": "clover-finance",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/CLV_(CLV).svg",
-    "symbol": "CLV",
+    "name": "USD Coin",
+    "precision": 6,
+    "priceId": "usd-coin",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDC.svg",
+    "symbol": "USDC",
+    "isTestToken": false,
     "chains": [
       {
-        "chainId": "0x5c7bd13edf349b33eb175ffae85210299e324d852916336027391536e686f267",
-        "name": "CLV Parachain",
-        "assetId": 0,
-        "assetSymbol": "CLV"
+        "chainId": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
+        "name": "Polkadot Asset Hub",
+        "assetId": 2,
+        "assetSymbol": "USDC",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "1337"
+        }
+      },
+      {
+        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
+        "name": "HydraDX",
+        "assetId": 15,
+        "assetSymbol": "USDC",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x16000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "10000",
+          "transfersEnabled": true
+        }
+      },
+      {
+        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
+        "name": "HydraDX",
+        "assetId": 21,
+        "assetSymbol": "USDC-Moonbeam",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x15000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "10000",
+          "transfersEnabled": true
+        }
+      },
+      {
+        "chainId": "0x5d3c298622d5634ed019bf61ea4b71655030015bde9beb0d6a24743714462c86",
+        "name": "Pendulum",
+        "assetId": 3,
+        "assetSymbol": "USDC",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x0102",
+          "currencyIdType": "SpacewalkPrimitivesCurrencyId",
+          "existentialDeposit": "1000",
+          "transfersEnabled": true
+        }
+      },
+      {
+        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
+        "name": "Moonbeam",
+        "assetId": 23,
+        "assetSymbol": "xcUSDC",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "166377000701797186346254371275954761085"
+        }
       }
     ]
   },
   {
     "name": "DED",
     "precision": 10,
+    "priceId": "dot-is-ded",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/DED.svg",
     "symbol": "DED",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
@@ -3908,6 +3617,147 @@
         "typeExtras": {
           "assetId": "30"
         }
+      },
+      {
+        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
+        "name": "HydraDX",
+        "assetId": 29,
+        "assetSymbol": "DED",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x53420f00",
+          "currencyIdType": "u32",
+          "existentialDeposit": "1",
+          "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
+    "name": "DOTA",
+    "precision": 4,
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/DOTA.svg",
+    "symbol": "DOTA",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
+        "name": "Polkadot Asset Hub",
+        "assetId": 5,
+        "assetSymbol": "DOTA",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "18"
+        }
+      },
+      {
+        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
+        "name": "HydraDX",
+        "assetId": 32,
+        "assetSymbol": "DOTA",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x66420f00",
+          "currencyIdType": "u32",
+          "existentialDeposit": "1",
+          "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
+    "name": "STINK",
+    "precision": 10,
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/STINK.svg",
+    "symbol": "STINK",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
+        "name": "Polkadot Asset Hub",
+        "assetId": 6,
+        "assetSymbol": "STINK",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "42069"
+        }
+      },
+      {
+        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
+        "name": "HydraDX",
+        "assetId": 31,
+        "assetSymbol": "STINK",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x62420f00",
+          "currencyIdType": "u32",
+          "existentialDeposit": "1",
+          "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
+    "name": "GABE",
+    "precision": 20,
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/GABE.svg",
+    "symbol": "GABE",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
+        "name": "Polkadot Asset Hub",
+        "assetId": 7,
+        "assetSymbol": "GABE",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "69420"
+        }
+      },
+      {
+        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
+        "name": "HydraDX",
+        "assetId": 33,
+        "assetSymbol": "GABE",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x7e420f00",
+          "currencyIdType": "u32",
+          "existentialDeposit": "1",
+          "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
+    "name": "WUD",
+    "precision": 10,
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/WUD.svg",
+    "symbol": "WUD",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
+        "name": "Polkadot Asset Hub",
+        "assetId": 8,
+        "assetSymbol": "WUD",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "31337"
+        }
+      },
+      {
+        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
+        "name": "HydraDX",
+        "assetId": 35,
+        "assetSymbol": "WUD",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x95420f00",
+          "currencyIdType": "u32",
+          "existentialDeposit": "1",
+          "transfersEnabled": true
+        }
       }
     ]
   },
@@ -3917,6 +3767,7 @@
     "priceId": "zeitgeist",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Zeitgeist_(ZTG).svg",
     "symbol": "ZTG",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x1bf2a2ecb4a868de66ea8610f2ce7c8c43706561b6476031315f6640fe38e060",
@@ -3945,6 +3796,7 @@
     "priceId": "litentry",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Litentry_(LIT).svg",
     "symbol": "LIT",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xda5831fbc8570e3c6336d0d72b8c08f8738beefec812df21ef2afc2982ede09c",
@@ -3976,6 +3828,7 @@
     "priceId": "subsocial",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Subsocial_(SUB).svg",
     "symbol": "SUB",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x4a12be580bb959937a1c7a61d5cf24428ed67fa571974b4007645d1886e7c89f",
@@ -4004,6 +3857,7 @@
     "priceId": "centrifuge",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Centrifuge_(CFG).svg",
     "symbol": "CFG",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xb3db41421702df9a7fcac62b53ffeac85f7853cc4e689e0b93aeb3db18c09d82",
@@ -4042,6 +3896,7 @@
     "priceId": "hydradx",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/HydraDX_(HDX).svg",
     "symbol": "HDX",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
@@ -4066,6 +3921,7 @@
     "precision": 12,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Lerna_(LRNA).svg",
     "symbol": "LRNA",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
@@ -4088,6 +3944,7 @@
     "priceId": "ethereum-wormhole",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/WETH-Acala.svg",
     "symbol": "WETH-Acala",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
@@ -4123,6 +3980,7 @@
     "priceId": "wrapped-bitcoin",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/WBTC-Acala.svg",
     "symbol": "WBTC-Acala",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
@@ -4157,6 +4015,7 @@
     "precision": 18,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/4-Pool.svg",
     "symbol": "4-Pool",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
@@ -4178,6 +4037,7 @@
     "precision": 18,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/2-Pool.svg",
     "symbol": "2-Pool",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
@@ -4199,6 +4059,7 @@
     "precision": 18,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/2-Pool-Stbl.svg",
     "symbol": "2-Pool-Stbl",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
@@ -4221,6 +4082,7 @@
     "priceId": "nodle-network",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Nodle_(NODL).svg",
     "symbol": "NODL",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
@@ -4234,12 +4096,6 @@
           "existentialDeposit": "109890109890",
           "transfersEnabled": true
         }
-      },
-      {
-        "chainId": "0x97da7ede98d7bad4e36b4d734b6055425a3be036da2a332ea5a7037656427a21",
-        "name": "Nodle Parachain",
-        "assetId": 0,
-        "assetSymbol": "NODL"
       },
       {
         "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
@@ -4259,6 +4115,7 @@
     "priceId": "crust-network",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Crust_(CRU).svg",
     "symbol": "CRU",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
@@ -4272,18 +4129,6 @@
           "existentialDeposit": "7874015748",
           "transfersEnabled": true
         }
-      },
-      {
-        "chainId": "0x4319cc49ee79495b57a1fec4d2bd43f59052dcc690276de566c2691d6df4f7b8",
-        "name": "Crust Polkadot Parachain",
-        "assetId": 0,
-        "assetSymbol": "CRU"
-      },
-      {
-        "chainId": "0x8b404e7ed8789d813982b9cb4c8b664c05b3fbf433309f603af014ec9ce56a8c",
-        "name": "Crust",
-        "assetId": 0,
-        "assetSymbol": "CRU"
       }
     ]
   },
@@ -4292,23 +4137,11 @@
     "precision": 18,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/iBTC-USDT.svg",
     "symbol": "LP iBTC-USDT",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbf88efe70e9e0e916416e8bed61f2b45717f517d7f3523e33c7b001e5ffcbc72",
         "name": "Interlay",
-        "assetId": 8,
-        "assetSymbol": "LP iBTC-USDT",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0300010102000000",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": false
-        }
-      },
-      {
-        "chainId": "0x418ae94c9fce02b1ab3b5bc211cd2f2133426f2861d97482bbdfdac1bbb0fb92",
-        "name": "Interlay Testnet",
         "assetId": 8,
         "assetSymbol": "LP iBTC-USDT",
         "type": "orml",
@@ -4326,23 +4159,11 @@
     "precision": 18,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/DOT-iBTC.svg",
     "symbol": "LP DOT-iBTC",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbf88efe70e9e0e916416e8bed61f2b45717f517d7f3523e33c7b001e5ffcbc72",
         "name": "Interlay",
-        "assetId": 9,
-        "assetSymbol": "LP DOT-iBTC",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0300000001",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": false
-        }
-      },
-      {
-        "chainId": "0x418ae94c9fce02b1ab3b5bc211cd2f2133426f2861d97482bbdfdac1bbb0fb92",
-        "name": "Interlay Testnet",
         "assetId": 9,
         "assetSymbol": "LP DOT-iBTC",
         "type": "orml",
@@ -4360,23 +4181,11 @@
     "precision": 18,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/INTR-USDT.svg",
     "symbol": "LP INTR-USDT",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbf88efe70e9e0e916416e8bed61f2b45717f517d7f3523e33c7b001e5ffcbc72",
         "name": "Interlay",
-        "assetId": 10,
-        "assetSymbol": "LP INTR-USDT",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0300020102000000",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": false
-        }
-      },
-      {
-        "chainId": "0x418ae94c9fce02b1ab3b5bc211cd2f2133426f2861d97482bbdfdac1bbb0fb92",
-        "name": "Interlay Testnet",
         "assetId": 10,
         "assetSymbol": "LP INTR-USDT",
         "type": "orml",
@@ -4394,23 +4203,11 @@
     "precision": 8,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/iBTC.svg",
     "symbol": "qiBTC",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbf88efe70e9e0e916416e8bed61f2b45717f517d7f3523e33c7b001e5ffcbc72",
         "name": "Interlay",
-        "assetId": 11,
-        "assetSymbol": "qiBTC",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0201000000",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": false
-        }
-      },
-      {
-        "chainId": "0x418ae94c9fce02b1ab3b5bc211cd2f2133426f2861d97482bbdfdac1bbb0fb92",
-        "name": "Interlay Testnet",
         "assetId": 11,
         "assetSymbol": "qiBTC",
         "type": "orml",
@@ -4428,23 +4225,11 @@
     "precision": 10,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
     "symbol": "qDOT",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbf88efe70e9e0e916416e8bed61f2b45717f517d7f3523e33c7b001e5ffcbc72",
         "name": "Interlay",
-        "assetId": 13,
-        "assetSymbol": "qDOT",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0202000000",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": false
-        }
-      },
-      {
-        "chainId": "0x418ae94c9fce02b1ab3b5bc211cd2f2133426f2861d97482bbdfdac1bbb0fb92",
-        "name": "Interlay Testnet",
         "assetId": 13,
         "assetSymbol": "qDOT",
         "type": "orml",
@@ -4463,6 +4248,7 @@
     "priceId": "aleph-zero",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Aleph_Zero_(AZERO).svg",
     "symbol": "AZERO",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x70255b4d28de0fc4e1a193d7e175ad1ccef431598211c55538f1018651a0344e",
@@ -4473,73 +4259,12 @@
     ]
   },
   {
-    "name": "Composable Finance",
-    "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Composable_Finance_(LAYR).svg",
-    "symbol": "LAYR",
-    "chains": [
-      {
-        "chainId": "0xdaab8df776eb52ec604a5df5d388bb62a050a0aaec4556a64265b9d42755552d",
-        "name": "Composable Finance",
-        "assetId": 0,
-        "assetSymbol": "LAYR"
-      }
-    ]
-  },
-  {
-    "name": "Polkadex",
-    "precision": 12,
-    "priceId": "polkadex",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadex_(PDEX).svg",
-    "symbol": "PDEX",
-    "chains": [
-      {
-        "chainId": "0x3920bcb4960a1eef5580cd5367ff3f430eef052774f78468852f7b9cb39f8a3c",
-        "name": "Polkadex",
-        "assetId": 0,
-        "assetSymbol": "PDEX"
-      }
-    ]
-  },
-  {
-    "name": "NEURO",
-    "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/NEURO.svg",
-    "symbol": "NEURO",
-    "chains": [
-      {
-        "chainId": "0xe7e0962324a3b86c83404dbea483f25fb5dab4c224791c81b756cfc948006174",
-        "name": "NeuroWeb",
-        "assetId": 0,
-        "assetSymbol": "NEURO"
-      }
-    ]
-  },
-  {
-    "name": "OriginTrail Parachain",
-    "precision": 18,
-    "priceId": "origintrail",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/OriginTrail_(TRAC).svg",
-    "symbol": "TRAC",
-    "chains": [
-      {
-        "chainId": "0xe7e0962324a3b86c83404dbea483f25fb5dab4c224791c81b756cfc948006174",
-        "name": "NeuroWeb",
-        "assetId": 1,
-        "assetSymbol": "TRAC",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "1"
-        }
-      }
-    ]
-  },
-  {
     "name": "vGLMR",
     "precision": 18,
     "priceId": "voucher-glmr",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vGLMR.svg",
     "symbol": "vGLMR",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x262e1b2ad728475fd6fe88e62d34c200abe6fd693931ddad144059b1eb884e5b",
@@ -4571,6 +4296,7 @@
     "precision": 18,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vFIL.svg",
     "symbol": "vFIL",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x262e1b2ad728475fd6fe88e62d34c200abe6fd693931ddad144059b1eb884e5b",
@@ -4592,6 +4318,7 @@
     "precision": 18,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vASTR.svg",
     "symbol": "vASTR",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x262e1b2ad728475fd6fe88e62d34c200abe6fd693931ddad144059b1eb884e5b",
@@ -4613,6 +4340,7 @@
     "precision": 10,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vsDOT.svg",
     "symbol": "vsDOT",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x262e1b2ad728475fd6fe88e62d34c200abe6fd693931ddad144059b1eb884e5b",
@@ -4635,6 +4363,7 @@
     "priceId": "manta-network",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Manta_(MANTA).svg",
     "symbol": "MANTA",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x262e1b2ad728475fd6fe88e62d34c200abe6fd693931ddad144059b1eb884e5b",
@@ -4648,12 +4377,6 @@
           "existentialDeposit": "10000000000000",
           "transfersEnabled": true
         }
-      },
-      {
-        "chainId": "0xf3c7ad88f6a80f366c4be216691411ef0622e8b809b1046ea297ef106058d4eb",
-        "name": "Manta Atlantic",
-        "assetId": 0,
-        "assetSymbol": "MANTA"
       },
       {
         "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
@@ -4672,6 +4395,7 @@
     "precision": 18,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vMANTA.svg",
     "symbol": "vMANTA",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x262e1b2ad728475fd6fe88e62d34c200abe6fd693931ddad144059b1eb884e5b",
@@ -4694,6 +4418,7 @@
     "priceId": "mangata-x",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Mangata_X_(MGX).svg",
     "symbol": "MGX",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xd611f22d291c5b7b69f1e105cca03352984c344c4421977efaa4cbdd1834e2aa",
@@ -4716,6 +4441,7 @@
     "priceId": "ethereum",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Ethereum_(ETH).svg",
     "symbol": "ETH",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xd611f22d291c5b7b69f1e105cca03352984c344c4421977efaa4cbdd1834e2aa",
@@ -4733,24 +4459,11 @@
     ]
   },
   {
-    "name": "Aleph Zero Testnet",
-    "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
-    "symbol": "TZERO",
-    "chains": [
-      {
-        "chainId": "0x05d5279c52c484cc80396535a316add7d47b1c5b9e0398dd1f584149341460c5",
-        "name": "Aleph Zero Testnet",
-        "assetId": 0,
-        "assetSymbol": "TZERO"
-      }
-    ]
-  },
-  {
     "name": "Test token",
     "precision": 12,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
     "symbol": "UNIT",
+    "isTestToken": true,
     "chains": [
       {
         "chainId": "0xe1ea3ab1d46ba8f4898b6b4b9c54ffc05282d299f89e84bd0fd08067758c9443",
@@ -4761,60 +4474,11 @@
     ]
   },
   {
-    "name": "Polymesh Testnet",
-    "precision": 6,
-    "priceId": "polymesh",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polymesh_(POLYX).svg",
-    "symbol": "POLYX",
-    "chains": [
-      {
-        "chainId": "0x3c3183f6d701500766ff7d147b79c4f10014a095eaaa98e960dcef6b3ead50ee",
-        "name": "Polymesh Testnet",
-        "assetId": 0,
-        "assetSymbol": "POLYX"
-      },
-      {
-        "chainId": "0x6fbd74e5e1d0a61d52ccfe9d4adaed16dd3a7caa37c6bc4d0c2fa12e8b2f4063",
-        "name": "Polymesh",
-        "assetId": 0,
-        "assetSymbol": "POLYX"
-      }
-    ]
-  },
-  {
-    "name": "Kabocha",
-    "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Kabocha_(KAB).svg",
-    "symbol": "KAB",
-    "chains": [
-      {
-        "chainId": "0xfeb426ca713f0f46c96465b8f039890370cf6bfd687c9076ea2843f58a6ae8a7",
-        "name": "Kabocha",
-        "assetId": 0,
-        "assetSymbol": "KAB"
-      }
-    ]
-  },
-  {
-    "name": "Bajun",
-    "precision": 12,
-    "priceId": "ajuna-network",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Bajun_(BAJU).svg",
-    "symbol": "BAJU",
-    "chains": [
-      {
-        "chainId": "0x35a06bfec2edf0ff4be89a6428ccd9ff5bd0167d618c5a0d4341f9600a458d14",
-        "name": "Bajun",
-        "assetId": 0,
-        "assetSymbol": "BAJU"
-      }
-    ]
-  },
-  {
     "name": "Imbue",
     "precision": 12,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Imbue_(IMBU).svg",
     "symbol": "IMBU",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xca93a37c913a25fa8fdb33c7f738afc39379cb71d37874a16d4c091a5aef9f89",
@@ -4829,6 +4493,7 @@
     "precision": 12,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Rococo_(ROC).svg",
     "symbol": "ROC",
+    "isTestToken": true,
     "chains": [
       {
         "chainId": "0x6408de7737c59c238890533af25896a2c20608d8b380bb01029acb392781063e",
@@ -4849,140 +4514,13 @@
     "precision": 12,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Amplitude_(AMPE).svg",
     "symbol": "AMPE",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xcceae7f3b9947cdb67369c026ef78efa5f34a08fe5808d373c04421ecf4f1aaf",
         "name": "Amplitude",
         "assetId": 0,
         "assetSymbol": "AMPE"
-      },
-      {
-        "chainId": "0x67221cd96c1551b72d55f65164d6a39f31b570c77a05c90e31931b0e2f379e13",
-        "name": "Amplitude Foucoco",
-        "assetId": 0,
-        "assetSymbol": "AMPE"
-      }
-    ]
-  },
-  {
-    "name": "Ternoa",
-    "precision": 18,
-    "priceId": "coin-capsule",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Ternoa_(CAPS).svg",
-    "symbol": "CAPS",
-    "chains": [
-      {
-        "chainId": "0x6859c81ca95ef624c9dfe4dc6e3381c33e5d6509e35e147092bfbc780f777c4e",
-        "name": "Ternoa",
-        "assetId": 0,
-        "assetSymbol": "CAPS"
-      },
-      {
-        "chainId": "0x18bcdb75a0bba577b084878db2dc2546eb21504eaad4b564bb7d47f9d02b6ace",
-        "name": "Ternoa Alphanet",
-        "assetId": 0,
-        "assetSymbol": "CAPS"
-      }
-    ]
-  },
-  {
-    "name": "Turing",
-    "precision": 10,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Turing_(TUR).svg",
-    "symbol": "TUR",
-    "chains": [
-      {
-        "chainId": "0xd54f0988402deb4548538626ce37e4a318441ea0529ca369400ebec4e04dfe4b",
-        "name": "Turing Staging",
-        "assetId": 0,
-        "assetSymbol": "TUR"
-      }
-    ]
-  },
-  {
-    "name": "Test token",
-    "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
-    "symbol": "Unit",
-    "chains": [
-      {
-        "chainId": "0xa2ee5a1f55a23dccd0c35e36512f9009e6e50a5654e8e5e469445d0748632aa8",
-        "name": "Governance2 Testnet",
-        "assetId": 0,
-        "assetSymbol": "Unit"
-      }
-    ]
-  },
-  {
-    "name": "Beresheet",
-    "precision": 18,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
-    "symbol": "tEDG",
-    "chains": [
-      {
-        "chainId": "0x8da6a03e0989154ff8c1977cbc0cbd55f6879d8759c272a4f3c078cef794bf5f",
-        "name": "Beresheet",
-        "assetId": 0,
-        "assetSymbol": "tEDG"
-      }
-    ]
-  },
-  {
-    "name": "DAO IPCI",
-    "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/DAO_IPCI_(MITO).svg",
-    "symbol": "MITO",
-    "chains": [
-      {
-        "chainId": "0x6f0f071506de39058fe9a95bbca983ac0e9c5da3443909574e95d52eb078d348",
-        "name": "DAO IPCI",
-        "assetId": 0,
-        "assetSymbol": "MITO"
-      }
-    ]
-  },
-  {
-    "name": "Myriad",
-    "precision": 18,
-    "priceId": "myriad-social",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Myriad_(MYRIA).svg",
-    "symbol": "MYRIA",
-    "chains": [
-      {
-        "chainId": "0x74ed91fbc18497f011290f9119a2217908649170337b6414a2d44923ade07063",
-        "name": "Myriad",
-        "assetId": 0,
-        "assetSymbol": "MYRIA"
-      }
-    ]
-  },
-  {
-    "name": "TAO",
-    "precision": 18,
-    "priceId": "fusotao",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Bittensor_(TAO).svg",
-    "symbol": "TAO",
-    "chains": [
-      {
-        "chainId": "0xa7113159e275582ee71ee499b24378a2416f34dc5aaf714443f0d11c6c3d99d3",
-        "name": "Fusotao",
-        "assetId": 0,
-        "assetSymbol": "TAO"
-      }
-    ]
-  },
-  {
-    "name": "XX network",
-    "precision": 9,
-    "priceId": "xxcoin",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/xx_network_(XX).svg",
-    "symbol": "XX",
-    "chains": [
-      {
-        "chainId": "0x50dd5d206917bf10502c68fb4d18a59fc8aa31586f4e8856b493e43544aa82aa",
-        "name": "XX network",
-        "assetId": 0,
-        "assetSymbol": "XX"
       }
     ]
   },
@@ -4992,6 +4530,7 @@
     "priceId": "pendulum-chain",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Pendulum_(PEN).svg",
     "symbol": "PEN",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x5d3c298622d5634ed019bf61ea4b71655030015bde9beb0d6a24743714462c86",
@@ -5002,244 +4541,12 @@
     ]
   },
   {
-    "name": "Aventus",
-    "precision": 18,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Aventus_(AVT).svg",
-    "symbol": "AVT",
-    "chains": [
-      {
-        "chainId": "0xa6ffcef7fb8caadf7f6c5ad8ada65e3eaa90d1604f3eabda546ff1d486865a0c",
-        "name": "Aventus Testnet",
-        "assetId": 0,
-        "assetSymbol": "AVT"
-      }
-    ]
-  },
-  {
-    "name": "Aventus",
-    "precision": 18,
-    "priceId": "aventus",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Aventus_(AVT).svg",
-    "symbol": "AVT",
-    "chains": [
-      {
-        "chainId": "0x8b5c955b5c8fd7112562327e3859473df4e3dff49bd72a113dbb668d2cfa20d7",
-        "name": "Aventus",
-        "assetId": 0,
-        "assetSymbol": "AVT"
-      }
-    ]
-  },
-  {
-    "name": "Kintsugi",
-    "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Kintsugi_(KINT).svg",
-    "symbol": "KINT",
-    "chains": [
-      {
-        "chainId": "0x3a5a5cd27eb15fd26c37315a0f0b938733bb798c897428448efac5e6150cad06",
-        "name": "Kintsugi Testnet",
-        "assetId": 0,
-        "assetSymbol": "KINT",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x000c",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": true
-        }
-      }
-    ]
-  },
-  {
-    "name": "KINT Bitcoin",
-    "precision": 8,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/kBTC.svg",
-    "symbol": "kBTC",
-    "chains": [
-      {
-        "chainId": "0x3a5a5cd27eb15fd26c37315a0f0b938733bb798c897428448efac5e6150cad06",
-        "name": "Kintsugi Testnet",
-        "assetId": 1,
-        "assetSymbol": "kBTC",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x000b",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": true
-        }
-      }
-    ]
-  },
-  {
-    "name": "Liquid KSM",
-    "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/lKSM.svg",
-    "symbol": "LKSM",
-    "chains": [
-      {
-        "chainId": "0x3a5a5cd27eb15fd26c37315a0f0b938733bb798c897428448efac5e6150cad06",
-        "name": "Kintsugi Testnet",
-        "assetId": 3,
-        "assetSymbol": "LKSM",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0102000000",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": true
-        }
-      }
-    ]
-  },
-  {
-    "name": "USD Tether",
-    "precision": 6,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
-    "symbol": "USDT",
-    "chains": [
-      {
-        "chainId": "0x3a5a5cd27eb15fd26c37315a0f0b938733bb798c897428448efac5e6150cad06",
-        "name": "Kintsugi Testnet",
-        "assetId": 4,
-        "assetSymbol": "USDT",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0103000000",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": true
-        }
-      }
-    ]
-  },
-  {
-    "name": "Acala SEED",
-    "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
-    "symbol": "aSEED",
-    "chains": [
-      {
-        "chainId": "0x3a5a5cd27eb15fd26c37315a0f0b938733bb798c897428448efac5e6150cad06",
-        "name": "Kintsugi Testnet",
-        "assetId": 5,
-        "assetSymbol": "aSEED",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0101000000",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": true
-        }
-      }
-    ]
-  },
-  {
-    "name": "Kusama",
-    "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Kusama_(KSM).svg",
-    "symbol": "KSM",
-    "chains": [
-      {
-        "chainId": "0x3a5a5cd27eb15fd26c37315a0f0b938733bb798c897428448efac5e6150cad06",
-        "name": "Kintsugi Testnet",
-        "assetId": 6,
-        "assetSymbol": "KSM",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x000a",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0xeb9f47779a9f5033c160c03511b5e4c1b2869210d7bc78a6ad7d0f28897455a7",
-        "name": "Novasama Testnet - Kusama",
-        "assetId": 0,
-        "assetSymbol": "KSM"
-      }
-    ]
-  },
-  {
-    "name": "Hashed",
-    "precision": 18,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Hashed_Network_(HASH).svg",
-    "symbol": "HASH",
-    "chains": [
-      {
-        "chainId": "0xdce5477cfca571c2cb652f38bbb70429004be3cf9649dd2b4ad9455b2251fe43",
-        "name": "Hashed Network",
-        "assetId": 0,
-        "assetSymbol": "HASH"
-      }
-    ]
-  },
-  {
-    "name": "TAO",
-    "precision": 9,
-    "priceId": "bittensor",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Bittensor_(TAO).svg",
-    "symbol": "TAO",
-    "chains": [
-      {
-        "chainId": "0x2f0555cc76fc2840a25a6ea3b9637146806f1f44b090c175ffde2a7e5ab36c03",
-        "name": "Bittensor",
-        "assetId": 0,
-        "assetSymbol": "TAO"
-      }
-    ]
-  },
-  {
-    "name": "3DPass",
-    "precision": 12,
-    "priceId": "3dpass",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/3DPass_(P3D).svg",
-    "symbol": "P3D",
-    "chains": [
-      {
-        "chainId": "0x6c5894837ad89b6d92b114a2fb3eafa8fe3d26a54848e3447015442cd6ef4e66",
-        "name": "3DPass",
-        "assetId": 0,
-        "assetSymbol": "P3D"
-      }
-    ]
-  },
-  {
-    "name": "Ajuna",
-    "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Ajuna_(AJUN).svg",
-    "symbol": "AJUN",
-    "chains": [
-      {
-        "chainId": "0xe358eb1d11b31255a286c12e44fe6780b7edb171d657905a97e39f71d9c6c3ee",
-        "name": "Ajuna",
-        "assetId": 0,
-        "assetSymbol": "AJUN"
-      }
-    ]
-  },
-  {
-    "name": "Frequency",
-    "precision": 8,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/FREQUENCY_(FRQCY).svg",
-    "symbol": "FRQCY",
-    "chains": [
-      {
-        "chainId": "0x4a587bf17a404e3572747add7aab7bbe56e805a5479c6c436f07f36fcc8d3ae1",
-        "name": "Frequency",
-        "assetId": 0,
-        "assetSymbol": "FRQCY"
-      }
-    ]
-  },
-  {
     "name": "Vara",
     "precision": 12,
     "priceId": "vara-network",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Vara.svg",
     "symbol": "VARA",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xfe1b4c55fd4d668101126434206571a7838a8b6b93a6d1b95d607e78e6c53763",
@@ -5250,75 +4557,11 @@
     ]
   },
   {
-    "name": "Giant",
-    "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/GIANT.svg",
-    "symbol": "GIANT",
-    "chains": [
-      {
-        "chainId": "0x49f4849244114177544d73d2412289f6d73a892b9eb1ca97cef81c9c0c9ec0ff",
-        "name": "GIANT",
-        "assetId": 0,
-        "assetSymbol": "GIANT"
-      }
-    ]
-  },
-  {
-    "name": "KREST token",
-    "precision": 18,
-    "priceId": "krest",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/krest_(krest).svg",
-    "symbol": "KREST",
-    "chains": [
-      {
-        "chainId": "0xb3dd5ad6a82872b30aabaede8f41dfd4ff6c32ff82f8757d034a45be63cf104c",
-        "name": "krest",
-        "assetId": 0,
-        "assetSymbol": "KREST"
-      }
-    ]
-  },
-  {
-    "name": "Jur token",
-    "precision": 18,
-    "priceId": "jur",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Jur.svg",
-    "symbol": "JUR",
-    "chains": [
-      {
-        "chainId": "0x58d1393b47b11707978fbc07e77d7b6f7d9aa88d207dc008a52385f7dba6156a",
-        "name": "Jur",
-        "assetId": 0,
-        "assetSymbol": "JUR"
-      }
-    ]
-  },
-  {
-    "name": "Enjin token",
-    "precision": 18,
-    "priceId": "enjincoin",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Enjin_(ENJ).svg",
-    "symbol": "ENJ",
-    "chains": [
-      {
-        "chainId": "0x3af4ff48ec76d2efc8476730f423ac07e25ad48f5f4c9dc39c778b164d808615",
-        "name": "Enjin Matrix",
-        "assetId": 0,
-        "assetSymbol": "ENJ"
-      },
-      {
-        "chainId": "0xd8761d3c88f26dc12875c00d3165f7d67243d56fc85b4cf19937601a7916e5a9",
-        "name": "Enjin Relay",
-        "assetId": 0,
-        "assetSymbol": "ENJ"
-      }
-    ]
-  },
-  {
     "name": "HOP token",
     "precision": 12,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
     "symbol": "HOP",
+    "isTestToken": true,
     "chains": [
       {
         "chainId": "0x7c34d42fc815d392057c78b49f2755c753440ccd38bcb0405b3bcfb601d08734",
@@ -5334,118 +4577,11 @@
     ]
   },
   {
-    "name": "VT token",
-    "precision": 18,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default_(VT).svg",
-    "symbol": "VT",
-    "chains": [
-      {
-        "chainId": "0x6ab1bd8aed6d5fdcaf347826bfcd0172681181edf8356b90cb3cf47076698ae2",
-        "name": "EWX Staging Parachain Argon",
-        "assetId": 0,
-        "assetSymbol": "VT"
-      },
-      {
-        "chainId": "0xac123be800b7c9a3e3449bb70edd8e3d9008d27826381451eebf94bce1db1fbe",
-        "name": "Energy Web X Rococo",
-        "assetId": 0,
-        "assetSymbol": "VT"
-      }
-    ]
-  },
-  {
-    "name": "WATR token",
-    "precision": 18,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Watr.svg",
-    "symbol": "WATR",
-    "chains": [
-      {
-        "chainId": "0x161db6cdc5896fe55ef12b4778fe78dd65d7af43f65c601786b88d7a93ebc58a",
-        "name": "Watr",
-        "assetId": 0,
-        "assetSymbol": "WATR"
-      }
-    ]
-  },
-  {
-    "name": "Joystream",
-    "precision": 10,
-    "priceId": "joystream",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/JOY.svg",
-    "symbol": "JOY",
-    "chains": [
-      {
-        "chainId": "0x6b5e488e0fa8f9821110d5c13f4c468abcd43ce5e297e62b34c53c3346465956",
-        "name": "Joystream",
-        "assetId": 0,
-        "assetSymbol": "JOY"
-      }
-    ]
-  },
-  {
-    "name": "Dock token",
-    "precision": 6,
-    "priceId": "dock",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/DOCK.svg",
-    "symbol": "DOCK",
-    "chains": [
-      {
-        "chainId": "0x6bfe24dca2a3be10f22212678ac13a6446ec764103c0f3471c71609eac384aae",
-        "name": "Dock",
-        "assetId": 0,
-        "assetSymbol": "DOCK"
-      }
-    ]
-  },
-  {
-    "name": "Polimec token",
-    "precision": 10,
-    "priceId": "polimec",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/PLMC.svg",
-    "symbol": "PLMC",
-    "chains": [
-      {
-        "chainId": "0x7eb9354488318e7549c722669dcbdcdc526f1fef1420e7944667212f3601fdbd",
-        "name": "Polimec",
-        "assetId": 0,
-        "assetSymbol": "PLMC"
-      }
-    ]
-  },
-  {
-    "name": "Energy Web token",
-    "precision": 18,
-    "priceId": "energy-web-token",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Energy_Web_(EWT).svg",
-    "symbol": "EWT",
-    "chains": [
-      {
-        "chainId": "0x5a51e04b88a4784d205091aa7bada002f3e5da3045e5b05655ee4db2589c33b5",
-        "name": "Energy Web X",
-        "assetId": 0,
-        "assetSymbol": "EWT"
-      }
-    ]
-  },
-  {
-    "name": "VARCH token",
-    "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/InvArch_(VARCH).svg",
-    "symbol": "VARCH",
-    "chains": [
-      {
-        "chainId": "0x31a7d8914fb31c249b972f18c115f1e22b4b039abbcb03c73b6774c5642f9efe",
-        "name": "InvArch",
-        "assetId": 0,
-        "assetSymbol": "VARCH"
-      }
-    ]
-  },
-  {
     "name": "xcHKO",
     "precision": 12,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/HKO.svg",
     "symbol": "xcHKO",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
@@ -5464,6 +4600,7 @@
     "precision": 12,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vBNC.svg",
     "symbol": "xcvBNC",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
@@ -5482,6 +4619,7 @@
     "precision": 18,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vMOVR.svg",
     "symbol": "xcvMOVR",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
@@ -5500,6 +4638,7 @@
     "precision": 18,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Mangata_X_(MGX).svg",
     "symbol": "xcMGX",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
@@ -5518,6 +4657,7 @@
     "precision": 10,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Turing_(TUR).svg",
     "symbol": "xcTUR",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
@@ -5536,6 +4676,7 @@
     "precision": 18,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
     "symbol": "DEV",
+    "isTestToken": true,
     "chains": [
       {
         "chainId": "0x91bc6e169807aaa54802737e1c504b2577d4fafedd5a02c10293b1cd60e39527",
@@ -5550,6 +4691,7 @@
     "precision": 12,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
     "symbol": "xcUNIT",
+    "isTestToken": true,
     "chains": [
       {
         "chainId": "0x91bc6e169807aaa54802737e1c504b2577d4fafedd5a02c10293b1cd60e39527",
@@ -5569,6 +4711,7 @@
     "priceId": "raresama",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/POOP.svg",
     "symbol": "POOP",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
@@ -5588,6 +4731,7 @@
     "precision": 12,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/OriginTrail_(OTP).svg",
     "symbol": "xcOTP",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
@@ -5606,6 +4750,7 @@
     "precision": 18,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vFIL.svg",
     "symbol": "xcvFIL",
+    "isTestToken": false,
     "chains": [
       {
         "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
@@ -5616,49 +4761,6 @@
         "typeExtras": {
           "assetId": "272547899416482196831721420898811311297"
         }
-      }
-    ]
-  },
-  {
-    "name": "PAS",
-    "precision": 10,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
-    "symbol": "PAS",
-    "chains": [
-      {
-        "chainId": "0x77afd6190f1554ad45fd0d31aee62aacc33c6db0ea801129acb813f913e0764f",
-        "name": "Paseo Testnet",
-        "assetId": 0,
-        "assetSymbol": "PAS"
-      }
-    ]
-  },
-  {
-    "name": "RLMC",
-    "precision": 10,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/PLMC.svg",
-    "symbol": "RLMC",
-    "chains": [
-      {
-        "chainId": "0x7bbb72faf3d6d997ebe622a4e0ebfb6fdacf905b6141c86a3122cd479213a8d8",
-        "name": "Rolimec Rococo",
-        "assetId": 0,
-        "assetSymbol": "RLMC"
-      }
-    ]
-  },
-  {
-    "name": "NUUM",
-    "precision": 18,
-    "priceId": "mnet-continuum",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Bit.Country_Continuum_(NUUM).svg",
-    "symbol": "NUUM",
-    "chains": [
-      {
-        "chainId": "0xae1ca86c936aa252cdc45f4f436220567b2bbbcc4834f5b8f4191462baf19dfb",
-        "name": "Continuum",
-        "assetId": 0,
-        "assetSymbol": "NUUM"
       }
     ]
   }
