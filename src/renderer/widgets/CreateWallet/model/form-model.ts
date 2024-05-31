@@ -94,7 +94,7 @@ const $availableAccounts = combine(
     if (!chain) return [];
 
     const filteredAccounts = walletUtils.getAccountsBy(wallets, (a, w) => {
-      const isValidWallet = !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w) && !walletUtils.isMultisig(w);
+      const isValidWallet = !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w);
       const isChainMatch = accountUtils.isChainAndCryptoMatch(a, chain);
 
       return isValidWallet && isChainMatch;
@@ -102,7 +102,7 @@ const $availableAccounts = combine(
 
     const baseAccounts = filteredAccounts.filter((a) => accountUtils.isBaseAccount(a) && a.name);
 
-    return [...filteredAccounts, ...baseAccounts];
+    return [...accountUtils.getAccountsAndShardGroups(filteredAccounts), ...baseAccounts];
   },
 );
 

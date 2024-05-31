@@ -40,10 +40,10 @@ export const BaseModal = ({
         <div className="fixed inset-0 overflow-hidden flex min-h-full items-center justify-center p-4">
           <ModalTransition>
             <Dialog.Panel
-              className={cnTw(
-                'transform rounded-lg bg-white text-left align-middle shadow-modal transition-all w-[440px] ',
-                panelClass,
-              )}
+              className={
+                'transform rounded-lg bg-white text-left align-middle shadow-modal transition-all w-[440px] ' +
+                panelClass
+              }
             >
               {headerExist && (
                 <header className={cnTw('flex items-center justify-between', headerClass)}>
