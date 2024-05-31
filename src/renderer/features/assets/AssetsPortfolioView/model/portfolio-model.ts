@@ -2,21 +2,27 @@ import { createEffect, createEvent, createStore, restore, sample } from 'effecto
 import { once } from 'patronum';
 
 import { Account, Balance, Chain, ChainId, AssetByChains, Wallet } from '@shared/core';
+import { includes } from '@shared/lib/utils';
 import { networkModel, networkUtils } from '@entities/network';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { AssetsListView } from '@entities/asset';
 import { balanceModel } from '@entities/balance';
+import { currencyModel, priceProviderModel } from '@entities/price';
 import { tokensService } from '../lib/tokensService';
 
 const activeViewChanged = createEvent<AssetsListView>();
 const accountsChanged = createEvent<Account[]>();
 const hideZeroBalancesChanged = createEvent<boolean>();
+const queryChanged = createEvent<string>();
 
 const $hideZeroBalances = restore(hideZeroBalancesChanged, false);
 const $accounts = restore<Account[]>(accountsChanged, []);
 const $activeView = restore<AssetsListView | null>(activeViewChanged, null);
+const $query = restore<string>(queryChanged, '');
 const $tokens = createStore<AssetByChains[]>([]);
 const $activeTokens = createStore<AssetByChains[]>([]);
+const $filtredTokens = createStore<AssetByChains[]>([]);
+const $sortedTokens = createStore<AssetByChains[]>([]);
 
 type UpdateTokenParams = {
   activeWallet?: Wallet;
@@ -143,13 +149,64 @@ sample({
   target: $activeTokens,
 });
 
+sample({
+  clock: queryChanged,
+  source: $activeTokens,
+  fn: (activeTokens, query) => {
+    return activeTokens.reduce<AssetByChains[]>((acc, token) => {
+      const filteredChains = token.chains.filter((chain) => {
+        const hasSymbol = includes(chain.assetSymbol, query);
+        const hasAssetName = includes(chain.name, query);
+        const hasChainName = includes(token.name, query);
+
+        return hasSymbol || hasAssetName || hasChainName;
+      });
+
+      if (filteredChains.length > 0) {
+        acc.push({ ...token, chains: filteredChains });
+      }
+
+      return acc;
+    }, []);
+  },
+  target: $filtredTokens,
+});
+
+sample({
+  clock: [$activeTokens, $filtredTokens],
+  source: {
+    query: $query,
+    activeTokens: $activeTokens,
+    filtredTokens: $filtredTokens,
+    assetsPrices: priceProviderModel.$assetsPrices,
+    fiatFlag: priceProviderModel.$fiatFlag,
+    currency: currencyModel.$activeCurrency,
+  },
+  fn: ({ query, activeTokens, filtredTokens, assetsPrices, fiatFlag, currency }) => {
+    const tokenList = query ? filtredTokens : activeTokens;
+    const sortedTokens = tokensService.sortTokensByBalance(
+      tokenList,
+      assetsPrices,
+      fiatFlag ? currency?.coingeckoId : undefined,
+    );
+
+    return sortedTokens;
+  },
+  target: $sortedTokens,
+});
+
 export const portfolioModel = {
-  $activeTokens,
   $activeView,
   $accounts,
+  $sortedTokens,
   events: {
     activeViewChanged,
     accountsChanged,
     hideZeroBalancesChanged,
+    queryChanged,
   },
+  /* Internal API (tests only) */
+  _$activeTokens: $activeTokens,
+  _$filtredTokens: $filtredTokens,
+  _$query: $query,
 };
