@@ -2,16 +2,16 @@ import { createEvent, combine, restore, createEffect, Store, sample } from 'effe
 
 import { Chain, Account, Address, Asset, type ProxiedAccount, Balance } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
-import {
-  AccountStore,
-  AmountFeeStore,
-  SignatoryFeeStore,
-  TransferRules,
-} from '@features/operations/OperationsValidation/lib/transfer-rules';
 import { BalanceMap, NetworkStore } from '../lib/types';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { transferableAmount } from '@shared/lib/utils';
-import { applyValidationRules } from '@features/operations/OperationsValidation';
+import {
+  validationUtils,
+  TransferAccountStore,
+  TransferSignatoryFeeStore,
+  TransferAmountFeeStore,
+  TransferRules,
+} from '@features/operations/OperationsValidation';
 
 type Input = {
   xcmChain: Chain;
@@ -32,7 +32,6 @@ type Input = {
 const formInitiated = createEvent<Input>();
 const formConfirmed = createEvent();
 const confirmed = createEvent();
-const errorShown = createEvent<Error>();
 
 const $confirmStore = restore(formInitiated, null);
 
@@ -46,7 +45,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
     {
       value: store.account,
       form: {},
-      ...TransferRules.account.noProxyFee({} as Store<AccountStore>),
+      ...TransferRules.account.noProxyFee({} as Store<TransferAccountStore>),
       source: {
         fee: store.fee,
         isProxy: !!store.proxiedAccount,
@@ -65,7 +64,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
     {
       value: undefined,
       form: {},
-      ...TransferRules.signatory.notEnoughTokens({} as Store<SignatoryFeeStore>),
+      ...TransferRules.signatory.notEnoughTokens({} as Store<TransferSignatoryFeeStore>),
       source: {
         fee: store.fee,
         isMultisig: !!store.signatory,
@@ -80,7 +79,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
               store.asset.assetId.toFixed(),
             ),
           ),
-      } as SignatoryFeeStore,
+      } as TransferSignatoryFeeStore,
     },
     {
       value: store.amount,
@@ -113,7 +112,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
     {
       value: store.amount,
       form: {},
-      ...TransferRules.amount.insufficientBalanceForFee({} as Store<AmountFeeStore>, {
+      ...TransferRules.amount.insufficientBalanceForFee({} as Store<TransferAmountFeeStore>, {
         withFormatAmount: false,
       }),
       source: {
@@ -143,11 +142,11 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
             ),
           ),
         },
-      } as AmountFeeStore,
+      } as TransferAmountFeeStore,
     },
   ];
 
-  const result = applyValidationRules(rules);
+  const result = validationUtils.applyValidationRules(rules);
 
   if (!result) return;
 
@@ -211,11 +210,6 @@ sample({
     balances,
   }),
   target: validateFx,
-});
-
-sample({
-  clock: validateFx.failData,
-  target: errorShown,
 });
 
 sample({

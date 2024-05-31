@@ -4,23 +4,14 @@ import { BN } from '@polkadot/util';
 import { formatAmount } from '@shared/lib/utils';
 import { balanceValidation, descriptionValidation } from '@shared/lib/validation';
 import { Account } from '@shared/core';
-import { NetworkStore } from '../../../../widgets/Transfer/lib/types';
-
-export type ShardsProxyFeeStore = { feeData: { fee: string }; isProxy: boolean; proxyBalance: string };
-export type ShardsBondBalanceStore = { isProxy: boolean; network: NetworkStore; accountsBalances: string[] };
-export type AmountBalanceStore = { network: NetworkStore; unstakeBalanceRange: string | string[] };
-export type Config = { withFormatAmount: boolean };
-export type AmountFeeStore = {
-  feeData: { fee: string };
-  isMultisig: boolean;
-  network: NetworkStore;
-  accountsBalances: string[];
-};
-export type SignatoryFeeStore = {
-  feeData: { fee: string; multisigDeposit: string };
-  isMultisig: boolean;
-  signatoryBalance: string;
-};
+import {
+  AmountFeeStore,
+  Config,
+  ShardsBondBalanceStore,
+  ShardsProxyFeeStore,
+  SignatoryFeeStore,
+  UnstakeAmountBalanceRange,
+} from '../types/types';
 
 export const UnstakeRules = {
   shards: {
@@ -82,11 +73,11 @@ export const UnstakeRules = {
       errorText: 'transfer.notZeroAmountError',
       validator: balanceValidation.isNonZeroBalance,
     },
-    notEnoughBalance: (source: Store<AmountBalanceStore>, config: Config = { withFormatAmount: true }) => ({
+    notEnoughBalance: (source: Store<UnstakeAmountBalanceRange>, config: Config = { withFormatAmount: true }) => ({
       name: 'notEnoughBalance',
       errorText: 'transfer.notEnoughBalanceError',
       source,
-      validator: (amount: string, _: any, { network, unstakeBalanceRange }: AmountBalanceStore) => {
+      validator: (amount: string, _: any, { network, unstakeBalanceRange }: UnstakeAmountBalanceRange) => {
         const value = config?.withFormatAmount ? formatAmount(amount, network.asset.precision) : amount;
         const amountBN = new BN(formatAmount(value, network.asset.precision));
 

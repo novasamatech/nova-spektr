@@ -2,16 +2,17 @@ import { Store, createEffect, createEvent, sample } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 
 import { Asset, Balance, Chain, ID, Transaction } from '@shared/core';
-import {
-  AccountStore,
-  AmountFeeStore,
-  SignatoryFeeStore,
-  TransferRules,
-} from '@features/operations/OperationsValidation/lib/transfer-rules';
+import { TransferRules } from '@features/operations/OperationsValidation';
 import { getAssetById, toAccountId, transferableAmount } from '@shared/lib/utils';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { BalanceMap, NetworkStore } from '@widgets/Transfer/lib/types';
-import { ValidationResult, applyValidationRules } from '@features/operations/OperationsValidation';
+import {
+  TransferAccountStore,
+  TransferAmountFeeStore,
+  TransferSignatoryFeeStore,
+  ValidationResult,
+} from '../types/types';
+import { validationUtils } from '../lib/validation-utils';
 import { networkModel } from '@entities/network';
 import { transactionService } from '@entities/transaction';
 
@@ -36,7 +37,7 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
     {
       value: transaction.address,
       form: {},
-      ...TransferRules.account.noProxyFee({} as Store<AccountStore>),
+      ...TransferRules.account.noProxyFee({} as Store<TransferAccountStore>),
       source: {
         fee,
         // TODO: Add support proxy
@@ -47,13 +48,13 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
     {
       value: undefined,
       form: {},
-      ...TransferRules.signatory.notEnoughTokens({} as Store<SignatoryFeeStore>),
+      ...TransferRules.signatory.notEnoughTokens({} as Store<TransferSignatoryFeeStore>),
       source: {
         fee,
         isMultisig: false,
         multisigDeposit: '0',
         balance: '0',
-      } as SignatoryFeeStore,
+      } as TransferSignatoryFeeStore,
     },
     {
       value: transaction.args.amount,
@@ -76,7 +77,7 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
     {
       value: transaction.args.amount,
       form: {},
-      ...TransferRules.amount.insufficientBalanceForFee({} as Store<AmountFeeStore>, {
+      ...TransferRules.amount.insufficientBalanceForFee({} as Store<TransferAmountFeeStore>, {
         withFormatAmount: false,
       }),
       source: {
@@ -98,11 +99,11 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
             balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toFixed()),
           ),
         },
-      } as AmountFeeStore,
+      } as TransferAmountFeeStore,
     },
   ];
 
-  const result = applyValidationRules(rules);
+  const result = validationUtils.applyValidationRules(rules);
 
   return {
     id,
@@ -117,6 +118,7 @@ sample({
     apis: networkModel.$apis,
     balances: balanceModel.$balances,
   },
+  filter: ({ apis }, { transaction }) => Boolean(apis[transaction.chainId]),
   fn: ({ apis, chains, balances }, { id, transaction }) => {
     const chain = chains[transaction.chainId];
     const api = apis[transaction.chainId];
@@ -142,6 +144,8 @@ sample({
 export const transferValidateModel = {
   events: {
     validationStarted,
+  },
+  output: {
     txValidated,
   },
 };

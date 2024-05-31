@@ -23,7 +23,8 @@ import type {
 import { useStakingData, StakingMap, eraService } from '@entities/staking';
 import { NetworkStore } from '../lib/types';
 import { transferableAmount, getRelaychainAsset, toAddress, ZERO_BALANCE, redeemableAmount } from '@shared/lib/utils';
-import { transactionBuilder, transactionService, DESCRIPTION_LENGTH } from '@entities/transaction';
+import { transactionBuilder, transactionService } from '@entities/transaction';
+import { WithdrawRules } from '@/src/renderer/features/operations/OperationsValidation';
 
 type BalanceMap = { balance: string; withdraw: string };
 
@@ -164,13 +165,7 @@ const $withdrawForm = createForm<FormParams>({
     },
     description: {
       init: '',
-      rules: [
-        {
-          name: 'maxLength',
-          errorText: 'transfer.descriptionLengthError',
-          validator: (value) => !value || value.length <= DESCRIPTION_LENGTH,
-        },
-      ],
+      rules: [WithdrawRules.description.maxLength],
     },
   },
   validateOn: ['submit'],

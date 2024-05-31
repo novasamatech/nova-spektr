@@ -47,48 +47,24 @@ const validateFx = createEffect((transactions: BasketTransaction[]) => {
       validateTransferBound({ id: tx.id, transaction: tx.coreTx });
     }
 
-    if (tx.coreTx.type === TransactionType.ADD_PROXY) {
-      addProxyValidateBound({ id: tx.id, transaction: tx.coreTx });
-    }
+    const TransactionValidators = {
+      [TransactionType.ADD_PROXY]: addProxyValidateBound,
+      [TransactionType.CREATE_PURE_PROXY]: addPureProxiedValidateBound,
+      [TransactionType.REMOVE_PROXY]: removeProxyValidateBound,
+      [TransactionType.REMOVE_PURE_PROXY]: removePureProxiedValidateBound,
+      [TransactionType.BOND]: bondNominateValidateBound,
+      [TransactionType.NOMINATE]: nominateValidateBound,
+      [TransactionType.STAKE_MORE]: bondExtraValidateBound,
+      [TransactionType.DESTINATION]: payeeValidateBound,
+      [TransactionType.RESTAKE]: restakeValidateBound,
+      [TransactionType.UNSTAKE]: unstakeValidateBound,
+      [TransactionType.REDEEM]: withdrawValidateBound,
+    };
 
-    if (tx.coreTx.type === TransactionType.CREATE_PURE_PROXY) {
-      addPureProxiedValidateBound({ id: tx.id, transaction: tx.coreTx });
-    }
-
-    if (tx.coreTx.type === TransactionType.REMOVE_PROXY) {
-      removeProxyValidateBound({ id: tx.id, transaction: tx.coreTx });
-    }
-
-    if (tx.coreTx.type === TransactionType.REMOVE_PURE_PROXY) {
-      removePureProxiedValidateBound({ id: tx.id, transaction: tx.coreTx });
-    }
-
-    if (tx.coreTx.type === TransactionType.BOND) {
-      bondNominateValidateBound({ id: tx.id, transaction: tx.coreTx });
-    }
-
-    if (tx.coreTx.type === TransactionType.NOMINATE) {
-      nominateValidateBound({ id: tx.id, transaction: tx.coreTx });
-    }
-
-    if (tx.coreTx.type === TransactionType.STAKE_MORE) {
-      bondExtraValidateBound({ id: tx.id, transaction: tx.coreTx });
-    }
-
-    if (tx.coreTx.type === TransactionType.DESTINATION) {
-      payeeValidateBound({ id: tx.id, transaction: tx.coreTx });
-    }
-
-    if (tx.coreTx.type === TransactionType.RESTAKE) {
-      restakeValidateBound({ id: tx.id, transaction: tx.coreTx });
-    }
-
-    if (tx.coreTx.type === TransactionType.UNSTAKE) {
-      unstakeValidateBound({ id: tx.id, transaction: tx.coreTx });
-    }
-
-    if (tx.coreTx.type === TransactionType.REDEEM) {
-      withdrawValidateBound({ id: tx.id, transaction: tx.coreTx });
+    if (tx.coreTx.type in TransactionValidators) {
+      // TS thinks that transfer should be in TransactionValidators
+      // @ts-ignore`
+      TransactionValidators[tx.coreTx.type]({ id: tx.id, transaction: tx.coreTx });
     }
   }
 });
@@ -98,13 +74,7 @@ const $basketTransactions = combine(
     wallet: walletModel.$activeWallet,
     basket: basketModel.$basket,
   },
-  ({ wallet, basket }) => {
-    return basket.filter((tx) => {
-      const isSameWallet = tx.initiatorWallet === wallet?.id;
-
-      return isSameWallet;
-    });
-  },
+  ({ wallet, basket }) => basket.filter((tx) => tx.initiatorWallet === wallet?.id),
 );
 
 sample({
@@ -141,35 +111,35 @@ sample({
 
     return [...chains].some((chainId) => apis[chainId]);
   },
-  fn: ({ transactions }) => {
-    return transactions;
-  },
+  fn: ({ transactions }) => transactions,
   target: validateFx,
 });
 
 sample({
   clock: [
-    transferValidateModel.events.txValidated,
-    addProxyValidateModel.events.txValidated,
-    addPureProxiedValidateModel.events.txValidated,
-    removeProxyValidateModel.events.txValidated,
-    removePureProxiedValidateModel.events.txValidated,
-    bondNominateValidateModel.events.txValidated,
-    nominateValidateModel.events.txValidated,
-    bondExtraValidateModel.events.txValidated,
-    restakeValidateModel.events.txValidated,
-    unstakeValidateModel.events.txValidated,
-    withdrawValidateModel.events.txValidated,
+    transferValidateModel.output.txValidated,
+    addProxyValidateModel.output.txValidated,
+    addPureProxiedValidateModel.output.txValidated,
+    removeProxyValidateModel.output.txValidated,
+    removePureProxiedValidateModel.output.txValidated,
+    bondNominateValidateModel.output.txValidated,
+    nominateValidateModel.output.txValidated,
+    bondExtraValidateModel.output.txValidated,
+    restakeValidateModel.output.txValidated,
+    unstakeValidateModel.output.txValidated,
+    withdrawValidateModel.output.txValidated,
   ],
   source: $invalidTxs,
   fn: (txs, { id, result }) => {
+    const newTxs = new Set(txs);
+
     if (!result) {
-      txs.delete(id);
+      newTxs.delete(id);
     } else {
-      txs.add(id);
+      newTxs.add(id);
     }
 
-    return txs;
+    return newTxs;
   },
 
   target: $invalidTxs,

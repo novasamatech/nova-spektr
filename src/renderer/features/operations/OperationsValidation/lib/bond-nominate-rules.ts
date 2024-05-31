@@ -4,23 +4,14 @@ import { BN } from '@polkadot/util';
 import { formatAmount, validateAddress } from '@shared/lib/utils';
 import { balanceValidation, descriptionValidation } from '@shared/lib/validation';
 import { Account, RewardsDestination } from '@shared/core';
-import { NetworkStore } from '../../../../widgets/Transfer/lib/types';
-
-export type ShardsProxyFeeStore = { feeData: { fee: string }; isProxy: boolean; proxyBalance: string };
-export type ShardsBondBalanceStore = { isProxy: boolean; network: NetworkStore; accountsBalances: string[] };
-export type AmountBalanceStore = { network: NetworkStore; bondBalanceRange: string | string[] };
-export type Config = { withFormatAmount: boolean };
-export type AmountFeeStore = {
-  feeData: { fee: string };
-  isMultisig: boolean;
-  network: NetworkStore;
-  accountsBalances: string[];
-};
-export type SignatoryFeeStore = {
-  feeData: { fee: string; multisigDeposit: string };
-  isMultisig: boolean;
-  signatoryBalance: string;
-};
+import {
+  BondAmountBalanceStore,
+  AmountFeeStore,
+  Config,
+  ShardsBondBalanceStore,
+  ShardsProxyFeeStore,
+  SignatoryFeeStore,
+} from '../types/types';
 
 export const BondNominateRules = {
   shards: {
@@ -98,11 +89,11 @@ export const BondNominateRules = {
       errorText: 'transfer.notZeroAmountError',
       validator: balanceValidation.isNonZeroBalance,
     },
-    notEnoughBalance: (source: Store<AmountBalanceStore>, config: Config = { withFormatAmount: true }) => ({
+    notEnoughBalance: (source: Store<BondAmountBalanceStore>, config: Config = { withFormatAmount: true }) => ({
       name: 'notEnoughBalance',
       errorText: 'transfer.notEnoughBalanceError',
       source,
-      validator: (amount: string, _: any, { network, bondBalanceRange }: AmountBalanceStore) => {
+      validator: (amount: string, _: any, { network, bondBalanceRange }: BondAmountBalanceStore) => {
         const value = config?.withFormatAmount ? formatAmount(amount, network.asset.precision) : amount;
         const amountBN = new BN(formatAmount(value, network.asset.precision));
 

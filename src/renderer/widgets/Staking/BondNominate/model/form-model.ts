@@ -18,6 +18,7 @@ import {
   validateAddress,
   ZERO_BALANCE,
 } from '@shared/lib/utils';
+import { BondNominateRules } from '@/src/renderer/features/operations/OperationsValidation';
 
 type FormParams = {
   shards: Account[];
@@ -197,13 +198,7 @@ const $bondForm = createForm<FormParams>({
     },
     description: {
       init: '',
-      rules: [
-        {
-          name: 'maxLength',
-          errorText: 'transfer.descriptionLengthError',
-          validator: (value) => !value || value.length <= 120,
-        },
-      ],
+      rules: [BondNominateRules.description.maxLength],
     },
   },
   validateOn: ['submit'],

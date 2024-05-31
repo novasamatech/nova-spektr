@@ -18,6 +18,7 @@ import {
   validateAddress,
   toShortAddress,
 } from '@shared/lib/utils';
+import { PayeeRules } from '@/src/renderer/features/operations/OperationsValidation';
 
 type FormParams = {
   shards: Account[];
@@ -143,13 +144,7 @@ const $payeeForm = createForm<FormParams>({
     },
     description: {
       init: '',
-      rules: [
-        {
-          name: 'maxLength',
-          errorText: 'transfer.descriptionLengthError',
-          validator: (value) => !value || value.length <= 120,
-        },
-      ],
+      rules: [PayeeRules.description.maxLength],
     },
   },
   validateOn: ['submit'],

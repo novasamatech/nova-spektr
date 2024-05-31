@@ -2,30 +2,18 @@ import { Store } from 'effector';
 import { BN } from '@polkadot/util';
 
 import { formatAmount, validateAddress } from '@shared/lib/utils';
-import { balanceValidation, descriptionValidation } from '@shared/lib/validation';
+import { balanceValidation, descriptionValidation } from './validation';
 import { Account } from '@shared/core';
 import { BalanceMap, NetworkStore } from '../../../../widgets/Transfer/lib/types';
-
-export type AccountStore = { fee: string; isProxy: boolean; proxyBalance: BalanceMap };
-export type SignatoryFeeStore = { fee: string; isMultisig: boolean; multisigDeposit: string; balance: string };
-export type AmountFeeStore = {
-  fee: string;
-  balance: BalanceMap;
-  network: NetworkStore | null;
-  isXcm: boolean;
-  isNative: boolean;
-  isMultisig: boolean;
-  isProxy: boolean;
-  xcmFee: string;
-};
+import { TransferAccountStore, TransferAmountFeeStore, TransferSignatoryFeeStore } from '../types/types';
 
 export const TransferRules = {
   account: {
-    noProxyFee: (source: Store<AccountStore>) => ({
+    noProxyFee: (source: Store<TransferAccountStore>) => ({
       name: 'noProxyFee',
       errorText: 'transfer.noSignatoryError',
       source,
-      validator: (_a: Account, _f: any, { isProxy, proxyBalance, fee }: AccountStore) => {
+      validator: (_a: Account, _f: any, { isProxy, proxyBalance, fee }: TransferAccountStore) => {
         if (!isProxy) return true;
 
         return balanceValidation.isLteThanBalance(fee, proxyBalance.native);
@@ -43,11 +31,11 @@ export const TransferRules = {
         return Object.keys(signatory).length > 0;
       },
     }),
-    notEnoughTokens: (source: Store<SignatoryFeeStore>) => ({
+    notEnoughTokens: (source: Store<TransferSignatoryFeeStore>) => ({
       name: 'notEnoughTokens',
       errorText: 'proxy.addProxy.notEnoughMultisigTokens',
       source,
-      validator: (_s: any, _f: any, { fee, isMultisig, multisigDeposit, balance }: SignatoryFeeStore) => {
+      validator: (_s: any, _f: any, { fee, isMultisig, multisigDeposit, balance }: TransferSignatoryFeeStore) => {
         if (!isMultisig) return true;
 
         const value = new BN(multisigDeposit).add(new BN(fee));
@@ -101,7 +89,7 @@ export const TransferRules = {
       },
     }),
     insufficientBalanceForFee: (
-      source: Store<AmountFeeStore>,
+      source: Store<TransferAmountFeeStore>,
       config: { withFormatAmount: boolean } = { withFormatAmount: true },
     ) => ({
       name: 'insufficientBalanceForFee',
@@ -110,7 +98,7 @@ export const TransferRules = {
       validator: (
         amount: string,
         _: any,
-        { network, isNative, isProxy, isMultisig, isXcm, balance, fee, xcmFee }: AmountFeeStore,
+        { network, isNative, isProxy, isMultisig, isXcm, balance, fee, xcmFee }: TransferAmountFeeStore,
       ) => {
         if (!network) return false;
 

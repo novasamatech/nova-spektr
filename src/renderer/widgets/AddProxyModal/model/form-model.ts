@@ -22,7 +22,7 @@ import { walletSelectModel } from '@features/wallets';
 import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
 import { walletUtils, accountUtils, walletModel, permissionUtils } from '@entities/wallet';
 import { proxyService } from '@shared/api/proxy';
-import { transactionService, DESCRIPTION_LENGTH } from '@entities/transaction';
+import { transactionService } from '@entities/transaction';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import {
   getProxyTypes,
@@ -35,6 +35,7 @@ import {
   validateAddress,
   ZERO_BALANCE,
 } from '@shared/lib/utils';
+import { AddProxyRules } from '@/src/renderer/features/operations/OperationsValidation';
 
 type ProxyAccounts = {
   accounts: {
@@ -199,12 +200,7 @@ const $proxyForm = createForm<FormParams>({
     },
     description: {
       init: '',
-      rules: [
-        {
-          name: 'maxLength',
-          validator: (value) => !value || value.length <= DESCRIPTION_LENGTH,
-        },
-      ],
+      rules: [AddProxyRules.description.maxLength],
     },
   },
   validateOn: ['submit'],

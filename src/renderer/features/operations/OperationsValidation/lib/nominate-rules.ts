@@ -4,23 +4,7 @@ import { BN } from '@polkadot/util';
 import { formatAmount } from '@shared/lib/utils';
 import { balanceValidation, descriptionValidation } from '@shared/lib/validation';
 import { Account } from '@shared/core';
-import { NetworkStore } from '../../../../widgets/Transfer/lib/types';
-
-export type ShardsProxyFeeStore = { feeData: { fee: string }; isProxy: boolean; proxyBalance: string };
-export type ShardsBondBalanceStore = { isProxy: boolean; network: NetworkStore; accountsBalances: string[] };
-export type AmountBalanceStore = { network: NetworkStore; bondBalanceRange: string | string[] };
-export type Config = { withFormatAmount: boolean };
-export type AmountFeeStore = {
-  feeData: { fee: string };
-  isMultisig: boolean;
-  network: NetworkStore;
-  accountsBalances: string[];
-};
-export type SignatoryFeeStore = {
-  feeData: { fee: string; multisigDeposit: string };
-  isMultisig: boolean;
-  signatoryBalance: string;
-};
+import { ShardsBondBalanceStore, ShardsProxyFeeStore, SignatoryFeeStore } from '../types/types';
 
 export const NominateRules = {
   shards: {

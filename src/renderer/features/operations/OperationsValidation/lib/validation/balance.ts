@@ -1,7 +1,7 @@
 import { BN } from '@polkadot/util';
 
-import { ZERO_BALANCE, formatAmount } from '../utils';
-import { Asset } from '../../core';
+import { ZERO_BALANCE, formatAmount } from '@shared/lib/utils';
+import { Config, TransferFeeStore } from '../../types/types';
 
 export const balanceValidation = {
   isNonZeroBalance,
@@ -32,19 +32,8 @@ function insufficientBalanceForFee(
     isProxy,
     isMultisig,
     isXcm,
-  }: {
-    amount: string;
-    asset: Asset;
-    balance: string;
-    xcmFee: string;
-    fee: string;
-
-    isNative: boolean;
-    isProxy: boolean;
-    isMultisig: boolean;
-    isXcm: boolean;
-  },
-  config: { withFormatAmount: boolean } = { withFormatAmount: true },
+  }: TransferFeeStore,
+  config: Config = { withFormatAmount: true },
 ) {
   const amountBN = new BN(
     isNative ? (config.withFormatAmount ? formatAmount(amount, asset.precision) : amount) : ZERO_BALANCE,

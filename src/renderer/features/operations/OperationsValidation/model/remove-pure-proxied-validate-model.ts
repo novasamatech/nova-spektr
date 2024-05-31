@@ -4,11 +4,11 @@ import { ApiPromise } from '@polkadot/api';
 import { Asset, Balance, Chain, ID, Transaction } from '@shared/core';
 import { getAssetById, toAccountId } from '@shared/lib/utils';
 import { balanceModel } from '@entities/balance';
-import { ValidationResult, applyValidationRules } from '@features/operations/OperationsValidation';
+import { AccountStore, SignatoryStore, ValidationResult } from '../types/types';
+import { validationUtils } from '../lib/validation-utils';
 import { networkModel } from '@entities/network';
 import { transactionService } from '@entities/transaction';
-import { SignatoryStore } from '../lib/add-proxy-rules';
-import { AccountStore, RemovePureProxiedRules } from '../lib/remove-pure-proxied-rules';
+import { RemovePureProxiedRules } from '../lib/remove-pure-proxied-rules';
 
 const validationStarted = createEvent<{ id: ID; transaction: Transaction }>();
 const txValidated = createEvent<{ id: ID; result: ValidationResult }>();
@@ -56,9 +56,7 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
     },
   ];
 
-  const result = applyValidationRules(rules);
-
-  return { id, result };
+  return { id, result: validationUtils.applyValidationRules(rules) };
 });
 
 sample({
@@ -68,6 +66,7 @@ sample({
     apis: networkModel.$apis,
     balances: balanceModel.$balances,
   },
+  filter: ({ apis }, { transaction }) => Boolean(apis[transaction.chainId]),
   fn: ({ apis, chains, balances }, { id, transaction }) => {
     const chain = chains[transaction.chainId];
     const api = apis[transaction.chainId];
@@ -93,6 +92,8 @@ sample({
 export const removePureProxiedValidateModel = {
   events: {
     validationStarted,
+  },
+  output: {
     txValidated,
   },
 };

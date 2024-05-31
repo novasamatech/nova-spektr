@@ -2,27 +2,18 @@ import { Store } from 'effector';
 import { BN } from '@polkadot/util';
 
 import { formatAmount } from '@shared/lib/utils';
-import { balanceValidation, descriptionValidation } from '@shared/lib/validation';
+import { balanceValidation, descriptionValidation } from './validation';
 import { Account } from '@shared/core';
-import { NetworkStore } from '../../../../widgets/Transfer/lib/types';
+import {
+  BondAmountBalanceStore,
+  AmountFeeStore,
+  Config,
+  ShardsBondBalanceStore,
+  ShardsProxyFeeStore,
+  SignatoryFeeStore,
+} from '../types/types';
 
-export type ShardsProxyFeeStore = { feeData: { fee: string }; isProxy: boolean; proxyBalance: string };
-export type ShardsBondBalanceStore = { isProxy: boolean; network: NetworkStore; accountsBalances: string[] };
-export type AmountBalanceStore = { network: NetworkStore; bondBalanceRange: string | string[] };
-export type Config = { withFormatAmount: boolean };
-export type AmountFeeStore = {
-  feeData: { fee: string };
-  isMultisig: boolean;
-  network: NetworkStore;
-  accountsBalances: string[];
-};
-export type SignatoryFeeStore = {
-  feeData: { fee: string; multisigDeposit: string };
-  isMultisig: boolean;
-  signatoryBalance: string;
-};
-
-export const TransferRules = {
+export const BondExtraRules = {
   shards: {
     noProxyFee: (source: Store<ShardsProxyFeeStore>) => ({
       name: 'noProxyFee',
@@ -82,11 +73,11 @@ export const TransferRules = {
       errorText: 'transfer.notZeroAmountError',
       validator: balanceValidation.isNonZeroBalance,
     },
-    notEnoughBalance: (source: Store<AmountBalanceStore>, config: Config = { withFormatAmount: true }) => ({
+    notEnoughBalance: (source: Store<BondAmountBalanceStore>, config: Config = { withFormatAmount: true }) => ({
       name: 'notEnoughBalance',
       errorText: 'transfer.notEnoughBalanceError',
       source,
-      validator: (amount: string, _: any, { network, bondBalanceRange }: AmountBalanceStore) => {
+      validator: (amount: string, _: any, { network, bondBalanceRange }: BondAmountBalanceStore) => {
         const value = config?.withFormatAmount ? formatAmount(amount, network.asset.precision) : amount;
         const amountBN = new BN(formatAmount(value, network.asset.precision));
 
