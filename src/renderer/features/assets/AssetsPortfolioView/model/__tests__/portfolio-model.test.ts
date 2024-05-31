@@ -87,7 +87,7 @@ describe('features/assets/AssetsPortfolioView/model/portfolio-model', () => {
 
   test('should update $sortedTokens store on changes in $activeTokens', async () => {
     const scope = fork({
-      values: [[portfolioModel._$activeTokens, []]],
+      values: new Map().set(portfolioModel._$activeTokens, []),
     });
 
     await allSettled(portfolioModel._$activeTokens, { scope, params: mockTokens });
