@@ -258,3 +258,20 @@ export const getRoundedValue = (assetBalance = '0', price: number, precision = 0
 
   return bnFiatBalance.toFixed(decimalPlaces);
 };
+
+export const getBalanceBn = (balance: string, precision: number) => {
+  const BNWithConfig = BigNumber.clone();
+  BNWithConfig.config({
+    // HOOK: for divide with decimal part
+    DECIMAL_PLACES: precision || Decimal.SMALL_NUMBER,
+    ROUNDING_MODE: BNWithConfig.ROUND_DOWN,
+    FORMAT: {
+      decimalSeparator: '.',
+      groupSeparator: '',
+    },
+  });
+  const TEN = new BNWithConfig(10);
+  const bnPrecision = new BNWithConfig(precision);
+
+  return new BNWithConfig(balance).div(TEN.pow(bnPrecision));
+};

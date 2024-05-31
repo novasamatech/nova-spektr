@@ -1,4 +1,4 @@
-import { AssetBalance, ChainId } from '@shared/core';
+import { AssetBalance, AssetByChains, ChainId } from '@shared/core';
 
 export type AssetChain = {
   chainId: ChainId;
@@ -7,3 +7,5 @@ export type AssetChain = {
   assetSymbol: string;
   balance?: AssetBalance;
 };
+
+export type AssetByChainsWithFiatBalance = AssetByChains & { fiatBalance: string };

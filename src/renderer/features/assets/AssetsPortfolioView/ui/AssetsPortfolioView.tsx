@@ -24,7 +24,7 @@ export const AssetsPortfolioView = () => {
   const { t } = useI18n();
 
   const activeView = useUnit(portfolioModel.$activeView);
-  const activeTokens = useUnit(portfolioModel.$activeTokens);
+  const sortedTokens = useUnit(portfolioModel.$sortedTokens);
   const accounts = useUnit(portfolioModel.$accounts);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const wallet = useUnit(walletModel.$activeWallet);
@@ -46,7 +46,7 @@ export const AssetsPortfolioView = () => {
       </div>
 
       <ul className="flex flex-col gap-y-4 items-center w-full">
-        {activeTokens.map((asset) => (
+        {sortedTokens.map((asset) => (
           <li key={asset.priceId || asset.symbol} className="w-[548px]">
             {asset.chains.length === 1 ? <TokenBalance asset={asset} /> : <TokenBalanceList asset={asset} />}
           </li>
