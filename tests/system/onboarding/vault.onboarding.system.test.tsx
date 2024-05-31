@@ -30,4 +30,20 @@ test.describe('Polkadot Vault onboarding', () => {
     await page.waitForSelector(accessDeniedText);
     expect(await page.isVisible(accessDeniedText));
   });
+
+  test('Default settings for assets page', async () => {
+    test.slow();
+    context = await browser.newContext({ ignoreHTTPSErrors: true, permissions: [] });
+    page = await context.newPage();
+    loginPage = new BaseLoginPage(page, new LoginPageElements());
+
+    const vaultWallet = await loginPage.createVaultAllWallet();
+    const assetsPage = await vaultWallet.gotoMain();
+    const settingsWidget = await assetsPage.openSettingsWidget();
+    const hideZeroBalancesStatus = await settingsWidget.getHideZeroBalancesStatus();
+    const pageViewStatus = await settingsWidget.getpageViewStatus();
+
+    expect(hideZeroBalancesStatus).toBe(false);
+    expect(pageViewStatus).toBe(settingsWidget.pageElements.tokenCentric);
+  });
 });

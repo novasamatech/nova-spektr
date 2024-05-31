@@ -1,9 +1,15 @@
 name: Run system tests
 
 on:
-  pull_request:
+  workflow_dispatch:
+  push:
     branches:
-      - 'main'
+      - 'dev'
+  schedule:
+    - cron: '0 6 * * *' # 9:00 GMT+3
+  pull_request:
+    paths:
+      - 'tests/**'
 
 env:
   CI: true
@@ -17,8 +23,22 @@ jobs:
         run: docker-compose up -d
       - name: ⚙️ Install dependencies
         uses: ./.github/workflows/install-pnpm
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+
+      - name: Get installed Playwright version
+        id: playwright-version
+        run: |
+          PLAYWRIGHT_VERSION=$(node -e "console.log(require('yaml').parse(require('fs').readFileSync('./pnpm-lock.yaml', 'utf8')).devDependencies['@playwright/test'].version)")
+          echo "PLAYWRIGHT_VERSION=$PLAYWRIGHT_VERSION" >> $GITHUB_ENV
+      - name: Cache playwright binaries
+        uses: actions/cache@v3
+        id: playwright-cache
+        with:
+          path: |
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
+      - run: npx playwright install --with-deps
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+
       - name: Run Playwright tests
         run: npx playwright test
       - uses: actions/upload-artifact@v3
@@ -26,7 +46,6 @@ jobs:
         with:
           name: playwright-report
           path: playwright-report/
-          retention-days: 30
   
   publish_report:
     name: Publish HTML Report
@@ -79,3 +98,37 @@ jobs:
           FULL_HTML_REPORT_URL=https://novasamatech.github.io/spektr-reports/$HTML_REPORT_URL_PATH
   
           echo "::notice title=📋 Published Playwright Test Report::$FULL_HTML_REPORT_URL"
+          echo "FULL_HTML_REPORT_URL<<EOF" >> $GITHUB_ENV
+          echo "$FULL_HTML_REPORT_URL" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "${{ github.event_name }}" = "push" ] || [ "${{ github.event_name }}" = "pull_request" ]; then
+            COMMIT_INFO="Commit: [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})"
+          else
+            COMMIT_INFO="Branch: dev"
+          fi
+          echo "COMMIT_INFO<<EOF" >> $GITHUB_ENV
+          echo "$COMMIT_INFO" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Set Status
+        run: |
+          if [[ "${{ needs.system-tests.result }}" == 'failure' ]]; then
+            echo "STATUS=❌" >> $GITHUB_ENV
+          else
+            echo "STATUS=✅" >> $GITHUB_ENV
+          fi
+
+      # - name: Notify Telegram channel
+      #   uses: appleboy/telegram-action@master
+      #   with:
+      #     to: ${{ secrets.TELEGRAM_TO }}
+      #     token: ${{ secrets.TELEGRAM_TOKEN }}
+      #     format: markdown
+      #     message: |
+      #       📋 Playwright Test Report Published
+      #       URL: ${{ env.FULL_HTML_REPORT_URL }}
+      #       Status: ${{ env.STATUS }}
+      #       ${{ env.COMMIT_INFO }}
