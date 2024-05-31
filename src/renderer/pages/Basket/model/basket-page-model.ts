@@ -125,6 +125,7 @@ sample({
     bondNominateValidateModel.output.txValidated,
     nominateValidateModel.output.txValidated,
     bondExtraValidateModel.output.txValidated,
+    payeeValidateModel.output.txValidated,
     restakeValidateModel.output.txValidated,
     unstakeValidateModel.output.txValidated,
     withdrawValidateModel.output.txValidated,

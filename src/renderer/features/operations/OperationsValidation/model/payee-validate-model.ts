@@ -4,10 +4,9 @@ import { ApiPromise } from '@polkadot/api';
 import { Asset, Balance, Chain, ID, Transaction } from '@shared/core';
 import { getAssetById, stakeableAmount, toAccountId } from '@shared/lib/utils';
 import { balanceModel } from '@entities/balance';
-import { ValidationResult } from '../types/types';
+import { ShardsBondBalanceStore, ValidationResult } from '../types/types';
 import { validationUtils } from '../lib/validation-utils';
 import { networkModel } from '@entities/network';
-import { ShardsBondBalanceStore } from '../lib/bond-nominate-rules';
 import { PayeeRules } from '../lib/payee-rules';
 import { transactionService } from '@entities/transaction';
 
@@ -82,6 +81,8 @@ sample({
 export const payeeValidateModel = {
   events: {
     validationStarted,
+  },
+  output: {
     txValidated,
   },
 };
