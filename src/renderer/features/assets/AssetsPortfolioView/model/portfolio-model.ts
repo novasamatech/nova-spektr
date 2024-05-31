@@ -184,13 +184,8 @@ sample({
   },
   fn: ({ query, activeTokens, filtredTokens, assetsPrices, fiatFlag, currency }) => {
     const tokenList = query ? filtredTokens : activeTokens;
-    const sortedTokens = tokensService.sortTokensByBalance(
-      tokenList,
-      assetsPrices,
-      fiatFlag ? currency?.coingeckoId : undefined,
-    );
 
-    return sortedTokens;
+    return tokensService.sortTokensByBalance(tokenList, assetsPrices, fiatFlag ? currency?.coingeckoId : undefined);
   },
   target: $sortedTokens,
 });
