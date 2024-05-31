@@ -1,3 +1,5 @@
+import BigNumber from 'bignumber.js';
+
 import { AssetBalance, AssetByChains, ChainId } from '@shared/core';
 
 export type AssetChain = {
@@ -9,3 +11,5 @@ export type AssetChain = {
 };
 
 export type AssetByChainsWithFiatBalance = AssetByChains & { fiatBalance: string };
+
+export type AssetByChainsWithBalance = AssetByChains & { tokenBalance?: BigNumber; fiatBalance?: string };
