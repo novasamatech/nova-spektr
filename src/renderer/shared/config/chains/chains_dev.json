@@ -5,7 +5,12 @@
     "addressPrefix": 0,
     "chainId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polkadot.svg",
-    "options": ["multisig", "governance", "regular_proxy", "pure_proxy"],
+    "options": [
+      "multisig",
+      "governance",
+      "regular_proxy",
+      "pure_proxy"
+    ],
     "nodes": [
       {
         "url": "wss://rpc-polkadot.novasamatech.org",
@@ -94,7 +99,12 @@
     "addressPrefix": 2,
     "chainId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Kusama.svg",
-    "options": ["multisig", "governance", "regular_proxy", "pure_proxy"],
+    "options": [
+      "multisig",
+      "governance",
+      "regular_proxy",
+      "pure_proxy"
+    ],
     "nodes": [
       {
         "url": "wss://rpc-kusama.novasamatech.org",
@@ -183,7 +193,13 @@
     "addressPrefix": 42,
     "chainId": "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_Testnet.svg",
-    "options": ["testnet", "multisig", "governance", "regular_proxy", "pure_proxy"],
+    "options": [
+      "testnet",
+      "multisig",
+      "governance",
+      "regular_proxy",
+      "pure_proxy"
+    ],
     "nodes": [
       {
         "url": "wss://westend-rpc.dwellir.com",
@@ -242,13 +258,6 @@
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/novasama-westend-proxy"
         }
-      ],
-
-      "multisig": [
-        {
-          "type": "subquery",
-          "url": "http://localhost:3000"
-        }
       ]
     }
   },
@@ -259,7 +268,9 @@
     "chainId": "0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9",
     "parentId": "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westmint_Testnet.svg",
-    "options": ["testnet"],
+    "options": [
+      "testnet"
+    ],
     "nodes": [
       {
         "url": "wss://westmint-rpc.dwellir.com",
@@ -337,7 +348,9 @@
     "chainId": "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Kusama_Asset_Hub.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://sys.ibp.network/statemine",
@@ -463,7 +476,9 @@
     "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Karura.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://karura-rpc-0.aca-api.network",
@@ -894,7 +909,9 @@
     "chainId": "0xf1cf9022c7ebb34b162d5b5e34e705a5a740b2d0ecc1009fb89023e62a488108",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Shiden.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://rpc.shiden.astar.network",
@@ -1095,7 +1112,9 @@
     "chainId": "0x9f28c6a68e0fc9646eff64935684f6eeeece527e37bbe1f213d22caa1d9d6bed",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Bifrost_Kusama.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://bifrost-rpc.liebi.com/ws",
@@ -1346,7 +1365,9 @@
     "chainId": "0x9af9a64e6e4da8e3073901c3ff0cc4c3aad9563786d89daf6ad820b6e14a0b8b",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Kintsugi.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://api-kusama.interlay.io/parachain",
@@ -1557,7 +1578,9 @@
     "chainId": "0x64a1c658a48b2e70a7fb1ad4c39eea35022568c20fc44a6e2e3d0a57aee6053b",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/ParallelHeiko.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://heiko-rpc.parallel.fi",
@@ -1728,7 +1751,9 @@
     "chainId": "0xa85cfb9b9fd4d622a5b28289a02347af987d8f73fa3108450e2b4a11c1ce5755",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Basilisk.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://rpc.basilisk.cloud",
@@ -1851,7 +1876,9 @@
     "chainId": "0xaa3876c1dc8a1afcc2e9a685a49ff7704cfd36ad8c90bf2702b9d1b00cc40011",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Altair.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://altair.api.onfinality.io/public-ws",
@@ -1896,7 +1923,9 @@
     "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Khala.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://khala-api.phala.network/ws",
@@ -2131,7 +2160,9 @@
     "chainId": "0x411f057b9107718c9624d6aa4a3f23c1653898297f3d4d529d9bb6511a39dd21",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/KILT_Spiritnet.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://kilt-rpc.dwellir.com",
@@ -2241,7 +2272,9 @@
     "chainId": "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Acala.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://rpc-acala.luckyfriday.io",
@@ -2536,7 +2569,9 @@
     "chainId": "0x9eb76c5184c4ab8679d2d5d819fdf90b9c001403e9e17da2e14b6d8aec4029c6",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Astar.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://rpc.astar.network",
@@ -2745,7 +2780,9 @@
     "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Parallel.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://parallel-rpc.dwellir.com",
@@ -2989,7 +3026,9 @@
     "chainId": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polkadot_Asset_Hub.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://sys.ibp.network/statemint",
@@ -3138,7 +3177,9 @@
     "chainId": "0x631ccc82a078481584041656af292834e1ae6daab61d2875b4dd0c14bb9b17bc",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Robonomics.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://kusama.rpc.robonomics.network/",
@@ -3199,7 +3240,9 @@
     "chainId": "0x1bf2a2ecb4a868de66ea8610f2ce7c8c43706561b6476031315f6640fe38e060",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Zeitgeist.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://zeitgeist-rpc.dwellir.com",
@@ -3290,7 +3333,9 @@
         }
       ]
     },
-    "options": ["multisig"]
+    "options": [
+      "multisig"
+    ]
   },
   {
     "name": "Subsocial",
@@ -3333,7 +3378,9 @@
         }
       ]
     },
-    "options": ["multisig"]
+    "options": [
+      "multisig"
+    ]
   },
   {
     "name": "Integritee Parachain",
@@ -3342,7 +3389,9 @@
     "chainId": "0xcdedc8eadbfa209d3f207bba541e57c3c58a667b05a2e1d1e86353c9000758da",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Integritee.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://kusama.api.integritee.network",
@@ -3391,7 +3440,9 @@
     "chainId": "0xb3db41421702df9a7fcac62b53ffeac85f7853cc4e689e0b93aeb3db18c09d82",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Centrifuge.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://centrifuge-rpc.dwellir.com",
@@ -3440,7 +3491,11 @@
     "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/HydraDX.svg",
-    "options": ["multisig", "regular_proxy", "pure_proxy"],
+    "options": [
+      "multisig",
+      "regular_proxy",
+      "pure_proxy"
+    ],
     "nodes": [
       {
         "url": "wss://hydradx-rpc.dwellir.com",
@@ -4007,7 +4062,9 @@
     "chainId": "0xbf88efe70e9e0e916416e8bed61f2b45717f517d7f3523e33c7b001e5ffcbc72",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Interlay.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://api.interlay.io/parachain",
@@ -4267,7 +4324,9 @@
     "chainId": "0x1bb969d85965e4bb5a651abbedf21a54b6b31a21f66b5401cc3f1e286268d736",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Phala.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://phala-rpc.dwellir.com",
@@ -4320,7 +4379,9 @@
     "chainId": "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Turing.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://rpc.turing.oak.tech",
@@ -4473,7 +4534,9 @@
     "addressPrefix": 42,
     "chainId": "0x70255b4d28de0fc4e1a193d7e175ad1ccef431598211c55538f1018651a0344e",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/AlephZero.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://ws.azero.dev",
@@ -4520,7 +4583,9 @@
     "chainId": "0x262e1b2ad728475fd6fe88e62d34c200abe6fd693931ddad144059b1eb884e5b",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Bifrost_Polkadot.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://hk.p.bifrost-rpc.liebi.com/ws",
@@ -4722,7 +4787,9 @@
     "chainId": "0x2fc8bb6ed7c0051bdcf4866c322ed32b6276572713607e3297ccf411b8f14aa9",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Litentry.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://rpc.litentry-parachain.litentry.io",
@@ -4929,7 +4996,9 @@
     "addressPrefix": 42,
     "chainId": "0xe1ea3ab1d46ba8f4898b6b4b9c54ffc05282d299f89e84bd0fd08067758c9443",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Moonbase_Alpha_Testnet.svg",
-    "options": ["testnet"],
+    "options": [
+      "testnet"
+    ],
     "nodes": [
       {
         "url": "wss://fro-moon-rpc-1-moonbase-relay-rpc-1.moonbase.ol-infra.network",
@@ -4953,7 +5022,9 @@
     "chainId": "0xca93a37c913a25fa8fdb33c7f738afc39379cb71d37874a16d4c091a5aef9f89",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Imbue.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://kusama.imbuenetwork.com",
@@ -4984,7 +5055,9 @@
     "addressPrefix": 42,
     "chainId": "0x6408de7737c59c238890533af25896a2c20608d8b380bb01029acb392781063e",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Rococo_Testnet.svg",
-    "options": ["testnet"],
+    "options": [
+      "testnet"
+    ],
     "nodes": [
       {
         "url": "wss://rococo-rpc.polkadot.io/",
@@ -5008,7 +5081,9 @@
     "chainId": "0xd42e9606a995dfe433dc7955dc2a70f495f350f373daa200098ae84437816ad2",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Tinkernet.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://tinkernet-rpc.dwellir.com",
@@ -5040,7 +5115,9 @@
     "chainId": "0xcceae7f3b9947cdb67369c026ef78efa5f34a08fe5808d373c04421ecf4f1aaf",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Amplitude.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://rpc-amplitude.pendulumchain.tech",
@@ -5117,7 +5194,9 @@
     "chainId": "0x5d3c298622d5634ed019bf61ea4b71655030015bde9beb0d6a24743714462c86",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Pendulum.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://rpc-pendulum.prd.pendulumchain.tech",
@@ -5217,7 +5296,9 @@
     "addressPrefix": 137,
     "chainId": "0xfe1b4c55fd4d668101126434206571a7838a8b6b93a6d1b95d607e78e6c53763",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Vara.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://rpc.vara-network.io",
@@ -5269,7 +5350,9 @@
     "chainId": "0xdcf691b5a3fbe24adc99ddc959c0561b973e329b1aef4c4b22e7bb2ddecb4464",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polkadot_Bridge_Hub.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://sys.ibp.network/bridgehub-polkadot",
@@ -5318,7 +5401,9 @@
     "chainId": "0x00dcb981df86429de8bbacf9803401f09485366c44efbf53af9ecfab03adc7e5",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Kusama_Bridge_Hub.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://sys.ibp.network/bridgehub-kusama",
@@ -5367,7 +5452,9 @@
     "chainId": "0x46ee89aa2eedd13e988962630ec9fb7565964cf5023bb351f2b6b25c1b68b0b2",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polkadot_Collectives.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://sys.ibp.network/collectives-polkadot",
@@ -5416,7 +5503,9 @@
     "chainId": "0x7c34d42fc815d392057c78b49f2755c753440ccd38bcb0405b3bcfb601d08734",
     "parentId": "0x6408de7737c59c238890533af25896a2c20608d8b380bb01029acb392781063e",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/AssetHub_Testnet.svg",
-    "options": ["testnet"],
+    "options": [
+      "testnet"
+    ],
     "nodes": [
       {
         "url": "wss://rococo-asset-hub-rpc.dwellir.com",
@@ -5472,7 +5561,12 @@
     "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Moonriver.svg",
-    "options": ["multisig", "ethereum_based", "regular_proxy", "pure_proxy"],
+    "options": [
+      "multisig",
+      "ethereum_based",
+      "regular_proxy",
+      "pure_proxy"
+    ],
     "nodes": [
       {
         "url": "wss://wss.api.moonriver.moonbeam.network",
@@ -5802,7 +5896,10 @@
     "chainId": "0x91bc6e169807aaa54802737e1c504b2577d4fafedd5a02c10293b1cd60e39527",
     "parentId": "0xe1ea3ab1d46ba8f4898b6b4b9c54ffc05282d299f89e84bd0fd08067758c9443",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Moonbase_Alpha_Testnet.svg",
-    "options": ["testnet", "ethereum_based"],
+    "options": [
+      "testnet",
+      "ethereum_based"
+    ],
     "nodes": [
       {
         "url": "wss://moonbase-alpha.public.blastapi.io",
@@ -5853,7 +5950,12 @@
     "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Moonbeam.svg",
-    "options": ["multisig", "ethereum_based", "regular_proxy", "pure_proxy"],
+    "options": [
+      "multisig",
+      "ethereum_based",
+      "regular_proxy",
+      "pure_proxy"
+    ],
     "nodes": [
       {
         "url": "wss://wss.api.moonbeam.network",
@@ -6199,7 +6301,9 @@
     "chainId": "0x0441383e31d1266a92b4cb2ddd4c2e3661ac476996db7e5844c52433b81fe782",
     "parentId": "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/BridgeHub_Testnet.svg",
-    "options": ["testnet"],
+    "options": [
+      "testnet"
+    ],
     "nodes": [
       {
         "url": "wss://westend-bridge-hub-rpc.dwellir.com",
@@ -6239,12 +6343,16 @@
     "chainId": "0xc1af4cb4eb3918e5db15086c0cc5ec17fb334f728b7c65dd44bfe1e174ff8b3f",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Kusama_People.svg",
-    "options": ["multisig"],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://kusama-people-rpc.polkadot.io",
         "name": "Parity node",
-        "features": ["noTls12"]
+        "features": [
+          "noTls12"
+        ]
       },
       {
         "url": "wss://ksm-rpc.stakeworld.io/people",
@@ -6268,7 +6376,10 @@
     "addressPrefix": 42,
     "chainId": "0xd67c91ca75c199ff1ee9555567dfad21b9033165c39977170ec8d3f6c1fa433c",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_Testnet.svg",
-    "options": ["testnet", "governance"],
+    "options": [
+      "testnet",
+      "governance"
+    ],
     "nodes": [
       {
         "url": "wss://rpc-test-network-1.novasamatech.org",

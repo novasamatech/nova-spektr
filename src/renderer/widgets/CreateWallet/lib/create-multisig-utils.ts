@@ -1,13 +1,11 @@
-import { Wallet } from '@/src/renderer/shared/core';
 import { Step } from './types';
-import { walletUtils } from '@entities/wallet';
 
 export const createMultisigUtils = {
   isSignStep,
   isSubmitStep,
   isConfirmStep,
   isInitStep,
-  noSignatoryWallet,
+  isNoneStep,
   isNameThresholdStep,
 };
 
@@ -31,6 +29,6 @@ function isSubmitStep(step: Step) {
   return step === Step.SUBMIT;
 }
 
-function noSignatoryWallet(wallets: Wallet[]) {
-  return wallets.every((wallet) => !walletUtils.isWatchOnly(wallet) || !walletUtils.isMultisig(wallet));
+function isNoneStep(step: Step): boolean {
+  return step === Step.NONE;
 }
