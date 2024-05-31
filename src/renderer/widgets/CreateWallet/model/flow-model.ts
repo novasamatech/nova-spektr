@@ -68,17 +68,9 @@ const $signer = combine(
     selectedSigner: $selectedSigner,
   },
   ({ accountSignatories, selectedSigner }) => {
-    // fixme this should be dynamic depending on if the signer is a proxy
     return accountSignatories.length > 1 && selectedSigner
       ? selectedSigner
       : (accountSignatories[0] as unknown as Account);
-    // if (txWrappers.length === 0) return accounts[0];
-
-    // if (transactionService.hasMultisig([txWrappers[0]])) {
-    //   return (txWrappers[0] as MultisigTxWrapper).multisigAccount;
-    // }
-
-    // return (txWrappers[0] as ProxyTxWrapper).proxyAccount;
   },
   { skipVoid: false },
 );

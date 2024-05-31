@@ -87,10 +87,7 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
         contentClass="flex h-[524px]"
         onClose={closeMultisigModal}
       >
-        <NameThresholdStep
-          signatories={signatories}
-          // onGoBack={goToPrevStep}
-        />
+        <NameThresholdStep signatories={signatories} />
 
         <section className="relative flex flex-col px-5 py-4 flex-1 bg-input-background-disabled h-full">
           <IconButton

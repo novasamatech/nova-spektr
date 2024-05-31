@@ -138,12 +138,10 @@ const AccountSelector = ({ chain }: { chain?: Chain }) => {
   const selectedSigner = useUnit(flowModel.$selectedSigner);
   const accountSignatories = useUnit(formModel.$accountSignatories);
   const wallets = useUnit(walletModel.$wallets);
-  // const proxiedAccounts = useUnit(formModel.$proxiedAccounts);
 
   if (!chain) return null;
 
   const options = accountSignatories.map(({ accountId, name }) => {
-    //   const isShard = accountUtils.isShardAccount(account);
     const address = toAddress(accountId, { prefix: chain.addressPrefix });
 
     return {

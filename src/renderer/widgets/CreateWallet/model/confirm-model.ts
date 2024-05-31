@@ -20,33 +20,6 @@ const $api = combine(
   { skipVoid: false },
 );
 
-// const $initiatorWallet = combine(
-//   {
-//     store: $confirmStore,
-//     wallets: walletModel.$wallets,
-//   },
-//   ({ store, wallets }) => {
-//     if (!store) return null;
-
-//     return walletUtils.getWalletById(wallets, store.signer.walletId);
-//   },
-//   { skipVoid: false },
-// );
-
-// const $proxiedWallet = combine(
-//   {
-//     store: $confirmStore,
-//     wallets: walletModel.$wallets,
-//   },
-//   ({ store, wallets }) => {
-
-//     if (!store || !store.proxiedAccount) return undefined;
-
-//     return walletUtils.getWalletById(wallets, store.proxiedAccount.walletId);
-//   },
-//   { skipVoid: false },
-// );
-
 const $signerWallet = combine(
   {
     store: $confirmStore,
@@ -63,8 +36,6 @@ const $signerWallet = combine(
 export const confirmModel = {
   $confirmStore,
   $signerWallet,
-  // $initiatorWallet,
-  // $proxiedWallet,
   $api,
   events: {
     formInitiated,
