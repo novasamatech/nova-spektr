@@ -44,7 +44,7 @@ const walletCreated = createEvent<{
   threshold: number;
 }>();
 const $selectedSigner = restore(selectedSignerChanged, null);
-const $step = restore(stepChanged, Step.NONE).reset(flowFinished);
+const $step = restore(stepChanged, Step.INIT).reset(flowFinished);
 const $fee = restore(feeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 const $isFeeLoading = restore(isFeeLoadingChanged, true);

@@ -101,7 +101,5 @@ describe('widgets/CreateWallet/model/add-proxy-model', () => {
 
     await jest.runAllTimersAsync();
     await action;
-
-    // expect(scope.getState(addProxyModel.$step)).toEqual(Step.NONE);
   });
 });
