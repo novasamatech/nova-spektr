@@ -18,7 +18,7 @@ import {
   validateAddress,
   toShortAddress,
 } from '@shared/lib/utils';
-import { PayeeRules } from '@/src/renderer/features/operations/OperationsValidation';
+import { PayeeRules } from '@features/operations/OperationsValidation';
 
 type FormParams = {
   shards: Account[];

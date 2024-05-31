@@ -31,7 +31,7 @@ import {
   unlockingAmount,
 } from '@shared/lib/utils';
 import { transactionBuilder, transactionService } from '@entities/transaction';
-import { RestakeRules } from '@/src/renderer/features/operations/OperationsValidation';
+import { RestakeRules } from '@features/operations/OperationsValidation';
 
 type BalanceMap = { balance: string; stake: string };
 

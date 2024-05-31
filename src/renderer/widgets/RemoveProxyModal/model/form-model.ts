@@ -21,7 +21,7 @@ import { walletUtils, accountUtils, walletModel } from '@entities/wallet';
 import { proxyService } from '@shared/api/proxy';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { getProxyTypes, isStringsMatchQuery, toAddress, TEST_ACCOUNTS, transferableAmount } from '@shared/lib/utils';
-import { RemoveProxyRules } from '@/src/renderer/features/operations/OperationsValidation';
+import { RemoveProxyRules } from '@features/operations/OperationsValidation';
 
 type ProxyAccounts = {
   accounts: {

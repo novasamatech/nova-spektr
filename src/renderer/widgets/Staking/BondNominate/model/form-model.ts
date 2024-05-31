@@ -18,7 +18,7 @@ import {
   validateAddress,
   ZERO_BALANCE,
 } from '@shared/lib/utils';
-import { BondNominateRules } from '@/src/renderer/features/operations/OperationsValidation';
+import { BondNominateRules } from '@features/operations/OperationsValidation';
 
 type FormParams = {
   shards: Account[];

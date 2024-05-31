@@ -24,7 +24,7 @@ import { useStakingData, StakingMap } from '@entities/staking';
 import { transferableAmount, getRelaychainAsset, toAddress, formatAmount, ZERO_BALANCE } from '@shared/lib/utils';
 import { NetworkStore } from '../lib/types';
 import { transactionBuilder, transactionService } from '@entities/transaction';
-import { UnstakeRules } from '@/src/renderer/features/operations/OperationsValidation';
+import { UnstakeRules } from '@features/operations/OperationsValidation';
 
 type BalanceMap = { balance: string; stake: string };
 

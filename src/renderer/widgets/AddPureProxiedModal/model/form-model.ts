@@ -30,7 +30,7 @@ import {
   toShortAddress,
   ZERO_BALANCE,
 } from '@shared/lib/utils';
-import { AddPureProxiedRules } from '@/src/renderer/features/operations/OperationsValidation';
+import { AddPureProxiedRules } from '@features/operations/OperationsValidation';
 
 type FormParams = {
   chain: Chain;

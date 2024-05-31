@@ -9,7 +9,7 @@ import { networkModel } from '@entities/network';
 import { Account, PartialBy, Chain, Asset } from '@shared/core';
 import { WalletData } from '../lib/types';
 import { transferableAmount, getRelaychainAsset, formatAmount, stakeableAmount, ZERO_BALANCE } from '@shared/lib/utils';
-import { BondExtraRules } from '@/src/renderer/features/operations/OperationsValidation';
+import { BondExtraRules } from '@features/operations/OperationsValidation';
 
 type FormParams = {
   shards: Account[];

@@ -24,7 +24,7 @@ import { useStakingData, StakingMap, eraService } from '@entities/staking';
 import { NetworkStore } from '../lib/types';
 import { transferableAmount, getRelaychainAsset, toAddress, ZERO_BALANCE, redeemableAmount } from '@shared/lib/utils';
 import { transactionBuilder, transactionService } from '@entities/transaction';
-import { WithdrawRules } from '@/src/renderer/features/operations/OperationsValidation';
+import { WithdrawRules } from '@features/operations/OperationsValidation';
 
 type BalanceMap = { balance: string; withdraw: string };
 

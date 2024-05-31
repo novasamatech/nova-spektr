@@ -35,7 +35,7 @@ import {
   validateAddress,
   ZERO_BALANCE,
 } from '@shared/lib/utils';
-import { AddProxyRules } from '@/src/renderer/features/operations/OperationsValidation';
+import { AddProxyRules } from '@features/operations/OperationsValidation';
 
 type ProxyAccounts = {
   accounts: {
