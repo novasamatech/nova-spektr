@@ -1,6 +1,7 @@
 import { Account, Chain, Transaction } from '@shared/core';
 
 export const enum Step {
+  NONE,
   INIT,
   NAMETHRESHOLD,
   CONFIRM,
