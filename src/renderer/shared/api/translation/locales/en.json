@@ -599,6 +599,9 @@
       "unstake": "Unstake"
     }
   },
+  "portfolilo": {
+    "networkCounter": "+1"
+  },
   "price": {
     "withCode": "{ amount } { code }",
     "withSymbol": "{ symbol }{ amount }"
@@ -674,9 +677,6 @@
     "submitSuccess": "Operation Success",
     "tooltipPart1": "Proxied wallets are wallet which have set one of your accounts in Nova Spektr as delegated authority (Proxies).",
     "tooltipPart2": "This means that you can control certain functions of these wallets based on the access type granted to you by the proxied wallet."
-  },
-  "portfolilo": {
-    "networkCounter": "+1"
   },
   "pureProxyRemove": {
     "warning": {
