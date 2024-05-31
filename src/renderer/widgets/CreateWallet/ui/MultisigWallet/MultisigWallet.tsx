@@ -46,11 +46,13 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
 
     if (!isOpen && isModalOpen) {
       closeMultisigModal({ closeAll: false });
+      flowModel.output.flowFinished();
     }
   }, [isOpen]);
 
   const closeMultisigModal = (params: { complete?: boolean; closeAll?: boolean } = { closeAll: true }) => {
     toggleIsModalOpen();
+    flowModel.output.flowFinished();
 
     setTimeout(params?.complete ? onComplete : params?.closeAll ? onClose : noop, DEFAULT_TRANSITION);
   };

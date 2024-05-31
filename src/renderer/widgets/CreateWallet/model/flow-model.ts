@@ -27,7 +27,6 @@ import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { createMultisigUtils } from '../lib/create-multisig-utils';
 
-const reset = createEvent();
 const stepChanged = createEvent<Step>();
 const feeChanged = createEvent<string>();
 const multisigDepositChanged = createEvent<string>();
@@ -45,16 +44,16 @@ const walletCreated = createEvent<{
   threshold: number;
 }>();
 const $selectedSigner = restore(selectedSignerChanged, null);
-const $step = restore(stepChanged, Step.INIT);
+const $step = restore(stepChanged, Step.NONE).reset(flowFinished);
 const $fee = restore(feeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
-const $callbacks = createStore<Callbacks | null>(null).reset(reset);
+const $callbacks = createStore<Callbacks | null>(null).reset(flowFinished);
 const callbacksApi = createApi($callbacks, {
   callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
 });
 
-const $error = createStore('').reset(reset);
+const $error = createStore('').reset(flowFinished);
 const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
@@ -379,6 +378,12 @@ sample({
   target: flowFinished,
 });
 
+sample({
+  clock: flowFinished,
+  fn: () => Step.INIT,
+  target: stepChanged,
+});
+
 export const flowModel = {
   $error,
   $step,
@@ -390,7 +395,6 @@ export const flowModel = {
   $signer,
   $signerWallet,
   events: {
-    reset,
     callbacksChanged: callbacksApi.callbacksChanged,
     walletCreated,
     stepChanged,
@@ -400,5 +404,8 @@ export const flowModel = {
     selectedSignerChanged,
     //for tests
     formSubmitted,
+  },
+  output: {
+    flowFinished,
   },
 };
