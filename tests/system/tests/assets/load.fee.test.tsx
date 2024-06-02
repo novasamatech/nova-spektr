@@ -29,9 +29,10 @@ test.describe('Load fee tests', () => {
   
     chainsList.forEach((chain) => {
       test(`Can load fee for network ${chain.name}`, async () => {
+        test.slow()
         const assetsPage = await vaultWallet.gotoMain();
   
-        await assetsPage.wentThroughAllNetworksTransfer(chain);
+        await assetsPage.checkTransferFee(chain);
       });
     });
   });

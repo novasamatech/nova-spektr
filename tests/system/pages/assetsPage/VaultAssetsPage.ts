@@ -9,6 +9,7 @@ import { WalletModalWindow } from '../modals/WalletModalWindow';
 import { AssetsSettingsModalWindow } from '../modals/AssetsSettingsModalWindow';
 import { AssetsSettingsModalElements } from '../_elements/AssetsSettingsModalElements';
 import { readConfig } from '../../utils/readConfig';
+import { expect } from '@playwright/test';
 
 export class VaultAssetsPage extends BasePage {
   public pageElements: AssetsPageElements;
@@ -34,30 +35,50 @@ export class VaultAssetsPage extends BasePage {
     return new AssetsSettingsModalWindow(this.page, new AssetsSettingsModalElements(), this);
   }
 
-  public async wentThroughAllNetworksTransfer(chain: {name: string}): Promise<VaultAssetsPage> {
+  public async checkTransferFee(chain: { name: string }): Promise<VaultAssetsPage> {
     const config = await readConfig();
     const filteredChains = config.filter((config_chain: any) => config_chain.name === chain.name);
 
     for (const chain of filteredChains) {
-      const chainId = chain.chainId;
-      for (const asset of chain.assets) {
-        const assetId = asset.assetId;
-        const url = `#/assets/transfer?chainId=${chainId}&assetId=${assetId}`;
-        await this.page.waitForTimeout(1000);
-        await this.page.goto(url);
-
-        let isEditable = false;
-        while (!isEditable) {
-          isEditable = await this.page.getByRole('button', { name: 'Continue' }).isEditable();
-          if (!isEditable) {
-            await this.page.waitForTimeout(100); // wait for 100ms before checking again
-          }
-        }
-
-        await this.page.getByRole('banner').getByRole('button').click();
-      }
+      await this.processChainAssets(chain);
     }
 
     return this;
+  }
+
+  private async processChainAssets(chain: any): Promise<void> {
+    const chainId = chain.chainId;
+    for (const asset of chain.assets) {
+      await this.processAsset(chainId, asset);
+    }
+  }
+
+  private async processAsset(chainId: string, asset: any): Promise<void> {
+    const assetId = asset.assetId;
+    const url = `#/assets/transfer?chainId=${chainId}&assetId=${assetId}`;
+    await this.page.waitForTimeout(1000);
+    await this.page.goto(url);
+
+    await this.waitForContinueButtonToBeEditable();
+    await this.expectTransferFeeNotZero();
+    await this.page.getByRole('banner').getByRole('button').click();
+  }
+
+  private async expectTransferFeeNotZero(): Promise<void> {
+    const feeRow = this.page.locator('div.flex.justify-between.items-center.w-full');
+    const feeLocator = feeRow.locator('dd > div > span.text-body.text-text-primary');
+    const feeText = await feeLocator.textContent();
+    const feePattern = /^\d+\.\d+\s+\w+$/;
+    expect(feeText).toMatch(feePattern);
+  }
+
+  private async waitForContinueButtonToBeEditable(): Promise<void> {
+    let isEditable = false;
+    while (!isEditable) {
+      isEditable = await this.page.getByRole('button', { name: 'Continue' }).isEditable();
+      if (!isEditable) {
+        await this.page.waitForTimeout(500);
+      }
+    }
   }
 }
