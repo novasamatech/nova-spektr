@@ -1,6 +1,6 @@
 import { IndexedDBData } from '../../../utils/interactWithDatabase';
 
-export const vaultAllTestWallet: IndexedDBData = {
+export const vaultSubstrateWallet: IndexedDBData = {
   database: 'spektr',
   table: 'wallets',
   testData: [
@@ -8,7 +8,7 @@ export const vaultAllTestWallet: IndexedDBData = {
   ],
 };
 
-export const vaultAllTestAccount: IndexedDBData = {
+export const vaultSubstrateAccount: IndexedDBData = {
   database: 'spektr',
   table: 'accounts',
   testData: [

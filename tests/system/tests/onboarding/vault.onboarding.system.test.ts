@@ -37,7 +37,7 @@ test.describe('Polkadot Vault onboarding', () => {
     page = await context.newPage();
     loginPage = new BaseLoginPage(page, new LoginPageElements());
 
-    const vaultWallet = await loginPage.createVaultAllWallet();
+    const vaultWallet = await loginPage.createVaultSubstrateWallet();
     const assetsPage = await vaultWallet.gotoMain();
     const settingsWidget = await assetsPage.openSettingsWidget();
     const hideZeroBalancesStatus = await settingsWidget.getHideZeroBalancesStatus();

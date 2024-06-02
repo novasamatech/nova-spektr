@@ -11,9 +11,10 @@ import {
   vaultDPPolkadotTestWallet,
   vaultDPPolkadotTestAccount,
 } from '../../data/db/dynamicDerivations/dynamicDerivationsWallets';
-import { injectDataInDatabase } from '../../utils/interactWithDatabase';
+import { IndexedDBData, injectDataInDatabase } from '../../utils/interactWithDatabase';
 import { AssetsPageElements } from '../_elements/AssetsPageElements';
-import { vaultAllTestAccount, vaultAllTestWallet } from '../../data/db/polkadotVaultWallet/polkadotVaultWallets';
+import { vaultSubstrateWallet, vaultSubstrateAccount } from '../../data/db/polkadotVaultWallet/polkadotVaultSubstrateWallet';
+import { vaultAndEthereumAccount, vaultAndEthereumWallet } from '../../data/db/polkadotVaultWallet/polkadotVaultWithEthereum';
 
 export class BaseLoginPage extends BasePage {
   protected pageElements: LoginPageElements;
@@ -52,26 +53,26 @@ export class BaseLoginPage extends BasePage {
   }
 
   public async createDDPolkadotVaultWallet(): Promise<VaultAssetsPage> {
-    await this.gotoOnboarding();
-
-    await injectDataInDatabase(this.page, vaultDPPolkadotTestWallet);
-    await injectDataInDatabase(this.page, vaultDPPolkadotTestAccount);
-
-    await this.page.waitForTimeout(2000); //waiting for database update
-    await this.page.reload();
-
-    return new VaultAssetsPage(this.page, new AssetsPageElements());
+    return this.createVaultWallet(vaultDPPolkadotTestWallet, vaultDPPolkadotTestAccount);
   }
 
-  public async createVaultAllWallet(): Promise<VaultAssetsPage> {
+  public async createVaultSubstrateWallet(): Promise<VaultAssetsPage> {
+    return this.createVaultWallet(vaultSubstrateWallet, vaultSubstrateAccount);
+  }
+
+  public async createVaultEthWallet(): Promise<VaultAssetsPage> {
+    return this.createVaultWallet(vaultAndEthereumWallet, vaultAndEthereumAccount);
+  }
+
+  private async createVaultWallet(walletData: IndexedDBData, accountData: IndexedDBData): Promise<VaultAssetsPage> {
     await this.gotoOnboarding();
-
-    await injectDataInDatabase(this.page, vaultAllTestWallet);
-    await injectDataInDatabase(this.page, vaultAllTestAccount);
-
-    await this.page.waitForTimeout(2000); //waiting for database update
+  
+    await injectDataInDatabase(this.page, walletData);
+    await injectDataInDatabase(this.page, accountData);
+  
+    await this.page.waitForTimeout(2000); // waiting for database update
     await this.page.reload();
-
+  
     return new VaultAssetsPage(this.page, new AssetsPageElements());
   }
 }
