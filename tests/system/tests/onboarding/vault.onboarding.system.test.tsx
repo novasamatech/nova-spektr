@@ -1,8 +1,8 @@
 import { chromium, Browser, Page, BrowserContext } from 'playwright';
 import { test, expect } from '@playwright/test';
 
-import { BaseLoginPage } from '../pages/loginPage/BaseLoginPage';
-import { LoginPageElements } from '../pages/_elements/LoginPageElements';
+import { BaseLoginPage } from '../../pages/loginPage/BaseLoginPage';
+import { LoginPageElements } from '../../pages/_elements/LoginPageElements';
 
 test.describe('Polkadot Vault onboarding', () => {
   let browser: Browser;

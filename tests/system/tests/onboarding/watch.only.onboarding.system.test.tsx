@@ -1,9 +1,9 @@
 import { chromium, Browser, Page, BrowserContext } from 'playwright';
 import { test, expect } from '@playwright/test';
 
-import { BaseLoginPage } from '../pages/loginPage/BaseLoginPage';
-import { LoginPageElements } from '../pages/_elements/LoginPageElements';
-import { baseTestConfig } from '../BaseTestConfig';
+import { BaseLoginPage } from '../../pages/loginPage/BaseLoginPage';
+import { LoginPageElements } from '../../pages/_elements/LoginPageElements';
+import { baseTestConfig } from '../../BaseTestConfig';
 
 test.describe('Watch only wallet onboarding', () => {
   let browser: Browser;
