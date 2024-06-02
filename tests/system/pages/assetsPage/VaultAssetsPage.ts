@@ -1,4 +1,5 @@
 import { Page } from 'playwright';
+import { expect } from '@playwright/test';
 
 import { BasePage } from '../BasePage';
 import { AssetsPageElements } from '../_elements/AssetsPageElements';
@@ -9,7 +10,6 @@ import { WalletModalWindow } from '../modals/WalletModalWindow';
 import { AssetsSettingsModalWindow } from '../modals/AssetsSettingsModalWindow';
 import { AssetsSettingsModalElements } from '../_elements/AssetsSettingsModalElements';
 import { readConfig } from '../../utils/readConfig';
-import { expect } from '@playwright/test';
 
 export class VaultAssetsPage extends BasePage {
   public pageElements: AssetsPageElements;

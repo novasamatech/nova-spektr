@@ -1,131 +1,131 @@
 export const chainsList = [
   {
-    "name": "Polkadot"
+    name: 'Polkadot',
   },
   {
-    "name": "Kusama"
+    name: 'Kusama',
   },
   {
-    "name": "Westend"
+    name: 'Westend',
   },
   {
-    "name": "Kusama Asset Hub"
+    name: 'Kusama Asset Hub',
   },
   {
-    "name": "Karura"
+    name: 'Karura',
   },
   {
-    "name": "Shiden"
+    name: 'Shiden',
   },
   {
-    "name": "Bifrost Kusama"
+    name: 'Bifrost Kusama',
   },
   {
-    "name": "Basilisk"
+    name: 'Basilisk',
   },
   {
-    "name": "Altair"
+    name: 'Altair',
   },
   {
-    "name": "Parallel Heiko"
+    name: 'Parallel Heiko',
   },
   {
-    "name": "Khala"
+    name: 'Khala',
   },
   {
-    "name": "KILT"
+    name: 'KILT',
   },
   {
-    "name": "QUARTZ"
+    name: 'QUARTZ',
   },
   {
-    "name": "Acala"
+    name: 'Acala',
   },
   {
-    "name": "Astar"
+    name: 'Astar',
   },
   {
-    "name": "Parallel"
+    name: 'Parallel',
   },
   {
-    "name": "Polkadot Asset Hub"
+    name: 'Polkadot Asset Hub',
   },
   {
-    "name": "Robonomics"
+    name: 'Robonomics',
   },
   {
-    "name": "Kintsugi"
+    name: 'Kintsugi',
   },
   {
-    "name": "Zeitgeist"
+    name: 'Zeitgeist',
   },
   {
-    "name": "Litmus"
+    name: 'Litmus',
   },
   {
-    "name": "Subsocial"
+    name: 'Subsocial',
   },
   {
-    "name": "Integritee Parachain"
+    name: 'Integritee Parachain',
   },
   {
-    "name": "Centrifuge Parachain"
+    name: 'Centrifuge Parachain',
   },
   {
-    "name": "HydraDX"
+    name: 'HydraDX',
   },
   {
-    "name": "Interlay"
+    name: 'Interlay',
   },
   {
-    "name": "Phala"
+    name: 'Phala',
   },
   {
-    "name": "Turing"
+    name: 'Turing',
   },
   {
-    "name": "Aleph Zero"
+    name: 'Aleph Zero',
   },
   {
-    "name": "Bifrost Polkadot"
+    name: 'Bifrost Polkadot',
   },
   {
-    "name": "Litentry"
+    name: 'Litentry',
   },
   {
-    "name": "Mangata X"
+    name: 'Mangata X',
   },
   {
-    "name": "Imbue"
+    name: 'Imbue',
   },
   {
-    "name": "Tinkernet"
+    name: 'Tinkernet',
   },
   {
-    "name": "Amplitude"
+    name: 'Amplitude',
   },
   {
-    "name": "Pendulum"
+    name: 'Pendulum',
   },
   {
-    "name": "Vara"
+    name: 'Vara',
   },
   {
-    "name": "Polkadot Bridge Hub"
+    name: 'Polkadot Bridge Hub',
   },
   {
-    "name": "Kusama Bridge Hub"
+    name: 'Kusama Bridge Hub',
   },
   {
-    "name": "Polkadot Collectives"
+    name: 'Polkadot Collectives',
   },
   {
-    "name": "Moonbeam"
+    name: 'Moonbeam',
   },
   {
-    "name": "Moonriver"
+    name: 'Moonriver',
   },
   {
-    "name": "Kusama People"
-  }
+    name: 'Kusama People',
+  },
 ];
