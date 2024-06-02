@@ -13,8 +13,14 @@ import {
 } from '../../data/db/dynamicDerivations/dynamicDerivationsWallets';
 import { IndexedDBData, injectDataInDatabase } from '../../utils/interactWithDatabase';
 import { AssetsPageElements } from '../_elements/AssetsPageElements';
-import { vaultSubstrateWallet, vaultSubstrateAccount } from '../../data/db/polkadotVaultWallet/polkadotVaultSubstrateWallet';
-import { vaultAndEthereumAccount, vaultAndEthereumWallet } from '../../data/db/polkadotVaultWallet/polkadotVaultWithEthereum';
+import {
+  vaultSubstrateWallet,
+  vaultSubstrateAccount,
+} from '../../data/db/polkadotVaultWallet/polkadotVaultSubstrateWallet';
+import {
+  vaultAndEthereumAccount,
+  vaultAndEthereumWallet,
+} from '../../data/db/polkadotVaultWallet/polkadotVaultWithEthereum';
 
 export class BaseLoginPage extends BasePage {
   protected pageElements: LoginPageElements;
@@ -66,13 +72,13 @@ export class BaseLoginPage extends BasePage {
 
   private async createVaultWallet(walletData: IndexedDBData, accountData: IndexedDBData): Promise<VaultAssetsPage> {
     await this.gotoOnboarding();
-  
+
     await injectDataInDatabase(this.page, walletData);
     await injectDataInDatabase(this.page, accountData);
-  
+
     await this.page.waitForTimeout(2000); // waiting for database update
     await this.page.reload();
-  
+
     return new VaultAssetsPage(this.page, new AssetsPageElements());
   }
 }
