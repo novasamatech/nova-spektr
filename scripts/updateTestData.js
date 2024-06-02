@@ -13,15 +13,15 @@ const updateChainsList = () => {
     .filter((chain) => chain.options.includes('ethereum_based'))
     .map((chain) => ({ name: chain.name }));
 
-  const chainsListContent = `export const substrateChains = ${JSON.stringify(substrateChains, null, 2)
-    .replace(/"name":/g, 'name:')
-    .replace(/"/g, "'")
-    .replace(/(\n\s+})/g, ',\n  }')};
-  
-export const ethChains = ${JSON.stringify(ethChains, null, 2)
-    .replace(/"name":/g, 'name:')
-    .replace(/"/g, "'")
-    .replace(/(\n\s+})/g, ',\n  }')};`;
+  const formatChains = (chains) => chains.map(chain => `  { name: '${chain.name}' }`).join(',\n');
+
+  const chainsListContent = `export const substrateChains = [
+${formatChains(substrateChains)}
+];
+
+export const ethChains = [
+${formatChains(ethChains)}
+];`;
 
   fs.writeFileSync(chainsListPath, chainsListContent, 'utf-8');
   console.log('chainsList.ts has been updated.');
