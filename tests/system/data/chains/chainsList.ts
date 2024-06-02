@@ -39,10 +39,10 @@ export const substrateChains = [
   { name: 'Polkadot Bridge Hub' },
   { name: 'Kusama Bridge Hub' },
   { name: 'Polkadot Collectives' },
-  { name: 'Kusama People' }
+  { name: 'Kusama People' },
 ];
 
 export const ethChains = [
   { name: 'Moonbeam' },
-  { name: 'Moonriver' }
+  { name: 'Moonriver' },
 ];

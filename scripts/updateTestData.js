@@ -16,12 +16,13 @@ const updateChainsList = () => {
   const formatChains = (chains) => chains.map(chain => `  { name: '${chain.name}' }`).join(',\n');
 
   const chainsListContent = `export const substrateChains = [
-${formatChains(substrateChains)}
+${formatChains(substrateChains)},
 ];
 
 export const ethChains = [
-${formatChains(ethChains)}
-];`;
+${formatChains(ethChains)},
+];
+`;
 
   fs.writeFileSync(chainsListPath, chainsListContent, 'utf-8');
   console.log('chainsList.ts has been updated.');
