@@ -59,18 +59,18 @@ export class BaseLoginPage extends BasePage {
   }
 
   public async createDDPolkadotVaultWallet(): Promise<VaultAssetsPage> {
-    return this.createVaultWallet(vaultDPPolkadotTestWallet, vaultDPPolkadotTestAccount);
+    return this.injectWalletInDatabase(vaultDPPolkadotTestWallet, vaultDPPolkadotTestAccount);
   }
 
   public async createVaultSubstrateWallet(): Promise<VaultAssetsPage> {
-    return this.createVaultWallet(vaultSubstrateWallet, vaultSubstrateAccount);
+    return this.injectWalletInDatabase(vaultSubstrateWallet, vaultSubstrateAccount);
   }
 
   public async createVaultEthWallet(): Promise<VaultAssetsPage> {
-    return this.createVaultWallet(vaultAndEthereumWallet, vaultAndEthereumAccount);
+    return this.injectWalletInDatabase(vaultAndEthereumWallet, vaultAndEthereumAccount);
   }
 
-  private async createVaultWallet(walletData: IndexedDBData, accountData: IndexedDBData): Promise<VaultAssetsPage> {
+  private async injectWalletInDatabase(walletData: IndexedDBData, accountData: IndexedDBData): Promise<VaultAssetsPage> {
     await this.gotoOnboarding();
 
     await injectDataInDatabase(this.page, walletData);
