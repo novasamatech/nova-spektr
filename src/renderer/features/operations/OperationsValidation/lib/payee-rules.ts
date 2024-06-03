@@ -2,7 +2,7 @@ import { Store } from 'effector';
 import { BN } from '@polkadot/util';
 
 import { formatAmount, validateAddress } from '@shared/lib/utils';
-import { balanceValidation, descriptionValidation } from '@shared/lib/validation';
+import { balanceValidation, descriptionValidation } from './validation';
 import { Account, RewardsDestination } from '@shared/core';
 import { ShardsBondBalanceStore, ShardsProxyFeeStore, SignatoryFeeStore } from '../types/types';
 
@@ -26,7 +26,7 @@ export const PayeeRules = {
 
         const amountBN = new BN(formatAmount(form.amount, network.asset.precision));
 
-        return shards.every((_, index) => amountBN.lte(new BN(accountsBalances[index])));
+        return shards.every((_, index) => balanceValidation.isLteThanBalance(amountBN, accountsBalances[index]));
       },
     }),
   },

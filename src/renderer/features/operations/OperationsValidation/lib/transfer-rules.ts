@@ -4,8 +4,13 @@ import { BN } from '@polkadot/util';
 import { formatAmount, validateAddress } from '@shared/lib/utils';
 import { balanceValidation, descriptionValidation } from './validation';
 import { Account } from '@shared/core';
-import { BalanceMap, NetworkStore } from '../../../../widgets/Transfer/lib/types';
-import { TransferAccountStore, TransferAmountFeeStore, TransferSignatoryFeeStore } from '../types/types';
+import {
+  BalanceMap,
+  NetworkStore,
+  TransferAccountStore,
+  TransferAmountFeeStore,
+  TransferSignatoryFeeStore,
+} from '../types/types';
 
 export const TransferRules = {
   account: {

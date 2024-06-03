@@ -2,7 +2,6 @@ import { Store } from 'effector';
 import { BN } from '@polkadot/util';
 
 import { formatAmount } from '@shared/lib/utils';
-import { balanceValidation, descriptionValidation } from '@shared/lib/validation';
 import { Account } from '@shared/core';
 import {
   AmountFeeStore,
@@ -12,6 +11,7 @@ import {
   SignatoryFeeStore,
   UnstakeAmountBalanceRange,
 } from '../types/types';
+import { balanceValidation, descriptionValidation } from './validation';
 
 export const UnstakeRules = {
   shards: {

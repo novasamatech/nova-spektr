@@ -5,11 +5,7 @@ export const validationUtils = {
 };
 
 const applyValidationRule = ({ value, form, source, name, errorText, validator }: Validation): ValidationResult => {
-  // TODO: find another way to get state from source
-  // eslint-disable-next-line effector/no-getState
-  const sourceData = source.getState ? source.getState() : source;
-
-  const isValid = validator(value, form, sourceData);
+  const isValid = validator(value, form, source);
 
   if (!isValid) {
     return { name, errorText };

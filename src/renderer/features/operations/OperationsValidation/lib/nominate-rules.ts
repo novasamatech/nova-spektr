@@ -2,7 +2,7 @@ import { Store } from 'effector';
 import { BN } from '@polkadot/util';
 
 import { formatAmount } from '@shared/lib/utils';
-import { balanceValidation, descriptionValidation } from '@shared/lib/validation';
+import { balanceValidation, descriptionValidation } from './validation';
 import { Account } from '@shared/core';
 import { ShardsBondBalanceStore, ShardsProxyFeeStore, SignatoryFeeStore } from '../types/types';
 

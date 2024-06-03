@@ -1,7 +1,7 @@
 import { Store } from 'effector';
 import { BN } from '@polkadot/util';
 
-import { descriptionValidation } from '@shared/lib/validation';
+import { descriptionValidation } from './validation';
 import { AccountId, Chain } from '@shared/core';
 import { transferableAmount } from '@shared/lib/utils';
 import { balanceUtils } from '@entities/balance';
