@@ -70,7 +70,10 @@ export class BaseLoginPage extends BasePage {
     return this.injectWalletInDatabase(vaultAndEthereumWallet, vaultAndEthereumAccount);
   }
 
-  private async injectWalletInDatabase(walletData: IndexedDBData, accountData: IndexedDBData): Promise<VaultAssetsPage> {
+  private async injectWalletInDatabase(
+    walletData: IndexedDBData,
+    accountData: IndexedDBData,
+  ): Promise<VaultAssetsPage> {
     await this.gotoOnboarding();
 
     await injectDataInDatabase(this.page, walletData);
