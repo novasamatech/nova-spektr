@@ -4,8 +4,23 @@ import { LoginPageElements } from '../_elements/LoginPageElements';
 import { BasePage } from '../BasePage';
 import { PolkadotVaultLoginPage } from './PolkadotVaultLoginPage';
 import { WatchOnlyLoginPage } from './WatchOnlyLoginPage';
-import { WatchOnlyAssetsPage } from '../assetsPage/WatchOnlyPageAssetsPage';
+import { WatchOnlyAssetsPage } from '../assetsPage/WatchOnlyAssetsPage';
 import { baseTestConfig } from '../../BaseTestConfig';
+import { VaultAssetsPage } from '../assetsPage/VaultAssetsPage';
+import {
+  vaultDPPolkadotTestWallet,
+  vaultDPPolkadotTestAccount,
+} from '../../data/db/dynamicDerivations/dynamicDerivationsWallets';
+import { IndexedDBData, injectDataInDatabase } from '../../utils/interactWithDatabase';
+import { AssetsPageElements } from '../_elements/AssetsPageElements';
+import {
+  vaultSubstrateWallet,
+  vaultSubstrateAccount,
+} from '../../data/db/polkadotVaultWallet/polkadotVaultSubstrateWallet';
+import {
+  vaultAndEthereumAccount,
+  vaultAndEthereumWallet,
+} from '../../data/db/polkadotVaultWallet/polkadotVaultWithEthereum';
 
 export class BaseLoginPage extends BasePage {
   protected pageElements: LoginPageElements;
@@ -17,18 +32,19 @@ export class BaseLoginPage extends BasePage {
 
   public async gotoOnboarding(): Promise<BaseLoginPage> {
     await this.goto(this.pageElements.url);
+    await this.page.getByText(this.pageElements.onboardingLabel).waitFor();
 
     return this;
   }
 
   public async clickWatchOnlyButton(): Promise<WatchOnlyLoginPage> {
-    await this.click(this.pageElements.watchOnlyButton);
+    await this.clickOnButton(this.pageElements.watchOnlyButton);
 
     return new WatchOnlyLoginPage(this.page, this.pageElements);
   }
 
   public async clickPolkadotVaultButton(): Promise<PolkadotVaultLoginPage> {
-    await this.click(this.pageElements.polkadotVaultButton);
+    await this.clickOnButton(this.pageElements.polkadotVaultButton);
 
     return new PolkadotVaultLoginPage(this.page, this.pageElements);
   }
@@ -40,5 +56,32 @@ export class BaseLoginPage extends BasePage {
       baseTestConfig.test_name,
       baseTestConfig.test_address,
     );
+  }
+
+  public async createDDPolkadotVaultWallet(): Promise<VaultAssetsPage> {
+    return this.injectWalletInDatabase(vaultDPPolkadotTestWallet, vaultDPPolkadotTestAccount);
+  }
+
+  public async createVaultSubstrateWallet(): Promise<VaultAssetsPage> {
+    return this.injectWalletInDatabase(vaultSubstrateWallet, vaultSubstrateAccount);
+  }
+
+  public async createVaultEthWallet(): Promise<VaultAssetsPage> {
+    return this.injectWalletInDatabase(vaultAndEthereumWallet, vaultAndEthereumAccount);
+  }
+
+  private async injectWalletInDatabase(
+    walletData: IndexedDBData,
+    accountData: IndexedDBData,
+  ): Promise<VaultAssetsPage> {
+    await this.gotoOnboarding();
+
+    await injectDataInDatabase(this.page, walletData);
+    await injectDataInDatabase(this.page, accountData);
+
+    await this.page.waitForTimeout(2000); // waiting for database update
+    await this.page.reload();
+
+    return new VaultAssetsPage(this.page, new AssetsPageElements());
   }
 }
