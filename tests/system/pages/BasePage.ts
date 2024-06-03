@@ -18,6 +18,7 @@ export abstract class BasePage {
 
   public async gotoMain(): Promise<this> {
     await this.page.goto(this.pageElements.url);
+    await this.page.waitForLoadState('networkidle');
 
     return this;
   }
@@ -48,6 +49,12 @@ export abstract class BasePage {
 
   async clickOnButton(name: string) {
     await this.page.getByRole('button', { name: name }).click();
+
+    return this;
+  }
+
+  async clickOnButtonBySelector(selector: string, force: boolean = false) {
+    await this.page.locator(selector).getByRole('button').click({ force: force });
 
     return this;
   }
