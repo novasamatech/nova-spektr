@@ -3,7 +3,7 @@ import { IndexedDBData } from '../../../utils/interactWithDatabase';
 export const vaultDPPolkadotTestWallet: IndexedDBData = {
   database: 'spektr',
   table: 'wallets',
-  testData: [
+  injectingData: [
     { id: 1, isActive: true, name: 'vaultDynamicDerivationsPolkadot', signingType: 'signing_pv', type: 'wallet_pv' },
   ],
 };
@@ -11,7 +11,7 @@ export const vaultDPPolkadotTestWallet: IndexedDBData = {
 export const vaultDPPolkadotTestAccount: IndexedDBData = {
   database: 'spektr',
   table: 'accounts',
-  testData: [
+  injectingData: [
     {
       id: 1,
       accountId: '0x7a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c',

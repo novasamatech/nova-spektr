@@ -27,7 +27,7 @@ jobs:
       - name: Get installed Playwright version
         id: playwright-version
         run: |
-          PLAYWRIGHT_VERSION=$(node -e "console.log(require('yaml').parse(require('fs').readFileSync('./pnpm-lock.yaml', 'utf8')).devDependencies['@playwright/test'].version)")
+          PLAYWRIGHT_VERSION=$(node -e "console.log(require('yaml').parse(require('fs').readFileSync('./pnpm-lock.yaml', 'utf8')).importers.devDependencies['@playwright/test'].version)")
           echo "PLAYWRIGHT_VERSION=$PLAYWRIGHT_VERSION" >> $GITHUB_ENV
       - name: Cache playwright binaries
         uses: actions/cache@v3
@@ -113,10 +113,12 @@ jobs:
           echo "EOF" >> $GITHUB_ENV
 
       - run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "${{ github.event_name }}" = "push" ] || [ "${{ github.event_name }}" = "pull_request" ]; then
-            COMMIT_INFO="Commit: [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})"
-          else
+          if [ "${{ github.event_name }}" = "schedule" ]; then
             COMMIT_INFO="Branch: dev"
+            RUN_TYPE_INFO="🤑 Fee loading"
+          else
+            COMMIT_INFO="Commit: [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})"
+            RUN_TYPE_INFO="✔ Regression"
           fi
           echo "COMMIT_INFO<<EOF" >> $GITHUB_ENV
           echo "$COMMIT_INFO" >> $GITHUB_ENV
@@ -131,14 +133,15 @@ jobs:
             echo "STATUS=✅" >> $GITHUB_ENV
           fi
 
-      # - name: Notify Telegram channel
-      #   uses: appleboy/telegram-action@master
-      #   with:
-      #     to: ${{ secrets.TELEGRAM_TO }}
-      #     token: ${{ secrets.TELEGRAM_TOKEN }}
-      #     format: markdown
-      #     message: |
-      #       📋 Playwright Test Report Published
-      #       URL: ${{ env.FULL_HTML_REPORT_URL }}
-      #       Status: ${{ env.STATUS }}
-      #       ${{ env.COMMIT_INFO }}
+      - name: Notify Telegram channel
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          format: markdown
+          message: |
+            📋 Playwright Test Report Published
+            URL: ${{ env.FULL_HTML_REPORT_URL }}
+            Run type: ${{ env.RUN_TYPE_INFO }}
+            Status: ${{ env.STATUS }}
+            ${{ env.COMMIT_INFO }}
