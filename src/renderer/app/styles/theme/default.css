@@ -78,6 +78,7 @@
   --block-background-hover: rgba(237, 237, 244);
   --block-background: rgba(69, 69, 137, 0.04);
   --badge-background: rgba(70, 73, 246, 0.16);
+  --badge-red-background-default: rgba(245, 33, 99, 0.16);
   --extended-block-background: rgba(69, 69, 137, 0.03);
   --block-background-default: #fff;
   --negative-action-background: rgba(245, 33, 99, 0.06);

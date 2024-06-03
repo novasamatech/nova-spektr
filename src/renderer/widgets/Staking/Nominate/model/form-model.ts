@@ -9,6 +9,7 @@ import { networkModel } from '@entities/network';
 import { Account, PartialBy, Chain, Asset } from '@shared/core';
 import { WalletData } from '../lib/types';
 import { transferableAmount, getRelaychainAsset, formatAmount, stakeableAmount, ZERO_BALANCE } from '@shared/lib/utils';
+import { NominateRules } from '@features/operations/OperationsValidation';
 
 type FormParams = {
   shards: Account[];
@@ -112,13 +113,7 @@ const $nominateForm = createForm<FormParams>({
     },
     description: {
       init: '',
-      rules: [
-        {
-          name: 'maxLength',
-          errorText: 'transfer.descriptionLengthError',
-          validator: (value) => !value || value.length <= 120,
-        },
-      ],
+      rules: [NominateRules.description.maxLength],
     },
   },
   validateOn: ['submit'],

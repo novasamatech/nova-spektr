@@ -26,3 +26,5 @@ export type TransferStore = {
   xcmFee: string;
   multisigDeposit: string;
 };
+
+export type BalanceMap = Record<'balance' | 'native', string>;

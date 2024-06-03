@@ -30,7 +30,8 @@ import {
   ZERO_BALANCE,
   unlockingAmount,
 } from '@shared/lib/utils';
-import { transactionBuilder, transactionService, DESCRIPTION_LENGTH } from '@entities/transaction';
+import { transactionBuilder, transactionService } from '@entities/transaction';
+import { RestakeRules } from '@features/operations/OperationsValidation';
 
 type BalanceMap = { balance: string; stake: string };
 
@@ -198,13 +199,7 @@ const $restakeForm = createForm<FormParams>({
     },
     description: {
       init: '',
-      rules: [
-        {
-          name: 'maxLength',
-          errorText: 'transfer.descriptionLengthError',
-          validator: (value) => !value || value.length <= DESCRIPTION_LENGTH,
-        },
-      ],
+      rules: [RestakeRules.description.maxLength],
     },
   },
   validateOn: ['submit'],

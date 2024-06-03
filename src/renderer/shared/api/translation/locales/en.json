@@ -75,6 +75,7 @@
     "closeButton": "Close modal window"
   },
   "basket": {
+    "invalidTransaction": "Unavailable",
     "noOperationsDescription": "There are no operations in the basket yet",
     "noOperationsLabel": "No operations",
     "searchPlaceholder": "Search",

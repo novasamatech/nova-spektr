@@ -192,11 +192,10 @@ export const Confirmation = ({ secondaryActionButton, onGoBack }: Props) => {
 
         <div className="flex gap-4">
           {secondaryActionButton}
-
           <SignButton
             isDefault={Boolean(secondaryActionButton)}
             type={(signerWallet || initiatorWallet).type}
-            onClick={confirmModel.output.formSubmitted}
+            onClick={confirmModel.events.confirmed}
           />
         </div>
       </div>
