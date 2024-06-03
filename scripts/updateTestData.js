@@ -13,7 +13,7 @@ const updateChainsList = () => {
     .filter((chain) => chain.options.includes('ethereum_based'))
     .map((chain) => ({ name: chain.name }));
 
-  const formatChains = (chains) => chains.map(chain => `  { name: '${chain.name}' }`).join(',\n');
+  const formatChains = (chains) => chains.map((chain) => `  { name: '${chain.name}' }`).join(',\n');
 
   const chainsListContent = `export const substrateChains = [
 ${formatChains(substrateChains)},

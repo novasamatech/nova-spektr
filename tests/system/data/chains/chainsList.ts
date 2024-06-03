@@ -42,7 +42,4 @@ export const substrateChains = [
   { name: 'Kusama People' },
 ];
 
-export const ethChains = [
-  { name: 'Moonbeam' },
-  { name: 'Moonriver' },
-];
+export const ethChains = [{ name: 'Moonbeam' }, { name: 'Moonriver' }];
