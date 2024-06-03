@@ -1,5 +1,4 @@
 // eslint-disable-next-line import/default
-import CopyPlugin from 'copy-webpack-plugin';
 import webpack, { Configuration } from 'webpack';
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
 import SimpleProgressWebpackPlugin from 'simple-progress-webpack-plugin';
@@ -119,15 +118,12 @@ const sharedConfig: Configuration = {
       Buffer: ['buffer', 'Buffer'],
     }),
 
-    new CopyPlugin({
-      patterns: [{ from: 'node_modules/@matrix-org/olm/olm.wasm', to: '' }],
-    }),
-
     new webpack.DefinePlugin({
       'process.env.PRODUCT_NAME': JSON.stringify(APP_CONFIG.TITLE),
       'process.env.VERSION': JSON.stringify(APP_CONFIG.VERSION),
       'process.env.BUILD_SOURCE': JSON.stringify(process.env.BUILD_SOURCE),
       'process.env.CHAINS_FILE': JSON.stringify(process.env.CHAINS_FILE),
+      'process.env.LOGGER': JSON.stringify(process.env.LOGGER),
     }),
   ],
 };

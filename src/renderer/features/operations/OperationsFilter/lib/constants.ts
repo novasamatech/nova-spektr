@@ -1,4 +1,4 @@
-import { TransactionType } from '@entities/transaction/model/transaction';
+import { TransactionType } from '@shared/core';
 
 export const UNKNOWN_TYPE = 'UNKNOWN_TYPE';
 

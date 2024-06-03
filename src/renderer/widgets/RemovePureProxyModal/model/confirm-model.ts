@@ -1,8 +1,7 @@
 import { createEvent, combine, restore } from 'effector';
 
-import { Account, AccountId, Chain, ProxiedAccount, ProxyType } from '@shared/core';
+import { Account, AccountId, Chain, ProxiedAccount, ProxyType, Transaction } from '@shared/core';
 import { networkModel } from '@entities/network';
-import { Transaction } from '@entities/transaction';
 import { walletModel, walletUtils } from '@entities/wallet';
 
 type Input = {
@@ -49,16 +48,13 @@ const $proxyWallet = combine(
   {
     store: $confirmStore,
     wallets: walletModel.$wallets,
-    accounts: walletModel.$accounts,
   },
-  ({ store, wallets, accounts }) => {
-    if (!store || !store.account) return null;
+  ({ store, wallets }) => {
+    if (!store || !store.account) return undefined;
 
-    const account = accounts.find((a) => a.accountId === (store.account as ProxiedAccount)?.proxyAccountId);
-
-    if (!account) return null;
-
-    return walletUtils.getWalletById(wallets, account.walletId);
+    return walletUtils.getWalletFilteredAccounts(wallets, {
+      accountFn: (a) => a.accountId === (store.account as ProxiedAccount).proxyAccountId,
+    });
   },
   { skipVoid: false },
 );

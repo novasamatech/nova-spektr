@@ -9,6 +9,7 @@ import { networkModel } from '@entities/network';
 import { Account, PartialBy, Chain, Asset } from '@shared/core';
 import { WalletData } from '../lib/types';
 import { transferableAmount, getRelaychainAsset, formatAmount, stakeableAmount, ZERO_BALANCE } from '@shared/lib/utils';
+import { BondExtraRules } from '@features/operations/OperationsValidation';
 
 type FormParams = {
   shards: Account[];
@@ -163,13 +164,7 @@ const $bondForm = createForm<FormParams>({
     },
     description: {
       init: '',
-      rules: [
-        {
-          name: 'maxLength',
-          errorText: 'transfer.descriptionLengthError',
-          validator: (value) => !value || value.length <= 120,
-        },
-      ],
+      rules: [BondExtraRules.description.maxLength],
     },
   },
   validateOn: ['submit'],

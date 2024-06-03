@@ -18,6 +18,7 @@ import {
   validateAddress,
   toShortAddress,
 } from '@shared/lib/utils';
+import { PayeeRules } from '@features/operations/OperationsValidation';
 
 type FormParams = {
   shards: Account[];
@@ -143,13 +144,7 @@ const $payeeForm = createForm<FormParams>({
     },
     description: {
       init: '',
-      rules: [
-        {
-          name: 'maxLength',
-          errorText: 'transfer.descriptionLengthError',
-          validator: (value) => !value || value.length <= 120,
-        },
-      ],
+      rules: [PayeeRules.description.maxLength],
     },
   },
   validateOn: ['submit'],
@@ -219,16 +214,19 @@ const $signatories = combine(
 const $destinationAccounts = combine(
   {
     wallets: walletModel.$wallets,
-    accounts: walletModel.$accounts,
     network: $networkStore,
     query: $destinationQuery,
   },
-  ({ wallets, accounts, network, query }) => {
+  ({ wallets, network, query }) => {
     if (!network) return [];
 
-    return accountUtils.getAccountsForBalances(wallets, accounts, (account) => {
-      const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(account, network.chain);
+    return walletUtils.getAccountsBy(wallets, (account, wallet) => {
+      const isPvWallet = walletUtils.isPolkadotVault(wallet);
+      const isBaseAccount = accountUtils.isBaseAccount(account);
+      if (isBaseAccount && isPvWallet) return false;
+
       const isShardAccount = accountUtils.isShardAccount(account);
+      const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(account, network.chain);
       const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
 
       return isChainAndCryptoMatch && !isShardAccount && isStringsMatchQuery(query, [account.name, address]);

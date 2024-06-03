@@ -4,7 +4,6 @@ on:
     tags:
       - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
-
 env:
   CSC_FOR_PULL_REQUEST: true
   CI: true
@@ -30,7 +29,7 @@ jobs:
       - name: Get tag name
         uses: olegtarasov/get-tag@v2.1 # Put version in GIT_TAG_NAME environment variable
         with:
-          tagRegex: "^.(.*)$"
+          tagRegex: '^.(.*)$'
 
       - name: Update package.json version
         uses: jossef/action-set-json-field@v2
@@ -86,6 +85,15 @@ jobs:
       - name: Get the version
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
+      - name: Rename Linux distr # In order to show that we do not support ARM yet.
+        run: |
+          original=$(find . -name "Nova*.AppImage" -type f)
+          filename="${original%.*}"
+          new="$filename"_x86_64.AppImage
+          mv "$original" "$new"
+          # Update latest-linux.yml with new file name
+          sed -i "s/$original/$new/g" latest-linux.yml
 
       - name: Replace space by "-"
         run: |

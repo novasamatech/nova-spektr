@@ -1,27 +1,30 @@
 import { useUnit } from 'effector-react';
 
 import { useMultisigTx } from '@entities/multisig';
-import { MultisigTxInitStatus } from '@entities/transaction';
 import { NavItem, Props as NavItemProps } from './NavItem';
 import { networkModel } from '@entities/network';
 import { Paths } from '@shared/routes';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { BodyText } from '@shared/ui';
+import { MultisigTxInitStatus } from '@shared/core';
+import { basketModel } from '@entities/basket';
 
 export const Navigation = () => {
   const chains = useUnit(networkModel.$chains);
-  const activeAccounts = useUnit(walletModel.$activeAccounts);
-  const activeWallet = useUnit(walletModel.$activeWallet);
+  const wallet = useUnit(walletModel.$activeWallet);
+  const basket = useUnit(basketModel.$basket);
 
   const { getLiveAccountMultisigTxs } = useMultisigTx({});
 
-  const txs = getLiveAccountMultisigTxs(
-    walletUtils.isMultisig(activeWallet) ? activeAccounts.map((a) => a.accountId) : [],
-  ).filter((tx) => tx.status === MultisigTxInitStatus.SIGNING && chains[tx.chainId]);
+  const txs = getLiveAccountMultisigTxs(walletUtils.isMultisig(wallet) ? [wallet.accounts[0].accountId] : []).filter(
+    (tx) => tx.status === MultisigTxInitStatus.SIGNING && chains[tx.chainId],
+  );
 
   const NavItems: NavItemProps[] = [
     { icon: 'asset', title: 'navigation.balancesLabel', link: Paths.ASSETS },
     { icon: 'staking', title: 'navigation.stakingLabel', link: Paths.STAKING },
+    // TODO: turn on if you want to test governance
+    // { icon: 'governance', title: 'navigation.governance', link: Paths.GOVERNANCE },
     {
       icon: 'operations',
       title: 'navigation.mstOperationLabel',
@@ -40,6 +43,18 @@ export const Navigation = () => {
           </li>
         ))}
         <li className="mt-auto">
+          <NavItem
+            icon="operations"
+            title="navigation.basketLabel"
+            link={Paths.BASKET}
+            badge={
+              <BodyText className="ml-auto text-text-tertiary">
+                {basket.filter((tx) => tx.initiatorWallet === wallet?.id).length || ''}
+              </BodyText>
+            }
+          />
+        </li>
+        <li>
           <NavItem icon="notification" title="navigation.notificationsLabel" link={Paths.NOTIFICATIONS} />
         </li>
         <li>

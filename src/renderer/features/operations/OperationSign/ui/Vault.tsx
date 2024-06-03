@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react';
-import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import { useUnit } from 'effector-react';
 
 import { useCountdown } from '@shared/lib/hooks';
 import { ValidationErrors, toAddress } from '@shared/lib/utils';
 import { useTransaction, ScanMultiframeQr, ScanSingleframeQr, QrReaderWrapper } from '@entities/transaction';
-import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
+import { accountUtils, walletUtils } from '@entities/wallet';
 import type { HexString, Address } from '@shared/core';
 import type { InnerSigningProps } from '../lib/types';
 import { operationSignUtils } from '../lib/operation-sign-utils';
@@ -22,16 +20,13 @@ export const Vault = ({
   onGoBack,
   onResult,
 }: InnerSigningProps) => {
-  const allAccounts = useUnit(walletModel.$accounts);
-
   const { verifySignature } = useTransaction();
 
   const [countdown, resetCountdown] = useCountdown(api);
-  const [unsignedTxs, setUnsignedTxs] = useState<UnsignedTransaction[]>([]);
   const [txPayloads, setTxPayloads] = useState<Uint8Array[]>([]);
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
-  const isScanStep = !unsignedTxs.length && !txPayloads.length;
+  const isScanStep = !txPayloads.length;
   const isMultiframe = transactions.length > 1;
 
   useEffect(() => {
@@ -71,20 +66,19 @@ export const Vault = ({
     if (!isVerified || balanceValidationError) {
       setValidationError(balanceValidationError || ValidationErrors.INVALID_SIGNATURE);
     } else {
-      onResult(signatures, unsignedTxs);
+      onResult(signatures, txPayloads);
     }
   };
 
   const getSignerAddress = (): Address => {
     if (!walletUtils.isPolkadotVault(wallet)) return transactions[0].address;
 
-    const root = accountUtils.getBaseAccount(allAccounts, wallet.id);
+    const root = accountUtils.getBaseAccount(wallet.accounts, wallet.id);
 
     return root ? toAddress(root.accountId, { prefix: 1 }) : transactions[0].address;
   };
 
   const scanAgain = () => {
-    setUnsignedTxs([]);
     setTxPayloads([]);
   };
 
@@ -103,10 +97,7 @@ export const Vault = ({
             transactions={transactions}
             onGoBack={onGoBack}
             onResetCountdown={resetCountdown}
-            onResult={(unsignedTx, payloads) => {
-              setUnsignedTxs(unsignedTx);
-              setTxPayloads(payloads);
-            }}
+            onResult={(payloads) => setTxPayloads(payloads)}
           />
         ) : (
           <ScanSingleframeQr
@@ -119,10 +110,7 @@ export const Vault = ({
             transaction={transactions[0]}
             onGoBack={onGoBack}
             onResetCountdown={resetCountdown}
-            onResult={(unsignedTx, payload) => {
-              setUnsignedTxs([unsignedTx]);
-              setTxPayloads([payload]);
-            }}
+            onResult={(payload) => setTxPayloads([payload])}
           />
         )}
       </div>

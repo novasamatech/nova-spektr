@@ -1,4 +1,4 @@
-import type { ProxyAccount, Wallet, Account, ProxyDeposits } from '@shared/core';
+import type { ProxyAccount, Wallet, ProxyDeposits, BaseAccount, WcAccount } from '@shared/core';
 import { ProxyType, WalletType, SigningType, AccountType, ChainType, CryptoType } from '@shared/core';
 import { TEST_ACCOUNTS } from '@shared/lib/utils';
 
@@ -27,6 +27,17 @@ const wallets: Wallet[] = [
     isActive: false,
     type: WalletType.MULTISIG,
     signingType: SigningType.MULTISIG,
+    accounts: [
+      {
+        id: 1,
+        walletId: 1,
+        name: 'My base account',
+        type: AccountType.BASE,
+        accountId: TEST_ACCOUNTS[0],
+        chainType: ChainType.SUBSTRATE,
+        cryptoType: CryptoType.SR25519,
+      } as BaseAccount,
+    ],
   },
   {
     id: 2,
@@ -34,37 +45,28 @@ const wallets: Wallet[] = [
     isActive: true,
     type: WalletType.WALLET_CONNECT,
     signingType: SigningType.WALLET_CONNECT,
-  },
-];
-const accounts: Account[] = [
-  {
-    id: 1,
-    walletId: 1,
-    name: 'My base account',
-    type: AccountType.BASE,
-    accountId: TEST_ACCOUNTS[0],
-    chainType: ChainType.SUBSTRATE,
-    cryptoType: CryptoType.SR25519,
-  },
-  {
-    id: 2,
-    walletId: 2,
-    name: 'Chain 1',
-    type: AccountType.WALLET_CONNECT,
-    accountId: TEST_ACCOUNTS[1],
-    chainType: ChainType.SUBSTRATE,
-    cryptoType: CryptoType.SR25519,
-    chainId: '0x001',
-  },
-  {
-    id: 3,
-    walletId: 2,
-    name: 'Chain 2',
-    type: AccountType.WALLET_CONNECT,
-    accountId: TEST_ACCOUNTS[1],
-    chainType: ChainType.SUBSTRATE,
-    cryptoType: CryptoType.SR25519,
-    chainId: '0x002',
+    accounts: [
+      {
+        id: 2,
+        walletId: 2,
+        name: 'Chain 1',
+        type: AccountType.WALLET_CONNECT,
+        accountId: TEST_ACCOUNTS[1],
+        chainType: ChainType.SUBSTRATE,
+        cryptoType: CryptoType.SR25519,
+        chainId: '0x001',
+      } as WcAccount,
+      {
+        id: 3,
+        walletId: 2,
+        name: 'Chain 2',
+        type: AccountType.WALLET_CONNECT,
+        accountId: TEST_ACCOUNTS[1],
+        chainType: ChainType.SUBSTRATE,
+        cryptoType: CryptoType.SR25519,
+        chainId: '0x002',
+      } as WcAccount,
+    ],
   },
 ];
 const deposits: ProxyDeposits[] = [
@@ -109,7 +111,6 @@ export const proxyMock = {
   oldProxy,
   newProxy,
   wallets,
-  accounts,
   deposits,
   proxyAccounts,
 };

@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useUnit } from 'effector-react';
 
-import { MultisigAccount, Signatory, Wallet, AccountId } from '@shared/core';
-import { BaseModal, FootnoteText, Tabs, HelpText, DropdownIconButton } from '@shared/ui';
+import { Signatory, Wallet, AccountId, MultisigWallet } from '@shared/core';
+import { BaseModal, FootnoteText, Tabs, DropdownIconButton } from '@shared/ui';
 import { RootExplorers } from '@shared/lib/utils';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { useI18n } from '@app/providers';
@@ -16,7 +16,6 @@ import { ProxiesList } from '../components/ProxiesList';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { networkUtils, networkModel } from '@entities/network';
-import { matrixModel, matrixUtils } from '@entities/matrix';
 import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
 import {
   AccountsList,
@@ -29,8 +28,7 @@ import {
 } from '@entities/wallet';
 
 type Props = {
-  wallet: Wallet;
-  account: MultisigAccount;
+  wallet: MultisigWallet;
   signatoryWallets: [AccountId, Wallet][];
   signatoryContacts: Signatory[];
   signatoryAccounts: Signatory[];
@@ -38,16 +36,12 @@ type Props = {
 };
 export const MultisigWalletDetails = ({
   wallet,
-  account,
   signatoryWallets = [],
   signatoryContacts = [],
   signatoryAccounts = [],
   onClose,
 }: Props) => {
   const { t } = useI18n();
-
-  const matrix = useUnit(matrixModel.$matrix);
-  const loginStatus = useUnit(matrixModel.$loginStatus);
 
   const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletProviderModel.$hasProxies);
@@ -56,18 +50,21 @@ export const MultisigWalletDetails = ({
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
-  const singleChain = account.chainId && chains[account.chainId];
+  const multisigAccount = wallet.accounts[0];
+  const singleChain = multisigAccount.chainId && chains[multisigAccount.chainId];
   const explorers = singleChain?.explorers || RootExplorers;
 
   const multisigChains = useMemo(() => {
     return Object.values(chains).filter((chain) => {
-      return networkUtils.isMultisigSupported(chain.options) && accountUtils.isChainAndCryptoMatch(account, chain);
+      return (
+        networkUtils.isMultisigSupported(chain.options) && accountUtils.isChainAndCryptoMatch(multisigAccount, chain)
+      );
     });
   }, [chains]);
 
   const canCreateProxy = useMemo(() => {
-    const anyProxy = permissionUtils.canCreateAnyProxy(wallet, [account]);
-    const nonAnyProxy = permissionUtils.canCreateNonAnyProxy(wallet, [account]);
+    const anyProxy = permissionUtils.canCreateAnyProxy(wallet);
+    const nonAnyProxy = permissionUtils.canCreateNonAnyProxy(wallet);
 
     if (!singleChain) return anyProxy || nonAnyProxy;
 
@@ -75,7 +72,7 @@ export const MultisigWalletDetails = ({
   }, [singleChain]);
 
   const canCreatePureProxy = useMemo(() => {
-    const anyProxy = permissionUtils.canCreateAnyProxy(wallet, [account]);
+    const anyProxy = permissionUtils.canCreateAnyProxy(wallet);
 
     if (!singleChain) return anyProxy;
 
@@ -126,7 +123,7 @@ export const MultisigWalletDetails = ({
   const TabAccountList = {
     id: 1,
     title: t('walletDetails.multisig.networksTab'),
-    panel: <AccountsList accountId={account.accountId} chains={multisigChains} className="h-[345px]" />,
+    panel: <AccountsList accountId={multisigAccount.accountId} chains={multisigChains} className="h-[345px]" />,
   };
 
   const TabSignatories = {
@@ -136,8 +133,8 @@ export const MultisigWalletDetails = ({
       <div className="flex flex-col">
         <FootnoteText className="text-text-tertiary px-5">
           {t('walletDetails.multisig.thresholdLabel', {
-            min: account.threshold,
-            max: account.signatories.length,
+            min: multisigAccount.threshold,
+            max: multisigAccount.signatories.length,
           })}
         </FootnoteText>
 
@@ -160,14 +157,7 @@ export const MultisigWalletDetails = ({
                           description={<WalletFiatBalance walletId={wallet.id} className="truncate" />}
                         />
                       }
-                    >
-                      <ExplorersPopover.Group
-                        active={matrixUtils.isLoggedIn(loginStatus)}
-                        title={t('general.explorers.matrixIdTitle')}
-                      >
-                        <HelpText className="text-text-secondary">{matrix.userId}</HelpText>
-                      </ExplorersPopover.Group>
-                    </ExplorersPopover>
+                    />
                   </li>
                 ))}
               </ul>
@@ -193,14 +183,7 @@ export const MultisigWalletDetails = ({
                           addressPrefix={singleChain.addressPrefix}
                         />
                       }
-                    >
-                      <ExplorersPopover.Group
-                        active={matrixUtils.isLoggedIn(loginStatus)}
-                        title={t('general.explorers.matrixIdTitle')}
-                      >
-                        <HelpText className="text-text-secondary">{matrix.userId}</HelpText>
-                      </ExplorersPopover.Group>
-                    </ExplorersPopover>
+                    />
                   </li>
                 ))}
               </ul>
@@ -220,14 +203,7 @@ export const MultisigWalletDetails = ({
                       address={signatory.accountId}
                       explorers={explorers}
                       button={<ContactItem name={signatory.name} address={signatory.accountId} />}
-                    >
-                      <ExplorersPopover.Group
-                        active={Boolean(signatory.matrixId)}
-                        title={t('general.explorers.matrixIdTitle')}
-                      >
-                        <HelpText className="text-text-secondary break-all">{signatory.matrixId}</HelpText>
-                      </ExplorersPopover.Group>
-                    </ExplorersPopover>
+                    />
                   </li>
                 ))}
               </ul>

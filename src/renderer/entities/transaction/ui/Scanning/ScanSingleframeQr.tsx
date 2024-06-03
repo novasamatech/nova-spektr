@@ -1,16 +1,14 @@
 import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
-import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
 import { useI18n } from '@app/providers';
 import { Button, FootnoteText } from '@shared/ui';
 import { WalletIcon } from '@entities/wallet'; // TODO: cross import
-import type { Account, ChainAccount, ChainId, ShardAccount, Wallet, Address, BaseAccount } from '@shared/core';
-import { CryptoType } from '@shared/core';
+import type { ChainAccount, ChainId, ShardAccount, Wallet, Address, BaseAccount, Account } from '@shared/core';
+import { CryptoType, Transaction } from '@shared/core';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
 import { QrTxGenerator } from '../QrCode/QrGenerator/QrTxGenerator';
-import { Transaction } from '../../model/transaction';
-import { useTransaction } from '../../lib';
+import { transactionService } from '../../lib';
 
 type Props = {
   api: ApiPromise;
@@ -22,7 +20,7 @@ type Props = {
   countdown: number;
   onGoBack: () => void;
   onResetCountdown: () => void;
-  onResult: (unsignedTx: UnsignedTransaction, txPayload: Uint8Array) => void;
+  onResult: (txPayload: Uint8Array) => void;
 };
 
 export const ScanSingleframeQr = ({
@@ -38,10 +36,8 @@ export const ScanSingleframeQr = ({
   onResult,
 }: Props) => {
   const { t } = useI18n();
-  const { createPayload } = useTransaction();
 
   const [txPayload, setTxPayload] = useState<Uint8Array>();
-  const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
 
   useEffect(() => {
     if (txPayload) return;
@@ -51,10 +47,9 @@ export const ScanSingleframeQr = ({
 
   const setupTransaction = async (): Promise<void> => {
     try {
-      const { payload, unsigned } = await createPayload(transaction, api);
+      const { payload } = await transactionService.createPayload(transaction, api);
 
       setTxPayload(payload);
-      setUnsignedTx(unsigned);
 
       if (payload) {
         onResetCountdown();
@@ -97,7 +92,7 @@ export const ScanSingleframeQr = ({
           {t('operation.goBackButton')}
         </Button>
 
-        <Button disabled={!unsignedTx || countdown === 0} onClick={() => onResult(unsignedTx!, txPayload!)}>
+        <Button disabled={!txPayload || countdown === 0} onClick={() => onResult(txPayload!)}>
           {t('signing.continueButton')}
         </Button>
       </div>

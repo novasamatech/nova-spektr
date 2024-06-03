@@ -3,6 +3,7 @@ import orderBy from 'lodash/orderBy';
 import concat from 'lodash/concat';
 import sortBy from 'lodash/sortBy';
 import BigNumber from 'bignumber.js';
+import { BN } from '@polkadot/util';
 
 import chainsProd from '@shared/config/chains/chains.json';
 import chainsDev from '@shared/config/chains/chains_dev.json';
@@ -10,7 +11,6 @@ import { getRelaychainAsset, nonNullable, totalAmount, ZERO_BALANCE } from '@sha
 import type { Chain, ChainId, Balance } from '@shared/core';
 import { isPolkadot, isKusama, isTestnet, isNameStartsWithNumber } from '../lib/utils';
 import { PriceObject } from '@shared/api/price-provider';
-import { sumBalances } from '@pages/Assets/Assets/common/utils';
 
 type ChainWithFiatBalance = Chain & {
   fiatBalance: string;
@@ -162,3 +162,24 @@ function sortChainsByBalance(
     sortBy(testnets.noBalance, 'name'),
   );
 }
+
+const sumValues = (firstValue?: string, secondValue?: string): string => {
+  if (firstValue && secondValue) {
+    return new BN(firstValue).add(new BN(secondValue)).toString();
+  }
+
+  return firstValue || '0';
+};
+
+export const sumBalances = (firstBalance: Balance, secondBalance?: Balance): Balance => {
+  if (!secondBalance) return firstBalance;
+
+  return {
+    ...firstBalance,
+    verified: firstBalance.verified && secondBalance.verified,
+    free: sumValues(firstBalance.free, secondBalance.free),
+    reserved: sumValues(firstBalance.reserved, secondBalance.reserved),
+    frozen: sumValues(firstBalance.frozen, secondBalance.frozen),
+    locked: (firstBalance.locked || []).concat(secondBalance.locked || []),
+  };
+};

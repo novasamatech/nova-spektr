@@ -1,22 +1,25 @@
-import { createEvent, createStore, sample } from 'effector';
+import { combine, createEvent, createStore, sample } from 'effector';
 import { spread, delay } from 'patronum';
 
-import { Transaction } from '@entities/transaction';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { walletSelectModel } from '@features/wallets';
 import { proxiesModel } from '@features/proxies';
-import { walletModel } from '@entities/wallet';
+import { walletModel, walletUtils } from '@entities/wallet';
 import { balanceSubModel } from '@features/balances';
 import { Step, AddProxyStore } from '../lib/types';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
+import { addProxyUtils } from '../lib/add-proxy-utils';
+import { BasketTransaction, Transaction } from '@shared/core';
+import { basketModel } from '@entities/basket';
 
 const stepChanged = createEvent<Step>();
 
 const flowStarted = createEvent();
 const flowFinished = createEvent();
 const flowClosed = createEvent();
+const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
@@ -24,6 +27,19 @@ const $addProxyStore = createStore<AddProxyStore | null>(null).reset(flowFinishe
 const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
+
+const $initiatorWallet = combine(
+  {
+    store: $addProxyStore,
+    wallets: walletModel.$wallets,
+  },
+  ({ store, wallets }) => {
+    if (!store) return undefined;
+
+    return walletUtils.getWalletById(wallets, store.account.walletId);
+  },
+  { skipVoid: false },
+);
 
 sample({ clock: stepChanged, target: $step });
 
@@ -108,10 +124,11 @@ sample({
   source: {
     addProxyStore: $addProxyStore,
     coreTx: $coreTx,
+    wrappedTx: $wrappedTx,
     multisigTx: $multisigTx,
   },
   filter: (proxyData) => {
-    return Boolean(proxyData.addProxyStore) && Boolean(proxyData.coreTx);
+    return Boolean(proxyData.addProxyStore) && Boolean(proxyData.wrappedTx) && Boolean(proxyData.coreTx);
   },
   fn: (proxyData, signParams) => ({
     event: {
@@ -120,7 +137,8 @@ sample({
       account: proxyData.addProxyStore!.account,
       signatory: proxyData.addProxyStore!.signatory,
       description: proxyData.addProxyStore!.description,
-      transactions: [proxyData.coreTx!],
+      coreTxs: [proxyData.coreTx!],
+      wrappedTxs: [proxyData.wrappedTx!],
       multisigTxs: proxyData.multisigTx ? [proxyData.multisigTx] : [],
     },
     step: Step.SUBMIT,
@@ -134,7 +152,7 @@ sample({
 sample({
   clock: delay(submitModel.output.formSubmitted, 2000),
   source: $step,
-  filter: (step) => step === Step.SUBMIT,
+  filter: (step) => addProxyUtils.isSubmitStep(step),
   target: flowFinished,
 });
 
@@ -159,6 +177,33 @@ sample({
 });
 
 sample({
+  clock: txSaved,
+  source: {
+    store: $addProxyStore,
+    coreTx: $coreTx,
+    txWrappers: formModel.$txWrappers,
+  },
+  filter: ({ store, coreTx, txWrappers }: any) => {
+    return Boolean(store) && Boolean(coreTx) && Boolean(txWrappers);
+  },
+  fn: ({ store, coreTx, txWrappers }) => {
+    const tx = {
+      initiatorWallet: store!.account.walletId,
+      coreTx,
+      txWrappers,
+    } as BasketTransaction;
+
+    return [tx];
+  },
+  target: basketModel.events.transactionsCreated,
+});
+
+sample({
+  clock: txSaved,
+  target: flowFinished,
+});
+
+sample({
   clock: [flowFinished, flowClosed],
   fn: () => Step.NONE,
   target: stepChanged,
@@ -167,9 +212,12 @@ sample({
 export const addProxyModel = {
   $step,
   $chain: $addProxyStore.map((store) => store?.chain, { skipVoid: false }),
+  $initiatorWallet,
+
   events: {
     flowStarted,
     stepChanged,
+    txSaved,
   },
   output: {
     flowFinished,

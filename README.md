@@ -43,7 +43,7 @@ Polkadot & Kusama ecosystem Enterprise Desktop application.
 2. Multishard wallet and multishard operations
 3. Show wallet balances for any supported token (assets, ORML, balances)
 4. Token transfer for any supported token (assets, ORML, balances)
-5. Multisig account and transactions with Spektr Matrix Protocol implementation
+5. Multisig account and transactions without passing callData off-chain
 6. Relay Chain staking
 
 ## Changelog

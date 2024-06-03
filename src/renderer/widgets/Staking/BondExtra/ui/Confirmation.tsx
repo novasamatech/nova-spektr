@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { ReactNode } from 'react';
 
 import { Button, DetailRow, FootnoteText, Icon, Tooltip, CaptionText } from '@shared/ui';
 import { useI18n } from '@app/providers';
@@ -14,10 +15,11 @@ import { FeeLoader } from '@entities/transaction';
 import { priceProviderModel } from '@entities/price';
 
 type Props = {
+  secondaryActionButton?: ReactNode;
   onGoBack: () => void;
 };
 
-export const Confirmation = ({ onGoBack }: Props) => {
+export const Confirmation = ({ secondaryActionButton, onGoBack }: Props) => {
   const { t } = useI18n();
 
   const confirmStore = useUnit(confirmModel.$confirmStore);
@@ -205,12 +207,16 @@ export const Confirmation = ({ onGoBack }: Props) => {
           <Button variant="text" onClick={onGoBack}>
             {t('operation.goBackButton')}
           </Button>
+          <div className="flex gap-4">
+            {secondaryActionButton}
 
-          <SignButton
-            disabled={isFeeLoading}
-            type={(signerWallet || initiatorWallet).type}
-            onClick={confirmModel.output.formSubmitted}
-          />
+            <SignButton
+              isDefault={Boolean(secondaryActionButton)}
+              disabled={isFeeLoading}
+              type={(signerWallet || initiatorWallet).type}
+              onClick={confirmModel.output.formSubmitted}
+            />
+          </div>
         </div>
       </div>
 

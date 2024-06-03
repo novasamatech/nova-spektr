@@ -10,25 +10,27 @@ import { validatorsService } from '@entities/staking';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { validatorsModel } from '@features/staking';
-import { Account } from '@shared/core';
+import {
+  Account,
+  BasketTransaction,
+  WrapperKind,
+  MultisigTxWrapper,
+  ProxyTxWrapper,
+  TxWrapper,
+  Transaction,
+} from '@shared/core';
 import { Step, BondNominateData, WalletData, FeeData } from '../lib/types';
 import { bondUtils } from '../lib/bond-utils';
 import { formModel } from './form-model';
 import { confirmModel } from './confirm-model';
-import {
-  TxWrapper,
-  Transaction,
-  transactionBuilder,
-  transactionService,
-  WrapperKind,
-  MultisigTxWrapper,
-  ProxyTxWrapper,
-} from '@entities/transaction';
+import { transactionBuilder, transactionService } from '@entities/transaction';
+import { basketModel } from '@entities/basket/model/basket-model';
 
 const stepChanged = createEvent<Step>();
 
 const flowStarted = createEvent<WalletData>();
 const flowFinished = createEvent();
+const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
@@ -116,10 +118,9 @@ sample({
   source: {
     walletData: $walletData,
     wallets: walletModel.$wallets,
-    accounts: walletModel.$accounts,
   },
   filter: ({ walletData }) => Boolean(walletData),
-  fn: ({ walletData, wallets, accounts }, data) => {
+  fn: ({ walletData, wallets }, data) => {
     const signatories = 'signatory' in data && data.signatory ? [data.signatory] : [];
 
     return bondUtils.getTxWrappers({
@@ -127,7 +128,6 @@ sample({
       wallet: walletData!.wallet,
       wallets,
       account: walletData!.shards[0],
-      accounts,
       signatories,
     });
   },
@@ -360,7 +360,8 @@ sample({
       account: bondFlowData.bondData!.shards[0],
       signatory: bondFlowData.bondData!.signatory,
       description: bondFlowData.bondData!.description,
-      transactions: bondFlowData.transactions!.map((tx) => tx.coreTx),
+      coreTxs: bondFlowData.transactions!.map((tx) => tx.coreTx),
+      wrappedTxs: bondFlowData.transactions!.map((tx) => tx.wrappedTx),
       multisigTxs: bondFlowData.transactions!.map((tx) => tx.multisigTx).filter(nonNullable),
     },
     step: Step.SUBMIT,
@@ -373,6 +374,8 @@ sample({
 
 sample({
   clock: delay(submitModel.output.formSubmitted, 2000),
+  source: $step,
+  filter: (step) => bondUtils.isSubmitStep(step),
   target: flowFinished,
 });
 
@@ -382,12 +385,46 @@ sample({
   target: [stepChanged, formModel.events.formCleared, validatorsModel.events.formCleared],
 });
 
+sample({
+  clock: txSaved,
+  source: {
+    store: $walletData,
+    coreTxs: $pureTxs,
+    txWrappers: $txWrappers,
+  },
+  filter: ({ store, coreTxs, txWrappers }: any) => {
+    return Boolean(store) && Boolean(coreTxs) && Boolean(txWrappers);
+  },
+  fn: ({ store, coreTxs, txWrappers }) => {
+    const txs = coreTxs!.map(
+      (coreTx) =>
+        ({
+          initiatorWallet: store!.wallet.id,
+          coreTx,
+          txWrappers,
+          groupId: Date.now(),
+        } as BasketTransaction),
+    );
+
+    return txs;
+  },
+  target: basketModel.events.transactionsCreated,
+});
+
+sample({
+  clock: txSaved,
+  target: flowFinished,
+});
+
 export const bondNominateModel = {
   $step,
   $walletData,
+  $initiatorWallet: $walletData.map((data) => data?.wallet),
+
   events: {
     flowStarted,
     stepChanged,
+    txSaved,
   },
   output: {
     flowFinished,

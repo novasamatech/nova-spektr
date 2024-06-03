@@ -1,10 +1,9 @@
 import { act, render, screen } from '@testing-library/react';
 import { ApiPromise } from '@polkadot/api';
 
-import { Transaction } from '@entities/transaction';
 import { XcmFee } from './XcmFee';
 import { ChainXCM, XcmConfig } from '@shared/api/xcm';
-import type { Asset } from '@shared/core';
+import type { Asset, Transaction } from '@shared/core';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -18,8 +17,7 @@ jest.mock('@entities/transaction', () => ({
   }),
 }));
 
-jest.mock('@entities/asset', () => ({
-  ...jest.requireActual('@entities/asset'),
+jest.mock('@entities/asset/ui', () => ({
   AssetBalance: ({ value }: any) => <div>{value}</div>,
 }));
 

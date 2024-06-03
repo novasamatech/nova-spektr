@@ -1,12 +1,12 @@
 import { Table } from 'dexie';
 
-import { MultisigEvent, MultisigTransaction, MultisigTransactionKey } from '@entities/transaction/model/transaction';
+import { MultisigEvent, MultisigTransaction, MultisigTransactionKey } from '@shared/core';
 import type {
   ChainMetadata,
-  Wallet,
-  Account,
   Contact,
+  Account,
   AccountId,
+  BasketTransaction,
   CallHash,
   ChainId,
   Balance,
@@ -14,6 +14,7 @@ import type {
   Connection,
   Notification,
   ProxyGroup,
+  Wallet,
 } from '@shared/core';
 
 // =====================================================
@@ -70,7 +71,7 @@ type WithID<T extends Object> = { id?: ID } & T;
 export type MultisigTransactionDS = WithID<MultisigTransaction>;
 export type MultisigEventDS = WithID<MultisigEvent>;
 
-export type TWallet = Table<Wallet, Wallet['id']>;
+export type TWallet = Table<Omit<Wallet, 'accounts'>, Wallet['id']>;
 export type TContact = Table<Contact, Contact['id']>;
 export type TAccount = Table<Account, Account['id']>;
 export type TBalance = Table<Balance, Balance['id']>;
@@ -81,3 +82,4 @@ export type TMultisigTransaction = Table<MultisigTransaction, ID[]>;
 export type TMultisigEvent = Table<MultisigEvent, ID>;
 export type TNotification = Table<Notification, Notification['id']>;
 export type TMetadata = Table<ChainMetadata, ChainMetadata['id']>;
+export type TBasketTransaction = Table<BasketTransaction, BasketTransaction['id']>;
