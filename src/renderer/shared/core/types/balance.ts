@@ -20,3 +20,5 @@ export type BalanceLock = {
   type: LockTypes;
   amount: string;
 };
+
+export type AssetBalance = Pick<Balance, 'verified' | 'free' | 'reserved' | 'frozen' | 'locked'>;
