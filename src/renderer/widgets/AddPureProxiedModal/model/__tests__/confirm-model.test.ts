@@ -1,6 +1,6 @@
 import { allSettled, fork } from 'effector';
 
-import { confirmModel } from '../confirm-model';
+import { addPureProxiedConfirmModel as confirmModel } from '@features/operations/OperationsConfirm/AddPureProxied';
 import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
 import { Account, Chain, Transaction } from '@shared/core';
