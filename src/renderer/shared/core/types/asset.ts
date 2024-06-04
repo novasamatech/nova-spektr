@@ -39,6 +39,7 @@ export type AssetByChains = {
   precision: number;
   icon: string;
   symbol: string;
+  isTestToken?: boolean;
   priceId?: string;
   totalBalance?: AssetBalance;
   chains: {

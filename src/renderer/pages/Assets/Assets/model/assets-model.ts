@@ -4,7 +4,7 @@ import { createEvent, sample, createStore } from 'effector';
 import type { Account, Wallet } from '@shared/core';
 import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
-import { portfolioModel, assetsSettingsModel } from '@features/assets';
+import { portfolioModel, assetsSettingsModel, assetsSearchModel } from '@features/assets';
 
 const activeShardsSet = createEvent<Account[]>();
 
@@ -19,6 +19,11 @@ sample({
 sample({
   clock: assetsSettingsModel.$hideZeroBalances,
   target: portfolioModel.events.hideZeroBalancesChanged,
+});
+
+sample({
+  clock: assetsSearchModel.$query,
+  target: portfolioModel.events.queryChanged,
 });
 
 sample({
