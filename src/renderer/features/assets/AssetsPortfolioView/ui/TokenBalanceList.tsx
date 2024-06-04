@@ -41,8 +41,14 @@ export const TokenBalanceList = ({ asset }: Props) => {
                   <FootnoteText className="text-text-tertiary mr-1.5">
                     {t('balances.availableNetworks', { count: asset.chains.length })}
                   </FootnoteText>
-                  <ChainIcon src={chains[asset.chains[0].chainId].icon} name={asset.chains[0].name} size={18} />
                   <ChainIcon
+                    key={`${asset.chains[0].chainId}-${asset.chains[0].assetSymbol}`}
+                    src={chains[asset.chains[0].chainId].icon}
+                    name={asset.chains[0].name}
+                    size={18}
+                  />
+                  <ChainIcon
+                    key={`${asset.chains[1].chainId}-${asset.chains[1].assetSymbol}`}
                     className="mx-[-8px]"
                     src={chains[asset.chains[1].chainId].icon}
                     name={asset.chains[1].name}
@@ -50,7 +56,7 @@ export const TokenBalanceList = ({ asset }: Props) => {
                   />
                   {asset.chains.length > 2 && (
                     <div className="b-r-2 w-6 rounded flex items-center justify-center bg-token-background p-0.5">
-                      <HelpText className="text-white">+1</HelpText>
+                      <HelpText className="text-white">{t('portfolilo.networkCounter')}</HelpText>
                     </div>
                   )}
                   {asset.totalBalance?.verified && (
