@@ -26,8 +26,6 @@ export const Confirmation = ({ secondaryActionButton, onGoBack }: Props) => {
   const signerWallet = useUnit(confirmModel.$signerWallet);
   const proxiedWallet = useUnit(confirmModel.$proxiedWallet);
 
-  console.log('xcm', confirmStore, initiatorWallet);
-
   if (!confirmStore || !initiatorWallet) return null;
 
   return (
