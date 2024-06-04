@@ -1,13 +1,12 @@
-import { AssetBalance } from '../index';
 import { Shimmering, HelpText } from '@shared/ui';
 import type { Asset } from '@shared/core';
-import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { AssetFiatBalance } from '@entities/price';
+import { AssetBalance } from '../index';
 
 type Props = {
   asset: Asset;
-  value?: string;
   label: string;
-  showShimmer?: boolean;
+  value?: string;
 };
 
 export const AssetDetails = ({ asset, value, label }: Props) => {
