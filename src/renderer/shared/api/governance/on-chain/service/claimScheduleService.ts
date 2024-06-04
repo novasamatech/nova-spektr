@@ -21,7 +21,7 @@ import {
   PendingChunk,
   ClaimableChunk,
   ClaimTimeUntil,
-} from '../lib/types';
+} from '../lib/claim-types';
 import type {
   BlockHeight,
   ReferendumInfo,

@@ -1,20 +1,29 @@
-import { useUnit } from 'effector-react';
-
 import { useI18n } from '@app/providers';
-import { Voted, ReferendumTimer } from '@entities/governance';
-import { FootnoteText, Accordion, Plate, CaptionText, OperationStatus, HeadlineText } from '@shared/ui';
-import type { ReferendumId, ReferendumInfo } from '@shared/core';
-import { referendumListModel } from '../model/referendum-list-model';
+import { Voted } from '@entities/governance';
+import { FootnoteText, Accordion, CaptionText, OperationStatus, HeadlineText } from '@shared/ui';
+import { ReferendumId, CompletedReferendum, ReferendumType } from '@shared/core';
+
+const Status: Record<
+  Exclude<ReferendumType, ReferendumType.Ongoing>,
+  { text: string; pallet: 'default' | 'success' | 'error' }
+> = {
+  [ReferendumType.Approved]: { text: 'Executed', pallet: 'success' },
+  [ReferendumType.Rejected]: { text: 'Rejected', pallet: 'error' },
+  [ReferendumType.Cancelled]: { text: 'Cancelled', pallet: 'default' },
+  [ReferendumType.Killed]: { text: 'Killed', pallet: 'error' },
+  [ReferendumType.TimedOut]: { text: 'Timed out', pallet: 'default' },
+};
 
 type Props = {
-  referendums: Record<ReferendumId, ReferendumInfo>;
+  referendums: Map<ReferendumId, CompletedReferendum>;
+  details: Record<ReferendumId, string>;
   onSelected: (index: ReferendumId) => void;
 };
 
-export const CompletedReferendums = ({ referendums, onSelected }: Props) => {
+export const CompletedReferendums = ({ referendums, details, onSelected }: Props) => {
   const { t } = useI18n();
 
-  const referendumsDetails = useUnit(referendumListModel.$referendumsDetails);
+  if (referendums.size === 0) return null;
 
   return (
     <Accordion isDefaultOpen>
@@ -27,16 +36,23 @@ export const CompletedReferendums = ({ referendums, onSelected }: Props) => {
         </div>
       </Accordion.Button>
       <Accordion.Content as="ul" className="flex flex-col gap-y-2">
-        {Object.entries(referendums).map(([index, referendum]) => (
-          <Plate as="li" key={index} className="flex flex-col gap-y-3">
-            <div className="flex items-center gap-x-2">
-              <Voted />
-              <OperationStatus pallet="success">Approved</OperationStatus>
-              <ReferendumTimer status="reject" time={600000} />
-              <FootnoteText className="ml-auto text-text-secondary">#{index}</FootnoteText>
-            </div>
-            <HeadlineText>{referendumsDetails[index] || `Referendum #${index}`}</HeadlineText>
-          </Plate>
+        {Array.from(referendums).map(([index, referendum]) => (
+          <li key={index}>
+            <button
+              type="button"
+              className="flex flex-col gap-y-3 p-3 w-full rounded-md bg-white"
+              onClick={() => onSelected(index)}
+            >
+              <div className="flex items-center gap-x-2 w-full">
+                <Voted />
+                <OperationStatus pallet={Status[referendum.type].pallet}>
+                  {t(Status[referendum.type].text)}
+                </OperationStatus>
+                <FootnoteText className="ml-auto text-text-secondary">#{index}</FootnoteText>
+              </div>
+              <HeadlineText>{details[index] || `Referendum #${index}`}</HeadlineText>
+            </button>
+          </li>
         ))}
       </Accordion.Content>
     </Accordion>

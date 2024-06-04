@@ -3,4 +3,10 @@ export { ChainSelector, InactiveNetwork, chainSelectorModel } from './ChainSelec
 export { Delegations, delegationsModel } from './Delegations';
 export { ReferendumDetails, referendumDetailsModel } from './ReferendumDetails';
 export { ReferendumFilter, EmptyResults, referendumFilterModel } from './ReferendumFilter';
-export { CompletedReferendums, OngoingReferendums, LoadingReferendums, referendumListModel } from './ReferendumList';
+export {
+  CompletedReferendums,
+  OngoingReferendums,
+  LoadingCompleted,
+  LoadingOngoing,
+  referendumListModel,
+} from './ReferendumList';

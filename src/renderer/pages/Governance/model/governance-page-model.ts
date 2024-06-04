@@ -2,6 +2,7 @@ import { createEvent, createStore, sample } from 'effector';
 
 import type { ChainId, ReferendumId } from '@shared/core';
 import { referendumListModel, referendumDetailsModel } from '@features/governance';
+import { governanceModel } from '@entities/governance';
 
 const componentMounted = createEvent();
 const referendumSelected = createEvent<ReferendumId>();
@@ -27,10 +28,10 @@ sample({
 //   target: referendumDetailsModel.events.referendumChanged,
 // });
 
-export const governanceModel = {
+export const governancePageModel = {
   // TODO: will be filtered in upcoming tasks
-  $ongoing: referendumListModel.$ongoingReferendums,
-  $completed: referendumListModel.$completedReferendums,
+  $ongoing: governanceModel.$ongoingReferendums,
+  $completed: governanceModel.$completedReferendums,
 
   events: {
     componentMounted,

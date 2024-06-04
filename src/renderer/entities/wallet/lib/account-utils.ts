@@ -9,7 +9,7 @@ import { AccountType, ChainType, CryptoType, ProxyType, ProxyVariant } from '@sh
 import type {
   ID,
   AccountId,
-  Threshold,
+  MultisigThreshold,
   MultisigAccount,
   ChainAccount,
   ShardAccount,
@@ -120,7 +120,11 @@ function isEthereumBased(account: Account): boolean {
 
 // Get specific accounts
 
-function getMultisigAccountId(ids: AccountId[], threshold: Threshold, cryptoType = CryptoType.SR25519): AccountId {
+function getMultisigAccountId(
+  ids: AccountId[],
+  threshold: MultisigThreshold,
+  cryptoType = CryptoType.SR25519,
+): AccountId {
   const accountId = createKeyMulti(ids, threshold);
   const isEthereum = cryptoType === CryptoType.ETHEREUM;
 

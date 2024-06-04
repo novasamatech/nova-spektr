@@ -3,24 +3,26 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { Header } from '@shared/ui';
-import { governanceModel } from '../model/governance-model';
+import { governancePageModel } from '../model/governance-page-model';
 import {
   ReferendumFilter,
   ReferendumDetails,
+  LoadingCompleted,
+  referendumListModel,
+  LoadingOngoing,
+  OngoingReferendums,
   CompletedReferendums,
-  EmptyResults,
-  LoadingReferendums,
-  InactiveNetwork,
 } from '@features/governance';
 
 export const Governance = () => {
   const { t } = useI18n();
 
-  // const ongoing = useUnit(governanceModel.$ongoing);
-  const completed = useUnit(governanceModel.$completed);
+  const ongoing = useUnit(governancePageModel.$ongoing);
+  const completed = useUnit(governancePageModel.$completed);
+  const details = useUnit(referendumListModel.$referendumsDetails);
 
   useEffect(() => {
-    governanceModel.events.componentMounted();
+    governancePageModel.events.componentMounted();
   }, []);
 
   return (
@@ -39,12 +41,24 @@ export const Governance = () => {
 
           {/* TODO: Tracks - Voted filter */}
 
-          {/*<OngoingReferendums referendums={ongoing} onSelected={governanceModel.events.referendumSelected} />*/}
-          <CompletedReferendums referendums={completed} onSelected={governanceModel.events.referendumSelected} />
-          <LoadingReferendums />
+          <div className="flex flex-col gap-y-3">
+            <LoadingOngoing />
+            <LoadingCompleted />
 
-          <EmptyResults />
-          <InactiveNetwork className="flex-grow mb-28" />
+            <OngoingReferendums
+              referendums={ongoing}
+              details={details}
+              onSelected={governancePageModel.events.referendumSelected}
+            />
+            <CompletedReferendums
+              referendums={completed}
+              details={details}
+              onSelected={governancePageModel.events.referendumSelected}
+            />
+          </div>
+
+          {/*<EmptyResults />*/}
+          {/*<InactiveNetwork className="flex-grow mb-28" />*/}
         </section>
       </div>
 

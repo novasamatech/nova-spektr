@@ -1,11 +1,29 @@
 import { createStore, createEvent, createEffect, restore, sample, combine } from 'effector';
 import { ApiPromise } from '@polkadot/api';
-import { spread } from 'patronum';
+import { spread, or, and, not } from 'patronum';
 import isEmpty from 'lodash/isEmpty';
+import { BN_ZERO, BN } from '@polkadot/util';
 
-import { ReferendumInfo, ChainId, ReferendumId, ReferendumType } from '@shared/core';
-import { IGovernanceApi, governanceService, polkassemblyService } from '@shared/api/governance';
-import { networkModel } from '@entities/network';
+import { networkModel, networkUtils } from '@entities/network';
+import { referendumUtils, governanceModel } from '@entities/governance';
+import { getCurrentBlockNumber } from '@shared/lib/utils';
+import { referendumListUtils } from '../lib/referendum-list-utils';
+import {
+  ReferendumInfo,
+  ChainId,
+  ReferendumId,
+  OngoingReferendum,
+  CompletedReferendum,
+  TrackInfo,
+  TrackId,
+  VotingThreshold,
+} from '@shared/core';
+import {
+  IGovernanceApi,
+  governanceService,
+  polkassemblyService,
+  opengovThresholdService,
+} from '@shared/api/governance';
 
 const chainIdChanged = createEvent<ChainId>();
 const governanceApiChanged = createEvent<IGovernanceApi>();
@@ -13,14 +31,78 @@ const governanceApiChanged = createEvent<IGovernanceApi>();
 const $chainId = restore(chainIdChanged, null);
 const $governanceApi = restore(governanceApiChanged, polkassemblyService);
 
-const $ongoingReferendums = createStore<Record<ReferendumId, ReferendumInfo>>({});
-const $completedReferendums = createStore<Record<ReferendumId, ReferendumInfo>>({});
 const $referendumsDetails = createStore<Record<ReferendumId, string>>({});
-const $referendumsRequested = createStore<boolean>(false).reset(chainIdChanged);
+const $referendumsRequested = createStore<boolean>(false);
 
-const requestOnChainReferendumsFx = createEffect((api: ApiPromise): Promise<Record<ReferendumId, ReferendumInfo>> => {
+const $isConnectionActive = combine(
+  {
+    chainId: $chainId,
+    statuses: networkModel.$connectionStatuses,
+  },
+  ({ chainId, statuses }) => {
+    if (!chainId) return false;
+
+    return networkUtils.isConnectingStatus(statuses[chainId]) || networkUtils.isConnectedStatus(statuses[chainId]);
+  },
+);
+
+const requestOnChainReferendumsFx = createEffect((api: ApiPromise): Promise<Map<ReferendumId, ReferendumInfo>> => {
   return governanceService.getReferendums(api);
 });
+
+const requestTracksFx = createEffect((api: ApiPromise): Record<TrackId, TrackInfo> => {
+  return governanceService.getTracks(api);
+});
+
+type ThresholdParams = {
+  api: ApiPromise;
+  referendums: Map<ReferendumId, OngoingReferendum>;
+  tracks: Record<TrackId, TrackInfo>;
+};
+const getApproveThresholdsFx = createEffect(
+  async ({ api, referendums, tracks }: ThresholdParams): Promise<Record<ReferendumId, VotingThreshold>> => {
+    const blockNumber = await getCurrentBlockNumber(api);
+
+    const result: Record<ReferendumId, VotingThreshold> = {};
+
+    for (const [index, referendum] of referendums.entries()) {
+      result[index] = opengovThresholdService.ayesFractionThreshold({
+        approvalCurve: tracks[referendum.track].minApproval,
+        tally: referendum.tally,
+        totalIssuance: BN_ZERO, // not used in calculation
+        blockDifference: referendum.deciding?.since ? blockNumber - referendum.deciding.since : 0,
+        decisionPeriod: new BN(tracks[referendum.track].decisionPeriod),
+      });
+    }
+
+    return result;
+  },
+);
+
+const getSupportThresholdsFx = createEffect(
+  async ({ api, referendums, tracks }: ThresholdParams): Promise<Record<ReferendumId, VotingThreshold>> => {
+    const blockNumber = await getCurrentBlockNumber(api);
+    const totalIssuance = await api.query.balances.totalIssuance();
+    const inactiveIssuance = await api.query.balances.inactiveIssuance();
+
+    const result: Record<ReferendumId, VotingThreshold> = {};
+
+    for (const [index, referendum] of referendums.entries()) {
+      if (tracks[referendum.track].minSupport.type === 'LinearDecreasing') {
+        console.log('=== index', index);
+      }
+      result[index] = opengovThresholdService.supportThreshold({
+        supportCurve: tracks[referendum.track].minSupport,
+        tally: referendum.tally,
+        totalIssuance: totalIssuance.toBn().sub(inactiveIssuance.toBn()),
+        blockDifference: referendum.deciding?.since ? blockNumber - referendum.deciding.since : 0,
+        decisionPeriod: new BN(tracks[referendum.track].decisionPeriod),
+      });
+    }
+
+    return result;
+  },
+);
 
 type OffChainParams = {
   chainId: ChainId;
@@ -28,7 +110,8 @@ type OffChainParams = {
 };
 const requestOffChainReferendumsFx = createEffect(
   ({ chainId, service }: OffChainParams): Promise<Record<string, string>> => {
-    return service.getReferendumList(chainId);
+    return Promise.resolve({});
+    // return service.getReferendumList(chainId);
   },
 );
 
@@ -47,32 +130,55 @@ const $isApiActive = combine($api, (api) => {
 });
 
 sample({
+  clock: chainIdChanged,
+  source: $chainId,
+  filter: (oldChainId, newChainId) => oldChainId !== newChainId,
+  target: $referendumsRequested.reinit,
+});
+
+sample({
+  clock: $api.updates,
+  fn: (api) => api!,
+  target: requestTracksFx,
+});
+
+sample({
   clock: $api.updates,
   source: $referendumsRequested,
   filter: (referendumsRequested, api) => !referendumsRequested && Boolean(api),
   fn: (_, api) => api!,
-  target: requestOnChainReferendumsFx,
+  target: [requestTracksFx, requestOnChainReferendumsFx],
+});
+
+sample({
+  clock: requestTracksFx.doneData,
+  target: governanceModel.$tracks,
 });
 
 sample({
   clock: requestOnChainReferendumsFx.doneData,
   fn: (referendums) => {
-    const ongoing: Record<ReferendumId, ReferendumInfo> = {};
-    const completed: Record<ReferendumId, ReferendumInfo> = {};
+    const ongoing: Map<ReferendumId, OngoingReferendum> = new Map();
+    const completed: Map<ReferendumId, CompletedReferendum> = new Map();
 
-    for (const [index, referendum] of Object.entries(referendums)) {
-      if (referendum.type === ReferendumType.Ongoing) {
-        ongoing[index] = referendum;
-      } else {
-        completed[index] = referendum;
+    for (const [index, referendum] of referendums) {
+      if (referendumUtils.isCompleted(referendum)) {
+        completed.set(index, referendum);
+      }
+      if (referendumUtils.isOngoing(referendum)) {
+        ongoing.set(index, referendum);
       }
     }
 
-    return { ongoing, completed, requested: true };
+    return {
+      ongoing: referendumListUtils.getSortedOngoing(ongoing),
+      completed: referendumListUtils.getSortedCompleted(completed),
+      requested: true,
+    };
   },
   target: spread({
-    ongoing: $ongoingReferendums,
-    completed: $completedReferendums,
+    ongoing: governanceModel.$ongoingReferendums,
+    completed: governanceModel.$completedReferendums,
     requested: $referendumsRequested,
   }),
 });
@@ -98,11 +204,35 @@ sample({
   target: $referendumsDetails,
 });
 
+sample({
+  clock: requestOnChainReferendumsFx.doneData,
+  source: {
+    api: $api,
+    tracks: governanceModel.$tracks,
+    referendums: governanceModel.$ongoingReferendums,
+  },
+  fn: ({ api, tracks, referendums }) => ({
+    api: api!,
+    referendums,
+    tracks,
+  }),
+  target: [getApproveThresholdsFx, getSupportThresholdsFx],
+});
+
+sample({
+  clock: getApproveThresholdsFx.doneData,
+  target: governanceModel.$approvalThresholds,
+});
+
+sample({
+  clock: getSupportThresholdsFx.doneData,
+  target: governanceModel.$supportThresholds,
+});
+
 export const referendumListModel = {
-  $ongoingReferendums,
-  $completedReferendums,
   $referendumsDetails,
   $isApiActive,
+  $isLoading: or(and($isConnectionActive, not($referendumsRequested)), requestOnChainReferendumsFx.pending),
 
   events: {
     chainIdChanged,

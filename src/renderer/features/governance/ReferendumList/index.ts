@@ -1,4 +1,5 @@
 export { OngoingReferendums } from './ui/OngoingReferendums';
 export { CompletedReferendums } from './ui/CompletedReferendums';
-export { LoadingReferendums } from './ui/LoadingReferendums';
+export { LoadingCompleted } from './ui/LoadingCompleted';
+export { LoadingOngoing } from './ui/LoadingOngoing';
 export { referendumListModel } from './model/referendum-list-model';

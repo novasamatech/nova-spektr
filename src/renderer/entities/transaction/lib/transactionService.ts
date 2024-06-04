@@ -17,7 +17,7 @@ import type {
   Address,
   ChainId,
   HexString,
-  Threshold,
+  MultisigThreshold,
   Wallet,
   MultisigAccount,
   ProxiedAccount,
@@ -114,7 +114,7 @@ async function signAndSubmit(
     .catch((error) => callback(false, (error as Error).message || 'Error'));
 }
 
-function getMultisigDeposit(threshold: Threshold, api: ApiPromise): string {
+function getMultisigDeposit(threshold: MultisigThreshold, api: ApiPromise): string {
   const { depositFactor, depositBase } = api.consts.multisig;
   const deposit = depositFactor.muln(threshold).add(depositBase);
 

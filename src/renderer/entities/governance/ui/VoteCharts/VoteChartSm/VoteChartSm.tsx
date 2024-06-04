@@ -15,7 +15,8 @@ export const VoteChartSm = ({ aye, nay, pass, bgColor = 'background-default' }: 
 
   return (
     <Tooltip
-      offsetPx={-56}
+      offsetPx={-78}
+      wrapperClass="w-full"
       content={
         <div className="flex flex-col">
           <HelpText className="text-text-white">{`${t('voteChart.toPass')} ${pass.toFixed(2)}%`}</HelpText>
@@ -24,7 +25,7 @@ export const VoteChartSm = ({ aye, nay, pass, bgColor = 'background-default' }: 
         </div>
       }
     >
-      <div className="vote-chart-container absolute">
+      <div className="vote-chart-container">
         <div className="vote-chart-aye" style={{ width: `clamp(4px, calc(${aye}% - 2px), calc(100% - 8px))` }} />
         <div className="vote-chart-nay" style={{ width: `clamp(4px, calc(${nay}% - 2px), calc(100% - 8px))` }} />
         <div
