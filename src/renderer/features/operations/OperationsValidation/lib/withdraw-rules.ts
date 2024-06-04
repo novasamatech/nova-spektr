@@ -4,6 +4,7 @@ import { BN } from '@polkadot/util';
 import { balanceValidation, descriptionValidation } from './validation';
 import { Account } from '@shared/core';
 import { AmountFeeStore, ShardsProxyFeeStore, SignatoryFeeStore } from '../types/types';
+import { ZERO_BALANCE } from '@shared/lib/utils';
 
 export const WithdrawRules = {
   shards: {
@@ -64,6 +65,16 @@ export const WithdrawRules = {
 
         return form.shards.every((_: Account, index: number) => {
           return feeBN.lte(new BN(accountsBalances[index]));
+        });
+      },
+    }),
+    noRedeemBalance: (source: Store<AmountFeeStore>) => ({
+      name: 'noRedeemBalance',
+      errorText: 'transfer.notEnoughUnlockingError',
+      source,
+      validator: (_v: string, form: any, { accountsBalances }: AmountFeeStore) => {
+        return form.shards.every((_: Account, index: number) => {
+          return accountsBalances[index] !== ZERO_BALANCE;
         });
       },
     }),

@@ -88,7 +88,7 @@ const $proxyForm = createForm<FormParams>({
             isMultisig: $isMultisig,
             chain: $chain,
           }),
-          validator: (value, form, { isMultisig, balances, chain, ...params }) => {
+          validator: (value, _f: any, { isMultisig, balances, chain, ...params }) => {
             if (!isMultisig) return true;
 
             const signatoryBalance = balanceUtils.getBalance(

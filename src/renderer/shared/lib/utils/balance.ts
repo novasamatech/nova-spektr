@@ -111,7 +111,7 @@ export const transferableAmount = (balance?: Balance): string => {
   return bnFree.gt(bnFrozen) ? bnFree.sub(bnFrozen).toString() : ZERO_BALANCE;
 };
 
-const stakedAmount = ({ locked = [] }: Balance): string => {
+export const stakedAmount = ({ locked = [] }: Balance): string => {
   const bnLocks = locked.find((lock) => lock.type === LockTypes.STAKING);
 
   return bnLocks?.amount ?? ZERO_BALANCE;
