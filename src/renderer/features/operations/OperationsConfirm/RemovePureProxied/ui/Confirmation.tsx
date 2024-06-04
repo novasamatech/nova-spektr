@@ -9,13 +9,14 @@ import { AddressWithExplorers, WalletIcon, accountUtils, ExplorersPopover, Walle
 import { proxyUtils } from '@entities/proxy';
 import { confirmModel } from '../model/confirm-model';
 import { toAddress } from '@shared/lib/utils';
+import { ProxyType } from '@shared/core';
 
 type Props = {
   secondaryActionButton?: ReactNode;
   onGoBack: () => void;
 };
 
-export const Confirmation = ({ onGoBack, secondaryActionButton }: Props) => {
+export const Confirmation = ({ secondaryActionButton, onGoBack }: Props) => {
   const { t } = useI18n();
 
   const confirmStore = useUnit(confirmModel.$confirmStore);
@@ -112,7 +113,7 @@ export const Confirmation = ({ onGoBack, secondaryActionButton }: Props) => {
         <hr className="border-filter-border w-full pr-2" />
 
         <DetailRow label={t('proxy.details.accessType')} className="pr-2">
-          <FootnoteText>{t(proxyUtils.getProxyTypeName(confirmStore.proxyType))}</FootnoteText>
+          <FootnoteText>{t(proxyUtils.getProxyTypeName(ProxyType.ANY))}</FootnoteText>
         </DetailRow>
 
         <DetailRow label={t('proxy.details.revokeFor')}>
@@ -120,7 +121,7 @@ export const Confirmation = ({ onGoBack, secondaryActionButton }: Props) => {
             type="short"
             explorers={confirmStore.chain?.explorers}
             addressFont="text-footnote text-inherit"
-            address={toAddress(confirmStore.delegate, { prefix: confirmStore.chain?.addressPrefix })}
+            address={toAddress(confirmStore.spawner, { prefix: confirmStore.chain?.addressPrefix })}
             wrapperClassName="text-text-secondary"
           />
         </DetailRow>

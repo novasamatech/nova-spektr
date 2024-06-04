@@ -20,7 +20,7 @@ import {
 import { Step, BondExtraData, WalletData, FeeData } from '../lib/types';
 import { bondExtraUtils } from '../lib/bond-extra-utils';
 import { formModel } from './form-model';
-import { confirmModel } from './confirm-model';
+import { bondExtraConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { transactionBuilder, transactionService } from '@entities/transaction';
 import { basketModel } from '@entities/basket/model/basket-model';
 
