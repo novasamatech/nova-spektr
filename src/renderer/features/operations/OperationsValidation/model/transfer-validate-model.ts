@@ -57,7 +57,7 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
       } as TransferSignatoryFeeStore,
     },
     {
-      value: transaction.args.amount,
+      value: transaction.args.value,
       form: {},
       ...TransferRules.amount.notEnoughBalance({} as Store<{ network: NetworkStore | null; balance: BalanceMap }>, {
         withFormatAmount: false,
@@ -75,7 +75,7 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
       } as { network: NetworkStore | null; balance: BalanceMap },
     },
     {
-      value: transaction.args.amount,
+      value: transaction.args.value,
       form: {},
       ...TransferRules.amount.insufficientBalanceForFee({} as Store<TransferAmountFeeStore>, {
         withFormatAmount: false,

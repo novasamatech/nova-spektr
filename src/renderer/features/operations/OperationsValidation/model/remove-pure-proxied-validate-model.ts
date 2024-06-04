@@ -4,7 +4,7 @@ import { ApiPromise } from '@polkadot/api';
 import { Asset, Balance, Chain, ID, Transaction } from '@shared/core';
 import { getAssetById, toAccountId } from '@shared/lib/utils';
 import { balanceModel } from '@entities/balance';
-import { AccountStore, SignatoryStore, ValidationResult } from '../types/types';
+import { SignatoryStore, ValidationResult } from '../types/types';
 import { validationUtils } from '../lib/validation-utils';
 import { networkModel } from '@entities/network';
 import { transactionService } from '@entities/transaction';
@@ -28,11 +28,11 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
 
   const rules = [
     {
-      value: undefined,
+      value: { accountId },
       form: {
         chain,
       },
-      ...RemovePureProxiedRules.signatory.notEnoughTokens({} as Store<SignatoryStore>),
+      ...RemovePureProxiedRules.account.notEnoughTokens({} as Store<SignatoryStore>),
       source: {
         fee,
         isMultisig: false,
@@ -40,19 +40,6 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
         multisigDeposit: '0',
         balances,
       } as SignatoryStore,
-    },
-    {
-      value: { accountId },
-      form: {
-        chain,
-      },
-      ...RemovePureProxiedRules.account.notEnoughTokens({} as Store<AccountStore>),
-      source: {
-        fee,
-        isMultisig: false,
-        proxyDeposit: '0',
-        balances,
-      } as AccountStore,
     },
   ];
 
