@@ -5,9 +5,9 @@ import { Step } from '../types';
 import { Account, Address, Asset, BasketTransaction, Chain, ChainId, Wallet } from '@shared/core';
 import { walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
-import { getAssetById, toAccountId } from '@/src/renderer/shared/lib/utils';
-import { transactionService } from '@/src/renderer/entities/transaction';
-import { transferConfirmModel } from '@/src/renderer/features/operations/OperationsConfirm';
+import { getAssetById, toAccountId } from '@shared/lib/utils';
+import { transactionService } from '@entities/transaction';
+import { transferConfirmModel } from '@features/operations/OperationsConfirm';
 
 type Input = {
   xcmChain: Chain;

@@ -11,7 +11,7 @@ import { transferUtils } from '../lib/transfer-utils';
 import { BasketTransaction, Transaction } from '@shared/core';
 import { basketModel } from '@entities/basket';
 import { walletModel, walletUtils } from '@entities/wallet';
-import { transferConfirmModel } from '@/src/renderer/features/operations/OperationsConfirm';
+import { transferConfirmModel } from '@features/operations/OperationsConfirm';
 
 const $navigation = createStore<{ navigate: NavigateFunction } | null>(null);
 const navigationApi = createApi($navigation, {

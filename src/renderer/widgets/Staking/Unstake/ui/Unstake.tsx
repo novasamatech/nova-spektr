@@ -6,11 +6,10 @@ import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
 import { OperationSign, OperationSubmit } from '@features/operations';
 import { UnstakeForm } from './UnstakeForm';
-import { Confirmation } from './Confirmation';
 import { unstakeUtils } from '../lib/unstake-utils';
 import { unstakeModel } from '../model/unstake-model';
 import { Step } from '../lib/types';
-import { basketUtils } from '@features/operations/OperationsConfirm';
+import { basketUtils, UnstakeConfirmation as Confirmation } from '@features/operations/OperationsConfirm';
 
 export const Unstake = () => {
   const { t } = useI18n();

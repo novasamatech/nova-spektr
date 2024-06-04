@@ -1,2 +1,2 @@
-export { confirmModel as addProxyConfirmModel } from './model/confirm-model';
-export { Confirmation as AddProxyConfirm } from './ui/Confirmation';
+export { confirmModel as removeProxyConfirmModel } from './model/confirm-model';
+export { Confirmation as RemoveProxyConfirm } from './ui/Confirmation';
