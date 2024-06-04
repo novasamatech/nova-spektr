@@ -1,5 +1,6 @@
 import { combine, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 
+import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
 import { basketModel } from '@entities/basket';
 import { BasketTransaction, ID, TransactionType } from '@shared/core';
@@ -17,14 +18,16 @@ import {
   restakeValidateModel,
   unstakeValidateModel,
   withdrawValidateModel,
+  ValidationResult,
 } from '@features/operations/OperationsValidation';
-import { networkModel } from '@entities/network';
+import { signOperationsModel } from './sign-operations-model';
 
 const txSelected = createEvent<ID>();
+const txClicked = createEvent<BasketTransaction>();
 const allSelected = createEvent();
 
 const $selectedTxs = createStore<ID[]>([]);
-const $invalidTxs = createStore<Set<ID>>(new Set());
+const $invalidTxs = createStore<Map<ID, ValidationResult>>(new Map());
 
 const validateFx = createEffect((transactions: BasketTransaction[]) => {
   const validateTransferBound = scopeBind(transferValidateModel.events.validationStarted, { safe: true });
@@ -132,18 +135,24 @@ sample({
   ],
   source: $invalidTxs,
   fn: (txs, { id, result }) => {
-    const newTxs = new Set(txs);
+    const newTxs = new Map(txs);
 
     if (!result) {
       newTxs.delete(id);
     } else {
-      newTxs.add(id);
+      newTxs.set(id, result);
     }
 
     return newTxs;
   },
 
   target: $invalidTxs,
+});
+
+sample({
+  clock: txClicked,
+  fn: (transaction) => [transaction],
+  target: signOperationsModel.events.flowStarted,
 });
 
 export const basketPageModel = {
@@ -153,6 +162,7 @@ export const basketPageModel = {
 
   events: {
     txSelected,
+    txClicked,
     allSelected,
   },
 };
