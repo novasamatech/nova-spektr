@@ -5,15 +5,15 @@ import { descriptionValidation } from './validation';
 import { AccountId, Chain } from '@shared/core';
 import { transferableAmount } from '@shared/lib/utils';
 import { balanceUtils } from '@entities/balance';
-import { AccountStore, SignatoryStore } from '../types/types';
+import { SignatoryStore } from '../types/types';
 
 export const RemovePureProxiedRules = {
   account: {
-    notEnoughTokens: (source: Store<AccountStore>) => ({
+    notEnoughTokens: (source: Store<SignatoryStore>) => ({
       name: 'notEnoughTokens',
       errorText: 'proxy.addProxy.notEnoughTokens',
       source,
-      validator: (value: any, form: { chain: Chain }, { isMultisig, balances, ...params }: AccountStore) => {
+      validator: (value: any, form: { chain: Chain }, { balances, ...params }: SignatoryStore) => {
         const balance = balanceUtils.getBalance(
           balances,
           value.accountId,
@@ -21,9 +21,7 @@ export const RemovePureProxiedRules = {
           form.chain.assets[0].assetId.toString(),
         );
 
-        return isMultisig
-          ? new BN(params.proxyDeposit).lte(new BN(transferableAmount(balance)))
-          : new BN(params.proxyDeposit).add(new BN(params.fee)).lte(new BN(transferableAmount(balance)));
+        return new BN(params.multisigDeposit).add(new BN(params.fee)).lte(new BN(transferableAmount(balance)));
       },
     }),
   },
