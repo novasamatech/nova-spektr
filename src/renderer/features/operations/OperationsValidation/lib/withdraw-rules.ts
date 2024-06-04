@@ -4,7 +4,7 @@ import { BN } from '@polkadot/util';
 import { balanceValidation, descriptionValidation } from './validation';
 import { Account } from '@shared/core';
 import { AmountFeeStore, ShardsProxyFeeStore, SignatoryFeeStore } from '../types/types';
-import { ZERO_BALANCE } from '@/src/renderer/shared/lib/utils';
+import { ZERO_BALANCE } from '@shared/lib/utils';
 
 export const WithdrawRules = {
   shards: {

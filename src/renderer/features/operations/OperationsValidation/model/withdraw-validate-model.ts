@@ -10,7 +10,7 @@ import { WithdrawRules } from '../lib/withdraw-rules';
 import { transactionService } from '@entities/transaction';
 import { AmountFeeStore, ValidationResult } from '../types/types';
 import { validationUtils } from '../lib/validation-utils';
-import { StakingMap, eraService, useStakingData } from '@/src/renderer/entities/staking';
+import { StakingMap, eraService, useStakingData } from '@entities/staking';
 
 const validationStarted = createEvent<{ id: ID; transaction: Transaction }>();
 const txValidated = createEvent<{ id: ID; result: ValidationResult }>();
