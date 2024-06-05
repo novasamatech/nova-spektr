@@ -4,7 +4,7 @@ import { ChangeEvent } from 'react';
 import { ChainTitle, XcmChains } from '@entities/chain';
 import { TransactionTitle, getTransactionAmount, isXcmTransaction } from '@entities/transaction';
 import { chainsService } from '@shared/api/network';
-import { getAssetById } from '@shared/lib/utils';
+import { cnTw, getAssetById } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
 import { BasketTransaction } from '@shared/core';
 import { Checkbox, HelpText, IconButton, Tooltip } from '@shared/ui';
@@ -33,8 +33,14 @@ export const Operation = ({ tx, errorText, selected, onSelect, onClick }: Props)
   };
 
   return (
-    <div className="h-[52px] flex gap-x-4 px-4 items-center w-full overflow-hidden cursor-pointer" onClick={onClick}>
-      <Checkbox checked={selected} onChange={onTxSelected} />
+    <div
+      className={cnTw(
+        'h-[52px] flex gap-x-4 px-4 items-center w-full overflow-hidden ',
+        !errorText && 'cursor-pointer',
+      )}
+      onClick={() => !errorText && onClick()}
+    >
+      <Checkbox disabled={Boolean(errorText)} checked={selected} onChange={onTxSelected} />
       <TransactionTitle className="flex-1 overflow-hidden" tx={tx.coreTx} />
 
       {asset && amount && (
