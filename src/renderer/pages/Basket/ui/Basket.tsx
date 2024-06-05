@@ -5,6 +5,7 @@ import { Button, Header } from '@shared/ui';
 import { Operation } from './Operation';
 import { basketPageModel } from '../model/basket-page-model';
 import { EmptyBasket } from './EmptyBasket';
+import { SignOperation } from './SignOperation';
 
 export const Basket = () => {
   const { t } = useI18n();
@@ -44,6 +45,8 @@ export const Basket = () => {
       )}
 
       {basketTxs.length === 0 && <EmptyBasket />}
+
+      <SignOperation />
     </section>
   );
 };

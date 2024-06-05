@@ -10,7 +10,6 @@ import { BasketTransaction } from '@shared/core';
 import { Checkbox, HelpText, IconButton, Tooltip } from '@shared/ui';
 import { basketModel } from '@entities/basket';
 import { useI18n } from '@app/providers';
-import { SignOperation } from './SignOperation';
 
 type Props = {
   tx: BasketTransaction;
@@ -60,8 +59,6 @@ export const Operation = ({ tx, errorText, selected, onSelect, onClick }: Props)
       </div>
 
       <IconButton name="delete" onClick={() => basketModel.events.transactionsRemoved([tx])} />
-
-      <SignOperation />
     </div>
   );
 };
