@@ -163,7 +163,7 @@ function sortChainsByBalance(
   );
 }
 
-const sumValues = (firstValue?: string, secondValue?: string): string => {
+export const sumValues = (firstValue?: string, secondValue?: string): string => {
   if (firstValue && secondValue) {
     return new BN(firstValue).add(new BN(secondValue)).toString();
   }

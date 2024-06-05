@@ -3,16 +3,17 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { FootnoteText, Shimmering } from '@shared/ui';
 import { priceProviderModel } from '../model/price-provider-model';
 import { currencyModel } from '../model/currency-model';
-import { formatFiatBalance, ZERO_BALANCE } from '@shared/lib/utils';
+import { cnTw, formatFiatBalance, ZERO_BALANCE } from '@shared/lib/utils';
 import { FiatBalance } from './FiatBalance';
 import { useI18n } from '@app/providers';
 
 type Props = {
   assetId?: string;
   className?: string;
+  wrapperClassName?: string;
 };
 
-export const TokenPrice = ({ assetId, className }: Props) => {
+export const TokenPrice = ({ assetId, className, wrapperClassName }: Props) => {
   const { t } = useI18n();
   const currency = useUnit(currencyModel.$activeCurrency);
   const price = useStoreMap(priceProviderModel.$assetsPrices, (prices) => {
@@ -25,7 +26,11 @@ export const TokenPrice = ({ assetId, className }: Props) => {
   if (!fiatFlag) return null;
 
   if (!assetId) {
-    return <FiatBalance amount={ZERO_BALANCE} className={className} />;
+    return (
+      <div className={wrapperClassName}>
+        <FiatBalance amount={ZERO_BALANCE} className={className} />
+      </div>
+    );
   }
 
   if (!price) return <Shimmering width={56} height={18} />;
@@ -42,7 +47,7 @@ export const TokenPrice = ({ assetId, className }: Props) => {
   });
 
   return (
-    <div className="flex gap-1">
+    <div className={cnTw('flex gap-1', wrapperClassName)}>
       <FiatBalance amount={`${balanceValue}${suffix}`} className={className} />
 
       {Boolean(price.change) && <FootnoteText className={changeStyle}>({changeToShow}%)</FootnoteText>}

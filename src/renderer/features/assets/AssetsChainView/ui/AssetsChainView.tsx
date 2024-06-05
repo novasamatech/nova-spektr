@@ -10,14 +10,16 @@ import { balanceModel } from '@entities/balance';
 import { priceProviderModel, currencyModel } from '@entities/price';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
+import { AssetsListView } from '@entities/asset';
 import { NetworkAssets } from './NetworkAssets/NetworkAssets';
 
 type Props = {
   query: string;
   activeShards: Account[];
   hideZeroBalances: boolean;
+  assetsView: AssetsListView;
 };
-export const AssetsChainView = ({ query, activeShards, hideZeroBalances }: Props) => {
+export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsView }: Props) => {
   const { t } = useI18n();
 
   const activeWallet = useUnit(walletModel.$activeWallet);
@@ -32,11 +34,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances }: Props
   const [sortedChains, setSortedChains] = useState<Chain[]>([]);
 
   useEffect(() => {
-    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
-  }, []);
-
-  useEffect(() => {
-    if (!activeWallet) return;
+    if (!activeWallet || assetsView !== AssetsListView.CHAIN_CENTRIC || !activeShards.length) return;
 
     const isMultisig = walletUtils.isMultisig(activeWallet);
 
@@ -67,7 +65,9 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances }: Props
     );
 
     setSortedChains(sortedChains);
-  }, [activeWallet, balances, assetsPrices]);
+  }, [activeWallet, balances, assetsPrices, assetsView, activeShards]);
+
+  if (assetsView !== AssetsListView.CHAIN_CENTRIC || !activeShards.length) return null;
 
   const searchSymbolOnly = sortedChains.some((chain) => {
     return chain.assets.some((asset) => isStringsMatchQuery(query, [asset.symbol, asset.name]));
@@ -75,29 +75,27 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances }: Props
 
   return (
     <div className="flex flex-col gap-y-4 w-full h-full overflow-y-scroll">
-      {activeShards.length > 0 && (
-        <ul className="flex flex-col gap-y-4 items-center w-full py-4">
-          {sortedChains.map((chain) => (
-            <NetworkAssets
-              key={chain.chainId}
-              searchSymbolOnly={searchSymbolOnly}
-              chain={chain}
-              accounts={activeShards}
-              hideZeroBalances={hideZeroBalances}
-              query={query}
-            />
-          ))}
+      <ul className="flex flex-col gap-y-4 items-center w-full py-4">
+        {sortedChains.map((chain) => (
+          <NetworkAssets
+            key={chain.chainId}
+            searchSymbolOnly={searchSymbolOnly}
+            chain={chain}
+            accounts={activeShards}
+            hideZeroBalances={hideZeroBalances}
+            query={query}
+          />
+        ))}
 
-          <div className="hidden only:flex flex-col items-center justify-center gap-y-8 w-full h-full">
-            <Icon as="img" name="emptyList" alt={t('balances.emptyStateLabel')} size={178} />
-            <BodyText align="center" className="text-text-tertiary">
-              {t('balances.emptyStateLabel')}
-              <br />
-              {t('balances.emptyStateDescription')}
-            </BodyText>
-          </div>
-        </ul>
-      )}
+        <div className="hidden only:flex flex-col items-center justify-center gap-y-8 w-full h-full">
+          <Icon as="img" name="emptyList" alt={t('balances.emptyStateLabel')} size={178} />
+          <BodyText align="center" className="text-text-tertiary">
+            {t('balances.emptyStateLabel')}
+            <br />
+            {t('balances.emptyStateDescription')}
+          </BodyText>
+        </div>
+      </ul>
     </div>
   );
 };

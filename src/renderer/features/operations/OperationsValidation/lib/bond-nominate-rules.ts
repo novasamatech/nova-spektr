@@ -3,7 +3,7 @@ import { BN } from '@polkadot/util';
 
 import { formatAmount, validateAddress } from '@shared/lib/utils';
 import { balanceValidation, descriptionValidation } from './validation';
-import { Account, RewardsDestination } from '@shared/core';
+import { Account, RewardsDestination, ShardAccount } from '@shared/core';
 import {
   BondAmountBalanceStore,
   AmountFeeStore,
@@ -106,7 +106,11 @@ export const BondNominateRules = {
       name: 'insufficientBalanceForFee',
       errorText: 'transfer.notEnoughBalanceForFeeError',
       source,
-      validator: (amount: string, form: any, { network, feeData, isMultisig, accountsBalances }: AmountFeeStore) => {
+      validator: (
+        amount: string,
+        form: { shards: ShardAccount[] },
+        { network, feeData, isMultisig, accountsBalances }: AmountFeeStore,
+      ) => {
         if (isMultisig) return true;
 
         const feeBN = new BN(feeData.fee);

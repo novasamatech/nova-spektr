@@ -44,9 +44,9 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
       } as ShardsBondBalanceStore,
     },
     {
-      value: [{ accountId }],
+      value: transaction.args.value,
       form: {
-        amount: transaction.args.amount,
+        amount: [{ accountId }],
       },
       ...BondNominateRules.amount.insufficientBalanceForFee({} as Store<AmountFeeStore>),
       source: {
