@@ -50,9 +50,24 @@ const requestOnChainReferendumsFx = createEffect((api: ApiPromise): Promise<Map<
   return governanceService.getReferendums(api);
 });
 
+type OffChainParams = {
+  chainId: ChainId;
+  service: IGovernanceApi;
+};
+const requestOffChainReferendumsFx = createEffect(
+  ({ chainId, service }: OffChainParams): Promise<Record<string, string>> => {
+    return Promise.resolve({});
+    // return service.getReferendumList(chainId);
+  },
+);
+
 const requestTracksFx = createEffect((api: ApiPromise): Record<TrackId, TrackInfo> => {
   return governanceService.getTracks(api);
 });
+
+// const requestVotingFx = createEffect((api: ApiPromise): Record<TrackId, TrackInfo> => {
+//   return governanceService.getVotingFor(api, TEST_ADDRESS);
+// });
 
 type ThresholdParams = {
   api: ApiPromise;
@@ -88,9 +103,6 @@ const getSupportThresholdsFx = createEffect(
     const result: Record<ReferendumId, VotingThreshold> = {};
 
     for (const [index, referendum] of referendums.entries()) {
-      if (tracks[referendum.track].minSupport.type === 'LinearDecreasing') {
-        console.log('=== index', index);
-      }
       result[index] = opengovThresholdService.supportThreshold({
         supportCurve: tracks[referendum.track].minSupport,
         tally: referendum.tally,
@@ -101,17 +113,6 @@ const getSupportThresholdsFx = createEffect(
     }
 
     return result;
-  },
-);
-
-type OffChainParams = {
-  chainId: ChainId;
-  service: IGovernanceApi;
-};
-const requestOffChainReferendumsFx = createEffect(
-  ({ chainId, service }: OffChainParams): Promise<Record<string, string>> => {
-    return Promise.resolve({});
-    // return service.getReferendumList(chainId);
   },
 );
 
@@ -232,7 +233,12 @@ sample({
 export const referendumListModel = {
   $referendumsDetails,
   $isApiActive,
-  $isLoading: or(and($isConnectionActive, not($referendumsRequested)), requestOnChainReferendumsFx.pending),
+  $isLoading: or(
+    and($isConnectionActive, not($referendumsRequested)),
+    requestOnChainReferendumsFx.pending,
+    getApproveThresholdsFx.pending,
+    getSupportThresholdsFx.pending,
+  ),
 
   events: {
     chainIdChanged,

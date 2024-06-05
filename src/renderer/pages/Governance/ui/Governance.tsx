@@ -4,6 +4,7 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@app/providers';
 import { Header } from '@shared/ui';
 import { governancePageModel } from '../model/governance-page-model';
+import { governanceModel } from '@entities/governance';
 import {
   ReferendumFilter,
   ReferendumDetails,
@@ -19,6 +20,8 @@ export const Governance = () => {
 
   const ongoing = useUnit(governancePageModel.$ongoing);
   const completed = useUnit(governancePageModel.$completed);
+  const supportThresholds = useUnit(governanceModel.$supportThresholds);
+  const approvalThresholds = useUnit(governanceModel.$approvalThresholds);
   const details = useUnit(referendumListModel.$referendumsDetails);
 
   useEffect(() => {
@@ -48,6 +51,8 @@ export const Governance = () => {
             <OngoingReferendums
               referendums={ongoing}
               details={details}
+              supportThresholds={supportThresholds}
+              approvalThresholds={approvalThresholds}
               onSelected={governancePageModel.events.referendumSelected}
             />
             <CompletedReferendums

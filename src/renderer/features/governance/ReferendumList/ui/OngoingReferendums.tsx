@@ -1,18 +1,29 @@
+import { isEmpty } from 'lodash';
+
 import { useI18n } from '@app/providers';
 import { Voted, ReferendumTimer, VoteChartSm } from '@entities/governance';
 import { FootnoteText, Accordion, CaptionText, OperationStatus, HeadlineText, Icon } from '@shared/ui';
-import type { ReferendumId, OngoingReferendum } from '@shared/core';
+import type { ReferendumId, OngoingReferendum, VotingThreshold } from '@shared/core';
+import { referendumListUtils } from '../lib/referendum-list-utils';
 
 type Props = {
   referendums: Map<ReferendumId, OngoingReferendum>;
   details: Record<ReferendumId, string>;
+  supportThresholds: Record<ReferendumId, VotingThreshold>;
+  approvalThresholds: Record<ReferendumId, VotingThreshold>;
   onSelected: (index: ReferendumId) => void;
 };
 
-export const OngoingReferendums = ({ referendums, details, onSelected }: Props) => {
+export const OngoingReferendums = ({
+  referendums,
+  details,
+  supportThresholds,
+  approvalThresholds,
+  onSelected,
+}: Props) => {
   const { t } = useI18n();
 
-  if (referendums.size === 0) return null;
+  if (referendums.size === 0 || isEmpty(supportThresholds) || isEmpty(approvalThresholds)) return null;
 
   return (
     <Accordion isDefaultOpen>
@@ -26,7 +37,8 @@ export const OngoingReferendums = ({ referendums, details, onSelected }: Props) 
       </Accordion.Button>
       <Accordion.Content as="ul" className="flex flex-col gap-y-2">
         {Array.from(referendums).map(([index, referendum]) => {
-          const total = referendum.tally.ayes.add(referendum.tally.nays);
+          const track = referendumListUtils.getTrackInfo(referendum.track);
+          const isPassing = supportThresholds[index].passing;
 
           return (
             <li key={index}>
@@ -36,12 +48,14 @@ export const OngoingReferendums = ({ referendums, details, onSelected }: Props) 
               >
                 <div className="flex items-center gap-x-2 w-full">
                   <Voted />
-                  <OperationStatus pallet="success">Approve</OperationStatus>
+                  <OperationStatus pallet={isPassing ? 'success' : 'default'}>
+                    {isPassing ? 'Passing' : 'Deciding'}
+                  </OperationStatus>
                   <ReferendumTimer status="reject" time={600000} />
                   <div className="flex ml-auto text-text-secondary">
                     <FootnoteText className="text-inherit">#{index}</FootnoteText>
-                    <Icon name="network" size={16} className="text-inherit ml-2 mr-1" />
-                    <FootnoteText className="text-inherit">Treasury: medium spend</FootnoteText>
+                    <Icon name={track.icon} size={16} className="text-inherit ml-2 mr-1" />
+                    <FootnoteText className="text-inherit">{track.title}</FootnoteText>
                   </div>
                 </div>
                 <div className="flex items-start gap-x-6 w-full">
@@ -50,9 +64,7 @@ export const OngoingReferendums = ({ referendums, details, onSelected }: Props) 
                   </HeadlineText>
                   <div className="basis-[200px] shrink-0">
                     <VoteChartSm
-                      aye={referendum.tally.ayes.muln(100).div(total).toNumber()}
-                      nay={referendum.tally.nays.muln(100).div(total).toNumber()}
-                      pass={25}
+                      {...referendumListUtils.getVoteFractions(referendum.tally, approvalThresholds[index].value)}
                     />
                   </div>
                 </div>
