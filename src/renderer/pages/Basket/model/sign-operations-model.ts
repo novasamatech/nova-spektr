@@ -316,7 +316,7 @@ const prepareBondNominateTransactionDataFx = createEffect(
       asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
       shards: [account],
       amount: transaction.coreTx.args.value,
-      validators: transaction.coreTx.args.validators,
+      validators: transaction.coreTx.args.targets,
       destination: transaction.coreTx.args.dest,
       description: '',
 
@@ -387,7 +387,7 @@ const prepareNominateTransactionDataFx = createEffect(
       chain,
       asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
       shards: [account],
-      validators: transaction.coreTx.args.validators,
+      validators: transaction.coreTx.args.targets,
       destination: transaction.coreTx.args.dest,
       description: '',
 
