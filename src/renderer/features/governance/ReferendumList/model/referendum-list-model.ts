@@ -8,6 +8,13 @@ import { networkModel, networkUtils } from '@entities/network';
 import { referendumUtils, governanceModel } from '@entities/governance';
 import { getCurrentBlockNumber } from '@shared/lib/utils';
 import { referendumListUtils } from '../lib/referendum-list-utils';
+import { walletModel } from '@entities/wallet';
+import {
+  IGovernanceApi,
+  governanceService,
+  polkassemblyService,
+  opengovThresholdService,
+} from '@shared/api/governance';
 import {
   ReferendumInfo,
   ChainId,
@@ -17,18 +24,15 @@ import {
   TrackInfo,
   TrackId,
   VotingThreshold,
+  Address,
+  Voting,
+  Chain,
 } from '@shared/core';
-import {
-  IGovernanceApi,
-  governanceService,
-  polkassemblyService,
-  opengovThresholdService,
-} from '@shared/api/governance';
 
-const chainIdChanged = createEvent<ChainId>();
+const chainChanged = createEvent<Chain>();
 const governanceApiChanged = createEvent<IGovernanceApi>();
 
-const $chainId = restore(chainIdChanged, null);
+const $chain = restore(chainChanged, null);
 const $governanceApi = restore(governanceApiChanged, polkassemblyService);
 
 const $referendumsDetails = createStore<Record<ReferendumId, string>>({});
@@ -36,13 +40,16 @@ const $referendumsRequested = createStore<boolean>(false);
 
 const $isConnectionActive = combine(
   {
-    chainId: $chainId,
+    chain: $chain,
     statuses: networkModel.$connectionStatuses,
   },
-  ({ chainId, statuses }) => {
-    if (!chainId) return false;
+  ({ chain, statuses }) => {
+    if (!chain) return false;
 
-    return networkUtils.isConnectingStatus(statuses[chainId]) || networkUtils.isConnectedStatus(statuses[chainId]);
+    return (
+      networkUtils.isConnectingStatus(statuses[chain.chainId]) ||
+      networkUtils.isConnectedStatus(statuses[chain.chainId])
+    );
   },
 );
 
@@ -65,9 +72,16 @@ const requestTracksFx = createEffect((api: ApiPromise): Record<TrackId, TrackInf
   return governanceService.getTracks(api);
 });
 
-// const requestVotingFx = createEffect((api: ApiPromise): Record<TrackId, TrackInfo> => {
-//   return governanceService.getVotingFor(api, TEST_ADDRESS);
-// });
+type VotingParams = {
+  api: ApiPromise;
+  tracksIds: TrackId[];
+  addresses: Address[];
+};
+const requestVotingFx = createEffect(
+  ({ api, tracksIds, addresses }: VotingParams): Promise<Record<TrackId, Record<TrackId, Voting>>> => {
+    return governanceService.getVotingFor(api, tracksIds, addresses);
+  },
+);
 
 type ThresholdParams = {
   api: ApiPromise;
@@ -118,11 +132,11 @@ const getSupportThresholdsFx = createEffect(
 
 const $api = combine(
   {
-    chainId: $chainId,
+    chain: $chain,
     apis: networkModel.$apis,
   },
-  ({ chainId, apis }) => {
-    return (chainId && apis[chainId]) || null;
+  ({ chain, apis }) => {
+    return (chain && apis[chain.chainId]) || null;
   },
 );
 
@@ -131,16 +145,10 @@ const $isApiActive = combine($api, (api) => {
 });
 
 sample({
-  clock: chainIdChanged,
-  source: $chainId,
-  filter: (oldChainId, newChainId) => oldChainId !== newChainId,
+  clock: chainChanged,
+  source: $chain,
+  filter: (oldChain, newChain) => oldChain?.chainId !== newChain.chainId,
   target: $referendumsRequested.reinit,
-});
-
-sample({
-  clock: $api.updates,
-  fn: (api) => api!,
-  target: requestTracksFx,
 });
 
 sample({
@@ -154,6 +162,38 @@ sample({
 sample({
   clock: requestTracksFx.doneData,
   target: governanceModel.$tracks,
+});
+
+sample({
+  clock: requestTracksFx.doneData,
+  source: {
+    api: $api,
+    chain: $chain,
+    wallet: walletModel.$activeWallet,
+    requested: $referendumsRequested,
+  },
+  filter: ({ api, chain, wallet, requested }) => {
+    return Boolean(chain) && Boolean(wallet) && !requested && Boolean(api);
+  },
+  fn: ({ api, chain, wallet }, tracks) => {
+    // TODO: uncomment when governance page is ready
+    // const matchedAccounts = walletUtils.getAccountsBy([wallet!], (account) => {
+    //   return accountUtils.isChainIdMatch(account, chain!.chainId);
+    // });
+    // const addresses = matchedAccounts.map((a) => toAddress(a.accountId, { prefix: chain!.addressPrefix }));
+    const addresses = [
+      '12mP4sjCfKbDyMRAEyLpkeHeoYtS5USY4x34n9NMwQrcEyoh',
+      '15x643ScnbVQM3zGcyRw3qVtaCoddmAfDv5LZVfU8fNxkVaR',
+    ];
+
+    return { api: api!, tracksIds: Object.keys(tracks), addresses };
+  },
+  target: requestVotingFx,
+});
+
+sample({
+  clock: requestVotingFx.doneData,
+  target: governanceModel.$voting,
 });
 
 sample({
@@ -187,14 +227,14 @@ sample({
 sample({
   clock: requestOnChainReferendumsFx.doneData,
   source: {
-    chainId: $chainId,
+    chain: $chain,
     service: $governanceApi,
   },
-  filter: ({ chainId, service }, referendums) => {
-    return Boolean(chainId) && !isEmpty(referendums) && Boolean(service);
+  filter: ({ chain, service }, referendums) => {
+    return Boolean(chain) && !isEmpty(referendums) && Boolean(service);
   },
-  fn: ({ chainId, service }) => {
-    return { chainId: chainId!, service: service! };
+  fn: ({ chain, service }) => {
+    return { chainId: chain!.chainId, service: service! };
   },
   target: requestOffChainReferendumsFx,
 });
@@ -238,10 +278,11 @@ export const referendumListModel = {
     requestOnChainReferendumsFx.pending,
     getApproveThresholdsFx.pending,
     getSupportThresholdsFx.pending,
+    requestVotingFx.pending,
   ),
 
   events: {
-    chainIdChanged,
+    chainChanged,
     governanceApiChanged,
   },
 };

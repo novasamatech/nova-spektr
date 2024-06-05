@@ -126,15 +126,27 @@ async function getReferendums(api: ApiPromise): Promise<Map<ReferendumId, Refere
   return result;
 }
 
-async function getVotingFor(api: ApiPromise, address: Address): Promise<Record<TrackId, Voting>> {
-  const votingEntries = await api.query.convictionVoting.votingFor.entries(address);
+async function getVotingFor(
+  api: ApiPromise,
+  tracksIds: TrackId[],
+  addresses: Address[],
+): Promise<Record<Address, Record<TrackId, Voting>>> {
+  const tuples = addresses.flatMap((address) => tracksIds.map((trackId) => [address, trackId]));
 
-  const result: Record<TrackId, Voting> = {};
-  for (const [misc, convictionVoting] of votingEntries) {
+  const votings = await api.query.convictionVoting.votingFor.multi(tuples);
+  const result = addresses.reduce<Record<Address, Record<TrackId, Voting>>>((acc, address) => {
+    acc[address] = {};
+
+    return acc;
+  }, {});
+
+  for (const [index, convictionVoting] of votings.entries()) {
+    if (convictionVoting.isStorageFallback) continue;
+
     if (convictionVoting.isDelegating) {
       const delegation = convictionVoting.asDelegating;
 
-      result[misc[1].toString()] = {
+      result[tuples[index][0]][tuples[index][1]] = {
         type: VotingType.DELEGATING,
         delegating: {
           balance: delegation.balance.toBn(),
@@ -183,7 +195,7 @@ async function getVotingFor(api: ApiPromise, address: Address): Promise<Record<T
         }
       }
 
-      result[misc[1].toString()] = {
+      result[tuples[index][0]][tuples[index][1]] = {
         type: VotingType.CASTING,
         casting: {
           votes,

@@ -6,14 +6,16 @@ import type {
   ReferendumId,
   OngoingReferendum,
   CompletedReferendum,
-  VotingThreshold, Voting,
+  VotingThreshold,
+  Voting,
+  Address,
 } from '@shared/core';
 
 const $ongoingReferendums = createStore<Map<ReferendumId, OngoingReferendum>>(new Map());
 const $completedReferendums = createStore<Map<ReferendumId, CompletedReferendum>>(new Map());
 
 const $tracks = createStore<Record<TrackId, TrackInfo>>({});
-const $voting = createStore<Record<TrackId, Voting>>({});
+const $voting = createStore<Record<Address, Record<TrackId, Voting>>>({});
 const $approvalThresholds = createStore<Record<ReferendumId, VotingThreshold>>({});
 const $supportThresholds = createStore<Record<ReferendumId, VotingThreshold>>({});
 

@@ -1,13 +1,25 @@
 import { BN } from '@polkadot/util';
+import orderBy from 'lodash/orderBy';
 
-import { ReferendumId, OngoingReferendum, CompletedReferendum, TrackId, Tally } from '@shared/core';
 import { IconNames } from '@shared/ui/Icon/data';
+import {
+  ReferendumId,
+  OngoingReferendum,
+  CompletedReferendum,
+  TrackId,
+  Tally,
+  Voting,
+  VotingType,
+  CastingVoting,
+  type Address,
+} from '@shared/core';
 
 export const referendumListUtils = {
   getSortedOngoing,
   getSortedCompleted,
   getVoteFractions,
   getTrackInfo,
+  isReferendumVoted,
 };
 
 function getSortedOngoing(referendums: Map<ReferendumId, OngoingReferendum>): Map<ReferendumId, OngoingReferendum> {
@@ -17,8 +29,8 @@ function getSortedOngoing(referendums: Map<ReferendumId, OngoingReferendum>): Ma
 function getSortedCompleted(
   referendums: Map<ReferendumId, CompletedReferendum>,
 ): Map<ReferendumId, CompletedReferendum> {
-  return new Map();
-  // return new Map(orderBy(Array.from(referendums), ([index]) => parseInt(index), 'desc'));
+  // return new Map();
+  return new Map(orderBy(Array.from(referendums), ([index]) => parseInt(index), 'desc'));
 }
 
 function getVoteFractions(tally: Tally, approve: BN): Record<'aye' | 'nay' | 'pass', number> {
@@ -52,4 +64,14 @@ function getTrackInfo(trackId: TrackId): { title: string; icon: IconNames } {
   };
 
   return names[trackId] || { title: 'Unknown track', icon: 'voting' };
+}
+
+function isReferendumVoted(index: ReferendumId, votings: Record<Address, Record<TrackId, Voting>>): boolean {
+  return Object.values(votings).some((votingMap) => {
+    return Object.values(votingMap).some((voting) => {
+      if (voting.type !== VotingType.CASTING) return false;
+
+      return Boolean((voting as CastingVoting).casting.votes[index]);
+    });
+  });
 }

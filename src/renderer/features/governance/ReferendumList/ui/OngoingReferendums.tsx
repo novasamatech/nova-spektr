@@ -1,29 +1,27 @@
-import { isEmpty } from 'lodash';
+import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { Voted, ReferendumTimer, VoteChartSm } from '@entities/governance';
+import { Voted, ReferendumTimer, VoteChartSm, governanceModel } from '@entities/governance';
 import { FootnoteText, Accordion, CaptionText, OperationStatus, HeadlineText, Icon } from '@shared/ui';
-import type { ReferendumId, OngoingReferendum, VotingThreshold } from '@shared/core';
+import type { ReferendumId, OngoingReferendum } from '@shared/core';
 import { referendumListUtils } from '../lib/referendum-list-utils';
+import { referendumListModel } from '../model/referendum-list-model';
 
 type Props = {
   referendums: Map<ReferendumId, OngoingReferendum>;
-  details: Record<ReferendumId, string>;
-  supportThresholds: Record<ReferendumId, VotingThreshold>;
-  approvalThresholds: Record<ReferendumId, VotingThreshold>;
   onSelected: (index: ReferendumId) => void;
 };
 
-export const OngoingReferendums = ({
-  referendums,
-  details,
-  supportThresholds,
-  approvalThresholds,
-  onSelected,
-}: Props) => {
+export const OngoingReferendums = ({ referendums, onSelected }: Props) => {
   const { t } = useI18n();
 
-  if (referendums.size === 0 || isEmpty(supportThresholds) || isEmpty(approvalThresholds)) return null;
+  const voting = useUnit(governanceModel.$voting);
+  const approvalThresholds = useUnit(governanceModel.$approvalThresholds);
+  const supportThresholds = useUnit(governanceModel.$supportThresholds);
+  const details = useUnit(referendumListModel.$referendumsDetails);
+  const isLoading = useUnit(referendumListModel.$isLoading);
+
+  if (isLoading || referendums.size === 0) return null;
 
   return (
     <Accordion isDefaultOpen>
@@ -47,7 +45,7 @@ export const OngoingReferendums = ({
                 onClick={() => onSelected(index)}
               >
                 <div className="flex items-center gap-x-2 w-full">
-                  <Voted />
+                  <Voted active={referendumListUtils.isReferendumVoted(index, voting)} />
                   <OperationStatus pallet={isPassing ? 'success' : 'default'}>
                     {isPassing ? 'Passing' : 'Deciding'}
                   </OperationStatus>

@@ -1,8 +1,14 @@
 import { Icon, FootnoteText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 
-export const Voted = () => {
+type Props = {
+  active: boolean;
+};
+
+export const Voted = ({ active }: Props) => {
   const { t } = useI18n();
+
+  if (!active) return null;
 
   return (
     <div className="flex gap-x-1 items-center">

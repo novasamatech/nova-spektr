@@ -1,7 +1,11 @@
+import { useUnit } from 'effector-react';
+
 import { useI18n } from '@app/providers';
-import { Voted } from '@entities/governance';
+import { Voted, governanceModel } from '@entities/governance';
 import { FootnoteText, Accordion, CaptionText, OperationStatus, HeadlineText } from '@shared/ui';
 import { ReferendumId, CompletedReferendum, ReferendumType } from '@shared/core';
+import { referendumListModel } from '../model/referendum-list-model';
+import { referendumListUtils } from '../lib/referendum-list-utils';
 
 const Status: Record<
   Exclude<ReferendumType, ReferendumType.Ongoing>,
@@ -16,14 +20,17 @@ const Status: Record<
 
 type Props = {
   referendums: Map<ReferendumId, CompletedReferendum>;
-  details: Record<ReferendumId, string>;
   onSelected: (index: ReferendumId) => void;
 };
 
-export const CompletedReferendums = ({ referendums, details, onSelected }: Props) => {
+export const CompletedReferendums = ({ referendums, onSelected }: Props) => {
   const { t } = useI18n();
 
-  if (referendums.size === 0) return null;
+  const voting = useUnit(governanceModel.$voting);
+  const details = useUnit(referendumListModel.$referendumsDetails);
+  const isLoading = useUnit(referendumListModel.$isLoading);
+
+  if (isLoading || referendums.size === 0) return null;
 
   return (
     <Accordion isDefaultOpen>
@@ -44,7 +51,7 @@ export const CompletedReferendums = ({ referendums, details, onSelected }: Props
               onClick={() => onSelected(index)}
             >
               <div className="flex items-center gap-x-2 w-full">
-                <Voted />
+                <Voted active={referendumListUtils.isReferendumVoted(index, voting)} />
                 <OperationStatus pallet={Status[referendum.type].pallet}>
                   {t(Status[referendum.type].text)}
                 </OperationStatus>

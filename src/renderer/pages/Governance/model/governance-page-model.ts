@@ -3,6 +3,7 @@ import { createEvent, createStore, sample } from 'effector';
 import type { ChainId, ReferendumId } from '@shared/core';
 import { referendumListModel, referendumDetailsModel } from '@features/governance';
 import { governanceModel } from '@entities/governance';
+import { networkModel } from '@entities/network';
 
 const componentMounted = createEvent();
 const referendumSelected = createEvent<ReferendumId>();
@@ -12,8 +13,9 @@ const $chainId = createStore<ChainId>('0x91b171bb158e2d3848fa23a9f1c25182fb8e203
 
 sample({
   clock: componentMounted,
-  source: $chainId,
-  target: referendumListModel.events.chainIdChanged,
+  source: networkModel.$chains,
+  fn: (chains) => chains['0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3'],
+  target: referendumListModel.events.chainChanged,
 });
 
 sample({

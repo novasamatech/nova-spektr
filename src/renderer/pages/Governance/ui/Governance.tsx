@@ -4,12 +4,10 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@app/providers';
 import { Header } from '@shared/ui';
 import { governancePageModel } from '../model/governance-page-model';
-import { governanceModel } from '@entities/governance';
 import {
   ReferendumFilter,
   ReferendumDetails,
   LoadingCompleted,
-  referendumListModel,
   LoadingOngoing,
   OngoingReferendums,
   CompletedReferendums,
@@ -20,9 +18,6 @@ export const Governance = () => {
 
   const ongoing = useUnit(governancePageModel.$ongoing);
   const completed = useUnit(governancePageModel.$completed);
-  const supportThresholds = useUnit(governanceModel.$supportThresholds);
-  const approvalThresholds = useUnit(governanceModel.$approvalThresholds);
-  const details = useUnit(referendumListModel.$referendumsDetails);
 
   useEffect(() => {
     governancePageModel.events.componentMounted();
@@ -48,18 +43,8 @@ export const Governance = () => {
             <LoadingOngoing />
             <LoadingCompleted />
 
-            <OngoingReferendums
-              referendums={ongoing}
-              details={details}
-              supportThresholds={supportThresholds}
-              approvalThresholds={approvalThresholds}
-              onSelected={governancePageModel.events.referendumSelected}
-            />
-            <CompletedReferendums
-              referendums={completed}
-              details={details}
-              onSelected={governancePageModel.events.referendumSelected}
-            />
+            <OngoingReferendums referendums={ongoing} onSelected={governancePageModel.events.referendumSelected} />
+            <CompletedReferendums referendums={completed} onSelected={governancePageModel.events.referendumSelected} />
           </div>
 
           {/*<EmptyResults />*/}
