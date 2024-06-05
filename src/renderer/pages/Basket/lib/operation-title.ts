@@ -9,15 +9,13 @@ type Title = {
 
 export const getOperationTitle = (transaction: BasketTransaction, chain: Chain): Title => {
   const type = transaction.coreTx.type;
-  if (TransferTypes.includes(type)) {
-    const asset = getAssetById(transaction.coreTx.args.assetId, chain.assets);
+  const asset = getAssetById(transaction.coreTx.args.assetId, chain.assets);
 
+  if (TransferTypes.includes(type)) {
     return { title: 'transfer.title', params: { asset: asset?.symbol } };
   }
 
   if (XcmTypes.includes(type)) {
-    const asset = getAssetById(transaction.coreTx.args.assetId, chain.assets);
-
     return { title: 'transfer.xcmTitle', params: { asset: asset?.symbol } };
   }
 
@@ -38,5 +36,5 @@ export const getOperationTitle = (transaction: BasketTransaction, chain: Chain):
   };
 
   // @ts-ignore
-  return { title: Title[type], params: {} };
+  return { title: Title[type], params: { asset: asset?.symbol } };
 };
