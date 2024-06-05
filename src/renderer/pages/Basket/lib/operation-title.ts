@@ -1,19 +1,24 @@
+import { getAssetById } from '@shared/lib/utils';
 import { TransferTypes, XcmTypes } from '@entities/transaction';
-import { BasketTransaction, TransactionType } from '@shared/core';
+import { BasketTransaction, Chain, TransactionType } from '@shared/core';
 
 type Title = {
   title: string;
   params: Record<string, any>;
 };
 
-export const getOperationTitle = (transaction: BasketTransaction): Title => {
+export const getOperationTitle = (transaction: BasketTransaction, chain: Chain): Title => {
   const type = transaction.coreTx.type;
   if (TransferTypes.includes(type)) {
-    return { title: 'transfer.title', params: { asset: '1' } };
+    const asset = getAssetById(transaction.coreTx.args.assetId, chain.assets);
+
+    return { title: 'transfer.title', params: { asset: asset?.symbol } };
   }
 
   if (XcmTypes.includes(type)) {
-    return { title: 'transfer.xcmTitle', params: { asset: '1' } };
+    const asset = getAssetById(transaction.coreTx.args.assetId, chain.assets);
+
+    return { title: 'transfer.xcmTitle', params: { asset: asset?.symbol } };
   }
 
   const Title = {

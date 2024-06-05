@@ -24,13 +24,15 @@ import {
   WithdrawConfirmation,
 } from '@features/operations/OperationsConfirm';
 import { getOperationTitle } from '../lib/operation-title';
-import { TransferTypes, XcmTypes } from '@/src/renderer/entities/transaction';
+import { TransferTypes, XcmTypes } from '@entities/transaction';
+import { networkModel } from '@entities/network';
 
 export const SignOperation = () => {
   const { t } = useI18n();
 
   const step = useUnit(signOperationsModel.$step);
   const transactions = useUnit(signOperationsModel.$transactions);
+  const chains = useUnit(networkModel.$chains);
 
   const [isModalOpen, closeModal] = useModalClose(
     !signOperationsUtils.isNoneStep(step),
@@ -40,9 +42,11 @@ export const SignOperation = () => {
   if (signOperationsUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
 
   const getModalTitle = (basketTransaction: BasketTransaction): String | ReactNode => {
-    const { title, params } = getOperationTitle(basketTransaction);
+    const chain = chains[basketTransaction.coreTx.chainId];
 
-    return <OperationTitle title={`${t(title, params)}`} chainId={basketTransaction.coreTx.chainId} />;
+    const { title, params } = getOperationTitle(basketTransaction, chain);
+
+    return <OperationTitle title={`${t(title, { ...params })}`} chainId={basketTransaction.coreTx.chainId} />;
   };
 
   const getConfirmScreen = (transaction: BasketTransaction) => {

@@ -26,6 +26,7 @@ export const Operation = ({ tx, errorText, selected, onSelect, onClick }: Props)
   const amount = getTransactionAmount(tx.coreTx);
 
   const onTxSelected = (event: ChangeEvent<HTMLInputElement>) => {
+    // TODO: Uncomment for https://github.com/novasamatech/nova-spektr/issues/1812
     // event.stopPropagation();
     // event.preventDefault();
     // onSelect(event.target.checked);
