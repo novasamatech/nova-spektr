@@ -56,7 +56,7 @@ export const CompletedReferendums = ({ referendums, onSelected }: Props) => {
                 </OperationStatus>
                 <FootnoteText className="ml-auto text-text-secondary">#{index}</FootnoteText>
               </div>
-              <HeadlineText>{details[index] || `Referendum #${index}`}</HeadlineText>
+              <HeadlineText>{details[index] || t('governance.referendums.referendumTitle', { index })}</HeadlineText>
             </button>
           </li>
         ))}

@@ -58,7 +58,7 @@ export const OngoingReferendums = ({ referendums, onSelected }: Props) => {
                 </div>
                 <div className="flex items-start gap-x-6 w-full">
                   <HeadlineText className="flex-1 pointer-events-auto">
-                    {details[index] || `Referendum #${index}`}
+                    {details[index] || t('governance.referendums.referendumTitle', { index })}
                   </HeadlineText>
                   <div className="basis-[200px] shrink-0">
                     <VoteChartSm
