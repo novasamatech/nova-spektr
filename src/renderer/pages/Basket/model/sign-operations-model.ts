@@ -1,4 +1,4 @@
-import { createEffect, createEvent, restore, sample, scopeBind } from 'effector';
+import { combine, createEffect, createEvent, restore, sample, scopeBind } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 
 import { Step } from '../types';
@@ -113,6 +113,13 @@ const startDataPreparationFx = createEffect((transactions: BasketTransaction[]) 
 
 const $step = restore(stepChanged, Step.NONE);
 const $transactions = restore(flowStarted, []);
+
+const $txDataParams = combine({
+  transactions: $transactions,
+  wallets: walletModel.$wallets,
+  chains: networkModel.$chains,
+  apis: networkModel.$apis,
+});
 
 type TransferDataParams = {
   wallets: Wallet[];
@@ -549,12 +556,7 @@ sample({
 
 sample({
   clock: transferDataPreparationStarted,
-  source: {
-    transactions: $transactions,
-    wallets: walletModel.$wallets,
-    chains: networkModel.$chains,
-    apis: networkModel.$apis,
-  },
+  source: $txDataParams,
   target: prepareTransferTransactionDataFx,
 });
 
@@ -563,22 +565,11 @@ sample({
   target: transferConfirmModel.events.formInitiated,
 });
 
-sample({
-  clock: prepareTransferTransactionDataFx.doneData,
-  fn: () => Step.CONFIRM,
-  target: stepChanged,
-});
-
 // Add proxy
 
 sample({
   clock: addProxyDataPreparationStarted,
-  source: {
-    transactions: $transactions,
-    wallets: walletModel.$wallets,
-    chains: networkModel.$chains,
-    apis: networkModel.$apis,
-  },
+  source: $txDataParams,
   target: prepareAddProxyTransactionDataFx,
 });
 
@@ -587,22 +578,11 @@ sample({
   target: addProxyConfirmModel.events.formInitiated,
 });
 
-sample({
-  clock: prepareAddProxyTransactionDataFx.doneData,
-  fn: () => Step.CONFIRM,
-  target: stepChanged,
-});
-
 // Add pure proxied
 
 sample({
   clock: addPureProxiedDataPreparationStarted,
-  source: {
-    transactions: $transactions,
-    wallets: walletModel.$wallets,
-    chains: networkModel.$chains,
-    apis: networkModel.$apis,
-  },
+  source: $txDataParams,
   target: prepareAddPureProxiedTransactionDataFx,
 });
 
@@ -611,22 +591,11 @@ sample({
   target: addPureProxiedConfirmModel.events.formInitiated,
 });
 
-sample({
-  clock: prepareAddPureProxiedTransactionDataFx.doneData,
-  fn: () => Step.CONFIRM,
-  target: stepChanged,
-});
-
 // Remove proxy
 
 sample({
   clock: removeProxyDataPreparationStarted,
-  source: {
-    transactions: $transactions,
-    wallets: walletModel.$wallets,
-    chains: networkModel.$chains,
-    apis: networkModel.$apis,
-  },
+  source: $txDataParams,
   target: prepareRemoveProxyTransactionDataFx,
 });
 
@@ -635,22 +604,11 @@ sample({
   target: removeProxyConfirmModel.events.formInitiated,
 });
 
-sample({
-  clock: prepareRemoveProxyTransactionDataFx.doneData,
-  fn: () => Step.CONFIRM,
-  target: stepChanged,
-});
-
 // Remove pure proxied
 
 sample({
   clock: removePureProxiedDataPreparationStarted,
-  source: {
-    transactions: $transactions,
-    wallets: walletModel.$wallets,
-    chains: networkModel.$chains,
-    apis: networkModel.$apis,
-  },
+  source: $txDataParams,
   target: prepareRemovePureProxiedTransactionDataFx,
 });
 
@@ -659,22 +617,11 @@ sample({
   target: removePureProxiedConfirmModel.events.formInitiated,
 });
 
-sample({
-  clock: prepareRemovePureProxiedTransactionDataFx.doneData,
-  fn: () => Step.CONFIRM,
-  target: stepChanged,
-});
-
 // Bond nominate
 
 sample({
   clock: bondNominateDataPreparationStarted,
-  source: {
-    transactions: $transactions,
-    wallets: walletModel.$wallets,
-    chains: networkModel.$chains,
-    apis: networkModel.$apis,
-  },
+  source: $txDataParams,
   target: prepareBondNominateTransactionDataFx,
 });
 
@@ -683,22 +630,11 @@ sample({
   target: bondNominateConfirmModel.events.formInitiated,
 });
 
-sample({
-  clock: prepareBondNominateTransactionDataFx.doneData,
-  fn: () => Step.CONFIRM,
-  target: stepChanged,
-});
-
 // Nominate
 
 sample({
   clock: nominateDataPreparationStarted,
-  source: {
-    transactions: $transactions,
-    wallets: walletModel.$wallets,
-    chains: networkModel.$chains,
-    apis: networkModel.$apis,
-  },
+  source: $txDataParams,
   target: prepareNominateTransactionDataFx,
 });
 
@@ -707,22 +643,11 @@ sample({
   target: nominateConfirmModel.events.formInitiated,
 });
 
-sample({
-  clock: prepareNominateTransactionDataFx.doneData,
-  fn: () => Step.CONFIRM,
-  target: stepChanged,
-});
-
 // Payee
 
 sample({
   clock: payeeDataPreparationStarted,
-  source: {
-    transactions: $transactions,
-    wallets: walletModel.$wallets,
-    chains: networkModel.$chains,
-    apis: networkModel.$apis,
-  },
+  source: $txDataParams,
   target: preparePayeeTransactionDataFx,
 });
 
@@ -731,22 +656,11 @@ sample({
   target: payeeConfirmModel.events.formInitiated,
 });
 
-sample({
-  clock: preparePayeeTransactionDataFx.doneData,
-  fn: () => Step.CONFIRM,
-  target: stepChanged,
-});
-
 // Bond extra
 
 sample({
   clock: bondExtraDataPreparationStarted,
-  source: {
-    transactions: $transactions,
-    wallets: walletModel.$wallets,
-    chains: networkModel.$chains,
-    apis: networkModel.$apis,
-  },
+  source: $txDataParams,
   target: prepareBondExtraTransactionDataFx,
 });
 
@@ -755,22 +669,11 @@ sample({
   target: bondExtraConfirmModel.events.formInitiated,
 });
 
-sample({
-  clock: prepareBondExtraTransactionDataFx.doneData,
-  fn: () => Step.CONFIRM,
-  target: stepChanged,
-});
-
 // Unstake
 
 sample({
   clock: unstakeDataPreparationStarted,
-  source: {
-    transactions: $transactions,
-    wallets: walletModel.$wallets,
-    chains: networkModel.$chains,
-    apis: networkModel.$apis,
-  },
+  source: $txDataParams,
   target: prepareUnstakeTransactionDataFx,
 });
 
@@ -779,22 +682,11 @@ sample({
   target: unstakeConfirmModel.events.formInitiated,
 });
 
-sample({
-  clock: prepareUnstakeTransactionDataFx.doneData,
-  fn: () => Step.CONFIRM,
-  target: stepChanged,
-});
-
 // Restake
 
 sample({
   clock: restakeDataPreparationStarted,
-  source: {
-    transactions: $transactions,
-    wallets: walletModel.$wallets,
-    chains: networkModel.$chains,
-    apis: networkModel.$apis,
-  },
+  source: $txDataParams,
   target: prepareRestakeTransactionDataFx,
 });
 
@@ -803,22 +695,11 @@ sample({
   target: unstakeConfirmModel.events.formInitiated,
 });
 
-sample({
-  clock: prepareUnstakeTransactionDataFx.doneData,
-  fn: () => Step.CONFIRM,
-  target: stepChanged,
-});
-
 // Withdraw
 
 sample({
   clock: withdrawDataPreparationStarted,
-  source: {
-    transactions: $transactions,
-    wallets: walletModel.$wallets,
-    chains: networkModel.$chains,
-    apis: networkModel.$apis,
-  },
+  source: $txDataParams,
   target: prepareWithdrawTransactionDataFx,
 });
 
@@ -828,15 +709,28 @@ sample({
 });
 
 sample({
-  clock: prepareWithdrawTransactionDataFx.doneData,
-  fn: () => Step.CONFIRM,
-  target: stepChanged,
-});
-
-sample({
   clock: flowFinished,
   fn: () => Step.NONE,
   target: $step,
+});
+
+sample({
+  clock: [
+    prepareAddProxyTransactionDataFx.doneData,
+    prepareAddPureProxiedTransactionDataFx.doneData,
+    prepareBondExtraTransactionDataFx.doneData,
+    prepareBondNominateTransactionDataFx.doneData,
+    prepareNominateTransactionDataFx.doneData,
+    preparePayeeTransactionDataFx.doneData,
+    prepareRemoveProxyTransactionDataFx.doneData,
+    prepareRemovePureProxiedTransactionDataFx.doneData,
+    prepareRestakeTransactionDataFx.doneData,
+    prepareTransferTransactionDataFx.doneData,
+    prepareUnstakeTransactionDataFx.doneData,
+    prepareWithdrawTransactionDataFx.doneData,
+  ],
+  fn: () => Step.CONFIRM,
+  target: stepChanged,
 });
 
 export const signOperationsModel = {
