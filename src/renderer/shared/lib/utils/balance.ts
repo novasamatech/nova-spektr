@@ -1,7 +1,7 @@
 import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
 import BigNumber from 'bignumber.js';
 
-import { type Balance, type Unlocking, LockTypes } from '@shared/core';
+import { type Balance, type Unlocking, LockTypes, AssetBalance } from '@shared/core';
 import { ZERO_BALANCE } from './constants';
 
 const MAX_INTEGER = 15;
@@ -86,7 +86,7 @@ export const formatBalance = (balance = '0', precision = 0): FormattedBalance =>
   };
 };
 
-export const totalAmount = (balance?: Balance): string => {
+export const totalAmount = <T extends AssetBalance>(balance?: T): string => {
   if (!balance) return ZERO_BALANCE;
 
   const bnFree = new BN(balance.free || ZERO_BALANCE);
@@ -102,7 +102,7 @@ export const lockedAmount = ({ locked = [] }: Balance): string => {
   return bnFrozen.toString();
 };
 
-export const transferableAmount = (balance?: Balance): string => {
+export const transferableAmount = <T extends AssetBalance>(balance?: T): string => {
   if (!balance) return ZERO_BALANCE;
 
   const bnFree = new BN(balance.free || ZERO_BALANCE);
@@ -111,7 +111,7 @@ export const transferableAmount = (balance?: Balance): string => {
   return bnFree.gt(bnFrozen) ? bnFree.sub(bnFrozen).toString() : ZERO_BALANCE;
 };
 
-const stakedAmount = ({ locked = [] }: Balance): string => {
+export const stakedAmount = ({ locked = [] }: Balance): string => {
   const bnLocks = locked.find((lock) => lock.type === LockTypes.STAKING);
 
   return bnLocks?.amount ?? ZERO_BALANCE;
@@ -257,4 +257,21 @@ export const getRoundedValue = (assetBalance = '0', price: number, precision = 0
   const decimalPlaces = getDecimalPlaceForFirstNonZeroChar(bnFiatBalance.toFixed(), nonZeroDigits);
 
   return bnFiatBalance.toFixed(decimalPlaces);
+};
+
+export const getBalanceBn = (balance: string, precision: number) => {
+  const BNWithConfig = BigNumber.clone();
+  BNWithConfig.config({
+    // HOOK: for divide with decimal part
+    DECIMAL_PLACES: precision || Decimal.SMALL_NUMBER,
+    ROUNDING_MODE: BNWithConfig.ROUND_DOWN,
+    FORMAT: {
+      decimalSeparator: '.',
+      groupSeparator: '',
+    },
+  });
+  const TEN = new BNWithConfig(10);
+  const bnPrecision = new BNWithConfig(precision);
+
+  return new BNWithConfig(balance).div(TEN.pow(bnPrecision));
 };

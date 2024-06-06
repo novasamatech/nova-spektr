@@ -37,10 +37,10 @@ export type {
 } from './types/account';
 
 export { AssetType, StakingType } from './types/asset';
-export type { Asset, OrmlExtras, StatemineExtras } from './types/asset';
+export type { Asset, OrmlExtras, StatemineExtras, AssetByChains } from './types/asset';
 
 export { LockTypes } from './types/balance';
-export type { Balance, BalanceLock } from './types/balance';
+export type { Balance, BalanceLock, AssetBalance } from './types/balance';
 
 export type { ChainMetadata } from './types/metadata';
 

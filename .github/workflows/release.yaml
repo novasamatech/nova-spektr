@@ -4,7 +4,6 @@ on:
     tags:
       - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
-
 env:
   CSC_FOR_PULL_REQUEST: true
   CI: true
@@ -30,7 +29,7 @@ jobs:
       - name: Get tag name
         uses: olegtarasov/get-tag@v2.1 # Put version in GIT_TAG_NAME environment variable
         with:
-          tagRegex: "^.(.*)$"
+          tagRegex: '^.(.*)$'
 
       - name: Update package.json version
         uses: jossef/action-set-json-field@v2

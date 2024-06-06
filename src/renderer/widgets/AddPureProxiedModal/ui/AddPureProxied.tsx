@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { BaseModal } from '@shared/ui';
+import { BaseModal, Button } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
@@ -11,7 +11,7 @@ import { AddPureProxiedForm } from './AddPureProxiedForm';
 import { Confirm } from './Confirm';
 import { addPureProxiedUtils } from '../lib/add-pure-proxied-utils';
 import { addPureProxiedModel } from '../model/add-pure-proxied-model';
-import { AddToBasketButton } from '@features/operations/OperationsConfirm';
+import { basketUtils } from '@features/operations/OperationsConfirm';
 
 export const AddPureProxied = () => {
   const { t } = useI18n();
@@ -39,7 +39,12 @@ export const AddPureProxied = () => {
       {addPureProxiedUtils.isConfirmStep(step) && (
         <Confirm
           secondaryActionButton={
-            <AddToBasketButton wallet={initiatorWallet} onTxSaved={addPureProxiedModel.events.txSaved} />
+            initiatorWallet &&
+            basketUtils.isBasketAvailable(initiatorWallet) && (
+              <Button pallet="secondary" onClick={() => addPureProxiedModel.events.txSaved()}>
+                {t('operation.addToBasket')}
+              </Button>
+            )
           }
           onGoBack={() => addPureProxiedModel.events.stepChanged(Step.INIT)}
         />

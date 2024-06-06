@@ -58,15 +58,20 @@
     "accountsModalTitle": "Your accounts",
     "allAccounts": "All accounts",
     "assetsOnLabel": "Your assets on:",
+    "availableNetworks": "{count} networks",
+    "balance": "Balance",
+    "balanceTooltip": "Transferable: <amountFree /><br />Locked: <amountLocked /><br />Reserved: <amountReserved />",
     "chainCentric": "Chain-centric",
     "emptyStateDescription": "Update the search or cancel filtering",
     "emptyStateLabel": "Nothing was found",
     "hideZeroBalancesLabel": "Hide zero balances",
     "pageView": "Page view",
+    "price": "Price",
     "saveShardsButton": "Continue",
     "searchPlaceholder": "Search",
     "selectedAccounts": "{ amount } accounts",
     "title": "Portfolio",
+    "token": "Token",
     "tokenCentric": "Token-centric",
     "verificationFailedLabel": "verification failed",
     "verificationTooltip": "The balance may be wrong or outdated, please check your network connection"
@@ -75,6 +80,7 @@
     "closeButton": "Close modal window"
   },
   "basket": {
+    "invalidTransaction": "Unavailable",
     "noOperationsDescription": "There are no operations in the basket yet",
     "noOperationsLabel": "No operations",
     "searchPlaceholder": "Search",
@@ -442,6 +448,7 @@
   },
   "operation": {
     "addCallDataButton": "Add call data",
+    "addToBasket": "Add to basket",
     "advanced": "Advanced",
     "approveButton": "Approve",
     "cancelTitle": "Reject",
@@ -492,16 +499,15 @@
       "placeholder": "Reason...",
       "title": "Enter reject reason"
     },
-    "saveToBasket": "Save to basket",
     "selectAccount": "Select account",
     "selectAccountLabel": "Account",
     "selectSignatory": "Select signatory",
     "selectSignatoryLabel": "Signatory",
     "selectSignatoryTitle": "Select signatory",
     "sign": {
+      "default": "Sign",
       "novaWallet": "Sign with Nova Wallet",
       "polkadotVault": "Sign with Polkadot Vault",
-      "unknown": "Sign",
       "walletConnect": "Sign with WalletConnect"
     },
     "signatoriesTitle": "Signatories",
@@ -598,6 +604,9 @@
       "unknown": "Unknown Operation",
       "unstake": "Unstake"
     }
+  },
+  "portfolilo": {
+    "networkCounter": "+1"
   },
   "price": {
     "withCode": "{ amount } { code }",

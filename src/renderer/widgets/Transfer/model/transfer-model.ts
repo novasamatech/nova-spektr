@@ -103,7 +103,7 @@ sample({
 });
 
 sample({
-  clock: confirmModel.output.formSubmitted,
+  clock: confirmModel.output.formConfirmed,
   source: {
     transferStore: $transferStore,
     networkStore: $networkStore,
@@ -207,8 +207,7 @@ sample({
 
 sample({
   clock: txSaved,
-  fn: () => Step.NONE,
-  target: [stepChanged, formModel.events.formCleared],
+  target: flowFinished,
 });
 
 export const transferModel = {
