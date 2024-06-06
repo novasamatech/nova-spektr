@@ -33,7 +33,6 @@ const $assetWithChains = combine(
 
     return { ...selectedAsset, chains: filteredChains };
   },
-  { skipVoid: false },
 );
 
 sample({

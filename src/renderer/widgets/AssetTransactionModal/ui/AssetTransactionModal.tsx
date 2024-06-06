@@ -46,10 +46,8 @@ export const AssetTransactionModal = () => {
 
   if (!assetWithChains || modalType === null) return null;
 
-  const path = getModalDetails(modalType).path;
-  const title = (
-    <HeaderTitleText>{t(getModalDetails(modalType).title, { asset: assetWithChains.symbol })}</HeaderTitleText>
-  );
+  const { title, path } = getModalDetails(modalType);
+  const modalTitle = <HeaderTitleText>{t(title, { asset: assetWithChains.symbol })}</HeaderTitleText>;
 
   return (
     <BaseModal
@@ -57,7 +55,7 @@ export const AssetTransactionModal = () => {
       panelClass="max-h-[610px] overflow-y-auto"
       headerClass="p-3 pl-5 pb-7"
       isOpen={isModalOpen}
-      title={title}
+      title={modalTitle}
       onClose={closeModal}
     >
       <SearchInput
@@ -71,7 +69,6 @@ export const AssetTransactionModal = () => {
         {assetWithChains.chains.map((chain) => (
           <li
             key={`${chain.assetSymbol}_${chain.chainId}`}
-            role="button"
             tabIndex={0}
             className="flex flex-col rounded text-text-secondary hover:bg-action-background-hover hover:text-text-primary"
           >
