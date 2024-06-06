@@ -34,7 +34,6 @@ export const TokenBalance = ({ asset }: Props) => {
               <ChainIcon src={chains[chain.chainId].icon} name={chain.name} size={18} />
               {chain.balance?.verified && (
                 <div className="flex items-center gap-x-2 text-text-warning">
-                  {/* FIXME: tooltip not visible when first displayed network invalid. For now just render it below icon */}
                   <Tooltip content={t('balances.verificationTooltip')} pointer="up">
                     <Icon name="warn" className="cursor-pointer text-inherit" size={16} />
                   </Tooltip>
