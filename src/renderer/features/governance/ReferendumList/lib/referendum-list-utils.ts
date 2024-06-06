@@ -23,13 +23,12 @@ export const referendumListUtils = {
 };
 
 function getSortedOngoing(referendums: Map<ReferendumId, OngoingReferendum>): Map<ReferendumId, OngoingReferendum> {
-  return referendums;
+  return new Map(orderBy(Array.from(referendums), ([index]) => parseInt(index), 'desc'));
 }
 
 function getSortedCompleted(
   referendums: Map<ReferendumId, CompletedReferendum>,
 ): Map<ReferendumId, CompletedReferendum> {
-  // return new Map();
   return new Map(orderBy(Array.from(referendums), ([index]) => parseInt(index), 'desc'));
 }
 

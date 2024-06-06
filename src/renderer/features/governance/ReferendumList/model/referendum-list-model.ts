@@ -63,8 +63,7 @@ type OffChainParams = {
 };
 const requestOffChainReferendumsFx = createEffect(
   ({ chainId, service }: OffChainParams): Promise<Record<string, string>> => {
-    return Promise.resolve({});
-    // return service.getReferendumList(chainId);
+    return service.getReferendumList(chainId);
   },
 );
 

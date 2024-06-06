@@ -1,7 +1,8 @@
 import { useUnit } from 'effector-react';
+import { isEmpty } from 'lodash';
 
 import { useI18n } from '@app/providers';
-import { Voted, ReferendumTimer, VoteChartSm, governanceModel } from '@entities/governance';
+import { Voted, VoteChartSm, governanceModel } from '@entities/governance';
 import { FootnoteText, Accordion, CaptionText, OperationStatus, HeadlineText, Icon } from '@shared/ui';
 import type { ReferendumId, OngoingReferendum } from '@shared/core';
 import { referendumListUtils } from '../lib/referendum-list-utils';
@@ -19,9 +20,8 @@ export const OngoingReferendums = ({ referendums, onSelected }: Props) => {
   const approvalThresholds = useUnit(governanceModel.$approvalThresholds);
   const supportThresholds = useUnit(governanceModel.$supportThresholds);
   const details = useUnit(referendumListModel.$referendumsDetails);
-  const isLoading = useUnit(referendumListModel.$isLoading);
 
-  if (isLoading || referendums.size === 0) return null;
+  if (isEmpty(approvalThresholds) || isEmpty(supportThresholds) || referendums.size === 0) return null;
 
   return (
     <Accordion isDefaultOpen>
@@ -49,7 +49,7 @@ export const OngoingReferendums = ({ referendums, onSelected }: Props) => {
                   <OperationStatus pallet={isPassing ? 'success' : 'default'}>
                     {isPassing ? 'Passing' : 'Deciding'}
                   </OperationStatus>
-                  <ReferendumTimer status="reject" time={600000} />
+                  {/*<ReferendumTimer status="reject" time={600000} />*/}
                   <div className="flex ml-auto text-text-secondary">
                     <FootnoteText className="text-inherit">#{index}</FootnoteText>
                     <Icon name={track.icon} size={16} className="text-inherit ml-2 mr-1" />

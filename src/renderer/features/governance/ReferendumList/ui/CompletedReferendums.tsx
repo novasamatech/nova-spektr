@@ -28,9 +28,8 @@ export const CompletedReferendums = ({ referendums, onSelected }: Props) => {
 
   const voting = useUnit(governanceModel.$voting);
   const details = useUnit(referendumListModel.$referendumsDetails);
-  const isLoading = useUnit(referendumListModel.$isLoading);
 
-  if (isLoading || referendums.size === 0) return null;
+  if (referendums.size === 0) return null;
 
   return (
     <Accordion isDefaultOpen>
