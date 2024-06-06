@@ -14,6 +14,8 @@ const activeViewChanged = createEvent<AssetsListView>();
 const accountsChanged = createEvent<Account[]>();
 const hideZeroBalancesChanged = createEvent<boolean>();
 const queryChanged = createEvent<string>();
+const transferStarted = createEvent<AssetByChains>();
+const receiveStarted = createEvent<AssetByChains>();
 
 const $hideZeroBalances = restore(hideZeroBalancesChanged, false);
 const $accounts = restore<Account[]>(accountsChanged, []);
@@ -156,8 +158,8 @@ sample({
     return activeTokens.reduce<AssetByChains[]>((acc, token) => {
       const filteredChains = token.chains.filter((chain) => {
         const hasSymbol = includes(chain.assetSymbol, query);
-        const hasAssetName = includes(chain.name, query);
-        const hasChainName = includes(token.name, query);
+        const hasAssetName = includes(token.name, query);
+        const hasChainName = includes(chain.name, query);
 
         return hasSymbol || hasAssetName || hasChainName;
       });
@@ -199,6 +201,8 @@ export const portfolioModel = {
     accountsChanged,
     hideZeroBalancesChanged,
     queryChanged,
+    transferStarted,
+    receiveStarted,
   },
   /* Internal API (tests only) */
   _$activeTokens: $activeTokens,
