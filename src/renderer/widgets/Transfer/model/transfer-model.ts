@@ -7,11 +7,11 @@ import { submitModel } from '@features/operations/OperationSubmit';
 import { Paths } from '@shared/routes';
 import { Step, TransferStore, NetworkStore } from '../lib/types';
 import { formModel } from './form-model';
-import { confirmModel } from './confirm-model';
 import { transferUtils } from '../lib/transfer-utils';
 import { BasketTransaction, Transaction } from '@shared/core';
 import { basketModel } from '@entities/basket';
 import { walletModel, walletUtils } from '@entities/wallet';
+import { transferConfirmModel } from '@features/operations/OperationsConfirm';
 
 const $navigation = createStore<{ navigate: NavigateFunction } | null>(null);
 const navigationApi = createApi($navigation, {
@@ -97,13 +97,13 @@ sample({
     step: Step.CONFIRM,
   }),
   target: spread({
-    event: confirmModel.events.formInitiated,
+    event: transferConfirmModel.events.formInitiated,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: confirmModel.output.formConfirmed,
+  clock: transferConfirmModel.output.formConfirmed,
   source: {
     transferStore: $transferStore,
     networkStore: $networkStore,
