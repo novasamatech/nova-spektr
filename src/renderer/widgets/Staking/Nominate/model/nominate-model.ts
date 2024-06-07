@@ -22,7 +22,7 @@ import {
 import { Step, NominateData, WalletData, FeeData } from '../lib/types';
 import { nominateUtils } from '../lib/nominate-utils';
 import { formModel } from './form-model';
-import { confirmModel } from './confirm-model';
+import { nominateConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { transactionBuilder, transactionService } from '@entities/transaction';
 import { basketModel } from '@entities/basket/model/basket-model';
 

@@ -7,11 +7,10 @@ import { useI18n } from '@app/providers';
 import { OperationSign, OperationSubmit } from '@features/operations';
 import { Validators } from '@features/staking';
 import { NominateForm } from './NominateForm';
-import { Confirmation } from './Confirmation';
 import { nominateUtils } from '../lib/nominate-utils';
 import { nominateModel } from '../model/nominate-model';
 import { Step } from '../lib/types';
-import { basketUtils } from '@features/operations/OperationsConfirm';
+import { basketUtils, NominateConfirmation as Confirmation } from '@features/operations/OperationsConfirm';
 
 export const Nominate = () => {
   const { t } = useI18n();

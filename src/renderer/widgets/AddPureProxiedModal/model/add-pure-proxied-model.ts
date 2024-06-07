@@ -25,7 +25,7 @@ import { proxiesModel } from '@features/proxies';
 import { Step, AddPureProxiedStore } from '../lib/types';
 import { addPureProxiedUtils } from '../lib/add-pure-proxied-utils';
 import { formModel } from './form-model';
-import { confirmModel } from './confirm-model';
+import { addPureProxiedConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { subscriptionService } from '@entities/chain';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';

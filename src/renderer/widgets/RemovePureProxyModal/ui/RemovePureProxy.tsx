@@ -7,12 +7,11 @@ import { useI18n } from '@app/providers';
 import type { Chain } from '@shared/core';
 import { Step } from '../lib/types';
 import { RemovePureProxyForm } from './RemovePureProxyForm';
-import { Confirmation } from './Confirm';
 import { removePureProxyUtils } from '../lib/remove-pure-proxy-utils';
 import { removePureProxyModel } from '../model/remove-pure-proxy-model';
 import { Warning } from './Warning';
 import { OperationSign, OperationSubmit } from '@features/operations';
-import { basketUtils } from '@features/operations/OperationsConfirm';
+import { basketUtils, RemovePureProxiedConfirm as Confirmation } from '@features/operations/OperationsConfirm';
 
 export const RemovePureProxy = () => {
   const { t } = useI18n();

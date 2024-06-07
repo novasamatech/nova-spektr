@@ -14,7 +14,7 @@ type Props = {
   onGoBack: () => void;
 };
 
-export const Confirm = ({ secondaryActionButton, onGoBack }: Props) => {
+export const Confirmation = ({ secondaryActionButton, onGoBack }: Props) => {
   const { t } = useI18n();
 
   const confirmStore = useUnit(confirmModel.$confirmStore);

@@ -22,7 +22,7 @@ import {
 import { Step, BondNominateData, WalletData, FeeData } from '../lib/types';
 import { bondUtils } from '../lib/bond-utils';
 import { formModel } from './form-model';
-import { confirmModel } from './confirm-model';
+import { bondNominateConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { transactionBuilder, transactionService } from '@entities/transaction';
 import { basketModel } from '@entities/basket/model/basket-model';
 

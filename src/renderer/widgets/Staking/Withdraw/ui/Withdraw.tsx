@@ -6,11 +6,10 @@ import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
 import { OperationSign, OperationSubmit } from '@features/operations';
 import { WithdrawForm } from './WithdrawForm';
-import { Confirmation } from './Confirmation';
 import { withdrawUtils } from '../lib/withdraw-utils';
 import { withdrawModel } from '../model/withdraw-model';
 import { Step } from '../lib/types';
-import { basketUtils } from '@features/operations/OperationsConfirm';
+import { basketUtils, WithdrawConfirmation as Confirmation } from '@features/operations/OperationsConfirm';
 
 export const Withdraw = () => {
   const { t } = useI18n();

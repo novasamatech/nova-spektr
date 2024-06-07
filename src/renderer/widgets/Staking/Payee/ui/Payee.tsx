@@ -6,11 +6,10 @@ import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
 import { OperationSign, OperationSubmit } from '@features/operations';
 import { PayeeForm } from './PayeeForm';
-import { Confirmation } from './Confirmation';
 import { payeeUtils } from '../lib/payee-utils';
 import { payeeModel } from '../model/payee-model';
 import { Step } from '../lib/types';
-import { basketUtils } from '@features/operations/OperationsConfirm';
+import { basketUtils, PayeeConfirmation as Confirmation } from '@features/operations/OperationsConfirm';
 
 export const Payee = () => {
   const { t } = useI18n();

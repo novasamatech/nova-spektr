@@ -9,7 +9,7 @@ import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
 import { BaseAccount, ConnectionStatus, ProxyType, Transaction } from '@shared/core';
 import { Step } from '../../lib/types';
 import { formModel } from '../form-model';
-import { confirmModel } from '../confirm-model';
+import { addProxyConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { addProxyModel } from '../add-proxy-model';
 
 jest.mock('@shared/lib/utils', () => ({

@@ -9,7 +9,7 @@ import { networkModel } from '@entities/network';
 import { balanceSubModel } from '@features/balances';
 import { Step, RemoveProxyStore } from '../lib/types';
 import { formModel } from './form-model';
-import { confirmModel } from './confirm-model';
+import { removePureProxiedConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { walletProviderModel } from '../../WalletDetails/model/wallet-provider-model';
 import {
   Account,
