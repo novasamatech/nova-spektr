@@ -3485,14 +3485,13 @@
     }
   },
   {
-    "name": "HydraDX",
+    "name": "Hydration",
     "specName": "polkadot",
     "addressPrefix": 63,
     "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/HydraDX.svg",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Hydration.svg",
     "options": [
-      "multisig",
       "regular_proxy",
       "pure_proxy"
     ],
@@ -3504,6 +3503,14 @@
       {
         "url": "wss://rpc.hydradx.cloud",
         "name": "Calactic Council node"
+      },
+      {
+        "url": "wss://hydradx.paras.ibp.network",
+        "name": "IBP1 node"
+      },
+      {
+        "url": "wss://hydradx.paras.dotters.network",
+        "name": "IBP2 node"
       }
     ],
     "assets": [
@@ -5271,6 +5278,35 @@
           "transfersEnabled": true
         },
         "name": "Moonbeam"
+      },
+      {
+        "assetId": 12,
+        "symbol": "PINK",
+        "precision": 10,
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Pink.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0107",
+          "currencyIdType": "SpacewalkPrimitivesCurrencyId",
+          "existentialDeposit": "1000",
+          "transfersEnabled": true
+        },
+        "name": "PINK"
+      },
+      {
+        "assetId": 13,
+        "symbol": "HDX",
+        "precision": 12,
+        "type": "orml",
+        "priceId": "hydradx",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/HydraDX_(HDX).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0108",
+          "currencyIdType": "SpacewalkPrimitivesCurrencyId",
+          "existentialDeposit": "1000",
+          "transfersEnabled": true
+        },
+        "name": "HydraDX"
       }
     ],
     "externalApi": {
