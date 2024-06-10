@@ -591,7 +591,6 @@
     }
   },
   "portfolilo": {
-    "networkCounter": "+1",
     "selectNetworkLabel": "Select network"
   },
   "price": {
