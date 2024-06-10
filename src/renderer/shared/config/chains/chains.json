@@ -3942,12 +3942,6 @@
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/proxy-hydradx"
         }
-      ],
-      "proxy": [
-        {
-          "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/proxy-hydradx"
-        }
       ]
     }
   },
