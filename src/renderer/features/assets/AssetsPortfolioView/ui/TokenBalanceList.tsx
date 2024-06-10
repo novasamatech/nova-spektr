@@ -69,7 +69,7 @@ export const TokenBalanceList = ({ asset }: Props) => {
                   />
                   {asset.chains.length > 2 && (
                     <div className="b-r-2 w-6 rounded flex items-center justify-center bg-token-background p-0.5">
-                      <HelpText className="text-white">{t('portfolilo.networkCounter')}</HelpText>
+                      <HelpText className="text-white">+{asset.chains.length - 2}</HelpText>
                     </div>
                   )}
                   {asset.totalBalance?.verified && (
