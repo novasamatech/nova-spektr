@@ -98,7 +98,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 1,
         "assetSymbol": "DOT",
         "type": "orml",
@@ -734,7 +734,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 9,
         "assetSymbol": "USDT",
         "type": "orml",
@@ -747,7 +747,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 28,
         "assetSymbol": "USDT-Moonbeam",
         "type": "orml",
@@ -1098,7 +1098,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 11,
         "assetSymbol": "BNC",
         "type": "orml",
@@ -1314,7 +1314,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 20,
         "assetSymbol": "PHA",
         "type": "orml",
@@ -1547,7 +1547,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 6,
         "assetSymbol": "iBTC",
         "type": "orml",
@@ -2714,7 +2714,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 34,
         "assetSymbol": "KILT",
         "type": "orml",
@@ -2925,7 +2925,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 16,
         "assetSymbol": "GLMR",
         "type": "orml",
@@ -3109,7 +3109,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 17,
         "assetSymbol": "INTR",
         "type": "orml",
@@ -3184,7 +3184,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 8,
         "assetSymbol": "ASTR",
         "type": "orml",
@@ -3276,7 +3276,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 2,
         "assetSymbol": "DAI-Acala",
         "type": "orml",
@@ -3289,7 +3289,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 12,
         "assetSymbol": "DAI-Moonbeam",
         "type": "orml",
@@ -3334,7 +3334,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 30,
         "assetSymbol": "PINK",
         "type": "orml",
@@ -3342,6 +3342,19 @@
           "currencyIdScale": "0x55420f00",
           "currencyIdType": "u32",
           "existentialDeposit": "1",
+          "transfersEnabled": true
+        }
+      },
+      {
+        "chainId": "0x5d3c298622d5634ed019bf61ea4b71655030015bde9beb0d6a24743714462c86",
+        "name": "Pendulum",
+        "assetId": 12,
+        "assetSymbol": "PINK",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x0107",
+          "currencyIdType": "SpacewalkPrimitivesCurrencyId",
+          "existentialDeposit": "1000",
           "transfersEnabled": true
         }
       }
@@ -3367,7 +3380,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 25,
         "assetSymbol": "UNQ",
         "type": "orml",
@@ -3400,7 +3413,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 19,
         "assetSymbol": "vDOT",
         "type": "orml",
@@ -3551,7 +3564,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 15,
         "assetSymbol": "USDC",
         "type": "orml",
@@ -3564,7 +3577,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 21,
         "assetSymbol": "USDC-Moonbeam",
         "type": "orml",
@@ -3620,7 +3633,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 29,
         "assetSymbol": "DED",
         "type": "orml",
@@ -3652,7 +3665,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 32,
         "assetSymbol": "DOTA",
         "type": "orml",
@@ -3684,7 +3697,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 31,
         "assetSymbol": "STINK",
         "type": "orml",
@@ -3716,7 +3729,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 33,
         "assetSymbol": "GABE",
         "type": "orml",
@@ -3748,7 +3761,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 35,
         "assetSymbol": "WUD",
         "type": "orml",
@@ -3777,7 +3790,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 7,
         "assetSymbol": "ZTG",
         "type": "orml",
@@ -3838,7 +3851,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 18,
         "assetSymbol": "SUB",
         "type": "orml",
@@ -3867,7 +3880,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 10,
         "assetSymbol": "CFG",
         "type": "orml",
@@ -3900,9 +3913,22 @@
     "chains": [
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 0,
         "assetSymbol": "HDX"
+      },
+      {
+        "chainId": "0x5d3c298622d5634ed019bf61ea4b71655030015bde9beb0d6a24743714462c86",
+        "name": "Pendulum",
+        "assetId": 13,
+        "assetSymbol": "HDX",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x0108",
+          "currencyIdType": "SpacewalkPrimitivesCurrencyId",
+          "existentialDeposit": "1000",
+          "transfersEnabled": true
+        }
       },
       {
         "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
@@ -3925,7 +3951,7 @@
     "chains": [
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 3,
         "assetSymbol": "LRNA",
         "type": "orml",
@@ -3948,7 +3974,7 @@
     "chains": [
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 4,
         "assetSymbol": "WETH-Acala",
         "type": "orml",
@@ -3961,7 +3987,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 14,
         "assetSymbol": "WETH-Moonbeam",
         "type": "orml",
@@ -3984,7 +4010,7 @@
     "chains": [
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 5,
         "assetSymbol": "WBTC-Acala",
         "type": "orml",
@@ -3997,7 +4023,7 @@
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 13,
         "assetSymbol": "WBTC-Moonbeam",
         "type": "orml",
@@ -4019,7 +4045,7 @@
     "chains": [
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 22,
         "assetSymbol": "4-Pool",
         "type": "orml",
@@ -4041,7 +4067,7 @@
     "chains": [
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 23,
         "assetSymbol": "2-Pool",
         "type": "orml",
@@ -4063,7 +4089,7 @@
     "chains": [
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 24,
         "assetSymbol": "2-Pool-Stbl",
         "type": "orml",
@@ -4086,7 +4112,7 @@
     "chains": [
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 26,
         "assetSymbol": "NODL",
         "type": "orml",
@@ -4119,7 +4145,7 @@
     "chains": [
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "HydraDX",
+        "name": "Hydration",
         "assetId": 27,
         "assetSymbol": "CRU",
         "type": "orml",
