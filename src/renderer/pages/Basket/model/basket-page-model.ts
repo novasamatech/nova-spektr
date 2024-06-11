@@ -219,8 +219,14 @@ sample({
 
 sample({
   clock: txClicked,
+  fn: (transaction) => new Set([transaction.id]),
+  target: $selectedTxs,
+});
+
+sample({
+  clock: txClicked,
   fn: (transaction) => [transaction],
-  target: signOperationsModel.events.flowStarted,
+  target: signStarted,
 });
 
 sample({

@@ -18,6 +18,8 @@ export const Basket = () => {
   const validatingTxs = useUnit(basketPageModel.$validatingTxs);
   const validationWarningShown = useUnit(basketPageModel.$validationWarningShown);
 
+  console.log('xcmValid', validTxs);
+
   return (
     <section className="flex flex-col items-center relative h-full">
       <Header title={t('basket.title')} />
