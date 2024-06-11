@@ -47,13 +47,13 @@ export const OngoingReferendums = ({ referendums, onSelected }: Props) => {
                 <div className="flex items-center gap-x-2 w-full">
                   <Voted active={referendumListUtils.isReferendumVoted(index, voting)} />
                   <OperationStatus pallet={isPassing ? 'success' : 'default'}>
-                    {isPassing ? 'Passing' : 'Deciding'}
+                    {isPassing ? t('governance.referendums.passing') : t('governance.referendums.deciding')}
                   </OperationStatus>
                   {/*<ReferendumTimer status="reject" time={600000} />*/}
                   <div className="flex ml-auto text-text-secondary">
                     <FootnoteText className="text-inherit">#{index}</FootnoteText>
                     <Icon name={track.icon} size={16} className="text-inherit ml-2 mr-1" />
-                    <FootnoteText className="text-inherit">{track.title}</FootnoteText>
+                    <FootnoteText className="text-inherit">{t(track.title)}</FootnoteText>
                   </div>
                 </div>
                 <div className="flex items-start gap-x-6 w-full">

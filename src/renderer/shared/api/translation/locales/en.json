@@ -265,8 +265,26 @@
   "governance": {
     "referendums": {
       "completed": "Completed",
+      "crowdloans": "Crowdloans",
+      "deciding": "Deciding",
+      "fellowshipAdmin": "Fellowship: Admin",
+      "fellowshipWhitelist": "Fellowship: Whitelist",
+      "governanceCanceller": "Governance: Canceller",
+      "governanceKiller": "Governance: Killer",
+      "governanceLease": "Governance: Lease",
+      "governanceRegistrar": "Governance: Registrar",
+      "mainAgenda": "Main agenda",
       "ongoing": "Ongoing",
-      "referendumTitle": "Referendum #{ index }"
+      "passing": "Passing",
+      "referendumTitle": "Referendum #{ index }",
+      "staking": "Staking",
+      "treasuryAny": "Treasury: Any",
+      "treasuryBigSpend": "Treasury: Big spend",
+      "treasuryBigTips": "Treasury: Big tips",
+      "treasuryMediumSpend": "Treasury: Medium spend",
+      "treasurySmallSpend": "Treasury: Small spend",
+      "treasurySmallTips": "Treasury: Small tips",
+      "wishForChange": "Wish for change"
     },
     "title": "Governance",
     "voted": "Voted"
