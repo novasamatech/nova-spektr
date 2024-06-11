@@ -7,7 +7,7 @@ import { Assets, ReceiveAsset, SendAsset } from './Assets';
 import { Operations } from './Operations/Operations';
 import { Notifications } from './Notifications/Notifications';
 import { Contacts, CreateContact, EditContact } from './AddressBook';
-import { Overview as Settings, Currency, Networks } from './Settings';
+import { Overview as Settings, Currency, Networks, Matrix } from './Settings';
 import { Governance } from './Governance';
 import { Staking } from './Staking';
 
@@ -45,6 +45,7 @@ export const ROUTES_CONFIG: RouteObject[] = [
         element: <Settings />,
         children: [
           { path: Paths.NETWORK, element: <Networks /> },
+          { path: Paths.MATRIX, element: <Matrix /> },
           { path: Paths.CURRENCY, element: <Currency /> },
         ],
       },

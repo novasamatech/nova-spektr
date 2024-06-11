@@ -132,6 +132,7 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
                 <SignatoryCard
                   key={signatory.accountId}
                   accountId={signatory.accountId}
+                  matrixId={signatory.matrixId}
                   addressPrefix={connection.addressPrefix}
                   status={getSignatoryStatus(signatory.accountId)}
                   explorers={connection.explorers}

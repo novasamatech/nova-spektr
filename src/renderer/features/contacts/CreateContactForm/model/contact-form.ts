@@ -4,6 +4,7 @@ import { createForm } from 'effector-forms';
 import { contactModel } from '@entities/contact';
 import { toAccountId, validateAddress } from '@shared/lib/utils';
 import type { Contact } from '@shared/core';
+import { validateFullUserName } from '@shared/api/matrix';
 
 export type Callbacks = {
   onSubmit: () => void;
@@ -41,6 +42,10 @@ const $contactForm = createForm({
         },
       ],
     },
+    matrixId: {
+      init: '',
+      rules: [{ name: 'invalid', errorText: 'addressBook.createContact.matrixIdError', validator: validateMatrixId }],
+    },
   },
   validateOn: ['change', 'submit'],
 });
@@ -57,6 +62,12 @@ function validateAddressExist(value: string, _: unknown, contacts: Contact[]): b
   const accountId = toAccountId(value);
 
   return contacts.every((contact) => contact.accountId !== accountId);
+}
+
+function validateMatrixId(value: string): boolean {
+  if (!value) return true;
+
+  return validateFullUserName(value);
 }
 
 const createContactFx = attach({

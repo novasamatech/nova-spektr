@@ -1,5 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState, ComponentProps } from 'react';
+import { useUnit } from 'effector-react';
 
 import { useI18n, useMultisigChainContext } from '@app/providers';
 import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
@@ -17,6 +18,8 @@ import {
   ExtrinsicResultParams,
   transactionService,
 } from '@entities/transaction';
+import { matrixModel } from '@entities/matrix';
+import { toAccountId } from '@shared/lib/utils';
 
 type ResultProps = Pick<ComponentProps<typeof StatusModal>, 'title' | 'content' | 'description'>;
 
@@ -28,6 +31,7 @@ type Props = {
   txPayload: Uint8Array;
   signature: HexString;
   rejectReason?: string;
+  matrixRoomId?: string;
   isReject?: boolean;
   onClose: () => void;
 };
@@ -40,10 +44,13 @@ export const Submit = ({
   txPayload,
   signature,
   rejectReason,
+  matrixRoomId,
   isReject,
   onClose,
 }: Props) => {
   const { t } = useI18n();
+
+  const matrix = useUnit(matrixModel.$matrix);
 
   const { addTask } = useMultisigChainContext();
   const { updateMultisigTx } = useMultisigTx({ addTask });
@@ -94,6 +101,10 @@ export const Submit = ({
           };
 
           await addEventWithQueue(event);
+
+          if (matrix.userIsLoggedIn && matrixRoomId) {
+            sendMultisigEvent(updatedTx, typedParams, rejectReason);
+          }
         }
 
         toggleSuccessMessage();
@@ -106,6 +117,32 @@ export const Submit = ({
       }
       toggleInProgress();
     });
+  };
+
+  const sendMultisigEvent = (updatedTx: MultisigTransaction, params: ExtrinsicResultParams, rejectReason?: string) => {
+    if (!tx || !updatedTx || !matrixRoomId) return;
+
+    const payload = {
+      senderAccountId: toAccountId(tx.address),
+      chainId: updatedTx.chainId,
+      callHash: updatedTx.callHash,
+      extrinsicTimepoint: params.timepoint,
+      extrinsicHash: params.extrinsicHash,
+      error: Boolean(params.multisigError),
+      description: rejectReason,
+      callTimepoint: {
+        height: updatedTx.blockCreated || params.timepoint.height,
+        index: updatedTx.indexCreated || params.timepoint.index,
+      },
+    };
+
+    if (tx.type === TransactionType.MULTISIG_CANCEL_AS_MULTI) {
+      matrix.sendCancel(matrixRoomId, payload).catch(console.warn);
+    } else if (params.isFinalApprove) {
+      matrix.sendFinalApprove(matrixRoomId, { ...payload, callOutcome: updatedTx.status }).catch(console.warn);
+    } else {
+      matrix.sendApprove(matrixRoomId, payload).catch(console.warn);
+    }
   };
 
   const getResultProps = (): ResultProps => {

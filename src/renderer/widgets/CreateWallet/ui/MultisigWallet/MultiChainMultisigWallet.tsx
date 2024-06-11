@@ -2,7 +2,7 @@ import { ComponentProps, useState, useEffect } from 'react';
 import { useUnit } from 'effector-react';
 import noop from 'lodash/noop';
 
-import { BaseModal, HeaderTitleText, Button, IconButton } from '@shared/ui';
+import { BaseModal, HeaderTitleText, Button, IconButton, StatusLabel } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { OperationResult } from '@entities/transaction';
@@ -12,6 +12,7 @@ import { contactModel } from '@entities/contact';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { walletModel } from '@entities/wallet';
 import { createMultisigWalletModel } from '../../model/create-multisig-wallet-model';
+import { matrixUtils, matrixModel } from '@entities/matrix';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -31,6 +32,9 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
   const contacts = useUnit(contactModel.$contacts);
+
+  const matrix = useUnit(matrixModel.$matrix);
+  const loginStatus = useUnit(matrixModel.$loginStatus);
 
   const isLoading = useUnit(createMultisigWalletModel.$isLoading);
   const error = useUnit(createMultisigWalletModel.$error);
@@ -97,6 +101,7 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
   const modalTitle = (
     <div className="flex justify-between items-center px-5 py-3 w-[464px] bg-white rounded-tl-lg">
       <HeaderTitleText className="py-[3px]">{t('createMultisigAccount.title')}</HeaderTitleText>
+      {matrixUtils.isLoggedIn(loginStatus) && <StatusLabel title={matrix.userId || ''} variant="success" />}
     </div>
   );
 

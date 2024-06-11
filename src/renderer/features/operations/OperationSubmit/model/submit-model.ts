@@ -12,6 +12,8 @@ import {
   MultisigEvent,
   transactionService,
 } from '@entities/transaction';
+import { matrixModel, matrixUtils } from '@entities/matrix';
+import { ISecureMessenger } from '@shared/api/matrix';
 
 type Input = {
   chain: Chain;
@@ -64,6 +66,34 @@ const signAndSubmitExtrinsicsFx = createEffect(
         } else {
           boundExtrinsicFailed(params as string);
         }
+      });
+    });
+  },
+);
+
+type ApproveParams = {
+  matrix: ISecureMessenger;
+  matrixRoomId: string;
+  multisigTxs: MultisigTransaction[];
+  description: string;
+  params: ExtrinsicResultParams;
+};
+const sendMatrixApproveFx = createEffect(
+  ({ matrix, matrixRoomId, multisigTxs, description, params }: ApproveParams) => {
+    multisigTxs.forEach((tx) => {
+      matrix.sendApprove(matrixRoomId, {
+        description,
+        senderAccountId: tx.depositor!,
+        chainId: tx.chainId,
+        callHash: tx.callHash,
+        callData: tx.callData,
+        extrinsicTimepoint: params.timepoint,
+        extrinsicHash: params.extrinsicHash,
+        error: Boolean(params.multisigError),
+        callTimepoint: {
+          height: tx.blockCreated || params.timepoint.height,
+          index: tx.indexCreated || params.timepoint.index,
+        },
       });
     });
   },
@@ -139,10 +169,11 @@ sample({
   clock: extrinsicSucceeded,
   source: {
     submitStore: $submitStore,
+    loginStatus: matrixModel.$loginStatus,
     hooks: $hooks,
   },
-  filter: ({ submitStore }) => {
-    return Boolean(submitStore?.multisigTxs.length);
+  filter: ({ submitStore, loginStatus }) => {
+    return matrixUtils.isLoggedIn(loginStatus) && Boolean(submitStore?.multisigTxs.length);
   },
   fn: ({ submitStore, hooks }, params) => ({
     params,
@@ -153,6 +184,30 @@ sample({
     description: submitStore!.description,
   }),
   target: saveMultisigTxFx,
+});
+
+sample({
+  clock: saveMultisigTxFx.done,
+  source: {
+    matrix: matrixModel.$matrix,
+    loginStatus: matrixModel.$loginStatus,
+    submitStore: $submitStore,
+  },
+  filter: ({ loginStatus, submitStore }) => {
+    return (
+      matrixUtils.isLoggedIn(loginStatus) &&
+      Boolean(submitStore?.multisigTxs.length) &&
+      Boolean((submitStore?.account as MultisigAccount).matrixRoomId)
+    );
+  },
+  fn: ({ matrix, submitStore }, { params, result }) => ({
+    matrix,
+    matrixRoomId: (submitStore!.account as MultisigAccount).matrixRoomId!,
+    multisigTxs: result.transactions,
+    description: submitStore!.description!,
+    params: params.params,
+  }),
+  target: sendMatrixApproveFx,
 });
 
 sample({
