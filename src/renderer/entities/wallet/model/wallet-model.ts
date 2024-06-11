@@ -21,6 +21,9 @@ const singleshardCreated = createEvent<CreateParams<BaseAccount>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const walletConnectCreated = createEvent<CreateParams<WcAccount>>();
 
+type MultisigUpdateParams = Partial<MultisigAccount> & { id: Account['id'] };
+const multisigAccountUpdated = createEvent<MultisigUpdateParams>();
+
 const walletRemoved = createEvent<ID>();
 const walletsRemoved = createEvent<ID[]>();
 
@@ -134,6 +137,14 @@ const removeWalletsFx = createEffect(async (wallets: Wallet[]): Promise<ID[]> =>
   return walletIds;
 });
 
+const multisigWalletUpdatedFx = createEffect(
+  async (account: MultisigUpdateParams): Promise<MultisigUpdateParams | undefined> => {
+    const id = await storageService.accounts.update(account.id, account);
+
+    return id ? account : undefined;
+  },
+);
+
 sample({
   clock: walletStarted,
   target: [fetchAllAccountsFx, fetchAllWalletsFx],
@@ -211,6 +222,30 @@ sample({
   target: $wallets,
 });
 
+sample({
+  clock: multisigAccountUpdated,
+  target: multisigWalletUpdatedFx,
+});
+
+// TODO: update wallet
+sample({
+  clock: multisigWalletUpdatedFx.doneData,
+  source: $wallets,
+  filter: (_, data) => Boolean(data),
+  fn: (wallets, data) => {
+    return wallets.map((wallet) => {
+      if (data!.walletId !== wallet.id) return wallet;
+
+      const newAccounts = wallet.accounts.map((account) => {
+        return account.id === data!.id ? data : account;
+      });
+
+      return { ...wallet, accounts: newAccounts } as Wallet;
+    });
+  },
+  target: $wallets,
+});
+
 export const walletModel = {
   $wallets,
   $activeWallet,
@@ -223,6 +258,7 @@ export const walletModel = {
     singleshardCreated,
     multisigCreated,
     walletConnectCreated,
+    multisigAccountUpdated,
     walletRemoved,
     walletRemovedSuccess: removeWalletFx.done,
     walletsRemoved,

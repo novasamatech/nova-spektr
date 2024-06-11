@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { useI18n } from '@app/providers';
 import { FootnoteText, Accordion } from '@shared/ui';
 import OperationStatus from './OperationStatus';
-import OperationFullInfo from './OperationFullInfo';
+import { OperationFullInfo } from './OperationFullInfo';
 import { MultisigTransactionDS } from '@shared/api/storage';
 import { useMultisigEvent } from '@entities/multisig';
 import { ChainTitle, XcmChains } from '@entities/chain';
