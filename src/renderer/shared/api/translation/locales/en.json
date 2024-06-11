@@ -80,22 +80,22 @@
     "closeButton": "Close modal window"
   },
   "basket": {
+    "emptySignButton": "Select operations",
     "invalidTransaction": "Unavailable",
     "noOperationsDescription": "There are no operations in the basket yet",
     "noOperationsLabel": "No operations",
     "searchPlaceholder": "Search",
     "selectAll": "Select all",
-    "title": "Basket",
     "signButton": "Sign",
-    "emptySignButton": "Select operations",
     "signOperations": {
       "title": "Sign { transactions } operations"
     },
+    "title": "Basket",
     "validationWarning": {
-      "proceedButton": "Proceed",
       "cancelButton": "Cancel",
-      "title": "Some of the selected operations are unavailable",
-      "description": "They will be excluded from the checkout. Would you like to proceed?"
+      "description": "They will be excluded from the checkout. Would you like to proceed?",
+      "proceedButton": "Proceed",
+      "title": "Some of the selected operations are unavailable"
     }
   },
   "createMultisigAccount": {
