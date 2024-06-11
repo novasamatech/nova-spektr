@@ -23,7 +23,7 @@ export const SelectedValidatorsModal = ({ isOpen, validators, onClose }: Props) 
     >
       <section>
         <ul className="flex flex-col [overflow-y:overlay]">
-          {validators.map((validator) => (
+          {validators?.map((validator) => (
             <li
               key={validator.address}
               className="grid items-center pl-5 pr-2 shrink-0 h-10 grid-cols-[1fr,40px] hover:bg-hover group"

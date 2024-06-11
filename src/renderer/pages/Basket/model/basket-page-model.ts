@@ -1,4 +1,5 @@
-import { combine, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import { combine, createEffect, createEvent, createStore, sample, scopeBind, split } from 'effector';
+import { once } from 'patronum';
 
 import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
@@ -22,12 +23,31 @@ import {
 } from '@features/operations/OperationsValidation';
 import { signOperationsModel } from './sign-operations-model';
 
-const txSelected = createEvent<ID>();
+const txSelected = createEvent<{ id: ID; value: boolean }>();
 const txClicked = createEvent<BasketTransaction>();
 const allSelected = createEvent();
+const signStarted = createEvent();
+const validationCompleted = createEvent();
+const signContinued = createEvent();
+const signTransactionsReceived = createEvent<{
+  valid: BasketTransaction[];
+  invalid: BasketTransaction[];
+}>();
+const validationWarningShown = createEvent<{
+  valid: BasketTransaction[];
+  invalid: BasketTransaction[];
+}>();
+const proceedValidationWarning = createEvent<{
+  valid: BasketTransaction[];
+  invalid: BasketTransaction[];
+}>();
+const cancelValidationWarning = createEvent();
 
-const $selectedTxs = createStore<ID[]>([]);
+const $selectedTxs = createStore<Set<number>>(new Set());
 const $invalidTxs = createStore<Map<ID, ValidationResult>>(new Map());
+const $validTxs = createStore<BasketTransaction[]>([]);
+const $validatingTxs = createStore<Set<number>>(new Set());
+const $validationWarningShown = createStore<boolean>(false);
 
 const validateFx = createEffect((transactions: BasketTransaction[]) => {
   const validateTransferBound = scopeBind(transferValidateModel.events.validationStarted, { safe: true });
@@ -77,18 +97,22 @@ const $basketTransactions = combine(
     wallet: walletModel.$activeWallet,
     basket: basketModel.$basket,
   },
-  ({ wallet, basket }) => basket.filter((tx) => tx.initiatorWallet === wallet?.id),
+  ({ wallet, basket }) => basket.filter((tx) => tx.initiatorWallet === wallet?.id).reverse(),
 );
 
 sample({
   clock: txSelected,
   source: $selectedTxs,
-  fn: (selectedTxs, id) => {
-    if (selectedTxs.includes(id)) {
-      return selectedTxs.filter((tx) => tx !== id);
+  fn: (selectedTxs, { id, value }) => {
+    const newSelectedTxs = new Set(selectedTxs);
+
+    if (value) {
+      newSelectedTxs.add(id);
+    } else {
+      newSelectedTxs.delete(id);
     }
 
-    return selectedTxs.concat(id);
+    return newSelectedTxs;
   },
   target: $selectedTxs,
 });
@@ -99,7 +123,7 @@ sample({
     txs: $basketTransactions,
     selectedTxs: $selectedTxs,
   },
-  fn: ({ txs, selectedTxs }) => (selectedTxs.length === txs.length ? [] : txs.map((tx) => tx.id)),
+  fn: ({ txs, selectedTxs }) => new Set(selectedTxs.size === txs.length ? [] : txs.map((tx) => tx.id)),
   target: $selectedTxs,
 });
 
@@ -135,18 +159,62 @@ sample({
   ],
   source: $invalidTxs,
   fn: (txs, { id, result }) => {
-    const newTxs = new Map(txs);
+    const invalidTxs = new Map(txs);
 
     if (!result) {
-      newTxs.delete(id);
+      invalidTxs.delete(id);
     } else {
-      newTxs.set(id, result);
+      invalidTxs.set(id, result);
     }
 
-    return newTxs;
+    return invalidTxs;
   },
 
   target: $invalidTxs,
+});
+
+// Validation on sign process
+
+sample({
+  clock: validateFx,
+  fn: (txs) => {
+    return new Set(txs.map((tx) => tx.id));
+  },
+  target: $validatingTxs,
+});
+
+sample({
+  clock: [
+    transferValidateModel.output.txValidated,
+    addProxyValidateModel.output.txValidated,
+    addPureProxiedValidateModel.output.txValidated,
+    removeProxyValidateModel.output.txValidated,
+    removePureProxiedValidateModel.output.txValidated,
+    bondNominateValidateModel.output.txValidated,
+    nominateValidateModel.output.txValidated,
+    bondExtraValidateModel.output.txValidated,
+    payeeValidateModel.output.txValidated,
+    restakeValidateModel.output.txValidated,
+    unstakeValidateModel.output.txValidated,
+    withdrawValidateModel.output.txValidated,
+  ],
+  source: $validatingTxs,
+  fn: (txs, { id }) => {
+    const validatingTxs = new Set(txs);
+    validatingTxs.delete(id);
+
+    return validatingTxs;
+  },
+
+  target: $validatingTxs,
+});
+
+sample({
+  clock: $validatingTxs,
+  filter: (txs) => {
+    return txs.size === 0;
+  },
+  target: validationCompleted,
 });
 
 sample({
@@ -155,14 +223,99 @@ sample({
   target: signOperationsModel.events.flowStarted,
 });
 
+sample({
+  clock: once({
+    source: validationCompleted,
+    reset: signStarted,
+  }),
+  target: signContinued,
+});
+
+sample({
+  clock: signStarted,
+  source: { allTransactions: $basketTransactions, selectedTxs: $selectedTxs, invalidTxs: $invalidTxs },
+  fn: ({ allTransactions, selectedTxs }) => allTransactions.filter((t) => selectedTxs.has(t.id)),
+  target: validateFx,
+});
+
+sample({
+  clock: signContinued,
+  source: { allTransactions: $basketTransactions, selectedTxs: $selectedTxs, invalidTxs: $invalidTxs },
+  fn: ({ allTransactions, selectedTxs, invalidTxs }) => {
+    const filteredTxs = allTransactions.filter((t) => selectedTxs.has(t.id));
+
+    return filteredTxs.reduce(
+      (acc, tx) => {
+        if (invalidTxs.has(tx.id)) {
+          acc.invalid.push(tx);
+        } else {
+          acc.valid.push(tx);
+        }
+
+        return acc;
+      },
+      {
+        valid: [] as BasketTransaction[],
+        invalid: [] as BasketTransaction[],
+      },
+    );
+  },
+  target: signTransactionsReceived,
+});
+
+split({
+  source: signTransactionsReceived,
+  match: {
+    invalid: ({ invalid }) => {
+      return invalid.length > 0;
+    },
+  },
+  cases: {
+    invalid: validationWarningShown,
+    __: proceedValidationWarning,
+  },
+});
+
+sample({
+  clock: validationWarningShown,
+  fn: () => true,
+  target: $validationWarningShown,
+});
+
+sample({
+  clock: validationWarningShown,
+  fn: ({ valid }) => valid,
+  target: $validTxs,
+});
+
+sample({
+  clock: proceedValidationWarning,
+  fn: ({ valid }) => {
+    return valid;
+  },
+  target: [$validTxs, signOperationsModel.events.flowStarted],
+});
+
+sample({
+  clock: [cancelValidationWarning, proceedValidationWarning],
+  fn: () => false,
+  target: $validationWarningShown,
+});
+
 export const basketPageModel = {
   $basketTransactions,
   $selectedTxs,
   $invalidTxs,
+  $validTxs,
+  $validationWarningShown,
+  $validatingTxs,
 
   events: {
     txSelected,
     txClicked,
     allSelected,
+    signStarted,
+    cancelValidationWarning,
+    proceedValidationWarning,
   },
 };

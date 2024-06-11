@@ -53,18 +53,18 @@ const flowStarted = createEvent<BasketTransaction[]>();
 const flowFinished = createEvent();
 const stepChanged = createEvent<Step>();
 
-const transferDataPreparationStarted = createEvent();
-const addProxyDataPreparationStarted = createEvent();
-const addPureProxiedDataPreparationStarted = createEvent();
-const removeProxyDataPreparationStarted = createEvent();
-const removePureProxiedDataPreparationStarted = createEvent();
-const bondNominateDataPreparationStarted = createEvent();
-const nominateDataPreparationStarted = createEvent();
-const bondExtraDataPreparationStarted = createEvent();
-const payeeDataPreparationStarted = createEvent();
-const unstakeDataPreparationStarted = createEvent();
-const restakeDataPreparationStarted = createEvent();
-const withdrawDataPreparationStarted = createEvent();
+const transferDataPreparationStarted = createEvent<BasketTransaction>();
+const addProxyDataPreparationStarted = createEvent<BasketTransaction>();
+const addPureProxiedDataPreparationStarted = createEvent<BasketTransaction>();
+const removeProxyDataPreparationStarted = createEvent<BasketTransaction>();
+const removePureProxiedDataPreparationStarted = createEvent<BasketTransaction>();
+const bondNominateDataPreparationStarted = createEvent<BasketTransaction>();
+const nominateDataPreparationStarted = createEvent<BasketTransaction>();
+const bondExtraDataPreparationStarted = createEvent<BasketTransaction>();
+const payeeDataPreparationStarted = createEvent<BasketTransaction>();
+const unstakeDataPreparationStarted = createEvent<BasketTransaction>();
+const restakeDataPreparationStarted = createEvent<BasketTransaction>();
+const withdrawDataPreparationStarted = createEvent<BasketTransaction>();
 
 // TODO: Use split or refactor at all
 const startDataPreparationFx = createEffect((transactions: BasketTransaction[]) => {
@@ -85,7 +85,7 @@ const startDataPreparationFx = createEffect((transactions: BasketTransaction[]) 
 
   for (const tx of transactions) {
     if (TransferTypes.includes(tx.coreTx.type) || XcmTypes.includes(tx.coreTx.type)) {
-      boundTransferDataPreparationStarted();
+      boundTransferDataPreparationStarted(tx);
     }
 
     const TransactionValidators = {
@@ -106,7 +106,7 @@ const startDataPreparationFx = createEffect((transactions: BasketTransaction[]) 
     if (tx.coreTx.type in TransactionValidators) {
       // TS thinks that transfer should be in TransactionValidators
       // @ts-ignore`
-      TransactionValidators[tx.coreTx.type]({ id: tx.id, transaction: tx.coreTx });
+      TransactionValidators[tx.coreTx.type](tx);
     }
   }
 });
@@ -115,7 +115,6 @@ const $step = restore(stepChanged, Step.NONE);
 const $transactions = restore(flowStarted, []);
 
 const $txDataParams = combine({
-  transactions: $transactions,
   wallets: walletModel.$wallets,
   chains: networkModel.$chains,
   apis: networkModel.$apis,
@@ -125,12 +124,11 @@ type TransferDataParams = {
   wallets: Wallet[];
   chains: Record<ChainId, Chain>;
   apis: Record<ChainId, ApiPromise>;
-  transactions: BasketTransaction[];
+  transaction: BasketTransaction;
 };
 
 const prepareTransferTransactionDataFx = createEffect(
-  async ({ transactions, wallets, chains, apis }: TransferDataParams) => {
-    const transaction = transactions[0];
+  async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
     const chainId = transaction.coreTx.chainId as ChainId;
     const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
@@ -172,8 +170,7 @@ type AddProxyInput = {
 };
 
 const prepareAddProxyTransactionDataFx = createEffect(
-  async ({ transactions, wallets, chains, apis }: TransferDataParams) => {
-    const transaction = transactions[0];
+  async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
     const chainId = transaction.coreTx.chainId as ChainId;
     const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
@@ -207,8 +204,7 @@ type AddPureProxiedInput = {
 };
 
 const prepareAddPureProxiedTransactionDataFx = createEffect(
-  async ({ transactions, wallets, chains, apis }: TransferDataParams) => {
-    const transaction = transactions[0];
+  async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
     const chainId = transaction.coreTx.chainId as ChainId;
     const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
@@ -239,8 +235,7 @@ type RemoveProxyInput = {
 };
 
 const prepareRemoveProxyTransactionDataFx = createEffect(
-  async ({ transactions, wallets, chains, apis }: TransferDataParams) => {
-    const transaction = transactions[0];
+  async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
     const chainId = transaction.coreTx.chainId as ChainId;
     const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
@@ -273,8 +268,7 @@ type RemovePureProxiedInput = {
 };
 
 const prepareRemovePureProxiedTransactionDataFx = createEffect(
-  async ({ transactions, wallets, chains, apis }: TransferDataParams) => {
-    const transaction = transactions[0];
+  async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
     const chainId = transaction.coreTx.chainId as ChainId;
     const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
@@ -309,8 +303,7 @@ type BondNominateInput = {
 };
 
 const prepareBondNominateTransactionDataFx = createEffect(
-  async ({ transactions, wallets, chains, apis }: TransferDataParams) => {
-    const transaction = transactions[0];
+  async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
     const chainId = transaction.coreTx.chainId as ChainId;
     const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
@@ -346,8 +339,7 @@ type BondExtraInput = {
 };
 
 const prepareBondExtraTransactionDataFx = createEffect(
-  async ({ transactions, wallets, chains, apis }: TransferDataParams) => {
-    const transaction = transactions[0];
+  async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
     const chainId = transaction.coreTx.chainId as ChainId;
     const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
@@ -381,8 +373,7 @@ type NominateInput = {
 };
 
 const prepareNominateTransactionDataFx = createEffect(
-  async ({ transactions, wallets, chains, apis }: TransferDataParams) => {
-    const transaction = transactions[0];
+  async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
     const chainId = transaction.coreTx.chainId as ChainId;
     const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
@@ -415,8 +406,7 @@ type PayeeInput = {
 };
 
 const preparePayeeTransactionDataFx = createEffect(
-  async ({ transactions, wallets, chains, apis }: TransferDataParams) => {
-    const transaction = transactions[0];
+  async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
     const chainId = transaction.coreTx.chainId as ChainId;
     const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
@@ -451,8 +441,7 @@ type UnstakeInput = {
 };
 
 const prepareUnstakeTransactionDataFx = createEffect(
-  async ({ transactions, wallets, chains, apis }: TransferDataParams) => {
-    const transaction = transactions[0];
+  async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
     const chainId = transaction.coreTx.chainId as ChainId;
     const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
@@ -486,8 +475,7 @@ type RestakeInput = {
 };
 
 const prepareRestakeTransactionDataFx = createEffect(
-  async ({ transactions, wallets, chains, apis }: TransferDataParams) => {
-    const transaction = transactions[0];
+  async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
     const chainId = transaction.coreTx.chainId as ChainId;
     const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
@@ -524,8 +512,7 @@ type WithdrawInput = {
 };
 
 const prepareWithdrawTransactionDataFx = createEffect(
-  async ({ transactions, wallets, chains, apis }: TransferDataParams) => {
-    const transaction = transactions[0];
+  async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
     const chainId = transaction.coreTx.chainId as ChainId;
     const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
@@ -557,6 +544,7 @@ sample({
 sample({
   clock: transferDataPreparationStarted,
   source: $txDataParams,
+  fn: ({ wallets, chains, apis }, transaction) => ({ transaction, wallets, chains, apis }),
   target: prepareTransferTransactionDataFx,
 });
 
@@ -570,6 +558,7 @@ sample({
 sample({
   clock: addProxyDataPreparationStarted,
   source: $txDataParams,
+  fn: ({ wallets, chains, apis }, transaction) => ({ transaction, wallets, chains, apis }),
   target: prepareAddProxyTransactionDataFx,
 });
 
@@ -583,6 +572,7 @@ sample({
 sample({
   clock: addPureProxiedDataPreparationStarted,
   source: $txDataParams,
+  fn: ({ wallets, chains, apis }, transaction) => ({ transaction, wallets, chains, apis }),
   target: prepareAddPureProxiedTransactionDataFx,
 });
 
@@ -596,6 +586,7 @@ sample({
 sample({
   clock: removeProxyDataPreparationStarted,
   source: $txDataParams,
+  fn: ({ wallets, chains, apis }, transaction) => ({ transaction, wallets, chains, apis }),
   target: prepareRemoveProxyTransactionDataFx,
 });
 
@@ -609,6 +600,7 @@ sample({
 sample({
   clock: removePureProxiedDataPreparationStarted,
   source: $txDataParams,
+  fn: ({ wallets, chains, apis }, transaction) => ({ transaction, wallets, chains, apis }),
   target: prepareRemovePureProxiedTransactionDataFx,
 });
 
@@ -622,6 +614,7 @@ sample({
 sample({
   clock: bondNominateDataPreparationStarted,
   source: $txDataParams,
+  fn: ({ wallets, chains, apis }, transaction) => ({ transaction, wallets, chains, apis }),
   target: prepareBondNominateTransactionDataFx,
 });
 
@@ -635,6 +628,7 @@ sample({
 sample({
   clock: nominateDataPreparationStarted,
   source: $txDataParams,
+  fn: ({ wallets, chains, apis }, transaction) => ({ transaction, wallets, chains, apis }),
   target: prepareNominateTransactionDataFx,
 });
 
@@ -648,6 +642,7 @@ sample({
 sample({
   clock: payeeDataPreparationStarted,
   source: $txDataParams,
+  fn: ({ wallets, chains, apis }, transaction) => ({ transaction, wallets, chains, apis }),
   target: preparePayeeTransactionDataFx,
 });
 
@@ -661,6 +656,7 @@ sample({
 sample({
   clock: bondExtraDataPreparationStarted,
   source: $txDataParams,
+  fn: ({ wallets, chains, apis }, transaction) => ({ transaction, wallets, chains, apis }),
   target: prepareBondExtraTransactionDataFx,
 });
 
@@ -674,6 +670,7 @@ sample({
 sample({
   clock: unstakeDataPreparationStarted,
   source: $txDataParams,
+  fn: ({ wallets, chains, apis }, transaction) => ({ transaction, wallets, chains, apis }),
   target: prepareUnstakeTransactionDataFx,
 });
 
@@ -687,6 +684,7 @@ sample({
 sample({
   clock: restakeDataPreparationStarted,
   source: $txDataParams,
+  fn: ({ wallets, chains, apis }, transaction) => ({ transaction, wallets, chains, apis }),
   target: prepareRestakeTransactionDataFx,
 });
 
@@ -700,6 +698,7 @@ sample({
 sample({
   clock: withdrawDataPreparationStarted,
   source: $txDataParams,
+  fn: ({ wallets, chains, apis }, transaction) => ({ transaction, wallets, chains, apis }),
   target: prepareWithdrawTransactionDataFx,
 });
 

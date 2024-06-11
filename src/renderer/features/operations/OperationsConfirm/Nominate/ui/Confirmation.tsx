@@ -15,10 +15,11 @@ import { priceProviderModel } from '@entities/price';
 
 type Props = {
   secondaryActionButton?: ReactNode;
-  onGoBack: () => void;
+  hideSignButton?: boolean;
+  onGoBack?: () => void;
 };
 
-export const Confirmation = ({ secondaryActionButton, onGoBack }: Props) => {
+export const Confirmation = ({ secondaryActionButton, hideSignButton, onGoBack }: Props) => {
   const { t } = useI18n();
 
   const confirmStore = useUnit(confirmModel.$confirmStore);
@@ -136,7 +137,7 @@ export const Confirmation = ({ secondaryActionButton, onGoBack }: Props) => {
               onClick={toggleValidators}
             >
               <div className="rounded-[30px] px-1.5 py-[1px] bg-icon-accent">
-                <CaptionText className="text-white">{confirmStore.validators.length}</CaptionText>
+                <CaptionText className="text-white">{confirmStore.validators?.length}</CaptionText>
               </div>
               <Icon className="group-hover:text-icon-hover" name="info" size={16} />
             </button>
@@ -204,19 +205,23 @@ export const Confirmation = ({ secondaryActionButton, onGoBack }: Props) => {
         </dl>
 
         <div className="flex w-full justify-between mt-3">
-          <Button variant="text" onClick={onGoBack}>
-            {t('operation.goBackButton')}
-          </Button>
+          {onGoBack && (
+            <Button variant="text" onClick={onGoBack}>
+              {t('operation.goBackButton')}
+            </Button>
+          )}
 
           <div className="flex gap-4">
             {secondaryActionButton}
 
-            <SignButton
-              isDefault={Boolean(secondaryActionButton)}
-              disabled={isFeeLoading}
-              type={(signerWallet || initiatorWallet).type}
-              onClick={confirmModel.output.formSubmitted}
-            />
+            {!hideSignButton && (
+              <SignButton
+                isDefault={Boolean(secondaryActionButton)}
+                disabled={isFeeLoading}
+                type={(signerWallet || initiatorWallet).type}
+                onClick={confirmModel.output.formSubmitted}
+              />
+            )}
           </div>
         </div>
       </div>
