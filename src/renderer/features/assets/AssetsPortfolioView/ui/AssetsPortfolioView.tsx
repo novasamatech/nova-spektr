@@ -47,7 +47,7 @@ export const AssetsPortfolioView = () => {
 
       <ul className="flex flex-col gap-y-4 items-center w-full">
         {sortedTokens.map((asset) => (
-          <li key={asset.priceId || asset.symbol} className="w-[548px]">
+          <li key={`${asset.priceId || ''}${asset.symbol}`} className="w-[548px]">
             {asset.chains.length === 1 ? <TokenBalance asset={asset} /> : <TokenBalanceList asset={asset} />}
           </li>
         ))}
