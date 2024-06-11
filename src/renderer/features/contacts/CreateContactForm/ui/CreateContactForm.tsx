@@ -13,7 +13,7 @@ export const CreateContactForm = ({ onSubmit }: Props) => {
   const {
     submit,
     isValid,
-    fields: { name, address },
+    fields: { name, address, matrixId },
   } = useForm(createFormModel.$contactForm);
 
   const pending = useUnit(createFormModel.$submitPending);
@@ -67,6 +67,23 @@ export const CreateContactForm = ({ onSubmit }: Props) => {
         />
         <InputHint variant="error" active={address.hasError()}>
           {t(address.errorText())}
+        </InputHint>
+      </div>
+
+      <div className="flex flex-col gap-y-2">
+        <Input
+          name="matrixId"
+          className="w-full"
+          wrapperClass="h-[42px]"
+          label={t('addressBook.createContact.matrixIdLabel')}
+          placeholder={t('addressBook.createContact.matrixIdPlaceholder')}
+          invalid={matrixId.hasError()}
+          value={matrixId.value}
+          onChange={matrixId.onChange}
+        />
+        <InputHint active={!matrixId.hasError()}>{t('addressBook.createContact.matrixIdHint')}</InputHint>
+        <InputHint variant="error" active={matrixId.hasError()}>
+          {t(matrixId.errorText())}
         </InputHint>
       </div>
 

@@ -1,16 +1,26 @@
-import { IconButton } from '@shared/ui';
+import { IconButton, HelpText } from '@shared/ui';
 import { cnTw } from '@shared/lib/utils';
 import { AccountAddressProps, AccountAddress, getAddress } from '../AccountAddress/AccountAddress';
 import type { Explorer } from '@shared/core';
 import { ExplorersPopover } from '../ExplorersPopover/ExplorersPopover';
+import { useI18n } from '@app/providers';
 
 type Props = {
   explorers?: Explorer[];
   position?: string;
   wrapperClassName?: string;
+  matrixId?: string;
 } & AccountAddressProps;
 
-export const AddressWithExplorers = ({ explorers = [], position, wrapperClassName, ...addressProps }: Props) => {
+export const AddressWithExplorers = ({
+  explorers = [],
+  position,
+  wrapperClassName,
+  matrixId,
+  ...addressProps
+}: Props) => {
+  const { t } = useI18n();
+
   const button = (
     <div
       className={cnTw(
@@ -28,5 +38,11 @@ export const AddressWithExplorers = ({ explorers = [], position, wrapperClassNam
     </div>
   );
 
-  return <ExplorersPopover button={button} address={getAddress(addressProps)} explorers={explorers} />;
+  return (
+    <ExplorersPopover button={button} address={getAddress(addressProps)} explorers={explorers}>
+      <ExplorersPopover.Group active={Boolean(matrixId)} title={t('general.explorers.matrixIdTitle')}>
+        <HelpText className="text-text-secondary break-all">{matrixId}</HelpText>
+      </ExplorersPopover.Group>
+    </ExplorersPopover>
+  );
 };

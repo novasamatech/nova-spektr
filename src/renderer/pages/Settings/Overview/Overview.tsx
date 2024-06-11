@@ -2,7 +2,7 @@ import { Outlet } from 'react-router-dom';
 
 import { useI18n } from '@app/providers';
 import { Header } from '@shared/ui';
-import { GeneralActions, SocialLinks, Version } from './components';
+import { GeneralActions, SocialLinks, Version, MatrixAction } from './components';
 
 export const Overview = () => {
   const { t } = useI18n();
@@ -15,6 +15,7 @@ export const Overview = () => {
         <section className="w-full h-full overflow-y-auto mt-4">
           <div className="w-[546px] flex flex-col gap-y-4 mx-auto">
             <GeneralActions />
+            <MatrixAction />
             <SocialLinks />
             <Version />
           </div>
