@@ -62,6 +62,7 @@ export const OngoingReferendums = ({ referendums, onSelected }: Props) => {
                   </HeadlineText>
                   <div className="basis-[200px] shrink-0">
                     <VoteChartSm
+                      bgColor="icon-button"
                       {...referendumListUtils.getVoteFractions(referendum.tally, approvalThresholds[index].value)}
                     />
                   </div>
