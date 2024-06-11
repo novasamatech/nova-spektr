@@ -56,7 +56,7 @@ type CreateWalletParams = {
   threshold: number;
   creatorId: HexString;
   signatories: Signatory[];
-  chainId: ChainId | null;
+  chainId?: ChainId;
   isEthereumChain: boolean;
 };
 
@@ -79,7 +79,7 @@ const createWalletFx = createEffect(
         accountId: accountId,
         threshold: threshold,
         cryptoType,
-        chainId: chainId || '0x00',
+        chainId,
         signatories: signatories.map(({ accountId, matrixId }) => ({ accountId, matrixId })),
       });
     }
@@ -149,9 +149,10 @@ sample({
     matrix: matrixModel.$matrix,
     isEthereumChain: $isEthereumChain,
   },
-  fn: ({ signatories, ...rest }, resultValues) => ({
+  fn: ({ signatories, chainId, ...rest }, resultValues) => ({
     ...rest,
     ...resultValues,
+    chainId: chainId || undefined,
     signatories: sortBy(signatories, 'accountId'),
   }),
   target: createWalletFx,

@@ -119,7 +119,7 @@ export type RoomParams = {
   creatorAccountId: AccountId;
   threshold: Threshold;
   cryptoType: CryptoType;
-  chainId: ChainId;
+  chainId?: ChainId;
   signatories: {
     accountId: AccountId;
     matrixId?: string;
