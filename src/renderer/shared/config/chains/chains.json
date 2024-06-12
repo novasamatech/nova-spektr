@@ -420,7 +420,7 @@
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-karura",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Kusama.svg",
         "typeExtras": {
           "currencyIdScale": "0x0081",
           "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
@@ -921,7 +921,7 @@
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-karura",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Kusama.svg",
         "typeExtras": {
           "assetId": "18446744073709551616"
         },
@@ -1108,7 +1108,7 @@
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-karura",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Kusama.svg",
         "typeExtras": {
           "currencyIdScale": "0x0302",
           "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
@@ -1306,7 +1306,7 @@
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-karura",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Kusama.svg",
         "typeExtras": {
           "currencyIdScale": "0x02000000",
           "currencyIdType": "u32",
@@ -1470,7 +1470,7 @@
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-karura",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Kusama.svg",
         "typeExtras": {
           "assetId": "103"
         },
@@ -1692,7 +1692,7 @@
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-karura",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Kusama.svg",
         "typeExtras": {
           "assetId": "4"
         },
@@ -2024,7 +2024,7 @@
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-acala",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Polkadot.svg",
         "typeExtras": {
           "currencyIdScale": "0x0001",
           "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
@@ -2374,7 +2374,7 @@
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-acala",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Polkadot.svg",
         "typeExtras": {
           "assetId": "18446744073709551617"
         },
@@ -2529,7 +2529,7 @@
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-acala",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Polkadot.svg",
         "typeExtras": {
           "assetId": "104"
         },
@@ -2952,7 +2952,7 @@
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-karura",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Kusama.svg",
         "typeExtras": {
           "currencyIdScale": "0x0101000000",
           "currencyIdType": "InterbtcPrimitivesCurrencyId",
@@ -3630,48 +3630,6 @@
         "name": "USDC-Moonbeam"
       },
       {
-        "assetId": 22,
-        "symbol": "4-Pool",
-        "precision": 18,
-        "type": "orml",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/4-Pool.svg",
-        "typeExtras": {
-          "currencyIdScale": "0x64000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "1000",
-          "transfersEnabled": true
-        },
-        "name": "4 Pool token"
-      },
-      {
-        "assetId": 23,
-        "symbol": "2-Pool",
-        "precision": 18,
-        "type": "orml",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/2-Pool.svg",
-        "typeExtras": {
-          "currencyIdScale": "0x65000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "1000",
-          "transfersEnabled": true
-        },
-        "name": "2 Pool token"
-      },
-      {
-        "assetId": 24,
-        "symbol": "2-Pool-Stbl",
-        "precision": 18,
-        "type": "orml",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/2-Pool-Stbl.svg",
-        "typeExtras": {
-          "currencyIdScale": "0x66000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "1000",
-          "transfersEnabled": true
-        },
-        "name": "2 Pool-Stbl token"
-      },
-      {
         "assetId": 25,
         "symbol": "UNQ",
         "precision": 18,
@@ -4165,7 +4123,7 @@
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-karura",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Kusama.svg",
         "typeExtras": {
           "currencyIdScale": "0x02000000",
           "currencyIdType": "u32",
@@ -5201,7 +5159,7 @@
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-acala",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Polkadot.svg",
         "typeExtras": {
           "assetId": "110021739665376159354538090254163045594"
         },
@@ -5624,7 +5582,7 @@
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-karura",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Kusama.svg",
         "typeExtras": {
           "assetId": "214920334981412447805621250067209749032"
         },

@@ -885,7 +885,7 @@
     "name": "Acala SEED",
     "precision": 12,
     "priceId": "ausd-seed-karura",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Kusama.svg",
     "symbol": "aSEED",
     "isTestToken": false,
     "chains": [
@@ -2719,7 +2719,7 @@
     "name": "Acala SEED",
     "precision": 12,
     "priceId": "ausd-seed-acala",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Polkadot.svg",
     "symbol": "aSEED",
     "isTestToken": false,
     "chains": [
