@@ -4,15 +4,24 @@ import { createForm } from 'effector-forms';
 import { BN } from '@polkadot/util';
 import { spread } from 'patronum';
 
-import { Address, ProxyType, Account, PartialBy, Chain, ProxiedAccount } from '@shared/core';
+import {
+  Address,
+  ProxyType,
+  Account,
+  PartialBy,
+  Chain,
+  ProxiedAccount,
+  TransactionType,
+  Transaction,
+} from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { walletSelectModel } from '@features/wallets';
 import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
 import { walletUtils, accountUtils, walletModel } from '@entities/wallet';
 import { proxyService } from '@shared/api/proxy';
-import { TransactionType, Transaction, DESCRIPTION_LENGTH } from '@entities/transaction';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { getProxyTypes, isStringsMatchQuery, toAddress, TEST_ACCOUNTS, transferableAmount } from '@shared/lib/utils';
+import { RemovePureProxiedRules } from '@features/operations/OperationsValidation';
 
 type ProxyAccounts = {
   accounts: {
@@ -79,7 +88,7 @@ const $proxyForm = createForm<FormParams>({
             isMultisig: $isMultisig,
             chain: $chain,
           }),
-          validator: (value, form, { isMultisig, balances, chain, ...params }) => {
+          validator: (value, _f: any, { isMultisig, balances, chain, ...params }) => {
             if (!isMultisig) return true;
 
             const signatoryBalance = balanceUtils.getBalance(
@@ -98,12 +107,7 @@ const $proxyForm = createForm<FormParams>({
     },
     description: {
       init: '',
-      rules: [
-        {
-          name: 'maxLength',
-          validator: (value) => !value || value.length <= DESCRIPTION_LENGTH,
-        },
-      ],
+      rules: [RemovePureProxiedRules.description.maxLength],
     },
   },
   validateOn: ['submit'],

@@ -10,7 +10,8 @@ import { ExtendedChain, networkUtils, networkModel } from '@entities/network';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { AssetBalance } from '@entities/asset';
 import { ChainTitle } from '@entities/chain';
-import type { Address, MultisigAccount, Validator } from '@shared/core';
+import type { Address, MultisigAccount, Validator, MultisigTransaction, Transaction } from '@shared/core';
+import { TransactionType } from '@shared/core';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
 import { useValidatorsMap, ValidatorsModal } from '@entities/staking';
 import { singnatoryUtils } from '@entities/signatory';
@@ -27,9 +28,6 @@ import {
   getSender,
 } from '../common/utils';
 import {
-  MultisigTransaction,
-  Transaction,
-  TransactionType,
   isAddProxyTransaction,
   isManageProxyTransaction,
   isRemoveProxyTransaction,

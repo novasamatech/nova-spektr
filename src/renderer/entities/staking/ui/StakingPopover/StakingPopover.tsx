@@ -12,6 +12,7 @@ const StakingRoot = ({ labelText, children }: PropsWithChildren<Props>) => (
     offsetPx={1}
     contentClass="p-4"
     panelClass="w-[230px]"
+    wrapperClass="w-max"
     content={<ul className="flex flex-col gap-y-1 list-disc pl-5">{children}</ul>}
   >
     <LabelHelpBox>{labelText}</LabelHelpBox>

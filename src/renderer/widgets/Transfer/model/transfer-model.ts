@@ -2,14 +2,16 @@ import { createEvent, createStore, sample, restore, combine, createApi, attach }
 import { spread, delay } from 'patronum';
 import { NavigateFunction } from 'react-router-dom';
 
-import { Transaction } from '@entities/transaction';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { Paths } from '@shared/routes';
 import { Step, TransferStore, NetworkStore } from '../lib/types';
 import { formModel } from './form-model';
-import { confirmModel } from './confirm-model';
 import { transferUtils } from '../lib/transfer-utils';
+import { BasketTransaction, Transaction } from '@shared/core';
+import { basketModel } from '@entities/basket';
+import { walletModel, walletUtils } from '@entities/wallet';
+import { transferConfirmModel } from '@features/operations/OperationsConfirm';
 
 const $navigation = createStore<{ navigate: NavigateFunction } | null>(null);
 const navigationApi = createApi($navigation, {
@@ -20,6 +22,7 @@ const stepChanged = createEvent<Step>();
 
 const flowStarted = createEvent<NetworkStore>();
 const flowFinished = createEvent();
+const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
@@ -39,6 +42,19 @@ const $xcmChain = combine(
     if (!network || !transferStore) return undefined;
 
     return transferStore.xcmChain.chainId === network.chain.chainId ? undefined : transferStore.xcmChain;
+  },
+  { skipVoid: false },
+);
+
+const $initiatorWallet = combine(
+  {
+    store: $transferStore,
+    wallets: walletModel.$wallets,
+  },
+  ({ store, wallets }) => {
+    if (!store) return undefined;
+
+    return walletUtils.getWalletById(wallets, store.account.walletId);
   },
   { skipVoid: false },
 );
@@ -81,13 +97,13 @@ sample({
     step: Step.CONFIRM,
   }),
   target: spread({
-    event: confirmModel.events.formInitiated,
+    event: transferConfirmModel.events.formInitiated,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: confirmModel.output.formSubmitted,
+  clock: transferConfirmModel.output.formConfirmed,
   source: {
     transferStore: $transferStore,
     networkStore: $networkStore,
@@ -168,11 +184,40 @@ sample({
   }),
 });
 
+sample({
+  clock: txSaved,
+  source: {
+    transferStore: $transferStore,
+    coreTx: $coreTx,
+    txWrappers: formModel.$txWrappers,
+  },
+  filter: ({ transferStore, coreTx, txWrappers }: any) =>
+    Boolean(transferStore) && Boolean(coreTx) && Boolean(txWrappers),
+  fn: ({ transferStore, coreTx, txWrappers }) => {
+    const tx = {
+      initiatorWallet: transferStore!.account.walletId,
+      coreTx,
+      txWrappers,
+    } as BasketTransaction;
+
+    return [tx];
+  },
+  target: basketModel.events.transactionsCreated,
+});
+
+sample({
+  clock: txSaved,
+  target: flowFinished,
+});
+
 export const transferModel = {
   $step,
   $xcmChain,
+  $initiatorWallet,
+
   events: {
     flowStarted,
+    txSaved,
     stepChanged,
     navigateApiChanged: navigationApi.navigateApiChanged,
   },

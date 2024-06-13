@@ -31,6 +31,9 @@ export const Paths = {
 
   // Staking
   STAKING: '/staking',
+
+  // Basket
+  BASKET: '/basket',
 } as const;
 
 export type PathType = ObjectValues<typeof Paths>;

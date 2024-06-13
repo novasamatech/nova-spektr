@@ -1,21 +1,22 @@
 import { useUnit } from 'effector-react';
 
-import { BaseModal } from '@shared/ui';
+import { BaseModal, Button } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
 import { OperationSign, OperationSubmit } from '@features/operations';
 import { PayeeForm } from './PayeeForm';
-import { Confirmation } from './Confirmation';
 import { payeeUtils } from '../lib/payee-utils';
 import { payeeModel } from '../model/payee-model';
 import { Step } from '../lib/types';
+import { basketUtils, PayeeConfirmation as Confirmation } from '@features/operations/OperationsConfirm';
 
 export const Payee = () => {
   const { t } = useI18n();
 
   const step = useUnit(payeeModel.$step);
   const walletData = useUnit(payeeModel.$walletData);
+  const initiatorWallet = useUnit(payeeModel.$initiatorWallet);
 
   const [isModalOpen, closeModal] = useModalClose(!payeeUtils.isNoneStep(step), payeeModel.output.flowFinished);
 
@@ -38,7 +39,19 @@ export const Payee = () => {
       onClose={closeModal}
     >
       {payeeUtils.isInitStep(step) && <PayeeForm onGoBack={closeModal} />}
-      {payeeUtils.isConfirmStep(step) && <Confirmation onGoBack={() => payeeModel.events.stepChanged(Step.INIT)} />}
+      {payeeUtils.isConfirmStep(step) && (
+        <Confirmation
+          secondaryActionButton={
+            initiatorWallet &&
+            basketUtils.isBasketAvailable(initiatorWallet) && (
+              <Button pallet="secondary" onClick={() => payeeModel.events.txSaved()}>
+                {t('operation.addToBasket')}
+              </Button>
+            )
+          }
+          onGoBack={() => payeeModel.events.stepChanged(Step.INIT)}
+        />
+      )}
       {payeeUtils.isSignStep(step) && <OperationSign onGoBack={() => payeeModel.events.stepChanged(Step.CONFIRM)} />}
     </BaseModal>
   );

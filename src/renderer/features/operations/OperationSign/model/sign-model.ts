@@ -1,8 +1,7 @@
 import { createEvent, restore, combine, sample } from 'effector';
 import { once } from 'patronum';
 
-import type { Chain, Account, HexString } from '@shared/core';
-import { Transaction } from '@entities/transaction';
+import type { Chain, Account, HexString, Transaction } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { walletModel, walletUtils } from '@entities/wallet';
 

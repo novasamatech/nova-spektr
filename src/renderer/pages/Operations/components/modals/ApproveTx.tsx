@@ -9,7 +9,7 @@ import { MultisigTransactionDS } from '@shared/api/storage';
 import { useToggle } from '@shared/lib/hooks';
 import { ExtendedChain } from '@entities/network';
 import { TEST_ADDRESS, toAddress, transferableAmount, getAssetById } from '@shared/lib/utils';
-import { getMultisigSignOperationTitle, getSignatoryAccounts } from '../../common/utils';
+import { getSignatoryAccounts } from '../../common/utils';
 import { Submit } from '../ActionSteps/Submit';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { SignatorySelectModal } from './SignatorySelectModal';
@@ -17,19 +17,19 @@ import { useMultisigEvent } from '@entities/multisig';
 import { SigningSwitch } from '@features/operations';
 import { permissionUtils, walletModel } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
-import type { Address, HexString, Timepoint, MultisigAccount, Account } from '@shared/core';
+import type { Address, HexString, Timepoint, MultisigAccount, Account, Transaction } from '@shared/core';
+import { TransactionType } from '@shared/core';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { OperationTitle } from '@entities/chain';
 import {
   isXcmTransaction,
   MAX_WEIGHT,
   OperationResult,
-  Transaction,
-  TransactionType,
   useCallDataDecoder,
   useTransaction,
   validateBalance,
   transactionService,
+  getMultisigSignOperationTitle,
 } from '@entities/transaction';
 
 type Props = {

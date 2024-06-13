@@ -1,6 +1,5 @@
 import { createRoot } from 'react-dom/client';
 import { HashRouter } from 'react-router-dom';
-import log from 'electron-log';
 
 import { App } from './App';
 import { kernelModel } from '@shared/core';
@@ -8,31 +7,22 @@ import { walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { proxyModel } from '@entities/proxy';
 import { notificationModel } from '@entities/notification';
+import { basketModel } from '@entities/basket';
 import { proxiesModel } from '@features/proxies';
 import { assetsSettingsModel } from '@features/assets';
-import { multisigsModel } from '../processes/multisigs';
+import { multisigsModel } from '@processes/multisigs';
+import { logger } from '@shared/config/utils';
+import '@features/balances';
 import './i18n';
 import './index.css';
 import './styles/theme/default.css';
-import '@features/balances';
-
-log.variables.version = process.env.VERSION;
-log.variables.env = process.env.NODE_ENV;
-log.transports.console.format = '{y}/{m}/{d} {h}:{i}:{s}.{ms} [{env}#{version}]-{processType} [{level}] > {text}';
-log.transports.console.useStyles = true;
-
-Object.assign(console, log.functions);
-log.errorHandler.startCatching({
-  showDialog: false,
-  onError({ error }) {
-    console.error('Uncaught error', error);
-  },
-});
 
 const container = document.getElementById('app');
 if (!container) {
   throw new Error('Root container is missing in index.html');
 }
+
+logger.init();
 
 kernelModel.events.appStarted();
 proxiesModel.events.workerStarted();
@@ -41,6 +31,7 @@ networkModel.events.networkStarted();
 proxyModel.events.proxyStarted();
 assetsSettingsModel.events.assetsStarted();
 notificationModel.events.notificationsStarted();
+basketModel.events.basketStarted();
 multisigsModel.events.multisigsDiscoveryStarted();
 
 createRoot(container).render(

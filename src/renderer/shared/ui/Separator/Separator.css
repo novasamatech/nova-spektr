@@ -2,5 +2,5 @@
   content: '';
   flex: 1;
   height: 1px;
-  background-color: theme('textColor.divider');
+  background-color: var(--divider);
 }

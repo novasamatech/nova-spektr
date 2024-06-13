@@ -1,17 +1,20 @@
 import { createEvent, createEffect, restore, sample, scopeBind, createStore, createApi } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 
-import type { Chain, Account, HexString, MultisigAccount } from '@shared/core';
+import type {
+  Chain,
+  Account,
+  HexString,
+  MultisigAccount,
+  Transaction,
+  MultisigTransaction,
+  MultisigEvent,
+} from '@shared/core';
 import { networkModel } from '@entities/network';
 import { buildMultisigTx } from '@entities/multisig';
 import { SubmitStep } from '../lib/types';
-import {
-  Transaction,
-  MultisigTransaction,
-  ExtrinsicResultParams,
-  MultisigEvent,
-  transactionService,
-} from '@entities/transaction';
+import { ExtrinsicResultParams, transactionService } from '@entities/transaction';
+
 import { matrixModel, matrixUtils } from '@entities/matrix';
 import { ISecureMessenger } from '@shared/api/matrix';
 

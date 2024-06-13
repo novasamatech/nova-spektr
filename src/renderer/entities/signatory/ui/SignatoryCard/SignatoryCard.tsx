@@ -1,10 +1,9 @@
 import { PropsWithChildren } from 'react';
 
 import { ExplorersPopover } from '@entities/wallet';
-import { SigningStatus } from '@entities/transaction';
 import { Icon, HelpText } from '@shared/ui';
 import { cnTw } from '@shared/lib/utils';
-import type { Explorer, AccountId } from '@shared/core';
+import type { Explorer, AccountId, SigningStatus } from '@shared/core';
 import { useI18n } from '@app/providers';
 
 const IconProps = {

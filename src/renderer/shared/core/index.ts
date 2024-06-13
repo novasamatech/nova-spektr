@@ -71,8 +71,45 @@ export { NotificationType } from './types/notification';
 
 export { XcmPallets } from './types/substrate';
 
-export { ReferendumType } from './types/referendum';
-export type { ReferendumInfo, ApprovedReferendum, RejectedReferendum, OngoingReferendum } from './types/referendum';
+export type { TrackId, TrackInfo } from './types/track';
 
-export { VotingType, Conviction } from './types/voting';
-export type { AccountVote, StandardVote, SplitVote, SplitAbstainVote } from './types/voting';
+export { TransactionType, MultisigTxInitStatus, MultisigTxFinalStatus, WrapperKind } from './types/transaction';
+export type {
+  Transaction,
+  SigningStatus,
+  MultisigTxStatus,
+  DecodedTransaction,
+  MultisigEvent,
+  MultisigTransaction,
+  MultisigTransactionKey,
+  TxWrapper,
+  TxWrappers_OLD,
+  MultisigTxWrapper,
+  ProxyTxWrapper,
+  WrapAsMulti,
+} from './types/transaction';
+
+export type { BasketTransaction } from './types/basket';
+
+export { ReferendumType } from './types/referendum';
+export type {
+  ReferendumId,
+  ReferendumInfo,
+  ApprovedReferendum,
+  RejectedReferendum,
+  OngoingReferendum,
+  TimedOutReferendum,
+  KilledReferendum,
+  CancelledReferendum,
+} from './types/referendum';
+
+export { VotingType, VoteType, Conviction } from './types/voting';
+export type {
+  Voting,
+  CastingVoting,
+  DelegatingVoting,
+  AccountVote,
+  StandardVote,
+  SplitVote,
+  SplitAbstainVote,
+} from './types/voting';

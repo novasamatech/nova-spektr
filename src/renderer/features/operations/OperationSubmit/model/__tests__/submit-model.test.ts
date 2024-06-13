@@ -1,8 +1,8 @@
 import { allSettled, fork } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 
-import { Account, Chain, WalletType, SigningType, Wallet } from '@shared/core';
-import { Transaction, transactionService } from '@entities/transaction';
+import { Account, Chain, WalletType, SigningType, Wallet, Transaction } from '@shared/core';
+import { transactionService } from '@entities/transaction';
 import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
 import { submitModel } from '../submit-model';

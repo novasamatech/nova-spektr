@@ -3,19 +3,22 @@ import { createForm } from 'effector-forms';
 import { BN } from '@polkadot/util';
 import { spread } from 'patronum';
 
-import { ProxyType, Chain, Account, PartialBy, ProxiedAccount } from '@shared/core';
-import { networkModel, networkUtils } from '@entities/network';
-import { walletSelectModel } from '@features/wallets';
-import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
-import { walletUtils, accountUtils, walletModel, permissionUtils } from '@entities/wallet';
 import {
+  ProxyType,
+  Chain,
+  Account,
+  PartialBy,
+  ProxiedAccount,
   TransactionType,
   Transaction,
   ProxyTxWrapper,
   MultisigTxWrapper,
-  transactionService,
-  DESCRIPTION_LENGTH,
-} from '@entities/transaction';
+} from '@shared/core';
+import { networkModel, networkUtils } from '@entities/network';
+import { walletSelectModel } from '@features/wallets';
+import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
+import { walletUtils, accountUtils, walletModel, permissionUtils } from '@entities/wallet';
+import { transactionService } from '@entities/transaction';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import {
   getProxyTypes,
@@ -27,6 +30,7 @@ import {
   toShortAddress,
   ZERO_BALANCE,
 } from '@shared/lib/utils';
+import { AddPureProxiedRules } from '@features/operations/OperationsValidation';
 
 type FormParams = {
   chain: Chain;
@@ -135,12 +139,7 @@ const $proxyForm = createForm<FormParams>({
     },
     description: {
       init: '',
-      rules: [
-        {
-          name: 'maxLength',
-          validator: (value) => !value || value.length <= DESCRIPTION_LENGTH,
-        },
-      ],
+      rules: [AddPureProxiedRules.description.maxLength],
     },
   },
   validateOn: ['submit'],
@@ -538,6 +537,7 @@ export const formModel = {
   $proxyTypes,
   $proxyQuery,
   $proxyWallet,
+  $txWrappers,
 
   $oldProxyDeposit,
   $newProxyDeposit,

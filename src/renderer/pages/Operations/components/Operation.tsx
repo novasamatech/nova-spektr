@@ -1,15 +1,13 @@
 import { format } from 'date-fns';
 
 import { useI18n } from '@app/providers';
-import { TransactionTitle } from './TransactionTitle/TransactionTitle';
 import { FootnoteText, Accordion } from '@shared/ui';
 import OperationStatus from './OperationStatus';
 import { OperationFullInfo } from './OperationFullInfo';
 import { MultisigTransactionDS } from '@shared/api/storage';
 import { useMultisigEvent } from '@entities/multisig';
 import { ChainTitle, XcmChains } from '@entities/chain';
-import { getTransactionAmount } from '../common/utils';
-import { isXcmTransaction } from '@entities/transaction';
+import { TransactionTitle, getTransactionAmount, isXcmTransaction } from '@entities/transaction';
 import type { MultisigAccount } from '@shared/core';
 import { chainsService } from '@shared/api/network';
 import { getAssetById } from '@shared/lib/utils';

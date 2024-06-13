@@ -8,7 +8,18 @@ import noop from 'lodash/noop';
 import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';
-import type { Account, PartialBy, ProxiedAccount, Chain, Asset, Address, ChainId } from '@shared/core';
+import type {
+  Account,
+  PartialBy,
+  ProxiedAccount,
+  Chain,
+  Asset,
+  Address,
+  ChainId,
+  Transaction,
+  MultisigTxWrapper,
+  ProxyTxWrapper,
+} from '@shared/core';
 import { useStakingData, StakingMap } from '@entities/staking';
 import { NetworkStore } from '../lib/types';
 import {
@@ -19,14 +30,8 @@ import {
   ZERO_BALANCE,
   unlockingAmount,
 } from '@shared/lib/utils';
-import {
-  Transaction,
-  transactionBuilder,
-  transactionService,
-  MultisigTxWrapper,
-  ProxyTxWrapper,
-  DESCRIPTION_LENGTH,
-} from '@entities/transaction';
+import { transactionBuilder, transactionService } from '@entities/transaction';
+import { RestakeRules } from '@features/operations/OperationsValidation';
 
 type BalanceMap = { balance: string; stake: string };
 
@@ -194,13 +199,7 @@ const $restakeForm = createForm<FormParams>({
     },
     description: {
       init: '',
-      rules: [
-        {
-          name: 'maxLength',
-          errorText: 'transfer.descriptionLengthError',
-          validator: (value) => !value || value.length <= DESCRIPTION_LENGTH,
-        },
-      ],
+      rules: [RestakeRules.description.maxLength],
     },
   },
   validateOn: ['submit'],
@@ -651,6 +650,7 @@ export const formModel = {
   $restakeForm,
   $proxyWallet,
   $signatories,
+  $txWrappers,
 
   $accounts,
   $accountsBalances,

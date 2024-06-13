@@ -1,19 +1,22 @@
-import { createEvent, createStore, sample, restore } from 'effector';
+import { createEvent, createStore, sample, restore, combine } from 'effector';
 import { spread, delay } from 'patronum';
 
-import { Transaction } from '@entities/transaction';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { Step, RestakeStore, NetworkStore } from '../lib/types';
 import { formModel } from './form-model';
-import { confirmModel } from './confirm-model';
+import { restakeConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { nonNullable, getRelaychainAsset } from '@shared/lib/utils';
 import { restakeUtils } from '../lib/restake-utils';
+import { BasketTransaction, Transaction } from '@shared/core';
+import { basketModel } from '@entities/basket';
+import { walletModel, walletUtils } from '@entities/wallet';
 
 const stepChanged = createEvent<Step>();
 
 const flowStarted = createEvent<NetworkStore>();
 const flowFinished = createEvent();
+const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
@@ -23,6 +26,19 @@ const $networkStore = restore<NetworkStore | null>(flowStarted, null);
 const $wrappedTxs = createStore<Transaction[] | null>(null);
 const $multisigTxs = createStore<Transaction[] | null>(null);
 const $coreTxs = createStore<Transaction[] | null>(null);
+
+const $initiatorWallet = combine(
+  {
+    store: $restakeStore,
+    wallets: walletModel.$wallets,
+  },
+  ({ store, wallets }) => {
+    if (!store) return undefined;
+
+    return walletUtils.getWalletById(wallets, store.shards[0].walletId);
+  },
+  { skipVoid: false },
+);
 
 sample({ clock: stepChanged, target: $step });
 
@@ -147,12 +163,46 @@ sample({
   target: [stepChanged, formModel.events.formCleared],
 });
 
+sample({
+  clock: txSaved,
+  source: {
+    store: $restakeStore,
+    coreTxs: $coreTxs,
+    txWrappers: formModel.$txWrappers,
+  },
+  filter: ({ store, coreTxs, txWrappers }: any) => {
+    return Boolean(store) && Boolean(coreTxs) && Boolean(txWrappers);
+  },
+  fn: ({ store, coreTxs, txWrappers }) => {
+    const txs = coreTxs!.map(
+      (coreTx) =>
+        ({
+          initiatorWallet: store!.shards[0].walletId,
+          coreTx,
+          txWrappers,
+          groupId: Date.now(),
+        } as BasketTransaction),
+    );
+
+    return txs;
+  },
+  target: basketModel.events.transactionsCreated,
+});
+
+sample({
+  clock: txSaved,
+  target: flowFinished,
+});
+
 export const restakeModel = {
   $step,
   $networkStore,
+  $initiatorWallet,
+
   events: {
     flowStarted,
     stepChanged,
+    txSaved,
   },
   output: {
     flowFinished,

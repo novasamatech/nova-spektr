@@ -10,6 +10,7 @@ import { Contacts, CreateContact, EditContact } from './AddressBook';
 import { Overview as Settings, Currency, Networks, Matrix } from './Settings';
 import { Governance } from './Governance';
 import { Staking } from './Staking';
+import { Basket } from './Basket';
 
 // React routes v6 hint:
 // https://github.com/remix-run/react-router/blob/main/docs/upgrading/v5.md#use-useroutes-instead-of-react-router-config
@@ -49,6 +50,7 @@ export const ROUTES_CONFIG: RouteObject[] = [
           { path: Paths.CURRENCY, element: <Currency /> },
         ],
       },
+      { path: Paths.BASKET, element: <Basket /> },
     ],
   },
   { path: '*', element: <Navigate to={Paths.ASSETS} replace /> },
