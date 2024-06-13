@@ -14,7 +14,6 @@ import { networkModel } from '@entities/network';
 import { buildMultisigTx } from '@entities/multisig';
 import { SubmitStep } from '../lib/types';
 import { ExtrinsicResultParams, transactionService } from '@entities/transaction';
-
 import { matrixModel, matrixUtils } from '@entities/matrix';
 import { ISecureMessenger } from '@shared/api/matrix';
 
