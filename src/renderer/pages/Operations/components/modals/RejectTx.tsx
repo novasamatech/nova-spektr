@@ -25,7 +25,6 @@ import {
   transactionService,
   getMultisigSignOperationTitle,
 } from '@entities/transaction';
-import { getMultisigSignOperationTitle } from '../../common/utils';
 
 type Props = {
   tx: MultisigTransactionDS;
