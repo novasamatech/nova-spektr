@@ -9,12 +9,7 @@ import { referendumUtils, governanceModel } from '@entities/governance';
 import { getCurrentBlockNumber } from '@shared/lib/utils';
 import { referendumListUtils } from '../lib/referendum-list-utils';
 import { walletModel } from '@entities/wallet';
-import {
-  IGovernanceApi,
-  governanceService,
-  polkassemblyService,
-  opengovThresholdService,
-} from '@shared/api/governance';
+import { IGovernanceApi, governanceService, opengovThresholdService } from '@shared/api/governance';
 import {
   ReferendumInfo,
   ChainId,
@@ -30,11 +25,9 @@ import {
 } from '@shared/core';
 
 const chainChanged = createEvent<Chain>();
-const governanceApiChanged = createEvent<IGovernanceApi>();
 const detailsReceived = createEvent<{ chainId: ChainId; data: Record<string, string> }>();
 
 const $chain = restore(chainChanged, null);
-const $governanceApi = restore(governanceApiChanged, polkassemblyService);
 
 const $referendumsDetails = createStore<Record<ChainId, Record<ReferendumId, string>>>({});
 const $referendumsRequested = createStore<boolean>(false);
@@ -171,15 +164,15 @@ sample({
   clock: $api.updates,
   source: {
     chain: $chain,
-    service: $governanceApi,
+    governanceApi: governanceModel.$governanceApi,
     referendumsRequested: $referendumsRequested,
   },
-  filter: ({ referendumsRequested, chain, service }, referendums) => {
-    return !referendumsRequested && Boolean(chain) && !isEmpty(referendums) && Boolean(service);
+  filter: ({ referendumsRequested, chain, governanceApi }, referendums) => {
+    return !referendumsRequested && Boolean(chain) && !isEmpty(referendums) && Boolean(governanceApi);
   },
-  fn: ({ chain, service }) => ({
+  fn: ({ chain, governanceApi }) => ({
     chainId: chain!.chainId,
-    service: service!,
+    service: governanceApi!.service,
   }),
   target: requestOffChainReferendumsFx,
 });
@@ -299,6 +292,5 @@ export const referendumListModel = {
 
   input: {
     chainChanged,
-    governanceApiChanged,
   },
 };

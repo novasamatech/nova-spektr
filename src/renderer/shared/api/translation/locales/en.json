@@ -275,6 +275,14 @@
     }
   },
   "governance": {
+    "offChainDataSource": {
+      "formDescription": "Nova Spektr may use different off-chain data sources for getting referendum data",
+      "formTitle": "Show referendum data",
+      "save": "Save",
+      "selectPlaceholder": "Select",
+      "sourceError": "Data source is required",
+      "title": "Referendum data"
+    },
     "referendums": {
       "completed": "Completed",
       "crowdloans": "Crowdloans",
@@ -866,6 +874,7 @@
       "mediumLabel": "Medium",
       "networkDetailsLabel": "Manage network connection",
       "networkLabel": "Network",
+      "referendumLabel": "Referendum data",
       "smpLabel": "Spektr Matrix Protocol",
       "socialLabel": "Social",
       "telegramDescription": "Connect, get help, and share ideas with our Telegram community!",

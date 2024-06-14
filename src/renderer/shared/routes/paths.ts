@@ -25,6 +25,7 @@ export const Paths = {
   NETWORK: '/settings/network',
   CURRENCY: '/settings/currency',
   MATRIX: '/settings/matrix',
+  REFERENDUM_DATA: '/settings/referendum',
 
   // Governance
   GOVERNANCE: '/governance',
