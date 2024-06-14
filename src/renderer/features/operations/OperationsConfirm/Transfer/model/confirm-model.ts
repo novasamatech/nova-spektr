@@ -2,7 +2,6 @@ import { createEvent, combine, restore, createEffect, Store, sample } from 'effe
 
 import { Chain, Account, Address, Asset, type ProxiedAccount, Balance } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
-import { BalanceMap, NetworkStore } from '../lib/types';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { transferableAmount } from '@shared/lib/utils';
 import {
@@ -11,6 +10,8 @@ import {
   TransferSignatoryFeeStore,
   TransferAmountFeeStore,
   TransferRules,
+  NetworkStore,
+  BalanceMap,
 } from '@features/operations/OperationsValidation';
 
 type Input = {

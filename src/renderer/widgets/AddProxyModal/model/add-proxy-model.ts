@@ -9,7 +9,7 @@ import { walletModel, walletUtils } from '@entities/wallet';
 import { balanceSubModel } from '@features/balances';
 import { Step, AddProxyStore } from '../lib/types';
 import { formModel } from './form-model';
-import { confirmModel } from './confirm-model';
+import { addProxyConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { addProxyUtils } from '../lib/add-proxy-utils';
 import { BasketTransaction, Transaction } from '@shared/core';
 import { basketModel } from '@entities/basket';

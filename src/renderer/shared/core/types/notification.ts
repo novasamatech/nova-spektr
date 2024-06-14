@@ -20,13 +20,14 @@ type BaseNotification = {
 
 type MultisigBaseNotification = BaseNotification & {
   multisigAccountId: AccountId;
+  originatorAccountId: AccountId;
+  smpRoomId: string;
 };
 
 export type MultisigCreated = MultisigBaseNotification & {
   signatories: AccountId[];
   threshold: number;
   multisigAccountName: string;
-  chainId: ChainId;
 };
 
 export type MultisigOperation = MultisigBaseNotification & {

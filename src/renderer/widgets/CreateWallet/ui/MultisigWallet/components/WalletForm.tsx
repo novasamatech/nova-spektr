@@ -9,6 +9,7 @@ import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
 import { ChainTitle } from '@entities/chain';
 import { CryptoType, Signatory, type AccountId, type Chain, type ChainId, type MultisigAccount } from '@shared/core';
+import { matrixModel } from '@entities/matrix';
 
 type MultisigAccountForm = {
   name: string;
@@ -59,6 +60,7 @@ export const WalletForm = ({
 }: Props) => {
   const { t } = useI18n();
 
+  const matrix = useUnit(matrixModel.$matrix);
   const wallets = useUnit(walletModel.$wallets);
   const chains = useUnit(networkModel.$chains);
 
@@ -100,14 +102,8 @@ export const WalletForm = ({
       cryptoType,
     );
 
-  const ownedSignatories = signatories.filter((s) => {
-    return walletUtils.getAccountsBy(wallets, (account) => account.accountId === s.accountId);
-  });
-
-  const hasOwnSignatory = ownedSignatories.length > 0;
-
   const submitMstAccount: SubmitHandler<MultisigAccountForm> = ({ name, threshold }) => {
-    const creator = hasOwnSignatory && ownedSignatories[0];
+    const creator = signatories.find((s) => s.matrixId === matrix.userId);
 
     if (!threshold || !creator) return;
 
@@ -115,7 +111,7 @@ export const WalletForm = ({
   };
 
   const noSignatoryWallet = wallets.every(
-    (wallet) => !walletUtils.isWatchOnly(wallet) || !walletUtils.isMultisig(wallet),
+    (wallet) => walletUtils.isWatchOnly(wallet) || walletUtils.isMultisig(wallet),
   );
 
   const signatoriesWallets = walletUtils.getWalletsFilteredAccounts(wallets, {

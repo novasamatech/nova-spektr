@@ -8,10 +8,9 @@ import type { Chain } from '@shared/core';
 import { OperationSign, OperationSubmit } from '@features/operations';
 import { Step } from '../lib/types';
 import { AddProxyForm } from './AddProxyForm';
-import { Confirmation } from './Confirmation';
 import { addProxyUtils } from '../lib/add-proxy-utils';
 import { addProxyModel } from '../model/add-proxy-model';
-import { basketUtils } from '@features/operations/OperationsConfirm';
+import { basketUtils, AddProxyConfirm } from '@features/operations/OperationsConfirm';
 
 export const AddProxy = () => {
   const { t } = useI18n();
@@ -41,7 +40,7 @@ export const AddProxy = () => {
     >
       {addProxyUtils.isInitStep(step) && <AddProxyForm onGoBack={closeModal} />}
       {addProxyUtils.isConfirmStep(step) && (
-        <Confirmation
+        <AddProxyConfirm
           secondaryActionButton={
             initiatorWallet &&
             basketUtils.isBasketAvailable(initiatorWallet) && (

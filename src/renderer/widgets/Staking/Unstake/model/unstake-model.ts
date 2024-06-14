@@ -5,7 +5,7 @@ import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { Step, UnstakeStore, NetworkStore } from '../lib/types';
 import { formModel } from './form-model';
-import { confirmModel } from './confirm-model';
+import { unstakeConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { nonNullable, getRelaychainAsset } from '@shared/lib/utils';
 import { unstakeUtils } from '../lib/unstake-utils';
 import { BasketTransaction, Transaction } from '@shared/core';

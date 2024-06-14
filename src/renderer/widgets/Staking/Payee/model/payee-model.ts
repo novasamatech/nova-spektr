@@ -20,7 +20,7 @@ import {
 import { Step, PayeeData, WalletData, FeeData } from '../lib/types';
 import { payeeUtils } from '../lib/payee-utils';
 import { formModel } from './form-model';
-import { confirmModel } from './confirm-model';
+import { payeeConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { transactionBuilder, transactionService } from '@entities/transaction';
 import { basketModel } from '@entities/basket/model/basket-model';
 

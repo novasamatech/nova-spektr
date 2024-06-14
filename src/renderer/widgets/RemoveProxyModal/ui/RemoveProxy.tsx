@@ -7,11 +7,10 @@ import { useI18n } from '@app/providers';
 import type { Chain } from '@shared/core';
 import { Step } from '../lib/types';
 import { RemoveProxyForm } from './RemoveProxyForm';
-import { Confirmation } from './Confirm';
 import { removeProxyUtils } from '../lib/remove-proxy-utils';
 import { removeProxyModel } from '../model/remove-proxy-model';
 import { OperationSign, OperationSubmit } from '@features/operations';
-import { basketUtils } from '@features/operations/OperationsConfirm';
+import { basketUtils, RemoveProxyConfirm as Confirmation } from '@features/operations/OperationsConfirm';
 
 export const RemoveProxy = () => {
   const { t } = useI18n();
