@@ -205,7 +205,7 @@ export const portfolioModel = {
     receiveStarted,
   },
   /* Internal API (tests only) */
-  _$activeTokens: $activeTokens,
+  _$activeTokensWithBalance: $activeTokensWithBalance,
   _$filtredTokens: $filtredTokens,
   _$query: $query,
 };
