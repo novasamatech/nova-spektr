@@ -8,7 +8,7 @@ export type BlockHeight = number;
 
 export type Address = string;
 export type AccountId = HexString;
-export type Threshold = number;
+export type MultisigThreshold = number;
 
 export type CallData = HexString;
 export type CallHash = HexString;

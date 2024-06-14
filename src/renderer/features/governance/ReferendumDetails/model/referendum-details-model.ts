@@ -1,12 +1,12 @@
 import { createStore, createEvent, createEffect, sample, restore } from 'effector';
 import markdownit from 'markdown-it';
 
-import { ChainId } from '@shared/core';
+import type { ChainId, ReferendumId } from '@shared/core';
 import { subsquareService, IGovernanceApi } from '@shared/api/governance';
 
-const governanceApiChanged = createEvent<IGovernanceApi>();
-const referendumChanged = createEvent<{ chainId: ChainId; index: string }>();
+const flowStarted = createEvent<{ chainId: ChainId; index: ReferendumId }>();
 const flowFinished = createEvent();
+const governanceApiChanged = createEvent<IGovernanceApi>();
 
 const $governanceApi = restore(governanceApiChanged, subsquareService);
 const $details = createStore<string | null>(null).reset(flowFinished);
@@ -31,7 +31,7 @@ const parseMarkdownFx = createEffect((value: string): string => {
 });
 
 sample({
-  clock: referendumChanged,
+  clock: flowStarted,
   source: $governanceApi,
   fn: (service, { chainId, index }) => ({ service, chainId, index }),
   target: requestOffChainDetailsFx,
@@ -50,8 +50,8 @@ sample({
 
 export const referendumDetailsModel = {
   $details,
-  events: {
-    referendumChanged,
+  input: {
+    flowStarted,
   },
   output: {
     flowFinished,

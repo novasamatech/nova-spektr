@@ -4,7 +4,7 @@ import { DropdownButton } from './DropdownButton';
 import { ButtonDropdownOption } from '../common/types';
 
 export default {
-  title: 'Redesign/Dropdown Button',
+  title: 'Dropdown Button',
   component: DropdownButton,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [

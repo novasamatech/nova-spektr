@@ -3,7 +3,7 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { PasswordInput } from './PasswordInput';
 
 export default {
-  title: 'Redesign/Password Input',
+  title: 'Password Input',
   component: PasswordInput,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as ComponentMeta<typeof PasswordInput>;

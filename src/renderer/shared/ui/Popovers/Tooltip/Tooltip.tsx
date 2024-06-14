@@ -16,6 +16,7 @@ export const Tooltip = ({
   content,
   panelClass,
   contentClass,
+  wrapperClass,
   pointer = 'down',
   arrow = 'center',
   children,
@@ -24,6 +25,7 @@ export const Tooltip = ({
     role="tooltip"
     offsetPx={offsetPx}
     contentClass={cnTw('py-1 px-2', contentClass)}
+    wrapperClass={wrapperClass}
     panelClass={cnTw(
       'max-w-[184px] bg-switch-background-active rounded w-max rounded border-none shadow-none',
       'spektr-arrow spektr-arrow__' + pointer,

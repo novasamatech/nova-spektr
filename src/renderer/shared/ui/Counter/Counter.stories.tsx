@@ -3,7 +3,7 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { Counter } from './Counter';
 
 export default {
-  title: 'Redesign/Counter',
+  title: 'Counter',
   component: Counter,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as ComponentMeta<typeof Counter>;
