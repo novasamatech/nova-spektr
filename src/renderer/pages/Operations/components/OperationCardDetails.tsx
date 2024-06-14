@@ -17,6 +17,7 @@ import { useValidatorsMap, ValidatorsModal } from '@entities/staking';
 import { singnatoryUtils } from '@entities/signatory';
 import { chainsService } from '@shared/api/network';
 import { proxyUtils } from '@entities/proxy';
+import { matrixModel } from '@entities/matrix';
 import {
   getMultisigExtrinsicLink,
   getDestination,
@@ -46,6 +47,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);
   const chains = useUnit(networkModel.$chains);
+  const matrix = useUnit(matrixModel.$matrix);
 
   const payee = getPayee(tx);
   const sender = getSender(tx);
@@ -310,6 +312,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
                   name={depositorSignatory.name}
                   addressFont={AddressStyle}
                   addressPrefix={addressPrefix}
+                  matrixId={matrix.userId}
                   wrapperClassName="-mr-2 min-w-min"
                   type="short"
                 />

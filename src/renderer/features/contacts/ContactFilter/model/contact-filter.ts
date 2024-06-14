@@ -28,8 +28,9 @@ const $contactsFiltered = combine(
       .filter((c) => {
         const hasName = includes(c.name, query);
         const hasAddress = includes(c.address, query);
+        const hasMatrixId = includes(c.matrixId, query);
 
-        return hasName || hasAddress;
+        return hasName || hasAddress || hasMatrixId;
       })
       .sort((a, b) => a.name.localeCompare(b.name));
   },

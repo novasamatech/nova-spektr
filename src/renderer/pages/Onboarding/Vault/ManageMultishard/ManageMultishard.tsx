@@ -241,7 +241,11 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
         <div className="flex items-center justify-between px-5 mt-[52px] mb-6">
           <SmallTitleText>{t('onboarding.vault.accountsTitle')}</SmallTitleText>
 
-          <Button variant="text" suffixElement={<Icon name="magic" size={16} />} onClick={fillAccountNames}>
+          <Button
+            variant="text"
+            suffixElement={<Icon name="magic" size={16} className="text-icon-accent" />}
+            onClick={fillAccountNames}
+          >
             {t('onboarding.vault.fillNamesButton')}
           </Button>
         </div>

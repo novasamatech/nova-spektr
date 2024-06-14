@@ -2,7 +2,7 @@ import { ComponentProps, useState, useEffect } from 'react';
 import { useUnit } from 'effector-react';
 import noop from 'lodash/noop';
 
-import { BaseModal, HeaderTitleText, Button, IconButton } from '@shared/ui';
+import { BaseModal, HeaderTitleText, Button, IconButton, StatusLabel } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { OperationResult } from '@entities/transaction';
@@ -14,6 +14,7 @@ import { createMultisigWalletModel } from '../../model/create-multisig-wallet-mo
 import { SelectAccountSignatories } from './components/SelectAccountSignatories';
 import { walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
+import { matrixUtils, matrixModel } from '@entities/matrix';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -31,6 +32,9 @@ type Props = {
 
 export const SingleChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }: Props) => {
   const { t } = useI18n();
+
+  const matrix = useUnit(matrixModel.$matrix);
+  const loginStatus = useUnit(matrixModel.$loginStatus);
 
   const accounts = useUnit(createMultisigWalletModel.$availableAccounts);
   const wallets = useUnit(walletModel.$wallets);
@@ -93,6 +97,7 @@ export const SingleChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack 
   const modalTitle = (
     <div className="flex justify-between items-center px-5 py-3 w-[464px] bg-white rounded-tl-lg">
       <HeaderTitleText className="py-[3px]">{t('createMultisigAccount.title')}</HeaderTitleText>
+      {matrixUtils.isLoggedIn(loginStatus) && <StatusLabel title={matrix.userId || ''} variant="success" />}
     </div>
   );
 

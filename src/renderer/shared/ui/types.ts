@@ -1,4 +1,5 @@
 export type { TabItem } from './Tabs/common/types';
+export type { IconNames } from './Icon/data';
 export type { ButtonDropdownOption } from './Dropdowns/common/types';
 export type { RadioOption, RadioResult } from './RadioGroup/common/types';
 export type {

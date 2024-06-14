@@ -8,14 +8,14 @@ import { useGraphql, useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
-import { useNetworkData, networkUtils } from '@entities/network';
+import { useNetworkData, networkUtils, InactiveNetwork } from '@entities/network';
 import { eraService } from '@entities/staking/api';
 import { NetworkInfo } from './NetworkInfo';
 import { AboutStaking } from './AboutStaking';
 import { Actions } from './Actions';
 import { NominatorsList } from './NominatorsList';
-import { InactiveChain } from './InactiveChain';
 import { NominatorInfo, Operations as StakeOperations } from '../lib/types';
+import * as Operations from '@widgets/Staking';
 import {
   ChainId,
   Chain,
@@ -27,7 +27,6 @@ import {
   BaseAccount,
   Account,
 } from '@shared/core';
-import * as Operations from '@widgets/Staking';
 import {
   useStakingData,
   StakingMap,
@@ -321,7 +320,7 @@ export const Staking = () => {
               </>
             )}
 
-            {!networkIsActive && <InactiveChain className="flex-grow mb-28" />}
+            <InactiveNetwork active={!networkIsActive} className="flex-grow mb-28" />
           </section>
         </div>
       </div>

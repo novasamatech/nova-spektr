@@ -3,7 +3,7 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { Loader } from './Loader';
 
 export default {
-  title: 'Redesign/Loader ',
+  title: 'Loader ',
   component: Loader,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [

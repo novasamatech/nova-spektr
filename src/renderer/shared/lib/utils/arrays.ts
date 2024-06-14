@@ -48,3 +48,9 @@ export function addUnique<T extends any>(collection: T[], item: T): T[] {
 export function removeFromCollection<T extends any>(collection: T[], item: T): T[] {
   return collection.filter((i) => i !== item);
 }
+
+export const sortByDateDesc = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]): number =>
+  new Date(dateA) < new Date(dateB) ? 1 : -1;
+
+export const sortByDateAsc = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]): number =>
+  new Date(dateA) > new Date(dateB) ? 1 : -1;

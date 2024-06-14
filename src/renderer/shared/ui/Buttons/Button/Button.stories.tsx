@@ -3,7 +3,7 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { Icon } from '@shared/ui';
 import { Button } from './Button';
 export default {
-  title: 'Redesign/Button',
+  title: 'Button',
   component: Button,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as ComponentMeta<typeof Button>;

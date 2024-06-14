@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
+import { useUnit } from 'effector-react';
 
 import { cnTw, includes, toAddress, RootExplorers, isEthereumAccountId } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
-import { Button, Checkbox, FootnoteText, Icon, SearchInput, SmallTitleText, Tabs, Tooltip } from '@shared/ui';
+import { Button, Checkbox, FootnoteText, Icon, SearchInput, SmallTitleText, Tabs, Tooltip, HelpText } from '@shared/ui';
 import { TabItem } from '@shared/ui/types';
 import { CreateContactModal } from '@widgets/ManageContactModal';
 import { ExtendedContact, ExtendedWallet } from '../common/types';
@@ -11,6 +12,7 @@ import { EmptyContactList } from '@entities/contact';
 import { type Contact, type Wallet, type Account, WalletType } from '@shared/core';
 import { ContactItem, ExplorersPopover, accountUtils, walletUtils } from '@entities/wallet';
 import { WalletItem } from './WalletItem';
+import { matrixModel } from '@entities/matrix';
 
 const enum SignatoryTabs {
   WALLETS = 'wallets',
@@ -28,6 +30,9 @@ type Props = {
 export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSelect }: Props) => {
   const { t } = useI18n();
 
+  const matrix = useUnit(matrixModel.$matrix);
+  const loginStatus = useUnit(matrixModel.$loginStatus);
+
   const [query, setQuery] = useState('');
   const [contactList, setContactList] = useState<ExtendedContact[]>([]);
   const [availableWallets, setAvailableWallets] = useState<ExtendedWallet[]>([]);
@@ -44,9 +49,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
     if (accounts.length === 0) return;
 
     const addressBookContacts = contacts
-      .filter((c) => {
-        return !isEthereumAccountId(c.accountId);
-      })
+      .filter((c) => c.matrixId && !isEthereumAccountId(c.accountId))
       .map((contact, index) => ({ ...contact, index: index.toString() }));
 
     const { available, disabled } = wallets.reduce<{
@@ -69,6 +72,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
             index: index.toString(),
             address: toAddress(accountId),
             accountId: accountId,
+            matrixId: matrix.userId,
           });
         } else {
           acc.disabled.push(wallet);
@@ -82,7 +86,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
     setContactList(addressBookContacts);
     setAvailableWallets(available);
     setDisabledWallets(disabled);
-  }, [accounts.length, contacts.length, wallets.length]);
+  }, [accounts.length, contacts.length, wallets.length, loginStatus]);
 
   useEffect(() => {
     onSelect(selectedWalletsList, selectedContactsList);
@@ -129,7 +133,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
   };
 
   const searchedContactList = contactList.filter((c) => {
-    return includes(c.address, query) || includes(c.name, query);
+    return includes(c.address, query) || includes(c.matrixId, query) || includes(c.name, query);
   });
 
   const getDisabledMessage = (type: WalletType) => {
@@ -229,7 +233,14 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
                     address={contact.accountId}
                     explorers={RootExplorers}
                     button={<ContactItem name={contact.name} address={contact.accountId} />}
-                  />
+                  >
+                    <ExplorersPopover.Group
+                      active={Boolean(contact.matrixId)}
+                      title={t('general.explorers.matrixIdTitle')}
+                    >
+                      <HelpText className="text-text-secondary break-all">{contact.matrixId}</HelpText>
+                    </ExplorersPopover.Group>
+                  </ExplorersPopover>
                 </Checkbox>
               </li>
             );
