@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { Header } from '@shared/ui';
+import { Header, Plate } from '@shared/ui';
+import { InactiveNetwork } from '@entities/network';
 import { governancePageModel } from '../model/governance-page-model';
 import {
   ReferendumFilter,
@@ -11,6 +12,8 @@ import {
   LoadingOngoing,
   OngoingReferendums,
   CompletedReferendums,
+  NetworkSelector,
+  networkSelectorModel,
 } from '@features/governance';
 
 export const Governance = () => {
@@ -18,9 +21,10 @@ export const Governance = () => {
 
   const ongoing = useUnit(governancePageModel.$ongoing);
   const completed = useUnit(governancePageModel.$completed);
+  const isApiConnected = useUnit(networkSelectorModel.$isApiConnected);
 
   useEffect(() => {
-    governancePageModel.events.componentMounted();
+    governancePageModel.events.flowStarted();
   }, []);
 
   return (
@@ -31,11 +35,16 @@ export const Governance = () => {
 
       <div className="overflow-y-auto w-full h-full py-6">
         <section className="flex flex-col h-full w-[736px] mx-auto">
-          {/*<div className="flex gap-x-3">*/}
-          {/*  <ChainSelector />*/}
-          {/*  <Locks onClick={() => console.log('Go to Unlock')} />*/}
-          {/*  <Delegations onClick={() => console.log('Go to Delegate')} />*/}
-          {/*</div>*/}
+          <div className="flex gap-x-3 mb-2">
+            <Plate className="w-[240px] h-[90px] pt-3 px-4 pb-4.5">
+              <NetworkSelector />
+            </Plate>
+            {/*<Plate className="w-[240px]">*/}
+            {/*  */}
+            {/*</Plate>*/}
+            {/*<Locks onClick={() => console.log('Go to Unlock')} />*/}
+            {/*<Delegations onClick={() => console.log('Go to Delegate')} />*/}
+          </div>
 
           {/* TODO: Tracks - Voted filter */}
 
@@ -48,7 +57,7 @@ export const Governance = () => {
           </div>
 
           {/*<EmptyResults />*/}
-          {/*<InactiveNetwork className="flex-grow mb-28" />*/}
+          <InactiveNetwork active={!isApiConnected} className="flex-grow" />
         </section>
       </div>
 

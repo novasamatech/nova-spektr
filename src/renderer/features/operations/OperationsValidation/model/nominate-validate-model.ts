@@ -8,7 +8,6 @@ import { ShardsBondBalanceStore, ValidationResult } from '../types/types';
 import { validationUtils } from '../lib/validation-utils';
 import { networkModel } from '@entities/network';
 import { NominateRules } from '../lib/nominate-rules';
-import { transactionService } from '@entities/transaction';
 
 const validationStarted = createEvent<{ id: ID; transaction: Transaction }>();
 const txValidated = createEvent<{ id: ID; result: ValidationResult }>();
@@ -24,8 +23,6 @@ type ValidateParams = {
 
 const validateFx = createEffect(async ({ id, api, chain, asset, transaction, balances }: ValidateParams) => {
   const accountId = toAccountId(transaction.address);
-  const fee = await transactionService.getTransactionFee(transaction, api);
-
   const shardBalance = balances.find(
     (balance) => balance.accountId === accountId && balance.assetId === asset.assetId.toString(),
   );

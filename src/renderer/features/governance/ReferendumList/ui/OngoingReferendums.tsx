@@ -19,9 +19,10 @@ export const OngoingReferendums = ({ referendums, onSelected }: Props) => {
   const voting = useUnit(governanceModel.$voting);
   const approvalThresholds = useUnit(governanceModel.$approvalThresholds);
   const supportThresholds = useUnit(governanceModel.$supportThresholds);
+  const chain = useUnit(referendumListModel.$chain);
   const details = useUnit(referendumListModel.$referendumsDetails);
 
-  if (isEmpty(approvalThresholds) || isEmpty(supportThresholds) || referendums.size === 0) return null;
+  if (!chain || isEmpty(approvalThresholds) || isEmpty(supportThresholds) || referendums.size === 0) return null;
 
   return (
     <Accordion isDefaultOpen>
@@ -58,7 +59,7 @@ export const OngoingReferendums = ({ referendums, onSelected }: Props) => {
                 </div>
                 <div className="flex items-start gap-x-6 w-full">
                   <HeadlineText className="flex-1 pointer-events-auto">
-                    {details[index] || t('governance.referendums.referendumTitle', { index })}
+                    {details[chain.chainId]?.[index] || t('governance.referendums.referendumTitle', { index })}
                   </HeadlineText>
                   <div className="basis-[200px] shrink-0">
                     <VoteChartSm

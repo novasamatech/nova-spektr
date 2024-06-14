@@ -12,12 +12,8 @@ import { formModel } from '../model/form-model';
 import { AssetBalance } from '@entities/asset';
 import { MultisigAccount } from '@shared/core';
 import { SignatorySelector } from '@entities/operations';
-import {
-  ProxyDepositWithLabel,
-  MultisigDepositWithLabel,
-  FeeWithLabel,
-  DESCRIPTION_LENGTH,
-} from '@entities/transaction';
+import { ProxyDepositWithLabel, MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
+import { DESCRIPTION_LENGTH } from '@features/operations/OperationsValidation';
 
 type Props = {
   onGoBack: () => void;

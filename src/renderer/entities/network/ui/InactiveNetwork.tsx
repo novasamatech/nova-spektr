@@ -16,17 +16,14 @@ export const InactiveNetwork = ({ active, className }: Props) => {
   if (!active) return null;
 
   return (
-    <div className={cn('flex flex-col items-center justify-center gap-y-1', className)}>
-      <img src={NoConnection} alt={t('staking.overview.noAccountsLabel')} width="147" height="147" />
-      <FootnoteText className="w-52 text-center text-text-tertiary">
-        {t('staking.overview.networkDisabledLabel')}
-      </FootnoteText>
-      <FootnoteText className="w-52 text-center text-text-tertiary">
-        {t('staking.overview.networkDisabledDescription')}
+    <div className={cn('flex flex-col items-center justify-center', className)}>
+      <img src={NoConnection} alt="" width="147" height="147" />
+      <FootnoteText align="center" className="w-[280px] text-text-tertiary mt-4">
+        {t('general.title.inactiveNetwork')}
       </FootnoteText>
 
-      <ButtonLink size="sm" className="mt-4" to={Paths.NETWORK}>
-        {t('staking.overview.networkSettingsLink')}
+      <ButtonLink variant="text" size="md" to={Paths.NETWORK}>
+        {t('general.button.networkSettingsLink')}
       </ButtonLink>
     </div>
   );

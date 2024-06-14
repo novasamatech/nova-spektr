@@ -7,7 +7,9 @@ export default {
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as ComponentMeta<typeof Voted>;
 
-const Template: ComponentStory<typeof Voted> = (args) => <Voted />;
+const Template: ComponentStory<typeof Voted> = (args) => <Voted {...args} />;
 
 export const Primary = Template.bind({});
-Primary.args = {};
+Primary.args = {
+  active: true,
+};
