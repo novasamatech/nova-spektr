@@ -22,6 +22,12 @@ import {
   ValidationResult,
 } from '@features/operations/OperationsValidation';
 import { signOperationsModel } from './sign-operations-model';
+import { addUnique, removeFromCollection } from '@/src/renderer/shared/lib/utils';
+
+type BasketTransactionsMap = {
+  valid: BasketTransaction[];
+  invalid: BasketTransaction[];
+};
 
 const txSelected = createEvent<{ id: ID; value: boolean }>();
 const txClicked = createEvent<BasketTransaction>();
@@ -29,24 +35,15 @@ const allSelected = createEvent();
 const signStarted = createEvent();
 const validationCompleted = createEvent();
 const signContinued = createEvent();
-const signTransactionsReceived = createEvent<{
-  valid: BasketTransaction[];
-  invalid: BasketTransaction[];
-}>();
-const validationWarningShown = createEvent<{
-  valid: BasketTransaction[];
-  invalid: BasketTransaction[];
-}>();
-const proceedValidationWarning = createEvent<{
-  valid: BasketTransaction[];
-  invalid: BasketTransaction[];
-}>();
+const signTransactionsReceived = createEvent<BasketTransactionsMap>();
+const validationWarningShown = createEvent<BasketTransactionsMap>();
+const proceedValidationWarning = createEvent<BasketTransactionsMap>();
 const cancelValidationWarning = createEvent();
 
-const $selectedTxs = createStore<Set<number>>(new Set());
+const $selectedTxs = createStore<number[]>([]);
 const $invalidTxs = createStore<Map<ID, ValidationResult>>(new Map());
 const $validTxs = createStore<BasketTransaction[]>([]);
-const $validatingTxs = createStore<Set<number>>(new Set());
+const $validatingTxs = createStore<number[]>([]);
 const $validationWarningShown = createStore<boolean>(false);
 
 const validateFx = createEffect((transactions: BasketTransaction[]) => {
@@ -104,15 +101,7 @@ sample({
   clock: txSelected,
   source: $selectedTxs,
   fn: (selectedTxs, { id, value }) => {
-    const newSelectedTxs = new Set(selectedTxs);
-
-    if (value) {
-      newSelectedTxs.add(id);
-    } else {
-      newSelectedTxs.delete(id);
-    }
-
-    return newSelectedTxs;
+    return value ? addUnique(selectedTxs, id) : removeFromCollection(selectedTxs, id);
   },
   target: $selectedTxs,
 });
@@ -123,7 +112,9 @@ sample({
     txs: $basketTransactions,
     selectedTxs: $selectedTxs,
   },
-  fn: ({ txs, selectedTxs }) => new Set(selectedTxs.size === txs.length ? [] : txs.map((tx) => tx.id)),
+  fn: ({ txs, selectedTxs }) => {
+    return selectedTxs.length === txs.length ? [] : txs.map((tx) => tx.id);
+  },
   target: $selectedTxs,
 });
 
@@ -177,9 +168,7 @@ sample({
 
 sample({
   clock: validateFx,
-  fn: (txs) => {
-    return new Set(txs.map((tx) => tx.id));
-  },
+  fn: (txs) => txs.map((tx) => tx.id),
   target: $validatingTxs,
 });
 
@@ -200,10 +189,7 @@ sample({
   ],
   source: $validatingTxs,
   fn: (txs, { id }) => {
-    const validatingTxs = new Set(txs);
-    validatingTxs.delete(id);
-
-    return validatingTxs;
+    return removeFromCollection(txs, id);
   },
 
   target: $validatingTxs,
@@ -211,15 +197,13 @@ sample({
 
 sample({
   clock: $validatingTxs,
-  filter: (txs) => {
-    return txs.size === 0;
-  },
+  filter: (txs) => txs.length === 0,
   target: validationCompleted,
 });
 
 sample({
   clock: txClicked,
-  fn: (transaction) => new Set([transaction.id]),
+  fn: (transaction) => [transaction.id],
   target: $selectedTxs,
 });
 
@@ -240,7 +224,7 @@ sample({
 sample({
   clock: signStarted,
   source: { allTransactions: $basketTransactions, selectedTxs: $selectedTxs, invalidTxs: $invalidTxs },
-  fn: ({ allTransactions, selectedTxs }) => allTransactions.filter((t) => selectedTxs.has(t.id)),
+  fn: ({ allTransactions, selectedTxs }) => allTransactions.filter((t) => selectedTxs.includes(t.id)),
   target: validateFx,
 });
 
@@ -248,7 +232,7 @@ sample({
   clock: signContinued,
   source: { allTransactions: $basketTransactions, selectedTxs: $selectedTxs, invalidTxs: $invalidTxs },
   fn: ({ allTransactions, selectedTxs, invalidTxs }) => {
-    const filteredTxs = allTransactions.filter((t) => selectedTxs.has(t.id));
+    const filteredTxs = allTransactions.filter((t) => selectedTxs.includes(t.id));
 
     return filteredTxs.reduce(
       (acc, tx) => {

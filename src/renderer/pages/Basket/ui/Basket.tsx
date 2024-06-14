@@ -18,8 +18,6 @@ export const Basket = () => {
   const validatingTxs = useUnit(basketPageModel.$validatingTxs);
   const validationWarningShown = useUnit(basketPageModel.$validationWarningShown);
 
-  console.log('xcmValid', validTxs);
-
   return (
     <section className="flex flex-col items-center relative h-full">
       <Header title={t('basket.title')} />
@@ -34,10 +32,10 @@ export const Basket = () => {
             <Button
               size="sm"
               className="w-[125px]"
-              disabled={validatingTxs.size > 0 || selectedTxs.size === 0}
+              disabled={validatingTxs.length > 0 || selectedTxs.length === 0}
               onClick={() => basketPageModel.events.signStarted()}
             >
-              {t(selectedTxs.size === 0 ? 'basket.emptySignButton' : 'basket.signButton')}
+              {t(selectedTxs.length === 0 ? 'basket.emptySignButton' : 'basket.signButton')}
             </Button>
           </div>
 
@@ -48,13 +46,15 @@ export const Basket = () => {
                   <div className="flex justify-center items-center">
                     <Checkbox
                       disabled={Boolean(invalidTxs.get(tx.id))}
-                      checked={selectedTxs.has(tx.id)}
-                      onChange={() => basketPageModel.events.txSelected({ id: tx.id, value: !selectedTxs.has(tx.id) })}
+                      checked={selectedTxs.includes(tx.id)}
+                      onChange={() =>
+                        basketPageModel.events.txSelected({ id: tx.id, value: !selectedTxs.includes(tx.id) })
+                      }
                     />
                   </div>
 
                   <Operation
-                    selected={selectedTxs.has(tx.id)}
+                    selected={selectedTxs.includes(tx.id)}
                     tx={tx}
                     errorText={invalidTxs.get(tx.id)?.errorText}
                     onSelect={(value) => basketPageModel.events.txSelected({ id: tx.id, value })}

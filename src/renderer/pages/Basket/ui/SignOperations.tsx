@@ -23,10 +23,10 @@ import {
   WithdrawConfirmation,
 } from '@features/operations/OperationsConfirm';
 import { TransferTypes, XcmTypes } from '@entities/transaction';
-import { networkModel } from '@/src/renderer/entities/network';
-import { OperationTitle } from '@/src/renderer/entities/chain';
+import { networkModel } from '@entities/network';
+import { OperationTitle } from '@entities/chain';
 import { getOperationTitle } from '../lib/operation-title';
-import { cnTw } from '@/src/renderer/shared/lib/utils';
+import { cnTw } from '@shared/lib/utils';
 
 export const SignOperations = () => {
   const { t } = useI18n();
@@ -113,6 +113,8 @@ export const SignOperations = () => {
     }
   };
 
+  const currentPage = currentTx + 1;
+
   return (
     <BaseModal
       closeButton
@@ -158,7 +160,7 @@ export const SignOperations = () => {
               'shadow-shadow-1',
             )}
           >
-            {currentTx + 1}/{transactions.length}
+            {currentPage}/{transactions.length}
           </div>
           <IconButton
             size={20}

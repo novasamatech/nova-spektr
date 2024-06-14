@@ -137,7 +137,7 @@ export const Confirmation = ({ secondaryActionButton, hideSignButton, onGoBack }
               onClick={toggleValidators}
             >
               <div className="rounded-[30px] px-1.5 py-[1px] bg-icon-accent">
-                <CaptionText className="text-white">{confirmStore.validators?.length}</CaptionText>
+                <CaptionText className="text-white">{confirmStore.validators.length}</CaptionText>
               </div>
               <Icon className="group-hover:text-icon-hover" name="info" size={16} />
             </button>
