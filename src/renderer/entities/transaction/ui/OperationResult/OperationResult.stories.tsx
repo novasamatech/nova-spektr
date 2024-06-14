@@ -3,7 +3,7 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { OperationResult } from './OperationResult';
 
 export default {
-  title: 'Redesign/Operation Result',
+  title: 'Operation Result',
   component: OperationResult,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as ComponentMeta<typeof OperationResult>;

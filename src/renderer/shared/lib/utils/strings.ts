@@ -123,3 +123,12 @@ export const toFixedNotation = (value: number, maxPrecision = 20): string => {
 export const splitCamelCaseString = (value: string): string => {
   return value.replace(/([a-zA-Z])(?=[A-Z])/g, '$1 ');
 };
+
+/**
+ * Add leading zero to the number below 10
+ * @param value number to edit
+ * @return {String}
+ */
+export const addLeadingZero = (value: number): string => {
+  return value < 10 ? `0${value}` : `${value}`;
+};

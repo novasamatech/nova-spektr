@@ -3,7 +3,7 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { StatusLabel } from './StatusLabel';
 
 export default {
-  title: 'Redesign/StatusLabel',
+  title: 'StatusLabel',
   component: StatusLabel,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as ComponentMeta<typeof StatusLabel>;

@@ -4,7 +4,7 @@ import { Input } from './Input';
 import { Icon } from '@shared/ui';
 
 export default {
-  title: 'Redesign/Input',
+  title: 'Input',
   component: Input,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as ComponentMeta<typeof Input>;

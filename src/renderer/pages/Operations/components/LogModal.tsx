@@ -5,7 +5,7 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@app/providers';
 import { ExtendedChain } from '@entities/network';
 import { MultisigEvent, SigningStatus } from '@shared/core';
-import OperationStatus from './OperationStatus';
+import { Status } from './Status';
 import { getSignatoryName } from '../common/utils';
 import { BaseModal, BodyText, FootnoteText, Identicon, ContextMenu, ExplorerLink, IconButton } from '@shared/ui';
 import { getAssetById, SS58_DEFAULT_PREFIX, toAddress, getExtrinsicExplorer, sortByDateAsc } from '@shared/lib/utils';
@@ -109,12 +109,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts }: Props)
           {asset && amount && <AssetBalance value={amount} asset={asset} className="truncate" />}
         </TransactionTitle>
 
-        <OperationStatus
-          className="shrink-0"
-          status={status}
-          signed={approvals.length}
-          threshold={account?.threshold || 0}
-        />
+        <Status className="shrink-0" status={status} signed={approvals.length} threshold={account?.threshold || 0} />
       </div>
 
       <div className="bg-main-app-background p-5 flex flex-col gap-y-4 min-h-[464px] max-h-[600px] overflow-y-scroll">

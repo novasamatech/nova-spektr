@@ -3,7 +3,7 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { AssetBalance } from './AssetBalance';
 
 export default {
-  title: 'Redesign/Token balance',
+  title: 'Token balance',
   component: AssetBalance,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as ComponentMeta<typeof AssetBalance>;

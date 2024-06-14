@@ -8,8 +8,6 @@ export { Popover, Tooltip, MenuPopover, useParentScrollLock } from './Popovers';
 
 export { Input, AmountInput, PasswordInput, SearchInput, InputArea, InputFile } from './Inputs';
 
-export { VoteChartLg, VoteChartSm } from './VoteCharts';
-
 export {
   LargeTitleText,
   TitleText,
@@ -24,6 +22,7 @@ export {
 } from './Typography';
 
 export { Plate } from './Plate/Plate';
+export { OperationStatus } from './OperationStatus/OperationStatus';
 export { Separator } from './Separator/Separator';
 export { InputHint } from './InputHint/InputHint';
 export { InfoLink } from './InfoLink/InfoLink';

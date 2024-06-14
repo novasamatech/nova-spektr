@@ -44,6 +44,7 @@ import MoreImg, { ReactComponent as MoreSvg } from '@shared/assets/images/functi
 import RenameImg, { ReactComponent as RenameSvg } from '@shared/assets/images/functionals/rename.svg';
 import ForgetImg, { ReactComponent as ForgetSvg } from '@shared/assets/images/functionals/forget.svg';
 import UpdateImg, { ReactComponent as UpdateSvg } from '@shared/assets/images/functionals/update.svg';
+import VotedImg, { ReactComponent as VotedSvg } from '@shared/assets/images/functionals/voted.svg';
 import OpenGovLockImg, { ReactComponent as OpenGovLockSvg } from '@shared/assets/images/functionals/opengov-lock.svg';
 import OpenGovDelegationsImg, {
   ReactComponent as OpenGovDelegationsSvg,
@@ -84,6 +85,7 @@ const FunctionalImages = {
   update: { svg: UpdateSvg, img: UpdateImg },
   opengovLock: { svg: OpenGovLockSvg, img: OpenGovLockImg },
   opengovDelegations: { svg: OpenGovDelegationsSvg, img: OpenGovDelegationsImg },
+  voted: { svg: VotedSvg, img: VotedImg },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

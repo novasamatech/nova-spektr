@@ -3,7 +3,7 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { Popover } from './Popover';
 
 export default {
-  title: 'Redesign/Popover ',
+  title: 'Popover ',
   component: Popover,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [

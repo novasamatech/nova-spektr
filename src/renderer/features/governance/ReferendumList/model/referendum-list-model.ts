@@ -1,25 +1,59 @@
 import { createStore, createEvent, createEffect, restore, sample, combine } from 'effector';
 import { ApiPromise } from '@polkadot/api';
-import { spread } from 'patronum';
-import { isEmpty } from 'lodash';
+import { spread, or, and, not } from 'patronum';
+import isEmpty from 'lodash/isEmpty';
+import { BN_ZERO, BN } from '@polkadot/util';
 
-import { ReferendumInfo, ChainId, TrackId, Voting, ReferendumId } from '@shared/core';
-import { IGovernanceApi, governanceService, subsquareService } from '@shared/api/governance';
-import { networkModel } from '@entities/network';
+import { networkModel, networkUtils } from '@entities/network';
+import { referendumUtils, governanceModel } from '@entities/governance';
+import { getCurrentBlockNumber } from '@shared/lib/utils';
+import { referendumListUtils } from '../lib/referendum-list-utils';
+import { walletModel } from '@entities/wallet';
+import {
+  IGovernanceApi,
+  governanceService,
+  polkassemblyService,
+  opengovThresholdService,
+} from '@shared/api/governance';
+import {
+  ReferendumInfo,
+  ChainId,
+  ReferendumId,
+  OngoingReferendum,
+  CompletedReferendum,
+  TrackInfo,
+  TrackId,
+  VotingThreshold,
+  Address,
+  Voting,
+  Chain,
+} from '@shared/core';
 
-const chainIdChanged = createEvent<ChainId>();
+const chainChanged = createEvent<Chain>();
 const governanceApiChanged = createEvent<IGovernanceApi>();
-const referendumSelected = createEvent<string>();
-const referendumWithChainSelected = createEvent<{ chainId: ChainId; index: string }>();
 
-const $chainId = restore(chainIdChanged, null);
-const $governanceApi = restore(governanceApiChanged, subsquareService);
+const $chain = restore(chainChanged, null);
+const $governanceApi = restore(governanceApiChanged, polkassemblyService);
 
-const $referendumsMap = createStore<Record<ReferendumId, ReferendumInfo>>({});
-const $referendumsDetails = createStore<Record<string, string> | null>(null);
-const $referendumsRequested = createStore<boolean>(false).reset(chainIdChanged);
+const $referendumsDetails = createStore<Record<ReferendumId, string>>({});
+const $referendumsRequested = createStore<boolean>(false);
 
-const requestOnChainReferendumsFx = createEffect((api: ApiPromise): Promise<Record<ReferendumId, ReferendumInfo>> => {
+const $isConnectionActive = combine(
+  {
+    chain: $chain,
+    statuses: networkModel.$connectionStatuses,
+  },
+  ({ chain, statuses }) => {
+    if (!chain) return false;
+
+    return (
+      networkUtils.isConnectingStatus(statuses[chain.chainId]) ||
+      networkUtils.isConnectedStatus(statuses[chain.chainId])
+    );
+  },
+);
+
+const requestOnChainReferendumsFx = createEffect((api: ApiPromise): Promise<Map<ReferendumId, ReferendumInfo>> => {
   return governanceService.getReferendums(api);
 });
 
@@ -33,34 +67,154 @@ const requestOffChainReferendumsFx = createEffect(
   },
 );
 
-const getVotesFx = createEffect((api: ApiPromise): Promise<Record<TrackId, Voting>> => {
-  return governanceService.getVotingFor(api, '12mP4sjCfKbDyMRAEyLpkeHeoYtS5USY4x34n9NMwQrcEyoh');
-  // return governanceService.getVotingFor(api, '153YD8ZHD9dRh82U419bSCB5SzWhbdAFzjj4NtA5pMazR2yC');
+const requestTracksFx = createEffect((api: ApiPromise): Record<TrackId, TrackInfo> => {
+  return governanceService.getTracks(api);
 });
+
+type VotingParams = {
+  api: ApiPromise;
+  tracksIds: TrackId[];
+  addresses: Address[];
+};
+const requestVotingFx = createEffect(
+  ({ api, tracksIds, addresses }: VotingParams): Promise<Record<TrackId, Record<TrackId, Voting>>> => {
+    return governanceService.getVotingFor(api, tracksIds, addresses);
+  },
+);
+
+type ThresholdParams = {
+  api: ApiPromise;
+  referendums: Map<ReferendumId, OngoingReferendum>;
+  tracks: Record<TrackId, TrackInfo>;
+};
+const getApproveThresholdsFx = createEffect(
+  async ({ api, referendums, tracks }: ThresholdParams): Promise<Record<ReferendumId, VotingThreshold>> => {
+    const blockNumber = await getCurrentBlockNumber(api);
+
+    const result: Record<ReferendumId, VotingThreshold> = {};
+
+    for (const [index, referendum] of referendums.entries()) {
+      result[index] = opengovThresholdService.ayesFractionThreshold({
+        approvalCurve: tracks[referendum.track].minApproval,
+        tally: referendum.tally,
+        totalIssuance: BN_ZERO, // not used in calculation
+        blockDifference: referendum.deciding?.since ? blockNumber - referendum.deciding.since : 0,
+        decisionPeriod: new BN(tracks[referendum.track].decisionPeriod),
+      });
+    }
+
+    return result;
+  },
+);
+
+const getSupportThresholdsFx = createEffect(
+  async ({ api, referendums, tracks }: ThresholdParams): Promise<Record<ReferendumId, VotingThreshold>> => {
+    const blockNumber = await getCurrentBlockNumber(api);
+    const totalIssuance = await api.query.balances.totalIssuance();
+    const inactiveIssuance = await api.query.balances.inactiveIssuance();
+
+    const result: Record<ReferendumId, VotingThreshold> = {};
+
+    for (const [index, referendum] of referendums.entries()) {
+      result[index] = opengovThresholdService.supportThreshold({
+        supportCurve: tracks[referendum.track].minSupport,
+        tally: referendum.tally,
+        totalIssuance: totalIssuance.toBn().sub(inactiveIssuance.toBn()),
+        blockDifference: referendum.deciding?.since ? blockNumber - referendum.deciding.since : 0,
+        decisionPeriod: new BN(tracks[referendum.track].decisionPeriod),
+      });
+    }
+
+    return result;
+  },
+);
 
 const $api = combine(
   {
-    chainId: $chainId,
+    chain: $chain,
     apis: networkModel.$apis,
   },
-  ({ chainId, apis }) => {
-    return (chainId && apis[chainId]) || null;
+  ({ chain, apis }) => {
+    return (chain && apis[chain.chainId]) || null;
   },
 );
+
+sample({
+  clock: chainChanged,
+  source: $chain,
+  filter: (oldChain, newChain) => oldChain?.chainId !== newChain.chainId,
+  target: $referendumsRequested.reinit,
+});
 
 sample({
   clock: $api.updates,
   source: $referendumsRequested,
   filter: (referendumsRequested, api) => !referendumsRequested && Boolean(api),
   fn: (_, api) => api!,
-  target: requestOnChainReferendumsFx,
+  target: [requestTracksFx, requestOnChainReferendumsFx],
+});
+
+sample({
+  clock: requestTracksFx.doneData,
+  target: governanceModel.$tracks,
+});
+
+sample({
+  clock: requestTracksFx.doneData,
+  source: {
+    api: $api,
+    chain: $chain,
+    wallet: walletModel.$activeWallet,
+    requested: $referendumsRequested,
+  },
+  filter: ({ api, chain, wallet, requested }) => {
+    return Boolean(chain) && Boolean(wallet) && !requested && Boolean(api);
+  },
+  fn: ({ api, chain, wallet }, tracks) => {
+    // TODO: uncomment when governance page is ready
+    // const matchedAccounts = walletUtils.getAccountsBy([wallet!], (account) => {
+    //   return accountUtils.isChainIdMatch(account, chain!.chainId);
+    // });
+    // const addresses = matchedAccounts.map((a) => toAddress(a.accountId, { prefix: chain!.addressPrefix }));
+    const addresses = [
+      '12mP4sjCfKbDyMRAEyLpkeHeoYtS5USY4x34n9NMwQrcEyoh',
+      '15x643ScnbVQM3zGcyRw3qVtaCoddmAfDv5LZVfU8fNxkVaR',
+    ];
+
+    return { api: api!, tracksIds: Object.keys(tracks), addresses };
+  },
+  target: requestVotingFx,
+});
+
+sample({
+  clock: requestVotingFx.doneData,
+  target: governanceModel.$voting,
 });
 
 sample({
   clock: requestOnChainReferendumsFx.doneData,
-  fn: (referendums) => ({ referendums, requested: true }),
+  fn: (referendums) => {
+    const ongoing: Map<ReferendumId, OngoingReferendum> = new Map();
+    const completed: Map<ReferendumId, CompletedReferendum> = new Map();
+
+    for (const [index, referendum] of referendums) {
+      if (referendumUtils.isCompleted(referendum)) {
+        completed.set(index, referendum);
+      }
+      if (referendumUtils.isOngoing(referendum)) {
+        ongoing.set(index, referendum);
+      }
+    }
+
+    return {
+      ongoing: referendumListUtils.getSortedOngoing(ongoing),
+      completed: referendumListUtils.getSortedCompleted(completed),
+      requested: true,
+    };
+  },
   target: spread({
-    referendums: $referendumsMap,
+    ongoing: governanceModel.$ongoingReferendums,
+    completed: governanceModel.$completedReferendums,
     requested: $referendumsRequested,
   }),
 });
@@ -68,15 +222,14 @@ sample({
 sample({
   clock: requestOnChainReferendumsFx.doneData,
   source: {
-    chainId: $chainId,
-    referendums: $referendumsMap,
+    chain: $chain,
     service: $governanceApi,
   },
-  filter: ({ chainId, referendums, service }) => {
-    return Boolean(chainId) && !isEmpty(referendums) && Boolean(service);
+  filter: ({ chain, service }, referendums) => {
+    return Boolean(chain) && !isEmpty(referendums) && Boolean(service);
   },
-  fn: ({ chainId, service }) => {
-    return { chainId: chainId!, service: service! };
+  fn: ({ chain, service }) => {
+    return { chainId: chain!.chainId, service: service! };
   },
   target: requestOffChainReferendumsFx,
 });
@@ -89,29 +242,42 @@ sample({
 
 sample({
   clock: requestOnChainReferendumsFx.doneData,
-  source: $api,
-  fn: (api) => api!,
-  target: getVotesFx,
+  source: {
+    api: $api,
+    tracks: governanceModel.$tracks,
+    referendums: governanceModel.$ongoingReferendums,
+  },
+  fn: ({ api, tracks, referendums }) => ({
+    api: api!,
+    referendums,
+    tracks,
+  }),
+  target: [getApproveThresholdsFx, getSupportThresholdsFx],
 });
 
 sample({
-  clock: referendumSelected,
-  source: $chainId,
-  filter: (chainId: ChainId | null): chainId is ChainId => Boolean(chainId),
-  fn: (chainId, index) => ({ chainId, index }),
-  target: referendumWithChainSelected,
+  clock: getApproveThresholdsFx.doneData,
+  target: governanceModel.$approvalThresholds,
+});
+
+sample({
+  clock: getSupportThresholdsFx.doneData,
+  target: governanceModel.$supportThresholds,
 });
 
 export const referendumListModel = {
-  $referendumsMap,
   $referendumsDetails,
+  $isApiActive: $api.map((api) => api?.isConnected),
+  $isLoading: or(
+    and($isConnectionActive, not($referendumsRequested)),
+    requestOnChainReferendumsFx.pending,
+    getApproveThresholdsFx.pending,
+    getSupportThresholdsFx.pending,
+    requestVotingFx.pending,
+  ),
 
   events: {
-    chainIdChanged,
+    chainChanged,
     governanceApiChanged,
-    referendumSelected,
-  },
-  output: {
-    referendumSelected: referendumWithChainSelected,
   },
 };

@@ -4,7 +4,7 @@ import { Identicon } from '../../Identicon/Identicon';
 import { MultiSelect } from './MultiSelect';
 
 export default {
-  title: 'Redesign/MultiSelect',
+  title: 'MultiSelect',
   component: MultiSelect,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [

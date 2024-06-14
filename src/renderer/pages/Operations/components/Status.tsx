@@ -1,0 +1,39 @@
+import { OperationStatus } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { MultisigTransaction, MultisigTxFinalStatus, MultisigTxInitStatus, MultisigTxStatus } from '@shared/core';
+
+const StatusTitle: Record<MultisigTxStatus, string> = {
+  [MultisigTxInitStatus.SIGNING]: 'operation.status.signing',
+  [MultisigTxFinalStatus.CANCELLED]: 'operation.status.cancelled',
+  [MultisigTxFinalStatus.ERROR]: 'operation.status.error',
+  [MultisigTxFinalStatus.ESTABLISHED]: 'operation.status.established',
+  [MultisigTxFinalStatus.EXECUTED]: 'operation.status.executed',
+};
+
+const StatusColor: Record<MultisigTxStatus, 'default' | 'success' | 'error'> = {
+  [MultisigTxInitStatus.SIGNING]: 'default',
+  [MultisigTxFinalStatus.ESTABLISHED]: 'default',
+  [MultisigTxFinalStatus.EXECUTED]: 'success',
+  [MultisigTxFinalStatus.CANCELLED]: 'error',
+  [MultisigTxFinalStatus.ERROR]: 'error',
+};
+
+type Props = {
+  status: MultisigTransaction['status'];
+  signed?: number;
+  threshold?: number;
+  className?: string;
+};
+
+export const Status = ({ status, signed, threshold, className }: Props) => {
+  const { t } = useI18n();
+
+  const text =
+    status === 'SIGNING' ? t('operation.signing', { signed, threshold: threshold || 0 }) : t(StatusTitle[status]);
+
+  return (
+    <OperationStatus pallet={StatusColor[status]} className={className}>
+      {text}
+    </OperationStatus>
+  );
+};

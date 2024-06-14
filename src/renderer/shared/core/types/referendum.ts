@@ -23,11 +23,7 @@ export interface OngoingReferendum extends ReferendumInfo {
     since: BlockHeight;
     confirming: BlockHeight;
   } | null;
-  tally: {
-    ayes: BN;
-    nays: BN;
-    support: BN;
-  };
+  tally: Tally;
   type: ReferendumType.Ongoing;
 }
 
@@ -56,6 +52,13 @@ export interface KilledReferendum extends ReferendumInfo {
   since: BlockHeight;
 }
 
+export type CompletedReferendum =
+  | RejectedReferendum
+  | ApprovedReferendum
+  | CancelledReferendum
+  | TimedOutReferendum
+  | KilledReferendum;
+
 export const enum ReferendumType {
   Rejected = 'rejected',
   Approved = 'approved',
@@ -64,6 +67,12 @@ export const enum ReferendumType {
   TimedOut = 'timedOut',
   Killed = 'killed',
 }
+
+export type Tally = {
+  ayes: BN;
+  nays: BN;
+  support: BN;
+};
 
 type Deposit = {
   who: Address;

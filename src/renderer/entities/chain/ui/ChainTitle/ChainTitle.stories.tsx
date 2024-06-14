@@ -4,7 +4,7 @@ import { ChainTitle } from './ChainTitle';
 import { TEST_CHAIN_ID } from '@shared/lib/utils';
 
 export default {
-  title: 'Redesign/Chain',
+  title: 'Chain',
   component: ChainTitle,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as ComponentMeta<typeof ChainTitle>;

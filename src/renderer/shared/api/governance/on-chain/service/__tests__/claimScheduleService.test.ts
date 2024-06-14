@@ -1,7 +1,7 @@
 import { BN, BN_ZERO, BN_ONE, BN_TWO, BN_TEN, BN_NINE, BN_FIVE, BN_THREE, BN_FOUR, BN_EIGHT } from '@polkadot/util';
 
 import { claimScheduleService } from '../claimScheduleService';
-import type { RemoveVote, Unlock, ClaimTimeAt, ClaimTimeUntil } from '../../lib/types';
+import type { RemoveVote, Unlock, ClaimTimeAt, ClaimTimeUntil } from '../../lib/claim-types';
 import { ReferendumType, VotingType, Conviction } from '@shared/core';
 import type {
   ReferendumId,

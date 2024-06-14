@@ -11,7 +11,7 @@ import { SmallTitleText } from './components/SmallTitleText';
 import { TitleText } from './components/TitleText';
 
 export default {
-  title: 'Redesign/Typography',
+  title: 'Typography',
   component: TextBase,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as ComponentMeta<typeof TextBase>;

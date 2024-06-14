@@ -1,4 +1,4 @@
-import type { AccountId, ChainId, ID, NoID, Threshold } from './general';
+import type { AccountId, ChainId, ID, NoID, MultisigThreshold } from './general';
 import { ChainType, CryptoType } from './general';
 import { Signatory } from './signatory';
 import { ProxyType, ProxyVariant } from './proxy';
@@ -38,7 +38,7 @@ export interface ShardAccount extends Account {
 
 export interface MultisigAccount extends Account {
   signatories: Signatory[];
-  threshold: Threshold;
+  threshold: MultisigThreshold;
   chainId?: ChainId;
   cryptoType: CryptoType;
   type: AccountType.MULTISIG;

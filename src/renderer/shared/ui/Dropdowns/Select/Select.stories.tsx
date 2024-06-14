@@ -4,7 +4,7 @@ import { Identicon } from '../../Identicon/Identicon';
 import { Select } from './Select';
 
 export default {
-  title: 'Redesign/Select',
+  title: 'Select',
   component: Select,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [

@@ -1,27 +1,36 @@
 /* eslint-disable i18next/no-literal-string */
+import { ElementType } from 'react';
+
 import { useI18n } from '@app/providers';
-import { secondsToDuration, getDurationFormat, getDurationParams, DurationFormat } from '@shared/lib/utils';
+import { timeUtils } from './common/utils';
+import { DurationFormat } from './common/types';
 
 type Props = {
-  seconds: string;
+  as?: ElementType;
+  seconds: string | number;
+  hideDaysHours?: boolean;
   className?: string;
 };
 
-export const Duration = ({ seconds, className }: Props) => {
+export const Duration = ({ as: Tag = 'span', seconds, hideDaysHours, className }: Props) => {
   const { t } = useI18n();
 
-  const duration = secondsToDuration(parseInt(seconds));
-  const i18nKey = getDurationFormat(duration);
-  const durationParams = getDurationParams(duration, i18nKey);
+  const numericSeconds = typeof seconds === 'string' ? parseInt(seconds) : seconds;
+  const duration = timeUtils.secondsToDuration(numericSeconds);
+  const i18nKey = timeUtils.getDurationFormat(duration);
 
-  if (i18nKey === DurationFormat.DAYS_HOURS) {
-    return (
-      <span className={className}>
-        {t(`time.${DurationFormat.DAYS}`, getDurationParams(duration, DurationFormat.DAYS))}{' '}
-        {t(`time.${DurationFormat.HOURS}`, getDurationParams(duration, DurationFormat.HOURS))}
-      </span>
-    );
+  if (i18nKey !== DurationFormat.DAYS_HOURS) {
+    const durationParams = timeUtils.getDurationParams(duration, i18nKey);
+
+    return <Tag className={className}>{t(`time.${i18nKey}`, durationParams)}</Tag>;
   }
 
-  return <span className={className}>{t(`time.${i18nKey}`, durationParams)}</span>;
+  const days = t(`time.${DurationFormat.DAYS}`, timeUtils.getDurationParams(duration, DurationFormat.DAYS));
+  const hours = t(`time.${DurationFormat.HOURS}`, timeUtils.getDurationParams(duration, DurationFormat.HOURS));
+
+  return (
+    <Tag className={className}>
+      {days}&nbsp;{!hideDaysHours && hours}
+    </Tag>
+  );
 };

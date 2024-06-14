@@ -1,6 +1,6 @@
-import { BN_ZERO, BN } from '@polkadot/util';
+import { BN_ZERO, BN, bnMax } from '@polkadot/util';
 
-import type { ClaimTime, ClaimTimeAt } from './types';
+import type { ClaimTime, ClaimTimeAt } from './claim-types';
 import { VotingType, VoteType, ReferendumType, Conviction } from '@shared/core';
 import type {
   Voting,
@@ -69,7 +69,7 @@ function isDelegating(voting: Voting): voting is DelegatingVoting {
   return voting.type === VotingType.DELEGATING;
 }
 
-// Vote types
+// Voted types
 
 function isStandardVote(vote: AccountVote): vote is StandardVote {
   return vote.type === VoteType.Standard;
@@ -99,24 +99,24 @@ function getTotalLock(voting: Voting): BN {
   if (isCasting(voting)) {
     const maxVote = Object.values(voting.casting.votes).reduce<BN>((acc, vote) => {
       if (vote.type === VoteType.Standard) {
-        acc = BN.max((vote as StandardVote).balance, acc);
+        acc = bnMax((vote as StandardVote).balance, acc);
       }
       if (vote.type === VoteType.Split) {
         const splitVote = vote as SplitVote;
-        acc = BN.max(splitVote.aye.add(splitVote.nay), acc);
+        acc = bnMax(splitVote.aye.add(splitVote.nay), acc);
       }
       if (vote.type === VoteType.SplitAbstain) {
         const abstainVote = vote as SplitAbstainVote;
-        acc = BN.max(abstainVote.aye.add(abstainVote.nay).add(abstainVote.abstain), acc);
+        acc = bnMax(abstainVote.aye.add(abstainVote.nay).add(abstainVote.abstain), acc);
       }
 
       return acc;
     }, BN_ZERO);
 
-    return BN.max(maxVote, voting.casting.prior.amount);
+    return bnMax(maxVote, voting.casting.prior.amount);
   }
   if (isDelegating(voting)) {
-    return BN.max(voting.delegating.balance, voting.delegating.prior.amount);
+    return bnMax(voting.delegating.balance, voting.delegating.prior.amount);
   }
 
   return BN_ZERO;

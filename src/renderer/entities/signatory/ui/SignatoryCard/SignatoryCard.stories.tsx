@@ -4,7 +4,7 @@ import { SignatoryCard } from './SignatoryCard';
 import { TEST_ADDRESS } from '@shared/lib/utils';
 
 export default {
-  title: 'Redesign/Signatory',
+  title: 'Signatory',
   component: SignatoryCard,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as ComponentMeta<typeof SignatoryCard>;
