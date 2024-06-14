@@ -6,11 +6,10 @@ import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
 import { OperationSign, OperationSubmit } from '@features/operations';
 import { ReturnToStakeForm } from './RestakeForm';
-import { Confirmation } from './Confirmation';
 import { restakeUtils } from '../lib/restake-utils';
 import { restakeModel } from '../model/restake-model';
 import { Step } from '../lib/types';
-import { basketUtils } from '@features/operations/OperationsConfirm';
+import { basketUtils, RestakeConfirmation as Confirmation } from '@features/operations/OperationsConfirm';
 
 export const Restake = () => {
   const { t } = useI18n();

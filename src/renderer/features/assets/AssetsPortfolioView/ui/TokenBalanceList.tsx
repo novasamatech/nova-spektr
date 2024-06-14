@@ -1,10 +1,9 @@
+import React from 'react';
 import { useUnit } from 'effector-react';
-import { Link } from 'react-router-dom';
 
 import { useI18n } from '@app/providers';
-import { Icon, Tooltip, Accordion, BodyText, FootnoteText, Plate, HelpText } from '@shared/ui';
+import { Icon, Tooltip, Accordion, BodyText, FootnoteText, Plate, HelpText, IconButton } from '@shared/ui';
 import type { AssetByChains } from '@shared/core';
-import { Paths, createLink } from '@shared/routes';
 import { CheckPermission, OperationType, walletModel } from '@entities/wallet';
 import { TokenPrice } from '@entities/price';
 import { AssetIcon } from '@entities/asset';
@@ -12,6 +11,10 @@ import { networkModel } from '@entities/network';
 import { ChainIcon } from '@entities/chain';
 import { NetworkCard } from './NetworkCard';
 import { AssembledAssetAmount } from './AssembledAssetAmount';
+import { portfolioModel } from '../model/portfolio-model';
+
+const IconButtonStyle =
+  'hover:bg-transparent hover:text-icon-default focus:bg-transparent focus:text-icon-default active:bg-transparent active:text-icon-default';
 
 type Props = {
   asset: AssetByChains;
@@ -22,6 +25,16 @@ export const TokenBalanceList = ({ asset }: Props) => {
 
   const activeWallet = useUnit(walletModel.$activeWallet);
   const chains = useUnit(networkModel.$chains);
+
+  const handleSend = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    portfolioModel.events.transferStarted(asset);
+  };
+
+  const handleReceive = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    portfolioModel.events.receiveStarted(asset);
+  };
 
   return (
     <Plate className="p-0 shadow-shards border-b-4 border-double z-10">
@@ -56,7 +69,7 @@ export const TokenBalanceList = ({ asset }: Props) => {
                   />
                   {asset.chains.length > 2 && (
                     <div className="b-r-2 w-6 rounded flex items-center justify-center bg-token-background p-0.5">
-                      <HelpText className="text-white">{t('portfolilo.networkCounter')}</HelpText>
+                      <HelpText className="text-white">+{asset.chains.length - 2}</HelpText>
                     </div>
                   )}
                   {asset.totalBalance?.verified && (
@@ -80,14 +93,10 @@ export const TokenBalanceList = ({ asset }: Props) => {
 
             <div className="flex gap-x-2 ml-3">
               <CheckPermission operationType={OperationType.TRANSFER} wallet={activeWallet}>
-                <Link to={createLink(Paths.TRANSFER_ASSET, {})} onClick={(e) => e.stopPropagation()}>
-                  <Icon name="sendArrow" size={20} />
-                </Link>
+                <IconButton size={20} name="sendArrow" className={IconButtonStyle} onClick={handleSend} />
               </CheckPermission>
               <CheckPermission operationType={OperationType.RECEIVE} wallet={activeWallet}>
-                <Link to={createLink(Paths.RECEIVE_ASSET, {})} onClick={(e) => e.stopPropagation()}>
-                  <Icon name="receiveArrow" size={20} />
-                </Link>
+                <IconButton size={20} name="receiveArrow" className={IconButtonStyle} onClick={handleReceive} />
               </CheckPermission>
             </div>
           </div>

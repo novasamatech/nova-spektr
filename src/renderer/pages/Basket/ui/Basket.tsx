@@ -5,6 +5,7 @@ import { Button, Header } from '@shared/ui';
 import { Operation } from './Operation';
 import { basketPageModel } from '../model/basket-page-model';
 import { EmptyBasket } from './EmptyBasket';
+import { SignOperation } from './SignOperation';
 
 export const Basket = () => {
   const { t } = useI18n();
@@ -31,8 +32,11 @@ export const Basket = () => {
                 <Operation
                   selected={selectedTxs.includes(tx.id)}
                   tx={tx}
-                  invalid={invalidTxs.has(tx.id)}
+                  errorText={invalidTxs.get(tx.id)?.errorText}
                   onSelect={() => basketPageModel.events.txSelected(tx.id)}
+                  onClick={() => {
+                    basketPageModel.events.txClicked(tx);
+                  }}
                 />
               </li>
             ))}
@@ -41,6 +45,8 @@ export const Basket = () => {
       )}
 
       {basketTxs.length === 0 && <EmptyBasket />}
+
+      <SignOperation />
     </section>
   );
 };

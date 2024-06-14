@@ -12,6 +12,7 @@ import {
   assetsSearchModel,
   assetsSettingsModel,
 } from '@features/assets';
+import { AssetTransactionModal } from '@widgets/AssetTransactionModal';
 import { assetsModel } from './model/assets-model';
 
 export const Assets = () => {
@@ -43,6 +44,7 @@ export const Assets = () => {
         </div>
       </section>
 
+      <AssetTransactionModal />
       <ShardSelectorModal onConfirm={assetsModel.events.activeShardsSet} />
       <Outlet />
     </>

@@ -376,7 +376,7 @@
       },
       {
         "assetId": 1,
-        "symbol": "RMRK (old)",
+        "symbol": "RMRK",
         "precision": 10,
         "type": "statemine",
         "priceId": "rmrk",
@@ -516,7 +516,7 @@
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-karura",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Kusama.svg",
         "typeExtras": {
           "currencyIdScale": "0x0081",
           "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
@@ -542,7 +542,7 @@
       },
       {
         "assetId": 3,
-        "symbol": "RMRK (old)",
+        "symbol": "RMRK",
         "precision": 10,
         "type": "orml",
         "priceId": "rmrk",
@@ -1017,7 +1017,7 @@
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-karura",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Kusama.svg",
         "typeExtras": {
           "assetId": "18446744073709551616"
         },
@@ -1155,7 +1155,7 @@
       },
       {
         "assetId": 2,
-        "symbol": "RMRK (old)",
+        "symbol": "RMRK",
         "precision": 10,
         "type": "orml",
         "priceId": "rmrk",
@@ -1204,7 +1204,7 @@
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-karura",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Kusama.svg",
         "typeExtras": {
           "currencyIdScale": "0x0302",
           "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
@@ -1456,7 +1456,7 @@
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-karura",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Kusama.svg",
         "typeExtras": {
           "currencyIdScale": "0x0101000000",
           "currencyIdType": "InterbtcPrimitivesCurrencyId",
@@ -1464,48 +1464,6 @@
           "transfersEnabled": true
         },
         "name": "Acala SEED"
-      },
-      {
-        "assetId": 6,
-        "symbol": "LP KSM-kBTC",
-        "precision": 18,
-        "type": "orml",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/KSM-kBTC.svg",
-        "typeExtras": {
-          "currencyIdScale": "0x03000a000b",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": false
-        },
-        "name": "LP token KSM-kBTC"
-      },
-      {
-        "assetId": 7,
-        "symbol": "LP kBTC-USDT",
-        "precision": 18,
-        "type": "orml",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/kBTC-USDT.svg",
-        "typeExtras": {
-          "currencyIdScale": "0x03000b0103000000",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": false
-        },
-        "name": "LP token kBTC-USDT"
-      },
-      {
-        "assetId": 8,
-        "symbol": "LP KSM-KINT",
-        "precision": 18,
-        "type": "orml",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/KSM-KINT.svg",
-        "typeExtras": {
-          "currencyIdScale": "0x03000a000c",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": false
-        },
-        "name": "LP token KSM-KINT"
       },
       {
         "assetId": 9,
@@ -1613,7 +1571,7 @@
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-karura",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Kusama.svg",
         "typeExtras": {
           "assetId": "103"
         },
@@ -1794,7 +1752,7 @@
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-karura",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Kusama.svg",
         "typeExtras": {
           "currencyIdScale": "0x02000000",
           "currencyIdType": "u32",
@@ -2007,7 +1965,7 @@
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-karura",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Kusama.svg",
         "typeExtras": {
           "assetId": "4"
         },
@@ -2339,7 +2297,7 @@
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-acala",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Polkadot.svg",
         "typeExtras": {
           "currencyIdScale": "0x0001",
           "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
@@ -2685,7 +2643,7 @@
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-acala",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Polkadot.svg",
         "typeExtras": {
           "assetId": "18446744073709551617"
         },
@@ -2840,7 +2798,7 @@
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-acala",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Polkadot.svg",
         "typeExtras": {
           "assetId": "104"
         },
@@ -2869,62 +2827,6 @@
           "assetId": "114"
         },
         "name": "Moonbeam"
-      },
-      {
-        "assetId": 7,
-        "symbol": "cDOT-6/13",
-        "precision": 10,
-        "type": "statemine",
-        "priceId": "polkadot",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
-        "typeExtras": {
-          "assetId": "200060013"
-        },
-        "name": "Special DOT token"
-      },
-      {
-        "assetId": 8,
-        "symbol": "cDOT-7/14",
-        "precision": 10,
-        "type": "statemine",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
-        "typeExtras": {
-          "assetId": "200070014"
-        },
-        "name": "Special DOT token"
-      },
-      {
-        "assetId": 9,
-        "symbol": "cDOT-8/15",
-        "precision": 10,
-        "type": "statemine",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
-        "typeExtras": {
-          "assetId": "200080015"
-        },
-        "name": "Special DOT token"
-      },
-      {
-        "assetId": 10,
-        "symbol": "cDOT-9/16",
-        "precision": 10,
-        "type": "statemine",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
-        "typeExtras": {
-          "assetId": "200090016"
-        },
-        "name": "Special DOT token"
-      },
-      {
-        "assetId": 11,
-        "symbol": "cDOT-10/17",
-        "precision": 10,
-        "type": "statemine",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
-        "typeExtras": {
-          "assetId": "200100017"
-        },
-        "name": "Special DOT token"
       },
       {
         "assetId": 12,
@@ -3485,12 +3387,12 @@
     }
   },
   {
-    "name": "HydraDX",
+    "name": "Hydration",
     "specName": "polkadot",
     "addressPrefix": 63,
     "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/HydraDX.svg",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Hydration.svg",
     "options": [
       "multisig",
       "regular_proxy",
@@ -3504,6 +3406,14 @@
       {
         "url": "wss://rpc.hydradx.cloud",
         "name": "Calactic Council node"
+      },
+      {
+        "url": "wss://hydradx.paras.ibp.network",
+        "name": "IBP1 node"
+      },
+      {
+        "url": "wss://hydradx.paras.dotters.network",
+        "name": "IBP2 node"
       }
     ],
     "assets": [
@@ -3828,48 +3738,6 @@
           "transfersEnabled": true
         },
         "name": "USDC-Moonbeam"
-      },
-      {
-        "assetId": 22,
-        "symbol": "4-Pool",
-        "precision": 18,
-        "type": "orml",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/4-Pool.svg",
-        "typeExtras": {
-          "currencyIdScale": "0x64000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "1000",
-          "transfersEnabled": true
-        },
-        "name": "4 Pool token"
-      },
-      {
-        "assetId": 23,
-        "symbol": "2-Pool",
-        "precision": 18,
-        "type": "orml",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/2-Pool.svg",
-        "typeExtras": {
-          "currencyIdScale": "0x65000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "1000",
-          "transfersEnabled": true
-        },
-        "name": "2 Pool token"
-      },
-      {
-        "assetId": 24,
-        "symbol": "2-Pool-Stbl",
-        "precision": 18,
-        "type": "orml",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/2-Pool-Stbl.svg",
-        "typeExtras": {
-          "currencyIdScale": "0x66000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "1000",
-          "transfersEnabled": true
-        },
-        "name": "2 Pool-Stbl token"
       },
       {
         "assetId": 25,
@@ -4201,48 +4069,6 @@
         "name": "USD Tether"
       },
       {
-        "assetId": 8,
-        "symbol": "LP iBTC-USDT",
-        "precision": 18,
-        "type": "orml",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/iBTC-USDT.svg",
-        "typeExtras": {
-          "currencyIdScale": "0x0300010102000000",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": false
-        },
-        "name": "LP token iBTC-USDT"
-      },
-      {
-        "assetId": 9,
-        "symbol": "LP DOT-iBTC",
-        "precision": 18,
-        "type": "orml",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/DOT-iBTC.svg",
-        "typeExtras": {
-          "currencyIdScale": "0x0300000001",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": false
-        },
-        "name": "LP token DOT-iBTC"
-      },
-      {
-        "assetId": 10,
-        "symbol": "LP INTR-USDT",
-        "precision": 18,
-        "type": "orml",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/INTR-USDT.svg",
-        "typeExtras": {
-          "currencyIdScale": "0x0300020102000000",
-          "currencyIdType": "InterbtcPrimitivesCurrencyId",
-          "existentialDeposit": "0",
-          "transfersEnabled": false
-        },
-        "name": "LP token INTR-USDT"
-      },
-      {
         "assetId": 11,
         "symbol": "qiBTC",
         "precision": 8,
@@ -4422,7 +4248,7 @@
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-karura",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Kusama.svg",
         "typeExtras": {
           "currencyIdScale": "0x02000000",
           "currencyIdType": "u32",
@@ -4922,7 +4748,7 @@
       },
       {
         "assetId": 5,
-        "symbol": "RMRK (old)",
+        "symbol": "RMRK",
         "precision": 10,
         "type": "orml",
         "priceId": "rmrk",
@@ -5061,7 +4887,10 @@
     "nodes": [
       {
         "url": "wss://rococo-rpc.polkadot.io/",
-        "name": "Rococo node"
+        "name": "Rococo node",
+        "features": [
+          "noTls12"
+        ]
       }
     ],
     "assets": [
@@ -5271,6 +5100,35 @@
           "transfersEnabled": true
         },
         "name": "Moonbeam"
+      },
+      {
+        "assetId": 12,
+        "symbol": "PINK",
+        "precision": 10,
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Pink.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0107",
+          "currencyIdType": "SpacewalkPrimitivesCurrencyId",
+          "existentialDeposit": "1000",
+          "transfersEnabled": true
+        },
+        "name": "PINK"
+      },
+      {
+        "assetId": 13,
+        "symbol": "HDX",
+        "precision": 12,
+        "type": "orml",
+        "priceId": "hydradx",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/HydraDX_(HDX).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0108",
+          "currencyIdType": "SpacewalkPrimitivesCurrencyId",
+          "existentialDeposit": "1000",
+          "transfersEnabled": true
+        },
+        "name": "HydraDX"
       }
     ],
     "externalApi": {
@@ -5513,7 +5371,10 @@
       },
       {
         "url": "wss://rococo-asset-hub-rpc.polkadot.io",
-        "name": "Parity node"
+        "name": "Parity node",
+        "features": [
+          "noTls12"
+        ]
       }
     ],
     "assets": [
@@ -5596,7 +5457,7 @@
       },
       {
         "assetId": 1,
-        "symbol": "xcRMRK (old)",
+        "symbol": "xcRMRK",
         "precision": 10,
         "type": "statemine",
         "priceId": "rmrk",
@@ -5616,7 +5477,7 @@
         "typeExtras": {
           "assetId": "42259045809535163221576417993425387648"
         },
-        "name": "xc Kusama"
+        "name": "Kusama"
       },
       {
         "assetId": 3,
@@ -5628,7 +5489,7 @@
         "typeExtras": {
           "assetId": "175400718394635817552109270754364440562"
         },
-        "name": "xc Kintsugi"
+        "name": "Kintsugi"
       },
       {
         "assetId": 4,
@@ -5640,7 +5501,7 @@
         "typeExtras": {
           "assetId": "10810581592933651521121702237638664357"
         },
-        "name": "xcKAR"
+        "name": "Karura"
       },
       {
         "assetId": 5,
@@ -5652,7 +5513,7 @@
         "typeExtras": {
           "assetId": "319623561105283008236062145480775032445"
         },
-        "name": "xcBNC"
+        "name": "Bifrost"
       },
       {
         "assetId": 6,
@@ -5664,7 +5525,7 @@
         "typeExtras": {
           "assetId": "328179947973504579459046439826496046832"
         },
-        "name": "xckBTC"
+        "name": "KINT Bitcoin"
       },
       {
         "assetId": 7,
@@ -5676,7 +5537,7 @@
         "typeExtras": {
           "assetId": "311091173110107856861649819128533077277"
         },
-        "name": "xcUSDT"
+        "name": "USD Tether"
       },
       {
         "assetId": 8,
@@ -5684,11 +5545,11 @@
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-karura",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Kusama.svg",
         "typeExtras": {
           "assetId": "214920334981412447805621250067209749032"
         },
-        "name": "xcaSEED"
+        "name": "Acala SEED"
       },
       {
         "assetId": 9,
@@ -5700,7 +5561,7 @@
         "typeExtras": {
           "assetId": "108457044225666871745333730479173774551"
         },
-        "name": "xcCSM"
+        "name": "Crust Shadow"
       },
       {
         "assetId": 10,
@@ -5712,7 +5573,7 @@
         "typeExtras": {
           "assetId": "189307976387032586987344677431204943363"
         },
-        "name": "xcPHA"
+        "name": "Phala"
       },
       {
         "assetId": 11,
@@ -5723,7 +5584,7 @@
         "typeExtras": {
           "assetId": "76100021443485661246318545281171740067"
         },
-        "name": "xcHKO"
+        "name": "Parallel Heiko"
       },
       {
         "assetId": 12,
@@ -5735,7 +5596,7 @@
         "typeExtras": {
           "assetId": "213357169630950964874127107356898319277"
         },
-        "name": "xcKMA"
+        "name": "Calamari Network"
       },
       {
         "assetId": 13,
@@ -5747,7 +5608,7 @@
         "typeExtras": {
           "assetId": "173481220575862801646329923366065693029"
         },
-        "name": "xcCRAB"
+        "name": "Darwinia Crab"
       },
       {
         "assetId": 14,
@@ -5759,7 +5620,7 @@
         "typeExtras": {
           "assetId": "105075627293246237499203909093923548958"
         },
-        "name": "xcTEER"
+        "name": "Integritee"
       },
       {
         "assetId": 15,
@@ -5771,7 +5632,7 @@
         "typeExtras": {
           "assetId": "65216491554813189869575508812319036608"
         },
-        "name": "xcLIT"
+        "name": "Litentry"
       },
       {
         "assetId": 16,
@@ -5783,7 +5644,7 @@
         "typeExtras": {
           "assetId": "16797826370226091782818345603793389938"
         },
-        "name": "xcSDN"
+        "name": "Shiden"
       },
       {
         "assetId": 17,
@@ -5795,7 +5656,7 @@
         "typeExtras": {
           "assetId": "108036400430056508975016746969135344601"
         },
-        "name": "xcXRT"
+        "name": "Robonomics"
       },
       {
         "assetId": 18,
@@ -5807,7 +5668,7 @@
         "typeExtras": {
           "assetId": "264344629840762281112027368930249420542"
         },
-        "name": "xcvKSM"
+        "name": "v Kusama"
       },
       {
         "assetId": 19,
@@ -5818,7 +5679,7 @@
         "typeExtras": {
           "assetId": "72145018963825376852137222787619937732"
         },
-        "name": "xcvBNC"
+        "name": "vBNC"
       },
       {
         "assetId": 20,
@@ -5829,29 +5690,31 @@
         "typeExtras": {
           "assetId": "203223821023327994093278529517083736593"
         },
-        "name": "xcvMOVR"
+        "name": "vMOVR"
       },
       {
         "assetId": 21,
         "symbol": "xcMGX",
         "precision": 18,
         "type": "statemine",
+        "priceId": "mangata-x",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Mangata_X_(MGX).svg",
         "typeExtras": {
           "assetId": "118095707745084482624853002839493125353"
         },
-        "name": "xcMGX"
+        "name": "Mangata X"
       },
       {
         "assetId": 22,
         "symbol": "xcTUR",
         "precision": 10,
         "type": "statemine",
+        "priceId": "turing-network",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Turing_(TUR).svg",
         "typeExtras": {
           "assetId": "133300872918374599700079037156071917454"
         },
-        "name": "xcTUR"
+        "name": "Turing"
       }
     ],
     "explorers": [
@@ -5993,7 +5856,7 @@
         "typeExtras": {
           "assetId": "42259045809535163221576417993425387648"
         },
-        "name": "xcDOT"
+        "name": "Polkadot"
       },
       {
         "assetId": 2,
@@ -6001,11 +5864,11 @@
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-acala",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED.svg",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Polkadot.svg",
         "typeExtras": {
           "assetId": "110021739665376159354538090254163045594"
         },
-        "name": "xcaSEED"
+        "name": "Acala SEED"
       },
       {
         "assetId": 3,
@@ -6017,7 +5880,7 @@
         "typeExtras": {
           "assetId": "224821240862170613278369189818311486111"
         },
-        "name": "xcACA"
+        "name": "Acala"
       },
       {
         "assetId": 4,
@@ -6029,7 +5892,7 @@
         "typeExtras": {
           "assetId": "32615670524745285411807346420584982855"
         },
-        "name": "xcPARA"
+        "name": "Parallel Finance"
       },
       {
         "assetId": 5,
@@ -6041,7 +5904,7 @@
         "typeExtras": {
           "assetId": "101170542313601871197860408087030232491"
         },
-        "name": "xcINTR"
+        "name": "Interlay"
       },
       {
         "assetId": 6,
@@ -6053,7 +5916,7 @@
         "typeExtras": {
           "assetId": "120637696315203257380661607956669368914"
         },
-        "name": "xciBTC"
+        "name": "Interlay Bitcoin"
       },
       {
         "assetId": 7,
@@ -6078,7 +5941,7 @@
         "typeExtras": {
           "assetId": "224077081838586484055667086558292981199"
         },
-        "name": "xcASTR"
+        "name": "Astar"
       },
       {
         "assetId": 9,
@@ -6090,7 +5953,7 @@
         "typeExtras": {
           "assetId": "132685552157663328694213725410064821485"
         },
-        "name": "xcPHA"
+        "name": "Phala"
       },
       {
         "assetId": 10,
@@ -6102,7 +5965,7 @@
         "typeExtras": {
           "assetId": "311091173110107856861649819128533077277"
         },
-        "name": "xcUSDT"
+        "name": "USD Tether"
       },
       {
         "assetId": 11,
@@ -6114,7 +5977,7 @@
         "typeExtras": {
           "assetId": "91372035960551235635465443179559840483"
         },
-        "name": "xcCFG"
+        "name": "Centrifuge"
       },
       {
         "assetId": 12,
@@ -6126,7 +5989,7 @@
         "typeExtras": {
           "assetId": "165823357460190568952172802245839421906"
         },
-        "name": "xcBNC"
+        "name": "Bifrost"
       },
       {
         "assetId": 13,
@@ -6138,7 +6001,7 @@
         "typeExtras": {
           "assetId": "190590555344745888270686124937537713878"
         },
-        "name": "xcEQ"
+        "name": "Equilibrium"
       },
       {
         "assetId": 14,
@@ -6150,7 +6013,7 @@
         "typeExtras": {
           "assetId": "187224307232923873519830480073807488153"
         },
-        "name": "xcEQD"
+        "name": "Equilibrium USD"
       },
       {
         "assetId": 15,
@@ -6162,7 +6025,7 @@
         "typeExtras": {
           "assetId": "69606720909260275826784788104880799692"
         },
-        "name": "xcHDX"
+        "name": "HydraDX"
       },
       {
         "assetId": 16,
@@ -6174,7 +6037,7 @@
         "typeExtras": {
           "assetId": "309163521958167876851250718453738106865"
         },
-        "name": "xcNODL"
+        "name": "Nodle"
       },
       {
         "assetId": 17,
@@ -6186,7 +6049,7 @@
         "typeExtras": {
           "assetId": "125699734534028342599692732320197985871"
         },
-        "name": "xcRING"
+        "name": "Darwinia"
       },
       {
         "assetId": 18,
@@ -6197,7 +6060,7 @@
         "typeExtras": {
           "assetId": "238111524681612888331172110363070489924"
         },
-        "name": "xcOTP"
+        "name": "OriginTrail"
       },
       {
         "assetId": 19,
@@ -6209,7 +6072,7 @@
         "typeExtras": {
           "assetId": "29085784439601774464560083082574142143"
         },
-        "name": "xcvDOT"
+        "name": "vDOT"
       },
       {
         "assetId": 20,
@@ -6220,7 +6083,7 @@
         "typeExtras": {
           "assetId": "272547899416482196831721420898811311297"
         },
-        "name": "xcvFIL"
+        "name": "vFIL"
       },
       {
         "assetId": 21,
@@ -6232,7 +6095,7 @@
         "typeExtras": {
           "assetId": "204507659831918931608354793288110796652"
         },
-        "name": "xcvGLMR"
+        "name": "vGLMR"
       },
       {
         "assetId": 22,
@@ -6244,7 +6107,7 @@
         "typeExtras": {
           "assetId": "166446646689194205559791995948102903873"
         },
-        "name": "xcMANTA"
+        "name": "Manta token"
       },
       {
         "assetId": 23,
@@ -6256,7 +6119,7 @@
         "typeExtras": {
           "assetId": "166377000701797186346254371275954761085"
         },
-        "name": "xcUSDC"
+        "name": "USD Coin"
       }
     ],
     "explorers": [
