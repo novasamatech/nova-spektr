@@ -129,7 +129,7 @@ const $apiDestination = combine(
 
 const $txDestination = combine(
   {
-    api: $apiDestination,
+    api: $api,
     destination: $destination,
     network: $networkStore,
     xcmParaId: $xcmParaId,
@@ -162,7 +162,7 @@ const $txDestination = combine(
 
 const $txBeneficiary = combine(
   {
-    api: $apiDestination,
+    api: $api,
     destination: $destination,
     transferDirection: $transferDirection,
   },
@@ -178,7 +178,7 @@ const $txBeneficiary = combine(
 
 const $txAsset = combine(
   {
-    api: $apiDestination,
+    api: $api,
     config: $config,
     amount: $amount,
     transferDirection: $transferDirection,
@@ -266,6 +266,7 @@ sample({
 
 export const xcmTransferModel = {
   $config,
+  $api,
   $apiDestination,
   $xcmData,
   $xcmFee,
