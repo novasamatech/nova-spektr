@@ -1,9 +1,8 @@
-import { dictionary } from '@shared/lib/utils';
 import type { ChainId } from '@shared/core';
+import { dictionary } from '@shared/lib/utils';
 import type { IGovernanceApi } from '../lib/types';
 import { offChainUtils } from '../lib/off-chain-utils';
 
-// TODO: use callback to return the data, instead of waiting all at once
 export const subsquareService: IGovernanceApi = {
   getReferendumList,
   getReferendumDetails,
@@ -35,17 +34,19 @@ async function getReferendumList(chainId: ChainId, callback: (data: Record<strin
     fetch(getApiUrl(chainName, 1), { method: 'GET' })
       .then((res) => res.json())
       .then((ping: SubsquareData) => {
-        callback(dictionary(ping.items, 'referendumIndex', (item) => item.title));
+        callback(parseSubsquareData(ping));
 
         for (let index = 2; index <= Math.ceil(ping.total / 100); index++) {
           fetch(getApiUrl(chainName, index), { method: 'GET' })
             .then((res) => res.json())
-            .then((data: SubsquareData) => {
-              callback(dictionary(data.items, 'referendumIndex', (item) => item.title));
-            });
+            .then((data: SubsquareData) => callback(parseSubsquareData(data)));
         }
       });
   }
+}
+
+function parseSubsquareData(data: SubsquareData): Record<string, string> {
+  return dictionary(data.items, 'referendumIndex', (item) => item.title);
 }
 
 /**
