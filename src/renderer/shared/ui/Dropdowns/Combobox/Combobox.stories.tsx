@@ -5,7 +5,7 @@ import { Identicon } from '../../Identicon/Identicon';
 import { Combobox } from './Combobox';
 
 export default {
-  title: 'Redesign/Combobox',
+  title: 'Combobox',
   component: Combobox,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [

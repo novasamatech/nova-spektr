@@ -13,10 +13,11 @@ import { ProxyType } from '@shared/core';
 
 type Props = {
   secondaryActionButton?: ReactNode;
-  onGoBack: () => void;
+  hideSignButton?: boolean;
+  onGoBack?: () => void;
 };
 
-export const Confirmation = ({ secondaryActionButton, onGoBack }: Props) => {
+export const Confirmation = ({ secondaryActionButton, hideSignButton, onGoBack }: Props) => {
   const { t } = useI18n();
 
   const confirmStore = useUnit(confirmModel.$confirmStore);
@@ -145,19 +146,23 @@ export const Confirmation = ({ secondaryActionButton, onGoBack }: Props) => {
       </dl>
 
       <div className="flex w-full justify-between mt-3">
-        <Button variant="text" onClick={onGoBack}>
-          {t('operation.goBackButton')}
-        </Button>
+        {onGoBack && (
+          <Button variant="text" onClick={onGoBack}>
+            {t('operation.goBackButton')}
+          </Button>
+        )}
 
         <div className="flex gap-4">
           {secondaryActionButton}
 
-          <SignButton
-            isDefault={Boolean(secondaryActionButton)}
-            disabled={isFeeLoading}
-            type={(signerWallet || initiatorWallet)?.type}
-            onClick={confirmModel.output.formSubmitted}
-          />
+          {!hideSignButton && (
+            <SignButton
+              isDefault={Boolean(secondaryActionButton)}
+              disabled={isFeeLoading}
+              type={(signerWallet || initiatorWallet)?.type}
+              onClick={confirmModel.output.formSubmitted}
+            />
+          )}
         </div>
       </div>
     </div>

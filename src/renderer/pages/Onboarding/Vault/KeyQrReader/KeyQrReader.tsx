@@ -180,7 +180,7 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
               <Loader color="primary" />
               {t('onboarding.paritySigner.startCameraLabel')}
             </p>
-            <Icon className="absolute text-shade-10" name="qrFrame" size={240} />
+            <Icon className="absolute text-shade-12" name="qrFrame" size={240} />
           </div>
         </div>
       )}

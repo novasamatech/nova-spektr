@@ -1,6 +1,13 @@
 import { useI18n } from '@app/providers';
-import { cnTw, secondsToMinutes } from '@shared/lib/utils';
+import { cnTw, addLeadingZero } from '@shared/lib/utils';
 import { CaptionText, FootnoteText } from '@shared/ui';
+
+function secondsToMinutes(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = addLeadingZero(seconds % 60);
+
+  return `${minutes}:${remainingSeconds}`;
+}
 
 type Props = {
   countdown: number;
@@ -21,7 +28,7 @@ export const Countdown = ({ countdown, className }: Props) => {
             (countdown >= 60 ? 'bg-label-background-green' : 'bg-label-background-red'),
         )}
       >
-        {/* if qr not loaded yet just show zero */}
+        {/* if qr is not loaded yet - show zero */}
         {secondsToMinutes(countdown)}
       </CaptionText>
     </div>

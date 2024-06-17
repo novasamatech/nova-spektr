@@ -29,7 +29,7 @@ async function getReferendumList(chainId: ChainId): Promise<Record<string, strin
 
     const ping = await (await fetch(getApiUrl(1, 1), { method: 'GET', headers })).json();
     const iterations = Math.ceil(ping.count / 100);
-    const remainders = await offChainUtils.getRemainingReferendums(iterations, getApiUrl);
+    const remainders = await offChainUtils.getRemainingReferendums(iterations, getApiUrl, { headers });
     const referendums = [...ping.posts, ...remainders.flatMap((r) => r.posts)];
 
     return dictionary(referendums, 'post_id', (item) => item.title);

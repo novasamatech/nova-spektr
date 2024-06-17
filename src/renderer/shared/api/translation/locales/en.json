@@ -89,12 +89,23 @@
     "closeButton": "Close modal window"
   },
   "basket": {
+    "emptySignButton": "Select operations",
     "invalidTransaction": "Unavailable",
     "noOperationsDescription": "There are no operations in the basket yet",
     "noOperationsLabel": "No operations",
     "searchPlaceholder": "Search",
     "selectAll": "Select all",
-    "title": "Basket"
+    "signButton": "Sign",
+    "signOperations": {
+      "title": "Sign { transactions } operations"
+    },
+    "title": "Basket",
+    "validationWarning": {
+      "cancelButton": "Cancel",
+      "description": "They will be excluded from the checkout. Would you like to proceed?",
+      "proceedButton": "Proceed",
+      "title": "Some of the selected operations are unavailable"
+    }
   },
   "createMultisigAccount": {
     "accountsAlertText": "Add signatory wallet before creating Multisig wallet",
@@ -273,7 +284,31 @@
     }
   },
   "governance": {
-    "title": "Governance"
+    "referendums": {
+      "completed": "Completed",
+      "crowdloans": "Crowdloans",
+      "deciding": "Deciding",
+      "fellowshipAdmin": "Fellowship: Admin",
+      "fellowshipWhitelist": "Fellowship: Whitelist",
+      "governanceCanceller": "Governance: Canceller",
+      "governanceKiller": "Governance: Killer",
+      "governanceLease": "Governance: Lease",
+      "governanceRegistrar": "Governance: Registrar",
+      "mainAgenda": "Main agenda",
+      "ongoing": "Ongoing",
+      "passing": "Passing",
+      "referendumTitle": "Referendum #{ index }",
+      "staking": "Staking",
+      "treasuryAny": "Treasury: Any",
+      "treasuryBigSpend": "Treasury: Big spend",
+      "treasuryBigTips": "Treasury: Big tips",
+      "treasuryMediumSpend": "Treasury: Medium spend",
+      "treasurySmallSpend": "Treasury: Small spend",
+      "treasurySmallTips": "Treasury: Small tips",
+      "wishForChange": "Wish for change"
+    },
+    "title": "Governance",
+    "voted": "Voted"
   },
   "log": {
     "cancelledMessage": "rejected this operation",
