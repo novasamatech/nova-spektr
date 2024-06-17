@@ -41,6 +41,9 @@ const resetValues = createEvent<ExistingDerivations>();
 const parseFileContentFx = createEffect<File, ParsedImportFile, DerivationImportError>(async (file: File) => {
   let structure: unknown;
   const fileContent = await file.text();
+  if (!fileContent) {
+    throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
+  }
 
   if (file.type === 'text/plain') {
     const textStructure = importKeysUtils.parseTextFile(fileContent);
