@@ -2,8 +2,8 @@ import { useUnit } from 'effector-react';
 import { isEmpty } from 'lodash';
 
 import { useI18n } from '@app/providers';
-import { Voted, VoteChartSm, governanceModel } from '@entities/governance';
-import { FootnoteText, Accordion, CaptionText, OperationStatus, HeadlineText, Icon } from '@shared/ui';
+import { Voted, VoteChartSm, governanceModel, TrackInfo } from '@entities/governance';
+import { Accordion, CaptionText, OperationStatus, HeadlineText } from '@shared/ui';
 import type { ReferendumId, OngoingReferendum } from '@shared/core';
 import { referendumListUtils } from '../lib/referendum-list-utils';
 import { referendumListModel } from '../model/referendum-list-model';
@@ -36,7 +36,6 @@ export const OngoingReferendums = ({ referendums, onSelected }: Props) => {
       </Accordion.Button>
       <Accordion.Content as="ul" className="flex flex-col gap-y-2">
         {Array.from(referendums).map(([index, referendum]) => {
-          const track = referendumListUtils.getTrackInfo(referendum.track);
           const isPassing = supportThresholds[index].passing;
 
           return (
@@ -51,11 +50,7 @@ export const OngoingReferendums = ({ referendums, onSelected }: Props) => {
                     {isPassing ? t('governance.referendums.passing') : t('governance.referendums.deciding')}
                   </OperationStatus>
                   {/*<ReferendumTimer status="reject" time={600000} />*/}
-                  <div className="flex ml-auto text-text-secondary">
-                    <FootnoteText className="text-inherit">#{index}</FootnoteText>
-                    <Icon name={track.icon} size={16} className="text-inherit ml-2 mr-1" />
-                    <FootnoteText className="text-inherit">{t(track.title)}</FootnoteText>
-                  </div>
+                  <TrackInfo index={index} trackId={referendum.track} />
                 </div>
                 <div className="flex items-start gap-x-6 w-full">
                   <HeadlineText className="flex-1 pointer-events-auto">

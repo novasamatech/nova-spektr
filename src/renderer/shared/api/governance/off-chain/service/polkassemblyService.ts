@@ -66,7 +66,7 @@ async function getReferendumDetails(chainId: ChainId, index: string): Promise<st
 
     const apiUrl = `https://api.polkassembly.io/api/v1/posts/on-chain-post?proposalType=referendums_v2&postId=${index}`;
 
-    const details = await (await fetch(apiUrl)).json();
+    const details = await (await fetch(apiUrl, { method: 'GET', headers })).json();
 
     return details.content;
   } catch {
