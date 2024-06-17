@@ -1,5 +1,3 @@
-import { stringify } from 'yaml';
-
 import { ForgetStep, ReconnectStep } from './constants';
 import { VaultMap, MultishardMap } from './types';
 import { accountUtils } from '@entities/wallet';
@@ -102,15 +100,9 @@ function exportMultishardWallet(wallet: Wallet, accounts: MultishardMap) {
     const accountsFlat = Object.values(accounts).flat();
     const exportStructure = exportKeysUtils.getExportStructure(root.accountId, accountsFlat);
 
-    const fileData = stringify(exportStructure, {
-      schema: 'failsafe',
-      defaultStringType: 'QUOTE_DOUBLE',
-      defaultKeyType: 'PLAIN',
-    });
-
     return {
-      blob: new Blob([fileData], { type: 'text/plain' }),
-      fileName: wallet.name + (rootsAndAccounts.length > 1 ? ` ${index}` : '') + '.yaml',
+      blob: new Blob([exportStructure], { type: 'text/plain' }),
+      fileName: wallet.name + (rootsAndAccounts.length > 1 ? ` ${index}` : '') + '.txt',
     };
   });
 
@@ -121,16 +113,10 @@ function exportVaultWallet(wallet: Wallet, root: BaseAccount, accounts: VaultMap
   const accountsFlat = Object.values(accounts).flat();
   const exportStructure = exportKeysUtils.getExportStructure(root.accountId, accountsFlat);
 
-  const fileData = stringify(exportStructure, {
-    schema: 'failsafe',
-    defaultStringType: 'QUOTE_DOUBLE',
-    defaultKeyType: 'PLAIN',
-  });
-
   downloadFiles([
     {
-      blob: new Blob([fileData], { type: 'text/plain' }),
-      fileName: `${wallet.name}.yaml`,
+      blob: new Blob([exportStructure], { type: 'text/plain' }),
+      fileName: `${wallet.name}.txt`,
     },
   ]);
 }
