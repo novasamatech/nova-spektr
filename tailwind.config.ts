@@ -33,6 +33,8 @@ const tailwindConfig: Config = {
         'input-active-shadow': 'var(--input-active-shadow)',
         'card-shadow-level2': 'var(--card-shadow-level2)',
         shards: '0px 3px 1px 0px rgba(69, 69, 137, 0.04)',
+        'shadow-1': 'var(--shadow-1)',
+        'shadow-2': 'var(--shadow-2)',
       },
       colors: {
         primary: '#567CDC',

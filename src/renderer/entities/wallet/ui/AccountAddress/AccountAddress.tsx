@@ -51,6 +51,9 @@ export const AccountAddress = ({
   ...props
 }: AccountAddressProps) => {
   const currentAddress = getAddress(props);
+
+  if (!currentAddress) return null;
+
   const typeIsAdaptive = type === 'adaptive';
   const addressToShow = type === 'short' ? toShortAddress(currentAddress, symbols) : currentAddress;
 

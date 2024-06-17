@@ -13,10 +13,11 @@ import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 
 type Props = {
   secondaryActionButton?: ReactNode;
-  onGoBack: () => void;
+  hideSignButton?: boolean;
+  onGoBack?: () => void;
 };
 
-export const Confirmation = ({ onGoBack, secondaryActionButton }: Props) => {
+export const Confirmation = ({ onGoBack, secondaryActionButton, hideSignButton }: Props) => {
   const { t } = useI18n();
 
   const confirmStore = useUnit(confirmModel.$confirmStore);
@@ -31,7 +32,7 @@ export const Confirmation = ({ onGoBack, secondaryActionButton }: Props) => {
   if (!confirmStore || !initiatorWallet) return null;
 
   return (
-    <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5">
+    <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5 w-modal">
       <div className="flex flex-col items-center gap-y-3 mb-2">
         <Icon name="proxyConfirm" size={60} />
 
@@ -163,18 +164,22 @@ export const Confirmation = ({ onGoBack, secondaryActionButton }: Props) => {
       </dl>
 
       <div className="flex w-full justify-between mt-3">
-        <Button variant="text" onClick={onGoBack}>
-          {t('operation.goBackButton')}
-        </Button>
+        {onGoBack && (
+          <Button variant="text" onClick={onGoBack}>
+            {t('operation.goBackButton')}
+          </Button>
+        )}
 
         <div className="flex gap-4">
           {secondaryActionButton}
-          <SignButton
-            isDefault={Boolean(secondaryActionButton)}
-            disabled={isFeeLoading}
-            type={(signerWallet || initiatorWallet).type}
-            onClick={confirmModel.output.formSubmitted}
-          />
+          {!hideSignButton && (
+            <SignButton
+              isDefault={Boolean(secondaryActionButton)}
+              disabled={isFeeLoading}
+              type={(signerWallet || initiatorWallet).type}
+              onClick={confirmModel.output.formSubmitted}
+            />
+          )}
         </div>
       </div>
     </div>
