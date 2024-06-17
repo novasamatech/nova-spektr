@@ -74,7 +74,7 @@ describe('features/assets/AssetsPortfolioView/model/portfolio-model', () => {
   test('should update $filtredTokens and $query stores on queryChanged event', async () => {
     const scope = fork({
       values: new Map()
-        .set(portfolioModel._$activeTokens, mockTokens)
+        .set(portfolioModel._$activeTokensWithBalance, mockTokens)
         .set(portfolioModel._$query, '')
         .set(portfolioModel._$filtredTokens, []),
     });
@@ -87,10 +87,10 @@ describe('features/assets/AssetsPortfolioView/model/portfolio-model', () => {
 
   test('should update $sortedTokens store on changes in $activeTokens', async () => {
     const scope = fork({
-      values: new Map().set(portfolioModel._$activeTokens, []),
+      values: new Map().set(portfolioModel._$activeTokensWithBalance, []),
     });
 
-    await allSettled(portfolioModel._$activeTokens, { scope, params: mockTokens });
+    await allSettled(portfolioModel._$activeTokensWithBalance, { scope, params: mockTokens });
 
     expect(scope.getState(portfolioModel.$sortedTokens)).toEqual(mockTokens);
   });
