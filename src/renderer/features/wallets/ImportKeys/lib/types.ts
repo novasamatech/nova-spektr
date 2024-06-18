@@ -37,3 +37,9 @@ export type TypedImportedDerivation = {
   chainId: ChainId;
   sharded?: string;
 };
+
+export type ParsedData = {
+  version: string;
+  publicAddress: HexString;
+  derivationPaths: ImportedDerivation[];
+};

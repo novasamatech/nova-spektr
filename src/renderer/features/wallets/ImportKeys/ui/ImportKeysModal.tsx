@@ -34,7 +34,7 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
   }, [isOpen]);
 
   const handleFileUpload = (file: File) => {
-    file.text().then(importKeysModel.events.fileUploaded);
+    importKeysModel.events.fileUploaded(file);
   };
 
   const getReportText = () => {
@@ -61,7 +61,7 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
       <div className="flex flex-col gap-y-4 items-start">
         <InputFile
           placeholder={t('dynamicDerivations.importKeys.fileInputPlaceholder')}
-          accept=".yaml"
+          accept=".yaml,.txt"
           className={cnTw('w-full h-[126px]', validationError && 'mb-2', successReport && 'mb-4')}
           invalid={Boolean(validationError?.error)}
           onChange={handleFileUpload}
