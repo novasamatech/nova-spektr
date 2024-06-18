@@ -83,17 +83,17 @@ function parseTextFile(fileContent: string): ParsedData | null {
   const hasPublicKey = key.startsWith('0x') || toAccountId(key) !== '0x00';
   if (!hasPublicKey) return null;
 
-  let currentGenesisHash = '';
+  let currentChainId = '';
   const derivationPaths = [];
   for (let i = 2; i < lines.length; i++) {
     const line = lines[i];
-    const genesisHashMatch = line.match(/^hash: (0x[a-fA-F0-9]{64})$/);
-    if (genesisHashMatch) {
-      const chainId = genesisHashMatch[1];
+    const chainIdMatch = line.match(/^hash: (0x[a-fA-F0-9]{64})$/);
+    if (chainIdMatch) {
+      const chainId = chainIdMatch[1];
       if (!chainId.startsWith('0x')) {
         return null;
       }
-      currentGenesisHash = genesisHashMatch[1];
+      currentChainId = chainIdMatch[1];
     }
 
     const derivationPathMatch = line.match(/^(\/\/[^\s:]*):\s*([^[]+?)\s*\[([^\]]+)\]$/);
@@ -108,7 +108,7 @@ function parseTextFile(fileContent: string): ParsedData | null {
         sharded: derivationPathShardedMatch?.[2],
         name: derivationPathShardedMatch?.[3] || derivationPathMatch[2],
         type: (derivationPathShardedMatch?.[4] || derivationPathMatch[3]) as KeyType,
-        chainId: currentGenesisHash,
+        chainId: currentChainId,
       };
       derivationPaths.push(derivationPathParams);
       continue;
@@ -149,7 +149,7 @@ function updateTextStructure(parsedData: ParsedData): ParsedImportFile {
 
   const result = {
     [root]: importFileChain,
-    version: +parsedData.version,
+    version: Number(parsedData.version),
   } as ParsedImportFile;
 
   return result;

@@ -6,9 +6,11 @@ export const exportKeysUtils = {
   getExportStructure,
 };
 
+const IMPORT_FILE_VERSION = 1;
+
 function getExportStructure(rootAccountId: AccountId, accounts: Array<ChainAccount | ShardAccount[]>): string {
   const set = new Set<ChainId>();
-  let output = `version: 1\n`;
+  let output = `version: ${IMPORT_FILE_VERSION}\n`;
   output += `public address: ${rootAccountId}\n`;
 
   accounts.forEach((account) => {
