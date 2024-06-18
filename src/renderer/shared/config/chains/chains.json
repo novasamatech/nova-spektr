@@ -3810,12 +3810,6 @@
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/proxy-hydradx"
         }
-      ],
-      "proxy": [
-        {
-          "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/proxy-hydradx"
-        }
       ]
     }
   },
@@ -5062,7 +5056,15 @@
         "account": "https://bridgehub-kusama.subscan.io/account/{address}",
         "multisig": "https://bridgehub-kusama.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       }
-    ]
+    ],
+    "externalApi": {
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet---kusama-bridgehub"
+        }
+      ]
+    }
   },
   {
     "name": "Polkadot Collectives",
@@ -5105,7 +5107,23 @@
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
         "name": "Polkadot"
       }
-    ]
+    ],
+    "explorers": [
+      {
+        "name": "Statescan",
+        "account": "https://collectives.statescan.io/#/accounts/{address}",
+        "event": "https://collectives.statescan.io/#/events/{event}",
+        "extrinsic": "https://collectives.statescan.io/#/extrinsics/{hash}"
+      }
+    ],
+    "externalApi": {
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/polkadot-collectives"
+        }
+      ]
+    }
   },
   {
     "name": "Moonbeam",
@@ -5828,5 +5846,51 @@
         "name": "Kusama"
       }
     ]
+  },
+  {
+    "name": "Polimec",
+    "specName": "polkadot",
+    "addressPrefix": 41,
+    "chainId": "0x7eb9354488318e7549c722669dcbdcdc526f1fef1420e7944667212f3601fdbd",
+    "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polimec.svg",
+    "options": [],
+    "nodes": [
+      {
+        "url": "wss://rpc.polimec.org",
+        "name": "Polimec node"
+      }
+    ],
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "PLMC",
+        "precision": 10,
+        "priceId": "polimec",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/PLMC.svg",
+        "name": "Polimec token"
+      }
+    ],
+    "explorers": [
+      {
+        "name": "Statescan",
+        "account": "https://polimec.statescan.io/#/accounts/{address}",
+        "event": "https://polimec.statescan.io/#/events/{event}"
+      }
+    ],
+    "externalApi": {
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet---polymec"
+        }
+      ],
+      "staking": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet---polymec"
+        }
+      ]
+    }
   }
 ]
