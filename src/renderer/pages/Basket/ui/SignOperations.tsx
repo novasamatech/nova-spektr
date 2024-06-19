@@ -4,8 +4,8 @@ import { useUnit } from 'effector-react';
 import { BaseModal, HeaderTitleText, IconButton } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { useI18n } from '@app/providers';
-import { TransactionType, type BasketTransaction } from '@shared/core';
-import { OperationSubmit } from '@features/operations';
+import { TransactionType, WalletType, type BasketTransaction } from '@shared/core';
+import { OperationSign, OperationSubmit } from '@features/operations';
 import { signOperationsUtils } from '../lib/sign-operations-utils';
 import { signOperationsModel } from '../model/sign-operations-model';
 import {
@@ -27,6 +27,8 @@ import { networkModel } from '@entities/network';
 import { OperationTitle } from '@entities/chain';
 import { getOperationTitle } from '../lib/operation-title';
 import { cnTw } from '@shared/lib/utils';
+import { Step } from '../types';
+import { SignButton } from '@/src/renderer/entities/operations';
 
 export const SignOperations = () => {
   const { t } = useI18n();
@@ -130,46 +132,56 @@ export const SignOperations = () => {
         setCurrentTx(0);
       }}
     >
-      <div className="bg-background-default overflow-x-hidden py-4" ref={ref}>
-        {transactions.length > 0 && signOperationsUtils.isConfirmStep(step) && (
-          <div className="flex gap-2 first:ml-4 ">
-            {transactions.map((t) => (
-              <div key={t.id} className="flex flex-col h-[622px]  last-of-type:pr-4">
-                <div className="w-[440px] bg-white rounded-lg shadow-shadow-2 max-h-full overflow-y-auto">
-                  {getModalTitle(t)}
-                  {getConfirmScreen(t)?.()}
-                </div>
+      {signOperationsUtils.isConfirmStep(step) && (
+        <>
+          <div className="bg-background-default overflow-x-hidden py-4" ref={ref}>
+            {transactions.length > 0 && signOperationsUtils.isConfirmStep(step) && (
+              <div className="flex gap-2 first:ml-4 ">
+                {transactions.map((t) => (
+                  <div key={t.id} className="flex flex-col h-[622px]  last-of-type:pr-4">
+                    <div className="w-[440px] bg-white rounded-lg shadow-shadow-2 max-h-full overflow-y-auto">
+                      {getModalTitle(t)}
+                      {getConfirmScreen(t)?.()}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="flex justify-between bg-white pt-3 px-5 pb-4 rounded-lg">
-        <div className="flex gap-2">
-          <IconButton
-            size={20}
-            className="border w-[42px] h-[42px] flex items-center justify-center"
-            name="left"
-            onClick={previousTx}
-          />
-          <div
-            className={cnTw(
-              'rounded-full font-semibold border border-divider w-[77px] h-[42px]',
-              'text-text-secondary flex items-center justify-center',
-              'shadow-shadow-1',
             )}
-          >
-            {currentPage}/{transactions.length}
           </div>
-          <IconButton
-            size={20}
-            className="border w-[42px] h-[42px] flex items-center justify-center"
-            name="right"
-            onClick={nextTx}
-          />
-        </div>
-      </div>
+
+          <div className="flex justify-between bg-white pt-3 px-5 pb-4 rounded-lg">
+            <div className="flex gap-2">
+              <IconButton
+                size={20}
+                className="border w-[42px] h-[42px] flex items-center justify-center"
+                name="left"
+                onClick={previousTx}
+              />
+              <div
+                className={cnTw(
+                  'rounded-full font-semibold border border-divider w-[77px] h-[42px]',
+                  'text-text-secondary flex items-center justify-center',
+                  'shadow-shadow-1',
+                )}
+              >
+                {currentPage}/{transactions.length}
+              </div>
+              <IconButton
+                size={20}
+                className="border w-[42px] h-[42px] flex items-center justify-center"
+                name="right"
+                onClick={nextTx}
+              />
+            </div>
+
+            <SignButton type={WalletType.POLKADOT_VAULT} onClick={signOperationsModel.events.txsConfirmed} />
+          </div>
+        </>
+      )}
+
+      {signOperationsUtils.isSignStep(step) && (
+        <OperationSign onGoBack={() => signOperationsModel.events.stepChanged(Step.CONFIRM)} />
+      )}
     </BaseModal>
   );
 };

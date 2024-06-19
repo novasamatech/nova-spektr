@@ -101,10 +101,12 @@ sample({
   },
   fn: ({ unstakeStore, networkStore, wrappedTxs }) => ({
     event: {
-      chain: networkStore!.chain,
-      accounts: unstakeStore!.shards,
-      signatory: unstakeStore!.signatory,
-      transactions: wrappedTxs!,
+      signingPayloads: wrappedTxs!.map((tx, index) => ({
+        chain: networkStore!.chain,
+        account: unstakeStore!.shards[index],
+        signatory: unstakeStore!.signatory,
+        transaction: tx!,
+      })),
     },
     step: Step.SIGN,
   }),

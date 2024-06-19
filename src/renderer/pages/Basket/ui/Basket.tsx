@@ -67,7 +67,7 @@ export const Basket = () => {
         </div>
       )}
 
-      {basketTxs.length === 1 && <EmptyBasket />}
+      {basketTxs.length === 0 && <EmptyBasket />}
 
       {validTxs.length === 1 ? <SignOperation /> : <SignOperations />}
 

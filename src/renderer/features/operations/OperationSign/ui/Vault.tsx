@@ -9,25 +9,21 @@ import type { InnerSigningProps } from '../lib/types';
 import { operationSignUtils } from '../lib/operation-sign-utils';
 
 export const Vault = ({
-  chainId,
-  api,
-  addressPrefix,
+  apis,
+  signingPayloads,
+  signerWallet,
   validateBalance,
-  accounts,
-  wallet,
-  signatory,
-  transactions,
   onGoBack,
   onResult,
 }: InnerSigningProps) => {
   const { verifySignature } = useTransaction();
 
-  const [countdown, resetCountdown] = useCountdown(api);
+  const [countdown, resetCountdown] = useCountdown(Object.values(apis));
   const [txPayloads, setTxPayloads] = useState<Uint8Array[]>([]);
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
   const isScanStep = !txPayloads.length;
-  const isMultiframe = transactions.length > 1;
+  const isMultiframe = signingPayloads.length > 1;
 
   useEffect(() => {
     if (countdown === 0) {
@@ -41,7 +37,7 @@ export const Vault = ({
       ? (data as HexString[]).map(operationSignUtils.transformEcdsaSignature)
       : [data as HexString].map(operationSignUtils.transformEcdsaSignature);
 
-    const accountIds = isMultiframe ? accounts.map((t) => t.accountId) : [(signatory || accounts[0])?.accountId];
+    const accountIds = signingPayloads.map((p) => p.signatory?.accountId || p.account.accountId);
 
     const isVerified = signatures.every((signature, index) => {
       // TODO: Research complex verification
@@ -71,11 +67,11 @@ export const Vault = ({
   };
 
   const getSignerAddress = (): Address => {
-    if (!walletUtils.isPolkadotVault(wallet)) return transactions[0].address;
+    if (!walletUtils.isPolkadotVault(signerWallet)) return signingPayloads[0].transaction.address;
 
-    const root = accountUtils.getBaseAccount(wallet.accounts, wallet.id);
+    const root = accountUtils.getBaseAccount(signerWallet.accounts, signerWallet.id);
 
-    return root ? toAddress(root.accountId, { prefix: 1 }) : transactions[0].address;
+    return root ? toAddress(root.accountId, { prefix: 1 }) : signingPayloads[0].transaction.address;
   };
 
   const scanAgain = () => {
@@ -87,27 +83,23 @@ export const Vault = ({
       <div className="w-[440px] px-5 py-4">
         {isMultiframe ? (
           <ScanMultiframeQr
-            chainId={chainId}
-            api={api}
-            addressPrefix={addressPrefix}
+            apis={apis}
             countdown={countdown}
-            accounts={accounts}
-            rootAddress={walletUtils.isPolkadotVault(wallet) ? getSignerAddress() : undefined}
-            signerWallet={wallet}
-            transactions={transactions}
+            signerWallet={signerWallet!}
+            signingPayloads={signingPayloads}
             onGoBack={onGoBack}
             onResetCountdown={resetCountdown}
             onResult={(payloads) => setTxPayloads(payloads)}
           />
         ) : (
           <ScanSingleframeQr
-            chainId={chainId}
-            api={api}
+            chainId={signingPayloads[0].chain.chainId}
+            api={apis[signingPayloads[0].chain.chainId]}
             address={getSignerAddress()}
             countdown={countdown}
-            account={signatory || accounts[0]}
-            signerWallet={wallet}
-            transaction={transactions[0]}
+            account={signingPayloads[0].signatory || signingPayloads[0].account}
+            signerWallet={signerWallet!}
+            transaction={signingPayloads[0].transaction}
             onGoBack={onGoBack}
             onResetCountdown={resetCountdown}
             onResult={(payload) => setTxPayloads([payload])}

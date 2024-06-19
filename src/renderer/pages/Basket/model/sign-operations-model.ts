@@ -1,5 +1,6 @@
 import { combine, createEffect, createEvent, restore, sample, scopeBind } from 'effector';
 import { ApiPromise } from '@polkadot/api';
+import { spread } from 'patronum';
 
 import { Step } from '../types';
 import {
@@ -17,7 +18,7 @@ import {
   Validator,
   Wallet,
 } from '@shared/core';
-import { walletModel } from '@entities/wallet';
+import { walletModel, walletUtils } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { getAssetById, toAccountId } from '@shared/lib/utils';
 import { TransferTypes, XcmTypes, transactionService } from '@entities/transaction';
@@ -30,10 +31,13 @@ import {
   payeeConfirmModel,
   removeProxyConfirmModel,
   removePureProxiedConfirmModel,
+  restakeConfirmModel,
   transferConfirmModel,
   unstakeConfirmModel,
   withdrawConfirmModel,
 } from '@features/operations/OperationsConfirm';
+import { signModel } from '@/src/renderer/features/operations/OperationSign/model/sign-model';
+import { submitModel } from '@/src/renderer/features/operations/OperationSubmit';
 
 type TransferInput = {
   xcmChain: Chain;
@@ -52,6 +56,7 @@ type TransferInput = {
 const flowStarted = createEvent<BasketTransaction[]>();
 const flowFinished = createEvent();
 const stepChanged = createEvent<Step>();
+const txsConfirmed = createEvent();
 
 const transferDataPreparationStarted = createEvent<BasketTransaction>();
 const addProxyDataPreparationStarted = createEvent<BasketTransaction>();
@@ -732,12 +737,90 @@ sample({
   target: stepChanged,
 });
 
+sample({
+  clock: [
+    transferConfirmModel.output.formConfirmed,
+    addProxyConfirmModel.output.formSubmitted,
+    addPureProxiedConfirmModel.output.formSubmitted,
+    removeProxyConfirmModel.output.formSubmitted,
+    removePureProxiedConfirmModel.output.formSubmitted,
+    bondExtraConfirmModel.output.formSubmitted,
+    bondNominateConfirmModel.output.formSubmitted,
+    nominateConfirmModel.output.formSubmitted,
+    payeeConfirmModel.output.formSubmitted,
+    restakeConfirmModel.output.formSubmitted,
+    unstakeConfirmModel.output.formSubmitted,
+    withdrawConfirmModel.output.formSubmitted,
+    txsConfirmed,
+  ],
+  source: {
+    transactions: $transactions,
+    chains: networkModel.$chains,
+    wallets: walletModel.$wallets,
+  },
+  filter: ({ transactions }) => Boolean(transactions),
+  fn: ({ transactions, wallets, chains }) => ({
+    event: {
+      signingPayloads: transactions.map((tx: BasketTransaction) => ({
+        chain: chains[tx.coreTx.chainId],
+        account: walletUtils.getAccountsBy(
+          wallets,
+          (account: Account, wallet: Wallet) =>
+            wallet.id === tx.initiatorWallet && account.accountId === toAccountId(tx.coreTx.address),
+        )[0],
+        signatory: undefined,
+        transaction: tx.coreTx,
+      })),
+    },
+    step: Step.SIGN,
+  }),
+  target: spread({
+    event: signModel.events.formInitiated,
+    step: stepChanged,
+  }),
+});
+
+sample({
+  clock: signModel.output.formSubmitted,
+  source: {
+    transactions: $transactions,
+    chains: networkModel.$chains,
+    wallets: walletModel.$wallets,
+  },
+  filter: (transactions) => {
+    return Boolean(transactions);
+  },
+  fn: ({ transactions, chains, wallets }, signParams) => ({
+    event: {
+      ...signParams,
+      chain: chains[transactions[0].coreTx.chainId],
+      account: walletUtils.getAccountsBy(
+        wallets,
+        (account: Account, wallet: Wallet) =>
+          wallet.id === transactions[0].initiatorWallet &&
+          account.accountId === toAccountId(transactions[0].coreTx.address),
+      )[0],
+      signatory: undefined,
+      description: '',
+      coreTxs: transactions.map((tx) => tx.coreTx!),
+      wrappedTxs: transactions.map((tx) => tx.coreTx!),
+      multisigTxs: [],
+    },
+    step: Step.SUBMIT,
+  }),
+  target: spread({
+    event: submitModel.events.formInitiated,
+    step: stepChanged,
+  }),
+});
+
 export const signOperationsModel = {
   $step,
   $transactions,
 
   events: {
     flowStarted,
+    txsConfirmed,
     stepChanged,
   },
   output: {

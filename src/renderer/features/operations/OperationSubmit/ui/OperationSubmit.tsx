@@ -41,7 +41,12 @@ export const OperationSubmit = ({ isOpen, onClose }: Props) => {
     if (submitUtils.isLoadingStep(step)) {
       return { title: t('transfer.inProgress'), variant: 'loading' };
     }
+
     if (submitUtils.isSuccessStep(step)) {
+      return { title: t('transfer.successMessage'), variant: 'success' };
+    }
+
+    if (submitUtils.isMixedResultStep(step)) {
       return { title: t('transfer.successMessage'), variant: 'success' };
     }
 

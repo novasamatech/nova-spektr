@@ -271,10 +271,12 @@ sample({
 
     return {
       event: {
-        chain: walletData!.chain,
-        accounts: wrapper ? [wrapper.proxyAccount] : payeeData!.shards,
-        signatory: payeeData!.signatory,
-        transactions: transactions!.map((tx) => tx.wrappedTx),
+        signingPayloads: transactions!.map((tx, index) => ({
+          chain: walletData!.chain,
+          account: wrapper ? wrapper.proxyAccount : payeeData!.shards[index],
+          signatory: payeeData!.signatory,
+          transaction: tx.wrappedTx,
+        })),
       },
       step: Step.SIGN,
     };

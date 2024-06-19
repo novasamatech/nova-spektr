@@ -6,7 +6,7 @@ import { useModalClose } from '@shared/lib/hooks';
 import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
 import { TransactionType, type BasketTransaction } from '@shared/core';
-import { OperationSubmit } from '@features/operations';
+import { OperationSign, OperationSubmit } from '@features/operations';
 import { signOperationsUtils } from '../lib/sign-operations-utils';
 import { signOperationsModel } from '../model/sign-operations-model';
 import {
@@ -26,6 +26,7 @@ import {
 import { getOperationTitle } from '../lib/operation-title';
 import { TransferTypes, XcmTypes } from '@entities/transaction';
 import { networkModel } from '@entities/network';
+import { Step } from '../types';
 
 export const SignOperation = () => {
   const { t } = useI18n();
@@ -105,6 +106,10 @@ export const SignOperation = () => {
       onClose={closeModal}
     >
       {transactions.length > 0 && signOperationsUtils.isConfirmStep(step) && getConfirmScreen(transactions[0])?.()}
+
+      {signOperationsUtils.isSignStep(step) && (
+        <OperationSign onGoBack={() => signOperationsModel.events.stepChanged(Step.CONFIRM)} />
+      )}
     </BaseModal>
   );
 };

@@ -348,10 +348,14 @@ sample({
   filter: ({ removeProxyStore, wrappedTx }) => Boolean(removeProxyStore) && Boolean(wrappedTx),
   fn: ({ removeProxyStore, signatories, wrappedTx }) => ({
     event: {
-      chain: removeProxyStore!.chain,
-      accounts: [removeProxyStore!.account],
-      signatory: signatories?.[0],
-      transactions: [wrappedTx!],
+      signingPayloads: [
+        {
+          chain: removeProxyStore!.chain,
+          account: removeProxyStore!.account,
+          signatory: signatories?.[0],
+          transaction: wrappedTx!,
+        },
+      ],
     },
     step: Step.SIGN,
   }),

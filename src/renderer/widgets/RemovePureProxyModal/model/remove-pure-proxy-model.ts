@@ -379,10 +379,14 @@ sample({
   },
   fn: ({ removeProxyStore, signatories, wrappedTx, realAccount }) => ({
     event: {
-      chain: removeProxyStore!.chain,
-      accounts: [realAccount!],
-      signatory: signatories?.[0],
-      transactions: [wrappedTx!],
+      signingPayloads: [
+        {
+          chain: removeProxyStore!.chain,
+          account: realAccount!,
+          signatory: signatories?.[0],
+          transaction: wrappedTx!,
+        },
+      ],
     },
     step: Step.SIGN,
   }),

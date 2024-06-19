@@ -114,10 +114,14 @@ sample({
   },
   fn: ({ transferStore, networkStore, wrappedTx }) => ({
     event: {
-      chain: networkStore!.chain,
-      accounts: [transferStore!.account],
-      signatory: transferStore!.signatory,
-      transactions: [wrappedTx!],
+      signingPayloads: [
+        {
+          chain: networkStore!.chain,
+          account: transferStore!.account,
+          signatory: transferStore!.signatory,
+          transaction: wrappedTx!,
+        },
+      ],
     },
     step: Step.SIGN,
   }),

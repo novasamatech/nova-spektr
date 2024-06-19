@@ -7,21 +7,18 @@ import { useI18n } from '@app/providers';
 import { transactionService } from '@entities/transaction';
 import { toAddress } from '@shared/lib/utils';
 import { Button, FootnoteText } from '@shared/ui';
-import type { ChainId, ShardAccount, Account, BaseAccount } from '@shared/core';
-import { SigningType, Wallet, Transaction } from '@shared/core';
+import type { ShardAccount, BaseAccount, ChainId } from '@shared/core';
+import { Wallet } from '@shared/core';
 import { createSubstrateSignPayload, createMultipleSignPayload } from '../QrCode/QrGenerator/common/utils';
 import { TRANSACTION_BULK } from '../QrCode/common/constants';
 import { QrMultiframeGenerator } from '../QrCode/QrGenerator/QrMultiframeTxGenerator';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
 import { WalletIcon } from '../../../wallet';
+import { SigningPayload } from '@/src/renderer/features/operations/OperationSign';
 
 type Props = {
-  api: ApiPromise;
-  chainId: ChainId;
-  accounts: Account[];
-  addressPrefix: number;
-  rootAddress?: string;
-  transactions: Transaction[];
+  apis: Record<ChainId, ApiPromise>;
+  signingPayloads: SigningPayload[];
   countdown: number;
   signerWallet: Wallet;
   onGoBack: () => void;
@@ -30,14 +27,10 @@ type Props = {
 };
 
 export const ScanMultiframeQr = ({
-  api,
-  chainId,
-  accounts,
-  addressPrefix,
-  rootAddress,
-  transactions,
-  countdown,
+  apis,
+  signingPayloads,
   signerWallet,
+  countdown,
   onGoBack,
   onResetCountdown,
   onResult,
@@ -55,24 +48,27 @@ export const ScanMultiframeQr = ({
   }, []);
 
   const setupTransactions = async (): Promise<void> => {
-    const transactionPromises = accounts.map((account, index) => {
-      const address = toAddress(account.accountId, { prefix: addressPrefix });
+    const transactionPromises = signingPayloads.map((signingPayload, index) => {
+      const address = toAddress(signingPayload.account.accountId, { prefix: signingPayload.chain.addressPrefix });
 
       return (async () => {
-        const { payload } = await transactionService.createPayload(transactions[index], api);
+        const { payload } = await transactionService.createPayload(
+          signingPayload.transaction,
+          apis[signingPayload.chain.chainId],
+        );
 
         const signPayload = createSubstrateSignPayload(
-          signerWallet.signingType === SigningType.POLKADOT_VAULT ? rootAddress! : address,
+          address,
           payload,
-          chainId,
+          signingPayload.chain.chainId,
           signerWallet.signingType,
-          (account as ShardAccount).derivationPath,
-          (account as BaseAccount).cryptoType,
+          (signingPayload.account as ShardAccount).derivationPath,
+          (signingPayload.account as BaseAccount).cryptoType,
         );
 
         return {
           signPayload,
-          transactionData: transactions[index],
+          transactionData: signingPayload.transaction,
         };
       })();
     });
@@ -99,7 +95,7 @@ export const ScanMultiframeQr = ({
 
   return (
     <div className="flex flex-col items-center w-full">
-      {accounts.length > 0 && (
+      {signingPayloads.length > 0 && (
         <div className="flex items-center justify-center mb-1 h-8 w-full">
           <div className="flex h-full justify-center items-center gap-x-0.5 ">
             <FootnoteText className="text-text-secondary">{t('signing.signer')}</FootnoteText>
@@ -112,7 +108,11 @@ export const ScanMultiframeQr = ({
         </div>
       )}
 
-      <QrGeneratorContainer countdown={countdown} chainId={chainId} onQrReset={setupTransactions}>
+      <QrGeneratorContainer
+        countdown={countdown}
+        chainId={signingPayloads[0].chain.chainId}
+        onQrReset={setupTransactions}
+      >
         {bulkTxExist && encoder && <QrMultiframeGenerator payload={bulkTransactions} size={200} encoder={encoder} />}
       </QrGeneratorContainer>
 
