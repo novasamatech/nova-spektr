@@ -66,6 +66,22 @@ function isFileStructureValid(result: any): result is ParsedImportFile {
   });
 }
 
+function processString(str: string) {
+  const parts = str.split('//');
+  const lastPart = parts[parts.length - 1];
+  const shardPattern = /^0\.\.\.(\d+)$/;
+
+  const match = lastPart.match(shardPattern);
+  if (match) {
+    const shard = match[1];
+    const processedString = parts.slice(0, -1).join('//');
+
+    return { path: processedString, shard };
+  } else {
+    return { path: str };
+  }
+}
+
 function parseTextFile(fileContent: string): ParsedData | null {
   const lines = fileContent
     .split('\n')
@@ -96,18 +112,16 @@ function parseTextFile(fileContent: string): ParsedData | null {
       currentChainId = chainIdMatch[1];
     }
 
-    const derivationPathMatch = line.match(/^(\/\/[^\s:]*):\s*([^[]+?)\s*\[([^\]]+)\]$/);
-    // To match paths with sharded keys correctly
-    const derivationPathShardedMatch = line.match(
-      /^(\/\/[^\s:/]*\/\/[^\s:/]*)(?:\/\/0\.\.\.(\d+))?:\s*([^[]+?)\s*\[([^\]]+)\]$/,
-    );
+    const derivationPathMatch = line.match(/^(\/{1,2}[^\s:]*):\s*([^[]+?)\s*\[([^\]]+)\]$/);
 
     if (derivationPathMatch) {
+      const { path, shard } = processString(derivationPathMatch[1]);
+
       const derivationPathParams = {
-        derivationPath: derivationPathShardedMatch?.[1] || derivationPathMatch[1],
-        sharded: derivationPathShardedMatch?.[2],
-        name: derivationPathShardedMatch?.[3] || derivationPathMatch[2],
-        type: (derivationPathShardedMatch?.[4] || derivationPathMatch[3]) as KeyType,
+        derivationPath: path,
+        sharded: shard,
+        name: derivationPathMatch[2],
+        type: derivationPathMatch[3] as KeyType,
         chainId: currentChainId,
       };
       derivationPaths.push(derivationPathParams);
