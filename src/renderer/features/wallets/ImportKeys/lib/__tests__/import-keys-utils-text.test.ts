@@ -121,4 +121,27 @@ describe('entities/dynamicDerivations/import-keys-utils/parseTextFile', () => {
       ],
     });
   });
+
+  test('should parse text file with multiple genesis and derivation paths', () => {
+    const fileContent = `version: 1\npublic address: 0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef\ngenesis: 0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3\n//path1: name1 [type1]\ngenesis: 0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef\n//path2: name2 [type2]`;
+    const parsedData = importKeysUtils.parseTextFile(fileContent);
+    expect(parsedData).toEqual({
+      version: '1',
+      publicAddress: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+      derivationPaths: [
+        {
+          derivationPath: '//path1',
+          name: 'name1',
+          type: 'type1',
+          chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+        },
+        {
+          derivationPath: '//path2',
+          name: 'name2',
+          type: 'type2',
+          chainId: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+        },
+      ],
+    });
+  });
 });
