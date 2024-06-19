@@ -5873,9 +5873,10 @@
     ],
     "explorers": [
       {
-        "name": "Statescan",
-        "account": "https://polimec.statescan.io/#/accounts/{address}",
-        "event": "https://polimec.statescan.io/#/events/{event}"
+        "name": "Polimec explorer",
+        "account": "https://explorer.polimec.org/polimec/account/{address}",
+        "event": "https://explorer.polimec.org/polimec/event/{event}",
+        "extrinsic": "https://explorer.polimec.org/polimec/extrinsic/{hash}"
       }
     ],
     "externalApi": {
