@@ -50,15 +50,33 @@ describe('entities/dynamicDerivations/import-keys-utils/parseTextFile', () => {
     });
   });
 
-  test('should parse text file with sharded keys', () => {
-    const fileContent = `version: 1\npublic address: 0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef\ngenesis: 0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3\n//path//0...10: name [type]`;
+  test('should parse text file with soft path and shards', () => {
+    const fileContent = `version: 1\npublic address: 0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef\ngenesis: 0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3\n//soft_path//0...10: name [type]`;
     const parsedData = importKeysUtils.parseTextFile(fileContent);
     expect(parsedData).toEqual({
       version: '1',
       publicAddress: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
       derivationPaths: [
         {
-          derivationPath: '//path',
+          derivationPath: '//soft_path',
+          sharded: '10',
+          name: 'name',
+          type: 'type',
+          chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+        },
+      ],
+    });
+  });
+
+  test('should parse text file with hard path and shards', () => {
+    const fileContent = `version: 1\npublic address: 0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef\ngenesis: 0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3\n/hard_path//0...10: name [type]`;
+    const parsedData = importKeysUtils.parseTextFile(fileContent);
+    expect(parsedData).toEqual({
+      version: '1',
+      publicAddress: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+      derivationPaths: [
+        {
+          derivationPath: '/hard_path',
           sharded: '10',
           name: 'name',
           type: 'type',
