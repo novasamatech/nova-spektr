@@ -87,7 +87,7 @@ function parseTextFile(fileContent: string): ParsedData | null {
   const derivationPaths = [];
   for (let i = 2; i < lines.length; i++) {
     const line = lines[i];
-    const chainIdMatch = line.match(/^hash: (0x[a-fA-F0-9]{64})$/);
+    const chainIdMatch = line.match(/^genesis: (0x[a-fA-F0-9]{64})$/);
     if (chainIdMatch) {
       const chainId = chainIdMatch[1];
       if (!chainId.startsWith('0x')) {

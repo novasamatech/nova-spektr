@@ -17,7 +17,7 @@ function getExportStructure(rootAccountId: AccountId, accounts: Array<ChainAccou
     const chainId = Array.isArray(account) ? account[0].chainId : account.chainId;
     if (!set.has(chainId)) {
       set.add(chainId);
-      output += `hash: ${chainId}\n`;
+      output += `genesis: ${chainId}\n`;
     }
     output += accountToDerivationExport(account);
   });
