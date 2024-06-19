@@ -8,6 +8,7 @@ import {
   ImportedDerivation,
   ImportFileChain,
   ImportFileKey,
+  ParsedData,
   ParsedImportFile,
   TypedImportedDerivation,
   ValidationError,
@@ -21,6 +22,7 @@ import {
   ChainType,
   CryptoType,
   DraftAccount,
+  HexString,
   KeyType,
   ShardAccount,
 } from '@shared/core';
@@ -33,6 +35,8 @@ const IMPORT_FILE_VERSION = '1';
 
 export const importKeysUtils = {
   isFileStructureValid,
+  parseTextFile,
+  updateTextStructure,
   getDerivationsFromFile,
   getDerivationError,
   shouldIgnoreDerivation,
@@ -60,6 +64,95 @@ function isFileStructureValid(result: any): result is ParsedImportFile {
       return isChainValid && hasChainKeys;
     });
   });
+}
+
+function parseTextFile(fileContent: string): ParsedData | null {
+  const lines = fileContent
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+
+  const versionMatch = lines[0].match(/^version: (\d+)$/);
+  if (!versionMatch || versionMatch[1] !== IMPORT_FILE_VERSION) {
+    return null;
+  }
+
+  const publicAddressMatch = lines[1].match(/^public address: (0x[a-fA-F0-9]{64})$/);
+  if (!publicAddressMatch) return null;
+  const key = publicAddressMatch[1];
+  const hasPublicKey = key.startsWith('0x') || toAccountId(key) !== '0x00';
+  if (!hasPublicKey) return null;
+
+  let currentChainId = '';
+  const derivationPaths = [];
+  for (let i = 2; i < lines.length; i++) {
+    const line = lines[i];
+    const chainIdMatch = line.match(/^hash: (0x[a-fA-F0-9]{64})$/);
+    if (chainIdMatch) {
+      const chainId = chainIdMatch[1];
+      if (!chainId.startsWith('0x')) {
+        return null;
+      }
+      currentChainId = chainIdMatch[1];
+    }
+
+    const derivationPathMatch = line.match(/^(\/\/[^\s:]*):\s*([^[]+?)\s*\[([^\]]+)\]$/);
+    // To match paths with sharded keys correctly
+    const derivationPathShardedMatch = line.match(
+      /^(\/\/[^\s:/]*\/\/[^\s:/]*)(?:\/\/0\.\.\.(\d+))?:\s*([^[]+?)\s*\[([^\]]+)\]$/,
+    );
+
+    if (derivationPathMatch) {
+      const derivationPathParams = {
+        derivationPath: derivationPathShardedMatch?.[1] || derivationPathMatch[1],
+        sharded: derivationPathShardedMatch?.[2],
+        name: derivationPathShardedMatch?.[3] || derivationPathMatch[2],
+        type: (derivationPathShardedMatch?.[4] || derivationPathMatch[3]) as KeyType,
+        chainId: currentChainId,
+      };
+      derivationPaths.push(derivationPathParams);
+      continue;
+    }
+  }
+
+  if (derivationPaths.length === 0) return null;
+
+  return {
+    version: versionMatch[1],
+    publicAddress: key as HexString,
+    derivationPaths,
+  };
+}
+
+function updateTextStructure(parsedData: ParsedData): ParsedImportFile {
+  const root = parsedData.publicAddress;
+
+  const importFileChain = parsedData.derivationPaths.reduce<ImportFileChain>((acc, path) => {
+    const chainId = path.chainId as ChainId;
+    const importFileKey: ImportFileKey = {
+      key: {
+        derivationPath: path.derivationPath,
+        name: path.name,
+        type: path.type,
+        ...(path.sharded && { sharded: path.sharded }),
+      },
+    };
+
+    if (!acc[chainId]) {
+      acc[chainId] = [];
+    }
+
+    acc[chainId].push(importFileKey);
+
+    return acc;
+  }, {});
+
+  const result = {
+    [root]: importFileChain,
+    version: Number(parsedData.version),
+  } as ParsedImportFile;
+
+  return result;
 }
 
 type FormattedResult = { derivations: ImportedDerivation[]; root: AccountId | Address };

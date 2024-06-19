@@ -233,7 +233,7 @@
         "wrongShardsNumber_one": "Number of shards {invalidValues} is not valid, please check the file.",
         "wrongShardsNumber_other": "Numbers of shards {invalidValues} are not valid, please check the file."
       },
-      "fileInputPlaceholder": "Select .yaml file on your computer",
+      "fileInputPlaceholder": "Select .yaml or .txt file on your computer",
       "modalTitle": "Import keys",
       "report": {
         "addedKeys_one": "{count} key added",
