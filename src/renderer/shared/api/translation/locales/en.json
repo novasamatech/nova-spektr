@@ -1142,6 +1142,8 @@
     "inProgress": "Submitting operation...",
     "incorrectRecipientError": "Please enter correct recipient address",
     "invalidSignature": "QR code is invalid. Please make sure you are scanning QR code for currently signing operation",
+    "mixedResultDescription": "They will be returned to the operation basket. You can resolve an issue and execute them later",
+    "mixedResultTitle": "{failed} out of {all} operations has not been executed",
     "multiple": {
       "executing": "Submitting operations",
       "transactions": "Transactions"

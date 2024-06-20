@@ -64,6 +64,8 @@ async function signAndSubmit(
   const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
   const accountId = toAccountId(transaction.address);
 
+  console.log('xcm', transaction, extrinsic, accountId);
+
   extrinsic.addSignature(accountId, hexToU8a(signature), payload);
 
   extrinsic

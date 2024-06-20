@@ -32,9 +32,11 @@ type Input = {
   txPayloads: Uint8Array[];
 };
 
+type Result = { id: number; result: ExtrinsicResult; params: ExtrinsicResultParams | string };
+
 const formInitiated = createEvent<Input>();
 const submitStarted = createEvent();
-const formSubmitted = createEvent<ExtrinsicResultParams>();
+const formSubmitted = createEvent<Result[]>();
 
 const extrinsicSucceeded = createEvent<{ id: number; params: ExtrinsicResultParams }>();
 const extrinsicFailed = createEvent<{ id: number; params: string }>();
@@ -44,7 +46,7 @@ const $submitStore = restore<Input>(formInitiated, null).reset(formSubmitted);
 
 const $submitStep = createStore<{ step: SubmitStep; message: string }>({ step: SubmitStep.LOADING, message: '' });
 const $submittingTxs = createStore<number[]>([]);
-const $results = createStore<{ id: number; result: ExtrinsicResult; params: ExtrinsicResultParams | string }[]>([]);
+const $results = createStore<Result[]>([]);
 
 type Callbacks = {
   addMultisigTx: (tx: MultisigTransaction) => Promise<void>;
@@ -256,7 +258,7 @@ sample({
       return { step: SubmitStep.ERROR, message: results[0].params as string };
     }
 
-    return { step: SubmitStep.MIXED_RESULT, message: 'Something went wrong but something not' };
+    return { step: SubmitStep.MIXED_RESULT, message: '' };
   },
   target: $submitStep,
 });
@@ -265,13 +267,14 @@ sample({
   clock: $submitStep,
   source: $results,
   filter: (_, { step }) => step === SubmitStep.SUCCESS,
-  fn: (results) => results[0].params as ExtrinsicResultParams,
   target: formSubmitted,
 });
 
 export const submitModel = {
   $submitStore,
   $submitStep,
+  $failedTxs: $results.map((result) => result.filter((r) => r.result === ExtrinsicResult.ERROR)),
+
   events: {
     formInitiated,
     submitStarted,

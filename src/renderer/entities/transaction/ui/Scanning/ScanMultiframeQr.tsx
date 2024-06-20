@@ -13,7 +13,7 @@ import { createSubstrateSignPayload, createMultipleSignPayload } from '../QrCode
 import { TRANSACTION_BULK } from '../QrCode/common/constants';
 import { QrMultiframeGenerator } from '../QrCode/QrGenerator/QrMultiframeTxGenerator';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
-import { WalletIcon } from '../../../wallet';
+import { WalletIcon, accountUtils, walletUtils } from '../../../wallet';
 import { SigningPayload } from '@/src/renderer/features/operations/OperationSign';
 
 type Props = {
@@ -49,7 +49,15 @@ export const ScanMultiframeQr = ({
 
   const setupTransactions = async (): Promise<void> => {
     const transactionPromises = signingPayloads.map((signingPayload, index) => {
-      const address = toAddress(signingPayload.account.accountId, { prefix: signingPayload.chain.addressPrefix });
+      let address = '';
+
+      const root = accountUtils.getBaseAccount(signerWallet.accounts, signerWallet.id);
+
+      if (walletUtils.isPolkadotVault(signerWallet) && root) {
+        address = toAddress(root.accountId, { prefix: 1 });
+      } else {
+        address = toAddress(signingPayload.account.accountId, { prefix: signingPayload.chain.addressPrefix });
+      }
 
       return (async () => {
         const { payload } = await transactionService.createPayload(
@@ -84,7 +92,9 @@ export const ScanMultiframeQr = ({
     );
     const bulk = createMultipleSignPayload(transactionsEncoded);
 
-    setBulkTransactions(createMultipleSignPayload(transactionsEncoded));
+    console.log('xcmBulk', bulk);
+
+    setBulkTransactions(bulk);
     setTxPayloads(txRequests.map((t) => t.signPayload));
     setEncoder(Encoder.with_defaults(bulk, 128));
   };

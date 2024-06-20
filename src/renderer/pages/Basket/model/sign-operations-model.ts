@@ -38,6 +38,8 @@ import {
 } from '@features/operations/OperationsConfirm';
 import { signModel } from '@/src/renderer/features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@/src/renderer/features/operations/OperationSubmit';
+import { basketModel } from '@/src/renderer/entities/basket';
+import { ExtrinsicResult } from '@/src/renderer/features/operations/OperationSubmit/lib/types';
 
 type TransferInput = {
   xcmChain: Chain;
@@ -758,22 +760,24 @@ sample({
     chains: networkModel.$chains,
     wallets: walletModel.$wallets,
   },
-  filter: ({ transactions }) => Boolean(transactions),
-  fn: ({ transactions, wallets, chains }) => ({
-    event: {
-      signingPayloads: transactions.map((tx: BasketTransaction) => ({
-        chain: chains[tx.coreTx.chainId],
-        account: walletUtils.getAccountsBy(
-          wallets,
-          (account: Account, wallet: Wallet) =>
-            wallet.id === tx.initiatorWallet && account.accountId === toAccountId(tx.coreTx.address),
-        )[0],
-        signatory: undefined,
-        transaction: tx.coreTx,
-      })),
-    },
-    step: Step.SIGN,
-  }),
+  filter: ({ transactions }) => Boolean(transactions) && transactions.length > 0,
+  fn: ({ transactions, wallets, chains }) => {
+    return {
+      event: {
+        signingPayloads: transactions.map((tx: BasketTransaction) => ({
+          chain: chains[tx.coreTx.chainId],
+          account: walletUtils.getAccountsBy(
+            wallets,
+            (account: Account, wallet: Wallet) =>
+              wallet.id === tx.initiatorWallet && account.accountId === toAccountId(tx.coreTx.address),
+          )[0],
+          signatory: undefined,
+          transaction: tx.coreTx,
+        })),
+      },
+      step: Step.SIGN,
+    };
+  },
   target: spread({
     event: signModel.events.formInitiated,
     step: stepChanged,
@@ -790,28 +794,45 @@ sample({
   filter: (transactions) => {
     return Boolean(transactions);
   },
-  fn: ({ transactions, chains, wallets }, signParams) => ({
-    event: {
-      ...signParams,
-      chain: chains[transactions[0].coreTx.chainId],
-      account: walletUtils.getAccountsBy(
-        wallets,
-        (account: Account, wallet: Wallet) =>
-          wallet.id === transactions[0].initiatorWallet &&
-          account.accountId === toAccountId(transactions[0].coreTx.address),
-      )[0],
-      signatory: undefined,
-      description: '',
-      coreTxs: transactions.map((tx) => tx.coreTx!),
-      wrappedTxs: transactions.map((tx) => tx.coreTx!),
-      multisigTxs: [],
-    },
-    step: Step.SUBMIT,
-  }),
+  fn: ({ transactions, chains, wallets }, signParams) => {
+    const result = {
+      event: {
+        ...signParams,
+        chain: chains[transactions[0].coreTx.chainId],
+        account: walletUtils.getAccountsBy(
+          wallets,
+          (account: Account, wallet: Wallet) =>
+            wallet.id === transactions[0].initiatorWallet &&
+            account.accountId === toAccountId(transactions[0].coreTx.address),
+        )[0],
+        signatory: undefined,
+        description: '',
+        coreTxs: transactions.map((tx) => tx.coreTx!),
+        wrappedTxs: transactions.map((tx) => tx.coreTx!),
+        multisigTxs: [],
+      },
+      step: Step.SUBMIT,
+    };
+
+    console.log('xcm', result);
+
+    return result;
+  },
   target: spread({
     event: submitModel.events.formInitiated,
     step: stepChanged,
   }),
+});
+
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: $transactions,
+  fn: (transactions, results) => {
+    return transactions.filter(
+      (tx, index) => !results.some((result) => result.id === index && result.result === ExtrinsicResult.SUCCESS),
+    );
+  },
+  target: basketModel.events.transactionsRemoved,
 });
 
 export const signOperationsModel = {

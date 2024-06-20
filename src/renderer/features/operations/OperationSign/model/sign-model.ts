@@ -53,6 +53,8 @@ const $signerWallet = combine(
   ({ store, wallets }) => {
     if (!store) return undefined;
 
+    console.log('xcm1', store);
+
     return walletUtils.getWalletById(wallets, store.signingPayloads[0].account.walletId);
   },
   { skipVoid: false },
