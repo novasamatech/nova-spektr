@@ -1,6 +1,6 @@
 import { combine, createEffect, createEvent, restore, sample, scopeBind } from 'effector';
 import { ApiPromise } from '@polkadot/api';
-import { spread } from 'patronum';
+import { delay, spread } from 'patronum';
 
 import { Step } from '../types';
 import {
@@ -119,7 +119,7 @@ const startDataPreparationFx = createEffect((transactions: BasketTransaction[]) 
 });
 
 const $step = restore(stepChanged, Step.NONE);
-const $transactions = restore(flowStarted, []);
+const $transactions = restore(flowStarted, []).reset(flowFinished);
 
 const $txDataParams = combine({
   wallets: walletModel.$wallets,
@@ -791,8 +791,8 @@ sample({
     chains: networkModel.$chains,
     wallets: walletModel.$wallets,
   },
-  filter: (transactions) => {
-    return Boolean(transactions);
+  filter: ({ transactions }) => {
+    return Boolean(transactions) && transactions.length > 0;
   },
   fn: ({ transactions, chains, wallets }, signParams) => {
     const result = {
@@ -833,6 +833,11 @@ sample({
     );
   },
   target: basketModel.events.transactionsRemoved,
+});
+
+sample({
+  clock: delay(submitModel.output.formSubmitted, 2000),
+  target: flowFinished,
 });
 
 export const signOperationsModel = {
