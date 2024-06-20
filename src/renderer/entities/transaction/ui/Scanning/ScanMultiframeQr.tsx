@@ -63,6 +63,7 @@ export const ScanMultiframeQr = ({
         const { payload } = await transactionService.createPayload(
           signingPayload.transaction,
           apis[signingPayload.chain.chainId],
+          index,
         );
 
         const signPayload = createSubstrateSignPayload(
@@ -76,6 +77,7 @@ export const ScanMultiframeQr = ({
 
         return {
           signPayload,
+          payload,
           transactionData: signingPayload.transaction,
         };
       })();
@@ -92,10 +94,8 @@ export const ScanMultiframeQr = ({
     );
     const bulk = createMultipleSignPayload(transactionsEncoded);
 
-    console.log('xcmBulk', bulk);
-
     setBulkTransactions(bulk);
-    setTxPayloads(txRequests.map((t) => t.signPayload));
+    setTxPayloads(txRequests.map((t) => t.payload));
     setEncoder(Encoder.with_defaults(bulk, 128));
   };
 

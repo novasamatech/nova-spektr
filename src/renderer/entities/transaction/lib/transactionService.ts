@@ -64,8 +64,6 @@ async function signAndSubmit(
   const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
   const accountId = toAccountId(transaction.address);
 
-  console.log('xcm', transaction, extrinsic, accountId);
-
   extrinsic.addSignature(accountId, hexToU8a(signature), payload);
 
   extrinsic
@@ -262,11 +260,14 @@ function getWrappedTransaction({ api, addressPrefix, transaction, txWrappers }: 
 async function createPayload(
   transaction: Transaction,
   api: ApiPromise,
+  nonce = 0,
 ): Promise<{
   unsigned: UnsignedTransaction;
   payload: Uint8Array;
 }> {
   const { info, options, registry } = await createTxMetadata(transaction.address, api);
+
+  info.nonce += nonce;
 
   const unsigned = getUnsignedTransaction[transaction.type](transaction, info, options, api);
   if (options.signedExtensions?.includes('ChargeAssetTxPayment')) {
