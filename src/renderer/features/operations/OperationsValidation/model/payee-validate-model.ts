@@ -23,7 +23,6 @@ type ValidateParams = {
 
 const validateFx = createEffect(async ({ id, api, chain, asset, transaction, balances }: ValidateParams) => {
   const accountId = toAccountId(transaction.address);
-
   const shardBalance = balances.find(
     (balance) => balance.accountId === accountId && balance.assetId === asset.assetId.toString(),
   );

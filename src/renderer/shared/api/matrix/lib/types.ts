@@ -4,7 +4,7 @@ import type {
   HexString,
   AccountId,
   Timepoint,
-  Threshold,
+  MultisigThreshold,
   CallHash,
   CallData,
   ChainId,
@@ -117,7 +117,7 @@ export type RoomParams = {
   accountName: string;
   accountId: AccountId;
   creatorAccountId: AccountId;
-  threshold: Threshold;
+  threshold: MultisigThreshold;
   cryptoType: CryptoType;
   chainId?: ChainId;
   signatories: {
@@ -129,7 +129,7 @@ export type RoomParams = {
 export type SpektrExtras = {
   mstAccount: {
     accountName: string;
-    threshold: Threshold;
+    threshold: MultisigThreshold;
     signatories: AccountId[];
     accountId: AccountId;
     creatorAccountId: AccountId;

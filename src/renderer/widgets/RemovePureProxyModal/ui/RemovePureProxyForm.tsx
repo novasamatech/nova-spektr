@@ -4,11 +4,12 @@ import { useUnit } from 'effector-react';
 
 import { Button, Input, InputHint, Alert } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { MultisigDepositWithLabel, FeeWithLabel, DESCRIPTION_LENGTH } from '@entities/transaction';
+import { MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
 import { MultisigAccount } from '@shared/core';
 import { SignatorySelector } from '@entities/operations';
 import { formModel } from '../model/form-model';
 import { removePureProxyModel } from '../model/remove-pure-proxy-model';
+import { DESCRIPTION_LENGTH } from '@features/operations/OperationsValidation';
 
 type Props = {
   onGoBack: () => void;

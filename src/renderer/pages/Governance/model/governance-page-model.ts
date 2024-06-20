@@ -1,29 +1,31 @@
-import { createEvent, createStore, sample } from 'effector';
+import { createEvent, sample } from 'effector';
 
-import type { ChainId, ReferendumId } from '@shared/core';
-import { referendumListModel, referendumDetailsModel } from '@features/governance';
+import type { ReferendumId, Chain } from '@shared/core';
+import { networkSelectorModel, referendumListModel } from '@features/governance';
 import { governanceModel } from '@entities/governance';
-import { networkModel } from '@entities/network';
 
-const componentMounted = createEvent();
+const flowStarted = createEvent();
 const referendumSelected = createEvent<ReferendumId>();
 
 // const $filteredReferendums = createStore<Record<ReferendumId, ReferendumInfo>>({});
-const $chainId = createStore<ChainId>('0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3');
 
 sample({
-  clock: componentMounted,
-  source: networkModel.$chains,
-  fn: (chains) => chains['0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3'],
-  target: referendumListModel.events.chainChanged,
+  clock: flowStarted,
+  target: networkSelectorModel.input.defaultChainSet,
 });
 
 sample({
-  clock: referendumSelected,
-  source: $chainId,
-  fn: (chainId, index) => ({ chainId, index }),
-  target: referendumDetailsModel.input.flowStarted,
+  source: networkSelectorModel.$governanceChain,
+  filter: (chain): chain is Chain => Boolean(chain),
+  target: referendumListModel.input.chainChanged,
 });
+
+// sample({
+//   clock: referendumSelected,
+//   source: $chainId,
+//   fn: (chainId, index) => ({ chainId, index }),
+//   target: referendumDetailsModel.input.flowStarted,
+// });
 
 // sample({
 //   clock: referendumListModel.output.referendumSelected,
@@ -36,7 +38,7 @@ export const governancePageModel = {
   $completed: governanceModel.$completedReferendums,
 
   events: {
-    componentMounted,
+    flowStarted,
     referendumSelected,
   },
 };

@@ -28,5 +28,6 @@ export { UnstakeRules } from './lib/unstake-rules';
 export { BondExtraRules } from './lib/bond-extra-rules';
 export { WithdrawRules } from './lib/withdraw-rules';
 
+export * from './lib/validation';
 export * from './lib/validation-utils';
 export * from './types/types';

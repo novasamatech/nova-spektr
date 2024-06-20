@@ -10,7 +10,6 @@ const governanceApiChanged = createEvent<IGovernanceApi>();
 
 const $governanceApi = restore(governanceApiChanged, subsquareService);
 const $details = createStore<string | null>(null).reset(flowFinished);
-// const $referendum = createStore<string>('').reset(flowFinished);
 
 type OffChainParams = {
   service: IGovernanceApi;

@@ -17,7 +17,7 @@ export type Chain = {
 
 export const enum ChainOptions {
   TESTNET = 'testnet',
-  CROWDLOANS = 'crowdloans',
+  GOVERNANCE = 'governance',
   MULTISIG = 'multisig',
   REGULAR_PROXY = 'regular_proxy',
   PURE_PROXY = 'pure_proxy',

@@ -27,9 +27,10 @@ export const CompletedReferendums = ({ referendums, onSelected }: Props) => {
   const { t } = useI18n();
 
   const voting = useUnit(governanceModel.$voting);
+  const chain = useUnit(referendumListModel.$chain);
   const details = useUnit(referendumListModel.$referendumsDetails);
 
-  if (referendums.size === 0) return null;
+  if (!chain || referendums.size === 0) return null;
 
   return (
     <Accordion isDefaultOpen>
@@ -56,7 +57,9 @@ export const CompletedReferendums = ({ referendums, onSelected }: Props) => {
                 </OperationStatus>
                 <FootnoteText className="ml-auto text-text-secondary">#{index}</FootnoteText>
               </div>
-              <HeadlineText>{details[index] || t('governance.referendums.referendumTitle', { index })}</HeadlineText>
+              <HeadlineText>
+                {details[chain.chainId]?.[index] || t('governance.referendums.referendumTitle', { index })}
+              </HeadlineText>
             </button>
           </li>
         ))}
