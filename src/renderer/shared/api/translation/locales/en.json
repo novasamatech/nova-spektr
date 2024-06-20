@@ -255,6 +255,7 @@
   },
   "general": {
     "button": {
+      "networkSettingsLink": "Network settings",
       "pasteButton": "Paste",
       "uploadButton": "Upload"
     },
@@ -280,7 +281,8 @@
       "passwordVisibilityButton": "Show password"
     },
     "title": {
-      "appName": "Nova Spektr"
+      "appName": "Nova Spektr",
+      "inactiveNetwork": "Network is inactive, please check the connection in network settings"
     }
   },
   "governance": {
@@ -1019,11 +1021,9 @@
       "actionsTitle": "Accounts",
       "emptyFilterDescription": "Try another filter parameters",
       "emptyFilterLabel": "No results",
-      "networkDisabledDescription": "Please check the connection in Network Settings",
       "networkDisabledLabel": "Network is inactive",
       "networkLabel": "Network",
       "networkPlaceholder": "Select network",
-      "networkSettingsLink": "Network settings",
       "noAccountsLabel": "Your haven’t got any account to start staking",
       "noActiveWalletsDescription": "Please select a wallet for staking",
       "noActiveWalletsLabel": "No wallet selected",

@@ -1,5 +1,5 @@
 export { Locks, locksModel } from './Locks';
-export { ChainSelector, InactiveNetwork, chainSelectorModel } from './ChainSelector';
+export { NetworkSelector, networkSelectorModel } from './NetworkSelector';
 export { Delegations, delegationsModel } from './Delegations';
 export { ReferendumDetails, referendumDetailsModel } from './ReferendumDetails';
 export { ReferendumFilter, EmptyResults, referendumFilterModel } from './ReferendumFilter';

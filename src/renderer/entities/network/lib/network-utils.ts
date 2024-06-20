@@ -18,6 +18,7 @@ export const networkUtils = {
   isMultisigSupported,
   isProxySupported,
   isPureProxySupported,
+  isGovernanceSupported,
   isEthereumBased,
 
   isLightClientConnection,
@@ -56,6 +57,10 @@ function isProxySupported(chainOptions?: ChainOptions[]): boolean {
 
 function isPureProxySupported(chainOptions?: ChainOptions[]): boolean {
   return Boolean(chainOptions?.includes(ChainOptions.PURE_PROXY));
+}
+
+function isGovernanceSupported(chainOptions?: ChainOptions[]): boolean {
+  return Boolean(chainOptions?.includes(ChainOptions.GOVERNANCE));
 }
 
 function isEthereumBased(chainOptions?: ChainOptions[]): boolean {

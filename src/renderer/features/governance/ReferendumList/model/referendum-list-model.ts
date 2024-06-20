@@ -1,6 +1,6 @@
-import { createStore, createEvent, createEffect, restore, sample, combine } from 'effector';
+import { createStore, createEvent, createEffect, restore, sample, combine, scopeBind } from 'effector';
 import { ApiPromise } from '@polkadot/api';
-import { spread, or, and, not } from 'patronum';
+import { spread, or, and, not, previous } from 'patronum';
 import isEmpty from 'lodash/isEmpty';
 import { BN_ZERO, BN } from '@polkadot/util';
 
@@ -31,11 +31,12 @@ import {
 
 const chainChanged = createEvent<Chain>();
 const governanceApiChanged = createEvent<IGovernanceApi>();
+const detailsReceived = createEvent<{ chainId: ChainId; data: Record<string, string> }>();
 
 const $chain = restore(chainChanged, null);
 const $governanceApi = restore(governanceApiChanged, polkassemblyService);
 
-const $referendumsDetails = createStore<Record<ReferendumId, string>>({});
+const $referendumsDetails = createStore<Record<ChainId, Record<ReferendumId, string>>>({});
 const $referendumsRequested = createStore<boolean>(false);
 
 const $isConnectionActive = combine(
@@ -61,11 +62,13 @@ type OffChainParams = {
   chainId: ChainId;
   service: IGovernanceApi;
 };
-const requestOffChainReferendumsFx = createEffect(
-  ({ chainId, service }: OffChainParams): Promise<Record<string, string>> => {
-    return service.getReferendumList(chainId);
-  },
-);
+const requestOffChainReferendumsFx = createEffect(({ chainId, service }: OffChainParams) => {
+  const boundUpdateDetails = scopeBind(detailsReceived, { safe: true });
+
+  service.getReferendumList(chainId, (data) => {
+    boundUpdateDetails({ chainId, data });
+  });
+});
 
 const requestTracksFx = createEffect((api: ApiPromise): Record<TrackId, TrackInfo> => {
   return governanceService.getTracks(api);
@@ -135,15 +138,25 @@ const $api = combine(
     apis: networkModel.$apis,
   },
   ({ chain, apis }) => {
-    return (chain && apis[chain.chainId]) || null;
+    if (!chain) return null;
+
+    return apis[chain.chainId] || null;
   },
 );
 
 sample({
   clock: chainChanged,
-  source: $chain,
+  source: previous($chain),
   filter: (oldChain, newChain) => oldChain?.chainId !== newChain.chainId,
-  target: $referendumsRequested.reinit,
+  target: [
+    $referendumsRequested.reinit,
+    governanceModel.$ongoingReferendums.reinit,
+    governanceModel.$completedReferendums.reinit,
+    governanceModel.$tracks.reinit,
+    governanceModel.$approvalThresholds.reinit,
+    governanceModel.$supportThresholds.reinit,
+    governanceModel.$voting.reinit,
+  ],
 });
 
 sample({
@@ -152,6 +165,23 @@ sample({
   filter: (referendumsRequested, api) => !referendumsRequested && Boolean(api),
   fn: (_, api) => api!,
   target: [requestTracksFx, requestOnChainReferendumsFx],
+});
+
+sample({
+  clock: $api.updates,
+  source: {
+    chain: $chain,
+    service: $governanceApi,
+    referendumsRequested: $referendumsRequested,
+  },
+  filter: ({ referendumsRequested, chain, service }, referendums) => {
+    return !referendumsRequested && Boolean(chain) && !isEmpty(referendums) && Boolean(service);
+  },
+  fn: ({ chain, service }) => ({
+    chainId: chain!.chainId,
+    service: service!,
+  }),
+  target: requestOffChainReferendumsFx,
 });
 
 sample({
@@ -222,27 +252,6 @@ sample({
 sample({
   clock: requestOnChainReferendumsFx.doneData,
   source: {
-    chain: $chain,
-    service: $governanceApi,
-  },
-  filter: ({ chain, service }, referendums) => {
-    return Boolean(chain) && !isEmpty(referendums) && Boolean(service);
-  },
-  fn: ({ chain, service }) => {
-    return { chainId: chain!.chainId, service: service! };
-  },
-  target: requestOffChainReferendumsFx,
-});
-
-sample({
-  clock: requestOffChainReferendumsFx.doneData,
-  filter: (referendums) => !isEmpty(referendums),
-  target: $referendumsDetails,
-});
-
-sample({
-  clock: requestOnChainReferendumsFx.doneData,
-  source: {
     api: $api,
     tracks: governanceModel.$tracks,
     referendums: governanceModel.$ongoingReferendums,
@@ -265,7 +274,19 @@ sample({
   target: governanceModel.$supportThresholds,
 });
 
+sample({
+  clock: detailsReceived,
+  source: $referendumsDetails,
+  fn: (referendumsDetails, { chainId, data }) => {
+    const { [chainId]: chainToUpdate, ...rest } = referendumsDetails;
+
+    return { ...rest, [chainId]: { ...chainToUpdate, ...data } };
+  },
+  target: $referendumsDetails,
+});
+
 export const referendumListModel = {
+  $chain,
   $referendumsDetails,
   $isApiActive: $api.map((api) => api?.isConnected),
   $isLoading: or(
@@ -276,7 +297,7 @@ export const referendumListModel = {
     requestVotingFx.pending,
   ),
 
-  events: {
+  input: {
     chainChanged,
     governanceApiChanged,
   },
