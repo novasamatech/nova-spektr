@@ -41,5 +41,5 @@ jobs:
           destination_s3="${{ env.S3_BUCKET }}"
           find "$base_directory" -type f | while read -r file; do
             relative_path="${file#$base_directory/}" # Extract the relative path
-            s3cmd put "$file" "${destination_s3}/${relative_path}" --acl-public
+            s3cmd sync "$file" "${destination_s3}/${relative_path}" --acl-public
           done
