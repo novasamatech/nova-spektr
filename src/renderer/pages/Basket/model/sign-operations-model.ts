@@ -40,6 +40,7 @@ import { signModel } from '@/src/renderer/features/operations/OperationSign/mode
 import { submitModel } from '@/src/renderer/features/operations/OperationSubmit';
 import { basketModel } from '@/src/renderer/entities/basket';
 import { ExtrinsicResult } from '@/src/renderer/features/operations/OperationSubmit/lib/types';
+import { ChainError } from '@/src/renderer/shared/core/types/basket';
 
 type TransferInput = {
   xcmChain: Chain;
@@ -795,7 +796,7 @@ sample({
     return Boolean(transactions) && transactions.length > 0;
   },
   fn: ({ transactions, chains, wallets }, signParams) => {
-    const result = {
+    return {
       event: {
         ...signParams,
         chain: chains[transactions[0].coreTx.chainId],
@@ -813,10 +814,6 @@ sample({
       },
       step: Step.SUBMIT,
     };
-
-    console.log('xcm', result);
-
-    return result;
   },
   target: spread({
     event: submitModel.events.formInitiated,
@@ -828,17 +825,41 @@ sample({
   clock: submitModel.output.formSubmitted,
   source: $transactions,
   fn: (transactions, results) => {
-    return transactions.filter(
-      (tx, index) => !results.some((result) => result.id === index && result.result === ExtrinsicResult.SUCCESS),
+    return transactions.filter((tx, index) =>
+      results.some((result) => result.id === index && result.result === ExtrinsicResult.SUCCESS),
     );
   },
   target: basketModel.events.transactionsRemoved,
 });
 
 sample({
-  clock: delay(submitModel.output.formSubmitted, 2000),
-  target: flowFinished,
+  clock: submitModel.output.formSubmitted,
+  source: $transactions,
+  fn: (transactions, results) => {
+    return transactions.reduce<BasketTransaction[]>((acc, tx, index) => {
+      const result = results.find((result) => result.id === index);
+
+      if (result?.result === ExtrinsicResult.ERROR) {
+        acc.push({
+          ...tx,
+          error: {
+            type: 'chain',
+            // params will be a string for failed transaction
+            message: result.params as string,
+          } as ChainError,
+        });
+      }
+
+      return acc;
+    }, []);
+  },
+  target: basketModel.events.transactionsUpdated,
 });
+
+// sample({
+//   clock: delay(submitModel.output.formSubmitted, 2000),
+//   target: flowFinished,
+// });
 
 export const signOperationsModel = {
   $step,

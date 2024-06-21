@@ -177,11 +177,11 @@ sample({
   target: signAndSubmitExtrinsicsFx,
 });
 
-sample({
-  clock: extrinsicFailed,
-  fn: ({ params: message }) => ({ step: SubmitStep.ERROR, message }),
-  target: $submitStep,
-});
+// sample({
+//   clock: extrinsicFailed,
+//   fn: ({ params: message }) => ({ step: SubmitStep.ERROR, message }),
+//   target: $submitStep,
+// });
 
 sample({
   clock: [extrinsicSucceeded, extrinsicFailed],
@@ -190,6 +190,36 @@ sample({
     return removeFromCollection(txs, id);
   },
   target: $submittingTxs,
+});
+
+sample({
+  clock: extrinsicSucceeded,
+  source: $results,
+  fn: (results, extrinsicResult) => {
+    return [
+      ...results,
+      {
+        result: ExtrinsicResult.SUCCESS,
+        ...extrinsicResult,
+      },
+    ];
+  },
+  target: $results,
+});
+
+sample({
+  clock: extrinsicFailed,
+  source: $results,
+  fn: (results, extrinsicResult) => {
+    return [
+      ...results,
+      {
+        result: ExtrinsicResult.ERROR,
+        ...extrinsicResult,
+      },
+    ];
+  },
+  target: $results,
 });
 
 sample({
@@ -266,7 +296,6 @@ sample({
 sample({
   clock: $submitStep,
   source: $results,
-  filter: (_, { step }) => step === SubmitStep.SUCCESS,
   target: formSubmitted,
 });
 

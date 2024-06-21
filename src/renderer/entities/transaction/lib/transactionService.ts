@@ -265,9 +265,7 @@ async function createPayload(
   unsigned: UnsignedTransaction;
   payload: Uint8Array;
 }> {
-  const { info, options, registry } = await createTxMetadata(transaction.address, api);
-
-  info.nonce += nonce;
+  const { info, options, registry } = await createTxMetadata(transaction.address, api, nonce);
 
   const unsigned = getUnsignedTransaction[transaction.type](transaction, info, options, api);
   if (options.signedExtensions?.includes('ChargeAssetTxPayment')) {

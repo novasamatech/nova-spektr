@@ -89,7 +89,7 @@ export const Vault = ({
             signingPayloads={signingPayloads}
             onGoBack={onGoBack}
             onResetCountdown={resetCountdown}
-            onResult={(payloads) => setTxPayloads(payloads)}
+            onResult={setTxPayloads}
           />
         ) : (
           <ScanSingleframeQr

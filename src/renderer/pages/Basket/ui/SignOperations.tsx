@@ -121,7 +121,7 @@ export const SignOperations = () => {
     <BaseModal
       closeButton
       contentClass=""
-      panelClass={cnTw(signOperationsUtils.isConfirmStep(step) ? 'w-[478px]' : 'w-[440px]')}
+      panelClass={cnTw(signOperationsUtils.isConfirmStep(step) && 'w-[478px]')}
       headerClass="py-3 pl-5 pr-3"
       isOpen={isModalOpen}
       title={
