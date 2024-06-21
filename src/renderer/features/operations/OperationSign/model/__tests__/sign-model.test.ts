@@ -49,6 +49,6 @@ describe('widgets/AddPureProxyModal/model/sign-model', () => {
     await allSettled(signModel.events.formInitiated, { scope, params: { signingPayloads: [payload] } });
 
     expect(scope.getState(signModel.$apis)).toEqual({ '0x00': testApi });
-    expect(scope.getState(signModel.$signStore)).toEqual({ signingPayloads: { payload } });
+    expect(scope.getState(signModel.$signStore)).toEqual({ signingPayloads: [payload] });
   });
 });
