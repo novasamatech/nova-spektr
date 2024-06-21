@@ -12,7 +12,7 @@ env:
 
 jobs:
   deploy-to-bucket:
-    runs-on: macos-latest
+    runs-on: macos-12
 
     steps:
       - name: Checkout
