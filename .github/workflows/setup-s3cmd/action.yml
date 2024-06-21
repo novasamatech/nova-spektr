@@ -15,17 +15,6 @@ runs:
       uses: s3-actions/s3cmd@v1.6.1
       with:
         provider: scaleway
-        access_key: ${{ inputs.s3_access_key }}
+        region: pl-waw
         secret_key: ${{ inputs.s3_secret_key }}
-
-    - name: Create .s3cfg file
-      run: |
-        rm ~/.s3cfg
-        echo "[default]" > ~/.s3cfg
-        echo "signature = s3v4" >> ~/.s3cfg
-        echo "bucket_location = pl-waw" >> ~/.s3cfg
-        echo "host_base = https://s3.pl-waw.scw.cloud" >> ~/.s3cfg
-        echo "host_bucket = https://s3.pl-waw.scw.cloud" >> ~/.s3cfg
-        echo "access_key = ${{ inputs.s3_access_key }}" >> ~/.s3cfg
-        echo "secret_key = ${{ inputs.s3_secret_key }}" >> ~/.s3cfg
-      shell: bash
+        access_key: ${{ inputs.s3_access_key }}
