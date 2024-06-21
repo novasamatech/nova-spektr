@@ -43,8 +43,9 @@ sample({
     query: referendumFilterModel.$query,
   },
   filter: ({ chain }) => Boolean(chain),
-  fn: ({ referendums, details, chain, query }) =>
-    filterReferendums({ referendums, details, query, chainId: chain!.chainId }),
+  fn: ({ referendums, details, chain, query }) => {
+    return filterReferendums({ referendums, details, query, chainId: chain!.chainId });
+  },
   target: $ongoingFilteredReferendums,
 });
 
@@ -57,8 +58,9 @@ sample({
     query: referendumFilterModel.$query,
   },
   filter: ({ chain }) => Boolean(chain),
-  fn: ({ referendums, details, chain, query }) =>
-    filterReferendums({ referendums, details, query, chainId: chain!.chainId }),
+  fn: ({ referendums, details, chain, query }) => {
+    return filterReferendums({ referendums, details, query, chainId: chain!.chainId });
+  },
   target: $completeFilterdReferendums,
 });
 
