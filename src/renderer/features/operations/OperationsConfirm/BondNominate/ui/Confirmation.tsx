@@ -13,15 +13,24 @@ import { AccountsModal, StakingPopover, UnstakingDuration, SelectedValidatorsMod
 import { useToggle } from '@shared/lib/hooks';
 import { FeeLoader } from '@entities/transaction';
 import { priceProviderModel } from '@entities/price';
+import { Config } from '../../../OperationsValidation';
 
 type Props = {
   id?: number;
   secondaryActionButton?: ReactNode;
   hideSignButton?: boolean;
+  config?: Config;
+
   onGoBack?: () => void;
 };
 
-export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, onGoBack }: Props) => {
+export const Confirmation = ({
+  id = 0,
+  secondaryActionButton,
+  hideSignButton,
+  onGoBack,
+  config = { withFormatAmount: true },
+}: Props) => {
   const { t } = useI18n();
 
   const stores = useUnit(confirmModel.$confirmStore);
@@ -48,6 +57,9 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
   const api = apis[confirmStore.chain.chainId];
   const eraLength = eraLengthMap[confirmStore.chain.chainId];
+  const amountValue = config.withFormatAmount
+    ? formatAmount(confirmStore.amount, confirmStore.asset.precision)
+    : confirmStore.amount;
 
   return (
     <>
@@ -57,15 +69,11 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
           <div className={cnTw('flex flex-col gap-y-1 items-center')}>
             <AssetBalance
-              value={formatAmount(confirmStore.amount, confirmStore.asset.precision)}
+              value={amountValue}
               asset={confirmStore.asset}
               className="font-manrope text-text-primary text-[32px] leading-[36px] font-bold"
             />
-            <AssetFiatBalance
-              asset={confirmStore.asset}
-              amount={formatAmount(confirmStore.amount, confirmStore.asset.precision)}
-              className="text-headline"
-            />
+            <AssetFiatBalance asset={confirmStore.asset} amount={amountValue} className="text-headline" />
           </div>
 
           <FootnoteText className="py-2 px-3 rounded bg-block-background ml-3 text-text-secondary">

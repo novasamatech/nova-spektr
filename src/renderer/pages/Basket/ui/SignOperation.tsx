@@ -52,6 +52,7 @@ export const SignOperation = () => {
 
   const getConfirmScreen = (transaction: BasketTransaction) => {
     const type = transaction.coreTx.type;
+    const config = { withFormatAmount: false };
 
     if (TransferTypes.includes(type) || XcmTypes.includes(type)) {
       return () => <TransferConfirm id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />;
@@ -73,13 +74,21 @@ export const SignOperation = () => {
       ),
       // Staking
       [TransactionType.BOND]: () => (
-        <BondNominateConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
+        <BondNominateConfirmation
+          id={transaction.id}
+          config={config}
+          onGoBack={() => signOperationsModel.output.flowFinished()}
+        />
       ),
       [TransactionType.NOMINATE]: () => (
         <NominateConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
       ),
       [TransactionType.STAKE_MORE]: () => (
-        <BondExtraConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
+        <BondExtraConfirmation
+          id={transaction.id}
+          config={config}
+          onGoBack={() => signOperationsModel.output.flowFinished()}
+        />
       ),
       [TransactionType.REDEEM]: () => (
         <WithdrawConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />

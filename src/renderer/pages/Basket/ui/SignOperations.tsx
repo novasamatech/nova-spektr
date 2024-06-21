@@ -72,6 +72,7 @@ export const SignOperations = () => {
 
   const getConfirmScreen = (transaction: BasketTransaction) => {
     const type = transaction.coreTx.type;
+    const config = { withFormatAmount: false };
 
     if (TransferTypes.includes(type) || XcmTypes.includes(type)) {
       return () => <TransferConfirm id={transaction.id} hideSignButton />;
@@ -84,9 +85,9 @@ export const SignOperations = () => {
       [TransactionType.CREATE_PURE_PROXY]: () => <AddPureProxiedConfirm id={transaction.id} hideSignButton />,
       [TransactionType.REMOVE_PURE_PROXY]: () => <RemovePureProxiedConfirm id={transaction.id} hideSignButton />,
       // Staking
-      [TransactionType.BOND]: () => <BondNominateConfirmation id={transaction.id} hideSignButton />,
+      [TransactionType.BOND]: () => <BondNominateConfirmation id={transaction.id} hideSignButton config={config} />,
       [TransactionType.NOMINATE]: () => <NominateConfirmation id={transaction.id} hideSignButton />,
-      [TransactionType.STAKE_MORE]: () => <BondExtraConfirmation id={transaction.id} hideSignButton />,
+      [TransactionType.STAKE_MORE]: () => <BondExtraConfirmation id={transaction.id} hideSignButton config={config} />,
       [TransactionType.REDEEM]: () => <WithdrawConfirmation id={transaction.id} hideSignButton />,
       [TransactionType.RESTAKE]: () => <RestakeConfirmation id={transaction.id} hideSignButton />,
       [TransactionType.DESTINATION]: () => <PayeeConfirmation id={transaction.id} hideSignButton />,
