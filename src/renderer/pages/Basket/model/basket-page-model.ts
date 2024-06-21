@@ -1,4 +1,4 @@
-import { combine, createEffect, createEvent, createStore, sample, scopeBind, split } from 'effector';
+import { combine, createEffect, createEvent, createStore, sample, split } from 'effector';
 import { once } from 'patronum';
 
 import { networkModel } from '@entities/network';
@@ -47,38 +47,23 @@ const $validatingTxs = createStore<number[]>([]);
 const $validationWarningShown = createStore<boolean>(false);
 
 const validateFx = createEffect((transactions: BasketTransaction[]) => {
-  const validateTransferBound = scopeBind(transferValidateModel.events.validationStarted, { safe: true });
-  const addProxyValidateBound = scopeBind(addProxyValidateModel.events.validationStarted, { safe: true });
-  const addPureProxiedValidateBound = scopeBind(addPureProxiedValidateModel.events.validationStarted, { safe: true });
-  const removeProxyValidateBound = scopeBind(removeProxyValidateModel.events.validationStarted, { safe: true });
-  const removePureProxiedValidateBound = scopeBind(removePureProxiedValidateModel.events.validationStarted, {
-    safe: true,
-  });
-  const bondNominateValidateBound = scopeBind(bondNominateValidateModel.events.validationStarted, { safe: true });
-  const nominateValidateBound = scopeBind(nominateValidateModel.events.validationStarted, { safe: true });
-  const bondExtraValidateBound = scopeBind(bondExtraValidateModel.events.validationStarted, { safe: true });
-  const payeeValidateBound = scopeBind(payeeValidateModel.events.validationStarted, { safe: true });
-  const restakeValidateBound = scopeBind(restakeValidateModel.events.validationStarted, { safe: true });
-  const unstakeValidateBound = scopeBind(unstakeValidateModel.events.validationStarted, { safe: true });
-  const withdrawValidateBound = scopeBind(withdrawValidateModel.events.validationStarted, { safe: true });
-
   for (const tx of transactions) {
     if (TransferTypes.includes(tx.coreTx.type) || XcmTypes.includes(tx.coreTx.type)) {
-      validateTransferBound({ id: tx.id, transaction: tx.coreTx });
+      transferValidateModel.events.validationStarted({ id: tx.id, transaction: tx.coreTx });
     }
 
     const TransactionValidators = {
-      [TransactionType.ADD_PROXY]: addProxyValidateBound,
-      [TransactionType.CREATE_PURE_PROXY]: addPureProxiedValidateBound,
-      [TransactionType.REMOVE_PROXY]: removeProxyValidateBound,
-      [TransactionType.REMOVE_PURE_PROXY]: removePureProxiedValidateBound,
-      [TransactionType.BOND]: bondNominateValidateBound,
-      [TransactionType.NOMINATE]: nominateValidateBound,
-      [TransactionType.STAKE_MORE]: bondExtraValidateBound,
-      [TransactionType.DESTINATION]: payeeValidateBound,
-      [TransactionType.RESTAKE]: restakeValidateBound,
-      [TransactionType.UNSTAKE]: unstakeValidateBound,
-      [TransactionType.REDEEM]: withdrawValidateBound,
+      [TransactionType.ADD_PROXY]: addProxyValidateModel.events.validationStarted,
+      [TransactionType.CREATE_PURE_PROXY]: addPureProxiedValidateModel.events.validationStarted,
+      [TransactionType.REMOVE_PROXY]: removeProxyValidateModel.events.validationStarted,
+      [TransactionType.REMOVE_PURE_PROXY]: removePureProxiedValidateModel.events.validationStarted,
+      [TransactionType.BOND]: bondNominateValidateModel.events.validationStarted,
+      [TransactionType.NOMINATE]: nominateValidateModel.events.validationStarted,
+      [TransactionType.STAKE_MORE]: bondExtraValidateModel.events.validationStarted,
+      [TransactionType.DESTINATION]: payeeValidateModel.events.validationStarted,
+      [TransactionType.RESTAKE]: restakeValidateModel.events.validationStarted,
+      [TransactionType.UNSTAKE]: unstakeValidateModel.events.validationStarted,
+      [TransactionType.REDEEM]: withdrawValidateModel.events.validationStarted,
     };
 
     if (tx.coreTx.type in TransactionValidators) {

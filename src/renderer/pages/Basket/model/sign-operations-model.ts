@@ -1,6 +1,6 @@
-import { combine, createEffect, createEvent, restore, sample, scopeBind } from 'effector';
+import { combine, createEffect, createEvent, restore, sample } from 'effector';
 import { ApiPromise } from '@polkadot/api';
-import { delay, spread } from 'patronum';
+import { spread } from 'patronum';
 
 import { Step } from '../types';
 import {
