@@ -9,7 +9,7 @@ const flowStarted = createEvent();
 const referendumSelected = createEvent<ReferendumId>();
 
 const $ongoingFilteredReferendums = createStore<Map<ReferendumId, OngoingReferendum>>(new Map());
-const $completeFilterddReferendums = createStore<Map<ReferendumId, CompletedReferendum>>(new Map());
+const $completeFilterdReferendums = createStore<Map<ReferendumId, CompletedReferendum>>(new Map());
 
 sample({
   clock: flowStarted,
@@ -59,12 +59,12 @@ sample({
   filter: ({ chain }) => Boolean(chain),
   fn: ({ referendums, details, chain, query }) =>
     filterReferendums({ referendums, details, query, chainId: chain!.chainId }),
-  target: $completeFilterddReferendums,
+  target: $completeFilterdReferendums,
 });
 
 export const governancePageModel = {
   $ongoing: $ongoingFilteredReferendums,
-  $completed: $completeFilterddReferendums,
+  $completed: $completeFilterdReferendums,
 
   events: {
     flowStarted,
