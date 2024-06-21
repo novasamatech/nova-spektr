@@ -1,13 +1,15 @@
-import { createEvent, sample } from 'effector';
+import { createEvent, createStore, sample } from 'effector';
 
-import type { ReferendumId, Chain } from '@shared/core';
-import { networkSelectorModel, referendumListModel } from '@features/governance';
+import type { ReferendumId, Chain, OngoingReferendum, CompletedReferendum } from '@shared/core';
 import { governanceModel } from '@entities/governance';
+import { networkSelectorModel, referendumFilterModel, referendumListModel } from '@features/governance';
+import { filterReferendums } from '../lib/utils';
 
 const flowStarted = createEvent();
 const referendumSelected = createEvent<ReferendumId>();
 
-// const $filteredReferendums = createStore<Record<ReferendumId, ReferendumInfo>>({});
+const $ongoingFilteredReferendums = createStore<Map<ReferendumId, OngoingReferendum>>(new Map());
+const $completeFilterddReferendums = createStore<Map<ReferendumId, CompletedReferendum>>(new Map());
 
 sample({
   clock: flowStarted,
@@ -32,10 +34,37 @@ sample({
 //   target: referendumDetailsModel.events.referendumChanged,
 // });
 
+sample({
+  clock: [referendumFilterModel.events.queryChanged, governanceModel.$ongoingReferendums],
+  source: {
+    referendums: governanceModel.$ongoingReferendums,
+    details: referendumListModel.$referendumsDetails,
+    chain: networkSelectorModel.$governanceChain,
+    query: referendumFilterModel.$query,
+  },
+  filter: ({ chain }) => Boolean(chain),
+  fn: ({ referendums, details, chain, query }) =>
+    filterReferendums({ referendums, details, query, chainId: chain!.chainId }),
+  target: $ongoingFilteredReferendums,
+});
+
+sample({
+  clock: [referendumFilterModel.events.queryChanged, governanceModel.$completedReferendums],
+  source: {
+    referendums: governanceModel.$completedReferendums,
+    details: referendumListModel.$referendumsDetails,
+    chain: networkSelectorModel.$governanceChain,
+    query: referendumFilterModel.$query,
+  },
+  filter: ({ chain }) => Boolean(chain),
+  fn: ({ referendums, details, chain, query }) =>
+    filterReferendums({ referendums, details, query, chainId: chain!.chainId }),
+  target: $completeFilterddReferendums,
+});
+
 export const governancePageModel = {
-  // TODO: will be filtered in upcoming tasks
-  $ongoing: governanceModel.$ongoingReferendums,
-  $completed: governanceModel.$completedReferendums,
+  $ongoing: $ongoingFilteredReferendums,
+  $completed: $completeFilterddReferendums,
 
   events: {
     flowStarted,
