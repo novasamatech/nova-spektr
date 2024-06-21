@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - dev
-  pull_request:
 
 env:
   S3_BUCKET: s3://spektr-web-dev
