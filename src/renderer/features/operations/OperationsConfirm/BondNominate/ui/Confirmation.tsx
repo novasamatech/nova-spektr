@@ -15,7 +15,7 @@ import { FeeLoader } from '@entities/transaction';
 import { priceProviderModel } from '@entities/price';
 
 type Props = {
-  id: number;
+  id?: number;
   secondaryActionButton?: ReactNode;
   hideSignButton?: boolean;
   onGoBack?: () => void;

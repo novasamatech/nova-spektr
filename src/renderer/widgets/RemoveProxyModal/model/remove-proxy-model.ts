@@ -321,15 +321,17 @@ sample({
     return Boolean(wrappedTx) && Boolean(chain) && Boolean(realAccount) && Boolean(account) && Boolean(store);
   },
   fn: ({ wrappedTx, chain, account, realAccount, store }, formData) => ({
-    event: {
-      ...formData,
-      chain: chain as Chain,
-      account: realAccount,
-      proxiedAccount: accountUtils.isProxiedAccount(account!) ? account : undefined,
-      transaction: wrappedTx as Transaction,
-      delegate: store!.delegate,
-      proxyType: store!.proxyType,
-    },
+    event: [
+      {
+        ...formData,
+        chain: chain as Chain,
+        account: realAccount,
+        proxiedAccount: accountUtils.isProxiedAccount(account!) ? account : undefined,
+        transaction: wrappedTx as Transaction,
+        delegate: store!.delegate,
+        proxyType: store!.proxyType,
+      },
+    ],
     step: Step.CONFIRM,
   }),
   target: spread({

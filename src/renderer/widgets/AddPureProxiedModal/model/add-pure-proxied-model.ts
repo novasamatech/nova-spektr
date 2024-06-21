@@ -30,7 +30,7 @@ import { subscriptionService } from '@entities/chain';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { basketModel } from '@entities/basket/model/basket-model';
-import { transactionService } from '@entities/transaction';
+import { ExtrinsicResultParams, transactionService } from '@entities/transaction';
 
 const stepChanged = createEvent<Step>();
 
@@ -178,7 +178,7 @@ sample({
   source: $addProxyStore,
   filter: (network: AddPureProxiedStore | null): network is AddPureProxiedStore => Boolean(network),
   fn: ({ chain }, { formData }) => ({
-    event: { ...formData, chain },
+    event: [{ ...formData, chain }],
     step: Step.CONFIRM,
   }),
   target: spread({
@@ -255,7 +255,7 @@ sample({
   fn: ({ apis, params }, submitData) => ({
     api: apis[params!.chain.chainId],
     accountId: params!.account.accountId,
-    timepoint: submitData.timepoint,
+    timepoint: (submitData[0].params as ExtrinsicResultParams).timepoint,
   }),
   target: getPureProxyFx,
 });

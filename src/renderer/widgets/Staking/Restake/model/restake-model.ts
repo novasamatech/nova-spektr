@@ -80,7 +80,7 @@ sample({
   source: $networkStore,
   filter: (network: NetworkStore | null): network is NetworkStore => Boolean(network),
   fn: ({ chain }, { formData }) => ({
-    event: { ...formData, chain, asset: getRelaychainAsset(chain.assets)! },
+    event: [{ ...formData, chain, asset: getRelaychainAsset(chain.assets)! }],
     step: Step.CONFIRM,
   }),
   target: spread({

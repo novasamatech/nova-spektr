@@ -239,14 +239,16 @@ sample({
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
 
     return {
-      event: {
-        chain: walletData!.chain,
-        asset: getRelaychainAsset(walletData!.chain.assets)!,
-        ...bondData!,
-        ...feeData,
-        ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
-        ...(wrapper && { shards: [wrapper.proxyAccount] }),
-      },
+      event: [
+        {
+          chain: walletData!.chain,
+          asset: getRelaychainAsset(walletData!.chain.assets)!,
+          ...bondData!,
+          ...feeData,
+          ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
+          ...(wrapper && { shards: [wrapper.proxyAccount] }),
+        },
+      ],
       step: Step.CONFIRM,
     };
   },

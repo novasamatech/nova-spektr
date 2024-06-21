@@ -259,13 +259,15 @@ sample({
 
 export const confirmModel = {
   $confirmStore: $confirmStore.map((store) =>
-    store?.reduce<Record<number, Input>>(
-      (acc, input, index) => ({
-        ...acc,
-        [input.id ?? index]: input,
-      }),
-      {},
-    ),
+    store
+      ? store.reduce<Record<number, Input>>(
+          (acc, input, index) => ({
+            ...acc,
+            [input.id ?? index]: input,
+          }),
+          {},
+        )
+      : {},
   ),
   $initiatorWallets,
   $proxiedWallets,

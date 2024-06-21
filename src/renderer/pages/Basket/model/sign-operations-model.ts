@@ -61,19 +61,6 @@ const flowFinished = createEvent();
 const stepChanged = createEvent<Step>();
 const txsConfirmed = createEvent();
 
-const transferDataPreparationStarted = createEvent<BasketTransaction>();
-const addProxyDataPreparationStarted = createEvent<BasketTransaction>();
-const addPureProxiedDataPreparationStarted = createEvent<BasketTransaction>();
-const removeProxyDataPreparationStarted = createEvent<BasketTransaction>();
-const removePureProxiedDataPreparationStarted = createEvent<BasketTransaction>();
-const bondNominateDataPreparationStarted = createEvent<BasketTransaction>();
-const nominateDataPreparationStarted = createEvent<BasketTransaction>();
-const bondExtraDataPreparationStarted = createEvent<BasketTransaction>();
-const payeeDataPreparationStarted = createEvent<BasketTransaction>();
-const unstakeDataPreparationStarted = createEvent<BasketTransaction>();
-const restakeDataPreparationStarted = createEvent<BasketTransaction>();
-const withdrawDataPreparationStarted = createEvent<BasketTransaction>();
-
 type PrepareDataParams = {
   wallets: Wallet[];
   chains: Record<ChainId, Chain>;
@@ -95,7 +82,7 @@ const startDataPreparationFx = createEffect(async ({ transactions, wallets, chai
       [TransactionType.ADD_PROXY]: prepareAddProxyTransaction,
       [TransactionType.CREATE_PURE_PROXY]: prepareAddPureProxiedTransaction,
       [TransactionType.REMOVE_PROXY]: prepareRemoveProxyTransaction,
-      [TransactionType.REMOVE_PURE_PROXY]: prepareRemoveProxyTransaction,
+      [TransactionType.REMOVE_PURE_PROXY]: prepareRemovePureProxiedTransaction,
 
       [TransactionType.BOND]: prepareBondNominateTransaction,
       [TransactionType.NOMINATE]: prepareNominateTransaction,
@@ -109,7 +96,7 @@ const startDataPreparationFx = createEffect(async ({ transactions, wallets, chai
     if (transaction.coreTx.type in TransactionValidators) {
       // TS thinks that transfer should be in TransactionValidators
       // @ts-ignore`
-      const params = await TransactionValidators[tx.coreTx.type](tx);
+      const params = await TransactionValidators[transaction.coreTx.type]({ transaction, wallets, chains, apis });
 
       dataParams.push({ type: transaction.coreTx.type, params });
     }
@@ -529,6 +516,13 @@ sample({
 
 sample({
   clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return (
+      dataParams?.filter((tx) => {
+        return tx.type === TransactionType.TRANSFER;
+      }).length > 0
+    );
+  },
   fn: (dataParams) => {
     return (
       dataParams
@@ -545,6 +539,14 @@ sample({
 
 sample({
   clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return (
+      dataParams?.filter((tx) => {
+        return tx.type === TransactionType.ADD_PROXY;
+      }).length > 0
+    );
+  },
+
   fn: (dataParams) => {
     return (
       dataParams
@@ -561,11 +563,19 @@ sample({
 
 sample({
   clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return (
+      dataParams?.filter((tx) => {
+        return tx.type === TransactionType.CREATE_PURE_PROXY;
+      }).length > 0
+    );
+  },
+
   fn: (dataParams) => {
     return (
       dataParams
         ?.filter((tx) => {
-          return tx.type === TransactionType.ADD_PROXY;
+          return tx.type === TransactionType.CREATE_PURE_PROXY;
         })
         .map((tx) => tx.params) || []
     );
@@ -576,126 +586,216 @@ sample({
 // Remove proxy
 
 sample({
-  clock: removeProxyDataPreparationStarted,
-  source: $txDataParams,
-  fn: ({ wallets, chains, apis }, transaction) => ({ transaction, wallets, chains, apis }),
-  target: prepareRemoveProxyTransactionDataFx,
-});
+  clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return (
+      dataParams?.filter((tx) => {
+        return tx.type === TransactionType.REMOVE_PROXY;
+      }).length > 0
+    );
+  },
 
-sample({
-  clock: prepareRemoveProxyTransactionDataFx.doneData,
+  fn: (dataParams) => {
+    return (
+      dataParams
+        ?.filter((tx) => {
+          return tx.type === TransactionType.REMOVE_PROXY;
+        })
+        .map((tx) => tx.params) || []
+    );
+  },
   target: removeProxyConfirmModel.events.formInitiated,
 });
 
 // Remove pure proxied
 
 sample({
-  clock: removePureProxiedDataPreparationStarted,
-  source: $txDataParams,
-  fn: ({ wallets, chains, apis }, transaction) => ({ transaction, wallets, chains, apis }),
-  target: prepareRemovePureProxiedTransactionDataFx,
-});
+  clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return (
+      dataParams?.filter((tx) => {
+        return tx.type === TransactionType.REMOVE_PURE_PROXY;
+      }).length > 0
+    );
+  },
 
-sample({
-  clock: prepareRemovePureProxiedTransactionDataFx.doneData,
+  fn: (dataParams) => {
+    return (
+      dataParams
+        ?.filter((tx) => {
+          return tx.type === TransactionType.REMOVE_PURE_PROXY;
+        })
+        .map((tx) => tx.params) || []
+    );
+  },
   target: removePureProxiedConfirmModel.events.formInitiated,
 });
 
 // Bond nominate
 
 sample({
-  clock: bondNominateDataPreparationStarted,
-  source: $txDataParams,
-  fn: ({ wallets, chains, apis }, transaction) => ({ transaction, wallets, chains, apis }),
-  target: prepareBondNominateTransactionDataFx,
-});
+  clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return (
+      dataParams?.filter((tx) => {
+        return tx.type === TransactionType.BOND;
+      }).length > 0
+    );
+  },
 
-sample({
-  clock: prepareBondNominateTransactionDataFx.doneData,
+  fn: (dataParams) => {
+    return (
+      dataParams
+        ?.filter((tx) => {
+          return tx.type === TransactionType.BOND;
+        })
+        .map((tx) => tx.params) || []
+    );
+  },
   target: bondNominateConfirmModel.events.formInitiated,
 });
 
 // Nominate
 
 sample({
-  clock: nominateDataPreparationStarted,
-  source: $txDataParams,
-  fn: ({ wallets, chains, apis }, transaction) => ({ transaction, wallets, chains, apis }),
-  target: prepareNominateTransactionDataFx,
-});
+  clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return (
+      dataParams?.filter((tx) => {
+        return tx.type === TransactionType.NOMINATE;
+      }).length > 0
+    );
+  },
 
-sample({
-  clock: prepareNominateTransactionDataFx.doneData,
+  fn: (dataParams) => {
+    return (
+      dataParams
+        ?.filter((tx) => {
+          return tx.type === TransactionType.NOMINATE;
+        })
+        .map((tx) => tx.params) || []
+    );
+  },
   target: nominateConfirmModel.events.formInitiated,
 });
 
 // Payee
 
 sample({
-  clock: payeeDataPreparationStarted,
-  source: $txDataParams,
-  fn: ({ wallets, chains, apis }, transaction) => ({ transaction, wallets, chains, apis }),
-  target: preparePayeeTransactionDataFx,
-});
+  clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return (
+      dataParams?.filter((tx) => {
+        return tx.type === TransactionType.DESTINATION;
+      }).length > 0
+    );
+  },
 
-sample({
-  clock: preparePayeeTransactionDataFx.doneData,
+  fn: (dataParams) => {
+    return (
+      dataParams
+        ?.filter((tx) => {
+          return tx.type === TransactionType.DESTINATION;
+        })
+        .map((tx) => tx.params) || []
+    );
+  },
   target: payeeConfirmModel.events.formInitiated,
 });
 
 // Bond extra
 
 sample({
-  clock: bondExtraDataPreparationStarted,
-  source: $txDataParams,
-  fn: ({ wallets, chains, apis }, transaction) => ({ transaction, wallets, chains, apis }),
-  target: prepareBondExtraTransactionDataFx,
-});
+  clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return (
+      dataParams?.filter((tx) => {
+        return tx.type === TransactionType.STAKE_MORE;
+      }).length > 0
+    );
+  },
 
-sample({
-  clock: prepareBondExtraTransactionDataFx.doneData,
+  fn: (dataParams) => {
+    return (
+      dataParams
+        ?.filter((tx) => {
+          return tx.type === TransactionType.STAKE_MORE;
+        })
+        .map((tx) => tx.params) || []
+    );
+  },
   target: bondExtraConfirmModel.events.formInitiated,
 });
 
 // Unstake
 
 sample({
-  clock: unstakeDataPreparationStarted,
-  source: $txDataParams,
-  fn: ({ wallets, chains, apis }, transaction) => ({ transaction, wallets, chains, apis }),
-  target: prepareUnstakeTransactionDataFx,
-});
+  clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return (
+      dataParams?.filter((tx) => {
+        return tx.type === TransactionType.UNSTAKE;
+      }).length > 0
+    );
+  },
 
-sample({
-  clock: prepareUnstakeTransactionDataFx.doneData,
+  fn: (dataParams) => {
+    return (
+      dataParams
+        ?.filter((tx) => {
+          return tx.type === TransactionType.UNSTAKE;
+        })
+        .map((tx) => tx.params) || []
+    );
+  },
   target: unstakeConfirmModel.events.formInitiated,
 });
 
 // Restake
 
 sample({
-  clock: restakeDataPreparationStarted,
-  source: $txDataParams,
-  fn: ({ wallets, chains, apis }, transaction) => ({ transaction, wallets, chains, apis }),
-  target: prepareRestakeTransactionDataFx,
-});
+  clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return (
+      dataParams?.filter((tx) => {
+        return tx.type === TransactionType.RESTAKE;
+      }).length > 0
+    );
+  },
 
-sample({
-  clock: prepareUnstakeTransactionDataFx.doneData,
+  fn: (dataParams) => {
+    return (
+      dataParams
+        ?.filter((tx) => {
+          return tx.type === TransactionType.RESTAKE;
+        })
+        .map((tx) => tx.params) || []
+    );
+  },
   target: unstakeConfirmModel.events.formInitiated,
 });
 
 // Withdraw
 
 sample({
-  clock: withdrawDataPreparationStarted,
-  source: $txDataParams,
-  fn: ({ wallets, chains, apis }, transaction) => ({ transaction, wallets, chains, apis }),
-  target: prepareWithdrawTransactionDataFx,
-});
+  clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return (
+      dataParams?.filter((tx) => {
+        return tx.type === TransactionType.REDEEM;
+      }).length > 0
+    );
+  },
 
-sample({
-  clock: prepareWithdrawTransactionDataFx.doneData,
+  fn: (dataParams) => {
+    return (
+      dataParams
+        ?.filter((tx) => {
+          return tx.type === TransactionType.REDEEM;
+        })
+        .map((tx) => tx.params) || []
+    );
+  },
   target: withdrawConfirmModel.events.formInitiated,
 });
 
@@ -706,20 +806,7 @@ sample({
 });
 
 sample({
-  clock: [
-    startDataPreparationFx.done,
-    prepareAddProxyTransactionDataFx.doneData,
-    prepareAddPureProxiedTransactionDataFx.doneData,
-    prepareBondExtraTransactionDataFx.doneData,
-    prepareBondNominateTransactionDataFx.doneData,
-    prepareNominateTransactionDataFx.doneData,
-    preparePayeeTransactionDataFx.doneData,
-    prepareRemoveProxyTransactionDataFx.doneData,
-    prepareRemovePureProxiedTransactionDataFx.doneData,
-    prepareRestakeTransactionDataFx.doneData,
-    prepareUnstakeTransactionDataFx.doneData,
-    prepareWithdrawTransactionDataFx.doneData,
-  ],
+  clock: startDataPreparationFx.done,
   fn: () => Step.CONFIRM,
   target: stepChanged,
 });

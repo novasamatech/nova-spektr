@@ -29,6 +29,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const proxiedWallets = useUnit(confirmModel.$proxiedWallets);
 
   const confirmStore = stores?.[id];
+
   const initiatorWallet = initiatorWallets[id];
   const signerWallet = signerWallets[id];
   const proxiedWallet = proxiedWallets[id];
