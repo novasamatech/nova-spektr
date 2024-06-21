@@ -1,10 +1,10 @@
 import { createEvent, combine, restore } from 'effector';
+import { ApiPromise } from '@polkadot/api';
 
 import type { Chain, Address, ProxiedAccount, Account, Transaction, Wallet, ChainId } from '@shared/core';
 import { ProxyType } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { walletModel, walletUtils } from '@entities/wallet';
-import { ApiPromise } from '@polkadot/api';
 
 type Input = {
   id?: number;
