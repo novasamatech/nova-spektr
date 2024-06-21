@@ -171,6 +171,7 @@ const prepareAddProxyTransaction = async ({ transaction, wallets, chains, apis }
   const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
   return {
+    id: transaction.id,
     chain,
     account,
     proxyType: transaction.coreTx.args.proxyType,
@@ -203,6 +204,7 @@ const prepareAddPureProxiedTransaction = async ({ transaction, wallets, chains, 
   const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
   return {
+    id: transaction.id,
     chain,
     account,
     amount: transaction.coreTx.args.value,
@@ -232,6 +234,7 @@ const prepareRemoveProxyTransaction = async ({ transaction, wallets, chains, api
   const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
   return {
+    id: transaction.id,
     chain,
     account,
     proxyType: transaction.coreTx.args.proxyType,
@@ -263,6 +266,7 @@ const prepareRemovePureProxiedTransaction = async ({ transaction, wallets, chain
   const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
   return {
+    id: transaction.id,
     chain,
     account,
     proxyType: transaction.coreTx.args.proxyType,
@@ -296,6 +300,7 @@ const prepareBondNominateTransaction = async ({ transaction, wallets, chains, ap
   const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
   return {
+    id: transaction.id,
     chain,
     asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
     shards: [account],
@@ -330,10 +335,11 @@ const prepareBondExtraTransaction = async ({ transaction, wallets, chains, apis 
   const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
   return {
+    id: transaction.id,
     chain,
     asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
     shards: [account],
-    amount: transaction.coreTx.args.value,
+    amount: transaction.coreTx.args.maxAdditional,
     description: '',
 
     fee,
@@ -362,6 +368,7 @@ const prepareNominateTransaction = async ({ transaction, wallets, chains, apis }
   const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
   return {
+    id: transaction.id,
     chain,
     asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
     shards: [account],
@@ -393,6 +400,7 @@ const preparePayeeTransaction = async ({ transaction, wallets, chains, apis }: T
   const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
   return {
+    id: transaction.id,
     chain,
     asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
     shards: [account],
@@ -426,6 +434,7 @@ const prepareUnstakeTransaction = async ({ transaction, wallets, chains, apis }:
   const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
   return {
+    id: transaction.id,
     chain,
     asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
     shards: [account],
@@ -458,6 +467,7 @@ const prepareRestakeTransaction = async ({ transaction, wallets, chains, apis }:
   const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
   return {
+    id: transaction.id,
     chain,
     asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
     shards: [account],
@@ -493,6 +503,7 @@ const prepareWithdrawTransaction = async ({ transaction, wallets, chains, apis }
   const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
   return {
+    id: transaction.id,
     chain,
     asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
     shards: [account],
