@@ -1,6 +1,6 @@
 import { createEvent, combine, restore, createEffect, Store, sample } from 'effector';
 
-import { Chain, Account, Address, Asset, type ProxiedAccount, Balance } from '@shared/core';
+import { Chain, Account, Address, Asset, type ProxiedAccount, Balance, Wallet } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { transferableAmount } from '@shared/lib/utils';
@@ -15,6 +15,7 @@ import {
 } from '@features/operations/OperationsValidation';
 
 type Input = {
+  id?: number;
   xcmChain: Chain;
   chain: Chain;
   asset: Asset;
@@ -30,7 +31,7 @@ type Input = {
   multisigDeposit: string;
 };
 
-const formInitiated = createEvent<Input>();
+const formInitiated = createEvent<Input[]>();
 const formConfirmed = createEvent();
 const confirmed = createEvent();
 
@@ -154,49 +155,87 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
   throw new Error(result.errorText);
 });
 
-const $initiatorWallet = combine(
+const $initiatorWallets = combine(
   {
     store: $confirmStore,
     wallets: walletModel.$wallets,
   },
   ({ store, wallets }) => {
-    if (!store) return undefined;
+    if (!store) return {};
 
-    return walletUtils.getWalletById(wallets, store.account.walletId);
+    return store.reduce<Record<number, Wallet>>((acc, storeItem, index) => {
+      const wallet = walletUtils.getWalletById(wallets, storeItem.account.walletId);
+      if (!wallet) return acc;
+
+      const id = storeItem.id ?? index;
+
+      return {
+        ...acc,
+        [id]: wallet,
+      };
+    }, {});
   },
-  { skipVoid: false },
 );
 
-const $proxiedWallet = combine(
+const $proxiedWallets = combine(
   {
     store: $confirmStore,
     wallets: walletModel.$wallets,
   },
   ({ store, wallets }) => {
-    if (!store || !store.proxiedAccount) return undefined;
+    if (!store) return {};
 
-    return walletUtils.getWalletById(wallets, store.proxiedAccount.walletId);
+    return store.reduce<Record<number, Wallet>>((acc, storeItem, index) => {
+      if (!storeItem.proxiedAccount) return acc;
+
+      const wallet = walletUtils.getWalletById(wallets, storeItem.proxiedAccount.walletId);
+      if (!wallet) return acc;
+
+      const id = storeItem.id ?? index;
+
+      return {
+        ...acc,
+        [id]: wallet,
+      };
+    }, {});
   },
-  { skipVoid: false },
 );
 
-const $signerWallet = combine(
+const $signerWallets = combine(
   {
     store: $confirmStore,
     wallets: walletModel.$wallets,
   },
   ({ store, wallets }) => {
-    if (!store) return undefined;
+    if (!store) return {};
 
-    return walletUtils.getWalletById(wallets, store.signatory?.walletId || store.account.walletId);
+    return store.reduce<Record<number, Wallet>>((acc, storeItem, index) => {
+      if (!storeItem.proxiedAccount) return acc;
+
+      const wallet = walletUtils.getWalletById(wallets, storeItem.signatory?.walletId || storeItem.account.walletId);
+      if (!wallet) return acc;
+
+      const id = storeItem.id ?? index;
+
+      return {
+        ...acc,
+        [id]: wallet,
+      };
+    }, {});
   },
-  { skipVoid: false },
 );
 
-const $isXcm = combine($confirmStore, (confirmStore) => {
-  if (!confirmStore) return false;
+const $isXcm = combine($confirmStore, (store) => {
+  if (!store) return {};
 
-  return confirmStore.xcmChain.chainId !== confirmStore.chain.chainId;
+  return store.reduce<Record<number, boolean>>((acc, storeItem, index) => {
+    const id = storeItem.id ?? index;
+
+    return {
+      ...acc,
+      [id]: storeItem.xcmChain.chainId !== storeItem.chain.chainId,
+    };
+  }, {});
 });
 
 sample({
@@ -207,7 +246,7 @@ sample({
   },
   filter: ({ store }) => Boolean(store),
   fn: ({ store, balances }) => ({
-    store: store!,
+    store: store?.[0]!,
     balances,
   }),
   target: validateFx,
@@ -219,10 +258,18 @@ sample({
 });
 
 export const confirmModel = {
-  $confirmStore,
-  $initiatorWallet,
-  $proxiedWallet,
-  $signerWallet,
+  $confirmStore: $confirmStore.map((store) =>
+    store?.reduce<Record<number, Input>>(
+      (acc, input, index) => ({
+        ...acc,
+        [input.id ?? index]: input,
+      }),
+      {},
+    ),
+  ),
+  $initiatorWallets,
+  $proxiedWallets,
+  $signerWallets,
 
   $isXcm,
   events: {

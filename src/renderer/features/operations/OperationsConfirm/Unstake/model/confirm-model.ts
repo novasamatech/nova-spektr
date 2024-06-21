@@ -1,10 +1,12 @@
 import { createEvent, combine, restore } from 'effector';
+import { ApiPromise } from '@polkadot/api';
 
-import { Chain, Account, Asset, type ProxiedAccount } from '@shared/core';
+import { Chain, Account, Asset, type ProxiedAccount, ChainId, Wallet } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { walletModel, walletUtils } from '@entities/wallet';
 
 type Input = {
+  id?: number;
   chain: Chain;
   asset: Asset;
   shards: Account[];
@@ -18,68 +20,124 @@ type Input = {
   multisigDeposit: string;
 };
 
-const formInitiated = createEvent<Input>();
+const formInitiated = createEvent<Input[]>();
 const formSubmitted = createEvent();
 
 const $confirmStore = restore(formInitiated, null);
 
-const $api = combine(
+const $apis = combine(
   {
     apis: networkModel.$apis,
     store: $confirmStore,
   },
   ({ apis, store }) => {
-    return store?.chain ? apis[store.chain.chainId] : undefined;
+    if (!store) return {};
+
+    return store.reduce((acc, payload) => {
+      const chainId = payload.chain?.chainId;
+      if (!chainId) return acc;
+
+      const api = apis[chainId];
+
+      if (!api) return acc;
+
+      return {
+        ...acc,
+        [chainId]: api,
+      };
+    }, {} as Record<ChainId, ApiPromise>);
   },
-  { skipVoid: false },
 );
 
-const $initiatorWallet = combine(
+const $initiatorWallets = combine(
   {
     store: $confirmStore,
     wallets: walletModel.$wallets,
   },
   ({ store, wallets }) => {
-    if (!store) return undefined;
+    if (!store) return {};
 
-    return walletUtils.getWalletById(wallets, store.shards[0].walletId);
+    return store.reduce<Record<number, Wallet>>((acc, storeItem, index) => {
+      if (!storeItem.shards[0]) return acc;
+
+      const wallet = walletUtils.getWalletById(wallets, storeItem.shards[0]?.walletId);
+      if (!wallet) return acc;
+
+      const id = storeItem.id ?? index;
+
+      return {
+        ...acc,
+        [id]: wallet,
+      };
+    }, {});
   },
-  { skipVoid: false },
 );
 
-const $proxiedWallet = combine(
+const $proxiedWallets = combine(
   {
     store: $confirmStore,
     wallets: walletModel.$wallets,
   },
   ({ store, wallets }) => {
-    if (!store || !store.proxiedAccount) return undefined;
+    if (!store) return {};
 
-    return walletUtils.getWalletById(wallets, store.proxiedAccount.walletId);
+    return store.reduce<Record<number, Wallet>>((acc, storeItem, index) => {
+      if (!storeItem.proxiedAccount) return acc;
+
+      const wallet = walletUtils.getWalletById(wallets, storeItem.proxiedAccount.walletId);
+      if (!wallet) return acc;
+
+      const id = storeItem.id ?? index;
+
+      return {
+        ...acc,
+        [id]: wallet,
+      };
+    }, {});
   },
-  { skipVoid: false },
 );
 
-const $signerWallet = combine(
+const $signerWallets = combine(
   {
     store: $confirmStore,
     wallets: walletModel.$wallets,
   },
   ({ store, wallets }) => {
-    if (!store) return undefined;
+    if (!store) return {};
 
-    return walletUtils.getWalletById(wallets, store.signatory?.walletId || store.shards[0].walletId);
+    return store.reduce<Record<number, Wallet>>((acc, storeItem, index) => {
+      if (!storeItem.proxiedAccount || (!storeItem.signatory?.walletId && !storeItem.shards[0]?.walletId)) return acc;
+
+      const wallet = walletUtils.getWalletById(
+        wallets,
+        (storeItem.signatory?.walletId || storeItem.shards[0]?.walletId)!,
+      );
+      if (!wallet) return acc;
+
+      const id = storeItem.id ?? index;
+
+      return {
+        ...acc,
+        [id]: wallet,
+      };
+    }, {});
   },
-  { skipVoid: false },
 );
 
 export const confirmModel = {
-  $confirmStore,
-  $initiatorWallet,
-  $proxiedWallet,
-  $signerWallet,
-
-  $api,
+  $confirmStore: $confirmStore.map((store) =>
+    store?.reduce<Record<number, Input>>(
+      (acc, input, index) => ({
+        ...acc,
+        [input.id ?? index]: input,
+      }),
+      {},
+    ),
+  ),
+  $initiatorWallets,
+  $signerWallets,
+  $proxiedWallets,
+  $apis,
   events: {
     formInitiated,
   },

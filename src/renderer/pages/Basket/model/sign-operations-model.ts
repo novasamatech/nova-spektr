@@ -36,11 +36,11 @@ import {
   unstakeConfirmModel,
   withdrawConfirmModel,
 } from '@features/operations/OperationsConfirm';
-import { signModel } from '@/src/renderer/features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@/src/renderer/features/operations/OperationSubmit';
-import { basketModel } from '@/src/renderer/entities/basket';
-import { ExtrinsicResult } from '@/src/renderer/features/operations/OperationSubmit/lib/types';
-import { ChainError } from '@/src/renderer/shared/core/types/basket';
+import { signModel } from '@features/operations/OperationSign/model/sign-model';
+import { submitModel } from '@features/operations/OperationSubmit';
+import { basketModel } from '@entities/basket';
+import { ExtrinsicResult } from '@features/operations/OperationSubmit/lib/types';
+import { ChainError } from '@shared/core/types/basket';
 
 type TransferInput = {
   xcmChain: Chain;
@@ -74,49 +74,48 @@ const unstakeDataPreparationStarted = createEvent<BasketTransaction>();
 const restakeDataPreparationStarted = createEvent<BasketTransaction>();
 const withdrawDataPreparationStarted = createEvent<BasketTransaction>();
 
-// TODO: Use split or refactor at all
-const startDataPreparationFx = createEffect((transactions: BasketTransaction[]) => {
-  const boundTransferDataPreparationStarted = scopeBind(transferDataPreparationStarted, { safe: true });
-  const boundAddProxyDataPreparationStarted = scopeBind(addProxyDataPreparationStarted, { safe: true });
-  const boundAddPureProxiedDataPreparationStarted = scopeBind(addPureProxiedDataPreparationStarted, { safe: true });
-  const boundRemoveProxyDataPreparationStarted = scopeBind(removeProxyDataPreparationStarted, { safe: true });
-  const boundRemovePureProxiedDataPreparationStarted = scopeBind(removePureProxiedDataPreparationStarted, {
-    safe: true,
-  });
-  const boundBondNominateDataPreparationStarted = scopeBind(bondNominateDataPreparationStarted, { safe: true });
-  const boundNominateDataPreparationStarted = scopeBind(nominateDataPreparationStarted, { safe: true });
-  const boundBondExtraDataPreparationStarted = scopeBind(bondExtraDataPreparationStarted, { safe: true });
-  const boundPayeeDataPreparationStarted = scopeBind(payeeDataPreparationStarted, { safe: true });
-  const boundUnstakeDataPreparationStarted = scopeBind(unstakeDataPreparationStarted, { safe: true });
-  const boundRestakeDataPreparationStarted = scopeBind(restakeDataPreparationStarted, { safe: true });
-  const boundWithrawDataPreparationStarted = scopeBind(withdrawDataPreparationStarted, { safe: true });
+type PrepareDataParams = {
+  wallets: Wallet[];
+  chains: Record<ChainId, Chain>;
+  apis: Record<ChainId, ApiPromise>;
+  transactions: BasketTransaction[];
+};
 
-  for (const tx of transactions) {
-    if (TransferTypes.includes(tx.coreTx.type) || XcmTypes.includes(tx.coreTx.type)) {
-      boundTransferDataPreparationStarted(tx);
+const startDataPreparationFx = createEffect(async ({ transactions, wallets, chains, apis }: PrepareDataParams) => {
+  const dataParams = [];
+
+  for (const transaction of transactions) {
+    if (TransferTypes.includes(transaction.coreTx.type) || XcmTypes.includes(transaction.coreTx.type)) {
+      const params = await prepareTransferTransactionData({ transaction, wallets, chains, apis });
+
+      dataParams.push({ type: TransactionType.TRANSFER, params });
     }
 
     const TransactionValidators = {
-      [TransactionType.ADD_PROXY]: boundAddProxyDataPreparationStarted,
-      [TransactionType.CREATE_PURE_PROXY]: boundAddPureProxiedDataPreparationStarted,
-      [TransactionType.REMOVE_PROXY]: boundRemoveProxyDataPreparationStarted,
-      [TransactionType.REMOVE_PURE_PROXY]: boundRemovePureProxiedDataPreparationStarted,
+      [TransactionType.ADD_PROXY]: prepareAddProxyTransaction,
+      [TransactionType.CREATE_PURE_PROXY]: prepareAddPureProxiedTransaction,
+      [TransactionType.REMOVE_PROXY]: prepareRemoveProxyTransaction,
+      [TransactionType.REMOVE_PURE_PROXY]: prepareRemoveProxyTransaction,
 
-      [TransactionType.BOND]: boundBondNominateDataPreparationStarted,
-      [TransactionType.NOMINATE]: boundNominateDataPreparationStarted,
-      [TransactionType.STAKE_MORE]: boundBondExtraDataPreparationStarted,
-      [TransactionType.DESTINATION]: boundPayeeDataPreparationStarted,
-      [TransactionType.RESTAKE]: boundRestakeDataPreparationStarted,
-      [TransactionType.UNSTAKE]: boundUnstakeDataPreparationStarted,
-      [TransactionType.REDEEM]: boundWithrawDataPreparationStarted,
+      [TransactionType.BOND]: prepareBondNominateTransaction,
+      [TransactionType.NOMINATE]: prepareNominateTransaction,
+      [TransactionType.STAKE_MORE]: prepareBondExtraTransaction,
+      [TransactionType.DESTINATION]: preparePayeeTransaction,
+      [TransactionType.RESTAKE]: prepareRestakeTransaction,
+      [TransactionType.UNSTAKE]: prepareUnstakeTransaction,
+      [TransactionType.REDEEM]: prepareWithdrawTransaction,
     };
 
-    if (tx.coreTx.type in TransactionValidators) {
+    if (transaction.coreTx.type in TransactionValidators) {
       // TS thinks that transfer should be in TransactionValidators
       // @ts-ignore`
-      TransactionValidators[tx.coreTx.type](tx);
+      const params = await TransactionValidators[tx.coreTx.type](tx);
+
+      dataParams.push({ type: transaction.coreTx.type, params });
     }
   }
+
+  return dataParams;
 });
 
 const $step = restore(stepChanged, Step.NONE);
@@ -135,32 +134,31 @@ type TransferDataParams = {
   transaction: BasketTransaction;
 };
 
-const prepareTransferTransactionDataFx = createEffect(
-  async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
-    const chainId = transaction.coreTx.chainId as ChainId;
-    const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
+const prepareTransferTransactionData = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
+  const chainId = transaction.coreTx.chainId as ChainId;
+  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
-    const chain = chains[chainId]!;
-    const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-    const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+  const chain = chains[chainId]!;
+  const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
+  const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
-    const xcmChain = chains[transaction.coreTx.args.destinationChain] || chain;
+  const xcmChain = chains[transaction.coreTx.args.destinationChain] || chain;
 
-    return {
-      xcmChain,
-      chain,
-      asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
-      account,
-      amount: transaction.coreTx.args.value,
-      destination: transaction.coreTx.args.dest,
-      description: '',
+  return {
+    id: transaction.id,
+    xcmChain,
+    chain,
+    asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
+    account,
+    amount: transaction.coreTx.args.value,
+    destination: transaction.coreTx.args.dest,
+    description: '',
 
-      fee,
-      xcmFee: transaction.coreTx.args.xcmFee || '0',
-      multisigDeposit: '0',
-    } as TransferInput;
-  },
-);
+    fee,
+    xcmFee: transaction.coreTx.args.xcmFee || '0',
+    multisigDeposit: '0',
+  } as TransferInput;
+};
 
 type AddProxyInput = {
   chain: Chain;
@@ -177,29 +175,27 @@ type AddProxyInput = {
   proxyNumber: number;
 };
 
-const prepareAddProxyTransactionDataFx = createEffect(
-  async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
-    const chainId = transaction.coreTx.chainId as ChainId;
-    const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
+const prepareAddProxyTransaction = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
+  const chainId = transaction.coreTx.chainId as ChainId;
+  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
-    const chain = chains[chainId]!;
-    const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-    const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+  const chain = chains[chainId]!;
+  const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
+  const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
-    return {
-      chain,
-      account,
-      proxyType: transaction.coreTx.args.proxyType,
-      delegate: transaction.coreTx.args.delegate,
-      description: '',
+  return {
+    chain,
+    account,
+    proxyType: transaction.coreTx.args.proxyType,
+    delegate: transaction.coreTx.args.delegate,
+    description: '',
 
-      transaction: transaction.coreTx,
-      proxyDeposit: '0',
-      proxyNumber: 1,
-      fee,
-    } as AddProxyInput;
-  },
-);
+    transaction: transaction.coreTx,
+    proxyDeposit: '0',
+    proxyNumber: 1,
+    fee,
+  } as AddProxyInput;
+};
 
 type AddPureProxiedInput = {
   chain: Chain;
@@ -211,25 +207,23 @@ type AddPureProxiedInput = {
   multisigDeposit: string;
 };
 
-const prepareAddPureProxiedTransactionDataFx = createEffect(
-  async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
-    const chainId = transaction.coreTx.chainId as ChainId;
-    const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
+const prepareAddPureProxiedTransaction = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
+  const chainId = transaction.coreTx.chainId as ChainId;
+  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
-    const chain = chains[chainId]!;
-    const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-    const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+  const chain = chains[chainId]!;
+  const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
+  const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
-    return {
-      chain,
-      account,
-      amount: transaction.coreTx.args.value,
-      description: '',
-      fee,
-      multisigDeposit: '0',
-    } as AddPureProxiedInput;
-  },
-);
+  return {
+    chain,
+    account,
+    amount: transaction.coreTx.args.value,
+    description: '',
+    fee,
+    multisigDeposit: '0',
+  } as AddPureProxiedInput;
+};
 
 type RemoveProxyInput = {
   chain: Chain;
@@ -242,27 +236,25 @@ type RemoveProxyInput = {
   proxiedAccount?: ProxiedAccount;
 };
 
-const prepareRemoveProxyTransactionDataFx = createEffect(
-  async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
-    const chainId = transaction.coreTx.chainId as ChainId;
-    const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
+const prepareRemoveProxyTransaction = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
+  const chainId = transaction.coreTx.chainId as ChainId;
+  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
-    const chain = chains[chainId]!;
-    const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-    const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+  const chain = chains[chainId]!;
+  const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
+  const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
-    return {
-      chain,
-      account,
-      proxyType: transaction.coreTx.args.proxyType,
-      delegate: transaction.coreTx.args.delegate,
-      description: '',
+  return {
+    chain,
+    account,
+    proxyType: transaction.coreTx.args.proxyType,
+    delegate: transaction.coreTx.args.delegate,
+    description: '',
 
-      transaction: transaction.coreTx,
-      fee,
-    } as RemoveProxyInput;
-  },
-);
+    transaction: transaction.coreTx,
+    fee,
+  } as RemoveProxyInput;
+};
 
 type RemovePureProxiedInput = {
   signatory?: Account;
@@ -275,27 +267,25 @@ type RemovePureProxiedInput = {
   proxiedAccount?: ProxiedAccount;
 };
 
-const prepareRemovePureProxiedTransactionDataFx = createEffect(
-  async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
-    const chainId = transaction.coreTx.chainId as ChainId;
-    const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
+const prepareRemovePureProxiedTransaction = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
+  const chainId = transaction.coreTx.chainId as ChainId;
+  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
-    const chain = chains[chainId]!;
-    const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-    const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+  const chain = chains[chainId]!;
+  const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
+  const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
-    return {
-      chain,
-      account,
-      proxyType: transaction.coreTx.args.proxyType,
-      spawner: toAccountId(transaction.coreTx.args.spawner),
-      description: '',
+  return {
+    chain,
+    account,
+    proxyType: transaction.coreTx.args.proxyType,
+    spawner: toAccountId(transaction.coreTx.args.spawner),
+    description: '',
 
-      transaction: transaction.coreTx,
-      fee,
-    } as RemovePureProxiedInput;
-  },
-);
+    transaction: transaction.coreTx,
+    fee,
+  } as RemovePureProxiedInput;
+};
 
 type BondNominateInput = {
   chain: Chain;
@@ -310,30 +300,28 @@ type BondNominateInput = {
   description: string;
 };
 
-const prepareBondNominateTransactionDataFx = createEffect(
-  async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
-    const chainId = transaction.coreTx.chainId as ChainId;
-    const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
+const prepareBondNominateTransaction = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
+  const chainId = transaction.coreTx.chainId as ChainId;
+  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
-    const chain = chains[chainId]!;
-    const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-    const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+  const chain = chains[chainId]!;
+  const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
+  const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
-    return {
-      chain,
-      asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
-      shards: [account],
-      amount: transaction.coreTx.args.value,
-      validators: transaction.coreTx.args.targets,
-      destination: transaction.coreTx.args.dest,
-      description: '',
+  return {
+    chain,
+    asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
+    shards: [account],
+    amount: transaction.coreTx.args.value,
+    validators: transaction.coreTx.args.targets,
+    destination: transaction.coreTx.args.dest,
+    description: '',
 
-      fee,
-      xcmFee: transaction.coreTx.args.xcmFee || '0',
-      multisigDeposit: '0',
-    } as BondNominateInput;
-  },
-);
+    fee,
+    xcmFee: transaction.coreTx.args.xcmFee || '0',
+    multisigDeposit: '0',
+  } as BondNominateInput;
+};
 
 type BondExtraInput = {
   chain: Chain;
@@ -346,28 +334,26 @@ type BondExtraInput = {
   description: string;
 };
 
-const prepareBondExtraTransactionDataFx = createEffect(
-  async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
-    const chainId = transaction.coreTx.chainId as ChainId;
-    const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
+const prepareBondExtraTransaction = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
+  const chainId = transaction.coreTx.chainId as ChainId;
+  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
-    const chain = chains[chainId]!;
-    const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-    const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+  const chain = chains[chainId]!;
+  const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
+  const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
-    return {
-      chain,
-      asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
-      shards: [account],
-      amount: transaction.coreTx.args.value,
-      description: '',
+  return {
+    chain,
+    asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
+    shards: [account],
+    amount: transaction.coreTx.args.value,
+    description: '',
 
-      fee,
-      xcmFee: transaction.coreTx.args.xcmFee || '0',
-      multisigDeposit: '0',
-    } as BondExtraInput;
-  },
-);
+    fee,
+    xcmFee: transaction.coreTx.args.xcmFee || '0',
+    multisigDeposit: '0',
+  } as BondExtraInput;
+};
 
 type NominateInput = {
   chain: Chain;
@@ -380,27 +366,25 @@ type NominateInput = {
   description: string;
 };
 
-const prepareNominateTransactionDataFx = createEffect(
-  async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
-    const chainId = transaction.coreTx.chainId as ChainId;
-    const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
+const prepareNominateTransaction = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
+  const chainId = transaction.coreTx.chainId as ChainId;
+  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
-    const chain = chains[chainId]!;
-    const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-    const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+  const chain = chains[chainId]!;
+  const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
+  const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
-    return {
-      chain,
-      asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
-      shards: [account],
-      validators: transaction.coreTx.args.targets,
-      destination: transaction.coreTx.args.dest,
-      description: '',
+  return {
+    chain,
+    asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
+    shards: [account],
+    validators: transaction.coreTx.args.targets,
+    destination: transaction.coreTx.args.dest,
+    description: '',
 
-      fee,
-    } as NominateInput;
-  },
-);
+    fee,
+  } as NominateInput;
+};
 
 type PayeeInput = {
   chain: Chain;
@@ -413,26 +397,24 @@ type PayeeInput = {
   description: string;
 };
 
-const preparePayeeTransactionDataFx = createEffect(
-  async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
-    const chainId = transaction.coreTx.chainId as ChainId;
-    const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
+const preparePayeeTransaction = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
+  const chainId = transaction.coreTx.chainId as ChainId;
+  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
-    const chain = chains[chainId]!;
-    const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-    const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+  const chain = chains[chainId]!;
+  const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
+  const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
-    return {
-      chain,
-      asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
-      shards: [account],
-      destination: transaction.coreTx.args.dest,
-      description: '',
+  return {
+    chain,
+    asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
+    shards: [account],
+    destination: transaction.coreTx.args.dest,
+    description: '',
 
-      fee,
-    } as PayeeInput;
-  },
-);
+    fee,
+  } as PayeeInput;
+};
 
 type UnstakeInput = {
   chain: Chain;
@@ -448,28 +430,26 @@ type UnstakeInput = {
   multisigDeposit: string;
 };
 
-const prepareUnstakeTransactionDataFx = createEffect(
-  async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
-    const chainId = transaction.coreTx.chainId as ChainId;
-    const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
+const prepareUnstakeTransaction = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
+  const chainId = transaction.coreTx.chainId as ChainId;
+  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
-    const chain = chains[chainId]!;
-    const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-    const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+  const chain = chains[chainId]!;
+  const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
+  const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
-    return {
-      chain,
-      asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
-      shards: [account],
-      amount: transaction.coreTx.args.value,
-      description: '',
+  return {
+    chain,
+    asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
+    shards: [account],
+    amount: transaction.coreTx.args.value,
+    description: '',
 
-      fee,
-      totalFee: '0',
-      multisigDeposit: '0',
-    } as UnstakeInput;
-  },
-);
+    fee,
+    totalFee: '0',
+    multisigDeposit: '0',
+  } as UnstakeInput;
+};
 
 type RestakeInput = {
   chain: Chain;
@@ -482,28 +462,26 @@ type RestakeInput = {
   description: string;
 };
 
-const prepareRestakeTransactionDataFx = createEffect(
-  async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
-    const chainId = transaction.coreTx.chainId as ChainId;
-    const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
+const prepareRestakeTransaction = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
+  const chainId = transaction.coreTx.chainId as ChainId;
+  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
-    const chain = chains[chainId]!;
-    const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-    const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+  const chain = chains[chainId]!;
+  const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
+  const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
-    return {
-      chain,
-      asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
-      shards: [account],
-      amount: transaction.coreTx.args.value,
-      description: '',
+  return {
+    chain,
+    asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
+    shards: [account],
+    amount: transaction.coreTx.args.value,
+    description: '',
 
-      fee,
-      xcmFee: transaction.coreTx.args.xcmFee || '0',
-      multisigDeposit: '0',
-    } as RestakeInput;
-  },
-);
+    fee,
+    xcmFee: transaction.coreTx.args.xcmFee || '0',
+    multisigDeposit: '0',
+  } as RestakeInput;
+};
 
 type WithdrawInput = {
   chain: Chain;
@@ -519,73 +497,79 @@ type WithdrawInput = {
   multisigDeposit: string;
 };
 
-const prepareWithdrawTransactionDataFx = createEffect(
-  async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
-    const chainId = transaction.coreTx.chainId as ChainId;
-    const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
+const prepareWithdrawTransaction = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
+  const chainId = transaction.coreTx.chainId as ChainId;
+  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
-    const chain = chains[chainId]!;
-    const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-    const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+  const chain = chains[chainId]!;
+  const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
+  const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
-    return {
-      chain,
-      asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
-      shards: [account],
-      amount: transaction.coreTx.args.value,
-      description: '',
+  return {
+    chain,
+    asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
+    shards: [account],
+    amount: transaction.coreTx.args.value,
+    description: '',
 
-      fee,
-      totalFee: '0',
-      multisigDeposit: '0',
-    } as WithdrawInput;
-  },
-);
+    fee,
+    totalFee: '0',
+    multisigDeposit: '0',
+  } as WithdrawInput;
+};
 
 sample({
   clock: flowStarted,
+  source: $txDataParams,
+  fn: ({ wallets, chains, apis }, transactions) => ({ transactions, wallets, chains, apis }),
   target: startDataPreparationFx,
 });
 
 // Transfer
 
 sample({
-  clock: transferDataPreparationStarted,
-  source: $txDataParams,
-  fn: ({ wallets, chains, apis }, transaction) => ({ transaction, wallets, chains, apis }),
-  target: prepareTransferTransactionDataFx,
-});
-
-sample({
-  clock: prepareTransferTransactionDataFx.doneData,
+  clock: startDataPreparationFx.doneData,
+  fn: (dataParams) => {
+    return (
+      dataParams
+        ?.filter((tx) => {
+          return tx.type === TransactionType.TRANSFER;
+        })
+        .map((tx) => tx.params) || []
+    );
+  },
   target: transferConfirmModel.events.formInitiated,
 });
 
 // Add proxy
 
 sample({
-  clock: addProxyDataPreparationStarted,
-  source: $txDataParams,
-  fn: ({ wallets, chains, apis }, transaction) => ({ transaction, wallets, chains, apis }),
-  target: prepareAddProxyTransactionDataFx,
-});
-
-sample({
-  clock: prepareAddProxyTransactionDataFx.doneData,
+  clock: startDataPreparationFx.doneData,
+  fn: (dataParams) => {
+    return (
+      dataParams
+        ?.filter((tx) => {
+          return tx.type === TransactionType.ADD_PROXY;
+        })
+        .map((tx) => tx.params) || []
+    );
+  },
   target: addProxyConfirmModel.events.formInitiated,
 });
 
 // Add pure proxied
 
 sample({
-  clock: addPureProxiedDataPreparationStarted,
-  source: $txDataParams,
-  fn: ({ wallets, chains, apis }, transaction) => ({ transaction, wallets, chains, apis }),
-  target: prepareAddPureProxiedTransactionDataFx,
-});
-
-sample({
-  clock: prepareAddPureProxiedTransactionDataFx.doneData,
+  clock: startDataPreparationFx.doneData,
+  fn: (dataParams) => {
+    return (
+      dataParams
+        ?.filter((tx) => {
+          return tx.type === TransactionType.ADD_PROXY;
+        })
+        .map((tx) => tx.params) || []
+    );
+  },
   target: addPureProxiedConfirmModel.events.formInitiated,
 });
 
@@ -723,6 +707,7 @@ sample({
 
 sample({
   clock: [
+    startDataPreparationFx.done,
     prepareAddProxyTransactionDataFx.doneData,
     prepareAddPureProxiedTransactionDataFx.doneData,
     prepareBondExtraTransactionDataFx.doneData,
@@ -732,7 +717,6 @@ sample({
     prepareRemoveProxyTransactionDataFx.doneData,
     prepareRemovePureProxiedTransactionDataFx.doneData,
     prepareRestakeTransactionDataFx.doneData,
-    prepareTransferTransactionDataFx.doneData,
     prepareUnstakeTransactionDataFx.doneData,
     prepareWithdrawTransactionDataFx.doneData,
   ],

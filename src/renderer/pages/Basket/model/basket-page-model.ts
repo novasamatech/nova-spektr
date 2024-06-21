@@ -22,7 +22,7 @@ import {
   ValidationResult,
 } from '@features/operations/OperationsValidation';
 import { signOperationsModel } from './sign-operations-model';
-import { addUnique, removeFromCollection } from '@/src/renderer/shared/lib/utils';
+import { addUnique, removeFromCollection } from '@shared/lib/utils';
 
 type BasketTransactionsMap = {
   valid: BasketTransaction[];

@@ -41,27 +41,25 @@ export const Basket = () => {
 
           <ul className="bg-block-background-default rounded-md flex divide-y flex-col gap-y-1.5 w-[736px]">
             {basketTxs.map((tx) => (
-              <>
-                <li key={tx.id} className="flex gap-x-4 px-4">
-                  <div className="flex justify-center items-center">
-                    <Checkbox
-                      disabled={Boolean(invalidTxs.get(tx.id))}
-                      checked={selectedTxs.includes(tx.id)}
-                      onChange={() =>
-                        basketPageModel.events.txSelected({ id: tx.id, value: !selectedTxs.includes(tx.id) })
-                      }
-                    />
-                  </div>
-
-                  <Operation
-                    selected={selectedTxs.includes(tx.id)}
-                    tx={tx}
-                    errorText={invalidTxs.get(tx.id)?.errorText}
-                    onSelect={(value) => basketPageModel.events.txSelected({ id: tx.id, value })}
-                    onClick={() => basketPageModel.events.txClicked(tx)}
+              <li key={tx.id} className="flex gap-x-4 px-4">
+                <div className="flex justify-center items-center">
+                  <Checkbox
+                    disabled={Boolean(invalidTxs.get(tx.id))}
+                    checked={selectedTxs.includes(tx.id)}
+                    onChange={() =>
+                      basketPageModel.events.txSelected({ id: tx.id, value: !selectedTxs.includes(tx.id) })
+                    }
                   />
-                </li>
-              </>
+                </div>
+
+                <Operation
+                  selected={selectedTxs.includes(tx.id)}
+                  tx={tx}
+                  errorText={invalidTxs.get(tx.id)?.errorText}
+                  onSelect={(value) => basketPageModel.events.txSelected({ id: tx.id, value })}
+                  onClick={() => basketPageModel.events.txClicked(tx)}
+                />
+              </li>
             ))}
           </ul>
         </div>

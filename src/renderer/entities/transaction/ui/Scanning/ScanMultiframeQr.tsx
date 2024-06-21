@@ -14,7 +14,7 @@ import { TRANSACTION_BULK } from '../QrCode/common/constants';
 import { QrMultiframeGenerator } from '../QrCode/QrGenerator/QrMultiframeTxGenerator';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
 import { WalletIcon, accountUtils, walletUtils } from '../../../wallet';
-import { SigningPayload } from '@/src/renderer/features/operations/OperationSign';
+import { SigningPayload } from '@features/operations/OperationSign';
 
 type Props = {
   apis: Record<ChainId, ApiPromise>;

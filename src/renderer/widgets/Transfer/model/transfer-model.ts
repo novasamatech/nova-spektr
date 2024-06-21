@@ -93,7 +93,7 @@ sample({
   source: $networkStore,
   filter: (network: NetworkStore | null): network is NetworkStore => Boolean(network),
   fn: ({ chain, asset }, { formData }) => ({
-    event: { ...formData, chain, asset },
+    event: [{ ...formData, chain, asset }],
     step: Step.CONFIRM,
   }),
   target: spread({

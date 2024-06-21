@@ -13,24 +13,30 @@ import { AccountsModal, StakingPopover, UnstakingDuration } from '@entities/stak
 import { useToggle } from '@shared/lib/hooks';
 
 type Props = {
+  id?: number;
   secondaryActionButton?: ReactNode;
   hideSignButton?: boolean;
   onGoBack?: () => void;
 };
 
-export const Confirmation = ({ secondaryActionButton, hideSignButton, onGoBack }: Props) => {
+export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, onGoBack }: Props) => {
   const { t } = useI18n();
 
-  const confirmStore = useUnit(confirmModel.$confirmStore);
-  const initiatorWallet = useUnit(confirmModel.$initiatorWallet);
-  const signerWallet = useUnit(confirmModel.$signerWallet);
-  const proxiedWallet = useUnit(confirmModel.$proxiedWallet);
+  const stores = useUnit(confirmModel.$confirmStore);
+  const initiatorWallets = useUnit(confirmModel.$initiatorWallets);
+  const signerWallets = useUnit(confirmModel.$signerWallets);
+  const proxiedWallets = useUnit(confirmModel.$proxiedWallets);
+  const apis = useUnit(confirmModel.$apis);
 
-  const api = useUnit(confirmModel.$api);
+  const confirmStore = stores?.[id];
+  const initiatorWallet = initiatorWallets[id];
+  const signerWallet = signerWallets[id];
+  const proxiedWallet = proxiedWallets[id];
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
 
   if (!confirmStore || !initiatorWallet) return null;
+  const api = apis[confirmStore.chain.chainId];
 
   return (
     <>

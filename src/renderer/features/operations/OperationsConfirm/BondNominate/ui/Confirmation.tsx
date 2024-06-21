@@ -15,30 +15,39 @@ import { FeeLoader } from '@entities/transaction';
 import { priceProviderModel } from '@entities/price';
 
 type Props = {
+  id: number;
   secondaryActionButton?: ReactNode;
   hideSignButton?: boolean;
   onGoBack?: () => void;
 };
 
-export const Confirmation = ({ secondaryActionButton, hideSignButton, onGoBack }: Props) => {
+export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, onGoBack }: Props) => {
   const { t } = useI18n();
 
-  const confirmStore = useUnit(confirmModel.$confirmStore);
-  const initiatorWallet = useUnit(confirmModel.$initiatorWallet);
-  const signerWallet = useUnit(confirmModel.$signerWallet);
-  const proxiedWallet = useUnit(confirmModel.$proxiedWallet);
+  const stores = useUnit(confirmModel.$confirmStore);
+  const initiatorWallets = useUnit(confirmModel.$initiatorWallets);
+  const signerWallets = useUnit(confirmModel.$signerWallets);
+  const proxiedWallets = useUnit(confirmModel.$proxiedWallets);
+
+  const confirmStore = stores?.[id];
+  const initiatorWallet = initiatorWallets[id];
+  const signerWallet = signerWallets[id];
+  const proxiedWallet = proxiedWallets[id];
 
   const feeData = useUnit(confirmModel.$feeData);
   const isFeeLoading = useUnit(confirmModel.$isFeeLoading);
-  const eraLength = useUnit(confirmModel.$eraLength);
+  const eraLengthMap = useUnit(confirmModel.$eraLength);
 
-  const api = useUnit(confirmModel.$api);
+  const apis = useUnit(confirmModel.$apis);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
   if (!confirmStore || !initiatorWallet) return null;
+
+  const api = apis[confirmStore.chain.chainId];
+  const eraLength = eraLengthMap[confirmStore.chain.chainId];
 
   return (
     <>

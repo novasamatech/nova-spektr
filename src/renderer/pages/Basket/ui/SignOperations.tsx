@@ -28,7 +28,7 @@ import { OperationTitle } from '@entities/chain';
 import { getOperationTitle } from '../lib/operation-title';
 import { cnTw } from '@shared/lib/utils';
 import { Step } from '../types';
-import { SignButton } from '@/src/renderer/entities/operations';
+import { SignButton } from '@entities/operations';
 
 export const SignOperations = () => {
   const { t } = useI18n();
@@ -74,7 +74,7 @@ export const SignOperations = () => {
     const type = transaction.coreTx.type;
 
     if (TransferTypes.includes(type) || XcmTypes.includes(type)) {
-      return () => <TransferConfirm hideSignButton />;
+      return () => <TransferConfirm hideSignButton id={transaction.id} />;
     }
 
     const Components = {

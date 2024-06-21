@@ -17,7 +17,7 @@ import { ExtrinsicResult, SubmitStep } from '../lib/types';
 import { ExtrinsicResultParams, transactionService } from '@entities/transaction';
 import { matrixModel, matrixUtils } from '@entities/matrix';
 import { ISecureMessenger } from '@shared/api/matrix';
-import { removeFromCollection } from '@/src/renderer/shared/lib/utils';
+import { removeFromCollection } from '@shared/lib/utils';
 
 type Input = {
   chain: Chain;

@@ -1,11 +1,13 @@
 import { createEvent, combine, restore } from 'effector';
 
-import type { Chain, Address, ProxiedAccount, Account, Transaction } from '@shared/core';
+import type { Chain, Address, ProxiedAccount, Account, Transaction, Wallet, ChainId } from '@shared/core';
 import { ProxyType } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { walletModel, walletUtils } from '@entities/wallet';
+import { ApiPromise } from '@polkadot/api';
 
 type Input = {
+  id?: number;
   chain: Chain;
   account: Account;
   signatory?: Account;
@@ -19,67 +21,117 @@ type Input = {
   proxyNumber: number;
 };
 
-const formInitiated = createEvent<Input>();
+const formInitiated = createEvent<Input[]>();
 const formSubmitted = createEvent();
 
-const $confirmStore = restore<Input>(formInitiated, null).reset(formSubmitted);
+const $confirmStore = restore<Input[]>(formInitiated, null).reset(formSubmitted);
 
-const $api = combine(
+const $apis = combine(
   {
     apis: networkModel.$apis,
     store: $confirmStore,
   },
   ({ apis, store }) => {
-    return store?.chain ? apis[store.chain.chainId] : undefined;
+    if (!store) return {};
+
+    return store.reduce((acc, payload) => {
+      const chainId = payload.chain.chainId;
+      const api = apis[chainId];
+
+      if (!api) return acc;
+
+      return {
+        ...acc,
+        [chainId]: api,
+      };
+    }, {} as Record<ChainId, ApiPromise>);
   },
-  { skipVoid: false },
 );
 
-const $initiatorWallet = combine(
+const $initiatorWallets = combine(
   {
     store: $confirmStore,
     wallets: walletModel.$wallets,
   },
   ({ store, wallets }) => {
-    if (!store) return null;
+    if (!store) return {};
 
-    return walletUtils.getWalletById(wallets, store.account.walletId);
+    return store.reduce<Record<number, Wallet>>((acc, storeItem, index) => {
+      const wallet = walletUtils.getWalletById(wallets, storeItem.account.walletId);
+      if (!wallet) return acc;
+
+      const id = storeItem.id ?? index;
+
+      return {
+        ...acc,
+        [id]: wallet,
+      };
+    }, {});
   },
-  { skipVoid: false },
 );
 
-const $proxiedWallet = combine(
+const $proxiedWallets = combine(
   {
     store: $confirmStore,
     wallets: walletModel.$wallets,
   },
   ({ store, wallets }) => {
-    if (!store || !store.proxiedAccount) return undefined;
+    if (!store) return {};
 
-    return walletUtils.getWalletById(wallets, store.proxiedAccount.walletId);
+    return store.reduce<Record<number, Wallet>>((acc, storeItem, index) => {
+      if (!storeItem.proxiedAccount) return acc;
+
+      const wallet = walletUtils.getWalletById(wallets, storeItem.proxiedAccount.walletId);
+      if (!wallet) return acc;
+
+      const id = storeItem.id ?? index;
+
+      return {
+        ...acc,
+        [id]: wallet,
+      };
+    }, {});
   },
-  { skipVoid: false },
 );
 
-const $signerWallet = combine(
+const $signerWallets = combine(
   {
     store: $confirmStore,
     wallets: walletModel.$wallets,
   },
   ({ store, wallets }) => {
-    if (!store) return null;
+    if (!store) return {};
 
-    return walletUtils.getWalletById(wallets, store.signatory?.walletId || store.account.walletId);
+    return store.reduce<Record<number, Wallet>>((acc, storeItem, index) => {
+      if (!storeItem.proxiedAccount) return acc;
+
+      const wallet = walletUtils.getWalletById(wallets, storeItem.signatory?.walletId || storeItem.account.walletId);
+      if (!wallet) return acc;
+
+      const id = storeItem.id ?? index;
+
+      return {
+        ...acc,
+        [id]: wallet,
+      };
+    }, {});
   },
-  { skipVoid: false },
 );
 
 export const confirmModel = {
-  $confirmStore,
-  $initiatorWallet,
-  $signerWallet,
-  $proxiedWallet,
-  $api,
+  $confirmStore: $confirmStore.map((store) =>
+    store?.reduce<Record<number, Input>>(
+      (acc, input, index) => ({
+        ...acc,
+        [input.id ?? index]: input,
+      }),
+      {},
+    ),
+  ),
+  $initiatorWallets,
+  $signerWallets,
+  $proxiedWallets,
+  $apis,
 
   events: {
     formInitiated,
