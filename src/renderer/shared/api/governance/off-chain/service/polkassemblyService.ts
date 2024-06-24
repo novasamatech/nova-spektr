@@ -28,7 +28,6 @@ async function getReferendumList(chainId: ChainId, callback: (data: Record<strin
     const getApiUrl = (page: number, size = 100): string => {
       return `https://api.polkassembly.io/api/v1/listing/on-chain-posts?proposalType=referendums_v2&page=${page}&listingLimit=${size}`;
     };
-
     const headers = new Headers();
     headers.append('x-network', chainName);
     headers.append('Cache-Control', 'public, max-age=600, must-revalidate');

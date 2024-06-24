@@ -10,6 +10,7 @@ import { notificationModel } from '@entities/notification';
 import { basketModel } from '@entities/basket';
 import { proxiesModel } from '@features/proxies';
 import { assetsSettingsModel } from '@features/assets';
+import { governanceModel } from '@entities/governance';
 import { multisigsModel } from '@processes/multisigs';
 import { logger } from '@shared/config/utils';
 import '@features/balances';
@@ -25,6 +26,7 @@ if (!container) {
 logger.init();
 
 kernelModel.events.appStarted();
+governanceModel.events.governanceStarted();
 proxiesModel.events.workerStarted();
 walletModel.events.walletStarted();
 networkModel.events.networkStarted();
