@@ -37,6 +37,7 @@ import LockImg, { ReactComponent as LockSvg } from '@shared/assets/images/functi
 import MagicImg, { ReactComponent as MagicSvg } from '@shared/assets/images/functionals/magic.svg';
 import QuestionImg, { ReactComponent as QuestionSvg } from '@shared/assets/images/functionals/question.svg';
 import CurrencyImg, { ReactComponent as CurrencySvg } from '@shared/assets/images/functionals/currency.svg';
+import ReferendumImg, { ReactComponent as ReferendumSvg } from '@shared/assets/images/functionals/referendum.svg';
 import ImportImg, { ReactComponent as ImportSvg } from '@shared/assets/images/functionals/import.svg';
 import ExportImg, { ReactComponent as ExportSvg } from '@shared/assets/images/functionals/export.svg';
 import EditKeysImg, { ReactComponent as EditKeysSvg } from '@shared/assets/images/functionals/edit-keys.svg';
@@ -56,6 +57,7 @@ const FunctionalImages = {
   checkmarkCutout: { svg: CheckCutoutSvg, img: CheckCutoutImg },
   checkmark: { svg: CheckSvg, img: CheckImg },
   currency: { svg: CurrencySvg, img: CurrencyImg },
+  referendum: { svg: ReferendumSvg, img: ReferendumImg },
   warnCutout: { svg: WarnCutoutSvg, img: WarnCutoutImg },
   emptyIdenticon: { svg: EmptyIdenticonSvg, img: EmptyIdenticonImg },
   search: { svg: SearchSvg, img: SearchImg },

@@ -1,18 +1,22 @@
 import { Link } from 'react-router-dom';
 import { useUnit } from 'effector-react/effector-react.umd';
 import { useEffect, useState } from 'react';
+import { capitalize } from 'lodash';
 
 import { Icon, BodyText, Plate, FootnoteText, HelpText, Switch } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { Paths } from '@shared/routes';
 import { cnTw } from '@shared/lib/utils';
 import { currencyModel, priceProviderModel } from '@entities/price';
+import { governanceModel } from '@entities/governance';
 
 // TODO: Language switcher temporary removed
 export const GeneralActions = () => {
   const { t } = useI18n();
+
   const currency = useUnit(currencyModel.$activeCurrency);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+  const governanceApi = useUnit(governanceModel.$governanceApi);
 
   const [isAutoUpdateOn, setIsAutoUpdateOn] = useState(true);
 
@@ -76,6 +80,20 @@ export const GeneralActions = () => {
           <Icon className="row-span-2" name="network" size={36} />
           <BodyText>{t('settings.overview.networkLabel')}</BodyText>
           <HelpText className="text-text-tertiary">{t('settings.overview.networkDetailsLabel')}</HelpText>
+        </Link>
+      </Plate>
+
+      <Plate className="p-0">
+        <Link
+          to={Paths.REFERENDUM_DATA}
+          className={cnTw(
+            'w-full flex items-center gap-x-2 p-3 rounded',
+            'transition hover:shadow-card-shadow focus:shadow-card-shadow',
+          )}
+        >
+          <Icon className="row-span-2" name="referendum" size={36} />
+          <BodyText>{t('settings.overview.referendumLabel')}</BodyText>
+          <FootnoteText className="text-text-tertiary ml-auto">{capitalize(governanceApi?.type)}</FootnoteText>
         </Link>
       </Plate>
 
