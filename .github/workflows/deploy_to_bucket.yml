@@ -6,30 +6,30 @@ on:
       - dev
 
 env:
-  S3_BUCKET: s3://spektr-web
+  S3_BUCKET: s3://spektr-web-dev
   STORING_DAYS: 60
 
 jobs:
   deploy-to-bucket:
-    runs-on: macos-latest
+    runs-on: macos-12
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: ⚙️ Install dependencies
         uses: ./.github/workflows/install-pnpm
-
-      - name: Build app
-        run: |
-          pnpm build
-          pnpm postbuild
 
       - name: ⚙️ Install s3cmd
         uses: ./.github/workflows/setup-s3cmd
         with:
           s3_access_key: ${{ secrets.S3_ACCESS_KEY }}
           s3_secret_key: ${{ secrets.S3_SECRET_KEY }}
+
+      - name: Build app
+        run: |
+          pnpm build
+          pnpm postbuild
 
       - name: List available S3 buckets
         run: s3cmd ls
@@ -41,5 +41,5 @@ jobs:
           destination_s3="${{ env.S3_BUCKET }}"
           find "$base_directory" -type f | while read -r file; do
             relative_path="${file#$base_directory/}" # Extract the relative path
-            s3cmd put "$file" "${destination_s3}/${relative_path}" --acl-public
+            s3cmd sync "$file" "${destination_s3}/${relative_path}" --acl-public
           done

@@ -10,7 +10,7 @@ on:
 env:
   CSC_FOR_PULL_REQUEST: true
   CI: true
-  S3_BUCKET: s3://spektr-releases
+  S3_BUCKET: s3://spektr-stage-releases
   STORING_DAYS: 60
 
 jobs:
@@ -163,14 +163,6 @@ jobs:
             done
           done
 
-      - name: Replace underscores in Linux URL
-        id: replace_linux_url
-        run: |
-          linux_url="${{ steps.interact_with_storage.outputs.linux_app }}"
-          modified_linux_url="${linux_url//_/\\_}"
-          echo "::set-output name=linux_app::$modified_linux_url"
-  
-
       - name: Notify Telegram channel
         uses: appleboy/telegram-action@master
         with:
@@ -180,7 +172,7 @@ jobs:
           message: | 
             👨‍💻 Stage build was created successfully, URLs to download:
               - Windows: ${{ steps.interact_with_storage.outputs.windows_app }}
-              - Linux: ${{ steps.replace_linux_url.outputs.linux_app }}
+              - Linux: ${{ steps.interact_with_storage.outputs.linux_app }}
               - MacOS: ${{ steps.interact_with_storage.outputs.macos_app }}
               - MacOS_arm: ${{ steps.interact_with_storage.outputs.macos_64_app }}
 
