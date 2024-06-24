@@ -5352,7 +5352,15 @@
           "url": "https://api.subquery.network/sq/nova-wallet/polkadot-collectives"
         }
       ]
-    }
+    },
+    "explorers": [
+      {
+        "name": "Statescan",
+        "account": "https://collectives.statescan.io/#/accounts/{address}",
+        "event": "https://collectives.statescan.io/#/events/{event}",
+        "extrinsic": "https://collectives.statescan.io/#/extrinsics/{hash}"
+      }
+    ]
   },
   {
     "name": "Rococo Asset Hub",
@@ -6258,5 +6266,52 @@
         "name": "Westend"
       }
     ]
+  },
+  {
+    "name": "Polimec",
+    "specName": "polkadot",
+    "addressPrefix": 41,
+    "chainId": "0x7eb9354488318e7549c722669dcbdcdc526f1fef1420e7944667212f3601fdbd",
+    "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polimec.svg",
+    "options": [],
+    "nodes": [
+      {
+        "url": "wss://rpc.polimec.org",
+        "name": "Polimec node"
+      }
+    ],
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "PLMC",
+        "precision": 10,
+        "priceId": "polimec",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/PLMC.svg",
+        "name": "Polimec token"
+      }
+    ],
+    "explorers": [
+      {
+        "name": "Polimec explorer",
+        "account": "https://explorer.polimec.org/polimec/account/{address}",
+        "event": "https://explorer.polimec.org/polimec/event/{event}",
+        "extrinsic": "https://explorer.polimec.org/polimec/extrinsic/{hash}"
+      }
+    ],
+    "externalApi": {
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet---polymec"
+        }
+      ],
+      "staking": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet---polymec"
+        }
+      ]
+    }
   }
 ]

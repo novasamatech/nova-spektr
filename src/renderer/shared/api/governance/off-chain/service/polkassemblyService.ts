@@ -1,9 +1,8 @@
 import type { ChainId } from '@shared/core';
+import { dictionary } from '@shared/lib/utils';
 import type { IGovernanceApi } from '../lib/types';
 import { offChainUtils } from '../lib/off-chain-utils';
-import { dictionary } from '../../../../lib/utils';
 
-// TODO: use callback to return the data, instead of waiting all at once
 export const polkassemblyService: IGovernanceApi = {
   getReferendumList,
   getReferendumDetails,
@@ -36,17 +35,19 @@ async function getReferendumList(chainId: ChainId, callback: (data: Record<strin
     fetch(getApiUrl(1), { method: 'GET', headers })
       .then((res) => res.json())
       .then((ping: PolkassemblyData) => {
-        callback(dictionary(ping.posts, 'post_id', (item) => item.title));
+        callback(parsePolkassemblyData(ping));
 
         for (let index = 2; index <= Math.ceil(ping.count / 100); index++) {
           fetch(getApiUrl(index), { method: 'GET', headers })
             .then((res) => res.json())
-            .then((data: PolkassemblyData) => {
-              callback(dictionary(data.posts, 'post_id', (item) => item.title));
-            });
+            .then((data: PolkassemblyData) => callback(parsePolkassemblyData(data)));
         }
       });
   }
+}
+
+function parsePolkassemblyData(data: PolkassemblyData): Record<string, string> {
+  return dictionary(data.posts, 'post_id', (item) => item.title);
 }
 
 /**
