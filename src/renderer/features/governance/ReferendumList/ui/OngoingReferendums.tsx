@@ -37,7 +37,7 @@ export const OngoingReferendums = ({ referendums, onSelected }: Props) => {
       <Accordion.Content as="ul" className="flex flex-col gap-y-2">
         {Array.from(referendums).map(([index, referendum]) => {
           const track = referendumListUtils.getTrackInfo(referendum.track);
-          const isPassing = supportThresholds[index].passing;
+          const isPassing = supportThresholds[index]?.passing;
 
           return (
             <li key={index}>
@@ -64,7 +64,7 @@ export const OngoingReferendums = ({ referendums, onSelected }: Props) => {
                   <div className="basis-[200px] shrink-0">
                     <VoteChartSm
                       bgColor="icon-button"
-                      {...referendumListUtils.getVoteFractions(referendum.tally, approvalThresholds[index].value)}
+                      {...referendumListUtils.getVoteFractions(referendum.tally, approvalThresholds[index]?.value)}
                     />
                   </div>
                 </div>
