@@ -1,7 +1,12 @@
-import { createStore } from 'effector';
+import { createEvent, restore } from 'effector';
 
-const $referendums = createStore<any[]>([]);
+const queryChanged = createEvent<string>();
+
+const $query = restore<string>(queryChanged, '');
 
 export const referendumFilterModel = {
-  referendums: $referendums,
+  $query,
+  events: {
+    queryChanged,
+  },
 };
