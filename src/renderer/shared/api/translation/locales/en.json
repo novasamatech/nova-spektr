@@ -682,12 +682,12 @@
     "details": {
       "accessType": "Access type",
       "account": "Account",
-      "sender": "Sender",
       "accountProxied": "Account (proxied)",
       "delegateTo": "Delegate to",
       "grantAccessType": "Grant access type",
       "revokeAccessType": "Revoke access type",
       "revokeFor": "Revoke for",
+      "sender": "Sender",
       "signatory": "Signatory",
       "wallet": "Wallet",
       "walletProxied": "Wallet (proxied)"
@@ -1165,8 +1165,8 @@
     "requiredDescriptionError": "Description is required",
     "requiredRecipientError": "Please enter recipient address",
     "senderAccount": "Sender account",
-    "senderProxiedAccount": "Account (proxied)",
     "senderLabel": "Sender",
+    "senderProxiedAccount": "Account (proxied)",
     "senderProxiedWallet": "Wallet (proxied)",
     "signatoryLabel": "Signatory",
     "signingAccount": "Signing account",
