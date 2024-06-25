@@ -126,6 +126,7 @@ export const SignOperations = () => {
         // Change panel class doesn't work
         {
           ...(signOperationsUtils.isConfirmStep(step) && {
+            //eslint-disable-next-line i18next/no-literal-string
             width: `478px`,
           }),
         }
