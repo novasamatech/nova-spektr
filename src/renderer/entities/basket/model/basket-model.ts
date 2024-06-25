@@ -60,6 +60,11 @@ sample({
 });
 
 sample({
+  clock: updateBasketTxsFx.done,
+  target: populateBasketFx,
+});
+
+sample({
   clock: removeBasketTxsFx.doneData,
   source: $basket,
   filter: (_, transactionIds) => Boolean(transactionIds),

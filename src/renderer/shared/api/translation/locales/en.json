@@ -89,10 +89,17 @@
     "closeButton": "Close modal window"
   },
   "basket": {
+    "chainError": "Failed: { date }",
     "emptySignButton": "Select operations",
-    "invalidTransaction": "Unavailable",
     "noOperationsDescription": "There are no operations in the basket yet",
     "noOperationsLabel": "No operations",
+    "refreshButton": "Refresh list",
+    "removeConfirm": {
+      "cancelButton": "Cancel",
+      "description": "Operation will be deleted from the basket, are you sure?",
+      "proceedButton": "Delete",
+      "title": "Delete this operation?"
+    },
     "searchPlaceholder": "Search",
     "selectAll": "Select all",
     "signButton": "Sign",
@@ -100,6 +107,7 @@
       "title": "Sign { transactions } operations"
     },
     "title": "Basket",
+    "validationError": "Unavailable",
     "validationWarning": {
       "cancelButton": "Cancel",
       "description": "They will be excluded from the checkout. Would you like to proceed?",

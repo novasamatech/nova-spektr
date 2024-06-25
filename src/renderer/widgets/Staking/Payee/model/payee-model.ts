@@ -365,7 +365,7 @@ sample({
 export const payeeModel = {
   $step,
   $walletData,
-  $initiatorWallet: $walletData.map((data) => data?.wallet),
+  $initiatorWallet: $walletData.map((data) => data?.wallet || null),
 
   events: {
     flowStarted,

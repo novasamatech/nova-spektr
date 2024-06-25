@@ -367,7 +367,7 @@ sample({
 export const bondExtraModel = {
   $step,
   $walletData,
-  $initiatorWallet: $walletData.map((data) => data?.wallet),
+  $initiatorWallet: $walletData.map((data) => data?.wallet || null),
 
   events: {
     flowStarted,

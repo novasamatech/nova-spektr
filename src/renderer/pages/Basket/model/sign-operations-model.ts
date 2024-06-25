@@ -933,6 +933,7 @@ sample({
             type: 'chain',
             // params will be a string for failed transaction
             message: result.params as string,
+            dateCreated: Date.now(),
           } as ChainError,
         });
       }

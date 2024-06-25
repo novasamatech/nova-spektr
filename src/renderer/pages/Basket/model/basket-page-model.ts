@@ -1,4 +1,4 @@
-import { combine, createEffect, createEvent, createStore, sample, split } from 'effector';
+import { combine, createEffect, createEvent, createStore, restore, sample, split } from 'effector';
 import { once } from 'patronum';
 
 import { networkModel } from '@entities/network';
@@ -33,18 +33,24 @@ const txSelected = createEvent<{ id: ID; value: boolean }>();
 const txClicked = createEvent<BasketTransaction>();
 const allSelected = createEvent();
 const signStarted = createEvent();
+const validationStarted = createEvent();
 const validationCompleted = createEvent();
 const signContinued = createEvent();
 const signTransactionsReceived = createEvent<BasketTransactionsMap>();
 const validationWarningShown = createEvent<BasketTransactionsMap>();
 const proceedValidationWarning = createEvent<BasketTransactionsMap>();
 const cancelValidationWarning = createEvent();
+const removeTxStarted = createEvent<BasketTransaction>();
+const removeTxCancelled = createEvent();
+const txRemoved = createEvent<BasketTransaction>();
 
 const $selectedTxs = createStore<number[]>([]);
 const $invalidTxs = createStore<Map<ID, ValidationResult>>(new Map());
 const $validTxs = createStore<BasketTransaction[]>([]);
 const $validatingTxs = createStore<number[]>([]);
 const $validationWarningShown = createStore<boolean>(false);
+const $alreadyValidatedTxs = createStore<number[]>([]);
+const $txToRemove = restore(removeTxStarted, null).reset([removeTxCancelled, txRemoved]);
 
 const validateFx = createEffect((transactions: BasketTransaction[]) => {
   for (const tx of transactions) {
@@ -82,6 +88,21 @@ const $basketTransactions = combine(
   ({ wallet, basket }) => basket.filter((tx) => tx.initiatorWallet === wallet?.id).reverse(),
 );
 
+const txValidated = [
+  transferValidateModel.output.txValidated,
+  addProxyValidateModel.output.txValidated,
+  addPureProxiedValidateModel.output.txValidated,
+  removeProxyValidateModel.output.txValidated,
+  removePureProxiedValidateModel.output.txValidated,
+  bondNominateValidateModel.output.txValidated,
+  nominateValidateModel.output.txValidated,
+  bondExtraValidateModel.output.txValidated,
+  payeeValidateModel.output.txValidated,
+  restakeValidateModel.output.txValidated,
+  unstakeValidateModel.output.txValidated,
+  withdrawValidateModel.output.txValidated,
+];
+
 sample({
   clock: txSelected,
   source: $selectedTxs,
@@ -92,19 +113,36 @@ sample({
 });
 
 sample({
+  clock: $basketTransactions,
+  source: $selectedTxs,
+  fn: (selectedTxs, txs) => selectedTxs.filter((id) => !txs.find((tx) => tx.id === id)),
+  target: $selectedTxs,
+});
+
+sample({
   clock: allSelected,
   source: {
     txs: $basketTransactions,
     selectedTxs: $selectedTxs,
+    invalidTxs: $invalidTxs,
   },
-  fn: ({ txs, selectedTxs }) => {
-    return selectedTxs.length === txs.length ? [] : txs.map((tx) => tx.id);
+  fn: ({ txs, selectedTxs, invalidTxs }) => {
+    const validTxs = txs.filter((tx) => !invalidTxs.has(tx.id));
+
+    return selectedTxs.length >= validTxs.length ? [] : validTxs.map((tx) => tx.id);
   },
   target: $selectedTxs,
 });
 
 sample({
-  clock: [$basketTransactions, networkModel.$apis],
+  clock: validationStarted,
+  source: $basketTransactions,
+  fn: (transactions) => transactions.map((tx) => tx.id),
+  target: $validatingTxs,
+});
+
+sample({
+  clock: validationStarted,
   source: {
     transactions: $basketTransactions,
     apis: networkModel.$apis,
@@ -119,20 +157,7 @@ sample({
 });
 
 sample({
-  clock: [
-    transferValidateModel.output.txValidated,
-    addProxyValidateModel.output.txValidated,
-    addPureProxiedValidateModel.output.txValidated,
-    removeProxyValidateModel.output.txValidated,
-    removePureProxiedValidateModel.output.txValidated,
-    bondNominateValidateModel.output.txValidated,
-    nominateValidateModel.output.txValidated,
-    bondExtraValidateModel.output.txValidated,
-    payeeValidateModel.output.txValidated,
-    restakeValidateModel.output.txValidated,
-    unstakeValidateModel.output.txValidated,
-    withdrawValidateModel.output.txValidated,
-  ],
+  clock: txValidated,
   source: $invalidTxs,
   fn: (txs, { id, result }) => {
     const invalidTxs = new Map(txs);
@@ -158,26 +183,21 @@ sample({
 });
 
 sample({
-  clock: [
-    transferValidateModel.output.txValidated,
-    addProxyValidateModel.output.txValidated,
-    addPureProxiedValidateModel.output.txValidated,
-    removeProxyValidateModel.output.txValidated,
-    removePureProxiedValidateModel.output.txValidated,
-    bondNominateValidateModel.output.txValidated,
-    nominateValidateModel.output.txValidated,
-    bondExtraValidateModel.output.txValidated,
-    payeeValidateModel.output.txValidated,
-    restakeValidateModel.output.txValidated,
-    unstakeValidateModel.output.txValidated,
-    withdrawValidateModel.output.txValidated,
-  ],
+  clock: txValidated,
   source: $validatingTxs,
   fn: (txs, { id }) => {
     return removeFromCollection(txs, id);
   },
-
   target: $validatingTxs,
+});
+
+sample({
+  clock: txValidated,
+  source: $alreadyValidatedTxs,
+  fn: (txs, { id }) => {
+    return addUnique(txs, id);
+  },
+  target: $alreadyValidatedTxs,
 });
 
 sample({
@@ -277,6 +297,12 @@ sample({
   target: $validationWarningShown,
 });
 
+sample({
+  clock: txRemoved,
+  fn: (tx) => [tx],
+  target: basketModel.events.transactionsRemoved,
+});
+
 export const basketPageModel = {
   $basketTransactions,
   $selectedTxs,
@@ -284,13 +310,20 @@ export const basketPageModel = {
   $validTxs,
   $validationWarningShown,
   $validatingTxs,
+  $txToRemove,
+  $alreadyValidatedTxs,
 
   events: {
+    validationStarted,
     txSelected,
     txClicked,
     allSelected,
     signStarted,
     cancelValidationWarning,
     proceedValidationWarning,
+
+    removeTxStarted,
+    removeTxCancelled,
+    txRemoved,
   },
 };
