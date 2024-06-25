@@ -659,7 +659,7 @@
   },
   "proxy": {
     "addProxy": {
-      "accountLabel": "Your account",
+      "accountLabel": "Account",
       "accountPlaceholder": "Select account",
       "balanceAlertMultisig": "To pay proxy deposit with selected account",
       "balanceAlertRegular": "To pay proxy deposit and network fee with selected account",
@@ -681,14 +681,15 @@
     },
     "details": {
       "accessType": "Access type",
-      "account": "Your account",
+      "account": "Account",
+      "sender": "Sender",
       "accountProxied": "Account (proxied)",
       "delegateTo": "Delegate to",
       "grantAccessType": "Grant access type",
       "revokeAccessType": "Revoke access type",
       "revokeFor": "Revoke for",
       "signatory": "Signatory",
-      "wallet": "Your wallet",
+      "wallet": "Wallet",
       "walletProxied": "Wallet (proxied)"
     },
     "names": {
@@ -1164,8 +1165,9 @@
     "requiredDescriptionError": "Description is required",
     "requiredRecipientError": "Please enter recipient address",
     "senderAccount": "Sender account",
+    "senderProxiedAccount": "Account (proxied)",
     "senderLabel": "Sender",
-    "senderProxiedWallet": "Sender wallet (proxied)",
+    "senderProxiedWallet": "Wallet (proxied)",
     "signatoryLabel": "Signatory",
     "signingAccount": "Signing account",
     "signingWallet": "Signing wallet",

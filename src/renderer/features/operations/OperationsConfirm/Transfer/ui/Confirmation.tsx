@@ -94,7 +94,7 @@ export const Confirmation = ({ secondaryActionButton, hideSignButton, onGoBack }
               <FootnoteText className="pr-2">{initiatorWallet.name}</FootnoteText>
             </DetailRow>
 
-            <DetailRow label={t('proxy.details.account')}>
+            <DetailRow label={t('proxy.details.sender')}>
               <AddressWithExplorers
                 type="short"
                 explorers={confirmStore.chain.explorers}
