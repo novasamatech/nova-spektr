@@ -42,8 +42,6 @@ export interface MultisigAccount extends Account {
   chainId?: ChainId;
   cryptoType: CryptoType;
   type: AccountType.MULTISIG;
-  creatorAccountId: AccountId;
-  matrixRoomId: string;
 }
 
 export interface WcAccount extends Account {

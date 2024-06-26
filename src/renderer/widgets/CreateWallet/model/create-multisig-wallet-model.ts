@@ -1,21 +1,9 @@
 import { combine, createApi, createEffect, createEvent, createStore, sample } from 'effector';
 import sortBy from 'lodash/sortBy';
 
-import {
-  AccountType,
-  ChainId,
-  ChainType,
-  CryptoType,
-  Signatory,
-  SigningType,
-  WalletType,
-  HexString,
-  AccountId,
-} from '@shared/core';
+import { AccountType, ChainId, ChainType, CryptoType, Signatory, SigningType, WalletType } from '@shared/core';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
-import { ISecureMessenger } from '@shared/api/matrix';
-import { matrixModel } from '@entities/matrix';
 
 const reset = createEvent();
 
@@ -31,7 +19,7 @@ const callbacksApi = createApi($callbacks, {
 const walletCreated = createEvent<{
   name: string;
   threshold: number;
-  creatorId: HexString;
+  creatorId: string;
 }>();
 const chainSelected = createEvent<ChainId>();
 const signatoriesChanged = createEvent<Signatory[]>();
@@ -51,38 +39,19 @@ const $isEthereumChain = combine(
 );
 
 type CreateWalletParams = {
-  matrix: ISecureMessenger;
   name: string;
   threshold: number;
-  creatorId: HexString;
+  creatorId: string;
   signatories: Signatory[];
-  chainId?: ChainId;
+  chainId: ChainId | null;
   isEthereumChain: boolean;
 };
 
 const createWalletFx = createEffect(
-  async ({ matrix, name, threshold, creatorId, signatories, chainId, isEthereumChain }: CreateWalletParams) => {
+  async ({ name, threshold, creatorId, signatories, chainId, isEthereumChain }: CreateWalletParams) => {
     const cryptoType = isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519;
     const accountIds = signatories.map((s) => s.accountId);
     const accountId = accountUtils.getMultisigAccountId(accountIds, threshold, cryptoType);
-
-    let roomId = matrix.joinedRooms(accountId)[0]?.roomId;
-    const isMyAccounts = signatories.every((s) => s.matrixId === matrix.userId);
-
-    if (!roomId && !isMyAccounts) {
-      // Create new room only if both conditions are met:
-      // 1. No existing roomId is found.
-      // 2. Not all signatories are controlled by the current user.
-      roomId = await matrix.createRoom({
-        creatorAccountId: creatorId,
-        accountName: name,
-        accountId: accountId,
-        threshold: threshold,
-        cryptoType,
-        chainId,
-        signatories: signatories.map(({ accountId, matrixId }) => ({ accountId, matrixId })),
-      });
-    }
 
     walletModel.events.multisigCreated({
       wallet: {
@@ -96,9 +65,7 @@ const createWalletFx = createEffect(
           chainId: chainId || undefined,
           name: name.trim(),
           accountId: accountId,
-          matrixRoomId: roomId,
           threshold: threshold,
-          creatorAccountId: creatorId as AccountId,
           cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
           chainType: isEthereumChain ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
           type: AccountType.MULTISIG,
@@ -146,13 +113,11 @@ sample({
   source: {
     signatories: $signatories,
     chainId: $chain,
-    matrix: matrixModel.$matrix,
     isEthereumChain: $isEthereumChain,
   },
-  fn: ({ signatories, chainId, ...rest }, resultValues) => ({
+  fn: ({ signatories, ...rest }, resultValues) => ({
     ...rest,
     ...resultValues,
-    chainId: chainId || undefined,
     signatories: sortBy(signatories, 'accountId'),
   }),
   target: createWalletFx,

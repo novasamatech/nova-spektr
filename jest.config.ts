@@ -22,7 +22,7 @@ const swcConfig = {
 };
 const config: Config = {
   preset: 'ts-jest',
-  testEnvironment: 'jsdom',
+  testEnvironment: 'jest-environment-jsdom',
   coverageReporters: ['json-summary', 'text', 'text-summary'],
   setupFilesAfterEnv: ['@testing-library/jest-dom'],
   coverageThreshold: {

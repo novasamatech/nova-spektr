@@ -14,18 +14,16 @@ import type { CallData, MultisigAccount } from '@shared/core';
 import { OperationSignatories } from './OperationSignatories';
 import { useNetworkData } from '@entities/network';
 import { walletModel, permissionUtils } from '@entities/wallet';
-import { matrixModel } from '@entities/matrix';
 
 type Props = {
   tx: MultisigTransactionDS;
   account?: MultisigAccount;
 };
 
-export const OperationFullInfo = ({ tx, account }: Props) => {
+const OperationFullInfo = ({ tx, account }: Props) => {
   const { t } = useI18n();
   const { api, chain, connection, extendedChain } = useNetworkData(tx.chainId);
 
-  const matrix = useUnit(matrixModel.$matrix);
   const wallets = useUnit(walletModel.$wallets);
 
   const { addTask } = useMultisigChainContext();
@@ -39,19 +37,6 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
     if (!api || !tx) return;
 
     updateCallData(api, tx, callData as CallData);
-
-    if (!account?.matrixRoomId) return;
-
-    matrix.sendUpdate(account?.matrixRoomId, {
-      senderAccountId: tx.depositor || '0x00',
-      chainId: tx.chainId,
-      callHash: tx.callHash,
-      callData,
-      callTimepoint: {
-        index: tx.indexCreated || 0,
-        height: tx.blockCreated || 0,
-      },
-    });
   };
 
   const isRejectAvailable = wallets.some((wallet) => {
@@ -99,3 +84,5 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
     </div>
   );
 };
+
+export default OperationFullInfo;

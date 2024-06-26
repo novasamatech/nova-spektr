@@ -2,8 +2,7 @@ import { format } from 'date-fns';
 
 import { useI18n } from '@app/providers';
 import { FootnoteText, Accordion } from '@shared/ui';
-import { Status } from './Status';
-import { OperationFullInfo } from './OperationFullInfo';
+import OperationFullInfo from './OperationFullInfo';
 import { MultisigTransactionDS } from '@shared/api/storage';
 import { useMultisigEvent } from '@entities/multisig';
 import { ChainTitle, XcmChains } from '@entities/chain';
@@ -12,6 +11,7 @@ import type { MultisigAccount } from '@shared/core';
 import { chainsService } from '@shared/api/network';
 import { getAssetById } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
+import { Status } from './Status';
 
 type Props = {
   tx: MultisigTransactionDS;
