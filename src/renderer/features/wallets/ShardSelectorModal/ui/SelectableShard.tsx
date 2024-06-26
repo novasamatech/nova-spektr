@@ -61,7 +61,12 @@ export const SelectableShard = ({
       )}
     >
       <Checkbox checked={checked} semiChecked={semiChecked} onChange={(event) => onChange(event.target.checked)} />
-      <ExplorersPopover button={content} address={address} explorers={explorers}>
+      <ExplorersPopover
+        button={content}
+        address={account.accountId}
+        addressPrefix={addressPrefix}
+        explorers={explorers}
+      >
         <ExplorersPopover.Group active={isSharded} title={t('general.explorers.derivationTitle')}>
           <HelpText className="text-text-secondary break-all">{isSharded && account.derivationPath}</HelpText>
         </ExplorersPopover.Group>
