@@ -409,8 +409,8 @@ importers:
         specifier: ^1.44.1
         version: 1.44.1
       pnpm:
-        specifier: ^8.6.11
-        version: 8.6.11
+        specifier: ^9.2.0
+        version: 9.4.0
       postcss:
         specifier: ^8.4.31
         version: 8.4.31
@@ -8078,9 +8078,9 @@ packages:
     resolution: {integrity: sha512-7Wjy+9E3WwLOEL30D+m8TSTF7qJJUJLONBnwQp0518siuMxUQUbgZwssaFX+QKlZkjHZcw/IpZCt/H0srrntSg==}
     engines: {node: '>=6'}
 
-  pnpm@8.6.11:
-    resolution: {integrity: sha512-jqknppuj45tDzJsLcLqkAxytBHZXIx9JTYkGNq0/7pSRggpio9wRxTDj4NA2ilOHPlJ5BVjB5Ij5dx65woMi5A==}
-    engines: {node: '>=16.14'}
+  pnpm@9.4.0:
+    resolution: {integrity: sha512-9Um4pSydK4U2di+ZwHIiBe/Fr5E+d4NdvMw7CwssqefcgCK3gGLBcpHEjoh0nHDOiOtadPH6jEv14Yu0bIvYOg==}
+    engines: {node: '>=18.12'}
     hasBin: true
 
   polished@4.2.2:
@@ -21158,7 +21158,7 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  pnpm@8.6.11: {}
+  pnpm@9.4.0: {}
 
   polished@4.2.2:
     dependencies:
