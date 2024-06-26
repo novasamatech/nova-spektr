@@ -8,11 +8,13 @@ import { basketPageModel } from '../model/basket-page-model';
 import { EmptyBasket } from './EmptyBasket';
 import { SignOperation } from './SignOperation';
 import { SignOperations } from './SignOperations';
+import { networkModel } from '@/src/renderer/entities/network';
 
 export const Basket = () => {
   const { t } = useI18n();
 
   const basketTxs = useUnit(basketPageModel.$basketTransactions);
+  const apis = useUnit(networkModel.$apis);
   const selectedTxs = useUnit(basketPageModel.$selectedTxs);
   const invalidTxs = useUnit(basketPageModel.$invalidTxs);
   const validTxs = useUnit(basketPageModel.$validTxs);
@@ -23,7 +25,7 @@ export const Basket = () => {
 
   useEffect(() => {
     basketPageModel.events.validationStarted();
-  }, []);
+  }, [apis]);
 
   return (
     <section className="flex flex-col items-center relative h-full">

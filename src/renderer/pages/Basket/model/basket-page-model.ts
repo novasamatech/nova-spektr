@@ -146,13 +146,31 @@ sample({
   source: {
     transactions: $basketTransactions,
     apis: networkModel.$apis,
+    alreadyValidatedTxs: $alreadyValidatedTxs,
+    validatingTxs: $validatingTxs,
   },
   filter: ({ transactions, apis }) => {
     const chains = new Set(transactions.map((t) => t.coreTx.chainId));
 
     return [...chains].some((chainId) => apis[chainId]);
   },
-  fn: ({ transactions }) => transactions,
+  fn: ({ transactions, apis, alreadyValidatedTxs, validatingTxs }) => {
+    const chains = new Set(transactions.map((t) => t.coreTx.chainId));
+
+    const txsToValidate = [...chains].reduce<BasketTransaction[]>((acc, chainId) => {
+      if (!apis[chainId]) {
+        return acc;
+      }
+
+      const txs = transactions
+        .filter((tx) => tx.coreTx.chainId === chainId)
+        .filter((tx) => !alreadyValidatedTxs.includes(tx.id) && !validatingTxs.includes(tx.id));
+
+      return [...acc, ...txs];
+    }, []);
+
+    return txsToValidate;
+  },
   target: validateFx,
 });
 
