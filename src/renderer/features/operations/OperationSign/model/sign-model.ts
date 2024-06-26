@@ -5,6 +5,18 @@ import type { Account, HexString, Transaction, Chain } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { walletModel, walletUtils } from '@entities/wallet';
 
+// TODO: Use it for signing
+// type Input = {
+//   signingPayloads: SigningPayload[];
+// };
+
+// type SigningPayload = {
+//   chain: Chain;
+//   account: Account;
+//   transaction: Transaction;
+//   signatory?: Account;
+// };
+
 type Input = {
   chain: Chain;
   accounts: Account[];

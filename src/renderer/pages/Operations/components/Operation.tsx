@@ -2,8 +2,8 @@ import { format } from 'date-fns';
 
 import { useI18n } from '@app/providers';
 import { FootnoteText, Accordion } from '@shared/ui';
-import OperationStatus from './OperationStatus';
-import OperationFullInfo from './OperationFullInfo';
+import { Status } from './Status';
+import { OperationFullInfo } from './OperationFullInfo';
 import { MultisigTransactionDS } from '@shared/api/storage';
 import { useMultisigEvent } from '@entities/multisig';
 import { ChainTitle, XcmChains } from '@entities/chain';
@@ -59,7 +59,7 @@ const Operation = ({ tx, account }: Props) => {
           )}
 
           <div className="flex justify-end w-[120px]">
-            <OperationStatus status={tx.status} signed={approvals.length} threshold={account?.threshold || 0} />
+            <Status status={tx.status} signed={approvals.length} threshold={account?.threshold || 0} />
           </div>
         </div>
       </Accordion.Button>

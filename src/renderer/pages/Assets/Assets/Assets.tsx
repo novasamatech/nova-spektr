@@ -6,16 +6,19 @@ import { Header } from '@shared/ui';
 import { ShardSelectorButton, ShardSelectorModal } from '@features/wallets';
 import {
   AssetsChainView,
+  AssetsPortfolioView,
   AssetsSearch,
   AssetsSettings,
   assetsSearchModel,
   assetsSettingsModel,
 } from '@features/assets';
+import { AssetTransactionModal } from '@widgets/AssetTransactionModal';
 import { assetsModel } from './model/assets-model';
 
 export const Assets = () => {
   const { t } = useI18n();
 
+  const assetsView = useUnit(assetsSettingsModel.$assetsView);
   const activeShards = useUnit(assetsModel.$activeShards);
   const query = useUnit(assetsSearchModel.$query);
   const hideZeroBalances = useUnit(assetsSettingsModel.$hideZeroBalances);
@@ -30,10 +33,18 @@ export const Assets = () => {
           </div>
         </Header>
         <ShardSelectorButton />
-
-        <AssetsChainView query={query} activeShards={activeShards} hideZeroBalances={hideZeroBalances} />
+        <div className="flex flex-col gap-y-4 w-full h-full overflow-y-scroll">
+          <AssetsPortfolioView />
+          <AssetsChainView
+            query={query}
+            activeShards={activeShards}
+            hideZeroBalances={hideZeroBalances}
+            assetsView={assetsView}
+          />
+        </div>
       </section>
 
+      <AssetTransactionModal />
       <ShardSelectorModal onConfirm={assetsModel.events.activeShardsSet} />
       <Outlet />
     </>

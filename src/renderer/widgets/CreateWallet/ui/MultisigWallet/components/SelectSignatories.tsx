@@ -17,12 +17,12 @@ import {
   CaptionText,
 } from '@shared/ui';
 import { TabItem } from '@shared/ui/types';
-import { CreateContactModal } from '@widgets/ManageContactModal';
 import { ExtendedAccount, ExtendedContact } from '../common/types';
 import { EmptyContactList } from '@entities/contact';
 import { type Contact, type Account, ShardAccount, Wallet, Chain } from '@shared/core';
 import { ContactItem, ExplorersPopover, WalletCardMd } from '@entities/wallet';
 import { networkUtils } from '@entities/network';
+import { CreateContactModal } from '@widgets/ManageContactModal';
 
 const enum SignatoryTabs {
   ACCOUNTS = 'accounts',
@@ -160,7 +160,7 @@ export const SelectSignatories = ({ isActive, accounts, wallets, contacts, chain
   };
 
   const searchedContactList = contactList.filter((c) => {
-    return includes(c.address, query) || includes(c.name, query);
+    return includes(c.address, query) || includes(c.matrixId, query) || includes(c.name, query);
   });
 
   const hasAccounts = Boolean(accounts.length);

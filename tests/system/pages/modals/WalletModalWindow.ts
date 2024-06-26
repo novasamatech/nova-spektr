@@ -11,6 +11,7 @@ export class WalletModalWindow extends BaseModal {
   constructor(page: Page, pageElements: WalletModalElements, previousPage: BasePage) {
     super(page);
     this.pageElements = pageElements;
+    this.previousPage = previousPage;
   }
 
   public async openWalletModelWindow(): Promise<WalletModalWindow> {

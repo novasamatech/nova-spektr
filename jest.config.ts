@@ -24,7 +24,7 @@ const config: Config = {
   maxConcurrency: 5,
   maxWorkers: '50%',
   preset: 'ts-jest',
-  testEnvironment: 'jest-environment-jsdom',
+  testEnvironment: 'jsdom',
   coverageReporters: ['json-summary', 'text', 'text-summary'],
   setupFilesAfterEnv: ['@testing-library/jest-dom'],
   coverageThreshold: {

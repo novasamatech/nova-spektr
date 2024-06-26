@@ -46,7 +46,7 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
   useEffect(() => {
     if (isOpen && !isModalOpen) {
       toggleIsModalOpen();
-      flowModel.events.reset();
+      // flowModel.events.reset();
       setName('');
     }
 

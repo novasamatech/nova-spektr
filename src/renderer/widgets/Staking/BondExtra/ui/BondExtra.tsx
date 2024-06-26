@@ -6,11 +6,10 @@ import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
 import { OperationSign, OperationSubmit } from '@features/operations';
 import { BondForm } from './BondForm';
-import { Confirmation } from './Confirmation';
 import { bondExtraUtils } from '../lib/bond-extra-utils';
 import { bondExtraModel } from '../model/bond-extra-model';
 import { Step } from '../lib/types';
-import { basketUtils } from '@features/operations/OperationsConfirm';
+import { basketUtils, BondExtraConfirmation as Confirmation } from '@features/operations/OperationsConfirm';
 
 export const BondExtra = () => {
   const { t } = useI18n();

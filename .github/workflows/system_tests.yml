@@ -1,9 +1,15 @@
 name: Run system tests
 
 on:
-  pull_request:
+  workflow_dispatch:
+  push:
     branches:
-      - 'main'
+      - 'dev'
+  schedule:
+    - cron: '0 6 * * *' # 9:00 GMT+3
+  pull_request:
+    paths:
+      - 'tests/**'
 
 env:
   CI: true
@@ -17,16 +23,39 @@ jobs:
         run: docker-compose up -d
       - name: ⚙️ Install dependencies
         uses: ./.github/workflows/install-pnpm
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-      - name: Run Playwright tests
+
+      - name: Get installed Playwright version
+        id: playwright-version
+        run: |
+          PLAYWRIGHT_VERSION=$(node -e "console.log(require('yaml').parse(require('fs').readFileSync('./pnpm-lock.yaml', 'utf8')).importers['.'].devDependencies['@playwright/test'].version)")
+          echo "PLAYWRIGHT_VERSION=$PLAYWRIGHT_VERSION" >> $GITHUB_ENV
+      - name: Cache playwright binaries
+        uses: actions/cache@v3
+        id: playwright-cache
+        with:
+          path: |
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
+      - run: npx playwright install --with-deps
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+
+      - name: Run Playwright tests for push event
+        if: github.event_name == 'push'
+        run: npx playwright test --grep @regress
+
+      - name: Run Playwright tests for pull_request or workflow_dispatch event
+        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
         run: npx playwright test
+
+      - name: Run Playwright tests for schedule event
+        if: github.event_name == 'schedule'
+        run: npx playwright test --grep @fee-test
+
       - uses: actions/upload-artifact@v3
         if: always()
         with:
           name: playwright-report
           path: playwright-report/
-          retention-days: 30
   
   publish_report:
     name: Publish HTML Report
@@ -79,3 +108,43 @@ jobs:
           FULL_HTML_REPORT_URL=https://novasamatech.github.io/spektr-reports/$HTML_REPORT_URL_PATH
   
           echo "::notice title=📋 Published Playwright Test Report::$FULL_HTML_REPORT_URL"
+          echo "FULL_HTML_REPORT_URL<<EOF" >> $GITHUB_ENV
+          echo "$FULL_HTML_REPORT_URL" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            COMMIT_INFO="Branch: dev"
+            RUN_TYPE_INFO="🤑 Fee loading"
+          else
+            COMMIT_INFO="Commit: [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})"
+            RUN_TYPE_INFO="✔ Regression"
+          fi
+          echo "COMMIT_INFO<<EOF" >> $GITHUB_ENV
+          echo "$COMMIT_INFO" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          echo "RUN_TYPE_INFO<<EOF" >> $GITHUB_ENV
+          echo "$RUN_TYPE_INFO" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Set Status
+        run: |
+          if [[ "${{ needs.system-tests.result }}" == 'failure' ]]; then
+            echo "STATUS=❌" >> $GITHUB_ENV
+          else
+            echo "STATUS=✅" >> $GITHUB_ENV
+          fi
+
+      - name: Notify Telegram channel
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          format: markdown
+          message: |
+            📋 Playwright Test Report Published
+            URL: ${{ env.FULL_HTML_REPORT_URL }}
+            Run type: ${{ env.RUN_TYPE_INFO }}
+            Status: ${{ env.STATUS }}
+            ${{ env.COMMIT_INFO }}

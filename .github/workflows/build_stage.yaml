@@ -10,7 +10,7 @@ on:
 env:
   CSC_FOR_PULL_REQUEST: true
   CI: true
-  S3_BUCKET: s3://spektr-releases
+  S3_BUCKET: s3://spektr-stage-releases
   STORING_DAYS: 60
 
 jobs:

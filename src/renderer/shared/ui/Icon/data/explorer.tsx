@@ -5,6 +5,8 @@ import SubscanImg, { ReactComponent as SubscanSvg } from '@shared/assets/images/
 import StatescanImg, { ReactComponent as StatescanSvg } from '@shared/assets/images/explorers/statescan.svg';
 import TernoaImg, { ReactComponent as TernoaSvg } from '@shared/assets/images/explorers/ternoa.svg';
 import MoonscanImg, { ReactComponent as MoonscanSvg } from '@shared/assets/images/explorers/moonscan.svg';
+import PolkassemblyImg, { ReactComponent as PolkassemblySvg } from '@shared/assets/images/explorers/polkassembly.svg';
+import SubsquareImg, { ReactComponent as SubsquareSvg } from '@shared/assets/images/explorers/subsquare.svg';
 import PolkaholicImg from '@shared/assets/images/explorers/polkaholic.webp';
 
 const ExplorerImages = {
@@ -16,6 +18,8 @@ const ExplorerImages = {
   ternoa: { svg: TernoaSvg, img: TernoaImg },
   polkaholic: { svg: null, img: PolkaholicImg },
   moonscan: { svg: MoonscanSvg, img: MoonscanImg },
+  polkassembly: { svg: PolkassemblySvg, img: PolkassemblyImg },
+  subsquare: { svg: SubsquareSvg, img: SubsquareImg },
 } as const;
 
 export type Explorer = keyof typeof ExplorerImages;

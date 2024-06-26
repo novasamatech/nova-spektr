@@ -5,7 +5,7 @@ import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { Step, WithdrawData, NetworkStore } from '../lib/types';
 import { formModel } from './form-model';
-import { confirmModel } from './confirm-model';
+import { withdrawConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { nonNullable, getRelaychainAsset } from '@shared/lib/utils';
 import { withdrawUtils } from '../lib/withdraw-utils';
 import { BasketTransaction, Transaction } from '@shared/core';

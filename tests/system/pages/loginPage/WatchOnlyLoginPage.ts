@@ -2,7 +2,7 @@ import { Page } from 'playwright';
 
 import { LoginPageElements } from '../_elements/LoginPageElements';
 import { BasePage } from '../BasePage';
-import { WatchOnlyAssetsPage } from '../assetsPage/WatchOnlyPageAssetsPage';
+import { WatchOnlyAssetsPage } from '../assetsPage/WatchOnlyAssetsPage';
 import { AssetsPageElements } from '../_elements/AssetsPageElements';
 
 export class WatchOnlyLoginPage extends BasePage {

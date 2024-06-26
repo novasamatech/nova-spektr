@@ -2,13 +2,12 @@ import { combine, createEffect, createEvent, sample, scopeBind } from 'effector'
 import { interval, once } from 'patronum';
 import { GraphQLClient } from 'graphql-request';
 
-import { Chain, MultisigAccount, NotificationType, ExternalType, Wallet, NoID } from '@shared/core';
+import { Chain, MultisigAccount, NotificationType, ExternalType, Wallet, NoID, MultisigCreated } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { MultisigResult, multisigService } from '@entities/multisig';
 import { notificationModel } from '@entities/notification';
 import { multisigUtils } from '../lib/mulitisigs-utils';
-import { MultisigCreated } from '@shared/core/types/notification';
 
 type SaveMultisigParams = {
   wallet: Omit<NoID<Wallet>, 'isActive' | 'accounts'>;
@@ -87,6 +86,8 @@ const saveMultisigFx = createEffect((multisigsToSave: SaveMultisigParams[]) => {
         chainId: multisig.accounts[0].chainId,
         signatories,
         threshold: multisig.accounts[0].threshold,
+        originatorAccountId: '' as string,
+        smpRoomId: '',
       } as NoID<MultisigCreated>,
     ]);
   });

@@ -4,14 +4,14 @@ import { useUnit } from 'effector-react';
 
 import { AssetBalance } from '@entities/asset';
 import { FeeLoader, transactionService } from '@entities/transaction';
-import type { Asset, Threshold } from '@shared/core';
+import type { Asset, MultisigThreshold } from '@shared/core';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { priceProviderModel } from '@entities/price';
 
 type Props = {
   api?: ApiPromise;
   asset: Asset;
-  threshold: Threshold;
+  threshold: MultisigThreshold;
   className?: string;
   onDepositChange?: (deposit: string) => void;
 };

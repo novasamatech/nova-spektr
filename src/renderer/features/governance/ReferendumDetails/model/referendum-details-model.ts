@@ -1,16 +1,14 @@
-import { createStore, createEvent, createEffect, sample, restore } from 'effector';
+import { createStore, createEvent, createEffect, sample } from 'effector';
 import markdownit from 'markdown-it';
 
-import { ChainId } from '@shared/core';
-import { subsquareService, IGovernanceApi } from '@shared/api/governance';
+import type { ChainId, ReferendumId } from '@shared/core';
+import { IGovernanceApi } from '@shared/api/governance';
+import { governanceModel } from '@entities/governance';
 
-const governanceApiChanged = createEvent<IGovernanceApi>();
-const referendumChanged = createEvent<{ chainId: ChainId; index: string }>();
+const flowStarted = createEvent<{ chainId: ChainId; index: ReferendumId }>();
 const flowFinished = createEvent();
 
-const $governanceApi = restore(governanceApiChanged, subsquareService);
 const $details = createStore<string | null>(null).reset(flowFinished);
-// const $referendum = createStore<string>('').reset(flowFinished);
 
 type OffChainParams = {
   service: IGovernanceApi;
@@ -31,9 +29,13 @@ const parseMarkdownFx = createEffect((value: string): string => {
 });
 
 sample({
-  clock: referendumChanged,
-  source: $governanceApi,
-  fn: (service, { chainId, index }) => ({ service, chainId, index }),
+  clock: flowStarted,
+  source: governanceModel.$governanceApi,
+  fn: (governanceApi, { chainId, index }) => ({
+    service: governanceApi!.service,
+    chainId,
+    index,
+  }),
   target: requestOffChainDetailsFx,
 });
 
@@ -50,8 +52,8 @@ sample({
 
 export const referendumDetailsModel = {
   $details,
-  events: {
-    referendumChanged,
+  input: {
+    flowStarted,
   },
   output: {
     flowFinished,

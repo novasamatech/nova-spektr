@@ -37,10 +37,10 @@ export type {
 } from './types/account';
 
 export { AssetType, StakingType } from './types/asset';
-export type { Asset, OrmlExtras, StatemineExtras } from './types/asset';
+export type { Asset, OrmlExtras, StatemineExtras, AssetByChains } from './types/asset';
 
 export { LockTypes } from './types/balance';
-export type { Balance, BalanceLock } from './types/balance';
+export type { Balance, BalanceLock, AssetBalance } from './types/balance';
 
 export type { ChainMetadata } from './types/metadata';
 
@@ -71,8 +71,6 @@ export { NotificationType } from './types/notification';
 
 export { XcmPallets } from './types/substrate';
 
-export type { TrackId, TrackInfo } from './types/track';
-
 export { TransactionType, MultisigTxInitStatus, MultisigTxFinalStatus, WrapperKind } from './types/transaction';
 export type {
   Transaction,
@@ -91,8 +89,19 @@ export type {
 
 export type { BasketTransaction } from './types/basket';
 
+export type {
+  TrackId,
+  TrackInfo,
+  VotingThreshold,
+  VotingCurve,
+  ReciprocalCurve,
+  SteppedDecreasingCurve,
+  LinearDecreasingCurve,
+} from './types/track';
+
 export { ReferendumType } from './types/referendum';
 export type {
+  Tally,
   ReferendumId,
   ReferendumInfo,
   ApprovedReferendum,
@@ -101,6 +110,7 @@ export type {
   TimedOutReferendum,
   KilledReferendum,
   CancelledReferendum,
+  CompletedReferendum,
 } from './types/referendum';
 
 export { VotingType, VoteType, Conviction } from './types/voting';

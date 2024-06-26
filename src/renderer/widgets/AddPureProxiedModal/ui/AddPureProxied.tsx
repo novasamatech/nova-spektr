@@ -8,10 +8,9 @@ import type { Chain } from '@shared/core';
 import { OperationSign, OperationSubmit } from '@features/operations';
 import { Step } from '../lib/types';
 import { AddPureProxiedForm } from './AddPureProxiedForm';
-import { Confirm } from './Confirm';
 import { addPureProxiedUtils } from '../lib/add-pure-proxied-utils';
 import { addPureProxiedModel } from '../model/add-pure-proxied-model';
-import { basketUtils } from '@features/operations/OperationsConfirm';
+import { basketUtils, AddPureProxiedConfirm } from '@features/operations/OperationsConfirm';
 
 export const AddPureProxied = () => {
   const { t } = useI18n();
@@ -37,7 +36,7 @@ export const AddPureProxied = () => {
     <BaseModal closeButton contentClass="" isOpen={isModalOpen} title={getModalTitle(step, chain)} onClose={closeModal}>
       {addPureProxiedUtils.isInitStep(step) && <AddPureProxiedForm onGoBack={closeModal} />}
       {addPureProxiedUtils.isConfirmStep(step) && (
-        <Confirm
+        <AddPureProxiedConfirm
           secondaryActionButton={
             initiatorWallet &&
             basketUtils.isBasketAvailable(initiatorWallet) && (

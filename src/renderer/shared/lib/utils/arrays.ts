@@ -40,3 +40,17 @@ export function dictionary<T extends Record<K, PropertyKey>, K extends KeysOfTyp
 export function getRepeatedIndex(index: number, base: number): number {
   return Math.floor(index / base);
 }
+
+export function addUnique<T extends any>(collection: T[], item: T): T[] {
+  return collection.includes(item) ? [...collection] : [...collection, item];
+}
+
+export function removeFromCollection<T extends any>(collection: T[], item: T): T[] {
+  return collection.filter((i) => i !== item);
+}
+
+export const sortByDateDesc = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]): number =>
+  new Date(dateA) < new Date(dateB) ? 1 : -1;
+
+export const sortByDateAsc = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]): number =>
+  new Date(dateA) > new Date(dateB) ? 1 : -1;
