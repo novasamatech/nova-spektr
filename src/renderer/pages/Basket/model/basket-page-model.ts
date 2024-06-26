@@ -35,6 +35,7 @@ const allSelected = createEvent();
 const signStarted = createEvent();
 const validationStarted = createEvent();
 const validationCompleted = createEvent();
+const refreshValidationStarted = createEvent();
 const signContinued = createEvent();
 const signTransactionsReceived = createEvent<BasketTransactionsMap>();
 const validationWarningShown = createEvent<BasketTransactionsMap>();
@@ -136,23 +137,11 @@ sample({
 
 sample({
   clock: validationStarted,
-  source: $basketTransactions,
-  fn: (transactions) => transactions.map((tx) => tx.id),
-  target: $validatingTxs,
-});
-
-sample({
-  clock: validationStarted,
   source: {
     transactions: $basketTransactions,
     apis: networkModel.$apis,
     alreadyValidatedTxs: $alreadyValidatedTxs,
     validatingTxs: $validatingTxs,
-  },
-  filter: ({ transactions, apis }) => {
-    const chains = new Set(transactions.map((t) => t.coreTx.chainId));
-
-    return [...chains].some((chainId) => apis[chainId]);
   },
   fn: ({ transactions, apis, alreadyValidatedTxs, validatingTxs }) => {
     const chains = new Set(transactions.map((t) => t.coreTx.chainId));
@@ -172,6 +161,39 @@ sample({
     return txsToValidate;
   },
   target: validateFx,
+});
+
+sample({
+  clock: refreshValidationStarted,
+  source: {
+    transactions: $basketTransactions,
+    apis: networkModel.$apis,
+    alreadyValidatedTxs: $alreadyValidatedTxs,
+    validatingTxs: $validatingTxs,
+  },
+  fn: ({ transactions, apis, alreadyValidatedTxs, validatingTxs }) => {
+    const chains = new Set(transactions.map((t) => t.coreTx.chainId));
+
+    const txsToValidate = [...chains].reduce<BasketTransaction[]>((acc, chainId) => {
+      if (!apis[chainId]) {
+        return acc;
+      }
+
+      const txs = transactions.filter((tx) => tx.coreTx.chainId === chainId);
+
+      return [...acc, ...txs];
+    }, []);
+
+    return txsToValidate;
+  },
+  target: validateFx,
+});
+
+sample({
+  clock: validateFx,
+  source: $validatingTxs,
+  fn: (validatingTxs, txs) => txs.reduce((acc, tx) => addUnique(acc, tx.id), validatingTxs),
+  target: $validatingTxs,
 });
 
 sample({
@@ -195,26 +217,16 @@ sample({
 // Validation on sign process
 
 sample({
-  clock: validateFx,
-  fn: (txs) => txs.map((tx) => tx.id),
-  target: $validatingTxs,
-});
-
-sample({
   clock: txValidated,
   source: $validatingTxs,
-  fn: (txs, { id }) => {
-    return removeFromCollection(txs, id);
-  },
+  fn: (txs, { id }) => removeFromCollection(txs, id),
   target: $validatingTxs,
 });
 
 sample({
   clock: txValidated,
   source: $alreadyValidatedTxs,
-  fn: (txs, { id }) => {
-    return addUnique(txs, id);
-  },
+  fn: (txs, { id }) => addUnique(txs, id),
   target: $alreadyValidatedTxs,
 });
 
@@ -333,6 +345,7 @@ export const basketPageModel = {
 
   events: {
     validationStarted,
+    refreshValidationStarted,
     txSelected,
     txClicked,
     allSelected,

@@ -39,7 +39,7 @@ export const Basket = () => {
             </Button>
 
             <div className="flex gap-4 items-center">
-              <Button variant="text" onClick={() => basketPageModel.events.validationStarted()}>
+              <Button variant="text" onClick={() => basketPageModel.events.refreshValidationStarted()}>
                 <div className="flex items-center gap-1">
                   <Icon className="text-icon-accent" name="refresh" />
                   {t('basket.refreshButton')}
@@ -56,15 +56,15 @@ export const Basket = () => {
             </div>
           </div>
 
-          <ul className="bg-block-background-default rounded-md flex divide-y flex-col gap-y-1.5 w-[736px]">
+          <ul className="rounded-md flex divide-y flex-col gap-y-1.5 w-[736px]">
             {basketTxs.map((tx) => {
-              const isInitialValidating = validatingTxs.includes(tx.id) && !alreadyValidatedTxs.includes(tx.id);
+              const isInitialValidating = !alreadyValidatedTxs.includes(tx.id);
               const isValidating = validatingTxs.includes(tx.id) && alreadyValidatedTxs.includes(tx.id);
 
               return isInitialValidating ? (
                 <Shimmering key={tx.id} width={736} height={52} className="flex gap-x-4 px-4" />
               ) : (
-                <li key={tx.id} className="flex gap-x-4 px-4">
+                <li key={tx.id} className="flex gap-x-4 px-4 bg-block-background-default">
                   <div className="flex justify-center items-center">
                     <Checkbox
                       disabled={Boolean(invalidTxs.get(tx.id)) || isValidating}
