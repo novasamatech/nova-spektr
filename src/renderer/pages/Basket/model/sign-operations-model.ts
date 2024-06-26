@@ -107,9 +107,6 @@ const startDataPreparationFx = createEffect(async ({ transactions, wallets, chai
 
 const $step = restore(stepChanged, Step.NONE);
 const $transactions = restore(flowStarted, []).reset(flowFinished);
-stepChanged.watch((e) => {
-  console.log('xcmStep', e);
-});
 
 const $txDataParams = combine({
   wallets: walletModel.$wallets,
@@ -933,6 +930,7 @@ sample({
             type: 'chain',
             // params will be a string for failed transaction
             message: result.params as string,
+            dateCreated: Date.now(),
           } as ChainError,
         });
       }

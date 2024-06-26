@@ -424,7 +424,7 @@ sample({
 export const bondNominateModel = {
   $step,
   $walletData,
-  $initiatorWallet: $walletData.map((data) => data?.wallet),
+  $initiatorWallet: $walletData.map((data) => data?.wallet || null),
 
   events: {
     flowStarted,
