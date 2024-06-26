@@ -41,6 +41,7 @@ import { submitModel } from '@features/operations/OperationSubmit';
 import { basketModel } from '@entities/basket';
 import { ExtrinsicResult } from '@features/operations/OperationSubmit/lib/types';
 import { ChainError } from '@shared/core/types/basket';
+import { proxyService } from '@/src/renderer/shared/api/proxy';
 
 type TransferInput = {
   xcmChain: Chain;
@@ -170,6 +171,9 @@ const prepareAddProxyTransaction = async ({ transaction, wallets, chains, apis }
   const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
   const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
+  const proxy = await proxyService.getProxiesForAccount(apis[chainId], transaction.coreTx.address);
+  const proxyDeposit = proxyService.getProxyDeposit(apis[chainId], proxy.deposit, proxy.accounts.length + 1);
+
   return {
     id: transaction.id,
     chain,
@@ -179,8 +183,8 @@ const prepareAddProxyTransaction = async ({ transaction, wallets, chains, apis }
     description: '',
 
     transaction: transaction.coreTx,
-    proxyDeposit: '0',
-    proxyNumber: 1,
+    proxyDeposit,
+    proxyNumber: proxy.accounts.length + 1,
     fee,
   } as AddProxyInput;
 };
@@ -202,6 +206,7 @@ const prepareAddPureProxiedTransaction = async ({ transaction, wallets, chains, 
   const chain = chains[chainId]!;
   const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
   const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+  const proxyDeposit = proxyService.getProxyDeposit(apis[chainId], '0', 1);
 
   return {
     id: transaction.id,
@@ -210,6 +215,7 @@ const prepareAddPureProxiedTransaction = async ({ transaction, wallets, chains, 
     amount: transaction.coreTx.args.value,
     description: '',
     fee,
+    proxyDeposit,
     multisigDeposit: '0',
   } as AddPureProxiedInput;
 };

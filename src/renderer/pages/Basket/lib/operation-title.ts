@@ -21,10 +21,10 @@ export const getOperationTitle = (transaction: BasketTransaction, chain: Chain):
 
   const Title = {
     // Proxy
-    [TransactionType.ADD_PROXY]: 'operations.modalTitles.addProxy',
-    [TransactionType.REMOVE_PROXY]: 'operations.modalTitles.removeProxy',
-    [TransactionType.CREATE_PURE_PROXY]: 'operations.modalTitles.a',
-    [TransactionType.REMOVE_PURE_PROXY]: 'operations.modalTitles.addProxy',
+    [TransactionType.ADD_PROXY]: 'operations.modalTitles.addProxyOn',
+    [TransactionType.REMOVE_PROXY]: 'operations.modalTitles.removeProxyOn',
+    [TransactionType.CREATE_PURE_PROXY]: 'operations.modalTitles.addPureProxyOn',
+    [TransactionType.REMOVE_PURE_PROXY]: 'operations.modalTitles.removePureProxyOn',
     // Staking
     [TransactionType.BOND]: 'operations.modalTitles.startStakingOn',
     [TransactionType.NOMINATE]: 'operations.modalTitles.nominateOn',

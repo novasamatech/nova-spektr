@@ -11,6 +11,7 @@ type Input = {
   signatory?: Account;
   description: string;
 
+  proxyDeposit: string;
   fee: string;
   multisigDeposit: string;
 };

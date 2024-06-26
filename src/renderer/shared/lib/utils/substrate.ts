@@ -45,8 +45,7 @@ export const createTxMetadata = async (
     blockNumber: block.header.number.toNumber(),
     genesisHash: genesisHash.toString(),
     metadataRpc: metadataRpc.toHex(),
-    // nonce: nonce.toNumber() + nonceDelta,
-    nonce: 0,
+    nonce: nonce.toNumber() + nonceDelta,
 
     specVersion: specVersion.toNumber(),
     transactionVersion: transactionVersion.toNumber(),

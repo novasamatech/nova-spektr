@@ -113,6 +113,24 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
         <hr className="border-filter-border w-full pr-2" />
 
+        <DetailRow
+          className="text-text-primary"
+          label={
+            <>
+              <Icon className="text-text-tertiary" name="lock" size={12} />
+              <FootnoteText className="text-text-tertiary">{t('proxy.proxyDepositLabel')}</FootnoteText>
+              <Tooltip content={t('proxy.proxyDepositHint')} offsetPx={-60}>
+                <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
+              </Tooltip>
+            </>
+          }
+        >
+          <div className="flex flex-col gap-y-0.5 items-end">
+            <AssetBalance value={confirmStore.proxyDeposit} asset={confirmStore.chain.assets[0]} />
+            <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.proxyDeposit} />
+          </div>
+        </DetailRow>
+
         {accountUtils.isMultisigAccount(confirmStore.account) && (
           <DetailRow
             className="text-text-primary"
