@@ -152,9 +152,9 @@ sample({
 });
 
 sample({
-  clock: queryChanged,
-  source: $activeTokensWithBalance,
-  fn: (activeTokensWithBalance, query) => {
+  clock: [$activeTokensWithBalance, queryChanged],
+  source: { activeTokensWithBalance: $activeTokensWithBalance, query: $query },
+  fn: ({ activeTokensWithBalance, query }) => {
     return activeTokensWithBalance.reduce<AssetByChains[]>((acc, token) => {
       const filteredChains = token.chains.filter((chain) => {
         const hasSymbol = includes(chain.assetSymbol, query);
