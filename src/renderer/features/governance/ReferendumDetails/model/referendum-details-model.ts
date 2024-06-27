@@ -1,5 +1,4 @@
 import { createStore, createEvent, createEffect, sample, combine } from 'effector';
-import markdownit from 'markdown-it';
 import { spread } from 'patronum';
 
 import type { ChainId, ReferendumId } from '@shared/core';
@@ -38,13 +37,6 @@ const requestOffChainDetailsFx = createEffect(
   },
 );
 
-const parseMarkdownFx = createEffect((value: string): string => {
-  const html = markdownit({ html: true, breaks: true }).render(value);
-
-  // remove noxious tags
-  return html.replace(/<font[^>]*>|<\/font>/g, '');
-});
-
 sample({
   clock: flowStarted,
   fn: ({ chainId, index }) => ({ chainId, index, started: true }),
@@ -70,11 +62,6 @@ sample({
 sample({
   clock: requestOffChainDetailsFx.doneData,
   filter: (details): details is string => Boolean(details),
-  target: parseMarkdownFx,
-});
-
-sample({
-  clock: parseMarkdownFx.doneData,
   target: $offChainDetails,
 });
 

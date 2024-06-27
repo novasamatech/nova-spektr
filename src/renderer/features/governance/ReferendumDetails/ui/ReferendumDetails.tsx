@@ -1,9 +1,8 @@
 import { useUnit } from 'effector-react';
 
 import { referendumDetailsModel } from '../model/referendum-details-model';
-import { BaseModal, Plate, FootnoteText } from '@shared/ui';
+import { BaseModal, Plate, FootnoteText, Loader, Markdown } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
-import './styles.css';
 import { TrackInfo } from '@entities/governance';
 
 export const ReferendumDetails = () => {
@@ -12,7 +11,7 @@ export const ReferendumDetails = () => {
   const offChainDetails = useUnit(referendumDetailsModel.$offChainDetails);
   const isDetailsLoading = useUnit(referendumDetailsModel.$isDetailsLoading);
 
-  const [isModalOpen, closeModal] = useModalClose(Boolean(offChainDetails), referendumDetailsModel.output.flowClosed);
+  const [isModalOpen, closeModal] = useModalClose(Boolean(referendum), referendumDetailsModel.output.flowClosed);
 
   if (!index || !referendum) return null;
 
@@ -20,43 +19,41 @@ export const ReferendumDetails = () => {
     <BaseModal
       isOpen={isModalOpen}
       title={`Referendum #${index}`}
-      contentClass="h-full w-full bg-main-app-background"
-      panelClass="w-[944px] h-[678px]"
-      headerClass="pl-5 pr-3 py-4"
+      contentClass="min-h-0 h-full w-full bg-main-app-background overflow-y-auto"
+      panelClass="flex flex-col w-[944px] h-[678px]"
+      headerClass="pl-5 pr-3 py-4 shrink-0"
+      closeButton
       onClose={closeModal}
     >
-      <div className="ref-details flex gap-x-4 max-h-[calc(100%-62px)] py-4 px-6 overflow-y-auto">
-        <Plate className="h-fit basis-[678px] p-6">
-          <div className="flex justify-between items-center mb-4">
-            <FootnoteText>Proposer: XXX</FootnoteText>
-            <TrackInfo trackId={referendum.track} />
-          </div>
+      <div className="ref-details flex flex-wrap-reverse items-end gap-4 p-6 min-h-full">
+        <div className="h-full min-h-0 grow min-w-80 basis-[530px]">
+          <Plate className="shadow-card-shadow border-filter-border h-fit p-6">
+            <div className="flex justify-between items-center mb-4">
+              <FootnoteText className="text-text-secondary">Proposer: XXX</FootnoteText>
+              <TrackInfo trackId={referendum.track} />
+            </div>
 
-          {isDetailsLoading && <div>Loading</div>}
-          {!isDetailsLoading && offChainDetails && (
-            <div
-              className="flex flex-col gap-y-1 text-footnote"
-              dangerouslySetInnerHTML={{ __html: offChainDetails }}
-            />
-          )}
-        </Plate>
+            {isDetailsLoading && (
+              <div className="flex justify-center items-center min-h-32">
+                <Loader color="primary" size={25} />
+              </div>
+            )}
 
-        <div className="flex flex-col gap-y-4 basis-[350px]">
-          {/* eslint-disable-next-line i18next/no-literal-string */}
-          <Plate className="p-6">Votes</Plate>
-
-          {/* eslint-disable-next-line i18next/no-literal-string */}
-          <Plate className="p-6">Summary</Plate>
-
-          {/* eslint-disable-next-line i18next/no-literal-string */}
-          <Plate className="p-6">Additional</Plate>
-
-          {/* eslint-disable-next-line i18next/no-literal-string */}
-          <Plate className="p-6">Timeline</Plate>
-
-          {/* eslint-disable-next-line i18next/no-literal-string */}
-          <Plate className="p-6">Advanced</Plate>
+            {!isDetailsLoading && offChainDetails && <Markdown>{offChainDetails}</Markdown>}
+          </Plate>
         </div>
+
+        {/*<div className="flex flex-row flex-wrap gap-4 basis-[350px] grow shrink-0">*/}
+        {/*  <Plate className="p-6 shadow-card-shadow border-filter-border grow basis-[350px]">Votes</Plate>*/}
+
+        {/*  <Plate className="p-6 shadow-card-shadow border-filter-border grow basis-[350px]">Summary</Plate>*/}
+
+        {/*  <Plate className="p-6 shadow-card-shadow border-filter-border grow basis-[350px]">Additional</Plate>*/}
+
+        {/*  <Plate className="p-6 shadow-card-shadow border-filter-border grow basis-[350px]">Timeline</Plate>*/}
+
+        {/*  <Plate className="p-6 shadow-card-shadow border-filter-border grow basis-[350px]">Advanced</Plate>*/}
+        {/*</div>*/}
       </div>
     </BaseModal>
   );
