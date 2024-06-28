@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { ReactNode } from 'react';
 
 import { Button, DetailRow, FootnoteText, Icon, Tooltip, CaptionText } from '@shared/ui';
@@ -32,22 +32,45 @@ export const Confirmation = ({
   config = { withFormatAmount: true },
 }: Props) => {
   const { t } = useI18n();
+  const confirmStore = useStoreMap({
+    store: confirmModel.$confirmStore,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
 
-  const stores = useUnit(confirmModel.$confirmStore);
-  const initiatorWallets = useUnit(confirmModel.$initiatorWallets);
-  const signerWallets = useUnit(confirmModel.$signerWallets);
-  const proxiedWallets = useUnit(confirmModel.$proxiedWallets);
+  const initiatorWallet = useStoreMap({
+    store: confirmModel.$initiatorWallets,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
 
-  const confirmStore = stores?.[id];
-  const initiatorWallet = initiatorWallets[id];
-  const signerWallet = signerWallets[id];
-  const proxiedWallet = proxiedWallets[id];
+  const signerWallet = useStoreMap({
+    store: confirmModel.$signerWallets,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
+
+  const proxiedWallet = useStoreMap({
+    store: confirmModel.$proxiedWallets,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
+
+  const api = useStoreMap({
+    store: confirmModel.$apis,
+    keys: [confirmStore.chain.chainId],
+    fn: (value, [chainId]) => value?.[chainId],
+  });
+
+  const eraLength = useStoreMap({
+    store: confirmModel.$eraLength,
+    keys: [confirmStore.chain.chainId],
+    fn: (value, [chainId]) => value?.[chainId],
+  });
 
   const feeData = useUnit(confirmModel.$feeData);
   const isFeeLoading = useUnit(confirmModel.$isFeeLoading);
-  const eraLengthMap = useUnit(confirmModel.$eraLength);
 
-  const apis = useUnit(confirmModel.$apis);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
@@ -55,8 +78,6 @@ export const Confirmation = ({
 
   if (!confirmStore || !initiatorWallet) return null;
 
-  const api = apis[confirmStore.chain.chainId];
-  const eraLength = eraLengthMap[confirmStore.chain.chainId];
   const amountValue = config.withFormatAmount
     ? formatAmount(confirmStore.amount, confirmStore.asset.precision)
     : confirmStore.amount;

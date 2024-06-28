@@ -11,6 +11,7 @@ import {
   BasketTransaction,
   Chain,
   ChainId,
+  Connection,
   ProxiedAccount,
   ProxyType,
   Transaction,
@@ -19,7 +20,7 @@ import {
   Wallet,
 } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
-import { networkModel } from '@entities/network';
+import { networkModel, networkUtils } from '@entities/network';
 import { getAssetById, redeemableAmount, toAccountId } from '@shared/lib/utils';
 import { TransferTypes, XcmTypes, transactionService } from '@entities/transaction';
 import {
@@ -43,7 +44,7 @@ import { ExtrinsicResult } from '@features/operations/OperationSubmit/lib/types'
 import { ChainError } from '@shared/core/types/basket';
 import { proxyService } from '@/src/renderer/shared/api/proxy';
 import { getCoreTx } from '../lib/utils';
-import { eraService, useStakingData } from '@/src/renderer/entities/staking';
+import { eraService, useStakingData, validatorsService } from '@/src/renderer/entities/staking';
 
 type TransferInput = {
   xcmChain: Chain;
@@ -69,46 +70,49 @@ type PrepareDataParams = {
   chains: Record<ChainId, Chain>;
   apis: Record<ChainId, ApiPromise>;
   transactions: BasketTransaction[];
+  connections: Record<ChainId, Connection>;
 };
 
-const startDataPreparationFx = createEffect(async ({ transactions, wallets, chains, apis }: PrepareDataParams) => {
-  const dataParams = [];
+const startDataPreparationFx = createEffect(
+  async ({ transactions, wallets, chains, apis, connections }: PrepareDataParams) => {
+    const dataParams = [];
 
-  for (const transaction of transactions) {
-    const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE, TransactionType.BOND]);
+    for (const transaction of transactions) {
+      const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE, TransactionType.BOND]);
 
-    if (TransferTypes.includes(coreTx.type) || XcmTypes.includes(coreTx.type)) {
-      const params = await prepareTransferTransactionData({ transaction, wallets, chains, apis });
+      if (TransferTypes.includes(coreTx.type) || XcmTypes.includes(coreTx.type)) {
+        const params = await prepareTransferTransactionData({ transaction, wallets, chains, apis, connections });
 
-      dataParams.push({ type: TransactionType.TRANSFER, params });
+        dataParams.push({ type: TransactionType.TRANSFER, params });
+      }
+
+      const TransactionValidators = {
+        [TransactionType.ADD_PROXY]: prepareAddProxyTransaction,
+        [TransactionType.CREATE_PURE_PROXY]: prepareAddPureProxiedTransaction,
+        [TransactionType.REMOVE_PROXY]: prepareRemoveProxyTransaction,
+        [TransactionType.REMOVE_PURE_PROXY]: prepareRemovePureProxiedTransaction,
+
+        [TransactionType.BOND]: prepareBondNominateTransaction,
+        [TransactionType.NOMINATE]: prepareNominateTransaction,
+        [TransactionType.STAKE_MORE]: prepareBondExtraTransaction,
+        [TransactionType.DESTINATION]: preparePayeeTransaction,
+        [TransactionType.RESTAKE]: prepareRestakeTransaction,
+        [TransactionType.UNSTAKE]: prepareUnstakeTransaction,
+        [TransactionType.REDEEM]: prepareWithdrawTransaction,
+      };
+
+      if (coreTx.type in TransactionValidators) {
+        // TS thinks that transfer should be in TransactionValidators
+        // @ts-ignore`
+        const params = await TransactionValidators[coreTx.type]({ transaction, wallets, chains, apis, connections });
+
+        dataParams.push({ type: coreTx.type, params });
+      }
     }
 
-    const TransactionValidators = {
-      [TransactionType.ADD_PROXY]: prepareAddProxyTransaction,
-      [TransactionType.CREATE_PURE_PROXY]: prepareAddPureProxiedTransaction,
-      [TransactionType.REMOVE_PROXY]: prepareRemoveProxyTransaction,
-      [TransactionType.REMOVE_PURE_PROXY]: prepareRemovePureProxiedTransaction,
-
-      [TransactionType.BOND]: prepareBondNominateTransaction,
-      [TransactionType.NOMINATE]: prepareNominateTransaction,
-      [TransactionType.STAKE_MORE]: prepareBondExtraTransaction,
-      [TransactionType.DESTINATION]: preparePayeeTransaction,
-      [TransactionType.RESTAKE]: prepareRestakeTransaction,
-      [TransactionType.UNSTAKE]: prepareUnstakeTransaction,
-      [TransactionType.REDEEM]: prepareWithdrawTransaction,
-    };
-
-    if (coreTx.type in TransactionValidators) {
-      // TS thinks that transfer should be in TransactionValidators
-      // @ts-ignore`
-      const params = await TransactionValidators[coreTx.type]({ transaction, wallets, chains, apis });
-
-      dataParams.push({ type: coreTx.type, params });
-    }
-  }
-
-  return dataParams;
-});
+    return dataParams;
+  },
+);
 
 const $step = restore(stepChanged, Step.NONE);
 const $transactions = restore(flowStarted, []).reset(flowFinished);
@@ -117,6 +121,7 @@ const $txDataParams = combine({
   wallets: walletModel.$wallets,
   chains: networkModel.$chains,
   apis: networkModel.$apis,
+  connections: networkModel.$connections,
 });
 
 type TransferDataParams = {
@@ -124,6 +129,7 @@ type TransferDataParams = {
   chains: Record<ChainId, Chain>;
   apis: Record<ChainId, ApiPromise>;
   transaction: BasketTransaction;
+  connections: Record<ChainId, Connection>;
 };
 
 const prepareTransferTransactionData = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
@@ -301,7 +307,13 @@ type BondNominateInput = {
   description: string;
 };
 
-const prepareBondNominateTransaction = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
+const prepareBondNominateTransaction = async ({
+  transaction,
+  wallets,
+  chains,
+  apis,
+  connections,
+}: TransferDataParams) => {
   const bondTx = transaction.coreTx.args.transactions.find((t: Transaction) => t.type === TransactionType.BOND)!;
   const nominateTx = transaction.coreTx.args.transactions.find(
     (t: Transaction) => t.type === TransactionType.NOMINATE,
@@ -314,13 +326,19 @@ const prepareBondNominateTransaction = async ({ transaction, wallets, chains, ap
   const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
   const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
+  const era = await eraService.getActiveEra(apis[chainId]);
+  const isLightClient = networkUtils.isLightClientConnection(connections[chain!.chainId]);
+  const validatorsMap = await validatorsService.getValidatorsWithInfo(apis[chainId], era || 0, isLightClient);
+
+  const validators = nominateTx.args.targets.map((address: string) => validatorsMap[address]);
+
   return {
     id: transaction.id,
     chain,
     asset: chain.assets[0],
     shards: [account],
     amount: bondTx.args.value,
-    validators: nominateTx.args.targets,
+    validators,
     destination: bondTx.args.dest,
     description: '',
 
@@ -373,7 +391,7 @@ type NominateInput = {
   description: string;
 };
 
-const prepareNominateTransaction = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
+const prepareNominateTransaction = async ({ transaction, wallets, chains, connections, apis }: TransferDataParams) => {
   const chainId = transaction.coreTx.chainId as ChainId;
   const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
@@ -381,12 +399,18 @@ const prepareNominateTransaction = async ({ transaction, wallets, chains, apis }
   const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
   const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
+  const era = await eraService.getActiveEra(apis[chainId]);
+  const isLightClient = networkUtils.isLightClientConnection(connections[chain!.chainId]);
+  const validatorsMap = await validatorsService.getValidatorsWithInfo(apis[chainId], era || 0, isLightClient);
+
+  const validators = transaction.coreTx.args.targets.map((address: string) => validatorsMap[address]);
+
   return {
     id: transaction.id,
     chain,
     asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
     shards: [account],
-    validators: transaction.coreTx.args.targets,
+    validators,
     destination: transaction.coreTx.args.dest,
     description: '',
 
@@ -542,7 +566,7 @@ const prepareWithdrawTransaction = async ({ transaction, wallets, chains, apis }
 sample({
   clock: flowStarted,
   source: $txDataParams,
-  fn: ({ wallets, chains, apis }, transactions) => ({ transactions, wallets, chains, apis }),
+  fn: ({ wallets, chains, apis, connections }, transactions) => ({ transactions, wallets, chains, apis, connections }),
   target: startDataPreparationFx,
 });
 

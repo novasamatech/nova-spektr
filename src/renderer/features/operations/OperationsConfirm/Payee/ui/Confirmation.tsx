@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { ReactNode } from 'react';
 
 import { Button, DetailRow, FootnoteText, Icon, Tooltip, CaptionText } from '@shared/ui';
@@ -23,15 +23,29 @@ type Props = {
 export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSignButton }: Props) => {
   const { t } = useI18n();
 
-  const stores = useUnit(confirmModel.$confirmStore);
-  const initiatorWallets = useUnit(confirmModel.$initiatorWallets);
-  const signerWallets = useUnit(confirmModel.$signerWallets);
-  const proxiedWallets = useUnit(confirmModel.$proxiedWallets);
+  const confirmStore = useStoreMap({
+    store: confirmModel.$confirmStore,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
 
-  const confirmStore = stores?.[id];
-  const initiatorWallet = initiatorWallets[id];
-  const signerWallet = signerWallets[id];
-  const proxiedWallet = proxiedWallets[id];
+  const initiatorWallet = useStoreMap({
+    store: confirmModel.$initiatorWallets,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
+
+  const signerWallet = useStoreMap({
+    store: confirmModel.$signerWallets,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
+
+  const proxiedWallet = useStoreMap({
+    store: confirmModel.$proxiedWallets,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
 
   const feeData = useUnit(confirmModel.$feeData);
   const isFeeLoading = useUnit(confirmModel.$isFeeLoading);
