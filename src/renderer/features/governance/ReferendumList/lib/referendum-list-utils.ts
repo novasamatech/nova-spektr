@@ -17,6 +17,7 @@ export const referendumListUtils = {
   getSortedOngoing,
   getSortedCompleted,
   getVoteFractions,
+  getVotedCount,
   isReferendumVoted,
 };
 
@@ -40,6 +41,16 @@ function getVoteFractions(tally: Tally, approve: BN): Record<'aye' | 'nay' | 'pa
   const pass = parseInt(approve.toString().slice(0, 8)) / 1000000;
 
   return { aye, nay, pass };
+}
+
+// ???
+function getVotedCount(tally: Tally, approve: BN) {
+  const pass = parseInt(approve.toString().slice(0, 8)) / 1000000;
+
+  return {
+    voted: tally.ayes.divn(pass),
+    of: tally.ayes.divn(100),
+  };
 }
 
 function isReferendumVoted(index: ReferendumId, votings: Record<Address, Record<TrackId, Voting>>): boolean {
