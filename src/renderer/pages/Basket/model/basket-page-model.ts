@@ -130,9 +130,12 @@ sample({
     selectedTxs: $selectedTxs,
     invalidTxs: $invalidTxs,
     validatingTxs: $validatingTxs,
+    alreadyValidatedTxs: $alreadyValidatedTxs,
   },
-  fn: ({ txs, selectedTxs, invalidTxs, validatingTxs }) => {
-    const validTxs = txs.filter((tx) => !invalidTxs.has(tx.id) && !validatingTxs.includes(tx.id));
+  fn: ({ txs, selectedTxs, invalidTxs, validatingTxs, alreadyValidatedTxs }) => {
+    const validTxs = txs.filter(
+      (tx) => !invalidTxs.has(tx.id) && !(validatingTxs.includes(tx.id) || !alreadyValidatedTxs.includes(tx.id)),
+    );
 
     return selectedTxs.length >= validTxs.length ? [] : validTxs.map((tx) => tx.id);
   },

@@ -34,14 +34,21 @@ export const Basket = () => {
       <Header title={t('basket.title')} />
 
       {basketTxs.length > 0 && (
-        <div className="overflow-y-auto w-full mt-4 h-full flex flex-col items-center">
-          <div className="flex items-start justify-between w-[736px]">
-            <Button variant="text" onClick={() => basketPageModel.events.allSelected()}>
-              {t('basket.selectAll')}
-            </Button>
+        <div className="overflow-y-auto w-full mt-4 gap-4 h-full flex flex-col items-center">
+          <div className="flex items-center justify-between w-[736px]">
+            <Checkbox
+              className="ml-3"
+              checked={basketTxs.length === selectedTxs.length}
+              semiChecked={selectedTxs.length > 0 && basketTxs.length !== selectedTxs.length}
+              onChange={() => basketPageModel.events.allSelected()}
+            >
+              <FootnoteText className="text-text-secondary">
+                {t('basket.selectedStatus', { count: basketTxs.length, selected: selectedTxs.length })}
+              </FootnoteText>
+            </Checkbox>
 
             <div className="flex gap-4 items-center">
-              <Button variant="text" onClick={() => basketPageModel.events.refreshValidationStarted()}>
+              <Button variant="text" size="sm" onClick={() => basketPageModel.events.refreshValidationStarted()}>
                 <div className="flex items-center gap-1">
                   <Icon className="text-icon-accent" name="refresh" />
                   {t('basket.refreshButton')}
@@ -60,7 +67,7 @@ export const Basket = () => {
 
           <ul className="rounded-md flex divide-y flex-col gap-y-1.5 w-[736px]">
             {basketTxs.map((tx) => (
-              <li key={tx.id} className="flex gap-x-4 px-4 bg-block-background-default">
+              <li key={tx.id} className="flex gap-x-4 px-3 bg-block-background-default">
                 <div className="flex justify-center items-center">
                   <Checkbox
                     disabled={
