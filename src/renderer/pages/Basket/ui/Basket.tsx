@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { Button, Checkbox, ConfirmModal, FootnoteText, Header, Icon, Shimmering, SmallTitleText } from '@shared/ui';
+import { Button, Checkbox, ConfirmModal, FootnoteText, Header, Icon, SmallTitleText } from '@shared/ui';
 import { Operation } from './Operation';
 import { basketPageModel } from '../model/basket-page-model';
 import { EmptyBasket } from './EmptyBasket';
@@ -19,9 +19,11 @@ export const Basket = () => {
   const invalidTxs = useUnit(basketPageModel.$invalidTxs);
   const validTxs = useUnit(basketPageModel.$validTxs);
   const validatingTxs = useUnit(basketPageModel.$validatingTxs);
+  const alreadyValidatedTxs = useUnit(basketPageModel.$alreadyValidatedTxs);
   const validationWarningShown = useUnit(basketPageModel.$validationWarningShown);
   const txToRemove = useUnit(basketPageModel.$txToRemove);
-  const alreadyValidatedTxs = useUnit(basketPageModel.$alreadyValidatedTxs);
+
+  const isSignAvailable = validatingTxs.filter((tx) => selectedTxs.includes(tx)).length > 0 || selectedTxs.length === 0;
 
   useEffect(() => {
     basketPageModel.events.validationStarted();
@@ -48,7 +50,7 @@ export const Basket = () => {
               <Button
                 size="sm"
                 className="w-[125px]"
-                disabled={validatingTxs.length > 0 || selectedTxs.length === 0}
+                disabled={isSignAvailable}
                 onClick={() => basketPageModel.events.signStarted()}
               >
                 {t(selectedTxs.length === 0 ? 'basket.emptySignButton' : 'basket.signButton')}
@@ -57,34 +59,31 @@ export const Basket = () => {
           </div>
 
           <ul className="rounded-md flex divide-y flex-col gap-y-1.5 w-[736px]">
-            {basketTxs.map((tx) => {
-              const isInitialValidating = !alreadyValidatedTxs.includes(tx.id);
-              const isValidating = validatingTxs.includes(tx.id) && alreadyValidatedTxs.includes(tx.id);
-
-              return isInitialValidating ? (
-                <Shimmering key={tx.id} width={736} height={52} className="flex gap-x-4 px-4" />
-              ) : (
-                <li key={tx.id} className="flex gap-x-4 px-4 bg-block-background-default">
-                  <div className="flex justify-center items-center">
-                    <Checkbox
-                      disabled={Boolean(invalidTxs.get(tx.id)) || isValidating}
-                      checked={selectedTxs.includes(tx.id)}
-                      onChange={() =>
-                        basketPageModel.events.txSelected({ id: tx.id, value: !selectedTxs.includes(tx.id) })
-                      }
-                    />
-                  </div>
-
-                  <Operation
-                    tx={tx}
-                    validating={isValidating}
-                    errorText={invalidTxs.get(tx.id)?.errorText}
-                    onClick={() => basketPageModel.events.txClicked(tx)}
-                    onTxRemoved={() => basketPageModel.events.removeTxStarted(tx)}
+            {basketTxs.map((tx) => (
+              <li key={tx.id} className="flex gap-x-4 px-4 bg-block-background-default">
+                <div className="flex justify-center items-center">
+                  <Checkbox
+                    disabled={
+                      Boolean(invalidTxs.get(tx.id)) ||
+                      validatingTxs.includes(tx.id) ||
+                      !alreadyValidatedTxs.includes(tx.id)
+                    }
+                    checked={selectedTxs.includes(tx.id)}
+                    onChange={() =>
+                      basketPageModel.events.txSelected({ id: tx.id, value: !selectedTxs.includes(tx.id) })
+                    }
                   />
-                </li>
-              );
-            })}
+                </div>
+
+                <Operation
+                  tx={tx}
+                  validating={validatingTxs.includes(tx.id) || !alreadyValidatedTxs.includes(tx.id)}
+                  errorText={invalidTxs.get(tx.id)?.errorText}
+                  onClick={() => basketPageModel.events.txClicked(tx)}
+                  onTxRemoved={() => basketPageModel.events.removeTxStarted(tx)}
+                />
+              </li>
+            ))}
           </ul>
         </div>
       )}

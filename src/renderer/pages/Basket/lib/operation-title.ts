@@ -1,6 +1,7 @@
 import { getAssetById } from '@shared/lib/utils';
 import { TransferTypes, XcmTypes } from '@entities/transaction';
 import { BasketTransaction, Chain, TransactionType } from '@shared/core';
+import { getCoreTx } from './utils';
 
 type Title = {
   title: string;
@@ -8,8 +9,10 @@ type Title = {
 };
 
 export const getOperationTitle = (transaction: BasketTransaction, chain: Chain): Title => {
-  const type = transaction.coreTx.type;
-  const asset = getAssetById(transaction.coreTx.args.assetId, chain.assets);
+  const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE, TransactionType.BOND]);
+
+  const type = coreTx.type;
+  const asset = getAssetById(coreTx.args.assetId, chain.assets);
 
   if (TransferTypes.includes(type)) {
     return { title: 'transfer.title', params: { asset: asset?.symbol } };

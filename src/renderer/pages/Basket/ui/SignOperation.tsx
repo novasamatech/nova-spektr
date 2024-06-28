@@ -27,6 +27,7 @@ import { getOperationTitle } from '../lib/operation-title';
 import { TransferTypes, XcmTypes } from '@entities/transaction';
 import { networkModel } from '@entities/network';
 import { Step } from '../types';
+import { getCoreTx } from '../lib/utils';
 
 export const SignOperation = () => {
   const { t } = useI18n();
@@ -51,7 +52,9 @@ export const SignOperation = () => {
   };
 
   const getConfirmScreen = (transaction: BasketTransaction) => {
-    const type = transaction.coreTx.type;
+    const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE, TransactionType.BOND]);
+
+    const type = coreTx.type;
     const config = { withFormatAmount: false };
 
     if (TransferTypes.includes(type) || XcmTypes.includes(type)) {

@@ -29,6 +29,7 @@ import { getOperationTitle } from '../lib/operation-title';
 import { cnTw } from '@shared/lib/utils';
 import { Step } from '../types';
 import { SignButton } from '@entities/operations';
+import { getCoreTx } from '../lib/utils';
 
 export const SignOperations = () => {
   const { t } = useI18n();
@@ -71,7 +72,8 @@ export const SignOperations = () => {
   };
 
   const getConfirmScreen = (transaction: BasketTransaction) => {
-    const type = transaction.coreTx.type;
+    const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE, TransactionType.BOND]);
+    const type = coreTx.type;
     const config = { withFormatAmount: false };
 
     if (TransferTypes.includes(type) || XcmTypes.includes(type)) {

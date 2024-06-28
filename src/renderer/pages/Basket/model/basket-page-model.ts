@@ -23,6 +23,7 @@ import {
 } from '@features/operations/OperationsValidation';
 import { signOperationsModel } from './sign-operations-model';
 import { addUnique, removeFromCollection } from '@shared/lib/utils';
+import { getCoreTx } from '../lib/utils';
 
 type BasketTransactionsMap = {
   valid: BasketTransaction[];
@@ -55,8 +56,10 @@ const $txToRemove = restore(removeTxStarted, null).reset([removeTxCancelled, txR
 
 const validateFx = createEffect((transactions: BasketTransaction[]) => {
   for (const tx of transactions) {
-    if (TransferTypes.includes(tx.coreTx.type) || XcmTypes.includes(tx.coreTx.type)) {
-      transferValidateModel.events.validationStarted({ id: tx.id, transaction: tx.coreTx });
+    const coreTx = getCoreTx(tx, [TransactionType.BOND, TransactionType.UNSTAKE]);
+
+    if (TransferTypes.includes(coreTx.type) || XcmTypes.includes(coreTx.type)) {
+      transferValidateModel.events.validationStarted({ id: tx.id, transaction: coreTx });
     }
 
     const TransactionValidators = {
@@ -73,10 +76,10 @@ const validateFx = createEffect((transactions: BasketTransaction[]) => {
       [TransactionType.REDEEM]: withdrawValidateModel.events.validationStarted,
     };
 
-    if (tx.coreTx.type in TransactionValidators) {
+    if (coreTx.type in TransactionValidators) {
       // TS thinks that transfer should be in TransactionValidators
       // @ts-ignore`
-      TransactionValidators[tx.coreTx.type]({ id: tx.id, transaction: tx.coreTx });
+      TransactionValidators[coreTx.type]({ id: tx.id, transaction: coreTx });
     }
   }
 });
@@ -126,9 +129,10 @@ sample({
     txs: $basketTransactions,
     selectedTxs: $selectedTxs,
     invalidTxs: $invalidTxs,
+    validatingTxs: $validatingTxs,
   },
-  fn: ({ txs, selectedTxs, invalidTxs }) => {
-    const validTxs = txs.filter((tx) => !invalidTxs.has(tx.id));
+  fn: ({ txs, selectedTxs, invalidTxs, validatingTxs }) => {
+    const validTxs = txs.filter((tx) => !invalidTxs.has(tx.id) && !validatingTxs.includes(tx.id));
 
     return selectedTxs.length >= validTxs.length ? [] : validTxs.map((tx) => tx.id);
   },

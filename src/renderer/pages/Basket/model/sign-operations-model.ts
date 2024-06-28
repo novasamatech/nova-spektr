@@ -20,7 +20,7 @@ import {
 } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { networkModel } from '@entities/network';
-import { getAssetById, toAccountId } from '@shared/lib/utils';
+import { getAssetById, redeemableAmount, toAccountId } from '@shared/lib/utils';
 import { TransferTypes, XcmTypes, transactionService } from '@entities/transaction';
 import {
   addProxyConfirmModel,
@@ -42,6 +42,8 @@ import { basketModel } from '@entities/basket';
 import { ExtrinsicResult } from '@features/operations/OperationSubmit/lib/types';
 import { ChainError } from '@shared/core/types/basket';
 import { proxyService } from '@/src/renderer/shared/api/proxy';
+import { getCoreTx } from '../lib/utils';
+import { eraService, useStakingData } from '@/src/renderer/entities/staking';
 
 type TransferInput = {
   xcmChain: Chain;
@@ -73,7 +75,9 @@ const startDataPreparationFx = createEffect(async ({ transactions, wallets, chai
   const dataParams = [];
 
   for (const transaction of transactions) {
-    if (TransferTypes.includes(transaction.coreTx.type) || XcmTypes.includes(transaction.coreTx.type)) {
+    const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE, TransactionType.BOND]);
+
+    if (TransferTypes.includes(coreTx.type) || XcmTypes.includes(coreTx.type)) {
       const params = await prepareTransferTransactionData({ transaction, wallets, chains, apis });
 
       dataParams.push({ type: TransactionType.TRANSFER, params });
@@ -94,12 +98,12 @@ const startDataPreparationFx = createEffect(async ({ transactions, wallets, chai
       [TransactionType.REDEEM]: prepareWithdrawTransaction,
     };
 
-    if (transaction.coreTx.type in TransactionValidators) {
+    if (coreTx.type in TransactionValidators) {
       // TS thinks that transfer should be in TransactionValidators
       // @ts-ignore`
-      const params = await TransactionValidators[transaction.coreTx.type]({ transaction, wallets, chains, apis });
+      const params = await TransactionValidators[coreTx.type]({ transaction, wallets, chains, apis });
 
-      dataParams.push({ type: transaction.coreTx.type, params });
+      dataParams.push({ type: coreTx.type, params });
     }
   }
 
@@ -298,6 +302,11 @@ type BondNominateInput = {
 };
 
 const prepareBondNominateTransaction = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
+  const bondTx = transaction.coreTx.args.transactions.find((t: Transaction) => t.type === TransactionType.BOND)!;
+  const nominateTx = transaction.coreTx.args.transactions.find(
+    (t: Transaction) => t.type === TransactionType.NOMINATE,
+  )!;
+
   const chainId = transaction.coreTx.chainId as ChainId;
   const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
 
@@ -308,15 +317,14 @@ const prepareBondNominateTransaction = async ({ transaction, wallets, chains, ap
   return {
     id: transaction.id,
     chain,
-    asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
+    asset: chain.assets[0],
     shards: [account],
-    amount: transaction.coreTx.args.value,
-    validators: transaction.coreTx.args.targets,
-    destination: transaction.coreTx.args.dest,
+    amount: bondTx.args.value,
+    validators: nominateTx.args.targets,
+    destination: bondTx.args.dest,
     description: '',
 
     fee,
-    xcmFee: transaction.coreTx.args.xcmFee || '0',
     multisigDeposit: '0',
   } as BondNominateInput;
 };
@@ -432,19 +440,21 @@ type UnstakeInput = {
 };
 
 const prepareUnstakeTransaction = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
-  const chainId = transaction.coreTx.chainId as ChainId;
-  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
+  const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE]);
+
+  const chainId = coreTx.chainId as ChainId;
+  const fee = await transactionService.getTransactionFee(coreTx, apis[chainId]);
 
   const chain = chains[chainId]!;
   const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-  const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+  const account = wallet.accounts.find((a) => a.accountId === toAccountId(coreTx.address));
 
   return {
     id: transaction.id,
     chain,
-    asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
+    asset: getAssetById(coreTx.args.assetId, chain.assets),
     shards: [account],
-    amount: transaction.coreTx.args.value,
+    amount: coreTx.args.value,
     description: '',
 
     fee,
@@ -507,13 +517,20 @@ const prepareWithdrawTransaction = async ({ transaction, wallets, chains, apis }
   const chain = chains[chainId]!;
   const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
   const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+  const era = await eraService.getActiveEra(apis[chainId]);
+
+  const staking = (await new Promise((resolve) => {
+    useStakingData().subscribeStaking(chainId, apis[chainId], [transaction.coreTx.address], resolve);
+  })) as any;
+
+  const amount = redeemableAmount(staking?.[transaction.coreTx.address]?.unlocking, era || 0);
 
   return {
     id: transaction.id,
     chain,
     asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
     shards: [account],
-    amount: transaction.coreTx.args.value,
+    amount,
     description: '',
 
     fee,
@@ -664,7 +681,10 @@ sample({
     return (
       dataParams
         ?.filter((tx) => {
-          return tx.type === TransactionType.BOND;
+          return (
+            tx.type === TransactionType.BOND ||
+            tx.params.transactions.find((tx: Transaction) => tx.type === TransactionType.BOND)
+          );
         })
         .map((tx) => tx.params) || []
     );
@@ -760,7 +780,10 @@ sample({
     return (
       dataParams
         ?.filter((tx) => {
-          return tx.type === TransactionType.UNSTAKE;
+          return (
+            tx.type === TransactionType.UNSTAKE ||
+            tx.params.transactions.find((tx: Transaction) => tx.type === TransactionType.UNSTAKE)
+          );
         })
         .map((tx) => tx.params) || []
     );

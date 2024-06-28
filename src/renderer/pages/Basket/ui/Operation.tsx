@@ -5,10 +5,11 @@ import { TransactionTitle, getTransactionAmount, isXcmTransaction } from '@entit
 import { chainsService } from '@shared/api/network';
 import { cnTw, getAssetById } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
-import { BasketTransaction } from '@shared/core';
+import { BasketTransaction, TransactionType } from '@shared/core';
 import { HelpText, IconButton, Shimmering, Tooltip } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { ChainError } from '@/src/renderer/shared/core/types/basket';
+import { getCoreTx } from '../lib/utils';
 
 type Props = {
   tx: BasketTransaction;
@@ -21,8 +22,10 @@ type Props = {
 export const Operation = ({ tx, errorText, validating, onClick, onTxRemoved }: Props) => {
   const { t } = useI18n();
 
-  const asset = getAssetById(tx.coreTx.args.asset, chainsService.getChainById(tx.coreTx.chainId)?.assets);
-  const amount = getTransactionAmount(tx.coreTx);
+  const coreTx = getCoreTx(tx, [TransactionType.UNSTAKE, TransactionType.BOND]);
+
+  const asset = getAssetById(coreTx.args.asset, chainsService.getChainById(coreTx.chainId)?.assets);
+  const amount = getTransactionAmount(coreTx);
 
   const onTxClicked = () => {
     if (errorText) return;
@@ -73,7 +76,7 @@ export const Operation = ({ tx, errorText, validating, onClick, onTxRemoved }: P
       className={cnTw('h-[52px] flex gap-x-4 items-center w-full overflow-hidden ', !errorText && 'cursor-pointer')}
       onClick={onTxClicked}
     >
-      <TransactionTitle className="flex-1 overflow-hidden" tx={tx.coreTx} />
+      <TransactionTitle className="flex-1 overflow-hidden" tx={coreTx} />
 
       {asset && amount && (
         <div className="w-[160px]">
@@ -81,10 +84,10 @@ export const Operation = ({ tx, errorText, validating, onClick, onTxRemoved }: P
         </div>
       )}
 
-      {isXcmTransaction(tx.coreTx) ? (
-        <XcmChains chainIdFrom={tx.coreTx.chainId} chainIdTo={tx.coreTx.args.destinationChain} className="w-[114px]" />
+      {isXcmTransaction(coreTx) ? (
+        <XcmChains chainIdFrom={coreTx.chainId} chainIdTo={coreTx.args.destinationChain} className="w-[114px]" />
       ) : (
-        <ChainTitle chainId={tx.coreTx.chainId} className="w-[114px]" />
+        <ChainTitle chainId={coreTx.chainId} className="w-[114px]" />
       )}
 
       <div className="w-[106px] flex justify-center">{getStatus()}</div>

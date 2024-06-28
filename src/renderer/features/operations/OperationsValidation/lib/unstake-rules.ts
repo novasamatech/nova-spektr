@@ -81,7 +81,7 @@ export const UnstakeRules = {
         const value = config?.withFormatAmount ? formatAmount(amount, network.asset.precision) : amount;
         const amountBN = new BN(value);
 
-        const unstakeBalance = Array.isArray(unstakeBalanceRange) ? unstakeBalanceRange[1] : unstakeBalanceRange;
+        const unstakeBalance = Array.isArray(unstakeBalanceRange) ? unstakeBalanceRange[0] : unstakeBalanceRange;
 
         return amountBN.lte(new BN(unstakeBalance));
       },
