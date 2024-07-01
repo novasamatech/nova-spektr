@@ -1,5 +1,5 @@
 import { ReactNode, useState } from 'react';
-import { useUnit } from 'effector-react';
+import { useStoreMap } from 'effector-react';
 
 import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
 import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
@@ -12,20 +12,44 @@ import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 
 type Props = {
+  id?: number;
   secondaryActionButton?: ReactNode;
   hideSignButton?: boolean;
   onGoBack?: () => void;
 };
 
-export const Confirmation = ({ onGoBack, secondaryActionButton, hideSignButton }: Props) => {
+export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSignButton }: Props) => {
   const { t } = useI18n();
 
-  const confirmStore = useUnit(confirmModel.$confirmStore);
-  const initiatorWallet = useUnit(confirmModel.$initiatorWallet);
-  const signerWallet = useUnit(confirmModel.$signerWallet);
-  const proxiedWallet = useUnit(confirmModel.$proxiedWallet);
+  const confirmStore = useStoreMap({
+    store: confirmModel.$confirmStore,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
 
-  const api = useUnit(confirmModel.$api);
+  const initiatorWallet = useStoreMap({
+    store: confirmModel.$initiatorWallets,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
+
+  const signerWallet = useStoreMap({
+    store: confirmModel.$signerWallets,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
+
+  const proxiedWallet = useStoreMap({
+    store: confirmModel.$proxiedWallets,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
+
+  const api = useStoreMap({
+    store: confirmModel.$apis,
+    keys: [confirmStore.chain.chainId],
+    fn: (value, [chainId]) => value?.[chainId],
+  });
 
   const [isFeeLoading, setIsFeeLoading] = useState(true);
 

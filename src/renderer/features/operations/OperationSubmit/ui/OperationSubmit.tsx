@@ -21,6 +21,7 @@ export const OperationSubmit = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
 
   const submitStore = useUnit(submitModel.$submitStore);
+  const failedTxs = useUnit(submitModel.$failedTxs);
   const { step, message } = useUnit(submitModel.$submitStep);
 
   const { addTask } = useTaskQueue();
@@ -41,8 +42,17 @@ export const OperationSubmit = ({ isOpen, onClose }: Props) => {
     if (submitUtils.isLoadingStep(step)) {
       return { title: t('transfer.inProgress'), variant: 'loading' };
     }
+
     if (submitUtils.isSuccessStep(step)) {
       return { title: t('transfer.successMessage'), variant: 'success' };
+    }
+
+    if (submitUtils.isMixedResultStep(step)) {
+      return {
+        title: t('transfer.mixedResultTitle', { failed: failedTxs.length, all: submitStore.txPayloads.length }),
+        variant: 'mixedResult',
+        description: t('transfer.mixedResultDescription'),
+      };
     }
 
     return { title: t('operation.feeErrorTitle'), variant: 'error', description: message };

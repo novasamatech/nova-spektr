@@ -1,6 +1,6 @@
 import useGenerator from './common/useGenerator';
 import { DEFAULT_FRAME_DELAY } from './common/constants';
-import { Address } from '@renderer/shared/core';
+import { Address } from '@shared/core';
 import { createDynamicDerivationPayload } from './common/utils';
 import { DynamicDerivationRequestInfo } from '../common/types';
 

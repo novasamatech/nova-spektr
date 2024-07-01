@@ -91,7 +91,7 @@ export const RestakeRules = {
       source,
       validator: (amount: string, _: any, { network, restakeBalanceRange }: RestakeAmountBalanceStore) => {
         const value = config?.withFormatAmount ? formatAmount(amount, network.asset.precision) : amount;
-        const amountBN = new BN(formatAmount(value, network.asset.precision));
+        const amountBN = new BN(value);
 
         const restakeBalance = Array.isArray(restakeBalanceRange) ? restakeBalanceRange[1] : restakeBalanceRange;
 
@@ -107,7 +107,7 @@ export const RestakeRules = {
 
         const feeBN = new BN(feeData.fee);
         const value = config?.withFormatAmount ? formatAmount(amount, network.asset.precision) : amount;
-        const amountBN = new BN(formatAmount(value, network.asset.precision));
+        const amountBN = new BN(value);
 
         return form.shards.every((_: Account, index: number) => {
           return amountBN.add(feeBN).lte(new BN(accountsBalances[index]));

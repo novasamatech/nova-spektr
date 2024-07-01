@@ -13,8 +13,8 @@ import {
   FRAME_SIZE,
   SUBSTRATE_ID,
 } from './constants';
-import type { ChainId } from '@renderer/shared/core';
-import { Address, CryptoType, CryptoTypeString, SigningType } from '@renderer/shared/core';
+import type { ChainId } from '@shared/core';
+import { Address, CryptoType, CryptoTypeString, SigningType } from '@shared/core';
 import { DynamicDerivationRequestInfo } from '../../common/types';
 import { DYNAMIC_DERIVATIONS_REQUEST } from '../../common/constants';
 

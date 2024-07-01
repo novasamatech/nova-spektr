@@ -4,8 +4,8 @@ import { useUnit } from 'effector-react';
 import { BaseModal, HeaderTitleText, IconButton } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { useI18n } from '@app/providers';
-import { TransactionType, type BasketTransaction } from '@shared/core';
-import { OperationSubmit } from '@features/operations';
+import { TransactionType, WalletType, type BasketTransaction } from '@shared/core';
+import { OperationSign, OperationSubmit } from '@features/operations';
 import { signOperationsUtils } from '../lib/sign-operations-utils';
 import { signOperationsModel } from '../model/sign-operations-model';
 import {
@@ -27,6 +27,9 @@ import { networkModel } from '@entities/network';
 import { OperationTitle } from '@entities/chain';
 import { getOperationTitle } from '../lib/operation-title';
 import { cnTw } from '@shared/lib/utils';
+import { Step } from '../types';
+import { SignButton } from '@entities/operations';
+import { getCoreTx } from '../lib/utils';
 
 export const SignOperations = () => {
   const { t } = useI18n();
@@ -69,26 +72,28 @@ export const SignOperations = () => {
   };
 
   const getConfirmScreen = (transaction: BasketTransaction) => {
-    const type = transaction.coreTx.type;
+    const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE, TransactionType.BOND]);
+    const type = coreTx.type;
+    const config = { withFormatAmount: false };
 
     if (TransferTypes.includes(type) || XcmTypes.includes(type)) {
-      return () => <TransferConfirm hideSignButton />;
+      return () => <TransferConfirm id={transaction.id} hideSignButton />;
     }
 
     const Components = {
       // Proxy
-      [TransactionType.ADD_PROXY]: () => <AddProxyConfirm hideSignButton />,
-      [TransactionType.REMOVE_PROXY]: () => <RemoveProxyConfirm hideSignButton />,
-      [TransactionType.CREATE_PURE_PROXY]: () => <AddPureProxiedConfirm hideSignButton />,
-      [TransactionType.REMOVE_PURE_PROXY]: () => <RemovePureProxiedConfirm hideSignButton />,
+      [TransactionType.ADD_PROXY]: () => <AddProxyConfirm id={transaction.id} hideSignButton />,
+      [TransactionType.REMOVE_PROXY]: () => <RemoveProxyConfirm id={transaction.id} hideSignButton />,
+      [TransactionType.CREATE_PURE_PROXY]: () => <AddPureProxiedConfirm id={transaction.id} hideSignButton />,
+      [TransactionType.REMOVE_PURE_PROXY]: () => <RemovePureProxiedConfirm id={transaction.id} hideSignButton />,
       // Staking
-      [TransactionType.BOND]: () => <BondNominateConfirmation hideSignButton />,
-      [TransactionType.NOMINATE]: () => <NominateConfirmation hideSignButton />,
-      [TransactionType.STAKE_MORE]: () => <BondExtraConfirmation hideSignButton />,
-      [TransactionType.REDEEM]: () => <WithdrawConfirmation hideSignButton />,
-      [TransactionType.RESTAKE]: () => <RestakeConfirmation hideSignButton />,
-      [TransactionType.DESTINATION]: () => <PayeeConfirmation hideSignButton />,
-      [TransactionType.UNSTAKE]: () => <UnstakeConfirmation hideSignButton />,
+      [TransactionType.BOND]: () => <BondNominateConfirmation id={transaction.id} hideSignButton config={config} />,
+      [TransactionType.NOMINATE]: () => <NominateConfirmation id={transaction.id} hideSignButton />,
+      [TransactionType.STAKE_MORE]: () => <BondExtraConfirmation id={transaction.id} hideSignButton config={config} />,
+      [TransactionType.REDEEM]: () => <WithdrawConfirmation id={transaction.id} hideSignButton />,
+      [TransactionType.RESTAKE]: () => <RestakeConfirmation id={transaction.id} hideSignButton />,
+      [TransactionType.DESTINATION]: () => <PayeeConfirmation id={transaction.id} hideSignButton />,
+      [TransactionType.UNSTAKE]: () => <UnstakeConfirmation id={transaction.id} hideSignButton />,
     };
 
     // @ts-ignore
@@ -119,7 +124,15 @@ export const SignOperations = () => {
     <BaseModal
       closeButton
       contentClass=""
-      panelClass="w-[478px]"
+      panelStyle={
+        // Change panel class doesn't work
+        {
+          ...(signOperationsUtils.isConfirmStep(step) && {
+            //eslint-disable-next-line i18next/no-literal-string
+            width: `478px`,
+          }),
+        }
+      }
       headerClass="py-3 pl-5 pr-3"
       isOpen={isModalOpen}
       title={
@@ -130,46 +143,56 @@ export const SignOperations = () => {
         setCurrentTx(0);
       }}
     >
-      <div className="bg-background-default overflow-x-hidden py-4" ref={ref}>
-        {transactions.length > 0 && signOperationsUtils.isConfirmStep(step) && (
-          <div className="flex gap-2 first:ml-4 ">
-            {transactions.map((t) => (
-              <div key={t.id} className="flex flex-col h-[622px]  last-of-type:pr-4">
-                <div className="w-[440px] bg-white rounded-lg shadow-shadow-2 max-h-full overflow-y-auto">
-                  {getModalTitle(t)}
-                  {getConfirmScreen(t)?.()}
-                </div>
+      {signOperationsUtils.isConfirmStep(step) && (
+        <>
+          <div className="bg-background-default overflow-x-hidden py-4" ref={ref}>
+            {transactions.length > 0 && signOperationsUtils.isConfirmStep(step) && (
+              <div className="flex gap-2 first:ml-4 ">
+                {transactions.map((t) => (
+                  <div key={t.id} className="flex flex-col h-[622px]  last-of-type:pr-4">
+                    <div className="w-[440px] bg-white rounded-lg shadow-shadow-2 max-h-full overflow-y-auto">
+                      {getModalTitle(t)}
+                      {getConfirmScreen(t)?.()}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="flex justify-between bg-white pt-3 px-5 pb-4 rounded-lg">
-        <div className="flex gap-2">
-          <IconButton
-            size={20}
-            className="border w-[42px] h-[42px] flex items-center justify-center"
-            name="left"
-            onClick={previousTx}
-          />
-          <div
-            className={cnTw(
-              'rounded-full font-semibold border border-divider w-[77px] h-[42px]',
-              'text-text-secondary flex items-center justify-center',
-              'shadow-shadow-1',
             )}
-          >
-            {currentPage}/{transactions.length}
           </div>
-          <IconButton
-            size={20}
-            className="border w-[42px] h-[42px] flex items-center justify-center"
-            name="right"
-            onClick={nextTx}
-          />
-        </div>
-      </div>
+
+          <div className="flex justify-between bg-white pt-3 px-5 pb-4 rounded-lg">
+            <div className="flex gap-2">
+              <IconButton
+                size={20}
+                className="border w-[42px] h-[42px] flex items-center justify-center"
+                name="left"
+                onClick={previousTx}
+              />
+              <div
+                className={cnTw(
+                  'rounded-full font-semibold border border-divider w-[77px] h-[42px]',
+                  'text-text-secondary flex items-center justify-center',
+                  'shadow-shadow-1',
+                )}
+              >
+                {currentPage}/{transactions.length}
+              </div>
+              <IconButton
+                size={20}
+                className="border w-[42px] h-[42px] flex items-center justify-center"
+                name="right"
+                onClick={nextTx}
+              />
+            </div>
+
+            <SignButton type={WalletType.POLKADOT_VAULT} onClick={signOperationsModel.events.txsConfirmed} />
+          </div>
+        </>
+      )}
+
+      {signOperationsUtils.isSignStep(step) && (
+        <OperationSign onGoBack={() => signOperationsModel.events.stepChanged(Step.CONFIRM)} />
+      )}
     </BaseModal>
   );
 };
