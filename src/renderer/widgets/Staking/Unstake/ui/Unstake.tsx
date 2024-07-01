@@ -10,6 +10,7 @@ import { unstakeUtils } from '../lib/unstake-utils';
 import { unstakeModel } from '../model/unstake-model';
 import { Step } from '../lib/types';
 import { basketUtils, UnstakeConfirmation as Confirmation } from '@features/operations/OperationsConfirm';
+import { OperationResult } from '@entities/transaction';
 
 export const Unstake = () => {
   const { t } = useI18n();
@@ -19,10 +20,24 @@ export const Unstake = () => {
   const initiatorWallet = useUnit(unstakeModel.$initiatorWallet);
 
   const [isModalOpen, closeModal] = useModalClose(!unstakeUtils.isNoneStep(step), unstakeModel.output.flowFinished);
+  const [isBasketModalOpen, closeBasketModal] = useModalClose(
+    unstakeUtils.isBasketStep(step),
+    unstakeModel.output.flowFinished,
+  );
 
   if (!networkStore) return null;
 
   if (unstakeUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  if (unstakeUtils.isBasketStep(step)) {
+    return (
+      <OperationResult
+        isOpen={isBasketModalOpen}
+        variant="success"
+        title={t('operation.addedToBasket')}
+        onClose={closeBasketModal}
+      />
+    );
+  }
 
   return (
     <BaseModal

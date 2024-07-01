@@ -11,6 +11,7 @@ import { bondUtils } from '../lib/bond-utils';
 import { bondNominateModel } from '../model/bond-nominate-model';
 import { Step } from '../lib/types';
 import { basketUtils, BondNominateConfirmation as Confirmation } from '@features/operations/OperationsConfirm';
+import { OperationResult } from '@entities/transaction';
 
 export const BondNominate = () => {
   const { t } = useI18n();
@@ -20,10 +21,24 @@ export const BondNominate = () => {
   const initiatorWallet = useUnit(bondNominateModel.$initiatorWallet);
 
   const [isModalOpen, closeModal] = useModalClose(!bondUtils.isNoneStep(step), bondNominateModel.output.flowFinished);
+  const [isBasketModalOpen, closeBasketModal] = useModalClose(
+    bondUtils.isBasketStep(step),
+    bondNominateModel.output.flowFinished,
+  );
 
   if (!walletData) return null;
 
   if (bondUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  if (bondUtils.isBasketStep(step)) {
+    return (
+      <OperationResult
+        isOpen={isBasketModalOpen}
+        variant="success"
+        title={t('operation.addedToBasket')}
+        onClose={closeBasketModal}
+      />
+    );
+  }
 
   return (
     <BaseModal
