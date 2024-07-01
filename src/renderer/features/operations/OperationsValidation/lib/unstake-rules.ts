@@ -79,9 +79,9 @@ export const UnstakeRules = {
       source,
       validator: (amount: string, _: any, { network, unstakeBalanceRange }: UnstakeAmountBalanceRange) => {
         const value = config?.withFormatAmount ? formatAmount(amount, network.asset.precision) : amount;
-        const amountBN = new BN(formatAmount(value, network.asset.precision));
+        const amountBN = new BN(value);
 
-        const unstakeBalance = Array.isArray(unstakeBalanceRange) ? unstakeBalanceRange[1] : unstakeBalanceRange;
+        const unstakeBalance = Array.isArray(unstakeBalanceRange) ? unstakeBalanceRange[0] : unstakeBalanceRange;
 
         return amountBN.lte(new BN(unstakeBalance));
       },
@@ -95,7 +95,7 @@ export const UnstakeRules = {
 
         const feeBN = new BN(feeData.fee);
         const value = config?.withFormatAmount ? formatAmount(amount, network.asset.precision) : amount;
-        const amountBN = new BN(formatAmount(value, network.asset.precision));
+        const amountBN = new BN(value);
 
         return form.shards.every((_: Account, index: number) => {
           return amountBN.add(feeBN).lte(new BN(accountsBalances[index]));

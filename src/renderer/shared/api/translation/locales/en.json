@@ -80,17 +80,27 @@
     "closeButton": "Close modal window"
   },
   "basket": {
+    "chainError": "Failed: { date }",
     "emptySignButton": "Select operations",
-    "invalidTransaction": "Unavailable",
     "noOperationsDescription": "There are no operations in the basket yet",
     "noOperationsLabel": "No operations",
+    "refreshButton": "Refresh list",
+    "removeConfirm": {
+      "cancelButton": "Cancel",
+      "description": "Operation will be deleted from the basket, are you sure?",
+      "proceedButton": "Delete",
+      "title": "Delete this operation?"
+    },
     "searchPlaceholder": "Search",
     "selectAll": "Select all",
+    "selectedStatus_one": "{ selected } out of { count } operation selected",
+    "selectedStatus_other": "{ selected } out of { count } operations selected",
     "signButton": "Sign",
     "signOperations": {
       "title": "Sign { transactions } operations"
     },
     "title": "Basket",
+    "validationError": "Unavailable",
     "validationWarning": {
       "cancelButton": "Cancel",
       "description": "They will be excluded from the checkout. Would you like to proceed?",
@@ -1081,6 +1091,8 @@
     "inProgress": "Submitting operation...",
     "incorrectRecipientError": "Please enter correct recipient address",
     "invalidSignature": "QR code is invalid. Please make sure you are scanning QR code for currently signing operation",
+    "mixedResultDescription": "They will be returned to the operation basket. You can resolve an issue and execute them later",
+    "mixedResultTitle": "{failed} out of {all} operations has not been executed",
     "multiple": {
       "executing": "Submitting operations",
       "transactions": "Transactions"

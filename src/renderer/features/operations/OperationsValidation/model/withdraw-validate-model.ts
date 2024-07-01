@@ -18,13 +18,11 @@ const stakingSet = createEvent<StakingMap>();
 
 const $staking = restore(stakingSet, null);
 
-const getEraFx = createEffect(async (api: ApiPromise): Promise<number | null> => {
+const getEraFx = createEffect(async ({ api }: { api: ApiPromise }): Promise<number | null> => {
   const era = await eraService.getActiveEra(api);
 
   return era || null;
 });
-
-const $era = restore(getEraFx.doneData, null);
 
 type StakingParams = {
   chainId: ChainId;
@@ -97,27 +95,29 @@ sample({
     const api = apis[transaction.chainId];
 
     return {
-      chainId: transaction.chainId,
       api,
       addresses: [transaction.address],
+      chainId: transaction.chainId,
     };
   },
-  target: subscribeStakingFx,
+  target: [subscribeStakingFx, getEraFx],
 });
 
 sample({
   clock: combineEvents({
-    events: { validation: validationStarted, staking: $staking.updates },
+    events: { validation: validationStarted, staking: $staking.updates, era: getEraFx.doneData },
+    reset: txValidated,
   }),
   source: {
     chains: networkModel.$chains,
     apis: networkModel.$apis,
     balances: balanceModel.$balances,
     staking: $staking,
-    era: $era,
   },
-  filter: ({ apis }, { validation: { transaction } }) => Boolean(apis[transaction.chainId]),
-  fn: ({ apis, chains, balances, staking, era }, { validation: { id, transaction } }) => {
+  filter: ({ apis, staking }, { validation: { transaction }, era }) => {
+    return Boolean(apis[transaction.chainId]) && Boolean(era) && Boolean(staking);
+  },
+  fn: ({ apis, chains, balances, staking }, { validation: { id, transaction }, era }) => {
     const chain = chains[transaction.chainId];
     const api = apis[transaction.chainId];
     const asset = getAssetById(transaction.args.assetId, chain.assets) || chain.assets[0];
