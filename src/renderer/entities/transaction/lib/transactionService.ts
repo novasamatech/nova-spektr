@@ -258,11 +258,12 @@ function getWrappedTransaction({ api, addressPrefix, transaction, txWrappers }: 
 async function createPayload(
   transaction: Transaction,
   api: ApiPromise,
+  nonce = 0,
 ): Promise<{
   unsigned: UnsignedTransaction;
   payload: Uint8Array;
 }> {
-  const { info, options, registry } = await createTxMetadata(transaction.address, api);
+  const { info, options, registry } = await createTxMetadata(transaction.address, api, nonce);
 
   const unsigned = getUnsignedTransaction[transaction.type](transaction, info, options, api);
   if (options.signedExtensions?.includes('ChargeAssetTxPayment')) {

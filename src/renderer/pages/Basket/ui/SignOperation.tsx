@@ -6,7 +6,7 @@ import { useModalClose } from '@shared/lib/hooks';
 import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
 import { TransactionType, type BasketTransaction } from '@shared/core';
-import { OperationSubmit } from '@features/operations';
+import { OperationSign, OperationSubmit } from '@features/operations';
 import { signOperationsUtils } from '../lib/sign-operations-utils';
 import { signOperationsModel } from '../model/sign-operations-model';
 import {
@@ -26,6 +26,8 @@ import {
 import { getOperationTitle } from '../lib/operation-title';
 import { TransferTypes, XcmTypes } from '@entities/transaction';
 import { networkModel } from '@entities/network';
+import { Step } from '../types';
+import { getCoreTx } from '../lib/utils';
 
 export const SignOperation = () => {
   const { t } = useI18n();
@@ -50,45 +52,58 @@ export const SignOperation = () => {
   };
 
   const getConfirmScreen = (transaction: BasketTransaction) => {
-    const type = transaction.coreTx.type;
+    const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE, TransactionType.BOND]);
+
+    const type = coreTx.type;
+    const config = { withFormatAmount: false };
 
     if (TransferTypes.includes(type) || XcmTypes.includes(type)) {
-      return () => <TransferConfirm onGoBack={() => signOperationsModel.output.flowFinished()} />;
+      return () => <TransferConfirm id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />;
     }
 
     const Components = {
       // Proxy
-      [TransactionType.ADD_PROXY]: () => <AddProxyConfirm onGoBack={() => signOperationsModel.output.flowFinished()} />,
+      [TransactionType.ADD_PROXY]: () => (
+        <AddProxyConfirm id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
+      ),
       [TransactionType.REMOVE_PROXY]: () => (
-        <RemoveProxyConfirm onGoBack={() => signOperationsModel.output.flowFinished()} />
+        <RemoveProxyConfirm id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
       ),
       [TransactionType.CREATE_PURE_PROXY]: () => (
-        <AddPureProxiedConfirm onGoBack={() => signOperationsModel.output.flowFinished()} />
+        <AddPureProxiedConfirm id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
       ),
       [TransactionType.REMOVE_PURE_PROXY]: () => (
-        <RemovePureProxiedConfirm onGoBack={() => signOperationsModel.output.flowFinished()} />
+        <RemovePureProxiedConfirm id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
       ),
       // Staking
       [TransactionType.BOND]: () => (
-        <BondNominateConfirmation onGoBack={() => signOperationsModel.output.flowFinished()} />
+        <BondNominateConfirmation
+          id={transaction.id}
+          config={config}
+          onGoBack={() => signOperationsModel.output.flowFinished()}
+        />
       ),
       [TransactionType.NOMINATE]: () => (
-        <NominateConfirmation onGoBack={() => signOperationsModel.output.flowFinished()} />
+        <NominateConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
       ),
       [TransactionType.STAKE_MORE]: () => (
-        <BondExtraConfirmation onGoBack={() => signOperationsModel.output.flowFinished()} />
+        <BondExtraConfirmation
+          id={transaction.id}
+          config={config}
+          onGoBack={() => signOperationsModel.output.flowFinished()}
+        />
       ),
       [TransactionType.REDEEM]: () => (
-        <WithdrawConfirmation onGoBack={() => signOperationsModel.output.flowFinished()} />
+        <WithdrawConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
       ),
       [TransactionType.RESTAKE]: () => (
-        <RestakeConfirmation onGoBack={() => signOperationsModel.output.flowFinished()} />
+        <RestakeConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
       ),
       [TransactionType.DESTINATION]: () => (
-        <PayeeConfirmation onGoBack={() => signOperationsModel.output.flowFinished()} />
+        <PayeeConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
       ),
       [TransactionType.UNSTAKE]: () => (
-        <UnstakeConfirmation onGoBack={() => signOperationsModel.output.flowFinished()} />
+        <UnstakeConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
       ),
     };
 
@@ -105,6 +120,10 @@ export const SignOperation = () => {
       onClose={closeModal}
     >
       {transactions.length > 0 && signOperationsUtils.isConfirmStep(step) && getConfirmScreen(transactions[0])?.()}
+
+      {signOperationsUtils.isSignStep(step) && (
+        <OperationSign onGoBack={() => signOperationsModel.events.stepChanged(Step.CONFIRM)} />
+      )}
     </BaseModal>
   );
 };

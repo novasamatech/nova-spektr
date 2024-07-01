@@ -13,6 +13,7 @@ type Props = {
   contentClass?: string;
   headerClass?: string;
   panelClass?: string;
+  panelStyle?: object;
   closeButton?: boolean;
   actionButton?: ReactNode;
   onClose: () => void;
@@ -28,6 +29,7 @@ export const BaseModal = ({
   closeButton,
   panelClass,
   children,
+  panelStyle,
   onClose,
 }: PropsWithChildren<Props>) => {
   const headerExist = title || actionButton || closeButton;
@@ -40,6 +42,7 @@ export const BaseModal = ({
         <div className="fixed inset-0 overflow-hidden flex min-h-full items-center justify-center p-4">
           <ModalTransition>
             <Dialog.Panel
+              style={panelStyle}
               className={cnTw(
                 'transform rounded-lg bg-white text-left align-middle shadow-modal transition-all w-[440px] ',
                 panelClass,

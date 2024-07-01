@@ -86,8 +86,6 @@ const saveMultisigFx = createEffect((multisigsToSave: SaveMultisigParams[]) => {
         chainId: multisig.accounts[0].chainId,
         signatories,
         threshold: multisig.accounts[0].threshold,
-        originatorAccountId: '' as string,
-        smpRoomId: '',
       } as NoID<MultisigCreated>,
     ]);
   });

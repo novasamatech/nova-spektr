@@ -68,6 +68,45 @@ export const SelectSignatories = ({ isActive, accounts, wallets, contacts, chain
     setContactList(addressBookContacts);
   }, [contacts.length, chain]);
 
+  //       return !isEthereumAccountId(c.accountId);
+  //     })
+  //     .map((contact, index) => ({ ...contact, index: index.toString() }));
+
+  //   const { available, disabled } = wallets.reduce<{
+  //     available: ExtendedWallet[];
+  //     disabled: Wallet[];
+  //   }>(
+  //     (acc, wallet, index) => {
+  //       const walletAccounts = accounts.filter((a) => a.walletId === wallet.id);
+
+  //       if (!walletAccounts.length) return acc;
+
+  //       // TODO: Check why it can be empty
+  //       const accountId = walletAccounts[0]?.accountId;
+  //       const isSameAccounts = walletAccounts.every((a) => a.accountId === accountId);
+  //       const isEvmAccount = accountUtils.isEthereumBased(walletAccounts[0]);
+
+  //       if (isSameAccounts && !isEvmAccount && walletUtils.isValidSignatory(wallet)) {
+  //         acc.available.push({
+  //           ...wallet,
+  //           index: index.toString(),
+  //           address: toAddress(accountId),
+  //           accountId: accountId,
+  //         });
+  //       } else {
+  //         acc.disabled.push(wallet);
+  //       }
+
+  //       return acc;
+  //     },
+  //     { available: [], disabled: [] },
+  //   );
+
+  //   setContactList(addressBookContacts);
+  //   setAvailableWallets(available);
+  //   setDisabledWallets(disabled);
+  // }, [accounts.length, contacts.length, wallets.length]);
+
   useEffect(() => {
     setSelectedAccounts({});
     setSelectedContacts({});
@@ -160,7 +199,7 @@ export const SelectSignatories = ({ isActive, accounts, wallets, contacts, chain
   };
 
   const searchedContactList = contactList.filter((c) => {
-    return includes(c.address, query) || includes(c.matrixId, query) || includes(c.name, query);
+    return includes(c.address, query) || includes(c.name, query);
   });
 
   const hasAccounts = Boolean(accounts.length);
@@ -313,13 +352,7 @@ export const SelectSignatories = ({ isActive, accounts, wallets, contacts, chain
                   <ExplorersPopover
                     address={contact.accountId}
                     explorers={RootExplorers}
-                    button={
-                      <ContactItem
-                        addressPrefix={chain?.addressPrefix}
-                        name={contact.name}
-                        address={contact.accountId}
-                      />
-                    }
+                    button={<ContactItem name={contact.name} address={contact.accountId} />}
                   />
                 </Checkbox>
               </li>
