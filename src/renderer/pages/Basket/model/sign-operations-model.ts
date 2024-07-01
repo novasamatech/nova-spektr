@@ -42,9 +42,9 @@ import { submitModel } from '@features/operations/OperationSubmit';
 import { basketModel } from '@entities/basket';
 import { ExtrinsicResult } from '@features/operations/OperationSubmit/lib/types';
 import { ChainError } from '@shared/core/types/basket';
-import { proxyService } from '@/src/renderer/shared/api/proxy';
+import { proxyService } from '@shared/api/proxy';
 import { getCoreTx } from '../lib/utils';
-import { eraService, useStakingData, validatorsService } from '@/src/renderer/entities/staking';
+import { eraService, useStakingData, validatorsService } from '@entities/staking';
 
 type TransferInput = {
   xcmChain: Chain;

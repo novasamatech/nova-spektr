@@ -8,7 +8,7 @@ import { AssetBalance } from '@entities/asset';
 import { BasketTransaction, TransactionType } from '@shared/core';
 import { HelpText, IconButton, Shimmering, Tooltip } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { ChainError } from '@/src/renderer/shared/core/types/basket';
+import { ChainError } from '@shared/core/types/basket';
 import { getCoreTx } from '../lib/utils';
 
 type Props = {

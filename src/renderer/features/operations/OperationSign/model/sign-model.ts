@@ -31,7 +31,7 @@ const $apis = combine(
   ({ apis, store }) => {
     if (!store) return {};
 
-    return store.signingPayloads.reduce((acc, payload) => {
+    return store.signingPayloads.reduce<Record<ChainId, ApiPromise>>((acc, payload) => {
       const chainId = payload.chain.chainId;
       const api = apis[chainId];
 
@@ -41,7 +41,7 @@ const $apis = combine(
         ...acc,
         [chainId]: api,
       };
-    }, {} as Record<ChainId, ApiPromise>);
+    }, {});
   },
 );
 

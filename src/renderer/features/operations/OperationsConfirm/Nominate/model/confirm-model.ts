@@ -23,6 +23,18 @@ const isFeeLoadingChanged = createEvent<boolean>();
 
 const $confirmStore = restore(formInitiated, null);
 
+const $storeMap = combine($confirmStore, (store) => {
+  return (
+    store?.reduce<Record<number, Input>>(
+      (acc, input, index) => ({
+        ...acc,
+        [input.id ?? index]: input,
+      }),
+      {},
+    ) || {}
+  );
+});
+
 const $feeData = restore(feeDataChanged, { fee: '0', totalFee: '0', multisigDeposit: '0' });
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
 
@@ -97,16 +109,7 @@ const $signerWallets = combine(
 );
 
 export const confirmModel = {
-  $confirmStore: $confirmStore.map(
-    (store) =>
-      store?.reduce<Record<number, Input>>(
-        (acc, input, index) => ({
-          ...acc,
-          [input.id ?? index]: input,
-        }),
-        {},
-      ) || {},
-  ),
+  $confirmStore: $storeMap,
   $initiatorWallets,
   $proxiedWallets,
   $signerWallets,

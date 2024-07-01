@@ -26,6 +26,18 @@ const formSubmitted = createEvent();
 
 const $confirmStore = restore<Input[]>(formInitiated, null).reset(formSubmitted);
 
+const $storeMap = combine($confirmStore, (store) => {
+  return (
+    store?.reduce<Record<number, Input>>(
+      (acc, input, index) => ({
+        ...acc,
+        [input.id ?? index]: input,
+      }),
+      {},
+    ) || {}
+  );
+});
+
 const $apis = combine(
   {
     apis: networkModel.$apis,
@@ -119,16 +131,7 @@ const $signerWallets = combine(
 );
 
 export const confirmModel = {
-  $confirmStore: $confirmStore.map(
-    (store) =>
-      store?.reduce<Record<number, Input>>(
-        (acc, input, index) => ({
-          ...acc,
-          [input.id ?? index]: input,
-        }),
-        {},
-      ) || {},
-  ),
+  $confirmStore: $storeMap,
   $initiatorWallets,
   $signerWallets,
   $proxiedWallets,

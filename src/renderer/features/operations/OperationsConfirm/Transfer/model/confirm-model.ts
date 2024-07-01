@@ -37,6 +37,18 @@ const confirmed = createEvent();
 
 const $confirmStore = restore(formInitiated, null);
 
+const $storeMap = combine($confirmStore, (store) => {
+  return (
+    store?.reduce<Record<number, Input>>(
+      (acc, input, index) => ({
+        ...acc,
+        [input.id ?? index]: input,
+      }),
+      {},
+    ) || {}
+  );
+});
+
 type ValidateParams = {
   store: Input;
   balances: Balance[];
@@ -258,17 +270,7 @@ sample({
 });
 
 export const confirmModel = {
-  $confirmStore: $confirmStore.map((store) =>
-    store
-      ? store.reduce<Record<number, Input>>(
-          (acc, input, index) => ({
-            ...acc,
-            [input.id ?? index]: input,
-          }),
-          {},
-        )
-      : {},
-  ),
+  $confirmStore: $storeMap,
   $initiatorWallets,
   $proxiedWallets,
   $signerWallets,

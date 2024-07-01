@@ -24,7 +24,7 @@ export const BondNominateRules = {
         return new BN(feeData.fee).lte(new BN(proxyBalance));
       },
     }),
-    noBondBalance: (source: Store<ShardsBondBalanceStore>) => ({
+    noBondBalance: (source: Store<ShardsBondBalanceStore>, config: Config = { withFormatAmount: true }) => ({
       name: 'noBondBalance',
       errorText: 'staking.bond.noBondBalanceError',
       source,
@@ -33,9 +33,10 @@ export const BondNominateRules = {
         form: { amount: string },
         { isProxy, network, accountsBalances }: ShardsBondBalanceStore,
       ) => {
-        if (isProxy || shards.length === 1) return true;
+        if (isProxy) return true;
 
-        const amountBN = new BN(formatAmount(form.amount, network.asset.precision));
+        const value = config?.withFormatAmount ? formatAmount(form.amount, network.asset.precision) : form.amount;
+        const amountBN = new BN(value);
 
         return shards.every((_, index) => amountBN.lte(new BN(accountsBalances[index])));
       },

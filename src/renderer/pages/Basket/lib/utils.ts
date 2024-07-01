@@ -1,4 +1,4 @@
-import { BasketTransaction, Transaction, TransactionType } from '@/src/renderer/shared/core';
+import { BasketTransaction, Transaction, TransactionType } from '@shared/core';
 
 export const getCoreTx = (tx: BasketTransaction, types: TransactionType[]): Transaction => {
   return tx.coreTx.type === TransactionType.BATCH_ALL

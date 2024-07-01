@@ -8,7 +8,7 @@ import { basketPageModel } from '../model/basket-page-model';
 import { EmptyBasket } from './EmptyBasket';
 import { SignOperation } from './SignOperation';
 import { SignOperations } from './SignOperations';
-import { networkModel } from '@/src/renderer/entities/network';
+import { networkModel } from '@entities/network';
 
 export const Basket = () => {
   const { t } = useI18n();

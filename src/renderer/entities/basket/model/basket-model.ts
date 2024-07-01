@@ -18,7 +18,7 @@ const addBasketTxsFx = createEffect(
   },
 );
 
-const updateBasketTxsFx = createEffect(async (transactions: BasketTransaction[]): Promise<number[] | undefined> => {
+const updateBasketTxsFx = createEffect((transactions: BasketTransaction[]): Promise<number[] | undefined> => {
   return storageService.basketTransactions.updateAll(transactions);
 });
 

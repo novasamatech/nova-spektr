@@ -45,7 +45,7 @@ export const BaseModal = ({
               style={panelStyle}
               className={cnTw(
                 'transform rounded-lg bg-white text-left align-middle shadow-modal transition-all w-[440px]',
-                panelClass ?? panelClass,
+                panelClass,
               )}
             >
               {headerExist && (

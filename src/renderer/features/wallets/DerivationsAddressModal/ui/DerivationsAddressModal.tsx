@@ -1,8 +1,8 @@
 import keyBy from 'lodash/keyBy';
 import { useState, useEffect } from 'react';
 
-import { BaseModal, Button, InfoLink, SmallTitleText } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
+import { BaseModal, Button, InfoLink, SmallTitleText } from '@shared/ui';
+import { useI18n } from '@app/providers';
 import { toAddress } from '@shared/lib/utils';
 import { derivationAddressUtils } from '../lib/utils';
 import { DdKeyQrReader } from './DdKeyQrReader';
