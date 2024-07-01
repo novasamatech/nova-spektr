@@ -1,27 +1,15 @@
 import { createEvent, restore, combine, sample } from 'effector';
 import { once } from 'patronum';
+import { ApiPromise } from '@polkadot/api';
 
-import type { Chain, Account, HexString, Transaction } from '@shared/core';
+import type { ChainId, HexString } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { walletModel, walletUtils } from '@entities/wallet';
+import type { SigningPayload } from '../lib/types';
 
 // TODO: Use it for signing
-// type Input = {
-//   signingPayloads: SigningPayload[];
-// };
-
-// type SigningPayload = {
-//   chain: Chain;
-//   account: Account;
-//   transaction: Transaction;
-//   signatory?: Account;
-// };
-
 type Input = {
-  chain: Chain;
-  accounts: Account[];
-  signatory?: Account;
-  transactions: Transaction[];
+  signingPayloads: SigningPayload[];
 };
 
 type SignatureData = {
@@ -35,15 +23,26 @@ const formSubmitted = createEvent<SignatureData>();
 
 const $signStore = restore<Input>(formInitiated, null);
 
-const $api = combine(
+const $apis = combine(
   {
     apis: networkModel.$apis,
     store: $signStore,
   },
   ({ apis, store }) => {
-    return store?.chain ? apis[store.chain.chainId] : undefined;
+    if (!store) return {};
+
+    return store.signingPayloads.reduce<Record<ChainId, ApiPromise>>((acc, payload) => {
+      const chainId = payload.chain.chainId;
+      const api = apis[chainId];
+
+      if (!api) return acc;
+
+      return {
+        ...acc,
+        [chainId]: api,
+      };
+    }, {});
   },
-  { skipVoid: false },
 );
 
 const $signerWallet = combine(
@@ -54,7 +53,7 @@ const $signerWallet = combine(
   ({ store, wallets }) => {
     if (!store) return undefined;
 
-    return walletUtils.getWalletById(wallets, store.accounts[0].walletId);
+    return walletUtils.getWalletById(wallets, store.signingPayloads[0].account.walletId);
   },
   { skipVoid: false },
 );
@@ -66,8 +65,9 @@ sample({
 
 export const signModel = {
   $signStore,
-  $api,
+  $apis,
   $signerWallet,
+
   events: {
     formInitiated,
     dataReceived,

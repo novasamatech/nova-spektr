@@ -9,11 +9,11 @@ type Props = {
 };
 
 export const OperationSign = ({ onGoBack }: Props) => {
-  const api = useUnit(signModel.$api);
+  const apis = useUnit(signModel.$apis);
   const signStore = useUnit(signModel.$signStore);
   const signerWallet = useUnit(signModel.$signerWallet);
 
-  if (!api || !signStore || !signerWallet) return null;
+  if (!apis || !signStore || !signerWallet) return null;
 
   const onSignResult = (signatures: HexString[], txPayloads: Uint8Array[]) => {
     signModel.events.dataReceived({ signatures, txPayloads });
@@ -21,13 +21,9 @@ export const OperationSign = ({ onGoBack }: Props) => {
 
   return (
     <SigningSwitch
-      api={api}
-      chainId={signStore.chain.chainId}
-      addressPrefix={signStore.chain.addressPrefix}
-      signerWaller={signerWallet}
-      accounts={signStore.accounts}
-      signatory={signStore.signatory || undefined}
-      transactions={signStore.transactions}
+      apis={apis}
+      signerWallet={signerWallet}
+      signingPayloads={signStore.signingPayloads}
       onGoBack={onGoBack}
       onResult={onSignResult}
     />

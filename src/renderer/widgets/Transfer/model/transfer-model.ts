@@ -93,7 +93,7 @@ sample({
   source: $networkStore,
   filter: (network: NetworkStore | null): network is NetworkStore => Boolean(network),
   fn: ({ chain, asset }, { formData }) => ({
-    event: { ...formData, chain, asset },
+    event: [{ ...formData, chain, asset }],
     step: Step.CONFIRM,
   }),
   target: spread({
@@ -114,10 +114,14 @@ sample({
   },
   fn: ({ transferStore, networkStore, wrappedTx }) => ({
     event: {
-      chain: networkStore!.chain,
-      accounts: [transferStore!.account],
-      signatory: transferStore!.signatory,
-      transactions: [wrappedTx!],
+      signingPayloads: [
+        {
+          chain: networkStore!.chain,
+          account: transferStore!.account,
+          signatory: transferStore!.signatory,
+          transaction: wrappedTx!,
+        },
+      ],
     },
     step: Step.SIGN,
   }),

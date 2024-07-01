@@ -79,7 +79,7 @@ export const BondExtraRules = {
       source,
       validator: (amount: string, _: any, { network, bondBalanceRange }: BondAmountBalanceStore) => {
         const value = config?.withFormatAmount ? formatAmount(amount, network.asset.precision) : amount;
-        const amountBN = new BN(formatAmount(value, network.asset.precision));
+        const amountBN = new BN(value);
 
         const bondBalance = Array.isArray(bondBalanceRange) ? bondBalanceRange[1] : bondBalanceRange;
 
@@ -95,7 +95,7 @@ export const BondExtraRules = {
 
         const feeBN = new BN(feeData.fee);
         const value = config?.withFormatAmount ? formatAmount(amount, network.asset.precision) : amount;
-        const amountBN = new BN(formatAmount(value, network.asset.precision));
+        const amountBN = new BN(value);
 
         return form.shards.every((_: Account, index: number) => {
           return amountBN.add(feeBN).lte(new BN(accountsBalances[index]));

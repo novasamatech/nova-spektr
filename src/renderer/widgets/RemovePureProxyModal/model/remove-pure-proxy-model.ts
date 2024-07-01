@@ -349,15 +349,17 @@ sample({
     return Boolean(wrappedTx) && Boolean(chain) && Boolean(account);
   },
   fn: ({ wrappedTx, chain, realAccount, account }, formData) => ({
-    event: {
-      ...formData,
-      chain: chain as Chain,
-      account: realAccount,
-      proxiedAccount: account as ProxiedAccount,
-      transaction: wrappedTx as Transaction,
-      spawner: (account as ProxiedAccount).proxyAccountId,
-      proxyType: ProxyType.ANY,
-    },
+    event: [
+      {
+        ...formData,
+        chain: chain as Chain,
+        account: realAccount,
+        proxiedAccount: account as ProxiedAccount,
+        transaction: wrappedTx as Transaction,
+        spawner: (account as ProxiedAccount).proxyAccountId,
+        proxyType: ProxyType.ANY,
+      },
+    ],
     step: Step.CONFIRM,
   }),
   target: spread({
@@ -379,10 +381,14 @@ sample({
   },
   fn: ({ removeProxyStore, signatories, wrappedTx, realAccount }) => ({
     event: {
-      chain: removeProxyStore!.chain,
-      accounts: [realAccount!],
-      signatory: signatories?.[0],
-      transactions: [wrappedTx!],
+      signingPayloads: [
+        {
+          chain: removeProxyStore!.chain,
+          account: realAccount!,
+          signatory: signatories?.[0],
+          transaction: wrappedTx!,
+        },
+      ],
     },
     step: Step.SIGN,
   }),

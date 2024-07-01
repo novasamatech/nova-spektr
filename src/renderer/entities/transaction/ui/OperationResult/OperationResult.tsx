@@ -1,6 +1,6 @@
 import { PropsWithChildren } from 'react';
 
-import { StatusModal } from '@shared/ui';
+import { Icon, StatusModal } from '@shared/ui';
 import { Animation } from '@shared/ui/Animation/Animation';
 import { VariantAnimationProps } from './common/constants';
 import { Variant } from './common/types';
@@ -22,7 +22,13 @@ export const OperationResult = ({
   onClose,
 }: PropsWithChildren<Props>) => (
   <StatusModal
-    content={<Animation variant={variant} {...VariantAnimationProps[variant]} />}
+    content={
+      variant === 'mixedResult' ? (
+        <Icon name="warn" size={48} />
+      ) : (
+        <Animation variant={variant} {...VariantAnimationProps[variant]} />
+      )
+    }
     title={title}
     description={description}
     isOpen={isOpen}

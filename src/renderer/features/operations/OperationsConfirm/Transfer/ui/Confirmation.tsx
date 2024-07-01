@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap } from 'effector-react';
 import { ReactNode } from 'react';
 
 import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
@@ -12,20 +12,44 @@ import { ChainTitle } from '@entities/chain';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
+  id?: number;
   secondaryActionButton?: ReactNode;
   hideSignButton?: boolean;
   onGoBack?: () => void;
 };
 
-export const Confirmation = ({ secondaryActionButton, hideSignButton, onGoBack }: Props) => {
+export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, onGoBack }: Props) => {
   const { t } = useI18n();
 
-  const isXcm = useUnit(confirmModel.$isXcm);
+  const confirmStore = useStoreMap({
+    store: confirmModel.$confirmStore,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
 
-  const confirmStore = useUnit(confirmModel.$confirmStore);
-  const initiatorWallet = useUnit(confirmModel.$initiatorWallet);
-  const signerWallet = useUnit(confirmModel.$signerWallet);
-  const proxiedWallet = useUnit(confirmModel.$proxiedWallet);
+  const initiatorWallet = useStoreMap({
+    store: confirmModel.$initiatorWallets,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
+
+  const signerWallet = useStoreMap({
+    store: confirmModel.$signerWallets,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
+
+  const proxiedWallet = useStoreMap({
+    store: confirmModel.$proxiedWallets,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
+
+  const isXcm = useStoreMap({
+    store: confirmModel.$isXcm,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
 
   if (!confirmStore || !initiatorWallet) return null;
 

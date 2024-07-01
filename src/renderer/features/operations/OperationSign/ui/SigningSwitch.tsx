@@ -17,10 +17,8 @@ const SigningFlow: Record<SigningType, (props: InnerSigningProps) => JSX.Element
 export const SigningSwitch = (props: SigningProps) => {
   // TODO: not always __activeWallet__ is a signing wallet, need to rely on __signerWaller__
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const wallets = useUnit(walletModel.$wallets);
 
-  const signatoryWallet = wallets.find((w) => w.id === props.signatory?.walletId);
-  const wallet = signatoryWallet || props.signerWaller || activeWallet;
+  const wallet = props.signerWallet || activeWallet;
 
   if (!wallet) return null;
 

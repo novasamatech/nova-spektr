@@ -5,6 +5,7 @@ import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
 import { Account, Chain, SigningType, Transaction, Wallet, WalletType } from '@shared/core';
 import { signModel } from '../sign-model';
+import { SigningPayload } from '../../lib/types';
 
 const testApi = {
   key: 'test-api',
@@ -38,16 +39,16 @@ describe('widgets/AddPureProxyModal/model/sign-model', () => {
         .set(walletModel.$wallets, [initiatorWallet, signerWallet]),
     });
 
-    const store = {
+    const payload = {
       chain: { chainId: '0x00' } as unknown as Chain,
-      accounts: [{ walletId: 1 }] as unknown as Account[],
-      signer: { walletId: 2 } as unknown as Account,
-      transactions: [{}] as Transaction[],
-    };
+      account: { walletId: 1 } as unknown as Account,
+      signatory: { walletId: 2 } as unknown as Account,
+      transaction: {} as Transaction,
+    } as SigningPayload;
 
-    await allSettled(signModel.events.formInitiated, { scope, params: store });
+    await allSettled(signModel.events.formInitiated, { scope, params: { signingPayloads: [payload] } });
 
-    expect(scope.getState(signModel.$api)).toEqual(testApi);
-    expect(scope.getState(signModel.$signStore)).toEqual(store);
+    expect(scope.getState(signModel.$apis)).toEqual({ '0x00': testApi });
+    expect(scope.getState(signModel.$signStore)).toEqual({ signingPayloads: [payload] });
   });
 });

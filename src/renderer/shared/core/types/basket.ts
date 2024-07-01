@@ -22,6 +22,7 @@ interface BasketError {
 
 export interface ChainError extends BasketError {
   type: ErrorType.CHAIN;
+  dateCreated: number;
 }
 
 export interface ClientError extends BasketError {

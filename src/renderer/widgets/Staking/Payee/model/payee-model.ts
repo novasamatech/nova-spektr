@@ -238,14 +238,16 @@ sample({
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
 
     return {
-      event: {
-        chain: walletData!.chain,
-        asset: getRelaychainAsset(walletData!.chain.assets)!,
-        ...payeeData!,
-        ...feeData,
-        ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
-        ...(wrapper && { shards: [wrapper.proxyAccount] }),
-      },
+      event: [
+        {
+          chain: walletData!.chain,
+          asset: getRelaychainAsset(walletData!.chain.assets)!,
+          ...payeeData!,
+          ...feeData,
+          ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
+          ...(wrapper && { shards: [wrapper.proxyAccount] }),
+        },
+      ],
       step: Step.CONFIRM,
     };
   },
@@ -271,10 +273,12 @@ sample({
 
     return {
       event: {
-        chain: walletData!.chain,
-        accounts: wrapper ? [wrapper.proxyAccount] : payeeData!.shards,
-        signatory: payeeData!.signatory,
-        transactions: transactions!.map((tx) => tx.wrappedTx),
+        signingPayloads: transactions!.map((tx, index) => ({
+          chain: walletData!.chain,
+          account: wrapper ? wrapper.proxyAccount : payeeData!.shards[index],
+          signatory: payeeData!.signatory,
+          transaction: tx.wrappedTx,
+        })),
       },
       step: Step.SIGN,
     };
@@ -361,7 +365,7 @@ sample({
 export const payeeModel = {
   $step,
   $walletData,
-  $initiatorWallet: $walletData.map((data) => data?.wallet),
+  $initiatorWallet: $walletData.map((data) => data?.wallet || null),
 
   events: {
     flowStarted,

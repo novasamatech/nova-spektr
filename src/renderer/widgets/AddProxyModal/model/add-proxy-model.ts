@@ -88,7 +88,7 @@ sample({
 sample({
   clock: formModel.output.formSubmitted,
   fn: ({ formData, transactions }) => ({
-    event: { ...formData, transaction: transactions.wrappedTx },
+    event: [{ ...formData, transaction: transactions.wrappedTx }],
     step: Step.CONFIRM,
   }),
   target: spread({
@@ -106,10 +106,14 @@ sample({
   filter: ({ addProxyStore, wrappedTx }) => Boolean(addProxyStore) && Boolean(wrappedTx),
   fn: ({ addProxyStore, wrappedTx }) => ({
     event: {
-      chain: addProxyStore!.chain,
-      accounts: [addProxyStore!.account],
-      signatory: addProxyStore!.signatory,
-      transactions: [wrappedTx!],
+      signingPayloads: [
+        {
+          chain: addProxyStore!.chain,
+          account: addProxyStore!.account,
+          signatory: addProxyStore!.signatory,
+          transaction: wrappedTx!,
+        },
+      ],
     },
     step: Step.SIGN,
   }),

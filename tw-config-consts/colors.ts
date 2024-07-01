@@ -81,6 +81,7 @@ export default {
   'block-background': 'var(--block-background)',
   'badge-background': 'var(--badge-background)',
   'badge-red-background-default': 'var(--badge-red-background-default)',
+  'badge-orange-background-default': 'var(--badge-orange-background-default)',
   'extended-block-background': 'var(--extended-block-background)',
   'negative-action-background': 'var(--negative-action-background)',
   'dim-background': 'var(--dim-background)',

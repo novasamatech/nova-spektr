@@ -1,4 +1,4 @@
-import { ChainId, HexString, KeyType } from '@renderer/shared/core';
+import { ChainId, HexString, KeyType } from '@shared/core';
 
 export type ImportFileKey = { key: Omit<ImportedDerivation, 'chainId'> };
 export type ImportFileChain = { [key: HexString]: ImportFileKey[] };

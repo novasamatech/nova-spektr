@@ -34,9 +34,9 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
     {
       value: [{ accountId }],
       form: {
-        amount: transaction.args.amount,
+        amount: transaction.args.value,
       },
-      ...BondNominateRules.shards.noBondBalance({} as Store<ShardsBondBalanceStore>),
+      ...BondNominateRules.shards.noBondBalance({} as Store<ShardsBondBalanceStore>, { withFormatAmount: false }),
       source: {
         isProxy: false,
         network: { chain, asset },
@@ -46,9 +46,9 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
     {
       value: transaction.args.value,
       form: {
-        amount: [{ accountId }],
+        shards: [{ accountId }],
       },
-      ...BondNominateRules.amount.insufficientBalanceForFee({} as Store<AmountFeeStore>),
+      ...BondNominateRules.amount.insufficientBalanceForFee({} as Store<AmountFeeStore>, { withFormatAmount: false }),
       source: {
         isMultisig: false,
         network: { chain, asset },

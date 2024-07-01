@@ -70,7 +70,7 @@ export const WithdrawRules = {
     }),
     noRedeemBalance: (source: Store<AmountFeeStore>) => ({
       name: 'noRedeemBalance',
-      errorText: 'transfer.notEnoughUnlockingError',
+      errorText: 'staking.notEnoughUnlockingError',
       source,
       validator: (_v: string, form: any, { accountsBalances }: AmountFeeStore) => {
         return form.shards.every((_: Account, index: number) => {

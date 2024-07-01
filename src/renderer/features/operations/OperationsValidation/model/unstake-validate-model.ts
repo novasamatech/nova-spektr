@@ -36,7 +36,7 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
       form: {
         shards: [{ accountId }],
       },
-      ...UnstakeRules.amount.insufficientBalanceForFee({} as Store<AmountFeeStore>),
+      ...UnstakeRules.amount.insufficientBalanceForFee({} as Store<AmountFeeStore>, { withFormatAmount: false }),
       source: {
         isMultisig: false,
         network: { chain, asset },
@@ -47,7 +47,7 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
     {
       value: transaction.args.value,
       form: {},
-      ...UnstakeRules.amount.notEnoughBalance({} as Store<UnstakeAmountBalanceRange>),
+      ...UnstakeRules.amount.notEnoughBalance({} as Store<UnstakeAmountBalanceRange>, { withFormatAmount: false }),
       source: {
         network: { chain, asset },
         unstakeBalanceRange: [stakedAmount(shardBalance as Balance)],

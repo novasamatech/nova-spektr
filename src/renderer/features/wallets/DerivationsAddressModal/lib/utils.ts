@@ -1,5 +1,5 @@
 import type { ChainAccount, ShardAccount, DraftAccount } from '@shared/core';
-import { toAccountId } from '@renderer/shared/lib/utils';
+import { toAccountId } from '@shared/lib/utils';
 import {
   DynamicDerivationRequestInfo,
   DdAddressInfoDecoded,

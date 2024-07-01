@@ -1,4 +1,4 @@
-import { combine, createEffect, createEvent, createStore, sample, scopeBind, split } from 'effector';
+import { combine, createEffect, createEvent, createStore, restore, sample, split } from 'effector';
 import { once } from 'patronum';
 
 import { networkModel } from '@entities/network';
@@ -22,7 +22,8 @@ import {
   ValidationResult,
 } from '@features/operations/OperationsValidation';
 import { signOperationsModel } from './sign-operations-model';
-import { addUnique, removeFromCollection } from '@/src/renderer/shared/lib/utils';
+import { addUnique, removeFromCollection } from '@shared/lib/utils';
+import { getCoreTx } from '../lib/utils';
 
 type BasketTransactionsMap = {
   valid: BasketTransaction[];
@@ -33,58 +34,52 @@ const txSelected = createEvent<{ id: ID; value: boolean }>();
 const txClicked = createEvent<BasketTransaction>();
 const allSelected = createEvent();
 const signStarted = createEvent();
+const validationStarted = createEvent();
 const validationCompleted = createEvent();
+const refreshValidationStarted = createEvent();
 const signContinued = createEvent();
 const signTransactionsReceived = createEvent<BasketTransactionsMap>();
 const validationWarningShown = createEvent<BasketTransactionsMap>();
 const proceedValidationWarning = createEvent<BasketTransactionsMap>();
 const cancelValidationWarning = createEvent();
+const removeTxStarted = createEvent<BasketTransaction>();
+const removeTxCancelled = createEvent();
+const txRemoved = createEvent<BasketTransaction>();
 
 const $selectedTxs = createStore<number[]>([]);
 const $invalidTxs = createStore<Map<ID, ValidationResult>>(new Map());
 const $validTxs = createStore<BasketTransaction[]>([]);
 const $validatingTxs = createStore<number[]>([]);
 const $validationWarningShown = createStore<boolean>(false);
+const $alreadyValidatedTxs = createStore<number[]>([]);
+const $txToRemove = restore(removeTxStarted, null).reset([removeTxCancelled, txRemoved]);
 
 const validateFx = createEffect((transactions: BasketTransaction[]) => {
-  const validateTransferBound = scopeBind(transferValidateModel.events.validationStarted, { safe: true });
-  const addProxyValidateBound = scopeBind(addProxyValidateModel.events.validationStarted, { safe: true });
-  const addPureProxiedValidateBound = scopeBind(addPureProxiedValidateModel.events.validationStarted, { safe: true });
-  const removeProxyValidateBound = scopeBind(removeProxyValidateModel.events.validationStarted, { safe: true });
-  const removePureProxiedValidateBound = scopeBind(removePureProxiedValidateModel.events.validationStarted, {
-    safe: true,
-  });
-  const bondNominateValidateBound = scopeBind(bondNominateValidateModel.events.validationStarted, { safe: true });
-  const nominateValidateBound = scopeBind(nominateValidateModel.events.validationStarted, { safe: true });
-  const bondExtraValidateBound = scopeBind(bondExtraValidateModel.events.validationStarted, { safe: true });
-  const payeeValidateBound = scopeBind(payeeValidateModel.events.validationStarted, { safe: true });
-  const restakeValidateBound = scopeBind(restakeValidateModel.events.validationStarted, { safe: true });
-  const unstakeValidateBound = scopeBind(unstakeValidateModel.events.validationStarted, { safe: true });
-  const withdrawValidateBound = scopeBind(withdrawValidateModel.events.validationStarted, { safe: true });
-
   for (const tx of transactions) {
-    if (TransferTypes.includes(tx.coreTx.type) || XcmTypes.includes(tx.coreTx.type)) {
-      validateTransferBound({ id: tx.id, transaction: tx.coreTx });
+    const coreTx = getCoreTx(tx, [TransactionType.BOND, TransactionType.UNSTAKE]);
+
+    if (TransferTypes.includes(coreTx.type) || XcmTypes.includes(coreTx.type)) {
+      transferValidateModel.events.validationStarted({ id: tx.id, transaction: coreTx });
     }
 
     const TransactionValidators = {
-      [TransactionType.ADD_PROXY]: addProxyValidateBound,
-      [TransactionType.CREATE_PURE_PROXY]: addPureProxiedValidateBound,
-      [TransactionType.REMOVE_PROXY]: removeProxyValidateBound,
-      [TransactionType.REMOVE_PURE_PROXY]: removePureProxiedValidateBound,
-      [TransactionType.BOND]: bondNominateValidateBound,
-      [TransactionType.NOMINATE]: nominateValidateBound,
-      [TransactionType.STAKE_MORE]: bondExtraValidateBound,
-      [TransactionType.DESTINATION]: payeeValidateBound,
-      [TransactionType.RESTAKE]: restakeValidateBound,
-      [TransactionType.UNSTAKE]: unstakeValidateBound,
-      [TransactionType.REDEEM]: withdrawValidateBound,
+      [TransactionType.ADD_PROXY]: addProxyValidateModel.events.validationStarted,
+      [TransactionType.CREATE_PURE_PROXY]: addPureProxiedValidateModel.events.validationStarted,
+      [TransactionType.REMOVE_PROXY]: removeProxyValidateModel.events.validationStarted,
+      [TransactionType.REMOVE_PURE_PROXY]: removePureProxiedValidateModel.events.validationStarted,
+      [TransactionType.BOND]: bondNominateValidateModel.events.validationStarted,
+      [TransactionType.NOMINATE]: nominateValidateModel.events.validationStarted,
+      [TransactionType.STAKE_MORE]: bondExtraValidateModel.events.validationStarted,
+      [TransactionType.DESTINATION]: payeeValidateModel.events.validationStarted,
+      [TransactionType.RESTAKE]: restakeValidateModel.events.validationStarted,
+      [TransactionType.UNSTAKE]: unstakeValidateModel.events.validationStarted,
+      [TransactionType.REDEEM]: withdrawValidateModel.events.validationStarted,
     };
 
-    if (tx.coreTx.type in TransactionValidators) {
+    if (coreTx.type in TransactionValidators) {
       // TS thinks that transfer should be in TransactionValidators
       // @ts-ignore`
-      TransactionValidators[tx.coreTx.type]({ id: tx.id, transaction: tx.coreTx });
+      TransactionValidators[coreTx.type]({ id: tx.id, transaction: coreTx });
     }
   }
 });
@@ -97,6 +92,21 @@ const $basketTransactions = combine(
   ({ wallet, basket }) => basket.filter((tx) => tx.initiatorWallet === wallet?.id).reverse(),
 );
 
+const txValidated = [
+  transferValidateModel.output.txValidated,
+  addProxyValidateModel.output.txValidated,
+  addPureProxiedValidateModel.output.txValidated,
+  removeProxyValidateModel.output.txValidated,
+  removePureProxiedValidateModel.output.txValidated,
+  bondNominateValidateModel.output.txValidated,
+  nominateValidateModel.output.txValidated,
+  bondExtraValidateModel.output.txValidated,
+  payeeValidateModel.output.txValidated,
+  restakeValidateModel.output.txValidated,
+  unstakeValidateModel.output.txValidated,
+  withdrawValidateModel.output.txValidated,
+];
+
 sample({
   clock: txSelected,
   source: $selectedTxs,
@@ -107,47 +117,94 @@ sample({
 });
 
 sample({
+  clock: $basketTransactions,
+  source: $selectedTxs,
+  fn: (selectedTxs, txs) => selectedTxs.filter((id) => !txs.find((tx) => tx.id === id)),
+  target: $selectedTxs,
+});
+
+sample({
   clock: allSelected,
   source: {
     txs: $basketTransactions,
     selectedTxs: $selectedTxs,
+    invalidTxs: $invalidTxs,
+    validatingTxs: $validatingTxs,
+    alreadyValidatedTxs: $alreadyValidatedTxs,
   },
-  fn: ({ txs, selectedTxs }) => {
-    return selectedTxs.length === txs.length ? [] : txs.map((tx) => tx.id);
+  fn: ({ txs, selectedTxs, invalidTxs, validatingTxs, alreadyValidatedTxs }) => {
+    const validTxs = txs.filter(
+      (tx) => !invalidTxs.has(tx.id) && !(validatingTxs.includes(tx.id) || !alreadyValidatedTxs.includes(tx.id)),
+    );
+
+    return selectedTxs.length >= validTxs.length ? [] : validTxs.map((tx) => tx.id);
   },
   target: $selectedTxs,
 });
 
 sample({
-  clock: [$basketTransactions, networkModel.$apis],
+  clock: validationStarted,
   source: {
     transactions: $basketTransactions,
     apis: networkModel.$apis,
+    alreadyValidatedTxs: $alreadyValidatedTxs,
+    validatingTxs: $validatingTxs,
   },
-  filter: ({ transactions, apis }) => {
+  fn: ({ transactions, apis, alreadyValidatedTxs, validatingTxs }) => {
     const chains = new Set(transactions.map((t) => t.coreTx.chainId));
 
-    return [...chains].some((chainId) => apis[chainId]);
+    const txsToValidate = [...chains].reduce<BasketTransaction[]>((acc, chainId) => {
+      if (!apis[chainId]) {
+        return acc;
+      }
+
+      const txs = transactions
+        .filter((tx) => tx.coreTx.chainId === chainId)
+        .filter((tx) => !alreadyValidatedTxs.includes(tx.id) && !validatingTxs.includes(tx.id));
+
+      return [...acc, ...txs];
+    }, []);
+
+    return txsToValidate;
   },
-  fn: ({ transactions }) => transactions,
   target: validateFx,
 });
 
 sample({
-  clock: [
-    transferValidateModel.output.txValidated,
-    addProxyValidateModel.output.txValidated,
-    addPureProxiedValidateModel.output.txValidated,
-    removeProxyValidateModel.output.txValidated,
-    removePureProxiedValidateModel.output.txValidated,
-    bondNominateValidateModel.output.txValidated,
-    nominateValidateModel.output.txValidated,
-    bondExtraValidateModel.output.txValidated,
-    payeeValidateModel.output.txValidated,
-    restakeValidateModel.output.txValidated,
-    unstakeValidateModel.output.txValidated,
-    withdrawValidateModel.output.txValidated,
-  ],
+  clock: refreshValidationStarted,
+  source: {
+    transactions: $basketTransactions,
+    apis: networkModel.$apis,
+    alreadyValidatedTxs: $alreadyValidatedTxs,
+    validatingTxs: $validatingTxs,
+  },
+  fn: ({ transactions, apis, alreadyValidatedTxs, validatingTxs }) => {
+    const chains = new Set(transactions.map((t) => t.coreTx.chainId));
+
+    const txsToValidate = [...chains].reduce<BasketTransaction[]>((acc, chainId) => {
+      if (!apis[chainId]) {
+        return acc;
+      }
+
+      const txs = transactions.filter((tx) => tx.coreTx.chainId === chainId);
+
+      return [...acc, ...txs];
+    }, []);
+
+    return txsToValidate;
+  },
+  target: validateFx,
+});
+
+sample({
+  clock: validateFx,
+  source: $validatingTxs,
+  fn: (validatingTxs, txs) => txs.reduce((acc, tx) => addUnique(acc, tx.id), validatingTxs),
+  target: $validatingTxs,
+});
+
+sample({
+  clock: txValidated,
   source: $invalidTxs,
   fn: (txs, { id, result }) => {
     const invalidTxs = new Map(txs);
@@ -167,32 +224,17 @@ sample({
 // Validation on sign process
 
 sample({
-  clock: validateFx,
-  fn: (txs) => txs.map((tx) => tx.id),
+  clock: txValidated,
+  source: $validatingTxs,
+  fn: (txs, { id }) => removeFromCollection(txs, id),
   target: $validatingTxs,
 });
 
 sample({
-  clock: [
-    transferValidateModel.output.txValidated,
-    addProxyValidateModel.output.txValidated,
-    addPureProxiedValidateModel.output.txValidated,
-    removeProxyValidateModel.output.txValidated,
-    removePureProxiedValidateModel.output.txValidated,
-    bondNominateValidateModel.output.txValidated,
-    nominateValidateModel.output.txValidated,
-    bondExtraValidateModel.output.txValidated,
-    payeeValidateModel.output.txValidated,
-    restakeValidateModel.output.txValidated,
-    unstakeValidateModel.output.txValidated,
-    withdrawValidateModel.output.txValidated,
-  ],
-  source: $validatingTxs,
-  fn: (txs, { id }) => {
-    return removeFromCollection(txs, id);
-  },
-
-  target: $validatingTxs,
+  clock: txValidated,
+  source: $alreadyValidatedTxs,
+  fn: (txs, { id }) => addUnique(txs, id),
+  target: $alreadyValidatedTxs,
 });
 
 sample({
@@ -292,6 +334,12 @@ sample({
   target: $validationWarningShown,
 });
 
+sample({
+  clock: txRemoved,
+  fn: (tx) => [tx],
+  target: basketModel.events.transactionsRemoved,
+});
+
 export const basketPageModel = {
   $basketTransactions,
   $selectedTxs,
@@ -299,13 +347,21 @@ export const basketPageModel = {
   $validTxs,
   $validationWarningShown,
   $validatingTxs,
+  $txToRemove,
+  $alreadyValidatedTxs,
 
   events: {
+    validationStarted,
+    refreshValidationStarted,
     txSelected,
     txClicked,
     allSelected,
     signStarted,
     cancelValidationWarning,
     proceedValidationWarning,
+
+    removeTxStarted,
+    removeTxCancelled,
+    txRemoved,
   },
 };

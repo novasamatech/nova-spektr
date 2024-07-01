@@ -18,7 +18,7 @@ describe('hooks/useToggle', () => {
   });
 
   test('should change countdown value', () => {
-    const { result } = renderHook(() => useCountdown({} as ApiPromise));
+    const { result } = renderHook(() => useCountdown([{} as ApiPromise]));
 
     const [countdown, resetCountdown] = result.current;
     expect(countdown).toEqual(DEFAULT_QR_LIFETIME);

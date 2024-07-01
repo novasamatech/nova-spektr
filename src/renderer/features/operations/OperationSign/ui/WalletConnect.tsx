@@ -19,18 +19,12 @@ import { operationSignModel } from '../model/operation-sign-model';
 import { operationSignUtils } from '../lib/operation-sign-utils';
 import { walletModel, walletUtils } from '@entities/wallet';
 
-export const WalletConnect = ({
-  api,
-  validateBalance,
-  accounts,
-  signatory,
-  transactions,
-  onGoBack,
-  onResult,
-}: InnerSigningProps) => {
+export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack, onResult }: InnerSigningProps) => {
   const { t } = useI18n();
   const { verifySignature } = useTransaction();
-  const [countdown, resetCountdown] = useCountdown(api);
+  const [countdown, resetCountdown] = useCountdown(Object.values(apis));
+  const payload = signingPayloads[0];
+  const api = apis[payload.chain.chainId];
 
   const wallets = useUnit(walletModel.$wallets);
   const session = useUnit(walletConnectModel.$session);
@@ -46,8 +40,8 @@ export const WalletConnect = ({
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
-  const transaction = transactions[0];
-  const account = signatory || accounts[0];
+  const transaction = payload.transaction;
+  const account = payload.signatory || payload.account;
 
   useGate(operationSignModel.SignerGate, account);
 
@@ -128,7 +122,7 @@ export const WalletConnect = ({
   };
 
   const handleSignature = async (signature: HexString) => {
-    const isVerified = txPayload && verifySignature(txPayload, signature as HexString, accounts[0].accountId);
+    const isVerified = txPayload && verifySignature(txPayload, signature as HexString, payload.account.accountId);
 
     const balanceValidationError = validateBalance && (await validateBalance());
 

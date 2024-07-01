@@ -45,8 +45,10 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
     },
     {
       value: transaction.args.maxAdditional,
-      form: {},
-      ...BondExtraRules.amount.insufficientBalanceForFee({} as Store<AmountFeeStore>),
+      form: {
+        shards: [{ accountId }],
+      },
+      ...BondExtraRules.amount.insufficientBalanceForFee({} as Store<AmountFeeStore>, { withFormatAmount: false }),
       source: {
         isMultisig: false,
         network: { chain, asset },
