@@ -38,6 +38,8 @@ export const AddPureProxied = () => {
   if (addPureProxiedUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
 
   if (addPureProxiedUtils.isBasketStep(step)) {
+    setTimeout(() => closeBasketModal(), 1450);
+
     return (
       <OperationResult
         isOpen={isBasketModalOpen}

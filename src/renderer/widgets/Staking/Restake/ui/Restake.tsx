@@ -29,6 +29,8 @@ export const Restake = () => {
 
   if (restakeUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
   if (restakeUtils.isBasketStep(step)) {
+    setTimeout(() => closeBasketModal(), 1450);
+
     return (
       <OperationResult
         isOpen={isBasketModalOpen}

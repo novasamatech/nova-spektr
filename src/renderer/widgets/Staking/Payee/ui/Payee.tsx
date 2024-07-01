@@ -29,6 +29,8 @@ export const Payee = () => {
 
   if (payeeUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
   if (payeeUtils.isBasketStep(step)) {
+    setTimeout(() => closeBasketModal(), 1450);
+
     return (
       <OperationResult
         isOpen={isBasketModalOpen}

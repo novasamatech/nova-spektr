@@ -29,6 +29,8 @@ export const BondExtra = () => {
 
   if (bondExtraUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
   if (bondExtraUtils.isBasketStep(step)) {
+    setTimeout(() => closeBasketModal(), 1450);
+
     return (
       <OperationResult
         isOpen={isBasketModalOpen}

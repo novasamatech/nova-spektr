@@ -39,6 +39,8 @@ export const RemoveProxy = () => {
   if (removeProxyUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
 
   if (removeProxyUtils.isBasketStep(step)) {
+    setTimeout(() => closeBasketModal(), 1450);
+
     return (
       <OperationResult
         isOpen={isBasketModalOpen}
