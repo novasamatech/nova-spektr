@@ -102,6 +102,8 @@
     },
     "searchPlaceholder": "Search",
     "selectAll": "Select all",
+    "selectedStatus_one": "{ selected } out of { count } operation selected",
+    "selectedStatus_other": "{ selected } out of { count } operations selected",
     "signButton": "Sign",
     "signOperations": {
       "title": "Sign { transactions } operations"
