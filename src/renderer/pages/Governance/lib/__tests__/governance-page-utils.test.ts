@@ -16,27 +16,27 @@ describe('page/governance/lib/governance-page-utils', () => {
 
   test('should return all referendums if query is empty', () => {
     const query = '';
-    const result = filterReferendums({ referendums, query, details, chainId });
+    const result = filterReferendums({ referendums, query, titles: details, chainId });
     expect(result).toEqual(referendums);
   });
 
   test('should return referendums that match the query in the ID', () => {
     const query = '111';
-    const result = filterReferendums({ referendums, query, details, chainId });
+    const result = filterReferendums({ referendums, query, titles: details, chainId });
     expect(result.size).toEqual(1);
     expect(result.has('111')).toEqual(true);
   });
 
   test('should return referendums that match the query in the title', () => {
     const query = 'Title 2';
-    const result = filterReferendums({ referendums, query, details, chainId });
+    const result = filterReferendums({ referendums, query, titles: details, chainId });
     expect(result.size).toEqual(1);
     expect(result.has('222')).toEqual(true);
   });
 
   test('should return an empty map if no referendums match the query', () => {
     const query = 'none';
-    const result = filterReferendums({ referendums, query, details, chainId });
+    const result = filterReferendums({ referendums, query, titles: details, chainId });
     expect(result.size).toEqual(0);
   });
 });

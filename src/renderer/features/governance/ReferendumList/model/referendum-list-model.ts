@@ -25,9 +25,7 @@ import {
 } from '@shared/core';
 import { networkSelectorModel } from '@features/governance';
 
-// const namesReceived = createEvent<{ chainId: ChainId; data: Record<string, string> }>();
-
-const $referendumsNames = createStore<Record<ChainId, Record<ReferendumId, string>>>({});
+const $referendumsTitles = createStore<Record<ChainId, Record<ReferendumId, string>>>({});
 const $referendumsRequested = createStore<boolean>(false);
 
 const $isConnectionActive = combine(
@@ -285,17 +283,17 @@ sample({
 
 sample({
   clock: receiveOffChainReferendums,
-  source: $referendumsNames,
+  source: $referendumsTitles,
   fn: (referendumsDetails, { chainId, data }) => {
     const { [chainId]: chainToUpdate, ...rest } = referendumsDetails;
 
     return { ...rest, [chainId]: { ...chainToUpdate, ...data } };
   },
-  target: $referendumsNames,
+  target: $referendumsTitles,
 });
 
 export const referendumListModel = {
-  $referendumsNames,
+  $referendumsNames: $referendumsTitles,
   $chain: networkSelectorModel.$governanceChain,
   $isApiActive: networkSelectorModel.$isApiConnected,
   $isLoading: or(
