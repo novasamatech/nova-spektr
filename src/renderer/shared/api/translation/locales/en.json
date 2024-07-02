@@ -277,6 +277,10 @@
       "matrixIdTitle": "Matrix ID",
       "publicKeyTitle": "Public key"
     },
+    "image": {
+      "loadingError": "Error while loading image",
+      "retryLoading": "Retry"
+    },
     "input": {
       "amountLabel": "Amount",
       "availableLabel": "Available:",
@@ -293,10 +297,6 @@
     "title": {
       "appName": "Nova Spektr",
       "inactiveNetwork": "Network is inactive, please check the connection in network settings"
-    },
-    "image": {
-      "loadingError": "Error while loading image",
-      "retryLoading": "Retry"
     }
   },
   "governance": {
@@ -309,32 +309,32 @@
       "title": "Referendum data"
     },
     "referendum": {
-      "threshold": "Threshold",
       "proposer": "Proposer: {name}",
+      "threshold": "Threshold",
       "votedTokens": "{voted} of {total} {asset}",
       "votingStatus": "Voting status"
     },
     "referendums": {
+      "approved": "Approved",
+      "cancelled": "Cancelled",
       "completed": "Completed",
       "crowdloans": "Crowdloans",
+      "deciding": "Deciding",
+      "executed": "Executed",
       "fellowshipAdmin": "Fellowship: Admin",
       "fellowshipWhitelist": "Fellowship: Whitelist",
       "governanceCanceller": "Governance: Canceller",
       "governanceKiller": "Governance: Killer",
       "governanceLease": "Governance: Lease",
       "governanceRegistrar": "Governance: Registrar",
+      "killed": "Killed",
       "mainAgenda": "Main agenda",
       "ongoing": "Ongoing",
-      "approved": "Approved",
-      "deciding": "Deciding",
-      "executed": "Executed",
       "passing": "Passing",
-      "rejected": "Rejected",
-      "cancelled": "Cancelled",
-      "killed": "Killed",
-      "timedOut": "Timed out",
       "referendumTitle": "Referendum #{ index }",
+      "rejected": "Rejected",
       "staking": "Staking",
+      "timedOut": "Timed out",
       "treasuryAny": "Treasury: Any",
       "treasuryBigSpend": "Treasury: Big spend",
       "treasuryBigTips": "Treasury: Big tips",
