@@ -10,7 +10,7 @@ export const balanceSubUtils = {
   formSubAccounts,
 };
 
-function getSiblingAccounts(wallet: Wallet, wallets: Wallet[]): Account[] {
+function getSiblingAccounts(wallet: Wallet, wallets: Wallet[], chains: Record<ChainId, Chain>): Account[] {
   if (walletUtils.isMultisig(wallet)) {
     const signatoriesMap = dictionary(wallet.accounts[0].signatories, 'accountId');
     const signatories = walletUtils.getAccountsBy(wallets, (account) => signatoriesMap[account.accountId]);
@@ -27,12 +27,14 @@ function getSiblingAccounts(wallet: Wallet, wallets: Wallet[]): Account[] {
 
     const proxy = walletUtils.getWalletFilteredAccounts(wallets, {
       walletFn: (wallet) => !walletUtils.isWatchOnly(wallet),
-      accountFn: (account) => account.accountId === proxiedAccount.proxyAccountId,
+      accountFn: (account) =>
+        account.accountId === proxiedAccount.proxyAccountId &&
+        accountUtils.isChainAndCryptoMatch(account, chains[proxiedAccount.chainId]),
     });
 
     if (!proxy) return [proxiedAccount];
 
-    return [proxiedAccount, ...getSiblingAccounts(proxy, wallets)];
+    return [proxiedAccount, ...getSiblingAccounts(proxy, wallets, chains)];
   }
 
   return wallet.accounts;

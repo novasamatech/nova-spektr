@@ -232,7 +232,7 @@ sample({
   },
   filter: (_, wallet) => Boolean(wallet),
   fn: ({ subAccounts, wallets, chains }, wallet) => {
-    const accountsToSub = balanceSubUtils.getSiblingAccounts(wallet!, wallets);
+    const accountsToSub = balanceSubUtils.getSiblingAccounts(wallet!, wallets, chains);
 
     return balanceSubUtils.formSubAccounts(wallet!.id, accountsToSub, subAccounts, chains);
   },
