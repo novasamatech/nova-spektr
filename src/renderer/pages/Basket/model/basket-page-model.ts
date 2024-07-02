@@ -1,5 +1,4 @@
 import { combine, createEffect, createEvent, createStore, restore, sample, split } from 'effector';
-import { once } from 'patronum';
 
 import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
@@ -35,7 +34,6 @@ const txClicked = createEvent<BasketTransaction>();
 const allSelected = createEvent();
 const signStarted = createEvent();
 const validationStarted = createEvent();
-const validationCompleted = createEvent();
 const refreshValidationStarted = createEvent();
 const signContinued = createEvent();
 const signTransactionsReceived = createEvent<BasketTransactionsMap>();
@@ -243,12 +241,6 @@ sample({
 });
 
 sample({
-  clock: $validatingTxs,
-  filter: (txs) => txs.length === 0,
-  target: validationCompleted,
-});
-
-sample({
   clock: txClicked,
   fn: (transaction) => [transaction.id],
   target: $selectedTxs,
@@ -261,18 +253,22 @@ sample({
 });
 
 sample({
-  clock: once({
-    source: validationCompleted,
-    reset: signStarted,
-  }),
-  target: signContinued,
-});
-
-sample({
   clock: signStarted,
   source: { allTransactions: $basketTransactions, selectedTxs: $selectedTxs, invalidTxs: $invalidTxs },
   fn: ({ allTransactions, selectedTxs }) => allTransactions.filter((t) => selectedTxs.includes(t.id)),
   target: validateFx,
+});
+
+sample({
+  clock: $validatingTxs,
+  source: {
+    validatingTxs: $validatingTxs,
+    selectedTxs: $selectedTxs,
+  },
+  filter: ({ validatingTxs, selectedTxs }) => {
+    return selectedTxs.filter((tx) => validatingTxs.includes(tx)).length === 0;
+  },
+  target: signContinued,
 });
 
 sample({
