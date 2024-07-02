@@ -11,6 +11,7 @@ import { removeProxyUtils } from '../lib/remove-proxy-utils';
 import { removeProxyModel } from '../model/remove-proxy-model';
 import { OperationSign, OperationSubmit } from '@features/operations';
 import { basketUtils, RemoveProxyConfirm as Confirmation } from '@features/operations/OperationsConfirm';
+import { OperationResult } from '@entities/transaction';
 
 export const RemoveProxy = () => {
   const { t } = useI18n();
@@ -24,6 +25,11 @@ export const RemoveProxy = () => {
     removeProxyModel.output.flowFinished,
   );
 
+  const [isBasketModalOpen, closeBasketModal] = useModalClose(
+    removeProxyUtils.isBasketStep(step),
+    removeProxyModel.output.flowFinished,
+  );
+
   const getModalTitle = (step: Step, chain?: Chain) => {
     if (removeProxyUtils.isInitStep(step) || !chain) return t('operations.modalTitles.removeProxy');
 
@@ -31,6 +37,19 @@ export const RemoveProxy = () => {
   };
 
   if (removeProxyUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+
+  if (removeProxyUtils.isBasketStep(step)) {
+    setTimeout(() => closeBasketModal(), 1450);
+
+    return (
+      <OperationResult
+        isOpen={isBasketModalOpen}
+        variant="success"
+        title={t('operation.addedToBasket')}
+        onClose={closeBasketModal}
+      />
+    );
+  }
 
   return (
     <BaseModal closeButton contentClass="" isOpen={isModalOpen} title={getModalTitle(step, chain)} onClose={closeModal}>
