@@ -24,8 +24,6 @@ describe('page/governance/lib/governance-page-utils', () => {
     const query = '111';
     const result = filterReferendums({ referendums, query, titles: details, chainId });
 
-    console.log({ result });
-
     expect(Object.values(result).length).toEqual(1);
     expect('111' in result).toEqual(true);
   });
