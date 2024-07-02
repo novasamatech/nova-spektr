@@ -35,7 +35,7 @@ const $completeFilteredByQuery = combine(
   },
 );
 
-const $ongoingFilteredReferendums = combine(
+const $ongoingFiltered = combine(
   {
     referendums: governanceModel.$ongoingReferendums,
     selectedVoteId: referendumFilterModel.$selectedVoteId,
@@ -54,7 +54,7 @@ const $ongoingFilteredReferendums = combine(
   },
 );
 
-const $completeFilteredReferendums = combine(
+const $completeFiltered = combine(
   {
     referendums: governanceModel.$completedReferendums,
     selectedVoteId: referendumFilterModel.$selectedVoteId,
@@ -96,27 +96,27 @@ sample({
 // });
 
 sample({
-  clock: [referendumFilterModel.events.queryChanged, $ongoingFilteredReferendums, $ongoingFilteredByQuery],
+  clock: [referendumFilterModel.events.queryChanged, $ongoingFiltered, $ongoingFilteredByQuery],
   source: {
-    ongoingFilteredReferendums: $ongoingFilteredReferendums,
+    ongoingFiltered: $ongoingFiltered,
     ongoingFilteredByQuery: $ongoingFilteredByQuery,
     query: referendumFilterModel.$query,
   },
-  fn: ({ ongoingFilteredReferendums, ongoingFilteredByQuery, query }) => {
-    return query === '' ? ongoingFilteredReferendums : ongoingFilteredByQuery;
+  fn: ({ ongoingFiltered, ongoingFilteredByQuery, query }) => {
+    return query === '' ? ongoingFiltered : ongoingFilteredByQuery;
   },
   target: $ongoing,
 });
 
 sample({
-  clock: [referendumFilterModel.events.queryChanged, $completeFilteredReferendums, $completeFilteredByQuery],
+  clock: [referendumFilterModel.events.queryChanged, $completeFiltered, $completeFilteredByQuery],
   source: {
-    completeFilteredReferendums: $completeFilteredReferendums,
+    completeFiltered: $completeFiltered,
     completeFilteredByQuery: $completeFilteredByQuery,
     query: referendumFilterModel.$query,
   },
-  fn: ({ completeFilteredReferendums, completeFilteredByQuery, query }) => {
-    return query === '' ? completeFilteredReferendums : completeFilteredByQuery;
+  fn: ({ completeFiltered, completeFilteredByQuery, query }) => {
+    return query === '' ? completeFiltered : completeFilteredByQuery;
   },
   target: $completed,
 });

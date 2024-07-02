@@ -1,6 +1,6 @@
 import { ChainId, OngoingReferendum, ReferendumId, VotingMap, VotingType } from '@shared/core';
-import { governancePageUtils } from '../governance-page-utils';
 import { VoteStatus, referendumListUtils } from '@features/governance';
+import { governancePageUtils } from '../governance-page-utils';
 
 describe('page/governance/lib/governance-page-utils', () => {
   const chainId = '0x1';

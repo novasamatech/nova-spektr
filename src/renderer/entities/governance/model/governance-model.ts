@@ -21,7 +21,7 @@ const $ongoingReferendums = createStore<Map<ReferendumId, OngoingReferendum>>(ne
 const $completedReferendums = createStore<Map<ReferendumId, CompletedReferendum>>(new Map());
 
 const $tracks = createStore<Record<TrackId, TrackInfo>>({});
-const $voting = createStore<VotingMap>({}); // address -> track -> voting
+const $voting = createStore<VotingMap>({});
 const $approvalThresholds = createStore<Record<ReferendumId, VotingThreshold>>({});
 const $supportThresholds = createStore<Record<ReferendumId, VotingThreshold>>({});
 
