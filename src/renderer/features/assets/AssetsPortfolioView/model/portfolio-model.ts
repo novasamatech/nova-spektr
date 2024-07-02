@@ -23,6 +23,7 @@ const $activeView = restore<AssetsListView | null>(activeViewChanged, null);
 const $query = restore<string>(queryChanged, '');
 const $tokens = createStore<AssetByChains[]>([]);
 const $activeTokens = createStore<AssetByChains[]>([]);
+const $activeTokensWithBalance = createStore<AssetByChains[]>([]);
 const $filtredTokens = createStore<AssetByChains[]>([]);
 const $sortedTokens = createStore<AssetByChains[]>([]);
 
@@ -127,7 +128,6 @@ sample({
       return acc;
     }, []);
   },
-
   target: $activeTokens,
 });
 
@@ -148,14 +148,14 @@ sample({
 
 sample({
   clock: populateTokensBalanceFx.doneData,
-  target: $activeTokens,
+  target: $activeTokensWithBalance,
 });
 
 sample({
-  clock: queryChanged,
-  source: $activeTokens,
-  fn: (activeTokens, query) => {
-    return activeTokens.reduce<AssetByChains[]>((acc, token) => {
+  clock: [$activeTokensWithBalance, queryChanged],
+  source: { activeTokensWithBalance: $activeTokensWithBalance, query: $query },
+  fn: ({ activeTokensWithBalance, query }) => {
+    return activeTokensWithBalance.reduce<AssetByChains[]>((acc, token) => {
       const filteredChains = token.chains.filter((chain) => {
         const hasSymbol = includes(chain.assetSymbol, query);
         const hasAssetName = includes(token.name, query);
@@ -175,17 +175,17 @@ sample({
 });
 
 sample({
-  clock: [$activeTokens, $filtredTokens],
+  clock: [$activeTokensWithBalance, $filtredTokens],
   source: {
     query: $query,
-    activeTokens: $activeTokens,
+    activeTokensWithBalance: $activeTokensWithBalance,
     filtredTokens: $filtredTokens,
     assetsPrices: priceProviderModel.$assetsPrices,
     fiatFlag: priceProviderModel.$fiatFlag,
     currency: currencyModel.$activeCurrency,
   },
-  fn: ({ query, activeTokens, filtredTokens, assetsPrices, fiatFlag, currency }) => {
-    const tokenList = query ? filtredTokens : activeTokens;
+  fn: ({ query, activeTokensWithBalance, filtredTokens, assetsPrices, fiatFlag, currency }) => {
+    const tokenList = query ? filtredTokens : activeTokensWithBalance;
 
     return tokensService.sortTokensByBalance(tokenList, assetsPrices, fiatFlag ? currency?.coingeckoId : undefined);
   },
@@ -205,7 +205,7 @@ export const portfolioModel = {
     receiveStarted,
   },
   /* Internal API (tests only) */
-  _$activeTokens: $activeTokens,
+  _$activeTokensWithBalance: $activeTokensWithBalance,
   _$filtredTokens: $filtredTokens,
   _$query: $query,
 };

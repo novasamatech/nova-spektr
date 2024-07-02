@@ -10,6 +10,14 @@ type SubsquareData = {
   }[];
 };
 
+type SubsquareData = {
+  total: number;
+  items: {
+    title: string;
+    referendumIndex: string;
+  }[];
+};
+
 /**
  * Request referendum list without details
  * Subsquare can give us only 100 units of data each round

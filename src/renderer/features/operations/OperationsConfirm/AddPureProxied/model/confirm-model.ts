@@ -1,68 +1,113 @@
 import { createEvent, combine, restore } from 'effector';
 
-import { Chain, Account, type ProxiedAccount } from '@shared/core';
+import { Chain, Account, type ProxiedAccount, Wallet } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 
 type Input = {
+  id?: number;
   chain: Chain;
   account: Account;
   proxiedAccount?: ProxiedAccount;
   signatory?: Account;
   description: string;
 
+  proxyDeposit: string;
   fee: string;
   multisigDeposit: string;
 };
 
-const formInitiated = createEvent<Input>();
+const formInitiated = createEvent<Input[]>();
 const formSubmitted = createEvent();
 
 const $confirmStore = restore(formInitiated, null);
 
-const $initiatorWallet = combine(
+const $storeMap = combine($confirmStore, (store) => {
+  return (
+    store?.reduce<Record<number, Input>>(
+      (acc, input, index) => ({
+        ...acc,
+        [input.id ?? index]: input,
+      }),
+      {},
+    ) || {}
+  );
+});
+
+const $initiatorWallets = combine(
   {
     store: $confirmStore,
     wallets: walletModel.$wallets,
   },
   ({ store, wallets }) => {
-    if (!store) return undefined;
+    if (!store) return {};
 
-    return walletUtils.getWalletById(wallets, store.account.walletId);
+    return store.reduce<Record<number, Wallet>>((acc, storeItem, index) => {
+      const wallet = walletUtils.getWalletById(wallets, storeItem.account.walletId);
+      if (!wallet) return acc;
+
+      const id = storeItem.id ?? index;
+
+      return {
+        ...acc,
+        [id]: wallet,
+      };
+    }, {});
   },
-  { skipVoid: false },
 );
 
-const $proxiedWallet = combine(
+const $proxiedWallets = combine(
   {
     store: $confirmStore,
     wallets: walletModel.$wallets,
   },
   ({ store, wallets }) => {
-    if (!store || !store.proxiedAccount) return undefined;
+    if (!store) return {};
 
-    return walletUtils.getWalletById(wallets, store.proxiedAccount.walletId);
+    return store.reduce<Record<number, Wallet>>((acc, storeItem, index) => {
+      if (!storeItem.proxiedAccount) return acc;
+
+      const wallet = walletUtils.getWalletById(wallets, storeItem.proxiedAccount.walletId);
+      if (!wallet) return acc;
+
+      const id = storeItem.id ?? index;
+
+      return {
+        ...acc,
+        [id]: wallet,
+      };
+    }, {});
   },
-  { skipVoid: false },
 );
 
-const $signerWallet = combine(
+const $signerWallets = combine(
   {
     store: $confirmStore,
     wallets: walletModel.$wallets,
   },
   ({ store, wallets }) => {
-    if (!store) return undefined;
+    if (!store) return {};
 
-    return walletUtils.getWalletById(wallets, store.signatory?.walletId || store.account.walletId);
+    return store.reduce<Record<number, Wallet>>((acc, storeItem, index) => {
+      if (!storeItem.proxiedAccount) return acc;
+
+      const wallet = walletUtils.getWalletById(wallets, storeItem.signatory?.walletId || storeItem.account.walletId);
+      if (!wallet) return acc;
+
+      const id = storeItem.id ?? index;
+
+      return {
+        ...acc,
+        [id]: wallet,
+      };
+    }, {});
   },
-  { skipVoid: false },
 );
 
 export const confirmModel = {
-  $confirmStore,
-  $initiatorWallet,
-  $proxiedWallet,
-  $signerWallet,
+  $confirmStore: $storeMap,
+  $initiatorWallets,
+  $proxiedWallets,
+  $signerWallets,
 
   events: {
     formInitiated,

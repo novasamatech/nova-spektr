@@ -35,11 +35,23 @@ const $mergedKeys = createStore<DraftAccount<ShardAccount | ChainAccount>[]>([])
 
 const $existingDerivations = createStore<ExistingDerivations | null>(null);
 
-const fileUploaded = createEvent<string>();
+const fileUploaded = createEvent<File>();
 const resetValues = createEvent<ExistingDerivations>();
 
-const parseFileContentFx = createEffect<string, ParsedImportFile, DerivationImportError>((fileContent: string) => {
+const parseFileContentFx = createEffect<File, ParsedImportFile, DerivationImportError>(async (file: File) => {
   let structure: unknown;
+  const fileContent = await file.text();
+  if (!fileContent) {
+    throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
+  }
+
+  if (file.type === 'text/plain') {
+    const textStructure = importKeysUtils.parseTextFile(fileContent);
+    if (!textStructure) throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
+
+    return importKeysUtils.updateTextStructure(textStructure);
+  }
+
   try {
     // using default core scheme converts 0x strings into numeric values
     structure = parse(fileContent, importKeysUtils.renameDerivationPathKeyReviver, { schema: 'failsafe' });
@@ -160,6 +172,7 @@ sample({
 
 sample({
   clock: fileUploaded,
+  filter: (file) => Boolean(file),
   target: parseFileContentFx,
 });
 

@@ -1,4 +1,4 @@
-import { ChainId, HexString, KeyType } from '@renderer/shared/core';
+import { ChainId, HexString, KeyType } from '@shared/core';
 
 export type ImportFileKey = { key: Omit<ImportedDerivation, 'chainId'> };
 export type ImportFileChain = { [key: HexString]: ImportFileKey[] };
@@ -36,4 +36,10 @@ export type TypedImportedDerivation = {
   type: KeyType;
   chainId: ChainId;
   sharded?: string;
+};
+
+export type ParsedData = {
+  version: string;
+  publicAddress: HexString;
+  derivationPaths: ImportedDerivation[];
 };

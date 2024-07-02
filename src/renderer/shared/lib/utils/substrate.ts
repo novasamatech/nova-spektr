@@ -16,10 +16,12 @@ const UNUSED_LABEL = 'unused';
  * Compose and return all the data needed for @substrate/txwrapper-polkadot signing
  * @param accountId account identification
  * @param api polkadot connector
+ * @param nonceDelta increases nonce when several transactions from one account will be created
  */
 export const createTxMetadata = async (
   accountId: Address,
   api: ApiPromise,
+  nonceDelta = 0,
 ): Promise<{ registry: TypeRegistry; options: OptionsWithMeta; info: BaseTxInfo }> => {
   const [{ block }, blockHash, genesisHash, metadataRpc, nonce, { specVersion, transactionVersion, specName }] =
     await Promise.all([
@@ -44,7 +46,7 @@ export const createTxMetadata = async (
     blockNumber: block.header.number.toNumber(),
     genesisHash: genesisHash.toString(),
     metadataRpc: metadataRpc.toHex(),
-    nonce: nonce.toNumber(),
+    nonce: nonce.toNumber() + nonceDelta,
     specVersion: specVersion.toNumber(),
     transactionVersion: transactionVersion.toNumber(),
     eraPeriod: 64,

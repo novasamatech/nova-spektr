@@ -1,5 +1,6 @@
 import { createEvent, createEffect, restore, sample, scopeBind, createStore, createApi } from 'effector';
 import { ApiPromise } from '@polkadot/api';
+import { once } from 'patronum';
 
 import type {
   Chain,
@@ -12,10 +13,11 @@ import type {
 } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { buildMultisigTx } from '@entities/multisig';
-import { SubmitStep } from '../lib/types';
+import { ExtrinsicResult, SubmitStep } from '../lib/types';
 import { ExtrinsicResultParams, transactionService } from '@entities/transaction';
 import { matrixModel, matrixUtils } from '@entities/matrix';
 import { ISecureMessenger } from '@shared/api/matrix';
+import { removeFromCollection } from '@shared/lib/utils';
 
 type Input = {
   chain: Chain;
@@ -30,16 +32,21 @@ type Input = {
   txPayloads: Uint8Array[];
 };
 
+type Result = { id: number; result: ExtrinsicResult; params: ExtrinsicResultParams | string };
+
 const formInitiated = createEvent<Input>();
 const submitStarted = createEvent();
-const formSubmitted = createEvent<ExtrinsicResultParams>();
+const formSubmitted = createEvent<Result[]>();
 
-const extrinsicSucceeded = createEvent<ExtrinsicResultParams>();
-const extrinsicFailed = createEvent<string>();
+const extrinsicSucceeded = createEvent<{ id: number; params: ExtrinsicResultParams }>();
+const extrinsicFailed = createEvent<{ id: number; params: string }>();
+const txsExecuted = createEvent();
 
 const $submitStore = restore<Input>(formInitiated, null).reset(formSubmitted);
 
 const $submitStep = createStore<{ step: SubmitStep; message: string }>({ step: SubmitStep.LOADING, message: '' });
+const $submittingTxs = createStore<number[]>([]);
+const $results = createStore<Result[]>([]);
 
 type Callbacks = {
   addMultisigTx: (tx: MultisigTransaction) => Promise<void>;
@@ -64,9 +71,9 @@ const signAndSubmitExtrinsicsFx = createEffect(
     wrappedTxs.forEach((transaction, index) => {
       transactionService.signAndSubmit(transaction, signatures[index], txPayloads[index], api, (executed, params) => {
         if (executed) {
-          boundExtrinsicSucceeded(params as ExtrinsicResultParams);
+          boundExtrinsicSucceeded({ id: index, params: params as ExtrinsicResultParams });
         } else {
-          boundExtrinsicFailed(params as string);
+          boundExtrinsicFailed({ id: index, params: params as string });
         }
       });
     });
@@ -131,6 +138,7 @@ const saveMultisigTxFx = createEffect(
         hooks.addMultisigTx(multisigData.transaction);
         acc.txs.push(multisigData.transaction);
         acc.events.push(multisigData.event);
+
         console.log(`New transaction was created with call hash ${multisigData.transaction.callHash}`);
 
         return acc;
@@ -143,6 +151,14 @@ const saveMultisigTxFx = createEffect(
 );
 
 sample({ clock: formInitiated, target: $submitStep.reinit });
+
+sample({
+  clock: submitStarted,
+  source: $submitStore,
+  filter: (params) => Boolean(params),
+  fn: (params) => params?.txPayloads.map((_, index) => index) || [],
+  target: $submittingTxs,
+});
 
 sample({
   clock: submitStarted,
@@ -161,10 +177,49 @@ sample({
   target: signAndSubmitExtrinsicsFx,
 });
 
+// sample({
+//   clock: extrinsicFailed,
+//   fn: ({ params: message }) => ({ step: SubmitStep.ERROR, message }),
+//   target: $submitStep,
+// });
+
+sample({
+  clock: [extrinsicSucceeded, extrinsicFailed],
+  source: $submittingTxs,
+  fn: (txs, { id }) => {
+    return removeFromCollection(txs, id);
+  },
+  target: $submittingTxs,
+});
+
+sample({
+  clock: extrinsicSucceeded,
+  source: $results,
+  fn: (results, extrinsicResult) => {
+    return [
+      ...results,
+      {
+        result: ExtrinsicResult.SUCCESS,
+        ...extrinsicResult,
+      },
+    ];
+  },
+  target: $results,
+});
+
 sample({
   clock: extrinsicFailed,
-  fn: (message) => ({ step: SubmitStep.ERROR, message }),
-  target: $submitStep,
+  source: $results,
+  fn: (results, extrinsicResult) => {
+    return [
+      ...results,
+      {
+        result: ExtrinsicResult.ERROR,
+        ...extrinsicResult,
+      },
+    ];
+  },
+  target: $results,
 });
 
 sample({
@@ -177,7 +232,7 @@ sample({
   filter: ({ submitStore, loginStatus }) => {
     return matrixUtils.isLoggedIn(loginStatus) && Boolean(submitStore?.multisigTxs.length);
   },
-  fn: ({ submitStore, hooks }, params) => ({
+  fn: ({ submitStore, hooks }, { params }) => ({
     params,
     hooks: hooks!,
     transactions: submitStore!.coreTxs,
@@ -213,19 +268,42 @@ sample({
 });
 
 sample({
-  clock: extrinsicSucceeded,
-  fn: () => ({ step: SubmitStep.SUCCESS, message: '' }),
+  clock: $submittingTxs,
+  filter: (txs) => txs.length === 0,
+  target: txsExecuted,
+});
+
+sample({
+  clock: once({
+    source: txsExecuted,
+    reset: submitStarted,
+  }),
+  source: $results,
+  fn: (results) => {
+    if (results.every(({ result }) => result === ExtrinsicResult.SUCCESS)) {
+      return { step: SubmitStep.SUCCESS, message: '' };
+    }
+
+    if (results.every(({ result }) => result === ExtrinsicResult.ERROR)) {
+      return { step: SubmitStep.ERROR, message: results[0].params as string };
+    }
+
+    return { step: SubmitStep.MIXED_RESULT, message: '' };
+  },
   target: $submitStep,
 });
 
 sample({
-  clock: extrinsicSucceeded,
+  clock: $submitStep,
+  source: $results,
   target: formSubmitted,
 });
 
 export const submitModel = {
   $submitStore,
   $submitStep,
+  $failedTxs: $results.map((result) => result.filter((r) => r.result === ExtrinsicResult.ERROR)),
+
   events: {
     formInitiated,
     submitStarted,

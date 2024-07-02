@@ -1,5 +1,5 @@
 import { ReactNode, useState } from 'react';
-import { useUnit } from 'effector-react';
+import { useStoreMap } from 'effector-react';
 
 import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
 import { Button, DetailRow, FootnoteText, Icon } from '@shared/ui';
@@ -11,23 +11,48 @@ import { confirmModel } from '../model/confirm-model';
 import { toAddress } from '@shared/lib/utils';
 
 type Props = {
+  id?: number;
   secondaryActionButton?: ReactNode;
-  onGoBack: () => void;
+  hideSignButton?: boolean;
+  onGoBack?: () => void;
 };
 
-export const Confirmation = ({ onGoBack, secondaryActionButton }: Props) => {
+export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSignButton }: Props) => {
   const { t } = useI18n();
 
-  const confirmStore = useUnit(confirmModel.$confirmStore);
-  const initiatorWallet = useUnit(confirmModel.$initiatorWallet);
-  const signerWallet = useUnit(confirmModel.$signerWallet);
-  const proxiedWallet = useUnit(confirmModel.$proxiedWallet);
+  const confirmStore = useStoreMap({
+    store: confirmModel.$confirmStore,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
 
-  const api = useUnit(confirmModel.$api);
+  const initiatorWallet = useStoreMap({
+    store: confirmModel.$initiatorWallets,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
+
+  const signerWallet = useStoreMap({
+    store: confirmModel.$signerWallets,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
+
+  const proxiedWallet = useStoreMap({
+    store: confirmModel.$proxiedWallets,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
+
+  const api = useStoreMap({
+    store: confirmModel.$apis,
+    keys: [confirmStore.chain?.chainId],
+    fn: (value, [chainId]) => chainId && value?.[chainId],
+  });
 
   const [isFeeLoading, setIsFeeLoading] = useState(true);
 
-  if (!confirmStore || !initiatorWallet) return null;
+  if (!confirmStore || !initiatorWallet || !confirmStore.chain?.chainId) return null;
 
   return (
     <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5">
@@ -47,7 +72,7 @@ export const Confirmation = ({ onGoBack, secondaryActionButton }: Props) => {
               <FootnoteText className="pr-2">{proxiedWallet.name}</FootnoteText>
             </DetailRow>
 
-            <DetailRow label={t('transfer.senderAccount')}>
+            <DetailRow label={t('transfer.senderProxiedAccount')}>
               <AddressWithExplorers
                 type="short"
                 explorers={confirmStore.chain!.explorers}
@@ -144,19 +169,23 @@ export const Confirmation = ({ onGoBack, secondaryActionButton }: Props) => {
       </dl>
 
       <div className="flex w-full justify-between mt-3">
-        <Button variant="text" onClick={onGoBack}>
-          {t('operation.goBackButton')}
-        </Button>
+        {onGoBack && (
+          <Button variant="text" onClick={onGoBack}>
+            {t('operation.goBackButton')}
+          </Button>
+        )}
 
         <div className="flex gap-4">
           {secondaryActionButton}
 
-          <SignButton
-            isDefault={Boolean(secondaryActionButton)}
-            disabled={isFeeLoading}
-            type={(signerWallet || initiatorWallet)?.type}
-            onClick={confirmModel.output.formSubmitted}
-          />
+          {!hideSignButton && (
+            <SignButton
+              isDefault={Boolean(secondaryActionButton)}
+              disabled={isFeeLoading}
+              type={(signerWallet || initiatorWallet)?.type}
+              onClick={confirmModel.output.formSubmitted}
+            />
+          )}
         </div>
       </div>
     </div>

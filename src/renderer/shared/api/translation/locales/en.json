@@ -89,12 +89,33 @@
     "closeButton": "Close modal window"
   },
   "basket": {
-    "invalidTransaction": "Unavailable",
+    "chainError": "Failed: { date }",
+    "emptySignButton": "Select operations",
     "noOperationsDescription": "There are no operations in the basket yet",
     "noOperationsLabel": "No operations",
+    "refreshButton": "Refresh list",
+    "removeConfirm": {
+      "cancelButton": "Cancel",
+      "description": "Operation will be deleted from the basket, are you sure?",
+      "proceedButton": "Delete",
+      "title": "Delete this operation?"
+    },
     "searchPlaceholder": "Search",
     "selectAll": "Select all",
-    "title": "Basket"
+    "selectedStatus_one": "{ selected } out of { count } operation selected",
+    "selectedStatus_other": "{ selected } out of { count } operations selected",
+    "signButton": "Sign",
+    "signOperations": {
+      "title": "Sign { transactions } operations"
+    },
+    "title": "Basket",
+    "validationError": "Unavailable",
+    "validationWarning": {
+      "cancelButton": "Cancel",
+      "description": "They will be excluded from the checkout. Would you like to proceed?",
+      "proceedButton": "Proceed",
+      "title": "Some of the selected operations are unavailable"
+    }
   },
   "createMultisigAccount": {
     "accountsAlertText": "Add signatory wallet before creating Multisig wallet",
@@ -222,7 +243,7 @@
         "wrongShardsNumber_one": "Number of shards {invalidValues} is not valid, please check the file.",
         "wrongShardsNumber_other": "Numbers of shards {invalidValues} are not valid, please check the file."
       },
-      "fileInputPlaceholder": "Select .yaml file on your computer",
+      "fileInputPlaceholder": "Select .yaml or .txt file on your computer",
       "modalTitle": "Import keys",
       "report": {
         "addedKeys_one": "{count} key added",
@@ -322,6 +343,7 @@
       "treasurySmallTips": "Treasury: Small tips",
       "wishForChange": "Wish for change"
     },
+    "searchPlaceholder": "Search",
     "title": "Governance",
     "voted": "Voted"
   },
@@ -672,7 +694,7 @@
   },
   "proxy": {
     "addProxy": {
-      "accountLabel": "Your account",
+      "accountLabel": "Account",
       "accountPlaceholder": "Select account",
       "balanceAlertMultisig": "To pay proxy deposit with selected account",
       "balanceAlertRegular": "To pay proxy deposit and network fee with selected account",
@@ -694,14 +716,15 @@
     },
     "details": {
       "accessType": "Access type",
-      "account": "Your account",
+      "account": "Account",
       "accountProxied": "Account (proxied)",
       "delegateTo": "Delegate to",
       "grantAccessType": "Grant access type",
       "revokeAccessType": "Revoke access type",
       "revokeFor": "Revoke for",
+      "sender": "Sender",
       "signatory": "Signatory",
-      "wallet": "Your wallet",
+      "wallet": "Wallet",
       "walletProxied": "Wallet (proxied)"
     },
     "names": {
@@ -1156,6 +1179,8 @@
     "inProgress": "Submitting operation...",
     "incorrectRecipientError": "Please enter correct recipient address",
     "invalidSignature": "QR code is invalid. Please make sure you are scanning QR code for currently signing operation",
+    "mixedResultDescription": "They will be returned to the operation basket. You can resolve an issue and execute them later",
+    "mixedResultTitle": "{failed} out of {all} operations has not been executed",
     "multiple": {
       "executing": "Submitting operations",
       "transactions": "Transactions"
@@ -1179,7 +1204,8 @@
     "requiredRecipientError": "Please enter recipient address",
     "senderAccount": "Sender account",
     "senderLabel": "Sender",
-    "senderProxiedWallet": "Sender wallet (proxied)",
+    "senderProxiedAccount": "Account (proxied)",
+    "senderProxiedWallet": "Wallet (proxied)",
     "signatoryLabel": "Signatory",
     "signingAccount": "Signing account",
     "signingWallet": "Signing wallet",

@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap } from 'effector-react';
 import { ReactNode } from 'react';
 
 import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
@@ -12,24 +12,49 @@ import { ChainTitle } from '@entities/chain';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
+  id?: number;
   secondaryActionButton?: ReactNode;
-  onGoBack: () => void;
+  hideSignButton?: boolean;
+  onGoBack?: () => void;
 };
 
-export const Confirmation = ({ secondaryActionButton, onGoBack }: Props) => {
+export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, onGoBack }: Props) => {
   const { t } = useI18n();
 
-  const isXcm = useUnit(confirmModel.$isXcm);
+  const confirmStore = useStoreMap({
+    store: confirmModel.$confirmStore,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
 
-  const confirmStore = useUnit(confirmModel.$confirmStore);
-  const initiatorWallet = useUnit(confirmModel.$initiatorWallet);
-  const signerWallet = useUnit(confirmModel.$signerWallet);
-  const proxiedWallet = useUnit(confirmModel.$proxiedWallet);
+  const initiatorWallet = useStoreMap({
+    store: confirmModel.$initiatorWallets,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
+
+  const signerWallet = useStoreMap({
+    store: confirmModel.$signerWallets,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
+
+  const proxiedWallet = useStoreMap({
+    store: confirmModel.$proxiedWallets,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
+
+  const isXcm = useStoreMap({
+    store: confirmModel.$isXcm,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
 
   if (!confirmStore || !initiatorWallet) return null;
 
   return (
-    <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5">
+    <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5 w-modal">
       <div className="flex flex-col items-center gap-y-3 mb-2">
         <Icon className="text-icon-default" name={isXcm ? 'crossChainConfirm' : 'transferConfirm'} size={60} />
 
@@ -55,7 +80,7 @@ export const Confirmation = ({ secondaryActionButton, onGoBack }: Props) => {
               <FootnoteText className="pr-2">{proxiedWallet.name}</FootnoteText>
             </DetailRow>
 
-            <DetailRow label={t('transfer.senderAccount')}>
+            <DetailRow label={t('transfer.senderProxiedAccount')}>
               <AddressWithExplorers
                 type="short"
                 explorers={confirmStore.chain.explorers}
@@ -93,7 +118,7 @@ export const Confirmation = ({ secondaryActionButton, onGoBack }: Props) => {
               <FootnoteText className="pr-2">{initiatorWallet.name}</FootnoteText>
             </DetailRow>
 
-            <DetailRow label={t('proxy.details.account')}>
+            <DetailRow label={t('proxy.details.sender')}>
               <AddressWithExplorers
                 type="short"
                 explorers={confirmStore.chain.explorers}
@@ -186,17 +211,21 @@ export const Confirmation = ({ secondaryActionButton, onGoBack }: Props) => {
       </dl>
 
       <div className="flex w-full justify-between mt-3">
-        <Button variant="text" onClick={onGoBack}>
-          {t('operation.goBackButton')}
-        </Button>
+        {onGoBack && (
+          <Button variant="text" onClick={onGoBack}>
+            {t('operation.goBackButton')}
+          </Button>
+        )}
 
         <div className="flex gap-4">
           {secondaryActionButton}
-          <SignButton
-            isDefault={Boolean(secondaryActionButton)}
-            type={(signerWallet || initiatorWallet).type}
-            onClick={confirmModel.events.confirmed}
-          />
+          {!hideSignButton && (
+            <SignButton
+              isDefault={Boolean(secondaryActionButton)}
+              type={(signerWallet || initiatorWallet).type}
+              onClick={confirmModel.events.confirmed}
+            />
+          )}
         </div>
       </div>
     </div>

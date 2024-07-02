@@ -1,33 +1,46 @@
 import { allSettled, fork } from 'effector';
 
-import { importKeysModel } from '../../model/import-keys-model';
-import { DerivationValidationError, ValidationError } from '@features/wallets/ImportKeys/lib/types';
 import { importKeysModelMock } from '@features/wallets/ImportKeys/lib/mocks/import-keys-model.mock';
+import { DerivationValidationError, ValidationError } from '@features/wallets/ImportKeys/lib/types';
+import { importKeysModel } from '../../model/import-keys-model';
 
 describe('features/ImportKeys/lib/import-keys-model', () => {
   test('should check import file structure', async () => {
     const scope = fork();
+    const file = { type: 'application/yaml', text: async () => importKeysModelMock.invalidFileStructure };
 
     await allSettled(importKeysModel.events.resetValues, { scope, params: { root: '0x00', derivations: [] } });
-    await allSettled(importKeysModel.events.fileUploaded, { scope, params: importKeysModelMock.invalidFileStructure });
+    await allSettled(importKeysModel.events.fileUploaded, { scope, params: file });
+
+    expect(scope.getState(importKeysModel.$validationError)?.error).toEqual(ValidationError.INVALID_FILE_STRUCTURE);
+  });
+
+  test('should check import file structure with txt file', async () => {
+    const scope = fork();
+    const file = { type: 'text/plain', text: async () => importKeysModelMock.invalidFileStructure };
+
+    await allSettled(importKeysModel.events.resetValues, { scope, params: { root: '0x00', derivations: [] } });
+    await allSettled(importKeysModel.events.fileUploaded, { scope, params: file });
 
     expect(scope.getState(importKeysModel.$validationError)?.error).toEqual(ValidationError.INVALID_FILE_STRUCTURE);
   });
 
   test('should check vault public address in import file', async () => {
     const scope = fork();
+    const file = { type: 'application/yaml', text: async () => importKeysModelMock.fileData };
 
     await allSettled(importKeysModel.events.resetValues, { scope, params: { root: '0x01', derivations: [] } });
-    await allSettled(importKeysModel.events.fileUploaded, { scope, params: importKeysModelMock.fileData });
+    await allSettled(importKeysModel.events.fileUploaded, { scope, params: file });
 
     expect(scope.getState(importKeysModel.$validationError)?.error).toEqual(ValidationError.INVALID_ROOT);
   });
 
   test('should save invalid derivations paths in $validationError', async () => {
     const scope = fork();
+    const file = { type: 'application/yaml', text: async () => importKeysModelMock.invalidPaths };
 
     await allSettled(importKeysModel.events.resetValues, { scope, params: { root: '0x00', derivations: [] } });
-    await allSettled(importKeysModel.events.fileUploaded, { scope, params: importKeysModelMock.invalidPaths });
+    await allSettled(importKeysModel.events.fileUploaded, { scope, params: file });
 
     const validationError = {
       error: ValidationError.DERIVATIONS_ERROR,

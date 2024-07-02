@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { ReactNode } from 'react';
 
 import { Button, DetailRow, FootnoteText, Icon, Tooltip, CaptionText } from '@shared/ui';
@@ -14,17 +14,38 @@ import { FeeLoader } from '@entities/transaction';
 import { priceProviderModel } from '@entities/price';
 
 type Props = {
+  id?: number;
   secondaryActionButton?: ReactNode;
-  onGoBack: () => void;
+  hideSignButton?: boolean;
+  onGoBack?: () => void;
 };
 
-export const Confirmation = ({ secondaryActionButton, onGoBack }: Props) => {
+export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, onGoBack }: Props) => {
   const { t } = useI18n();
 
-  const confirmStore = useUnit(confirmModel.$confirmStore);
-  const initiatorWallet = useUnit(confirmModel.$initiatorWallet);
-  const signerWallet = useUnit(confirmModel.$signerWallet);
-  const proxiedWallet = useUnit(confirmModel.$proxiedWallet);
+  const confirmStore = useStoreMap({
+    store: confirmModel.$confirmStore,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
+
+  const initiatorWallet = useStoreMap({
+    store: confirmModel.$initiatorWallets,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
+
+  const signerWallet = useStoreMap({
+    store: confirmModel.$signerWallets,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
+
+  const proxiedWallet = useStoreMap({
+    store: confirmModel.$proxiedWallets,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
 
   const feeData = useUnit(confirmModel.$feeData);
   const isFeeLoading = useUnit(confirmModel.$isFeeLoading);
@@ -55,7 +76,7 @@ export const Confirmation = ({ secondaryActionButton, onGoBack }: Props) => {
                 <FootnoteText className="pr-2">{proxiedWallet.name}</FootnoteText>
               </DetailRow>
 
-              <DetailRow label={t('transfer.senderAccount')}>
+              <DetailRow label={t('transfer.senderProxiedAccount')}>
                 <AddressWithExplorers
                   type="short"
                   explorers={confirmStore.chain.explorers}
@@ -204,19 +225,23 @@ export const Confirmation = ({ secondaryActionButton, onGoBack }: Props) => {
         </dl>
 
         <div className="flex w-full justify-between mt-3">
-          <Button variant="text" onClick={onGoBack}>
-            {t('operation.goBackButton')}
-          </Button>
+          {onGoBack && (
+            <Button variant="text" onClick={onGoBack}>
+              {t('operation.goBackButton')}
+            </Button>
+          )}
 
           <div className="flex gap-4">
             {secondaryActionButton}
 
-            <SignButton
-              isDefault={Boolean(secondaryActionButton)}
-              disabled={isFeeLoading}
-              type={(signerWallet || initiatorWallet).type}
-              onClick={confirmModel.output.formSubmitted}
-            />
+            {!hideSignButton && (
+              <SignButton
+                isDefault={Boolean(secondaryActionButton)}
+                disabled={isFeeLoading}
+                type={(signerWallet || initiatorWallet).type}
+                onClick={confirmModel.output.formSubmitted}
+              />
+            )}
           </div>
         </div>
       </div>
