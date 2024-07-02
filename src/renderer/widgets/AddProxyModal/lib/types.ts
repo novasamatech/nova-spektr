@@ -7,6 +7,7 @@ export const enum Step {
   CONFIRM,
   SIGN,
   SUBMIT,
+  BASKET,
 }
 
 export type AddProxyStore = {

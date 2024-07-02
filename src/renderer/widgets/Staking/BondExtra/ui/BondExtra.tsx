@@ -10,6 +10,7 @@ import { bondExtraUtils } from '../lib/bond-extra-utils';
 import { bondExtraModel } from '../model/bond-extra-model';
 import { Step } from '../lib/types';
 import { basketUtils, BondExtraConfirmation as Confirmation } from '@features/operations/OperationsConfirm';
+import { OperationResult } from '@entities/transaction';
 
 export const BondExtra = () => {
   const { t } = useI18n();
@@ -19,10 +20,26 @@ export const BondExtra = () => {
   const initiatorWallet = useUnit(bondExtraModel.$initiatorWallet);
 
   const [isModalOpen, closeModal] = useModalClose(!bondExtraUtils.isNoneStep(step), bondExtraModel.output.flowFinished);
+  const [isBasketModalOpen, closeBasketModal] = useModalClose(
+    bondExtraUtils.isBasketStep(step),
+    bondExtraModel.output.flowFinished,
+  );
 
   if (!walletData) return null;
 
   if (bondExtraUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  if (bondExtraUtils.isBasketStep(step)) {
+    setTimeout(() => closeBasketModal(), 1450);
+
+    return (
+      <OperationResult
+        isOpen={isBasketModalOpen}
+        variant="success"
+        title={t('operation.addedToBasket')}
+        onClose={closeBasketModal}
+      />
+    );
+  }
 
   return (
     <BaseModal

@@ -11,6 +11,7 @@ import { AddProxyForm } from './AddProxyForm';
 import { addProxyUtils } from '../lib/add-proxy-utils';
 import { addProxyModel } from '../model/add-proxy-model';
 import { basketUtils, AddProxyConfirm } from '@features/operations/OperationsConfirm';
+import { OperationResult } from '@entities/transaction';
 
 export const AddProxy = () => {
   const { t } = useI18n();
@@ -20,6 +21,10 @@ export const AddProxy = () => {
   const initiatorWallet = useUnit(addProxyModel.$initiatorWallet);
 
   const [isModalOpen, closeModal] = useModalClose(!addProxyUtils.isNoneStep(step), addProxyModel.output.flowClosed);
+  const [isBasketModalOpen, closeBasketModal] = useModalClose(
+    addProxyUtils.isBasketStep(step),
+    addProxyModel.output.flowClosed,
+  );
 
   const getModalTitle = (step: Step, chain?: Chain) => {
     if (addProxyUtils.isInitStep(step) || !chain) return t('operations.modalTitles.addProxy');
@@ -28,6 +33,19 @@ export const AddProxy = () => {
   };
 
   if (addProxyUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+
+  if (addProxyUtils.isBasketStep(step)) {
+    setTimeout(() => closeBasketModal(), 1450);
+
+    return (
+      <OperationResult
+        isOpen={isBasketModalOpen}
+        variant="success"
+        title={t('operation.addedToBasket')}
+        onClose={closeBasketModal}
+      />
+    );
+  }
 
   return (
     <BaseModal

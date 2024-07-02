@@ -211,7 +211,8 @@ sample({
 
 sample({
   clock: txSaved,
-  target: flowFinished,
+  fn: () => Step.BASKET,
+  target: stepChanged,
 });
 
 export const transferModel = {

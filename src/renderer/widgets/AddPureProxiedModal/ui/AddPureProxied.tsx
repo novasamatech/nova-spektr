@@ -11,6 +11,7 @@ import { AddPureProxiedForm } from './AddPureProxiedForm';
 import { addPureProxiedUtils } from '../lib/add-pure-proxied-utils';
 import { addPureProxiedModel } from '../model/add-pure-proxied-model';
 import { basketUtils, AddPureProxiedConfirm } from '@features/operations/OperationsConfirm';
+import { OperationResult } from '@entities/transaction';
 
 export const AddPureProxied = () => {
   const { t } = useI18n();
@@ -23,6 +24,10 @@ export const AddPureProxied = () => {
     !addPureProxiedUtils.isNoneStep(step),
     addPureProxiedModel.output.flowFinished,
   );
+  const [isBasketModalOpen, closeBasketModal] = useModalClose(
+    addPureProxiedUtils.isBasketStep(step),
+    addPureProxiedModel.output.flowFinished,
+  );
 
   const getModalTitle = (step: Step, chain?: Chain) => {
     if (addPureProxiedUtils.isInitStep(step) || !chain) return t('operations.modalTitles.addPureProxy');
@@ -31,6 +36,19 @@ export const AddPureProxied = () => {
   };
 
   if (addPureProxiedUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+
+  if (addPureProxiedUtils.isBasketStep(step)) {
+    setTimeout(() => closeBasketModal(), 1450);
+
+    return (
+      <OperationResult
+        isOpen={isBasketModalOpen}
+        variant="success"
+        title={t('operation.addedToBasket')}
+        onClose={closeBasketModal}
+      />
+    );
+  }
 
   return (
     <BaseModal closeButton contentClass="" isOpen={isModalOpen} title={getModalTitle(step, chain)} onClose={closeModal}>

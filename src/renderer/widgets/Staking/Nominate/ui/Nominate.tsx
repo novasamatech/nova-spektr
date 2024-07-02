@@ -11,6 +11,7 @@ import { nominateUtils } from '../lib/nominate-utils';
 import { nominateModel } from '../model/nominate-model';
 import { Step } from '../lib/types';
 import { basketUtils, NominateConfirmation as Confirmation } from '@features/operations/OperationsConfirm';
+import { OperationResult } from '@entities/transaction';
 
 export const Nominate = () => {
   const { t } = useI18n();
@@ -20,10 +21,26 @@ export const Nominate = () => {
   const initiatorWallet = useUnit(nominateModel.$initiatorWallet);
 
   const [isModalOpen, closeModal] = useModalClose(!nominateUtils.isNoneStep(step), nominateModel.output.flowFinished);
+  const [isBasketModalOpen, closeBasketModal] = useModalClose(
+    nominateUtils.isBasketStep(step),
+    nominateModel.output.flowFinished,
+  );
 
   if (!walletData) return null;
 
   if (nominateUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  if (nominateUtils.isBasketStep(step)) {
+    setTimeout(() => closeBasketModal(), 1450);
+
+    return (
+      <OperationResult
+        isOpen={isBasketModalOpen}
+        variant="success"
+        title={t('operation.addedToBasket')}
+        onClose={closeBasketModal}
+      />
+    );
+  }
 
   return (
     <BaseModal

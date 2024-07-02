@@ -47,11 +47,11 @@ export const OperationSubmit = ({ isOpen, onClose }: Props) => {
       return { title: t('transfer.successMessage'), variant: 'success' };
     }
 
-    if (submitUtils.isMixedResultStep(step)) {
+    if (submitUtils.iswarningStep(step)) {
       return {
-        title: t('transfer.mixedResultTitle', { failed: failedTxs.length, all: submitStore.txPayloads.length }),
-        variant: 'mixedResult',
-        description: t('transfer.mixedResultDescription'),
+        title: t('transfer.warningTitle', { failed: failedTxs.length, all: submitStore.txPayloads.length }),
+        variant: 'warning',
+        description: t('transfer.warningDescription'),
       };
     }
 
