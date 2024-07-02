@@ -1,7 +1,7 @@
 import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { FC } from 'react';
 
-import { type Chain, CompletedReferendum, OngoingReferendum } from '@shared/core';
+import { type Chain, type Referendum } from '@shared/core';
 import { pickNestedValue } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
 import { BaseModal, Plate, FootnoteText, Loader, Markdown } from '@shared/ui';
@@ -10,10 +10,11 @@ import { governanceModel, TrackInfo } from '@entities/governance';
 import { referendumDetailsModel } from '../model/referendum-details-model';
 import { referendumListModel } from '../../ReferendumList/model/referendum-list-model';
 import { VotingStatus } from './VotingStatus';
+import { DetailsCard } from './DetailsCard';
 
 type Props = {
   chain: Chain;
-  referendum: OngoingReferendum | CompletedReferendum;
+  referendum: Referendum;
   onClose: VoidFunction;
 };
 
@@ -27,25 +28,25 @@ export const ReferendumDetails: FC<Props> = ({ chain, referendum, onClose }) => 
   const offChainDetails = useStoreMap({
     store: referendumDetailsModel.$offChainDetails,
     keys: [chain.chainId, referendum.referendumId],
-    fn: (details, [chainId, index]) => pickNestedValue(details, chainId, index),
+    fn: (x, [chainId, index]) => pickNestedValue(x, chainId, index),
   });
 
   const title = useStoreMap({
     store: referendumListModel.$referendumsNames,
     keys: [chain.chainId, referendum.referendumId],
-    fn: (names, [chainId, index]) => pickNestedValue(names, chainId, index),
+    fn: (x, [chainId, index]) => pickNestedValue(x, chainId, index),
   });
 
   const approvalThreshold = useStoreMap({
     store: governanceModel.$approvalThresholds,
-    keys: [referendum.referendumId],
-    fn: (x, [index]) => (index ? x[index] : null),
+    keys: [chain.chainId, referendum.referendumId],
+    fn: (x, [chainId, index]) => pickNestedValue(x, chainId, index),
   });
 
   const supportThreshold = useStoreMap({
     store: governanceModel.$supportThresholds,
-    keys: [referendum.referendumId],
-    fn: (x, [index]) => (index ? x[index] : null),
+    keys: [chain.chainId, referendum.referendumId],
+    fn: (x, [chainId, index]) => pickNestedValue(x, chainId, index),
   });
 
   const [isModalOpen, closeModal] = useModalClose(Boolean(referendum), onClose);
@@ -83,14 +84,14 @@ export const ReferendumDetails: FC<Props> = ({ chain, referendum, onClose }) => 
         </div>
 
         <div className="flex flex-row flex-wrap gap-4 basis-[350px] grow shrink-0">
-          <Plate className="p-6 shadow-card-shadow border-filter-border grow basis-[350px]">
+          <DetailsCard title={t('governance.referendum.votingStatus')}>
             <VotingStatus
               referendum={referendum}
               approvalThreshold={approvalThreshold}
               supportThreshold={supportThreshold}
               asset={asset}
             />
-          </Plate>
+          </DetailsCard>
         </div>
       </div>
     </BaseModal>

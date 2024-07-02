@@ -16,11 +16,9 @@ type OffChainParams = {
   index: ReferendumId;
 };
 
-const requestOffChainDetailsFx = createEffect(
-  ({ service, chain, index }: OffChainParams): Promise<string | undefined> => {
-    return service.getReferendumDetails(chain, index);
-  },
-);
+const requestOffChainDetailsFx = createEffect(({ service, chain, index }: OffChainParams) => {
+  return service.getReferendumDetails(chain, index);
+});
 
 sample({
   clock: flow.open,

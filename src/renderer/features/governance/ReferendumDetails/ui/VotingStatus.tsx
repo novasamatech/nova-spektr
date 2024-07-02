@@ -1,12 +1,12 @@
 import { FC } from 'react';
 
-import { FootnoteText, Icon, SmallTitleText } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { FootnoteText, Icon } from '@shared/ui';
 import { referendumUtils, VoteChart } from '@entities/governance';
 import { formatBalance } from '@shared/lib/utils';
 import { Asset, Referendum, VotingThreshold } from '@shared/core';
 import { VotingStatusBadge } from '../../VotingStatus/ui/VotingStatusBadge';
 import { referendumListUtils } from '../../ReferendumList/lib/referendum-list-utils';
-import { useI18n } from '@app/providers';
 
 type Props = {
   referendum: Referendum;
@@ -31,7 +31,6 @@ export const VotingStatus: FC<Props> = ({ referendum, asset, supportThreshold, a
 
   return (
     <div className="flex flex-col items-start gap-6">
-      <SmallTitleText>{t('governance.referendum.votingStatus')}</SmallTitleText>
       <VotingStatusBadge passing={isPassing} referendum={referendum} />
       {votedFractions && <VoteChart bgColor="icon-button" descriptionPosition="bottom" {...votedFractions} />}
       {votedCount && (

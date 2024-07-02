@@ -24,9 +24,9 @@ const $completedReferendums = createStore<Record<ChainId, Record<ReferendumId, C
 
 const $tracks = createStore<Record<TrackId, TrackInfo>>({});
 const $voting = createStore<Record<Address, Record<TrackId, Voting>>>({});
-// TODO add chains
-const $approvalThresholds = createStore<Record<ReferendumId, VotingThreshold>>({});
-const $supportThresholds = createStore<Record<ReferendumId, VotingThreshold>>({});
+
+const $approvalThresholds = createStore<Record<ChainId, Record<ReferendumId, VotingThreshold>>>({});
+const $supportThresholds = createStore<Record<ChainId, Record<ReferendumId, VotingThreshold>>>({});
 
 const $governanceApi = createStore<{ type: SourceType; service: IGovernanceApi } | null>(null);
 

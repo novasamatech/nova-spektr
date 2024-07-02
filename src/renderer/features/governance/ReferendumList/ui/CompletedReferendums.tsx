@@ -1,13 +1,14 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { useI18n } from '@app/providers';
 import { Voted, governanceModel } from '@entities/governance';
 import { FootnoteText, Accordion, CaptionText, HeadlineText } from '@shared/ui';
 import { ReferendumId, CompletedReferendum } from '@shared/core';
+import { VotingStatusBadge } from '../../VotingStatus/ui/VotingStatusBadge';
 import { referendumListModel } from '../model/referendum-list-model';
 import { referendumListUtils } from '../lib/referendum-list-utils';
-import { VotingStatusBadge } from '@features/governance/VotingStatus/ui/VotingStatusBadge';
+import { ListItem } from './ListItem';
 
 type Props = {
   referendums: Record<ReferendumId, CompletedReferendum>;
@@ -17,11 +18,15 @@ type Props = {
 export const CompletedReferendums = ({ referendums, onSelect }: Props) => {
   const { t } = useI18n();
 
-  const voting = useUnit(governanceModel.$voting);
   const chain = useUnit(referendumListModel.$chain);
-  const names = useUnit(referendumListModel.$referendumsNames);
+  const voting = useUnit(governanceModel.$voting);
+  const names = useStoreMap({
+    store: referendumListModel.$referendumsNames,
+    keys: [chain],
+    fn: (x, [chain]) => (chain ? x[chain?.chainId] ?? {} : {}),
+  });
 
-  const referendumList = useMemo(() => Object.entries(referendums), [referendums]);
+  const referendumList = useMemo(() => Object.values(referendums), [referendums]);
 
   if (!chain || referendumList.length === 0) {
     return null;
@@ -38,22 +43,19 @@ export const CompletedReferendums = ({ referendums, onSelect }: Props) => {
         </div>
       </Accordion.Button>
       <Accordion.Content as="ul" className="flex flex-col gap-y-2">
-        {referendumList.map(([index, referendum]) => (
-          <li key={index}>
-            <button
-              type="button"
-              className="flex flex-col gap-y-3 p-3 w-full rounded-md bg-white"
-              onClick={() => onSelect(referendum)}
-            >
+        {referendumList.map((referendum) => (
+          <li key={referendum.referendumId}>
+            <ListItem onClick={() => onSelect(referendum)}>
               <div className="flex items-center gap-x-2 w-full">
-                <Voted active={referendumListUtils.isReferendumVoted(index, voting)} />
+                <Voted active={referendumListUtils.isReferendumVoted(referendum.referendumId, voting)} />
                 <VotingStatusBadge referendum={referendum} />
-                <FootnoteText className="ml-auto text-text-secondary">#{index}</FootnoteText>
+                <FootnoteText className="ml-auto text-text-secondary">#{referendum.referendumId}</FootnoteText>
               </div>
               <HeadlineText>
-                {names[chain.chainId]?.[index] || t('governance.referendums.referendumTitle', { index })}
+                {names[referendum.referendumId] ||
+                  t('governance.referendums.referendumTitle', { index: referendum.referendumId })}
               </HeadlineText>
-            </button>
+            </ListItem>
           </li>
         ))}
       </Accordion.Content>

@@ -86,6 +86,7 @@ export const createChunksEffect = <T, V>(fn: (params: T, callback: (value: V) =>
 
   return {
     request,
+    pending: requestFx.pending,
     receive: readonly(receive),
   };
 };

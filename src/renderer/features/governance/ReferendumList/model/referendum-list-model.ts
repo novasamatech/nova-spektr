@@ -71,7 +71,11 @@ type OffChainReceiveParams = {
 const { request: requestOffChainReferendums, receive: receiveOffChainReferendums } = createChunksEffect<
   OffChainParams,
   OffChainReceiveParams
->(({ chain, service }, cb) => service.getReferendumList(chain, (data) => cb({ chainId: chain.chainId, data })));
+>(({ chain, service }, cb) => {
+  service.getReferendumList(chain, (data) => {
+    cb({ chainId: chain.chainId, data });
+  });
+});
 
 type RequestTracksParams = {
   api: ApiPromise;
@@ -126,8 +130,8 @@ const getSupportThresholdsFx = createEffect(
 
     const result: Record<ReferendumId, VotingThreshold> = {};
 
-    for (const [index, referendum] of Object.entries(referendums)) {
-      result[index] = opengovThresholdService.supportThreshold({
+    for (const referendum of Object.values(referendums)) {
+      result[referendum.referendumId] = opengovThresholdService.supportThreshold({
         supportCurve: tracks[referendum.track].minSupport,
         tally: referendum.tally,
         totalIssuance: totalIssuance.toBn().sub(inactiveIssuance.toBn()),
@@ -273,11 +277,29 @@ sample({
 
 sample({
   clock: getApproveThresholdsFx.doneData,
+  source: {
+    chain: networkSelectorModel.$governanceChain,
+    thresholds: governanceModel.$approvalThresholds,
+  },
+  filter: ({ chain }) => !!chain,
+  fn: ({ chain, thresholds }, data) => ({
+    ...thresholds,
+    [chain!.chainId]: data,
+  }),
   target: governanceModel.$approvalThresholds,
 });
 
 sample({
   clock: getSupportThresholdsFx.doneData,
+  source: {
+    chain: networkSelectorModel.$governanceChain,
+    thresholds: governanceModel.$supportThresholds,
+  },
+  filter: ({ chain }) => !!chain,
+  fn: ({ chain, thresholds }, data) => ({
+    ...thresholds,
+    [chain!.chainId]: data,
+  }),
   target: governanceModel.$supportThresholds,
 });
 
