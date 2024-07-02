@@ -19,9 +19,10 @@ const getReferendumList: IGovernanceApi['getReferendumList'] = async (chain, cal
   const chainName = chain.specName;
 
   if (chainName) {
-    const getApiUrl = (page: number, size = 100): string => {
-      return `https://api.polkassembly.io/api/v1/listing/on-chain-posts?proposalType=referendums_v2&page=${page}&listingLimit=${size}`;
+    const getApiUrl = (page: number, size = 100) => {
+      return `https://api.polkassembly.io/api/v1/listing/on-chain-posts?proposalType=referendums_v2&page=${page}&listingLimit=${size}&sortBy=newest`;
     };
+
     const headers = new Headers();
     headers.append('x-network', chainName);
     headers.append('Cache-Control', 'public, max-age=600, must-revalidate');
