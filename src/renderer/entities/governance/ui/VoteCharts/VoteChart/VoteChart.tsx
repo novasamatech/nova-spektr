@@ -11,7 +11,7 @@ type Props = {
   descriptionPosition?: 'tooltip' | 'bottom';
 };
 
-export const VoteChartSm = ({
+export const VoteChart = ({
   aye,
   nay,
   pass,

@@ -1,13 +1,6 @@
-import type { ChainId } from '@shared/core';
+import type { Chain } from '@shared/core';
 import type { IGovernanceApi } from '../lib/types';
-import { offChainUtils } from '../lib/off-chain-utils';
 import { dictionary } from '../../../../lib/utils';
-
-// TODO: use callback to return the data, instead of waiting all at once
-export const polkassemblyService: IGovernanceApi = {
-  getReferendumList,
-  getReferendumDetails,
-};
 
 type PolkassemblyData = {
   count: number;
@@ -19,11 +12,11 @@ type PolkassemblyData = {
 /**
  * Request referendum list without details 100 units of data each round
  * Ping their API to check "total" referendums and request remaining with Promise.allSettled
- * @param chainId chainId value
+ * @param chain
  * @param callback returns portions of data
  */
-async function getReferendumList(chainId: ChainId, callback: (data: Record<string, string>) => void) {
-  const chainName = offChainUtils.getChainName(chainId);
+const getReferendumList: IGovernanceApi['getReferendumList'] = async (chain, callback) => {
+  const chainName = chain.specName;
 
   if (chainName) {
     const getApiUrl = (page: number, size = 100): string => {
@@ -36,27 +29,35 @@ async function getReferendumList(chainId: ChainId, callback: (data: Record<strin
     fetch(getApiUrl(1), { method: 'GET', headers })
       .then((res) => res.json())
       .then((ping: PolkassemblyData) => {
-        callback(dictionary(ping.posts, 'post_id', (item) => item.title));
+        const totalPages = Math.ceil(ping.count / 100);
 
-        for (let index = 2; index <= Math.ceil(ping.count / 100); index++) {
+        callback(
+          dictionary(ping.posts, 'post_id', (item) => item.title),
+          totalPages === 1,
+        );
+
+        for (let index = 2; index <= totalPages; index++) {
           fetch(getApiUrl(index), { method: 'GET', headers })
             .then((res) => res.json())
             .then((data: PolkassemblyData) => {
-              callback(dictionary(data.posts, 'post_id', (item) => item.title));
+              callback(
+                dictionary(data.posts, 'post_id', (item) => item.title),
+                index === totalPages - 1,
+              );
             });
         }
       });
   }
-}
+};
 
 /**
  * Request referendum details
- * @param chainId chainId value
+ * @param chain chainId value
  * @param index referendum index
  * @return {Promise}
  */
-async function getReferendumDetails(chainId: ChainId, index: string): Promise<string | undefined> {
-  const chainName = offChainUtils.getChainName(chainId);
+async function getReferendumDetails(chain: Chain, index: string): Promise<string | undefined> {
+  const chainName = chain.specName;
   if (!chainName) return undefined;
 
   try {
@@ -73,3 +74,9 @@ async function getReferendumDetails(chainId: ChainId, index: string): Promise<st
     return undefined;
   }
 }
+
+// TODO: use callback to return the data, instead of waiting all at once
+export const polkassemblyService: IGovernanceApi = {
+  getReferendumList,
+  getReferendumDetails,
+};

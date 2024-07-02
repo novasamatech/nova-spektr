@@ -1,28 +1,32 @@
 import { useUnit } from 'effector-react';
 import { isEmpty } from 'lodash';
+import { useMemo } from 'react';
 
 import { useI18n } from '@app/providers';
-import { Voted, VoteChartSm, governanceModel, TrackInfo } from '@entities/governance';
-import { Accordion, CaptionText, OperationStatus, HeadlineText } from '@shared/ui';
+import { Voted, VoteChart, governanceModel, TrackInfo } from '@entities/governance';
+import { Accordion, CaptionText, HeadlineText } from '@shared/ui';
 import type { ReferendumId, OngoingReferendum } from '@shared/core';
 import { referendumListUtils } from '../lib/referendum-list-utils';
 import { referendumListModel } from '../model/referendum-list-model';
+import { VotingStatusBadge } from '@features/governance/VotingStatus/ui/VotingStatusBadge';
 
 type Props = {
-  referendums: Map<ReferendumId, OngoingReferendum>;
-  onSelected: (index: ReferendumId) => void;
+  referendums: Record<ReferendumId, OngoingReferendum>;
+  onSelect: (value: OngoingReferendum) => void;
 };
 
-export const OngoingReferendums = ({ referendums, onSelected }: Props) => {
+export const OngoingReferendums = ({ referendums, onSelect }: Props) => {
   const { t } = useI18n();
 
   const voting = useUnit(governanceModel.$voting);
   const approvalThresholds = useUnit(governanceModel.$approvalThresholds);
   const supportThresholds = useUnit(governanceModel.$supportThresholds);
   const chain = useUnit(referendumListModel.$chain);
-  const details = useUnit(referendumListModel.$referendumsDetails);
+  const names = useUnit(referendumListModel.$referendumsNames);
 
-  if (!chain || isEmpty(approvalThresholds) || isEmpty(supportThresholds) || referendums.size === 0) return null;
+  const referendumList = useMemo(() => Object.entries(referendums), [referendums]);
+
+  if (!chain || isEmpty(approvalThresholds) || isEmpty(supportThresholds) || referendumList.length === 0) return null;
 
   return (
     <Accordion isDefaultOpen>
@@ -31,35 +35,37 @@ export const OngoingReferendums = ({ referendums, onSelected }: Props) => {
           <CaptionText className="uppercase text-text-secondary tracking-[0.75px] font-semibold">
             {t('governance.referendums.ongoing')}
           </CaptionText>
-          <CaptionText className="text-text-tertiary font-semibold">{referendums.size}</CaptionText>
+          <CaptionText className="text-text-tertiary font-semibold">{referendumList.length}</CaptionText>
         </div>
       </Accordion.Button>
       <Accordion.Content as="ul" className="flex flex-col gap-y-2">
-        {Array.from(referendums).map(([index, referendum]) => {
+        {referendumList.map(([index, referendum]) => {
           const isPassing = supportThresholds[index].passing;
+          const voteFractions = referendumListUtils.getVoteFractions(referendum.tally, approvalThresholds[index].value);
 
           return (
             <li key={index}>
               <button
                 className="flex flex-col gap-y-3 p-3 w-full rounded-md bg-white"
-                onClick={() => onSelected(index)}
+                onClick={() => onSelect(referendum)}
               >
                 <div className="flex items-center gap-x-2 w-full">
                   <Voted active={referendumListUtils.isReferendumVoted(index, voting)} />
-                  <OperationStatus pallet={isPassing ? 'success' : 'default'}>
-                    {isPassing ? t('governance.referendums.passing') : t('governance.referendums.deciding')}
-                  </OperationStatus>
+                  <VotingStatusBadge passing={isPassing} referendum={referendum} />
+
                   {/*<ReferendumTimer status="reject" time={600000} />*/}
                   <TrackInfo index={index} trackId={referendum.track} />
                 </div>
                 <div className="flex items-start gap-x-6 w-full">
                   <HeadlineText className="flex-1 pointer-events-auto">
-                    {details[chain.chainId]?.[index] || t('governance.referendums.referendumTitle', { index })}
+                    {names[chain.chainId]?.[index] || t('governance.referendums.referendumTitle', { index })}
                   </HeadlineText>
                   <div className="basis-[200px] shrink-0">
-                    <VoteChartSm
+                    <VoteChart
                       bgColor="icon-button"
-                      {...referendumListUtils.getVoteFractions(referendum.tally, approvalThresholds[index].value)}
+                      aye={voteFractions.aye}
+                      nay={voteFractions.nay}
+                      pass={voteFractions.pass}
                     />
                   </div>
                 </div>

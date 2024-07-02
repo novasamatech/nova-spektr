@@ -141,8 +141,8 @@ importers:
         specifier: ^0.6.1
         version: 0.6.1
       patronum:
-        specifier: ^2.1.1
-        version: 2.1.1(effector@23.1.0)
+        specifier: ^2.2.0
+        version: 2.2.0(effector@23.1.0)
       qr-code-styling:
         specifier: 1.6.0-rc.1
         version: 1.6.0-rc.1
@@ -8224,8 +8224,8 @@ packages:
   pathe@1.1.1:
     resolution: {integrity: sha512-d+RQGp0MAYTIaDBIMmOfMwz3E+LOZnxx1HZd5R18mmCZY0QBlK0LDZfPc8FW8Ed2DlvsuE6PRjroDY+wg4+j/Q==}
 
-  patronum@2.1.1:
-    resolution: {integrity: sha512-VPGBzylMxmkpw94ApK887hXqlzF+81gK3UJeUyTACjGVoQsNOkWdwK8FWUCFvBZK4R/TG4tT0eytlUjytkvbEQ==}
+  patronum@2.2.0:
+    resolution: {integrity: sha512-Idsb5swd+2UI1NuBlHJuVA4WlaUeEluZJxGAZ9obCViuEf4pP68bij3f1sZCM/vqqWPsbHclYweDNt/sWu0O1g==}
     peerDependencies:
       effector: ^23
 
@@ -21907,7 +21907,7 @@ snapshots:
 
   pathe@1.1.1: {}
 
-  patronum@2.1.1(effector@23.1.0):
+  patronum@2.2.0(effector@23.1.0):
     dependencies:
       effector: 23.1.0
 

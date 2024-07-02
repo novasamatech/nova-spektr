@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { useUnit } from 'effector-react';
+import { useState } from 'react';
+import { useGate, useStoreMap, useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { Header, Plate } from '@shared/ui';
@@ -15,17 +15,28 @@ import {
   NetworkSelector,
   networkSelectorModel,
 } from '@features/governance';
+import { Referendum } from '@shared/core';
 
 export const Governance = () => {
+  useGate(governancePageModel.gates.governanceFlow);
+
   const { t } = useI18n();
 
-  const ongoing = useUnit(governancePageModel.$ongoing);
-  const completed = useUnit(governancePageModel.$completed);
+  const [selectedReferendum, setSelectedReferendum] = useState<Referendum | null>(null);
   const isApiConnected = useUnit(networkSelectorModel.$isApiConnected);
+  const governanceChain = useUnit(networkSelectorModel.$governanceChain);
 
-  useEffect(() => {
-    governancePageModel.events.flowStarted();
-  }, []);
+  const ongoing = useStoreMap({
+    store: governancePageModel.$ongoing,
+    keys: [governanceChain],
+    fn: (referendums, [chain]) => (chain ? referendums[chain.chainId] ?? {} : {}),
+  });
+
+  const completed = useStoreMap({
+    store: governancePageModel.$completed,
+    keys: [governanceChain],
+    fn: (referendums, [chain]) => (chain ? referendums[chain.chainId] ?? {} : {}),
+  });
 
   return (
     <div className="h-full flex flex-col">
@@ -52,8 +63,8 @@ export const Governance = () => {
             <LoadingOngoing />
             <LoadingCompleted />
 
-            <OngoingReferendums referendums={ongoing} onSelected={governancePageModel.events.referendumSelected} />
-            <CompletedReferendums referendums={completed} onSelected={governancePageModel.events.referendumSelected} />
+            <OngoingReferendums referendums={ongoing} onSelect={setSelectedReferendum} />
+            <CompletedReferendums referendums={completed} onSelect={setSelectedReferendum} />
           </div>
 
           {/*<EmptyResults />*/}
@@ -61,7 +72,13 @@ export const Governance = () => {
         </section>
       </div>
 
-      <ReferendumDetails />
+      {selectedReferendum && governanceChain && (
+        <ReferendumDetails
+          referendum={selectedReferendum}
+          chain={governanceChain}
+          onClose={() => setSelectedReferendum(null)}
+        />
+      )}
     </div>
   );
 };

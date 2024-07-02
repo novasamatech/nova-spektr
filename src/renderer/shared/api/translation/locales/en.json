@@ -272,6 +272,10 @@
     "title": {
       "appName": "Nova Spektr",
       "inactiveNetwork": "Network is inactive, please check the connection in network settings"
+    },
+    "image": {
+      "loadingError": "Error while loading image",
+      "retryLoading": "Retry"
     }
   },
   "governance": {
@@ -283,10 +287,15 @@
       "sourceError": "Data source is required",
       "title": "Referendum data"
     },
+    "referendum": {
+      "threshold": "Threshold",
+      "proposer": "Proposer: {name}",
+      "votedTokens": "{voted} of {total} {asset}",
+      "votingStatus": "Voting status"
+    },
     "referendums": {
       "completed": "Completed",
       "crowdloans": "Crowdloans",
-      "deciding": "Deciding",
       "fellowshipAdmin": "Fellowship: Admin",
       "fellowshipWhitelist": "Fellowship: Whitelist",
       "governanceCanceller": "Governance: Canceller",
@@ -295,7 +304,14 @@
       "governanceRegistrar": "Governance: Registrar",
       "mainAgenda": "Main agenda",
       "ongoing": "Ongoing",
+      "approved": "Approved",
+      "deciding": "Deciding",
+      "executed": "Executed",
       "passing": "Passing",
+      "rejected": "Rejected",
+      "cancelled": "Cancelled",
+      "killed": "Killed",
+      "timedOut": "Timed out",
       "referendumTitle": "Referendum #{ index }",
       "staking": "Staking",
       "treasuryAny": "Treasury: Any",

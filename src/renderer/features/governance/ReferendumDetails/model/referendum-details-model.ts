@@ -1,81 +1,53 @@
-import { createStore, createEvent, createEffect, sample, combine } from 'effector';
-import { spread } from 'patronum';
+import { createStore, createEffect, sample } from 'effector';
+import { createGate } from 'effector-react';
 
-import type { ChainId, ReferendumId } from '@shared/core';
+import type { Chain, ChainId, Referendum, ReferendumId } from '@shared/core';
 import { IGovernanceApi } from '@shared/api/governance';
 import { governanceModel } from '@entities/governance';
+import { pickNestedValue, setNestedValue } from '@shared/lib/utils';
 
-const flowStarted = createEvent<{ chainId: ChainId; index: ReferendumId }>();
-const flowClosed = createEvent();
+const flow = createGate<{ chain: Chain; referendum: Referendum }>();
 
-const $index = createStore<ReferendumId | null>(null).reset(flowClosed);
-const $chainId = createStore<ChainId | null>(null).reset(flowClosed);
-const $isFlowStarted = createStore<boolean>(false).reset(flowClosed);
-const $offChainDetails = createStore<string | null>(null).reset(flowClosed);
-
-const $referendum = combine(
-  {
-    index: $index,
-    ongoing: governanceModel.$ongoingReferendums,
-  },
-  ({ index, ongoing }) => {
-    if (!index || !ongoing.has(index)) return null;
-
-    return ongoing.get(index) || null;
-  },
-);
+const $offChainDetails = createStore<Record<ChainId, Record<ReferendumId, string>>>({});
 
 type OffChainParams = {
   service: IGovernanceApi;
-  chainId: ChainId;
-  index: string;
+  chain: Chain;
+  index: ReferendumId;
 };
 
 const requestOffChainDetailsFx = createEffect(
-  ({ service, chainId, index }: OffChainParams): Promise<string | undefined> => {
-    return service.getReferendumDetails(chainId, index);
+  ({ service, chain, index }: OffChainParams): Promise<string | undefined> => {
+    return service.getReferendumDetails(chain, index);
   },
 );
 
 sample({
-  clock: flowStarted,
-  fn: ({ chainId, index }) => ({ chainId, index, started: true }),
-  target: spread({
-    chainId: $chainId,
-    index: $index,
-    started: $isFlowStarted,
-  }),
-});
-
-sample({
-  clock: flowStarted,
-  source: governanceModel.$governanceApi,
-  filter: (governanceApi) => Boolean(governanceApi),
-  fn: (governanceApi, { chainId, index }) => ({
-    service: governanceApi!.service,
-    chainId,
-    index,
+  clock: flow.open,
+  source: {
+    api: governanceModel.$governanceApi,
+    details: $offChainDetails,
+  },
+  filter: ({ api, details }, { referendum, chain }) =>
+    !!api && !pickNestedValue(details, chain.chainId, referendum.referendumId),
+  fn: ({ api }, { chain, referendum }) => ({
+    chain,
+    service: api!.service,
+    index: referendum.referendumId,
   }),
   target: requestOffChainDetailsFx,
 });
 
 sample({
-  clock: requestOffChainDetailsFx.doneData,
-  filter: (details): details is string => Boolean(details),
+  clock: requestOffChainDetailsFx.done,
+  source: $offChainDetails,
+  fn: (details, { params, result }) => setNestedValue(details, params.chain.chainId, params.index, result ?? ''),
   target: $offChainDetails,
 });
 
 export const referendumDetailsModel = {
-  $index,
-  $referendum,
   $offChainDetails,
-  $isFlowStarted,
   $isDetailsLoading: requestOffChainDetailsFx.pending,
 
-  input: {
-    flowStarted,
-  },
-  output: {
-    flowClosed,
-  },
+  input: { flow },
 };

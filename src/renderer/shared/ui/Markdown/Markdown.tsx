@@ -5,6 +5,7 @@ import remarkGfm from 'remark-gfm';
 
 import { BodyText, InfoLink, Checkbox, Button, Icon } from '@shared/ui';
 import { cnTw } from '@shared/lib/utils';
+import { useI18n } from '@app/providers';
 
 const rehypeOptions: Options['remarkRehypeOptions'] = { allowDangerousHtml: true };
 const rehypePlugins: Options['rehypePlugins'] = [rehypeRaw];
@@ -49,20 +50,23 @@ const components: Components = {
       {props.children}
     </InfoLink>
   ),
-  p: (props) => <BodyText as="p" {...props} />,
+  p: ({ node, className, ...props }) => (
+    <BodyText as="p" className={cnTw('overflow-hidden overflow-ellipsis', className)} {...props} />
+  ),
   hr: () => <hr className="bg-current" />,
   input: ({ node, type, ...props }) => (type === 'checkbox' ? <Checkbox {...props} /> : <input {...props} />),
   img: ({ node, className, ...props }) => {
+    const { t } = useI18n();
     const [showError, setShowError] = useState(false);
 
     return showError ? (
       <div className="flex flex-wrap items-center justify-center p-2 pl-3 w-fit rounded-md border border-alert-border-negative">
         <div className="flex items-center gap-2">
           <Icon className="text-icon-negative" size={16} name="warn" />
-          <span>Error while loading image</span>
+          <span>{t('general.image.loadingError')}</span>
         </div>
         <Button size="sm" variant="text" onClick={() => setShowError(false)}>
-          Retry
+          {t('general.image.retryLoading')}
         </Button>
       </div>
     ) : (
@@ -95,7 +99,7 @@ const components: Components = {
 export const Markdown: FC<{ children: string }> = ({ children }) => {
   return (
     <ReactMarkdown
-      className="flex flex-col gap-3 text-body whitespace-pre-line"
+      className="flex flex-col gap-3 text-body whitespace-pre-line overflow-hidden"
       remarkRehypeOptions={rehypeOptions}
       remarkPlugins={remarkPlugins}
       rehypePlugins={rehypePlugins}

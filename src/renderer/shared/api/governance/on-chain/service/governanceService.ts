@@ -2,11 +2,8 @@ import { ApiPromise } from '@polkadot/api';
 import { BN_ZERO, BN } from '@polkadot/util';
 import { PalletReferendaCurve } from '@polkadot/types/lookup';
 
-import { ReferendumType, VoteType, TrackId, CastingVoting, VotingType } from '@shared/core';
+import { ReferendumType, VoteType, TrackId, CastingVoting, VotingType, Referendum } from '@shared/core';
 import type {
-  OngoingReferendum,
-  RejectedReferendum,
-  ApprovedReferendum,
   Address,
   StandardVote,
   SplitVote,
@@ -15,11 +12,7 @@ import type {
   Voting,
   AccountVote,
   ReferendumId,
-  ReferendumInfo,
   DelegatingVoting,
-  CancelledReferendum,
-  TimedOutReferendum,
-  KilledReferendum,
   LinearDecreasingCurve,
   VotingCurve,
   SteppedDecreasingCurve,
@@ -33,20 +26,23 @@ export const governanceService = {
   getTracks,
 };
 
-async function getReferendums(api: ApiPromise): Promise<Map<ReferendumId, ReferendumInfo>> {
+async function getReferendums(api: ApiPromise): Promise<Record<ReferendumId, Referendum>> {
   const referendums = await api.query.referenda.referendumInfoFor.entries();
 
-  const result: Map<ReferendumId, ReferendumInfo> = new Map();
+  const result: Record<ReferendumId, Referendum> = {};
 
   for (const [refIndex, option] of referendums) {
     if (option.isNone) continue;
 
     const referendum = option.unwrap();
+    const referendumId = refIndex.args[0].toString();
 
     if (referendum.isOngoing) {
       const ongoing = referendum.asOngoing;
 
-      result.set(refIndex.args[0].toString(), {
+      result[referendumId] = {
+        referendumId,
+        type: ReferendumType.Ongoing,
         track: ongoing.track.toString(),
         submitted: ongoing.submitted.toNumber(),
         enactment: {
@@ -75,51 +71,55 @@ async function getReferendums(api: ApiPromise): Promise<Map<ReferendumId, Refere
           who: ongoing.submissionDeposit.who.toString(),
           amount: ongoing.submissionDeposit.amount.toBn(),
         },
-        type: ReferendumType.Ongoing,
-      } as OngoingReferendum);
+      };
     }
 
     if (referendum.isRejected) {
       const rejected = referendum.asRejected;
 
-      result.set(refIndex.args[0].toString(), {
-        since: rejected[0].toNumber(),
+      result[referendumId] = {
+        referendumId,
         type: ReferendumType.Rejected,
-      } as RejectedReferendum);
+        since: rejected[0].toNumber(),
+      };
     }
 
     if (referendum.isApproved) {
       const approved = referendum.asApproved;
 
-      result.set(refIndex.args[0].toString(), {
-        since: approved[0].toNumber(),
+      result[referendumId] = {
+        referendumId,
         type: ReferendumType.Approved,
-      } as ApprovedReferendum);
+        since: approved[0].toNumber(),
+      };
     }
 
     if (referendum.isCancelled) {
       const cancelled = referendum.asCancelled;
 
-      result.set(refIndex.args[0].toString(), {
-        since: cancelled[0].toNumber(),
+      result[referendumId] = {
+        referendumId,
         type: ReferendumType.Cancelled,
-      } as CancelledReferendum);
+        since: cancelled[0].toNumber(),
+      };
     }
 
     if (referendum.isTimedOut) {
       const timedOut = referendum.asTimedOut;
 
-      result.set(refIndex.args[0].toString(), {
-        since: timedOut[0].toNumber(),
+      result[referendumId] = {
+        referendumId,
         type: ReferendumType.TimedOut,
-      } as TimedOutReferendum);
+        since: timedOut[0].toNumber(),
+      };
     }
 
     if (referendum.isKilled) {
-      result.set(refIndex.args[0].toString(), {
-        since: referendum.asKilled.toNumber(),
+      result[referendumId] = {
+        referendumId,
         type: ReferendumType.Killed,
-      } as KilledReferendum);
+        since: referendum.asKilled.toNumber(),
+      };
     }
   }
 

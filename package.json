@@ -108,7 +108,7 @@
     "lottie-react": "^2.4.0",
     "matrix-js-sdk": "30.3.0",
     "parity-scale-codec": "^0.6.1",
-    "patronum": "^2.1.1",
+    "patronum": "^2.2.0",
     "qr-code-styling": "1.6.0-rc.1",
     "qrcode-generator": "^1.4.4",
     "raptorq": "^1.7.22",

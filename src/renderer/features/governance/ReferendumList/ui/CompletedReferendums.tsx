@@ -1,36 +1,31 @@
 import { useUnit } from 'effector-react';
+import { useMemo } from 'react';
 
 import { useI18n } from '@app/providers';
 import { Voted, governanceModel } from '@entities/governance';
-import { FootnoteText, Accordion, CaptionText, OperationStatus, HeadlineText } from '@shared/ui';
-import { ReferendumId, CompletedReferendum, ReferendumType } from '@shared/core';
+import { FootnoteText, Accordion, CaptionText, HeadlineText } from '@shared/ui';
+import { ReferendumId, CompletedReferendum } from '@shared/core';
 import { referendumListModel } from '../model/referendum-list-model';
 import { referendumListUtils } from '../lib/referendum-list-utils';
-
-const Status: Record<
-  Exclude<ReferendumType, ReferendumType.Ongoing>,
-  { text: string; pallet: 'default' | 'success' | 'error' }
-> = {
-  [ReferendumType.Approved]: { text: 'Executed', pallet: 'success' },
-  [ReferendumType.Rejected]: { text: 'Rejected', pallet: 'error' },
-  [ReferendumType.Cancelled]: { text: 'Cancelled', pallet: 'default' },
-  [ReferendumType.Killed]: { text: 'Killed', pallet: 'error' },
-  [ReferendumType.TimedOut]: { text: 'Timed out', pallet: 'default' },
-};
+import { VotingStatusBadge } from '@features/governance/VotingStatus/ui/VotingStatusBadge';
 
 type Props = {
-  referendums: Map<ReferendumId, CompletedReferendum>;
-  onSelected: (index: ReferendumId) => void;
+  referendums: Record<ReferendumId, CompletedReferendum>;
+  onSelect: (value: CompletedReferendum) => void;
 };
 
-export const CompletedReferendums = ({ referendums, onSelected }: Props) => {
+export const CompletedReferendums = ({ referendums, onSelect }: Props) => {
   const { t } = useI18n();
 
   const voting = useUnit(governanceModel.$voting);
   const chain = useUnit(referendumListModel.$chain);
-  const details = useUnit(referendumListModel.$referendumsDetails);
+  const names = useUnit(referendumListModel.$referendumsNames);
 
-  if (!chain || referendums.size === 0) return null;
+  const referendumList = useMemo(() => Object.entries(referendums), [referendums]);
+
+  if (!chain || referendumList.length === 0) {
+    return null;
+  }
 
   return (
     <Accordion isDefaultOpen>
@@ -43,22 +38,20 @@ export const CompletedReferendums = ({ referendums, onSelected }: Props) => {
         </div>
       </Accordion.Button>
       <Accordion.Content as="ul" className="flex flex-col gap-y-2">
-        {Array.from(referendums).map(([index, referendum]) => (
+        {referendumList.map(([index, referendum]) => (
           <li key={index}>
             <button
               type="button"
               className="flex flex-col gap-y-3 p-3 w-full rounded-md bg-white"
-              onClick={() => onSelected(index)}
+              onClick={() => onSelect(referendum)}
             >
               <div className="flex items-center gap-x-2 w-full">
                 <Voted active={referendumListUtils.isReferendumVoted(index, voting)} />
-                <OperationStatus pallet={Status[referendum.type].pallet}>
-                  {t(Status[referendum.type].text)}
-                </OperationStatus>
+                <VotingStatusBadge referendum={referendum} />
                 <FootnoteText className="ml-auto text-text-secondary">#{index}</FootnoteText>
               </div>
               <HeadlineText>
-                {details[chain.chainId]?.[index] || t('governance.referendums.referendumTitle', { index })}
+                {names[chain.chainId]?.[index] || t('governance.referendums.referendumTitle', { index })}
               </HeadlineText>
             </button>
           </li>
