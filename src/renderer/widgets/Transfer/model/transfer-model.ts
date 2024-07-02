@@ -27,11 +27,11 @@ const txSaved = createEvent();
 const $step = createStore<Step>(Step.NONE);
 
 const $transferStore = createStore<TransferStore | null>(null).reset(flowFinished);
-const $networkStore = restore<NetworkStore | null>(flowStarted, null).reset(flowFinished);
+const $networkStore = restore<NetworkStore | null>(flowStarted, null);
 
-const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
-const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
-const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
+const $wrappedTx = createStore<Transaction | null>(null);
+const $multisigTx = createStore<Transaction | null>(null);
+const $coreTx = createStore<Transaction | null>(null);
 
 const $xcmChain = combine(
   {
