@@ -18,7 +18,7 @@ export const trackOptions = [
 ];
 
 export const enum VoteStatus {
-  VOTED ='voted',
+  VOTED = 'voted',
   NOT_VOTED = 'notVoted',
 }
 

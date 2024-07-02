@@ -23,6 +23,7 @@ sample({
     if (selectedVoteId === id) {
       return '';
     }
+
     return id;
   },
   target: $selectedVoteId,
