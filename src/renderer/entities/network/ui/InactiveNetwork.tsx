@@ -7,13 +7,14 @@ import { FootnoteText, ButtonLink } from '@shared/ui';
 
 type Props = {
   active: boolean;
+  isLoading?: boolean;
   className?: string;
 };
 
-export const InactiveNetwork = ({ active, className }: Props) => {
+export const InactiveNetwork = ({ active, isLoading, className }: Props) => {
   const { t } = useI18n();
 
-  if (!active) return null;
+  if (!active || isLoading) return null;
 
   return (
     <div className={cn('flex flex-col items-center justify-center', className)}>

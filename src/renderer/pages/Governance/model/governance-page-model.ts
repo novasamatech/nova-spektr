@@ -1,15 +1,76 @@
-import { createEvent, createStore, sample } from 'effector';
+import { combine, createEvent, createStore, sample } from 'effector';
 
 import type { ReferendumId, Chain, OngoingReferendum, CompletedReferendum } from '@shared/core';
 import { governanceModel } from '@entities/governance';
 import { networkSelectorModel, referendumFilterModel, referendumListModel } from '@features/governance';
-import { filterReferendums } from '../lib/utils';
+import { governancePageUtils } from '../lib/governance-page-utils';
 
 const flowStarted = createEvent();
 const referendumSelected = createEvent<ReferendumId>();
 
-const $ongoingFilteredReferendums = createStore<Map<ReferendumId, OngoingReferendum>>(new Map());
-const $completeFilterdReferendums = createStore<Map<ReferendumId, CompletedReferendum>>(new Map());
+const $ongoing = createStore<Map<ReferendumId, OngoingReferendum>>(new Map());
+const $completed = createStore<Map<ReferendumId, CompletedReferendum>>(new Map());
+
+const $ongoingFilteredByQuery = combine(
+  {
+    referendums: governanceModel.$ongoingReferendums,
+    query: referendumFilterModel.$query,
+    details: referendumListModel.$referendumsDetails,
+    chain: networkSelectorModel.$governanceChain,
+  },
+  ({ referendums, details, chain, query }) => {
+    return governancePageUtils.filteredByQuery({ referendums, query, details, chainId: chain?.chainId });
+  },
+);
+
+const $completeFilteredByQuery = combine(
+  {
+    referendums: governanceModel.$completedReferendums,
+    query: referendumFilterModel.$query,
+    details: referendumListModel.$referendumsDetails,
+    chain: networkSelectorModel.$governanceChain,
+  },
+  ({ referendums, details, chain, query }) => {
+    return governancePageUtils.filteredByQuery({ referendums, query, details, chainId: chain?.chainId });
+  },
+);
+
+const $ongoingFilteredReferendums = combine(
+  {
+    referendums: governanceModel.$ongoingReferendums,
+    selectedVoteId: referendumFilterModel.$selectedVoteId,
+    selectedTrackIds: referendumFilterModel.$selectedTrackIds,
+    voting: governanceModel.$voting,
+  },
+  ({ referendums, selectedVoteId, voting, selectedTrackIds }) => {
+    const filteredReferendums = Array.from(referendums.entries()).filter(([key, referendum]) => {
+      const filteredByVote = governancePageUtils.filterByVote({ selectedVoteId, key, voting });
+      const filteredByTracks = governancePageUtils.filterByTracks(selectedTrackIds, referendum);
+
+      return filteredByVote && filteredByTracks;
+    });
+
+    return new Map(filteredReferendums);
+  },
+);
+
+const $completeFilteredReferendums = combine(
+  {
+    referendums: governanceModel.$completedReferendums,
+    selectedVoteId: referendumFilterModel.$selectedVoteId,
+    selectedTrackIds: referendumFilterModel.$selectedTrackIds,
+    voting: governanceModel.$voting,
+  },
+  ({ referendums, selectedVoteId, voting, selectedTrackIds }) => {
+    if (selectedTrackIds?.length > 0) return new Map();
+
+    const filteredReferendums = Array.from(referendums.entries()).filter(([key]) => {
+      return governancePageUtils.filterByVote({ selectedVoteId, key, voting });
+    });
+
+    return new Map(filteredReferendums);
+  },
+);
 
 sample({
   clock: flowStarted,
@@ -35,38 +96,34 @@ sample({
 // });
 
 sample({
-  clock: [referendumFilterModel.events.queryChanged, governanceModel.$ongoingReferendums],
+  clock: [referendumFilterModel.events.queryChanged, $ongoingFilteredReferendums, $ongoingFilteredByQuery],
   source: {
-    referendums: governanceModel.$ongoingReferendums,
-    details: referendumListModel.$referendumsDetails,
-    chain: networkSelectorModel.$governanceChain,
+    ongoingFilteredReferendums: $ongoingFilteredReferendums,
+    ongoingFilteredByQuery: $ongoingFilteredByQuery,
     query: referendumFilterModel.$query,
   },
-  filter: ({ chain }) => Boolean(chain),
-  fn: ({ referendums, details, chain, query }) => {
-    return filterReferendums({ referendums, details, query, chainId: chain!.chainId });
+  fn: ({ ongoingFilteredReferendums, ongoingFilteredByQuery, query }) => {
+    return query === '' ? ongoingFilteredReferendums : ongoingFilteredByQuery;
   },
-  target: $ongoingFilteredReferendums,
+  target: $ongoing,
 });
 
 sample({
-  clock: [referendumFilterModel.events.queryChanged, governanceModel.$completedReferendums],
+  clock: [referendumFilterModel.events.queryChanged, $completeFilteredReferendums, $completeFilteredByQuery],
   source: {
-    referendums: governanceModel.$completedReferendums,
-    details: referendumListModel.$referendumsDetails,
-    chain: networkSelectorModel.$governanceChain,
+    completeFilteredReferendums: $completeFilteredReferendums,
+    completeFilteredByQuery: $completeFilteredByQuery,
     query: referendumFilterModel.$query,
   },
-  filter: ({ chain }) => Boolean(chain),
-  fn: ({ referendums, details, chain, query }) => {
-    return filterReferendums({ referendums, details, query, chainId: chain!.chainId });
+  fn: ({ completeFilteredReferendums, completeFilteredByQuery, query }) => {
+    return query === '' ? completeFilteredReferendums : completeFilteredByQuery;
   },
-  target: $completeFilterdReferendums,
+  target: $completed,
 });
 
 export const governancePageModel = {
-  $ongoing: $ongoingFilteredReferendums,
-  $completed: $completeFilterdReferendums,
+  $ongoing,
+  $completed,
 
   events: {
     flowStarted,
