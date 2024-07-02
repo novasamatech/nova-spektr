@@ -10,11 +10,16 @@ type Props<T> = {
 };
 
 export function filterReferendums<T>({ referendums, query, titles, chainId }: Props<T>): ReferendumMap<T> {
-  if (!query || referendums.size === 0) {
+  if (!query) {
     return referendums;
   }
 
-  const filteredReferendums = Object.entries(referendums).filter(([key]) => {
+  const list = Object.entries(referendums);
+  if (list.length === 0) {
+    return referendums;
+  }
+
+  const filteredReferendums = list.filter(([key]) => {
     const title = titles[chainId]?.[key];
     const hasIndex = includes(key, query);
     const hasTitle = includes(title, query);
