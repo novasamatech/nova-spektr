@@ -26,12 +26,12 @@ const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
-const $transferStore = createStore<TransferStore | null>(null);
-const $networkStore = restore<NetworkStore | null>(flowStarted, null);
+const $transferStore = createStore<TransferStore | null>(null).reset(flowFinished);
+const $networkStore = restore<NetworkStore | null>(flowStarted, null).reset(flowFinished);
 
-const $wrappedTx = createStore<Transaction | null>(null);
-const $multisigTx = createStore<Transaction | null>(null);
-const $coreTx = createStore<Transaction | null>(null);
+const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
+const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
+const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
 
 const $xcmChain = combine(
   {
@@ -182,6 +182,8 @@ sample({
 
 sample({
   clock: flowFinished,
+  source: $transferStore,
+  filter: (transferStore) => Boolean(transferStore),
   target: attach({
     source: $navigation,
     effect: (state) => state?.navigate(Paths.ASSETS, { replace: true }),

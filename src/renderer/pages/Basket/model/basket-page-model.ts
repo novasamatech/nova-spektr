@@ -119,7 +119,7 @@ sample({
 sample({
   clock: $basketTransactions,
   source: $selectedTxs,
-  fn: (selectedTxs, txs) => selectedTxs.filter((id) => !txs.find((tx) => tx.id === id)),
+  fn: (selectedTxs, txs) => selectedTxs.filter((id) => txs.find((tx) => tx.id === id)),
   target: $selectedTxs,
 });
 

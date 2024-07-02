@@ -994,11 +994,6 @@ sample({
   target: basketModel.events.transactionsUpdated,
 });
 
-// sample({
-//   clock: delay(submitModel.output.formSubmitted, 2000),
-//   target: flowFinished,
-// });
-
 export const signOperationsModel = {
   $step,
   $transactions,
