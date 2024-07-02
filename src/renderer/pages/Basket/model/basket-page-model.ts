@@ -143,6 +143,11 @@ sample({
 });
 
 sample({
+  clock: $basketTransactions,
+  target: validationStarted,
+});
+
+sample({
   clock: validationStarted,
   source: {
     transactions: $basketTransactions,
