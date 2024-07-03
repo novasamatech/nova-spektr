@@ -1,5 +1,3 @@
-import { FC } from 'react';
-
 import { referendumUtils, VoteChart } from '@entities/governance';
 // import { formatBalance } from '@shared/lib/utils';
 import { Asset, Referendum, VotingThreshold } from '@shared/core';
@@ -13,7 +11,7 @@ type Props = {
   asset: Asset | null;
 };
 
-export const VotingStatus: FC<Props> = ({ referendum, asset, supportThreshold, approvalThreshold }) => {
+export const VotingStatus = ({ referendum, asset, supportThreshold, approvalThreshold }: Props) => {
   // const { t } = useI18n();
 
   const isPassing = supportThreshold?.passing ?? false;

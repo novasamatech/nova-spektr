@@ -1,4 +1,4 @@
-import { type FC, useState } from 'react';
+import { useState } from 'react';
 import ReactMarkdown, { type Components, type Options } from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
@@ -96,7 +96,7 @@ const components: Components = {
   ),
 };
 
-export const Markdown: FC<{ children: string }> = ({ children }) => {
+export const Markdown = ({ children }: { children: string }) => {
   return (
     <ReactMarkdown
       className="flex flex-col gap-3 text-body whitespace-pre-line overflow-hidden"

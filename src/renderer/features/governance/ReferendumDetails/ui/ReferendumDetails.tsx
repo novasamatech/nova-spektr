@@ -1,5 +1,4 @@
 import { useGate, useStoreMap, useUnit } from 'effector-react';
-import { FC } from 'react';
 
 import { type Chain, type Referendum } from '@shared/core';
 import { pickNestedValue } from '@shared/lib/utils';
@@ -18,7 +17,7 @@ type Props = {
   onClose: VoidFunction;
 };
 
-export const ReferendumDetails: FC<Props> = ({ chain, referendum, onClose }) => {
+export const ReferendumDetails = ({ chain, referendum, onClose }: Props) => {
   useGate(referendumDetailsModel.input.flow, { chain, referendum });
 
   const { t } = useI18n();

@@ -1,5 +1,3 @@
-import { FC } from 'react';
-
 import { useI18n } from '@app/providers';
 import { OperationStatus } from '@shared/ui';
 import { type CompletedReferendum, type OngoingReferendum, ReferendumType } from '@shared/core';
@@ -19,7 +17,7 @@ const statusesMap: Record<
   [ReferendumType.TimedOut]: { text: 'governance.referendums.timedOut', pallet: 'default' },
 };
 
-export const VotingStatusBadge: FC<Props> = ({ passing, referendum }) => {
+export const VotingStatusBadge = ({ passing, referendum }: Props) => {
   const { t } = useI18n();
 
   if (referendum.type === ReferendumType.Ongoing) {
