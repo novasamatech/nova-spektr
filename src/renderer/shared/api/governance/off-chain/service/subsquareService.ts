@@ -30,24 +30,22 @@ const getReferendumList: IGovernanceApi['getReferendumList'] = async (chain, cal
       .then((ping: SubsquareData) => {
         const totalPages = Math.ceil(ping.total / 100);
 
-        callback(
-          dictionary(ping.items, 'referendumIndex', (item) => item.title),
-          totalPages === 1,
-        );
+        callback(parseSubsquareData(ping), totalPages === 1);
 
         for (let index = 2; index <= totalPages; index++) {
           fetch(getApiUrl(chainName, index), { method: 'GET' })
             .then((res) => res.json())
             .then((data: SubsquareData) => {
-              callback(
-                dictionary(data.items, 'referendumIndex', (item) => item.title),
-                index === totalPages - 1,
-              );
+              callback(parseSubsquareData(data), index === totalPages - 1);
             });
         }
       });
   }
 };
+
+function parseSubsquareData(data: SubsquareData) {
+  return dictionary(data.items, 'referendumIndex', (item) => item.title);
+}
 
 /**
  * Request referendum details

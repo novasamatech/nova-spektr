@@ -18,7 +18,7 @@ const $currentReferendums = combine(
     chain: referendumListModel.$chain,
   },
   ({ referendums, chain }) => {
-    return chain ? referendums[chain.chainId] ?? [] : [];
+    return chain ? referendumListUtils.getSortedReferendums(referendums[chain.chainId] ?? []) : [];
   },
 );
 
@@ -74,9 +74,7 @@ const $displayedCurrentReferendums = combine(
     filteredByQuery: $referendumsFilteredByQuery,
     query: referendumFilterModel.$query,
   },
-  ({ filtered, filteredByQuery, query }) => {
-    return referendumListUtils.getSortedReferendums(query === '' ? filtered : filteredByQuery);
-  },
+  ({ filtered, filteredByQuery, query }) => (query === '' ? filtered : filteredByQuery),
 );
 
 const $ongoing = $displayedCurrentReferendums.map((x) => x.filter(referendumUtils.isOngoing));

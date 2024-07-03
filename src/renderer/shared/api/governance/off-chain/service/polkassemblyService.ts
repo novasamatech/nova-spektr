@@ -32,24 +32,22 @@ const getReferendumList: IGovernanceApi['getReferendumList'] = async (chain, cal
       .then((ping: PolkassemblyData) => {
         const totalPages = Math.ceil(ping.count / 100);
 
-        callback(
-          dictionary(ping.posts, 'post_id', (item) => item.title),
-          totalPages === 1,
-        );
+        callback(parsePolkassemblyData(ping), totalPages === 1);
 
         for (let index = 2; index <= totalPages; index++) {
           fetch(getApiUrl(index), { method: 'GET', headers })
             .then((res) => res.json())
             .then((data: PolkassemblyData) => {
-              callback(
-                dictionary(data.posts, 'post_id', (item) => item.title),
-                index === totalPages - 1,
-              );
+              callback(parsePolkassemblyData(data), index === totalPages - 1);
             });
         }
       });
   }
 };
+
+function parsePolkassemblyData(data: PolkassemblyData) {
+  return dictionary(data.posts, 'post_id', (item) => item.title);
+}
 
 /**
  * Request referendum details
