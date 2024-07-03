@@ -122,4 +122,5 @@ export type {
   StandardVote,
   SplitVote,
   SplitAbstainVote,
+  VotingMap,
 } from './types/voting';

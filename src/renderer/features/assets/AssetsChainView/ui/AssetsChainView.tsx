@@ -1,16 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@app/providers';
 import { isStringsMatchQuery } from '@shared/lib/utils';
 import type { Account, Chain } from '@shared/core';
-import { Icon, BodyText } from '@shared/ui';
 import { chainsService } from '@shared/api/network';
 import { balanceModel } from '@entities/balance';
 import { priceProviderModel, currencyModel } from '@entities/price';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
-import { AssetsListView } from '@entities/asset';
+import { AssetsListView, EmptyAssetsState } from '@entities/asset';
 import { NetworkAssets } from './NetworkAssets/NetworkAssets';
 
 type Props = {
@@ -20,8 +18,6 @@ type Props = {
   assetsView: AssetsListView;
 };
 export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsView }: Props) => {
-  const { t } = useI18n();
-
   const activeWallet = useUnit(walletModel.$activeWallet);
   const balances = useUnit(balanceModel.$balances);
 
@@ -86,15 +82,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
             query={query}
           />
         ))}
-
-        <div className="hidden only:flex flex-col items-center justify-center gap-y-8 w-full h-full">
-          <Icon as="img" name="emptyList" alt={t('balances.emptyStateLabel')} size={178} />
-          <BodyText align="center" className="text-text-tertiary">
-            {t('balances.emptyStateLabel')}
-            <br />
-            {t('balances.emptyStateDescription')}
-          </BodyText>
-        </div>
+        <EmptyAssetsState />
       </ul>
     </div>
   );

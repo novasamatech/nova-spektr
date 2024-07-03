@@ -11,8 +11,7 @@ import type {
   OngoingReferendum,
   CompletedReferendum,
   VotingThreshold,
-  Voting,
-  Address,
+  VotingMap,
 } from '@shared/core';
 
 const governanceStarted = createEvent();
@@ -22,7 +21,7 @@ const $ongoingReferendums = createStore<Map<ReferendumId, OngoingReferendum>>(ne
 const $completedReferendums = createStore<Map<ReferendumId, CompletedReferendum>>(new Map());
 
 const $tracks = createStore<Record<TrackId, TrackInfo>>({});
-const $voting = createStore<Record<Address, Record<TrackId, Voting>>>({});
+const $voting = createStore<VotingMap>({});
 const $approvalThresholds = createStore<Record<ReferendumId, VotingThreshold>>({});
 const $supportThresholds = createStore<Record<ReferendumId, VotingThreshold>>({});
 

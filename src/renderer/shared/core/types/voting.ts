@@ -2,6 +2,7 @@ import { BN } from '@polkadot/util';
 
 import type { BlockHeight, Address } from './general';
 import type { ReferendumId } from './referendum';
+import { TrackId } from './track';
 
 export interface Voting {
   type: VotingType;
@@ -68,6 +69,8 @@ export const enum VoteType {
   Split = 'split',
   SplitAbstain = 'split_abstain',
 }
+
+export type VotingMap = Record<Address, Record<TrackId, Voting>>;
 
 export const enum Conviction {
   None = 'None',
