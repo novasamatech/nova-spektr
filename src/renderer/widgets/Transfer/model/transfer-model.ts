@@ -182,8 +182,6 @@ sample({
 
 sample({
   clock: flowFinished,
-  source: $transferStore,
-  filter: (transferStore) => Boolean(transferStore),
   target: attach({
     source: $navigation,
     effect: (state) => state?.navigate(Paths.ASSETS, { replace: true }),
