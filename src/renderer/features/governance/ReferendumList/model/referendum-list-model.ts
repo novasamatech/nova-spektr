@@ -5,17 +5,15 @@ import isEmpty from 'lodash/isEmpty';
 import { BN_ZERO, BN } from '@polkadot/util';
 
 import { networkModel, networkUtils } from '@entities/network';
-import { referendumUtils, governanceModel } from '@entities/governance';
+import { governanceModel, referendumUtils } from '@entities/governance';
 import { getCurrentBlockNumber, toAddress } from '@shared/lib/utils';
-import { createChunksEffect, referendumListUtils } from '../lib/referendum-list-utils';
+import { createChunksEffect } from '../lib/referendum-list-utils';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { IGovernanceApi, governanceService, opengovThresholdService } from '@shared/api/governance';
 import {
-  ReferendumInfo,
   ChainId,
   ReferendumId,
   OngoingReferendum,
-  CompletedReferendum,
   TrackInfo,
   TrackId,
   VotingThreshold,
@@ -27,6 +25,14 @@ import { networkSelectorModel } from '@features/governance';
 
 const $referendumsTitles = createStore<Record<ChainId, Record<ReferendumId, string>>>({});
 const $referendumsRequested = createStore<boolean>(false);
+
+const $currentReferendumTitles = combine(
+  {
+    titles: $referendumsTitles,
+    chain: networkSelectorModel.$governanceChain,
+  },
+  ({ titles, chain }) => (chain ? titles[chain.chainId] ?? {} : {}),
+);
 
 const $isConnectionActive = combine(
   {
@@ -52,11 +58,9 @@ type RequestChainParams = {
   api: ApiPromise;
 };
 
-const requestOnChainReferendumsFx = createEffect(
-  ({ api }: RequestChainParams): Promise<Record<ReferendumId, ReferendumInfo>> => {
-    return governanceService.getReferendums(api);
-  },
-);
+const requestOnChainReferendumsFx = createEffect(({ api }: RequestChainParams) => {
+  return governanceService.getReferendums(api);
+});
 
 type OffChainParams = {
   chain: Chain;
@@ -99,7 +103,7 @@ const requestVotingFx = createEffect(
 
 type ThresholdParams = {
   api: ApiPromise;
-  referendums: Record<ReferendumId, OngoingReferendum>;
+  referendums: OngoingReferendum[];
   tracks: Record<TrackId, TrackInfo>;
 };
 const getApproveThresholdsFx = createEffect(
@@ -108,8 +112,8 @@ const getApproveThresholdsFx = createEffect(
 
     const result: Record<ReferendumId, VotingThreshold> = {};
 
-    for (const [index, referendum] of Object.entries(referendums)) {
-      result[index] = opengovThresholdService.ayesFractionThreshold({
+    for (const referendum of referendums) {
+      result[referendum.referendumId] = opengovThresholdService.ayesFractionThreshold({
         approvalCurve: tracks[referendum.track].minApproval,
         tally: referendum.tally,
         totalIssuance: BN_ZERO, // not used in calculation
@@ -130,7 +134,7 @@ const getSupportThresholdsFx = createEffect(
 
     const result: Record<ReferendumId, VotingThreshold> = {};
 
-    for (const referendum of Object.values(referendums)) {
+    for (const referendum of referendums) {
       result[referendum.referendumId] = opengovThresholdService.supportThreshold({
         supportCurve: tracks[referendum.track].minSupport,
         tally: referendum.tally,
@@ -148,15 +152,7 @@ sample({
   clock: networkSelectorModel.events.chainChanged,
   source: previous(networkSelectorModel.$governanceChain),
   filter: (oldChain, newChain) => oldChain?.chainId !== newChain.chainId,
-  target: [
-    $referendumsRequested.reinit,
-    governanceModel.$ongoingReferendums.reinit,
-    governanceModel.$completedReferendums.reinit,
-    governanceModel.$tracks.reinit,
-    governanceModel.$approvalThresholds.reinit,
-    governanceModel.$supportThresholds.reinit,
-    governanceModel.$voting.reinit,
-  ],
+  target: $referendumsRequested.reinit,
 });
 
 sample({
@@ -223,39 +219,23 @@ sample({
 sample({
   clock: requestOnChainReferendumsFx.done,
   source: {
-    ongoingReferendums: governanceModel.$ongoingReferendums,
-    completedReferendums: governanceModel.$completedReferendums,
+    referendums: governanceModel.$referendums,
+    chain: networkSelectorModel.$governanceChain,
   },
-  fn: ({ ongoingReferendums, completedReferendums }, { params, result: referendums }) => {
-    const ongoing: Record<ReferendumId, OngoingReferendum> = {};
-    const completed: Record<ReferendumId, CompletedReferendum> = {};
-
-    for (const [index, referendum] of Object.entries(referendums)) {
-      if (referendumUtils.isCompleted(referendum)) {
-        completed[index] = referendum;
-      }
-      if (referendumUtils.isOngoing(referendum)) {
-        ongoing[index] = referendum;
-      }
+  fn: ({ chain, referendums }, { params, result }) => {
+    if (!chain) {
+      return referendums;
     }
 
-    const chainId = params.chain.chainId;
+    const resultReferendums = { ...referendums, [chain.chainId]: result };
 
     return {
-      ongoing: {
-        ...ongoingReferendums,
-        [chainId]: referendumListUtils.getSortedOngoing(ongoing),
-      },
-      completed: {
-        ...completedReferendums,
-        [chainId]: referendumListUtils.getSortedCompleted(completed),
-      },
+      referendums: resultReferendums,
       requested: true,
     };
   },
   target: spread({
-    ongoing: governanceModel.$ongoingReferendums,
-    completed: governanceModel.$completedReferendums,
+    referendums: governanceModel.$referendums,
     requested: $referendumsRequested,
   }),
 });
@@ -265,11 +245,11 @@ sample({
   source: {
     api: networkSelectorModel.$governanceChainApi,
     tracks: governanceModel.$tracks,
-    referendums: governanceModel.$ongoingReferendums,
+    referendums: governanceModel.$referendums,
   },
   fn: ({ api, tracks, referendums }, { params }) => ({
     api: api!,
-    referendums: referendums[params.chain.chainId] ?? {},
+    referendums: (referendums[params.chain.chainId] ?? []).filter(referendumUtils.isOngoing),
     tracks,
   }),
   target: [getApproveThresholdsFx, getSupportThresholdsFx],
@@ -315,7 +295,8 @@ sample({
 });
 
 export const referendumListModel = {
-  $referendumsNames: $referendumsTitles,
+  $referendumsTitles,
+  $currentReferendumTitles,
   $chain: networkSelectorModel.$governanceChain,
   $isApiActive: networkSelectorModel.$isApiConnected,
   $isLoading: or(

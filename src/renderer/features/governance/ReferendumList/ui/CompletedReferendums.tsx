@@ -1,34 +1,28 @@
-import { useStoreMap, useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import { useUnit } from 'effector-react';
+import { memo } from 'react';
 
 import { useI18n } from '@app/providers';
 import { Voted, governanceModel } from '@entities/governance';
 import { FootnoteText, Accordion, CaptionText, HeadlineText } from '@shared/ui';
-import { ReferendumId, CompletedReferendum } from '@shared/core';
+import { CompletedReferendum } from '@shared/core';
 import { VotingStatusBadge } from '../../VotingStatus/ui/VotingStatusBadge';
 import { referendumListModel } from '../model/referendum-list-model';
 import { referendumListUtils } from '../lib/referendum-list-utils';
 import { ListItem } from './ListItem';
 
 type Props = {
-  referendums: Record<ReferendumId, CompletedReferendum>;
+  referendums: CompletedReferendum[];
   onSelect: (value: CompletedReferendum) => void;
 };
 
-export const CompletedReferendums = ({ referendums, onSelect }: Props) => {
+export const CompletedReferendums = memo<Props>(({ referendums, onSelect }) => {
   const { t } = useI18n();
 
   const chain = useUnit(referendumListModel.$chain);
   const voting = useUnit(governanceModel.$voting);
-  const names = useStoreMap({
-    store: referendumListModel.$referendumsNames,
-    keys: [chain],
-    fn: (x, [chain]) => (chain ? x[chain?.chainId] ?? {} : {}),
-  });
+  const names = useUnit(referendumListModel.$currentReferendumTitles);
 
-  const referendumList = useMemo(() => Object.values(referendums), [referendums]);
-
-  if (!chain || referendumList.length === 0) {
+  if (!chain || referendums.length === 0) {
     return null;
   }
 
@@ -43,7 +37,7 @@ export const CompletedReferendums = ({ referendums, onSelect }: Props) => {
         </div>
       </Accordion.Button>
       <Accordion.Content as="ul" className="flex flex-col gap-y-2">
-        {referendumList.map((referendum) => (
+        {referendums.map((referendum) => (
           <li key={referendum.referendumId}>
             <ListItem onClick={() => onSelect(referendum)}>
               <div className="flex items-center gap-x-2 w-full">
@@ -61,4 +55,4 @@ export const CompletedReferendums = ({ referendums, onSelect }: Props) => {
       </Accordion.Content>
     </Accordion>
   );
-};
+});

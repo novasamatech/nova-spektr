@@ -27,7 +27,7 @@ export const ReferendumDetails: FC<Props> = ({ chain, referendum, onClose }) => 
   const isProposerLoading = useUnit(referendumDetailsModel.$isProposersLoading);
 
   const title = useStoreMap({
-    store: referendumListModel.$referendumsNames,
+    store: referendumListModel.$referendumsTitles,
     keys: [chain.chainId, referendum.referendumId],
     fn: (x, [chainId, index]) => pickNestedValue(x, chainId, index),
   });
@@ -43,7 +43,7 @@ export const ReferendumDetails: FC<Props> = ({ chain, referendum, onClose }) => 
   });
 
   const description = useStoreMap({
-    store: referendumDetailsModel.$offChainDetails,
+    store: referendumDetailsModel.$descriptions,
     keys: [chain.chainId, referendum.referendumId],
     fn: (x, [chainId, index]) => pickNestedValue(x, chainId, index),
   });

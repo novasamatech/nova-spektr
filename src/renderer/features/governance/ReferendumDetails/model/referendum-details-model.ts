@@ -11,9 +11,9 @@ import { networkSelectorModel } from '@features/governance';
 
 const flow = createGate<{ chain: Chain; referendum: Referendum }>();
 
-// descriptions
+// Descriptions
 
-const $offChainDetails = createStore<Record<ChainId, Record<ReferendumId, string>>>({});
+const $descriptions = createStore<Record<ChainId, Record<ReferendumId, string>>>({});
 
 type OffChainParams = {
   service: IGovernanceApi;
@@ -29,7 +29,7 @@ sample({
   clock: flow.open,
   source: {
     api: governanceModel.$governanceApi,
-    details: $offChainDetails,
+    details: $descriptions,
   },
   filter: ({ api, details }, { referendum, chain }) =>
     !!api && !pickNestedValue(details, chain.chainId, referendum.referendumId),
@@ -43,9 +43,9 @@ sample({
 
 sample({
   clock: requestOffChainDetailsFx.done,
-  source: $offChainDetails,
+  source: $descriptions,
   fn: (details, { params, result }) => setNestedValue(details, params.chain.chainId, params.index, result ?? ''),
-  target: $offChainDetails,
+  target: $descriptions,
 });
 
 // Proposers
@@ -93,7 +93,7 @@ sample({
 // Model
 
 export const referendumDetailsModel = {
-  $offChainDetails,
+  $descriptions,
   $proposers,
   $isProposersLoading: requestProposersFx.pending,
   $isDetailsLoading: requestOffChainDetailsFx.pending,

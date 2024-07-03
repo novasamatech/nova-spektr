@@ -4,22 +4,12 @@ import { IGovernanceApi } from '@shared/api/governance';
 import type { SourceType } from '../lib/types';
 import { localStorageService } from '@shared/api/local-storage';
 import { GOVERNANCE_API_KEY, GovernanceApis } from '../lib/constants';
-import type {
-  TrackId,
-  TrackInfo,
-  ReferendumId,
-  OngoingReferendum,
-  CompletedReferendum,
-  VotingThreshold,
-  VotingMap,
-  ChainId,
-} from '@shared/core';
+import type { TrackId, TrackInfo, ReferendumId, Referendum, VotingThreshold, VotingMap, ChainId } from '@shared/core';
 
 const governanceStarted = createEvent();
 const governanceApiChanged = createEvent<SourceType>();
 
-const $ongoingReferendums = createStore<Record<ChainId, Record<ReferendumId, OngoingReferendum>>>({});
-const $completedReferendums = createStore<Record<ChainId, Record<ReferendumId, CompletedReferendum>>>({});
+const $referendums = createStore<Record<ChainId, Referendum[]>>({});
 
 const $tracks = createStore<Record<TrackId, TrackInfo>>({});
 const $voting = createStore<VotingMap>({});
@@ -57,8 +47,7 @@ sample({
 });
 
 export const governanceModel = {
-  $ongoingReferendums,
-  $completedReferendums,
+  $referendums,
   $tracks,
   $voting,
   $approvalThresholds,

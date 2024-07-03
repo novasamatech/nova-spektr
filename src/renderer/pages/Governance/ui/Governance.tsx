@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useGate, useStoreMap, useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { Header, Plate } from '@shared/ui';
@@ -30,17 +30,8 @@ export const Governance = () => {
   const isLoading = useUnit(referendumListModel.$isLoading);
   const governanceChain = useUnit(networkSelectorModel.$governanceChain);
 
-  const ongoing = useStoreMap({
-    store: governancePageModel.$ongoing,
-    keys: [governanceChain],
-    fn: (referendums, [chain]) => (chain ? referendums[chain.chainId] ?? {} : {}),
-  });
-
-  const completed = useStoreMap({
-    store: governancePageModel.$completed,
-    keys: [governanceChain],
-    fn: (referendums, [chain]) => (chain ? referendums[chain.chainId] ?? {} : {}),
-  });
+  const ongoing = useUnit(governancePageModel.$ongoing);
+  const completed = useUnit(governancePageModel.$completed);
 
   return (
     <div className="h-full flex flex-col">
@@ -61,13 +52,24 @@ export const Governance = () => {
             {/*<Delegations onClick={() => console.log('Go to Delegate')} />*/}
           </div>
 
-          <ReferendumFilters />
-          <div className="flex flex-col gap-y-3">
-            <LoadingOngoing />
-            <LoadingCompleted />
+          <div className="mt-5 mb-4">
+            <ReferendumFilters />
+          </div>
 
-            <OngoingReferendums referendums={ongoing} onSelect={setSelectedReferendum} />
-            <CompletedReferendums referendums={completed} onSelect={setSelectedReferendum} />
+          <div className="flex flex-col gap-y-3">
+            {isLoading && (
+              <>
+                <LoadingOngoing />
+                <LoadingCompleted />
+              </>
+            )}
+
+            {!isLoading && (
+              <>
+                <OngoingReferendums referendums={ongoing} onSelect={setSelectedReferendum} />
+                <CompletedReferendums referendums={completed} onSelect={setSelectedReferendum} />
+              </>
+            )}
           </div>
 
           <EmptyGovernance />

@@ -5,36 +5,25 @@ import { readonly } from 'patronum';
 
 import {
   ReferendumId,
-  OngoingReferendum,
-  CompletedReferendum,
   TrackId,
   Tally,
   Voting,
   VotingType,
   CastingVoting,
   type Address,
+  Referendum,
 } from '@shared/core';
 
 export const referendumListUtils = {
-  getSortedOngoing,
-  getSortedCompleted,
+  getSortedReferendums,
   getVoteFractions,
   getVotedCount,
   isReferendumVoted,
 };
 
 // TODO: use block number to make an appropriate sorting
-function getSortedOngoing(
-  referendums: Record<ReferendumId, OngoingReferendum>,
-): Record<ReferendumId, OngoingReferendum> {
-  return Object.fromEntries(orderBy(Object.entries(referendums), ([index]) => parseInt(index), 'desc'));
-}
-
-// TODO: use block number to make an appropriate sorting
-function getSortedCompleted(
-  referendums: Record<ReferendumId, CompletedReferendum>,
-): Record<ReferendumId, CompletedReferendum> {
-  return Object.fromEntries(orderBy(Object.entries(referendums), ([index]) => parseInt(index), 'desc'));
+function getSortedReferendums(referendums: Referendum[]) {
+  return orderBy(referendums, ({ referendumId }) => parseInt(referendumId), 'desc');
 }
 
 function getVoteFractions(tally: Tally, approve: BN): Record<'aye' | 'nay' | 'pass', number> {

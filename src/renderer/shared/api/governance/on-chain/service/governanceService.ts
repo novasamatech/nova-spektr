@@ -26,10 +26,10 @@ export const governanceService = {
   getTracks,
 };
 
-async function getReferendums(api: ApiPromise): Promise<Record<ReferendumId, Referendum>> {
+async function getReferendums(api: ApiPromise): Promise<Referendum[]> {
   const referendums = await api.query.referenda.referendumInfoFor.entries();
 
-  const result: Record<ReferendumId, Referendum> = {};
+  const result: Referendum[] = [];
 
   for (const [refIndex, option] of referendums) {
     if (option.isNone) continue;
@@ -40,7 +40,7 @@ async function getReferendums(api: ApiPromise): Promise<Record<ReferendumId, Ref
     if (referendum.isOngoing) {
       const ongoing = referendum.asOngoing;
 
-      result[referendumId] = {
+      result.push({
         referendumId,
         type: ReferendumType.Ongoing,
         track: ongoing.track.toString(),
@@ -71,55 +71,55 @@ async function getReferendums(api: ApiPromise): Promise<Record<ReferendumId, Ref
           who: ongoing.submissionDeposit.who.toString(),
           amount: ongoing.submissionDeposit.amount.toBn(),
         },
-      };
+      });
     }
 
     if (referendum.isRejected) {
       const rejected = referendum.asRejected;
 
-      result[referendumId] = {
+      result.push({
         referendumId,
         type: ReferendumType.Rejected,
         since: rejected[0].toNumber(),
-      };
+      });
     }
 
     if (referendum.isApproved) {
       const approved = referendum.asApproved;
 
-      result[referendumId] = {
+      result.push({
         referendumId,
         type: ReferendumType.Approved,
         since: approved[0].toNumber(),
-      };
+      });
     }
 
     if (referendum.isCancelled) {
       const cancelled = referendum.asCancelled;
 
-      result[referendumId] = {
+      result.push({
         referendumId,
         type: ReferendumType.Cancelled,
         since: cancelled[0].toNumber(),
-      };
+      });
     }
 
     if (referendum.isTimedOut) {
       const timedOut = referendum.asTimedOut;
 
-      result[referendumId] = {
+      result.push({
         referendumId,
         type: ReferendumType.TimedOut,
         since: timedOut[0].toNumber(),
-      };
+      });
     }
 
     if (referendum.isKilled) {
-      result[referendumId] = {
+      result.push({
         referendumId,
         type: ReferendumType.Killed,
         since: referendum.asKilled.toNumber(),
-      };
+      });
     }
   }
 

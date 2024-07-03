@@ -1,77 +1,58 @@
-import { ChainId, OngoingReferendum, ReferendumId, VotingMap, VotingType } from '@shared/core';
-import { VoteStatus, referendumListUtils } from '@features/governance';
+import { OngoingReferendum, Referendum, ReferendumId, ReferendumType, VotingMap, VotingType } from '@shared/core';
+import { referendumListUtils, VoteStatus } from '@features/governance';
 import { governancePageUtils } from '../governance-page-utils';
 
 describe('page/governance/lib/governance-page-utils', () => {
-  const chainId = '0x1';
-  const referendums = {
-    111: {},
-    222: {},
-  };
-  const details: Record<ChainId, Record<ReferendumId, string>> = {
-    '0x1': {
-      111: 'Referendum Title 1',
-      222: 'Referendum Title 2',
-    },
+  const referendums: Referendum[] = [
+    { referendumId: '111', type: ReferendumType.Approved, since: 0 },
+    { referendumId: '222', type: ReferendumType.Approved, since: 0 },
+  ];
+  const details: Record<ReferendumId, string> = {
+    111: 'Referendum Title 1',
+    222: 'Referendum Title 2',
   };
 
-  const key = '111';
+  const referendumId = '111';
   const voting: VotingMap = {
     '123': { '1': { type: VotingType.CASTING } },
   };
 
   const referendum = {
+    type: ReferendumType.Ongoing,
     track: '1',
   } as OngoingReferendum;
 
-  test('should return all referendums if query is empty', () => {
-    const query = '';
-    const result = governancePageUtils.filteredByQuery({ referendums, query, titles: details, chainId });
-    expect(result).toEqual(referendums);
-  });
-
-  test('should return referendums that match the query in the ID', () => {
-    const query = '111';
-    const result = governancePageUtils.filteredByQuery({ referendums, query, titles: details, chainId });
-
-    expect(Object.values(result).length).toEqual(1);
-    expect('111' in result).toEqual(true);
-  });
-
-  test('should return referendums that match the query in the title', () => {
-    const query = 'Title 2';
-    const result = governancePageUtils.filteredByQuery({ referendums, query, titles: details, chainId });
-    expect(Object.values(result).length).toEqual(1);
-    expect('222' in result).toEqual(true);
-  });
-
-  test('should return an empty map if no referendums match the query', () => {
-    const query = 'none';
-    const result = governancePageUtils.filteredByQuery({ referendums, query, titles: details, chainId });
-    expect(Object.values(result).length).toEqual(0);
+  test.each([
+    { referendums, details, query: '', expected: referendums },
+    { referendums, details, query: '111', expected: referendums.filter((x) => x.referendumId === '111') },
+    { referendums, details, query: '222', expected: referendums.filter((x) => x.referendumId === '222') },
+    { referendums, details, query: 'none', expected: [] },
+  ])('should return correct referendums if query is "$query"', ({ referendums, query, details, expected }) => {
+    const result = governancePageUtils.filteredByQuery({ referendums, query, details });
+    expect(result).toEqual(expected);
   });
 
   test('should return true if selectedVoteId is VOTED and referendum is voted', () => {
     jest.spyOn(referendumListUtils, 'isReferendumVoted').mockReturnValue(true);
-    const result = governancePageUtils.filterByVote({ selectedVoteId: VoteStatus.VOTED, key, voting });
+    const result = governancePageUtils.filterByVote({ selectedVoteId: VoteStatus.VOTED, referendumId, voting });
     expect(result).toEqual(true);
   });
 
   test('should return false if selectedVoteId is VOTED and referendum is not voted', () => {
     jest.spyOn(referendumListUtils, 'isReferendumVoted').mockReturnValue(false);
-    const result = governancePageUtils.filterByVote({ selectedVoteId: VoteStatus.VOTED, key, voting });
+    const result = governancePageUtils.filterByVote({ selectedVoteId: VoteStatus.VOTED, referendumId, voting });
     expect(result).toEqual(false);
   });
 
   test('should return false if selectedVoteId is not VOTED and referendum is voted', () => {
     jest.spyOn(referendumListUtils, 'isReferendumVoted').mockReturnValue(true);
-    const result = governancePageUtils.filterByVote({ selectedVoteId: VoteStatus.NOT_VOTED, key, voting });
+    const result = governancePageUtils.filterByVote({ selectedVoteId: VoteStatus.NOT_VOTED, referendumId, voting });
     expect(result).toEqual(false);
   });
 
   test('should return true if selectedVoteId is not VOTED and referendum is not voted', () => {
     jest.spyOn(referendumListUtils, 'isReferendumVoted').mockReturnValue(false);
-    const result = governancePageUtils.filterByVote({ selectedVoteId: VoteStatus.NOT_VOTED, key, voting });
+    const result = governancePageUtils.filterByVote({ selectedVoteId: VoteStatus.NOT_VOTED, referendumId, voting });
     expect(result).toEqual(true);
   });
 
