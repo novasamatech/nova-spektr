@@ -4,7 +4,7 @@ import { useI18n } from '@app/providers';
 import { SearchInput } from '@shared/ui';
 import { referendumFilterModel } from '../model/referendum-filter-model';
 
-export const ReferendumFilter = () => {
+export const ReferendumSearch = () => {
   const { t } = useI18n();
   const query = useUnit(referendumFilterModel.$query);
 

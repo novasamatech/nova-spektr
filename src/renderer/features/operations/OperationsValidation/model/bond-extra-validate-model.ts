@@ -4,7 +4,7 @@ import { ApiPromise } from '@polkadot/api';
 import { Asset, Balance, Chain, ID, Transaction } from '@shared/core';
 import { getAssetById, stakeableAmount, toAccountId, transferableAmount } from '@shared/lib/utils';
 import { balanceModel } from '@entities/balance';
-import { AmountFeeStore, ShardsBondBalanceStore, ValidationResult } from '../types/types';
+import { AmountFeeStore, BondAmountBalanceStore, ValidationResult } from '../types/types';
 import { validationUtils } from '../lib/validation-utils';
 import { networkModel } from '@entities/network';
 import { transactionService } from '@entities/transaction';
@@ -32,16 +32,13 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
 
   const rules = [
     {
-      value: [{ accountId }],
-      form: {
-        amount: transaction.args.maxAdditional,
-      },
-      ...BondExtraRules.shards.noBondBalance({} as Store<ShardsBondBalanceStore>),
+      value: transaction.args.maxAdditional,
+      form: {},
+      ...BondExtraRules.amount.notEnoughBalance({} as Store<BondAmountBalanceStore>, { withFormatAmount: false }),
       source: {
-        isProxy: false,
         network: { chain, asset },
-        accountsBalances: [stakeableAmount(shardBalance)],
-      } as ShardsBondBalanceStore,
+        bondBalanceRange: [stakeableAmount(shardBalance)],
+      } as BondAmountBalanceStore,
     },
     {
       value: transaction.args.maxAdditional,

@@ -11,8 +11,7 @@ import type {
   OngoingReferendum,
   CompletedReferendum,
   VotingThreshold,
-  Voting,
-  Address,
+  VotingMap,
   ChainId,
 } from '@shared/core';
 
@@ -23,7 +22,7 @@ const $ongoingReferendums = createStore<Record<ChainId, Record<ReferendumId, Ong
 const $completedReferendums = createStore<Record<ChainId, Record<ReferendumId, CompletedReferendum>>>({});
 
 const $tracks = createStore<Record<TrackId, TrackInfo>>({});
-const $voting = createStore<Record<Address, Record<TrackId, Voting>>>({});
+const $voting = createStore<VotingMap>({});
 
 const $approvalThresholds = createStore<Record<ChainId, Record<ReferendumId, VotingThreshold>>>({});
 const $supportThresholds = createStore<Record<ChainId, Record<ReferendumId, VotingThreshold>>>({});

@@ -27,7 +27,7 @@ export const StatusModal = ({
   onClose,
 }: PropsWithChildren<Props>) => {
   return (
-    <Transition appear show={isOpen} as={Fragment}>
+    <Transition appear leave="duration-400" show={isOpen} as={Fragment}>
       <Dialog as="div" className={cnTw('relative', zIndex)} onClose={onClose}>
         <ModalBackdrop />
 

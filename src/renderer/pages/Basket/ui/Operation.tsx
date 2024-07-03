@@ -27,8 +27,10 @@ export const Operation = ({ tx, errorText, validating, onClick, onTxRemoved }: P
   const asset = getAssetById(coreTx.args.asset, chainsService.getChainById(coreTx.chainId)?.assets);
   const amount = getTransactionAmount(coreTx);
 
+  const disabled = errorText || validating;
+
   const onTxClicked = () => {
-    if (errorText) return;
+    if (disabled) return;
 
     onClick();
   };
@@ -73,7 +75,7 @@ export const Operation = ({ tx, errorText, validating, onClick, onTxRemoved }: P
 
   return (
     <div
-      className={cnTw('h-[52px] flex gap-x-4 items-center w-full overflow-hidden ', !errorText && 'cursor-pointer')}
+      className={cnTw('h-[52px] flex gap-x-4 items-center w-full overflow-hidden ', !disabled && 'cursor-pointer')}
       onClick={onTxClicked}
     >
       <TransactionTitle className="flex-1 overflow-hidden" tx={coreTx} />

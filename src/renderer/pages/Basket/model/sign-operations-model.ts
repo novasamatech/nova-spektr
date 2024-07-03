@@ -146,7 +146,7 @@ const prepareTransferTransactionData = async ({ transaction, wallets, chains, ap
     id: transaction.id,
     xcmChain,
     chain,
-    asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
+    asset: getAssetById(transaction.coreTx.args.asset, chain.assets),
     account,
     amount: transaction.coreTx.args.value,
     destination: transaction.coreTx.args.dest,
@@ -993,11 +993,6 @@ sample({
   },
   target: basketModel.events.transactionsUpdated,
 });
-
-// sample({
-//   clock: delay(submitModel.output.formSubmitted, 2000),
-//   target: flowFinished,
-// });
 
 export const signOperationsModel = {
   $step,

@@ -2,13 +2,14 @@ import { useUnit } from 'effector-react';
 import { Link } from 'react-router-dom';
 
 import { useI18n } from '@app/providers';
-import { BaseModal, BodyText, FootnoteText, HeaderTitleText, Icon, SearchInput } from '@shared/ui';
+import { BaseModal, BodyText, FootnoteText, HeaderTitleText, SearchInput } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { totalAmount } from '@shared/lib/utils';
 import { PathType, Paths, createLink } from '@shared/routes';
 import { ChainIcon } from '@entities/chain';
 import { networkModel } from '@entities/network';
 import { AssetFiatBalance } from '@entities/price';
+import { EmptyAssetsState } from '@entities/asset';
 import { assetTransactionModel } from '../model/asset-transaction-model';
 import { assetTransactionUtils } from '../lib/utils';
 import { ModalType } from '../lib/types';
@@ -91,15 +92,7 @@ export const AssetTransactionModal = () => {
             </Link>
           </li>
         ))}
-
-        <div className="hidden only:flex flex-col items-center justify-center gap-y-8 w-full h-full">
-          <Icon as="img" name="emptyList" alt={t('balances.emptyStateLabel')} size={178} />
-          <BodyText align="center" className="text-text-tertiary">
-            {t('balances.emptyStateLabel')}
-            <br />
-            {t('balances.emptyStateDescription')}
-          </BodyText>
-        </div>
+        <EmptyAssetsState />
       </ul>
     </BaseModal>
   );

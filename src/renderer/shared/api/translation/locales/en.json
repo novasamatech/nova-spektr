@@ -300,6 +300,13 @@
     }
   },
   "governance": {
+    "emptyStateDescription": "Update the search or cancel filtering",
+    "emptyStateLabel": "Nothing was found",
+    "filters": {
+      "notVoted": "Not Voted",
+      "tracks": "Tracks",
+      "vote": "Vote"
+    },
     "offChainDataSource": {
       "formDescription": "Nova Spektr may use different off-chain data sources for getting referendum data",
       "formTitle": "Show referendum data",
@@ -529,6 +536,7 @@
   "operation": {
     "addCallDataButton": "Add call data",
     "addToBasket": "Add to basket",
+    "addedToBasket": "Added to basket",
     "advanced": "Advanced",
     "approveButton": "Approve",
     "cancelTitle": "Reject",
@@ -1179,8 +1187,6 @@
     "inProgress": "Submitting operation...",
     "incorrectRecipientError": "Please enter correct recipient address",
     "invalidSignature": "QR code is invalid. Please make sure you are scanning QR code for currently signing operation",
-    "mixedResultDescription": "They will be returned to the operation basket. You can resolve an issue and execute them later",
-    "mixedResultTitle": "{failed} out of {all} operations has not been executed",
     "multiple": {
       "executing": "Submitting operations",
       "transactions": "Transactions"
@@ -1214,6 +1220,8 @@
     "swapToCryptoModeAlt": "swap input to crypto",
     "swapToCurrencyModeAlt": "swap input to currency",
     "title": "Transfer { asset } on",
+    "warningDescription": "They will be returned to the operation basket. You can resolve an issue and execute them later",
+    "warningTitle": "{failed} out of {all} operations has not been executed",
     "xcmTitle": "Transfer { asset } from"
   },
   "transferDetails": {

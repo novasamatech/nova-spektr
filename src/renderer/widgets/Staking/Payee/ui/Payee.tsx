@@ -10,6 +10,7 @@ import { payeeUtils } from '../lib/payee-utils';
 import { payeeModel } from '../model/payee-model';
 import { Step } from '../lib/types';
 import { basketUtils, PayeeConfirmation as Confirmation } from '@features/operations/OperationsConfirm';
+import { OperationResult } from '@entities/transaction';
 
 export const Payee = () => {
   const { t } = useI18n();
@@ -19,10 +20,26 @@ export const Payee = () => {
   const initiatorWallet = useUnit(payeeModel.$initiatorWallet);
 
   const [isModalOpen, closeModal] = useModalClose(!payeeUtils.isNoneStep(step), payeeModel.output.flowFinished);
+  const [isBasketModalOpen, closeBasketModal] = useModalClose(
+    payeeUtils.isBasketStep(step),
+    payeeModel.output.flowFinished,
+  );
 
   if (!walletData) return null;
 
   if (payeeUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  if (payeeUtils.isBasketStep(step)) {
+    setTimeout(() => closeBasketModal(), 1450);
+
+    return (
+      <OperationResult
+        isOpen={isBasketModalOpen}
+        variant="success"
+        title={t('operation.addedToBasket')}
+        onClose={closeBasketModal}
+      />
+    );
+  }
 
   return (
     <BaseModal
