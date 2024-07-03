@@ -103,12 +103,7 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
     },
   ];
 
-  const result = validationUtils.applyValidationRules(rules);
-
-  return {
-    id,
-    result,
-  };
+  return { id, result: validationUtils.applyValidationRules(rules) };
 });
 
 sample({

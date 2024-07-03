@@ -92,7 +92,7 @@ export const BondNominateRules = {
     },
     notEnoughBalance: (source: Store<BondAmountBalanceStore>, config: Config = { withFormatAmount: true }) => ({
       name: 'notEnoughBalance',
-      errorText: 'transfer.notEnoughBalanceError',
+      errorText: 'staking.notEnoughBalanceError',
       source,
       validator: (amount: string, _: any, { network, bondBalanceRange }: BondAmountBalanceStore) => {
         const value = config?.withFormatAmount ? formatAmount(amount, network.asset.precision) : amount;

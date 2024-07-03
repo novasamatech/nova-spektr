@@ -87,7 +87,7 @@ export const RestakeRules = {
     },
     notEnoughBalance: (source: Store<RestakeAmountBalanceStore>, config: Config = { withFormatAmount: true }) => ({
       name: 'notEnoughBalance',
-      errorText: 'transfer.notEnoughBalanceError',
+      errorText: 'staking.notEnoughBalanceError',
       source,
       validator: (amount: string, _: any, { network, restakeBalanceRange }: RestakeAmountBalanceStore) => {
         const value = config?.withFormatAmount ? formatAmount(amount, network.asset.precision) : amount;

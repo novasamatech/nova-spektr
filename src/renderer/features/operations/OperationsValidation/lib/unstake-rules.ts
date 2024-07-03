@@ -75,7 +75,7 @@ export const UnstakeRules = {
     },
     notEnoughBalance: (source: Store<UnstakeAmountBalanceRange>, config: Config = { withFormatAmount: true }) => ({
       name: 'notEnoughBalance',
-      errorText: 'transfer.notEnoughBalanceError',
+      errorText: 'staking.notEnoughBalanceError',
       source,
       validator: (amount: string, _: any, { network, unstakeBalanceRange }: UnstakeAmountBalanceRange) => {
         const value = config?.withFormatAmount ? formatAmount(amount, network.asset.precision) : amount;
