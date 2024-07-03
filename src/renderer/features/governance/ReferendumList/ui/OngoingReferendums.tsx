@@ -1,6 +1,5 @@
 import { useStoreMap, useUnit } from 'effector-react';
-import { isEmpty } from 'lodash';
-import { memo } from 'react';
+import { memo, useDeferredValue } from 'react';
 
 import { useI18n } from '@app/providers';
 import { Voted, VoteChart, governanceModel, TrackInfo } from '@entities/governance';
@@ -20,8 +19,8 @@ export const OngoingReferendums = memo<Props>(({ referendums, onSelect }) => {
   const { t } = useI18n();
 
   const chain = useUnit(referendumListModel.$chain);
-  const voting = useUnit(governanceModel.$voting);
   const titles = useUnit(referendumListModel.$currentReferendumTitles);
+  const voting = useUnit(governanceModel.$voting);
 
   const approvalThresholds = useStoreMap({
     store: governanceModel.$approvalThresholds,
@@ -35,7 +34,9 @@ export const OngoingReferendums = memo<Props>(({ referendums, onSelect }) => {
     fn: (x, [chain]) => (chain ? x[chain.chainId] ?? {} : {}),
   });
 
-  if (!chain || isEmpty(approvalThresholds) || isEmpty(supportThresholds) || referendums.length === 0) return null;
+  const deferredReferendums = useDeferredValue(referendums);
+
+  if (!chain || deferredReferendums.length === 0) return null;
 
   return (
     <Accordion isDefaultOpen>
@@ -48,7 +49,7 @@ export const OngoingReferendums = memo<Props>(({ referendums, onSelect }) => {
         </div>
       </Accordion.Button>
       <Accordion.Content as="ul" className="flex flex-col gap-y-2">
-        {referendums.map((referendum) => {
+        {deferredReferendums.map((referendum) => {
           const approvalThreshold = approvalThresholds[referendum.referendumId];
           const supportThreshold = supportThresholds[referendum.referendumId];
 

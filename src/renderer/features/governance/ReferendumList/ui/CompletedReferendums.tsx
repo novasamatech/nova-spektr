@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { memo } from 'react';
+import { memo, useDeferredValue } from 'react';
 
 import { useI18n } from '@app/providers';
 import { Voted, governanceModel } from '@entities/governance';
@@ -22,7 +22,9 @@ export const CompletedReferendums = memo<Props>(({ referendums, onSelect }) => {
   const voting = useUnit(governanceModel.$voting);
   const names = useUnit(referendumListModel.$currentReferendumTitles);
 
-  if (!chain || referendums.length === 0) {
+  const deferredReferendums = useDeferredValue(referendums);
+
+  if (!chain || deferredReferendums.length === 0) {
     return null;
   }
 
@@ -37,7 +39,7 @@ export const CompletedReferendums = memo<Props>(({ referendums, onSelect }) => {
         </div>
       </Accordion.Button>
       <Accordion.Content as="ul" className="flex flex-col gap-y-2">
-        {referendums.map((referendum) => (
+        {deferredReferendums.map((referendum) => (
           <li key={referendum.referendumId}>
             <ListItem onClick={() => onSelect(referendum)}>
               <div className="flex items-center gap-x-2 w-full">

@@ -1,5 +1,6 @@
 import { combine, sample } from 'effector';
 import { createGate } from 'effector-react';
+import { either } from 'patronum';
 
 import {
   networkSelectorModel,
@@ -68,13 +69,10 @@ const $referendumsFilteredByStatus = combine(
   },
 );
 
-const $displayedCurrentReferendums = combine(
-  {
-    filtered: $referendumsFilteredByStatus,
-    filteredByQuery: $referendumsFilteredByQuery,
-    query: referendumFilterModel.$query,
-  },
-  ({ filtered, filteredByQuery, query }) => (query === '' ? filtered : filteredByQuery),
+const $displayedCurrentReferendums = either(
+  referendumFilterModel.$query.map((x) => x.length > 0),
+  $referendumsFilteredByQuery,
+  $referendumsFilteredByStatus,
 );
 
 const $ongoing = $displayedCurrentReferendums.map((x) => x.filter(referendumUtils.isOngoing));
