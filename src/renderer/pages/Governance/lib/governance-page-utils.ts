@@ -10,14 +10,14 @@ export const governancePageUtils = {
   filterByTracks,
 };
 
-type FilteredByQueryProps<T> = {
+type FilteredByQueryParams<T> = {
   referendums: ReferendumMap<T>;
   query: string;
   details: Record<ChainId, Record<ReferendumId, string>>;
   chainId?: ChainId;
 };
 
-function filteredByQuery<T>({ referendums, query, details, chainId }: FilteredByQueryProps<T>): ReferendumMap<T> {
+function filteredByQuery<T>({ referendums, query, details, chainId }: FilteredByQueryParams<T>): ReferendumMap<T> {
   if (!query || !chainId || referendums.size === 0) return referendums;
 
   const filteredReferendums = Array.from(referendums.entries()).filter(([key]) => {
@@ -31,13 +31,13 @@ function filteredByQuery<T>({ referendums, query, details, chainId }: FilteredBy
   return new Map(filteredReferendums);
 }
 
-type FilterByVoteProps = {
+type FilterByVoteParams = {
   selectedVoteId: string;
   voting: VotingMap;
   key: string;
 };
 
-function filterByVote({ selectedVoteId, key, voting }: FilterByVoteProps) {
+function filterByVote({ selectedVoteId, key, voting }: FilterByVoteParams) {
   if (!selectedVoteId) return true;
 
   const isReferendumVoted = referendumListUtils.isReferendumVoted(key, voting);
