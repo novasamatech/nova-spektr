@@ -36,7 +36,7 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
       form: {
         shards: [{ accountId }],
       },
-      ...RestakeRules.amount.insufficientBalanceForFee({} as Store<AmountFeeStore>),
+      ...RestakeRules.amount.insufficientBalanceForFee({} as Store<AmountFeeStore>, { withFormatAmount: false }),
       source: {
         isMultisig: false,
         network: { chain, asset },
