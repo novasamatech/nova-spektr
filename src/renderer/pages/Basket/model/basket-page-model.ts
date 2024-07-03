@@ -43,6 +43,7 @@ const cancelValidationWarning = createEvent();
 const removeTxStarted = createEvent<BasketTransaction>();
 const removeTxCancelled = createEvent();
 const txRemoved = createEvent<BasketTransaction>();
+const selectedTxsReset = createEvent();
 
 const $selectedTxs = createStore<number[]>([]);
 const $invalidTxs = createStore<Map<ID, ValidationResult>>(new Map());
@@ -341,6 +342,12 @@ sample({
   target: basketModel.events.transactionsRemoved,
 });
 
+sample({
+  clock: selectedTxsReset,
+  fn: () => [],
+  target: $selectedTxs,
+});
+
 export const basketPageModel = {
   $basketTransactions,
   $selectedTxs,
@@ -364,5 +371,7 @@ export const basketPageModel = {
     removeTxStarted,
     removeTxCancelled,
     txRemoved,
+
+    selectedTxsReset,
   },
 };
