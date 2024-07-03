@@ -21,6 +21,8 @@ export const RemoveProxyRules = {
           form.chain.assets[0].assetId.toString(),
         );
 
+        console.log('xcm', balances, value.accountId, balance, params);
+
         return isMultisig
           ? new BN(params.proxyDeposit).lte(new BN(transferableAmount(balance)))
           : new BN(params.proxyDeposit).add(new BN(params.fee)).lte(new BN(transferableAmount(balance)));

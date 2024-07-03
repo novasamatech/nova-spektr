@@ -43,10 +43,16 @@ export const Transfer = ({ chain, asset }: Props) => {
     transferModel.events.navigateApiChanged({ navigate });
   }, []);
 
+  useEffect(() => {
+    if (transferUtils.isBasketStep(step)) {
+      const timer = setTimeout(() => closeBasketModal(), 1450);
+
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
+
   if (transferUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
   if (transferUtils.isBasketStep(step)) {
-    setTimeout(() => closeBasketModal(), 1450);
-
     return (
       <OperationResult
         isOpen={isBasketModalOpen}

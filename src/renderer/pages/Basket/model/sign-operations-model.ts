@@ -249,6 +249,8 @@ const prepareRemoveProxyTransaction = async ({ transaction, wallets, chains, api
   const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
   const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
 
+  console.log('xcm', wallet.accounts);
+
   return {
     id: transaction.id,
     chain,
