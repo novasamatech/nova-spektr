@@ -7,12 +7,12 @@ import { BaseModal, HeaderTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { ConfirmationStep } from './ConfirmationStep';
-import { NameThresholdStep } from './NameThresholdStep';
+import { NameNetworkSelection } from './NameNetworkSelection';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { flowModel } from '../../model/flow-model';
 import { createMultisigUtils } from '../../lib/create-multisig-utils';
 import { formModel } from '../../model/form-model';
-import { SelectSignatoriesStep } from './SelectSignatoriesStep';
+import { SelectSignatoriesThreshold } from './SelectSignatoriesThreshold';
 import { Step } from '../../lib/types';
 import { OperationSign, OperationSubmit } from '@features/operations';
 
@@ -75,8 +75,10 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
         panelClass="w-[480px]"
         onClose={closeMultisigModal}
       >
-        {createMultisigUtils.isInitStep(activeStep) && <SelectSignatoriesStep />}
-        {createMultisigUtils.isNameThresholdStep(activeStep) && <NameThresholdStep signatories={signatories} />}
+        {createMultisigUtils.isNameNetworkStep(activeStep) && <NameNetworkSelection />}
+        {createMultisigUtils.isSignatoriesThresholdStep(activeStep) && (
+          <SelectSignatoriesThreshold signatories={signatories} />
+        )}
         {createMultisigUtils.isConfirmStep(activeStep) && (
           <ConfirmationStep chain={chain.value} accounts={accountSignatories} contacts={contactSignatories} />
         )}

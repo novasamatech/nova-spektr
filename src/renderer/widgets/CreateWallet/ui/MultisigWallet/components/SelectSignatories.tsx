@@ -4,18 +4,7 @@ import { groupBy, isEqual } from 'lodash';
 import { cnTw, includes, isEthereumAccountId, isStringsMatchQuery, RootExplorers, toAddress } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
-import {
-  Button,
-  Checkbox,
-  FootnoteText,
-  Icon,
-  SearchInput,
-  SmallTitleText,
-  Tabs,
-  Accordion,
-  BodyText,
-  CaptionText,
-} from '@shared/ui';
+import { Button, Checkbox, FootnoteText, Icon, SearchInput, Tabs, Accordion, BodyText, CaptionText } from '@shared/ui';
 import { TabItem } from '@shared/ui/types';
 import { ExtendedAccount, ExtendedContact } from '../common/types';
 import { EmptyContactList } from '@entities/contact';
@@ -399,7 +388,7 @@ export const SelectSignatories = ({ isActive, accounts, wallets, contacts, chain
   return (
     <>
       <div className={cnTw('max-h-full flex flex-col flex-1', !isActive && 'hidden')}>
-        <SmallTitleText className="py-2 px-2 mb-4">{t('createMultisigAccount.signatoryTitle')}</SmallTitleText>
+        {/* <SmallTitleText className="py-2 px-2 mb-4">{t('createMultisigAccount.signatoryTitle')}</SmallTitleText> */}
 
         <Tabs
           items={TabItems}

@@ -51,7 +51,7 @@ describe('widgets/CreateWallet/model/add-proxy-model', () => {
       params: [signerWallet.accounts[0] as unknown as ExtendedContact],
     });
 
-    expect(scope.getState(flowModel.$step)).toEqual(Step.INIT);
+    expect(scope.getState(flowModel.$step)).toEqual(Step.NAME_NETWORK);
     await allSettled(formModel.$createMultisigForm.fields.chain.onChange, { scope, params: testChain });
     await allSettled(formModel.$createMultisigForm.fields.name.onChange, { scope, params: 'some name' });
     await allSettled(formModel.$createMultisigForm.fields.threshold.onChange, { scope, params: 2 });

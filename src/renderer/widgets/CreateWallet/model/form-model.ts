@@ -1,5 +1,6 @@
 import { createForm } from 'effector-forms';
 import { combine, createEvent, restore } from 'effector';
+import { sample } from 'lodash';
 
 import { Chain, CryptoType, MultisigAccount } from '@shared/core';
 import chains from '@shared/config/chains/chains.json';
@@ -39,6 +40,7 @@ const $createMultisigForm = createForm<FormParams>({
 const reset = createEvent();
 const accountSignatoriesChanged = createEvent<ExtendedAccount[]>();
 const contactSignatoriesChanged = createEvent<ExtendedContact[]>();
+const formSubmitted = createEvent<void>();
 
 const $accountSignatories = restore(accountSignatoriesChanged, []).reset(reset);
 const $contactSignatories = restore(contactSignatoriesChanged, []).reset(reset);
@@ -115,6 +117,11 @@ const $hasOwnSignatory = combine(
     })?.length,
 );
 
+sample({
+  clock: $createMultisigForm.submit,
+  target: formSubmitted,
+});
+
 export const formModel = {
   $createMultisigForm,
   $multisigAccountId,
@@ -127,5 +134,8 @@ export const formModel = {
   events: {
     contactSignatoriesChanged,
     accountSignatoriesChanged,
+  },
+  output: {
+    formSubmitted,
   },
 };

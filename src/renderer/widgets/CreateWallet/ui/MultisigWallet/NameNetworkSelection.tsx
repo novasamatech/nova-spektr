@@ -1,0 +1,81 @@
+import { useUnit } from 'effector-react';
+import { useForm } from 'effector-forms';
+import { FormEvent } from 'react';
+
+import { Button, Input, InputHint, Select } from '@shared/ui';
+import { useI18n } from '@app/providers';
+import { DropdownOption } from '@shared/ui/types';
+import { networkModel, networkUtils } from '@entities/network';
+import { ChainTitle } from '@entities/chain';
+import { type Chain } from '@shared/core';
+import { formModel } from '../../model/form-model';
+import { flowModel } from '../../model/flow-model';
+import { Step } from '../../lib/types';
+
+const getChainOptions = (chains: Chain[]): DropdownOption<Chain>[] => {
+  return chains
+    .filter((c) => networkUtils.isMultisigSupported(c.options))
+    .map((chain) => ({
+      id: chain.chainId.toString(),
+      element: <ChainTitle chain={chain} />,
+      value: chain,
+    }));
+};
+
+export const NameNetworkSelection = () => {
+  const { t } = useI18n();
+
+  const chains = useUnit(networkModel.$chains);
+  const {
+    fields: { name, chain },
+    submit,
+  } = useForm(formModel.$createMultisigForm);
+
+  const chainOptions = getChainOptions(Object.values(chains));
+  const canContinue = name.isValid;
+
+  const submitForm = (event: FormEvent) => {
+    event.preventDefault();
+    submit();
+  };
+
+  return (
+    <section className="flex flex-col gap-y-4 px-3 py-4 flex-1 h-full">
+      {/* <SmallTitleText className="py-2 px-2">{t('createMultisigAccount.walletFormTitle')}</SmallTitleText> */}
+
+      <form id="multisigForm" className="flex flex-col px-2 gap-y-4 h-full" onSubmit={submitForm}>
+        <div className="flex gap-x-4 items-end">
+          <Input
+            placeholder={t('createMultisigAccount.namePlaceholder')}
+            label={t('createMultisigAccount.walletNameLabel')}
+            invalid={!!name.hasError()}
+            value={name.value}
+            onChange={name.onChange}
+          />
+          <InputHint variant="error" active={!!name.hasError()}>
+            {name.errorText()}
+          </InputHint>
+        </div>
+        <div className="flex gap-x-4 items-end">
+          <Select
+            placeholder={t('createMultisigAccount.chainPlaceholder')}
+            label={t('createMultisigAccount.chainName')}
+            className="w-[204px]"
+            selectedId={chain.value.chainId.toString()}
+            options={chainOptions}
+            onChange={({ value }) => chain.onChange(value)}
+          />
+        </div>
+        <div className="flex justify-end items-center mt-auto">
+          <Button
+            key="create"
+            disabled={!canContinue}
+            onClick={() => flowModel.events.stepChanged(Step.SIGNATORIES_THRESHOLD)}
+          >
+            {t('createMultisigAccount.continueButton')}
+          </Button>
+        </div>
+      </form>
+    </section>
+  );
+};

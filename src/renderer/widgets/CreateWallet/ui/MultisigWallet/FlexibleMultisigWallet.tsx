@@ -8,8 +8,8 @@ import { useToggle } from '@shared/lib/hooks';
 import { OperationResult } from '@entities/transaction';
 import { ExtendedContact, ExtendedWallet } from './common/types';
 import { ConfirmationStep } from './ConfirmationStep';
-import { NameThresholdStep } from './NameThresholdStep';
-import { SelectSignatoriesStep } from './SelectSignatoriesStep';
+import { NameNetworkSelection } from './NameNetworkSelection';
+import { SelectSignatoriesThreshold } from './SelectSignatoriesThreshold';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { flowModel } from '../../model/flow-model';
 
@@ -87,7 +87,7 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
         contentClass="flex h-[524px]"
         onClose={closeMultisigModal}
       >
-        <NameThresholdStep signatories={signatories} />
+        <NameNetworkSelection />
 
         <section className="relative flex flex-col px-5 py-4 flex-1 bg-input-background-disabled h-full">
           <IconButton
@@ -102,7 +102,7 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
             <ConfirmationStep wallets={signatoryWallets} contacts={signatoryContacts} />
           )}
 
-          <SelectSignatoriesStep />
+          <SelectSignatoriesThreshold signatories={signatories} />
         </section>
       </BaseModal>
 

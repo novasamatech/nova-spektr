@@ -44,7 +44,7 @@ const walletCreated = createEvent<{
   threshold: number;
 }>();
 const $selectedSigner = restore(selectedSignerChanged, null);
-const $step = restore(stepChanged, Step.INIT).reset(flowFinished);
+const $step = restore(stepChanged, Step.NAME_NETWORK).reset(flowFinished);
 const $fee = restore(feeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
@@ -220,7 +220,7 @@ const $fakeTx = combine(
 );
 
 sample({
-  clock: formModel.$createMultisigForm.submit,
+  clock: formModel.output.formSubmitted,
   source: formModel.$createMultisigForm.$isValid,
   filter: (isValid) => isValid,
   fn: () => Step.CONFIRM,
@@ -380,7 +380,7 @@ sample({
 
 sample({
   clock: flowFinished,
-  fn: () => Step.INIT,
+  fn: () => Step.NAME_NETWORK,
   target: stepChanged,
 });
 

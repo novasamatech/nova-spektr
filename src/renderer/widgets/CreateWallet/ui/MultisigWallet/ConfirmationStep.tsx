@@ -122,7 +122,7 @@ export const ConfirmationStep = ({ chain, wallets = [], accounts = [], contacts 
           />
         </div>
         <div className="flex justify-between items-center mt-auto">
-          <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.NAMETHRESHOLD)}>
+          <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.SIGNATORIES_THRESHOLD)}>
             {t('createMultisigAccount.backButton')}
           </Button>
           <SignButton type={signerWallet!.type} onClick={confirmModel.output.formSubmitted} />
