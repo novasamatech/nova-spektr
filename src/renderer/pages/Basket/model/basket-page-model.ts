@@ -23,6 +23,8 @@ import {
 import { signOperationsModel } from './sign-operations-model';
 import { addUnique, removeFromCollection } from '@shared/lib/utils';
 import { getCoreTx } from '../lib/utils';
+import { Step } from '../types/basket-page-types';
+import { basketPageUtils } from '../lib/basket-page-utils';
 
 type BasketTransactionsMap = {
   valid: BasketTransaction[];
@@ -44,7 +46,9 @@ const removeTxStarted = createEvent<BasketTransaction>();
 const removeTxCancelled = createEvent();
 const txRemoved = createEvent<BasketTransaction>();
 const selectedTxsReset = createEvent();
+const stepChanged = createEvent<Step>();
 
+const $step = restore(stepChanged, Step.SELECT);
 const $selectedTxs = createStore<number[]>([]);
 const $invalidTxs = createStore<Map<ID, ValidationResult>>(new Map());
 const $validTxs = createStore<BasketTransaction[]>([]);
@@ -248,6 +252,12 @@ sample({
 });
 
 sample({
+  clock: signStarted,
+  fn: () => Step.SIGN,
+  target: stepChanged,
+});
+
+sample({
   clock: txClicked,
   fn: (transaction) => [transaction],
   target: signStarted,
@@ -263,11 +273,12 @@ sample({
 sample({
   clock: $validatingTxs,
   source: {
+    step: $step,
     validatingTxs: $validatingTxs,
     selectedTxs: $selectedTxs,
   },
-  filter: ({ validatingTxs, selectedTxs }) => {
-    return selectedTxs.filter((tx) => validatingTxs.includes(tx)).length === 0;
+  filter: ({ step, validatingTxs, selectedTxs }) => {
+    return basketPageUtils.isSignStep(step) && selectedTxs.filter((tx) => validatingTxs.includes(tx)).length === 0;
   },
   target: signContinued,
 });
@@ -348,6 +359,12 @@ sample({
   target: $selectedTxs,
 });
 
+sample({
+  clock: signOperationsModel.output.flowFinished,
+  fn: () => Step.SELECT,
+  target: stepChanged,
+});
+
 export const basketPageModel = {
   $basketTransactions,
   $selectedTxs,
@@ -357,6 +374,7 @@ export const basketPageModel = {
   $validatingTxs,
   $txToRemove,
   $alreadyValidatedTxs,
+  $step,
 
   events: {
     validationStarted,
@@ -367,6 +385,7 @@ export const basketPageModel = {
     signStarted,
     cancelValidationWarning,
     proceedValidationWarning,
+    stepChanged,
 
     removeTxStarted,
     removeTxCancelled,
