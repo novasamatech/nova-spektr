@@ -6,7 +6,8 @@ import { Header, Plate } from '@shared/ui';
 import { InactiveNetwork } from '@entities/network';
 import { governancePageModel } from '../model/governance-page-model';
 import {
-  ReferendumFilter,
+  ReferendumSearch,
+  ReferendumFilters,
   ReferendumDetails,
   LoadingCompleted,
   LoadingOngoing,
@@ -14,7 +15,9 @@ import {
   CompletedReferendums,
   NetworkSelector,
   networkSelectorModel,
+  referendumListModel,
 } from '@features/governance';
+import { EmptyGovernance } from './EmptyGovernance';
 
 export const Governance = () => {
   const { t } = useI18n();
@@ -22,6 +25,7 @@ export const Governance = () => {
   const ongoing = useUnit(governancePageModel.$ongoing);
   const completed = useUnit(governancePageModel.$completed);
   const isApiConnected = useUnit(networkSelectorModel.$isApiConnected);
+  const isLoading = useUnit(referendumListModel.$isLoading);
 
   useEffect(() => {
     governancePageModel.events.flowStarted();
@@ -30,7 +34,7 @@ export const Governance = () => {
   return (
     <div className="h-full flex flex-col">
       <Header title={t('governance.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
-        <ReferendumFilter />
+        <ReferendumSearch />
       </Header>
 
       <div className="overflow-y-auto w-full h-full py-6">
@@ -46,8 +50,7 @@ export const Governance = () => {
             {/*<Delegations onClick={() => console.log('Go to Delegate')} />*/}
           </div>
 
-          {/* TODO: Tracks - Voted filter */}
-
+          <ReferendumFilters />
           <div className="flex flex-col gap-y-3">
             <LoadingOngoing />
             <LoadingCompleted />
@@ -56,8 +59,8 @@ export const Governance = () => {
             <CompletedReferendums referendums={completed} onSelected={governancePageModel.events.referendumSelected} />
           </div>
 
-          {/*<EmptyResults />*/}
-          <InactiveNetwork active={!isApiConnected} className="flex-grow" />
+          <EmptyGovernance />
+          <InactiveNetwork active={!isApiConnected} isLoading={isLoading} className="flex-grow" />
         </section>
       </div>
 

@@ -1,11 +1,11 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { Icon, BodyText, FootnoteText } from '@shared/ui';
+import { FootnoteText } from '@shared/ui';
 import { priceProviderModel } from '@entities/price';
 import { walletModel } from '@entities/wallet';
 import { Wallet, WalletType } from '@shared/core';
-import { AssetsListView } from '@entities/asset';
+import { AssetsListView, EmptyAssetsState } from '@entities/asset';
 import { TokenBalanceList } from './TokenBalanceList';
 import { TokenBalance } from './TokenBalance';
 import { portfolioModel } from '../model/portfolio-model';
@@ -52,14 +52,7 @@ export const AssetsPortfolioView = () => {
           </li>
         ))}
 
-        <div className="hidden only:flex flex-col items-center justify-center gap-y-8 w-full h-full">
-          <Icon as="img" name="emptyList" alt={t('balances.emptyStateLabel')} size={178} />
-          <BodyText align="center" className="text-text-tertiary">
-            {t('balances.emptyStateLabel')}
-            <br />
-            {t('balances.emptyStateDescription')}
-          </BodyText>
-        </div>
+        <EmptyAssetsState />
       </ul>
     </div>
   );

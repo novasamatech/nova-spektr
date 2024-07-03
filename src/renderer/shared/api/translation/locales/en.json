@@ -296,6 +296,13 @@
     }
   },
   "governance": {
+    "emptyStateDescription": "Update the search or cancel filtering",
+    "emptyStateLabel": "Nothing was found",
+    "filters": {
+      "notVoted": "Not Voted",
+      "tracks": "Tracks",
+      "vote": "Vote"
+    },
     "offChainDataSource": {
       "formDescription": "Nova Spektr may use different off-chain data sources for getting referendum data",
       "formTitle": "Show referendum data",
