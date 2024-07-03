@@ -1,12 +1,17 @@
 import { createStore, createEffect, sample } from 'effector';
 import { createGate } from 'effector-react';
+import { ApiPromise } from '@polkadot/api';
 
-import type { Chain, ChainId, Referendum, ReferendumId } from '@shared/core';
+import type { Address, Chain, ChainId, Identity, Referendum, ReferendumId } from '@shared/core';
 import { IGovernanceApi } from '@shared/api/governance';
-import { governanceModel } from '@entities/governance';
+import { governanceModel, referendumUtils } from '@entities/governance';
 import { pickNestedValue, setNestedValue } from '@shared/lib/utils';
+import { referendumProposersService } from '@features/governance/ReferendumDetails/lib/referendum-proposers-service';
+import { networkSelectorModel } from '@features/governance';
 
 const flow = createGate<{ chain: Chain; referendum: Referendum }>();
+
+// descriptions
 
 const $offChainDetails = createStore<Record<ChainId, Record<ReferendumId, string>>>({});
 
@@ -43,8 +48,54 @@ sample({
   target: $offChainDetails,
 });
 
+// Proposers
+
+type GetProposersParams = {
+  api: ApiPromise;
+  addresses: Address[];
+};
+
+const $proposers = createStore<Record<ChainId, Record<Address, Identity>>>({});
+
+const requestProposersFx = createEffect(({ api, addresses }: GetProposersParams) => {
+  return referendumProposersService.getIdentities(api, addresses);
+});
+
+sample({
+  clock: flow.open,
+  source: {
+    api: networkSelectorModel.$governanceChainApi,
+  },
+  filter: ({ api }, { referendum }) => referendumUtils.isOngoing(referendum) && !!api,
+  fn: ({ api }, { referendum }) => {
+    return {
+      api: api!,
+      addresses:
+        referendumUtils.isOngoing(referendum) && referendum.submissionDeposit ? [referendum.submissionDeposit.who] : [],
+    };
+  },
+  target: requestProposersFx,
+});
+
+sample({
+  clock: requestProposersFx.done,
+  source: {
+    proposers: $proposers,
+    chain: networkSelectorModel.$governanceChain,
+  },
+  filter: ({ chain }) => !!chain,
+  fn: ({ proposers, chain }, { result }) => {
+    return { ...proposers, [chain!.chainId]: { ...proposers[chain!.chainId], ...result } };
+  },
+  target: $proposers,
+});
+
+// Model
+
 export const referendumDetailsModel = {
   $offChainDetails,
+  $proposers,
+  $isProposersLoading: requestProposersFx.pending,
   $isDetailsLoading: requestOffChainDetailsFx.pending,
 
   input: { flow },

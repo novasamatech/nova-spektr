@@ -3,7 +3,7 @@ import { FC } from 'react';
 import { useI18n } from '@app/providers';
 import { FootnoteText, Icon } from '@shared/ui';
 import { referendumUtils, VoteChart } from '@entities/governance';
-import { formatBalance } from '@shared/lib/utils';
+// import { formatBalance } from '@shared/lib/utils';
 import { Asset, Referendum, VotingThreshold } from '@shared/core';
 import { VotingStatusBadge } from '../../VotingStatus/ui/VotingStatusBadge';
 import { referendumListUtils } from '../../ReferendumList/lib/referendum-list-utils';
@@ -39,13 +39,13 @@ export const VotingStatus: FC<Props> = ({ referendum, asset, supportThreshold, a
             <Icon name="checkmarkOutline" size={18} className="text-icon-positive" />
             <FootnoteText className="text-text-secondary">{t('governance.referendum.threshold')}</FootnoteText>
           </div>
-          <FootnoteText>
-            {t('governance.referendum.votedTokens', {
-              voted: formatBalance(votedCount.voted.toString()).value,
-              total: formatBalance(votedCount.of.toString()).value,
-              asset: asset?.symbol,
-            })}
-          </FootnoteText>
+          {/*<FootnoteText>*/}
+          {/*  {t('governance.referendum.votedTokens', {*/}
+          {/*    voted: formatBalance(votedCount.voted.toString()).value,*/}
+          {/*    total: formatBalance(votedCount.of.toString()).value,*/}
+          {/*    asset: asset?.symbol,*/}
+          {/*  })}*/}
+          {/*</FootnoteText>*/}
         </div>
       )}
     </div>

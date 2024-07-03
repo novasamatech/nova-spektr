@@ -4,9 +4,9 @@ import { FC } from 'react';
 import { type Chain, type Referendum } from '@shared/core';
 import { pickNestedValue } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
-import { BaseModal, Plate, FootnoteText, Loader, Markdown } from '@shared/ui';
+import { BaseModal, Plate, FootnoteText, Loader, Markdown, Shimmering } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
-import { governanceModel, TrackInfo } from '@entities/governance';
+import { governanceModel, referendumUtils, TrackInfo } from '@entities/governance';
 import { referendumDetailsModel } from '../model/referendum-details-model';
 import { referendumListModel } from '../../ReferendumList/model/referendum-list-model';
 import { VotingStatus } from './VotingStatus';
@@ -24,15 +24,26 @@ export const ReferendumDetails: FC<Props> = ({ chain, referendum, onClose }) => 
   const { t } = useI18n();
 
   const isDetailsLoading = useUnit(referendumDetailsModel.$isDetailsLoading);
+  const isProposerLoading = useUnit(referendumDetailsModel.$isProposersLoading);
 
-  const offChainDetails = useStoreMap({
-    store: referendumDetailsModel.$offChainDetails,
+  const title = useStoreMap({
+    store: referendumListModel.$referendumsNames,
     keys: [chain.chainId, referendum.referendumId],
     fn: (x, [chainId, index]) => pickNestedValue(x, chainId, index),
   });
 
-  const title = useStoreMap({
-    store: referendumListModel.$referendumsNames,
+  const proposer = useStoreMap({
+    store: referendumDetailsModel.$proposers,
+    keys: [chain.chainId, referendum],
+    fn: (x, [chainId, referendum]) => {
+      return referendumUtils.isOngoing(referendum) && referendum.submissionDeposit
+        ? pickNestedValue(x, chainId, referendum.submissionDeposit.who)
+        : null;
+    },
+  });
+
+  const description = useStoreMap({
+    store: referendumDetailsModel.$offChainDetails,
     keys: [chain.chainId, referendum.referendumId],
     fn: (x, [chainId, index]) => pickNestedValue(x, chainId, index),
   });
@@ -66,10 +77,23 @@ export const ReferendumDetails: FC<Props> = ({ chain, referendum, onClose }) => 
       <div className="ref-details flex flex-wrap-reverse items-end gap-4 p-6 min-h-full">
         <div className="h-full min-h-0 grow min-w-80 basis-[530px]">
           <Plate className="shadow-card-shadow border-filter-border h-fit p-6">
-            <div className="flex justify-between items-center mb-4">
-              <FootnoteText className="text-text-secondary">
-                {t('governance.referendum.proposer', { name: 'XXX' })}
-              </FootnoteText>
+            <div className="flex items-center mb-4">
+              {isProposerLoading || proposer ? (
+                <FootnoteText className="text-text-secondary flex items-center">
+                  {t('governance.referendum.proposer', {
+                    name: proposer
+                      ? proposer.parent.name ||
+                        proposer.email ||
+                        proposer.twitter ||
+                        proposer.parent.address ||
+                        'Unknown'
+                      : null,
+                  })}
+                  {isProposerLoading && !proposer ? <Shimmering height={18} width={70} /> : null}
+                </FootnoteText>
+              ) : null}
+
+              <div className="grow" />
               {'track' in referendum && <TrackInfo trackId={referendum.track} />}
             </div>
 
@@ -79,7 +103,7 @@ export const ReferendumDetails: FC<Props> = ({ chain, referendum, onClose }) => 
               </div>
             )}
 
-            {!isDetailsLoading && offChainDetails && <Markdown>{offChainDetails}</Markdown>}
+            {!isDetailsLoading && description && <Markdown>{description}</Markdown>}
           </Plate>
         </div>
 
