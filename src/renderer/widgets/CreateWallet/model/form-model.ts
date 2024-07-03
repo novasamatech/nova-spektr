@@ -119,6 +119,8 @@ const $hasOwnSignatory = combine(
 
 sample({
   clock: $createMultisigForm.submit,
+  source: $createMultisigForm.$isValid,
+  filter: (isValid: boolean) => isValid,
   target: formSubmitted,
 });
 

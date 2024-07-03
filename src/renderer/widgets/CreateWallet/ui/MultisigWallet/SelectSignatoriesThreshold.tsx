@@ -1,5 +1,6 @@
 import { useUnit } from 'effector-react';
 import { useForm } from 'effector-forms';
+import { FormEvent } from 'react';
 
 import { Alert, Button, InputHint, Select } from '@shared/ui';
 import { useI18n } from '@app/providers';
@@ -36,6 +37,7 @@ export const SelectSignatoriesThreshold = ({ signatories }: Props) => {
 
   const {
     fields: { chain, threshold },
+    submit,
   } = useForm(formModel.$createMultisigForm);
   const multisigAlreadyExists = useUnit(formModel.$multisigAlreadyExists);
   const hasOwnSignatory = useUnit(formModel.$hasOwnSignatory);
@@ -46,6 +48,11 @@ export const SelectSignatoriesThreshold = ({ signatories }: Props) => {
 
   const hasEnoughSignatories = signatories.length >= 2;
   const canSubmit = hasOwnSignatory && hasEnoughSignatories && !multisigAlreadyExists;
+
+  const onSubmit = (event: FormEvent) => {
+    event.preventDefault();
+    submit();
+  };
 
   return (
     <section className="flex flex-col gap-y-4 px-3 py-4 flex-1 h-full">
@@ -103,7 +110,7 @@ export const SelectSignatoriesThreshold = ({ signatories }: Props) => {
         <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.NAME_NETWORK)}>
           {t('createMultisigAccount.backButton')}
         </Button>
-        <Button key="create" type="submit" disabled={!canSubmit}>
+        <Button key="create" type="submit" disabled={!canSubmit} onClick={onSubmit}>
           {t('createMultisigAccount.continueButton')}
         </Button>
       </div>

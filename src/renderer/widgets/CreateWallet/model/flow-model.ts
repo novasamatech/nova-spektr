@@ -221,8 +221,6 @@ const $fakeTx = combine(
 
 sample({
   clock: formModel.output.formSubmitted,
-  source: formModel.$createMultisigForm.$isValid,
-  filter: (isValid) => isValid,
   fn: () => Step.CONFIRM,
   target: stepChanged,
 });
@@ -329,9 +327,13 @@ sample({
   filter: ({ addMultisigStore, wrappedTx }) => Boolean(addMultisigStore) && Boolean(wrappedTx),
   fn: ({ addMultisigStore, wrappedTx, signer }) => ({
     event: {
-      chain: addMultisigStore!.chain,
-      accounts: [signer],
-      transactions: [wrappedTx!],
+      signingPayloads: [
+        {
+          chain: addMultisigStore!.chain,
+          account: signer,
+          transaction: wrappedTx!,
+        },
+      ],
     },
     step: Step.SIGN,
   }),
