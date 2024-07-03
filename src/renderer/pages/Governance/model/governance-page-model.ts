@@ -83,7 +83,7 @@ const $completed = $displayedCurrentReferendums.map((x) => x.filter(referendumUt
 sample({
   clock: governanceFlow.open,
   source: { chain: networkSelectorModel.$governanceChain },
-  filter: ({ chain }) => !chain,
+  filter: ({ chain }) => chain === null,
   target: networkSelectorModel.input.defaultChainSet,
 });
 

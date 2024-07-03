@@ -65,7 +65,7 @@ export const OngoingReferendums = memo<Props>(({ referendums, onSelect }) => {
                   <VotingStatusBadge passing={isPassing} referendum={referendum} />
 
                   {/*<ReferendumTimer status="reject" time={600000} />*/}
-                  <TrackInfo index={referendum.referendumId} trackId={referendum.track} />
+                  <TrackInfo referendumId={referendum.referendumId} trackId={referendum.track} />
                 </div>
                 <div className="flex items-start gap-x-6 w-full">
                   <HeadlineText className="flex-1 pointer-events-auto">

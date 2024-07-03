@@ -27,18 +27,18 @@ function getTrackInfo(trackId: TrackId): { title: string; icon: IconNames } {
 }
 
 type Props = {
-  index?: ReferendumId;
+  referendumId?: ReferendumId;
   trackId: TrackId;
 };
 
-export const TrackInfo = ({ index, trackId }: Props) => {
+export const TrackInfo = ({ referendumId, trackId }: Props) => {
   const { t } = useI18n();
 
   const { title, icon } = getTrackInfo(trackId);
 
   return (
     <div className="flex ml-auto text-text-secondary">
-      {index && <FootnoteText className="text-inherit">#{index}</FootnoteText>}
+      {referendumId && <FootnoteText className="text-inherit">#{referendumId}</FootnoteText>}
       <Icon name={icon} size={16} className="text-inherit ml-2 mr-1" />
       <FootnoteText className="text-inherit">{t(title)}</FootnoteText>
     </div>

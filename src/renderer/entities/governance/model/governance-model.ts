@@ -1,10 +1,10 @@
 import { createStore, createEvent, sample, createEffect } from 'effector';
 
 import { IGovernanceApi } from '@shared/api/governance';
-import type { SourceType } from '../lib/types';
-import { localStorageService } from '@shared/api/local-storage';
-import { GOVERNANCE_API_KEY, GovernanceApis } from '../lib/constants';
 import type { TrackId, TrackInfo, ReferendumId, Referendum, VotingThreshold, VotingMap, ChainId } from '@shared/core';
+import { localStorageService } from '@shared/api/local-storage';
+import { type SourceType } from '../lib/types';
+import { GOVERNANCE_API_KEY, GovernanceApis } from '../lib/constants';
 
 const governanceStarted = createEvent();
 const governanceApiChanged = createEvent<SourceType>();
@@ -20,11 +20,11 @@ const $supportThresholds = createStore<Record<ChainId, Record<ReferendumId, Voti
 const $governanceApi = createStore<{ type: SourceType; service: IGovernanceApi } | null>(null);
 
 const getGovernanceApiFx = createEffect((): SourceType => {
-  return localStorageService.getFromStorage(GOVERNANCE_API_KEY, 'polkassembly');
+  return localStorageService.getFromStorage<SourceType>(GOVERNANCE_API_KEY, 'polkassembly');
 });
 
 const saveGovernanceApiFx = createEffect((sourceType: SourceType): SourceType => {
-  return localStorageService.saveToStorage(GOVERNANCE_API_KEY, sourceType);
+  return localStorageService.saveToStorage<SourceType>(GOVERNANCE_API_KEY, sourceType);
 });
 
 sample({

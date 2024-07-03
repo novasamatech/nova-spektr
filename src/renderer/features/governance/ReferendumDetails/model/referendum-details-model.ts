@@ -4,16 +4,19 @@ import { ApiPromise } from '@polkadot/api';
 
 import type { Address, Chain, ChainId, Identity, Referendum, ReferendumId } from '@shared/core';
 import { IGovernanceApi } from '@shared/api/governance';
+import { networkSelectorModel } from '@features/governance';
 import { governanceModel, referendumUtils } from '@entities/governance';
 import { pickNestedValue, setNestedValue } from '@shared/lib/utils';
-import { referendumProposersService } from '@features/governance/ReferendumDetails/lib/referendum-proposers-service';
-import { networkSelectorModel } from '@features/governance';
+import { referendumProposersService } from '../lib/referendum-proposers-service';
 
 const flow = createGate<{ chain: Chain; referendum: Referendum }>();
 
 // Descriptions
 
 const $descriptions = createStore<Record<ChainId, Record<ReferendumId, string>>>({});
+const $votingAssets = networkSelectorModel.$governanceChains.map((chains) => {
+  return Object.fromEntries(chains.map((chain) => [chain.chainId, chain.assets.at(0) ?? null]));
+});
 
 type OffChainParams = {
   service: IGovernanceApi;
@@ -93,10 +96,11 @@ sample({
 // Model
 
 export const referendumDetailsModel = {
+  $votingAssets,
   $descriptions,
   $proposers,
   $isProposersLoading: requestProposersFx.pending,
   $isDetailsLoading: requestOffChainDetailsFx.pending,
 
-  input: { flow },
+  gates: { flow },
 };
