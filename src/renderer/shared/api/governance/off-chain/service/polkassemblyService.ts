@@ -1,6 +1,6 @@
 import type { Chain } from '@shared/core';
 import type { IGovernanceApi } from '../lib/types';
-import { dictionary } from '../../../../lib/utils';
+import { dictionary } from '@shared/lib/utils';
 
 type PolkassemblyData = {
   count: number;
