@@ -26,7 +26,7 @@ const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
-const $transferStore = createStore<TransferStore | null>(null).reset(flowFinished);
+const $transferStore = createStore<TransferStore | null>(null);
 const $networkStore = restore<NetworkStore | null>(flowStarted, null);
 
 const $wrappedTx = createStore<Transaction | null>(null);
