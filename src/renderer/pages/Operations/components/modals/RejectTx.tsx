@@ -6,7 +6,7 @@ import { BaseModal, Button } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { MultisigTransactionDS } from '@shared/api/storage';
 import { useToggle } from '@shared/lib/hooks';
-import { ExtendedChain } from '@entities/network';
+import { ExtendedChain, networkModel } from '@entities/network';
 import { toAddress, transferableAmount, getAssetById } from '@shared/lib/utils';
 import RejectReasonModal from './RejectReasonModal';
 import { Submit } from '../ActionSteps/Submit';
@@ -45,6 +45,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
 
   const wallets = useUnit(walletModel.$wallets);
   const balances = useUnit(balanceModel.$balances);
+  const apis = useUnit(networkModel.$apis);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRejectReasonModalOpen, toggleRejectReasonModal] = useToggle();
@@ -199,12 +200,16 @@ const RejectTx = ({ tx, account, connection }: Props) => {
         )}
         {activeStep === Step.SIGNING && rejectTx && connection.api && signAccount && (
           <SigningSwitch
-            chainId={tx.chainId}
-            api={connection.api}
-            addressPrefix={connection?.addressPrefix}
-            accounts={[signAccount]}
-            transactions={[rejectTx]}
-            signatory={signAccount}
+            signerWallet={wallets.find((w) => w.id === signAccount.walletId)}
+            apis={apis}
+            signingPayloads={[
+              {
+                chain: connection,
+                account: signAccount,
+                transaction: rejectTx,
+                signatory: signAccount,
+              },
+            ]}
             validateBalance={checkBalance}
             onGoBack={goBack}
             onResult={onSignResult}

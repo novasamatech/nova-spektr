@@ -56,8 +56,12 @@ export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
     if (!proxyForRemoval || !wallet) return;
 
     const account = wallet.accounts.find((a) => {
-      return accountUtils.isChainAndCryptoMatch(a, chains[proxyForRemoval.chainId]);
+      return (
+        accountUtils.isNonBaseVaultAccount(a, wallet) &&
+        accountUtils.isChainAndCryptoMatch(a, chains[proxyForRemoval.chainId])
+      );
     });
+
     removeProxyModel.events.flowStarted({ account: account!, proxy: proxyForRemoval });
   };
 

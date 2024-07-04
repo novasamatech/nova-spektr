@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { useEffect } from 'react';
 
 import { BaseModal, Button } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
@@ -25,12 +26,18 @@ export const Unstake = () => {
     unstakeModel.output.flowFinished,
   );
 
+  useEffect(() => {
+    if (unstakeUtils.isBasketStep(step)) {
+      const timer = setTimeout(() => closeBasketModal(), 1450);
+
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
+
   if (!networkStore) return null;
 
   if (unstakeUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
   if (unstakeUtils.isBasketStep(step)) {
-    setTimeout(() => closeBasketModal(), 1450);
-
     return (
       <OperationResult
         isOpen={isBasketModalOpen}

@@ -26,7 +26,7 @@ const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
-const $transferStore = createStore<TransferStore | null>(null).reset(flowFinished);
+const $transferStore = createStore<TransferStore | null>(null);
 const $networkStore = restore<NetworkStore | null>(flowStarted, null);
 
 const $wrappedTx = createStore<Transaction | null>(null);
@@ -182,8 +182,6 @@ sample({
 
 sample({
   clock: flowFinished,
-  source: $transferStore,
-  filter: (transferStore) => Boolean(transferStore),
   target: attach({
     source: $navigation,
     effect: (state) => state?.navigate(Paths.ASSETS, { replace: true }),

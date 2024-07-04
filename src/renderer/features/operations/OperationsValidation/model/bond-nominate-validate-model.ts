@@ -2,7 +2,7 @@ import { Store, createEffect, createEvent, sample } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 
 import { Asset, Balance, Chain, ID, Transaction } from '@shared/core';
-import { getAssetById, stakeableAmount, toAccountId, transferableAmount } from '@shared/lib/utils';
+import { stakeableAmount, toAccountId, transferableAmount } from '@shared/lib/utils';
 import { balanceModel } from '@entities/balance';
 import { AmountFeeStore, ShardsBondBalanceStore, ValidationResult } from '../types/types';
 import { validationUtils } from '../lib/validation-utils';
@@ -72,7 +72,7 @@ sample({
   fn: ({ apis, chains, balances }, { id, transaction }) => {
     const chain = chains[transaction.chainId];
     const api = apis[transaction.chainId];
-    const asset = getAssetById(transaction.args.assetId, chain.assets) || chain.assets[0];
+    const asset = chain.assets[0];
 
     return {
       id,

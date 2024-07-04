@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { useEffect } from 'react';
 
 import { BaseModal, Button } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
@@ -26,12 +27,17 @@ export const Nominate = () => {
     nominateModel.output.flowFinished,
   );
 
+  useEffect(() => {
+    if (nominateUtils.isBasketStep(step)) {
+      const timer = setTimeout(() => closeBasketModal(), 1450);
+
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
   if (!walletData) return null;
 
   if (nominateUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
   if (nominateUtils.isBasketStep(step)) {
-    setTimeout(() => closeBasketModal(), 1450);
-
     return (
       <OperationResult
         isOpen={isBasketModalOpen}
