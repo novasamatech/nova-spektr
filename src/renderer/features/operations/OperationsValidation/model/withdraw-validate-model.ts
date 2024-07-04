@@ -3,7 +3,7 @@ import { ApiPromise } from '@polkadot/api';
 import { combineEvents } from 'patronum';
 
 import { Address, Asset, Balance, Chain, ChainId, ID, Transaction } from '@shared/core';
-import { getAssetById, redeemableAmount, toAccountId, transferableAmount } from '@shared/lib/utils';
+import { redeemableAmount, toAccountId, transferableAmount } from '@shared/lib/utils';
 import { balanceModel } from '@entities/balance';
 import { networkModel } from '@entities/network';
 import { WithdrawRules } from '../lib/withdraw-rules';
@@ -120,7 +120,7 @@ sample({
   fn: ({ apis, chains, balances, staking }, { validation: { id, transaction }, era }) => {
     const chain = chains[transaction.chainId];
     const api = apis[transaction.chainId];
-    const asset = getAssetById(transaction.args.assetId, chain.assets) || chain.assets[0];
+    const asset = chain.assets[0];
 
     return {
       id,
