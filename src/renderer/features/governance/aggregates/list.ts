@@ -4,8 +4,9 @@ import { inFlight, not, or, readonly } from 'patronum';
 import {
   approveThresholdModel,
   supportThresholdModel,
-  referendumModel as referendumModelEntity,
+  referendumModel,
   votingModel,
+  votingService,
 } from '@entities/governance';
 import { networkSelectorModel } from '../model/network-selector-model';
 import { titleModel } from '../model/title-model';
@@ -13,13 +14,14 @@ import { AggregatedReferendum } from '../types/structs';
 
 const $referendums = combine(
   {
-    referendums: referendumModelEntity.$referendums,
+    referendums: referendumModel.$referendums,
     titles: titleModel.$titles,
     approvalThresholds: approveThresholdModel.$approvalThresholds,
     supportThresholds: supportThresholdModel.$supportThresholds,
     chain: networkSelectorModel.$governanceChain,
+    voting: votingModel.$voting,
   },
-  ({ referendums, chain, titles, approvalThresholds, supportThresholds }): AggregatedReferendum[] => {
+  ({ referendums, chain, titles, approvalThresholds, supportThresholds, voting }): AggregatedReferendum[] => {
     if (!chain) {
       return [];
     }
@@ -35,6 +37,7 @@ const $referendums = combine(
         title: titlesInChain[referendum.referendumId] ?? null,
         approvalThreshold: approvalInChain[referendum.referendumId] ?? null,
         supportThreshold: supportInChain[referendum.referendumId] ?? null,
+        isVoted: votingService.isReferendumVoted(referendum.referendumId, voting),
       };
     });
   },
@@ -47,7 +50,7 @@ sample({
   },
   filter: (_, api) => !!api,
   fn: ({ chain }, api) => ({ api: api!, chain: chain! }),
-  target: referendumModelEntity.events.requestReferendums,
+  target: referendumModel.events.requestReferendums,
 });
 
 export const listAggregate = {
@@ -55,7 +58,7 @@ export const listAggregate = {
   $isLoading: or(
     not(networkSelectorModel.$isConnectionActive),
     inFlight([
-      referendumModelEntity.effects.requestReferendumsFx,
+      referendumModel.effects.requestReferendumsFx,
       approveThresholdModel.effects.requestApproveThresholdsFx,
       supportThresholdModel.effects.requestSupportThresholdsFx,
       votingModel.effects.requestVotingFx,
@@ -63,10 +66,10 @@ export const listAggregate = {
   ),
 
   effects: {
-    requestReferendumsFx: referendumModelEntity.effects.requestReferendumsFx,
+    requestReferendumsFx: referendumModel.effects.requestReferendumsFx,
   },
 
   events: {
-    requestDone: referendumModelEntity.events.requestDone,
+    requestDone: referendumModel.events.requestDone,
   },
 };

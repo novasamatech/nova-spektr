@@ -8,13 +8,13 @@ export { filterModel } from './model/filter-model';
 export { networkSelectorModel } from './model/network-selector-model';
 export { offChainModel } from './model/off-chain-model';
 
-export { Locks } from './views/Locks';
-export { Delegations } from './views/Delegations';
-export { NetworkSelector } from './views/NetworkSelector';
-export { ReferendumDetails } from './views/ReferendumDetails';
-export { ReferendumSearch, ReferendumFilters, VoteStatus } from './views/ReferendumFilter';
-export { OffChainDataSource } from './views/OffChainDataSource';
-export { CompletedReferendums, OngoingReferendums } from './views/ReferendumList';
+export { Locks } from './components/Locks';
+export { Delegations } from './components/Delegations';
+export { NetworkSelector } from './components/NetworkSelector';
+export { ReferendumDetails } from './components/ReferendumDetails';
+export { ReferendumSearch, ReferendumFilters, VoteStatus } from './components/ReferendumFilter';
+export { OffChainDataSource } from './components/OffChainDataSource';
+export { CompletedReferendums, OngoingReferendums } from './components/ReferendumList';
 
 export { listService } from './lib/list';
 

@@ -5,4 +5,5 @@ export type AggregatedReferendum<T extends Referendum = Referendum> = {
   title: string | null;
   approvalThreshold: VotingThreshold | null;
   supportThreshold: VotingThreshold | null;
+  isVoted: boolean;
 };

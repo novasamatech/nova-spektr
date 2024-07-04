@@ -1,14 +1,11 @@
-import { useUnit } from 'effector-react';
 import { memo, useDeferredValue } from 'react';
 
 import { useI18n } from '@app/providers';
-import { Voted, votingModel, votingService } from '@entities/governance';
-import { FootnoteText, Accordion, CaptionText, HeadlineText, Shimmering } from '@shared/ui';
+import { Accordion, CaptionText, Shimmering } from '@shared/ui';
 import { CompletedReferendum } from '@shared/core';
 import { AggregatedReferendum } from '../../types/structs';
-import { VotingStatusBadge } from '../VotingStatusBadge';
+import { CompletedReferendumItem } from './CompletedReferendumItem';
 import { ListItemPlaceholder } from './ListItemPlaceholder';
-import { ListItem } from './ListItem';
 
 type Props = {
   referendums: AggregatedReferendum<CompletedReferendum>[];
@@ -24,7 +21,6 @@ const placeholder = Array.from({ length: 4 }, (_, index) => (
 
 export const CompletedReferendums = memo<Props>(({ referendums, isLoading, onSelect }) => {
   const { t } = useI18n();
-  const voting = useUnit(votingModel.$voting);
   const deferredReferendums = useDeferredValue(referendums);
 
   if (deferredReferendums.length === 0) {
@@ -49,18 +45,9 @@ export const CompletedReferendums = memo<Props>(({ referendums, isLoading, onSel
         {isLoading && placeholder}
 
         {!isLoading &&
-          deferredReferendums.map(({ referendum, title }) => (
-            <li key={referendum.referendumId}>
-              <ListItem onClick={() => onSelect(referendum)}>
-                <div className="flex items-center gap-x-2 w-full">
-                  <Voted active={votingService.isReferendumVoted(referendum.referendumId, voting)} />
-                  <VotingStatusBadge referendum={referendum} />
-                  <FootnoteText className="ml-auto text-text-secondary">#{referendum.referendumId}</FootnoteText>
-                </div>
-                <HeadlineText>
-                  {title || t('governance.referendums.referendumTitle', { index: referendum.referendumId })}
-                </HeadlineText>
-              </ListItem>
+          deferredReferendums.map((item) => (
+            <li key={item.referendum.referendumId}>
+              <CompletedReferendumItem item={item} onSelect={onSelect} />
             </li>
           ))}
       </Accordion.Content>
