@@ -57,14 +57,12 @@ export const Governance = () => {
           </div>
 
           <div className="flex flex-col gap-y-3">
-            {isLoading && (
+            {isLoading ? (
               <>
                 <LoadingOngoing />
                 <LoadingCompleted />
               </>
-            )}
-
-            {!isLoading && (
+            ) : (
               <>
                 <OngoingReferendums referendums={ongoing} onSelect={setSelectedReferendum} />
                 <CompletedReferendums referendums={completed} onSelect={setSelectedReferendum} />
