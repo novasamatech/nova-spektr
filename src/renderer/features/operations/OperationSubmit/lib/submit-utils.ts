@@ -16,7 +16,7 @@ function isSuccessStep(step: SubmitStep): boolean {
 }
 
 function iswarningStep(step: SubmitStep): boolean {
-  return step === SubmitStep.MIXED_RESULT;
+  return step === SubmitStep.WARNING;
 }
 
 function isErrorStep(step: SubmitStep): boolean {

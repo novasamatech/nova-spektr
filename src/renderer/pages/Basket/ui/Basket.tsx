@@ -29,6 +29,10 @@ export const Basket = () => {
     basketPageModel.events.validationStarted();
   }, [apis]);
 
+  useEffect(() => {
+    return basketPageModel.events.selectedTxsReset();
+  }, []);
+
   return (
     <section className="flex flex-col items-center relative h-full">
       <Header title={t('basket.title')} />

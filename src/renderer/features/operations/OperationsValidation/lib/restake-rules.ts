@@ -93,7 +93,7 @@ export const RestakeRules = {
         const value = config?.withFormatAmount ? formatAmount(amount, network.asset.precision) : amount;
         const amountBN = new BN(value);
 
-        const restakeBalance = Array.isArray(restakeBalanceRange) ? restakeBalanceRange[1] : restakeBalanceRange;
+        const restakeBalance = Array.isArray(restakeBalanceRange) ? restakeBalanceRange[0] : restakeBalanceRange;
 
         return amountBN.lte(new BN(restakeBalance));
       },

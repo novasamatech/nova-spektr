@@ -2,7 +2,7 @@ import { Store, createEffect, createEvent, sample } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 
 import { Asset, Balance, Chain, ID, Transaction } from '@shared/core';
-import { getAssetById, toAccountId, transferableAmount } from '@shared/lib/utils';
+import { toAccountId, transferableAmount } from '@shared/lib/utils';
 import { balanceModel } from '@entities/balance';
 import { AmountFeeStore, ValidationResult } from '../types/types';
 import { validationUtils } from '../lib/validation-utils';
@@ -36,7 +36,7 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
       form: {
         shards: [{ accountId }],
       },
-      ...RestakeRules.amount.insufficientBalanceForFee({} as Store<AmountFeeStore>),
+      ...RestakeRules.amount.insufficientBalanceForFee({} as Store<AmountFeeStore>, { withFormatAmount: false }),
       source: {
         isMultisig: false,
         network: { chain, asset },
@@ -60,7 +60,7 @@ sample({
   fn: ({ apis, chains, balances }, { id, transaction }) => {
     const chain = chains[transaction.chainId];
     const api = apis[transaction.chainId];
-    const asset = getAssetById(transaction.args.assetId, chain.assets) || chain.assets[0];
+    const asset = chain.assets[0];
 
     return {
       id,

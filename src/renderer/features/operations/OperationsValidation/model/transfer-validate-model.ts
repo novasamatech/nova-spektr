@@ -117,7 +117,7 @@ sample({
   fn: ({ apis, chains, balances }, { id, transaction }) => {
     const chain = chains[transaction.chainId];
     const api = apis[transaction.chainId];
-    const asset = getAssetById(transaction.args.assetId, chain.assets) || chain.assets[0];
+    const asset = getAssetById(transaction.args.asset, chain.assets) || chain.assets[0];
 
     return {
       id,

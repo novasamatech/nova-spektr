@@ -836,7 +836,7 @@ sample({
         .map((tx) => tx.params) || []
     );
   },
-  target: unstakeConfirmModel.events.formInitiated,
+  target: restakeConfirmModel.events.formInitiated,
 });
 
 // Withdraw

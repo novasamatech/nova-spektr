@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { useEffect } from 'react';
 
 import { BaseModal, Button } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
@@ -26,6 +27,14 @@ export const AddProxy = () => {
     addProxyModel.output.flowClosed,
   );
 
+  useEffect(() => {
+    if (addProxyUtils.isBasketStep(step)) {
+      const timer = setTimeout(() => closeBasketModal(), 1450);
+
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
+
   const getModalTitle = (step: Step, chain?: Chain) => {
     if (addProxyUtils.isInitStep(step) || !chain) return t('operations.modalTitles.addProxy');
 
@@ -35,8 +44,6 @@ export const AddProxy = () => {
   if (addProxyUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
 
   if (addProxyUtils.isBasketStep(step)) {
-    setTimeout(() => closeBasketModal(), 1450);
-
     return (
       <OperationResult
         isOpen={isBasketModalOpen}

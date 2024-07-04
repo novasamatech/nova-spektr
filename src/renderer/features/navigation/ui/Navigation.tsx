@@ -8,6 +8,7 @@ import { walletModel, walletUtils } from '@entities/wallet';
 import { BodyText } from '@shared/ui';
 import { MultisigTxInitStatus } from '@shared/core';
 import { basketModel } from '@entities/basket';
+import { basketUtils } from '../../operations/OperationsConfirm';
 
 export const Navigation = () => {
   const chains = useUnit(networkModel.$chains);
@@ -42,24 +43,29 @@ export const Navigation = () => {
             <NavItem icon={icon} title={title} link={link} badge={badge} />
           </li>
         ))}
-        <li className="mt-auto">
-          <NavItem
-            icon="operations"
-            title="navigation.basketLabel"
-            link={Paths.BASKET}
-            badge={
-              <BodyText className="ml-auto text-text-tertiary">
-                {basket.filter((tx) => tx.initiatorWallet === wallet?.id).length || ''}
-              </BodyText>
-            }
-          />
-        </li>
-        <li>
-          <NavItem icon="notification" title="navigation.notificationsLabel" link={Paths.NOTIFICATIONS} />
-        </li>
-        <li>
-          <NavItem icon="settings" title="navigation.settingsLabel" link={Paths.SETTINGS} />
-        </li>
+
+        <div className="mt-auto flex flex-col gap-2">
+          {wallet && basketUtils.isBasketAvailable(wallet) && (
+            <li>
+              <NavItem
+                icon="operations"
+                title="navigation.basketLabel"
+                link={Paths.BASKET}
+                badge={
+                  <BodyText className="ml-auto text-text-tertiary">
+                    {basket.filter((tx) => tx.initiatorWallet === wallet?.id).length || ''}
+                  </BodyText>
+                }
+              />
+            </li>
+          )}
+          <li>
+            <NavItem icon="notification" title="navigation.notificationsLabel" link={Paths.NOTIFICATIONS} />
+          </li>
+          <li>
+            <NavItem icon="settings" title="navigation.settingsLabel" link={Paths.SETTINGS} />
+          </li>
+        </div>
       </ul>
     </nav>
   );
