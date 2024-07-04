@@ -12,13 +12,18 @@ import {
   CastingVoting,
   type Address,
   Referendum,
+  type Wallet,
+  Chain,
 } from '@shared/core';
+import { accountUtils, walletUtils } from '@entities/wallet';
+import { toAddress } from '@shared/lib/utils';
 
 export const referendumListUtils = {
   getSortedReferendums,
   getVoteFractions,
   getVotedCount,
   isReferendumVoted,
+  getAddressesForWallet,
 };
 
 // TODO: use block number to make an appropriate sorting
@@ -58,6 +63,14 @@ function isReferendumVoted(index: ReferendumId, votings: Record<Address, Record<
   return false;
 }
 
+function getAddressesForWallet(wallet: Wallet, chain: Chain) {
+  const matchedAccounts = walletUtils.getAccountsBy([wallet], (account) => {
+    return accountUtils.isChainIdMatch(account, chain!.chainId);
+  });
+
+  return matchedAccounts.map((a) => toAddress(a.accountId, { prefix: chain!.addressPrefix }));
+}
+
 export const createChunksEffect = <T, V>(fn: (params: T, callback: (value: V) => unknown) => unknown) => {
   const request = createEvent<T>();
   const receive = createEvent<V>();
@@ -76,6 +89,7 @@ export const createChunksEffect = <T, V>(fn: (params: T, callback: (value: V) =>
   return {
     request,
     pending: requestFx.pending,
+    done: requestFx.done,
     receive: readonly(receive),
   };
 };

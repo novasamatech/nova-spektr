@@ -1,6 +1,7 @@
-import type { Chain } from '@shared/core';
+import type { Chain, ReferendumId } from '@shared/core';
 import type { IGovernanceApi } from '../lib/types';
 import { dictionary } from '@shared/lib/utils';
+import { offChainUtils } from '@shared/api/governance/off-chain/lib/off-chain-utils';
 
 type PolkassemblyData = {
   count: number;
@@ -17,9 +18,10 @@ type PolkassemblyData = {
  */
 const getReferendumList: IGovernanceApi['getReferendumList'] = async (chain, callback) => {
   const chainName = chain.specName;
+  const pageSize = 50;
 
   if (chainName) {
-    const getApiUrl = (page: number, size = 100) => {
+    const getApiUrl = (page: number, size = pageSize) => {
       return `https://api.polkassembly.io/api/v1/listing/on-chain-posts?proposalType=referendums_v2&page=${page}&listingLimit=${size}&sortBy=newest`;
     };
 
@@ -27,21 +29,22 @@ const getReferendumList: IGovernanceApi['getReferendumList'] = async (chain, cal
     headers.append('x-network', chainName);
     headers.append('Cache-Control', 'public, max-age=600, must-revalidate');
 
-    fetch(getApiUrl(1), { method: 'GET', headers })
-      .then((res) => res.json())
-      .then((ping: PolkassemblyData) => {
-        const totalPages = Math.ceil(ping.count / 100);
+    const ping: PolkassemblyData = await fetch(getApiUrl(1), { method: 'GET', headers }).then((r) => r.json());
+    const totalPages = Math.ceil(ping.count / pageSize);
 
-        callback(parsePolkassemblyData(ping), totalPages === 1);
+    callback(parsePolkassemblyData(ping), totalPages === 1);
 
-        for (let index = 2; index <= totalPages; index++) {
-          fetch(getApiUrl(index), { method: 'GET', headers })
-            .then((res) => res.json())
-            .then((data: PolkassemblyData) => {
-              callback(parsePolkassemblyData(data), index === totalPages - 1);
-            });
-        }
-      });
+    return offChainUtils.createChunkedTasks({
+      items: Array.from({ length: totalPages - 1 }),
+      chunkSize: 6,
+      task: (_, index) => {
+        return fetch(getApiUrl(index + 2), { method: 'GET', headers })
+          .then((res) => res.json())
+          .then((data: PolkassemblyData) => {
+            callback(parsePolkassemblyData(data), index === totalPages - 1);
+          });
+      },
+    });
   }
 };
 
@@ -51,11 +54,11 @@ function parsePolkassemblyData(data: PolkassemblyData) {
 
 /**
  * Request referendum details
- * @param chain chainId value
- * @param index referendum index
+ * @param chain
+ * @param referendumId referendum index
  * @return {Promise}
  */
-async function getReferendumDetails(chain: Chain, index: string): Promise<string | undefined> {
+async function getReferendumDetails(chain: Chain, referendumId: ReferendumId): Promise<string | undefined> {
   const chainName = chain.specName;
   if (!chainName) return undefined;
 
@@ -64,7 +67,7 @@ async function getReferendumDetails(chain: Chain, index: string): Promise<string
     headers.append('x-network', chainName);
     headers.append('Cache-Control', 'public, max-age=600, must-revalidate');
 
-    const apiUrl = `https://api.polkassembly.io/api/v1/posts/on-chain-post?proposalType=referendums_v2&postId=${index}`;
+    const apiUrl = `https://api.polkassembly.io/api/v1/posts/on-chain-post?proposalType=referendums_v2&postId=${referendumId}`;
 
     const details = await (await fetch(apiUrl, { method: 'GET', headers })).json();
 

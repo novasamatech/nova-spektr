@@ -6,9 +6,9 @@ import { BN_ZERO, BN } from '@polkadot/util';
 
 import { networkModel, networkUtils } from '@entities/network';
 import { governanceModel, referendumUtils } from '@entities/governance';
-import { getCurrentBlockNumber, toAddress } from '@shared/lib/utils';
-import { createChunksEffect } from '../lib/referendum-list-utils';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { getCurrentBlockNumber } from '@shared/lib/utils';
+import { createChunksEffect, referendumListUtils } from '../lib/referendum-list-utils';
+import { walletModel } from '@entities/wallet';
 import { IGovernanceApi, governanceService, opengovThresholdService } from '@shared/api/governance';
 import {
   ChainId,
@@ -23,8 +23,8 @@ import {
 } from '@shared/core';
 import { networkSelectorModel } from '@features/governance';
 
-const $referendumsTitles = createStore<Record<ChainId, Record<ReferendumId, string>>>({});
 const $referendumsRequested = createStore<boolean>(false);
+const $referendumsTitles = createStore<Record<ChainId, Record<ReferendumId, string>>>({});
 
 const $currentReferendumTitles = combine(
   {
@@ -76,7 +76,7 @@ const { request: requestOffChainReferendums, receive: receiveOffChainReferendums
   OffChainParams,
   OffChainReceiveParams
 >(({ chain, service }, cb) => {
-  service.getReferendumList(chain, (data) => {
+  return service.getReferendumList(chain, (data) => {
     cb({ chainId: chain.chainId, data });
   });
 });
@@ -156,7 +156,7 @@ sample({
 });
 
 sample({
-  clock: networkSelectorModel.$governanceChainApi.updates,
+  clock: networkSelectorModel.$governanceChainApi,
   source: {
     requested: $referendumsRequested,
     chain: networkSelectorModel.$governanceChain,
@@ -167,7 +167,7 @@ sample({
 });
 
 sample({
-  clock: networkSelectorModel.$governanceChainApi.updates,
+  clock: networkSelectorModel.$governanceChainApi,
   source: {
     chain: networkSelectorModel.$governanceChain,
     governanceApi: governanceModel.$governanceApi,
@@ -194,19 +194,32 @@ sample({
     api: networkSelectorModel.$governanceChainApi,
     chain: networkSelectorModel.$governanceChain,
     wallet: walletModel.$activeWallet,
-    requested: $referendumsRequested,
   },
-  filter: ({ api, chain, wallet, requested }) => {
-    return Boolean(chain) && Boolean(wallet) && !requested && Boolean(api);
-  },
+  filter: ({ api, chain, wallet }) => !!api && !!chain && !!wallet,
   fn: ({ api, chain, wallet }, tracks) => {
-    // TODO: uncomment when governance page is ready
-    const matchedAccounts = walletUtils.getAccountsBy([wallet!], (account) => {
-      return accountUtils.isChainIdMatch(account, chain!.chainId);
-    });
-    const addresses = matchedAccounts.map((a) => toAddress(a.accountId, { prefix: chain!.addressPrefix }));
+    return {
+      api: api!,
+      tracksIds: Object.keys(tracks),
+      addresses: referendumListUtils.getAddressesForWallet(wallet!, chain!),
+    };
+  },
+  target: requestVotingFx,
+});
 
-    return { api: api!, tracksIds: Object.keys(tracks), addresses };
+sample({
+  clock: walletModel.$activeWallet,
+  source: {
+    api: networkSelectorModel.$governanceChainApi,
+    chain: networkSelectorModel.$governanceChain,
+    tracks: governanceModel.$tracks,
+  },
+  filter: ({ api, chain }, wallet) => !!api && !!chain && !!wallet,
+  fn: ({ api, chain, tracks }, wallet) => {
+    return {
+      api: api!,
+      tracksIds: Object.keys(tracks),
+      addresses: referendumListUtils.getAddressesForWallet(wallet!, chain!),
+    };
   },
   target: requestVotingFx,
 });

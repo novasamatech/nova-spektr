@@ -1,10 +1,26 @@
-import type { ChainId } from '@shared/core';
-import { OpenGov } from '@shared/lib/utils';
-
-export const offChainUtils = {
-  getChainName,
+type Params<T> = {
+  items: T[];
+  chunkSize: number;
+  task: (item: T, index: number) => Promise<unknown>;
 };
 
-function getChainName(chainId: ChainId): string | undefined {
-  return OpenGov[chainId];
-}
+const createChunkedTasks = <T>({ items, chunkSize, task }: Params<T>) => {
+  const createChunk = (currentIndex: number): Promise<unknown> => {
+    const nextIndex = currentIndex + chunkSize;
+    const chunkedItems = items.slice(currentIndex, nextIndex);
+
+    if (chunkedItems.length === 0) {
+      return Promise.resolve();
+    }
+
+    const tasks = chunkedItems.map((item, i) => task(item, currentIndex + i));
+
+    return Promise.allSettled(tasks).finally(() => createChunk(nextIndex));
+  };
+
+  return createChunk(0);
+};
+
+export const offChainUtils = {
+  createChunkedTasks,
+};
