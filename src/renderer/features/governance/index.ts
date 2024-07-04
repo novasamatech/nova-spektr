@@ -14,7 +14,7 @@ export { NetworkSelector } from './views/NetworkSelector';
 export { ReferendumDetails } from './views/ReferendumDetails';
 export { ReferendumSearch, ReferendumFilters, VoteStatus } from './views/ReferendumFilter';
 export { OffChainDataSource } from './views/OffChainDataSource';
-export { CompletedReferendums, OngoingReferendums, LoadingCompleted, LoadingOngoing } from './views/ReferendumList';
+export { CompletedReferendums, OngoingReferendums } from './views/ReferendumList';
 
 export { listService } from './lib/list';
 

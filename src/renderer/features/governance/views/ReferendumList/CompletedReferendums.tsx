@@ -3,27 +3,31 @@ import { memo, useDeferredValue } from 'react';
 
 import { useI18n } from '@app/providers';
 import { Voted, votingModel, votingService } from '@entities/governance';
-import { FootnoteText, Accordion, CaptionText, HeadlineText } from '@shared/ui';
+import { FootnoteText, Accordion, CaptionText, HeadlineText, Shimmering } from '@shared/ui';
 import { CompletedReferendum } from '@shared/core';
-import { networkSelectorModel } from '../../model/network-selector-model';
+import { AggregatedReferendum } from '../../types/structs';
 import { VotingStatusBadge } from '../VotingStatusBadge';
+import { ListItemPlaceholder } from './ListItemPlaceholder';
 import { ListItem } from './ListItem';
-import { AggregatedReferendum } from '@features/governance';
 
 type Props = {
   referendums: AggregatedReferendum<CompletedReferendum>[];
+  isLoading: boolean;
   onSelect: (value: CompletedReferendum) => void;
 };
 
-export const CompletedReferendums = memo<Props>(({ referendums, onSelect }) => {
+const placeholder = Array.from({ length: 4 }, (_, index) => (
+  <li key={index}>
+    <ListItemPlaceholder />
+  </li>
+));
+
+export const CompletedReferendums = memo<Props>(({ referendums, isLoading, onSelect }) => {
   const { t } = useI18n();
-
-  const chain = useUnit(networkSelectorModel.$governanceChain);
   const voting = useUnit(votingModel.$voting);
-
   const deferredReferendums = useDeferredValue(referendums);
 
-  if (!chain || deferredReferendums.length === 0) {
+  if (deferredReferendums.length === 0) {
     return null;
   }
 
@@ -34,24 +38,31 @@ export const CompletedReferendums = memo<Props>(({ referendums, onSelect }) => {
           <CaptionText className="uppercase text-text-secondary tracking-[0.75px] font-semibold">
             {t('governance.referendums.completed')}
           </CaptionText>
-          <CaptionText className="text-text-tertiary font-semibold">{Object.keys(referendums).length}</CaptionText>
+          {isLoading ? (
+            <Shimmering width={25} height={12} />
+          ) : (
+            <CaptionText className="text-text-tertiary font-semibold">{referendums.length}</CaptionText>
+          )}
         </div>
       </Accordion.Button>
       <Accordion.Content as="ul" className="flex flex-col gap-y-2">
-        {deferredReferendums.map(({ referendum, title }) => (
-          <li key={referendum.referendumId}>
-            <ListItem onClick={() => onSelect(referendum)}>
-              <div className="flex items-center gap-x-2 w-full">
-                <Voted active={votingService.isReferendumVoted(referendum.referendumId, voting)} />
-                <VotingStatusBadge referendum={referendum} />
-                <FootnoteText className="ml-auto text-text-secondary">#{referendum.referendumId}</FootnoteText>
-              </div>
-              <HeadlineText>
-                {title || t('governance.referendums.referendumTitle', { index: referendum.referendumId })}
-              </HeadlineText>
-            </ListItem>
-          </li>
-        ))}
+        {isLoading && placeholder}
+
+        {!isLoading &&
+          deferredReferendums.map(({ referendum, title }) => (
+            <li key={referendum.referendumId}>
+              <ListItem onClick={() => onSelect(referendum)}>
+                <div className="flex items-center gap-x-2 w-full">
+                  <Voted active={votingService.isReferendumVoted(referendum.referendumId, voting)} />
+                  <VotingStatusBadge referendum={referendum} />
+                  <FootnoteText className="ml-auto text-text-secondary">#{referendum.referendumId}</FootnoteText>
+                </div>
+                <HeadlineText>
+                  {title || t('governance.referendums.referendumTitle', { index: referendum.referendumId })}
+                </HeadlineText>
+              </ListItem>
+            </li>
+          ))}
       </Accordion.Content>
     </Accordion>
   );

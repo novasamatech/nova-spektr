@@ -9,8 +9,6 @@ import {
   ReferendumSearch,
   ReferendumFilters,
   ReferendumDetails,
-  LoadingCompleted,
-  LoadingOngoing,
   OngoingReferendums,
   CompletedReferendums,
   NetworkSelector,
@@ -56,17 +54,8 @@ export const Governance = () => {
           </div>
 
           <div className="flex flex-col gap-y-3">
-            {isLoading ? (
-              <>
-                <LoadingOngoing />
-                <LoadingCompleted />
-              </>
-            ) : (
-              <>
-                <OngoingReferendums referendums={ongoing} onSelect={setSelectedReferendum} />
-                <CompletedReferendums referendums={completed} onSelect={setSelectedReferendum} />
-              </>
-            )}
+            <OngoingReferendums referendums={ongoing} isLoading={isLoading} onSelect={setSelectedReferendum} />
+            <CompletedReferendums referendums={completed} isLoading={isLoading} onSelect={setSelectedReferendum} />
           </div>
 
           <EmptyGovernance />

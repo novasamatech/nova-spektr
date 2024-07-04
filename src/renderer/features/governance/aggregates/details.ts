@@ -15,18 +15,13 @@ const $votingAssets = networkSelectorModel.$governanceChains.map((chains) => {
 
 sample({
   clock: flow.open,
-  target: proposerIdentityAggregate.events.requestProposer,
-});
-
-sample({
-  clock: flow.open,
-  target: descriptionsModel.events.requestDescription,
+  target: [proposerIdentityAggregate.events.requestProposer, descriptionsModel.events.requestDescription],
 });
 
 export const detailsAggregate = {
+  $votingAssets,
   $descriptions: descriptionsModel.$descriptions,
   $titles: titleModel.$titles,
-  $votingAssets,
   $proposers: proposerIdentityAggregate.$proposers,
   $isProposersLoading: proposerIdentityAggregate.$isProposersLoading,
   $isDescriptionLoading: descriptionsModel.$isDescriptionLoading,
