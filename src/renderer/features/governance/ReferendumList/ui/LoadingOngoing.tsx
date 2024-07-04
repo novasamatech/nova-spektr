@@ -1,15 +1,8 @@
-import { useUnit } from 'effector-react';
-
 import { useI18n } from '@app/providers';
 import { Accordion, CaptionText, Shimmering } from '@shared/ui';
-import { referendumListModel } from '../model/referendum-list-model';
 
 export const LoadingOngoing = () => {
   const { t } = useI18n();
-
-  const isLoading = useUnit(referendumListModel.$isLoading);
-
-  if (!isLoading) return null;
 
   return (
     <Accordion isDefaultOpen>

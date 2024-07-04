@@ -1,38 +1,30 @@
 import { createStore, createEvent, sample, createEffect } from 'effector';
 
 import { IGovernanceApi } from '@shared/api/governance';
-import type { SourceType } from '../lib/types';
+import type { TrackId, TrackInfo, ReferendumId, Referendum, VotingThreshold, VotingMap, ChainId } from '@shared/core';
 import { localStorageService } from '@shared/api/local-storage';
+import { type SourceType } from '../lib/types';
 import { GOVERNANCE_API_KEY, GovernanceApis } from '../lib/constants';
-import type {
-  TrackId,
-  TrackInfo,
-  ReferendumId,
-  OngoingReferendum,
-  CompletedReferendum,
-  VotingThreshold,
-  VotingMap,
-} from '@shared/core';
 
 const governanceStarted = createEvent();
 const governanceApiChanged = createEvent<SourceType>();
 
-const $ongoingReferendums = createStore<Map<ReferendumId, OngoingReferendum>>(new Map());
-const $completedReferendums = createStore<Map<ReferendumId, CompletedReferendum>>(new Map());
+const $referendums = createStore<Record<ChainId, Referendum[]>>({});
 
 const $tracks = createStore<Record<TrackId, TrackInfo>>({});
 const $voting = createStore<VotingMap>({});
-const $approvalThresholds = createStore<Record<ReferendumId, VotingThreshold>>({});
-const $supportThresholds = createStore<Record<ReferendumId, VotingThreshold>>({});
+
+const $approvalThresholds = createStore<Record<ChainId, Record<ReferendumId, VotingThreshold>>>({});
+const $supportThresholds = createStore<Record<ChainId, Record<ReferendumId, VotingThreshold>>>({});
 
 const $governanceApi = createStore<{ type: SourceType; service: IGovernanceApi } | null>(null);
 
 const getGovernanceApiFx = createEffect((): SourceType => {
-  return localStorageService.getFromStorage(GOVERNANCE_API_KEY, 'polkassembly');
+  return localStorageService.getFromStorage<SourceType>(GOVERNANCE_API_KEY, 'polkassembly');
 });
 
 const saveGovernanceApiFx = createEffect((sourceType: SourceType): SourceType => {
-  return localStorageService.saveToStorage(GOVERNANCE_API_KEY, sourceType);
+  return localStorageService.saveToStorage<SourceType>(GOVERNANCE_API_KEY, sourceType);
 });
 
 sample({
@@ -55,8 +47,7 @@ sample({
 });
 
 export const governanceModel = {
-  $ongoingReferendums,
-  $completedReferendums,
+  $referendums,
   $tracks,
   $voting,
   $approvalThresholds,

@@ -11,7 +11,7 @@ export const EmptyGovernance = () => {
   const completed = useUnit(governancePageModel.$completed);
   const isLoading = useUnit(referendumListModel.$isLoading);
 
-  if (ongoing.size > 0 || completed.size > 0 || isLoading) return null;
+  if (ongoing.length > 0 || completed.length > 0 || isLoading) return null;
 
   return (
     <div className="flex flex-col items-center justify-center gap-y-8 w-full h-full">

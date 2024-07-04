@@ -7,9 +7,11 @@ export type ReferendumId = string;
 
 export interface ReferendumInfo {
   type: ReferendumType;
+  referendumId: ReferendumId;
 }
 
 export interface OngoingReferendum extends ReferendumInfo {
+  type: ReferendumType.Ongoing;
   track: TrackId;
   submitted: BlockHeight;
   submissionDeposit: Deposit | null;
@@ -24,7 +26,6 @@ export interface OngoingReferendum extends ReferendumInfo {
     confirming: BlockHeight;
   } | null;
   tally: Tally;
-  type: ReferendumType.Ongoing;
 }
 
 export interface RejectedReferendum extends ReferendumInfo {
@@ -58,6 +59,8 @@ export type CompletedReferendum =
   | CancelledReferendum
   | TimedOutReferendum
   | KilledReferendum;
+
+export type Referendum = OngoingReferendum | CompletedReferendum;
 
 export const enum ReferendumType {
   Rejected = 'rejected',

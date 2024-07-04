@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { useUnit } from 'effector-react';
+import { useState } from 'react';
+import { useGate, useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { Header, Plate } from '@shared/ui';
@@ -17,19 +17,21 @@ import {
   networkSelectorModel,
   referendumListModel,
 } from '@features/governance';
+import { Referendum } from '@shared/core';
 import { EmptyGovernance } from './EmptyGovernance';
 
 export const Governance = () => {
+  useGate(governancePageModel.gates.governanceFlow);
+
   const { t } = useI18n();
+
+  const [selectedReferendum, setSelectedReferendum] = useState<Referendum | null>(null);
+  const isApiConnected = useUnit(networkSelectorModel.$isApiConnected);
+  const isLoading = useUnit(referendumListModel.$isLoading);
+  const governanceChain = useUnit(networkSelectorModel.$governanceChain);
 
   const ongoing = useUnit(governancePageModel.$ongoing);
   const completed = useUnit(governancePageModel.$completed);
-  const isApiConnected = useUnit(networkSelectorModel.$isApiConnected);
-  const isLoading = useUnit(referendumListModel.$isLoading);
-
-  useEffect(() => {
-    governancePageModel.events.flowStarted();
-  }, []);
 
   return (
     <div className="h-full flex flex-col">
@@ -50,13 +52,22 @@ export const Governance = () => {
             {/*<Delegations onClick={() => console.log('Go to Delegate')} />*/}
           </div>
 
-          <ReferendumFilters />
-          <div className="flex flex-col gap-y-3">
-            <LoadingOngoing />
-            <LoadingCompleted />
+          <div className="mt-5 mb-4">
+            <ReferendumFilters />
+          </div>
 
-            <OngoingReferendums referendums={ongoing} onSelected={governancePageModel.events.referendumSelected} />
-            <CompletedReferendums referendums={completed} onSelected={governancePageModel.events.referendumSelected} />
+          <div className="flex flex-col gap-y-3">
+            {isLoading ? (
+              <>
+                <LoadingOngoing />
+                <LoadingCompleted />
+              </>
+            ) : (
+              <>
+                <OngoingReferendums referendums={ongoing} onSelect={setSelectedReferendum} />
+                <CompletedReferendums referendums={completed} onSelect={setSelectedReferendum} />
+              </>
+            )}
           </div>
 
           <EmptyGovernance />
@@ -64,7 +75,13 @@ export const Governance = () => {
         </section>
       </div>
 
-      <ReferendumDetails />
+      {selectedReferendum && governanceChain && (
+        <ReferendumDetails
+          referendum={selectedReferendum}
+          chain={governanceChain}
+          onClose={() => setSelectedReferendum(null)}
+        />
+      )}
     </div>
   );
 };

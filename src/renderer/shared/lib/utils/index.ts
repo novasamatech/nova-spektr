@@ -10,5 +10,6 @@ export * from './substrate';
 export * from './twMerge';
 export * from './validation';
 export * from './arrays';
+export * from './objects';
 export * from './chains';
 export * from './derivation';

@@ -111,6 +111,7 @@ export type {
   KilledReferendum,
   CancelledReferendum,
   CompletedReferendum,
+  Referendum,
 } from './types/referendum';
 
 export { VotingType, VoteType, Conviction } from './types/voting';

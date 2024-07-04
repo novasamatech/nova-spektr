@@ -277,6 +277,10 @@
       "matrixIdTitle": "Matrix ID",
       "publicKeyTitle": "Public key"
     },
+    "image": {
+      "loadingError": "Error while loading image",
+      "retryLoading": "Retry"
+    },
     "input": {
       "amountLabel": "Amount",
       "availableLabel": "Available:",
@@ -311,21 +315,33 @@
       "sourceError": "Data source is required",
       "title": "Referendum data"
     },
+    "referendum": {
+      "proposer": "Proposer: {name}",
+      "threshold": "Threshold",
+      "votedTokens": "{voted} of {total} {asset}",
+      "votingStatus": "Voting status"
+    },
     "referendums": {
+      "approved": "Approved",
+      "cancelled": "Cancelled",
       "completed": "Completed",
       "crowdloans": "Crowdloans",
       "deciding": "Deciding",
+      "executed": "Executed",
       "fellowshipAdmin": "Fellowship: Admin",
       "fellowshipWhitelist": "Fellowship: Whitelist",
       "governanceCanceller": "Governance: Canceller",
       "governanceKiller": "Governance: Killer",
       "governanceLease": "Governance: Lease",
       "governanceRegistrar": "Governance: Registrar",
+      "killed": "Killed",
       "mainAgenda": "Main agenda",
       "ongoing": "Ongoing",
       "passing": "Passing",
       "referendumTitle": "Referendum #{ index }",
+      "rejected": "Rejected",
       "staking": "Staking",
+      "timedOut": "Timed out",
       "treasuryAny": "Treasury: Any",
       "treasuryBigSpend": "Treasury: Big spend",
       "treasuryBigTips": "Treasury: Big tips",
