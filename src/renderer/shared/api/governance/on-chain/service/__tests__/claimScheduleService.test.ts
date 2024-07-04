@@ -804,7 +804,7 @@ describe('shared/api/governance/claimScheduleService', () => {
 
   test('delegate plus voting case', () => {
     const referendums: Record<ReferendumId, ApprovedReferendum> = {
-      0: { type: ReferendumType.Approved, since: 1100 },
+      '0': { type: ReferendumType.Approved, referendumId: '0', since: 1100 },
     };
     const votingByTrack: Record<TrackId, DelegatingVoting | CastingVoting> = {
       0: {

@@ -1,8 +1,7 @@
-import { ChainId, OngoingReferendum, ReferendumId, VotingMap } from '@shared/core';
+import { Referendum, ReferendumId, VotingMap } from '@shared/core';
 import { includes } from '@shared/lib/utils';
 import { VoteStatus, referendumListUtils } from '@features/governance';
-
-type ReferendumMap<T> = Map<ReferendumId, T>;
+import { referendumUtils } from '@entities/governance';
 
 export const governancePageUtils = {
   filteredByQuery,
@@ -10,43 +9,50 @@ export const governancePageUtils = {
   filterByTracks,
 };
 
-type FilteredByQueryParams<T> = {
-  referendums: ReferendumMap<T>;
+type FilteredByQueryParams<T extends Referendum> = {
+  referendums: T[];
   query: string;
-  details: Record<ChainId, Record<ReferendumId, string>>;
-  chainId?: ChainId;
+  details: Record<ReferendumId, string>;
 };
 
-function filteredByQuery<T>({ referendums, query, details, chainId }: FilteredByQueryParams<T>): ReferendumMap<T> {
-  if (!query || !chainId || referendums.size === 0) return referendums;
+function filteredByQuery<T extends Referendum>({ referendums, query, details }: FilteredByQueryParams<T>): T[] {
+  if (!query) {
+    return referendums;
+  }
 
-  const filteredReferendums = Array.from(referendums.entries()).filter(([key]) => {
-    const title = details[chainId]?.[key];
-    const hasIndex = includes(key, query);
+  return referendums.filter(({ referendumId }) => {
+    const title = details[referendumId];
+    const hasIndex = includes(referendumId, query);
     const hasTitle = includes(title, query);
 
     return hasIndex || hasTitle;
   });
-
-  return new Map(filteredReferendums);
 }
 
 type FilterByVoteParams = {
+  referendumId: ReferendumId;
   selectedVoteId: string;
   voting: VotingMap;
-  key: string;
 };
 
-function filterByVote({ selectedVoteId, key, voting }: FilterByVoteParams) {
-  if (!selectedVoteId) return true;
+function filterByVote({ selectedVoteId, referendumId, voting }: FilterByVoteParams) {
+  if (!selectedVoteId) {
+    return true;
+  }
 
-  const isReferendumVoted = referendumListUtils.isReferendumVoted(key, voting);
+  const isReferendumVoted = referendumListUtils.isReferendumVoted(referendumId, voting);
 
   return selectedVoteId === VoteStatus.VOTED ? isReferendumVoted : !isReferendumVoted;
 }
 
-function filterByTracks(selectedTrackIds: string[], referendum: OngoingReferendum) {
-  if (!selectedTrackIds?.length) return true;
+function filterByTracks(selectedTrackIds: string[], referendum: Referendum) {
+  if (!selectedTrackIds?.length) {
+    return true;
+  }
+
+  if (!referendumUtils.isOngoing(referendum)) {
+    return false;
+  }
 
   return selectedTrackIds.includes(referendum.track);
 }

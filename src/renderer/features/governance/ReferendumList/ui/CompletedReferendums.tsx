@@ -1,36 +1,32 @@
 import { useUnit } from 'effector-react';
+import { memo, useDeferredValue } from 'react';
 
 import { useI18n } from '@app/providers';
 import { Voted, governanceModel } from '@entities/governance';
-import { FootnoteText, Accordion, CaptionText, OperationStatus, HeadlineText } from '@shared/ui';
-import { ReferendumId, CompletedReferendum, ReferendumType } from '@shared/core';
+import { FootnoteText, Accordion, CaptionText, HeadlineText } from '@shared/ui';
+import { CompletedReferendum } from '@shared/core';
+import { VotingStatusBadge } from '../../VotingStatus/ui/VotingStatusBadge';
 import { referendumListModel } from '../model/referendum-list-model';
 import { referendumListUtils } from '../lib/referendum-list-utils';
-
-const Status: Record<
-  Exclude<ReferendumType, ReferendumType.Ongoing>,
-  { text: string; pallet: 'default' | 'success' | 'error' }
-> = {
-  [ReferendumType.Approved]: { text: 'Executed', pallet: 'success' },
-  [ReferendumType.Rejected]: { text: 'Rejected', pallet: 'error' },
-  [ReferendumType.Cancelled]: { text: 'Cancelled', pallet: 'default' },
-  [ReferendumType.Killed]: { text: 'Killed', pallet: 'error' },
-  [ReferendumType.TimedOut]: { text: 'Timed out', pallet: 'default' },
-};
+import { ListItem } from './ListItem';
 
 type Props = {
-  referendums: Map<ReferendumId, CompletedReferendum>;
-  onSelected: (index: ReferendumId) => void;
+  referendums: CompletedReferendum[];
+  onSelect: (value: CompletedReferendum) => void;
 };
 
-export const CompletedReferendums = ({ referendums, onSelected }: Props) => {
+export const CompletedReferendums = memo<Props>(({ referendums, onSelect }) => {
   const { t } = useI18n();
 
-  const voting = useUnit(governanceModel.$voting);
   const chain = useUnit(referendumListModel.$chain);
-  const details = useUnit(referendumListModel.$referendumsDetails);
+  const voting = useUnit(governanceModel.$voting);
+  const names = useUnit(referendumListModel.$currentReferendumTitles);
 
-  if (!chain || referendums.size === 0) return null;
+  const deferredReferendums = useDeferredValue(referendums);
+
+  if (!chain || deferredReferendums.length === 0) {
+    return null;
+  }
 
   return (
     <Accordion isDefaultOpen>
@@ -43,27 +39,22 @@ export const CompletedReferendums = ({ referendums, onSelected }: Props) => {
         </div>
       </Accordion.Button>
       <Accordion.Content as="ul" className="flex flex-col gap-y-2">
-        {Array.from(referendums).map(([index, referendum]) => (
-          <li key={index}>
-            <button
-              type="button"
-              className="flex flex-col gap-y-3 p-3 w-full rounded-md bg-white"
-              onClick={() => onSelected(index)}
-            >
+        {deferredReferendums.map((referendum) => (
+          <li key={referendum.referendumId}>
+            <ListItem onClick={() => onSelect(referendum)}>
               <div className="flex items-center gap-x-2 w-full">
-                <Voted active={referendumListUtils.isReferendumVoted(index, voting)} />
-                <OperationStatus pallet={Status[referendum.type].pallet}>
-                  {t(Status[referendum.type].text)}
-                </OperationStatus>
-                <FootnoteText className="ml-auto text-text-secondary">#{index}</FootnoteText>
+                <Voted active={referendumListUtils.isReferendumVoted(referendum.referendumId, voting)} />
+                <VotingStatusBadge referendum={referendum} />
+                <FootnoteText className="ml-auto text-text-secondary">#{referendum.referendumId}</FootnoteText>
               </div>
               <HeadlineText>
-                {details[chain.chainId]?.[index] || t('governance.referendums.referendumTitle', { index })}
+                {names[referendum.referendumId] ||
+                  t('governance.referendums.referendumTitle', { index: referendum.referendumId })}
               </HeadlineText>
-            </button>
+            </ListItem>
           </li>
         ))}
       </Accordion.Content>
     </Accordion>
   );
-};
+});

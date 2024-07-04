@@ -49,6 +49,7 @@ export { MainLayout } from './Layouts/MainLayout/MainLayout';
 export { Truncate } from './Truncate/Truncate';
 export { Countdown } from './Countdown/Countdown';
 export { Tabs } from './Tabs/Tabs';
+export { Markdown } from './Markdown/Markdown';
 
 // FIXME: Animation component exported separately.
 // Adding them to this file causes to crash all tests which use anything from that file
