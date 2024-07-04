@@ -365,6 +365,13 @@ sample({
   target: stepChanged,
 });
 
+sample({
+  clock: walletModel.events.walletRemovedSuccess,
+  source: basketModel.$basket,
+  fn: (txs, { params }) => txs.filter((t) => t.initiatorWallet === params.id),
+  target: basketModel.events.transactionsRemoved,
+});
+
 export const basketPageModel = {
   $basketTransactions,
   $selectedTxs,

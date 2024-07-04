@@ -47,6 +47,16 @@ export const Operation = ({ tx, errorText, validating, onClick, onTxRemoved }: P
       return <Shimmering width={106} height={18} />;
     }
 
+    if (errorText) {
+      return (
+        <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey={errorText} />}>
+          <div className="flex gap-x-1 items-center rounded-md bg-badge-red-background-default px-2 py-0.5">
+            <HelpText className="text-text-negative">{t('basket.validationError')} </HelpText>
+          </div>
+        </Tooltip>
+      );
+    }
+
     if (tx.error) {
       return (
         <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey={tx.error.message} />}>
@@ -62,15 +72,6 @@ export const Operation = ({ tx, errorText, validating, onClick, onTxRemoved }: P
         </Tooltip>
       );
     }
-
-    if (errorText)
-      return (
-        <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey={errorText} />}>
-          <div className="flex gap-x-1 items-center rounded-md bg-badge-red-background-default px-2 py-0.5">
-            <HelpText className="text-text-negative">{t('basket.validationError')} </HelpText>
-          </div>
-        </Tooltip>
-      );
   };
 
   return (
