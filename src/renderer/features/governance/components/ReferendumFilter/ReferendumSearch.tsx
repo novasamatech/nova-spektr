@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { SearchInput } from '@shared/ui';
-import { filterModel } from '../../model/filter-model';
+import { filterModel } from '../../model/filter';
 
 export const ReferendumSearch = () => {
   const { t } = useI18n();

@@ -1,7 +1,7 @@
 import { CompletedReferendum, OngoingReferendum, Referendum, ReferendumId, VotingMap } from '@shared/core';
 import { includes } from '@shared/lib/utils';
 import { AggregatedReferendum, VoteStatus } from '@features/governance';
-import { referendumUtils, votingService } from '@entities/governance';
+import { referendumService, votingService } from '@entities/governance';
 
 export const governancePageUtils = {
   filteredByQuery,
@@ -51,7 +51,7 @@ function isReferendumInTrack(selectedTrackIds: string[], referendum: Referendum)
     return true;
   }
 
-  if (!referendumUtils.isOngoing(referendum)) {
+  if (!referendumService.isOngoing(referendum)) {
     return false;
   }
 
@@ -59,9 +59,9 @@ function isReferendumInTrack(selectedTrackIds: string[], referendum: Referendum)
 }
 
 function isAggregatedReferendumOngoing(r: AggregatedReferendum): r is AggregatedReferendum<OngoingReferendum> {
-  return referendumUtils.isOngoing(r.referendum);
+  return referendumService.isOngoing(r.referendum);
 }
 
 function isAggregatedReferendumCompleted(r: AggregatedReferendum): r is AggregatedReferendum<CompletedReferendum> {
-  return referendumUtils.isCompleted(r.referendum);
+  return referendumService.isCompleted(r.referendum);
 }

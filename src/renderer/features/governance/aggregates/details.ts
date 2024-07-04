@@ -3,9 +3,9 @@ import { createGate } from 'effector-react';
 
 import type { Chain, Referendum } from '@shared/core';
 import { proposerIdentityAggregate } from './proposer-identity';
-import { networkSelectorModel } from '../model/network-selector-model';
-import { descriptionsModel } from '../model/descriptions-model';
-import { titleModel } from '../model/title-model';
+import { networkSelectorModel } from '../model/networkSelector';
+import { descriptionsModel } from '../model/description';
+import { titleModel } from '../model/title';
 
 const flow = createGate<{ chain: Chain; referendum: Referendum }>();
 

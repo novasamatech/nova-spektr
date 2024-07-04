@@ -5,7 +5,7 @@ import { type Chain, type ChainId, type ReferendumId } from '@shared/core';
 import { type IGovernanceApi } from '@shared/api/governance';
 import { governanceModel } from '@entities/governance';
 import { createChunksEffect } from '../utils/createChunksEffect';
-import { networkSelectorModel } from './network-selector-model';
+import { networkSelectorModel } from './networkSelector';
 
 const $titles = createStore<Record<ChainId, Record<ReferendumId, string>>>({});
 

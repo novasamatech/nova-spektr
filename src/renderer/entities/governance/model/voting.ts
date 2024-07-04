@@ -5,8 +5,8 @@ import { readonly } from 'patronum';
 import { walletModel } from '@entities/wallet';
 import { Address, TrackId, type VotingMap } from '@shared/core';
 import { governanceService } from '@shared/api/governance';
-import { walletService } from '../lib/wallet-service';
-import { tracksModel } from './tracks-model';
+import { walletService } from '../lib/walletService';
+import { tracksModel } from './tracks';
 
 const $voting = createStore<VotingMap>({});
 

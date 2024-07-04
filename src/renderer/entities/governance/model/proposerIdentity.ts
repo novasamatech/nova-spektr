@@ -3,8 +3,8 @@ import { createEffect, createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
 import { type Address, Chain, type ChainId, type Identity, type Referendum } from '@shared/core';
-import { referendumUtils } from '@entities/governance';
-import { proposersService } from '../lib/proposers-service';
+import { referendumService } from '@entities/governance';
+import { proposersService } from '../lib/proposersService';
 
 const $proposers = createStore<Record<ChainId, Record<Address, Identity>>>({});
 
@@ -22,13 +22,15 @@ const requestProposersFx = createEffect(({ api, addresses }: GetProposersParams)
 
 sample({
   clock: requestProposer,
-  filter: ({ referendum }) => referendumUtils.isOngoing(referendum),
+  filter: ({ referendum }) => referendumService.isOngoing(referendum),
   fn: ({ api, chain, referendum }) => {
     return {
       api: api,
       chain,
       addresses:
-        referendumUtils.isOngoing(referendum) && referendum.submissionDeposit ? [referendum.submissionDeposit.who] : [],
+        referendumService.isOngoing(referendum) && referendum.submissionDeposit
+          ? [referendum.submissionDeposit.who]
+          : [],
     };
   },
   target: requestProposersFx,

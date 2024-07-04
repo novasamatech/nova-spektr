@@ -1,4 +1,4 @@
-import { referendumUtils, votingService, VoteChart } from '@entities/governance';
+import { referendumService, votingService, VoteChart } from '@entities/governance';
 // import { formatBalance } from '@shared/lib/utils';
 import { Asset, Referendum, VotingThreshold } from '@shared/core';
 import { VotingStatusBadge } from '../VotingStatusBadge';
@@ -16,11 +16,11 @@ export const VotingStatus = ({ referendum, asset, supportThreshold, approvalThre
   const isPassing = supportThreshold?.passing ?? false;
 
   const votedFractions =
-    referendumUtils.isOngoing(referendum) && approvalThreshold
+    referendumService.isOngoing(referendum) && approvalThreshold
       ? votingService.getVoteFractions(referendum.tally, approvalThreshold.value)
       : null;
   // const votedCount =
-  //   referendumUtils.isOngoing(referendum) && supportThreshold
+  //   referendumService.isOngoing(referendum) && supportThreshold
   //     ? referendumListUtils.getVotedCount(referendum.tally, supportThreshold.value)
   //     : null;
 

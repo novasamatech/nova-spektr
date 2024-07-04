@@ -1,7 +1,7 @@
 import { useStoreMap, useUnit } from 'effector-react';
 
 import { Loader, Markdown } from '@shared/ui';
-import { referendumUtils, TrackInfo } from '@entities/governance';
+import { referendumService, TrackInfo } from '@entities/governance';
 import { pickNestedValue } from '@shared/lib/utils';
 import { ChainId, Referendum } from '@shared/core';
 import { detailsAggregate } from '../../aggregates/details';
@@ -25,7 +25,7 @@ export const ProposalDescription = ({ chainId, referendum }: Props) => {
       <div className="flex items-center mb-4">
         <ProposerName chainId={chainId} referendum={referendum} />
         <div className="grow" />
-        {referendumUtils.isOngoing(referendum) && <TrackInfo trackId={referendum.track} />}
+        {referendumService.isOngoing(referendum) && <TrackInfo trackId={referendum.track} />}
       </div>
 
       {isDescriptionLoading && (

@@ -3,10 +3,10 @@ export { detailsAggregate } from './aggregates/details';
 export { tracksAggregate } from './aggregates/tracks';
 export { listAggregate } from './aggregates/list';
 
-export { titleModel } from './model/title-model';
-export { filterModel } from './model/filter-model';
-export { networkSelectorModel } from './model/network-selector-model';
-export { offChainModel } from './model/off-chain-model';
+export { titleModel } from './model/title';
+export { filterModel } from './model/filter';
+export { networkSelectorModel } from './model/networkSelector';
+export { offChainModel } from './model/offChain';
 
 export { Locks } from './components/Locks';
 export { Delegations } from './components/Delegations';

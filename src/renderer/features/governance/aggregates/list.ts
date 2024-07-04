@@ -8,8 +8,8 @@ import {
   votingModel,
   votingService,
 } from '@entities/governance';
-import { networkSelectorModel } from '../model/network-selector-model';
-import { titleModel } from '../model/title-model';
+import { networkSelectorModel } from '../model/networkSelector';
+import { titleModel } from '../model/title';
 import { AggregatedReferendum } from '../types/structs';
 
 const $referendums = combine(

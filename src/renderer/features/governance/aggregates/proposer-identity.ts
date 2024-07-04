@@ -2,7 +2,7 @@ import { createEvent, sample } from 'effector';
 
 import { type Referendum } from '@shared/core';
 import { proposerIdentityModel as proposerIdentityModelEntity } from '@entities/governance';
-import { networkSelectorModel } from '../model/network-selector-model';
+import { networkSelectorModel } from '../model/networkSelector';
 
 const requestProposer = createEvent<{ referendum: Referendum }>();
 

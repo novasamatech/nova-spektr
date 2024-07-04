@@ -2,7 +2,7 @@ import { useStoreMap, useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { FootnoteText, Shimmering } from '@shared/ui';
-import { referendumUtils } from '@entities/governance';
+import { referendumService } from '@entities/governance';
 import { pickNestedValue } from '@shared/lib/utils';
 import { ChainId, Referendum } from '@shared/core';
 import { detailsAggregate } from '../../aggregates/details';
@@ -21,7 +21,7 @@ export const ProposerName = ({ chainId, referendum }: Props) => {
     store: detailsAggregate.$proposers,
     keys: [chainId, referendum],
     fn: (x, [chainId, referendum]) => {
-      return referendumUtils.isOngoing(referendum) && referendum.submissionDeposit
+      return referendumService.isOngoing(referendum) && referendum.submissionDeposit
         ? pickNestedValue(x, chainId, referendum.submissionDeposit.who)
         : null;
     },

@@ -1,7 +1,7 @@
 import { sample } from 'effector';
 
 import { tracksModel as tracksModelEntity } from '@entities/governance';
-import { networkSelectorModel } from '../model/network-selector-model';
+import { networkSelectorModel } from '../model/networkSelector';
 
 sample({
   clock: networkSelectorModel.$governanceChainApi,

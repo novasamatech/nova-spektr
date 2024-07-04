@@ -13,9 +13,9 @@ import {
 } from '@shared/core';
 import { getCurrentBlockNumber } from '@shared/lib/utils';
 import { opengovThresholdService } from '@shared/api/governance';
-import { referendumUtils } from '@entities/governance';
-import { referendumModel } from './referendum-model';
-import { tracksModel } from './tracks-model';
+import { referendumService } from '@entities/governance';
+import { referendumModel } from './referendum';
+import { tracksModel } from './tracks';
 
 const $supportThresholds = createStore<Record<ChainId, Record<ReferendumId, VotingThreshold>>>({});
 
@@ -65,7 +65,7 @@ sample({
   fn: ({ tracks }, { params, result: referendums }) => ({
     api: params.api,
     chain: params.chain,
-    referendums: referendums.filter(referendumUtils.isOngoing),
+    referendums: referendums.filter(referendumService.isOngoing),
     tracks,
   }),
   target: requestSupportThresholdsFx,
