@@ -3,8 +3,7 @@ import { createGate } from 'effector-react';
 import { either, readonly } from 'patronum';
 
 import { listAggregate, networkSelectorModel, filterModel, listService } from '@features/governance';
-import { votingModel } from '@entities/governance';
-import { governancePageUtils } from '../lib/governance-page-utils';
+import { governancePageUtils } from '../lib/governancePageUtils';
 
 const flow = createGate();
 
@@ -22,15 +21,13 @@ const $referendumsFilteredByStatus = combine(
     referendums: $currentReferendums,
     selectedVoteId: filterModel.$selectedVoteId,
     selectedTrackIds: filterModel.$selectedTrackIds,
-    voting: votingModel.$voting,
   },
-  ({ referendums, selectedVoteId, voting, selectedTrackIds }) => {
-    return referendums.filter(({ referendum }) => {
+  ({ referendums, selectedVoteId, selectedTrackIds }) => {
+    return referendums.filter((referendum) => {
       const filteredByTracks = governancePageUtils.isReferendumInTrack(selectedTrackIds, referendum);
       const filteredByVote = governancePageUtils.isReferendumVoted({
         selectedVoteId,
-        referendumId: referendum.referendumId,
-        voting,
+        referendum,
       });
 
       return filteredByVote && filteredByTracks;

@@ -1,7 +1,7 @@
-import { CompletedReferendum, OngoingReferendum, Referendum, ReferendumId, VotingMap } from '@shared/core';
+import { CompletedReferendum, OngoingReferendum } from '@shared/core';
 import { includes } from '@shared/lib/utils';
 import { AggregatedReferendum, VoteStatus } from '@features/governance';
-import { referendumService, votingService } from '@entities/governance';
+import { referendumService } from '@entities/governance';
 
 export const governancePageUtils = {
   filteredByQuery,
@@ -31,31 +31,28 @@ function filteredByQuery<T extends AggregatedReferendum>({ referendums, query }:
 }
 
 type FilterByVoteParams = {
-  referendumId: ReferendumId;
+  referendum: AggregatedReferendum;
   selectedVoteId: string;
-  voting: VotingMap;
 };
 
-function isReferendumVoted({ selectedVoteId, referendumId, voting }: FilterByVoteParams) {
+function isReferendumVoted({ selectedVoteId, referendum }: FilterByVoteParams) {
   if (!selectedVoteId) {
     return true;
   }
 
-  const isReferendumVoted = votingService.isReferendumVoted(referendumId, voting);
-
-  return selectedVoteId === VoteStatus.VOTED ? isReferendumVoted : !isReferendumVoted;
+  return selectedVoteId === VoteStatus.VOTED ? referendum.isVoted : !referendum.isVoted;
 }
 
-function isReferendumInTrack(selectedTrackIds: string[], referendum: Referendum) {
+function isReferendumInTrack(selectedTrackIds: string[], referendum: AggregatedReferendum) {
   if (!selectedTrackIds?.length) {
     return true;
   }
 
-  if (!referendumService.isOngoing(referendum)) {
+  if (!isAggregatedReferendumOngoing(referendum)) {
     return false;
   }
 
-  return selectedTrackIds.includes(referendum.track);
+  return selectedTrackIds.includes(referendum.referendum.track);
 }
 
 function isAggregatedReferendumOngoing(r: AggregatedReferendum): r is AggregatedReferendum<OngoingReferendum> {
