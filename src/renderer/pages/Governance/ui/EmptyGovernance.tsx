@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@app/providers';
 import { Icon, BodyText } from '@shared/ui';
 import { listAggregate } from '@features/governance';
-import { governancePageAggregate } from '@pages/Governance/aggregates/governance-page';
+import { governancePageAggregate } from '../aggregates/governancePage';
 
 export const EmptyGovernance = () => {
   const { t } = useI18n();

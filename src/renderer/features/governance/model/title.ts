@@ -17,6 +17,8 @@ const $referendumTitles = combine(
   ({ titles, chain }) => (chain ? titles[chain.chainId] ?? {} : {}),
 );
 
+const $loadedTitles = createStore<Record<ChainId, true>>({});
+
 type OffChainParams = {
   chain: Chain;
   service: IGovernanceApi;
@@ -28,9 +30,10 @@ type OffChainReceiveParams = {
 };
 
 const {
-  request: requestOffChainReferendums,
-  receive: receiveOffChainReferendums,
+  request: requestReferendumTitles,
+  receive: receiveReferendumTitles,
   pending: $isTitlesLoading,
+  done: referendumTitlesReceived,
 } = createChunksEffect<OffChainParams, OffChainReceiveParams>(({ chain, service }, cb) => {
   return service.getReferendumList(chain, (data) => {
     cb({ chainId: chain.chainId, data });
@@ -38,23 +41,33 @@ const {
 });
 
 sample({
+  clock: referendumTitlesReceived,
+  source: $loadedTitles,
+  fn: (titles, { params }) => {
+    return { ...titles, [params.chain.chainId]: true };
+  },
+  target: $loadedTitles,
+});
+
+sample({
   clock: networkSelectorModel.$governanceChainApi,
   source: {
     chain: networkSelectorModel.$governanceChain,
     governanceApi: governanceModel.$governanceApi,
+    loadedTitles: $loadedTitles,
   },
-  filter: ({ chain, governanceApi }, referendums) => {
-    return !!chain && !!governanceApi && !isEmpty(referendums);
+  filter: ({ chain, governanceApi, loadedTitles }, referendums) => {
+    return !!chain && !!governanceApi && !isEmpty(referendums) && !loadedTitles[chain.chainId];
   },
   fn: ({ chain, governanceApi }) => ({
     chain: chain!,
     service: governanceApi!.service,
   }),
-  target: requestOffChainReferendums,
+  target: requestReferendumTitles,
 });
 
 sample({
-  clock: receiveOffChainReferendums,
+  clock: receiveReferendumTitles,
   source: $titles,
   fn: (referendumsDetails, { chainId, data }) => {
     const { [chainId]: chainToUpdate, ...rest } = referendumsDetails;

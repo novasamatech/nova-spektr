@@ -2,20 +2,29 @@ import { memo } from 'react';
 
 import { useI18n } from '@app/providers';
 import { Voted } from '@entities/governance';
-import { FootnoteText, HeadlineText } from '@shared/ui';
+import { FootnoteText, HeadlineText, Shimmering } from '@shared/ui';
 import { CompletedReferendum } from '@shared/core';
 import { AggregatedReferendum } from '../../types/structs';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 import { ListItem } from './ListItem';
 
 type Props = {
+  isTitlesLoading: boolean;
   item: AggregatedReferendum<CompletedReferendum>;
   onSelect: (value: CompletedReferendum) => void;
 };
 
-export const CompletedReferendumItem = memo<Props>(({ item, onSelect }) => {
+export const CompletedReferendumItem = memo<Props>(({ item, isTitlesLoading, onSelect }) => {
   const { t } = useI18n();
   const { referendum, title, isVoted } = item;
+
+  const titleNode =
+    title ||
+    (isTitlesLoading ? (
+      <Shimmering height={20} width={200} />
+    ) : (
+      t('governance.referendums.referendumTitle', { index: referendum.referendumId })
+    ));
 
   return (
     <ListItem onClick={() => onSelect(referendum)}>
@@ -24,9 +33,7 @@ export const CompletedReferendumItem = memo<Props>(({ item, onSelect }) => {
         <VotingStatusBadge referendum={referendum} />
         <FootnoteText className="ml-auto text-text-secondary">#{referendum.referendumId}</FootnoteText>
       </div>
-      <HeadlineText>
-        {title || t('governance.referendums.referendumTitle', { index: referendum.referendumId })}
-      </HeadlineText>
+      <HeadlineText>{titleNode}</HeadlineText>
     </ListItem>
   );
 });

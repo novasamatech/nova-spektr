@@ -10,6 +10,7 @@ import { ListItemPlaceholder } from './ListItemPlaceholder';
 type Props = {
   referendums: AggregatedReferendum<CompletedReferendum>[];
   isLoading: boolean;
+  isTitlesLoading: boolean;
   onSelect: (value: CompletedReferendum) => void;
 };
 
@@ -19,7 +20,7 @@ const placeholder = Array.from({ length: 4 }, (_, index) => (
   </li>
 ));
 
-export const CompletedReferendums = memo<Props>(({ referendums, isLoading, onSelect }) => {
+export const CompletedReferendums = memo<Props>(({ referendums, isLoading, isTitlesLoading, onSelect }) => {
   const { t } = useI18n();
   const deferredReferendums = useDeferredValue(referendums);
 
@@ -47,7 +48,7 @@ export const CompletedReferendums = memo<Props>(({ referendums, isLoading, onSel
         {!isLoading &&
           deferredReferendums.map((item) => (
             <li key={item.referendum.referendumId}>
-              <CompletedReferendumItem item={item} onSelect={onSelect} />
+              <CompletedReferendumItem item={item} isTitlesLoading={isTitlesLoading} onSelect={onSelect} />
             </li>
           ))}
       </Accordion.Content>

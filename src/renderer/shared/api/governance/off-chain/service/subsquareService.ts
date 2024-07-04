@@ -20,7 +20,7 @@ type SubsquareData = {
  */
 const getReferendumList: IGovernanceApi['getReferendumList'] = async (chain, callback) => {
   const chainName = chain.specName;
-  const pageSize = 50;
+  const pageSize = 100;
 
   if (chainName) {
     const getApiUrl = (chainName: string, page: number, size = 100): string => {

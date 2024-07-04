@@ -45,11 +45,9 @@ const $referendums = combine(
 
 sample({
   clock: networkSelectorModel.$governanceChainApi,
-  source: {
-    chain: networkSelectorModel.$governanceChain,
-  },
+  source: networkSelectorModel.$governanceChain,
   filter: (_, api) => !!api,
-  fn: ({ chain }, api) => ({ api: api!, chain: chain! }),
+  fn: (chain, api) => ({ api: api!, chain: chain! }),
   target: referendumModel.events.requestReferendums,
 });
 
