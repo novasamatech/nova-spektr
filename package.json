@@ -70,7 +70,7 @@
   },
   "dependencies": {
     "@apollo/client": "^3.7.1",
-    "@headlessui/react": "^1.7.17",
+    "@headlessui/react": "^2.1.1",
     "@matrix-org/olm": "3.2.15",
     "@polkadot/api": "^11.2.1",
     "@polkadot/keyring": "^12.6.2",
@@ -136,7 +136,7 @@
     "@commitlint/cli": "^17.3.0",
     "@commitlint/config-conventional": "^17.0.3",
     "@electron/notarize": "^2.3.0",
-    "@headlessui/tailwindcss": "^0.1.2",
+    "@headlessui/tailwindcss": "^0.2.1",
     "@jest/types": "^29.6.3",
     "@playwright/test": "^1.44.1",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.7",
