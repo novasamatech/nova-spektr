@@ -4,7 +4,7 @@ import { useGate, useUnit } from 'effector-react';
 import { useI18n } from '@app/providers';
 import { Header, Plate } from '@shared/ui';
 import { InactiveNetwork } from '@entities/network';
-import { governancePageModel } from '../model/governance-page-model';
+import { governancePageAggregate } from '@pages/Governance/aggregates/governance-page';
 import {
   ReferendumSearch,
   ReferendumFilters,
@@ -15,23 +15,22 @@ import {
   CompletedReferendums,
   NetworkSelector,
   networkSelectorModel,
-  referendumListModel,
 } from '@features/governance';
 import { Referendum } from '@shared/core';
 import { EmptyGovernance } from './EmptyGovernance';
 
 export const Governance = () => {
-  useGate(governancePageModel.gates.governanceFlow);
+  useGate(governancePageAggregate.gates.flow);
 
   const { t } = useI18n();
 
   const [selectedReferendum, setSelectedReferendum] = useState<Referendum | null>(null);
   const isApiConnected = useUnit(networkSelectorModel.$isApiConnected);
-  const isLoading = useUnit(referendumListModel.$isLoading);
   const governanceChain = useUnit(networkSelectorModel.$governanceChain);
+  const isLoading = useUnit(governancePageAggregate.$isLoading);
 
-  const ongoing = useUnit(governancePageModel.$ongoing);
-  const completed = useUnit(governancePageModel.$completed);
+  const ongoing = useUnit(governancePageAggregate.$ongoing);
+  const completed = useUnit(governancePageAggregate.$completed);
 
   return (
     <div className="h-full flex flex-col">

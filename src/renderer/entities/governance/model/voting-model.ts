@@ -1,5 +1,6 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { ApiPromise } from '@polkadot/api';
+import { readonly } from 'patronum';
 
 import { walletModel } from '@entities/wallet';
 import { Address, TrackId, type VotingMap } from '@shared/core';
@@ -43,10 +44,8 @@ sample({
   target: $voting,
 });
 
-$voting.watch((x) => console.log('voting', x));
-
 export const votingModel = {
-  $voting,
+  $voting: readonly($voting),
 
   effects: {
     requestVotingFx,

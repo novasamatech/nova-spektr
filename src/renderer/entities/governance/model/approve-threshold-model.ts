@@ -1,6 +1,7 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { BN, BN_ZERO } from '@polkadot/util';
 import { type ApiPromise } from '@polkadot/api';
+import { readonly } from 'patronum';
 
 import type {
   Chain,
@@ -55,14 +56,11 @@ sample({
 
 sample({
   clock: referendumModel.events.requestDone,
-  source: {
-    tracks: tracksModel.$tracks,
-    referendums: referendumModel.$referendums,
-  },
-  fn: ({ tracks, referendums }, { params }) => ({
+  source: tracksModel.$tracks,
+  fn: (tracks, { params, result: referendums }) => ({
     api: params.api,
     chain: params.chain,
-    referendums: (referendums[params.chain.chainId] ?? []).filter(referendumUtils.isOngoing),
+    referendums: referendums.filter(referendumUtils.isOngoing),
     tracks,
   }),
   target: requestApproveThresholdsFx,
@@ -79,7 +77,7 @@ sample({
 });
 
 export const approveThresholdModel = {
-  $approvalThresholds,
+  $approvalThresholds: readonly($approvalThresholds),
   $getApproveThresholdsPending: requestApproveThresholdsFx.pending,
   effects: {
     requestApproveThresholdsFx,

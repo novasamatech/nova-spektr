@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { Icon, FootnoteText, Shimmering } from '@shared/ui';
-import { locksModel } from '../model/locks-model';
+import { locksModel } from '../../model/locks-model';
 import { AssetBalance } from '@entities/asset';
 
 type Props = {

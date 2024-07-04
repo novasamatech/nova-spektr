@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { Select } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { ChainTitle } from '@entities/chain';
-import { networkSelectorModel } from '../model/network-selector-model';
+import { networkSelectorModel } from '../../model/network-selector-model';
 
 export const NetworkSelector = () => {
   const { t } = useI18n();

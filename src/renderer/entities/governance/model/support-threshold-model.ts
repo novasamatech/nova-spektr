@@ -13,7 +13,7 @@ import {
 } from '@shared/core';
 import { getCurrentBlockNumber } from '@shared/lib/utils';
 import { opengovThresholdService } from '@shared/api/governance';
-import { governanceModel, referendumUtils } from '@entities/governance';
+import { referendumUtils } from '@entities/governance';
 import { referendumModel } from './referendum-model';
 import { tracksModel } from './tracks-model';
 
@@ -30,9 +30,11 @@ const requestSupportThresholds = createEvent<SupportThresholdParams>();
 
 const requestSupportThresholdsFx = createEffect(
   async ({ api, referendums, tracks }: SupportThresholdParams): Promise<Record<ReferendumId, VotingThreshold>> => {
-    const blockNumber = await getCurrentBlockNumber(api);
-    const totalIssuance = await api.query.balances.totalIssuance();
-    const inactiveIssuance = await api.query.balances.inactiveIssuance();
+    const [blockNumber, totalIssuance, inactiveIssuance] = await Promise.all([
+      getCurrentBlockNumber(api),
+      api.query.balances.totalIssuance(),
+      api.query.balances.inactiveIssuance(),
+    ]);
 
     const result: Record<ReferendumId, VotingThreshold> = {};
 
@@ -76,7 +78,7 @@ sample({
     ...thresholds,
     [params.chain.chainId]: result,
   }),
-  target: governanceModel.$supportThresholds,
+  target: $supportThresholds,
 });
 
 export const supportThresholdModel = {

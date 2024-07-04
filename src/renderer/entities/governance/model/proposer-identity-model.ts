@@ -1,5 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { createEffect, createEvent, createStore, sample } from 'effector';
+import { readonly } from 'patronum';
 
 import { type Address, Chain, type ChainId, type Identity, type Referendum } from '@shared/core';
 import { referendumUtils } from '@entities/governance';
@@ -43,7 +44,7 @@ sample({
 });
 
 export const proposerIdentityModel = {
-  $proposers,
+  $proposers: readonly($proposers),
   $isProposersLoading: requestProposersFx.pending,
 
   events: {

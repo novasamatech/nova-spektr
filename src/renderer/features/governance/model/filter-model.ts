@@ -31,7 +31,7 @@ sample({
   target: $selectedVoteId,
 });
 
-export const referendumFilterModel = {
+export const filterModel = {
   $query,
   $debouncedQuery,
   $selectedTrackIds,

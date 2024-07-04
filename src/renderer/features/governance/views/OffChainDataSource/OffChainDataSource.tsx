@@ -4,8 +4,8 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { Select, Button, FootnoteText, HelpText, BaseModal, Icon, InputHint } from '@shared/ui';
-import { offChainModel } from '../model/off-chain-model';
-import { Sources } from '../lib/constants';
+import { offChainModel } from '../../model/off-chain-model';
+import { Sources } from './constants';
 import { useModalClose } from '@shared/lib/hooks';
 
 export const OffChainDataSource = () => {

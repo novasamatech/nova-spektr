@@ -1,8 +1,7 @@
-import { referendumUtils, VoteChart } from '@entities/governance';
+import { referendumUtils, votingService, VoteChart } from '@entities/governance';
 // import { formatBalance } from '@shared/lib/utils';
 import { Asset, Referendum, VotingThreshold } from '@shared/core';
-import { VotingStatusBadge } from '../../VotingStatusBadge';
-import { votingService } from '@entities/governance/lib/voting-service';
+import { VotingStatusBadge } from '../VotingStatusBadge';
 
 type Props = {
   referendum: Referendum;

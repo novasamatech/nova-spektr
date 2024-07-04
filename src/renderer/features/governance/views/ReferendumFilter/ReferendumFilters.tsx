@@ -2,14 +2,14 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { MultiSelect, Select } from '@shared/ui';
-import { referendumFilterModel } from '../model/referendum-filter-model';
-import { trackOptions, voteOptions } from '../common/constants';
+import { filterModel } from '../../model/filter-model';
+import { trackOptions, voteOptions } from './constants';
 
 export const ReferendumFilters = () => {
   const { t } = useI18n();
-  const selectedTrackIds = useUnit(referendumFilterModel.$selectedTrackIds);
-  const selectedVoteId = useUnit(referendumFilterModel.$selectedVoteId);
-  const query = useUnit(referendumFilterModel.$query);
+  const selectedTrackIds = useUnit(filterModel.$selectedTrackIds);
+  const selectedVoteId = useUnit(filterModel.$selectedVoteId);
+  const query = useUnit(filterModel.$query);
 
   if (query) return null;
 
@@ -25,7 +25,7 @@ export const ReferendumFilters = () => {
           value,
           element: t(value),
         }))}
-        onChange={referendumFilterModel.events.selectedTracksChanged}
+        onChange={filterModel.events.selectedTracksChanged}
       />
       <Select
         className="w-[103px]"
@@ -36,7 +36,7 @@ export const ReferendumFilters = () => {
           value,
           element: t(value),
         }))}
-        onChange={referendumFilterModel.events.selectedVoteChanged}
+        onChange={filterModel.events.selectedVoteChanged}
       />
     </div>
   );

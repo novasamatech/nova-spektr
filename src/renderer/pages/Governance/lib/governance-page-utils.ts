@@ -1,29 +1,30 @@
-import { Referendum, ReferendumId, VotingMap } from '@shared/core';
+import { CompletedReferendum, OngoingReferendum, Referendum, ReferendumId, VotingMap } from '@shared/core';
 import { includes } from '@shared/lib/utils';
-import { VoteStatus } from '@features/governance';
+import { AggregatedReferendum, VoteStatus } from '@features/governance';
 import { referendumUtils, votingService } from '@entities/governance';
 
 export const governancePageUtils = {
   filteredByQuery,
-  filterByVote,
-  filterByTracks,
+  isReferendumVoted,
+  isReferendumInTrack,
+
+  isAggregatedReferendumOngoing,
+  isAggregatedReferendumCompleted,
 };
 
-type FilteredByQueryParams<T extends Referendum> = {
+type FilteredByQueryParams<T> = {
   referendums: T[];
   query: string;
-  details: Record<ReferendumId, string>;
 };
 
-function filteredByQuery<T extends Referendum>({ referendums, query, details }: FilteredByQueryParams<T>): T[] {
+function filteredByQuery<T extends AggregatedReferendum>({ referendums, query }: FilteredByQueryParams<T>): T[] {
   if (!query) {
     return referendums;
   }
 
-  return referendums.filter(({ referendumId }) => {
-    const title = details[referendumId];
-    const hasIndex = includes(referendumId, query);
-    const hasTitle = includes(title, query);
+  return referendums.filter(({ referendum, title }) => {
+    const hasIndex = includes(referendum.referendumId, query);
+    const hasTitle = includes(title ?? '', query);
 
     return hasIndex || hasTitle;
   });
@@ -35,7 +36,7 @@ type FilterByVoteParams = {
   voting: VotingMap;
 };
 
-function filterByVote({ selectedVoteId, referendumId, voting }: FilterByVoteParams) {
+function isReferendumVoted({ selectedVoteId, referendumId, voting }: FilterByVoteParams) {
   if (!selectedVoteId) {
     return true;
   }
@@ -45,7 +46,7 @@ function filterByVote({ selectedVoteId, referendumId, voting }: FilterByVotePara
   return selectedVoteId === VoteStatus.VOTED ? isReferendumVoted : !isReferendumVoted;
 }
 
-function filterByTracks(selectedTrackIds: string[], referendum: Referendum) {
+function isReferendumInTrack(selectedTrackIds: string[], referendum: Referendum) {
   if (!selectedTrackIds?.length) {
     return true;
   }
@@ -55,4 +56,12 @@ function filterByTracks(selectedTrackIds: string[], referendum: Referendum) {
   }
 
   return selectedTrackIds.includes(referendum.track);
+}
+
+function isAggregatedReferendumOngoing(r: AggregatedReferendum): r is AggregatedReferendum<OngoingReferendum> {
+  return referendumUtils.isOngoing(r.referendum);
+}
+
+function isAggregatedReferendumCompleted(r: AggregatedReferendum): r is AggregatedReferendum<CompletedReferendum> {
+  return referendumUtils.isCompleted(r.referendum);
 }

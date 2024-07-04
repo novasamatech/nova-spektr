@@ -4,7 +4,7 @@ import { Loader, Markdown } from '@shared/ui';
 import { referendumUtils, TrackInfo } from '@entities/governance';
 import { pickNestedValue } from '@shared/lib/utils';
 import { ChainId, Referendum } from '@shared/core';
-import { referendumDetailsModel } from '../model/referendum-details-model';
+import { detailsAggregate } from '../../aggregates/details';
 import { ProposerName } from './ProposerName';
 
 type Props = {
@@ -13,9 +13,9 @@ type Props = {
 };
 
 export const ProposalDescription = ({ chainId, referendum }: Props) => {
-  const isDetailsLoading = useUnit(referendumDetailsModel.$isDetailsLoading);
+  const isDescriptionLoading = useUnit(detailsAggregate.$isDescriptionLoading);
   const description = useStoreMap({
-    store: referendumDetailsModel.$descriptions,
+    store: detailsAggregate.$descriptions,
     keys: [chainId, referendum.referendumId],
     fn: (x, [chainId, index]) => pickNestedValue(x, chainId, index),
   });
@@ -28,13 +28,13 @@ export const ProposalDescription = ({ chainId, referendum }: Props) => {
         {referendumUtils.isOngoing(referendum) && <TrackInfo trackId={referendum.track} />}
       </div>
 
-      {isDetailsLoading && (
+      {isDescriptionLoading && (
         <div className="flex justify-center items-center min-h-32">
           <Loader color="primary" size={25} />
         </div>
       )}
 
-      {!isDetailsLoading && description && <Markdown>{description}</Markdown>}
+      {!isDescriptionLoading && description && <Markdown>{description}</Markdown>}
     </div>
   );
 };

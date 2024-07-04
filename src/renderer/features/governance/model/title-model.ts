@@ -1,4 +1,4 @@
-import { createStore, sample } from 'effector';
+import { combine, createStore, sample } from 'effector';
 import isEmpty from 'lodash/isEmpty';
 
 import { type Chain, type ChainId, type ReferendumId } from '@shared/core';
@@ -8,6 +8,14 @@ import { createChunksEffect } from '../utils/createChunksEffect';
 import { networkSelectorModel } from './network-selector-model';
 
 const $titles = createStore<Record<ChainId, Record<ReferendumId, string>>>({});
+
+const $referendumTitles = combine(
+  {
+    titles: $titles,
+    chain: networkSelectorModel.$governanceChain,
+  },
+  ({ titles, chain }) => (chain ? titles[chain.chainId] ?? {} : {}),
+);
 
 type OffChainParams = {
   chain: Chain;
@@ -58,5 +66,6 @@ sample({
 
 export const titleModel = {
   $titles,
+  $referendumTitles,
   $isTitlesLoading,
 };

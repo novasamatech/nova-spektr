@@ -5,7 +5,7 @@ import { FootnoteText, Shimmering } from '@shared/ui';
 import { referendumUtils } from '@entities/governance';
 import { pickNestedValue } from '@shared/lib/utils';
 import { ChainId, Referendum } from '@shared/core';
-import { referendumDetailsModel } from '../model/referendum-details-model';
+import { detailsAggregate } from '../../aggregates/details';
 
 type Props = {
   chainId: ChainId;
@@ -15,10 +15,10 @@ type Props = {
 export const ProposerName = ({ chainId, referendum }: Props) => {
   const { t } = useI18n();
 
-  const isProposerLoading = useUnit(referendumDetailsModel.$isProposersLoading);
+  const isProposerLoading = useUnit(detailsAggregate.$isProposersLoading);
 
   const proposer = useStoreMap({
-    store: referendumDetailsModel.$proposers,
+    store: detailsAggregate.$proposers,
     keys: [chainId, referendum],
     fn: (x, [chainId, referendum]) => {
       return referendumUtils.isOngoing(referendum) && referendum.submissionDeposit

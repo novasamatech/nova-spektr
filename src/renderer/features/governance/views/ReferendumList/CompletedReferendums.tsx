@@ -2,16 +2,16 @@ import { useUnit } from 'effector-react';
 import { memo, useDeferredValue } from 'react';
 
 import { useI18n } from '@app/providers';
-import { Voted, governanceModel, votingService } from '@entities/governance';
+import { Voted, votingModel, votingService } from '@entities/governance';
 import { FootnoteText, Accordion, CaptionText, HeadlineText } from '@shared/ui';
 import { CompletedReferendum } from '@shared/core';
-import { networkSelectorModel } from '../../../model/network-selector-model';
-import { VotingStatusBadge } from '../../VotingStatusBadge';
-import { referendumListModel } from '../model/referendum-list-model';
+import { networkSelectorModel } from '../../model/network-selector-model';
+import { VotingStatusBadge } from '../VotingStatusBadge';
 import { ListItem } from './ListItem';
+import { AggregatedReferendum } from '@features/governance';
 
 type Props = {
-  referendums: CompletedReferendum[];
+  referendums: AggregatedReferendum<CompletedReferendum>[];
   onSelect: (value: CompletedReferendum) => void;
 };
 
@@ -19,8 +19,7 @@ export const CompletedReferendums = memo<Props>(({ referendums, onSelect }) => {
   const { t } = useI18n();
 
   const chain = useUnit(networkSelectorModel.$governanceChain);
-  const voting = useUnit(governanceModel.$voting);
-  const titles = useUnit(referendumListModel.$referendumTitles);
+  const voting = useUnit(votingModel.$voting);
 
   const deferredReferendums = useDeferredValue(referendums);
 
@@ -39,7 +38,7 @@ export const CompletedReferendums = memo<Props>(({ referendums, onSelect }) => {
         </div>
       </Accordion.Button>
       <Accordion.Content as="ul" className="flex flex-col gap-y-2">
-        {deferredReferendums.map((referendum) => (
+        {deferredReferendums.map(({ referendum, title }) => (
           <li key={referendum.referendumId}>
             <ListItem onClick={() => onSelect(referendum)}>
               <div className="flex items-center gap-x-2 w-full">
@@ -48,8 +47,7 @@ export const CompletedReferendums = memo<Props>(({ referendums, onSelect }) => {
                 <FootnoteText className="ml-auto text-text-secondary">#{referendum.referendumId}</FootnoteText>
               </div>
               <HeadlineText>
-                {titles[referendum.referendumId] ||
-                  t('governance.referendums.referendumTitle', { index: referendum.referendumId })}
+                {title || t('governance.referendums.referendumTitle', { index: referendum.referendumId })}
               </HeadlineText>
             </ListItem>
           </li>

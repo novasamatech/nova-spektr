@@ -1,24 +1,17 @@
-import { useStoreMap, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 import { memo, useDeferredValue } from 'react';
 
 import { useI18n } from '@app/providers';
-import {
-  Voted,
-  VoteChart,
-  TrackInfo,
-  governanceModel,
-  approveThresholdModel,
-  votingService,
-} from '@entities/governance';
+import { Voted, VoteChart, TrackInfo, votingService, votingModel } from '@entities/governance';
 import { Accordion, CaptionText, HeadlineText } from '@shared/ui';
 import type { OngoingReferendum } from '@shared/core';
-import { VotingStatusBadge } from '../../VotingStatusBadge';
-import { referendumListModel } from '../model/referendum-list-model';
-import { networkSelectorModel } from '../../../model/network-selector-model';
+import { networkSelectorModel } from '../../model/network-selector-model';
+import { AggregatedReferendum } from '../../types/structs';
+import { VotingStatusBadge } from '../VotingStatusBadge';
 import { ListItem } from './ListItem';
 
 type Props = {
-  referendums: OngoingReferendum[];
+  referendums: AggregatedReferendum<OngoingReferendum>[];
   onSelect: (value: OngoingReferendum) => void;
 };
 
@@ -26,24 +19,13 @@ export const OngoingReferendums = memo<Props>(({ referendums, onSelect }) => {
   const { t } = useI18n();
 
   const chain = useUnit(networkSelectorModel.$governanceChain);
-  const titles = useUnit(referendumListModel.$referendumTitles);
-  const voting = useUnit(governanceModel.$voting);
-
-  const approvalThresholds = useStoreMap({
-    store: approveThresholdModel.$approvalThresholds,
-    keys: [chain],
-    fn: (x, [chain]) => (chain ? x[chain.chainId] ?? {} : {}),
-  });
-
-  const supportThresholds = useStoreMap({
-    store: governanceModel.$supportThresholds,
-    keys: [chain],
-    fn: (x, [chain]) => (chain ? x[chain.chainId] ?? {} : {}),
-  });
+  const voting = useUnit(votingModel.$voting);
 
   const deferredReferendums = useDeferredValue(referendums);
 
-  if (!chain || deferredReferendums.length === 0) return null;
+  if (!chain || deferredReferendums.length === 0) {
+    return null;
+  }
 
   return (
     <Accordion isDefaultOpen>
@@ -56,10 +38,7 @@ export const OngoingReferendums = memo<Props>(({ referendums, onSelect }) => {
         </div>
       </Accordion.Button>
       <Accordion.Content as="ul" className="flex flex-col gap-y-2">
-        {deferredReferendums.map((referendum) => {
-          const approvalThreshold = approvalThresholds[referendum.referendumId];
-          const supportThreshold = supportThresholds[referendum.referendumId];
-
+        {deferredReferendums.map(({ referendum, title, approvalThreshold, supportThreshold }) => {
           const isPassing = supportThreshold ? supportThreshold.passing : false;
           const voteFractions = approvalThreshold
             ? votingService.getVoteFractions(referendum.tally, approvalThreshold.value)
@@ -77,8 +56,7 @@ export const OngoingReferendums = memo<Props>(({ referendums, onSelect }) => {
                 </div>
                 <div className="flex items-start gap-x-6 w-full">
                   <HeadlineText className="flex-1 pointer-events-auto">
-                    {titles[referendum.referendumId] ||
-                      t('governance.referendums.referendumTitle', { index: referendum.referendumId })}
+                    {title || t('governance.referendums.referendumTitle', { index: referendum.referendumId })}
                   </HeadlineText>
                   <div className="basis-[200px] shrink-0">
                     {voteFractions ? (

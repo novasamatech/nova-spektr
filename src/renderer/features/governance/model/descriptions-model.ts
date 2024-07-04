@@ -1,17 +1,13 @@
-import { createStore, createEffect, sample } from 'effector';
-import { createGate } from 'effector-react';
+import { createStore, createEffect, sample, createEvent } from 'effector';
 
 import type { Chain, ChainId, Referendum, ReferendumId } from '@shared/core';
 import { IGovernanceApi } from '@shared/api/governance';
 import { governanceModel } from '@entities/governance';
 import { pickNestedValue, setNestedValue } from '@shared/lib/utils';
-import { proposerIdentityModel } from '../../../model/proposer-identity-model';
-import { votingAssetsModel } from '../../../model/voting-assets-model';
-import { titleModel } from '../../../model/title-model';
-
-const flow = createGate<{ chain: Chain; referendum: Referendum }>();
 
 const $descriptions = createStore<Record<ChainId, Record<ReferendumId, string>>>({});
+
+const requestDescription = createEvent<{ referendum: Referendum; chain: Chain }>();
 
 type OffChainParams = {
   service: IGovernanceApi;
@@ -24,18 +20,13 @@ const requestOffChainDetailsFx = createEffect(({ service, chain, index }: OffCha
 });
 
 sample({
-  clock: flow.open,
-  target: proposerIdentityModel.events.requestProposer,
-});
-
-sample({
-  clock: flow.open,
+  clock: requestDescription,
   source: {
     api: governanceModel.$governanceApi,
-    details: $descriptions,
+    descriptions: $descriptions,
   },
-  filter: ({ api, details }, { referendum, chain }) =>
-    !!api && !pickNestedValue(details, chain.chainId, referendum.referendumId),
+  filter: ({ api, descriptions }, { referendum, chain }) =>
+    !!api && !pickNestedValue(descriptions, chain.chainId, referendum.referendumId),
   fn: ({ api }, { chain, referendum }) => ({
     chain,
     service: api!.service,
@@ -51,13 +42,11 @@ sample({
   target: $descriptions,
 });
 
-export const referendumDetailsModel = {
+export const descriptionsModel = {
   $descriptions,
-  $titles: titleModel.$titles,
-  $votingAssets: votingAssetsModel.$votingAssets,
-  $proposers: proposerIdentityModel.$proposers,
-  $isProposersLoading: proposerIdentityModel.$isProposersLoading,
-  $isDetailsLoading: requestOffChainDetailsFx.pending,
+  $isDescriptionLoading: requestOffChainDetailsFx.pending,
 
-  gates: { flow },
+  events: {
+    requestDescription,
+  },
 };

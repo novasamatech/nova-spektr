@@ -2,14 +2,14 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { Icon, BodyText } from '@shared/ui';
-import { referendumListModel } from '@features/governance';
-import { governancePageModel } from '../model/governance-page-model';
+import { listAggregate } from '@features/governance';
+import { governancePageAggregate } from '@pages/Governance/aggregates/governance-page';
 
 export const EmptyGovernance = () => {
   const { t } = useI18n();
-  const ongoing = useUnit(governancePageModel.$ongoing);
-  const completed = useUnit(governancePageModel.$completed);
-  const isLoading = useUnit(referendumListModel.$isLoading);
+  const ongoing = useUnit(governancePageAggregate.$ongoing);
+  const completed = useUnit(governancePageAggregate.$completed);
+  const isLoading = useUnit(listAggregate.$isLoading);
 
   if (ongoing.length > 0 || completed.length > 0 || isLoading) return null;
 

@@ -1,5 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 import { createEffect, createEvent, createStore, sample } from 'effector';
+import { readonly } from 'patronum';
 
 import { type Chain, type TrackId, type TrackInfo } from '@shared/core';
 import { governanceService } from '@shared/api/governance';
@@ -27,10 +28,8 @@ sample({
   target: $tracks,
 });
 
-$tracks.watch((x) => console.log('tracks', x));
-
 export const tracksModel = {
-  $tracks,
+  $tracks: readonly($tracks),
   $isTracksLoading: requestTracksFx.pending,
 
   effects: {

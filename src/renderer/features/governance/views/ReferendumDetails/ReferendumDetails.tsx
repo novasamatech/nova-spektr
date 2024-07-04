@@ -6,7 +6,7 @@ import { useI18n } from '@app/providers';
 import { BaseModal, Plate } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { approveThresholdModel, supportThresholdModel } from '@entities/governance';
-import { referendumDetailsModel } from '../model/referendum-details-model';
+import { detailsAggregate } from '../../aggregates/details';
 import { ProposalDescription } from './ProposalDescription';
 import { VotingStatus } from './VotingStatus';
 import { DetailsCard } from './DetailsCard';
@@ -18,18 +18,18 @@ type Props = {
 };
 
 export const ReferendumDetails = ({ chain, referendum, onClose }: Props) => {
-  useGate(referendumDetailsModel.gates.flow, { chain, referendum });
+  useGate(detailsAggregate.gates.flow, { chain, referendum });
 
   const { t } = useI18n();
 
   const title = useStoreMap({
-    store: referendumDetailsModel.$titles,
+    store: detailsAggregate.$titles,
     keys: [chain.chainId, referendum.referendumId],
     fn: (x, [chainId, index]) => pickNestedValue(x, chainId, index),
   });
 
   const votingAsset = useStoreMap({
-    store: referendumDetailsModel.$votingAssets,
+    store: detailsAggregate.$votingAssets,
     keys: [chain.chainId],
     fn: (x, [chainId]) => x[chainId],
   });

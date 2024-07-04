@@ -2,18 +2,18 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { SearchInput } from '@shared/ui';
-import { referendumFilterModel } from '../model/referendum-filter-model';
+import { filterModel } from '../../model/filter-model';
 
 export const ReferendumSearch = () => {
   const { t } = useI18n();
-  const query = useUnit(referendumFilterModel.$query);
+  const query = useUnit(filterModel.$query);
 
   return (
     <SearchInput
       value={query}
       placeholder={t('governance.searchPlaceholder')}
       wrapperClass="w-[230px]"
-      onChange={referendumFilterModel.events.queryChanged}
+      onChange={filterModel.events.queryChanged}
     />
   );
 };

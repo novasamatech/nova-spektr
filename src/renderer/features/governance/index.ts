@@ -1,18 +1,21 @@
-export { Locks, locksModel } from './views/Locks';
-export { NetworkSelector } from './views/NetworkSelector';
-export { networkSelectorModel } from './model/network-selector-model';
+export { proposerIdentityAggregate } from './aggregates/proposer-identity';
+export { detailsAggregate } from './aggregates/details';
+export { tracksAggregate } from './aggregates/tracks';
+export { listAggregate } from './aggregates/list';
+
 export { titleModel } from './model/title-model';
-export { tracksModel } from './model/tracks-model';
-export { referendumModel } from './model/referendum-model';
-export { Delegations, delegationsModel } from './views/Delegations';
-export { referendumDetailsModel, ReferendumDetails } from './views/ReferendumDetails';
-export { ReferendumSearch, ReferendumFilters, referendumFilterModel, VoteStatus } from './views/ReferendumFilter';
-export { OffChainDataSource, offChainModel } from './views/OffChainDataSource';
-export {
-  CompletedReferendums,
-  OngoingReferendums,
-  LoadingCompleted,
-  LoadingOngoing,
-  referendumListModel,
-  listService,
-} from './views/ReferendumList';
+export { filterModel } from './model/filter-model';
+export { networkSelectorModel } from './model/network-selector-model';
+export { offChainModel } from './model/off-chain-model';
+
+export { Locks } from './views/Locks';
+export { Delegations } from './views/Delegations';
+export { NetworkSelector } from './views/NetworkSelector';
+export { ReferendumDetails } from './views/ReferendumDetails';
+export { ReferendumSearch, ReferendumFilters, VoteStatus } from './views/ReferendumFilter';
+export { OffChainDataSource } from './views/OffChainDataSource';
+export { CompletedReferendums, OngoingReferendums, LoadingCompleted, LoadingOngoing } from './views/ReferendumList';
+
+export { listService } from './lib/list';
+
+export { type AggregatedReferendum } from './types/structs';
