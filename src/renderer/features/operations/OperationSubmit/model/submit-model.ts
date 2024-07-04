@@ -42,7 +42,7 @@ const extrinsicSucceeded = createEvent<{ id: number; params: ExtrinsicResultPara
 const extrinsicFailed = createEvent<{ id: number; params: string }>();
 const txsExecuted = createEvent();
 
-const $submitStore = restore<Input>(formInitiated, null).reset(formSubmitted);
+const $submitStore = restore<Input>(formInitiated, null);
 
 const $submitStep = createStore<{ step: SubmitStep; message: string }>({ step: SubmitStep.LOADING, message: '' });
 const $submittingTxs = createStore<number[]>([]);
