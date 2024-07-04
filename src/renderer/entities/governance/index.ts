@@ -1,7 +1,14 @@
 export { referendumUtils } from './lib/referendum-utils';
 export { governanceModel } from './model/governance-model';
+export { referendumModel } from './model/referendum-model';
+export { tracksModel } from './model/tracks-model';
+export { votingModel } from './model/voting-model';
+export { approveThresholdModel } from './model/approve-threshold-model';
+export { supportThresholdModel } from './model/support-threshold-model';
+export { proposerIdentityModel } from './model/proposer-identity-model';
 export { Voted } from './ui/Voted/Voted';
 export { TrackInfo } from './ui/TrackInfo/TrackInfo';
 export { VoteChart } from './ui/VoteCharts';
 export { ReferendumTimer } from './ui/ReferendumTimer/ReferendumTimer';
+export { votingService } from './lib/voting-service';
 export type { SourceType } from './lib/types';

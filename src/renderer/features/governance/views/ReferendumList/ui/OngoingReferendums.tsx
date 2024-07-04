@@ -2,12 +2,19 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { memo, useDeferredValue } from 'react';
 
 import { useI18n } from '@app/providers';
-import { Voted, VoteChart, governanceModel, TrackInfo } from '@entities/governance';
+import {
+  Voted,
+  VoteChart,
+  TrackInfo,
+  governanceModel,
+  approveThresholdModel,
+  votingService,
+} from '@entities/governance';
 import { Accordion, CaptionText, HeadlineText } from '@shared/ui';
 import type { OngoingReferendum } from '@shared/core';
-import { VotingStatusBadge } from '../../VotingStatus/ui/VotingStatusBadge';
-import { referendumListUtils } from '../lib/referendum-list-utils';
+import { VotingStatusBadge } from '../../VotingStatusBadge';
 import { referendumListModel } from '../model/referendum-list-model';
+import { networkSelectorModel } from '../../../model/network-selector-model';
 import { ListItem } from './ListItem';
 
 type Props = {
@@ -18,12 +25,12 @@ type Props = {
 export const OngoingReferendums = memo<Props>(({ referendums, onSelect }) => {
   const { t } = useI18n();
 
-  const chain = useUnit(referendumListModel.$chain);
-  const titles = useUnit(referendumListModel.$currentReferendumTitles);
+  const chain = useUnit(networkSelectorModel.$governanceChain);
+  const titles = useUnit(referendumListModel.$referendumTitles);
   const voting = useUnit(governanceModel.$voting);
 
   const approvalThresholds = useStoreMap({
-    store: governanceModel.$approvalThresholds,
+    store: approveThresholdModel.$approvalThresholds,
     keys: [chain],
     fn: (x, [chain]) => (chain ? x[chain.chainId] ?? {} : {}),
   });
@@ -55,14 +62,14 @@ export const OngoingReferendums = memo<Props>(({ referendums, onSelect }) => {
 
           const isPassing = supportThreshold ? supportThreshold.passing : false;
           const voteFractions = approvalThreshold
-            ? referendumListUtils.getVoteFractions(referendum.tally, approvalThreshold.value)
+            ? votingService.getVoteFractions(referendum.tally, approvalThreshold.value)
             : null;
 
           return (
             <li key={referendum.referendumId}>
               <ListItem onClick={() => onSelect(referendum)}>
                 <div className="flex items-center gap-x-2 w-full">
-                  <Voted active={referendumListUtils.isReferendumVoted(referendum.referendumId, voting)} />
+                  <Voted active={votingService.isReferendumVoted(referendum.referendumId, voting)} />
                   <VotingStatusBadge passing={isPassing} referendum={referendum} />
 
                   {/*<ReferendumTimer status="reject" time={600000} />*/}

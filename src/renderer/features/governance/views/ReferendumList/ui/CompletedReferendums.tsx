@@ -2,12 +2,12 @@ import { useUnit } from 'effector-react';
 import { memo, useDeferredValue } from 'react';
 
 import { useI18n } from '@app/providers';
-import { Voted, governanceModel } from '@entities/governance';
+import { Voted, governanceModel, votingService } from '@entities/governance';
 import { FootnoteText, Accordion, CaptionText, HeadlineText } from '@shared/ui';
 import { CompletedReferendum } from '@shared/core';
-import { VotingStatusBadge } from '../../VotingStatus/ui/VotingStatusBadge';
+import { networkSelectorModel } from '../../../model/network-selector-model';
+import { VotingStatusBadge } from '../../VotingStatusBadge';
 import { referendumListModel } from '../model/referendum-list-model';
-import { referendumListUtils } from '../lib/referendum-list-utils';
 import { ListItem } from './ListItem';
 
 type Props = {
@@ -18,9 +18,9 @@ type Props = {
 export const CompletedReferendums = memo<Props>(({ referendums, onSelect }) => {
   const { t } = useI18n();
 
-  const chain = useUnit(referendumListModel.$chain);
+  const chain = useUnit(networkSelectorModel.$governanceChain);
   const voting = useUnit(governanceModel.$voting);
-  const names = useUnit(referendumListModel.$currentReferendumTitles);
+  const titles = useUnit(referendumListModel.$referendumTitles);
 
   const deferredReferendums = useDeferredValue(referendums);
 
@@ -43,12 +43,12 @@ export const CompletedReferendums = memo<Props>(({ referendums, onSelect }) => {
           <li key={referendum.referendumId}>
             <ListItem onClick={() => onSelect(referendum)}>
               <div className="flex items-center gap-x-2 w-full">
-                <Voted active={referendumListUtils.isReferendumVoted(referendum.referendumId, voting)} />
+                <Voted active={votingService.isReferendumVoted(referendum.referendumId, voting)} />
                 <VotingStatusBadge referendum={referendum} />
                 <FootnoteText className="ml-auto text-text-secondary">#{referendum.referendumId}</FootnoteText>
               </div>
               <HeadlineText>
-                {names[referendum.referendumId] ||
+                {titles[referendum.referendumId] ||
                   t('governance.referendums.referendumTitle', { index: referendum.referendumId })}
               </HeadlineText>
             </ListItem>

@@ -1,5 +1,6 @@
 import { OngoingReferendum, Referendum, ReferendumId, ReferendumType, VotingMap, VotingType } from '@shared/core';
-import { referendumListUtils, VoteStatus } from '@features/governance';
+import { VoteStatus } from '@features/governance';
+import { votingService } from '@entities/governance';
 import { governancePageUtils } from '../governance-page-utils';
 
 describe('page/governance/lib/governance-page-utils', () => {
@@ -33,25 +34,25 @@ describe('page/governance/lib/governance-page-utils', () => {
   });
 
   test('should return true if selectedVoteId is VOTED and referendum is voted', () => {
-    jest.spyOn(referendumListUtils, 'isReferendumVoted').mockReturnValue(true);
+    jest.spyOn(votingService, 'isReferendumVoted').mockReturnValue(true);
     const result = governancePageUtils.filterByVote({ selectedVoteId: VoteStatus.VOTED, referendumId, voting });
     expect(result).toEqual(true);
   });
 
   test('should return false if selectedVoteId is VOTED and referendum is not voted', () => {
-    jest.spyOn(referendumListUtils, 'isReferendumVoted').mockReturnValue(false);
+    jest.spyOn(votingService, 'isReferendumVoted').mockReturnValue(false);
     const result = governancePageUtils.filterByVote({ selectedVoteId: VoteStatus.VOTED, referendumId, voting });
     expect(result).toEqual(false);
   });
 
   test('should return false if selectedVoteId is not VOTED and referendum is voted', () => {
-    jest.spyOn(referendumListUtils, 'isReferendumVoted').mockReturnValue(true);
+    jest.spyOn(votingService, 'isReferendumVoted').mockReturnValue(true);
     const result = governancePageUtils.filterByVote({ selectedVoteId: VoteStatus.NOT_VOTED, referendumId, voting });
     expect(result).toEqual(false);
   });
 
   test('should return true if selectedVoteId is not VOTED and referendum is not voted', () => {
-    jest.spyOn(referendumListUtils, 'isReferendumVoted').mockReturnValue(false);
+    jest.spyOn(votingService, 'isReferendumVoted').mockReturnValue(false);
     const result = governancePageUtils.filterByVote({ selectedVoteId: VoteStatus.NOT_VOTED, referendumId, voting });
     expect(result).toEqual(true);
   });

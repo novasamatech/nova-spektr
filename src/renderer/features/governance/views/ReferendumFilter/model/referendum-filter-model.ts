@@ -1,4 +1,5 @@
 import { createEvent, createStore, restore, sample } from 'effector';
+import { debounce } from 'patronum';
 
 import { DropdownResult } from '@shared/ui/types';
 
@@ -9,6 +10,7 @@ const selectedVoteChanged = createEvent<DropdownResult>();
 const $selectedTrackIds = createStore<string[]>([]);
 const $selectedVoteId = createStore<string>('');
 const $query = restore<string>(queryChanged, '');
+const $debouncedQuery = restore<string>(debounce(queryChanged, 100), '');
 
 sample({
   clock: selectedTracksChanged,
@@ -31,6 +33,7 @@ sample({
 
 export const referendumFilterModel = {
   $query,
+  $debouncedQuery,
   $selectedTrackIds,
   $selectedVoteId,
   events: {

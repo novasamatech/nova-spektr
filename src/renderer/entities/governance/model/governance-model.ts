@@ -1,7 +1,7 @@
 import { createStore, createEvent, sample, createEffect } from 'effector';
 
 import { IGovernanceApi } from '@shared/api/governance';
-import type { TrackId, TrackInfo, ReferendumId, Referendum, VotingThreshold, VotingMap, ChainId } from '@shared/core';
+import type { ReferendumId, VotingThreshold, VotingMap, ChainId } from '@shared/core';
 import { localStorageService } from '@shared/api/local-storage';
 import { type SourceType } from '../lib/types';
 import { GOVERNANCE_API_KEY, GovernanceApis } from '../lib/constants';
@@ -9,12 +9,8 @@ import { GOVERNANCE_API_KEY, GovernanceApis } from '../lib/constants';
 const governanceStarted = createEvent();
 const governanceApiChanged = createEvent<SourceType>();
 
-const $referendums = createStore<Record<ChainId, Referendum[]>>({});
-
-const $tracks = createStore<Record<TrackId, TrackInfo>>({});
 const $voting = createStore<VotingMap>({});
 
-const $approvalThresholds = createStore<Record<ChainId, Record<ReferendumId, VotingThreshold>>>({});
 const $supportThresholds = createStore<Record<ChainId, Record<ReferendumId, VotingThreshold>>>({});
 
 const $governanceApi = createStore<{ type: SourceType; service: IGovernanceApi } | null>(null);
@@ -47,10 +43,7 @@ sample({
 });
 
 export const governanceModel = {
-  $referendums,
-  $tracks,
   $voting,
-  $approvalThresholds,
   $supportThresholds,
   $governanceApi,
 

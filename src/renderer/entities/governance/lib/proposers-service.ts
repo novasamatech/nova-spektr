@@ -1,12 +1,8 @@
-import { ApiPromise } from '@polkadot/api';
 import { u8aToString } from '@polkadot/util';
-import { PalletIdentityRegistration } from '@polkadot/types/lookup';
+import { type ApiPromise } from '@polkadot/api';
+import { type PalletIdentityRegistration } from '@polkadot/types/lookup';
 
 import type { Address, Identity, SubIdentity } from '@shared/core';
-
-export const referendumProposersService = {
-  getIdentities,
-};
 
 async function getIdentities(api: ApiPromise, addresses: Address[]) {
   const subIdentities = await getSubIdentities(api, addresses);
@@ -69,3 +65,7 @@ async function getParentIdentities(api: ApiPromise, subIdentities: SubIdentity[]
 
   return result;
 }
+
+export const proposersService = {
+  getIdentities,
+};

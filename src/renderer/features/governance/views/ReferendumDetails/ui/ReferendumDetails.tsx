@@ -5,9 +5,8 @@ import { pickNestedValue } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
 import { BaseModal, Plate } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
-import { governanceModel } from '@entities/governance';
+import { approveThresholdModel, supportThresholdModel } from '@entities/governance';
 import { referendumDetailsModel } from '../model/referendum-details-model';
-import { referendumListModel } from '../../ReferendumList/model/referendum-list-model';
 import { ProposalDescription } from './ProposalDescription';
 import { VotingStatus } from './VotingStatus';
 import { DetailsCard } from './DetailsCard';
@@ -24,7 +23,7 @@ export const ReferendumDetails = ({ chain, referendum, onClose }: Props) => {
   const { t } = useI18n();
 
   const title = useStoreMap({
-    store: referendumListModel.$referendumsTitles,
+    store: referendumDetailsModel.$titles,
     keys: [chain.chainId, referendum.referendumId],
     fn: (x, [chainId, index]) => pickNestedValue(x, chainId, index),
   });
@@ -36,13 +35,13 @@ export const ReferendumDetails = ({ chain, referendum, onClose }: Props) => {
   });
 
   const approvalThreshold = useStoreMap({
-    store: governanceModel.$approvalThresholds,
+    store: approveThresholdModel.$approvalThresholds,
     keys: [chain.chainId, referendum.referendumId],
     fn: (x, [chainId, index]) => pickNestedValue(x, chainId, index),
   });
 
   const supportThreshold = useStoreMap({
-    store: governanceModel.$supportThresholds,
+    store: supportThresholdModel.$supportThresholds,
     keys: [chain.chainId, referendum.referendumId],
     fn: (x, [chainId, index]) => pickNestedValue(x, chainId, index),
   });

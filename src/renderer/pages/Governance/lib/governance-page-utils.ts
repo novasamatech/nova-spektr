@@ -1,7 +1,7 @@
 import { Referendum, ReferendumId, VotingMap } from '@shared/core';
 import { includes } from '@shared/lib/utils';
-import { VoteStatus, referendumListUtils } from '@features/governance';
-import { referendumUtils } from '@entities/governance';
+import { VoteStatus } from '@features/governance';
+import { referendumUtils, votingService } from '@entities/governance';
 
 export const governancePageUtils = {
   filteredByQuery,
@@ -40,7 +40,7 @@ function filterByVote({ selectedVoteId, referendumId, voting }: FilterByVotePara
     return true;
   }
 
-  const isReferendumVoted = referendumListUtils.isReferendumVoted(referendumId, voting);
+  const isReferendumVoted = votingService.isReferendumVoted(referendumId, voting);
 
   return selectedVoteId === VoteStatus.VOTED ? isReferendumVoted : !isReferendumVoted;
 }

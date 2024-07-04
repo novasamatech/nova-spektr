@@ -1,6 +1,6 @@
 import { createEvent, restore, combine, sample } from 'effector';
 
-import { Chain } from '@shared/core';
+import { type Chain, ConnectionStatus } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 
 const chainChanged = createEvent<Chain>();
@@ -35,7 +35,27 @@ sample({
   target: $governanceChain,
 });
 
+const $isConnectionActive = combine(
+  {
+    chain: $governanceChain,
+    statuses: networkModel.$connectionStatuses,
+  },
+  ({ chain, statuses }) => {
+    if (!chain) {
+      return false;
+    }
+
+    const status: ConnectionStatus | void = statuses[chain.chainId];
+    if (!status) {
+      return false;
+    }
+
+    return networkUtils.isConnectingStatus(status) || networkUtils.isConnectedStatus(status);
+  },
+);
+
 export const networkSelectorModel = {
+  $isConnectionActive,
   $governanceChain,
   $governanceChains,
   $governanceChainApi,

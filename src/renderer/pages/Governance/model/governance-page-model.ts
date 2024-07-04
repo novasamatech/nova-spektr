@@ -3,30 +3,31 @@ import { createGate } from 'effector-react';
 import { either } from 'patronum';
 
 import {
+  referendumModel,
   networkSelectorModel,
   referendumFilterModel,
-  referendumListModel,
-  referendumListUtils,
+  listService,
+  titleModel,
 } from '@features/governance';
-import { governanceModel, referendumUtils } from '@entities/governance';
+import { referendumUtils, votingModel } from '@entities/governance';
 import { governancePageUtils } from '../lib/governance-page-utils';
 
 const governanceFlow = createGate();
 
 const $currentReferendums = combine(
   {
-    referendums: governanceModel.$referendums,
-    chain: referendumListModel.$chain,
+    referendums: referendumModel.$referendums,
+    chain: networkSelectorModel.$governanceChain,
   },
   ({ referendums, chain }) => {
-    return chain ? referendumListUtils.getSortedReferendums(referendums[chain.chainId] ?? []) : [];
+    return chain ? listService.sortReferendums(referendums[chain.chainId] ?? []) : [];
   },
 );
 
-const $currentDetails = combine(
+const $titles = combine(
   {
-    titles: referendumListModel.$referendumsTitles,
-    chain: referendumListModel.$chain,
+    titles: titleModel.$titles,
+    chain: networkSelectorModel.$governanceChain,
   },
   ({ titles, chain }) => {
     return chain ? titles[chain.chainId] ?? {} : {};
@@ -36,14 +37,14 @@ const $currentDetails = combine(
 const $referendumsFilteredByQuery = combine(
   {
     referendums: $currentReferendums,
-    details: $currentDetails,
-    query: referendumFilterModel.$query,
+    titles: $titles,
+    query: referendumFilterModel.$debouncedQuery,
   },
-  ({ referendums, details, query }) => {
+  ({ referendums, titles, query }) => {
     return governancePageUtils.filteredByQuery({
       referendums,
       query,
-      details,
+      details: titles,
     });
   },
 );
@@ -53,7 +54,7 @@ const $referendumsFilteredByStatus = combine(
     referendums: $currentReferendums,
     selectedVoteId: referendumFilterModel.$selectedVoteId,
     selectedTrackIds: referendumFilterModel.$selectedTrackIds,
-    voting: governanceModel.$voting,
+    voting: votingModel.$voting,
   },
   ({ referendums, selectedVoteId, voting, selectedTrackIds }) => {
     return referendums.filter((referendum) => {
