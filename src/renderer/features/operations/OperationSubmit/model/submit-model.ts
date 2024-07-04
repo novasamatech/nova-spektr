@@ -288,7 +288,7 @@ sample({
       return { step: SubmitStep.ERROR, message: results[0].params as string };
     }
 
-    return { step: SubmitStep.MIXED_RESULT, message: '' };
+    return { step: SubmitStep.WARNING, message: '' };
   },
   target: $submitStep,
 });
