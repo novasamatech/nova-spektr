@@ -52,7 +52,6 @@ sample({
 
 export const listAggregate = {
   $referendums: readonly($referendums),
-  $requestPending: referendumModelEntity.$isReferendumsLoading,
   $isLoading: or(
     not(networkSelectorModel.$isConnectionActive),
     inFlight([
@@ -66,6 +65,7 @@ export const listAggregate = {
   effects: {
     requestReferendumsFx: referendumModelEntity.effects.requestReferendumsFx,
   },
+
   events: {
     requestDone: referendumModelEntity.events.requestDone,
   },

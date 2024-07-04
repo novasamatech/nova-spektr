@@ -18,7 +18,7 @@ const $governanceChainApi = combine(
     apis: networkModel.$apis,
   },
   ({ chain, apis }) => {
-    return chain ? apis[chain.chainId] : null;
+    return chain ? apis[chain.chainId] ?? null : null;
   },
 );
 

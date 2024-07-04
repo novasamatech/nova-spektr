@@ -1,6 +1,7 @@
 import { dictionary } from '@shared/lib/utils';
 import type { Chain } from '@shared/core';
 import type { IGovernanceApi } from '../lib/types';
+import { offChainUtils } from '@shared/api/governance/off-chain/lib/off-chain-utils';
 
 type SubsquareData = {
   total: number;
@@ -19,27 +20,32 @@ type SubsquareData = {
  */
 const getReferendumList: IGovernanceApi['getReferendumList'] = async (chain, callback) => {
   const chainName = chain.specName;
+  const pageSize = 50;
 
   if (chainName) {
     const getApiUrl = (chainName: string, page: number, size = 100): string => {
       return `https://${chainName}.subsquare.io/api/gov2/referendums?page=${page}&page_size=${size}&simple=true`;
     };
 
-    fetch(getApiUrl(chainName, 1), { method: 'GET' })
-      .then((res) => res.json())
-      .then((ping: SubsquareData) => {
-        const totalPages = Math.ceil(ping.total / 100);
+    const ping: SubsquareData = await fetch(getApiUrl(chainName, 1, pageSize), {
+      method: 'GET',
+      mode: 'same-origin',
+    }).then((r) => r.json());
+    const totalPages = Math.ceil(ping.total / pageSize);
 
-        callback(parseSubsquareData(ping), totalPages === 1);
+    callback(parseSubsquareData(ping), totalPages === 1);
 
-        for (let index = 2; index <= totalPages; index++) {
-          fetch(getApiUrl(chainName, index), { method: 'GET' })
-            .then((res) => res.json())
-            .then((data: SubsquareData) => {
-              callback(parseSubsquareData(data), index === totalPages - 1);
-            });
-        }
-      });
+    return offChainUtils.createChunkedTasks({
+      items: Array.from({ length: totalPages - 1 }),
+      chunkSize: 6,
+      task: (_, index) => {
+        return fetch(getApiUrl(chainName, index + 2, pageSize), { method: 'GET', mode: 'no-cors' })
+          .then((res) => res.json())
+          .then((data: SubsquareData) => {
+            callback(parseSubsquareData(data), index === totalPages - 1);
+          });
+      },
+    });
   }
 };
 
