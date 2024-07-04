@@ -45,7 +45,6 @@ const cancelValidationWarning = createEvent();
 const removeTxStarted = createEvent<BasketTransaction>();
 const removeTxCancelled = createEvent();
 const txRemoved = createEvent<BasketTransaction>();
-const selectedTxsReset = createEvent();
 const stepChanged = createEvent<Step>();
 
 const $step = restore(stepChanged, Step.SELECT);
@@ -354,12 +353,6 @@ sample({
 });
 
 sample({
-  clock: selectedTxsReset,
-  fn: () => [],
-  target: $selectedTxs,
-});
-
-sample({
   clock: signOperationsModel.output.flowFinished,
   fn: () => Step.SELECT,
   target: stepChanged,
@@ -398,6 +391,6 @@ export const basketPageModel = {
     removeTxCancelled,
     txRemoved,
 
-    selectedTxsReset,
+    selectedTxsReset: $selectedTxs.reinit,
   },
 };
