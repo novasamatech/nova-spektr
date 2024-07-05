@@ -11,6 +11,7 @@ import {
 import { networkSelectorModel } from '../model/networkSelector';
 import { titleModel } from '../model/title';
 import { AggregatedReferendum } from '../types/structs';
+import { votingAggregate } from './voting';
 
 const $referendums = combine(
   {
@@ -19,7 +20,7 @@ const $referendums = combine(
     approvalThresholds: approveThresholdModel.$approvalThresholds,
     supportThresholds: supportThresholdModel.$supportThresholds,
     chain: networkSelectorModel.$governanceChain,
-    voting: votingModel.$voting,
+    voting: votingAggregate.$voting,
   },
   ({ referendums, chain, titles, approvalThresholds, supportThresholds, voting }): AggregatedReferendum[] => {
     if (!chain) {
