@@ -1,6 +1,6 @@
 import { sample } from 'effector';
 
-import { tracksModel as tracksModelEntity } from '@entities/governance';
+import { tracksModel } from '@entities/governance';
 import { networkSelectorModel } from '../model/networkSelector';
 
 sample({
@@ -8,13 +8,14 @@ sample({
   source: networkSelectorModel.$governanceChain,
   filter: (chain, api) => !!chain && !!api,
   fn: (chain, api) => ({ api: api!, chain: chain! }),
-  target: tracksModelEntity.events.requestTracks,
+  target: tracksModel.events.requestTracks,
 });
 
 export const tracksAggregate = {
-  $tracks: tracksModelEntity.$tracks,
+  $tracks: tracksModel.$tracks,
 
   events: {
-    requestDone: tracksModelEntity.events.requestDone,
+    requestTracks: tracksModel.events.requestTracks,
+    requestDone: tracksModel.events.requestDone,
   },
 };

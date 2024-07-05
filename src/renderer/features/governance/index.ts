@@ -1,6 +1,7 @@
 export { proposerIdentityAggregate } from './aggregates/proposer-identity';
 export { detailsAggregate } from './aggregates/details';
 export { tracksAggregate } from './aggregates/tracks';
+export { votingAggregate } from './aggregates/voting';
 export { listAggregate } from './aggregates/list';
 
 export { titleModel } from './model/title';
