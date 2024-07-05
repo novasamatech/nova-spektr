@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react';
-import { groupBy, isEqual } from 'lodash';
+import { isEqual } from 'lodash';
+import { useUnit } from 'effector-react';
 
-import { cnTw, includes, isEthereumAccountId, isStringsMatchQuery, RootExplorers, toAddress } from '@shared/lib/utils';
+import { cnTw, includes, isEthereumAccountId } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
-import { Button, Checkbox, FootnoteText, Icon, SearchInput, Tabs, Accordion, BodyText, CaptionText } from '@shared/ui';
-import { TabItem } from '@shared/ui/types';
+import { SmallTitleText } from '@shared/ui';
 import { ExtendedAccount, ExtendedContact } from '../common/types';
-import { EmptyContactList } from '@entities/contact';
 import { type Contact, type Account, ShardAccount, Wallet, Chain } from '@shared/core';
-import { ContactItem, ExplorersPopover, WalletCardMd } from '@entities/wallet';
 import { networkUtils } from '@entities/network';
 import { CreateContactModal } from '@widgets/ManageContactModal';
+import { signatoryModel } from '../../../model/signatory-model';
+import { Signatory } from './Signatory';
 
 const enum SignatoryTabs {
   ACCOUNTS = 'accounts',
@@ -31,7 +31,7 @@ export const SelectSignatories = ({ isActive, accounts, wallets, contacts, chain
   const { t } = useI18n();
 
   const [query, setQuery] = useState('');
-  const [accountsQuery, setAccountsQuery] = useState('');
+  // const [accountsQuery, setAccountsQuery] = useState('');
   const [contactList, setContactList] = useState<ExtendedContact[]>([]);
   const [accountsList, setAccountsList] = useState<Record<Wallet['id'], Array<ExtendedAccount | ExtendedAccount[]>>>(
     {},
@@ -43,6 +43,7 @@ export const SelectSignatories = ({ isActive, accounts, wallets, contacts, chain
 
   const selectedAccountsList = Object.values(selectedAccounts);
   const selectedContactsList = Object.values(selectedContacts);
+  const signatories = useUnit(signatoryModel.$signatories);
 
   useEffect(() => {
     const addressBookContacts = contacts
@@ -102,48 +103,6 @@ export const SelectSignatories = ({ isActive, accounts, wallets, contacts, chain
   }, [chain]);
 
   useEffect(() => {
-    const extendedAccounts = accounts.reduce<Array<ExtendedAccount | ExtendedAccount[]>>((acc, account) => {
-      if (Array.isArray(account)) {
-        const toAdd = [] as ExtendedAccount[];
-
-        (account as ShardAccount[]).forEach((a) => {
-          const address = toAddress(a.accountId, { prefix: chain?.addressPrefix });
-
-          if (!accountsQuery || isStringsMatchQuery(accountsQuery, [a.accountId, a.name, address]))
-            toAdd.push({
-              ...a,
-              index: a.accountId.toString(),
-              address,
-            });
-        });
-
-        if (toAdd.length > 0) {
-          acc.push(toAdd);
-        }
-      } else {
-        const address = toAddress(account.accountId, { prefix: chain?.addressPrefix });
-
-        if (!accountsQuery || isStringsMatchQuery(accountsQuery, [account.accountId, account.name, address])) {
-          acc.push({
-            ...account,
-            index: account.accountId.toString(),
-            address: toAddress(account.accountId),
-          });
-        }
-      }
-
-      return acc;
-    }, []);
-
-    const groupedWithWallet = groupBy(
-      extendedAccounts,
-      (account) => (account as ExtendedAccount).walletId || (account as ExtendedAccount[])[0].walletId,
-    );
-
-    setAccountsList(groupedWithWallet);
-  }, [accounts.length, chain?.chainId, accountsQuery]);
-
-  useEffect(() => {
     onSelect(selectedAccountsList, selectedContactsList);
   }, [selectedAccountsList.length, selectedContactsList.length]);
 
@@ -197,206 +156,246 @@ export const SelectSignatories = ({ isActive, accounts, wallets, contacts, chain
   const selectedAccountsLength = Object.values(selectedAccounts).length;
   const selectedContactsLength = Object.values(selectedContacts).length;
 
-  const AccountsTab = hasAccounts ? (
-    <div className="flex flex-col gap-2">
-      <SearchInput
-        wrapperClass="mx-2"
-        placeholder={t('createMultisigAccount.searchContactPlaceholder')}
-        value={accountsQuery}
-        onChange={setAccountsQuery}
-      />
-      <ul className="flex flex-col gap-y-2 overflow-auto max-h-40">
-        {Object.entries(accountsList).map(([walletId, accounts]) => {
-          const wallet = wallets[Number(walletId)];
+  // const AccountsTab = hasAccounts ? (
+  //   <div className="flex flex-col gap-2">
+  //     <SearchInput
+  //       wrapperClass="mx-2"
+  //       placeholder={t('createMultisigAccount.searchContactPlaceholder')}
+  //       value={accountsQuery}
+  //       onChange={setAccountsQuery}
+  //     />
+  //     <Combobox
+  //       options={[{ id: '1', element: <div>something</div>, value: 1 }]}
+  //       onChange={(d) => {
+  //         console.log('<><>onChange', d);
+  //       }}
+  //       onInput={(d) => {
+  //         console.log('<><>onInput', d);
+  //       }}
+  //     />
+  //     {/* <ul className="flex flex-col gap-y-2 overflow-auto max-h-40">
+  //       {Object.entries(accountsList).map(([walletId, accounts]) => {
+  //         const wallet = wallets[Number(walletId)];
 
-          return (
-            <li key={walletId}>
-              <WalletCardMd className="py-[7px] px-2" wallet={wallet} />
+  //         return (
+  //           <li key={walletId}>
+  //             <WalletCardMd className="py-[7px] px-2" wallet={wallet} />
 
-              <div className="pl-6">
-                {accounts.map((account) => {
-                  if (Array.isArray(account)) {
-                    return (
-                      //eslint-disable-next-line i18next/no-literal-string
-                      <Accordion key={`${walletId}_sharded_${account[0].id}`} className="pl-8">
-                        <Accordion.Button buttonClass="px-1.5 py-2">
-                          <div className="flex items-center gap-x-2">
-                            <div
-                              className={cnTw(
-                                'flex items-center justify-center rounded-[30px] px-1.5 h-4',
-                                'bg-input-background-disabled',
-                              )}
-                            >
-                              <CaptionText className="text-text-secondary">{account.length}</CaptionText>
-                            </div>
-                            <BodyText className="text-text-secondary">{account[0].name}</BodyText>
-                          </div>
-                        </Accordion.Button>
-                        <Accordion.Content as="ul">
-                          {account.map((a) => {
-                            const disabled = isDisabledAccount(a);
+  //             <div className="pl-6">
+  //               {accounts.map((account) => {
+  //                 if (Array.isArray(account)) {
+  //                   return (
+  //                     //eslint-disable-next-line i18next/no-literal-string
+  //                     <Accordion key={`${walletId}_sharded_${account[0].id}`} className="pl-8">
+  //                       <Accordion.Button buttonClass="px-1.5 py-2">
+  //                         <div className="flex items-center gap-x-2">
+  //                           <div
+  //                             className={cnTw(
+  //                               'flex items-center justify-center rounded-[30px] px-1.5 h-4',
+  //                               'bg-input-background-disabled',
+  //                             )}
+  //                           >
+  //                             <CaptionText className="text-text-secondary">{account.length}</CaptionText>
+  //                           </div>
+  //                           <BodyText className="text-text-secondary">{account[0].name}</BodyText>
+  //                         </div>
+  //                       </Accordion.Button>
+  //                       <Accordion.Content as="ul">
+  //                         {account.map((a) => {
+  //                           const disabled = isDisabledAccount(a);
 
-                            return (
-                              <li
-                                key={`${a.id}_shard_${walletId}`}
-                                className={cnTw(
-                                  'py-1.5 pl-8 rounded-md',
-                                  !disabled && 'hover:bg-action-background-hover',
-                                )}
-                              >
-                                <Checkbox
-                                  checked={!!selectedAccounts[a.id]}
-                                  disabled={disabled}
-                                  onChange={() => selectAccount(a)}
-                                >
-                                  <ExplorersPopover
-                                    address={a.accountId}
-                                    explorers={RootExplorers}
-                                    button={
-                                      <ContactItem
-                                        addressPrefix={chain?.addressPrefix}
-                                        hideAddress
-                                        name={toAddress(a.accountId, { prefix: chain?.addressPrefix, chunk: 7 })}
-                                        address={a.accountId}
-                                      />
-                                    }
-                                  />
-                                </Checkbox>
-                              </li>
-                            );
-                          })}
-                        </Accordion.Content>
-                      </Accordion>
-                    );
-                  }
+  //                           return (
+  //                             <li
+  //                               key={`${a.id}_shard_${walletId}`}
+  //                               className={cnTw(
+  //                                 'py-1.5 pl-8 rounded-md',
+  //                                 !disabled && 'hover:bg-action-background-hover',
+  //                               )}
+  //                             >
+  //                               <Checkbox
+  //                                 checked={!!selectedAccounts[a.id]}
+  //                                 disabled={disabled}
+  //                                 onChange={() => selectAccount(a)}
+  //                               >
+  //                                 <ExplorersPopover
+  //                                   address={a.accountId}
+  //                                   explorers={RootExplorers}
+  //                                   button={
+  //                                     <ContactItem
+  //                                       addressPrefix={chain?.addressPrefix}
+  //                                       hideAddress
+  //                                       name={toAddress(a.accountId, { prefix: chain?.addressPrefix, chunk: 7 })}
+  //                                       address={a.accountId}
+  //                                     />
+  //                                   }
+  //                                 />
+  //                               </Checkbox>
+  //                             </li>
+  //                           );
+  //                         })}
+  //                       </Accordion.Content>
+  //                     </Accordion>
+  //                   );
+  //                 }
 
-                  const disabled = isDisabledAccount(account);
+  //                 const disabled = isDisabledAccount(account);
 
-                  return (
-                    <li
-                      key={`${account.id}_${walletId}`}
-                      className={cnTw('py-1.5 px-2 rounded-md', !disabled && 'hover:bg-action-background-hover')}
-                    >
-                      <Checkbox
-                        checked={!!selectedAccounts[account.id]}
-                        disabled={disabled}
-                        onChange={() => selectAccount(account)}
-                      >
-                        <ExplorersPopover
-                          address={account.accountId}
-                          explorers={RootExplorers}
-                          button={
-                            <ContactItem
-                              addressPrefix={chain?.addressPrefix}
-                              name={account.name}
-                              address={account.accountId}
-                            />
-                          }
-                        />
-                      </Checkbox>
-                    </li>
-                  );
-                })}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  ) : (
-    <EmptyContactList description={t('createMultisigAccount.noWalletsLabel')} />
-  );
+  //                 return (
+  //                   <li
+  //                     key={`${account.id}_${walletId}`}
+  //                     className={cnTw('py-1.5 px-2 rounded-md', !disabled && 'hover:bg-action-background-hover')}
+  //                   >
+  //                     <Checkbox
+  //                       checked={!!selectedAccounts[account.id]}
+  //                       disabled={disabled}
+  //                       onChange={() => selectAccount(account)}
+  //                     >
+  //                       <ExplorersPopover
+  //                         address={account.accountId}
+  //                         explorers={RootExplorers}
+  //                         button={
+  //                           <ContactItem
+  //                             addressPrefix={chain?.addressPrefix}
+  //                             name={account.name}
+  //                             address={account.accountId}
+  //                           />
+  //                         }
+  //                       />
+  //                     </Checkbox>
+  //                   </li>
+  //                 );
+  //               })}
+  //             </div>
+  //           </li>
+  //         );
+  //       })}
+  //     </ul> */}
+  //   </div>
+  // ) : (
+  //   <EmptyContactList description={t('createMultisigAccount.noWalletsLabel')} />
+  // );
 
-  const ContactsTab = (
-    <div>
-      <div className="flex items-center gap-x-4 mb-4 px-2">
-        <SearchInput
-          wrapperClass="flex-1"
-          placeholder={t('createMultisigAccount.searchContactPlaceholder')}
-          value={query}
-          onChange={setQuery}
-        />
-        {hasContacts && (
-          <Button variant="text" suffixElement={<Icon name="add" size={16} />} onClick={toggleContactModalOpen}>
-            {t('createMultisigAccount.addContact')}
-          </Button>
-        )}
-      </div>
+  // const ContactsTab = (
+  //   <div>
+  //     <div className="flex items-center gap-x-4 mb-4 px-2">
+  //       <SearchInput
+  //         wrapperClass="flex-1"
+  //         placeholder={t('createMultisigAccount.searchContactPlaceholder')}
+  //         value={query}
+  //         onChange={setQuery}
+  //       />
+  //       {hasContacts && (
+  //         <Button variant="text" suffixElement={<Icon name="add" size={16} />} onClick={toggleContactModalOpen}>
+  //           {t('createMultisigAccount.addContact')}
+  //         </Button>
+  //       )}
+  //     </div>
 
-      {hasContacts ? (
-        <ul className="flex flex-col gap-y-2">
-          {searchedContactList.map((contact) => {
-            const disabled = isDisabledContact(contact);
+  //     {hasContacts ? (
+  //       <ul className="flex flex-col gap-y-2">
+  //         {searchedContactList.map((contact) => {
+  //           const disabled = isDisabledContact(contact);
 
-            return (
-              <li
-                key={contact.index + '_contacts'}
-                className={cnTw('py-1.5 px-2 rounded-md', !disabled && 'hover:bg-action-background-hover')}
-              >
-                <Checkbox
-                  checked={Boolean(selectedContacts[contact.index]) || false}
-                  disabled={disabled}
-                  onChange={() => selectContact(contact)}
-                >
-                  <ExplorersPopover
-                    address={contact.accountId}
-                    explorers={RootExplorers}
-                    button={<ContactItem name={contact.name} address={contact.accountId} />}
-                  />
-                </Checkbox>
-              </li>
-            );
-          })}
-        </ul>
-      ) : (
-        <EmptyContactList onNewContact={toggleContactModalOpen} />
-      )}
-    </div>
-  );
+  //           return (
+  //             <li
+  //               key={contact.index + '_contacts'}
+  //               className={cnTw('py-1.5 px-2 rounded-md', !disabled && 'hover:bg-action-background-hover')}
+  //             >
+  //               <Checkbox
+  //                 checked={Boolean(selectedContacts[contact.index]) || false}
+  //                 disabled={disabled}
+  //                 onChange={() => selectContact(contact)}
+  //               >
+  //                 <ExplorersPopover
+  //                   address={contact.accountId}
+  //                   explorers={RootExplorers}
+  //                   button={<ContactItem name={contact.name} address={contact.accountId} />}
+  //                 />
+  //               </Checkbox>
+  //             </li>
+  //           );
+  //         })}
+  //       </ul>
+  //     ) : (
+  //       <EmptyContactList onNewContact={toggleContactModalOpen} />
+  //     )}
+  //   </div>
+  // );
 
-  const TabItems: TabItem[] = [
-    {
-      id: SignatoryTabs.ACCOUNTS,
-      panel: AccountsTab,
-      title: (
-        <>
-          {t('createMultisigAccount.accountsTab')}
-          {selectedAccountsLength > 0 && (
-            <FootnoteText as="span" className="text-text-tertiary ml-1">
-              {selectedAccountsLength}
-            </FootnoteText>
-          )}
-        </>
-      ),
-    },
-    {
-      id: SignatoryTabs.CONTACTS,
-      panel: ContactsTab,
-      title: (
-        <>
-          {t('createMultisigAccount.contactsTab')}
-          {selectedContactsLength > 0 && (
-            <FootnoteText as="span" className="text-text-tertiary ml-1">
-              {selectedContactsLength}
-            </FootnoteText>
-          )}
-        </>
-      ),
-    },
-  ];
+  // const TabItems: TabItem[] = [
+  //   {
+  //     id: SignatoryTabs.ACCOUNTS,
+  //     panel: AccountsTab,
+  //     title: (
+  //       <>
+  //         {t('createMultisigAccount.accountsTab')}
+  //         {selectedAccountsLength > 0 && (
+  //           <FootnoteText as="span" className="text-text-tertiary ml-1">
+  //             {selectedAccountsLength}
+  //           </FootnoteText>
+  //         )}
+  //       </>
+  //     ),
+  //   },
+  //   {
+  //     id: SignatoryTabs.CONTACTS,
+  //     panel: ContactsTab,
+  //     title: (
+  //       <>
+  //         {t('createMultisigAccount.contactsTab')}
+  //         {selectedContactsLength > 0 && (
+  //           <FootnoteText as="span" className="text-text-tertiary ml-1">
+  //             {selectedContactsLength}
+  //           </FootnoteText>
+  //         )}
+  //       </>
+  //     ),
+  //   },
+  // ];
+
+  console.log('signatories', signatories);
 
   return (
     <>
       <div className={cnTw('max-h-full flex flex-col flex-1', !isActive && 'hidden')}>
-        {/* <SmallTitleText className="py-2 px-2 mb-4">{t('createMultisigAccount.signatoryTitle')}</SmallTitleText> */}
+        <SmallTitleText className="py-2 px-2 mb-4">
+          Step 2 - Set the signatory wallet of your flexible multisig and how many need to confirm to execute a valid
+          transaction
+        </SmallTitleText>
 
-        <Tabs
+        <div className="flex flex-col gap-2">
+          {Array.from(signatories.keys()).map((key) => (
+            <Signatory key={key} index={key} />
+          ))}
+          <button
+            onClick={() => signatoryModel.events.signatoriesChanged({ index: signatories.size, name: '', address: '' })}
+          >
+            Add
+          </button>
+          {/* <SearchInput
+            wrapperClass="mx-2"
+            placeholder={t('createMultisigAccount.searchContactPlaceholder')}
+            value={accountsQuery}
+            onChange={setAccountsQuery}
+          /> */}
+
+          {/* <Combobox
+        query={proxyQuery}
+        options={options}
+        value={delegate.value}
+        invalid={delegate.hasError()}
+        prefixElement={prefixElement}
+        onInput={formModel.events.proxyQueryChanged}
+        onChange={({ value }) => delegate.onChange(value)}
+      /> */}
+        </div>
+        {/* <Tabs
           items={TabItems}
           unmount={false}
           panelClassName="mt-4 flex-1 overflow-y-auto"
           tabClassName="flex-inline"
           tabsClassName="mx-2"
-        />
+        /> */}
       </div>
 
       <CreateContactModal isOpen={isContactModalOpen} onClose={toggleContactModalOpen} />

@@ -28,3 +28,9 @@ export type FormSubmitEvent = {
 };
 
 export type AddMultisigStore = FormSubmitEvent['formData'];
+
+export interface SignatoryInfo {
+  index: number;
+  name: string;
+  address: string;
+}
