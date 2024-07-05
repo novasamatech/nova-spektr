@@ -28,31 +28,19 @@ const $currentWalletVoting = combine(
 );
 
 sample({
-  clock: walletModel.$activeWallet,
+  clock: [tracksAggregate.$tracks, walletModel.$activeWallet],
   source: {
     tracks: tracksAggregate.$tracks,
-    api: networkSelectorModel.$governanceChainApi,
+    wallet: walletModel.$activeWallet,
     chain: networkSelectorModel.$governanceChain,
+    api: networkSelectorModel.$governanceChainApi,
   },
-  filter: ({ api, chain, tracks }, wallet) => !!api && !!chain && !!wallet,
-  fn: ({ api, chain, tracks }, wallet) => {
+  filter: ({ wallet, api, chain }) => !!wallet && !!chain && !!api,
+  fn: ({ wallet, api, chain, tracks }) => {
     return {
       api: api!,
       tracksIds: Object.keys(tracks),
       addresses: accountUtils.getAddressesForWallet(wallet!, chain!),
-    };
-  },
-  target: votingModel.events.requestVoting,
-});
-
-sample({
-  clock: tracksAggregate.events.requestDone,
-  source: walletModel.$activeWallet,
-  fn: (wallet, { params, result }) => {
-    return {
-      api: params.api,
-      tracksIds: Object.keys(result),
-      addresses: accountUtils.getAddressesForWallet(wallet!, params.chain),
     };
   },
   target: votingModel.events.requestVoting,
