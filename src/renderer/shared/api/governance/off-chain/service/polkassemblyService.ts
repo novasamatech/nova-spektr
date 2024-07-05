@@ -1,7 +1,7 @@
 import type { Chain, ReferendumId } from '@shared/core';
 import type { IGovernanceApi } from '../lib/types';
 import { dictionary } from '@shared/lib/utils';
-import { offChainUtils } from '@shared/api/governance/off-chain/lib/off-chain-utils';
+import { offChainUtils } from '../lib/off-chain-utils';
 
 type PolkassemblyData = {
   count: number;

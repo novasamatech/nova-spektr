@@ -1,7 +1,7 @@
 import { dictionary } from '@shared/lib/utils';
 import type { Chain } from '@shared/core';
 import type { IGovernanceApi } from '../lib/types';
-import { offChainUtils } from '@shared/api/governance/off-chain/lib/off-chain-utils';
+import { offChainUtils } from '../lib/off-chain-utils';
 
 type SubsquareData = {
   total: number;
