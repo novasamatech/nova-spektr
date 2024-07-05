@@ -1,0 +1,1 @@
+export { ReferendumDetails } from './ReferendumDetails';

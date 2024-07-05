@@ -1,3 +1,5 @@
+import 'source-map-support/register';
+
 import { app, BrowserWindow } from 'electron';
 
 import { setupLogger } from './factories/logs';

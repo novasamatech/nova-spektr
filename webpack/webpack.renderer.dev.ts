@@ -13,7 +13,7 @@ const { FOLDERS, RENDERER } = APP_CONFIG;
 const config = merge<WpConfig & WdsConfig>(sharedConfig, {
   mode: 'development',
   target: 'web',
-  devtool: 'inline-source-map',
+  devtool: 'source-map',
 
   entry: resolve(FOLDERS.ENTRY_POINTS.RENDERER),
 
