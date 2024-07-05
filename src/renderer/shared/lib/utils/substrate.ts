@@ -8,30 +8,25 @@ import { Address, CallData, CallHash, XcmPallets, ProxyType } from '@shared/core
 import { XcmTransferType } from '../../api/xcm';
 import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './constants';
 
+export type TxMetadata = { registry: TypeRegistry; options: OptionsWithMeta; info: BaseTxInfo };
+
 // TODO: Add V3, V4 support
 const SUPPORTED_VERSIONS = ['V2'];
 const UNUSED_LABEL = 'unused';
 
 /**
  * Compose and return all the data needed for @substrate/txwrapper-polkadot signing
- * @param accountId account identification
+ * @param address account address
  * @param api polkadot connector
- * @param nonceDelta increases nonce when several transactions from one account will be created
  */
-export const createTxMetadata = async (
-  accountId: Address,
-  api: ApiPromise,
-  nonceDelta = 0,
-): Promise<{ registry: TypeRegistry; options: OptionsWithMeta; info: BaseTxInfo }> => {
-  const [{ block }, blockHash, genesisHash, metadataRpc, nonce, { specVersion, transactionVersion, specName }] =
-    await Promise.all([
-      api.rpc.chain.getBlock(),
-      api.rpc.chain.getBlockHash(),
-      api.rpc.chain.getBlockHash(0),
-      api.rpc.state.getMetadata(),
-      api.rpc.system.accountNextIndex(accountId),
-      api.rpc.state.getRuntimeVersion(),
-    ]);
+export const createTxMetadata = async (address: Address, api: ApiPromise): Promise<TxMetadata> => {
+  const [{ block }, blockHash, metadataRpc, nonce, { specVersion, transactionVersion, specName }] = await Promise.all([
+    api.rpc.chain.getBlock(),
+    api.rpc.chain.getBlockHash(),
+    api.rpc.state.getMetadata(),
+    api.rpc.system.accountNextIndex(address),
+    api.rpc.state.getRuntimeVersion(),
+  ]);
 
   const registry = getRegistry({
     chainName: specName.toString() as GetRegistryOpts['specName'],
@@ -41,12 +36,12 @@ export const createTxMetadata = async (
   });
 
   const info: BaseTxInfo = {
-    address: accountId,
+    address,
     blockHash: blockHash.toString(),
     blockNumber: block.header.number.toNumber(),
-    genesisHash: genesisHash.toString(),
+    genesisHash: api.genesisHash.toString(),
     metadataRpc: metadataRpc.toHex(),
-    nonce: nonce.toNumber() + nonceDelta,
+    nonce: nonce.toNumber(),
     specVersion: specVersion.toNumber(),
     transactionVersion: transactionVersion.toNumber(),
     eraPeriod: 64,
@@ -175,4 +170,14 @@ export const getPalletAndCallByXcmTransferType = (
 
   // Should never be reached as all transferType cases are covered
   throw new Error('Invalid transferType');
+};
+
+export const upgradeNonce = (metadata: TxMetadata, index: number): TxMetadata => {
+  return {
+    ...metadata,
+    info: {
+      ...metadata.info,
+      nonce: metadata.info.nonce + index,
+    },
+  };
 };

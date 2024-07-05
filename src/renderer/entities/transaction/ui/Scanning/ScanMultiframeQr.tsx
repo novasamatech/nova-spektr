@@ -5,9 +5,9 @@ import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
 import { transactionService } from '@entities/transaction';
-import { toAddress } from '@shared/lib/utils';
+import { TxMetadata, createTxMetadata, toAddress, upgradeNonce } from '@shared/lib/utils';
 import { Button, FootnoteText } from '@shared/ui';
-import type { ShardAccount, BaseAccount, ChainId } from '@shared/core';
+import type { ShardAccount, BaseAccount, ChainId, Address } from '@shared/core';
 import { Wallet } from '@shared/core';
 import { createSubstrateSignPayload, createMultipleSignPayload } from '../QrCode/QrGenerator/common/utils';
 import { TRANSACTION_BULK } from '../QrCode/common/constants';
@@ -48,7 +48,9 @@ export const ScanMultiframeQr = ({
   }, []);
 
   const setupTransactions = async (): Promise<void> => {
-    const transactionPromises = signingPayloads.map((signingPayload, index) => {
+    const metadataMap = {} as Record<Address, Record<ChainId, TxMetadata>>;
+
+    for (let signingPayload of signingPayloads) {
       let address = '';
 
       const root = accountUtils.getBaseAccount(signerWallet.accounts, signerWallet.id);
@@ -59,28 +61,53 @@ export const ScanMultiframeQr = ({
         address = toAddress(signingPayload.account.accountId, { prefix: signingPayload.chain.addressPrefix });
       }
 
-      return (async () => {
-        const { payload } = await transactionService.createPayload(
-          signingPayload.transaction,
-          apis[signingPayload.chain.chainId],
-          index,
-        );
+      if (!metadataMap[address]) {
+        metadataMap[address] = {};
+      }
 
-        const signPayload = createSubstrateSignPayload(
+      if (!metadataMap[address][signingPayload.chain.chainId]) {
+        metadataMap[address][signingPayload.chain.chainId] = await createTxMetadata(
           address,
-          payload,
-          signingPayload.chain.chainId,
-          signerWallet.signingType,
-          (signingPayload.account as ShardAccount).derivationPath,
-          (signingPayload.account as BaseAccount).cryptoType,
+          apis[signingPayload.chain.chainId],
         );
+      }
+    }
 
-        return {
-          signPayload,
-          payload,
-          transactionData: signingPayload.transaction,
-        };
-      })();
+    const transactionPromises = signingPayloads.map((signingPayload) => {
+      const chainId = signingPayload.chain.chainId;
+      const api = apis[chainId];
+      let address = '';
+
+      const root = accountUtils.getBaseAccount(signerWallet.accounts, signerWallet.id);
+
+      if (walletUtils.isPolkadotVault(signerWallet) && root) {
+        address = toAddress(root.accountId, { prefix: 1 });
+      } else {
+        address = toAddress(signingPayload.account.accountId, { prefix: signingPayload.chain.addressPrefix });
+      }
+
+      const { payload } = transactionService.createPayloadWithMetadata(
+        signingPayload.transaction,
+        api,
+        metadataMap[address][chainId],
+      );
+
+      metadataMap[address][chainId] = upgradeNonce(metadataMap[address][chainId], 1);
+
+      const signPayload = createSubstrateSignPayload(
+        address,
+        payload,
+        chainId,
+        signerWallet.signingType,
+        (signingPayload.account as ShardAccount).derivationPath,
+        (signingPayload.account as BaseAccount).cryptoType,
+      );
+
+      return {
+        signPayload,
+        payload,
+        transactionData: signingPayload.transaction,
+      };
     });
 
     const txRequests = await Promise.all(transactionPromises);

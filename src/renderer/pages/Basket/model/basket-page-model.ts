@@ -1,10 +1,12 @@
 import { combine, createEffect, createEvent, createStore, restore, sample, split } from 'effector';
+import { ApiPromise } from '@polkadot/api';
+import { SignerOptions } from '@polkadot/api/submittable/types';
 
 import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
 import { basketModel } from '@entities/basket';
-import { BasketTransaction, ID, TransactionType } from '@shared/core';
-import { TransferTypes, XcmTypes } from '@entities/transaction';
+import { BasketTransaction, ChainId, ID, TransactionType } from '@shared/core';
+import { TransferTypes, XcmTypes, transactionService } from '@entities/transaction';
 import {
   transferValidateModel,
   addProxyValidateModel,
@@ -47,6 +49,8 @@ const removeTxCancelled = createEvent();
 const txRemoved = createEvent<BasketTransaction>();
 const stepChanged = createEvent<Step>();
 
+type SignerOptionsMap = Record<ChainId, Partial<SignerOptions>>;
+
 const $step = restore(stepChanged, Step.SELECT);
 const $selectedTxs = createStore<number[]>([]);
 const $invalidTxs = createStore<Map<ID, ValidationResult>>(new Map());
@@ -55,13 +59,38 @@ const $validatingTxs = createStore<number[]>([]);
 const $validationWarningShown = createStore<boolean>(false);
 const $alreadyValidatedTxs = createStore<number[]>([]);
 const $txToRemove = restore(removeTxStarted, null).reset([removeTxCancelled, txRemoved]);
+const $signerOptions = createStore<SignerOptionsMap>({});
 
-const validateFx = createEffect((transactions: BasketTransaction[]) => {
+const getSignerOptionsFx = createEffect(
+  async ({ transactions, apis }: { transactions: BasketTransaction[]; apis: Record<ChainId, ApiPromise> }) => {
+    const signerOptions = {} as SignerOptionsMap;
+
+    for (const transaction of transactions) {
+      const chainId = transaction.coreTx.chainId;
+
+      if (signerOptions[chainId]) continue;
+
+      const api = apis[chainId];
+
+      signerOptions[chainId] = await transactionService.createSignerOptions(api);
+    }
+
+    return signerOptions;
+  },
+);
+
+type ValidateParams = { transactions: BasketTransaction[]; signerOptions: SignerOptionsMap };
+
+const validateFx = createEffect(({ transactions, signerOptions }: ValidateParams) => {
   for (const tx of transactions) {
     const coreTx = getCoreTx(tx, [TransactionType.BOND, TransactionType.UNSTAKE]);
 
     if (TransferTypes.includes(coreTx.type) || XcmTypes.includes(coreTx.type)) {
-      transferValidateModel.events.validationStarted({ id: tx.id, transaction: coreTx });
+      transferValidateModel.events.validationStarted({
+        id: tx.id,
+        transaction: coreTx,
+        signerOptions: signerOptions[coreTx.chainId],
+      });
     }
 
     const TransactionValidators = {
@@ -81,7 +110,11 @@ const validateFx = createEffect((transactions: BasketTransaction[]) => {
     if (coreTx.type in TransactionValidators) {
       // TS thinks that transfer should be in TransactionValidators
       // @ts-ignore`
-      TransactionValidators[coreTx.type]({ id: tx.id, transaction: coreTx });
+      TransactionValidators[coreTx.type]({
+        id: tx.id,
+        transaction: coreTx,
+        signerOptions: signerOptions[coreTx.chainId],
+      });
     }
   }
 });
@@ -126,6 +159,18 @@ sample({
 });
 
 sample({
+  clock: $basketTransactions,
+  source: networkModel.$apis,
+  fn: (apis, transactions) => ({ apis, transactions }),
+  target: getSignerOptionsFx,
+});
+
+sample({
+  clock: getSignerOptionsFx.doneData,
+  target: $signerOptions,
+});
+
+sample({
   clock: allSelected,
   source: {
     txs: $basketTransactions,
@@ -156,8 +201,9 @@ sample({
     apis: networkModel.$apis,
     alreadyValidatedTxs: $alreadyValidatedTxs,
     validatingTxs: $validatingTxs,
+    signerOptions: $signerOptions,
   },
-  fn: ({ transactions, apis, alreadyValidatedTxs, validatingTxs }) => {
+  fn: ({ transactions, apis, alreadyValidatedTxs, validatingTxs, signerOptions }) => {
     const chains = new Set(transactions.map((t) => t.coreTx.chainId));
 
     const txsToValidate = [...chains].reduce<BasketTransaction[]>((acc, chainId) => {
@@ -172,7 +218,10 @@ sample({
       return [...acc, ...txs];
     }, []);
 
-    return txsToValidate;
+    return {
+      transactions: txsToValidate,
+      signerOptions,
+    };
   },
   target: validateFx,
 });
@@ -182,10 +231,9 @@ sample({
   source: {
     transactions: $basketTransactions,
     apis: networkModel.$apis,
-    alreadyValidatedTxs: $alreadyValidatedTxs,
-    validatingTxs: $validatingTxs,
+    signerOptions: $signerOptions,
   },
-  fn: ({ transactions, apis, alreadyValidatedTxs, validatingTxs }) => {
+  fn: ({ transactions, apis, signerOptions }) => {
     const chains = new Set(transactions.map((t) => t.coreTx.chainId));
 
     const txsToValidate = [...chains].reduce<BasketTransaction[]>((acc, chainId) => {
@@ -198,7 +246,10 @@ sample({
       return [...acc, ...txs];
     }, []);
 
-    return txsToValidate;
+    return {
+      transactions: txsToValidate,
+      signerOptions,
+    };
   },
   target: validateFx,
 });
@@ -206,7 +257,7 @@ sample({
 sample({
   clock: validateFx,
   source: $validatingTxs,
-  fn: (validatingTxs, txs) => txs.reduce((acc, tx) => addUnique(acc, tx.id), validatingTxs),
+  fn: (validatingTxs, { transactions }) => transactions.reduce((acc, tx) => addUnique(acc, tx.id), validatingTxs),
   target: $validatingTxs,
 });
 
@@ -264,8 +315,16 @@ sample({
 
 sample({
   clock: signStarted,
-  source: { allTransactions: $basketTransactions, selectedTxs: $selectedTxs, invalidTxs: $invalidTxs },
-  fn: ({ allTransactions, selectedTxs }) => allTransactions.filter((t) => selectedTxs.includes(t.id)),
+  source: {
+    allTransactions: $basketTransactions,
+    selectedTxs: $selectedTxs,
+    invalidTxs: $invalidTxs,
+    signerOptions: $signerOptions,
+  },
+  fn: ({ allTransactions, selectedTxs, signerOptions }) => ({
+    transactions: allTransactions.filter((t) => selectedTxs.includes(t.id)),
+    signerOptions,
+  }),
   target: validateFx,
 });
 

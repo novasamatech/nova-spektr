@@ -1,6 +1,7 @@
-import { combine, createEffect, createEvent, restore, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 import { spread } from 'patronum';
+import type { SignerOptions } from '@polkadot/api/submittable/types';
 
 import { Step } from '../types';
 import {
@@ -46,24 +47,15 @@ import { proxyService } from '@shared/api/proxy';
 import { getCoreTx } from '../lib/utils';
 import { eraService, useStakingData, validatorsService } from '@entities/staking';
 
-type TransferInput = {
-  xcmChain: Chain;
-  chain: Chain;
-  asset: Asset;
-  account: Account;
-  amount: string;
-  destination: Address;
-  description: string;
-
-  fee: string;
-  xcmFee: string;
-  multisigDeposit: string;
-};
-
 const flowStarted = createEvent<BasketTransaction[]>();
 const flowFinished = createEvent();
 const stepChanged = createEvent<Step>();
 const txsConfirmed = createEvent();
+
+type SignerOptionsMap = Record<ChainId, Partial<SignerOptions>>;
+
+// TODO: discuss place for such cases
+const $signerOptions = createStore<SignerOptionsMap>({});
 
 type PrepareDataParams = {
   wallets: Wallet[];
@@ -71,17 +63,25 @@ type PrepareDataParams = {
   apis: Record<ChainId, ApiPromise>;
   transactions: BasketTransaction[];
   connections: Record<ChainId, Connection>;
+  signerOptions: SignerOptionsMap;
 };
 
 const startDataPreparationFx = createEffect(
-  async ({ transactions, wallets, chains, apis, connections }: PrepareDataParams) => {
+  async ({ transactions, wallets, chains, apis, connections, signerOptions }: PrepareDataParams) => {
     const dataParams = [];
 
     for (const transaction of transactions) {
       const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE, TransactionType.BOND]);
 
       if (TransferTypes.includes(coreTx.type) || XcmTypes.includes(coreTx.type)) {
-        const params = await prepareTransferTransactionData({ transaction, wallets, chains, apis, connections });
+        const params = await prepareTransferTransactionData({
+          transaction,
+          wallets,
+          chains,
+          apis,
+          connections,
+          signerOptions,
+        });
 
         dataParams.push({ type: TransactionType.TRANSFER, params });
       }
@@ -104,7 +104,14 @@ const startDataPreparationFx = createEffect(
       if (coreTx.type in TransactionValidators) {
         // TS thinks that transfer should be in TransactionValidators
         // @ts-ignore`
-        const params = await TransactionValidators[coreTx.type]({ transaction, wallets, chains, apis, connections });
+        const params = await TransactionValidators[coreTx.type]({
+          transaction,
+          wallets,
+          chains,
+          apis,
+          connections,
+          signerOptions,
+        });
 
         dataParams.push({ type: coreTx.type, params });
       }
@@ -117,24 +124,51 @@ const startDataPreparationFx = createEffect(
 const $step = restore(stepChanged, Step.NONE);
 const $transactions = restore(flowStarted, []).reset(flowFinished);
 
+const getSignerOptionsFx = createEffect(
+  async ({ transactions, apis }: { transactions: BasketTransaction[]; apis: Record<ChainId, ApiPromise> }) => {
+    const signerOptions = {} as SignerOptionsMap;
+
+    for (const transaction of transactions) {
+      const chainId = transaction.coreTx.chainId;
+
+      if (signerOptions[chainId]) continue;
+
+      const api = apis[chainId];
+
+      signerOptions[chainId] = await transactionService.createSignerOptions(api);
+    }
+
+    return signerOptions;
+  },
+);
+
 const $txDataParams = combine({
   wallets: walletModel.$wallets,
   chains: networkModel.$chains,
   apis: networkModel.$apis,
   connections: networkModel.$connections,
+  signerOptions: $signerOptions,
 });
 
-type TransferDataParams = {
-  wallets: Wallet[];
-  chains: Record<ChainId, Chain>;
-  apis: Record<ChainId, ApiPromise>;
-  transaction: BasketTransaction;
-  connections: Record<ChainId, Connection>;
+type DataParams = Omit<PrepareDataParams, 'transactions'> & { transaction: BasketTransaction };
+
+type TransferInput = {
+  xcmChain: Chain;
+  chain: Chain;
+  asset: Asset;
+  account: Account;
+  amount: string;
+  destination: Address;
+  description: string;
+
+  fee: string;
+  xcmFee: string;
+  multisigDeposit: string;
 };
 
-const prepareTransferTransactionData = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
+const prepareTransferTransactionData = async ({ transaction, wallets, chains, apis, signerOptions }: DataParams) => {
   const chainId = transaction.coreTx.chainId as ChainId;
-  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
+  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId], signerOptions[chainId]);
 
   const chain = chains[chainId]!;
   const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
@@ -173,9 +207,9 @@ type AddProxyInput = {
   proxyNumber: number;
 };
 
-const prepareAddProxyTransaction = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
+const prepareAddProxyTransaction = async ({ transaction, wallets, chains, apis, signerOptions }: DataParams) => {
   const chainId = transaction.coreTx.chainId as ChainId;
-  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
+  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId], signerOptions[chainId]);
 
   const chain = chains[chainId]!;
   const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
@@ -209,9 +243,9 @@ type AddPureProxiedInput = {
   multisigDeposit: string;
 };
 
-const prepareAddPureProxiedTransaction = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
+const prepareAddPureProxiedTransaction = async ({ transaction, wallets, chains, apis, signerOptions }: DataParams) => {
   const chainId = transaction.coreTx.chainId as ChainId;
-  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
+  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId], signerOptions[chainId]);
 
   const chain = chains[chainId]!;
   const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
@@ -241,9 +275,9 @@ type RemoveProxyInput = {
   proxiedAccount?: ProxiedAccount;
 };
 
-const prepareRemoveProxyTransaction = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
+const prepareRemoveProxyTransaction = async ({ transaction, wallets, chains, apis, signerOptions }: DataParams) => {
   const chainId = transaction.coreTx.chainId as ChainId;
-  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
+  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId], signerOptions[chainId]);
 
   const chain = chains[chainId]!;
   const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
@@ -273,9 +307,15 @@ type RemovePureProxiedInput = {
   proxiedAccount?: ProxiedAccount;
 };
 
-const prepareRemovePureProxiedTransaction = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
+const prepareRemovePureProxiedTransaction = async ({
+  transaction,
+  wallets,
+  chains,
+  apis,
+  signerOptions,
+}: DataParams) => {
   const chainId = transaction.coreTx.chainId as ChainId;
-  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
+  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId], signerOptions[chainId]);
 
   const chain = chains[chainId]!;
   const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
@@ -313,14 +353,15 @@ const prepareBondNominateTransaction = async ({
   chains,
   apis,
   connections,
-}: TransferDataParams) => {
+  signerOptions,
+}: DataParams) => {
   const bondTx = transaction.coreTx.args.transactions.find((t: Transaction) => t.type === TransactionType.BOND)!;
   const nominateTx = transaction.coreTx.args.transactions.find(
     (t: Transaction) => t.type === TransactionType.NOMINATE,
   )!;
 
   const chainId = transaction.coreTx.chainId as ChainId;
-  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
+  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId], signerOptions[chainId]);
 
   const chain = chains[chainId]!;
   const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
@@ -358,9 +399,9 @@ type BondExtraInput = {
   description: string;
 };
 
-const prepareBondExtraTransaction = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
+const prepareBondExtraTransaction = async ({ transaction, wallets, chains, apis, signerOptions }: DataParams) => {
   const chainId = transaction.coreTx.chainId as ChainId;
-  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
+  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId], signerOptions[chainId]);
 
   const chain = chains[chainId]!;
   const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
@@ -391,9 +432,16 @@ type NominateInput = {
   description: string;
 };
 
-const prepareNominateTransaction = async ({ transaction, wallets, chains, connections, apis }: TransferDataParams) => {
+const prepareNominateTransaction = async ({
+  transaction,
+  wallets,
+  chains,
+  connections,
+  apis,
+  signerOptions,
+}: DataParams) => {
   const chainId = transaction.coreTx.chainId as ChainId;
-  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
+  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId], signerOptions[chainId]);
 
   const chain = chains[chainId]!;
   const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
@@ -429,9 +477,9 @@ type PayeeInput = {
   description: string;
 };
 
-const preparePayeeTransaction = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
+const preparePayeeTransaction = async ({ transaction, wallets, chains, apis, signerOptions }: DataParams) => {
   const chainId = transaction.coreTx.chainId as ChainId;
-  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
+  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId], signerOptions[chainId]);
 
   const chain = chains[chainId]!;
   const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
@@ -463,7 +511,7 @@ type UnstakeInput = {
   multisigDeposit: string;
 };
 
-const prepareUnstakeTransaction = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
+const prepareUnstakeTransaction = async ({ transaction, wallets, chains, apis, signerOptions }: DataParams) => {
   const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE]);
 
   const chainId = coreTx.chainId as ChainId;
@@ -498,9 +546,9 @@ type RestakeInput = {
   description: string;
 };
 
-const prepareRestakeTransaction = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
+const prepareRestakeTransaction = async ({ transaction, wallets, chains, apis, signerOptions }: DataParams) => {
   const chainId = transaction.coreTx.chainId as ChainId;
-  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
+  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId], signerOptions[chainId]);
 
   const chain = chains[chainId]!;
   const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
@@ -534,9 +582,9 @@ type WithdrawInput = {
   multisigDeposit: string;
 };
 
-const prepareWithdrawTransaction = async ({ transaction, wallets, chains, apis }: TransferDataParams) => {
+const prepareWithdrawTransaction = async ({ transaction, wallets, chains, apis, signerOptions }: DataParams) => {
   const chainId = transaction.coreTx.chainId as ChainId;
-  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]);
+  const fee = await transactionService.getTransactionFee(transaction.coreTx, apis[chainId], signerOptions[chainId]);
 
   const chain = chains[chainId]!;
   const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
@@ -566,8 +614,27 @@ const prepareWithdrawTransaction = async ({ transaction, wallets, chains, apis }
 sample({
   clock: flowStarted,
   source: $txDataParams,
-  fn: ({ wallets, chains, apis, connections }, transactions) => ({ transactions, wallets, chains, apis, connections }),
+  fn: ({ wallets, chains, apis, connections, signerOptions }, transactions) => ({
+    transactions,
+    wallets,
+    chains,
+    apis,
+    connections,
+    signerOptions,
+  }),
   target: startDataPreparationFx,
+});
+
+sample({
+  clock: $transactions,
+  source: networkModel.$apis,
+  fn: (apis, transactions) => ({ apis, transactions }),
+  target: getSignerOptionsFx,
+});
+
+sample({
+  clock: getSignerOptionsFx.doneData,
+  target: $signerOptions,
 });
 
 // Transfer
