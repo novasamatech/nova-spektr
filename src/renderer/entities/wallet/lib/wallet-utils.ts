@@ -1,4 +1,4 @@
-import type {
+import {
   MultiShardWallet,
   MultisigWallet,
   NovaWalletWallet,
@@ -12,8 +12,8 @@ import type {
   Wallet,
   Account,
   ID,
+  WalletType,
 } from '@shared/core';
-import { WalletType } from '@shared/core';
 
 export const walletUtils = {
   isPolkadotVault,
