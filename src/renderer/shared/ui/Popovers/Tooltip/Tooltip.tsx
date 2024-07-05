@@ -2,7 +2,6 @@ import { ComponentProps } from 'react';
 
 import { Popover } from '@shared/ui';
 import { cnTw } from '@shared/lib/utils';
-import { HelpText } from '../../Typography';
 import { Horizontal } from '../common/types';
 import './Tooltip.css';
 
@@ -32,7 +31,7 @@ export const Tooltip = ({
       'spektr-arrow__' + arrow,
       panelClass,
     )}
-    content={<HelpText className="text-white">{content}</HelpText>}
+    content={<div className=" text-help-text text-white">{content}</div>}
   >
     {children}
   </Popover>

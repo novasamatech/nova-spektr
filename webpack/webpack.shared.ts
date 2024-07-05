@@ -29,6 +29,9 @@ export const getSwcConfig = (isDev: boolean) => {
           refresh: isDev,
         },
       },
+      experimental: {
+        plugins: isDev ? [['effector-swc-plugin', {}]] : [],
+      },
     },
   };
 };

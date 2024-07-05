@@ -4,34 +4,32 @@ import { useGate, useUnit } from 'effector-react';
 import { useI18n } from '@app/providers';
 import { Header, Plate } from '@shared/ui';
 import { InactiveNetwork } from '@entities/network';
-import { governancePageModel } from '../model/governance-page-model';
 import {
   ReferendumSearch,
   ReferendumFilters,
   ReferendumDetails,
-  LoadingCompleted,
-  LoadingOngoing,
   OngoingReferendums,
   CompletedReferendums,
   NetworkSelector,
   networkSelectorModel,
-  referendumListModel,
 } from '@features/governance';
 import { Referendum } from '@shared/core';
+import { governancePageAggregate } from '../aggregates/governancePage';
 import { EmptyGovernance } from './EmptyGovernance';
 
 export const Governance = () => {
-  useGate(governancePageModel.gates.governanceFlow);
+  useGate(governancePageAggregate.gates.flow);
 
   const { t } = useI18n();
 
   const [selectedReferendum, setSelectedReferendum] = useState<Referendum | null>(null);
   const isApiConnected = useUnit(networkSelectorModel.$isApiConnected);
-  const isLoading = useUnit(referendumListModel.$isLoading);
   const governanceChain = useUnit(networkSelectorModel.$governanceChain);
 
-  const ongoing = useUnit(governancePageModel.$ongoing);
-  const completed = useUnit(governancePageModel.$completed);
+  const isLoading = useUnit(governancePageAggregate.$isLoading);
+  const isTitlesLoading = useUnit(governancePageAggregate.$isTitlesLoading);
+  const ongoing = useUnit(governancePageAggregate.$ongoing);
+  const completed = useUnit(governancePageAggregate.$completed);
 
   return (
     <div className="h-full flex flex-col">
@@ -57,17 +55,18 @@ export const Governance = () => {
           </div>
 
           <div className="flex flex-col gap-y-3">
-            {isLoading ? (
-              <>
-                <LoadingOngoing />
-                <LoadingCompleted />
-              </>
-            ) : (
-              <>
-                <OngoingReferendums referendums={ongoing} onSelect={setSelectedReferendum} />
-                <CompletedReferendums referendums={completed} onSelect={setSelectedReferendum} />
-              </>
-            )}
+            <OngoingReferendums
+              referendums={ongoing}
+              isTitlesLoading={isTitlesLoading}
+              isLoading={isLoading}
+              onSelect={setSelectedReferendum}
+            />
+            <CompletedReferendums
+              referendums={completed}
+              isTitlesLoading={isTitlesLoading}
+              isLoading={isLoading}
+              onSelect={setSelectedReferendum}
+            />
           </div>
 
           <EmptyGovernance />

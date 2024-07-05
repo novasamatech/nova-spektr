@@ -60,15 +60,15 @@ const components: Components = {
     const [showError, setShowError] = useState(false);
 
     return showError ? (
-      <div className="flex flex-wrap items-center justify-center p-2 pl-3 w-fit rounded-md border border-alert-border-negative">
-        <div className="flex items-center gap-2">
+      <span className="flex flex-wrap items-center justify-center p-2 pl-3 w-fit rounded-md border border-alert-border-negative">
+        <span className="flex items-center gap-2">
           <Icon className="text-icon-negative" size={16} name="warn" />
           <span>{t('general.image.loadingError')}</span>
-        </div>
+        </span>
         <Button size="sm" variant="text" onClick={() => setShowError(false)}>
           {t('general.image.retryLoading')}
         </Button>
-      </div>
+      </span>
     ) : (
       <img className={cnTw('max-w-full', className)} {...props} onError={() => setShowError(true)} />
     );
@@ -83,7 +83,7 @@ const components: Components = {
   },
   pre: ({ node, children, className, ...props }) => {
     return (
-      <pre className={cnTw('flex flex-col *:leading-normal *:pl-2', className)} {...props}>
+      <pre className={cnTw('flex flex-col overflow-x-auto *:leading-normal *:pl-2 *:w-fit', className)} {...props}>
         {children}
       </pre>
     );
