@@ -27,10 +27,7 @@ const getReferendumList: IGovernanceApi['getReferendumList'] = async (chain, cal
       return `https://${chainName}.subsquare.io/api/gov2/referendums?page=${page}&page_size=${size}&simple=true`;
     };
 
-    const ping: SubsquareData = await fetch(getApiUrl(chainName, 1, pageSize), {
-      method: 'GET',
-      mode: 'same-origin',
-    }).then((r) => r.json());
+    const ping: SubsquareData = await fetch(getApiUrl(chainName, 1, pageSize), { method: 'GET' }).then((r) => r.json());
     const totalPages = Math.ceil(ping.total / pageSize);
 
     callback(parseSubsquareData(ping), totalPages === 1);

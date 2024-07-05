@@ -3,15 +3,15 @@ import { memo } from 'react';
 import { useI18n } from '@app/providers';
 import { Voted, VoteChart, TrackInfo, votingService } from '@entities/governance';
 import { HeadlineText, Shimmering } from '@shared/ui';
-import type { OngoingReferendum } from '@shared/core';
-import { AggregatedReferendum } from '../../types/structs';
+import { type OngoingReferendum } from '@shared/core';
+import { type AggregatedReferendum } from '../../types/structs';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 import { ListItem } from './ListItem';
 
 type Props = {
   isTitlesLoading: boolean;
   item: AggregatedReferendum<OngoingReferendum>;
-  onSelect: (value: OngoingReferendum) => void;
+  onSelect: (value: AggregatedReferendum<OngoingReferendum>) => void;
 };
 
 export const OngoingReferendumItem = memo<Props>(({ item, isTitlesLoading, onSelect }) => {
@@ -31,7 +31,7 @@ export const OngoingReferendumItem = memo<Props>(({ item, isTitlesLoading, onSel
     ));
 
   return (
-    <ListItem onClick={() => onSelect(referendum)}>
+    <ListItem onClick={() => onSelect(item)}>
       <div className="flex items-center gap-x-2 w-full">
         <Voted active={isVoted} />
         <VotingStatusBadge passing={isPassing} referendum={referendum} />

@@ -2,8 +2,8 @@ import { memo, useDeferredValue } from 'react';
 
 import { useI18n } from '@app/providers';
 import { Accordion, CaptionText, Shimmering } from '@shared/ui';
-import type { OngoingReferendum } from '@shared/core';
-import { AggregatedReferendum } from '../../types/structs';
+import { type OngoingReferendum } from '@shared/core';
+import { type AggregatedReferendum } from '../../types/structs';
 import { OngoingReferendumItem } from './OngoingReferendumItem';
 import { ListItemPlaceholder } from './ListItemPlaceholder';
 
@@ -11,7 +11,7 @@ type Props = {
   referendums: AggregatedReferendum<OngoingReferendum>[];
   isLoading: boolean;
   isTitlesLoading: boolean;
-  onSelect: (value: OngoingReferendum) => void;
+  onSelect: (value: AggregatedReferendum<OngoingReferendum>) => void;
 };
 
 const placeholder = Array.from({ length: 4 }, (_, index) => (

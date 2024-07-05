@@ -1,4 +1,4 @@
-export { proposerIdentityAggregate } from './aggregates/proposer-identity';
+export { proposerIdentityAggregate } from './aggregates/proposerIdentity';
 export { detailsAggregate } from './aggregates/details';
 export { tracksAggregate } from './aggregates/tracks';
 export { votingAggregate } from './aggregates/voting';

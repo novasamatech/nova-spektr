@@ -12,8 +12,8 @@ import {
   CompletedReferendums,
   NetworkSelector,
   networkSelectorModel,
+  AggregatedReferendum,
 } from '@features/governance';
-import { Referendum } from '@shared/core';
 import { governancePageAggregate } from '../aggregates/governancePage';
 import { EmptyGovernance } from './EmptyGovernance';
 
@@ -22,7 +22,7 @@ export const Governance = () => {
 
   const { t } = useI18n();
 
-  const [selectedReferendum, setSelectedReferendum] = useState<Referendum | null>(null);
+  const [selectedReferendum, setSelectedReferendum] = useState<AggregatedReferendum | null>(null);
   const isApiConnected = useUnit(networkSelectorModel.$isApiConnected);
   const governanceChain = useUnit(networkSelectorModel.$governanceChain);
 
