@@ -25,7 +25,7 @@ export const MenuPopover = ({
 }: PropsWithChildren<Props>) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const onMenuClick = (e: MouseEvent<HTMLButtonElement>) => {
+  const onMenuClick = (e: MouseEvent<HTMLElement>) => {
     e.stopPropagation();
     setTimeout(() => menuRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
   };
@@ -34,7 +34,7 @@ export const MenuPopover = ({
     <Menu>
       {({ open, close }) => (
         <div className={cnTw('relative', open && 'z-20', containerClassName)}>
-          <Menu.Button className={cnTw('flex items-center', buttonClassName)} onClick={onMenuClick}>
+          <Menu.Button as="div" className={cnTw('flex items-center', buttonClassName)} onClick={onMenuClick}>
             {children}
           </Menu.Button>
           <Menu.Items
