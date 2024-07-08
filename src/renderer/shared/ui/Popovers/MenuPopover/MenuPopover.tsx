@@ -34,7 +34,7 @@ export const MenuPopover = ({
     <Menu>
       {({ open, close }) => (
         <div className={cnTw('relative', open && 'z-20', containerClassName)}>
-          <Menu.Button className={cnTw('flex items-center', buttonClassName)} onClick={onMenuClick}>
+          <Menu.Button as="div" className={cnTw('flex items-center', buttonClassName)} onClick={onMenuClick}>
             {children}
           </Menu.Button>
           <Menu.Items
