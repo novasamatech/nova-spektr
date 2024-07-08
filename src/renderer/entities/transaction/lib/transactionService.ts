@@ -57,7 +57,6 @@ async function getTransactionFee(
   options?: Partial<SignerOptions>,
 ): Promise<string> {
   const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-
   const paymentInfo = await extrinsic.paymentInfo(transaction.address, options);
 
   return paymentInfo.partialFee.toString();
@@ -72,7 +71,6 @@ async function signAndSubmit(
 ) {
   const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
   const accountId = toAccountId(transaction.address);
-
   extrinsic.addSignature(accountId, hexToU8a(signature), payload);
 
   extrinsic
