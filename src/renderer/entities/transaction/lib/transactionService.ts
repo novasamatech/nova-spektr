@@ -6,6 +6,7 @@ import { construct, UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 import type { SignerOptions } from '@polkadot/api/types/submittable';
+import { u32 } from '@polkadot/types';
 
 import { Transaction, TransactionType, WrapperKind } from '@shared/core';
 import { createTxMetadata, toAccountId, dictionary, TxMetadata } from '@shared/lib/utils';
@@ -30,7 +31,6 @@ import type {
   ProxyTxWrapper,
 } from '@shared/core';
 import { HashData, ITransactionService } from './common/types';
-import { eraService } from '../../staking';
 
 export const transactionService = {
   hasMultisig,
@@ -57,6 +57,7 @@ async function getTransactionFee(
   options?: Partial<SignerOptions>,
 ): Promise<string> {
   const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+
   const paymentInfo = await extrinsic.paymentInfo(transaction.address, options);
 
   return paymentInfo.partialFee.toString();
@@ -300,12 +301,11 @@ function createPayloadWithMetadata(
 
 async function createSignerOptions(api: ApiPromise): Promise<Partial<SignerOptions>> {
   const [blockHash] = await Promise.all([api.rpc.chain.getBlockHash()]);
-  const era = await eraService.getActiveEra(api);
 
   return {
     blockHash,
-    nonce: 1,
-    era,
+    nonce: new u32(api.registry, 1),
+    era: 64,
   };
 }
 
