@@ -48,7 +48,7 @@ export const ScanMultiframeQr = ({
   }, []);
 
   const setupTransactions = async (): Promise<void> => {
-    const metadataMap = {} as Record<Address, Record<ChainId, TxMetadata>>;
+    const metadataMap: Record<Address, Record<ChainId, TxMetadata>> = {};
 
     for (let signingPayload of signingPayloads) {
       let address = '';
