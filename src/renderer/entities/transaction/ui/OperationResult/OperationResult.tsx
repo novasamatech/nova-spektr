@@ -23,7 +23,7 @@ export const OperationResult = ({
 }: PropsWithChildren<Props>) => (
   <StatusModal
     content={
-      variant === 'mixedResult' ? (
+      variant === 'warning' ? (
         <Icon name="warn" size={48} />
       ) : (
         <Animation variant={variant} {...VariantAnimationProps[variant]} />

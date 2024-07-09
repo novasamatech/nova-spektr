@@ -1,36 +1,40 @@
-import { useEffect } from 'react';
-import { useUnit } from 'effector-react';
+import { useState } from 'react';
+import { useGate, useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { Header, Plate } from '@shared/ui';
 import { InactiveNetwork } from '@entities/network';
-import { governancePageModel } from '../model/governance-page-model';
 import {
-  ReferendumFilter,
+  ReferendumSearch,
+  ReferendumFilters,
   ReferendumDetails,
-  LoadingCompleted,
-  LoadingOngoing,
   OngoingReferendums,
   CompletedReferendums,
   NetworkSelector,
   networkSelectorModel,
 } from '@features/governance';
+import { Referendum } from '@shared/core';
+import { governancePageAggregate } from '../aggregates/governancePage';
+import { EmptyGovernance } from './EmptyGovernance';
 
 export const Governance = () => {
+  useGate(governancePageAggregate.gates.flow);
+
   const { t } = useI18n();
 
-  const ongoing = useUnit(governancePageModel.$ongoing);
-  const completed = useUnit(governancePageModel.$completed);
+  const [selectedReferendum, setSelectedReferendum] = useState<Referendum | null>(null);
   const isApiConnected = useUnit(networkSelectorModel.$isApiConnected);
+  const governanceChain = useUnit(networkSelectorModel.$governanceChain);
 
-  useEffect(() => {
-    governancePageModel.events.flowStarted();
-  }, []);
+  const isLoading = useUnit(governancePageAggregate.$isLoading);
+  const isTitlesLoading = useUnit(governancePageAggregate.$isTitlesLoading);
+  const ongoing = useUnit(governancePageAggregate.$ongoing);
+  const completed = useUnit(governancePageAggregate.$completed);
 
   return (
     <div className="h-full flex flex-col">
       <Header title={t('governance.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
-        <ReferendumFilter />
+        <ReferendumSearch />
       </Header>
 
       <div className="overflow-y-auto w-full h-full py-6">
@@ -46,22 +50,37 @@ export const Governance = () => {
             {/*<Delegations onClick={() => console.log('Go to Delegate')} />*/}
           </div>
 
-          {/* TODO: Tracks - Voted filter */}
-
-          <div className="flex flex-col gap-y-3">
-            <LoadingOngoing />
-            <LoadingCompleted />
-
-            <OngoingReferendums referendums={ongoing} onSelected={governancePageModel.events.referendumSelected} />
-            <CompletedReferendums referendums={completed} onSelected={governancePageModel.events.referendumSelected} />
+          <div className="mt-5 mb-4">
+            <ReferendumFilters />
           </div>
 
-          {/*<EmptyResults />*/}
-          <InactiveNetwork active={!isApiConnected} className="flex-grow" />
+          <div className="flex flex-col gap-y-3">
+            <OngoingReferendums
+              referendums={ongoing}
+              isTitlesLoading={isTitlesLoading}
+              isLoading={isLoading}
+              onSelect={setSelectedReferendum}
+            />
+            <CompletedReferendums
+              referendums={completed}
+              isTitlesLoading={isTitlesLoading}
+              isLoading={isLoading}
+              onSelect={setSelectedReferendum}
+            />
+          </div>
+
+          <EmptyGovernance />
+          <InactiveNetwork active={!isApiConnected} isLoading={isLoading} className="flex-grow" />
         </section>
       </div>
 
-      <ReferendumDetails />
+      {selectedReferendum && governanceChain && (
+        <ReferendumDetails
+          referendum={selectedReferendum}
+          chain={governanceChain}
+          onClose={() => setSelectedReferendum(null)}
+        />
+      )}
     </div>
   );
 };

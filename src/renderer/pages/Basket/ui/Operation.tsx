@@ -27,8 +27,10 @@ export const Operation = ({ tx, errorText, validating, onClick, onTxRemoved }: P
   const asset = getAssetById(coreTx.args.asset, chainsService.getChainById(coreTx.chainId)?.assets);
   const amount = getTransactionAmount(coreTx);
 
+  const disabled = errorText || validating;
+
   const onTxClicked = () => {
-    if (errorText) return;
+    if (disabled) return;
 
     onClick();
   };
@@ -43,6 +45,16 @@ export const Operation = ({ tx, errorText, validating, onClick, onTxRemoved }: P
   const getStatus = () => {
     if (validating) {
       return <Shimmering width={106} height={18} />;
+    }
+
+    if (errorText) {
+      return (
+        <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey={errorText} />}>
+          <div className="flex gap-x-1 items-center rounded-md bg-badge-red-background-default px-2 py-0.5">
+            <HelpText className="text-text-negative">{t('basket.validationError')} </HelpText>
+          </div>
+        </Tooltip>
+      );
     }
 
     if (tx.error) {
@@ -60,20 +72,11 @@ export const Operation = ({ tx, errorText, validating, onClick, onTxRemoved }: P
         </Tooltip>
       );
     }
-
-    if (errorText)
-      return (
-        <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey={errorText} />}>
-          <div className="flex gap-x-1 items-center rounded-md bg-badge-red-background-default px-2 py-0.5">
-            <HelpText className="text-text-negative">{t('basket.validationError')} </HelpText>
-          </div>
-        </Tooltip>
-      );
   };
 
   return (
     <div
-      className={cnTw('h-[52px] flex gap-x-4 items-center w-full overflow-hidden ', !errorText && 'cursor-pointer')}
+      className={cnTw('h-[52px] flex gap-x-4 items-center w-full overflow-hidden ', !disabled && 'cursor-pointer')}
       onClick={onTxClicked}
     >
       <TransactionTitle className="flex-1 overflow-hidden" tx={coreTx} />

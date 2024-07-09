@@ -13,13 +13,14 @@ type Input = {
   signatory?: Account;
   destination?: string;
   description: string;
+
+  fee: string;
+  totalFee: string;
+  multisigDeposit: string;
 };
 
 const formInitiated = createEvent<Input[]>();
 const formSubmitted = createEvent();
-
-const feeDataChanged = createEvent<Record<'fee' | 'totalFee' | 'multisigDeposit', string>>();
-const isFeeLoadingChanged = createEvent<boolean>();
 
 const $confirmStore = restore(formInitiated, null);
 
@@ -35,8 +36,6 @@ const $storeMap = combine($confirmStore, (store) => {
   );
 });
 
-const $feeData = restore(feeDataChanged, { fee: '0', totalFee: '0', multisigDeposit: '0' });
-const $isFeeLoading = restore(isFeeLoadingChanged, true);
 const $initiatorWallets = combine(
   {
     store: $confirmStore,
@@ -112,13 +111,8 @@ export const confirmModel = {
   $proxiedWallets,
   $signerWallets,
 
-  $feeData,
-  $isFeeLoading,
-
   events: {
     formInitiated,
-    feeDataChanged,
-    isFeeLoadingChanged,
   },
   output: {
     formSubmitted,

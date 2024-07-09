@@ -161,7 +161,7 @@ const $unstakeForm = createForm<FormParams>({
         },
         {
           name: 'notEnoughBalance',
-          errorText: 'transfer.notEnoughBalanceError',
+          errorText: 'staking.notEnoughBalanceError',
           source: combine({
             network: $networkStore,
             unstakeBalanceRange: $unstakeBalanceRange,

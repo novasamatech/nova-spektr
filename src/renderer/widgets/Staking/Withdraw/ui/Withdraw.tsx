@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { useEffect } from 'react';
 
 import { BaseModal, Button } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
@@ -10,6 +11,7 @@ import { withdrawUtils } from '../lib/withdraw-utils';
 import { withdrawModel } from '../model/withdraw-model';
 import { Step } from '../lib/types';
 import { basketUtils, WithdrawConfirmation as Confirmation } from '@features/operations/OperationsConfirm';
+import { OperationResult } from '@entities/transaction';
 
 export const Withdraw = () => {
   const { t } = useI18n();
@@ -19,10 +21,32 @@ export const Withdraw = () => {
   const initiatorWallet = useUnit(withdrawModel.$initiatorWallet);
 
   const [isModalOpen, closeModal] = useModalClose(!withdrawUtils.isNoneStep(step), withdrawModel.output.flowFinished);
+  const [isBasketModalOpen, closeBasketModal] = useModalClose(
+    withdrawUtils.isBasketStep(step),
+    withdrawModel.output.flowFinished,
+  );
+
+  useEffect(() => {
+    if (withdrawUtils.isBasketStep(step)) {
+      const timer = setTimeout(() => closeBasketModal(), 1450);
+
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
 
   if (!networkStore) return null;
 
   if (withdrawUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  if (withdrawUtils.isBasketStep(step)) {
+    return (
+      <OperationResult
+        isOpen={isBasketModalOpen}
+        variant="success"
+        title={t('operation.addedToBasket')}
+        onClose={closeBasketModal}
+      />
+    );
+  }
 
   return (
     <BaseModal

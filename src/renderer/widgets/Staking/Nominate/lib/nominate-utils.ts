@@ -10,6 +10,7 @@ export const nominateUtils = {
   isConfirmStep,
   isSignStep,
   isSubmitStep,
+  isBasketStep,
 
   getTxWrappers,
 };
@@ -36,6 +37,10 @@ function isSignStep(step: Step): boolean {
 
 function isSubmitStep(step: Step): boolean {
   return step === Step.SUBMIT;
+}
+
+function isBasketStep(step: Step): boolean {
+  return step === Step.BASKET;
 }
 
 type TxWrapperParams = {

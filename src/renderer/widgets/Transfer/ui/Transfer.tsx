@@ -13,6 +13,7 @@ import { transferUtils } from '../lib/transfer-utils';
 import { transferModel } from '../model/transfer-model';
 import { Step } from '../lib/types';
 import { basketUtils, TransferConfirm } from '@features/operations/OperationsConfirm';
+import { OperationResult } from '@entities/transaction';
 
 type Props = {
   chain: Chain;
@@ -29,6 +30,10 @@ export const Transfer = ({ chain, asset }: Props) => {
   const initiatorWallet = useUnit(transferModel.$initiatorWallet);
 
   const [isModalOpen, closeModal] = useModalClose(!transferUtils.isNoneStep(step), transferModel.output.flowFinished);
+  const [isBasketModalOpen, closeBasketModal] = useModalClose(
+    transferUtils.isBasketStep(step),
+    transferModel.output.flowFinished,
+  );
 
   useEffect(() => {
     transferModel.events.flowStarted({ chain, asset });
@@ -38,7 +43,25 @@ export const Transfer = ({ chain, asset }: Props) => {
     transferModel.events.navigateApiChanged({ navigate });
   }, []);
 
+  useEffect(() => {
+    if (transferUtils.isBasketStep(step)) {
+      const timer = setTimeout(() => closeBasketModal(), 1450);
+
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
+
   if (transferUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  if (transferUtils.isBasketStep(step)) {
+    return (
+      <OperationResult
+        isOpen={isBasketModalOpen}
+        variant="success"
+        title={t('operation.addedToBasket')}
+        onClose={closeBasketModal}
+      />
+    );
+  }
 
   const getModalTitle = (chain: Chain, asset: Asset, xcmChain?: Chain): String | ReactNode => {
     const operationTitle = xcmChain ? 'transfer.xcmTitle' : 'transfer.title';

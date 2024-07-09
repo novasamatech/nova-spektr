@@ -1,5 +1,6 @@
 .vote-chart-container {
   display: flex;
+  position: relative;
   justify-content: space-between;
   align-items: center;
   row-gap: 4px;

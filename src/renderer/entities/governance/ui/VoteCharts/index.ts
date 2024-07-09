@@ -1,2 +1,1 @@
-export { VoteChartLg } from './VoteChartLg/VoteChartLg';
-export { VoteChartSm } from './VoteChartSm/VoteChartSm';
+export { VoteChart } from './VoteChart/VoteChart';

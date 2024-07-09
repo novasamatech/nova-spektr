@@ -8,13 +8,12 @@ import { basketPageModel } from '../model/basket-page-model';
 import { EmptyBasket } from './EmptyBasket';
 import { SignOperation } from './SignOperation';
 import { SignOperations } from './SignOperations';
-import { networkModel } from '@entities/network';
+import { basketPageUtils } from '../lib/basket-page-utils';
 
 export const Basket = () => {
   const { t } = useI18n();
 
   const basketTxs = useUnit(basketPageModel.$basketTransactions);
-  const apis = useUnit(networkModel.$apis);
   const selectedTxs = useUnit(basketPageModel.$selectedTxs);
   const invalidTxs = useUnit(basketPageModel.$invalidTxs);
   const validTxs = useUnit(basketPageModel.$validTxs);
@@ -22,12 +21,15 @@ export const Basket = () => {
   const alreadyValidatedTxs = useUnit(basketPageModel.$alreadyValidatedTxs);
   const validationWarningShown = useUnit(basketPageModel.$validationWarningShown);
   const txToRemove = useUnit(basketPageModel.$txToRemove);
+  const step = useUnit(basketPageModel.$step);
 
-  const isSignAvailable = validatingTxs.filter((tx) => selectedTxs.includes(tx)).length > 0 || selectedTxs.length === 0;
+  const isSignAvailable =
+    validatingTxs.filter((tx) => selectedTxs.includes(tx)).length > 0 ||
+    (selectedTxs.length === 0 && basketPageUtils.isSelectStep(step));
 
   useEffect(() => {
-    basketPageModel.events.validationStarted();
-  }, [apis]);
+    return basketPageModel.events.selectedTxsReset();
+  }, []);
 
   return (
     <section className="flex flex-col items-center relative h-full">

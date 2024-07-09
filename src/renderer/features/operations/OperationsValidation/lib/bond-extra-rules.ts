@@ -24,14 +24,15 @@ export const BondExtraRules = {
         return new BN(feeData.fee).lte(new BN(proxyBalance));
       },
     }),
-    noBondBalance: (source: Store<ShardsBondBalanceStore>) => ({
+    noBondBalance: (source: Store<ShardsBondBalanceStore>, config: Config = { withFormatAmount: true }) => ({
       name: 'noBondBalance',
       errorText: 'staking.bond.noBondBalanceError',
       source,
       validator: (shards: any[], form: any, { isProxy, network, accountsBalances }: ShardsBondBalanceStore) => {
         if (isProxy || shards.length === 1) return true;
 
-        const amountBN = new BN(formatAmount(form.amount, network.asset.precision));
+        const value = config?.withFormatAmount ? formatAmount(form.amount, network.asset.precision) : form.amount;
+        const amountBN = new BN(value);
 
         return shards.every((_, index) => amountBN.lte(new BN(accountsBalances[index])));
       },
@@ -75,13 +76,13 @@ export const BondExtraRules = {
     },
     notEnoughBalance: (source: Store<BondAmountBalanceStore>, config: Config = { withFormatAmount: true }) => ({
       name: 'notEnoughBalance',
-      errorText: 'transfer.notEnoughBalanceError',
+      errorText: 'staking.notEnoughBalanceError',
       source,
       validator: (amount: string, _: any, { network, bondBalanceRange }: BondAmountBalanceStore) => {
         const value = config?.withFormatAmount ? formatAmount(amount, network.asset.precision) : amount;
         const amountBN = new BN(value);
 
-        const bondBalance = Array.isArray(bondBalanceRange) ? bondBalanceRange[1] : bondBalanceRange;
+        const bondBalance = Array.isArray(bondBalanceRange) ? bondBalanceRange[0] : bondBalanceRange;
 
         return amountBN.lte(new BN(bondBalance));
       },
