@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { useForm } from 'effector-forms';
 import { FormEvent } from 'react';
 
-import { Button, Input, InputHint, Select } from '@shared/ui';
+import { Button, FootnoteText, Input, InputHint, Select, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { DropdownOption } from '@shared/ui/types';
 import { networkModel, networkUtils } from '@entities/network';
@@ -40,12 +40,15 @@ export const NameNetworkSelection = () => {
   };
 
   return (
-    <section className="flex flex-col gap-y-4 px-3 py-4 flex-1 h-full">
-      {/* <SmallTitleText className="py-2 px-2">{t('createMultisigAccount.walletFormTitle')}</SmallTitleText> */}
-
-      <form id="multisigForm" className="flex flex-col px-2 gap-y-4 h-full" onSubmit={submitForm}>
+    <section className="flex flex-col flex-1 h-full">
+      <SmallTitleText className="px-5 mt-2 text-text-secondary">Step 1</SmallTitleText>
+      <SmallTitleText className="px-5 pb-6 mb-6 text-text-tertiary font-medium border-b border-container-border">
+        Select the network and name for your multisig wallet
+      </SmallTitleText>
+      <form id="multisigForm" className="flex flex-col px-5 pb-6 gap-y-4 h-full" onSubmit={submitForm}>
         <div className="flex gap-x-4 items-end">
           <Input
+            className="w-[360px]"
             placeholder={t('createMultisigAccount.namePlaceholder')}
             label={t('createMultisigAccount.walletNameLabel')}
             invalid={!!name.hasError()}
@@ -60,11 +63,15 @@ export const NameNetworkSelection = () => {
           <Select
             placeholder={t('createMultisigAccount.chainPlaceholder')}
             label={t('createMultisigAccount.chainName')}
-            className="w-[204px]"
+            className="w-[386px]"
             selectedId={chain.value.chainId.toString()}
             options={chainOptions}
             onChange={({ value }) => chain.onChange(value)}
           />
+          <FootnoteText className="mt-2 text-text-tertiary">
+            New multisig will work in only this network, if you want to use different network, you will need to create
+            new multisig
+          </FootnoteText>
         </div>
         <div className="flex justify-end items-center mt-auto">
           <Button

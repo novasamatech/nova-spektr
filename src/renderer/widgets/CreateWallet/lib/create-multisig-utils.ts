@@ -6,6 +6,7 @@ export const createMultisigUtils = {
   isConfirmStep,
   isNameNetworkStep,
   isSignatoriesThresholdStep,
+  isNotFirstStep,
 };
 
 function isConfirmStep(step: Step) {
@@ -26,4 +27,8 @@ function isSignStep(step: Step) {
 
 function isSubmitStep(step: Step) {
   return step === Step.SUBMIT;
+}
+
+function isNotFirstStep(step: Step) {
+  return step > Step.NAME_NETWORK;
 }

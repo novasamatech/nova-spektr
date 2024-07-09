@@ -169,7 +169,7 @@
     "thresholdHint": "Threshold of signatories required to execute a transaction",
     "thresholdName": "Threshold",
     "thresholdPlaceholder": "Select threshold",
-    "title": "Create Multisig Wallet",
+    "title": "Create multisig",
     "walletFormTitle": "Set up your wallet",
     "walletNameLabel": "Wallet name",
     "walletsTab": "Your wallets",

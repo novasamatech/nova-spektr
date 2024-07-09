@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { useForm } from 'effector-forms';
 import { FormEvent } from 'react';
 
-import { Alert, Button, InputHint, Select } from '@shared/ui';
+import { Alert, Button, InputHint, Select, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { formModel } from '../../model/form-model';
 import { flowModel } from '../../model/flow-model';
@@ -55,64 +55,70 @@ export const SelectSignatoriesThreshold = ({ signatories }: Props) => {
   };
 
   return (
-    <section className="flex flex-col gap-y-4 px-3 py-4 flex-1 h-full">
-      <SelectSignatories
-        isActive
-        accounts={accounts}
-        wallets={dictionary(wallets, 'id')}
-        contacts={contacts}
-        chain={chain.value}
-        onSelect={(accounts, contacts) => {
-          formModel.events.accountSignatoriesChanged(accounts);
-          formModel.events.contactSignatoriesChanged(contacts);
-        }}
-      />
-      <div className="flex gap-x-4 items-end">
-        <Alert
-          active={!hasOwnSignatory && signatories.length > 0}
-          title={t('createMultisigAccount.noOwnSignatoryTitle')}
-          variant="error"
-        >
-          <Alert.Item withDot={false}>{t('createMultisigAccount.noOwnSignatory')}</Alert.Item>
-        </Alert>
-        <Alert
-          active={hasOwnSignatory && !hasEnoughSignatories}
-          title={t('createMultisigAccount.notEnoughSignatoriesTitle')}
-          variant="error"
-        >
-          <Alert.Item withDot={false}>{t('createMultisigAccount.notEnoughSignatories')}</Alert.Item>
-        </Alert>
-      </div>
-      <div className="flex gap-x-4 items-end">
-        <Select
-          placeholder={t('createMultisigAccount.thresholdPlaceholder')}
-          label={t('createMultisigAccount.thresholdName')}
-          className="w-[204px]"
-          selectedId={threshold.value.toString()}
-          options={thresholdOptions}
-          invalid={threshold.hasError()}
-          onChange={({ value }) => threshold.onChange(value)}
+    <section className="flex flex-col flex-1 h-full">
+      <SmallTitleText className="px-5 text-text-secondary">Step 2</SmallTitleText>
+      <SmallTitleText className="px-5 pb-6 mb-6 text-text-tertiary font-medium border-b border-container-border">
+        Set the signatory wallet of your flexible multisig and how many need to confirm to execute a valid transaction
+      </SmallTitleText>
+      <div className="flex flex-col gap-y-4 px-5 py-4">
+        <SelectSignatories
+          isActive
+          accounts={accounts}
+          wallets={dictionary(wallets, 'id')}
+          contacts={contacts}
+          chain={chain.value}
+          onSelect={(accounts, contacts) => {
+            formModel.events.accountSignatoriesChanged(accounts);
+            formModel.events.contactSignatoriesChanged(contacts);
+          }}
         />
-        <InputHint className="flex-1" active>
-          {t('createMultisigAccount.thresholdHint')}
-        </InputHint>
-      </div>
-      <div className="flex gap-x-4 items-end">
-        <Alert
-          active={Boolean(multisigAlreadyExists)}
-          title={t('createMultisigAccount.multisigExistTitle')}
-          variant="error"
-        >
-          <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
-        </Alert>
-      </div>
-      <div className="flex justify-between items-center mt-auto">
-        <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.NAME_NETWORK)}>
-          {t('createMultisigAccount.backButton')}
-        </Button>
-        <Button key="create" type="submit" disabled={!canSubmit} onClick={onSubmit}>
-          {t('createMultisigAccount.continueButton')}
-        </Button>
+        <div className="flex gap-x-4 items-end">
+          <Alert
+            active={!hasOwnSignatory && signatories.length > 0}
+            title={t('createMultisigAccount.noOwnSignatoryTitle')}
+            variant="error"
+          >
+            <Alert.Item withDot={false}>{t('createMultisigAccount.noOwnSignatory')}</Alert.Item>
+          </Alert>
+          <Alert
+            active={hasOwnSignatory && !hasEnoughSignatories}
+            title={t('createMultisigAccount.notEnoughSignatoriesTitle')}
+            variant="error"
+          >
+            <Alert.Item withDot={false}>{t('createMultisigAccount.notEnoughSignatories')}</Alert.Item>
+          </Alert>
+        </div>
+        <div className="flex gap-x-4 items-end">
+          <Select
+            placeholder={t('createMultisigAccount.thresholdPlaceholder')}
+            label={t('createMultisigAccount.thresholdName')}
+            className="w-[368px]"
+            selectedId={threshold.value.toString()}
+            options={thresholdOptions}
+            invalid={threshold.hasError()}
+            onChange={({ value }) => threshold.onChange(value)}
+          />
+          <InputHint className="flex-1" active>
+            {t('createMultisigAccount.thresholdHint')}
+          </InputHint>
+        </div>
+        <div className="flex gap-x-4 items-end">
+          <Alert
+            active={Boolean(multisigAlreadyExists)}
+            title={t('createMultisigAccount.multisigExistTitle')}
+            variant="error"
+          >
+            <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
+          </Alert>
+        </div>
+        <div className="flex justify-between items-center mt-auto">
+          <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.NAME_NETWORK)}>
+            {t('createMultisigAccount.backButton')}
+          </Button>
+          <Button key="create" type="submit" disabled={!canSubmit} onClick={onSubmit}>
+            {t('createMultisigAccount.continueButton')}
+          </Button>
+        </div>
       </div>
     </section>
   );

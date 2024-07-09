@@ -2,14 +2,16 @@ import { useState } from 'react';
 import { validateAddress } from '@polkadot/util-crypto';
 
 import { useI18n } from '@app/providers';
-import { Input, Combobox, Identicon, Icon } from '@shared/ui';
+import { Input, Combobox, Identicon, Icon, IconButton } from '@shared/ui';
 import { signatoryModel } from '../../../model/signatory-model';
 
 interface Props {
   index: number;
+  canBeDeleted?: boolean;
+  onDelete?: (index: number) => void;
 }
 
-export const Signatory = ({ index }: Props) => {
+export const Signatory = ({ index, onDelete, canBeDeleted = true }: Props) => {
   const { t } = useI18n();
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
@@ -70,20 +72,25 @@ export const Signatory = ({ index }: Props) => {
     </div>
   );
 
+  const accountInputLabel = canBeDeleted ? t('Signatory address') : t('Your account');
+
   return (
-    <div className="flex">
-      <Input
-        name="Signatory name"
-        className=""
-        wrapperClass="h-[42px]"
-        label={t('addressBook.createContact.nameLabel')}
-        placeholder={t('addressBook.createContact.namePlaceholder')}
-        invalid={false}
-        value={name}
-        onChange={onNameChange}
-      />
+    <div className="flex gap-x-2">
+      <div className="flex-1">
+        <Input
+          name="Signatory name"
+          className=""
+          wrapperClass="h-[36px]"
+          label={t('addressBook.createContact.nameLabel')}
+          placeholder={t('addressBook.createContact.namePlaceholder')}
+          invalid={false}
+          value={name}
+          onChange={onNameChange}
+        />
+      </div>
       <Combobox
-        label="Signatory address"
+        className="flex-1"
+        label={accountInputLabel}
         placeholder="Choose or paste an address"
         options={[]}
         query={query}
@@ -94,6 +101,9 @@ export const Signatory = ({ index }: Props) => {
         }}
         onInput={setQuery}
       />
+      {canBeDeleted && onDelete && (
+        <IconButton className="mt-4 ml-2" name="delete" size={20} onClick={() => onDelete(index)} />
+      )}
     </div>
   );
 };

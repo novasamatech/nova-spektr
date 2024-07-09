@@ -15,6 +15,7 @@ import { formModel } from '../../model/form-model';
 import { SelectSignatoriesThreshold } from './SelectSignatoriesThreshold';
 import { Step } from '../../lib/types';
 import { OperationSign, OperationSubmit } from '@features/operations';
+import { ChainTitle } from '@entities/chain';
 
 type Props = {
   isOpen: boolean;
@@ -61,8 +62,20 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
     return <OperationSubmit isOpen={isModalOpen} onClose={closeMultisigModal} />;
 
   const modalTitle = (
-    <div className="flex justify-between items-center px-5 py-3 w-[464px] bg-white rounded-tl-lg rounded-tr-lg">
-      <HeaderTitleText className="py-[3px]">{t('createMultisigAccount.title')}</HeaderTitleText>
+    <div className="flex justify-between items-center py-3 w-[464px] bg-white rounded-tl-lg rounded-tr-lg">
+      <HeaderTitleText className="py-[3px] flex">
+        {t('createMultisigAccount.title')}
+        {createMultisigUtils.isNotFirstStep(activeStep) && (
+          <>
+            <span className="mx-1">on</span>
+            <ChainTitle
+              chainId={chain.value.chainId}
+              className="gap-x-1.5"
+              fontClass="font-manrope text-header-title text-text-primary truncate"
+            />
+          </>
+        )}
+      </HeaderTitleText>
     </div>
   );
 
@@ -72,7 +85,8 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
         closeButton
         title={modalTitle}
         isOpen={isModalOpen}
-        panelClass="w-[480px]"
+        contentClass="flex"
+        panelClass="w-[784px]"
         onClose={closeMultisigModal}
       >
         {createMultisigUtils.isNameNetworkStep(activeStep) && <NameNetworkSelection />}
