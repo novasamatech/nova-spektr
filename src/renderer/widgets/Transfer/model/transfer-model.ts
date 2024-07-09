@@ -1,5 +1,5 @@
 import { createEvent, createStore, sample, restore, combine, createApi, attach } from 'effector';
-import { spread, delay } from 'patronum';
+import { spread, delay, once } from 'patronum';
 import { NavigateFunction } from 'react-router-dom';
 
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
@@ -181,7 +181,8 @@ sample({
 });
 
 sample({
-  clock: flowFinished,
+  clock: once({ source: flowFinished, reset: flowStarted }),
+  source: $step,
   target: attach({
     source: $navigation,
     effect: (state) => state?.navigate(Paths.ASSETS, { replace: true }),

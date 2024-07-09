@@ -51,15 +51,7 @@ export const ScanMultiframeQr = ({
     const metadataMap: Record<Address, Record<ChainId, TxMetadata>> = {};
 
     for (let signingPayload of signingPayloads) {
-      let address = '';
-
-      const root = accountUtils.getBaseAccount(signerWallet.accounts, signerWallet.id);
-
-      if (walletUtils.isPolkadotVault(signerWallet) && root) {
-        address = toAddress(root.accountId, { prefix: 1 });
-      } else {
-        address = toAddress(signingPayload.account.accountId, { prefix: signingPayload.chain.addressPrefix });
-      }
+      const address = toAddress(signingPayload.account.accountId, { prefix: signingPayload.chain.addressPrefix });
 
       if (!metadataMap[address]) {
         metadataMap[address] = {};
@@ -76,6 +68,16 @@ export const ScanMultiframeQr = ({
     const transactionPromises = signingPayloads.map((signingPayload) => {
       const chainId = signingPayload.chain.chainId;
       const api = apis[chainId];
+      const txAddress = toAddress(signingPayload.account.accountId, { prefix: signingPayload.chain.addressPrefix });
+
+      const { payload } = transactionService.createPayloadWithMetadata(
+        signingPayload.transaction,
+        api,
+        metadataMap[txAddress][chainId],
+      );
+
+      metadataMap[txAddress][chainId] = upgradeNonce(metadataMap[txAddress][chainId], 1);
+
       let address = '';
 
       const root = accountUtils.getBaseAccount(signerWallet.accounts, signerWallet.id);
@@ -85,14 +87,6 @@ export const ScanMultiframeQr = ({
       } else {
         address = toAddress(signingPayload.account.accountId, { prefix: signingPayload.chain.addressPrefix });
       }
-
-      const { payload } = transactionService.createPayloadWithMetadata(
-        signingPayload.transaction,
-        api,
-        metadataMap[address][chainId],
-      );
-
-      metadataMap[address][chainId] = upgradeNonce(metadataMap[address][chainId], 1);
 
       const signPayload = createSubstrateSignPayload(
         address,
