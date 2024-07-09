@@ -43,4 +43,7 @@ export const substrateChains = [
   { name: 'Polimec' },
 ];
 
-export const ethChains = [{ name: 'Moonbeam' }, { name: 'Moonriver' }];
+export const ethChains = [
+  { name: 'Moonbeam' },
+  { name: 'Moonriver' },
+];

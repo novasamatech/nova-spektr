@@ -1,4 +1,5 @@
 import { Page } from 'playwright';
+import { expect } from '@playwright/test';
 
 import { BasePage } from '../BasePage';
 import { BasketPageElements } from '../_elements/BasketPageElements';
@@ -46,5 +47,8 @@ export class BaseBasketPage extends BasePage {
     await this.page.waitForTimeout(2000); // waiting for database update
     await this.page.reload();
     await this.page.waitForLoadState('networkidle');
+
+    const shimmerElements = this.page.locator(this.pageElements.shimmeringAtribute);
+    await expect(shimmerElements, 'On the Basket page has shimmering elements').toHaveCount(0);
   }
 }
