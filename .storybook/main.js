@@ -45,6 +45,8 @@ module.exports = {
       ],
     });
 
+    config.resolve.fallback = { ...config.resolve.fallback, fs: false }
+
     // const assetRule = config.module.rules.find(({ test }) => test?.test('.svg'));
     //
     // const assetLoader = {

@@ -17,7 +17,7 @@ const $inactiveNetworks = combine(
   ({ networks, statuses, connections }) => {
     return networksListUtils
       .getExtendedChain(networks, connections, statuses)
-      .filter((chain) => networkUtils.isDisabledConnection(chain.connection));
+      .filter((chain) => chain.connection && networkUtils.isDisabledConnection(chain.connection));
   },
 );
 

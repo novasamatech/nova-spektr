@@ -1,6 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 import { Args } from '@substrate/txwrapper-polkadot';
-import { Weight } from '@polkadot/types/interfaces';
+import { Header, Index, Weight } from '@polkadot/types/interfaces';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { AnyJson } from '@polkadot/types/types';
 
@@ -64,3 +64,5 @@ export interface XTokenPalletTransferArgs extends Args {
   destWeightLimit?: AnyJson;
   destWeight?: number;
 }
+
+export type ExtraSignerOptions = { header: Header | null; mortalLength: number; nonce: Index };

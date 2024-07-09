@@ -1,1 +1,1 @@
-export type Variant = 'success' | 'error' | 'loading' | 'mixedResult';
+export type Variant = 'success' | 'error' | 'loading' | 'warning';

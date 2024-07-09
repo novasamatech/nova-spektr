@@ -87,13 +87,13 @@ export const RestakeRules = {
     },
     notEnoughBalance: (source: Store<RestakeAmountBalanceStore>, config: Config = { withFormatAmount: true }) => ({
       name: 'notEnoughBalance',
-      errorText: 'transfer.notEnoughBalanceError',
+      errorText: 'staking.notEnoughBalanceError',
       source,
       validator: (amount: string, _: any, { network, restakeBalanceRange }: RestakeAmountBalanceStore) => {
         const value = config?.withFormatAmount ? formatAmount(amount, network.asset.precision) : amount;
         const amountBN = new BN(value);
 
-        const restakeBalance = Array.isArray(restakeBalanceRange) ? restakeBalanceRange[1] : restakeBalanceRange;
+        const restakeBalance = Array.isArray(restakeBalanceRange) ? restakeBalanceRange[0] : restakeBalanceRange;
 
         return amountBN.lte(new BN(restakeBalance));
       },

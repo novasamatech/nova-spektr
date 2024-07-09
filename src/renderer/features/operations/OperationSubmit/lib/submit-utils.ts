@@ -3,7 +3,7 @@ import { SubmitStep } from './types';
 export const submitUtils = {
   isLoadingStep,
   isSuccessStep,
-  isMixedResultStep,
+  iswarningStep,
   isErrorStep,
 };
 
@@ -15,8 +15,8 @@ function isSuccessStep(step: SubmitStep): boolean {
   return step === SubmitStep.SUCCESS;
 }
 
-function isMixedResultStep(step: SubmitStep): boolean {
-  return step === SubmitStep.MIXED_RESULT;
+function iswarningStep(step: SubmitStep): boolean {
+  return step === SubmitStep.WARNING;
 }
 
 function isErrorStep(step: SubmitStep): boolean {

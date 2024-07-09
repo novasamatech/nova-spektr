@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { useEffect } from 'react';
 
 import { BaseModal, Button } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
@@ -10,6 +11,7 @@ import { restakeUtils } from '../lib/restake-utils';
 import { restakeModel } from '../model/restake-model';
 import { Step } from '../lib/types';
 import { basketUtils, RestakeConfirmation as Confirmation } from '@features/operations/OperationsConfirm';
+import { OperationResult } from '@entities/transaction';
 
 export const Restake = () => {
   const { t } = useI18n();
@@ -19,10 +21,32 @@ export const Restake = () => {
   const initiatorWallet = useUnit(restakeModel.$initiatorWallet);
 
   const [isModalOpen, closeModal] = useModalClose(!restakeUtils.isNoneStep(step), restakeModel.output.flowFinished);
+  const [isBasketModalOpen, closeBasketModal] = useModalClose(
+    restakeUtils.isBasketStep(step),
+    restakeModel.output.flowFinished,
+  );
+
+  useEffect(() => {
+    if (restakeUtils.isBasketStep(step)) {
+      const timer = setTimeout(() => closeBasketModal(), 1450);
+
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
 
   if (!networkStore) return null;
 
   if (restakeUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  if (restakeUtils.isBasketStep(step)) {
+    return (
+      <OperationResult
+        isOpen={isBasketModalOpen}
+        variant="success"
+        title={t('operation.addedToBasket')}
+        onClose={closeBasketModal}
+      />
+    );
+  }
 
   return (
     <BaseModal

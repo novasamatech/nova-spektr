@@ -222,7 +222,7 @@ sample({
 
 sample({
   clock: getTransactionFeeFx.pending,
-  target: [formModel.events.isFeeLoadingChanged, confirmModel.events.isFeeLoadingChanged],
+  target: formModel.events.isFeeLoadingChanged,
 });
 
 sample({
@@ -248,7 +248,7 @@ sample({
 
 sample({
   clock: $feeData.updates,
-  target: [formModel.events.feeDataChanged, confirmModel.events.feeDataChanged],
+  target: formModel.events.feeDataChanged,
 });
 
 // Steps
@@ -414,7 +414,8 @@ sample({
 
 sample({
   clock: txSaved,
-  target: flowFinished,
+  fn: () => Step.BASKET,
+  target: stepChanged,
 });
 
 export const nominateModel = {

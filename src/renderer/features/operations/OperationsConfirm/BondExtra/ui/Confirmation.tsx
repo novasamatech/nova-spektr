@@ -1,4 +1,4 @@
-import { useStoreMap, useUnit } from 'effector-react';
+import { useStoreMap } from 'effector-react';
 import { ReactNode } from 'react';
 
 import { Button, DetailRow, FootnoteText, Icon, Tooltip, CaptionText } from '@shared/ui';
@@ -11,8 +11,6 @@ import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { confirmModel } from '../model/confirm-model';
 import { AccountsModal, StakingPopover } from '@entities/staking';
 import { useToggle } from '@shared/lib/hooks';
-import { FeeLoader } from '@entities/transaction';
-import { priceProviderModel } from '@entities/price';
 import { Config } from '../../../OperationsValidation';
 
 type Props = {
@@ -55,11 +53,6 @@ export const Confirmation = ({
     keys: [id],
     fn: (value, [id]) => value?.[id],
   });
-
-  const feeData = useUnit(confirmModel.$feeData);
-  const isFeeLoading = useUnit(confirmModel.$isFeeLoading);
-
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
 
@@ -187,8 +180,8 @@ export const Confirmation = ({
               }
             >
               <div className="flex flex-col gap-y-0.5 items-end">
-                <AssetBalance value={feeData.multisigDeposit} asset={confirmStore.chain.assets[0]} />
-                <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={feeData.multisigDeposit} />
+                <AssetBalance value={confirmStore.multisigDeposit} asset={confirmStore.chain.assets[0]} />
+                <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.multisigDeposit} />
               </div>
             </DetailRow>
           )}
@@ -201,14 +194,10 @@ export const Confirmation = ({
               </FootnoteText>
             }
           >
-            {isFeeLoading ? (
-              <FeeLoader fiatFlag={Boolean(fiatFlag)} />
-            ) : (
-              <div className="flex flex-col gap-y-0.5 items-end">
-                <AssetBalance value={feeData.fee} asset={confirmStore.chain.assets[0]} />
-                <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={feeData.fee} />
-              </div>
-            )}
+            <div className="flex flex-col gap-y-0.5 items-end">
+              <AssetBalance value={confirmStore.fee} asset={confirmStore.chain.assets[0]} />
+              <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.fee} />
+            </div>
           </DetailRow>
 
           {confirmStore.shards.length > 1 && (
@@ -216,14 +205,10 @@ export const Confirmation = ({
               className="text-text-primary"
               label={<FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>}
             >
-              {isFeeLoading ? (
-                <FeeLoader fiatFlag={Boolean(fiatFlag)} />
-              ) : (
-                <div className="flex flex-col gap-y-0.5 items-end">
-                  <AssetBalance value={feeData.totalFee} asset={confirmStore.chain.assets[0]} />
-                  <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={feeData.totalFee} />
-                </div>
-              )}
+              <div className="flex flex-col gap-y-0.5 items-end">
+                <AssetBalance value={confirmStore.totalFee} asset={confirmStore.chain.assets[0]} />
+                <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.totalFee} />
+              </div>
             </DetailRow>
           )}
 
@@ -244,7 +229,6 @@ export const Confirmation = ({
             {!hideSignButton && (
               <SignButton
                 isDefault={Boolean(secondaryActionButton)}
-                disabled={isFeeLoading}
                 type={(signerWallet || initiatorWallet).type}
                 onClick={confirmModel.output.formSubmitted}
               />

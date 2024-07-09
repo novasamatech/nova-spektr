@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { useEffect } from 'react';
 
 import { BaseModal, Button } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
@@ -12,6 +13,7 @@ import { removePureProxyModel } from '../model/remove-pure-proxy-model';
 import { Warning } from './Warning';
 import { OperationSign, OperationSubmit } from '@features/operations';
 import { basketUtils, RemovePureProxiedConfirm as Confirmation } from '@features/operations/OperationsConfirm';
+import { OperationResult } from '@entities/transaction';
 
 export const RemovePureProxy = () => {
   const { t } = useI18n();
@@ -25,6 +27,19 @@ export const RemovePureProxy = () => {
     !removePureProxyUtils.isNoneStep(step),
     removePureProxyModel.output.flowFinished,
   );
+
+  const [isBasketModalOpen, closeBasketModal] = useModalClose(
+    removePureProxyUtils.isBasketStep(step),
+    removePureProxyModel.output.flowFinished,
+  );
+
+  useEffect(() => {
+    if (removePureProxyUtils.isBasketStep(step)) {
+      const timer = setTimeout(() => closeBasketModal(), 1450);
+
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
 
   const getModalTitle = (step: Step, chain?: Chain) => {
     if (removePureProxyUtils.isInitStep(step) || !chain)
@@ -41,6 +56,17 @@ export const RemovePureProxy = () => {
   };
 
   if (removePureProxyUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+
+  if (removePureProxyUtils.isBasketStep(step)) {
+    return (
+      <OperationResult
+        isOpen={isBasketModalOpen}
+        variant="success"
+        title={t('operation.addedToBasket')}
+        onClose={closeBasketModal}
+      />
+    );
+  }
 
   return (
     <BaseModal closeButton contentClass="" isOpen={isModalOpen} title={getModalTitle(step, chain)} onClose={closeModal}>

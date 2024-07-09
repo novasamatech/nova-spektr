@@ -1,7 +1,7 @@
 export const enum SubmitStep {
   LOADING,
   SUCCESS,
-  MIXED_RESULT,
+  WARNING,
   ERROR,
 }
 

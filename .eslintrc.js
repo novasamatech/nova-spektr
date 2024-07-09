@@ -80,6 +80,7 @@ module.exports = {
     'unused-imports/no-unused-imports': 'error',
     'react/no-array-index-key': 'warn',
     'react/display-name': 'off',
+    'react/prop-types': 'off',
     'react/react-in-jsx-scope': 'off',
     'react/jsx-sort-props': ['error', { callbacksLast: true, noSortAlphabetically: true }],
     'react/function-component-definition': [

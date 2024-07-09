@@ -135,7 +135,7 @@ function getAssetLocation(
       Concrete: location,
     },
     fun: {
-      Fungible: amount,
+      Fungible: amount.toString(),
     },
   };
 
