@@ -72,13 +72,15 @@ export const Signatory = ({ index, onDelete, canBeDeleted = true }: Props) => {
     </div>
   );
 
-  const accountInputLabel = canBeDeleted ? t('Signatory address') : t('Your account');
+  const accountInputLabel = canBeDeleted
+    ? t('createMultisigAccount.signatoryAddress')
+    : t('createMultisigAccount.ownAccountSelection');
 
   return (
     <div className="flex gap-x-2">
       <div className="flex-1">
         <Input
-          name="Signatory name"
+          name={t('createMultisigAccount.signatoryNameLabel')}
           className=""
           wrapperClass="h-[36px]"
           label={t('addressBook.createContact.nameLabel')}
@@ -91,7 +93,7 @@ export const Signatory = ({ index, onDelete, canBeDeleted = true }: Props) => {
       <Combobox
         className="flex-1"
         label={accountInputLabel}
-        placeholder="Choose or paste an address"
+        placeholder={t('createMultisigAccount.signatorySelection')}
         options={[]}
         query={query}
         value={address}

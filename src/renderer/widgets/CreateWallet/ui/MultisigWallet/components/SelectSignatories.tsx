@@ -11,11 +11,6 @@ import { networkUtils } from '@entities/network';
 import { signatoryModel } from '../../../model/signatory-model';
 import { Signatory } from './Signatory';
 
-const enum SignatoryTabs {
-  ACCOUNTS = 'accounts',
-  CONTACTS = 'contacts',
-}
-
 type Props = {
   isActive: boolean;
   accounts: (Account | ShardAccount[])[];
@@ -28,8 +23,6 @@ type Props = {
 export const SelectSignatories = ({ isActive, accounts, wallets, contacts, chain, onSelect }: Props) => {
   const { t } = useI18n();
 
-  const [query, setQuery] = useState('');
-  // const [accountsQuery, setAccountsQuery] = useState('');
   const [contactList, setContactList] = useState<ExtendedContact[]>([]);
   const [accountsList, setAccountsList] = useState<Record<Wallet['id'], Array<ExtendedAccount | ExtendedAccount[]>>>(
     {},
@@ -127,7 +120,7 @@ export const SelectSignatories = ({ isActive, accounts, wallets, contacts, chain
           suffixElement={<Icon name="add" size={16} />}
           onClick={onAddSignatoryClick}
         >
-          Add new signatory
+          {t('createMulisigAccount.addNewSignatory')}
         </Button>
       </div>
     </div>

@@ -41,9 +41,11 @@ export const NameNetworkSelection = () => {
 
   return (
     <section className="flex flex-col flex-1 h-full">
-      <SmallTitleText className="px-5 mt-2 text-text-secondary">Step 1</SmallTitleText>
+      <SmallTitleText className="px-5 mt-2 text-text-secondary">
+        {t('createMultisigAccount.step', { step: 1 })}
+      </SmallTitleText>
       <SmallTitleText className="px-5 pb-6 mb-6 text-text-tertiary font-medium border-b border-container-border">
-        Select the network and name for your multisig wallet
+        {t('createMultisigAccount.nameNetworkDescription')}
       </SmallTitleText>
       <form id="multisigForm" className="flex flex-col px-5 pb-6 gap-y-4 h-full" onSubmit={submitForm}>
         <div className="flex gap-x-4 items-end">
@@ -69,8 +71,7 @@ export const NameNetworkSelection = () => {
             onChange={({ value }) => chain.onChange(value)}
           />
           <FootnoteText className="mt-2 text-text-tertiary">
-            New multisig will work in only this network, if you want to use different network, you will need to create
-            new multisig
+            {t('createMultisigAccount.networkDescription')}
           </FootnoteText>
         </div>
         <div className="flex justify-end items-center mt-auto">

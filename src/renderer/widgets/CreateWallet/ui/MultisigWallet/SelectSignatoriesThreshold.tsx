@@ -56,9 +56,11 @@ export const SelectSignatoriesThreshold = ({ signatories }: Props) => {
 
   return (
     <section className="flex flex-col flex-1 h-full">
-      <SmallTitleText className="px-5 text-text-secondary">Step 2</SmallTitleText>
+      <SmallTitleText className="px-5 text-text-secondary">
+        {t('createMultisigAccount.step', { step: 2 })}
+      </SmallTitleText>
       <SmallTitleText className="px-5 pb-6 mb-6 text-text-tertiary font-medium border-b border-container-border">
-        Set the signatory wallet of your flexible multisig and how many need to confirm to execute a valid transaction
+        {t('createMultisigAccount.signatoryThresholdDescription')}
       </SmallTitleText>
       <div className="flex flex-col gap-y-4 px-5 py-4">
         <SelectSignatories
