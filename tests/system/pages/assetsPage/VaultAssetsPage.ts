@@ -12,6 +12,8 @@ import { readConfig } from '../../utils/readConfig';
 import { ChainModel } from '../../data/chains/testChainModel';
 import { TransferModalElements } from '../_elements/TransferModalElements';
 import { TransferModalWindow } from '../modals/TransferModalWindow';
+import { VaultBasketPage } from '../basketPage/VaultBasketPage';
+import { BasketPageElements } from '../_elements/BasketPageElements';
 
 export class VaultAssetsPage extends BasePage {
   public pageElements: AssetsPageElements;
@@ -35,6 +37,13 @@ export class VaultAssetsPage extends BasePage {
     await this.clickOnButtonBySelector(this.pageElements.settingsModalWindowButtonSelector, true);
 
     return new AssetsSettingsModalWindow(this.page, new AssetsSettingsModalElements(), this);
+  }
+
+  public async openBasket(): Promise<VaultBasketPage> {
+    const basketPage = new VaultBasketPage(this.page, new BasketPageElements());
+    await basketPage.gotoMain();
+
+    return basketPage;
   }
 
   public async openTransfer(chain: ChainModel, assetId: number): Promise<TransferModalWindow> {
