@@ -2,6 +2,7 @@ import { u8aToHex } from '@polkadot/util';
 import { createKeyMulti } from '@polkadot/util-crypto';
 import keyBy from 'lodash/keyBy';
 
+import { toAddress } from '@shared/lib/utils';
 // TODO: resolve cross import
 import { networkUtils } from '@entities/network';
 import { walletUtils } from './wallet-utils';
@@ -39,6 +40,7 @@ export const accountUtils = {
   isEthereumBased,
   isCryptoTypeMatch,
 
+  getAddressesForWallet,
   getAccountsAndShardGroups,
   getMultisigAccountId,
   getSignatoryAccounts,
@@ -193,4 +195,12 @@ function isStakingProxyType(account: ProxiedAccount): boolean {
 
 function isNonBaseVaultAccount(account: Account, wallet: Wallet): boolean {
   return !walletUtils.isPolkadotVault(wallet) || !accountUtils.isBaseAccount(account);
+}
+
+function getAddressesForWallet(wallet: Wallet, chain: Chain) {
+  const matchedAccounts = walletUtils.getAccountsBy([wallet], (account) => {
+    return isChainIdMatch(account, chain.chainId);
+  });
+
+  return matchedAccounts.map((a) => toAddress(a.accountId, { prefix: chain.addressPrefix }));
 }
