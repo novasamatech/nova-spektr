@@ -1,5 +1,6 @@
 import { Store, createEffect, createEvent, sample } from 'effector';
 import { ApiPromise } from '@polkadot/api';
+import { SignerOptions } from '@polkadot/api/submittable/types';
 
 import { Asset, Balance, Chain, ID, Transaction } from '@shared/core';
 import { stakeableAmount, toAccountId } from '@shared/lib/utils';
@@ -9,7 +10,7 @@ import { validationUtils } from '../lib/validation-utils';
 import { networkModel } from '@entities/network';
 import { PayeeRules } from '../lib/payee-rules';
 
-const validationStarted = createEvent<{ id: ID; transaction: Transaction }>();
+const validationStarted = createEvent<{ id: ID; transaction: Transaction; signerOptions?: Partial<SignerOptions> }>();
 const txValidated = createEvent<{ id: ID; result: ValidationResult }>();
 
 type ValidateParams = {
@@ -19,31 +20,34 @@ type ValidateParams = {
   asset: Asset;
   transaction: Transaction;
   balances: Balance[];
+  signerOptions?: Partial<SignerOptions>;
 };
 
-const validateFx = createEffect(async ({ id, api, chain, asset, transaction, balances }: ValidateParams) => {
-  const accountId = toAccountId(transaction.address);
-  const shardBalance = balances.find(
-    (balance) => balance.accountId === accountId && balance.assetId === asset.assetId.toString(),
-  );
+const validateFx = createEffect(
+  async ({ id, api, chain, asset, transaction, balances, signerOptions }: ValidateParams) => {
+    const accountId = toAccountId(transaction.address);
+    const shardBalance = balances.find(
+      (balance) => balance.accountId === accountId && balance.assetId === asset.assetId.toString(),
+    );
 
-  const rules = [
-    {
-      value: [{ accountId }],
-      form: {
-        amount: transaction.args.amount,
+    const rules = [
+      {
+        value: [{ accountId }],
+        form: {
+          amount: transaction.args.amount,
+        },
+        ...PayeeRules.shards.noBondBalance({} as Store<ShardsBondBalanceStore>),
+        source: {
+          isProxy: false,
+          network: { chain, asset },
+          accountsBalances: [stakeableAmount(shardBalance)],
+        } as ShardsBondBalanceStore,
       },
-      ...PayeeRules.shards.noBondBalance({} as Store<ShardsBondBalanceStore>),
-      source: {
-        isProxy: false,
-        network: { chain, asset },
-        accountsBalances: [stakeableAmount(shardBalance)],
-      } as ShardsBondBalanceStore,
-    },
-  ];
+    ];
 
-  return { id, result: validationUtils.applyValidationRules(rules) };
-});
+    return { id, result: validationUtils.applyValidationRules(rules) };
+  },
+);
 
 sample({
   clock: validationStarted,
@@ -53,7 +57,7 @@ sample({
     balances: balanceModel.$balances,
   },
   filter: ({ apis }, { transaction }) => Boolean(apis[transaction.chainId]),
-  fn: ({ apis, chains, balances }, { id, transaction }) => {
+  fn: ({ apis, chains, balances }, { id, transaction, signerOptions }) => {
     const chain = chains[transaction.chainId];
     const api = apis[transaction.chainId];
     const asset = chain.assets[0];
@@ -65,6 +69,7 @@ sample({
       chain,
       asset,
       balances,
+      signerOptions,
     };
   },
   target: validateFx,

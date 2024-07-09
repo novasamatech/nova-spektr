@@ -5,9 +5,9 @@ import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
 import { transactionService } from '@entities/transaction';
-import { toAddress } from '@shared/lib/utils';
+import { TxMetadata, createTxMetadata, toAddress, upgradeNonce } from '@shared/lib/utils';
 import { Button, FootnoteText } from '@shared/ui';
-import type { ShardAccount, BaseAccount, ChainId } from '@shared/core';
+import type { ShardAccount, BaseAccount, ChainId, Address } from '@shared/core';
 import { Wallet } from '@shared/core';
 import { createSubstrateSignPayload, createMultipleSignPayload } from '../QrCode/QrGenerator/common/utils';
 import { TRANSACTION_BULK } from '../QrCode/common/constants';
@@ -48,7 +48,36 @@ export const ScanMultiframeQr = ({
   }, []);
 
   const setupTransactions = async (): Promise<void> => {
-    const transactionPromises = signingPayloads.map((signingPayload, index) => {
+    const metadataMap: Record<Address, Record<ChainId, TxMetadata>> = {};
+
+    for (let signingPayload of signingPayloads) {
+      const address = toAddress(signingPayload.account.accountId, { prefix: signingPayload.chain.addressPrefix });
+
+      if (!metadataMap[address]) {
+        metadataMap[address] = {};
+      }
+
+      if (!metadataMap[address][signingPayload.chain.chainId]) {
+        metadataMap[address][signingPayload.chain.chainId] = await createTxMetadata(
+          address,
+          apis[signingPayload.chain.chainId],
+        );
+      }
+    }
+
+    const transactionPromises = signingPayloads.map((signingPayload) => {
+      const chainId = signingPayload.chain.chainId;
+      const api = apis[chainId];
+      const txAddress = toAddress(signingPayload.account.accountId, { prefix: signingPayload.chain.addressPrefix });
+
+      const { payload } = transactionService.createPayloadWithMetadata(
+        signingPayload.transaction,
+        api,
+        metadataMap[txAddress][chainId],
+      );
+
+      metadataMap[txAddress][chainId] = upgradeNonce(metadataMap[txAddress][chainId], 1);
+
       let address = '';
 
       const root = accountUtils.getBaseAccount(signerWallet.accounts, signerWallet.id);
@@ -59,28 +88,20 @@ export const ScanMultiframeQr = ({
         address = toAddress(signingPayload.account.accountId, { prefix: signingPayload.chain.addressPrefix });
       }
 
-      return (async () => {
-        const { payload } = await transactionService.createPayload(
-          signingPayload.transaction,
-          apis[signingPayload.chain.chainId],
-          index,
-        );
+      const signPayload = createSubstrateSignPayload(
+        address,
+        payload,
+        chainId,
+        signerWallet.signingType,
+        (signingPayload.account as ShardAccount).derivationPath,
+        (signingPayload.account as BaseAccount).cryptoType,
+      );
 
-        const signPayload = createSubstrateSignPayload(
-          address,
-          payload,
-          signingPayload.chain.chainId,
-          signerWallet.signingType,
-          (signingPayload.account as ShardAccount).derivationPath,
-          (signingPayload.account as BaseAccount).cryptoType,
-        );
-
-        return {
-          signPayload,
-          payload,
-          transactionData: signingPayload.transaction,
-        };
-      })();
+      return {
+        signPayload,
+        payload,
+        transactionData: signingPayload.transaction,
+      };
     });
 
     const txRequests = await Promise.all(transactionPromises);

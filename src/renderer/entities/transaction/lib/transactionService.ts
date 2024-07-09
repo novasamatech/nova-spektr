@@ -5,9 +5,11 @@ import { hexToU8a } from '@polkadot/util';
 import { construct, UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
+import type { SignerOptions } from '@polkadot/api/types/submittable';
+import { u32 } from '@polkadot/types';
 
 import { Transaction, TransactionType, WrapperKind } from '@shared/core';
-import { createTxMetadata, toAccountId, dictionary } from '@shared/lib/utils';
+import { createTxMetadata, toAccountId, dictionary, TxMetadata } from '@shared/lib/utils';
 import { getExtrinsic, getUnsignedTransaction, wrapAsMulti, wrapAsProxy } from './extrinsicService';
 import { decodeDispatchError } from './common/utils';
 import { useCallDataDecoder } from './callDataDecoder';
@@ -38,6 +40,8 @@ export const transactionService = {
   getMultisigDeposit,
 
   createPayload,
+  createPayloadWithMetadata,
+  createSignerOptions,
   signAndSubmit,
 
   getTxWrappers,
@@ -47,9 +51,13 @@ export const transactionService = {
 const shouldWrapAsMulti = (wrapper: TxWrappers_OLD): wrapper is WrapAsMulti =>
   'signatoryId' in wrapper && 'account' in wrapper;
 
-async function getTransactionFee(transaction: Transaction, api: ApiPromise): Promise<string> {
+async function getTransactionFee(
+  transaction: Transaction,
+  api: ApiPromise,
+  options?: Partial<SignerOptions>,
+): Promise<string> {
   const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-  const paymentInfo = await extrinsic.paymentInfo(transaction.address);
+  const paymentInfo = await extrinsic.paymentInfo(transaction.address, options);
 
   return paymentInfo.partialFee.toString();
 }
@@ -63,7 +71,6 @@ async function signAndSubmit(
 ) {
   const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
   const accountId = toAccountId(transaction.address);
-
   extrinsic.addSignature(accountId, hexToU8a(signature), payload);
 
   extrinsic
@@ -260,13 +267,23 @@ function getWrappedTransaction({ api, addressPrefix, transaction, txWrappers }: 
 async function createPayload(
   transaction: Transaction,
   api: ApiPromise,
-  nonce = 0,
 ): Promise<{
   unsigned: UnsignedTransaction;
   payload: Uint8Array;
 }> {
-  const { info, options, registry } = await createTxMetadata(transaction.address, api, nonce);
+  const metadata = await createTxMetadata(transaction.address, api);
 
+  return createPayloadWithMetadata(transaction, api, metadata);
+}
+
+function createPayloadWithMetadata(
+  transaction: Transaction,
+  api: ApiPromise,
+  { info, options, registry }: TxMetadata,
+): {
+  unsigned: UnsignedTransaction;
+  payload: Uint8Array;
+} {
   const unsigned = getUnsignedTransaction[transaction.type](transaction, info, options, api);
   if (options.signedExtensions?.includes('ChargeAssetTxPayment')) {
     unsigned.assetId = undefined;
@@ -277,6 +294,16 @@ async function createPayload(
   return {
     unsigned,
     payload: hexToU8a(signingPayloadHex),
+  };
+}
+
+async function createSignerOptions(api: ApiPromise): Promise<Partial<SignerOptions>> {
+  const [blockHash] = await Promise.all([api.rpc.chain.getBlockHash()]);
+
+  return {
+    blockHash,
+    nonce: new u32(api.registry, 1),
+    era: 64,
   };
 }
 
@@ -295,15 +322,22 @@ export const useTransaction = (): ITransactionService => {
     };
   };
 
-  const getExtrinsicWeight = async (extrinsic: SubmittableExtrinsic<'promise'>): Promise<Weight> => {
-    const paymentInfo = await extrinsic.paymentInfo(extrinsic.signer);
+  const getExtrinsicWeight = async (
+    extrinsic: SubmittableExtrinsic<'promise'>,
+    options?: Partial<SignerOptions>,
+  ): Promise<Weight> => {
+    const paymentInfo = await extrinsic.paymentInfo(extrinsic.signer, options);
 
     return paymentInfo.weight;
   };
 
-  const getTxWeight = async (transaction: Transaction, api: ApiPromise): Promise<Weight> => {
+  const getTxWeight = async (
+    transaction: Transaction,
+    api: ApiPromise,
+    options?: Partial<SignerOptions>,
+  ): Promise<Weight> => {
     const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-    const { weight } = await extrinsic.paymentInfo(transaction.address);
+    const { weight } = await extrinsic.paymentInfo(transaction.address, options);
 
     return weight;
   };
