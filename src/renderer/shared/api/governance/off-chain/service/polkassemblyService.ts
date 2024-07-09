@@ -19,7 +19,6 @@ const getReferendumList: IGovernanceApi['getReferendumList'] = async (chain, cal
         proposalType: 'referendums_v2',
       },
       (data, done) => {
-        console.log({ data, after: parsePolkassemblyData(data) });
         callback(parsePolkassemblyData(data), done);
       },
     )
@@ -86,11 +85,7 @@ async function getReferendumDetails(chain: Chain, referendumId: ReferendumId): P
       postId: referendumId,
       proposalType: 'referendums_v2',
     })
-    .then((r) => {
-      console.log({ referendumId, data: r });
-
-      return r.description ?? '';
-    });
+    .then((r) => r.description ?? '');
 }
 
 // TODO: use callback to return the data, instead of waiting all at once

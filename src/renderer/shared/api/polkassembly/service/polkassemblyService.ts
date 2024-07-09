@@ -35,14 +35,7 @@ type ListingOnChainPostsParams = {
 };
 
 const fetchListingOnChainPosts = async (
-  {
-    network,
-    trackStatus = 'All',
-    trackNo,
-    proposalType,
-    sortBy,
-    limit = Number.MAX_SAFE_INTEGER,
-  }: ListingOnChainPostsParams,
+  { network, trackStatus, trackNo, proposalType, sortBy, limit = Number.MAX_SAFE_INTEGER }: ListingOnChainPostsParams,
   callback?: ChunkDataCallback<ListingOnChainPost>,
 ): Promise<ListingOnChainPost[]> => {
   const pageSize = Math.min(100, limit);
