@@ -4,7 +4,7 @@ on:
   pull_request:
 
 permissions:
-  issues: write
+  pull-requests: write
 
 jobs:
   unit-tests:
