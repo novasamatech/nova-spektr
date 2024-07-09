@@ -177,7 +177,7 @@ export const upgradeNonce = (metadata: TxMetadata, index: number): TxMetadata =>
     ...metadata,
     info: {
       ...metadata.info,
-      nonce: metadata.info.nonce + index,
+      nonce: new BN(metadata.info.nonce).add(new BN(index)).toNumber(),
     },
   };
 };
