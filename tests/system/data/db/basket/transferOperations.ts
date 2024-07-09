@@ -347,56 +347,10 @@ export function createNumberOfTransfers(numberOfTransfers: number, initiatorWall
     coreTx: {
       chainId,
       address,
-      type: TransactionType.XCM_TELEPORT,
+      type: TransactionType.TRANSFER,
       args: {
-        dest: 'Cm1GneZB3Xnj3PvnHMnLYppk3d8rhJDUvjgPzRp9bZfcimH',
-        value: '100000000000',
-        destinationChain: '0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a',
-        xcmFee: '15836598',
-        xcmAsset: {
-          V4: [
-            {
-              id: {
-                Concrete: {
-                  parents: 0,
-                  interior: 'Here',
-                },
-              },
-              fun: {
-                Fungible: {
-                  negative: 0,
-                  words: [23629238, 1490],
-                  length: 2,
-                  red: null,
-                },
-              },
-            },
-          ],
-        },
-        xcmWeight: '4000000000',
-        xcmDest: {
-          V4: {
-            parents: 0,
-            interior: {
-              X1: {
-                Parachain: 1000,
-              },
-            },
-          },
-        },
-        xcmBeneficiary: {
-          V4: {
-            parents: 0,
-            interior: {
-              X1: {
-                accountId32: {
-                  network: 'Any',
-                  id: '0x08264834504a64ace1373f0c8ed5d57381ddf54a2f67a318fa42b1352681606d',
-                },
-              },
-            },
-          },
-        },
+        dest: '5CFPcUJgYgWryPaV1aYjSbTpbTLu42V32Ytw1L9rfoMAsfGh',
+        value: '100000',
       },
     },
     txWrappers: [],
