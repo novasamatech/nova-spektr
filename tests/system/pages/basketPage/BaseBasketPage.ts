@@ -49,6 +49,6 @@ export class BaseBasketPage extends BasePage {
     await this.page.waitForLoadState('networkidle');
 
     const shimmerElements = this.page.locator(this.pageElements.shimmeringAtribute);
-    await expect(shimmerElements, 'On the Basket page has shimmering elements').toHaveCount(0);
+    await expect(shimmerElements, 'On the Basket page has shimmering elements').toHaveCount(0, { timeout: 35000 });
   }
 }

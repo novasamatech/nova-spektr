@@ -1,38 +1,46 @@
 import { IndexedDBData } from '../../../utils/interactWithDatabase';
+import { BasketTransaction, TransactionType } from '../../../../../src/renderer/shared/core';
 
 export function createProxyOperations(initiatorWallet: number, address: string, chainId: string): IndexedDBData {
-  const transactions = [
+  const transactions: BasketTransaction[] = [
     {
-      type: 'add_proxy',
-      args: {
-        delegate: '5CFPcUJgYgWryPaV1aYjSbTpbTLu42V32Ytw1L9rfoMAsfGh',
-        proxyType: 'Any',
-        delay: 0,
-      },
-      groupId: undefined,
       id: 1,
+      initiatorWallet,
+      coreTx: {
+        chainId,
+        address,
+        type: TransactionType.ADD_PROXY,
+        args: {
+          delegate: '5CFPcUJgYgWryPaV1aYjSbTpbTLu42V32Ytw1L9rfoMAsfGh',
+          proxyType: 'Any',
+          delay: 0,
+        },
+      },
+      txWrappers: [],
+      groupId: undefined,
     },
     {
-      type: 'create_pure_proxy',
-      args: {
-        proxyType: 'Any',
-        delay: 0,
-        index: 0,
-      },
-      groupId: undefined,
       id: 2,
+      initiatorWallet,
+      coreTx: {
+        chainId,
+        address,
+        type: TransactionType.CREATE_PURE_PROXY,
+        args: {
+          proxyType: 'Any',
+          delay: 0,
+          index: 0,
+        },
+      },
+      txWrappers: [],
+      groupId: undefined,
     },
   ];
 
   const injectingData = transactions.map((tx) => ({
-    initiatorWallet,
-    coreTx: {
-      chainId,
-      address,
-      type: tx.type,
-      args: tx.args,
-    },
-    txWrappers: [],
+    initiatorWallet: tx.initiatorWallet,
+    coreTx: tx.coreTx,
+    txWrappers: tx.txWrappers,
     groupId: tx.groupId,
     id: tx.id,
   }));

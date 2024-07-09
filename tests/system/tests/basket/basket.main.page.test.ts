@@ -29,8 +29,7 @@ test.describe(
       loginPage = new BaseLoginPage(page, new LoginPageElements());
 
       const vaultWallet = await loginPage.createDDPolkadotVaultWallet();
-      const assetsPage = await vaultWallet.gotoMain();
-      const basketPage = await assetsPage.openBasket();
+      await vaultWallet.openBasket();
 
       await expect(page).toHaveScreenshot();
     });
@@ -41,8 +40,7 @@ test.describe(
       loginPage = new BaseLoginPage(page, new LoginPageElements());
 
       const vaultWallet = await loginPage.createDDPolkadotVaultWallet();
-      const assetsPage = await vaultWallet.gotoMain();
-      const basketPage = await assetsPage.openBasket();
+      const basketPage = await vaultWallet.openBasket();
       await basketPage.addStakingOperationsIntoBasket();
 
       await expect(page).toHaveScreenshot();
@@ -54,8 +52,7 @@ test.describe(
       loginPage = new BaseLoginPage(page, new LoginPageElements());
 
       const vaultWallet = await loginPage.createDDPolkadotVaultWallet();
-      const assetsPage = await vaultWallet.gotoMain();
-      const basketPage = await assetsPage.openBasket();
+      const basketPage = await vaultWallet.openBasket();
       await basketPage.addTransferOperationsIntoBasket();
 
       await expect(page).toHaveScreenshot();
@@ -67,8 +64,7 @@ test.describe(
       loginPage = new BaseLoginPage(page, new LoginPageElements());
 
       const vaultWallet = await loginPage.createDDPolkadotVaultWallet();
-      const assetsPage = await vaultWallet.gotoMain();
-      const basketPage = await assetsPage.openBasket();
+      const basketPage = await vaultWallet.openBasket();
       await basketPage.addProxyOperationsIntoBasket();
 
       await expect(page).toHaveScreenshot();
