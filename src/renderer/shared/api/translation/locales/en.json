@@ -319,7 +319,12 @@
       "proposer": "Proposer: {name}",
       "threshold": "Threshold",
       "votedTokens": "{voted} of {total} {asset}",
-      "votingStatus": "Voting status"
+      "votingStatus": "Voting status",
+      "votingSummary": "Summary",
+      "aye": "Aye",
+      "nay": "Nay",
+      "support": "Support",
+      "votes": "{votes} votes"
     },
     "referendums": {
       "approved": "Approved",
