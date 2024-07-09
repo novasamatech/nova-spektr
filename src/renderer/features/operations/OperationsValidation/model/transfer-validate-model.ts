@@ -1,7 +1,7 @@
 import { Store, createEffect, createEvent, sample } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 
-import { Asset, Balance, Chain, ID, Transaction } from '@shared/core';
+import { Asset, Balance, Chain, ChainId, ID, Transaction, TransactionType } from '@shared/core';
 import { TransferRules } from '@features/operations/OperationsValidation';
 import { getAssetById, toAccountId, transferableAmount } from '@shared/lib/utils';
 import { balanceModel, balanceUtils } from '@entities/balance';
@@ -16,7 +16,9 @@ import { validationUtils } from '../lib/validation-utils';
 import { networkModel } from '@entities/network';
 import { transactionService } from '@entities/transaction';
 
-const validationStarted = createEvent<{ id: ID; transaction: Transaction }>();
+type FeeMap = Record<ChainId, Record<TransactionType, string>>;
+
+const validationStarted = createEvent<{ id: ID; transaction: Transaction; feeMap: FeeMap }>();
 const txValidated = createEvent<{ id: ID; result: ValidationResult }>();
 
 type ValidateParams = {
@@ -26,12 +28,14 @@ type ValidateParams = {
   asset: Asset;
   transaction: Transaction;
   balances: Balance[];
+  feeMap: FeeMap;
 };
 
-const validateFx = createEffect(async ({ id, api, chain, asset, transaction, balances }: ValidateParams) => {
+const validateFx = createEffect(async ({ id, api, chain, asset, transaction, balances, feeMap }: ValidateParams) => {
   const accountId = toAccountId(transaction.address);
 
-  const fee = await transactionService.getTransactionFee(transaction, api);
+  const fee =
+    feeMap?.[chain.chainId]?.[transaction.type] || (await transactionService.getTransactionFee(transaction, api));
 
   const rules = [
     {
@@ -114,7 +118,7 @@ sample({
     balances: balanceModel.$balances,
   },
   filter: ({ apis }, { transaction }) => Boolean(apis[transaction.chainId]),
-  fn: ({ apis, chains, balances }, { id, transaction }) => {
+  fn: ({ apis, chains, balances }, { id, transaction, feeMap }) => {
     const chain = chains[transaction.chainId];
     const api = apis[transaction.chainId];
     const asset = getAssetById(transaction.args.asset, chain.assets) || chain.assets[0];
@@ -126,6 +130,7 @@ sample({
       chain,
       asset,
       balances,
+      feeMap,
     };
   },
   target: validateFx,

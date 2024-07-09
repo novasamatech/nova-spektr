@@ -1,10 +1,12 @@
 import { combine, createEffect, createEvent, createStore, restore, sample, split } from 'effector';
+import { ApiPromise } from '@polkadot/api';
+import { throttle } from 'patronum';
 
-import { networkModel } from '@entities/network';
+import { networkModel, networkUtils } from '@entities/network';
 import { walletModel } from '@entities/wallet';
 import { basketModel } from '@entities/basket';
-import { BasketTransaction, ID, TransactionType } from '@shared/core';
-import { TransferTypes, XcmTypes } from '@entities/transaction';
+import { BasketTransaction, ChainId, ID, TransactionType } from '@shared/core';
+import { TransferTypes, XcmTypes, transactionService } from '@entities/transaction';
 import {
   transferValidateModel,
   addProxyValidateModel,
@@ -31,6 +33,8 @@ type BasketTransactionsMap = {
   invalid: BasketTransaction[];
 };
 
+type FeeMap = Record<ChainId, Record<TransactionType, string>>;
+
 const txSelected = createEvent<{ id: ID; value: boolean }>();
 const txClicked = createEvent<BasketTransaction>();
 const allSelected = createEvent();
@@ -55,13 +59,52 @@ const $validatingTxs = createStore<number[]>([]);
 const $validationWarningShown = createStore<boolean>(false);
 const $alreadyValidatedTxs = createStore<number[]>([]);
 const $txToRemove = restore(removeTxStarted, null).reset([removeTxCancelled, txRemoved]);
+const $feeMap = createStore<FeeMap>({});
+const $connectedChains = createStore('');
 
-const validateFx = createEffect((transactions: BasketTransaction[]) => {
+const getFeeMapFx = createEffect(
+  async ({
+    transactions,
+    apis,
+    feeMap,
+  }: {
+    transactions: BasketTransaction[];
+    apis: Record<ChainId, ApiPromise>;
+    feeMap: FeeMap;
+  }) => {
+    const newFeeMap: FeeMap = { ...feeMap };
+
+    for (const transaction of transactions) {
+      const chainId = transaction.coreTx.chainId;
+      const api = apis[chainId];
+
+      if (!api) continue;
+
+      const transactionType = basketPageUtils.getTransactionType(transaction);
+
+      if (!newFeeMap[chainId]) newFeeMap[chainId] = {} as Record<TransactionType, string>;
+
+      if (newFeeMap[chainId][transactionType]) continue;
+
+      newFeeMap[chainId][transactionType] = await transactionService.getTransactionFee(transaction.coreTx, api);
+    }
+
+    return newFeeMap;
+  },
+);
+
+type ValidateParams = { transactions: BasketTransaction[]; feeMap: FeeMap };
+
+const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
   for (const tx of transactions) {
     const coreTx = getCoreTx(tx, [TransactionType.BOND, TransactionType.UNSTAKE]);
 
     if (TransferTypes.includes(coreTx.type) || XcmTypes.includes(coreTx.type)) {
-      transferValidateModel.events.validationStarted({ id: tx.id, transaction: coreTx });
+      transferValidateModel.events.validationStarted({
+        id: tx.id,
+        transaction: coreTx,
+        feeMap,
+      });
     }
 
     const TransactionValidators = {
@@ -81,7 +124,11 @@ const validateFx = createEffect((transactions: BasketTransaction[]) => {
     if (coreTx.type in TransactionValidators) {
       // TS thinks that transfer should be in TransactionValidators
       // @ts-ignore`
-      TransactionValidators[coreTx.type]({ id: tx.id, transaction: coreTx });
+      TransactionValidators[coreTx.type]({
+        id: tx.id,
+        transaction: coreTx,
+        feeMap,
+      });
     }
   }
 });
@@ -110,6 +157,21 @@ const txValidated = [
 ];
 
 sample({
+  clock: throttle(networkModel.$connectionStatuses, 2000),
+  source: {
+    statuses: networkModel.$connectionStatuses,
+    txs: $basketTransactions,
+  },
+  fn: ({ statuses, txs }) =>
+    [...new Set(txs.map((tx) => tx.coreTx.chainId))]
+      .filter((chainId) => {
+        return networkUtils.isConnectedStatus(statuses[chainId]);
+      })
+      .join(' '),
+  target: $connectedChains,
+});
+
+sample({
   clock: txSelected,
   source: $selectedTxs,
   fn: (selectedTxs, { id, value }) => {
@@ -123,6 +185,18 @@ sample({
   source: $selectedTxs,
   fn: (selectedTxs, txs) => selectedTxs.filter((id) => txs.find((tx) => tx.id === id)),
   target: $selectedTxs,
+});
+
+sample({
+  clock: $connectedChains,
+  source: { apis: networkModel.$apis, transactions: $basketTransactions, feeMap: $feeMap },
+  fn: ({ apis, transactions, feeMap }) => ({ apis, transactions, feeMap }),
+  target: getFeeMapFx,
+});
+
+sample({
+  clock: getFeeMapFx.doneData,
+  target: $feeMap,
 });
 
 sample({
@@ -145,7 +219,7 @@ sample({
 });
 
 sample({
-  clock: $basketTransactions,
+  clock: [$basketTransactions, $connectedChains],
   target: validationStarted,
 });
 
@@ -156,10 +230,10 @@ sample({
     apis: networkModel.$apis,
     alreadyValidatedTxs: $alreadyValidatedTxs,
     validatingTxs: $validatingTxs,
+    feeMap: $feeMap,
   },
-  fn: ({ transactions, apis, alreadyValidatedTxs, validatingTxs }) => {
+  fn: ({ transactions, apis, alreadyValidatedTxs, validatingTxs, feeMap }) => {
     const chains = new Set(transactions.map((t) => t.coreTx.chainId));
-
     const txsToValidate = [...chains].reduce<BasketTransaction[]>((acc, chainId) => {
       if (!apis[chainId]) {
         return acc;
@@ -172,7 +246,10 @@ sample({
       return [...acc, ...txs];
     }, []);
 
-    return txsToValidate;
+    return {
+      transactions: txsToValidate,
+      feeMap,
+    };
   },
   target: validateFx,
 });
@@ -182,10 +259,9 @@ sample({
   source: {
     transactions: $basketTransactions,
     apis: networkModel.$apis,
-    alreadyValidatedTxs: $alreadyValidatedTxs,
-    validatingTxs: $validatingTxs,
+    feeMap: $feeMap,
   },
-  fn: ({ transactions, apis, alreadyValidatedTxs, validatingTxs }) => {
+  fn: ({ transactions, apis, feeMap }) => {
     const chains = new Set(transactions.map((t) => t.coreTx.chainId));
 
     const txsToValidate = [...chains].reduce<BasketTransaction[]>((acc, chainId) => {
@@ -198,7 +274,10 @@ sample({
       return [...acc, ...txs];
     }, []);
 
-    return txsToValidate;
+    return {
+      transactions: txsToValidate,
+      feeMap,
+    };
   },
   target: validateFx,
 });
@@ -206,7 +285,7 @@ sample({
 sample({
   clock: validateFx,
   source: $validatingTxs,
-  fn: (validatingTxs, txs) => txs.reduce((acc, tx) => addUnique(acc, tx.id), validatingTxs),
+  fn: (validatingTxs, { transactions }) => transactions.reduce((acc, tx) => addUnique(acc, tx.id), validatingTxs),
   target: $validatingTxs,
 });
 
@@ -264,8 +343,16 @@ sample({
 
 sample({
   clock: signStarted,
-  source: { allTransactions: $basketTransactions, selectedTxs: $selectedTxs, invalidTxs: $invalidTxs },
-  fn: ({ allTransactions, selectedTxs }) => allTransactions.filter((t) => selectedTxs.includes(t.id)),
+  source: {
+    allTransactions: $basketTransactions,
+    selectedTxs: $selectedTxs,
+    invalidTxs: $invalidTxs,
+    feeMap: $feeMap,
+  },
+  fn: ({ allTransactions, selectedTxs, feeMap }) => ({
+    transactions: allTransactions.filter((t) => selectedTxs.includes(t.id)),
+    feeMap,
+  }),
   target: validateFx,
 });
 
@@ -337,7 +424,19 @@ sample({
   fn: ({ valid }) => {
     return valid;
   },
-  target: [$validTxs, signOperationsModel.events.flowStarted],
+  target: $validTxs,
+});
+
+sample({
+  clock: proceedValidationWarning,
+  source: $feeMap,
+  fn: (feeMap, { valid }) => {
+    return {
+      transactions: valid,
+      feeMap,
+    };
+  },
+  target: signOperationsModel.events.flowStarted,
 });
 
 sample({
@@ -377,7 +476,6 @@ export const basketPageModel = {
   $step,
 
   events: {
-    validationStarted,
     refreshValidationStarted,
     txSelected,
     txClicked,
