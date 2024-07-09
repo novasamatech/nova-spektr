@@ -4,7 +4,7 @@ import { expect } from '@playwright/test';
 import { BasePage } from '../BasePage';
 import { BasketPageElements } from '../_elements/BasketPageElements';
 import { IndexedDBData, injectDataInDatabase } from '../../utils/interactWithDatabase';
-import { createStakingOperations, createTransferOperations, createProxyOperations } from '../../data/db/basket';
+import { createStakingOperations, createTransferOperations, createProxyOperations, createNumberOfTransfers } from '../../data/db/basket';
 
 export class BaseBasketPage extends BasePage {
   protected pageElements: BasketPageElements;
@@ -34,6 +34,16 @@ export class BaseBasketPage extends BasePage {
 
   public async addProxyOperationsIntoBasket(): Promise<void> {
     const operations = createProxyOperations(
+      1,
+      '5Cad3FdyS4j4z39uzTPhcPFey5MNXEszCCTTfkH6Ly1LsFwz',
+      '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e',
+    );
+    await this.injectBasketOperationsInDatabase(operations);
+  }
+
+  public async createNumberOfTransfers(transfersCount: number): Promise<void> {
+    const operations = createNumberOfTransfers(
+      transfersCount,
       1,
       '5Cad3FdyS4j4z39uzTPhcPFey5MNXEszCCTTfkH6Ly1LsFwz',
       '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e',

@@ -69,5 +69,17 @@ test.describe(
 
       await expect(page).toHaveScreenshot();
     });
+
+    test('Many Transfers submission', async () => {
+      context = await browser.newContext({ ignoreHTTPSErrors: true, permissions: ['camera'] });
+      page = await context.newPage();
+      loginPage = new BaseLoginPage(page, new LoginPageElements());
+
+      const vaultWallet = await loginPage.createDDPolkadotVaultWallet();
+      const basketPage = await vaultWallet.openBasket();
+      await basketPage.createNumberOfTransfers(100);
+
+      await expect(page).toHaveScreenshot();
+    });
   },
 );
