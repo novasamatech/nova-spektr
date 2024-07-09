@@ -1,13 +1,14 @@
 import { createForm } from 'effector-forms';
-import { combine, createEvent, restore } from 'effector';
+import { combine, createEvent } from 'effector';
 import { sample } from 'lodash';
 
 import { Chain, CryptoType, MultisigAccount } from '@shared/core';
 import chains from '@shared/config/chains/chains.json';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkUtils } from '@entities/network';
-import { ExtendedAccount, ExtendedContact } from '../ui/MultisigWallet/common/types';
 import { FormParams } from '../lib/types';
+import { signatoryModel } from './signatory-model';
+import { toAccountId } from '@shared/lib/utils';
 
 const $createMultisigForm = createForm<FormParams>({
   fields: {
@@ -37,26 +38,12 @@ const $createMultisigForm = createForm<FormParams>({
   validateOn: ['submit'],
 });
 
-const reset = createEvent();
-const accountSignatoriesChanged = createEvent<ExtendedAccount[]>();
-const contactSignatoriesChanged = createEvent<ExtendedContact[]>();
 const formSubmitted = createEvent<void>();
-
-const $accountSignatories = restore(accountSignatoriesChanged, []).reset(reset);
-const $contactSignatories = restore(contactSignatoriesChanged, []).reset(reset);
-
-const $signatories = combine(
-  {
-    accountSignatories: $accountSignatories,
-    contactSignatories: $contactSignatories,
-  },
-  ({ accountSignatories, contactSignatories }) => [...accountSignatories, ...contactSignatories],
-);
 
 const $multisigAccountId = combine(
   {
     formValues: $createMultisigForm.$values,
-    signatories: $signatories,
+    signatories: signatoryModel.$signatories,
   },
   ({ formValues: { threshold, chain }, signatories }) => {
     if (!threshold) return null;
@@ -64,7 +51,7 @@ const $multisigAccountId = combine(
     const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
 
     return accountUtils.getMultisigAccountId(
-      signatories.map((s) => s.accountId),
+      Array.from(signatories.values()).map((s) => toAccountId(s.address)),
       threshold,
       cryptoType,
     );
@@ -109,11 +96,11 @@ const $availableAccounts = combine(
 );
 
 const $hasOwnSignatory = combine(
-  { wallets: walletModel.$wallets, signatories: $signatories },
+  { wallets: walletModel.$wallets, signatories: signatoryModel.$signatories },
   ({ wallets, signatories }) =>
     !!walletUtils.getWalletsFilteredAccounts(wallets, {
       walletFn: (w) => !walletUtils.isWatchOnly(w) && !walletUtils.isMultisig(w),
-      accountFn: (a) => signatories.some((s) => s.accountId === a.accountId),
+      accountFn: (a) => Array.from(signatories.values()).some((s) => toAccountId(s.address) === a.accountId),
     })?.length,
 );
 
@@ -129,14 +116,7 @@ export const formModel = {
   $multisigAccountId,
   $multisigAlreadyExists,
   $availableAccounts,
-  $signatories,
-  $accountSignatories,
-  $contactSignatories,
   $hasOwnSignatory,
-  events: {
-    contactSignatoriesChanged,
-    accountSignatoriesChanged,
-  },
   output: {
     formSubmitted,
   },

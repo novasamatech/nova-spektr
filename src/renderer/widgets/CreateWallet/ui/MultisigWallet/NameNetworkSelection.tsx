@@ -42,7 +42,7 @@ export const NameNetworkSelection = () => {
   return (
     <section className="flex flex-col flex-1 h-full">
       <SmallTitleText className="px-5 mt-2 text-text-secondary">
-        {t('createMultisigAccount.step', { step: 1 })}
+        {t('createMultisigAccount.multisigStep', { step: 1 })}
       </SmallTitleText>
       <SmallTitleText className="px-5 pb-6 mb-6 text-text-tertiary font-medium border-b border-container-border">
         {t('createMultisigAccount.nameNetworkDescription')}

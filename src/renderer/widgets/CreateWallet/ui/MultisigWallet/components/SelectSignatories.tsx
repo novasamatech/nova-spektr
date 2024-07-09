@@ -3,9 +3,8 @@ import { useUnit } from 'effector-react';
 
 import { cnTw, isEthereumAccountId } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
-import { useToggle } from '@shared/lib/hooks';
 import { Button, Icon } from '@shared/ui';
-import { ExtendedAccount, ExtendedContact } from '../common/types';
+import { ExtendedContact } from '../common/types';
 import { type Contact, type Account, ShardAccount, Wallet, Chain } from '@shared/core';
 import { networkUtils } from '@entities/network';
 import { signatoryModel } from '../../../model/signatory-model';
@@ -17,23 +16,12 @@ type Props = {
   wallets: Record<Wallet['id'], Wallet>;
   contacts: Contact[];
   chain?: Chain;
-  onSelect: (accounts: ExtendedAccount[], contacts: ExtendedContact[]) => void;
 };
 
-export const SelectSignatories = ({ isActive, accounts, wallets, contacts, chain, onSelect }: Props) => {
+export const SelectSignatories = ({ isActive, contacts, chain }: Props) => {
   const { t } = useI18n();
 
   const [contactList, setContactList] = useState<ExtendedContact[]>([]);
-  const [accountsList, setAccountsList] = useState<Record<Wallet['id'], Array<ExtendedAccount | ExtendedAccount[]>>>(
-    {},
-  );
-  const [isContactModalOpen, toggleContactModalOpen] = useToggle();
-
-  const [selectedAccounts, setSelectedAccounts] = useState<Record<string, ExtendedAccount>>({});
-  const [selectedContacts, setSelectedContacts] = useState<Record<string, ExtendedContact>>({});
-
-  const selectedAccountsList = Object.values(selectedAccounts);
-  const selectedContactsList = Object.values(selectedContacts);
   const signatories = useUnit(signatoryModel.$signatories);
 
   useEffect(() => {
@@ -88,15 +76,6 @@ export const SelectSignatories = ({ isActive, accounts, wallets, contacts, chain
   //   setDisabledWallets(disabled);
   // }, [accounts.length, contacts.length, wallets.length]);
 
-  useEffect(() => {
-    setSelectedAccounts({});
-    setSelectedContacts({});
-  }, [chain]);
-
-  useEffect(() => {
-    onSelect(selectedAccountsList, selectedContactsList);
-  }, [selectedAccountsList.length, selectedContactsList.length]);
-
   const onAddSignatoryClick = () => {
     signatoryModel.events.signatoriesChanged({ index: signatories.size, name: '', address: '' });
   };
@@ -120,7 +99,7 @@ export const SelectSignatories = ({ isActive, accounts, wallets, contacts, chain
           suffixElement={<Icon name="add" size={16} />}
           onClick={onAddSignatoryClick}
         >
-          {t('createMulisigAccount.addNewSignatory')}
+          {t('createMultisigAccount.addNewSignatory')}
         </Button>
       </div>
     </div>

@@ -30,9 +30,6 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
     fields: { chain },
   } = useForm(formModel.$createMultisigForm);
   const activeStep = useUnit(flowModel.$step);
-  const accountSignatories = useUnit(formModel.$accountSignatories);
-  const contactSignatories = useUnit(formModel.$contactSignatories);
-  const signatories = useUnit(formModel.$signatories);
 
   const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
 
@@ -86,16 +83,12 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
         title={modalTitle}
         isOpen={isModalOpen}
         contentClass="flex"
-        panelClass="w-[784px]"
+        panelClass={createMultisigUtils.isSignStep(activeStep) ? 'w-[440px]' : 'w-[784px]'}
         onClose={closeMultisigModal}
       >
         {createMultisigUtils.isNameNetworkStep(activeStep) && <NameNetworkSelection />}
-        {createMultisigUtils.isSignatoriesThresholdStep(activeStep) && (
-          <SelectSignatoriesThreshold signatories={signatories} />
-        )}
-        {createMultisigUtils.isConfirmStep(activeStep) && (
-          <ConfirmationStep chain={chain.value} accounts={accountSignatories} contacts={contactSignatories} />
-        )}
+        {createMultisigUtils.isSignatoriesThresholdStep(activeStep) && <SelectSignatoriesThreshold />}
+        {createMultisigUtils.isConfirmStep(activeStep) && <ConfirmationStep chain={chain.value} />}
         {createMultisigUtils.isSignStep(activeStep) && (
           <OperationSign onGoBack={() => flowModel.events.stepChanged(Step.CONFIRM)} />
         )}

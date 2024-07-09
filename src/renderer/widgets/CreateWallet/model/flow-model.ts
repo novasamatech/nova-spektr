@@ -21,11 +21,12 @@ import { networkModel, networkUtils } from '@entities/network';
 import { AddMultisigStore, FormSubmitEvent, Step } from '../lib/types';
 import { formModel } from './form-model';
 import { transactionService } from '@entities/transaction';
-import { TEST_ACCOUNTS, ZERO_BALANCE, toAddress } from '@shared/lib/utils';
+import { TEST_ACCOUNTS, ZERO_BALANCE, toAccountId, toAddress } from '@shared/lib/utils';
 import { confirmModel } from './confirm-model';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { createMultisigUtils } from '../lib/create-multisig-utils';
+import { signatoryModel } from './signatory-model';
 
 const stepChanged = createEvent<Step>();
 const feeChanged = createEvent<string>();
@@ -33,7 +34,6 @@ const multisigDepositChanged = createEvent<string>();
 const isFeeLoadingChanged = createEvent<boolean>();
 const formSubmitted = createEvent<FormSubmitEvent>();
 const flowFinished = createEvent();
-const selectedSignerChanged = createEvent<Account>();
 
 export type Callbacks = {
   onComplete: () => void;
@@ -43,7 +43,6 @@ const walletCreated = createEvent<{
   name: string;
   threshold: number;
 }>();
-const $selectedSigner = restore(selectedSignerChanged, null);
 const $step = restore(stepChanged, Step.NAME_NETWORK).reset(flowFinished);
 const $fee = restore(feeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
@@ -63,13 +62,18 @@ const $addMultisigStore = createStore<AddMultisigStore | null>(null).reset(flowF
 // several accountSignatories. Otherwise it is the first accountSignatory
 const $signer = combine(
   {
-    accountSignatories: formModel.$accountSignatories,
-    selectedSigner: $selectedSigner,
+    signatories: signatoryModel.$signatories,
+    wallets: walletModel.$wallets,
   },
-  ({ accountSignatories, selectedSigner }) => {
-    return accountSignatories.length > 1 && selectedSigner
-      ? selectedSigner
-      : (accountSignatories[0] as unknown as Account);
+  ({ signatories, wallets }) => {
+    if (signatories.size === 0) return null;
+
+    const signerAccount = walletUtils.getAccountsBy(
+      wallets,
+      (a) => a.accountId === toAccountId(signatories.get(0)!.address),
+    );
+
+    return signerAccount[0];
   },
   { skipVoid: false },
 );
@@ -78,7 +82,7 @@ const $signerWallet = combine(
   { signer: $signer, wallets: walletModel.$wallets },
   ({ signer, wallets }) => {
     return walletUtils.getWalletFilteredAccounts(wallets, {
-      accountFn: (a) => a.accountId === signer.accountId,
+      accountFn: (a) => a.accountId === signer?.accountId,
       walletFn: (w) => walletUtils.isValidSignatory(w),
     });
   },
@@ -127,13 +131,13 @@ const $transaction = combine(
     chains: networkModel.$chains,
     chain: formModel.$createMultisigForm.fields.chain.$value,
     remarkTx: $remarkTx,
-    signatories: formModel.$signatories,
+    signatories: signatoryModel.$signatories,
     signer: $signer,
     threshold: formModel.$createMultisigForm.fields.threshold.$value,
     multisigAccountId: formModel.$multisigAccountId,
   },
   ({ apis, chain, remarkTx, signatories, signer, threshold, multisigAccountId }) => {
-    if (!chain || !remarkTx) return undefined;
+    if (!chain || !remarkTx || !signer) return undefined;
 
     return transactionService.getWrappedTransaction({
       api: apis[chain.chainId],
@@ -143,7 +147,9 @@ const $transaction = combine(
         {
           kind: WrapperKind.MULTISIG,
           multisigAccount: { accountId: multisigAccountId, signatories, threshold } as unknown as MultisigAccount,
-          signatories: signatories.map((s) => ({ accountId: s.accountId })) as Account[],
+          signatories: Array.from(signatories.values()).map((s) => ({
+            accountId: toAccountId(s.address),
+          })) as Account[],
           signer,
         },
       ],
@@ -226,26 +232,21 @@ sample({
 });
 
 sample({
-  clock: formModel.$accountSignatories,
-  fn: (signatories) => {
-    return signatories[0] as unknown as Account;
-  },
-  target: selectedSignerChanged,
-});
-
-sample({
   clock: submitModel.output.extrinsicSucceeded,
   source: {
     name: formModel.$createMultisigForm.fields.name.$value,
     threshold: formModel.$createMultisigForm.fields.threshold.$value,
-    signatories: formModel.$signatories,
+    signatories: signatoryModel.$signatories,
     chain: formModel.$createMultisigForm.fields.chain.$value,
   },
   fn: ({ signatories, chain, name, threshold }) => ({
     name,
     threshold,
     chainId: chain.chainId,
-    signatories: sortBy(signatories, 'accountId'),
+    signatories: sortBy(
+      Array.from(signatories.values()).map((a) => ({ address: a.address, accountId: toAccountId(a.address) })),
+      'accountId',
+    ),
     isEthereumChain: networkUtils.isEthereumBased(chain.options),
   }),
   target: createWalletFx,
@@ -267,8 +268,8 @@ sample({
     fee: $fee,
     multisigDeposit: $multisigDeposit,
   },
-  filter: ({ transaction }) => {
-    return Boolean(transaction);
+  filter: ({ transaction, signer }) => {
+    return Boolean(transaction) && Boolean(signer);
   },
   fn: ({ multisigDeposit, signer, transaction, fee }, formData) => {
     return {
@@ -279,7 +280,7 @@ sample({
       },
       formData: {
         ...formData,
-        signer,
+        signer: signer!,
         fee,
         account: signer,
         multisigDeposit,
@@ -324,13 +325,14 @@ sample({
     wrappedTx: $wrappedTx,
     signer: $signer,
   },
-  filter: ({ addMultisigStore, wrappedTx }) => Boolean(addMultisigStore) && Boolean(wrappedTx),
+  filter: ({ addMultisigStore, wrappedTx, signer }) =>
+    Boolean(addMultisigStore) && Boolean(wrappedTx) && Boolean(signer),
   fn: ({ addMultisigStore, wrappedTx, signer }) => ({
     event: {
       signingPayloads: [
         {
           chain: addMultisigStore!.chain,
-          account: signer,
+          account: signer!,
           transaction: wrappedTx!,
         },
       ],
@@ -352,14 +354,14 @@ sample({
     multisigTx: $multisigTx,
     signer: $signer,
   },
-  filter: ({ addMultisigStore, coreTx, wrappedTx }) => {
-    return Boolean(addMultisigStore) && Boolean(wrappedTx) && Boolean(coreTx);
+  filter: ({ addMultisigStore, coreTx, wrappedTx, signer }) => {
+    return Boolean(addMultisigStore) && Boolean(wrappedTx) && Boolean(coreTx) && Boolean(signer);
   },
   fn: ({ addMultisigStore, coreTx, wrappedTx, multisigTx, signer }, signParams) => ({
     event: {
       ...signParams,
       chainId: addMultisigStore!.chain.chainId,
-      account: signer,
+      account: signer!,
       coreTxs: [coreTx!],
       wrappedTxs: [wrappedTx!],
       multisigTxs: multisigTx ? [multisigTx] : [],
@@ -393,7 +395,6 @@ export const flowModel = {
   $fakeTx,
   $api,
   $isFeeLoading,
-  $selectedSigner,
   $signer,
   $signerWallet,
   events: {
@@ -403,7 +404,6 @@ export const flowModel = {
     feeChanged,
     multisigDepositChanged,
     isFeeLoadingChanged,
-    selectedSignerChanged,
     //for tests
     formSubmitted,
   },

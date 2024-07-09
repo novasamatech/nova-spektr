@@ -12,7 +12,7 @@ import { SelectSignatories } from './components/SelectSignatories';
 import { dictionary } from '@shared/lib/utils';
 import { Step } from '../../lib/types';
 import { DropdownOption } from '@shared/ui/types';
-import { ExtendedContact } from './common/types';
+import { signatoryModel } from '../../model/signatory-model';
 
 const getThresholdOptions = (optionsAmount: number): DropdownOption<number>[] => {
   if (optionsAmount === 0) return [];
@@ -28,13 +28,11 @@ const getThresholdOptions = (optionsAmount: number): DropdownOption<number>[] =>
   });
 };
 
-interface Props {
-  signatories: ExtendedContact[];
-}
-
-export const SelectSignatoriesThreshold = ({ signatories }: Props) => {
+export const SelectSignatoriesThreshold = () => {
   const { t } = useI18n();
 
+  const signatoriesMap = useUnit(signatoryModel.$signatories);
+  const signatories = Array.from(signatoriesMap.values());
   const {
     fields: { chain, threshold },
     submit,
@@ -57,7 +55,7 @@ export const SelectSignatoriesThreshold = ({ signatories }: Props) => {
   return (
     <section className="flex flex-col flex-1 h-full">
       <SmallTitleText className="px-5 text-text-secondary">
-        {t('createMultisigAccount.step', { step: 2 })}
+        {t('createMultisigAccount.multisigStep', { step: 2 })}
       </SmallTitleText>
       <SmallTitleText className="px-5 pb-6 mb-6 text-text-tertiary font-medium border-b border-container-border">
         {t('createMultisigAccount.signatoryThresholdDescription')}
@@ -69,10 +67,6 @@ export const SelectSignatoriesThreshold = ({ signatories }: Props) => {
           wallets={dictionary(wallets, 'id')}
           contacts={contacts}
           chain={chain.value}
-          onSelect={(accounts, contacts) => {
-            formModel.events.accountSignatoriesChanged(accounts);
-            formModel.events.contactSignatoriesChanged(contacts);
-          }}
         />
         <div className="flex gap-x-4 items-end">
           <Alert
