@@ -24,6 +24,8 @@ export type TrackStatus =
   | 'Rejected'
   | 'TimedOut';
 
+export type VoteType = 'Motion' | 'Fellowship' | 'Referendum' | 'ReferendumV2' | 'DemocracyProposal';
+
 export type ListingOnChainPost = {
   comments_count: number;
   created_at: string;
@@ -115,4 +117,28 @@ export type DetailedOnChainPost = {
   type: string;
   user_id: number;
   title: string;
+};
+
+export type PostVote = {
+  decision: 'yes' | 'no' | 'abstain';
+  voter: Address;
+  balance: {
+    value: string | null;
+  };
+  lockPeriod: number;
+};
+
+export type PostVotesResponse = {
+  abstain: {
+    count: number;
+    votes: PostVote[];
+  };
+  yes: {
+    count: number;
+    votes: PostVote[];
+  };
+  no: {
+    count: number;
+    votes: PostVote[];
+  };
 };

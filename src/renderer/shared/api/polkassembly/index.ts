@@ -1,3 +1,11 @@
-export { polkassemblyApiService } from './service/polkassemblyService';
+export { polkassemblyApiService } from './service/polkassemblyApiService';
 
-export type { ListingOnChainPost, DetailedOnChainPost, ProposalType, TrackStatus } from './lib/types';
+export type {
+  ListingOnChainPost,
+  DetailedOnChainPost,
+  ProposalType,
+  TrackStatus,
+  PostVote,
+  Status,
+  VoteType,
+} from './lib/types';

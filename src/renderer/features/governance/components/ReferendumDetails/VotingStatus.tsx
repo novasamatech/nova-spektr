@@ -1,49 +1,56 @@
 import { referendumService, votingService, VoteChart } from '@entities/governance';
 import { formatBalance } from '@shared/lib/utils';
-import { FootnoteText, Icon } from '@shared/ui';
+import { Button, FootnoteText, Icon } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { Asset } from '@shared/core';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 import { AggregatedReferendum } from '../../types/structs';
 
 type Props = {
-  referendum: AggregatedReferendum;
+  item: AggregatedReferendum;
   asset: Asset | null;
 };
 
-export const VotingStatus = ({ referendum, asset }: Props) => {
+export const VotingStatus = ({ item, asset }: Props) => {
   const { t } = useI18n();
+  const { referendum, approvalThreshold, supportThreshold } = item;
 
-  const isPassing = referendum.supportThreshold?.passing ?? false;
+  if (!asset) {
+    return null;
+  }
+
+  const isPassing = item.supportThreshold?.passing ?? false;
 
   const votedFractions =
-    referendumService.isOngoing(referendum.referendum) && referendum.approvalThreshold
-      ? votingService.getVoteFractions(referendum.referendum.tally, referendum.approvalThreshold.value)
+    referendumService.isOngoing(referendum) && approvalThreshold
+      ? votingService.getVoteFractions(referendum.tally, approvalThreshold.value)
       : null;
   const votedCount =
-    referendumService.isOngoing(referendum.referendum) && referendum.supportThreshold
-      ? votingService.getVotedCount(referendum.referendum.tally, referendum.supportThreshold.value)
+    referendumService.isOngoing(referendum) && supportThreshold
+      ? votingService.getVotedCount(referendum.tally, supportThreshold.value)
       : null;
+
+  const votedBalance = votedCount ? formatBalance(votedCount.voted.toString(), asset.precision) : null;
+  const supportThresholdBalance = votedCount ? formatBalance(votedCount.of.toString(), asset.precision) : null;
 
   return (
     <div className="flex flex-col items-start gap-6">
-      <VotingStatusBadge passing={isPassing} referendum={referendum.referendum} />
+      <VotingStatusBadge passing={isPassing} referendum={referendum} />
       {votedFractions && <VoteChart bgColor="icon-button" descriptionPosition="bottom" {...votedFractions} />}
-      {votedCount && (
-        <div className="flex items-center gap-1 justify-between flex-wrap w-full">
-          <div className="flex items-center gap-1">
-            <Icon name="checkmarkOutline" size={18} className="text-icon-positive" />
-            <FootnoteText className="text-text-secondary">{t('governance.referendum.threshold')}</FootnoteText>
-          </div>
-          <FootnoteText>
+      {votedBalance && supportThresholdBalance && (
+        <div className="flex items-center gap-1.5 flex-wrap w-full">
+          <Icon name="checkmarkOutline" size={18} className="text-icon-positive" />
+          <FootnoteText className="text-text-secondary">{t('governance.referendum.threshold')}</FootnoteText>
+          <FootnoteText className="grow text-end">
             {t('governance.referendum.votedTokens', {
-              voted: formatBalance(votedCount.voted.toString()).value,
-              total: formatBalance(votedCount.of.toString()).value,
-              asset: asset?.symbol,
+              voted: votedBalance.value + votedBalance.suffix,
+              total: supportThresholdBalance.value + supportThresholdBalance.suffix,
+              asset: asset.symbol,
             })}
           </FootnoteText>
         </div>
       )}
+      <Button className="w-full">Vote</Button>
     </div>
   );
 };

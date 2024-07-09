@@ -1,7 +1,15 @@
 import { createChunkedRequest } from '../lib/createChunkedRequest';
-import { ListingOnChainPost, DetailedOnChainPost, ProposalType, TrackStatus } from '../lib/types';
+import {
+  ListingOnChainPost,
+  DetailedOnChainPost,
+  ProposalType,
+  TrackStatus,
+  VoteType,
+  PostVotesResponse,
+  PostVote,
+} from '../lib/types';
 
-type ChunkDataCallback<T> = (chunk: T[], done: boolean) => unknown;
+type ChunkDataCallback<T> = (chunk: T, done: boolean) => unknown;
 
 const origin = 'https://api.polkassembly.io';
 
@@ -34,9 +42,9 @@ type ListingOnChainPostsParams = {
   limit?: number;
 };
 
-const fetchListingOnChainPosts = async (
+const fetchPostsList = async (
   { network, trackStatus, trackNo, proposalType, sortBy, limit = Number.MAX_SAFE_INTEGER }: ListingOnChainPostsParams,
-  callback?: ChunkDataCallback<ListingOnChainPost>,
+  callback?: ChunkDataCallback<ListingOnChainPost[]>,
 ): Promise<ListingOnChainPost[]> => {
   const pageSize = Math.min(100, limit);
 
@@ -74,7 +82,7 @@ type OnChainPostParams = {
   postId: string;
 };
 
-async function fetchOnChainPost({ network, postId, proposalType }: OnChainPostParams): Promise<DetailedOnChainPost> {
+async function fetchPost({ network, postId, proposalType }: OnChainPostParams): Promise<DetailedOnChainPost> {
   const url = createURL('/api/v1/posts/on-chain-post', {
     proposalType,
     postId,
@@ -83,7 +91,53 @@ async function fetchOnChainPost({ network, postId, proposalType }: OnChainPostPa
   return fetch(url, { method: 'GET', headers: createHeaders(network) }).then((r) => r.json());
 }
 
+type PostVotesParams = {
+  network: string;
+  postId: string;
+  voteType: VoteType;
+  sortBy?: 'balance' | 'time';
+  limit?: number;
+};
+
+const fetchPostVotes = async (
+  { network, postId, voteType, sortBy, limit = Number.MAX_SAFE_INTEGER }: PostVotesParams,
+  callback?: ChunkDataCallback<PostVote[]>,
+): Promise<PostVote[]> => {
+  const pageSize = Math.min(50, limit);
+
+  const getApiUrl = (page: number, size: number) => {
+    return createURL('/api/v1/votes', {
+      postId,
+      voteType,
+      page,
+      listingLimit: size,
+      sortBy,
+    });
+  };
+
+  const requestParams = { method: 'GET', headers: createHeaders(network) };
+  let result: PostVote[] = [];
+
+  const createRequest = async (page: number): Promise<PostVote[]> => {
+    const res: PostVotesResponse = await fetch(getApiUrl(page, pageSize), requestParams).then((res) => res.json());
+    const data = res.abstain.votes.concat(res.yes.votes, res.no.votes);
+    const shouldContinue = res.abstain.count + res.yes.count + res.no.count === pageSize;
+
+    result = result.concat(data);
+    callback?.(data, !shouldContinue);
+
+    if (!shouldContinue) {
+      return result;
+    }
+
+    return createRequest(page + 1);
+  };
+
+  return createRequest(1);
+};
+
 export const polkassemblyApiService = {
-  fetchOnChainPost,
-  fetchListingOnChainPosts,
+  fetchPost,
+  fetchPostsList,
+  fetchPostVotes,
 };

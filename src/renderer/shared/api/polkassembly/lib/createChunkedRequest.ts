@@ -41,6 +41,8 @@ export const createChunkedRequest = async <T, V>({
 
   let result = getRecords(ping);
 
+  callback?.(result, totalRequests === 1);
+
   return createChunkedTasks({
     items: Array.from({ length: totalRequests - 1 }),
     chunkSize,

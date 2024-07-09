@@ -53,7 +53,7 @@ export const ReferendumDetails = ({ chain, referendum, onClose }: Props) => {
 
         <div className="flex flex-row flex-wrap gap-4 basis-[350px] grow shrink-0">
           <DetailsCard title={t('governance.referendum.votingStatus')}>
-            <VotingStatus referendum={referendum} asset={votingAsset} />
+            <VotingStatus item={referendum} asset={votingAsset} />
           </DetailsCard>
         </div>
       </div>

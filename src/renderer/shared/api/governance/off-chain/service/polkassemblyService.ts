@@ -1,75 +1,59 @@
 import type { Chain, ReferendumId } from '@shared/core';
-import type { IGovernanceApi } from '../lib/types';
+import type { GovernanceApi, ReferendumVote } from '../lib/types';
 import { dictionary } from '@shared/lib/utils';
-import { polkassemblyApiService, ListingOnChainPost } from '../../../polkassembly';
+import { polkassemblyApiService, ListingOnChainPost, PostVote } from '../../../polkassembly';
 
-/**
- * Request referendum list without details 100 units of data each round
- * Ping their API to check "total" referendums and request remaining with Promise.allSettled
- * @param chain
- * @param callback returns portions of data
- */
-const getReferendumList: IGovernanceApi['getReferendumList'] = async (chain, callback) => {
-  const chainName = chain.specName;
+const getReferendumList: GovernanceApi['getReferendumList'] = async (chain, callback) => {
+  function mapListingPost(data: ListingOnChainPost[]) {
+    return dictionary(data, 'post_id', (item) => item.title);
+  }
 
   return polkassemblyApiService
-    .fetchListingOnChainPosts(
+    .fetchPostsList(
       {
-        network: chainName,
+        network: chain.specName,
         proposalType: 'referendums_v2',
+        sortBy: 'newest',
       },
       (data, done) => {
-        callback(parsePolkassemblyData(data), done);
+        callback(mapListingPost(data), done);
       },
     )
-    .then(parsePolkassemblyData);
+    .then(mapListingPost);
 };
 
-function parsePolkassemblyData(data: ListingOnChainPost[]) {
-  return dictionary(data, 'post_id', (item) => item.title);
-}
+const getReferendumVotes: GovernanceApi['getReferendumVotes'] = (chain, referendumId, callback) => {
+  const mapDecision = (x: PostVote['decision']): ReferendumVote['decision'] => {
+    switch (x) {
+      case 'abstain':
+        return 'abstain';
+      case 'no':
+        return 'nay';
+      case 'yes':
+        return 'aye';
+    }
+  };
 
-// /**
-//  * Request referendum list without details 100 units of data each round
-//  * Ping their API to check "total" referendums and request remaining with Promise.allSettled
-//  * @param chain
-//  * @param callback returns portions of data
-//  */
-// const getReferendumVotes: IGovernanceApi['getReferendumList'] = async (chain, callback) => {
-//   const chainName = chain.specName;
-//   const pageSize = 100;
-//
-//   if (chainName) {
-//     const getApiUrl = (page: number, size = pageSize) => {
-//       return createURL('/api/v1/votes', {
-//         postId:
-//       });
-//
-//       return new URL(`/api/v1/votes`, origin);
-//     };
-//
-//     const headers = new Headers();
-//     headers.append('x-network', chainName);
-//     headers.append('Cache-Control', 'public, max-age=600, must-revalidate');
-//
-//     const ping: PolkassemblyData = await fetch(getApiUrl(1), { method: 'GET', headers }).then((r) => r.json());
-//     const totalPages = Math.ceil(ping.count / pageSize);
-//
-//     callback(parsePolkassemblyData(ping), totalPages === 1);
-//
-//     return offChainUtils.createChunkedTasks({
-//       items: Array.from({ length: totalPages - 1 }),
-//       chunkSize: 6,
-//       task: (_, index) => {
-//         return fetch(getApiUrl(index + 2), { method: 'GET', headers })
-//           .then((res) => res.json())
-//           .then((data: PolkassemblyData) => {
-//             callback(parsePolkassemblyData(data), index === totalPages - 1);
-//           });
-//       },
-//     });
-//   }
-// };
+  const mapVote = (votes: PostVote[]): ReferendumVote[] => {
+    return votes.map(({ decision, voter }) => ({
+      decision: mapDecision(decision),
+      voter,
+    }));
+  };
+
+  return polkassemblyApiService
+    .fetchPostVotes(
+      {
+        network: chain.specName,
+        postId: referendumId,
+        voteType: 'ReferendumV2',
+      },
+      (data, done) => {
+        callback(mapVote(data), done);
+      },
+    )
+    .then(mapVote);
+};
 
 /**
  * Request referendum details
@@ -77,19 +61,17 @@ function parsePolkassemblyData(data: ListingOnChainPost[]) {
  * @param referendumId referendum index
  */
 async function getReferendumDetails(chain: Chain, referendumId: ReferendumId): Promise<string | undefined> {
-  const chainName = chain.specName;
-
   return polkassemblyApiService
-    .fetchOnChainPost({
-      network: chainName,
+    .fetchPost({
+      network: chain.specName,
       postId: referendumId,
       proposalType: 'referendums_v2',
     })
-    .then((r) => r.description ?? '');
+    .then((r) => r.content);
 }
 
-// TODO: use callback to return the data, instead of waiting all at once
-export const polkassemblyService: IGovernanceApi = {
+export const polkassemblyService: GovernanceApi = {
   getReferendumList,
+  getReferendumVotes,
   getReferendumDetails,
 };
