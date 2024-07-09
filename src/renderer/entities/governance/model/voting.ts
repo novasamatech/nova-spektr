@@ -16,6 +16,11 @@ type VotingParams = {
 const requestVoting = createEvent<VotingParams>();
 
 const requestVotingFx = createEffect(({ api, tracksIds, addresses }: VotingParams): Promise<VotingMap> => {
+  governanceService
+    .getAllVotingFor(api, tracksIds)
+    .then((x) => console.log('votings', x))
+    .catch((e) => console.log('error votings', e));
+
   return governanceService.getVotingFor(api, tracksIds, addresses);
 });
 
