@@ -12,6 +12,7 @@ import {
   CompletedReferendums,
   NetworkSelector,
   networkSelectorModel,
+  Locks,
 } from '@features/governance';
 import { Referendum } from '@shared/core';
 import { governancePageAggregate } from '../aggregates/governancePage';
@@ -43,11 +44,8 @@ export const Governance = () => {
             <Plate className="w-[240px] h-[90px] pt-3 px-4 pb-4.5">
               <NetworkSelector />
             </Plate>
-            {/*<Plate className="w-[240px]">*/}
-            {/*  */}
-            {/*</Plate>*/}
-            {/*<Locks onClick={() => console.log('Go to Unlock')} />*/}
-            {/*<Delegations onClick={() => console.log('Go to Delegate')} />*/}
+            <Locks />
+            {/* <Delegations /> */}
           </div>
 
           <div className="mt-5 mb-4">

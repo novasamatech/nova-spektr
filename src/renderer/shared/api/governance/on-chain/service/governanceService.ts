@@ -211,14 +211,21 @@ async function getVotingFor(
   return result;
 }
 
-async function getTrackLocks(api: ApiPromise, address: Address): Promise<Record<TrackId, BN>> {
-  const locks = await api.query.convictionVoting.classLocksFor(address);
+async function getTrackLocks(api: ApiPromise, addresses: Address[]): Promise<Record<Address, Record<TrackId, BN>>> {
+  const tuples = await api.query.convictionVoting.classLocksFor.multi(addresses);
+  const result: Record<Address, Record<TrackId, BN>> = {};
 
-  return locks.reduce<Record<TrackId, BN>>((acc, lock) => {
-    acc[lock[0].toString()] = lock[1].toBn();
+  for (const [index, locks] of tuples.entries()) {
+    const lockData = locks.reduce<Record<TrackId, BN>>((acc, lock) => {
+      acc[lock[0].toString()] = lock[1].toBn();
 
-    return acc;
-  }, {});
+      return acc;
+    }, {});
+
+    result[addresses[index]] = lockData;
+  }
+
+  return result;
 }
 
 function getTracks(api: ApiPromise): Record<TrackId, TrackInfo> {

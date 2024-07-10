@@ -5,3 +5,4 @@ export { governanceService } from './on-chain/service/governanceService';
 export { claimScheduleService } from './on-chain/service/claimScheduleService';
 export { opengovThresholdService } from './on-chain/service/opengovThresholdService';
 export { fellowshipThresholdService } from './on-chain/service/fellowshipThresholdService';
+export * from './on-chain/lib/claim-types';

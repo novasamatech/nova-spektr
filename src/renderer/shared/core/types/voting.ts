@@ -46,7 +46,7 @@ export interface StandardVote extends AccountVote {
   type: VoteType.Standard;
   vote: {
     type: 'aye' | 'nay';
-    conviction: Conviction;
+      conviction: Conviction;
   };
   balance: BN;
 }
@@ -74,10 +74,10 @@ export type VotingMap = Record<Address, Record<TrackId, Voting>>;
 
 export const enum Conviction {
   None = 'None',
-  Locked1x = 'locked_1x',
-  Locked2x = 'locked_2x',
-  Locked3x = 'locked_3x',
-  Locked4x = 'locked_4x',
-  Locked5x = 'locked_5x',
-  Locked6x = 'locked_6x',
+  Locked1x = 'Locked1x',
+  Locked2x = 'Locked2x',
+  Locked3x = 'Locked3x',
+  Locked4x = 'Locked4x',
+  Locked5x = 'Locked5x',
+  Locked6x = 'Locked6x',
 }
