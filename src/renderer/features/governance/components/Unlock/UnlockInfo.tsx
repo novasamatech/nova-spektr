@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { Button, Duration, FootnoteText, Icon, Shimmering } from '@shared/ui';
-import {  UnlockChunkType } from '@shared/api/governance';
+import { UnlockChunkType } from '@shared/api/governance';
 import { AssetBalance } from '@entities/asset';
 import { locksModel } from '../../model/locks';
 import { unlockModel } from '../../model/unlock';

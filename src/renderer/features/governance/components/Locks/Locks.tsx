@@ -17,7 +17,7 @@ export const Locks = () => {
 
   return (
     <>
-      <button onClick={() => unlockModel.events.flowStarted()} disabled={isLoading || totalLock.isZero()}>
+      <button disabled={isLoading || totalLock.isZero()} onClick={() => unlockModel.events.flowStarted()}>
         <Plate className="w-[240px] h-[90px] pt-3 px-4 pb-4.5 flex justify-between items-center">
           <div className="flex flex-col gap-y-2 items-start">
             <div className="flex gap-x-1 items-center">
