@@ -46,7 +46,7 @@ const $submitStore = restore<Input>(formInitiated, null);
 
 const $submitStep = createStore<{ step: SubmitStep; message: string }>({ step: SubmitStep.LOADING, message: '' });
 const $submittingTxs = createStore<number[]>([]);
-const $results = createStore<Result[]>([]);
+const $results = createStore<Result[]>([]).reset(formInitiated);
 
 type Callbacks = {
   addMultisigTx: (tx: MultisigTransaction) => Promise<void>;
@@ -176,12 +176,6 @@ sample({
   }),
   target: signAndSubmitExtrinsicsFx,
 });
-
-// sample({
-//   clock: extrinsicFailed,
-//   fn: ({ params: message }) => ({ step: SubmitStep.ERROR, message }),
-//   target: $submitStep,
-// });
 
 sample({
   clock: [extrinsicSucceeded, extrinsicFailed],
