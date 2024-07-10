@@ -29,7 +29,7 @@ export const multisigWallet = {
   isActive: false,
   type: WalletType.MULTISIG,
   signingType: SigningType.MULTISIG,
-  accounts: [{ accountId: '0x3003f217fc9972c122371905dbb12bea27dbec95b11aa102ffe6b51bb0f0c753' } as unknown as Account],
+  accounts: [{ accountId: '0x7f7cc72b17ac5d762869e97af14ebcc561590b6cc9eeeac7a3cdadde646c95c3' } as unknown as Account],
 } as Wallet;
 
 export const signerWallet = {
