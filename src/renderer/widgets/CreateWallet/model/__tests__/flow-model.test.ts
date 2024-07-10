@@ -11,7 +11,7 @@ import { confirmModel } from '../confirm-model';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { signatoryModel } from '../signatory-model';
-import { toAddress } from '@/src/renderer/shared/lib/utils';
+import { toAddress } from '@shared/lib/utils';
 
 jest.mock('@entities/transaction/lib/extrinsicService', () => ({
   ...jest.requireActual('@entities/transaction/lib/extrinsicService'),
