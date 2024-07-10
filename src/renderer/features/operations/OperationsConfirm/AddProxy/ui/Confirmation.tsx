@@ -47,7 +47,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
 
   const api = useStoreMap({
     store: confirmModel.$apis,
-    keys: [confirmStore.chain?.chainId],
+    keys: [confirmStore?.chain?.chainId],
     fn: (value, [chainId]) => value?.[chainId],
   });
 
