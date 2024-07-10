@@ -7,7 +7,7 @@ import { InactiveNetwork } from '@entities/network';
 import {
   ReferendumSearch,
   ReferendumFilters,
-  ReferendumDetails,
+  ReferendumDetailsDialog,
   OngoingReferendums,
   CompletedReferendums,
   NetworkSelector,
@@ -75,7 +75,7 @@ export const Governance = () => {
       </div>
 
       {selectedReferendum && governanceChain && (
-        <ReferendumDetails
+        <ReferendumDetailsDialog
           referendum={selectedReferendum}
           chain={governanceChain}
           onClose={() => setSelectedReferendum(null)}

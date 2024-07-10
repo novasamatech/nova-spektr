@@ -1,20 +1,24 @@
+import { useState } from 'react';
+
 import { referendumService, votingService, VoteChart } from '@entities/governance';
 import { formatBalance } from '@shared/lib/utils';
 import { Button, FootnoteText, Icon } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { Asset } from '@shared/core';
+import { Asset, Chain } from '@shared/core';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 import { AggregatedReferendum } from '../../types/structs';
+import { VoteDialog } from './VoteDialog';
 
 type Props = {
   item: AggregatedReferendum;
+  chain: Chain;
   asset: Asset | null;
 };
 
-export const VotingStatus = ({ item, asset }: Props) => {
+export const VotingStatus = ({ item, chain, asset }: Props) => {
   const { t } = useI18n();
   const { referendum, approvalThreshold, supportThreshold } = item;
-
+  const [voteOpen, setVoteOpen] = useState(false);
   if (!asset) {
     return null;
   }
@@ -50,7 +54,11 @@ export const VotingStatus = ({ item, asset }: Props) => {
           </FootnoteText>
         </div>
       )}
-      <Button className="w-full">Vote</Button>
+      <Button className="w-full" onClick={() => setVoteOpen(true)}>
+        {t('governance.referendum.vote')}
+      </Button>
+
+      {voteOpen && <VoteDialog referendum={referendum} chain={chain} onClose={() => setVoteOpen(false)} />}
     </div>
   );
 };

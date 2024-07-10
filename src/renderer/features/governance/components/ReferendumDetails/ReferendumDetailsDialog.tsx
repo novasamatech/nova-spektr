@@ -17,7 +17,7 @@ type Props = {
   onClose: VoidFunction;
 };
 
-export const ReferendumDetails = ({ chain, referendum, onClose }: Props) => {
+export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) => {
   useGate(detailsAggregate.gates.flow, { chain, referendum: referendum.referendum });
 
   const { t } = useI18n();
@@ -47,13 +47,13 @@ export const ReferendumDetails = ({ chain, referendum, onClose }: Props) => {
       onClose={closeModal}
     >
       <div className="flex flex-wrap-reverse items-end gap-4 p-6 min-h-full">
-        <Plate className="min-h-0 min-w-80 basis-[530px] p-6 shadow-card-shadow border-filter-border">
+        <Plate className="min-h-0 min-w-80 basis-[530px] grow p-6 shadow-card-shadow border-filter-border">
           <ProposalDescription chainId={chain.chainId} referendum={referendum.referendum} />
         </Plate>
 
         <div className="flex flex-row flex-wrap gap-4 basis-[350px] grow shrink-0">
           <DetailsCard title={t('governance.referendum.votingStatus')}>
-            <VotingStatus item={referendum} asset={votingAsset} />
+            <VotingStatus item={referendum} chain={chain} asset={votingAsset} />
           </DetailsCard>
         </div>
       </div>
