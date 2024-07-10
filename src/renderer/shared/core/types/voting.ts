@@ -46,7 +46,7 @@ export interface StandardVote extends AccountVote {
   type: VoteType.Standard;
   vote: {
     type: 'aye' | 'nay';
-      conviction: Conviction;
+    conviction: Conviction;
   };
   balance: BN;
 }

@@ -1,5 +1,4 @@
-import { Address } from '@/src/renderer/shared/core';
-
+import { Address } from '@shared/core';
 import { Chunks, UnlockChunk } from '@shared/api/governance';
 
 export const unlockService = {

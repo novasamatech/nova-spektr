@@ -2,7 +2,7 @@ import { OngoingReferendum, ReferendumType } from '@shared/core';
 import { AggregatedReferendum, VoteStatus } from '@features/governance';
 import { governancePageUtils } from '../governancePageUtils';
 
-describe('page/governance/lib/governancePageUtils', () => {
+describe('pages/Governance/lib/governancePageUtils', () => {
   const referendums: AggregatedReferendum[] = [
     {
       referendum: { referendumId: '111', type: ReferendumType.Approved, since: 0 },

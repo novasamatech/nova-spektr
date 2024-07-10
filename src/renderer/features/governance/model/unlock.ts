@@ -7,11 +7,11 @@ import { ClaimTimeAt, UnlockChunk, UnlockChunkType, claimScheduleService } from 
 import { Address, ReferendumInfo, TrackId, TrackInfo, VotingMap } from '@shared/core';
 import { walletModel } from '@entities/wallet';
 import { referendumModel } from '@entities/governance';
-import { networkSelectorModel } from './networkSelector';
-import { locksModel } from './locks';
 import { unlockService } from '../lib/unlock';
 import { votingAggregate } from '../aggregates/voting';
 import { tracksAggregate } from '../aggregates/tracks';
+import { networkSelectorModel } from './networkSelector';
+import { locksModel } from './locks';
 
 const stepChanged = createEvent<Step>();
 const flowStarted = createEvent();
