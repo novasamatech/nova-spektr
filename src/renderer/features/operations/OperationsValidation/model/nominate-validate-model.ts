@@ -4,7 +4,7 @@ import { SignerOptions } from '@polkadot/api/submittable/types';
 
 import { Asset, Balance, Chain, ID, Transaction } from '@shared/core';
 import { stakeableAmount, toAccountId } from '@shared/lib/utils';
-import { balanceModel } from '@entities/balance';
+import { balanceModel, balanceUtils } from '@entities/balance';
 import { ShardsBondBalanceStore, ValidationResult } from '../types/types';
 import { validationUtils } from '../lib/validation-utils';
 import { networkModel } from '@entities/network';
@@ -26,9 +26,7 @@ type ValidateParams = {
 const validateFx = createEffect(
   async ({ id, api, chain, asset, transaction, balances, signerOptions }: ValidateParams) => {
     const accountId = toAccountId(transaction.address);
-    const shardBalance = balances.find(
-      (balance) => balance.accountId === accountId && balance.assetId === asset.assetId.toString(),
-    );
+    const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
 
     const rules = [
       {

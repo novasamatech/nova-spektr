@@ -47,7 +47,7 @@ export const OperationSubmit = ({ isOpen, onClose }: Props) => {
       return { title: t('transfer.successMessage'), variant: 'success' };
     }
 
-    if (submitUtils.iswarningStep(step)) {
+    if (submitUtils.isWarningStep(step)) {
       return {
         title: t('transfer.warningTitle', { failed: failedTxs.length, all: submitStore.txPayloads.length }),
         variant: 'warning',

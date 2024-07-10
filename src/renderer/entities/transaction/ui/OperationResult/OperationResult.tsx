@@ -24,7 +24,7 @@ export const OperationResult = ({
   <StatusModal
     content={
       variant === 'warning' ? (
-        <Icon name="warn" size={48} />
+        <Icon name="warn" size={48} className="m-4" />
       ) : (
         <Animation variant={variant} {...VariantAnimationProps[variant]} />
       )

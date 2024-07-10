@@ -46,13 +46,13 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
 
   const api = useStoreMap({
     store: confirmModel.$apis,
-    keys: [confirmStore.chain?.chainId],
+    keys: [confirmStore?.chain?.chainId],
     fn: (value, [chainId]) => chainId && value?.[chainId],
   });
 
   const [isFeeLoading, setIsFeeLoading] = useState(true);
 
-  if (!confirmStore || !initiatorWallet || !confirmStore.chain?.chainId) return null;
+  if (!confirmStore || !initiatorWallet || !confirmStore?.chain?.chainId) return null;
 
   return (
     <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5">
