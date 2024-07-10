@@ -56,13 +56,13 @@ export const Confirmation = ({
 
   const api = useStoreMap({
     store: confirmModel.$apis,
-    keys: [confirmStore.chain.chainId],
+    keys: [confirmStore.chain?.chainId],
     fn: (value, [chainId]) => value?.[chainId],
   });
 
   const eraLength = useStoreMap({
     store: confirmModel.$eraLength,
-    keys: [confirmStore.chain.chainId],
+    keys: [confirmStore.chain?.chainId],
     fn: (value, [chainId]) => value?.[chainId],
   });
 
