@@ -1,6 +1,6 @@
 import { combine, createEffect, createEvent, createStore, restore, sample, split } from 'effector';
 import { ApiPromise } from '@polkadot/api';
-import { throttle } from 'patronum';
+import { combineEvents, throttle } from 'patronum';
 
 import { networkModel, networkUtils } from '@entities/network';
 import { walletModel } from '@entities/wallet';
@@ -27,6 +27,7 @@ import { addUnique, removeFromCollection } from '@shared/lib/utils';
 import { getCoreTx } from '../lib/utils';
 import { Step } from '../types/basket-page-types';
 import { basketPageUtils } from '../lib/basket-page-utils';
+import { balanceModel } from '@/src/renderer/entities/balance';
 
 type BasketTransactionsMap = {
   valid: BasketTransaction[];
@@ -52,14 +53,14 @@ const txRemoved = createEvent<BasketTransaction>();
 const stepChanged = createEvent<Step>();
 
 const $step = restore(stepChanged, Step.SELECT);
-const $selectedTxs = createStore<number[]>([]);
-const $invalidTxs = createStore<Map<ID, ValidationResult>>(new Map());
+const $selectedTxs = createStore<number[]>([]).reset(walletModel.$activeWallet);
+const $invalidTxs = createStore<Map<ID, ValidationResult>>(new Map()).reset(walletModel.$activeWallet);
 const $validTxs = createStore<BasketTransaction[]>([]);
 const $validatingTxs = createStore<number[]>([]);
 const $validationWarningShown = createStore<boolean>(false);
-const $alreadyValidatedTxs = createStore<number[]>([]);
+const $alreadyValidatedTxs = createStore<number[]>([]).reset(walletModel.$activeWallet);
 const $txToRemove = restore(removeTxStarted, null).reset([removeTxCancelled, txRemoved]);
-const $feeMap = createStore<FeeMap>({});
+const $feeMap = createStore<FeeMap>({}).reset(walletModel.$activeWallet);
 const $connectedChains = createStore('');
 
 const getFeeMapFx = createEffect(
@@ -188,7 +189,7 @@ sample({
 });
 
 sample({
-  clock: $connectedChains,
+  clock: [$connectedChains, $basketTransactions],
   source: { apis: networkModel.$apis, transactions: $basketTransactions, feeMap: $feeMap },
   fn: ({ apis, transactions, feeMap }) => ({ apis, transactions, feeMap }),
   target: getFeeMapFx,
@@ -219,7 +220,13 @@ sample({
 });
 
 sample({
-  clock: [$basketTransactions, $connectedChains],
+  clock: [
+    $connectedChains,
+    combineEvents({
+      events: [$basketTransactions.updates, balanceModel.$balances.updates],
+      reset: walletModel.$activeWallet,
+    }),
+  ],
   target: validationStarted,
 });
 
