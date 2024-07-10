@@ -7,10 +7,11 @@ import { Account, Chain, ConnectionStatus } from '@shared/core';
 import { Step } from '../../lib/types';
 import { formModel } from '../form-model';
 import { flowModel } from '../flow-model';
-import { ExtendedAccount, ExtendedContact } from '../../ui/MultisigWallet/common/types';
 import { confirmModel } from '../confirm-model';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
+import { signatoryModel } from '../signatory-model';
+import { toAddress } from '@/src/renderer/shared/lib/utils';
 
 jest.mock('@entities/transaction/lib/extrinsicService', () => ({
   ...jest.requireActual('@entities/transaction/lib/extrinsicService'),
@@ -28,7 +29,7 @@ jest.mock('@entities/transaction/lib/extrinsicService', () => ({
   }),
 }));
 
-describe('widgets/CreateWallet/model/add-proxy-model', () => {
+describe('widgets/CreateWallet/model/form-model', () => {
   beforeAll(() => {
     jest.useFakeTimers();
   });
@@ -42,13 +43,13 @@ describe('widgets/CreateWallet/model/add-proxy-model', () => {
         .set(walletModel.$wallets, [initiatorWallet, signerWallet]),
     });
 
-    await allSettled(formModel.events.accountSignatoriesChanged, {
+    await allSettled(signatoryModel.events.signatoriesChanged, {
       scope,
-      params: [initiatorWallet.accounts[0] as unknown as ExtendedAccount],
+      params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0].accountId) },
     });
-    await allSettled(formModel.events.contactSignatoriesChanged, {
+    await allSettled(signatoryModel.events.signatoriesChanged, {
       scope,
-      params: [signerWallet.accounts[0] as unknown as ExtendedContact],
+      params: { index: 1, name: 'Alice', address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' },
     });
 
     expect(scope.getState(flowModel.$step)).toEqual(Step.NAME_NETWORK);

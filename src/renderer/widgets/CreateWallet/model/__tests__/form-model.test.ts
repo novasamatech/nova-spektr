@@ -5,7 +5,8 @@ import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
 import { initiatorWallet, multisigWallet, signerWallet, testApi, testChain, wrongChainWallet } from './mock';
 import { ConnectionStatus } from '@shared/core';
-import { ExtendedAccount, ExtendedContact } from '../../ui/MultisigWallet/common/types';
+import { toAddress } from '@shared/lib/utils';
+import { signatoryModel } from '../signatory-model';
 
 jest.mock('@shared/lib/utils', () => ({
   ...jest.requireActual('@shared/lib/utils'),
@@ -58,13 +59,13 @@ describe('widgets/CreateWallet/model/form-model', () => {
         .set(walletModel.$wallets, [initiatorWallet, signerWallet, multisigWallet]),
     });
 
-    await allSettled(formModel.events.accountSignatoriesChanged, {
+    await allSettled(signatoryModel.events.signatoriesChanged, {
       scope,
-      params: [initiatorWallet.accounts[0] as unknown as ExtendedAccount],
+      params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0].accountId) },
     });
-    await allSettled(formModel.events.contactSignatoriesChanged, {
+    await allSettled(signatoryModel.events.signatoriesChanged, {
       scope,
-      params: [signerWallet.accounts[0] as unknown as ExtendedContact],
+      params: { index: 1, name: 'Alice', address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' },
     });
 
     await allSettled(formModel.$createMultisigForm.fields.threshold.onChange, { scope, params: 2 });
@@ -103,9 +104,9 @@ describe('widgets/CreateWallet/model/form-model', () => {
 
     expect(scope.getState(formModel.$hasOwnSignatory)).toEqual(false);
 
-    await allSettled(formModel.events.accountSignatoriesChanged, {
+    await allSettled(signatoryModel.events.signatoriesChanged, {
       scope,
-      params: [initiatorWallet.accounts[0] as unknown as ExtendedAccount],
+      params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0].accountId) },
     });
 
     expect(scope.getState(formModel.$hasOwnSignatory)).toEqual(true);
@@ -121,13 +122,13 @@ describe('widgets/CreateWallet/model/form-model', () => {
     });
 
     await allSettled(formModel.$createMultisigForm.fields.chain.onChange, { scope, params: testChain });
-    await allSettled(formModel.events.accountSignatoriesChanged, {
+    await allSettled(signatoryModel.events.signatoriesChanged, {
       scope,
-      params: [initiatorWallet.accounts[0] as unknown as ExtendedAccount],
+      params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0].accountId) },
     });
-    await allSettled(formModel.events.contactSignatoriesChanged, {
+    await allSettled(signatoryModel.events.signatoriesChanged, {
       scope,
-      params: [signerWallet.accounts[0] as unknown as ExtendedContact],
+      params: { index: 1, name: 'test', address: toAddress(signerWallet.accounts[0].accountId) },
     });
     await allSettled(formModel.$createMultisigForm.fields.threshold.onChange, { scope, params: 2 });
 

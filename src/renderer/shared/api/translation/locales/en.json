@@ -179,6 +179,7 @@
     "thresholdName": "Threshold",
     "thresholdPlaceholder": "Select threshold",
     "title": "Create multisig",
+    "titleOn": "on",
     "walletFormTitle": "Set up your wallet",
     "walletNameLabel": "Wallet name",
     "walletsTab": "Your wallets",

@@ -64,7 +64,7 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
         {t('createMultisigAccount.title')}
         {createMultisigUtils.isNotFirstStep(activeStep) && (
           <>
-            <span className="mx-1">on</span>
+            <span className="mx-1">{t('createMultisigAccount.titleOn')}</span>
             <ChainTitle
               chainId={chain.value.chainId}
               className="gap-x-1.5"
