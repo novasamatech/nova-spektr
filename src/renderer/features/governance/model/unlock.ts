@@ -19,7 +19,7 @@ const flowFinished = createEvent();
 const txSaved = createEvent();
 
 const $step = restore<Step>(stepChanged, Step.NONE);
-const $claimSchedule = createStore<UnlockChunk[]>([]);
+const $claimSchedule = createStore<UnlockChunk[]>([]).reset(walletModel.$activeWallet);
 const $isLoading = createStore<boolean>(true);
 
 type Props = {
@@ -79,7 +79,7 @@ const getClaimScheduleFx = createEffect(
 // );
 
 sample({
-  clock: [referendumModel.events.requestDone, locksModel.$trackLocks, walletModel.$activeWallet],
+  clock: [referendumModel.events.requestDone, locksModel.$trackLocks],
   source: {
     api: networkSelectorModel.$governanceChainApi,
     tracks: tracksAggregate.$tracks,

@@ -7,7 +7,6 @@ import { useModalClose } from '@shared/lib/hooks';
 import { Step, isStep } from '@shared/lib/utils';
 import { OperationTitle } from '@entities/chain';
 import { OperationResult } from '@entities/transaction';
-import { OperationSign, OperationSubmit } from '@features/operations';
 import { unlockModel } from '../../model/unlock';
 import { networkSelectorModel } from '../../model/networkSelector';
 import { UnlockInfo } from './UnlockInfo';
@@ -34,7 +33,6 @@ export const Unlock = () => {
 
   if (!governanceChain) return null;
 
-  if (isStep(step, Step.SUBMIT)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
   if (isStep(step, Step.BASKET)) {
     return (
       <OperationResult
@@ -55,20 +53,6 @@ export const Unlock = () => {
   return (
     <BaseModal closeButton contentClass="" isOpen={isModalOpen} title={title} onClose={closeModal}>
       {isStep(step, Step.INIT) && <UnlockInfo />}
-      {/* {isStep(step, Step.CONFIRM) && (
-        <Confirmation
-          secondaryActionButton={
-            initiatorWallet &&
-            basketUtils.isBasketAvailable(initiatorWallet) && (
-              <Button pallet="secondary" onClick={() => unlockModel.events.txSaved()}>
-                {t('operation.addToBasket')}
-              </Button>
-            )
-          }
-          onGoBack={() => unlockModel.events.stepChanged(Step.INIT)}
-        />
-      )} */}
-      {isStep(step, Step.SIGN) && <OperationSign onGoBack={() => unlockModel.events.stepChanged(Step.CONFIRM)} />}
     </BaseModal>
   );
 };

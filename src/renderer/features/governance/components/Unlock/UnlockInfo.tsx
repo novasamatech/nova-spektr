@@ -37,6 +37,7 @@ export const UnlockInfo = () => {
             )}
             {unlock.type === UnlockChunkType.PENDING_LOCK && (
               <Duration
+                as={FootnoteText}
                 className="text-text-tertiary"
                 seconds={unlockService.getSecondsDuratonToBlock(unlock.timeToBlock!)}
               />
