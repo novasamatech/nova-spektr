@@ -10,6 +10,7 @@ import type {
   Transaction,
   MultisigTransaction,
   MultisigEvent,
+  ChainId,
 } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { buildMultisigTx } from '@entities/multisig';
@@ -58,24 +59,30 @@ const $hooksApi = createApi($hooks, {
 });
 
 type SignAndSubmitExtrinsicParams = {
-  api: ApiPromise;
+  apis: Record<ChainId, ApiPromise>;
   wrappedTxs: Transaction[];
   txPayloads: Uint8Array[];
   signatures: HexString[];
 };
 const signAndSubmitExtrinsicsFx = createEffect(
-  ({ api, wrappedTxs, txPayloads, signatures }: SignAndSubmitExtrinsicParams): void => {
+  ({ apis, wrappedTxs, txPayloads, signatures }: SignAndSubmitExtrinsicParams): void => {
     const boundExtrinsicSucceeded = scopeBind(extrinsicSucceeded, { safe: true });
     const boundExtrinsicFailed = scopeBind(extrinsicFailed, { safe: true });
 
     wrappedTxs.forEach((transaction, index) => {
-      transactionService.signAndSubmit(transaction, signatures[index], txPayloads[index], api, (executed, params) => {
-        if (executed) {
-          boundExtrinsicSucceeded({ id: index, params: params as ExtrinsicResultParams });
-        } else {
-          boundExtrinsicFailed({ id: index, params: params as string });
-        }
-      });
+      transactionService.signAndSubmit(
+        transaction,
+        signatures[index],
+        txPayloads[index],
+        apis[transaction.chainId],
+        (executed, params) => {
+          if (executed) {
+            boundExtrinsicSucceeded({ id: index, params: params as ExtrinsicResultParams });
+          } else {
+            boundExtrinsicFailed({ id: index, params: params as string });
+          }
+        },
+      );
     });
   },
 );
@@ -168,7 +175,7 @@ sample({
   },
   filter: ({ params }) => Boolean(params),
   fn: ({ apis, params }) => ({
-    api: apis[params!.chain.chainId],
+    apis,
     signatures: params!.signatures,
     wrappedTxs: params!.wrappedTxs,
     coreTxs: params!.coreTxs,
