@@ -56,7 +56,7 @@ function canApproveMultisigTx(wallet: Wallet): boolean {
   if (walletUtils.isProxied(wallet)) {
     return false;
 
-    // TODO: Uncomment when we support proxied wallets for approve
+    // TODO: Uncomment when we support proxied wallets for approve mst
     // const isAnyProxy = accountUtils.isAnyProxyType(wallet.accounts[0]);
     // const isNonTransfer = accountUtils.isNonTransferProxyType(wallet.accounts[0]);
 
@@ -71,7 +71,7 @@ function canRejectMultisigTx(wallet: Wallet): boolean {
   if (walletUtils.isProxied(wallet)) {
     return false;
 
-    // TODO: Uncomment when we support proxied wallets for approve
+    // TODO: Uncomment when we support proxied wallets for reject mst
     // const isAnyProxy = accountUtils.isAnyProxyType(wallet.accounts[0]);
     // const isNonTransfer = accountUtils.isNonTransferProxyType(wallet.accounts[0]);
 
