@@ -2,11 +2,11 @@ import { sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import type { Chain, Referendum } from '@shared/core';
-import { proposerIdentityAggregate } from './proposerIdentity';
+import { voteHistoryModel } from '@entities/governance';
 import { networkSelectorModel } from '../model/networkSelector';
 import { descriptionsModel } from '../model/description';
 import { titleModel } from '../model/title';
-import { voteHistoryModel } from '@entities/governance';
+import { proposerIdentityAggregate } from './proposerIdentity';
 
 const flow = createGate<{ chain: Chain; referendum: Referendum }>();
 

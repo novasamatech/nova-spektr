@@ -2,7 +2,7 @@ import { PropsWithChildren } from 'react';
 import { Trans } from 'react-i18next';
 
 import { Chain, Referendum } from '@shared/core';
-import { BaseModal, FootnoteText, HeaderTitleText, Icon, LabelHelpBox, Popover, SmallTitleText } from '@shared/ui';
+import { BaseModal, HeaderTitleText, Icon, LabelHelpBox, Popover, SmallTitleText } from '@shared/ui';
 import { ChainIcon } from '@entities/chain';
 import { IconNames } from '@shared/ui/Icon/data';
 import { useI18n } from '@app/providers';
@@ -35,7 +35,7 @@ const AboutVoting = () => {
         i18nKey="governance.voting.about"
         components={{
           header: <SmallTitleText />,
-          p: <FootnoteText className="text-text-secondary" as="div" />,
+          p: <div className="text-footnote text-text-secondary" />,
           ul: <ul className="list-disc ml-4" />,
           li: <li />,
         }}

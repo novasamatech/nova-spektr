@@ -22,7 +22,6 @@ import type {
 export const governanceService = {
   getReferendums,
   getVotingFor,
-  getAllVotingFor,
   getTrackLocks,
   getTracks,
 };
@@ -210,12 +209,6 @@ async function getVotingFor(
   }
 
   return result;
-}
-
-async function getAllVotingFor(api: ApiPromise, tracksIds: TrackId[]) {
-  const votings = await api.query.convictionVoting.votingFor.entries(tracksIds[0]);
-
-  return votings;
 }
 
 async function getTrackLocks(api: ApiPromise, address: Address): Promise<Record<TrackId, BN>> {

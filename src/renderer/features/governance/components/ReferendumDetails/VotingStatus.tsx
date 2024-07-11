@@ -23,7 +23,7 @@ export const VotingStatus = ({ item, chain, asset }: Props) => {
     return null;
   }
 
-  const isPassing = item.supportThreshold?.passing ?? false;
+  const isPassing = supportThreshold?.passing ?? false;
 
   const votedFractions =
     referendumService.isOngoing(referendum) && approvalThreshold
