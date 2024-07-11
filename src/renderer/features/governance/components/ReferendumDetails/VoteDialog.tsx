@@ -71,10 +71,7 @@ export const VoteDialog = ({ referendum, chain, onClose }: Props) => {
             <LabelHelpBox>{t('governance.voting.aboutLabel')}</LabelHelpBox>
           </Popover>
         </div>
-
-        <div className="w-90">
-          <AboutVoting />
-        </div>
+        <div className="flex px-5">TODO</div>
       </div>
       <div className="pt-3 pb-4 px-5 flex gap-4 shrink-0">
         <VoteButton icon="shelfDown" onClick={() => {}}>
