@@ -1,11 +1,22 @@
-import { createEvent, createStore, sample } from 'effector';
+import { combine, createEvent, createStore, sample } from 'effector';
 
 import { SignatoryInfo } from '../lib/types';
+import { walletModel, walletUtils } from '@entities/wallet';
+import { toAccountId } from '@shared/lib/utils';
 
 const signatoriesChanged = createEvent<SignatoryInfo>();
 const signatoryDeleted = createEvent<number>();
 
-const $signatories = createStore<Map<number, Omit<SignatoryInfo, 'index'>>>(new Map([[0, { name: '', address: '' }]]));
+const $signatories = createStore<Map<number, Omit<SignatoryInfo, 'index'>>>(new Map([]));
+
+const $hasOwnSignatory = combine(
+  { wallets: walletModel.$wallets, signatories: $signatories },
+  ({ wallets, signatories }) =>
+    !!walletUtils.getWalletsFilteredAccounts(wallets, {
+      walletFn: (w) => !walletUtils.isWatchOnly(w) && !walletUtils.isMultisig(w),
+      accountFn: (a) => Array.from(signatories.values()).some((s) => toAccountId(s.address) === a.accountId),
+    })?.length,
+);
 
 sample({
   clock: signatoriesChanged,
@@ -34,6 +45,7 @@ sample({
 
 export const signatoryModel = {
   $signatories,
+  $hasOwnSignatory,
   events: {
     signatoriesChanged,
     signatoryDeleted,

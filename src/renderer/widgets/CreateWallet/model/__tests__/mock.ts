@@ -51,6 +51,25 @@ export const signerWallet = {
   ],
 } as Wallet;
 
+export const signatoryWallet = {
+  id: 5,
+  name: 'Signer Wallet',
+  isActive: true,
+  type: WalletType.WALLET_CONNECT,
+  signingType: SigningType.WALLET_CONNECT,
+  accounts: [
+    {
+      id: 5,
+      walletId: 5,
+      name: 'account 5',
+      type: AccountType.WALLET_CONNECT,
+      accountId: '0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d',
+      chainType: ChainType.SUBSTRATE,
+      chainId: '0x00',
+    } as unknown as ChainAccount,
+  ],
+} as Wallet;
+
 export const initiatorWallet = {
   id: 1,
   name: 'Wallet',

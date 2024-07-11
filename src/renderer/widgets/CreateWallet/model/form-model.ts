@@ -95,15 +95,6 @@ const $availableAccounts = combine(
   },
 );
 
-const $hasOwnSignatory = combine(
-  { wallets: walletModel.$wallets, signatories: signatoryModel.$signatories },
-  ({ wallets, signatories }) =>
-    !!walletUtils.getWalletsFilteredAccounts(wallets, {
-      walletFn: (w) => !walletUtils.isWatchOnly(w) && !walletUtils.isMultisig(w),
-      accountFn: (a) => Array.from(signatories.values()).some((s) => toAccountId(s.address) === a.accountId),
-    })?.length,
-);
-
 sample({
   clock: $createMultisigForm.submit,
   source: $createMultisigForm.$isValid,
@@ -116,7 +107,6 @@ export const formModel = {
   $multisigAccountId,
   $multisigAlreadyExists,
   $availableAccounts,
-  $hasOwnSignatory,
   output: {
     formSubmitted,
   },

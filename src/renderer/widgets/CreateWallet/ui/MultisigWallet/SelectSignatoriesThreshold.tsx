@@ -6,10 +6,7 @@ import { Alert, Button, InputHint, Select, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { formModel } from '../../model/form-model';
 import { flowModel } from '../../model/flow-model';
-import { walletModel } from '@entities/wallet';
-import { contactModel } from '@entities/contact';
 import { SelectSignatories } from './components/SelectSignatories';
-import { dictionary } from '@shared/lib/utils';
 import { Step } from '../../lib/types';
 import { DropdownOption } from '@shared/ui/types';
 import { signatoryModel } from '../../model/signatory-model';
@@ -38,10 +35,8 @@ export const SelectSignatoriesThreshold = () => {
     submit,
   } = useForm(formModel.$createMultisigForm);
   const multisigAlreadyExists = useUnit(formModel.$multisigAlreadyExists);
-  const hasOwnSignatory = useUnit(formModel.$hasOwnSignatory);
-  const accounts = useUnit(formModel.$availableAccounts);
-  const wallets = useUnit(walletModel.$wallets);
-  const contacts = useUnit(contactModel.$contacts);
+  const hasOwnSignatory = useUnit(signatoryModel.$hasOwnSignatory);
+
   const thresholdOptions = getThresholdOptions(signatories.length - 1);
 
   const hasEnoughSignatories = signatories.length >= 2;
@@ -61,13 +56,7 @@ export const SelectSignatoriesThreshold = () => {
         {t('createMultisigAccount.signatoryThresholdDescription')}
       </SmallTitleText>
       <div className="flex flex-col gap-y-4 px-5 py-4">
-        <SelectSignatories
-          isActive
-          accounts={accounts}
-          wallets={dictionary(wallets, 'id')}
-          contacts={contacts}
-          chain={chain.value}
-        />
+        <SelectSignatories chain={chain.value} />
         <div className="flex gap-x-4 items-end">
           <Alert
             active={!hasOwnSignatory && signatories.length > 0}
