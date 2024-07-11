@@ -54,10 +54,13 @@ function canApproveMultisigTx(wallet: Wallet): boolean {
   if (walletUtils.isMultisig(wallet)) return false;
 
   if (walletUtils.isProxied(wallet)) {
-    const isAnyProxy = accountUtils.isAnyProxyType(wallet.accounts[0]);
-    const isNonTransfer = accountUtils.isNonTransferProxyType(wallet.accounts[0]);
+    return false;
 
-    return isAnyProxy || isNonTransfer;
+    // TODO: Uncomment when we support proxied wallets for approve
+    // const isAnyProxy = accountUtils.isAnyProxyType(wallet.accounts[0]);
+    // const isNonTransfer = accountUtils.isNonTransferProxyType(wallet.accounts[0]);
+
+    // return isAnyProxy || isNonTransfer;
   }
 
   return true;
@@ -66,10 +69,13 @@ function canRejectMultisigTx(wallet: Wallet): boolean {
   if (walletUtils.isWatchOnly(wallet)) return false;
   if (walletUtils.isMultisig(wallet)) return false;
   if (walletUtils.isProxied(wallet)) {
-    const isAnyProxy = accountUtils.isAnyProxyType(wallet.accounts[0]);
-    const isNonTransfer = accountUtils.isNonTransferProxyType(wallet.accounts[0]);
+    return false;
 
-    return isAnyProxy || isNonTransfer;
+    // TODO: Uncomment when we support proxied wallets for approve
+    // const isAnyProxy = accountUtils.isAnyProxyType(wallet.accounts[0]);
+    // const isNonTransfer = accountUtils.isNonTransferProxyType(wallet.accounts[0]);
+
+    // return isAnyProxy || isNonTransfer;
   }
 
   return true;
