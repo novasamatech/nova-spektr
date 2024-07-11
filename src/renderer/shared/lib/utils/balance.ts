@@ -7,6 +7,7 @@ import { ZERO_BALANCE } from './constants';
 const MAX_INTEGER = 15;
 
 const enum Suffix {
+  THOUSANDS = 'K',
   MILLIONS = 'M',
   BILLIONS = 'B',
   TRILLIONS = 'T',
@@ -40,6 +41,7 @@ type FormattedBalance = {
   value: string;
   suffix: string;
   decimalPlaces: number;
+  formatted: string;
 };
 export const formatBalance = (balance = '0', precision = 0): FormattedBalance => {
   const BNWithConfig = BigNumber.clone();
@@ -65,6 +67,8 @@ export const formatBalance = (balance = '0', precision = 0): FormattedBalance =>
     decimalPlaces = Decimal.SMALL_NUMBER;
   } else if (bnBalance.lt(1_000_000)) {
     decimalPlaces = Decimal.BIG_NUMBER;
+    divider = TEN.pow(new BNWithConfig(3));
+    suffix = Suffix.THOUSANDS;
   } else if (bnBalance.lt(1_000_000_000)) {
     decimalPlaces = Decimal.BIG_NUMBER;
     divider = TEN.pow(new BNWithConfig(6));
@@ -79,10 +83,13 @@ export const formatBalance = (balance = '0', precision = 0): FormattedBalance =>
     suffix = Suffix.TRILLIONS;
   }
 
+  const value = new BNWithConfig(bnBalance).div(divider).decimalPlaces(decimalPlaces).toFormat();
+
   return {
-    value: new BNWithConfig(bnBalance).div(divider).decimalPlaces(decimalPlaces).toFormat(),
+    value,
     suffix,
     decimalPlaces,
+    formatted: value + suffix,
   };
 };
 
@@ -184,7 +191,7 @@ const getDecimalPlaceForFirstNonZeroChar = (value: string, nonZeroDigits = 3) =>
 
 export const formatFiatBalance = (balance = '0', precision = 0): FormattedBalance => {
   if (Number(balance) === 0 || isNaN(Number(balance))) {
-    return { value: ZERO_BALANCE, suffix: '', decimalPlaces: 0 };
+    return { value: ZERO_BALANCE, suffix: '', decimalPlaces: 0, formatted: ZERO_BALANCE };
   }
   const BNWithConfig = BigNumber.clone();
   BNWithConfig.config({
@@ -230,6 +237,7 @@ export const formatFiatBalance = (balance = '0', precision = 0): FormattedBalanc
     value: bnFiatBalance,
     suffix,
     decimalPlaces,
+    formatted: bnFiatBalance + suffix,
   };
 };
 
