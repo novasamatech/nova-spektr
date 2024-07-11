@@ -1,6 +1,6 @@
 import { combine, createEffect, createEvent, createStore, restore, sample, split } from 'effector';
 import { ApiPromise } from '@polkadot/api';
-import { combineEvents, throttle } from 'patronum';
+import { delay, throttle } from 'patronum';
 
 import { networkModel, networkUtils } from '@entities/network';
 import { walletModel } from '@entities/wallet';
@@ -27,7 +27,6 @@ import { addUnique, removeFromCollection } from '@shared/lib/utils';
 import { getCoreTx } from '../lib/utils';
 import { Step } from '../types/basket-page-types';
 import { basketPageUtils } from '../lib/basket-page-utils';
-import { balanceModel } from '@/src/renderer/entities/balance';
 
 type BasketTransactionsMap = {
   valid: BasketTransaction[];
@@ -222,10 +221,8 @@ sample({
 sample({
   clock: [
     $connectedChains,
-    combineEvents({
-      events: [$basketTransactions.updates, balanceModel.$balances.updates],
-      reset: walletModel.$activeWallet,
-    }),
+    // HOOK: delay to wait until update balances for new wallet
+    delay($basketTransactions, 1000),
   ],
   target: validationStarted,
 });
