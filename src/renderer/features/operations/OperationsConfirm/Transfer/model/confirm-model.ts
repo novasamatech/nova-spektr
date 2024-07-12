@@ -57,22 +57,24 @@ type ValidateParams = {
 const validateFx = createEffect(({ store, balances }: ValidateParams) => {
   const rules = [
     {
-      value: store.account,
+      value: store.signatory || store.account,
       form: {},
       ...TransferRules.account.noProxyFee({} as Store<TransferAccountStore>),
       source: {
         fee: store.fee,
         isProxy: !!store.proxiedAccount,
-        proxyBalance:
-          store.proxiedAccount &&
-          transferableAmount(
-            balanceUtils.getBalance(
-              balances,
-              store.proxiedAccount.accountId,
-              store.chain.chainId,
-              store.asset.assetId.toFixed(),
+        proxyBalance: {
+          native:
+            store.proxiedAccount &&
+            transferableAmount(
+              balanceUtils.getBalance(
+                balances,
+                store.proxiedAccount.accountId,
+                store.chain.chainId,
+                store.asset.assetId.toFixed(),
+              ),
             ),
-          ),
+        },
       },
     },
     {
@@ -162,6 +164,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
 
   const result = validationUtils.applyValidationRules(rules);
 
+  console.log('xcm', result);
   if (!result) return;
 
   throw new Error(result.errorText);
