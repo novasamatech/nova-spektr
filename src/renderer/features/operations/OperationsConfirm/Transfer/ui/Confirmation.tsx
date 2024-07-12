@@ -39,8 +39,6 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     fn: (value, [id]) => value?.[id],
   });
 
-  console.log('xcm', signerWallet);
-
   const proxiedWallet = useStoreMap({
     store: confirmModel.$proxiedWallets,
     keys: [id],
