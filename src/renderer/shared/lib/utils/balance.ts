@@ -37,13 +37,26 @@ export const formatAmount = (amount: string, precision: number): string => {
   return new BN(amount.replace(/\D/g, '')).mul(BN_TEN.pow(bnPrecision)).toString();
 };
 
+type FormatBalanceShorthands = Record<Suffix, boolean>;
 type FormattedBalance = {
   value: string;
   suffix: string;
   decimalPlaces: number;
   formatted: string;
 };
-export const formatBalance = (balance = '0', precision = 0): FormattedBalance => {
+const defaultBalanceShorthands: FormatBalanceShorthands = {
+  [Suffix.TRILLIONS]: true,
+  [Suffix.BILLIONS]: true,
+  [Suffix.MILLIONS]: true,
+  [Suffix.THOUSANDS]: false,
+};
+export const formatBalance = (
+  balance = '0',
+  precision = 0,
+  shorthands: Partial<FormatBalanceShorthands> = defaultBalanceShorthands,
+): FormattedBalance => {
+  const mergedShorthands = { ...defaultBalanceShorthands, ...shorthands };
+
   const BNWithConfig = BigNumber.clone();
   BNWithConfig.config({
     // HOOK: for divide with decimal part
@@ -67,20 +80,28 @@ export const formatBalance = (balance = '0', precision = 0): FormattedBalance =>
     decimalPlaces = Decimal.SMALL_NUMBER;
   } else if (bnBalance.lt(1_000_000)) {
     decimalPlaces = Decimal.BIG_NUMBER;
-    divider = TEN.pow(new BNWithConfig(3));
-    suffix = Suffix.THOUSANDS;
+    if (mergedShorthands[Suffix.THOUSANDS]) {
+      divider = TEN.pow(new BNWithConfig(3));
+      suffix = Suffix.THOUSANDS;
+    }
   } else if (bnBalance.lt(1_000_000_000)) {
     decimalPlaces = Decimal.BIG_NUMBER;
-    divider = TEN.pow(new BNWithConfig(6));
-    suffix = Suffix.MILLIONS;
+    if (mergedShorthands[Suffix.MILLIONS]) {
+      divider = TEN.pow(new BNWithConfig(6));
+      suffix = Suffix.MILLIONS;
+    }
   } else if (bnBalance.lt(1_000_000_000_000)) {
     decimalPlaces = Decimal.BIG_NUMBER;
-    divider = TEN.pow(new BNWithConfig(9));
-    suffix = Suffix.BILLIONS;
+    if (mergedShorthands[Suffix.BILLIONS]) {
+      divider = TEN.pow(new BNWithConfig(9));
+      suffix = Suffix.BILLIONS;
+    }
   } else {
     decimalPlaces = Decimal.BIG_NUMBER;
-    divider = TEN.pow(new BNWithConfig(12));
-    suffix = Suffix.TRILLIONS;
+    if (mergedShorthands[Suffix.TRILLIONS]) {
+      divider = TEN.pow(new BNWithConfig(12));
+      suffix = Suffix.TRILLIONS;
+    }
   }
 
   const value = new BNWithConfig(bnBalance).div(divider).decimalPlaces(decimalPlaces).toFormat();

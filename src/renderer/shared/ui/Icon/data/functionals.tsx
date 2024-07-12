@@ -50,6 +50,9 @@ import OpenGovLockImg, { ReactComponent as OpenGovLockSvg } from '@shared/assets
 import OpenGovDelegationsImg, {
   ReactComponent as OpenGovDelegationsSvg,
 } from '@shared/assets/images/functionals/opengov-delegations.svg';
+import ThumbUpImg, { ReactComponent as ThumbUpSvg } from '@shared/assets/images/functionals/thumb-up.svg';
+import ThumbDownImg, { ReactComponent as ThumbDownSvg } from '@shared/assets/images/functionals/thumb-down.svg';
+import MinusCircleImg, { ReactComponent as MinusCircleSvg } from '@shared/assets/images/functionals/minus-circle.svg';
 
 const FunctionalImages = {
   copy: { svg: CopySvg, img: CopyImg },
@@ -88,6 +91,9 @@ const FunctionalImages = {
   opengovLock: { svg: OpenGovLockSvg, img: OpenGovLockImg },
   opengovDelegations: { svg: OpenGovDelegationsSvg, img: OpenGovDelegationsImg },
   voted: { svg: VotedSvg, img: VotedImg },
+  thumbUp: { svg: ThumbUpSvg, img: ThumbUpImg },
+  thumbDown: { svg: ThumbDownSvg, img: ThumbDownImg },
+  minusCircle: { svg: MinusCircleSvg, img: MinusCircleImg },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

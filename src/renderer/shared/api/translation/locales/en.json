@@ -318,7 +318,9 @@
     "referendum": {
       "abstain": "Abstain",
       "aye": "Aye",
+      "ayes": "Ayes",
       "nay": "Nay",
+      "nays": "Nays",
       "proposer": "Proposer:",
       "support": "Support",
       "threshold": "Threshold",

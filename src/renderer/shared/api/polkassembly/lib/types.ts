@@ -122,7 +122,7 @@ export type DetailedOnChainPost = {
 export type PostVote = {
   decision: 'yes' | 'no' | 'abstain';
   voter: Address;
-  balance: { value: string } | { abstain: string; aye: string; nay: string };
+  balance: { value: string } | { abstain: string | null; aye: string; nay: string };
   lockPeriod: number | null;
 };
 

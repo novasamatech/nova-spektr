@@ -6,7 +6,7 @@ export type ReferendumVote = {
   decision: 'aye' | 'nay' | 'abstain';
   voter: Address;
   balance: BN;
-  lockPeriod: number;
+  conviction: number;
 };
 
 export interface GovernanceApi {

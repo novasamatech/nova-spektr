@@ -41,8 +41,6 @@ const $voteHistory = combine(
 
 const requestVoteHistory = createEvent<{ referendumId: ReferendumId }>();
 
-requestVoteHistory.watch((x) => console.log('requestVoteHistory', x));
-
 sample({
   clock: requestVoteHistory,
   source: networkSelectorModel.$governanceChain,

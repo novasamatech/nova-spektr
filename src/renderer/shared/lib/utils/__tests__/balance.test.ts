@@ -49,5 +49,15 @@ describe('shared/lib/onChainUtils/balance', () => {
       expect(suffix).toEqual('T');
       expect(decimalPlaces).toEqual(2);
     });
+
+    test('should add correct shorthands, when parametrized', () => {
+      const { value, suffix, decimalPlaces } = formatBalance('5200000000000000', 12, {
+        K: true,
+      });
+
+      expect(value).toEqual('5.2');
+      expect(suffix).toEqual('K');
+      expect(decimalPlaces).toEqual(2);
+    });
   });
 });

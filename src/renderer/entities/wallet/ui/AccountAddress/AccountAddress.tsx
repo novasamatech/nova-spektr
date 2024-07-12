@@ -28,7 +28,7 @@ export type AccountAddressProps = {
 } & (WithAccountId | WithAddress);
 
 export const getAddress = (props: WithAccountId | WithAddress): Address => {
-  if ((props as WithAddress).address) return (props as WithAddress).address;
+  if ('address' in props) return props.address;
 
   const { accountId, addressPrefix } = props as WithAccountId;
 

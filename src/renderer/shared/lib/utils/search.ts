@@ -10,7 +10,7 @@ type Params<T extends object> = {
 };
 
 /**
- * Method performs search and sorting of array by query
+ * Performs searching by query and sort using weight of each field
  * @param records - list of objects
  * @param query - requested string
  * @param weights - object with keys to search.

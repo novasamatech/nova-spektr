@@ -13,7 +13,7 @@ import { DetailsCard } from './DetailsCard';
 import { AggregatedReferendum } from '../../types/structs';
 import { VotingSummary } from './VotingSummary';
 import { referendumService } from '@entities/governance';
-import { VoteHistoryDialog } from './VoteHistoryDialog';
+import { VotingHistoryDialog } from './VotingHistoryDialog';
 
 type Props = {
   chain: Chain;
@@ -78,7 +78,7 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) =
       </div>
 
       {showVoteHistory && (
-        <VoteHistoryDialog referendum={referendum.referendum} onClose={() => setShowVoteHistory(false)} />
+        <VotingHistoryDialog referendum={referendum.referendum} onClose={() => setShowVoteHistory(false)} />
       )}
     </BaseModal>
   );

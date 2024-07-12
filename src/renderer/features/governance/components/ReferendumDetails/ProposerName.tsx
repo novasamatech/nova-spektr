@@ -1,10 +1,10 @@
 import { useStoreMap } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { FootnoteText, Identicon, Shimmering } from '@shared/ui';
-import { referendumService } from '@entities/governance';
-import { pickNestedValue } from '@shared/lib/utils';
+import { FootnoteText, Shimmering } from '@shared/ui';
 import { ChainId, Referendum } from '@shared/core';
+import { referendumService } from '@entities/governance';
+import { AccountAddress } from '@entities/wallet';
 import { detailsAggregate } from '../../aggregates/details';
 
 type Props = {
@@ -17,10 +17,10 @@ export const ProposerName = ({ chainId, referendum }: Props) => {
 
   const proposer = useStoreMap({
     store: detailsAggregate.$proposers,
-    keys: [chainId, referendum],
-    fn: (x, [chainId, referendum]) => {
+    keys: [referendum],
+    fn: (x, [referendum]) => {
       return referendumService.isOngoing(referendum) && referendum.submissionDeposit
-        ? pickNestedValue(x, chainId, referendum.submissionDeposit.who)
+        ? x[referendum.submissionDeposit.who]
         : null;
     },
   });
@@ -36,18 +36,18 @@ export const ProposerName = ({ chainId, referendum }: Props) => {
   }
 
   const proposerName = proposer ? (
-    <>
-      <Identicon address={proposer.parent.address} size={16} />
-      <FootnoteText className="text-text-secondary">
-        {proposer.parent.name || proposer.email || proposer.twitter || proposer.parent.address}
-      </FootnoteText>
-    </>
+    <AccountAddress
+      addressFont="text-text-secondary"
+      size={16}
+      address={proposer.parent.address}
+      name={proposer.parent.name || proposer.email || proposer.twitter || proposer.parent.address}
+    />
   ) : null;
 
   const proposerLoader = isProposerLoading ? <Shimmering height={18} width={70} /> : null;
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-2">
       <FootnoteText className="text-text-secondary">{t('governance.referendum.proposer')}</FootnoteText>
       {proposerName}
       {proposerLoader}
