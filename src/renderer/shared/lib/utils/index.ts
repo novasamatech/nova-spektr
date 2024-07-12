@@ -13,3 +13,4 @@ export * from './arrays';
 export * from './objects';
 export * from './chains';
 export * from './derivation';
+export * from './search';

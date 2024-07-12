@@ -1,4 +1,5 @@
 import { useGate, useStoreMap } from 'effector-react';
+import { useState } from 'react';
 
 import { type Chain } from '@shared/core';
 import { pickNestedValue } from '@shared/lib/utils';
@@ -12,6 +13,7 @@ import { DetailsCard } from './DetailsCard';
 import { AggregatedReferendum } from '../../types/structs';
 import { VotingSummary } from './VotingSummary';
 import { referendumService } from '@entities/governance';
+import { VoteHistoryDialog } from './VoteHistoryDialog';
 
 type Props = {
   chain: Chain;
@@ -21,6 +23,8 @@ type Props = {
 
 export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) => {
   useGate(detailsAggregate.gates.flow, { chain, referendum: referendum.referendum });
+
+  const [showVoteHistory, setShowVoteHistory] = useState(false);
 
   const { t } = useI18n();
 
@@ -62,7 +66,7 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) =
             <DetailsCard
               title={t('governance.referendum.votingSummary')}
               action={
-                <Button variant="text" size="sm" className="p-0 h-fit">
+                <Button variant="text" size="sm" className="p-0 h-fit" onClick={() => setShowVoteHistory(true)}>
                   View vote history
                 </Button>
               }
@@ -72,6 +76,10 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) =
           )}
         </div>
       </div>
+
+      {showVoteHistory && (
+        <VoteHistoryDialog referendum={referendum.referendum} onClose={() => setShowVoteHistory(false)} />
+      )}
     </BaseModal>
   );
 };

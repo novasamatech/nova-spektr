@@ -1,6 +1,6 @@
 import { PropsWithChildren, ReactNode } from 'react';
 
-import { getAccountExplorer, toAddress, copyToClipboard } from '@shared/lib/utils';
+import { getAccountExplorer, toAddress, copyToClipboard, cnTw } from '@shared/lib/utils';
 import type { Address, Explorer, AccountId } from '@shared/core';
 import { ExplorerLink, IconButton, ContextMenu, HelpText } from '@shared/ui';
 import { useI18n } from '@app/providers';
@@ -22,13 +22,12 @@ const ExplorersPopoverRoot = ({
   className,
 }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
-
   const formattedAddress = toAddress(address, { prefix: addressPrefix });
 
   return (
-    <ContextMenu button={button} className={className}>
+    <ContextMenu button={button}>
       <ContextMenu.Group title={t('general.explorers.addressTitle')}>
-        <div className="flex items-center gap-x-2">
+        <div className={cnTw('flex items-center gap-x-2', className)}>
           <HelpText className="text-text-secondary break-all">{formattedAddress}</HelpText>
           <IconButton className="shrink-0" name="copy" size={20} onClick={() => copyToClipboard(formattedAddress)} />
         </div>

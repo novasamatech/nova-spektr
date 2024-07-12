@@ -1,7 +1,7 @@
-import { useStoreMap, useUnit } from 'effector-react';
+import { useStoreMap } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { FootnoteText, Shimmering } from '@shared/ui';
+import { FootnoteText, Identicon, Shimmering } from '@shared/ui';
 import { referendumService } from '@entities/governance';
 import { pickNestedValue } from '@shared/lib/utils';
 import { ChainId, Referendum } from '@shared/core';
@@ -15,8 +15,6 @@ type Props = {
 export const ProposerName = ({ chainId, referendum }: Props) => {
   const { t } = useI18n();
 
-  const isProposerLoading = useUnit(detailsAggregate.$isProposersLoading);
-
   const proposer = useStoreMap({
     store: detailsAggregate.$proposers,
     keys: [chainId, referendum],
@@ -27,18 +25,32 @@ export const ProposerName = ({ chainId, referendum }: Props) => {
     },
   });
 
+  const isProposerLoading = useStoreMap({
+    store: detailsAggregate.$isProposersLoading,
+    keys: [proposer],
+    fn: (loading, [proposer]) => loading && !proposer,
+  });
+
   if (!isProposerLoading && !proposer) {
     return null;
   }
 
+  const proposerName = proposer ? (
+    <>
+      <Identicon address={proposer.parent.address} size={16} />
+      <FootnoteText className="text-text-secondary">
+        {proposer.parent.name || proposer.email || proposer.twitter || proposer.parent.address}
+      </FootnoteText>
+    </>
+  ) : null;
+
+  const proposerLoader = isProposerLoading ? <Shimmering height={18} width={70} /> : null;
+
   return (
-    <FootnoteText className="text-text-secondary flex items-center">
-      {t('governance.referendum.proposer', {
-        name: proposer
-          ? proposer.parent.name || proposer.email || proposer.twitter || proposer.parent.address || 'Unknown'
-          : null,
-      })}
-      {isProposerLoading && !proposer ? <Shimmering height={18} width={70} /> : null}
-    </FootnoteText>
+    <div className="flex items-center gap-1">
+      <FootnoteText className="text-text-secondary">{t('governance.referendum.proposer')}</FootnoteText>
+      {proposerName}
+      {proposerLoader}
+    </div>
   );
 };

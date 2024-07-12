@@ -1,3 +1,5 @@
+import { BN } from '@polkadot/util';
+
 import type { Chain, ReferendumId } from '@shared/core';
 import type { GovernanceApi, ReferendumVote } from '../lib/types';
 import { dictionary } from '@shared/lib/utils';
@@ -35,9 +37,11 @@ const getReferendumVotes: GovernanceApi['getReferendumVotes'] = (chain, referend
   };
 
   const mapVote = (votes: PostVote[]): ReferendumVote[] => {
-    return votes.map(({ decision, voter }) => ({
+    return votes.map(({ decision, voter, balance, lockPeriod }) => ({
       decision: mapDecision(decision),
       voter,
+      balance: new BN('value' in balance ? balance.value : balance.abstain),
+      lockPeriod: lockPeriod ?? 0,
     }));
   };
 

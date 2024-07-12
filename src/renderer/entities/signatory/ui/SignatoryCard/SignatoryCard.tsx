@@ -12,6 +12,7 @@ const IconProps = {
 } as const;
 
 type Props = {
+  className?: string;
   accountId: AccountId;
   explorers?: Explorer[];
   addressPrefix?: number;
@@ -20,6 +21,7 @@ type Props = {
 };
 
 export const SignatoryCard = ({
+  className,
   accountId,
   explorers,
   addressPrefix,
@@ -34,6 +36,7 @@ export const SignatoryCard = ({
       className={cnTw(
         'group flex items-center gap-x-2 px-2 py-1.5 cursor-pointer flex-1 text-text-secondary rounded',
         'transition-colors hover:bg-action-background-hover hover:text-text-primary',
+        className,
       )}
     >
       {children}

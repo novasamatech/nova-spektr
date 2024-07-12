@@ -1,13 +1,24 @@
-import { createEvent, sample } from 'effector';
+import { combine, createEvent, sample } from 'effector';
 
-import { type Referendum } from '@shared/core';
-import { proposerIdentityModel as proposerIdentityModelEntity } from '@entities/governance';
+import { Address, type Referendum } from '@shared/core';
+import { proposerIdentityModel } from '@entities/governance';
 import { networkSelectorModel } from '../model/networkSelector';
 
-const requestProposer = createEvent<{ referendum: Referendum }>();
+const $proposers = combine(
+  {
+    proposers: proposerIdentityModel.$proposers,
+    chain: networkSelectorModel.$governanceChain,
+  },
+  ({ proposers, chain }) => {
+    return chain ? proposers[chain.chainId] ?? {} : {};
+  },
+);
+
+const requestReferendumProposer = createEvent<{ referendum: Referendum }>();
+const requestProposers = createEvent<{ addresses: Address[] }>();
 
 sample({
-  clock: requestProposer,
+  clock: requestReferendumProposer,
   source: {
     api: networkSelectorModel.$governanceChainApi,
     chain: networkSelectorModel.$governanceChain,
@@ -18,13 +29,31 @@ sample({
     chain: chain!,
     referendum,
   }),
-  target: proposerIdentityModelEntity.events.requestProposer,
+  target: proposerIdentityModel.events.requestReferendumProposer,
+});
+
+sample({
+  clock: requestProposers,
+  source: {
+    api: networkSelectorModel.$governanceChainApi,
+    chain: networkSelectorModel.$governanceChain,
+  },
+  filter: ({ chain, api }) => !!chain && !!api,
+  fn: ({ chain, api }, { addresses }) => ({
+    api: api!,
+    chain: chain!,
+    addresses,
+  }),
+  target: proposerIdentityModel.events.requestProposers,
 });
 
 export const proposerIdentityAggregate = {
-  $proposers: proposerIdentityModelEntity.$proposers,
-  $isProposersLoading: proposerIdentityModelEntity.$isProposersLoading,
+  $proposers,
+  $isProposersLoading: proposerIdentityModel.$isProposersLoading,
+
   events: {
-    requestProposer,
+    proposersRequestDone: proposerIdentityModel.events.proposersRequestDone,
+    requestReferendumProposer,
+    requestProposers,
   },
 };
