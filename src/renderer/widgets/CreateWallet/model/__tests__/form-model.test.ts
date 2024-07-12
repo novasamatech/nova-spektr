@@ -64,7 +64,8 @@ describe('widgets/CreateWallet/model/form-model', () => {
         .set(networkModel.$apis, { '0x00': testApi })
         .set(networkModel.$chains, { '0x00': testChain })
         .set(networkModel.$connectionStatuses, { '0x00': ConnectionStatus.CONNECTED })
-        .set(walletModel.$wallets, [initiatorWallet, signerWallet, multisigWallet]),
+        .set(walletModel.$wallets, [initiatorWallet, signerWallet, multisigWallet])
+        .set(signatoryModel.$signatories, new Map([])),
     });
 
     await allSettled(signatoryModel.events.signatoriesChanged, {
@@ -105,7 +106,8 @@ describe('widgets/CreateWallet/model/form-model', () => {
         .set(networkModel.$apis, { '0x00': testApi })
         .set(networkModel.$chains, { '0x00': testChain })
         .set(networkModel.$connectionStatuses, { '0x00': ConnectionStatus.CONNECTED })
-        .set(walletModel.$wallets, [initiatorWallet, signerWallet, multisigWallet]),
+        .set(walletModel.$wallets, [initiatorWallet, signerWallet, multisigWallet])
+        .set(signatoryModel.$signatories, new Map([])),
     });
 
     await allSettled(formModel.$createMultisigForm.fields.chain.onChange, { scope, params: testChain });

@@ -11,7 +11,9 @@ describe('widgets/CreateWallet/model/signatory-model', () => {
   });
 
   test('should correctly add signatories', async () => {
-    const scope = fork();
+    const scope = fork({
+      values: new Map().set(signatoryModel.$signatories, new Map([])),
+    });
 
     expect(scope.getState(signatoryModel.$signatories).size).toEqual(0);
 
@@ -29,7 +31,9 @@ describe('widgets/CreateWallet/model/signatory-model', () => {
   });
 
   test('should correctly delete signatories', async () => {
-    const scope = fork();
+    const scope = fork({
+      values: new Map().set(signatoryModel.$signatories, new Map([])),
+    });
 
     expect(scope.getState(signatoryModel.$signatories).size).toEqual(0);
 
