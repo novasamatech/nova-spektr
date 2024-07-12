@@ -53,7 +53,10 @@ const $signerWallet = combine(
   ({ store, wallets }) => {
     if (!store) return undefined;
 
-    return walletUtils.getWalletById(wallets, store.signingPayloads[0].account.walletId);
+    return walletUtils.getWalletById(
+      wallets,
+      (store.signingPayloads[0].signatory || store.signingPayloads[0].account).walletId,
+    );
   },
   { skipVoid: false },
 );

@@ -115,8 +115,6 @@ const $signerWallets = combine(
     if (!store) return {};
 
     return store.reduce<Record<number, Wallet>>((acc, storeItem, index) => {
-      if (!storeItem.proxiedAccount || (!storeItem.signatory?.walletId && !storeItem.account?.walletId)) return acc;
-
       const wallet = walletUtils.getWalletById(
         wallets,
         (storeItem.signatory?.walletId || storeItem.account?.walletId)!,
