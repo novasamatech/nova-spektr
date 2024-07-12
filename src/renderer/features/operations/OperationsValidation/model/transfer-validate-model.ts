@@ -46,7 +46,7 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
         fee,
         // TODO: Add support proxy
         isProxy: false,
-        proxyBalance: '0',
+        proxyBalance: { native: '0' },
       },
     },
     {
