@@ -341,6 +341,7 @@
     "referendum": {
       "abstain": "Abstain",
       "additional": "Additional",
+      "advanced": "Advanced",
       "aye": "Aye",
       "ayes": "Ayes",
       "nay": "Nay",
