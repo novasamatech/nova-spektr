@@ -67,7 +67,7 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) =
               title={t('governance.referendum.votingSummary')}
               action={
                 <Button variant="text" size="sm" className="p-0 h-fit" onClick={() => setShowVoteHistory(true)}>
-                  View vote history
+                  {t('governance.voteHistory.viewVoteHistory')}
                 </Button>
               }
             >

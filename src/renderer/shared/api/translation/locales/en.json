@@ -367,7 +367,8 @@
       "listEmptyState": "No one voted here",
       "title": "Vote history",
       "totalVotesCount": "{value} votes {symbol}",
-      "totalVotesCountConviction": "{value} × {conviction}"
+      "totalVotesCountConviction": "{value} × {conviction}",
+      "viewVoteHistory": "View vote history"
     },
     "voted": "Voted",
     "voting": {
