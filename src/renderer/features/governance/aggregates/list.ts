@@ -34,7 +34,7 @@ const $referendums = combine(
 
     return referendumsInChain.map((referendum) => {
       return {
-        referendum,
+        ...referendum,
         title: titlesInChain[referendum.referendumId] ?? null,
         approvalThreshold: approvalInChain[referendum.referendumId] ?? null,
         supportThreshold: supportInChain[referendum.referendumId] ?? null,
