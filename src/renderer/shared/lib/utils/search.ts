@@ -13,6 +13,7 @@ type Params<T extends object> = {
  * Performs searching by query and sort using weight of each field
  * @param records - list of objects
  * @param query - requested string
+ * @param queryMinLength - from this query length method starts to perform search
  * @param weights - object with keys to search.
  */
 export const performSearch = <T extends object>({ records, query, queryMinLength, weights }: Params<T>) => {
