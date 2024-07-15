@@ -3,10 +3,10 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@app/providers';
 import { Button, Duration, FootnoteText, Icon, Shimmering } from '@shared/ui';
 import { UnlockChunkType } from '@shared/api/governance';
+import { getSecondsDuratonToBlock } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
 import { locksModel } from '../../model/locks';
 import { unlockModel } from '../../model/unlock';
-import { unlockService } from '../../lib/unlock';
 
 export const UnlockInfo = () => {
   const { t } = useI18n();
@@ -39,7 +39,7 @@ export const UnlockInfo = () => {
               <Duration
                 as={FootnoteText}
                 className="text-text-tertiary"
-                seconds={unlockService.getSecondsDuratonToBlock(unlock.timeToBlock!)}
+                seconds={getSecondsDuratonToBlock(unlock.timeToBlock!)}
               />
             )}
           </div>

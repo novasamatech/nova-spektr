@@ -44,7 +44,7 @@ sample({
     let maxLockTotal = BN_ZERO;
     for (const address in trackLocks) {
       const lock = trackLocks[address];
-      const totalLock = Object.values(lock).reduce<BN>((acc, lock) => (lock.gt(acc) ? lock : acc), BN_ZERO);
+      const totalLock = Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
 
       maxLockTotal = maxLockTotal.add(totalLock);
     }
@@ -65,4 +65,8 @@ export const locksModel = {
   $isLoading,
   $totalLock,
   $trackLocks,
+
+  events: {
+    requestDone: getTrackLocksFx.done,
+  },
 };

@@ -1,6 +1,7 @@
 import { createEvent, createStore, sample, createEffect, restore } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
+import { combineEvents } from 'patronum';
 
 import { Step, getCreatedDateFromApi, getCurrentBlockNumber } from '@shared/lib/utils';
 import { ClaimTimeAt, UnlockChunk, UnlockChunkType, claimScheduleService } from '@shared/api/governance';
@@ -20,7 +21,6 @@ const txSaved = createEvent();
 
 const $step = restore<Step>(stepChanged, Step.NONE);
 const $claimSchedule = createStore<UnlockChunk[]>([]).reset(walletModel.$activeWallet);
-const $isLoading = createStore<boolean>(true);
 
 type Props = {
   api: ApiPromise;
@@ -79,16 +79,19 @@ const getClaimScheduleFx = createEffect(
 // );
 
 sample({
-  clock: [referendumModel.events.requestDone, locksModel.$trackLocks],
+  clock: [
+    referendumModel.events.requestDone,
+    combineEvents([locksModel.events.requestDone, votingAggregate.events.requestDone]),
+  ],
   source: {
     api: networkSelectorModel.$governanceChainApi,
     tracks: tracksAggregate.$tracks,
     trackLocks: locksModel.$trackLocks,
-    voting: votingAggregate.$currentWalletVoting,
+    voting: votingAggregate.$voting,
     referendums: referendumModel.$referendums,
     chain: networkSelectorModel.$governanceChain,
   },
-  filter: ({ api, voting, trackLocks, chain }) => !!api && !!chain && !!voting && !!trackLocks,
+  filter: ({ api, chain }) => !!api && !!chain,
   fn: ({ api, tracks, trackLocks, voting, referendums, chain }) => ({
     api: api!,
     tracks,
@@ -111,12 +114,6 @@ sample({
 });
 
 sample({
-  clock: getClaimScheduleFx.finally,
-  fn: () => false,
-  target: $isLoading,
-});
-
-sample({
   clock: flowFinished,
   fn: () => Step.NONE,
   target: stepChanged,
@@ -131,7 +128,7 @@ sample({
 export const unlockModel = {
   $step,
   $claimSchedule,
-  $isLoading,
+  $isLoading: getClaimScheduleFx.pending || referendumModel.$isReferendumsLoading,
   $isUnlockable: $claimSchedule.map((c) => c.some((claim) => claim.type === UnlockChunkType.CLAIMABLE)),
 
   events: {
