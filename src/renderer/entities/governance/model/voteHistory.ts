@@ -1,6 +1,7 @@
 import { createStore, createEffect, createEvent, sample } from 'effector';
 import { readonly } from 'patronum';
 
+import { setNestedValue } from '@shared/lib/utils';
 import { Chain, ChainId, ReferendumId } from '@shared/core';
 import { GovernanceApi, ReferendumVote } from '@shared/api/governance';
 import { governanceModel } from './governanceApi';
@@ -37,13 +38,7 @@ sample({
   clock: requestVoteHistoryFx.done,
   source: $voteHistory,
   fn: (history, { params, result }) => {
-    return {
-      ...history,
-      [params.chain.chainId]: {
-        ...(history[params.chain.chainId] ?? {}),
-        [params.referendumId]: result,
-      },
-    };
+    return setNestedValue(history, params.chain.chainId, params.referendumId, result);
   },
   target: $voteHistory,
 });

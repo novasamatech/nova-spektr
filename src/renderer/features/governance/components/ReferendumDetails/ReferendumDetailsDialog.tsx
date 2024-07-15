@@ -1,19 +1,19 @@
 import { useGate, useStoreMap } from 'effector-react';
 import { useState } from 'react';
 
+import { useI18n } from '@app/providers';
 import { type Chain } from '@shared/core';
 import { pickNestedValue } from '@shared/lib/utils';
-import { useI18n } from '@app/providers';
 import { BaseModal, Button, Plate } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
+import { referendumService } from '@entities/governance';
 import { detailsAggregate } from '../../aggregates/details';
 import { ProposalDescription } from './ProposalDescription';
+import { AggregatedReferendum } from '../../types/structs';
+import { VotingHistoryDialog } from '../VotingHistory/VotingHistoryDialog';
+import { VotingSummary } from './VotingSummary';
 import { VotingStatus } from './VotingStatus';
 import { DetailsCard } from './DetailsCard';
-import { AggregatedReferendum } from '../../types/structs';
-import { VotingSummary } from './VotingSummary';
-import { referendumService } from '@entities/governance';
-import { VotingHistoryDialog } from './VotingHistoryDialog';
 
 type Props = {
   chain: Chain;
