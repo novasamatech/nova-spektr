@@ -55,7 +55,8 @@ export const formatBalance = (
   precision = 0,
   shorthands: Partial<FormatBalanceShorthands> = defaultBalanceShorthands,
 ): FormattedBalance => {
-  const mergedShorthands = { ...defaultBalanceShorthands, ...shorthands };
+  const mergedShorthands =
+    shorthands === defaultBalanceShorthands ? defaultBalanceShorthands : { ...defaultBalanceShorthands, ...shorthands };
 
   const BNWithConfig = BigNumber.clone();
   BNWithConfig.config({
