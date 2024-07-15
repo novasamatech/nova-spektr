@@ -9,7 +9,7 @@ jest.mock('@app/providers', () => ({
   }),
   Paths: {
     NETWORK: '/settings/network',
-    // REFERENDUM_DATA: '/settings/referendum', //TODO: Uncomment to enable referendum data on Settings page
+    REFERENDUM_DATA: '/settings/referendum',
     CURRENCY: '/settings/currency',
   },
 }));
@@ -23,8 +23,7 @@ describe('screens/Settings/Overview/GeneralActions', () => {
     expect(label).toBeInTheDocument();
 
     expect(links[0]).toHaveAttribute('href', '/settings/network');
-    // TODO: Uncomment to enable referendum data on Settings page
-    // expect(links[1]).toHaveAttribute('href', '/settings/referendum');
-    expect(links[1]).toHaveAttribute('href', '/settings/currency');
+    expect(links[1]).toHaveAttribute('href', '/settings/referendum');
+    expect(links[2]).toHaveAttribute('href', '/settings/currency');
   });
 });
