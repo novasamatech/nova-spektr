@@ -18,9 +18,9 @@ export const ProposerName = ({ chainId, referendum }: Props) => {
   const proposer = useStoreMap({
     store: detailsAggregate.$proposers,
     keys: [referendum],
-    fn: (x, [referendum]) => {
+    fn: (proposers, [referendum]) => {
       return referendumService.isOngoing(referendum) && referendum.submissionDeposit
-        ? x[referendum.submissionDeposit.who]
+        ? proposers[referendum.submissionDeposit.who]
         : null;
     },
   });
