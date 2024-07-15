@@ -47,6 +47,12 @@ import ForgetImg, { ReactComponent as ForgetSvg } from '@shared/assets/images/fu
 import UpdateImg, { ReactComponent as UpdateSvg } from '@shared/assets/images/functionals/update.svg';
 import VotedImg, { ReactComponent as VotedSvg } from '@shared/assets/images/functionals/voted.svg';
 import OpenGovLockImg, { ReactComponent as OpenGovLockSvg } from '@shared/assets/images/functionals/opengov-lock.svg';
+import OpenGovVotingLockImg, {
+  ReactComponent as OpenGovVotingLockSvg,
+} from '@shared/assets/images/functionals/opengov-voting-lock.svg';
+import OpenGovUnlockImg, {
+  ReactComponent as OpenGovUnlockSvg,
+} from '@shared/assets/images/functionals/opengov-unlock.svg';
 import OpenGovDelegationsImg, {
   ReactComponent as OpenGovDelegationsSvg,
 } from '@shared/assets/images/functionals/opengov-delegations.svg';
@@ -89,6 +95,8 @@ const FunctionalImages = {
   forget: { img: ForgetImg, svg: ForgetSvg },
   update: { svg: UpdateSvg, img: UpdateImg },
   opengovLock: { svg: OpenGovLockSvg, img: OpenGovLockImg },
+  opengovUnlock: { svg: OpenGovUnlockSvg, img: OpenGovUnlockImg },
+  opengovVotingLock: { svg: OpenGovVotingLockSvg, img: OpenGovVotingLockImg },
   opengovDelegations: { svg: OpenGovDelegationsSvg, img: OpenGovDelegationsImg },
   voted: { svg: VotedSvg, img: VotedImg },
   thumbUp: { svg: ThumbUpSvg, img: ThumbUpImg },

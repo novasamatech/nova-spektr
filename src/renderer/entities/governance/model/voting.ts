@@ -20,6 +20,11 @@ const requestVotingFx = createEffect(({ api, tracksIds, addresses }: VotingParam
 });
 
 sample({
+  clock: requestVoting,
+  target: requestVotingFx,
+});
+
+sample({
   clock: requestVotingFx.doneData,
   source: $voting,
   fn: (voting, newVoting) => ({ ...voting, ...newVoting }),
