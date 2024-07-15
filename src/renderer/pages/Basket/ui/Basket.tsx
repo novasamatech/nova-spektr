@@ -9,6 +9,7 @@ import { EmptyBasket } from './EmptyBasket';
 import { SignOperation } from './SignOperation';
 import { SignOperations } from './SignOperations';
 import { basketPageUtils } from '../lib/basket-page-utils';
+import { BasketFilter, basketFilterModel } from '@features/basket/BasketFilter';
 
 export const Basket = () => {
   const { t } = useI18n();
@@ -23,6 +24,8 @@ export const Basket = () => {
   const txToRemove = useUnit(basketPageModel.$txToRemove);
   const step = useUnit(basketPageModel.$step);
 
+  const filteredTxs = useUnit(basketFilterModel.$filteredTxs);
+
   const isSignAvailable =
     validatingTxs.filter((tx) => selectedTxs.includes(tx)).length > 0 ||
     (selectedTxs.length === 0 && basketPageUtils.isSelectStep(step));
@@ -35,7 +38,9 @@ export const Basket = () => {
     <section className="flex flex-col items-center relative h-full">
       <Header title={t('basket.title')} />
 
-      {basketTxs.length > 0 && (
+      <BasketFilter />
+
+      {filteredTxs.length > 0 && (
         <div className="overflow-y-auto w-full mt-4 gap-4 h-full flex flex-col items-center">
           <div className="flex items-center justify-between w-[736px]">
             <Checkbox
@@ -68,7 +73,7 @@ export const Basket = () => {
           </div>
 
           <ul className="rounded-md flex divide-y flex-col gap-y-1.5 w-[736px]">
-            {basketTxs.map((tx) => (
+            {filteredTxs.map((tx) => (
               <li key={tx.id} className="flex gap-x-4 px-3 bg-block-background-default">
                 <div className="flex justify-center items-center">
                   <Checkbox

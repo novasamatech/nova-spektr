@@ -27,6 +27,7 @@ import { addUnique, removeFromCollection } from '@shared/lib/utils';
 import { getCoreTx } from '../lib/utils';
 import { Step } from '../types/basket-page-types';
 import { basketPageUtils } from '../lib/basket-page-utils';
+import { basketFilterModel } from '@features/basket/BasketFilter';
 
 type BasketTransactionsMap = {
   valid: BasketTransaction[];
@@ -202,7 +203,7 @@ sample({
 sample({
   clock: allSelected,
   source: {
-    txs: $basketTransactions,
+    txs: basketFilterModel.$filteredTxs,
     selectedTxs: $selectedTxs,
     invalidTxs: $invalidTxs,
     validatingTxs: $validatingTxs,
