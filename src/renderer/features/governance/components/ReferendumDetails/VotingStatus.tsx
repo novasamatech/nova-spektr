@@ -34,10 +34,8 @@ export const VotingStatus = ({ referendum, chain, asset }: Props) => {
       ? votingService.getVotedCount(referendum.tally, supportThreshold.value)
       : null;
 
-  const votedBalance = votedCount ? formatBalance(votedCount.voted.toString(), asset.precision, { K: true }) : null;
-  const supportThresholdBalance = votedCount
-    ? formatBalance(votedCount.of.toString(), asset.precision, { K: true })
-    : null;
+  const votedBalance = votedCount ? formatBalance(votedCount.voted, asset.precision, { K: true }) : null;
+  const supportThresholdBalance = votedCount ? formatBalance(votedCount.of, asset.precision, { K: true }) : null;
 
   return (
     <div className="flex flex-col items-start gap-6">

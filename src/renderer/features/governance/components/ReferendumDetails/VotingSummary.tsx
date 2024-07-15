@@ -17,9 +17,9 @@ export const VotingSummary = ({ referendum, asset }: Props) => {
     return null;
   }
 
-  const ayeBalance = formatBalance(referendum.tally.ayes.toString(), asset.precision);
-  const naysBalance = formatBalance(referendum.tally.nays.toString(), asset.precision);
-  const supportBalance = formatBalance(referendum.tally.support.toString(), asset.precision);
+  const ayeBalance = formatBalance(referendum.tally.ayes, asset.precision);
+  const naysBalance = formatBalance(referendum.tally.nays, asset.precision);
+  const supportBalance = formatBalance(referendum.tally.support, asset.precision);
 
   return (
     <div className="flex flex-col items-start gap-3">

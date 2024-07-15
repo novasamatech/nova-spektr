@@ -1,3 +1,5 @@
+import { BN } from '@polkadot/util';
+
 import { formatBalance } from '../balance';
 
 describe('shared/lib/onChainUtils/balance', () => {
@@ -47,6 +49,14 @@ describe('shared/lib/onChainUtils/balance', () => {
 
       expect(value).toEqual('91.52');
       expect(suffix).toEqual('T');
+      expect(decimalPlaces).toEqual(2);
+    });
+
+    test('should also work with BN', () => {
+      const { value, suffix, decimalPlaces } = formatBalance(new BN('1617210799282230602'), 12);
+
+      expect(value).toEqual('1.61');
+      expect(suffix).toEqual('M');
       expect(decimalPlaces).toEqual(2);
     });
 

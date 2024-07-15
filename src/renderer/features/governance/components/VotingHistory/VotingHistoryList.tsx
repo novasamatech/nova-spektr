@@ -52,8 +52,8 @@ export const VotingHistoryList = memo<Props>(({ items, asset, chain, loading }) 
             {shouldRenderList &&
               deferredItems.map(({ voter, balance, conviction, name }) => {
                 const votingPowerBalance = balance.muln(conviction * 10).divn(10);
-                const formattedVotingPower = formatBalance(votingPowerBalance.toString(), asset.precision);
-                const formattedBalance = formatBalance(balance.toString(), asset.precision);
+                const formattedVotingPower = formatBalance(votingPowerBalance, asset.precision);
+                const formattedBalance = formatBalance(balance, asset.precision);
 
                 return (
                   <div key={voter} className="flex">

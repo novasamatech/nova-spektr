@@ -51,12 +51,14 @@ const defaultBalanceShorthands: FormatBalanceShorthands = {
   [Suffix.THOUSANDS]: false,
 };
 export const formatBalance = (
-  balance = '0',
+  balance: string | BN = '0',
   precision = 0,
   shorthands: Partial<FormatBalanceShorthands> = defaultBalanceShorthands,
 ): FormattedBalance => {
   const mergedShorthands =
     shorthands === defaultBalanceShorthands ? defaultBalanceShorthands : { ...defaultBalanceShorthands, ...shorthands };
+
+  const stringBalance = balance.toString();
 
   const BNWithConfig = BigNumber.clone();
   BNWithConfig.config({
@@ -70,13 +72,13 @@ export const formatBalance = (
   });
   const TEN = new BNWithConfig(10);
   const bnPrecision = new BNWithConfig(precision);
-  const bnBalance = new BNWithConfig(balance).div(TEN.pow(bnPrecision));
+  const bnBalance = new BNWithConfig(stringBalance).div(TEN.pow(bnPrecision));
   let divider = new BNWithConfig(1);
   let decimalPlaces = 0;
   let suffix = '';
 
   if (bnBalance.lt(1)) {
-    decimalPlaces = Math.max(precision - balance.toString().length + 1, 5);
+    decimalPlaces = Math.max(precision - stringBalance.length + 1, 5);
   } else if (bnBalance.lt(10)) {
     decimalPlaces = Decimal.SMALL_NUMBER;
   } else if (bnBalance.lt(1_000_000)) {
