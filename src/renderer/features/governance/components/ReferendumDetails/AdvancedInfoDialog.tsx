@@ -12,7 +12,6 @@ export const AdvancedInfoDialog = ({ onClose }: Props) => {
 
   return (
     <BaseModal
-      closeButton
       isOpen={isOpen}
       panelClass="w-modal"
       title={t('governance.advanced.title')}
