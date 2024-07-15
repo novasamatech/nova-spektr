@@ -305,6 +305,9 @@
     }
   },
   "governance": {
+    "advanced": {
+      "title": "Advanced"
+    },
     "delegate": "Delegate",
     "emptyStateDescription": "Update the search or cancel filtering",
     "emptyStateLabel": "Nothing was found",
