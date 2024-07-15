@@ -86,13 +86,13 @@ export const VoteDialog = ({ referendum, chain, onClose }: Props) => {
         <div className="flex px-5">TODO</div>
       </div>
       <div className="pt-3 pb-4 px-5 flex gap-4 shrink-0">
-        <VoteButton icon="shelfDown" onClick={() => {}}>
+        <VoteButton icon="thumbDown" onClick={() => {}}>
           {t('governance.referendum.nay')}
         </VoteButton>
-        <VoteButton icon="up" onClick={() => {}}>
+        <VoteButton icon="minusCircle" onClick={() => {}}>
           {t('governance.referendum.abstain')}
         </VoteButton>
-        <VoteButton icon="up" onClick={() => {}}>
+        <VoteButton icon="thumbUp" onClick={() => {}}>
           {t('governance.referendum.aye')}
         </VoteButton>
       </div>

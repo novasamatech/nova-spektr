@@ -39,7 +39,7 @@ export const AddressWithTwoLines = ({
   ...props
 }: Props) => {
   return (
-    <div className={cnTw('flex items-center gap-x-2', className)}>
+    <div className={cnTw('flex items-center gap-x-2 min-w-0', className)}>
       {showIcon && (
         <Identicon theme={iconTheme} address={getAddress(props)} size={size} background={false} canCopy={canCopy} />
       )}

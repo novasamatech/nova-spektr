@@ -1,15 +1,19 @@
 import { useGate, useStoreMap } from 'effector-react';
+import { useState } from 'react';
 
+import { useI18n } from '@app/providers';
 import { type Chain } from '@shared/core';
 import { pickNestedValue } from '@shared/lib/utils';
-import { useI18n } from '@app/providers';
-import { BaseModal, Plate } from '@shared/ui';
+import { BaseModal, Button, Plate } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
+import { referendumService } from '@entities/governance';
 import { detailsAggregate } from '../../aggregates/details';
 import { ProposalDescription } from './ProposalDescription';
+import { AggregatedReferendum } from '../../types/structs';
+import { VotingHistoryDialog } from '../VotingHistory/VotingHistoryDialog';
+import { VotingSummary } from './VotingSummary';
 import { VotingStatus } from './VotingStatus';
 import { DetailsCard } from './DetailsCard';
-import { AggregatedReferendum } from '../../types/structs';
 
 type Props = {
   chain: Chain;
@@ -19,6 +23,8 @@ type Props = {
 
 export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) => {
   useGate(detailsAggregate.gates.flow, { chain, referendum });
+
+  const [showVoteHistory, setShowVoteHistory] = useState(false);
 
   const { t } = useI18n();
 
@@ -55,8 +61,23 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) =
           <DetailsCard title={t('governance.referendum.votingStatus')}>
             <VotingStatus referendum={referendum} chain={chain} asset={votingAsset} />
           </DetailsCard>
+
+          {referendumService.isOngoing(referendum) && votingAsset && (
+            <DetailsCard
+              title={t('governance.referendum.votingSummary')}
+              action={
+                <Button variant="text" size="sm" className="p-0 h-fit" onClick={() => setShowVoteHistory(true)}>
+                  {t('governance.voteHistory.viewVoteHistory')}
+                </Button>
+              }
+            >
+              <VotingSummary referendum={referendum} asset={votingAsset} />
+            </DetailsCard>
+          )}
         </div>
       </div>
+
+      {showVoteHistory && <VotingHistoryDialog referendum={referendum} onClose={() => setShowVoteHistory(false)} />}
     </BaseModal>
   );
 };
