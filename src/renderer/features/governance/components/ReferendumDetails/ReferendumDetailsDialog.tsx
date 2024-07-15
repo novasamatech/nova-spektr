@@ -14,6 +14,7 @@ import { VotingHistoryDialog } from '../VotingHistory/VotingHistoryDialog';
 import { VotingSummary } from './VotingSummary';
 import { VotingStatus } from './VotingStatus';
 import { DetailsCard } from './DetailsCard';
+import { ReferendumAdditional } from './ReferendumAdditional';
 
 type Props = {
   chain: Chain;
@@ -74,6 +75,10 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) =
               <VotingSummary referendum={referendum} asset={votingAsset} />
             </DetailsCard>
           )}
+
+          <DetailsCard title={t('governance.referendum.additional')}>
+            <ReferendumAdditional network={chain.specName} referendumId={referendum.referendumId} />
+          </DetailsCard>
         </div>
       </div>
 
