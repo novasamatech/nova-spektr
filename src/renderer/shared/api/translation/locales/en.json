@@ -305,6 +305,12 @@
     }
   },
   "governance": {
+    "additional": {
+      "polkassemblyLink": "https://{network}.polkassembly.io/referenda/{referendumId}",
+      "polkassemblyLinkTitle": "View in Polkassembly",
+      "subsquareLink": "https://{network}.subsquare.io/referenda/{referendumId}",
+      "subsquareLinkTitle": "View on Subsquare"
+    },
     "advanced": {
       "title": "Advanced"
     },
@@ -334,6 +340,7 @@
     },
     "referendum": {
       "abstain": "Abstain",
+      "additional": "Additional",
       "aye": "Aye",
       "ayes": "Ayes",
       "nay": "Nay",
