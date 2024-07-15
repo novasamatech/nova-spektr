@@ -1,5 +1,3 @@
-import { FC } from 'react';
-
 import { FootnoteText } from '@shared/ui';
 import { referendumService } from '@entities/governance';
 import { useI18n } from '@app/providers';
@@ -8,13 +6,12 @@ import { formatBalance } from '@shared/lib/utils';
 import { Asset } from '@shared/core';
 
 type Props = {
-  item: AggregatedReferendum;
+  referendum: AggregatedReferendum;
   asset: Asset;
 };
 
-export const VotingSummary: FC<Props> = ({ item, asset }: Props) => {
+export const VotingSummary = ({ referendum }: Props) => {
   const { t } = useI18n();
-  const { referendum } = item;
 
   if (!referendumService.isOngoing(referendum)) {
     return null;

@@ -2,7 +2,7 @@ import { PropsWithChildren } from 'react';
 import { Trans } from 'react-i18next';
 
 import { Chain, Referendum } from '@shared/core';
-import { BaseModal, HeaderTitleText, Icon, LabelHelpBox, Popover, SmallTitleText } from '@shared/ui';
+import { BaseModal, FootnoteText, HeaderTitleText, Icon, LabelHelpBox, Popover, SmallTitleText } from '@shared/ui';
 import { ChainIcon } from '@entities/chain';
 import { IconNames } from '@shared/ui/Icon/data';
 import { useI18n } from '@app/providers';
@@ -30,16 +30,28 @@ const AboutVoting = () => {
 
   return (
     <div className="flex flex-col gap-2 p-4 whitespace-pre-line">
-      <Trans
-        t={t}
-        i18nKey="governance.voting.about"
-        components={{
-          header: <SmallTitleText />,
-          p: <div className="text-footnote text-text-secondary" />,
-          ul: <ul className="list-disc ml-4" />,
-          li: <li />,
-        }}
-      />
+      <div>
+        <Trans
+          t={t}
+          i18nKey="governance.voting.aboutVoting"
+          components={{
+            header: <SmallTitleText />,
+            p: <FootnoteText className="text-text-secondary mt-2" />,
+            ul: <FootnoteText className="list-disc ms-2" />,
+            li: <FootnoteText as="li" className="text-text-secondary" />,
+          }}
+        />
+      </div>
+      <div>
+        <Trans
+          t={t}
+          i18nKey="governance.voting.aboutVotingPower"
+          components={{
+            header: <SmallTitleText />,
+            p: <FootnoteText className="text-text-secondary mt-2" />,
+          }}
+        />
+      </div>
     </div>
   );
 };

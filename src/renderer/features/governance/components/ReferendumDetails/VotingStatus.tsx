@@ -10,14 +10,14 @@ import { AggregatedReferendum } from '../../types/structs';
 import { VoteDialog } from './VoteDialog';
 
 type Props = {
-  item: AggregatedReferendum;
+  referendum: AggregatedReferendum;
   chain: Chain;
   asset: Asset | null;
 };
 
-export const VotingStatus = ({ item, chain, asset }: Props) => {
+export const VotingStatus = ({ referendum, chain, asset }: Props) => {
   const { t } = useI18n();
-  const { referendum, approvalThreshold, supportThreshold } = item;
+  const { approvalThreshold, supportThreshold } = referendum;
   const [voteOpen, setVoteOpen] = useState(false);
   if (!asset) {
     return null;

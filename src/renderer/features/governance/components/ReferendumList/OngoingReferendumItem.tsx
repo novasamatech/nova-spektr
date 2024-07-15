@@ -10,13 +10,13 @@ import { ListItem } from './ListItem';
 
 type Props = {
   isTitlesLoading: boolean;
-  item: AggregatedReferendum<OngoingReferendum>;
+  referendum: AggregatedReferendum<OngoingReferendum>;
   onSelect: (value: AggregatedReferendum<OngoingReferendum>) => void;
 };
 
-export const OngoingReferendumItem = memo<Props>(({ item, isTitlesLoading, onSelect }) => {
+export const OngoingReferendumItem = memo<Props>(({ referendum, isTitlesLoading, onSelect }) => {
   const { t } = useI18n();
-  const { referendum, supportThreshold, approvalThreshold, isVoted, title } = item;
+  const { supportThreshold, approvalThreshold, isVoted, title } = referendum;
   const isPassing = supportThreshold ? supportThreshold.passing : false;
   const voteFractions = approvalThreshold
     ? votingService.getVoteFractions(referendum.tally, approvalThreshold.value)
@@ -31,7 +31,7 @@ export const OngoingReferendumItem = memo<Props>(({ item, isTitlesLoading, onSel
     ));
 
   return (
-    <ListItem onClick={() => onSelect(item)}>
+    <ListItem onClick={() => onSelect(referendum)}>
       <div className="flex items-center gap-x-2 w-full">
         <Voted active={isVoted} />
         <VotingStatusBadge passing={isPassing} referendum={referendum} />

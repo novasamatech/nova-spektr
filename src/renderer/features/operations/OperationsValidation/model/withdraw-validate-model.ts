@@ -1,10 +1,11 @@
 import { Store, createEffect, createEvent, restore, sample, scopeBind } from 'effector';
 import { ApiPromise } from '@polkadot/api';
 import { combineEvents } from 'patronum';
+import { SignerOptions } from '@polkadot/api/submittable/types';
 
 import { Address, Asset, Balance, Chain, ChainId, ID, Transaction } from '@shared/core';
 import { redeemableAmount, toAccountId, transferableAmount } from '@shared/lib/utils';
-import { balanceModel } from '@entities/balance';
+import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel } from '@entities/network';
 import { WithdrawRules } from '../lib/withdraw-rules';
 import { transactionService } from '@entities/transaction';
@@ -12,7 +13,7 @@ import { AmountFeeStore, ValidationResult } from '../types/types';
 import { validationUtils } from '../lib/validation-utils';
 import { StakingMap, eraService, useStakingData } from '@entities/staking';
 
-const validationStarted = createEvent<{ id: ID; transaction: Transaction }>();
+const validationStarted = createEvent<{ id: ID; transaction: Transaction; signerOptions?: Partial<SignerOptions> }>();
 const txValidated = createEvent<{ id: ID; result: ValidationResult }>();
 const stakingSet = createEvent<StakingMap>();
 
@@ -44,16 +45,15 @@ type ValidateParams = {
   balances: Balance[];
   staking: StakingMap | null;
   era: number | null;
+  signerOptions?: Partial<SignerOptions>;
 };
 
 const validateFx = createEffect(
-  async ({ id, api, chain, asset, transaction, balances, staking, era }: ValidateParams) => {
+  async ({ id, api, chain, asset, transaction, balances, staking, era, signerOptions }: ValidateParams) => {
     const accountId = toAccountId(transaction.address);
-    const fee = await transactionService.getTransactionFee(transaction, api);
+    const fee = await transactionService.getTransactionFee(transaction, api, signerOptions);
 
-    const shardBalance = balances.find(
-      (balance) => balance.accountId === accountId && balance.assetId === asset.assetId.toString(),
-    );
+    const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
 
     const rules = [
       {
@@ -117,7 +117,7 @@ sample({
   filter: ({ apis, staking }, { validation: { transaction }, era }) => {
     return Boolean(apis[transaction.chainId]) && Boolean(era) && Boolean(staking);
   },
-  fn: ({ apis, chains, balances, staking }, { validation: { id, transaction }, era }) => {
+  fn: ({ apis, chains, balances, staking }, { validation: { id, transaction, signerOptions }, era }) => {
     const chain = chains[transaction.chainId];
     const api = apis[transaction.chainId];
     const asset = chain.assets[0];
@@ -131,6 +131,7 @@ sample({
       balances,
       staking,
       era,
+      signerOptions,
     };
   },
   target: validateFx,

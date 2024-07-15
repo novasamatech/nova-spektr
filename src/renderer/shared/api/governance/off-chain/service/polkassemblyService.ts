@@ -5,6 +5,12 @@ import type { GovernanceApi, ReferendumVote } from '../lib/types';
 import { dictionary } from '@shared/lib/utils';
 import { polkassemblyApiService, ListingOnChainPost, PostVote } from '../../../polkassembly';
 
+const referendumDecisionMap: Record<PostVote['decision'], ReferendumVote['decision']> = {
+  abstain: 'abstain',
+  yes: 'aye',
+  no: 'nay',
+};
+
 const getReferendumList: GovernanceApi['getReferendumList'] = async (chain, callback) => {
   function mapListingPost(data: ListingOnChainPost[]) {
     return dictionary(data, 'post_id', (item) => item.title);
@@ -25,20 +31,9 @@ const getReferendumList: GovernanceApi['getReferendumList'] = async (chain, call
 };
 
 const getReferendumVotes: GovernanceApi['getReferendumVotes'] = (chain, referendumId, callback) => {
-  const mapDecision = (x: PostVote['decision']): ReferendumVote['decision'] => {
-    switch (x) {
-      case 'abstain':
-        return 'abstain';
-      case 'no':
-        return 'nay';
-      case 'yes':
-        return 'aye';
-    }
-  };
-
   const mapVote = (votes: PostVote[]): ReferendumVote[] => {
     return votes.map(({ decision, voter, balance, lockPeriod }) => ({
-      decision: mapDecision(decision),
+      decision: referendumDecisionMap[decision],
       voter,
       balance: new BN('value' in balance ? balance.value : balance.abstain ?? 0),
       conviction: typeof lockPeriod === 'number' ? (lockPeriod === 0 ? 0.1 : lockPeriod) : 0,
