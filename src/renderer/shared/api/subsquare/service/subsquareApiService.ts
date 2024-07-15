@@ -1,5 +1,10 @@
 import { createChunkedRequest } from '../lib/createChunkedRequest';
-import { SubsquareReferendumListResponse, SubsquareSimpleReferendum, SubsquareReferendumVote } from '../lib/types';
+import {
+  SubsquareReferendumListResponse,
+  SubsquareSimpleReferendum,
+  SubsquareReferendumVote,
+  SubsquareFullReferendum,
+} from '../lib/types';
 
 type ChunkDataCallback<T> = (chunk: T, done: boolean) => unknown;
 
@@ -51,10 +56,7 @@ type FetchReferendumParams = {
   referendumId: string;
 };
 
-const fetchReferendum = async ({
-  network,
-  referendumId,
-}: FetchReferendumParams): Promise<SubsquareSimpleReferendum> => {
+const fetchReferendum = async ({ network, referendumId }: FetchReferendumParams): Promise<SubsquareFullReferendum> => {
   const url = createURL(network, `/api/gov2/referendums/${referendumId}`);
 
   return fetch(url, { method: 'GET' }).then((r) => r.json());

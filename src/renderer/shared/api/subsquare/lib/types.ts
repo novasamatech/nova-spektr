@@ -1,4 +1,4 @@
-import { Address, HexString } from '@shared/core';
+import { type Address, type HexString } from '@shared/core';
 
 export type SubsquareSimpleReferendum = {
   _id: string;
@@ -12,7 +12,7 @@ export type SubsquareSimpleReferendum = {
   };
   proposer: Address;
   title: string;
-  track: 33;
+  track: number;
   createdAt: string;
   updatedAt: string;
   lastActivityAt: string;
@@ -34,7 +34,11 @@ export type SubsquareSimpleReferendum = {
   commentsCount: number;
 };
 
-type SubSquareReferendumCommonData = {
+export type SubsquareFullReferendum = SubsquareSimpleReferendum & {
+  content: string;
+};
+
+type SubsquareReferendumVoteCommonData = {
   referendumIndex: number;
   account: Address;
   isDelegating: boolean;
@@ -45,7 +49,7 @@ type SubSquareReferendumCommonData = {
   queryAt: number;
 };
 
-type SubSquareReferendumDirectVote = SubSquareReferendumCommonData & {
+type SubSquareReferendumDirectVote = SubsquareReferendumVoteCommonData & {
   isDelegating: false;
   balance: string;
   aye: boolean;
@@ -56,14 +60,14 @@ type SubSquareReferendumDirectVote = SubSquareReferendumCommonData & {
   };
 };
 
-type SubSquareReferendumDelegatedVote = SubSquareReferendumCommonData & {
+type SubSquareReferendumDelegatedVote = SubsquareReferendumVoteCommonData & {
   isDelegating: true;
   balance: string;
   aye: boolean;
   votes: string;
 };
 
-type SubsquareReferendumAbstainVote = SubSquareReferendumCommonData & {
+type SubsquareReferendumAbstainVote = SubsquareReferendumVoteCommonData & {
   ayeBalance: string;
   ayeVotes: string;
   nayBalance: string;
@@ -76,6 +80,6 @@ export type SubsquareReferendumVote =
   | SubsquareReferendumAbstainVote;
 
 export type SubsquareReferendumListResponse = {
-  items: SubsquareSimpleReferendum[];
+  items: SubsquareFullReferendum[];
   total: number;
 };

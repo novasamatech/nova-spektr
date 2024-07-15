@@ -1,6 +1,6 @@
 import { combine, createEvent, sample } from 'effector';
 
-import { Address, type Referendum } from '@shared/core';
+import { type Address, type Referendum } from '@shared/core';
 import { proposerIdentityModel } from '@entities/governance';
 import { networkSelectorModel } from '../model/networkSelector';
 
