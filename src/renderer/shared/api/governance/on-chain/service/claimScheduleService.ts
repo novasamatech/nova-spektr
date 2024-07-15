@@ -17,17 +17,17 @@ import {
   ClaimAction,
   Unlock,
   RemoveVote,
-  UnlockChunk,
   PendingChunk,
   ClaimableChunk,
   ClaimTimeUntil,
+  Chunks,
+  UnlockChunkType,
 } from '../lib/claim-types';
 import type {
   BlockHeight,
   ReferendumInfo,
   TrackInfo,
   Voting,
-  ReferendumId,
   TrackId,
   CastingVoting,
   AccountVote,
@@ -43,13 +43,14 @@ export const claimScheduleService = {
 
 type ClaimParams = {
   currentBlockNumber: BlockHeight;
-  referendums: Record<ReferendumId, ReferendumInfo>;
+  referendums: ReferendumInfo[];
   tracks: Record<TrackId, TrackInfo>;
   trackLocks: Record<TrackId, BN>;
   votingByTrack: Record<TrackId, Voting>;
   undecidingTimeout: BlockHeight;
   voteLockingPeriod: BlockHeight;
 };
+
 function estimateClaimSchedule({
   currentBlockNumber,
   referendums,
@@ -58,7 +59,7 @@ function estimateClaimSchedule({
   votingByTrack,
   undecidingTimeout,
   voteLockingPeriod,
-}: ClaimParams): UnlockChunk[] {
+}: ClaimParams): Chunks[] {
   // step 1 - determine/estimate individual unlocks for all priors and votes
   // result example: [(1500, 1 KSM), (1200, 2 KSM), (1000, 1 KSM)]
   const claimableLocks = individualClaimableLocks(
@@ -86,7 +87,7 @@ function estimateClaimSchedule({
 // Step 1
 function individualClaimableLocks(
   currentBlockNumber: BlockHeight,
-  referendums: Record<ReferendumId, ReferendumInfo>,
+  referendums: ReferendumInfo[],
   votingByTrack: Record<TrackId, Voting>,
   tracks: Record<TrackId, TrackInfo>,
   trackLocks: Record<TrackId, BN>,
@@ -152,7 +153,7 @@ function gapClaimableLock({ trackId, voting, gap, currentBlockNumber }: GapLockP
 
 function castingClaimableLocks(
   currentBlockNumber: BlockHeight,
-  referendums: Record<ReferendumId, ReferendumInfo>,
+  referendums: ReferendumInfo[],
   trackId: TrackId,
   tracks: Record<TrackId, TrackInfo>,
   voting: CastingVoting,
@@ -167,7 +168,7 @@ function castingClaimableLocks(
 
   const standardVotes = Object.entries(voting.casting.votes) as [string, StandardVote][];
 
-  const standardVoteLocks = standardVotes.map(([referendumId, standardVote]) => {
+  const standardVoteLocks = standardVotes.map<ClaimableLock>(([referendumId, standardVote]) => {
     const estimatedEnd = maxConvictionEndOf(
       currentBlockNumber,
       trackId,
@@ -175,7 +176,7 @@ function castingClaimableLocks(
       standardVote,
       voteLockingPeriod,
       undecidingTimeout,
-      referendums[referendumId],
+      referendums.find((i) => i.referendumId === referendumId),
     );
 
     return {
@@ -184,7 +185,7 @@ function castingClaimableLocks(
         type: 'at',
         block: Math.max(estimatedEnd, (priorLock.claimAt as ClaimTimeAt).block),
       } as ClaimTime,
-      amount: standardVote.balance,
+      amount: standardVote.balance || BN_ZERO,
       affected: [{ trackId, type: 'vote', referendumId } as AffectVote],
     } as ClaimableLock;
   });
@@ -385,11 +386,11 @@ function getClaimTimeSortKey(claimTime: ClaimTime): string {
 }
 
 // Step 4
-function toUnlockChunks(locks: ClaimableLock[], currentBlockNumber: BlockHeight): UnlockChunk[] {
+function toUnlockChunks(locks: ClaimableLock[], currentBlockNumber: BlockHeight): Chunks[] {
   const chunks = locks.map((item) => toUnlockChunk(item, currentBlockNumber));
 
-  const claimable = chunks.filter((chunk): chunk is ClaimableChunk => chunk.type === 'claimable');
-  const nonClaimable = chunks.filter((chunk): chunk is PendingChunk => chunk.type === 'pending');
+  const claimable = chunks.filter((chunk): chunk is ClaimableChunk => chunk.type === UnlockChunkType.CLAIMABLE);
+  const nonClaimable = chunks.filter((chunk): chunk is PendingChunk => chunk.type !== UnlockChunkType.CLAIMABLE);
 
   // Fold all claimable chunks into a single one
   const claimableChunk = claimable.reduce<ClaimableChunk>(
@@ -399,18 +400,23 @@ function toUnlockChunks(locks: ClaimableLock[], currentBlockNumber: BlockHeight)
 
       return acc;
     },
-    { type: 'claimable', amount: BN_ZERO, actions: [] },
+    { type: UnlockChunkType.CLAIMABLE, amount: BN_ZERO, actions: [] },
   );
 
   return claimableChunk.amount.isZero() ? nonClaimable : [claimableChunk, ...nonClaimable];
 }
 
-function toUnlockChunk(lock: ClaimableLock, currentBlockNumber: BlockHeight): UnlockChunk {
+function toUnlockChunk(lock: ClaimableLock, currentBlockNumber: BlockHeight): Chunks {
   if (claimableAt(lock.claimAt, currentBlockNumber)) {
-    return { type: 'claimable', amount: lock.amount, actions: toClaimActions(lock.affected) } as UnlockChunk;
+    return {
+      type: UnlockChunkType.CLAIMABLE,
+      amount: lock.amount,
+      actions: toClaimActions(lock.affected),
+    };
   }
+  const type = onChainUtils.isClaimAt(lock.claimAt) ? UnlockChunkType.PENDING_LOCK : UnlockChunkType.PENDING_DELIGATION;
 
-  return { type: 'pending', amount: lock.amount, claimableAt: lock.claimAt } as PendingChunk;
+  return { type: type, amount: lock.amount, claimableAt: lock.claimAt } as PendingChunk;
 }
 
 function claimableAt(claimAt: ClaimTime, at: BlockHeight): Boolean {

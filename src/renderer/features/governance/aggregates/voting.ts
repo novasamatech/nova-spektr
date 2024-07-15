@@ -49,4 +49,8 @@ sample({
 export const votingAggregate = {
   $currentWalletVoting,
   $voting: votingModel.$voting,
+
+  events: {
+    requestDone: votingModel.effects.requestVotingFx.done,
+  },
 };

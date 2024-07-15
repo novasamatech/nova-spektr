@@ -300,12 +300,21 @@
     }
   },
   "governance": {
+    "delegate": "Delegate",
     "emptyStateDescription": "Update the search or cancel filtering",
     "emptyStateLabel": "Nothing was found",
     "filters": {
       "notVoted": "Not Voted",
       "tracks": "Tracks",
       "vote": "Vote"
+    },
+    "locks": {
+      "governanceLock": "Governance lock",
+      "lock": "Lock",
+      "title": "Unlock on",
+      "unlock": "Unlock",
+      "unlockable": "Unlockable",
+      "yourDeligation": "Your Deligation"
     },
     "offChainDataSource": {
       "formDescription": "Nova Spektr may use different off-chain data sources for getting referendum data",

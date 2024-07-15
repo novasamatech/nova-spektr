@@ -1,6 +1,6 @@
 import { BN } from '@polkadot/util';
 
-import type { BlockHeight, ReferendumId, TrackId } from '@shared/core';
+import type { Address, BlockHeight, ReferendumId, TrackId } from '@shared/core';
 
 export type ClaimableLock = {
   claimAt: ClaimTime;
@@ -23,16 +23,14 @@ export interface AffectVote extends ClaimAffect {
   referendumId: ReferendumId;
 }
 
-export interface ClaimTime {
-  type: 'at' | 'until';
-}
+export type ClaimTime = ClaimTimeAt | ClaimTimeUntil;
 
-export interface ClaimTimeAt extends ClaimTime {
+export interface ClaimTimeAt {
   block: BlockHeight;
   type: 'at';
 }
 
-export interface ClaimTimeUntil extends ClaimTime {
+export interface ClaimTimeUntil {
   type: 'until';
 }
 
@@ -59,22 +57,33 @@ export interface RemoveVote extends ClaimAction {
 }
 
 // Unlock chunk
-export interface UnlockChunk {
-  type: 'claimable' | 'pending';
+export enum UnlockChunkType {
+  CLAIMABLE = 'claimable',
+  PENDING_DELIGATION = 'pendingDelagation',
+  PENDING_LOCK = 'pendingLock',
 }
 
-export interface ClaimableChunk extends UnlockChunk {
-  type: 'claimable';
+export interface ClaimableChunk {
+  type: UnlockChunkType.CLAIMABLE;
   amount: BN;
   actions: ClaimAction[];
 }
 
-export interface PendingChunk extends UnlockChunk {
-  type: 'pending';
+export interface PendingChunk {
+  type: UnlockChunkType.PENDING_DELIGATION | UnlockChunkType.PENDING_LOCK;
   amount: BN;
   claimableAt: ClaimTime;
 }
 
-export interface ClaimSchedule {
-  chunks: UnlockChunk[];
+export interface PendingChunkWithAddress extends PendingChunk {
+  address: Address;
+  timeToBlock?: number;
 }
+
+export interface ClaimChunkWithAddress extends ClaimableChunk {
+  address: Address;
+}
+
+export type Chunks = ClaimableChunk | PendingChunk;
+
+export type UnlockChunk = ClaimChunkWithAddress | PendingChunkWithAddress;

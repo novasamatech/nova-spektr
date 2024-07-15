@@ -1,23 +1,28 @@
 import { BN, BN_ZERO, BN_ONE, BN_TWO, BN_TEN, BN_NINE, BN_FIVE, BN_THREE, BN_FOUR, BN_EIGHT } from '@polkadot/util';
 
-import { claimScheduleService } from '../claimScheduleService';
-import type { RemoveVote, Unlock, ClaimTimeAt, ClaimTimeUntil } from '../../lib/claim-types';
 import { ReferendumType, VotingType, Conviction } from '@shared/core';
 import type {
-  ReferendumId,
   TrackId,
   TrackInfo,
   Voting,
-  OngoingReferendum,
   CastingVoting,
   StandardVote,
-  ApprovedReferendum,
   DelegatingVoting,
+  ReferendumInfo,
+  ApprovedReferendum,
 } from '@shared/core';
+import { claimScheduleService } from '../claimScheduleService';
+import {
+  type RemoveVote,
+  type Unlock,
+  type ClaimTimeAt,
+  type ClaimTimeUntil,
+  UnlockChunkType,
+} from '../../lib/claim-types';
 
 describe('shared/api/governance/claimScheduleService', () => {
   test('should handle empty case', () => {
-    const referendums: Record<ReferendumId, OngoingReferendum> = {};
+    const referendums: ReferendumInfo[] = [{ type: ReferendumType.Approved, referendumId: '123' }];
     const tracks: Record<TrackId, TrackInfo> = {};
     const trackLocks: Record<TrackId, BN> = {};
     const votingByTrack: Record<TrackId, Voting> = {};
@@ -36,9 +41,7 @@ describe('shared/api/governance/claimScheduleService', () => {
   });
 
   test('should handle single claimable', () => {
-    const referendums: Record<ReferendumId, ApprovedReferendum> = {
-      0: { type: ReferendumType.Approved, since: 1000 } as ApprovedReferendum,
-    };
+    const referendums: ReferendumInfo[] = [{ type: ReferendumType.Approved, referendumId: '123' }];
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
         type: VotingType.CASTING,
@@ -98,7 +101,7 @@ describe('shared/api/governance/claimScheduleService', () => {
     };
 
     const result = claimScheduleService.estimateClaimSchedule({
-      referendums: {},
+      referendums: [],
       tracks: {},
       trackLocks: {},
       votingByTrack,
@@ -109,12 +112,12 @@ describe('shared/api/governance/claimScheduleService', () => {
 
     expect(result).toEqual([
       {
-        type: 'claimable',
+        type: UnlockChunkType.CLAIMABLE,
         amount: BN_ONE,
         actions: [{ type: 'unlock', trackId: '0' } as Unlock],
       },
       {
-        type: 'pending',
+        type: UnlockChunkType.PENDING_LOCK,
         amount: BN_ONE,
         claimableAt: { block: 1100, type: 'at' },
       },
@@ -140,7 +143,7 @@ describe('shared/api/governance/claimScheduleService', () => {
     };
 
     const result = claimScheduleService.estimateClaimSchedule({
-      referendums: {},
+      referendums: [],
       tracks: {},
       trackLocks: {},
       votingByTrack,
@@ -151,7 +154,7 @@ describe('shared/api/governance/claimScheduleService', () => {
 
     expect(result).toEqual([
       {
-        type: 'pending',
+        type: UnlockChunkType.PENDING_LOCK,
         amount: BN_TWO,
         claimableAt: { block: 1100, type: 'at' },
       },
@@ -159,10 +162,11 @@ describe('shared/api/governance/claimScheduleService', () => {
   });
 
   test('should take max between two locks with same time', () => {
-    const referendums: Record<ReferendumId, ApprovedReferendum> = {
-      0: { type: ReferendumType.Approved, since: 1000 } as ApprovedReferendum,
-      1: { type: ReferendumType.Approved, since: 1000 } as ApprovedReferendum,
-    };
+    const referendums: ReferendumInfo[] = [
+      { type: ReferendumType.Approved, referendumId: '12' },
+      { type: ReferendumType.Approved, referendumId: '22' },
+    ];
+
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
         type: VotingType.CASTING,
@@ -200,7 +204,7 @@ describe('shared/api/governance/claimScheduleService', () => {
 
     expect(result).toEqual([
       {
-        type: 'claimable',
+        type: UnlockChunkType.CLAIMABLE,
         amount: new BN(8),
         actions: [
           { type: 'remove_vote', trackId: '0', referendumId: '0' } as RemoveVote,
@@ -212,9 +216,8 @@ describe('shared/api/governance/claimScheduleService', () => {
   });
 
   test('should handle rejigged prior', () => {
-    const referendums: Record<ReferendumId, ApprovedReferendum> = {
-      1: { type: ReferendumType.Approved, since: 1000 } as ApprovedReferendum,
-    };
+    const referendums: ReferendumInfo[] = [{ type: ReferendumType.Approved, referendumId: '123' }];
+
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
         type: VotingType.CASTING,
@@ -256,10 +259,11 @@ describe('shared/api/governance/claimScheduleService', () => {
   });
 
   test('should fold several claimable to one', () => {
-    const referendums: Record<ReferendumId, ApprovedReferendum> = {
-      0: { type: ReferendumType.Approved, since: 1100 } as ApprovedReferendum,
-      1: { type: ReferendumType.Approved, since: 1000 } as ApprovedReferendum,
-    };
+    const referendums: ApprovedReferendum[] = [
+      { type: ReferendumType.Approved, referendumId: '0', since: 1100 },
+      { type: ReferendumType.Approved, referendumId: '1', since: 1000 },
+    ];
+
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
         type: VotingType.CASTING,
@@ -319,11 +323,12 @@ describe('shared/api/governance/claimScheduleService', () => {
   });
 
   test('should include shadowed actions', () => {
-    const referendums: Record<ReferendumId, ApprovedReferendum> = {
-      1: { type: ReferendumType.Approved, since: 1000 } as ApprovedReferendum,
-      2: { type: ReferendumType.Approved, since: 1100 } as ApprovedReferendum,
-      3: { type: ReferendumType.Approved, since: 1200 } as ApprovedReferendum,
-    };
+    const referendums: ApprovedReferendum[] = [
+      { type: ReferendumType.Approved, referendumId: '1', since: 1000 },
+      { type: ReferendumType.Approved, referendumId: '2', since: 1100 },
+      { type: ReferendumType.Approved, referendumId: '3', since: 1200 },
+    ];
+
     const votingByTrack: Record<TrackId, CastingVoting> = {
       1: {
         type: VotingType.CASTING,
@@ -420,7 +425,7 @@ describe('shared/api/governance/claimScheduleService', () => {
     };
 
     const result = claimScheduleService.estimateClaimSchedule({
-      referendums: {},
+      referendums: [],
       tracks: {},
       trackLocks: { 0: BN_TEN },
       votingByTrack,
@@ -475,7 +480,7 @@ describe('shared/api/governance/claimScheduleService', () => {
     };
 
     const result = claimScheduleService.estimateClaimSchedule({
-      referendums: {},
+      referendums: [],
       tracks: {},
       trackLocks: { 0: BN_TEN },
       votingByTrack,
@@ -486,7 +491,7 @@ describe('shared/api/governance/claimScheduleService', () => {
 
     expect(result).toEqual([
       {
-        type: 'claimable',
+        type: UnlockChunkType.CLAIMABLE,
         amount: BN_NINE,
         actions: [
           { type: 'remove_vote', trackId: '0', referendumId: '0' } as RemoveVote,
@@ -495,7 +500,7 @@ describe('shared/api/governance/claimScheduleService', () => {
         ],
       },
       {
-        type: 'pending',
+        type: UnlockChunkType.PENDING_LOCK,
         amount: BN_ONE,
         claimableAt: { type: 'at', block: 1100 } as ClaimTimeAt,
       },
@@ -514,7 +519,7 @@ describe('shared/api/governance/claimScheduleService', () => {
     };
 
     const result = claimScheduleService.estimateClaimSchedule({
-      referendums: {},
+      referendums: [],
       tracks: {},
       trackLocks: { 0: BN_TEN },
       votingByTrack,
@@ -525,7 +530,7 @@ describe('shared/api/governance/claimScheduleService', () => {
 
     expect(result).toEqual([
       {
-        type: 'pending',
+        type: UnlockChunkType.PENDING_LOCK,
         amount: BN_TEN,
         claimableAt: { type: 'at', block: 1100 } as ClaimTimeAt,
       },
@@ -544,7 +549,7 @@ describe('shared/api/governance/claimScheduleService', () => {
     };
 
     const result = claimScheduleService.estimateClaimSchedule({
-      referendums: {},
+      referendums: [],
       tracks: {},
       trackLocks: { 0: BN_TEN },
       votingByTrack,
@@ -563,11 +568,11 @@ describe('shared/api/governance/claimScheduleService', () => {
   });
 
   test('pending should be sorted by remaining time', () => {
-    const referendums: Record<ReferendumId, ApprovedReferendum> = {
-      0: { type: ReferendumType.Approved, since: 1100 } as ApprovedReferendum,
-      1: { type: ReferendumType.Approved, since: 1300 } as ApprovedReferendum,
-      2: { type: ReferendumType.Approved, since: 1200 } as ApprovedReferendum,
-    };
+    const referendums: ApprovedReferendum[] = [
+      { type: ReferendumType.Approved, referendumId: '0', since: 1100 },
+      { type: ReferendumType.Approved, referendumId: '1', since: 1300 },
+      { type: ReferendumType.Approved, referendumId: '2', since: 1200 },
+    ];
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
         type: VotingType.CASTING,
@@ -612,17 +617,17 @@ describe('shared/api/governance/claimScheduleService', () => {
 
     expect(result).toEqual([
       {
-        type: 'pending',
+        type: UnlockChunkType.PENDING_LOCK,
         amount: BN_ONE,
         claimableAt: { type: 'at', block: 1100 } as ClaimTimeAt,
       },
       {
-        type: 'pending',
+        type: UnlockChunkType.PENDING_LOCK,
         amount: BN_ONE,
         claimableAt: { type: 'at', block: 1200 } as ClaimTimeAt,
       },
       {
-        type: 'pending',
+        type: UnlockChunkType.PENDING_LOCK,
         amount: BN_ONE,
         claimableAt: { type: 'at', block: 1300 } as ClaimTimeAt,
       },
@@ -630,10 +635,11 @@ describe('shared/api/governance/claimScheduleService', () => {
   });
 
   test('gap should not be covered by its track locks', () => {
-    const referendums: Record<ReferendumId, ApprovedReferendum> = {
-      5: { type: ReferendumType.Approved, since: 1500 } as ApprovedReferendum,
-      13: { type: ReferendumType.Approved, since: 2000 } as ApprovedReferendum,
-    };
+    const referendums: ApprovedReferendum[] = [
+      { type: ReferendumType.Approved, referendumId: '5', since: 1500 },
+      { type: ReferendumType.Approved, referendumId: '13', since: 2000 },
+    ];
+
     const votingByTrack: Record<TrackId, CastingVoting> = {
       20: {
         type: VotingType.CASTING,
@@ -679,17 +685,17 @@ describe('shared/api/governance/claimScheduleService', () => {
 
     expect(result).toEqual([
       {
-        type: 'claimable',
+        type: UnlockChunkType.CLAIMABLE,
         amount: new BN(91),
         actions: [{ type: 'unlock', trackId: '21' } as Unlock],
       },
       {
-        type: 'pending',
+        type: UnlockChunkType.PENDING_LOCK,
         amount: BN_NINE,
         claimableAt: { type: 'at', block: 1500 } as ClaimTimeAt,
       },
       {
-        type: 'pending',
+        type: UnlockChunkType.PENDING_LOCK,
         amount: BN_ONE,
         claimableAt: { type: 'at', block: 2000 } as ClaimTimeAt,
       },
@@ -710,7 +716,7 @@ describe('shared/api/governance/claimScheduleService', () => {
     };
 
     const result = claimScheduleService.estimateClaimSchedule({
-      referendums: {},
+      referendums: [],
       tracks: {},
       trackLocks: {},
       votingByTrack,
@@ -721,7 +727,7 @@ describe('shared/api/governance/claimScheduleService', () => {
 
     expect(result).toEqual([
       {
-        type: 'pending',
+        type: UnlockChunkType.PENDING_DELIGATION,
         amount: BN_ONE,
         claimableAt: { type: 'until' } as ClaimTimeUntil,
       },
@@ -742,7 +748,7 @@ describe('shared/api/governance/claimScheduleService', () => {
     };
 
     const result = claimScheduleService.estimateClaimSchedule({
-      referendums: {},
+      referendums: [],
       tracks: {},
       trackLocks: {},
       votingByTrack,
@@ -753,12 +759,12 @@ describe('shared/api/governance/claimScheduleService', () => {
 
     expect(result).toEqual([
       {
-        type: 'pending',
+        type: UnlockChunkType.PENDING_LOCK,
         amount: BN_NINE,
         claimableAt: { type: 'at', block: 1100 } as ClaimTimeAt,
       },
       {
-        type: 'pending',
+        type: UnlockChunkType.PENDING_DELIGATION,
         amount: BN_ONE,
         claimableAt: { type: 'until' } as ClaimTimeUntil,
       },
@@ -779,7 +785,7 @@ describe('shared/api/governance/claimScheduleService', () => {
     };
 
     const result = claimScheduleService.estimateClaimSchedule({
-      referendums: {},
+      referendums: [],
       tracks: {},
       trackLocks: { 0: BN_TEN },
       votingByTrack,
@@ -790,12 +796,12 @@ describe('shared/api/governance/claimScheduleService', () => {
 
     expect(result).toEqual([
       {
-        type: 'claimable',
+        type: UnlockChunkType.CLAIMABLE,
         amount: BN_NINE,
         actions: [{ type: 'unlock', trackId: '0' } as Unlock],
       },
       {
-        type: 'pending',
+        type: UnlockChunkType.PENDING_DELIGATION,
         amount: BN_ONE,
         claimableAt: { type: 'until' } as ClaimTimeUntil,
       },
@@ -803,9 +809,7 @@ describe('shared/api/governance/claimScheduleService', () => {
   });
 
   test('delegate plus voting case', () => {
-    const referendums: Record<ReferendumId, ApprovedReferendum> = {
-      '0': { type: ReferendumType.Approved, referendumId: '0', since: 1100 },
-    };
+    const referendums: ApprovedReferendum[] = [{ type: ReferendumType.Approved, referendumId: '0', since: 1100 }];
     const votingByTrack: Record<TrackId, DelegatingVoting | CastingVoting> = {
       0: {
         type: VotingType.DELEGATING,
@@ -846,19 +850,19 @@ describe('shared/api/governance/claimScheduleService', () => {
     expect(result).toEqual([
       // 5 is claimable from track 1 priors
       {
-        type: 'claimable',
+        type: UnlockChunkType.CLAIMABLE,
         amount: BN_FIVE,
         actions: [{ type: 'unlock', trackId: '1' } as Unlock],
       },
       // 4 is delayed until 1100 from track 1 votes
       {
-        type: 'pending',
+        type: UnlockChunkType.PENDING_LOCK,
         amount: BN_FOUR,
         claimableAt: { type: 'at', block: 1100 } as ClaimTimeAt,
       },
       // 1 is delayed indefinitely because of track 1 delegation
       {
-        type: 'pending',
+        type: UnlockChunkType.PENDING_DELIGATION,
         amount: BN_ONE,
         claimableAt: { type: 'until' } as ClaimTimeUntil,
       },
