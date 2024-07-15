@@ -5,14 +5,18 @@ import { governancePageUtils } from '../governancePageUtils';
 describe('pages/Governance/lib/governancePageUtils', () => {
   const referendums: AggregatedReferendum[] = [
     {
-      referendum: { referendumId: '111', type: ReferendumType.Approved, since: 0 },
+      type: ReferendumType.Approved,
+      referendumId: '111',
+      since: 0,
       title: 'Referendum Title 1',
       approvalThreshold: null,
       supportThreshold: null,
       isVoted: false,
     },
     {
-      referendum: { referendumId: '222', type: ReferendumType.Approved, since: 0 },
+      type: ReferendumType.Approved,
+      referendumId: '222',
+      since: 0,
       title: 'Referendum Title 2',
       approvalThreshold: null,
       supportThreshold: null,
@@ -23,25 +27,21 @@ describe('pages/Governance/lib/governancePageUtils', () => {
   const createVotingReferendum = (isVoted: boolean) => {
     return {
       isVoted,
-      referendum: {
-        type: ReferendumType.Ongoing,
-        track: '1',
-      },
+      type: ReferendumType.Ongoing,
+      track: '1',
     } as AggregatedReferendum<OngoingReferendum>;
   };
 
   const referendum = {
     isVoted: true,
-    referendum: {
-      type: ReferendumType.Ongoing,
-      track: '1',
-    },
+    type: ReferendumType.Ongoing,
+    track: '1',
   } as AggregatedReferendum<OngoingReferendum>;
 
   test.each([
     { referendums, query: '', expected: referendums },
-    { referendums, query: '111', expected: referendums.filter(({ referendum }) => referendum.referendumId === '111') },
-    { referendums, query: '222', expected: referendums.filter(({ referendum }) => referendum.referendumId === '222') },
+    { referendums, query: '111', expected: referendums.filter(({ referendumId }) => referendumId === '111') },
+    { referendums, query: '222', expected: referendums.filter(({ referendumId }) => referendumId === '222') },
     { referendums, query: 'none', expected: [] },
   ])('should return correct referendums if query is "$query"', ({ referendums, query, expected }) => {
     const result = governancePageUtils.filteredByQuery({ referendums, query });

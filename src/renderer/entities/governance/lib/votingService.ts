@@ -21,10 +21,8 @@ const getVoteFractions = (tally: Tally, approve: BN): Record<'aye' | 'nay' | 'pa
 };
 
 function getVotedCount(tally: Tally, threshold: BN) {
-  const total = tally.ayes.add(tally.nays);
-
   return {
-    voted: total,
+    voted: tally.support,
     of: threshold,
   };
 }

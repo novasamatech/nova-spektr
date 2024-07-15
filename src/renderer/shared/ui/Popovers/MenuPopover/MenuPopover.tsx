@@ -25,7 +25,7 @@ export const MenuPopover = ({
 }: PropsWithChildren<Props>) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const onMenuClick = (e: MouseEvent<HTMLButtonElement>) => {
+  const onMenuClick = (e: MouseEvent<HTMLElement>) => {
     e.stopPropagation();
     setTimeout(() => menuRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
   };
