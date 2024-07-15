@@ -12,7 +12,8 @@ const tailwindConfig: Config = {
   theme: {
     extend: {
       width: {
-        modal: '440px',
+        90: '22.5rem',
+        modal: '27.5rem',
       },
       height: {
         modal: '576px',

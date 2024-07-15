@@ -11,7 +11,7 @@ type Props = {
   referendums: AggregatedReferendum<CompletedReferendum>[];
   isLoading: boolean;
   isTitlesLoading: boolean;
-  onSelect: (value: CompletedReferendum) => void;
+  onSelect: (value: AggregatedReferendum<CompletedReferendum>) => void;
 };
 
 const placeholder = Array.from({ length: 4 }, (_, index) => (
@@ -46,9 +46,9 @@ export const CompletedReferendums = memo<Props>(({ referendums, isLoading, isTit
         {isLoading && placeholder}
 
         {!isLoading &&
-          deferredReferendums.map((item) => (
-            <li key={item.referendum.referendumId}>
-              <CompletedReferendumItem item={item} isTitlesLoading={isTitlesLoading} onSelect={onSelect} />
+          deferredReferendums.map((referendum) => (
+            <li key={referendum.referendumId}>
+              <CompletedReferendumItem referendum={referendum} isTitlesLoading={isTitlesLoading} onSelect={onSelect} />
             </li>
           ))}
       </Accordion.Content>

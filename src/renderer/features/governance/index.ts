@@ -1,4 +1,4 @@
-export { proposerIdentityAggregate } from './aggregates/proposer-identity';
+export { proposerIdentityAggregate } from './aggregates/proposerIdentity';
 export { detailsAggregate } from './aggregates/details';
 export { tracksAggregate } from './aggregates/tracks';
 export { votingAggregate } from './aggregates/voting';
@@ -12,7 +12,7 @@ export { offChainModel } from './model/offChain';
 export { Locks } from './components/Locks';
 export { Delegations } from './components/Delegations';
 export { NetworkSelector } from './components/NetworkSelector';
-export { ReferendumDetails } from './components/ReferendumDetails';
+export { ReferendumDetailsDialog } from './components/ReferendumDetails';
 export { ReferendumSearch, ReferendumFilters, VoteStatus } from './components/ReferendumFilter';
 export { OffChainDataSource } from './components/OffChainDataSource';
 export { CompletedReferendums, OngoingReferendums } from './components/ReferendumList';

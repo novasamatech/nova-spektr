@@ -1,23 +1,23 @@
 import { useGate, useStoreMap } from 'effector-react';
 
-import { type Chain, type Referendum } from '@shared/core';
+import { type Chain } from '@shared/core';
 import { pickNestedValue } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
 import { BaseModal, Plate } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
-import { approveThresholdModel, supportThresholdModel } from '@entities/governance';
 import { detailsAggregate } from '../../aggregates/details';
 import { ProposalDescription } from './ProposalDescription';
 import { VotingStatus } from './VotingStatus';
 import { DetailsCard } from './DetailsCard';
+import { AggregatedReferendum } from '../../types/structs';
 
 type Props = {
   chain: Chain;
-  referendum: Referendum;
+  referendum: AggregatedReferendum;
   onClose: VoidFunction;
 };
 
-export const ReferendumDetails = ({ chain, referendum, onClose }: Props) => {
+export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) => {
   useGate(detailsAggregate.gates.flow, { chain, referendum });
 
   const { t } = useI18n();
@@ -34,18 +34,6 @@ export const ReferendumDetails = ({ chain, referendum, onClose }: Props) => {
     fn: (x, [chainId]) => x[chainId],
   });
 
-  const approvalThreshold = useStoreMap({
-    store: approveThresholdModel.$approvalThresholds,
-    keys: [chain.chainId, referendum.referendumId],
-    fn: (x, [chainId, index]) => pickNestedValue(x, chainId, index),
-  });
-
-  const supportThreshold = useStoreMap({
-    store: supportThresholdModel.$supportThresholds,
-    keys: [chain.chainId, referendum.referendumId],
-    fn: (x, [chainId, index]) => pickNestedValue(x, chainId, index),
-  });
-
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
   return (
@@ -59,18 +47,13 @@ export const ReferendumDetails = ({ chain, referendum, onClose }: Props) => {
       onClose={closeModal}
     >
       <div className="flex flex-wrap-reverse items-end gap-4 p-6 min-h-full">
-        <Plate className="min-h-0 min-w-80 basis-[530px] p-6 shadow-card-shadow border-filter-border">
+        <Plate className="min-h-0 min-w-80 basis-[530px] grow p-6 shadow-card-shadow border-filter-border">
           <ProposalDescription chainId={chain.chainId} referendum={referendum} />
         </Plate>
 
         <div className="flex flex-row flex-wrap gap-4 basis-[350px] grow shrink-0">
           <DetailsCard title={t('governance.referendum.votingStatus')}>
-            <VotingStatus
-              referendum={referendum}
-              approvalThreshold={approvalThreshold}
-              supportThreshold={supportThreshold}
-              asset={votingAsset}
-            />
+            <VotingStatus referendum={referendum} chain={chain} asset={votingAsset} />
           </DetailsCard>
         </div>
       </div>

@@ -3,20 +3,20 @@ import { memo } from 'react';
 import { useI18n } from '@app/providers';
 import { Voted, VoteChart, TrackInfo, votingService } from '@entities/governance';
 import { HeadlineText, Shimmering } from '@shared/ui';
-import type { OngoingReferendum } from '@shared/core';
-import { AggregatedReferendum } from '../../types/structs';
+import { type OngoingReferendum } from '@shared/core';
+import { type AggregatedReferendum } from '../../types/structs';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 import { ListItem } from './ListItem';
 
 type Props = {
   isTitlesLoading: boolean;
-  item: AggregatedReferendum<OngoingReferendum>;
-  onSelect: (value: OngoingReferendum) => void;
+  referendum: AggregatedReferendum<OngoingReferendum>;
+  onSelect: (value: AggregatedReferendum<OngoingReferendum>) => void;
 };
 
-export const OngoingReferendumItem = memo<Props>(({ item, isTitlesLoading, onSelect }) => {
+export const OngoingReferendumItem = memo<Props>(({ referendum, isTitlesLoading, onSelect }) => {
   const { t } = useI18n();
-  const { referendum, supportThreshold, approvalThreshold, isVoted, title } = item;
+  const { supportThreshold, approvalThreshold, isVoted, title } = referendum;
   const isPassing = supportThreshold ? supportThreshold.passing : false;
   const voteFractions = approvalThreshold
     ? votingService.getVoteFractions(referendum.tally, approvalThreshold.value)

@@ -2,7 +2,7 @@ import { combine, createStore, sample } from 'effector';
 import isEmpty from 'lodash/isEmpty';
 
 import { type Chain, type ChainId, type ReferendumId } from '@shared/core';
-import { type IGovernanceApi } from '@shared/api/governance';
+import { type GovernanceApi } from '@shared/api/governance';
 import { governanceModel } from '@entities/governance';
 import { createChunksEffect } from '../utils/createChunksEffect';
 import { networkSelectorModel } from './networkSelector';
@@ -21,7 +21,7 @@ const $loadedTitles = createStore<Record<ChainId, true>>({});
 
 type OffChainParams = {
   chain: Chain;
-  service: IGovernanceApi;
+  service: GovernanceApi;
 };
 
 type OffChainReceiveParams = {

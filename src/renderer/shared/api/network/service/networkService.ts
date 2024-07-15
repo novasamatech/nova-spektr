@@ -13,7 +13,7 @@ export const networkService = {
 };
 
 function createApi(provider: ProviderInterface): Promise<ApiPromise> {
-  return ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
+  return ApiPromise.create({ provider, throwOnConnect: true, noInitWarn: true, throwOnUnknown: true });
 }
 
 type ProviderParams = {

@@ -1,6 +1,6 @@
 import { createStore, createEvent, sample, createEffect } from 'effector';
 
-import { IGovernanceApi } from '@shared/api/governance';
+import { GovernanceApi } from '@shared/api/governance';
 import { localStorageService } from '@shared/api/local-storage';
 import { type SourceType } from '../lib/types';
 import { GOVERNANCE_API_KEY, GovernanceApis } from '../lib/constants';
@@ -8,7 +8,7 @@ import { GOVERNANCE_API_KEY, GovernanceApis } from '../lib/constants';
 const governanceStarted = createEvent();
 const governanceApiChanged = createEvent<SourceType>();
 
-const $governanceApi = createStore<{ type: SourceType; service: IGovernanceApi } | null>(null);
+const $governanceApi = createStore<{ type: SourceType; service: GovernanceApi } | null>(null);
 
 const getGovernanceApiFx = createEffect((): SourceType => {
   return localStorageService.getFromStorage<SourceType>(GOVERNANCE_API_KEY, 'polkassembly');

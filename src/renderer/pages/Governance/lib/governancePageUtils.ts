@@ -22,9 +22,9 @@ function filteredByQuery<T extends AggregatedReferendum>({ referendums, query }:
     return referendums;
   }
 
-  return referendums.filter(({ referendum, title }) => {
+  return referendums.filter((referendum) => {
     const hasIndex = includes(referendum.referendumId, query);
-    const hasTitle = includes(title ?? '', query);
+    const hasTitle = includes(referendum.title ?? '', query);
 
     return hasIndex || hasTitle;
   });
@@ -52,13 +52,13 @@ function isReferendumInTrack(selectedTrackIds: string[], referendum: AggregatedR
     return false;
   }
 
-  return selectedTrackIds.includes(referendum.referendum.track);
+  return selectedTrackIds.includes(referendum.track);
 }
 
 function isAggregatedReferendumOngoing(r: AggregatedReferendum): r is AggregatedReferendum<OngoingReferendum> {
-  return referendumService.isOngoing(r.referendum);
+  return referendumService.isOngoing(r);
 }
 
 function isAggregatedReferendumCompleted(r: AggregatedReferendum): r is AggregatedReferendum<CompletedReferendum> {
-  return referendumService.isCompleted(r.referendum);
+  return referendumService.isCompleted(r);
 }

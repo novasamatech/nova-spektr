@@ -1,1 +1,1 @@
-export { ReferendumDetails } from './ReferendumDetails';
+export { ReferendumDetailsDialog } from './ReferendumDetailsDialog';

@@ -2,6 +2,7 @@ export { governanceModel } from './model/governanceApi';
 export { referendumModel } from './model/referendum';
 export { tracksModel } from './model/tracks';
 export { votingModel } from './model/voting';
+export { voteHistoryModel } from './model/voteHistory';
 export { approveThresholdModel } from './model/approveThreshold';
 export { supportThresholdModel } from './model/supportThreshold';
 export { proposerIdentityModel } from './model/proposerIdentity';
