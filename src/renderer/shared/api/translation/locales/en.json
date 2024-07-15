@@ -91,6 +91,11 @@
   "basket": {
     "chainError": "Failed: { date }",
     "emptySignButton": "Select operations",
+    "filter": {
+      "failed": "Failed",
+      "invalid": "Invalid",
+      "valid": "Valid"
+    },
     "noOperationsDescription": "There are no operations in the basket yet",
     "noOperationsLabel": "No operations",
     "refreshButton": "Refresh list",
