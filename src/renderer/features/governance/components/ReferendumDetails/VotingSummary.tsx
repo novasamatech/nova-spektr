@@ -10,7 +10,7 @@ type Props = {
   asset: Asset;
 };
 
-export const VotingSummary = ({ referendum }: Props) => {
+export const VotingSummary = ({ referendum, asset }: Props) => {
   const { t } = useI18n();
 
   if (!referendumService.isOngoing(referendum)) {

@@ -20,7 +20,7 @@ const getReferendumDetails: GovernanceApi['getReferendumDetails'] = async (chain
   try {
     const details = await subsquareApiService.fetchReferendum({ network, referendumId });
 
-    return details.content;
+    return details.title;
   } catch {
     return undefined;
   }
