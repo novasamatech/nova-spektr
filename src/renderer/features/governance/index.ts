@@ -12,10 +12,11 @@ export { offChainModel } from './model/offChain';
 export { Locks } from './components/Locks';
 export { Delegations } from './components/Delegations';
 export { NetworkSelector } from './components/NetworkSelector';
-export { ReferendumDetailsDialog } from './components/ReferendumDetails';
+export { ReferendumDetailsDialog } from './components/ReferendumDetails/ReferendumDetailsDialog';
 export { ReferendumSearch, ReferendumFilters, VoteStatus } from './components/ReferendumFilter';
 export { OffChainDataSource } from './components/OffChainDataSource';
 export { CompletedReferendums, OngoingReferendums } from './components/ReferendumList';
+export { VotingHistoryDialog } from './components/VotingHistory/VotingHistoryDialog';
 
 export { listService } from './lib/list';
 

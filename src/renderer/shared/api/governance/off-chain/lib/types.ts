@@ -1,8 +1,12 @@
+import { BN } from '@polkadot/util';
+
 import { Address, Chain, ReferendumId } from '@shared/core';
 
 export type ReferendumVote = {
   decision: 'aye' | 'nay' | 'abstain';
   voter: Address;
+  balance: BN;
+  conviction: number;
 };
 
 export interface GovernanceApi {

@@ -2,7 +2,6 @@ import { sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import type { Chain, Referendum } from '@shared/core';
-import { voteHistoryModel } from '@entities/governance';
 import { networkSelectorModel } from '../model/networkSelector';
 import { descriptionsModel } from '../model/description';
 import { titleModel } from '../model/title';
@@ -16,16 +15,7 @@ const $votingAssets = networkSelectorModel.$governanceChains.map((chains) => {
 
 sample({
   clock: flow.open,
-  target: [proposerIdentityAggregate.events.requestProposer, descriptionsModel.events.requestDescription],
-});
-
-sample({
-  clock: flow.open,
-  fn: ({ chain, referendum }) => ({
-    chain,
-    referendumId: referendum.referendumId,
-  }),
-  target: voteHistoryModel.events.requestVoteHistory,
+  target: [proposerIdentityAggregate.events.requestReferendumProposer, descriptionsModel.events.requestDescription],
 });
 
 export const detailsAggregate = {

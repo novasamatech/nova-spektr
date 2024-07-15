@@ -1,11 +1,12 @@
 import { createStore, createEffect, createEvent, sample } from 'effector';
 import { readonly } from 'patronum';
 
+import { setNestedValue } from '@shared/lib/utils';
 import { Chain, ChainId, ReferendumId } from '@shared/core';
 import { GovernanceApi, ReferendumVote } from '@shared/api/governance';
 import { governanceModel } from './governanceApi';
 
-const $voteHistory = createStore<Record<ChainId, ReferendumVote[]>>({});
+const $voteHistory = createStore<Record<ChainId, Record<ReferendumId, ReferendumVote[]>>>({});
 
 const requestVoteHistory = createEvent<{ chain: Chain; referendumId: ReferendumId }>();
 
@@ -16,7 +17,7 @@ type RequestVoteHistoryParams = {
 };
 
 const requestVoteHistoryFx = createEffect(({ chain, referendumId, service }: RequestVoteHistoryParams) => {
-  return service.getReferendumVotes;
+  return service.getReferendumVotes(chain, referendumId, () => {});
 });
 
 sample({
@@ -37,15 +38,17 @@ sample({
   clock: requestVoteHistoryFx.done,
   source: $voteHistory,
   fn: (history, { params, result }) => {
-    return { ...history, [params.chain.chainId]: result };
+    return setNestedValue(history, params.chain.chainId, params.referendumId, result);
   },
   target: $voteHistory,
 });
 
 export const voteHistoryModel = {
   $voteHistory: readonly($voteHistory),
+  $voteHistoryLoading: requestVoteHistoryFx.pending,
 
   events: {
     requestVoteHistory,
+    voteHistoryRequestDone: requestVoteHistoryFx.done,
   },
 };

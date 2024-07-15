@@ -332,8 +332,10 @@
     "referendum": {
       "abstain": "Abstain",
       "aye": "Aye",
+      "ayes": "Ayes",
       "nay": "Nay",
-      "proposer": "Proposer: {name}",
+      "nays": "Nays",
+      "proposer": "Proposer:",
       "support": "Support",
       "threshold": "Threshold",
       "vote": "Vote",
@@ -373,6 +375,15 @@
     },
     "searchPlaceholder": "Search",
     "title": "Governance",
+    "voteHistory": {
+      "listColumnAccount": "Account",
+      "listColumnVotingPower": "Voting power",
+      "listEmptyState": "No one voted here",
+      "title": "Vote history",
+      "totalVotesCount": "{value} votes {symbol}",
+      "totalVotesCountConviction": "{value} × {conviction}",
+      "viewVoteHistory": "View vote history"
+    },
     "voted": "Voted",
     "voting": {
       "aboutLabel": "About voting",

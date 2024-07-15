@@ -1,5 +1,5 @@
 import { CompletedReferendum, OngoingReferendum } from '@shared/core';
-import { includes } from '@shared/lib/utils';
+import { performSearch } from '@shared/lib/utils';
 import { referendumService } from '@entities/governance';
 import { AggregatedReferendum, VoteStatus } from '@features/governance';
 
@@ -18,16 +18,16 @@ type FilteredByQueryParams<T> = {
 };
 
 function filteredByQuery<T extends AggregatedReferendum>({ referendums, query }: FilteredByQueryParams<T>): T[] {
-  if (!query) {
-    return referendums;
-  }
-
-  return referendums.filter((referendum) => {
-    const hasIndex = includes(referendum.referendumId, query);
-    const hasTitle = includes(referendum.title ?? '', query);
-
-    return hasIndex || hasTitle;
+  const res = performSearch<AggregatedReferendum>({
+    records: referendums,
+    query,
+    weights: {
+      title: 1,
+      referendumId: 0.5,
+    },
   });
+
+  return res as T[];
 }
 
 type FilterByVoteParams = {
