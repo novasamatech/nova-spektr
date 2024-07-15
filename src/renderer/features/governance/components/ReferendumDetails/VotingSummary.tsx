@@ -5,12 +5,11 @@ import { AggregatedReferendum } from '../../types/structs';
 import { formatBalance } from '@shared/lib/utils';
 
 type Props = {
-  item: AggregatedReferendum;
+  referendum: AggregatedReferendum;
 };
 
-export const VotingSummary = ({ item }: Props) => {
+export const VotingSummary = ({ referendum }: Props) => {
   const { t } = useI18n();
-  const { referendum } = item;
 
   if (!referendumService.isOngoing(referendum)) {
     return;
@@ -32,8 +31,7 @@ export const VotingSummary = ({ item }: Props) => {
         <div className="w-1 h-3 rounded-[4px] bg-icon-negative" />
         <FootnoteText>{t('governance.referendum.nay')}</FootnoteText>
         <FootnoteText className="text-end grow">
-          {/*{t('governance.referendum.votes', { votes: naysBalance.value + naysBalance.suffix })}*/}
-          {t('governance.referendum.votes', { votes: referendum.tally.nays.toString() })}
+          {t('governance.referendum.votes', { votes: naysBalance.value + naysBalance.suffix })}
         </FootnoteText>
       </div>
       <div className="flex gap-2 items-center w-full">

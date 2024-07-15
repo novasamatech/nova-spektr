@@ -46,9 +46,9 @@ export const OngoingReferendums = memo<Props>(({ referendums, isLoading, isTitle
         {isLoading && placeholder}
 
         {!isLoading &&
-          deferredReferendums.map((item) => (
-            <li key={item.referendum.referendumId}>
-              <OngoingReferendumItem item={item} isTitlesLoading={isTitlesLoading} onSelect={onSelect} />
+          deferredReferendums.map((referendum) => (
+            <li key={referendum.referendumId}>
+              <OngoingReferendumItem referendum={referendum} isTitlesLoading={isTitlesLoading} onSelect={onSelect} />
             </li>
           ))}
       </Accordion.Content>

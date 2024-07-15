@@ -10,16 +10,15 @@ import { ListItem } from './ListItem';
 
 type Props = {
   isTitlesLoading: boolean;
-  item: AggregatedReferendum<CompletedReferendum>;
+  referendum: AggregatedReferendum<CompletedReferendum>;
   onSelect: (value: AggregatedReferendum<CompletedReferendum>) => void;
 };
 
-export const CompletedReferendumItem = memo<Props>(({ item, isTitlesLoading, onSelect }) => {
+export const CompletedReferendumItem = memo<Props>(({ referendum, isTitlesLoading, onSelect }) => {
   const { t } = useI18n();
-  const { referendum, title, isVoted } = item;
 
   const titleNode =
-    title ||
+    referendum.title ||
     (isTitlesLoading ? (
       <Shimmering height={20} width={200} />
     ) : (
@@ -27,9 +26,9 @@ export const CompletedReferendumItem = memo<Props>(({ item, isTitlesLoading, onS
     ));
 
   return (
-    <ListItem onClick={() => onSelect(item)}>
+    <ListItem onClick={() => onSelect(referendum)}>
       <div className="flex items-center gap-x-2 w-full">
-        <Voted active={isVoted} />
+        <Voted active={referendum.isVoted} />
         <VotingStatusBadge referendum={referendum} />
         <FootnoteText className="ml-auto text-text-secondary">#{referendum.referendumId}</FootnoteText>
       </div>
