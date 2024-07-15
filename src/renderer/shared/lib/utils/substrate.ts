@@ -181,3 +181,10 @@ export const upgradeNonce = (metadata: TxMetadata, index: number): TxMetadata =>
     },
   };
 };
+
+export const getSecondsDuratonToBlock = (timeToBlock: number): number => {
+  const currentTime = Date.now();
+  const time = timeToBlock - currentTime;
+
+  return Math.floor(time / 1000);
+};
