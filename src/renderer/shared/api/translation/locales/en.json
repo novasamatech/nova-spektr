@@ -305,6 +305,12 @@
     }
   },
   "governance": {
+    "additional": {
+      "polkassemblyLink": "https://{network}.polkassembly.io/referenda/{referendumId}",
+      "polkassemblyLinkTitle": "View in Polkassembly",
+      "subsquareLink": "https://{network}.subsquare.io/referenda/{referendumId}",
+      "subsquareLinkTitle": "View on Subsquare"
+    },
     "delegate": "Delegate",
     "emptyStateDescription": "Update the search or cancel filtering",
     "emptyStateLabel": "Nothing was found",
@@ -331,6 +337,7 @@
     },
     "referendum": {
       "abstain": "Abstain",
+      "additional": "Additional",
       "aye": "Aye",
       "ayes": "Ayes",
       "nay": "Nay",
