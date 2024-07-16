@@ -62,26 +62,25 @@ const getReferendumVotes: GovernanceApi['getReferendumVotes'] = (chain, referend
     .then((data) => data.map(mapVote));
 };
 
-const mapStatus = (status: SubsquareTimelineRecordStatus): ReferendumTimelineRecordStatus => {
-  switch (status) {
-    case 'Placed':
-      return 'DecisionDepositPlaced';
-    case 'DecisionStarted':
-      return 'Deciding';
-    default:
-      return status;
-  }
-};
-
-const mapTimeline = (timeline: SubsquareTimelineRecord): ReferendumTimelineRecord => {
-  // TODO map status
-  return {
-    status: mapStatus(timeline.name),
-    date: new Date(timeline.indexer.blockTime),
-  };
-};
-
 const getReferendumTimeline: GovernanceApi['getReferendumTimeline'] = async (chain, referendumId) => {
+  const mapStatus = (status: SubsquareTimelineRecordStatus): ReferendumTimelineRecordStatus => {
+    switch (status) {
+      case 'Placed':
+        return 'DecisionDepositPlaced';
+      case 'DecisionStarted':
+        return 'Deciding';
+      default:
+        return status;
+    }
+  };
+
+  const mapTimeline = (timeline: SubsquareTimelineRecord): ReferendumTimelineRecord => {
+    return {
+      status: mapStatus(timeline.name),
+      date: new Date(timeline.indexer.blockTime),
+    };
+  };
+
   return subsquareApiService
     .fetchReferendum({ network: chain.specName, referendumId })
     .then((r) => r.onchainData.timeline.map(mapTimeline));
