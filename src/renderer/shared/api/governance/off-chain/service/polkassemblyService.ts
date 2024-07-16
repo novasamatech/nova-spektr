@@ -81,7 +81,7 @@ const getReferendumTimeline: GovernanceApi['getReferendumTimeline'] = async (cha
       postId: referendumId,
       proposalType: 'referendums_v2',
     })
-    .then((r) => r.timeline.statuses.map(mapTimeline));
+    .then((r) => r.timeline.flatMap((timeline) => timeline.statuses.map(mapTimeline)));
 };
 
 export const polkassemblyService: GovernanceApi = {

@@ -70,10 +70,7 @@ const mapTimeline = (timeline: SubsquareTimelineRecord): ReferendumTimelineRecor
 
 const getReferendumTimeline: GovernanceApi['getReferendumTimeline'] = async (chain, referendumId) => {
   return subsquareApiService
-    .fetchReferendum({
-      network: chain.specName,
-      referendumId,
-    })
+    .fetchReferendum({ network: chain.specName, referendumId })
     .then((r) => r.onchainData.timeline.map(mapTimeline));
 };
 

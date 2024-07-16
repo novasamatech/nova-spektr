@@ -17,8 +17,10 @@ export type ReferendumTimelineRecordStatus =
   | 'Deciding'
   | 'DecisionDepositPlaced'
   | 'Killed'
+  | 'Executed'
   | 'Submitted'
   | 'Rejected'
+  | 'Awarded'
   | 'TimedOut';
 
 export type ReferendumTimelineRecord = {

@@ -14,6 +14,7 @@ export type ProposalType =
 
 export type TrackStatus =
   | 'All'
+  | 'Created'
   | 'Confirmed'
   | 'ConfirmStarted'
   | 'Cancelled'
@@ -108,7 +109,7 @@ export type DetailedOnChainPost = {
     index: number;
     statuses: PolkassembyPostStatus[];
     type: VoteType;
-  };
+  }[];
   topic: {
     name: string;
     id: number;
