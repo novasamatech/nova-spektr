@@ -2,8 +2,8 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { Icon, FootnoteText, Plate, Shimmering } from '@shared/ui';
-import { delegationModel } from '../../model/delegation';
-import { AssetBalance } from '@/src/renderer/entities/asset';
+import { AssetBalance } from '@entities/asset';
+import { delegationModel } from '../../aggregates/delegation';
 
 export const Delegations = () => {
   const { t } = useI18n();
