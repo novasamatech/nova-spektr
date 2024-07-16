@@ -400,6 +400,24 @@
       "wishForChange": "Wish for change"
     },
     "searchPlaceholder": "Search",
+    "timeline": {
+      "status": {
+        "All": "All",
+        "Approved": "Approved",
+        "Awarded": "Awarded",
+        "Cancelled": "Cancelled",
+        "ConfirmStarted": "Confirm started",
+        "Confirmed": "Confirmed",
+        "Created": "Created",
+        "Deciding": "Deciding",
+        "DecisionDepositPlaced": "Decision deposit placed",
+        "Executed": "Executed",
+        "Killed": "Killed",
+        "Rejected": "Rejected",
+        "Submitted": "Submitted",
+        "TimedOut": "Timed out"
+      }
+    },
     "title": "Governance",
     "voteHistory": {
       "listColumnAccount": "Account",
@@ -416,24 +434,6 @@
       "aboutVoting": "<header>Voting</header><p>In the Polkadot OpenGov voting system, there are three types of votes:</p><ul><li>Aye vote - a vote \"for\" a proposal. Votes are counted with a conviction multiplier that increases the\nnumber of votes based on the voter's conviction.</li><li>Nay vote - a vote \"against.\" Similar to the aye vote, it considers the level of conviction, multiplying the number of votes.</li><li>Abstain vote - abstaining from voting. Abstain votes do not affect the conviction level and are not counted in the vote tally with conviction.</li></ul>",
       "aboutVotingPower": "<header>Voting power and lock period</header><p>Conviction is a mechanism that allows participants to amplify their vote by locking their tokens for various periods (lock period). The longer the tokens are locked, the stronger the vote. \nFor example, a six-times conviction increases the vote's weight and requires a token lock for 32 weeks after voting ends.</p>",
       "title": "Vote on"
-    },
-    "timeline": {
-      "status": {
-        "All": "All",
-        "Created": "Created",
-        "Approved": "Approved",
-        "Awarded": "Awarded",
-        "Executed": "Executed",
-        "Confirmed": "Confirmed",
-        "ConfirmStarted": "Confirm started",
-        "Cancelled": "Cancelled",
-        "Deciding": "Deciding",
-        "DecisionDepositPlaced": "Decision deposit placed",
-        "Killed": "Killed",
-        "Submitted": "Submitted",
-        "Rejected": "Rejected",
-        "TimedOut": "Timed out"
-      }
     }
   },
   "log": {
