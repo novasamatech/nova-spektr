@@ -9,9 +9,9 @@ export const fellowshipThresholdService: IVotingThreshold = {
 };
 
 function supportThreshold(params: SupportParams): VotingThreshold {
-  return { value: BN_ZERO, passing: false };
+  return { value: BN_ZERO, passing: false, curve: null };
 }
 
 function ayesFractionThreshold(params: AyesParams): VotingThreshold {
-  return { value: BN_ZERO, passing: false };
+  return { value: BN_ZERO, passing: false, curve: null };
 }

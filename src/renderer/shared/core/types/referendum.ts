@@ -13,6 +13,7 @@ export interface ReferendumInfo {
 export interface OngoingReferendum extends ReferendumInfo {
   type: ReferendumType.Ongoing;
   track: TrackId;
+  proposal: string;
   submitted: BlockHeight;
   submissionDeposit: Deposit | null;
   decisionDeposit: Deposit | null;

@@ -1,6 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 import { BN_ZERO, BN } from '@polkadot/util';
-import { PalletReferendaCurve } from '@polkadot/types/lookup';
+import { FrameSupportPreimagesBounded, PalletReferendaCurve } from '@polkadot/types/lookup';
 
 import { ReferendumType, VoteType, TrackId, CastingVoting, VotingType, Referendum } from '@shared/core';
 import type {
@@ -26,6 +26,20 @@ export const governanceService = {
   getTracks,
 };
 
+function getProposalHex(proposal: FrameSupportPreimagesBounded) {
+  if (proposal.isInline) {
+    return proposal.asInline.toHex();
+  }
+  if (proposal.isLookup) {
+    return proposal.asLookup.toHex();
+  }
+  if (proposal.isLegacy) {
+    return proposal.asLegacy.toHex();
+  }
+
+  return '';
+}
+
 async function getReferendums(api: ApiPromise): Promise<Referendum[]> {
   const referendums = await api.query.referenda.referendumInfoFor.entries();
 
@@ -39,21 +53,25 @@ async function getReferendums(api: ApiPromise): Promise<Referendum[]> {
 
     if (referendum.isOngoing) {
       const ongoing = referendum.asOngoing;
+      const deciding = ongoing.deciding.unwrapOr(null);
+      const decisionDeposit = ongoing.decisionDeposit.unwrapOr(null);
+      const proposal = getProposalHex(ongoing.proposal);
 
       result.push({
         referendumId,
         type: ReferendumType.Ongoing,
         track: ongoing.track.toString(),
+        proposal,
         submitted: ongoing.submitted.toNumber(),
         enactment: {
           value: ongoing.enactment.isAfter ? ongoing.enactment.asAfter.toBn() : ongoing.enactment.asAt.toBn(),
           type: ongoing.enactment.type,
         },
         inQueue: ongoing.inQueue.toPrimitive(),
-        deciding: ongoing.deciding.isSome
+        deciding: deciding
           ? {
-              since: ongoing.deciding.unwrap().since.toNumber(),
-              confirming: ongoing.deciding.unwrap().confirming.unwrapOr(BN_ZERO).toNumber(),
+              since: deciding.since.toNumber(),
+              confirming: deciding.confirming.unwrapOr(BN_ZERO).toNumber(),
             }
           : null,
         tally: {
@@ -61,10 +79,10 @@ async function getReferendums(api: ApiPromise): Promise<Referendum[]> {
           nays: ongoing.tally.nays.toBn(),
           support: ongoing.tally.support.toBn(),
         },
-        decisionDeposit: ongoing.decisionDeposit.isSome
+        decisionDeposit: decisionDeposit
           ? {
-              who: ongoing.decisionDeposit.unwrap().who.toString(),
-              amount: ongoing.decisionDeposit.unwrap().amount.toBn(),
+              who: decisionDeposit.who.toString(),
+              amount: decisionDeposit.amount.toBn(),
             }
           : null,
         submissionDeposit: {

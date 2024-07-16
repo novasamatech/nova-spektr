@@ -1,14 +1,7 @@
 import { BN, bnMin, bnMax, BN_BILLION } from '@polkadot/util';
 
 import type { IVotingThreshold, SupportParams, AyesParams } from '../lib/threshold-types';
-import type {
-  VotingThreshold,
-  VotingCurve,
-  LinearDecreasingCurve,
-  SteppedDecreasingCurve,
-  ReciprocalCurve,
-  BlockHeight,
-} from '@shared/core';
+import type { VotingThreshold, VotingCurve, BlockHeight } from '@shared/core';
 
 export const opengovThresholdService: IVotingThreshold = {
   supportThreshold,
@@ -28,6 +21,7 @@ function supportThreshold({
   return {
     value: supportNeeded,
     passing: tally.support.gte(supportNeeded),
+    curve: supportCurve,
   };
 }
 
@@ -38,6 +32,7 @@ function ayesFractionThreshold({ approvalCurve, tally, blockDifference, decision
   return {
     value: threshold,
     passing: ayeFraction.gte(threshold),
+    curve: approvalCurve,
   };
 }
 
@@ -47,7 +42,7 @@ function getThreshold(curve: VotingCurve, input: BlockHeight, decisionPeriod: BN
   const x = BN_BILLION.muln(input).div(decisionPeriod);
 
   if (curve.type === 'LinearDecreasing') {
-    const linear = curve as LinearDecreasingCurve;
+    const linear = curve;
 
     // *ceil - (x.min(*length).saturating_div(*length, Down) * (*ceil - *floor))
     // NOTE: We first multiply, then divide (since we work with fractions)
@@ -55,14 +50,14 @@ function getThreshold(curve: VotingCurve, input: BlockHeight, decisionPeriod: BN
   }
 
   if (curve.type === 'SteppedDecreasing') {
-    const stepped = curve as SteppedDecreasingCurve;
+    const stepped = curve;
 
     // (*begin - (step.int_mul(x.int_div(*period))).min(*begin)).max(*end)
     return bnMax(stepped.end, stepped.begin.sub(bnMin(stepped.begin, stepped.step.mul(x).div(stepped.period))));
   }
 
   if (curve.type === 'Reciprocal') {
-    const reciprocal = curve as ReciprocalCurve;
+    const reciprocal = curve;
     const div = x.add(reciprocal.xOffset);
 
     if (div.isZero()) return BN_BILLION;
