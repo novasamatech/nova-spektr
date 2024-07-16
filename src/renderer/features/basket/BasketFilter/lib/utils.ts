@@ -19,9 +19,9 @@ export const getStatusOptions = (t: TFunction) => {
       element: t('basket.filter.failed'),
     },
     {
-      id: TxStatus.INVALID,
-      value: TxStatus.INVALID,
-      element: t('basket.filter.invalid'),
+      id: TxStatus.UNAVAILABLE,
+      value: TxStatus.UNAVAILABLE,
+      element: t('basket.filter.unavailable'),
     },
   ];
 };
@@ -103,8 +103,8 @@ export const getTransactionOptions = (t: TFunction) => {
 
 const mapValues = (result: DropdownResult) => result.value;
 
-const getTxStatus = (tx: BasketTransaction, isInvalid: boolean) => {
-  if (isInvalid) return TxStatus.INVALID;
+const getTxStatus = (tx: BasketTransaction, isUnavailable: boolean) => {
+  if (isUnavailable) return TxStatus.UNAVAILABLE;
   if (tx.error) return TxStatus.FAILED;
 
   return TxStatus.VALID;
