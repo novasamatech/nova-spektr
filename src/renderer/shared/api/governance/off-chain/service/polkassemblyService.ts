@@ -66,11 +66,7 @@ async function getReferendumDetails(chain: Chain, referendumId: ReferendumId): P
       postId: referendumId,
       proposalType: 'referendums_v2',
     })
-    .then((r) => {
-      console.log(r);
-
-      return r.content;
-    });
+    .then((r) => r.content);
 }
 
 export const polkassemblyService: GovernanceApi = {
