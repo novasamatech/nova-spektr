@@ -52,6 +52,7 @@ export const Timeline = ({ referendumId }: Props) => {
           <div key={status.status} className="flex items-center justify-between">
             <FootnoteText>{format(status.date, 'd MMM’yy, hh:mm')}</FootnoteText>
             <OperationStatus pallet={getStatusPalette(status.status)}>
+              {/* eslint-disable-next-line i18next/no-literal-string */}
               {t(`governance.timeline.status.${status.status}`)}
             </OperationStatus>
           </div>
