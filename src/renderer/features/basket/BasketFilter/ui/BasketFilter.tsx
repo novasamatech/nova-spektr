@@ -46,6 +46,7 @@ export const BasketFilter = () => {
       <MultiSelect
         className="w-[210px]"
         placeholder={t('operations.filters.operationTypePlaceholder')}
+        disabled={!filtersOptions.type.size}
         selectedIds={selectedOptions.type.map(({ id }) => id)}
         options={[...filtersOptions.type]}
         onChange={(value) => handleFilterChange(value, 'type')}
@@ -53,6 +54,7 @@ export const BasketFilter = () => {
       <MultiSelect
         className="w-[135px]"
         placeholder={t('operations.filters.networkPlaceholder')}
+        disabled={!filtersOptions.network.size}
         selectedIds={selectedOptions.network.map(({ id }) => id)}
         options={[...filtersOptions.network]}
         onChange={(value) => handleFilterChange(value, 'network')}
@@ -60,6 +62,7 @@ export const BasketFilter = () => {
       <MultiSelect
         className="w-[173px]"
         placeholder={t('operations.filters.statusPlaceholder')}
+        disabled={!basketTxs.length}
         selectedIds={selectedOptions.status.map(({ id }) => id)}
         options={[...filtersOptions.status]}
         onChange={(value) => handleFilterChange(value, 'status')}

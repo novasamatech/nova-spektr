@@ -7,5 +7,5 @@ export const TransferTypes = [TransactionType.TRANSFER, TransactionType.ASSET_TR
 export const enum TxStatus {
   VALID = 'VALID',
   FAILED = 'FAILED',
-  INVALID = 'INVALID',
+  UNAVAILABLE = 'UNAVAILABLE',
 }
