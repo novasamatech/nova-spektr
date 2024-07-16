@@ -1,4 +1,32 @@
-import { type Address, type HexString } from '@shared/core';
+import { type Address, type HexString, type ReferendumId } from '@shared/core';
+
+export type SubsquareTimelineRecordStatus =
+  | 'All'
+  | 'Confirmed'
+  | 'ConfirmStarted'
+  | 'Cancelled'
+  | 'Deciding'
+  | 'DecisionDepositPlaced'
+  | 'Killed'
+  | 'Submitted'
+  | 'Rejected'
+  | 'TimedOut';
+
+export type SubsquareTimelineRecord = {
+  name: SubsquareTimelineRecordStatus;
+  track: number;
+  referendumId: ReferendumId;
+  proposer: Address;
+  proposalHash: HexString;
+  args: unknown;
+  indexer: {
+    blockHash: HexString;
+    blockHeight: number;
+    blockTime: number;
+    eventIndex: number;
+    extrinsicIndex: number;
+  };
+};
 
 export type SubsquareSimpleReferendum = {
   _id: string;
@@ -25,7 +53,9 @@ export type SubsquareSimpleReferendum = {
       blockTime: number;
     };
   };
-  onchainData: unknown;
+  onchainData: {
+    timeline: SubsquareTimelineRecord[];
+  };
   author: {
     username: string;
     publicKey: string;

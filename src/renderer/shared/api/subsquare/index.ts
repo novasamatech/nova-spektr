@@ -1,3 +1,8 @@
 export { subsquareApiService } from './service/subsquareApiService';
 
-export type { SubsquareReferendumVote, SubsquareSimpleReferendum, SubsquareReferendumListResponse } from './lib/types';
+export type {
+  SubsquareReferendumVote,
+  SubsquareSimpleReferendum,
+  SubsquareReferendumListResponse,
+  SubsquareTimelineRecord,
+} from './lib/types';

@@ -6,6 +6,6 @@ export type {
   ProposalType,
   TrackStatus,
   PostVote,
-  Status,
+  PolkassembyPostStatus,
   VoteType,
 } from './lib/types';

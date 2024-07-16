@@ -50,7 +50,7 @@ export type ListingOnChainPost = {
   user_id: number;
 };
 
-export type Status = {
+export type PolkassembyPostStatus = {
   timestamp: string;
   status: TrackStatus;
   block: number;
@@ -106,9 +106,9 @@ export type DetailedOnChainPost = {
     created_at: string;
     hash: HexString;
     index: number;
-    statuses: Status[];
-    type: string;
-  }[];
+    statuses: PolkassembyPostStatus[];
+    type: VoteType;
+  };
   topic: {
     name: string;
     id: number;

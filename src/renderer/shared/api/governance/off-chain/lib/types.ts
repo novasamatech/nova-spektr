@@ -9,6 +9,23 @@ export type ReferendumVote = {
   conviction: number;
 };
 
+export type ReferendumTimelineRecordStatus =
+  | 'All'
+  | 'Confirmed'
+  | 'ConfirmStarted'
+  | 'Cancelled'
+  | 'Deciding'
+  | 'DecisionDepositPlaced'
+  | 'Killed'
+  | 'Submitted'
+  | 'Rejected'
+  | 'TimedOut';
+
+export type ReferendumTimelineRecord = {
+  date: Date;
+  status: ReferendumTimelineRecordStatus;
+};
+
 export interface GovernanceApi {
   getReferendumList: (chain: Chain, callback: (data: Record<string, string>, done: boolean) => void) => void;
   getReferendumDetails: (chain: Chain, referendumId: ReferendumId) => Promise<string | undefined>;
@@ -17,4 +34,5 @@ export interface GovernanceApi {
     referendumId: ReferendumId,
     callback: (data: ReferendumVote[], done: boolean) => void,
   ) => Promise<ReferendumVote[]>;
+  getReferendumTimeline: (chain: Chain, referendumId: ReferendumId) => Promise<ReferendumTimelineRecord[]>;
 }
