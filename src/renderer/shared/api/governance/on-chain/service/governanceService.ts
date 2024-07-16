@@ -39,21 +39,31 @@ async function getReferendums(api: ApiPromise): Promise<Referendum[]> {
 
     if (referendum.isOngoing) {
       const ongoing = referendum.asOngoing;
+      const deciding = ongoing.deciding.unwrapOr(null);
+      const decisionDeposit = ongoing.decisionDeposit.unwrapOr(null);
+      const proposal = ongoing.proposal.isInline
+        ? ongoing.proposal.asInline.toHex()
+        : ongoing.proposal.isLookup
+        ? ongoing.proposal.asLookup.toHex()
+        : ongoing.proposal.isLegacy
+        ? ongoing.proposal.asLegacy.toHex()
+        : '';
 
       result.push({
         referendumId,
         type: ReferendumType.Ongoing,
         track: ongoing.track.toString(),
+        proposal,
         submitted: ongoing.submitted.toNumber(),
         enactment: {
           value: ongoing.enactment.isAfter ? ongoing.enactment.asAfter.toBn() : ongoing.enactment.asAt.toBn(),
           type: ongoing.enactment.type,
         },
         inQueue: ongoing.inQueue.toPrimitive(),
-        deciding: ongoing.deciding.isSome
+        deciding: deciding
           ? {
-              since: ongoing.deciding.unwrap().since.toNumber(),
-              confirming: ongoing.deciding.unwrap().confirming.unwrapOr(BN_ZERO).toNumber(),
+              since: deciding.since.toNumber(),
+              confirming: deciding.confirming.unwrapOr(BN_ZERO).toNumber(),
             }
           : null,
         tally: {
@@ -61,10 +71,10 @@ async function getReferendums(api: ApiPromise): Promise<Referendum[]> {
           nays: ongoing.tally.nays.toBn(),
           support: ongoing.tally.support.toBn(),
         },
-        decisionDeposit: ongoing.decisionDeposit.isSome
+        decisionDeposit: decisionDeposit
           ? {
-              who: ongoing.decisionDeposit.unwrap().who.toString(),
-              amount: ongoing.decisionDeposit.unwrap().amount.toBn(),
+              who: decisionDeposit.who.toString(),
+              amount: decisionDeposit.amount.toBn(),
             }
           : null,
         submissionDeposit: {

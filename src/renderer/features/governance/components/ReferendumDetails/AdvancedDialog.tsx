@@ -1,17 +1,36 @@
-import { BaseModal, DetailRow, Separator } from '@shared/ui';
+import { BaseModal, DetailRow, IconButton, Separator, Truncate } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { useModalClose } from '@shared/lib/hooks';
 import { AggregatedReferendum } from '../../types/structs';
 import { AddressWithName } from '@entities/wallet';
+import { copyToClipboard, formatBalance } from '@shared/lib/utils';
+import { Asset, OngoingReferendum } from '@shared/core';
 
 type Props = {
-  referendum: AggregatedReferendum;
+  referendum: AggregatedReferendum<OngoingReferendum>;
+  asset: Asset;
   onClose: VoidFunction;
 };
 
-export const AdvancedDialog = ({ referendum, onClose }: Props) => {
+export const AdvancedDialog = ({ asset, referendum, onClose }: Props) => {
   const { t } = useI18n();
   const [isOpen, closeModal] = useModalClose(true, onClose);
+
+  const { submissionDeposit, approvalThreshold, supportThreshold, tally, proposal } = referendum;
+  const approvalCurve = approvalThreshold?.curve?.type;
+  const supportCurve = supportThreshold?.curve?.type;
+
+  const electrorateBalance = formatBalance(tally.ayes.add(tally.nays).add(tally.support), asset.precision);
+  const electrorate = `${electrorateBalance.formatted} ${asset.symbol}`;
+
+  const turnoutBalance = supportThreshold
+    ? formatBalance(supportThreshold.value.sub(tally.support), asset.precision)
+    : null;
+  const turnout = `${turnoutBalance?.formatted ?? 0} ${asset.symbol}`;
+
+  const deposit = submissionDeposit
+    ? `${formatBalance(submissionDeposit.amount, asset.precision).formatted} ${asset.symbol}`
+    : null;
 
   return (
     <BaseModal
@@ -22,16 +41,46 @@ export const AdvancedDialog = ({ referendum, onClose }: Props) => {
       title={t('governance.advanced.title')}
       onClose={closeModal}
     >
-      <DetailRow label={'Proposer'}>
-        <AddressWithName addressFont="text-footnote" address={'0xfdsfsdaf'} />
+      <DetailRow label={t('governance.advanced.fields.proposer')}>
+        {submissionDeposit && (
+          <AddressWithName
+            className="px-2"
+            address={submissionDeposit.who}
+            addressFont="text-footnote text-text-secondary"
+            type="short"
+            symbols={8}
+          />
+        )}
       </DetailRow>
-      <DetailRow label={'Deposit'}>test</DetailRow>
+
+      <DetailRow label={t('governance.advanced.fields.deposit')}>{deposit}</DetailRow>
+
       <Separator className="text-filter-border" />
-      <DetailRow label={'Approve curve'}>{referendum.approvalThreshold?.curve.type}</DetailRow>
-      <DetailRow label={'Support curve'}>{referendum.supportThreshold?.curve.type}</DetailRow>
-      <DetailRow label={'Turnout'}>test</DetailRow>
-      <DetailRow label={'Electrorate'}>test</DetailRow>
-      <DetailRow label={'Call hash'}>test</DetailRow>
+
+      <div className="flex flex-col gap-2.5">
+        {approvalCurve && (
+          <DetailRow label={t('governance.advanced.fields.approveCurve')}>
+            {approvalCurve && t(`governance.curves.${approvalCurve}`)}
+          </DetailRow>
+        )}
+
+        {supportCurve && (
+          <DetailRow label={t('governance.advanced.fields.supportCurve')}>
+            {supportCurve && t(`governance.curves.${supportCurve}`)}
+          </DetailRow>
+        )}
+
+        <DetailRow label={t('governance.advanced.fields.turnout')}>{turnout}</DetailRow>
+
+        <DetailRow label={t('governance.advanced.fields.electrorate')}>{electrorate}</DetailRow>
+
+        <DetailRow label={t('governance.advanced.fields.callHash')}>
+          <div className="flex items-center gap-1 text-text-secondary w-32">
+            <Truncate className="text-footnote" start={6} end={5} text={proposal} />
+            <IconButton name="copy" onClick={() => copyToClipboard(proposal)} />
+          </div>
+        </DetailRow>
+      </div>
     </BaseModal>
   );
 };

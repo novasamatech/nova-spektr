@@ -41,5 +41,5 @@ export type VotingCurve = LinearDecreasingCurve | SteppedDecreasingCurve | Recip
 export type VotingThreshold = {
   value: BN;
   passing: boolean;
-  curve: LinearDecreasingCurve | SteppedDecreasingCurve | ReciprocalCurve;
+  curve: LinearDecreasingCurve | SteppedDecreasingCurve | ReciprocalCurve | null;
 };

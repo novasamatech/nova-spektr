@@ -91,7 +91,9 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) =
       </div>
 
       {showVoteHistory && <VotingHistoryDialog referendum={referendum} onClose={() => setShowVoteHistory(false)} />}
-      {showAdvanced && <AdvancedDialog referendum={referendum} onClose={() => setShowAdvanced(false)} />}
+      {showAdvanced && referendumService.isOngoing(referendum) && votingAsset && (
+        <AdvancedDialog asset={votingAsset} referendum={referendum} onClose={() => setShowAdvanced(false)} />
+      )}
     </BaseModal>
   );
 };
