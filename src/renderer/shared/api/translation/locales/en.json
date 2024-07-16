@@ -185,6 +185,9 @@
     "walletsTab": "Your wallets",
     "yourAccounts": "Your accounts"
   },
+  "delegate": {
+    "title": "Delegations"
+  },
   "dropdown": {
     "chooseOptionLabel": "Choose an option"
   },
@@ -311,7 +314,7 @@
       "subsquareLink": "https://{network}.subsquare.io/referenda/{referendumId}",
       "subsquareLinkTitle": "View on Subsquare"
     },
-    "delegate": "Delegate",
+    "delegations": "Delegations",
     "emptyStateDescription": "Update the search or cancel filtering",
     "emptyStateLabel": "Nothing was found",
     "filters": {
