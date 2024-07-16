@@ -201,6 +201,12 @@ sample({
 });
 
 sample({
+  clock: $invalidTxs,
+  fn: (invalidTxs) => [...invalidTxs.keys()],
+  target: basketFilterModel.events.invalidTxsSet,
+});
+
+sample({
   clock: allSelected,
   source: {
     txs: basketFilterModel.$filteredTxs,

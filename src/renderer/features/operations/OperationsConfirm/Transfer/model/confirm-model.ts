@@ -164,7 +164,6 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
 
   const result = validationUtils.applyValidationRules(rules);
 
-  console.log('xcm', result);
   if (!result) return;
 
   throw new Error(result.errorText);
