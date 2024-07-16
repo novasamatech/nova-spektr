@@ -37,7 +37,7 @@ export function createWindow(): BrowserWindow {
     window.loadURL('file://' + __dirname + '/index.html');
   }
 
-  ENVIRONMENT.IS_DEV && window.webContents.openDevTools({ mode: 'right' });
+  ENVIRONMENT.IS_DEV && window.webContents.openDevTools({ mode: 'bottom' });
 
   session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
     details.requestHeaders['User-Agent'] = 'Nova Spektr';
