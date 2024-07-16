@@ -28,7 +28,9 @@ export const Locks = () => {
               )}
             </div>
             {isLoading && <Shimmering width={120} height={20} />}
-            {!isLoading && asset && <AssetBalance value={totalLock.toString()} asset={asset} />}
+            {!isLoading && asset && (
+              <AssetBalance className="text-small-title" value={totalLock.toString()} asset={asset} />
+            )}
           </div>
           <Icon name="arrowRight" />
         </Plate>

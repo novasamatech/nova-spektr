@@ -52,5 +52,6 @@ export const votingAggregate = {
 
   events: {
     requestDone: votingModel.effects.requestVotingFx.done,
+    requestPending: votingModel.effects.requestVotingFx.pending,
   },
 };
