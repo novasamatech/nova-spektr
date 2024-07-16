@@ -14,6 +14,7 @@ import {
   networkSelectorModel,
   Locks,
   AggregatedReferendum,
+  Delegations,
 } from '@features/governance';
 import { governancePageAggregate } from '../aggregates/governancePage';
 import { EmptyGovernance } from './EmptyGovernance';
@@ -45,7 +46,7 @@ export const Governance = () => {
               <NetworkSelector />
             </Plate>
             <Locks />
-            {/* <Delegations /> */}
+            <Delegations />
           </div>
 
           <div className="mt-5 mb-4">

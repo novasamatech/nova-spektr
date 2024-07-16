@@ -185,6 +185,9 @@
     "walletsTab": "Your wallets",
     "yourAccounts": "Your accounts"
   },
+  "delegate": {
+    "title": "Delegations"
+  },
   "dropdown": {
     "chooseOptionLabel": "Choose an option"
   },
@@ -328,7 +331,7 @@
       "Reciprocal": "Reciprocal",
       "SteppedDecreasing": "Stepped decreasing"
     },
-    "delegate": "Delegate",
+    "delegations": "Delegations",
     "emptyStateDescription": "Update the search or cancel filtering",
     "emptyStateLabel": "Nothing was found",
     "filters": {

@@ -171,8 +171,8 @@ async function getVotingFor(
           conviction: delegation.conviction.type,
           target: delegation.target.toString(),
           prior: {
-            unlockAt: convictionVoting.asCasting.prior[0].toNumber(),
-            amount: convictionVoting.asCasting.prior[0].toBn(),
+            unlockAt: delegation.prior[0].toNumber(),
+            amount: delegation.prior[0].toBn(),
           },
         },
       } as DelegatingVoting;
