@@ -7,14 +7,15 @@ import { pickNestedValue } from '@shared/lib/utils';
 import { BaseModal, Button, Plate } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { referendumService } from '@entities/governance';
+import { type AggregatedReferendum } from '../../types/structs';
 import { detailsAggregate } from '../../aggregates/details';
-import { ProposalDescription } from './ProposalDescription';
-import { AggregatedReferendum } from '../../types/structs';
 import { VotingHistoryDialog } from '../VotingHistory/VotingHistoryDialog';
+import { ProposalDescription } from './ProposalDescription';
 import { VotingSummary } from './VotingSummary';
 import { VotingStatus } from './VotingStatus';
 import { DetailsCard } from './DetailsCard';
 import { ReferendumAdditional } from './ReferendumAdditional';
+import { AdvancedDialog } from './AdvancedDialog';
 
 type Props = {
   chain: Chain;
@@ -26,6 +27,7 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) =
   useGate(detailsAggregate.gates.flow, { chain, referendum });
 
   const [showVoteHistory, setShowVoteHistory] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const { t } = useI18n();
 
@@ -79,10 +81,19 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) =
           <DetailsCard title={t('governance.referendum.additional')}>
             <ReferendumAdditional network={chain.specName} referendumId={referendum.referendumId} />
           </DetailsCard>
+
+          <DetailsCard>
+            <Button className="p-0 h-auto w-fit" size="sm" variant="text" onClick={() => setShowAdvanced(true)}>
+              {t('governance.referendum.advanced')}
+            </Button>
+          </DetailsCard>
         </div>
       </div>
 
       {showVoteHistory && <VotingHistoryDialog referendum={referendum} onClose={() => setShowVoteHistory(false)} />}
+      {showAdvanced && referendumService.isOngoing(referendum) && votingAsset && (
+        <AdvancedDialog asset={votingAsset} referendum={referendum} onClose={() => setShowAdvanced(false)} />
+      )}
     </BaseModal>
   );
 };

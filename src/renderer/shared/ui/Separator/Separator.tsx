@@ -9,7 +9,7 @@ type Props = {
 
 export const Separator = ({ text, className }: Props) => {
   return (
-    <div className={cnTw('flex items-center w-full spektr-separator', className)}>
+    <div className={cnTw('flex items-center w-full spektr-separator border-divider', className)}>
       <CaptionText className="text-text-tertiary uppercase mx-4" align="center">
         {text}
       </CaptionText>
