@@ -7,7 +7,8 @@ import {
   SubsquareReferendumVote,
   SubsquareTimelineRecord,
 } from '@shared/api/subsquare';
-import { GovernanceApi, ReferendumTimelineRecord, ReferendumVote } from '../lib/types';
+import { GovernanceApi, ReferendumTimelineRecord, ReferendumTimelineRecordStatus, ReferendumVote } from '../lib/types';
+import { SubsquareTimelineRecordStatus } from '../../../subsquare/lib/types';
 
 const getReferendumList: GovernanceApi['getReferendumList'] = async (chain, callback) => {
   const network = chain.specName;
@@ -61,9 +62,21 @@ const getReferendumVotes: GovernanceApi['getReferendumVotes'] = (chain, referend
     .then((data) => data.map(mapVote));
 };
 
+const mapStatus = (status: SubsquareTimelineRecordStatus): ReferendumTimelineRecordStatus => {
+  switch (status) {
+    case 'Placed':
+      return 'DecisionDepositPlaced';
+    case 'DecisionStarted':
+      return 'Deciding';
+    default:
+      return status;
+  }
+};
+
 const mapTimeline = (timeline: SubsquareTimelineRecord): ReferendumTimelineRecord => {
+  // TODO map status
   return {
-    status: timeline.name,
+    status: mapStatus(timeline.name),
     date: new Date(timeline.indexer.blockTime),
   };
 };
