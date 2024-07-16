@@ -1,6 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 import { BN_ZERO, BN } from '@polkadot/util';
-import { PalletReferendaCurve } from '@polkadot/types/lookup';
+import { FrameSupportPreimagesBounded, PalletReferendaCurve } from '@polkadot/types/lookup';
 
 import { ReferendumType, VoteType, TrackId, CastingVoting, VotingType, Referendum } from '@shared/core';
 import type {
@@ -26,6 +26,20 @@ export const governanceService = {
   getTracks,
 };
 
+function getProposalHex(proposal: FrameSupportPreimagesBounded) {
+  if (proposal.isInline) {
+    return proposal.asInline.toHex();
+  }
+  if (proposal.isLookup) {
+    return proposal.asLookup.toHex();
+  }
+  if (proposal.isLegacy) {
+    return proposal.asLegacy.toHex();
+  }
+
+  return '';
+}
+
 async function getReferendums(api: ApiPromise): Promise<Referendum[]> {
   const referendums = await api.query.referenda.referendumInfoFor.entries();
 
@@ -41,13 +55,7 @@ async function getReferendums(api: ApiPromise): Promise<Referendum[]> {
       const ongoing = referendum.asOngoing;
       const deciding = ongoing.deciding.unwrapOr(null);
       const decisionDeposit = ongoing.decisionDeposit.unwrapOr(null);
-      const proposal = ongoing.proposal.isInline
-        ? ongoing.proposal.asInline.toHex()
-        : ongoing.proposal.isLookup
-        ? ongoing.proposal.asLookup.toHex()
-        : ongoing.proposal.isLegacy
-        ? ongoing.proposal.asLegacy.toHex()
-        : '';
+      const proposal = getProposalHex(ongoing.proposal);
 
       result.push({
         referendumId,
