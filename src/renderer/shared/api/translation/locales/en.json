@@ -311,6 +311,23 @@
       "subsquareLink": "https://{network}.subsquare.io/referenda/{referendumId}",
       "subsquareLinkTitle": "View on Subsquare"
     },
+    "advanced": {
+      "fields": {
+        "approveCurve": "Approve curve",
+        "callHash": "Call hash",
+        "deposit": "Deposit",
+        "electrorate": "Electrorate",
+        "proposer": "Proposer",
+        "supportCurve": "Support curve",
+        "turnout": "Turnout"
+      },
+      "title": "Advanced"
+    },
+    "curves": {
+      "LinearDecreasing": "Linear decreasing",
+      "Reciprocal": "Reciprocal",
+      "SteppedDecreasing": "Stepped decreasing"
+    },
     "delegate": "Delegate",
     "emptyStateDescription": "Update the search or cancel filtering",
     "emptyStateLabel": "Nothing was found",
@@ -338,6 +355,7 @@
     "referendum": {
       "abstain": "Abstain",
       "additional": "Additional",
+      "advanced": "Advanced",
       "aye": "Aye",
       "ayes": "Ayes",
       "nay": "Nay",

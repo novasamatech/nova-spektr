@@ -39,12 +39,17 @@ const requestSupportThresholdsFx = createEffect(
     const result: Record<ReferendumId, VotingThreshold> = {};
 
     for (const referendum of referendums) {
+      const track = tracks[referendum.track];
+      if (!track) {
+        continue;
+      }
+
       result[referendum.referendumId] = opengovThresholdService.supportThreshold({
         supportCurve: tracks[referendum.track].minSupport,
         tally: referendum.tally,
         totalIssuance: totalIssuance.toBn().sub(inactiveIssuance.toBn()),
         blockDifference: referendum.deciding?.since ? blockNumber - referendum.deciding.since : 0,
-        decisionPeriod: new BN(tracks[referendum.track].decisionPeriod),
+        decisionPeriod: new BN(track.decisionPeriod),
       });
     }
 

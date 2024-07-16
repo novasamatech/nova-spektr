@@ -1,6 +1,7 @@
 .spektr-separator::before, .spektr-separator::after {
   content: '';
   flex: 1;
-  height: 1px;
-  background-color: var(--divider);
+  height: 0;
+  border-bottom: 1px solid;
+  border-color: inherit;
 }
