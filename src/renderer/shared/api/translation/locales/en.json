@@ -93,8 +93,8 @@
     "emptySignButton": "Select operations",
     "filter": {
       "failed": "Failed",
-      "valid": "Valid",
-      "unavailable": "Unavailable"
+      "unavailable": "Unavailable",
+      "valid": "Valid"
     },
     "noOperationsDescription": "There are no operations in the basket yet",
     "noOperationsLabel": "No operations",
