@@ -55,7 +55,7 @@ export const AdvancedDialog = ({ asset, referendum, onClose }: Props) => {
 
       <DetailRow label={t('governance.advanced.fields.deposit')}>{deposit}</DetailRow>
 
-      <Separator className="text-filter-border" />
+      <Separator className="border-filter-border" />
 
       <div className="flex flex-col gap-2.5">
         {approvalCurve && (
