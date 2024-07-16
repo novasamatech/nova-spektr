@@ -138,8 +138,10 @@ export const transferableAmount = <T extends AssetBalance>(balance?: T): string 
 
   const bnFree = new BN(balance.free || ZERO_BALANCE);
   const bnFrozen = new BN(balance.frozen || ZERO_BALANCE);
+  const bnReserved = new BN(balance.reserved || ZERO_BALANCE);
+  const freeCannotDropBelow = bnFrozen.gt(bnReserved) ? bnFrozen.sub(bnReserved) : BN_ZERO;
 
-  return bnFree.gt(bnFrozen) ? bnFree.sub(bnFrozen).toString() : ZERO_BALANCE;
+  return bnFree.gt(freeCannotDropBelow) ? bnFree.sub(freeCannotDropBelow).toString() : ZERO_BALANCE;
 };
 
 export const stakedAmount = ({ locked = [] }: Balance): string => {
