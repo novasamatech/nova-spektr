@@ -7,8 +7,7 @@ import { BaseModal } from '../BaseModalWindow';
 import { type BasePage } from '../BasePage';
 import { TransferModalElements } from '../_elements/TransferModalElements';
 
-export class TransferModalWindow extends BaseModal {
-  public pageElements: TransferModalElements;
+export class TransferModalWindow extends BaseModal<TransferModalElements> {
   public previousPage: BasePage;
   public chain: ChainModel;
   public assetId: number;
@@ -20,8 +19,7 @@ export class TransferModalWindow extends BaseModal {
     chain: ChainModel,
     assetId: number,
   ) {
-    super(page);
-    this.pageElements = pageElements;
+    super(page, pageElements);
     this.previousPage = previousPage;
     this.chain = chain;
     this.assetId = assetId;

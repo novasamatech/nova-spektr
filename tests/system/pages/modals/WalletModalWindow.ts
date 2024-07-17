@@ -4,13 +4,11 @@ import { BaseModal } from '../BaseModalWindow';
 import { type BasePage } from '../BasePage';
 import { type WalletModalElements } from '../_elements/WalletModalElements';
 
-export class WalletModalWindow extends BaseModal {
-  public pageElements: WalletModalElements;
+export class WalletModalWindow extends BaseModal<WalletModalElements> {
   public previousPage: BasePage;
 
   constructor(page: Page, pageElements: WalletModalElements, previousPage: BasePage) {
-    super(page);
-    this.pageElements = pageElements;
+    super(page, pageElements);
     this.previousPage = previousPage;
   }
 

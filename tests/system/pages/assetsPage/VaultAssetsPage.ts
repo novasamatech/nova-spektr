@@ -1,5 +1,3 @@
-import { type Page } from 'playwright';
-
 import { type ChainModel } from '../../data/chains/testChainModel';
 import { readConfig } from '../../utils/readConfig';
 import { BasePage } from '../BasePage';
@@ -13,14 +11,7 @@ import { TransferModalWindow } from '../modals/TransferModalWindow';
 import { WalletModalWindow } from '../modals/WalletModalWindow';
 import { BaseSettingsPage } from '../settingsPage/BaseSettingsPage';
 
-export class VaultAssetsPage extends BasePage {
-  public pageElements: AssetsPageElements;
-
-  constructor(page: Page, pageElements: AssetsPageElements) {
-    super(page);
-    this.pageElements = pageElements;
-  }
-
+export class VaultAssetsPage extends BasePage<AssetsPageElements> {
   public async goToSettingsPage(): Promise<BaseSettingsPage> {
     return new BaseSettingsPage(this.page, new SettingsPageElements()).gotoMain();
   }

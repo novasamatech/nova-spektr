@@ -2,13 +2,8 @@ import { type Page } from 'playwright';
 
 import { type BaseModalElements } from './_elements/BaseModalElements';
 
-export abstract class BaseModal {
-  protected page: Page;
-  protected pageElements: BaseModalElements;
-
-  constructor(page: Page) {
-    this.page = page;
-  }
+export abstract class BaseModal<T extends BaseModalElements = BaseModalElements> {
+  constructor(protected page: Page, protected pageElements: T) {}
 
   async click(selector: string) {
     await this.page.click(selector);

@@ -1,18 +1,9 @@
-import { type Page } from 'playwright';
-
 import { BasePage } from '../BasePage';
 import { AssetsPageElements } from '../_elements/AssetsPageElements';
 import { type LoginPageElements } from '../_elements/LoginPageElements';
 import { WatchOnlyAssetsPage } from '../assetsPage/WatchOnlyAssetsPage';
 
-export class WatchOnlyLoginPage extends BasePage {
-  public pageElements: LoginPageElements;
-
-  constructor(page: Page, pageElements: LoginPageElements) {
-    super(page);
-    this.pageElements = pageElements;
-  }
-
+export class WatchOnlyLoginPage extends BasePage<LoginPageElements> {
   public async fillAccountAddress(address: string): Promise<WatchOnlyLoginPage> {
     await this.clickIntoField(this.pageElements.enterAccountAddress);
     await this.fillFieldByValue(this.pageElements.enterAccountAddress, address);

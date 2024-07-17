@@ -1,5 +1,3 @@
-import { type Page } from 'playwright';
-
 import { baseTestConfig } from '../../BaseTestConfig';
 import {
   vaultDPPolkadotTestAccount,
@@ -23,14 +21,7 @@ import { type WatchOnlyAssetsPage } from '../assetsPage/WatchOnlyAssetsPage';
 import { PolkadotVaultLoginPage } from './PolkadotVaultLoginPage';
 import { WatchOnlyLoginPage } from './WatchOnlyLoginPage';
 
-export class BaseLoginPage extends BasePage {
-  protected pageElements: LoginPageElements;
-
-  constructor(page: Page, pageElements: LoginPageElements) {
-    super(page);
-    this.pageElements = pageElements;
-  }
-
+export class BaseLoginPage extends BasePage<LoginPageElements> {
   public async gotoOnboarding(): Promise<BaseLoginPage> {
     await this.goto(this.pageElements.url);
     await this.page.getByText(this.pageElements.onboardingLabel).waitFor();
