@@ -88,13 +88,16 @@ function isAutoBalanceConnection(connection: Connection): boolean {
 }
 
 function getNewestMetadata(metadata: ChainMetadata[]): Record<ChainId, ChainMetadata> {
-  return metadata.reduce<Record<ChainId, ChainMetadata>>((acc, data) => {
-    if (data.version >= (acc[data.chainId]?.version || -1)) {
-      acc[data.chainId] = data;
-    }
+  return metadata.reduce<Record<ChainId, ChainMetadata>>(
+    (acc, data) => {
+      if (data.version >= (acc[data.chainId]?.version || -1)) {
+        acc[data.chainId] = data;
+      }
 
-    return acc;
-  }, {} as Record<ChainId, ChainMetadata>);
+      return acc;
+    },
+    {} as Record<ChainId, ChainMetadata>,
+  );
 }
 
 function getLightClientChains(): ChainId[] {

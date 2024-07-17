@@ -39,7 +39,7 @@ const getReferendumVotes: GovernanceApi['getReferendumVotes'] = (chain, referend
     return votes.map(({ decision, voter, balance, lockPeriod }) => ({
       decision: referendumDecisionMap[decision],
       voter,
-      balance: new BN('value' in balance ? balance.value : balance.abstain ?? 0),
+      balance: new BN('value' in balance ? balance.value : (balance.abstain ?? 0)),
       conviction: typeof lockPeriod === 'number' ? (lockPeriod === 0 ? 0.1 : lockPeriod) : 0,
     }));
   };

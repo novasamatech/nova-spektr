@@ -316,7 +316,7 @@ sample({
   fn: (wallets, data) => {
     const accountsMap = dictionary(data.accounts, 'walletId');
 
-    const newWallets = data.wallets.map((wallet) => ({ ...wallet, accounts: [accountsMap[wallet.id]] } as Wallet));
+    const newWallets = data.wallets.map((wallet) => ({ ...wallet, accounts: [accountsMap[wallet.id]] }) as Wallet);
 
     return wallets.concat(newWallets);
   },

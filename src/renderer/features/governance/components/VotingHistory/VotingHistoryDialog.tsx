@@ -34,7 +34,7 @@ export const VotingHistoryDialog = ({ referendum, onClose }: Props) => {
   const votingAsset = useStoreMap({
     store: voteHistoryAggregate.$votingAssets,
     keys: [chain?.chainId],
-    fn: (x, [chainId]) => (chainId ? x[chainId] ?? null : null),
+    fn: (x, [chainId]) => (chainId ? (x[chainId] ?? null) : null),
   });
 
   const isLoading = useUnit(voteHistoryAggregate.$voteHistoryLoading);

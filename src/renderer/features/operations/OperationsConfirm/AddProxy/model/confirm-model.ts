@@ -45,17 +45,20 @@ const $apis = combine(
   ({ apis, store }) => {
     if (!store) return {};
 
-    return store.reduce((acc, payload) => {
-      const chainId = payload.chain.chainId;
-      const api = apis[chainId];
+    return store.reduce(
+      (acc, payload) => {
+        const chainId = payload.chain.chainId;
+        const api = apis[chainId];
 
-      if (!api) return acc;
+        if (!api) return acc;
 
-      return {
-        ...acc,
-        [chainId]: api,
-      };
-    }, {} as Record<ChainId, ApiPromise>);
+        return {
+          ...acc,
+          [chainId]: api,
+        };
+      },
+      {} as Record<ChainId, ApiPromise>,
+    );
   },
 );
 

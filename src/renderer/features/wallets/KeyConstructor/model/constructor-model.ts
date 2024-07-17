@@ -155,7 +155,7 @@ const addNewKeyFx = createEffect((formValues: FormValues): ChainAccount | ShardA
         groupId,
         type: AccountType.SHARD,
         derivationPath: `${formValues.derivationPath}//${index}`,
-      } as ShardAccount),
+      }) as ShardAccount,
   );
 });
 

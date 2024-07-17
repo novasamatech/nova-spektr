@@ -12,8 +12,8 @@ export function prepareTestData(chains: ChainJSON[]): [ChainJSON[], ChainJSON[],
       currentChain.parentId === polkadotId
         ? acc[0].push(currentChain)
         : currentChain.parentId === kusamaId
-        ? acc[1].push(currentChain)
-        : null;
+          ? acc[1].push(currentChain)
+          : null;
 
       return acc;
     },

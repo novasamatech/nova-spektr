@@ -155,7 +155,7 @@ sample({
   fn: ([accounts, wallets]) => {
     const accountsMap = groupBy(accounts, 'walletId');
 
-    return wallets.map((wallet) => ({ ...wallet, accounts: accountsMap[wallet.id] } as Wallet));
+    return wallets.map((wallet) => ({ ...wallet, accounts: accountsMap[wallet.id] }) as Wallet);
   },
   target: $wallets,
 });

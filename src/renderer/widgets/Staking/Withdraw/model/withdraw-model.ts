@@ -184,7 +184,7 @@ sample({
           coreTx,
           txWrappers,
           groupId: Date.now(),
-        } as BasketTransaction),
+        }) as BasketTransaction,
     );
 
     return txs;

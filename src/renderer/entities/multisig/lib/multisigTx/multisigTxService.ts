@@ -160,10 +160,10 @@ export const useMultisigTx = ({ addTask }: Props): IMultisigTxService => {
         const status = hasPendingFinalApproval
           ? MultisigTxFinalStatus.EXECUTED
           : hasPendingCancelled
-          ? MultisigTxFinalStatus.CANCELLED
-          : tx.status === 'SIGNING'
-          ? MultisigTxFinalStatus.ESTABLISHED
-          : tx.status;
+            ? MultisigTxFinalStatus.CANCELLED
+            : tx.status === 'SIGNING'
+              ? MultisigTxFinalStatus.ESTABLISHED
+              : tx.status;
 
         updateMultisigTx({ ...tx, status }).then(() => {
           console.log(

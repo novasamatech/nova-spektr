@@ -15,7 +15,7 @@ const $referendumTitles = combine(
     titles: $titles,
     chain: networkSelectorModel.$governanceChain,
   },
-  ({ titles, chain }) => (chain ? titles[chain.chainId] ?? {} : {}),
+  ({ titles, chain }) => (chain ? (titles[chain.chainId] ?? {}) : {}),
 );
 
 const $loadedTitles = createStore<Record<ChainId, true>>({});

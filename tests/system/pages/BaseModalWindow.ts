@@ -3,7 +3,10 @@ import { type Page } from 'playwright';
 import { type BaseModalElements } from './_elements/BaseModalElements';
 
 export abstract class BaseModal<T extends BaseModalElements = BaseModalElements> {
-  constructor(protected page: Page, protected pageElements: T) {}
+  constructor(
+    protected page: Page,
+    protected pageElements: T,
+  ) {}
 
   async click(selector: string) {
     await this.page.click(selector);
