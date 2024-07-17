@@ -31,7 +31,7 @@ const getStatusPalette = (status: ReferendumTimelineRecordStatus) => {
 export const Timeline = ({ referendumId }: Props) => {
   const { t } = useI18n();
 
-  const loading = useUnit(detailsAggregate.$isTimelinesLoading);
+  const isLoading = useUnit(detailsAggregate.$isTimelinesLoading);
   const timeline = useStoreMap({
     store: detailsAggregate.$timelines,
     keys: [referendumId],
@@ -40,14 +40,14 @@ export const Timeline = ({ referendumId }: Props) => {
 
   return (
     <div className="flex flex-col gap-3.5">
-      {loading && (
+      {isLoading && (
         <div className="flex items-center justify-between">
           <Shimmering height={18} width={120} />
           <Shimmering height={18} width={80} />
         </div>
       )}
 
-      {!loading &&
+      {!isLoading &&
         timeline.map((status) => (
           <div key={status.status} className="flex items-center justify-between">
             <FootnoteText>{format(status.date, 'd MMM’yy, hh:mm')}</FootnoteText>
