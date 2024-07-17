@@ -113,6 +113,7 @@ sample({
   fn: (claimSchedule) => {
     const unlockable = claimSchedule.reduce((acc, claim) => {
       if (claim.type !== UnlockChunkType.CLAIMABLE) return acc;
+
       return acc.add(claim.amount);
     }, BN_ZERO);
 
