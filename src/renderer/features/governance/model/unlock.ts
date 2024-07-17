@@ -21,7 +21,7 @@ const txSaved = createEvent();
 
 const $step = restore<Step>(stepChanged, Step.NONE);
 const $claimSchedule = createStore<UnlockChunk[]>([]).reset(walletModel.$activeWallet);
-const $totalUnlock = createStore<BN | null>(null);
+const $totalUnlock = createStore<BN>(BN_ZERO);
 
 type Props = {
   api: ApiPromise;
@@ -117,7 +117,7 @@ sample({
       return acc.add(claim.amount);
     }, BN_ZERO);
 
-    return unlockable.isZero() ? null : unlockable;
+    return unlockable;
   },
   target: $totalUnlock,
 });

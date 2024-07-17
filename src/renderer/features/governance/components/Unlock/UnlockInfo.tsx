@@ -27,7 +27,7 @@ export const UnlockInfo = () => {
       <AssetFiatBalance className="mb-5" amount={totalLock.toString()} asset={asset} />
       {isLoading && <Shimmering width={250} height={20} />}
       <>
-        {!!totalUnlock && (
+        {!totalUnlock.isZero() && (
           <div className="flex justify-between items-center self-stretch mb-3">
             <AssetBalance value={totalUnlock.toString()} asset={asset} />
             <FootnoteText className="text-text-positive">{t('governance.locks.unlockable')}</FootnoteText>
