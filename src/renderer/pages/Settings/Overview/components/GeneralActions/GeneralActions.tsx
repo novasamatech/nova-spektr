@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useUnit } from 'effector-react/effector-react.umd';
 import { useEffect, useState } from 'react';
-import { capitalize } from 'lodash';
+// import { capitalize } from 'lodash';  // TODO: temp remove governance
 
 import { Icon, BodyText, Plate, FootnoteText, HelpText, Switch } from '@shared/ui';
 import { useI18n } from '@app/providers';
@@ -83,7 +83,8 @@ export const GeneralActions = () => {
         </Link>
       </Plate>
 
-      <Plate className="p-0">
+      {/* TODO: temp remove governance */}
+      {/* <Plate className="p-0">
         <Link
           to={Paths.REFERENDUM_DATA}
           className={cnTw(
@@ -95,7 +96,7 @@ export const GeneralActions = () => {
           <BodyText>{t('settings.overview.referendumLabel')}</BodyText>
           <FootnoteText className="text-text-tertiary ml-auto">{capitalize(governanceApi?.type)}</FootnoteText>
         </Link>
-      </Plate>
+      </Plate> */}
 
       <Plate className="p-0">
         <Link
