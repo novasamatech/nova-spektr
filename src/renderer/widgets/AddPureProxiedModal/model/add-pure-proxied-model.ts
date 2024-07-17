@@ -1,28 +1,28 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { combineEvents, delay, spread } from 'patronum';
-import { ApiPromise } from '@polkadot/api';
-import { UnsubscribePromise } from '@polkadot/api/types';
+import { type ApiPromise } from '@polkadot/api';
+import { type UnsubscribePromise } from '@polkadot/api/types';
 
 import { toAddress } from '@shared/lib/utils';
 import { walletSelectModel } from '@features/wallets';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import {
-  type ProxyGroup,
+  type Account,
+  type AccountId,
+  type BasketTransaction,
   type NoID,
+  type PartialProxiedAccount,
+  type ProxyGroup,
   ProxyType,
-  AccountId,
-  PartialProxiedAccount,
   ProxyVariant,
-  Timepoint,
-  Account,
-  BasketTransaction,
-  Transaction,
+  type Timepoint,
+  type Transaction,
 } from '@shared/core';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { networkModel } from '@entities/network';
 import { balanceSubModel } from '@features/balances';
 import { proxiesModel } from '@features/proxies';
-import { Step, AddPureProxiedStore } from '../lib/types';
+import { type AddPureProxiedStore, Step } from '../lib/types';
 import { addPureProxiedUtils } from '../lib/add-pure-proxied-utils';
 import { formModel } from './form-model';
 import { addPureProxiedConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
@@ -30,7 +30,7 @@ import { subscriptionService } from '@entities/chain';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { basketModel } from '@entities/basket/model/basket-model';
-import { ExtrinsicResultParams, transactionService } from '@entities/transaction';
+import { type ExtrinsicResultParams, transactionService } from '@entities/transaction';
 
 const stepChanged = createEvent<Step>();
 

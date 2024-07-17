@@ -4,7 +4,7 @@ import BN from 'bignumber.js';
 import { Shimmering } from '@shared/ui';
 import { priceProviderModel } from '../model/price-provider-model';
 import { currencyModel } from '../model/currency-model';
-import { formatFiatBalance, ZERO_BALANCE } from '@shared/lib/utils';
+import { ZERO_BALANCE, formatFiatBalance } from '@shared/lib/utils';
 import { FiatBalance } from './FiatBalance';
 import { useI18n } from '@app/providers';
 import type { Asset, AssetByChains } from '@shared/core';

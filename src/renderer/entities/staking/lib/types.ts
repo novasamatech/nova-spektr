@@ -1,4 +1,4 @@
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
 
 import type { Address, ChainId, EraIndex, Stake, Unlocking, Validator } from '@shared/core';
 

@@ -6,12 +6,12 @@ import { MultishardAccountsList, WalletCardLg, permissionUtils } from '@entities
 import { useI18n } from '@app/providers';
 import type { MultiShardWallet } from '@shared/core';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
-import { IconNames } from '@shared/ui/Icon/data';
+import { type IconNames } from '@shared/ui/Icon/data';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
-import { TabItem } from '@shared/ui/types';
+import { type TabItem } from '@shared/ui/types';
 import { networkModel } from '@entities/network';
 import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
-import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
+import { AddProxy, addProxyModel } from '@widgets/AddProxyModal';
 import { ProxiesList } from '../components/ProxiesList';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import type { MultishardMap } from '../../lib/types';

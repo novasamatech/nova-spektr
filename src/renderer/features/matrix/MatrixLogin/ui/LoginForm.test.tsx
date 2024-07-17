@@ -1,7 +1,7 @@
-import { render, screen, act, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Provider } from 'effector-react';
-import { fork, Scope } from 'effector';
+import { type Scope, fork } from 'effector';
 
 import { LoginForm } from './LoginForm';
 import { matrixModel } from '@entities/matrix';

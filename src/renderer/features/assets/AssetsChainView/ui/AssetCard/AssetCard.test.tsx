@@ -6,7 +6,7 @@ import { Provider } from 'effector-react';
 
 import chains from '@shared/config/chains/chains.json';
 import { TEST_ACCOUNTS } from '@shared/lib/utils';
-import { type Chain, type Asset, type Balance, WalletType } from '@shared/core';
+import { type Asset, type Balance, type Chain, WalletType } from '@shared/core';
 import { walletModel } from '@entities/wallet';
 import { AssetCard } from './AssetCard';
 

@@ -1,4 +1,4 @@
-import { fork, allSettled } from 'effector';
+import { allSettled, fork } from 'effector';
 
 import { walletModel } from '../wallet-model';
 import { walletMock } from './mocks/wallet-mock';

@@ -1,10 +1,10 @@
 import { once } from 'patronum';
-import { createEvent, sample, createStore } from 'effector';
+import { createEvent, createStore, sample } from 'effector';
 
 import type { Account, Wallet } from '@shared/core';
-import { walletModel, accountUtils, walletUtils } from '@entities/wallet';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
-import { portfolioModel, assetsSettingsModel, assetsSearchModel } from '@features/assets';
+import { assetsSearchModel, assetsSettingsModel, portfolioModel } from '@features/assets';
 
 const activeShardsSet = createEvent<Account[]>();
 

@@ -7,7 +7,7 @@ import { ManageVault } from './ManageVault/ManageVault';
 import { BaseModal } from '@shared/ui';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
-import { SeedInfo, VaultFeatures } from '@entities/transaction';
+import { type SeedInfo, VaultFeatures } from '@entities/transaction';
 
 const isDynamicDerivationSupport = (seedInfo: SeedInfo): boolean => {
   const dynamicDerivationsExist = seedInfo.features?.some(

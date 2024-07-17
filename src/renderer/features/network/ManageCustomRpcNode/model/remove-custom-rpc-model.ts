@@ -1,7 +1,7 @@
-import { sample, createEvent, createEffect, createStore } from 'effector';
+import { createEffect, createEvent, createStore, sample } from 'effector';
 
 import { networkModel } from '@entities/network';
-import { ChainId, RpcNode, Connection } from '@shared/core';
+import { type ChainId, type Connection, type RpcNode } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 
 const flowFinished = createEvent<{ chainId: ChainId; node: RpcNode }>();

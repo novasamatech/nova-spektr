@@ -1,7 +1,7 @@
-import { ReactNode, useEffect, useRef } from 'react';
+import { type ReactNode, useEffect, useRef } from 'react';
 
-import { ExtendedChain } from '@entities/network';
-import { CaptionText, Counter, Accordion } from '@shared/ui';
+import { type ExtendedChain } from '@entities/network';
+import { Accordion, CaptionText, Counter } from '@shared/ui';
 import { networksListUtils } from '../lib/networks-list-utils';
 import { useToggle } from '@shared/lib/hooks';
 

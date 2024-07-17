@@ -1,8 +1,8 @@
-import { PropsWithChildren, useEffect, useState } from 'react';
+import { type PropsWithChildren, useEffect, useState } from 'react';
 import { BN, BN_ZERO } from '@polkadot/util';
 
-import { Select, FootnoteText, Plate, IconButton, Shimmering } from '@shared/ui';
-import { DropdownOption, DropdownResult } from '@shared/ui/types';
+import { FootnoteText, IconButton, Plate, Select, Shimmering } from '@shared/ui';
+import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
 import { getRelaychainAsset } from '@shared/lib/utils';
 import { chainsService } from '@shared/api/network';
 import { settingsStorage } from '@entities/settings';

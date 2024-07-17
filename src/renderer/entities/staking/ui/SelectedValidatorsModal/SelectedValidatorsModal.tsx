@@ -1,6 +1,6 @@
 import { BaseModal } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { Validator } from '@shared/core/types/validator';
+import { type Validator } from '@shared/core/types/validator';
 import { ValidatorsTable } from '@entities/staking/ui';
 
 type Props = {

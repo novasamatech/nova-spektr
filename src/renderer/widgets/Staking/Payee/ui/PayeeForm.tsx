@@ -1,29 +1,29 @@
 import { useForm } from 'effector-forms';
-import { FormEvent, useState } from 'react';
+import { type FormEvent, useState } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { Address, RewardsDestination } from '@shared/core';
-import { accountUtils, AccountAddress, ProxyWalletAlert } from '@entities/wallet';
-import { toAddress, toShortAddress, formatBalance, validateAddress } from '@shared/lib/utils';
+import { type Address, RewardsDestination } from '@shared/core';
+import { AccountAddress, ProxyWalletAlert, accountUtils } from '@entities/wallet';
+import { formatBalance, toAddress, toShortAddress, validateAddress } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
-import { RadioOption } from '@shared/ui/types';
+import { type RadioOption } from '@shared/ui/types';
 import { formModel } from '../model/form-model';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { FeeLoader } from '@entities/transaction';
 import { priceProviderModel } from '@entities/price';
 import { SignatorySelector } from '@entities/operations';
 import {
-  Input,
   Button,
+  Combobox,
+  DetailRow,
+  FootnoteText,
+  Icon,
+  Identicon,
+  Input,
   InputHint,
   MultiSelect,
   RadioGroup,
-  Combobox,
-  Identicon,
-  Icon,
-  DetailRow,
-  FootnoteText,
   Tooltip,
 } from '@shared/ui';
 

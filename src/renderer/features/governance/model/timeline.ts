@@ -1,8 +1,8 @@
-import { createEvent, createStore, createEffect, sample, combine } from 'effector';
+import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
-import { Chain, ChainId, ReferendumId } from '@shared/core';
-import { GovernanceApi, ReferendumTimelineRecord } from '@shared/api/governance';
+import { type Chain, type ChainId, type ReferendumId } from '@shared/core';
+import { type GovernanceApi, type ReferendumTimelineRecord } from '@shared/api/governance';
 import { governanceModel } from '@entities/governance';
 import { networkSelectorModel } from '../model/networkSelector';
 import { setNestedValue } from '@shared/lib/utils';

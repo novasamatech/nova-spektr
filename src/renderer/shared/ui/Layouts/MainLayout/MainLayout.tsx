@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom';
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 
 export const MainLayout = ({ children }: PropsWithChildren) => (
   <div className="flex h-screen">

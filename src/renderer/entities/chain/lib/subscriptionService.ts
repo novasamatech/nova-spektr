@@ -1,8 +1,8 @@
-import { ApiPromise } from '@polkadot/api';
-import { UnsubscribePromise } from '@polkadot/api/types';
-import { Event } from '@polkadot/types/interfaces';
-import { Vec } from '@polkadot/types';
-import { FrameSystemEventRecord } from '@polkadot/types/lookup';
+import { type ApiPromise } from '@polkadot/api';
+import { type UnsubscribePromise } from '@polkadot/api/types';
+import { type Event } from '@polkadot/types/interfaces';
+import { type Vec } from '@polkadot/types';
+import { type FrameSystemEventRecord } from '@polkadot/types/lookup';
 
 type Params = {
   method?: string;

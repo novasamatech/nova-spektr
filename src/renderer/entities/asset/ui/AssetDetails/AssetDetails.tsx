@@ -1,4 +1,4 @@
-import { Shimmering, HelpText } from '@shared/ui';
+import { HelpText, Shimmering } from '@shared/ui';
 import type { Asset } from '@shared/core';
 import { AssetFiatBalance } from '@entities/price';
 import { AssetBalance } from '../index';

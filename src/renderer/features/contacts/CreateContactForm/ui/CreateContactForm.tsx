@@ -1,8 +1,8 @@
 import { useUnit } from 'effector-react';
-import { FormEvent, useEffect } from 'react';
+import { type FormEvent, useEffect } from 'react';
 import { useForm } from 'effector-forms';
 
-import { createFormModel, Callbacks } from '../model/contact-form';
+import { type Callbacks, createFormModel } from '../model/contact-form';
 import { Button, Icon, Identicon, Input, InputHint } from '@shared/ui';
 import { useI18n } from '@app/providers';
 

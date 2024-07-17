@@ -7,10 +7,10 @@ import { BN } from '@polkadot/util';
 
 import chainsProd from '@shared/config/chains/chains.json';
 import chainsDev from '@shared/config/chains/chains_dev.json';
-import { getRelaychainAsset, nonNullable, totalAmount, ZERO_BALANCE } from '@shared/lib/utils';
-import type { Chain, ChainId, Balance } from '@shared/core';
-import { isPolkadot, isKusama, isTestnet, isNameStartsWithNumber } from '../lib/utils';
-import { PriceObject } from '@shared/api/price-provider';
+import { ZERO_BALANCE, getRelaychainAsset, nonNullable, totalAmount } from '@shared/lib/utils';
+import type { Balance, Chain, ChainId } from '@shared/core';
+import { isKusama, isNameStartsWithNumber, isPolkadot, isTestnet } from '../lib/utils';
+import { type PriceObject } from '@shared/api/price-provider';
 
 type ChainWithFiatBalance = Chain & {
   fiatBalance: string;

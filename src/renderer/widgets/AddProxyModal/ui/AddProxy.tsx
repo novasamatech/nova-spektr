@@ -11,7 +11,7 @@ import { Step } from '../lib/types';
 import { AddProxyForm } from './AddProxyForm';
 import { addProxyUtils } from '../lib/add-proxy-utils';
 import { addProxyModel } from '../model/add-proxy-model';
-import { basketUtils, AddProxyConfirm } from '@features/operations/OperationsConfirm';
+import { AddProxyConfirm, basketUtils } from '@features/operations/OperationsConfirm';
 import { OperationResult } from '@entities/transaction';
 
 export const AddProxy = () => {

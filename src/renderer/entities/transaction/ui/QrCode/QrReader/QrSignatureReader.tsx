@@ -1,5 +1,5 @@
 import { hexToU8a, u8aToHex } from '@polkadot/util';
-import { BrowserCodeReader, BrowserQRCodeReader, IScannerControls } from '@zxing/browser';
+import { BrowserCodeReader, BrowserQRCodeReader, type IScannerControls } from '@zxing/browser';
 import { useEffect, useRef } from 'react';
 import init from 'raptorq';
 
@@ -7,7 +7,7 @@ import { cnTw } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
 import { ErrorFields } from '../common/constants';
 import { QR_READER_ERRORS } from '../common/errors';
-import { DecodeCallback, ErrorObject, QrError, VideoInput } from '../common/types';
+import { type DecodeCallback, type ErrorObject, QrError, type VideoInput } from '../common/types';
 import type { HexString } from '@shared/core';
 
 type Props = {

@@ -1,12 +1,12 @@
 /* eslint-disable i18next/no-literal-string */
 import { Popover as Popup, Transition } from '@headlessui/react';
-import { AriaRole, Fragment, PropsWithChildren, ReactNode, useId, useRef, useState } from 'react';
+import { type AriaRole, Fragment, type PropsWithChildren, type ReactNode, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { cnTw } from '@shared/lib/utils';
 import { useDebounce } from '@shared/lib/hooks';
 import { useParentScrollLock } from '../common/useParentScrollLock';
-import { Horizontal, Vertical } from '../common/types';
+import { type Horizontal, type Vertical } from '../common/types';
 
 const TranslateX: Record<Horizontal, string> = {
   left: '-translate-x-full',

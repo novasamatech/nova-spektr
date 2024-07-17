@@ -1,9 +1,9 @@
-import { FormEvent, useMemo, useEffect, useRef } from 'react';
+import { type FormEvent, useEffect, useMemo, useRef } from 'react';
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 
 import { constructorModel } from '../model/constructor-model';
-import { Button, Input, Checkbox, FootnoteText, Select, InputHint } from '@shared/ui';
+import { Button, Checkbox, FootnoteText, Input, InputHint, Select } from '@shared/ui';
 import { ShardInfoPopover } from './ShardInfoPopover';
 import { ChainTitle } from '@entities/chain';
 import { networkModel } from '@entities/network';

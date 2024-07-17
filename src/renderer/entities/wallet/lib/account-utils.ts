@@ -8,19 +8,19 @@ import { networkUtils } from '@entities/network';
 import { walletUtils } from './wallet-utils';
 import { AccountType, ChainType, CryptoType, ProxyType, ProxyVariant } from '@shared/core';
 import type {
-  ID,
+  Account,
   AccountId,
-  MultisigThreshold,
-  MultisigAccount,
-  ChainAccount,
-  ShardAccount,
-  WcAccount,
-  ProxiedAccount,
-  Wallet,
   BaseAccount,
   Chain,
+  ChainAccount,
   ChainId,
-  Account,
+  ID,
+  MultisigAccount,
+  MultisigThreshold,
+  ProxiedAccount,
+  ShardAccount,
+  Wallet,
+  WcAccount,
 } from '@shared/core';
 
 export const accountUtils = {

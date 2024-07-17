@@ -1,5 +1,5 @@
 import { MemoryRouter } from 'react-router-dom';
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { type ComponentMeta, type ComponentStory } from '@storybook/react';
 
 import { Icon } from '../../Icon/Icon';
 import { ButtonWebLink } from './ButtonWebLink';

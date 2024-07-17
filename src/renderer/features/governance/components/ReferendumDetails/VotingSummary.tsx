@@ -1,9 +1,9 @@
 import { FootnoteText } from '@shared/ui';
 import { referendumService } from '@entities/governance';
 import { useI18n } from '@app/providers';
-import { AggregatedReferendum } from '../../types/structs';
+import { type AggregatedReferendum } from '../../types/structs';
 import { formatBalance } from '@shared/lib/utils';
-import { Asset } from '@shared/core';
+import { type Asset } from '@shared/core';
 
 type Props = {
   referendum: AggregatedReferendum;

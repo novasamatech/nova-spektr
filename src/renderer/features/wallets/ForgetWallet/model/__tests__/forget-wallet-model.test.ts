@@ -2,14 +2,14 @@ import { allSettled, fork } from 'effector';
 
 import {
   AccountType,
+  type BaseAccount,
   ChainType,
   CryptoType,
   ProxyType,
   ProxyVariant,
   SigningType,
+  type Wallet,
   WalletType,
-  Wallet,
-  BaseAccount,
 } from '@shared/core';
 import { forgetWalletModel } from '../forget-wallet-model';
 import { storageService } from '@shared/api/storage';

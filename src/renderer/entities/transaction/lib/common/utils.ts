@@ -1,16 +1,16 @@
-import { ApiPromise } from '@polkadot/api';
-import { SpRuntimeDispatchError } from '@polkadot/types/lookup';
-import { TFunction } from 'react-i18next';
+import { type ApiPromise } from '@polkadot/api';
+import { type SpRuntimeDispatchError } from '@polkadot/types/lookup';
+import { type TFunction } from 'react-i18next';
 
-import { Transaction, DecodedTransaction, TransactionType, MultisigTransaction } from '@shared/core';
+import { type DecodedTransaction, type MultisigTransaction, type Transaction, TransactionType } from '@shared/core';
 import {
-  MAX_WEIGHT,
-  OLD_MULTISIG_ARGS_AMOUNT,
   CONTROLLER_ARG_NAME,
   DEST_WEIGHT_ARG_NAME,
-  XcmTypes,
-  TransferTypes,
+  MAX_WEIGHT,
   ManageProxyTypes,
+  OLD_MULTISIG_ARGS_AMOUNT,
+  TransferTypes,
+  XcmTypes,
 } from './constants';
 import { formatSectionAndMethod } from '@shared/lib/utils';
 

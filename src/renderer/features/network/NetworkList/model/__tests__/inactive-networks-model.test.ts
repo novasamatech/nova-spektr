@@ -1,4 +1,4 @@
-import { fork, allSettled } from 'effector';
+import { allSettled, fork } from 'effector';
 
 import { networkModel } from '@entities/network';
 import { networksMock } from './mocks/networks-mock';

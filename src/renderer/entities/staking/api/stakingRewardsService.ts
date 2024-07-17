@@ -1,8 +1,8 @@
 import { useQuery } from '@apollo/client';
 
 import { GET_TOTAL_REWARDS } from '../graphql/queries/stakingRewards';
-import { RewardsQuery } from '../graphql/types/stakingRewards';
-import { IStakingRewardsService, RewardsMap } from '../lib/types';
+import { type RewardsQuery } from '../graphql/types/stakingRewards';
+import { type IStakingRewardsService, type RewardsMap } from '../lib/types';
 import type { Address } from '@shared/core';
 
 export const useStakingRewards = (addresses: Address[]): IStakingRewardsService => {

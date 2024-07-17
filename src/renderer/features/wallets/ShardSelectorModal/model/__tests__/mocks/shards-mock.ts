@@ -1,10 +1,10 @@
 import {
   AccountType,
-  BaseAccount,
-  ChainAccount,
-  ShardAccount,
-  PolkadotVaultWallet,
-  MultiShardWallet,
+  type BaseAccount,
+  type ChainAccount,
+  type MultiShardWallet,
+  type PolkadotVaultWallet,
+  type ShardAccount,
   SigningType,
   WalletType,
 } from '@shared/core';

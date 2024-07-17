@@ -1,7 +1,7 @@
-import { fork, allSettled } from 'effector';
+import { allSettled, fork } from 'effector';
 
 import { kernelModel } from '@shared/core';
-import { fiatService, PriceObject, coingekoService, CurrencyItem } from '@shared/api/price-provider';
+import { type CurrencyItem, type PriceObject, coingekoService, fiatService } from '@shared/api/price-provider';
 import { priceProviderModel } from '../price-provider-model';
 import { PriceApiProvider } from '../../lib/types';
 import { currencyModel } from '../currency-model';

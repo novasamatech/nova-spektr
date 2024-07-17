@@ -1,6 +1,6 @@
 import { Header } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { NotificationsList, EmptyNotifications } from '@features/notifications';
+import { EmptyNotifications, NotificationsList } from '@features/notifications';
 
 export const Notifications = () => {
   const { t } = useI18n();

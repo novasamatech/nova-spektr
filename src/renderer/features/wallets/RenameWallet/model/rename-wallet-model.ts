@@ -2,7 +2,7 @@ import { attach, combine, createApi, createEffect, createStore, sample } from 'e
 import { createForm } from 'effector-forms';
 import { not } from 'patronum';
 
-import { Wallet } from '@shared/core';
+import { type Wallet } from '@shared/core';
 import { walletModel } from '@entities/wallet';
 import { storageService } from '@shared/api/storage';
 import { splice } from '@shared/lib/utils';

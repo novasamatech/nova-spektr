@@ -3,19 +3,19 @@ import {
   AuthType,
   AutoDiscovery,
   ClientEvent,
-  createClient,
   Direction,
-  EventTimeline,
+  type EventTimeline,
   EventType,
   IndexedDBCryptoStore,
   IndexedDBStore,
-  MatrixClient,
-  MatrixEvent,
+  type MatrixClient,
+  type MatrixEvent,
   MatrixEventEvent,
   Preset,
-  Room,
+  type Room,
   RoomMemberEvent,
   Visibility,
+  createClient,
 } from 'matrix-js-sdk';
 import { deriveKey } from 'matrix-js-sdk/lib/crypto/key_passphrase';
 import { SyncState } from 'matrix-js-sdk/lib/sync';
@@ -27,34 +27,34 @@ import noop from 'lodash/noop';
 import {
   BASE_MATRIX_URL,
   KEY_FILE_MAX_SIZE,
+  MATRIX_HOME_SERVER,
   ROOM_CRYPTO_CONFIG,
   WELL_KNOWN_SERVERS,
-  MATRIX_HOME_SERVER,
 } from '../lib/constants';
 import MATRIX_ERRORS from '../lib/errors';
 import CredentialStorage from './credentialStorage';
 import SecretStorage from './secretStorage';
 import { nonNullable } from '@shared/lib/utils';
 import {
-  ApprovePayload,
-  BaseMultisigPayload,
-  Callbacks,
-  CancelPayload,
-  Credential,
-  ErrorObject,
-  FinalApprovePayload,
-  ICredentialStorage,
-  InvitePayload,
-  ISecretStorage,
-  ISecureMessenger,
-  LoginFlows,
+  type ApprovePayload,
+  type BaseMultisigPayload,
+  type Callbacks,
+  type CancelPayload,
+  type Credential,
+  type ErrorObject,
+  type FinalApprovePayload,
+  type ICredentialStorage,
+  type ISecretStorage,
+  type ISecureMessenger,
+  type InvitePayload,
+  type LoginFlows,
   MatrixError,
   Membership,
-  MultisigPayload,
-  RoomParams,
-  SpektrExtras,
+  type MultisigPayload,
+  type RoomParams,
+  type SpektrExtras,
   SpektrMultisigEvent,
-  UpdatePayload,
+  type UpdatePayload,
 } from '../lib/types';
 
 global.Olm = Olm;

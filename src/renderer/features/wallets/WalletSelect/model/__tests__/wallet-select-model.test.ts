@@ -1,8 +1,8 @@
-import { fork, allSettled } from 'effector';
+import { allSettled, fork } from 'effector';
 
 import { walletSelectModel } from '../wallet-select-model';
 import { walletModel } from '@entities/wallet';
-import { Wallet, WalletType, SigningType, WalletFamily } from '@shared/core';
+import { SigningType, type Wallet, type WalletFamily, WalletType } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 
 describe('features/wallets/WalletSelect/model/wallet-select-model', () => {

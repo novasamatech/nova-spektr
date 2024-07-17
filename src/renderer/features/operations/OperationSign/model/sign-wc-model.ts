@@ -1,12 +1,12 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { combineEvents } from 'patronum';
-import Client from '@walletconnect/sign-client';
-import { EngineTypes } from '@walletconnect/types';
+import type Client from '@walletconnect/sign-client';
+import { type EngineTypes } from '@walletconnect/types';
 
-import { walletConnectModel, type InitReconnectParams } from '@entities/walletConnect';
+import { type InitReconnectParams, walletConnectModel } from '@entities/walletConnect';
 import { toAccountId } from '@shared/lib/utils';
 import { chainsService } from '@shared/api/network';
-import { WcAccount, type HexString } from '@shared/core';
+import { type HexString, type WcAccount } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { operationSignModel } from './operation-sign-model';
 import { ReconnectStep } from '../lib/types';

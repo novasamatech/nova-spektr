@@ -1,8 +1,16 @@
-import { createEvent, combine, restore } from 'effector';
-import { ApiPromise } from '@polkadot/api';
+import { combine, createEvent, restore } from 'effector';
+import { type ApiPromise } from '@polkadot/api';
 
-import type { Chain, Address, ProxiedAccount, Account, Transaction, Wallet, ChainId } from '@shared/core';
-import { ProxyType } from '@shared/core';
+import type {
+  Account,
+  Address,
+  Chain,
+  ChainId,
+  ProxiedAccount,
+  type ProxyType,
+  Transaction,
+  Wallet,
+} from '@shared/core';
 import { networkModel } from '@entities/network';
 import { walletModel, walletUtils } from '@entities/wallet';
 

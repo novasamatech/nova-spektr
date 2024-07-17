@@ -1,15 +1,15 @@
-import { createEffect, createEvent, createStore, sample, scopeBind, combine, merge } from 'effector';
+import { combine, createEffect, createEvent, createStore, merge, sample, scopeBind } from 'effector';
 import { createForm } from 'effector-forms';
-import { spread, delay } from 'patronum';
+import { delay, spread } from 'patronum';
 import { WsProvider } from '@polkadot/rpc-provider';
 import { ApiPromise } from '@polkadot/api';
 
-import { Connection, RpcNode, HexString, ChainId } from '@shared/core';
+import { type ChainId, type Connection, type HexString, type RpcNode } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { networkModel } from '@entities/network';
 import { customRpcUtils } from '../lib/custom-rpc-utils';
 import { RpcValidation } from '../lib/types';
-import { FieldRules, CONNECTION_TIMEOUT } from '../lib/constants';
+import { CONNECTION_TIMEOUT, FieldRules } from '../lib/constants';
 
 type Input = {
   chainName: string;

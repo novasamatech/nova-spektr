@@ -4,13 +4,13 @@ import { concat, orderBy, sortBy } from 'lodash';
 import tokensProd from '@shared/config/tokens/tokens.json';
 import tokensDev from '@shared/config/tokens/tokens_dev.json';
 import { sumValues } from '@shared/api/network/service/chainsService';
-import type { Account, AccountId, Balance, ChainId, AssetByChains, AssetBalance } from '@shared/core';
-import { getBalanceBn, totalAmount, ZERO_BALANCE } from '@shared/lib/utils';
+import type { Account, AccountId, AssetBalance, AssetByChains, Balance, ChainId } from '@shared/core';
+import { ZERO_BALANCE, getBalanceBn, totalAmount } from '@shared/lib/utils';
 import { isKusama, isNameStartsWithNumber, isPolkadot } from '@shared/api/network/lib/utils';
-import { PriceObject } from '@shared/api/price-provider';
+import { type PriceObject } from '@shared/api/price-provider';
 import { balanceUtils } from '@entities/balance';
 import { accountUtils } from '@entities/wallet';
-import { AssetByChainsWithBalance, AssetByChainsWithFiatBalance, AssetChain } from './types';
+import { type AssetByChainsWithBalance, type AssetByChainsWithFiatBalance, type AssetChain } from './types';
 
 const TOKENS: Record<string, any> = {
   tokens: tokensProd,

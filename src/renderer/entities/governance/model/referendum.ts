@@ -2,8 +2,8 @@ import type { ApiPromise } from '@polkadot/api';
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
-import type { Chain, ChainId, Referendum } from '@shared/core';
-import { governanceService } from '@shared/api/governance';
+import type { Chain, ChainId, Referendum } from '@/shared/core';
+import { governanceService } from '@/shared/api/governance';
 
 const $referendums = createStore<Record<ChainId, Referendum[]>>({});
 

@@ -1,8 +1,8 @@
 import { WellKnownChain } from '@substrate/connect';
 
-import type { ChainId, Explorer, HexString, Address, AccountId } from '@shared/core';
+import type { AccountId, Address, ChainId, Explorer, HexString } from '@shared/core';
 import { toAddress } from './address';
-import { SS58_DEFAULT_PREFIX, RelayChains } from './constants';
+import { RelayChains, SS58_DEFAULT_PREFIX } from './constants';
 
 export const toLocalChainId = (chainId?: ChainId): string | undefined => {
   return chainId?.replace('0x', '');

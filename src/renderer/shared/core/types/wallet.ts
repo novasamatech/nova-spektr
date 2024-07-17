@@ -1,12 +1,12 @@
 import type { ID } from './general';
 import type {
+  Account,
   BaseAccount,
-  ShardAccount,
   ChainAccount,
   MultisigAccount,
   ProxiedAccount,
+  ShardAccount,
   WcAccount,
-  Account,
 } from './account';
 
 export interface Wallet {

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
-import { Icon, FootnoteText, Plate, BodyText, StatusLabel, HelpText } from '@shared/ui';
+import { BodyText, FootnoteText, HelpText, Icon, Plate, StatusLabel } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { Paths } from '@shared/routes';
 import { cnTw } from '@shared/lib/utils';

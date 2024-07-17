@@ -5,10 +5,10 @@ import { TransactionTitle, getTransactionAmount, isXcmTransaction } from '@entit
 import { chainsService } from '@shared/api/network';
 import { cnTw, getAssetById } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
-import { BasketTransaction, TransactionType } from '@shared/core';
+import { type BasketTransaction, TransactionType } from '@shared/core';
 import { HelpText, IconButton, Shimmering, Tooltip } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { ChainError } from '@shared/core/types/basket';
+import { type ChainError } from '@shared/core/types/basket';
 import { getCoreTx } from '../lib/utils';
 
 type Props = {

@@ -1,12 +1,12 @@
 import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
-import { Button, Loader, Icon, BodyText, Checkbox, SmallTitleText, Shimmering, SearchInput } from '@shared/ui';
+import { BodyText, Button, Checkbox, Icon, Loader, SearchInput, Shimmering, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { ValidatorsTable } from '@entities/staking';
 import { cnTw } from '@shared/lib/utils';
 import { validatorsModel } from '../model/validators-model';
-import { Validator } from '@shared/core';
+import { type Validator } from '@shared/core';
 
 type Props = {
   onGoBack: () => void;

@@ -1,11 +1,11 @@
 import { useUnit } from 'effector-react';
-import { FormEvent, useEffect } from 'react';
+import { type FormEvent, useEffect } from 'react';
 import { useForm } from 'effector-forms';
 
-import { editFormModel, Callbacks } from '../model/contact-form';
+import { type Callbacks, editFormModel } from '../model/contact-form';
 import { Button, Icon, Identicon, Input, InputHint } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { Contact } from '@shared/core';
+import { type Contact } from '@shared/core';
 
 type Props = Callbacks & {
   contactToEdit: Contact;

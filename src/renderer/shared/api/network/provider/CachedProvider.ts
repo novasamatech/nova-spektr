@@ -1,7 +1,7 @@
-import { ProviderInterface } from '@polkadot/rpc-provider/types';
+import { type ProviderInterface } from '@polkadot/rpc-provider/types';
 
 import { GET_METADATA_METHOD } from '../lib/constants';
-import { ProviderWithMetadata } from '../lib/types';
+import { type ProviderWithMetadata } from '../lib/types';
 import type { HexString } from '@shared/core';
 
 export function createCachedProvider(Provider: new (...args: any[]) => ProviderInterface, metadata?: HexString) {

@@ -1,13 +1,13 @@
 import 'source-map-support/register';
 
-import { app, BrowserWindow } from 'electron';
+import { type BrowserWindow, app } from 'electron';
 
 import { setupLogger } from './factories/logs';
 import { createWindow } from './factories/window';
 import { setupApplication } from './factories/setup';
 import { setupAutoUpdater } from './factories/updater';
 import { runAppSingleInstance } from './factories/instance';
-import { registerDeepLinkProtocol, processUrl } from './factories/protocol';
+import { processUrl, registerDeepLinkProtocol } from './factories/protocol';
 import { PLATFORM } from './shared/constants/platform';
 import { ENVIRONMENT } from './shared/constants/environment';
 import { APP_CONFIG } from '../../app.config';

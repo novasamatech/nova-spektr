@@ -6,7 +6,7 @@ import { KeyForm } from './KeyForm';
 import { KeysList } from './KeysList';
 import { WarningModal } from './WarningModal';
 import { constructorModel } from '../model/constructor-model';
-import { ChainAccount, ShardAccount, DraftAccount } from '@shared/core';
+import { type ChainAccount, type DraftAccount, type ShardAccount } from '@shared/core';
 import { useI18n } from '@app/providers';
 
 type Props = {

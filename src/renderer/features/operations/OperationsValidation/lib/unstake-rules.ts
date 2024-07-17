@@ -1,15 +1,15 @@
-import { Store } from 'effector';
+import { type Store } from 'effector';
 import { BN } from '@polkadot/util';
 
 import { formatAmount } from '@shared/lib/utils';
-import { Account } from '@shared/core';
+import { type Account } from '@shared/core';
 import {
-  AmountFeeStore,
-  Config,
-  ShardsBondBalanceStore,
-  ShardsProxyFeeStore,
-  SignatoryFeeStore,
-  UnstakeAmountBalanceRange,
+  type AmountFeeStore,
+  type Config,
+  type ShardsBondBalanceStore,
+  type ShardsProxyFeeStore,
+  type SignatoryFeeStore,
+  type UnstakeAmountBalanceRange,
 } from '../types/types';
 import { balanceValidation, descriptionValidation } from './validation';
 

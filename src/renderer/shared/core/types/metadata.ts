@@ -1,4 +1,4 @@
-import type { ChainId, Metadata, ID } from './general';
+import type { ChainId, ID, Metadata } from './general';
 
 /**
  * TODO: id doesn't exist in DB, need to update schema

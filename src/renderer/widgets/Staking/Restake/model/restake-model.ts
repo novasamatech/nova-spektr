@@ -1,14 +1,14 @@
-import { createEvent, createStore, sample, restore, combine } from 'effector';
-import { spread, delay } from 'patronum';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { delay, spread } from 'patronum';
 
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
-import { Step, RestakeStore, NetworkStore } from '../lib/types';
+import { type NetworkStore, type RestakeStore, Step } from '../lib/types';
 import { formModel } from './form-model';
 import { restakeConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
-import { nonNullable, getRelaychainAsset } from '@shared/lib/utils';
+import { getRelaychainAsset, nonNullable } from '@shared/lib/utils';
 import { restakeUtils } from '../lib/restake-utils';
-import { BasketTransaction, Transaction } from '@shared/core';
+import { type BasketTransaction, type Transaction } from '@shared/core';
 import { basketModel } from '@entities/basket';
 import { walletModel, walletUtils } from '@entities/wallet';
 

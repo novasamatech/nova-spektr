@@ -1,34 +1,34 @@
-import { createEvent, createStore, sample, combine, restore } from 'effector';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { BN } from '@polkadot/util';
 import { spread } from 'patronum';
 
 import {
+  type Account,
+  type Chain,
+  type MultisigTxWrapper,
+  type PartialBy,
+  type ProxiedAccount,
+  type ProxyTxWrapper,
   ProxyType,
-  Chain,
-  Account,
-  PartialBy,
-  ProxiedAccount,
+  type Transaction,
   TransactionType,
-  Transaction,
-  ProxyTxWrapper,
-  MultisigTxWrapper,
 } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { walletSelectModel } from '@features/wallets';
 import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
-import { walletUtils, accountUtils, walletModel, permissionUtils } from '@entities/wallet';
+import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
 import { transactionService } from '@entities/transaction';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import {
+  TEST_ACCOUNTS,
+  ZERO_BALANCE,
+  dictionary,
   getProxyTypes,
   isStringsMatchQuery,
   toAddress,
-  TEST_ACCOUNTS,
-  dictionary,
-  transferableAmount,
   toShortAddress,
-  ZERO_BALANCE,
+  transferableAmount,
 } from '@shared/lib/utils';
 import { AddPureProxiedRules } from '@features/operations/OperationsValidation';
 

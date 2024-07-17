@@ -1,5 +1,5 @@
 import { useForm } from 'effector-forms';
-import { FormEvent, ClipboardEvent } from 'react';
+import { type ClipboardEvent, type FormEvent } from 'react';
 import { useUnit } from 'effector-react';
 import { Trans } from 'react-i18next';
 

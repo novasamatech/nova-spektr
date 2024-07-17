@@ -1,8 +1,8 @@
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { Duration, Shimmering, FootnoteText } from '@shared/ui';
+import { Duration, FootnoteText, Shimmering } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { useStakingData } from '@entities/staking';
 import { AssetBalance } from '@entities/asset';

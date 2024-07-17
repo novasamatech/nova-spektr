@@ -1,4 +1,4 @@
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_TWO } from '@polkadot/util';
 
 import { getExpectedBlockTime, getPalletAndCallByXcmTransferType } from '../substrate';

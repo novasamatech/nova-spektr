@@ -10,7 +10,7 @@ import { UnstakeForm } from './UnstakeForm';
 import { unstakeUtils } from '../lib/unstake-utils';
 import { unstakeModel } from '../model/unstake-model';
 import { Step } from '../lib/types';
-import { basketUtils, UnstakeConfirmation as Confirmation } from '@features/operations/OperationsConfirm';
+import { UnstakeConfirmation as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
 import { OperationResult } from '@entities/transaction';
 
 export const Unstake = () => {

@@ -1,7 +1,7 @@
-import { createEvent, sample, createStore, combine } from 'effector';
+import { combine, createEvent, createStore, sample } from 'effector';
 
-import { networkUtils, networkModel } from '@entities/network';
-import { Chain } from '@shared/core';
+import { networkModel, networkUtils } from '@entities/network';
+import { type Chain } from '@shared/core';
 import { networksListUtils } from '../lib/networks-list-utils';
 
 const networksChanged = createEvent<Chain[]>();

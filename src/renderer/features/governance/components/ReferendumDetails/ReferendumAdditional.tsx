@@ -1,4 +1,4 @@
-import { ReferendumId } from '@shared/core';
+import { type ReferendumId } from '@shared/core';
 import { FootnoteText, Icon } from '@shared/ui';
 import { useI18n } from '@app/providers';
 

@@ -10,7 +10,7 @@ import { walletDetailsUtils } from '../lib/utils';
 import type { MultishardMap, VaultMap } from '../lib/types';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { networkModel } from '@entities/network';
-import type { BaseAccount, Signatory, Wallet, AccountId, ProxyAccount, ChainId, ProxyGroup } from '@shared/core';
+import type { AccountId, BaseAccount, ChainId, ProxyAccount, ProxyGroup, Signatory, Wallet } from '@shared/core';
 
 const removeProxy = createEvent<ProxyAccount>();
 

@@ -1,19 +1,19 @@
-import { BN_ZERO, BN, bnMax } from '@polkadot/util';
+import { type BN, BN_ZERO, bnMax } from '@polkadot/util';
 
 import type { ClaimTime, ClaimTimeAt } from './claim-types';
-import { VotingType, VoteType, ReferendumType, Conviction } from '@shared/core';
+import { Conviction, ReferendumType, VoteType, VotingType } from '@shared/core';
 import type {
-  Voting,
+  AccountVote,
+  ApprovedReferendum,
   CastingVoting,
   DelegatingVoting,
-  StandardVote,
-  SplitVote,
-  SplitAbstainVote,
-  ReferendumInfo,
   OngoingReferendum,
+  ReferendumInfo,
   RejectedReferendum,
-  ApprovedReferendum,
-  AccountVote,
+  SplitAbstainVote,
+  SplitVote,
+  StandardVote,
+  Voting,
 } from '@shared/core';
 
 export const onChainUtils = {

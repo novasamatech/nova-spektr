@@ -1,12 +1,12 @@
 import { Popover } from '@headlessui/react';
 import { useUnit } from 'effector-react';
-import { ReactNode, useEffect } from 'react';
+import { type ReactNode, useEffect } from 'react';
 
-import { SmallTitleText, SearchInput } from '@shared/ui';
+import { SearchInput, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { WalletFamily } from '@shared/core';
+import { type WalletFamily } from '@shared/core';
 import { WalletGroup } from './WalletGroup';
-import { walletSelectModel, Callbacks } from '../model/wallet-select-model';
+import { type Callbacks, walletSelectModel } from '../model/wallet-select-model';
 
 type Props = Callbacks & {
   action?: ReactNode;

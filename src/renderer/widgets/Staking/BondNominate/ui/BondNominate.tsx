@@ -11,7 +11,7 @@ import { BondForm } from './BondForm';
 import { bondUtils } from '../lib/bond-utils';
 import { bondNominateModel } from '../model/bond-nominate-model';
 import { Step } from '../lib/types';
-import { basketUtils, BondNominateConfirmation as Confirmation } from '@features/operations/OperationsConfirm';
+import { BondNominateConfirmation as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
 import { OperationResult } from '@entities/transaction';
 
 export const BondNominate = () => {

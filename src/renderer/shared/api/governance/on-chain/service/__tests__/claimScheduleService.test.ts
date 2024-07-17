@@ -1,22 +1,22 @@
-import { BN, BN_ZERO, BN_ONE, BN_TWO, BN_TEN, BN_NINE, BN_FIVE, BN_THREE, BN_FOUR, BN_EIGHT } from '@polkadot/util';
+import { BN, BN_EIGHT, BN_FIVE, BN_FOUR, BN_NINE, BN_ONE, BN_TEN, BN_THREE, BN_TWO, BN_ZERO } from '@polkadot/util';
 
-import { ReferendumType, VotingType, Conviction } from '@shared/core';
+import { Conviction, ReferendumType, VotingType } from '@shared/core';
 import type {
+  ApprovedReferendum,
+  CastingVoting,
+  DelegatingVoting,
+  ReferendumInfo,
+  StandardVote,
   TrackId,
   TrackInfo,
   Voting,
-  CastingVoting,
-  StandardVote,
-  DelegatingVoting,
-  ReferendumInfo,
-  ApprovedReferendum,
 } from '@shared/core';
 import { claimScheduleService } from '../claimScheduleService';
 import {
-  type RemoveVote,
-  type Unlock,
   type ClaimTimeAt,
   type ClaimTimeUntil,
+  type RemoveVote,
+  type Unlock,
   UnlockChunkType,
 } from '../../lib/claim-types';
 

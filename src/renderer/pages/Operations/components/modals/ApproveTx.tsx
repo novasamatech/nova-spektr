@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Weight } from '@polkadot/types/interfaces';
+import { type Weight } from '@polkadot/types/interfaces';
 import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 
 import { BaseModal, Button } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { MultisigTransactionDS } from '@shared/api/storage';
+import { type MultisigTransactionDS } from '@shared/api/storage';
 import { useToggle } from '@shared/lib/hooks';
-import { ExtendedChain, networkModel } from '@entities/network';
-import { TEST_ADDRESS, toAddress, transferableAmount, getAssetById } from '@shared/lib/utils';
+import { type ExtendedChain, networkModel } from '@entities/network';
+import { TEST_ADDRESS, getAssetById, toAddress, transferableAmount } from '@shared/lib/utils';
 import { getSignatoryAccounts } from '../../common/utils';
 import { Submit } from '../ActionSteps/Submit';
 import { Confirmation } from '../ActionSteps/Confirmation';
@@ -17,19 +17,19 @@ import { useMultisigEvent } from '@entities/multisig';
 import { SigningSwitch } from '@features/operations';
 import { permissionUtils, walletModel } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
-import type { Address, HexString, Timepoint, MultisigAccount, Account, Transaction } from '@shared/core';
+import type { Account, Address, HexString, MultisigAccount, Timepoint, Transaction } from '@shared/core';
 import { TransactionType } from '@shared/core';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { OperationTitle } from '@entities/chain';
 import {
-  isXcmTransaction,
   MAX_WEIGHT,
   OperationResult,
+  getMultisigSignOperationTitle,
+  isXcmTransaction,
+  transactionService,
   useCallDataDecoder,
   useTransaction,
   validateBalance,
-  transactionService,
-  getMultisigSignOperationTitle,
 } from '@entities/transaction';
 
 type Props = {

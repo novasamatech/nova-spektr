@@ -1,15 +1,15 @@
-import { ApiPromise } from '@polkadot/api';
-import { useEffect, useState, ComponentProps } from 'react';
+import { type ApiPromise } from '@polkadot/api';
+import { type ComponentProps, useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useI18n, useMultisigChainContext } from '@app/providers';
-import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
+import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
 import { useToggle } from '@shared/lib/hooks';
 import { Button, StatusModal } from '@shared/ui';
 import { Animation } from '@shared/ui/Animation/Animation';
-import type { HexString, Account, MultisigEvent, MultisigTransaction, SigningStatus, Transaction } from '@shared/core';
-import { TransactionType, MultisigTxFinalStatus } from '@shared/core';
-import { ExtrinsicResultParams, transactionService } from '@entities/transaction';
+import type { Account, HexString, MultisigEvent, MultisigTransaction, SigningStatus, Transaction } from '@shared/core';
+import { MultisigTxFinalStatus, TransactionType } from '@shared/core';
+import { type ExtrinsicResultParams, transactionService } from '@entities/transaction';
 import { matrixModel } from '@entities/matrix';
 import { toAccountId } from '@shared/lib/utils';
 

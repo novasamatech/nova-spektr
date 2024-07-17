@@ -1,11 +1,11 @@
 import { Listbox, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
-import { TFunction } from 'react-i18next';
+import { type TFunction } from 'react-i18next';
 
 import { cnTw } from '@shared/lib/utils';
-import { Icon, FootnoteText, IconButton, Button, HelpText } from '@shared/ui';
+import { Button, FootnoteText, HelpText, Icon, IconButton } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { SelectButtonStyle, OptionStyle } from '@shared/ui/Dropdowns/common/constants';
+import { OptionStyle, SelectButtonStyle } from '@shared/ui/Dropdowns/common/constants';
 import { useScrollTo } from '@shared/lib/hooks';
 import { CommonInputStyles, CommonInputStylesTheme } from '@shared/ui/Inputs/common/styles';
 import { ConnectionType } from '@shared/core';

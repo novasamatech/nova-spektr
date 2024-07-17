@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useUnit } from 'effector-react';
 
-import { SmallTitleText, Button, Icon } from '@shared/ui';
+import { Button, Icon, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { shardsModel } from '../model/shards-model';
 

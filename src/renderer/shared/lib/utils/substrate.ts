@@ -1,10 +1,16 @@
-import { ApiPromise } from '@polkadot/api';
-import { BaseTxInfo, getRegistry, GetRegistryOpts, OptionsWithMeta, TypeRegistry } from '@substrate/txwrapper-polkadot';
-import { isHex, hexToU8a, bnMin, BN_TWO, BN } from '@polkadot/util';
+import { type ApiPromise } from '@polkadot/api';
+import {
+  type BaseTxInfo,
+  type GetRegistryOpts,
+  type OptionsWithMeta,
+  type TypeRegistry,
+  getRegistry,
+} from '@substrate/txwrapper-polkadot';
+import { type BN, BN_TWO, bnMin, hexToU8a, isHex } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
-import { u32 } from '@polkadot/types';
+import { type u32 } from '@polkadot/types';
 
-import { Address, CallData, CallHash, XcmPallets, ProxyType } from '@shared/core';
+import { type Address, type CallData, type CallHash, type ProxyType, XcmPallets } from '@shared/core';
 import { XcmTransferType } from '../../api/xcm';
 import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './constants';
 

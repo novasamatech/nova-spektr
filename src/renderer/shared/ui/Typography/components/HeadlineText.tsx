@@ -1,5 +1,5 @@
 import { cnTw } from '@shared/lib/utils';
-import { TypographyProps } from '../common/types';
+import { type TypographyProps } from '../common/types';
 import { TextBase } from '../common/TextBase';
 
 export const HeadlineText = ({ className, ...props }: TypographyProps) => (

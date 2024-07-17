@@ -1,4 +1,11 @@
-import { AssetId, Currency, PriceObject, PriceAdapter, PriceItem, PriceRange } from '../lib/types';
+import {
+  type AssetId,
+  type Currency,
+  type PriceAdapter,
+  type PriceItem,
+  type PriceObject,
+  type PriceRange,
+} from '../lib/types';
 import { getCurrencyChangeKey } from '../lib/utils';
 import { COINGECKO_URL } from '../lib/constants';
 

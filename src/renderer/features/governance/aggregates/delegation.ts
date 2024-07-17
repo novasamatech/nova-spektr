@@ -2,7 +2,7 @@ import { combine } from 'effector';
 import { BN } from '@polkadot/util';
 
 import { votingAggregate } from './voting';
-import { DelegatingVoting, VotingType } from '@shared/core';
+import { type DelegatingVoting, VotingType } from '@shared/core';
 import { networkSelectorModel } from '../model/networkSelector';
 
 const $totalDelegations = combine(

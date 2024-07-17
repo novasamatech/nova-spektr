@@ -2,17 +2,17 @@
 import { blake2AsU8a } from '@polkadot/util-crypto';
 import { u8aToHex } from '@polkadot/util';
 
-import { Node } from '../lib/types';
-import { keyLEToNibbles, getNodeType } from '../lib/utils';
+import { type Node } from '../lib/types';
+import { getNodeType, keyLEToNibbles } from '../lib/utils';
 import {
-  NodeType,
-  VARIANTS,
-  LEAF_VARIANT,
   BRANCH_VARIANT,
   BRANCH_WITH_VALUE_VARIANT,
+  HASH_LENGTH,
   HEADER_MASK,
   KEY_LENGTH_MASK,
-  HASH_LENGTH,
+  LEAF_VARIANT,
+  NodeType,
+  VARIANTS,
 } from '../lib/constants';
 
 const decodeHeaderByte = (header: number) => {

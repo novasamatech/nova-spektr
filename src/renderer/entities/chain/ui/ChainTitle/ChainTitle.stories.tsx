@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { type ComponentMeta, type ComponentStory } from '@storybook/react';
 
 import { ChainTitle } from './ChainTitle';
 import { TEST_CHAIN_ID } from '@shared/lib/utils';

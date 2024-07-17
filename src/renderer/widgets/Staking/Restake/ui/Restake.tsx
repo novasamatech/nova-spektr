@@ -10,7 +10,7 @@ import { ReturnToStakeForm } from './RestakeForm';
 import { restakeUtils } from '../lib/restake-utils';
 import { restakeModel } from '../model/restake-model';
 import { Step } from '../lib/types';
-import { basketUtils, RestakeConfirmation as Confirmation } from '@features/operations/OperationsConfirm';
+import { RestakeConfirmation as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
 import { OperationResult } from '@entities/transaction';
 
 export const Restake = () => {

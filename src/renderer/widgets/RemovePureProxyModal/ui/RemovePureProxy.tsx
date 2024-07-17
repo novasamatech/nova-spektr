@@ -12,7 +12,7 @@ import { removePureProxyUtils } from '../lib/remove-pure-proxy-utils';
 import { removePureProxyModel } from '../model/remove-pure-proxy-model';
 import { Warning } from './Warning';
 import { OperationSign, OperationSubmit } from '@features/operations';
-import { basketUtils, RemovePureProxiedConfirm as Confirmation } from '@features/operations/OperationsConfirm';
+import { RemovePureProxiedConfirm as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
 import { OperationResult } from '@entities/transaction';
 
 export const RemovePureProxy = () => {

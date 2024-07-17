@@ -3,9 +3,9 @@ import { useUnit } from 'effector-react';
 
 import { TransactionAmount } from '@pages/Operations/components/TransactionAmount';
 import { DetailRow, FootnoteText, Icon } from '@shared/ui';
-import { ExtendedChain } from '@entities/network';
+import { type ExtendedChain } from '@entities/network';
 import { useI18n } from '@app/providers';
-import { type MultisigAccount, Account, type MultisigTransaction, type Transaction } from '@shared/core';
+import { type Account, type MultisigAccount, type MultisigTransaction, type Transaction } from '@shared/core';
 import { getAssetById } from '@shared/lib/utils';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
 import { xcmTransferModel } from '@widgets/Transfer';
@@ -14,7 +14,7 @@ import { walletModel } from '@entities/wallet';
 import { getIconName } from '@entities/transaction/lib/transactionConfirmIcon';
 import { priceProviderModel } from '@entities/price';
 import { Details } from '../Details';
-import { Fee, MultisigDepositWithLabel, isXcmTransaction, XcmFee, FeeLoader } from '@entities/transaction';
+import { Fee, FeeLoader, MultisigDepositWithLabel, XcmFee, isXcmTransaction } from '@entities/transaction';
 
 type Props = {
   tx: MultisigTransaction;

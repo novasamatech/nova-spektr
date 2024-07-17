@@ -1,13 +1,13 @@
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 import { Trans } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { validateShortUserName, WELL_KNOWN_SERVERS, LoginFlows } from '@shared/api/matrix';
+import { type LoginFlows, WELL_KNOWN_SERVERS, validateShortUserName } from '@shared/api/matrix';
 import type { ComboboxOption } from '@shared/ui/types';
-import { IconNames } from '@shared/ui/Icon/data';
-import { matrixModel, LoginStatus, matrixUtils } from '@entities/matrix';
+import { type IconNames } from '@shared/ui/Icon/data';
+import { LoginStatus, matrixModel, matrixUtils } from '@entities/matrix';
 import { matrixLoginModel } from '../model/matrix-login-model';
 import { APP_CONFIG } from '../../../../../../app.config';
 import {

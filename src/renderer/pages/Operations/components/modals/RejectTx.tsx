@@ -4,10 +4,10 @@ import { useUnit } from 'effector-react';
 
 import { BaseModal, Button } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { MultisigTransactionDS } from '@shared/api/storage';
+import { type MultisigTransactionDS } from '@shared/api/storage';
 import { useToggle } from '@shared/lib/hooks';
-import { ExtendedChain, networkModel } from '@entities/network';
-import { toAddress, transferableAmount, getAssetById } from '@shared/lib/utils';
+import { type ExtendedChain, networkModel } from '@entities/network';
+import { getAssetById, toAddress, transferableAmount } from '@shared/lib/utils';
 import RejectReasonModal from './RejectReasonModal';
 import { Submit } from '../ActionSteps/Submit';
 import { Confirmation } from '../ActionSteps/Confirmation';
@@ -15,15 +15,15 @@ import { SigningSwitch } from '@features/operations';
 import { OperationTitle } from '@entities/chain';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
-import type { Address, HexString, Timepoint, MultisigAccount, Account, Transaction } from '@shared/core';
+import type { Account, Address, HexString, MultisigAccount, Timepoint, Transaction } from '@shared/core';
 import { TransactionType } from '@shared/core';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import {
   OperationResult,
-  validateBalance,
+  getMultisigSignOperationTitle,
   isXcmTransaction,
   transactionService,
-  getMultisigSignOperationTitle,
+  validateBalance,
 } from '@entities/transaction';
 
 type Props = {

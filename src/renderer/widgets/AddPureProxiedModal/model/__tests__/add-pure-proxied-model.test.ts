@@ -1,5 +1,5 @@
 import { allSettled, fork } from 'effector';
-import { Event } from '@polkadot/types/interfaces';
+import { type Event } from '@polkadot/types/interfaces';
 
 import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';

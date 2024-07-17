@@ -1,6 +1,6 @@
 import { cnTw, toAddress } from '@shared/lib/utils';
-import { BodyText, Checkbox, HelpText, Identicon, Truncate, IconButton } from '@shared/ui';
-import type { ChainAccount, ShardAccount, Explorer, BaseAccount, Wallet } from '@shared/core';
+import { BodyText, Checkbox, HelpText, IconButton, Identicon, Truncate } from '@shared/ui';
+import type { BaseAccount, ChainAccount, Explorer, ShardAccount, Wallet } from '@shared/core';
 import { ExplorersPopover, accountUtils, walletUtils } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 

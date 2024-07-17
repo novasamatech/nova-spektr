@@ -1,5 +1,5 @@
-import { ApiPromise } from '@polkadot/api';
-import { UnsubscribePromise } from '@polkadot/api/types';
+import { type ApiPromise } from '@polkadot/api';
+import { type UnsubscribePromise } from '@polkadot/api/types';
 
 import type { ChainMetadata, NoID } from '@shared/core';
 

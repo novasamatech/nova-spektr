@@ -1,18 +1,18 @@
 import { useUnit } from 'effector-react';
-import { ReactNode, useEffect } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { BaseModal, Button } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
-import type { Chain, Asset } from '@shared/core';
+import type { Asset, Chain } from '@shared/core';
 import { OperationSign, OperationSubmit } from '@features/operations';
 import { TransferForm } from './TransferForm';
 import { transferUtils } from '../lib/transfer-utils';
 import { transferModel } from '../model/transfer-model';
 import { Step } from '../lib/types';
-import { basketUtils, TransferConfirm } from '@features/operations/OperationsConfirm';
+import { TransferConfirm, basketUtils } from '@features/operations/OperationsConfirm';
 import { OperationResult } from '@entities/transaction';
 
 type Props = {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useUnit } from 'effector-react';
 import uniqBy from 'lodash/uniqBy';
 
@@ -8,32 +8,32 @@ import { useGraphql, useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
-import { useNetworkData, networkUtils, InactiveNetwork } from '@entities/network';
+import { InactiveNetwork, networkUtils, useNetworkData } from '@entities/network';
 import { eraService } from '@entities/staking/api';
 import { NetworkInfo } from './NetworkInfo';
 import { AboutStaking } from './AboutStaking';
 import { Actions } from './Actions';
 import { NominatorsList } from './NominatorsList';
-import { NominatorInfo, Operations as StakeOperations } from '../lib/types';
+import { type NominatorInfo, Operations as StakeOperations } from '../lib/types';
 import * as Operations from '@widgets/Staking';
 import {
-  ChainId,
-  Chain,
-  Address,
-  Stake,
-  Validator,
-  ShardAccount,
-  ChainAccount,
-  BaseAccount,
-  Account,
+  type Account,
+  type Address,
+  type BaseAccount,
+  type Chain,
+  type ChainAccount,
+  type ChainId,
+  type ShardAccount,
+  type Stake,
+  type Validator,
 } from '@shared/core';
 import {
-  useStakingData,
-  StakingMap,
-  ValidatorMap,
-  validatorsService,
-  useStakingRewards,
+  type StakingMap,
+  type ValidatorMap,
   ValidatorsModal,
+  useStakingData,
+  useStakingRewards,
+  validatorsService,
 } from '@entities/staking';
 
 export const Staking = () => {

@@ -1,6 +1,6 @@
-import { MouseEvent } from 'react';
+import { type MouseEvent } from 'react';
 
-import { Wallet } from '@shared/core';
+import { type Wallet } from '@shared/core';
 import { FootnoteText, IconButton } from '@shared/ui';
 import { WalletIcon } from '../WalletIcon/WalletIcon';
 import { cnTw } from '@shared/lib/utils';

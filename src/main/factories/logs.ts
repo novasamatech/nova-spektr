@@ -1,6 +1,6 @@
 import { join, parse } from 'path';
-import { readdirSync, rmSync, renameSync } from 'fs';
-import log, { LogFile } from 'electron-log';
+import { readdirSync, renameSync, rmSync } from 'fs';
+import log, { type LogFile } from 'electron-log';
 
 const MAX_LOG_FILES_TO_KEEP = 10;
 

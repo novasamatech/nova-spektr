@@ -1,9 +1,9 @@
 import { Identicon as PolkadotIdenticon } from '@polkadot/react-identicon';
-import { IconTheme } from '@polkadot/react-identicon/types';
-import { useLayoutEffect, useRef, SyntheticEvent } from 'react';
+import { type IconTheme } from '@polkadot/react-identicon/types';
+import { type SyntheticEvent, useLayoutEffect, useRef } from 'react';
 
 import { cnTw, copyToClipboard, isEthereumAccountId } from '@shared/lib/utils';
-import { AccountId, Address } from '@shared/core';
+import { type AccountId, type Address } from '@shared/core';
 import { Icon } from '../Icon/Icon';
 
 type Props = {

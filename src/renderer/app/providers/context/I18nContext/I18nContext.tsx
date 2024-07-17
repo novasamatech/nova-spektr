@@ -1,11 +1,11 @@
-import { createContext, FC, PropsWithChildren, useContext } from 'react';
+import { type FC, type PropsWithChildren, createContext, useContext } from 'react';
 import type { TFunction } from 'react-i18next';
 import { useTranslation } from 'react-i18next';
-import { Locale, format as fnsFormatDate } from 'date-fns';
+import { type Locale, format as fnsFormatDate } from 'date-fns';
 import { enGB } from 'date-fns/locale';
 
 import { LanguageSwitcher } from '@shared/ui';
-import { LanguageItem, SupportedLocale } from '@shared/api/translation/lib/types';
+import { type LanguageItem, type SupportedLocale } from '@shared/api/translation/lib/types';
 import { LanguageOptions } from '@shared/api/translation/lib/constants';
 import { useTranslationService } from '@shared/api/translation/translationService';
 

@@ -1,12 +1,12 @@
 import noop from 'lodash/noop';
 
-import { Chain, ProxyAccount } from '@shared/core';
+import { type Chain, type ProxyAccount } from '@shared/core';
 import { ProxyAccount as ProxyAccountComponent } from '@entities/proxy';
 import { copyToClipboard, toAddress } from '@shared/lib/utils';
 import { DropdownIconButton, HelpText, IconButton } from '@shared/ui';
 import { ExplorersPopover } from '@entities/wallet';
 import { useI18n } from '@app/providers';
-import { DropdownIconButtonOption } from '@shared/ui/types';
+import { type DropdownIconButtonOption } from '@shared/ui/types';
 
 type Props = {
   account: ProxyAccount;

@@ -1,4 +1,4 @@
-import { Wallet, type WalletFamily, WalletType } from '@shared/core';
+import { type Wallet, type WalletFamily, WalletType } from '@shared/core';
 import { walletUtils } from '@entities/wallet';
 import { includes } from '@shared/lib/utils';
 

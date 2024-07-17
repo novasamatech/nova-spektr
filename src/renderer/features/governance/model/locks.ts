@@ -1,6 +1,6 @@
 import { spread } from 'patronum';
-import { createStore, createEffect, sample } from 'effector';
-import { ApiPromise } from '@polkadot/api';
+import { createEffect, createStore, sample } from 'effector';
+import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_ZERO } from '@polkadot/util';
 
 import type { Address, TrackId } from '@shared/core';

@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { AccountId, Balance, ChainId } from '@shared/core';
+import { type AccountId, type Balance, type ChainId } from '@shared/core';
 import { balanceModel } from '../model/balance-model';
 import { balanceUtils } from '../lib/balance-utils';
 

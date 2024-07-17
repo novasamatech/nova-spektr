@@ -1,10 +1,10 @@
 import { BaseModal, DetailRow, IconButton, Separator, Truncate } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { useModalClose } from '@shared/lib/hooks';
-import { AggregatedReferendum } from '../../types/structs';
+import { type AggregatedReferendum } from '../../types/structs';
 import { AddressWithName } from '@entities/wallet';
 import { copyToClipboard, formatBalance } from '@shared/lib/utils';
-import { Asset, OngoingReferendum } from '@shared/core';
+import { type Asset, type OngoingReferendum } from '@shared/core';
 
 type Props = {
   referendum: AggregatedReferendum<OngoingReferendum>;

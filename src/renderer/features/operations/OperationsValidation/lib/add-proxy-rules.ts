@@ -1,10 +1,10 @@
-import { Store } from 'effector';
+import { type Store } from 'effector';
 import { BN } from '@polkadot/util';
 
-import { AccountId, Chain } from '@shared/core';
+import { type AccountId, type Chain } from '@shared/core';
 import { transferableAmount } from '@shared/lib/utils';
 import { balanceUtils } from '@entities/balance';
-import { AccountStore, ChainProxyStore, SignatoryStore } from '../types/types';
+import { type AccountStore, type ChainProxyStore, type SignatoryStore } from '../types/types';
 import { descriptionValidation } from './validation';
 
 export const AddProxyRules = {

@@ -1,7 +1,7 @@
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
-import { IconNames } from '../Icon/data';
+import { type IconNames } from '../Icon/data';
 import { Icon } from '../Icon/Icon';
 
 type Props = {

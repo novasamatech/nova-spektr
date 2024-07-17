@@ -4,11 +4,11 @@ import { Trans } from 'react-i18next';
 import { useI18n } from '@app/providers';
 import { toAccountId } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
-import { ButtonDropdownOption } from '@shared/ui/types';
+import { type ButtonDropdownOption } from '@shared/ui/types';
 import type { Address, Stake } from '@shared/core';
-import { Operations, ControllerTypes } from '../lib/types';
-import { SmallTitleText, DropdownButton, Button, BaseModal, Icon } from '@shared/ui';
-import { StashOperations, ControllerOperations, OperationOptions } from '../lib/constants';
+import { ControllerTypes, type Operations } from '../lib/types';
+import { BaseModal, Button, DropdownButton, Icon, SmallTitleText } from '@shared/ui';
+import { ControllerOperations, OperationOptions, StashOperations } from '../lib/constants';
 
 type Props = {
   canInteract: boolean;

@@ -1,6 +1,6 @@
-import { createEvent, createStore, sample, restore, combine, createEffect } from 'effector';
-import { ApiPromise } from '@polkadot/api';
-import { spread, delay } from 'patronum';
+import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { type ApiPromise } from '@polkadot/api';
+import { delay, spread } from 'patronum';
 import { BN } from '@polkadot/util';
 
 import { walletModel } from '@entities/wallet';
@@ -9,15 +9,15 @@ import { networkModel } from '@entities/network';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import {
-  Account,
-  BasketTransaction,
-  TxWrapper,
-  Transaction,
+  type Account,
+  type BasketTransaction,
+  type MultisigTxWrapper,
+  type ProxyTxWrapper,
+  type Transaction,
+  type TxWrapper,
   WrapperKind,
-  MultisigTxWrapper,
-  ProxyTxWrapper,
 } from '@shared/core';
-import { Step, BondExtraData, WalletData, FeeData } from '../lib/types';
+import { type BondExtraData, type FeeData, Step, type WalletData } from '../lib/types';
 import { bondExtraUtils } from '../lib/bond-extra-utils';
 import { formModel } from './form-model';
 import { bondExtraConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';

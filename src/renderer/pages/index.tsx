@@ -1,4 +1,4 @@
-import { Navigate, RouteObject } from 'react-router-dom';
+import { Navigate, type RouteObject } from 'react-router-dom';
 
 import { MainLayout } from '@widgets/Layout';
 import { Paths } from '@shared/routes';
@@ -7,7 +7,7 @@ import { Assets, ReceiveAsset, SendAsset } from './Assets';
 import { Operations } from './Operations/Operations';
 import { Notifications } from './Notifications/Notifications';
 import { Contacts, CreateContact, EditContact } from './AddressBook';
-import { Overview as Settings, Currency, Networks, Matrix, ReferendumData } from './Settings';
+import { Currency, Matrix, Networks, ReferendumData, Overview as Settings } from './Settings';
 import { Governance } from './Governance';
 import { Staking } from './Staking';
 import { Basket } from './Basket';

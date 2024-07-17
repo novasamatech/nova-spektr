@@ -1,4 +1,4 @@
-import { BN } from '@polkadot/util';
+import { type BN } from '@polkadot/util';
 
 import type { Address, BlockHeight, ReferendumId, TrackId } from '@shared/core';
 

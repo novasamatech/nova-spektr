@@ -1,18 +1,18 @@
-import CurrencyImages, { Currency } from './currency';
-import NavigationImages, { Navigation } from './navigation';
-import ChevronImages, { Chevron } from './chevron';
-import FunctionalImages, { Functional } from './functionals';
-import MiscImages, { Misc } from './misc';
-import FlagImages, { Flag } from './flag';
-import ExplorerImages, { Explorer } from './explorer';
-import AestheticImages, { Aesthetic } from './aesthetics';
-import ArrowImages, { Arrow } from './arrow';
-import WalletTypeImages, { WalletImages } from './walletType';
-import StakingImages, { Staking } from './staking';
-import SocialImages, { Social } from './social';
-import MstImages, { Mst } from './mst';
-import KeyTypeImages, { KeyImages } from './keyType';
-import ConfirmImages, { Confirm } from './confirm';
+import CurrencyImages, { type Currency } from './currency';
+import NavigationImages, { type Navigation } from './navigation';
+import ChevronImages, { type Chevron } from './chevron';
+import FunctionalImages, { type Functional } from './functionals';
+import MiscImages, { type Misc } from './misc';
+import FlagImages, { type Flag } from './flag';
+import ExplorerImages, { type Explorer } from './explorer';
+import AestheticImages, { type Aesthetic } from './aesthetics';
+import ArrowImages, { type Arrow } from './arrow';
+import WalletTypeImages, { type WalletImages } from './walletType';
+import StakingImages, { type Staking } from './staking';
+import SocialImages, { type Social } from './social';
+import MstImages, { type Mst } from './mst';
+import KeyTypeImages, { type KeyImages } from './keyType';
+import ConfirmImages, { type Confirm } from './confirm';
 
 const AllIcons = {
   ...CurrencyImages,

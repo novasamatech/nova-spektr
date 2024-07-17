@@ -1,15 +1,15 @@
 import cn from 'classnames';
 import { useEffect, useState } from 'react';
-import { Controller, useForm, SubmitHandler } from 'react-hook-form';
+import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 import { u8aToHex } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { Button, Input, InputHint, HeaderTitleText, SmallTitleText, IconButton } from '@shared/ui';
+import { Button, HeaderTitleText, IconButton, Input, InputHint, SmallTitleText } from '@shared/ui';
 import { AccountsList, walletModel } from '@entities/wallet';
 import type { Chain } from '@shared/core';
-import { SigningType, ErrorType, WalletType, CryptoType, ChainType, AccountType, CryptoTypeString } from '@shared/core';
-import { SeedInfo } from '@entities/transaction';
+import { AccountType, ChainType, CryptoType, CryptoTypeString, ErrorType, SigningType, WalletType } from '@shared/core';
+import { type SeedInfo } from '@entities/transaction';
 import { networkModel, networkUtils } from '@entities/network';
 
 type WalletForm = {

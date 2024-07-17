@@ -3,7 +3,7 @@ import cn from 'classnames';
 import NoConnection from '@shared/assets/images/misc/no-connection.webp';
 import { useI18n } from '@app/providers';
 import { Paths } from '@shared/routes';
-import { FootnoteText, ButtonLink } from '@shared/ui';
+import { ButtonLink, FootnoteText } from '@shared/ui';
 
 type Props = {
   active: boolean;

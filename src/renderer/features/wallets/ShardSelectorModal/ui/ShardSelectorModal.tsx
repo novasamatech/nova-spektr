@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { BaseModal, Button } from '@shared/ui';
 import { ShardSearch } from './ShardSearch';
 import { ShardsStructure } from './ShardsStructure';
-import { shardsModel, Callbacks } from '../model/shards-model';
+import { type Callbacks, shardsModel } from '../model/shards-model';
 import { useI18n } from '@app/providers';
 
 export const ShardSelectorModal = ({ onConfirm }: Callbacks) => {

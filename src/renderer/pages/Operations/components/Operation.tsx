@@ -1,8 +1,8 @@
 import { useI18n } from '@app/providers';
-import { FootnoteText, Accordion } from '@shared/ui';
+import { Accordion, FootnoteText } from '@shared/ui';
 import { Status } from './Status';
 import { OperationFullInfo } from './OperationFullInfo';
-import { MultisigTransactionDS } from '@shared/api/storage';
+import { type MultisigTransactionDS } from '@shared/api/storage';
 import { useMultisigEvent } from '@entities/multisig';
 import { ChainTitle, XcmChains } from '@entities/chain';
 import { TransactionTitle, getTransactionAmount, isXcmTransaction } from '@entities/transaction';

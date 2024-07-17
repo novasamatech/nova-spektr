@@ -1,8 +1,8 @@
-import { FormEvent } from 'react';
+import { type FormEvent } from 'react';
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 
-import { BaseModal, Button, Input, InputHint, Alert } from '@shared/ui';
+import { Alert, BaseModal, Button, Input, InputHint } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { OperationTitle } from '@entities/chain';
 import { addCustomRpcModel } from '../model/add-custom-rpc-model';

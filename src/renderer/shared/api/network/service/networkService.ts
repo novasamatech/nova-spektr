@@ -1,11 +1,11 @@
 import { ApiPromise, ScProvider, WsProvider } from '@polkadot/api';
-import { ProviderInterface } from '@polkadot/rpc-provider/types';
+import { type ProviderInterface } from '@polkadot/rpc-provider/types';
 import * as Sc from '@substrate/connect';
 
 import type { ChainId, HexString } from '@shared/core';
 import { getKnownChain } from '@shared/lib/utils';
 import { createCachedProvider } from '../provider/CachedProvider';
-import { ProviderType, ProviderWithMetadata } from '../lib/types';
+import { ProviderType, type ProviderWithMetadata } from '../lib/types';
 
 export const networkService = {
   createProvider,

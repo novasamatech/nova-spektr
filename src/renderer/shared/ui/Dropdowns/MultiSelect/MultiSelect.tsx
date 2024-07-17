@@ -3,15 +3,15 @@ import { Fragment, useId } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
 import { Checkbox } from '../../Checkbox/Checkbox';
-import { FootnoteText, LabelText, CaptionText } from '../../Typography';
+import { CaptionText, FootnoteText, LabelText } from '../../Typography';
 import { Icon } from '../../Icon/Icon';
 import { CommonInputStyles, CommonInputStylesTheme } from '../../Inputs/common/styles';
-import { DropdownOption, DropdownResult, Position, Theme } from '../common/types';
+import { type DropdownOption, type DropdownResult, type Position, type Theme } from '../common/types';
 import {
-  OptionsContainerStyle,
-  OptionsContainerStyleTheme,
   OptionStyle,
   OptionStyleTheme,
+  OptionsContainerStyle,
+  OptionsContainerStyleTheme,
   SelectButtonStyle,
   ViewClass,
 } from '../common/constants';

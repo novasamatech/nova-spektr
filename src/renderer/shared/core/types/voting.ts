@@ -1,8 +1,8 @@
-import { BN } from '@polkadot/util';
+import { type BN } from '@polkadot/util';
 
-import type { BlockHeight, Address } from './general';
+import type { Address, BlockHeight } from './general';
 import type { ReferendumId } from './referendum';
-import { TrackId } from './track';
+import { type TrackId } from './track';
 
 export interface Voting {
   type: VotingType;

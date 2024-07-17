@@ -1,11 +1,11 @@
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
 import { FootnoteText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { MultisigCreatedNotification } from './notifies/MultisigCreatedNotification';
 import { ProxyCreatedNotification } from './notifies/ProxyCreatedNotification';
 import { ProxyRemovedNotification } from './notifies/ProxyRemovedNotification';
-import type { Notification, MultisigCreated, ProxyAction } from '@shared/core';
+import type { MultisigCreated, Notification, ProxyAction } from '@shared/core';
 import { NotificationType } from '@shared/core';
 
 const Notifications: Record<NotificationType, (n: Notification) => ReactNode> = {

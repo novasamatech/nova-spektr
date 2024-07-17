@@ -1,6 +1,6 @@
-import { IconButton, HelpText } from '@shared/ui';
+import { HelpText, IconButton } from '@shared/ui';
 import { cnTw } from '@shared/lib/utils';
-import { AccountAddressProps, AccountAddress, getAddress } from '../AccountAddress/AccountAddress';
+import { AccountAddress, type AccountAddressProps, getAddress } from '../AccountAddress/AccountAddress';
 import type { Explorer } from '@shared/core';
 import { ExplorersPopover } from '../ExplorersPopover/ExplorersPopover';
 import { useI18n } from '@app/providers';

@@ -1,8 +1,8 @@
-import { ChangeEvent } from 'react';
+import { type ChangeEvent } from 'react';
 import { useUnit } from 'effector-react';
 
-import { Accordion, Checkbox, CaptionText, FootnoteText } from '@shared/ui';
-import { ShardAccount, Chain, ID } from '@shared/core';
+import { Accordion, CaptionText, Checkbox, FootnoteText } from '@shared/ui';
+import { type Chain, type ID, type ShardAccount } from '@shared/core';
 import { shardsModel } from '../model/shards-model';
 import { selectorUtils } from '../lib/selector-utils';
 import { SelectableShard } from './SelectableShard';

@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { useMultisigTx } from '@entities/multisig';
-import { NavItem, Props as NavItemProps } from './NavItem';
+import { NavItem, type Props as NavItemProps } from './NavItem';
 import { networkModel } from '@entities/network';
 import { Paths } from '@shared/routes';
 import { walletModel, walletUtils } from '@entities/wallet';

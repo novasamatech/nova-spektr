@@ -10,7 +10,7 @@ import { BondForm } from './BondForm';
 import { bondExtraUtils } from '../lib/bond-extra-utils';
 import { bondExtraModel } from '../model/bond-extra-model';
 import { Step } from '../lib/types';
-import { basketUtils, BondExtraConfirmation as Confirmation } from '@features/operations/OperationsConfirm';
+import { BondExtraConfirmation as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
 import { OperationResult } from '@entities/transaction';
 
 export const BondExtra = () => {

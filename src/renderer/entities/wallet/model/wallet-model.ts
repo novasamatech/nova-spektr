@@ -2,7 +2,7 @@ import { combine, createEffect, createEvent, createStore, sample } from 'effecto
 import { combineEvents } from 'patronum';
 import groupBy from 'lodash/groupBy';
 
-import type { ID, MultisigAccount, NoID, Wallet, Account, BaseAccount, ChainAccount, WcAccount } from '@shared/core';
+import type { Account, BaseAccount, ChainAccount, ID, MultisigAccount, NoID, Wallet, WcAccount } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { dictionary } from '@shared/lib/utils';
 import { modelUtils } from '../lib/model-utils';

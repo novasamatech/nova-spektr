@@ -2,27 +2,27 @@ import { useEffect, useState } from 'react';
 import { groupBy, isEqual } from 'lodash';
 import { useUnit } from 'effector-react';
 
-import { cnTw, includes, isEthereumAccountId, isStringsMatchQuery, RootExplorers, toAddress } from '@shared/lib/utils';
+import { RootExplorers, cnTw, includes, isEthereumAccountId, isStringsMatchQuery, toAddress } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import {
+  Accordion,
+  BodyText,
   Button,
+  CaptionText,
   Checkbox,
   FootnoteText,
+  HelpText,
   Icon,
   SearchInput,
   SmallTitleText,
   Tabs,
-  Accordion,
-  BodyText,
-  CaptionText,
-  HelpText,
 } from '@shared/ui';
-import { TabItem } from '@shared/ui/types';
+import { type TabItem } from '@shared/ui/types';
 import { CreateContactModal } from '@widgets/ManageContactModal';
-import { ExtendedAccount, ExtendedContact } from '../common/types';
+import { type ExtendedAccount, type ExtendedContact } from '../common/types';
 import { EmptyContactList } from '@entities/contact';
-import { type Contact, type Account, ShardAccount, Wallet, Chain } from '@shared/core';
+import { type Account, type Chain, type Contact, type ShardAccount, type Wallet } from '@shared/core';
 import { ContactItem, ExplorersPopover, WalletCardMd } from '@entities/wallet';
 import { networkUtils } from '@entities/network';
 import { matrixModel } from '@entities/matrix';

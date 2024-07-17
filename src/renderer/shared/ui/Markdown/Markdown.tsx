@@ -3,7 +3,7 @@ import ReactMarkdown, { type Components, type Options } from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
 
-import { BodyText, InfoLink, Checkbox, Button, Icon } from '@shared/ui';
+import { BodyText, Button, Checkbox, Icon, InfoLink } from '@shared/ui';
 import { cnTw } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
 

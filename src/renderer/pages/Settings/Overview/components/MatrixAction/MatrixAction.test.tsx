@@ -5,7 +5,7 @@ import { fork } from 'effector';
 
 import { MatrixAction } from './MatrixAction';
 import { Paths } from '@shared/routes';
-import { matrixModel, LoginStatus } from '@entities/matrix';
+import { LoginStatus, matrixModel } from '@entities/matrix';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({

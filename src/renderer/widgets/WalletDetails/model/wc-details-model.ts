@@ -2,8 +2,8 @@ import { createEvent, createStore, sample } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
 import { walletModel, walletUtils } from '@entities/wallet';
-import { walletConnectModel, InitConnectParams } from '@entities/walletConnect';
-import { ReconnectStep, ForgetStep } from '../lib/constants';
+import { type InitConnectParams, walletConnectModel } from '@entities/walletConnect';
+import { ForgetStep, ReconnectStep } from '../lib/constants';
 import { walletSelectModel } from '@features/wallets';
 import type { Wallet, WcAccount } from '@shared/core';
 import { chainsService } from '@shared/api/network';

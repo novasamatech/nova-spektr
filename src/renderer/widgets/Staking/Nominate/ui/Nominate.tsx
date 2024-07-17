@@ -11,7 +11,7 @@ import { NominateForm } from './NominateForm';
 import { nominateUtils } from '../lib/nominate-utils';
 import { nominateModel } from '../model/nominate-model';
 import { Step } from '../lib/types';
-import { basketUtils, NominateConfirmation as Confirmation } from '@features/operations/OperationsConfirm';
+import { NominateConfirmation as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
 import { OperationResult } from '@entities/transaction';
 
 export const Nominate = () => {

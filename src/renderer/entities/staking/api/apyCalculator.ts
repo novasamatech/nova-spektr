@@ -1,7 +1,7 @@
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
 import BigNumber from 'bignumber.js';
 
-import { ApyValidator } from '../lib/types';
+import { type ApyValidator } from '../lib/types';
 import { DECAY_RATE, INTEREST_IDEAL, MINIMUM_INFLATION, STAKED_PORTION_IDEAL } from '../lib/constants';
 import type { Address } from '@shared/core';
 

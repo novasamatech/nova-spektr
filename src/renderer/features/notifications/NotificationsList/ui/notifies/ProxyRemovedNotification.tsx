@@ -6,7 +6,7 @@ import { BodyText, Identicon } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { toAddress } from '@shared/lib/utils';
 import { ChainTitle } from '@entities/chain';
-import { WalletType, ProxyAction } from '@shared/core';
+import { type ProxyAction, WalletType } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { ProxyTypeOperation } from '../../lib/constants';
 

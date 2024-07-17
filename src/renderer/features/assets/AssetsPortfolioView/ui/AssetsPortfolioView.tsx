@@ -4,7 +4,7 @@ import { useI18n } from '@app/providers';
 import { FootnoteText } from '@shared/ui';
 import { priceProviderModel } from '@entities/price';
 import { walletModel } from '@entities/wallet';
-import { Wallet, WalletType } from '@shared/core';
+import { type Wallet, WalletType } from '@shared/core';
 import { AssetsListView, EmptyAssetsState } from '@entities/asset';
 import { TokenBalanceList } from './TokenBalanceList';
 import { TokenBalance } from './TokenBalance';

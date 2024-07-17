@@ -1,5 +1,5 @@
 import { RpcValidation } from './types';
-import { RpcNode } from '@shared/core';
+import { type RpcNode } from '@shared/core';
 
 export const customRpcUtils = {
   validateWsAddress,

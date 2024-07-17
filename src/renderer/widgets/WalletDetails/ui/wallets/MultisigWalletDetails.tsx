@@ -1,21 +1,21 @@
 import { useMemo } from 'react';
 import { useUnit } from 'effector-react';
 
-import { Signatory, Wallet, AccountId, MultisigWallet } from '@shared/core';
-import { BaseModal, FootnoteText, Tabs, DropdownIconButton, HelpText } from '@shared/ui';
+import { type AccountId, type MultisigWallet, type Signatory, type Wallet } from '@shared/core';
+import { BaseModal, DropdownIconButton, FootnoteText, HelpText, Tabs } from '@shared/ui';
 import { RootExplorers } from '@shared/lib/utils';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { useI18n } from '@app/providers';
 import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatBalance';
-import { IconNames } from '@shared/ui/Icon/data';
+import { type IconNames } from '@shared/ui/Icon/data';
 import type { TabItem } from '@shared/ui/types';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
-import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
+import { AddProxy, addProxyModel } from '@widgets/AddProxyModal';
 import { ProxiesList } from '../components/ProxiesList';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { walletProviderModel } from '../../model/wallet-provider-model';
-import { networkUtils, networkModel } from '@entities/network';
+import { networkModel, networkUtils } from '@entities/network';
 import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
 import {
   AccountsList,

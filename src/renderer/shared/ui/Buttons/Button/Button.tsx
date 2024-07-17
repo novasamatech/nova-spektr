@@ -1,9 +1,9 @@
 import noop from 'lodash/noop';
-import { MouseEvent, PropsWithChildren, ReactNode, forwardRef } from 'react';
+import { type MouseEvent, type PropsWithChildren, type ReactNode, forwardRef } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
-import { ViewClass, SizeClass, Padding } from '../common/constants';
-import { Pallet, Variant } from '../common/types';
+import { Padding, SizeClass, ViewClass } from '../common/constants';
+import { type Pallet, type Variant } from '../common/types';
 import { Loader } from '../../Loader/Loader';
 
 type Props = {

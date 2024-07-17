@@ -1,39 +1,39 @@
-import { createEvent, createStore, sample, combine, createEffect, restore } from 'effector';
-import { ApiPromise } from '@polkadot/api';
+import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { type ApiPromise } from '@polkadot/api';
 import { createForm } from 'effector-forms';
 import { BN } from '@polkadot/util';
 import { spread } from 'patronum';
 
 import {
-  Address,
+  type Account,
+  type Address,
+  type BaseAccount,
+  type Chain,
+  type MultisigTxWrapper,
+  type PartialBy,
+  type ProxiedAccount,
+  type ProxyTxWrapper,
   ProxyType,
-  Chain,
-  BaseAccount,
-  PartialBy,
-  ProxiedAccount,
-  Account,
+  type Transaction,
   TransactionType,
-  Transaction,
-  ProxyTxWrapper,
-  MultisigTxWrapper,
 } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { walletSelectModel } from '@features/wallets';
 import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
-import { walletUtils, accountUtils, walletModel, permissionUtils } from '@entities/wallet';
+import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
 import { proxyService } from '@shared/api/proxy';
 import { transactionService } from '@entities/transaction';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import {
+  TEST_ACCOUNTS,
+  ZERO_BALANCE,
+  dictionary,
   getProxyTypes,
   isStringsMatchQuery,
   toAddress,
-  TEST_ACCOUNTS,
-  dictionary,
-  transferableAmount,
   toShortAddress,
+  transferableAmount,
   validateAddress,
-  ZERO_BALANCE,
 } from '@shared/lib/utils';
 import { AddProxyRules } from '@features/operations/OperationsValidation';
 

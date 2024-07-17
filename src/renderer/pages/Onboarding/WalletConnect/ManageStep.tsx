@@ -1,23 +1,23 @@
 import cn from 'classnames';
 import { useEffect, useState } from 'react';
-import { Controller, useForm, SubmitHandler } from 'react-hook-form';
+import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
 import { useI18n, useStatusContext } from '@app/providers';
-import { Button, Input, InputHint, HeaderTitleText, SmallTitleText, Icon } from '@shared/ui';
+import { Button, HeaderTitleText, Icon, Input, InputHint, SmallTitleText } from '@shared/ui';
 import { toAccountId } from '@shared/lib/utils';
 import { chainsService } from '@shared/api/network';
-import { IconNames } from '@shared/ui/Icon/data';
+import { type IconNames } from '@shared/ui/Icon/data';
 import { MultiAccountsList, walletModel } from '@entities/wallet';
 import {
-  AccountId,
-  Chain,
+  type AccountId,
+  AccountType,
+  type Chain,
   ChainType,
   ErrorType,
+  type NoID,
   SigningType,
   WalletType,
-  AccountType,
-  WcAccount,
-  NoID,
+  type WcAccount,
 } from '@shared/core';
 
 const WalletLogo: Record<WalletTypeName, IconNames> = {

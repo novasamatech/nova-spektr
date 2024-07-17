@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 
-import { Input, Props as InputProps } from '../Input/Input';
+import { Input, type Props as InputProps } from '../Input/Input';
 import { Icon } from '../../Icon/Icon';
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';

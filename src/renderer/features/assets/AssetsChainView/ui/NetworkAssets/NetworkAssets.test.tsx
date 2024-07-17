@@ -5,8 +5,8 @@ import { fork } from 'effector';
 import { TEST_ACCOUNTS } from '@shared/lib/utils';
 import chains from '@shared/config/chains/chains.json';
 import { NetworkAssets } from './NetworkAssets';
-import type { Chain, BaseAccount, ChainAccount, ShardAccount } from '@shared/core';
-import { ChainType, CryptoType, AccountType } from '@shared/core';
+import type { BaseAccount, Chain, ChainAccount, ShardAccount } from '@shared/core';
+import { AccountType, ChainType, CryptoType } from '@shared/core';
 import { balanceModel } from '@entities/balance';
 
 const testChain = chains.find((chain) => chain.assets.length > 1) as Chain;

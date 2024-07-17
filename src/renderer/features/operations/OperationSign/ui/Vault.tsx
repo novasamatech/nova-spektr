@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 
 import { useCountdown } from '@shared/lib/hooks';
 import { ValidationErrors, toAddress } from '@shared/lib/utils';
-import { useTransaction, ScanMultiframeQr, ScanSingleframeQr, QrReaderWrapper } from '@entities/transaction';
+import { QrReaderWrapper, ScanMultiframeQr, ScanSingleframeQr, useTransaction } from '@entities/transaction';
 import { accountUtils, walletUtils } from '@entities/wallet';
-import type { HexString, Address } from '@shared/core';
+import type { Address, HexString } from '@shared/core';
 import type { InnerSigningProps } from '../lib/types';
 import { operationSignUtils } from '../lib/operation-sign-utils';
 

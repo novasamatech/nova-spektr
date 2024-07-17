@@ -6,14 +6,14 @@ import { useI18n } from '@app/providers';
 import EmptyOperations from './components/EmptyState/EmptyOperations';
 import Operation from './components/Operation';
 import { FootnoteText, Header } from '@shared/ui';
-import { MultisigTransactionDS } from '@shared/api/storage';
-import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
+import { type MultisigTransactionDS } from '@shared/api/storage';
+import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
 import { OperationsFilter } from '@features/operations';
-import { walletModel, accountUtils } from '@entities/wallet';
+import { accountUtils, walletModel } from '@entities/wallet';
 import { priceProviderModel } from '@entities/price';
 import { networkModel } from '@entities/network';
 import { sortByDateDesc } from '@shared/lib/utils';
-import { MultisigEvent, MultisigTransactionKey } from '@shared/core';
+import { type MultisigEvent, type MultisigTransactionKey } from '@shared/core';
 
 export const Operations = () => {
   const { t, formatDate } = useI18n();

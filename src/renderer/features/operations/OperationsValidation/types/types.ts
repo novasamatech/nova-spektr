@@ -1,4 +1,4 @@
-import { Asset, Balance, Chain } from '@shared/core';
+import { type Asset, type Balance, type Chain } from '@shared/core';
 
 export type BalanceMap = Record<'balance' | 'native', string>;
 

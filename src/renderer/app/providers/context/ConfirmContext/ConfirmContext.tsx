@@ -1,6 +1,14 @@
-import { createContext, PropsWithChildren, useCallback, useContext, useRef, useState, ReactNode } from 'react';
+import {
+  type PropsWithChildren,
+  type ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useRef,
+  useState,
+} from 'react';
 
-import { ConfirmModal, SmallTitleText, FootnoteText } from '@shared/ui';
+import { ConfirmModal, FootnoteText, SmallTitleText } from '@shared/ui';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
 

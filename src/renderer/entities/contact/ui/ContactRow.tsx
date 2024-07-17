@@ -1,4 +1,4 @@
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 
 import { BodyText, IconButton, Identicon, Plate, Truncate } from '@shared/ui';
 import { copyToClipboard } from '@shared/lib/utils';

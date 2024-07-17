@@ -1,14 +1,14 @@
 import merge from 'lodash/merge';
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
 import { u8aToString } from '@polkadot/util';
-import { Data, Option } from '@polkadot/types';
-import { PalletIdentityRegistration } from '@polkadot/types/lookup';
-import { AccountId32 } from '@polkadot/types/interfaces';
+import { type Data, type Option } from '@polkadot/types';
+import { type PalletIdentityRegistration } from '@polkadot/types/lookup';
+import { type AccountId32 } from '@polkadot/types/interfaces';
 
 import type { Address, EraIndex, Identity, SubIdentity, Validator } from '@shared/core';
 import { stakingUtils } from '../lib/staking-utils';
 import { DEFAULT_MAX_NOMINATORS, KUSAMA_MAX_NOMINATORS } from '../lib/constants';
-import { ValidatorMap } from '../lib/types';
+import { type ValidatorMap } from '../lib/types';
 
 export const validatorsService = {
   getValidatorsWithInfo,

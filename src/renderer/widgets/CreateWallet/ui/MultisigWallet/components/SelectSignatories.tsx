@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
-import { cnTw, includes, toAddress, RootExplorers, isEthereumAccountId } from '@shared/lib/utils';
+import { RootExplorers, cnTw, includes, isEthereumAccountId, toAddress } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
-import { Button, Checkbox, FootnoteText, Icon, SearchInput, SmallTitleText, Tabs, Tooltip, HelpText } from '@shared/ui';
-import { TabItem } from '@shared/ui/types';
+import { Button, Checkbox, FootnoteText, HelpText, Icon, SearchInput, SmallTitleText, Tabs, Tooltip } from '@shared/ui';
+import { type TabItem } from '@shared/ui/types';
 import { CreateContactModal } from '@widgets/ManageContactModal';
-import { ExtendedContact, ExtendedWallet } from '../common/types';
+import { type ExtendedContact, type ExtendedWallet } from '../common/types';
 import { EmptyContactList } from '@entities/contact';
-import { type Contact, type Wallet, type Account, WalletType } from '@shared/core';
+import { type Account, type Contact, type Wallet, WalletType } from '@shared/core';
 import { ContactItem, ExplorersPopover, accountUtils, walletUtils } from '@entities/wallet';
 import { WalletItem } from './WalletItem';
 import { matrixModel } from '@entities/matrix';

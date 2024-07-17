@@ -1,6 +1,6 @@
-import { Asset, Explorer, Validator } from '@shared/core';
+import { type Asset, type Explorer, type Validator } from '@shared/core';
 import { cnTw, getComposedIdentity } from '@shared/lib/utils';
-import { BodyText, FootnoteText, HelpText, Identicon, Truncate, IconButton } from '@shared/ui';
+import { BodyText, FootnoteText, HelpText, IconButton, Identicon, Truncate } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { ExplorersPopover } from '@entities/wallet';

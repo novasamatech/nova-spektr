@@ -1,4 +1,4 @@
-import { BrowserCodeReader, BrowserQRCodeReader, IScannerControls } from '@zxing/browser';
+import { BrowserCodeReader, BrowserQRCodeReader, type IScannerControls } from '@zxing/browser';
 import init, { Decoder, EncodingPacket } from 'raptorq';
 import { useEffect, useRef } from 'react';
 import { u8aToHex } from '@polkadot/util';
@@ -8,7 +8,7 @@ import { cnTw } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
 import { QR_READER_ERRORS } from '../common/errors';
 import { ErrorFields, FRAME_KEY, SIGNED_TRANSACTION_BULK } from '../common/constants';
-import { DecodeCallback, ErrorObject, Progress, QrError, VideoInput } from '../common/types';
+import { type DecodeCallback, type ErrorObject, type Progress, QrError, type VideoInput } from '../common/types';
 import { CRYPTO_SR25519 } from '../QrGenerator/common/constants';
 import type { HexString } from '@shared/core';
 

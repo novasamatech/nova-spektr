@@ -1,9 +1,9 @@
 import { xcmService } from '../service/xcmService';
 import {
-  XTOKENS_ACA_PARALLEL,
-  XTOKENS_ACA_DOT,
-  XCMPALLET_TRANSFER_KSM_BIFROST,
   XCMPALLET_TRANSFER_HUB_ASTAR,
+  XCMPALLET_TRANSFER_KSM_BIFROST,
+  XTOKENS_ACA_DOT,
+  XTOKENS_ACA_PARALLEL,
 } from './mock/xcmData';
 
 describe('shared/api/xcm/service/xcm-service', () => {

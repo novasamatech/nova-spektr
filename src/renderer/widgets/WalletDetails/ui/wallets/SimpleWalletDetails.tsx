@@ -7,14 +7,14 @@ import { AccountsList, WalletCardLg, accountUtils, permissionUtils, walletUtils 
 import { networkModel, networkUtils } from '@entities/network';
 import { useI18n } from '@app/providers';
 import type { Chain, SingleShardWallet, WatchOnlyWallet } from '@shared/core';
-import { IconNames } from '@shared/ui/Icon/data';
+import { type IconNames } from '@shared/ui/Icon/data';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
-import { TabItem } from '@shared/ui/types';
+import { type TabItem } from '@shared/ui/types';
 import { ProxiesList } from '../components/ProxiesList';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { walletProviderModel } from '../../model/wallet-provider-model';
-import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
+import { AddProxy, addProxyModel } from '@widgets/AddProxyModal';
 import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
 
 type Props = {

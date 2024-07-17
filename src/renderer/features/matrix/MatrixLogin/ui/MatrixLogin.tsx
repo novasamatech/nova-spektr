@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { BaseModal } from '@shared/ui';
-import { MatrixInfoPopover, matrixUtils, matrixModel } from '@entities/matrix';
+import { MatrixInfoPopover, matrixModel, matrixUtils } from '@entities/matrix';
 import { LoginForm } from './LoginForm';
 import { useToggle } from '@shared/lib/hooks';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';

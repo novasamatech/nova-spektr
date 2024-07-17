@@ -1,4 +1,4 @@
-import { ProviderInterfaceCallback, ProviderInterface } from '@polkadot/rpc-provider/types';
+import { type ProviderInterface, type ProviderInterfaceCallback } from '@polkadot/rpc-provider/types';
 
 import type { HexString } from '@shared/core';
 

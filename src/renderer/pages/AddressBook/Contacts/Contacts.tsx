@@ -4,7 +4,7 @@ import { useUnit } from 'effector-react';
 import { Header } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { ContactFilter, CreateContactNavigation, EditContactNavigation, filterModel } from '@features/contacts';
-import { ContactList, contactModel, ContactRow, EmptyContactList, EmptyFilteredContacts } from '@entities/contact';
+import { ContactList, ContactRow, EmptyContactList, EmptyFilteredContacts, contactModel } from '@entities/contact';
 
 export const Contacts = () => {
   const { t } = useI18n();

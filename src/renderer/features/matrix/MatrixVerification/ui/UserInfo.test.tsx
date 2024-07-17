@@ -1,4 +1,4 @@
-import { render, screen, act } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { Provider } from 'effector-react';
 import { fork } from 'effector';
 

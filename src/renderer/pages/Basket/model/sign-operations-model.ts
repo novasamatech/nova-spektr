@@ -1,23 +1,23 @@
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
 import { spread } from 'patronum';
 
 import { Step } from '../types';
 import {
-  Account,
-  AccountId,
-  Address,
-  Asset,
-  BasketTransaction,
-  Chain,
-  ChainId,
-  Connection,
-  ProxiedAccount,
-  ProxyType,
-  Transaction,
+  type Account,
+  type AccountId,
+  type Address,
+  type Asset,
+  type BasketTransaction,
+  type Chain,
+  type ChainId,
+  type Connection,
+  type ProxiedAccount,
+  type ProxyType,
+  type Transaction,
   TransactionType,
-  Validator,
-  Wallet,
+  type Validator,
+  type Wallet,
 } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
@@ -41,7 +41,7 @@ import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { basketModel } from '@entities/basket';
 import { ExtrinsicResult } from '@features/operations/OperationSubmit/lib/types';
-import { ChainError } from '@shared/core/types/basket';
+import { type ChainError } from '@shared/core/types/basket';
 import { proxyService } from '@shared/api/proxy';
 import { getCoreTx } from '../lib/utils';
 import { eraService, useStakingData, validatorsService } from '@entities/staking';

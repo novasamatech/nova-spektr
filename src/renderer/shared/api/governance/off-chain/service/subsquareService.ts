@@ -2,13 +2,18 @@ import { BN } from '@polkadot/util';
 
 import { dictionary } from '@shared/lib/utils';
 import {
+  type SubsquareReferendumVote,
+  type SubsquareSimpleReferendum,
+  type SubsquareTimelineRecord,
   subsquareApiService,
-  SubsquareSimpleReferendum,
-  SubsquareReferendumVote,
-  SubsquareTimelineRecord,
 } from '@shared/api/subsquare';
-import { GovernanceApi, ReferendumTimelineRecord, ReferendumTimelineRecordStatus, ReferendumVote } from '../lib/types';
-import { SubsquareTimelineRecordStatus } from '../../../subsquare/lib/types';
+import {
+  type GovernanceApi,
+  type ReferendumTimelineRecord,
+  type ReferendumTimelineRecordStatus,
+  type ReferendumVote,
+} from '../lib/types';
+import { type SubsquareTimelineRecordStatus } from '../../../subsquare/lib/types';
 
 const getReferendumList: GovernanceApi['getReferendumList'] = async (chain, callback) => {
   const network = chain.specName;

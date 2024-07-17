@@ -1,10 +1,16 @@
-import { BaseTxInfo, defineMethod, methods, OptionsWithMeta, UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import { ApiPromise } from '@polkadot/api';
+import {
+  type BaseTxInfo,
+  type OptionsWithMeta,
+  type UnsignedTransaction,
+  defineMethod,
+  methods,
+} from '@substrate/txwrapper-polkadot';
+import { type ApiPromise } from '@polkadot/api';
 import { methods as ormlMethods } from '@substrate/txwrapper-orml';
-import { SubmittableExtrinsic } from '@polkadot/api/types';
+import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import sortBy from 'lodash/sortBy';
 
-import { Transaction, TransactionType, MultisigTxWrapper, ProxyTxWrapper } from '@shared/core';
+import { type MultisigTxWrapper, type ProxyTxWrapper, type Transaction, TransactionType } from '@shared/core';
 import { getMaxWeight, hasDestWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
 import * as xcmMethods from '@entities/transaction/lib/common/xcmMethods';
 import { DEFAULT_FEE_ASSET_ITEM } from '@entities/transaction';

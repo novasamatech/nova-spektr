@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 import { Popover, Transition } from '@headlessui/react';
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
 import { walletModel } from '@entities/wallet';
 import { Shimmering } from '@shared/ui';

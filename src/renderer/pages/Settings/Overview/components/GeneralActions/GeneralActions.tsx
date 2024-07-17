@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react/effector-react.umd';
 import { useEffect, useState } from 'react';
 import { capitalize } from 'lodash';
 
-import { Icon, BodyText, Plate, FootnoteText, HelpText, Switch } from '@shared/ui';
+import { BodyText, FootnoteText, HelpText, Icon, Plate, Switch } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { Paths } from '@shared/routes';
 import { cnTw } from '@shared/lib/utils';

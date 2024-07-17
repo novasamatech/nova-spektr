@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { Icon, Tooltip, BodyText, Plate, FootnoteText, CaptionText } from '@shared/ui';
+import { BodyText, CaptionText, FootnoteText, Icon, Plate, Tooltip } from '@shared/ui';
 import type { AssetByChains } from '@shared/core';
 import { TokenPrice } from '@entities/price';
 import { AssetIcon, AssetLinks } from '@entities/asset';

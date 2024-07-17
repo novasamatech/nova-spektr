@@ -5,7 +5,7 @@ import { isStringsMatchQuery } from '@shared/lib/utils';
 import type { Account, Chain } from '@shared/core';
 import { chainsService } from '@shared/api/network';
 import { balanceModel } from '@entities/balance';
-import { priceProviderModel, currencyModel } from '@entities/price';
+import { currencyModel, priceProviderModel } from '@entities/price';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
 import { AssetsListView, EmptyAssetsState } from '@entities/asset';

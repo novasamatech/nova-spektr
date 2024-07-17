@@ -5,15 +5,15 @@ import { BodyText, Button, CaptionText, FootnoteText, Icon, SmallTitleText } fro
 import { AddressWithName, WalletIcon, walletModel } from '@entities/wallet';
 import { getSignatoryName } from '@pages/Operations/common/utils';
 import {
-  AccountId,
-  MultisigAccount,
-  Signatory,
-  Wallet,
-  MultisigEvent,
-  MultisigTransaction,
-  SigningStatus,
+  type AccountId,
+  type MultisigAccount,
+  type MultisigEvent,
+  type MultisigTransaction,
+  type Signatory,
+  type SigningStatus,
+  type Wallet,
 } from '@shared/core';
-import { ExtendedChain } from '@entities/network';
+import { type ExtendedChain } from '@entities/network';
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { nonNullable } from '@shared/lib/utils';

@@ -1,14 +1,14 @@
 import {
-  ProxyAction,
-  NoID,
-  Wallet,
-  ChainId,
-  AccountId,
-  WalletType,
-  NotificationType,
-  Chain,
-  type PartialProxiedAccount,
+  type AccountId,
+  type Chain,
+  type ChainId,
   ChainOptions,
+  type NoID,
+  type NotificationType,
+  type PartialProxiedAccount,
+  type ProxyAction,
+  type Wallet,
+  type WalletType,
 } from '@shared/core';
 import { walletUtils } from '@entities/wallet';
 import { proxyUtils } from '@entities/proxy';

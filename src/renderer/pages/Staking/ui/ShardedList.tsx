@@ -1,15 +1,15 @@
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
-import type { Asset, Explorer, Address } from '@shared/core';
-import { FootnoteText, Checkbox, Accordion, Shimmering, Plate, Tooltip } from '@shared/ui';
-import { ShardAccount } from '@shared/core/types/account';
+import type { Address, Asset, Explorer } from '@shared/core';
+import { Accordion, Checkbox, FootnoteText, Plate, Shimmering, Tooltip } from '@shared/ui';
+import { type ShardAccount } from '@shared/core/types/account';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { useStakingData } from '@entities/staking';
 import { NominatorsItem } from './NominatorItem';
-import { NominatorInfo } from '../lib/types';
+import { type NominatorInfo } from '../lib/types';
 
 type Props = {
   shardsStake: NominatorInfo<ShardAccount>[];

@@ -1,7 +1,7 @@
-import { TFunction } from 'react-i18next';
+import { type TFunction } from 'react-i18next';
 
 import { DropdownButton } from '@shared/ui';
-import { ButtonDropdownOption } from '@shared/ui/types';
+import { type ButtonDropdownOption } from '@shared/ui/types';
 import { useI18n } from '@app/providers';
 import { WalletType } from '@shared/core';
 import { WalletIcon } from '@entities/wallet';

@@ -1,7 +1,7 @@
 import { Trans } from 'react-i18next';
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 
-import { FootnoteText, Icon, Popover, SmallTitleText, LabelHelpBox } from '@shared/ui';
+import { FootnoteText, Icon, LabelHelpBox, Popover, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 
 // const WIKI_LINK = '';

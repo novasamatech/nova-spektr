@@ -1,4 +1,4 @@
-import { ProxiedAccount, ProxyType, ProxyVariant } from '@shared/core';
+import { type ProxiedAccount, ProxyType, ProxyVariant } from '@shared/core';
 import { TEST_ACCOUNTS } from '@shared/lib/utils';
 import { proxyUtils } from '../proxy-utils';
 import { proxyMock } from './mocks/proxy-mocks';

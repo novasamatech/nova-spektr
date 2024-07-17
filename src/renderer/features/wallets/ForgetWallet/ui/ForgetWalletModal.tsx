@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import { Wallet } from '@shared/core';
+import { type Wallet } from '@shared/core';
 import { ConfirmModal, FootnoteText, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { forgetWalletModel } from '../model/forget-wallet-model';

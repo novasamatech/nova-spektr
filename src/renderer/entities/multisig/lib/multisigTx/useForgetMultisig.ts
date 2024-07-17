@@ -1,4 +1,4 @@
-import { IMultisigTransactionStorage, storage } from '@shared/api/storage';
+import { type IMultisigTransactionStorage, storage } from '@shared/api/storage';
 
 export const useForgetMultisig = (): Pick<IMultisigTransactionStorage, 'deleteMultisigTxs'> => {
   const transactionStorage = storage.connectTo('multisigTransactions');

@@ -3,11 +3,11 @@ import groupBy from 'lodash/groupBy';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { Icon, CaptionText, Tooltip, Accordion } from '@shared/ui';
-import { ZERO_BALANCE, totalAmount, includes, cnTw } from '@shared/lib/utils';
-import type { AccountId, Chain, Asset, Balance, Account } from '@shared/core';
+import { Accordion, CaptionText, Icon, Tooltip } from '@shared/ui';
+import { ZERO_BALANCE, cnTw, includes, totalAmount } from '@shared/lib/utils';
+import type { Account, AccountId, Asset, Balance, Chain } from '@shared/core';
 import { sumBalances } from '@shared/api/network/service/chainsService';
-import { ExtendedChain } from '@entities/network';
+import { type ExtendedChain } from '@entities/network';
 import { ChainTitle } from '@entities/chain';
 import { accountUtils } from '@entities/wallet';
 import { currencyModel, priceProviderModel } from '@entities/price';

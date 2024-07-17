@@ -1,10 +1,10 @@
-import { createEvent, createEffect, combine, sample, restore, createStore } from 'effector';
-import { ApiPromise } from '@polkadot/api';
+import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { type ApiPromise } from '@polkadot/api';
 import { pending, spread } from 'patronum';
 
-import { Chain, Asset, Validator, EraIndex } from '@shared/core';
+import { type Asset, type Chain, type EraIndex, type Validator } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
-import { validatorsService, ValidatorMap } from '@entities/staking';
+import { type ValidatorMap, validatorsService } from '@entities/staking';
 import { eraService } from '@entities/staking/api';
 
 type Input = {

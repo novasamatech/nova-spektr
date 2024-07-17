@@ -1,10 +1,10 @@
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 import { Trans } from 'react-i18next';
 
-import { Chain, Referendum } from '@shared/core';
+import { type Chain, type Referendum } from '@shared/core';
 import { BaseModal, FootnoteText, HeaderTitleText, Icon, LabelHelpBox, Popover, SmallTitleText } from '@shared/ui';
 import { ChainIcon } from '@entities/chain';
-import { IconNames } from '@shared/ui/Icon/data';
+import { type IconNames } from '@shared/ui/Icon/data';
 import { useI18n } from '@app/providers';
 
 type Props = {

@@ -1,5 +1,5 @@
 /* eslint-disable i18next/no-literal-string */
-import { ElementType } from 'react';
+import { type ElementType } from 'react';
 
 import { useI18n } from '@app/providers';
 import { timeUtils } from './common/utils';

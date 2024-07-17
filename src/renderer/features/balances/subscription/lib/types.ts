@@ -1,4 +1,4 @@
-import { UnsubscribePromise } from '@polkadot/api/types';
+import { type UnsubscribePromise } from '@polkadot/api/types';
 
 import type { AccountId, ChainId, ID } from '@shared/core';
 

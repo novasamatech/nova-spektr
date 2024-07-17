@@ -1,15 +1,15 @@
 import { useForm } from 'effector-forms';
-import { FormEvent } from 'react';
+import { type FormEvent } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { accountUtils, AccountAddress, ProxyWalletAlert } from '@entities/wallet';
-import { toAddress, toShortAddress, formatBalance } from '@shared/lib/utils';
+import { AccountAddress, ProxyWalletAlert, accountUtils } from '@entities/wallet';
+import { formatBalance, toAddress, toShortAddress } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { FeeLoader } from '@entities/transaction';
 import { priceProviderModel } from '@entities/price';
-import { Input, Button, InputHint, AmountInput, MultiSelect, Icon, DetailRow, FootnoteText, Tooltip } from '@shared/ui';
+import { AmountInput, Button, DetailRow, FootnoteText, Icon, Input, InputHint, MultiSelect, Tooltip } from '@shared/ui';
 import { SignatorySelector } from '@entities/operations';
 import { formModel } from '../model/form-model';
 

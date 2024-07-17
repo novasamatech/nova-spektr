@@ -1,4 +1,4 @@
-import type { ChainId, AccountId, ID } from './general';
+import type { AccountId, ChainId, ID } from './general';
 
 export type Balance = {
   id: ID;

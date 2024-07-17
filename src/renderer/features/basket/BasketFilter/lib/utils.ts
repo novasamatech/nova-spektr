@@ -1,9 +1,9 @@
-import { TFunction } from 'react-i18next';
+import { type TFunction } from 'react-i18next';
 
-import { BasketTransaction, Chain, Transaction, TransactionType } from '@shared/core';
+import { type BasketTransaction, type Chain, type Transaction, TransactionType } from '@shared/core';
 import { TransferTypes, TxStatus, UNKNOWN_TYPE } from './constants';
-import { DropdownOption, DropdownResult } from '@shared/ui/types';
-import { SelectedFilters } from '../common/types';
+import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
+import { type SelectedFilters } from '../common/types';
 import { XcmTypes } from '@entities/transaction';
 
 export const getStatusOptions = (t: TFunction) => {

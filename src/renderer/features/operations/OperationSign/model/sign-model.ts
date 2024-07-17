@@ -1,6 +1,6 @@
-import { createEvent, restore, combine, sample } from 'effector';
+import { combine, createEvent, restore, sample } from 'effector';
 import { once } from 'patronum';
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
 
 import type { ChainId, HexString } from '@shared/core';
 import { networkModel } from '@entities/network';

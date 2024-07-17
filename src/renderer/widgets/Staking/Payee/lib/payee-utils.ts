@@ -1,7 +1,7 @@
 import { Step } from './types';
-import { walletUtils, accountUtils } from '@entities/wallet';
+import { accountUtils, walletUtils } from '@entities/wallet';
 import { transactionService } from '@entities/transaction';
-import { Wallet, Account, Chain } from '@shared/core';
+import { type Account, type Chain, type Wallet } from '@shared/core';
 
 export const payeeUtils = {
   isNoneStep,

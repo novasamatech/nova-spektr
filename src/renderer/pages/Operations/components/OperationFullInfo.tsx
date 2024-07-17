@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { Icon, Button, InfoLink, SmallTitleText } from '@shared/ui';
+import { Button, Icon, InfoLink, SmallTitleText } from '@shared/ui';
 import { OperationCardDetails } from './OperationCardDetails';
 import RejectTx from './modals/RejectTx';
 import ApproveTx from './modals/ApproveTx';
@@ -9,11 +9,11 @@ import CallDataModal from './modals/CallDataModal';
 import { useI18n, useMultisigChainContext } from '@app/providers';
 import { useMultisigTx } from '@entities/multisig';
 import { useToggle } from '@shared/lib/hooks';
-import { MultisigTransactionDS } from '@shared/api/storage';
+import { type MultisigTransactionDS } from '@shared/api/storage';
 import type { CallData, MultisigAccount } from '@shared/core';
 import { OperationSignatories } from './OperationSignatories';
 import { useNetworkData } from '@entities/network';
-import { walletModel, permissionUtils } from '@entities/wallet';
+import { permissionUtils, walletModel } from '@entities/wallet';
 import { matrixModel } from '@entities/matrix';
 
 type Props = {

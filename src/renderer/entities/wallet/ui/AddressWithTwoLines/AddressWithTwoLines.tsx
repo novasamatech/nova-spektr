@@ -1,11 +1,10 @@
-import { ReactNode } from 'react';
-import { IconTheme } from '@polkadot/react-identicon/types';
+import { type ReactNode } from 'react';
+import { type IconTheme } from '@polkadot/react-identicon/types';
 
 import { cnTw } from '@shared/lib/utils';
 import { Identicon } from '@shared/ui';
-import { SigningType } from '@shared/core';
+import { type AccountId, type Address, type SigningType } from '@shared/core';
 import { getAddress } from '../AccountAddress/AccountAddress';
-import type { AccountId, Address } from '@shared/core';
 
 type WithAccountId = {
   accountId: AccountId;

@@ -1,5 +1,5 @@
 import { combine, createEvent, createStore, sample } from 'effector';
-import { spread, delay } from 'patronum';
+import { delay, spread } from 'patronum';
 
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
@@ -7,11 +7,11 @@ import { walletSelectModel } from '@features/wallets';
 import { proxiesModel } from '@features/proxies';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { balanceSubModel } from '@features/balances';
-import { Step, AddProxyStore } from '../lib/types';
+import { type AddProxyStore, Step } from '../lib/types';
 import { formModel } from './form-model';
 import { addProxyConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { addProxyUtils } from '../lib/add-proxy-utils';
-import { BasketTransaction, Transaction } from '@shared/core';
+import { type BasketTransaction, type Transaction } from '@shared/core';
 import { basketModel } from '@entities/basket';
 
 const stepChanged = createEvent<Step>();

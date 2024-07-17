@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, ReactNode } from 'react';
+import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
 import { AssetBalance, AssetIcon } from '@entities/asset';

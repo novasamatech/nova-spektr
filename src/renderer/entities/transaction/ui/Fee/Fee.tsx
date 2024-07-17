@@ -1,6 +1,6 @@
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
-import { useEffect, useState, memo } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 
 import { AssetBalance } from '@entities/asset';

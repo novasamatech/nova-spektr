@@ -1,21 +1,21 @@
 import { hexToU8a, u8aConcat, u8aToU8a } from '@polkadot/util';
 import { decodeAddress } from '@polkadot/util-crypto';
 import qrcode from 'qrcode-generator';
-import { Encoder } from 'raptorq';
+import { type Encoder } from 'raptorq';
 import { str } from 'parity-scale-codec';
 
 import {
-  Command,
   CRYPTO_ECDSA,
   CRYPTO_ETHEREUM,
   CRYPTO_SR25519,
   CRYPTO_STUB,
+  Command,
   FRAME_SIZE,
   SUBSTRATE_ID,
 } from './constants';
-import type { ChainId } from '@shared/core';
-import { Address, CryptoType, CryptoTypeString, SigningType } from '@shared/core';
-import { DynamicDerivationRequestInfo } from '../../common/types';
+import { CryptoType, CryptoTypeString, SigningType } from '@shared/core';
+import type { type Address, ChainId } from '@shared/core';
+import { type DynamicDerivationRequestInfo } from '../../common/types';
 import { DYNAMIC_DERIVATIONS_REQUEST } from '../../common/constants';
 
 const MULTIPART = new Uint8Array([0]);

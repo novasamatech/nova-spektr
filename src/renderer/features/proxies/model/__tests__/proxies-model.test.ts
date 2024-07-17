@@ -2,13 +2,13 @@ import { allSettled, fork } from 'effector';
 
 import { networkModel } from '@entities/network';
 import {
-  ConnectionType,
-  ProxyAccount,
-  type HexString,
-  ProxyType,
-  AccountId,
+  type AccountId,
   AccountType,
   ChainOptions,
+  ConnectionType,
+  type HexString,
+  type ProxyAccount,
+  ProxyType,
 } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { proxiesModel } from '../proxies-model';

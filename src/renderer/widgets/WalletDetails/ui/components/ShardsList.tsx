@@ -1,8 +1,8 @@
 import { useUnit } from 'effector-react';
 
-import { BaseModal, IconButton, HelpText } from '@shared/ui';
+import { BaseModal, HelpText, IconButton } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
-import { ExplorersPopover, AccountAddress, accountUtils } from '@entities/wallet';
+import { AccountAddress, ExplorersPopover, accountUtils } from '@entities/wallet';
 import { vaultDetailsModel } from '../../model/vault-details-model';
 import { cnTw } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';

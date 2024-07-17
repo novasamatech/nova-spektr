@@ -11,10 +11,12 @@ import type {
   TrackId,
   TrackInfo,
   VotingThreshold,
-} from '@shared/core';
-import { getCurrentBlockNumber } from '@shared/lib/utils';
-import { opengovThresholdService } from '@shared/api/governance';
-import { referendumService } from '@entities/governance';
+} from '@/shared/core';
+import { getCurrentBlockNumber } from '@/shared/lib/utils';
+import { opengovThresholdService } from '@/shared/api/governance';
+
+import { referendumService } from '@/entities/governance';
+
 import { tracksModel } from './tracks';
 import { referendumModel } from './referendum';
 

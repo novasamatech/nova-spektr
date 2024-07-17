@@ -2,7 +2,7 @@ import React from 'react';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { Icon, Tooltip, Accordion, BodyText, FootnoteText, Plate, HelpText, IconButton } from '@shared/ui';
+import { Accordion, BodyText, FootnoteText, HelpText, Icon, IconButton, Plate, Tooltip } from '@shared/ui';
 import type { AssetByChains } from '@shared/core';
 import { CheckPermission, OperationType, walletModel } from '@entities/wallet';
 import { TokenPrice } from '@entities/price';

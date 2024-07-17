@@ -1,9 +1,9 @@
-import { fork, allSettled } from 'effector';
+import { allSettled, fork } from 'effector';
 
 import { shardsModel } from '../shards-model';
 import { shardsMock } from './mocks/shards-mock';
 import { walletModel } from '@entities/wallet';
-import { ChainAccount, ShardAccount } from '@shared/core';
+import { type ChainAccount, type ShardAccount } from '@shared/core';
 import { networkModel } from '@entities/network';
 
 describe('features/wallet/model/shards-model', () => {

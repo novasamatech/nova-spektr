@@ -1,11 +1,11 @@
-import { PropsWithChildren, Children } from 'react';
+import { Children, type PropsWithChildren } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
 import { IconButton } from '../Buttons';
 import { HeadlineText } from '../Typography';
 import { Icon } from '../Icon/Icon';
-import { Variant } from './common/types';
-import { ViewStyle, IconStyle, IconName } from './common/constants';
+import { type Variant } from './common/types';
+import { IconName, IconStyle, ViewStyle } from './common/constants';
 import { AlertItem } from './AlertItem';
 
 type Props = {

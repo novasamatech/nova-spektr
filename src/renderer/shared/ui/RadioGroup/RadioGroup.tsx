@@ -1,9 +1,9 @@
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 import { RadioGroup as HeadlessRadioGroup } from '@headlessui/react';
 
 import { Option } from './RadioOption';
 import { RadioCard } from './RadioCard';
-import { RadioOption, RadioResult } from './common/types';
+import { type RadioOption, type RadioResult } from './common/types';
 import { LabelText } from '@shared/ui';
 import './RadioGroup.css';
 

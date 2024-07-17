@@ -51,14 +51,13 @@ module.exports = {
     },
   },
   rules: {
+    'sort-imports': ['error', { ignoreDeclarationSort: true }],
     'import/no-unresolved': 'off',
     'import/order': [
       'error',
       {
-        groups: [
-          ['builtin', 'external'],
-          ['internal', 'sibling', 'parent', 'object', 'index'],
-        ],
+        alphabetize: { order: 'asc' },
+        groups: ['builtin', 'external', ['internal', 'sibling', 'parent', 'object'], 'index'],
         pathGroups: [
           { group: 'sibling', pattern: '@/app/**', position: 'before' },
           { group: 'sibling', pattern: '@/shared/**', position: 'before' },
@@ -155,12 +154,19 @@ module.exports = {
       },
       rules: {
         'unused-imports/no-unused-imports': 'error',
+        '@typescript-eslint/consistent-type-imports': [
+          'error',
+          {
+            prefer: 'type-imports',
+            fixStyle: 'inline-type-imports',
+          },
+        ],
         '@typescript-eslint/no-unused-vars': 'off',
         '@typescript-eslint/no-empty-interface': 'off',
         '@typescript-eslint/no-non-null-assertion': 'off',
         '@typescript-eslint/no-empty-function': 'off',
         // TODO enable
-        '@typescript-eslint/no-unnecessary-type-constraint': 'warn',
+        '@typescript-eslint/no-unnecessary-type-constraint': 'error',
         // it took around 4 seconds to check this single rule
         'effector/enforce-effect-naming-convention': 'off',
         // it took around 4 seconds to check this single rule

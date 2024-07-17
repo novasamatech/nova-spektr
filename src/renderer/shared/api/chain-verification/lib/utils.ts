@@ -1,4 +1,4 @@
-import { Node } from './types';
+import { type Node } from './types';
 import { NodeType } from './constants';
 
 /**

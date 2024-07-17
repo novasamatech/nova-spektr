@@ -11,11 +11,11 @@ import { Paths, createLink } from '@shared/routes';
 import { FallbackScreen } from '@shared/ui';
 import {
   ConfirmDialogProvider,
-  StatusModalProvider,
-  I18Provider,
   GraphqlProvider,
-  MultisigChainProvider,
+  I18Provider,
   MatrixProvider,
+  MultisigChainProvider,
+  StatusModalProvider,
 } from './providers';
 import { walletPairingModel } from '@features/wallets';
 import { WalletType } from '@shared/core';

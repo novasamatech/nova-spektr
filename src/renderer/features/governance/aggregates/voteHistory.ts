@@ -5,7 +5,7 @@ import { type ReferendumId } from '@shared/core';
 import { voteHistoryModel } from '@entities/governance';
 import { networkSelectorModel } from '../model/networkSelector';
 import { proposerIdentityAggregate } from './proposerIdentity';
-import { AggregatedVoteHistory } from '../types/structs';
+import { type AggregatedVoteHistory } from '../types/structs';
 import { detailsAggregate } from './details';
 
 const flow = createGate<{ referendumId: ReferendumId }>();

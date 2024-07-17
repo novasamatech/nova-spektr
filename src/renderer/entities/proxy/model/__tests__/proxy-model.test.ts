@@ -1,9 +1,9 @@
-import { fork, allSettled } from 'effector';
+import { allSettled, fork } from 'effector';
 
 import { storageService } from '@shared/api/storage';
 import { proxyModel } from '../proxy-model';
-import type { HexString, ProxyAccount, ProxyGroup } from '@shared/core';
-import { ProxyType, AccountId } from '@shared/core';
+import { ProxyType } from '@shared/core';
+import type { type AccountId, HexString, ProxyAccount, ProxyGroup } from '@shared/core';
 
 const proxyMock = {
   id: 1,

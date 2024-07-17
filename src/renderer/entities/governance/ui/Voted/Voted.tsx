@@ -1,5 +1,6 @@
-import { Icon, FootnoteText } from '@shared/ui';
-import { useI18n } from '@app/providers';
+import { useI18n } from '@/app/providers';
+
+import { FootnoteText, Icon } from '@/shared/ui';
 
 type Props = {
   active: boolean;

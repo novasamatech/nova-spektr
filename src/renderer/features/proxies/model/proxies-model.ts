@@ -1,33 +1,33 @@
 import { attach, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
-import { Endpoint, createEndpoint } from '@remote-ui/rpc';
+import { type Endpoint, createEndpoint } from '@remote-ui/rpc';
 import keyBy from 'lodash/keyBy';
 import { once, spread } from 'patronum';
 import { GraphQLClient } from 'graphql-request';
 
-import type {
-  AccountId,
-  Chain,
-  ChainId,
-  Connection,
-  PartialProxiedAccount,
-  ProxiedAccount,
-  ProxyAccount,
-  ProxyDeposits,
-  Wallet,
-  WalletsMap,
-  Account,
-} from '@shared/core';
 import {
   AccountType,
   ChainType,
   CryptoType,
+  ExternalType,
+  NotificationType,
+  ProxyVariant,
   SigningType,
   WalletType,
-  NotificationType,
-  NoID,
-  ProxyGroup,
-  ProxyVariant,
-  ExternalType,
+} from '@shared/core';
+import type {
+  Account,
+  AccountId,
+  Chain,
+  ChainId,
+  Connection,
+  type NoID,
+  PartialProxiedAccount,
+  ProxiedAccount,
+  ProxyAccount,
+  ProxyDeposits,
+  type ProxyGroup,
+  Wallet,
+  WalletsMap,
 } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';

@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
 import { Alert, BaseModal, Button, InfoLink, InputFile, InputHint } from '@shared/ui';
-import type { AccountId, ChainAccount, ShardAccount, DraftAccount } from '@shared/core';
+import type { AccountId, ChainAccount, DraftAccount, ShardAccount } from '@shared/core';
 import { useI18n } from '@app/providers';
 import { cnTw } from '@shared/lib/utils';
 import { importKeysModel } from '../model/import-keys-model';

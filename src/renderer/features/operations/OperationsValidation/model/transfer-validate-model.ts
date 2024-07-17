@@ -1,16 +1,24 @@
-import { Store, createEffect, createEvent, sample } from 'effector';
-import { ApiPromise } from '@polkadot/api';
+import { type Store, createEffect, createEvent, sample } from 'effector';
+import { type ApiPromise } from '@polkadot/api';
 
-import { Asset, Balance, Chain, ChainId, ID, Transaction, TransactionType } from '@shared/core';
+import {
+  type Asset,
+  type Balance,
+  type Chain,
+  type ChainId,
+  type ID,
+  type Transaction,
+  type TransactionType,
+} from '@shared/core';
 import { TransferRules } from '@features/operations/OperationsValidation';
 import { getAssetById, toAccountId, transferableAmount } from '@shared/lib/utils';
 import { balanceModel, balanceUtils } from '@entities/balance';
-import { BalanceMap, NetworkStore } from '@widgets/Transfer/lib/types';
+import { type BalanceMap, type NetworkStore } from '@widgets/Transfer/lib/types';
 import {
-  TransferAccountStore,
-  TransferAmountFeeStore,
-  TransferSignatoryFeeStore,
-  ValidationResult,
+  type TransferAccountStore,
+  type TransferAmountFeeStore,
+  type TransferSignatoryFeeStore,
+  type ValidationResult,
 } from '../types/types';
 import { validationUtils } from '../lib/validation-utils';
 import { networkModel } from '@entities/network';

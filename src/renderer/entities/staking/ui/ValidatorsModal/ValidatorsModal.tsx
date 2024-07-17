@@ -1,6 +1,6 @@
 import { Accordion, BaseModal, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { Validator } from '@shared/core/types/validator';
+import { type Validator } from '@shared/core/types/validator';
 import { cnTw } from '@shared/lib/utils';
 import type { Asset, Explorer } from '@shared/core';
 import { ValidatorsTable } from '../ValidatorsTable/ValidatorsTable';

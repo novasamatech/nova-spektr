@@ -1,11 +1,21 @@
-import { ApiPromise } from '@polkadot/api';
-import { Args } from '@substrate/txwrapper-polkadot';
-import { Header, Index, Weight } from '@polkadot/types/interfaces';
-import { SubmittableExtrinsic } from '@polkadot/api/types';
-import { AnyJson } from '@polkadot/types/types';
+import { type ApiPromise } from '@polkadot/api';
+import { type Args } from '@substrate/txwrapper-polkadot';
+import { type Header, type Index, type Weight } from '@polkadot/types/interfaces';
+import { type SubmittableExtrinsic } from '@polkadot/api/types';
+import { type AnyJson } from '@polkadot/types/types';
 
-import type { Address, CallData, HexString, Timepoint, AccountId, ChainId, TxWrappers_OLD } from '@shared/core';
-import { DecodedTransaction, Transaction, TransactionType } from '@shared/core';
+import type {
+  AccountId,
+  Address,
+  CallData,
+  ChainId,
+  type DecodedTransaction,
+  HexString,
+  Timepoint,
+  type Transaction,
+  type TransactionType,
+  TxWrappers_OLD,
+} from '@shared/core';
 
 // =====================================================
 // =========== ITransactionService interface ===========

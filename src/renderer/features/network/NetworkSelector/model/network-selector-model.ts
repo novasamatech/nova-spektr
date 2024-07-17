@@ -1,8 +1,8 @@
-import { createEvent, sample, createEffect, createStore } from 'effector';
+import { createEffect, createEvent, createStore, sample } from 'effector';
 import { spread } from 'patronum';
 
 import { networkModel, networkUtils } from '@entities/network';
-import { ChainId, ConnectionType, RpcNode, Connection } from '@shared/core';
+import { type ChainId, type Connection, ConnectionType, type RpcNode } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 
 const lightClientSelected = createEvent<ChainId>();

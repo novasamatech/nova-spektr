@@ -1,7 +1,7 @@
 import sortBy from 'lodash/sortBy';
 
 import { splitCamelCaseString, toAddress } from '@shared/lib/utils';
-import type { ProxyAccount, NoID, ProxyGroup, Wallet, ProxyDeposits, PartialProxiedAccount } from '@shared/core';
+import type { NoID, PartialProxiedAccount, ProxyAccount, ProxyDeposits, ProxyGroup, Wallet } from '@shared/core';
 import { ProxyType, ProxyVariant } from '@shared/core';
 import { ProxyTypeName } from './constants';
 import { accountUtils } from '../../wallet';

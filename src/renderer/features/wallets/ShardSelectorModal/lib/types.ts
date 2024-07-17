@@ -1,4 +1,4 @@
-import type { BaseAccount, ChainAccount, ShardAccount, ChainId, AccountId, ID } from '@shared/core';
+import type { AccountId, BaseAccount, ChainAccount, ChainId, ID, ShardAccount } from '@shared/core';
 
 export type RootTuple = [BaseAccount, ChainTuple[]];
 export type ChainTuple = [ChainId, Array<ChainAccount | ShardAccount[]>];

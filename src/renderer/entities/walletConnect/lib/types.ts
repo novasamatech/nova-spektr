@@ -1,4 +1,4 @@
-import Client from '@walletconnect/sign-client';
+import type Client from '@walletconnect/sign-client';
 
 export type InitConnectParams = {
   client: Client;

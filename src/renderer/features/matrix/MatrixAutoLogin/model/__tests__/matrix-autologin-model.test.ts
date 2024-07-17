@@ -1,7 +1,7 @@
-import { fork, allSettled } from 'effector';
+import { allSettled, fork } from 'effector';
 
 import { matrixAutologinModel } from '../matrix-autologin-model';
-import { matrixModel, LoginStatus } from '@entities/matrix';
+import { LoginStatus, matrixModel } from '@entities/matrix';
 import { AutoLoginStatus } from '../../lib/types';
 
 describe('features/matrix/MatrixAutoLogin/model/matrix-autologin-model', () => {

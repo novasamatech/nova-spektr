@@ -1,6 +1,6 @@
 import orderBy from 'lodash/orderBy';
 
-import { AggregatedReferendum } from '../types/structs';
+import { type AggregatedReferendum } from '../types/structs';
 
 export const listService = {
   sortReferendums,

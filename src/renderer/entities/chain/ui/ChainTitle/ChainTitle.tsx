@@ -1,4 +1,4 @@
-import { ElementType, useEffect, useState } from 'react';
+import { type ElementType, useEffect, useState } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
 import { chainsService } from '@shared/api/network';

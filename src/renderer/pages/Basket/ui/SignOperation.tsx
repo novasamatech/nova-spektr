@@ -1,11 +1,11 @@
 import { useUnit } from 'effector-react';
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
 import { BaseModal } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
-import { TransactionType, type BasketTransaction } from '@shared/core';
+import { type BasketTransaction, TransactionType } from '@shared/core';
 import { OperationSign, OperationSubmit } from '@features/operations';
 import { signOperationsUtils } from '../lib/sign-operations-utils';
 import { signOperationsModel } from '../model/sign-operations-model';

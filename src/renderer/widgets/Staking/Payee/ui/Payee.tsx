@@ -10,7 +10,7 @@ import { PayeeForm } from './PayeeForm';
 import { payeeUtils } from '../lib/payee-utils';
 import { payeeModel } from '../model/payee-model';
 import { Step } from '../lib/types';
-import { basketUtils, PayeeConfirmation as Confirmation } from '@features/operations/OperationsConfirm';
+import { PayeeConfirmation as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
 import { OperationResult } from '@entities/transaction';
 
 export const Payee = () => {

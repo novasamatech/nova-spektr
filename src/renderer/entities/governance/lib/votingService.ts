@@ -1,4 +1,4 @@
-import { BN } from '@polkadot/util';
+import { type BN } from '@polkadot/util';
 
 import {
   type Address,
@@ -8,7 +8,7 @@ import {
   type TrackId,
   type Voting,
   VotingType,
-} from '@shared/core';
+} from '@/shared/core';
 
 const getVoteFractions = (tally: Tally, approve: BN): Record<'aye' | 'nay' | 'pass', number> => {
   const total = tally.ayes.add(tally.nays);

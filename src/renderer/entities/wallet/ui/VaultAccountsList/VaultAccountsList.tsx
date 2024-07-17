@@ -1,5 +1,5 @@
 import { cnTw } from '@shared/lib/utils';
-import { accountUtils, DerivedAccount, ExplorersPopover } from '@entities/wallet';
+import { DerivedAccount, ExplorersPopover, accountUtils } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import { Accordion, FootnoteText, HelpText } from '@shared/ui';
 import { ChainTitle } from '@entities/chain';

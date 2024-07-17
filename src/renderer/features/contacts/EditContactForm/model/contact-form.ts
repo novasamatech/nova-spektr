@@ -3,7 +3,7 @@ import { createForm } from 'effector-forms';
 import { not } from 'patronum';
 
 import { contactModel } from '@entities/contact';
-import { Contact } from '@shared/core';
+import { type Contact } from '@shared/core';
 import { toAccountId, validateAddress } from '@shared/lib/utils';
 import { validateFullUserName } from '@shared/api/matrix';
 

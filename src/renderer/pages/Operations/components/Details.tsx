@@ -2,27 +2,34 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { useI18n } from '@app/providers';
-import { AddressWithExplorers, WalletCardSm, WalletIcon, walletModel, ExplorersPopover } from '@entities/wallet';
-import { Icon, FootnoteText, DetailRow, CaptionText } from '@shared/ui';
+import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, walletModel } from '@entities/wallet';
+import { CaptionText, DetailRow, FootnoteText, Icon } from '@shared/ui';
 import { useToggle } from '@shared/lib/hooks';
 import { cnTw, toAccountId } from '@shared/lib/utils';
-import { ExtendedChain, networkUtils, networkModel } from '@entities/network';
+import { type ExtendedChain, networkModel, networkUtils } from '@entities/network';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { ChainTitle } from '@entities/chain';
-import { Wallet, Account } from '@shared/core';
-import { getTransactionFromMultisigTx } from '@entities/multisig';
-import type { Address, MultisigAccount, Validator, MultisigTransaction, Transaction } from '@shared/core';
-import { useValidatorsMap, SelectedValidatorsModal } from '@entities/staking';
-import { proxyUtils } from '@entities/proxy';
-import { getDestination, getPayee, getDelegate, getProxyType, getDestinationChain, getSpawner } from '../common/utils';
 import {
-  isXcmTransaction,
-  isTransferTransaction,
-  isManageProxyTransaction,
+  type Account,
+  type Address,
+  type MultisigAccount,
+  type MultisigTransaction,
+  type Transaction,
+  type Validator,
+  type Wallet,
+} from '@shared/core';
+import { getTransactionFromMultisigTx } from '@entities/multisig';
+import { SelectedValidatorsModal, useValidatorsMap } from '@entities/staking';
+import { proxyUtils } from '@entities/proxy';
+import { getDelegate, getDestination, getDestinationChain, getPayee, getProxyType, getSpawner } from '../common/utils';
+import {
   isAddProxyTransaction,
+  isManageProxyTransaction,
+  isProxyTransaction,
   isRemoveProxyTransaction,
   isRemovePureProxyTransaction,
-  isProxyTransaction,
+  isTransferTransaction,
+  isXcmTransaction,
 } from '@entities/transaction';
 
 type Props = {

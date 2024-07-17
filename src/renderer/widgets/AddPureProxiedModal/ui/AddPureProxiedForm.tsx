@@ -1,18 +1,18 @@
 import { useForm } from 'effector-forms';
-import { FormEvent } from 'react';
+import { type FormEvent } from 'react';
 import { useUnit } from 'effector-react';
 
-import { Button, Select, Input, InputHint, Alert } from '@shared/ui';
+import { Alert, Button, Input, InputHint, Select } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { ChainTitle } from '@entities/chain';
 import { PureProxyPopover } from '@entities/proxy';
 import { AccountAddress, accountUtils } from '@entities/wallet';
 import { toAddress, toShortAddress } from '@shared/lib/utils';
 import { AssetBalance } from '@entities/asset';
-import { MultisigAccount } from '@shared/core';
+import { type MultisigAccount } from '@shared/core';
 import { SignatorySelector } from '@entities/operations';
 import { formModel } from '../model/form-model';
-import { ProxyDepositWithLabel, MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
+import { FeeWithLabel, MultisigDepositWithLabel, ProxyDepositWithLabel } from '@entities/transaction';
 import { DESCRIPTION_LENGTH } from '@features/operations/OperationsValidation';
 
 type Props = {

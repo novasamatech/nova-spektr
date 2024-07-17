@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { HelpText, IconButton, FootnoteText, SmallTitleText, Icon } from '@shared/ui';
+import { FootnoteText, HelpText, Icon, IconButton, SmallTitleText } from '@shared/ui';
 import { constructorModel } from '../model/constructor-model';
 import { networkModel } from '@entities/network';
 import { ChainIcon } from '@entities/chain';

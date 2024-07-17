@@ -1,11 +1,11 @@
 import { useForm } from 'effector-forms';
-import { FormEvent } from 'react';
+import { type FormEvent } from 'react';
 import { useUnit } from 'effector-react';
 
-import { Button, Input, InputHint, Alert } from '@shared/ui';
+import { Alert, Button, Input, InputHint } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
-import { MultisigAccount } from '@shared/core';
+import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
+import { type MultisigAccount } from '@shared/core';
 import { SignatorySelector } from '@entities/operations';
 import { removeProxyModel } from '../model/remove-proxy-model';
 import { formModel } from '../model/form-model';

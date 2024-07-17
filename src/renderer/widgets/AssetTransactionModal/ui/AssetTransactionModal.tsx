@@ -5,7 +5,7 @@ import { useI18n } from '@app/providers';
 import { BaseModal, BodyText, FootnoteText, HeaderTitleText, SearchInput } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { totalAmount } from '@shared/lib/utils';
-import { PathType, Paths, createLink } from '@shared/routes';
+import { type PathType, Paths, createLink } from '@shared/routes';
 import { ChainIcon } from '@entities/chain';
 import { networkModel } from '@entities/network';
 import { AssetFiatBalance } from '@entities/price';

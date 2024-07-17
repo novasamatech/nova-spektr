@@ -1,4 +1,4 @@
-import { createEvent, createStore, combine, sample, restore } from 'effector';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 import { createForm } from 'effector-forms';
 import { BN } from '@polkadot/util';
@@ -6,9 +6,9 @@ import { BN } from '@polkadot/util';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel } from '@entities/network';
-import { Account, PartialBy, Chain, Asset } from '@shared/core';
-import { WalletData } from '../lib/types';
-import { transferableAmount, getRelaychainAsset, formatAmount, stakeableAmount, ZERO_BALANCE } from '@shared/lib/utils';
+import { type Account, type Asset, type Chain, type PartialBy } from '@shared/core';
+import { type WalletData } from '../lib/types';
+import { ZERO_BALANCE, formatAmount, getRelaychainAsset, stakeableAmount, transferableAmount } from '@shared/lib/utils';
 import { BondExtraRules } from '@features/operations/OperationsValidation';
 
 type FormParams = {

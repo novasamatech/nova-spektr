@@ -1,5 +1,5 @@
-import { Address } from '@shared/core';
-import { Chunks, UnlockChunk } from '@shared/api/governance';
+import { type Address } from '@shared/core';
+import { type Chunks, type UnlockChunk } from '@shared/api/governance';
 
 export const unlockService = {
   filterClaims,

@@ -1,4 +1,4 @@
-import { Position, Theme } from './types';
+import { type Position, type Theme } from './types';
 import { cnTw } from '@shared/lib/utils';
 
 export const ViewClass: Record<Exclude<Position, 'auto'>, string> = {

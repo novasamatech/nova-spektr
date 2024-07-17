@@ -1,4 +1,4 @@
-import { QrError, ErrorObject } from './types';
+import { type ErrorObject, QrError } from './types';
 
 export const QR_READER_ERRORS: Record<QrError, ErrorObject> = {
   [QrError.NO_VIDEO_INPUT]: {

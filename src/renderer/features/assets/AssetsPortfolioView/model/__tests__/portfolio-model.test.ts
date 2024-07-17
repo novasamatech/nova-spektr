@@ -1,6 +1,6 @@
-import { fork, allSettled } from 'effector';
+import { allSettled, fork } from 'effector';
 
-import { AssetByChains } from '@shared/core';
+import { type AssetByChains } from '@shared/core';
 import { AssetsListView } from '@entities/asset';
 import { portfolioModel } from '../portfolio-model';
 

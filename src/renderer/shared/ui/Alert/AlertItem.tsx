@@ -1,4 +1,4 @@
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 
 import { FootnoteText } from '../Typography';
 import { cnTw } from '@shared/lib/utils';

@@ -1,14 +1,14 @@
-import { createContext, PropsWithChildren, useContext, useEffect } from 'react';
-import { VoidFn } from '@polkadot/api/types';
-import { Event } from '@polkadot/types/interfaces';
+import { type PropsWithChildren, createContext, useContext, useEffect } from 'react';
+import { type VoidFn } from '@polkadot/api/types';
+import { type Event } from '@polkadot/types/interfaces';
 import { useUnit } from 'effector-react';
 
 import { subscriptionService } from '@entities/chain';
-import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
-import { toAddress, getCreatedDateFromApi } from '@shared/lib/utils';
+import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
+import { getCreatedDateFromApi, toAddress } from '@shared/lib/utils';
 import { useDebounce, useTaskQueue } from '@shared/lib/hooks';
-import { Task } from '@shared/lib/hooks/useTaskQueue';
-import { MultisigAccount, ChainId, MultisigTxFinalStatus, SigningStatus } from '@shared/core';
+import { type Task } from '@shared/lib/hooks/useTaskQueue';
+import { type ChainId, type MultisigAccount, MultisigTxFinalStatus, type SigningStatus } from '@shared/core';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
 

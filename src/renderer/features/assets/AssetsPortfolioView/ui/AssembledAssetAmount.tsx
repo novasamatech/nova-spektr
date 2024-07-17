@@ -1,10 +1,10 @@
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 import { Trans } from 'react-i18next';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { totalAmount, transferableAmount } from '@shared/lib/utils';
-import type { AssetBalance as Balance, AssetByChains } from '@shared/core';
+import type { AssetByChains, AssetBalance as Balance } from '@shared/core';
 import { Shimmering, Tooltip } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance, priceProviderModel } from '@entities/price';

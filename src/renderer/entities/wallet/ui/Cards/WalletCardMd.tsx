@@ -1,4 +1,4 @@
-import { ReactNode, MouseEvent } from 'react';
+import { type MouseEvent, type ReactNode } from 'react';
 
 import type { Wallet } from '@shared/core';
 import { FootnoteText, IconButton } from '@shared/ui';

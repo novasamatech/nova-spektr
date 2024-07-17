@@ -1,6 +1,6 @@
-import { fork, allSettled } from 'effector';
+import { allSettled, fork } from 'effector';
 
-import { Notification, NotificationType } from '@shared/core';
+import { type Notification, NotificationType } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { notificationModel } from '../notification-model';
 

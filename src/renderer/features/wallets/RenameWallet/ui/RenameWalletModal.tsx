@@ -1,7 +1,7 @@
 import { useForm } from 'effector-forms';
-import { FormEvent, useEffect } from 'react';
+import { type FormEvent, useEffect } from 'react';
 
-import { Wallet } from '@shared/core';
+import { type Wallet } from '@shared/core';
 import { BaseModal, Button, Input, InputHint } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { renameWalletModel } from '../model/rename-wallet-model';

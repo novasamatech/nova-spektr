@@ -11,7 +11,7 @@ import { Step } from '../lib/types';
 import { AddPureProxiedForm } from './AddPureProxiedForm';
 import { addPureProxiedUtils } from '../lib/add-pure-proxied-utils';
 import { addPureProxiedModel } from '../model/add-pure-proxied-model';
-import { basketUtils, AddPureProxiedConfirm } from '@features/operations/OperationsConfirm';
+import { AddPureProxiedConfirm, basketUtils } from '@features/operations/OperationsConfirm';
 import { OperationResult } from '@entities/transaction';
 
 export const AddPureProxied = () => {

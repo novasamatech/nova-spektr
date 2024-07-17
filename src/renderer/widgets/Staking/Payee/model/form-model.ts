@@ -1,22 +1,22 @@
-import { createEvent, createStore, combine, sample, restore } from 'effector';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 import { createForm } from 'effector-forms';
 import { BN } from '@polkadot/util';
 
-import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel } from '@entities/network';
-import { Account, PartialBy, Chain, Asset, Address, RewardsDestination } from '@shared/core';
-import { WalletData } from '../lib/types';
+import { type Account, type Address, type Asset, type Chain, type PartialBy, RewardsDestination } from '@shared/core';
+import { type WalletData } from '../lib/types';
 import {
-  transferableAmount,
-  getRelaychainAsset,
-  toAddress,
   formatAmount,
+  getRelaychainAsset,
   isStringsMatchQuery,
   stakeableAmount,
-  validateAddress,
+  toAddress,
   toShortAddress,
+  transferableAmount,
+  validateAddress,
 } from '@shared/lib/utils';
 import { PayeeRules } from '@features/operations/OperationsValidation';
 

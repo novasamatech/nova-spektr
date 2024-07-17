@@ -10,7 +10,7 @@ import { WithdrawForm } from './WithdrawForm';
 import { withdrawUtils } from '../lib/withdraw-utils';
 import { withdrawModel } from '../model/withdraw-model';
 import { Step } from '../lib/types';
-import { basketUtils, WithdrawConfirmation as Confirmation } from '@features/operations/OperationsConfirm';
+import { WithdrawConfirmation as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
 import { OperationResult } from '@entities/transaction';
 
 export const Withdraw = () => {

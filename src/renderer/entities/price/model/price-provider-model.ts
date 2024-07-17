@@ -1,8 +1,8 @@
-import { createEvent, createStore, createEffect, sample } from 'effector';
+import { createEffect, createEvent, createStore, sample } from 'effector';
 
 import { PriceApiProvider } from '../lib/types';
-import { DEFAULT_FIAT_PROVIDER, DEFAULT_ASSETS_PRICES, DEFAULT_FIAT_FLAG } from '../lib/constants';
-import { fiatService, coingekoService, PriceObject, PriceAdapter } from '@shared/api/price-provider';
+import { DEFAULT_ASSETS_PRICES, DEFAULT_FIAT_FLAG, DEFAULT_FIAT_PROVIDER } from '../lib/constants';
+import { type PriceAdapter, type PriceObject, coingekoService, fiatService } from '@shared/api/price-provider';
 import { kernelModel } from '@shared/core';
 import { chainsService } from '@shared/api/network';
 import { nonNullable } from '@shared/lib/utils';

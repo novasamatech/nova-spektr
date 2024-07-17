@@ -3,8 +3,8 @@ import { u8aConcat } from '@polkadot/util';
 import useGenerator from './common/useGenerator';
 import { DEFAULT_FRAME_DELAY, SUBSTRATE_ID } from './common/constants';
 import { createSubstrateSignPayload } from './common/utils';
-import type { ChainId } from '@shared/core';
-import { CryptoType, SigningType } from '@shared/core';
+import { CryptoType } from '@shared/core';
+import type { ChainId, type SigningType } from '@shared/core';
 
 type Props = {
   address: string;

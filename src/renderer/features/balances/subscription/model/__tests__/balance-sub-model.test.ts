@@ -1,6 +1,6 @@
-import { fork, allSettled, Scope } from 'effector';
+import { type Scope, allSettled, fork } from 'effector';
 
-import { ConnectionStatus, Balance } from '@shared/core';
+import { type Balance, ConnectionStatus } from '@shared/core';
 import { storageService } from '@shared/api/storage';
 import { walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';

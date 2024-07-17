@@ -1,4 +1,4 @@
-import { Icon, HelpText } from '@shared/ui';
+import { HelpText, Icon } from '@shared/ui';
 import { useI18n } from '@app/providers';
 
 export const Version = () => {

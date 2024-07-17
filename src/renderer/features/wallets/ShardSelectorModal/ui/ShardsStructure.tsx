@@ -10,7 +10,7 @@ import { useI18n } from '@app/providers';
 import { ShardedGroup } from './ShardedGroup';
 import { SelectableShard } from './SelectableShard';
 import { selectorUtils } from '../lib/selector-utils';
-import type { ID, ChainId, AccountId } from '@shared/core';
+import type { AccountId, ChainId, ID } from '@shared/core';
 
 export const ShardsStructure = () => {
   const { t } = useI18n();

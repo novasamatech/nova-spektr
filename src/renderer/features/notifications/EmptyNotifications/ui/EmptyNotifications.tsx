@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { Icon, BodyText } from '@shared/ui';
+import { BodyText, Icon } from '@shared/ui';
 import { notificationModel } from '@entities/notification';
 
 export const EmptyNotifications = () => {

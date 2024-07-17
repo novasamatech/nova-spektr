@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
 import { useI18n } from '@app/providers';
 import { FootnoteText, StatusLabel } from '@shared/ui';

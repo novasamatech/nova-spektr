@@ -1,14 +1,14 @@
 import cn from 'classnames';
 import { Menu } from '@headlessui/react';
-import { ComponentProps } from 'react';
+import { type ComponentProps } from 'react';
 import { Link } from 'react-router-dom';
 
 import { FootnoteText } from '../../Typography';
 import { Icon } from '../../Icon/Icon';
-import { IconNames } from '../../Icon/data';
+import { type IconNames } from '../../Icon/data';
 import { Button } from '../../Buttons';
 import { cnTw } from '@shared/lib/utils';
-import { ButtonDropdownOption } from '../common/types';
+import { type ButtonDropdownOption } from '../common/types';
 
 type ButtonProps = ComponentProps<typeof Button>;
 

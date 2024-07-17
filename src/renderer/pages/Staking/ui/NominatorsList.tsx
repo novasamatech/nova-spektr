@@ -1,17 +1,17 @@
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
 import { Trans } from 'react-i18next';
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
 import { useI18n } from '@app/providers';
 import { cnTw } from '@shared/lib/utils';
-import { FootnoteText, Tooltip, Icon, HelpText } from '@shared/ui';
-import type { Asset, Explorer, Address, BaseAccount, ShardAccount, Account } from '@shared/core';
+import { FootnoteText, HelpText, Icon, Tooltip } from '@shared/ui';
+import type { Account, Address, Asset, BaseAccount, Explorer, ShardAccount } from '@shared/core';
 import { useStakingData } from '@entities/staking';
 import { AccountAddress, AddressWithName, accountUtils } from '@entities/wallet';
 import { NominatorsItem } from './NominatorItem';
 import { ShardedList } from './ShardedList';
 import { TimeToEra } from './TimeToEra';
-import { NominatorInfo } from '../lib/types';
+import { type NominatorInfo } from '../lib/types';
 
 type Props = {
   nominators: Array<NominatorInfo<BaseAccount> | NominatorInfo<ShardAccount>[]>;

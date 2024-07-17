@@ -1,25 +1,25 @@
 import Client from '@walletconnect/sign-client';
-import { PairingTypes, SessionTypes } from '@walletconnect/types';
+import { type PairingTypes, type SessionTypes } from '@walletconnect/types';
 import { getSdkError } from '@walletconnect/utils';
 import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import keyBy from 'lodash/keyBy';
 
 import { nonNullable } from '@shared/lib/utils';
-import { ID, WcAccount, kernelModel, Wallet, Account } from '@shared/core';
+import { type Account, type ID, type Wallet, type WcAccount, kernelModel } from '@shared/core';
 import { localStorageService } from '@shared/api/local-storage';
 import { storageService } from '@shared/api/storage';
 import { walletModel, walletUtils } from '@entities/wallet';
-import { InitConnectParams } from '../lib/types';
+import { type InitConnectParams } from '../lib/types';
 import { walletConnectUtils } from '../lib/utils';
 import {
-  WALLETCONNECT_CLIENT_ID,
-  DEFAULT_LOGGER,
-  DEFAULT_RELAY_URL,
-  DEFAULT_PROJECT_ID,
   DEFAULT_APP_METADATA,
-  DEFAULT_POLKADOT_METHODS,
+  DEFAULT_LOGGER,
   DEFAULT_POLKADOT_EVENTS,
+  DEFAULT_POLKADOT_METHODS,
+  DEFAULT_PROJECT_ID,
+  DEFAULT_RELAY_URL,
   EXTEND_PAIRING,
+  WALLETCONNECT_CLIENT_ID,
 } from '../lib/constants';
 
 type SessionTopicParams = {

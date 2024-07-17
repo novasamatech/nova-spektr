@@ -5,23 +5,23 @@ import { BaseModal, ContextMenu, DropdownIconButton, HelpText, IconButton, Tabs 
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { RootAccountLg, VaultAccountsList, WalletCardLg, accountUtils, permissionUtils } from '@entities/wallet';
 import { useI18n } from '@app/providers';
-import type { BaseAccount, Chain, ChainAccount, DraftAccount, ShardAccount, PolkadotVaultWallet } from '@shared/core';
+import type { BaseAccount, Chain, ChainAccount, DraftAccount, PolkadotVaultWallet, ShardAccount } from '@shared/core';
 import { KeyType } from '@shared/core';
 import { copyToClipboard, toAddress } from '@shared/lib/utils';
-import { IconNames } from '@shared/ui/Icon/data';
+import { type IconNames } from '@shared/ui/Icon/data';
 import { DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@features/wallets';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { networkModel } from '@entities/network';
-import { TabItem } from '@shared/ui/types';
-import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
+import { type TabItem } from '@shared/ui/types';
+import { AddProxy, addProxyModel } from '@widgets/AddProxyModal';
 import { ProxiesList } from '../components/ProxiesList';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { ShardsList } from '../components/ShardsList';
 import { vaultDetailsModel } from '../../model/vault-details-model';
 import { walletDetailsUtils } from '../../lib/utils';
-import { VaultMap } from '../../lib/types';
+import { type VaultMap } from '../../lib/types';
 import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
 
 type Props = {

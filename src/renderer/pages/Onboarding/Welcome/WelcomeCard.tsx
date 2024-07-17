@@ -1,7 +1,7 @@
 import { cnTw } from '@shared/lib/utils';
-import { Icon, BodyText, CaptionText, FootnoteText } from '@shared/ui';
+import { BodyText, CaptionText, FootnoteText, Icon } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { IconNames } from '@shared/ui/Icon/data';
+import { type IconNames } from '@shared/ui/Icon/data';
 
 type Props = {
   title: string;

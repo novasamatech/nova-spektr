@@ -2,12 +2,12 @@ import { BN } from '@polkadot/util';
 
 import { dictionary } from '@shared/lib/utils';
 import {
+  type PolkassemblyListingPost,
+  type PolkassemblyPostVote,
+  type PolkassembyPostStatus,
   polkassemblyApiService,
-  PolkassemblyListingPost,
-  PolkassemblyPostVote,
-  PolkassembyPostStatus,
 } from '@shared/api/polkassembly';
-import { GovernanceApi, ReferendumTimelineRecord, ReferendumVote } from '../lib/types';
+import { type GovernanceApi, type ReferendumTimelineRecord, type ReferendumVote } from '../lib/types';
 
 const referendumDecisionMap: Record<PolkassemblyPostVote['decision'], ReferendumVote['decision']> = {
   abstain: 'abstain',

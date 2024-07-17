@@ -2,7 +2,7 @@ import { act, render, screen, within } from '@testing-library/react';
 import noop from 'lodash/noop';
 
 import { DropdownButton } from './DropdownButton';
-import { ButtonDropdownOption } from '../common/types';
+import { type ButtonDropdownOption } from '../common/types';
 
 describe('ui/Dropdowns/DropdownButton', () => {
   const options: ButtonDropdownOption[] = [

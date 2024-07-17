@@ -1,4 +1,4 @@
-import { app, shell, Menu, MenuItem, MenuItemConstructorOptions } from 'electron';
+import { Menu, type MenuItem, type MenuItemConstructorOptions, app, shell } from 'electron';
 
 import { PLATFORM } from '../shared/constants/platform';
 import { ENVIRONMENT } from '../shared/constants/environment';

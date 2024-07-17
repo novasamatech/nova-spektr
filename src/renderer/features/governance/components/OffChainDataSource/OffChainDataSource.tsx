@@ -1,9 +1,9 @@
 import { useForm } from 'effector-forms';
-import { FormEvent, useEffect } from 'react';
+import { type FormEvent, useEffect } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { Select, Button, FootnoteText, HelpText, BaseModal, Icon, InputHint } from '@shared/ui';
+import { BaseModal, Button, FootnoteText, HelpText, Icon, InputHint, Select } from '@shared/ui';
 import { offChainModel } from '../../model/offChain';
 import { Sources } from './constants';
 import { useModalClose } from '@shared/lib/hooks';

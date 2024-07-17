@@ -3,7 +3,7 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { FootnoteText, Shimmering } from '@shared/ui';
 import { priceProviderModel } from '../model/price-provider-model';
 import { currencyModel } from '../model/currency-model';
-import { cnTw, formatFiatBalance, ZERO_BALANCE } from '@shared/lib/utils';
+import { ZERO_BALANCE, cnTw, formatFiatBalance } from '@shared/lib/utils';
 import { FiatBalance } from './FiatBalance';
 import { useI18n } from '@app/providers';
 

@@ -1,7 +1,7 @@
-import { fork, allSettled, Scope } from 'effector';
+import { type Scope, allSettled, fork } from 'effector';
 
 import { constructorModel } from '../constructor-model';
-import { KeyType, AccountType, CryptoType, ChainType, ChainAccount, ShardAccount } from '@shared/core';
+import { AccountType, type ChainAccount, ChainType, CryptoType, KeyType, type ShardAccount } from '@shared/core';
 import { TEST_CHAIN_ID } from '@shared/lib/utils';
 import { networkModel } from '@entities/network';
 import { constructorMock } from './mocks/constructor-mock';

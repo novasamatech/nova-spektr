@@ -5,13 +5,13 @@ import { reset } from 'patronum';
 
 import {
   DerivationValidationError,
-  DerivationWithPath,
-  ParsedImportFile,
-  TypedImportedDerivation,
+  type DerivationWithPath,
+  type ParsedImportFile,
+  type TypedImportedDerivation,
   ValidationError,
 } from '../lib/types';
-import { DerivationImportError, ErrorDetails } from '../lib/derivation-import-error';
-import { AccountId, ChainAccount, ChainId, DraftAccount, ShardAccount } from '@shared/core';
+import { DerivationImportError, type ErrorDetails } from '../lib/derivation-import-error';
+import { type AccountId, type ChainAccount, type ChainId, type DraftAccount, type ShardAccount } from '@shared/core';
 import { importKeysUtils } from '../lib/import-keys-utils';
 import { toAccountId } from '@shared/lib/utils';
 import { PATH_ERRORS } from '../lib/constants';

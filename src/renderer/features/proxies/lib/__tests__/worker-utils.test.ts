@@ -1,4 +1,4 @@
-import { AccountType, ProxyVariant, ChainType, CryptoType } from '@shared/core';
+import { AccountType, ChainType, CryptoType, ProxyVariant } from '@shared/core';
 import type { NoID, PartialProxiedAccount, ProxyAccount } from '@shared/core';
 import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
 import { proxyWorkerUtils } from '../worker-utils';

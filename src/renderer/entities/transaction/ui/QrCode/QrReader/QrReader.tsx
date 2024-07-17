@@ -1,5 +1,5 @@
 import { decodeAddress } from '@polkadot/util-crypto';
-import { BrowserCodeReader, BrowserQRCodeReader, IScannerControls } from '@zxing/browser';
+import { BrowserCodeReader, BrowserQRCodeReader, type IScannerControls } from '@zxing/browser';
 import init, { Decoder, EncodingPacket } from 'raptorq';
 import { useEffect, useRef } from 'react';
 
@@ -8,13 +8,21 @@ import { CryptoTypeString } from '@shared/core';
 import { useI18n } from '@app/providers';
 import {
   DYNAMIC_DERIVATIONS_ADDRESS_RESPONSE,
-  ErrorFields,
   EXPORT_ADDRESS,
+  ErrorFields,
   FRAME_KEY,
-  VaultFeature,
+  type VaultFeature,
 } from '../common/constants';
 import { QR_READER_ERRORS } from '../common/errors';
-import { DdSeedInfo, DecodeCallback, ErrorObject, Progress, QrError, SeedInfo, VideoInput } from '../common/types';
+import {
+  type DdSeedInfo,
+  type DecodeCallback,
+  type ErrorObject,
+  type Progress,
+  QrError,
+  type SeedInfo,
+  type VideoInput,
+} from '../common/types';
 import RaptorFrame from './RaptorFrame';
 
 const enum Status {

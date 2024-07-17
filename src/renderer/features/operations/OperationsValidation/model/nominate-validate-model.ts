@@ -1,11 +1,11 @@
-import { Store, createEffect, createEvent, sample } from 'effector';
-import { ApiPromise } from '@polkadot/api';
-import { SignerOptions } from '@polkadot/api/submittable/types';
+import { type Store, createEffect, createEvent, sample } from 'effector';
+import { type ApiPromise } from '@polkadot/api';
+import { type SignerOptions } from '@polkadot/api/submittable/types';
 
-import { Asset, Balance, Chain, ID, Transaction } from '@shared/core';
+import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@shared/core';
 import { stakeableAmount, toAccountId } from '@shared/lib/utils';
 import { balanceModel, balanceUtils } from '@entities/balance';
-import { ShardsBondBalanceStore, ValidationResult } from '../types/types';
+import { type ShardsBondBalanceStore, type ValidationResult } from '../types/types';
 import { validationUtils } from '../lib/validation-utils';
 import { networkModel } from '@entities/network';
 import { NominateRules } from '../lib/nominate-rules';

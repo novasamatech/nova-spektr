@@ -12,7 +12,7 @@ import { useToggle } from '@shared/lib/hooks';
 import { RemovePureProxy, removePureProxyModel } from '@widgets/RemovePureProxyModal';
 import { RemoveProxy, removeProxyModel } from '@widgets/RemoveProxyModal';
 import { accountUtils } from '@entities/wallet';
-import { ProxiedAccount, ProxyAccount, ProxyType, ProxyVariant } from '@shared/core';
+import { type ProxiedAccount, type ProxyAccount, ProxyType, ProxyVariant } from '@shared/core';
 import { walletSelectModel } from '@features/wallets';
 
 type Props = {

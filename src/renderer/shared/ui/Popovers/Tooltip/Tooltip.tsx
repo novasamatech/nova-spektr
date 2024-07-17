@@ -1,8 +1,8 @@
-import { ComponentProps } from 'react';
+import { type ComponentProps } from 'react';
 
 import { Popover } from '@shared/ui';
 import { cnTw } from '@shared/lib/utils';
-import { Horizontal } from '../common/types';
+import { type Horizontal } from '../common/types';
 import './Tooltip.css';
 
 type PopoverProps = ComponentProps<typeof Popover> & {

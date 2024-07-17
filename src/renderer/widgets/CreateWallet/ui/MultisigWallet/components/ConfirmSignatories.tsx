@@ -1,10 +1,10 @@
-import { cnTw, RootExplorers } from '@shared/lib/utils';
+import { RootExplorers, cnTw } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
-import { FootnoteText, SmallTitleText, HelpText } from '@shared/ui';
-import { ExtendedWallet, ExtendedContact, ExtendedAccount } from '../common/types';
+import { FootnoteText, HelpText, SmallTitleText } from '@shared/ui';
+import { type ExtendedAccount, type ExtendedContact, type ExtendedWallet } from '../common/types';
 import { WalletItem } from './WalletItem';
 import { ContactItem, ExplorersPopover } from '@entities/wallet';
-import { Chain, WalletType } from '@shared/core';
+import { type Chain, WalletType } from '@shared/core';
 
 type Props = {
   wallets?: ExtendedWallet[];

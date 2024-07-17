@@ -1,4 +1,4 @@
-import AllIcons, { IconNames } from './data';
+import AllIcons, { type IconNames } from './data';
 import { cnTw } from '@shared/lib/utils';
 
 type Props = {

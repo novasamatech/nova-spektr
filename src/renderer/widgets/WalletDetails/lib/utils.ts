@@ -1,15 +1,15 @@
 import { ForgetStep, ReconnectStep } from './constants';
-import { VaultMap, MultishardMap } from './types';
+import { type MultishardMap, type VaultMap } from './types';
 import { accountUtils } from '@entities/wallet';
 import {
-  BaseAccount,
-  ChainId,
-  ChainAccount,
-  Wallet,
-  ShardAccount,
+  type BaseAccount,
+  type ChainAccount,
+  type ChainId,
   KeyType,
-  PolkadotVaultWallet,
-  MultiShardWallet,
+  type MultiShardWallet,
+  type PolkadotVaultWallet,
+  type ShardAccount,
+  type Wallet,
 } from '@shared/core';
 import { downloadFiles, exportKeysUtils } from '@features/wallets/ExportKeys';
 

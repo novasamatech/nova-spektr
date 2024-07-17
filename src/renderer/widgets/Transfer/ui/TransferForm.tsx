@@ -1,15 +1,15 @@
 import { useForm } from 'effector-forms';
-import { FormEvent } from 'react';
+import { type FormEvent } from 'react';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { MultisigAccount, Chain } from '@shared/core';
+import { type Chain, type MultisigAccount } from '@shared/core';
 import { AssetBalance } from '@entities/asset';
 import { ChainTitle } from '@entities/chain';
-import { accountUtils, AccountAddress, AccountSelectModal, ProxyWalletAlert } from '@entities/wallet';
-import { toAddress, toShortAddress, validateAddress, formatBalance } from '@shared/lib/utils';
-import { MultisigDepositWithLabel, FeeWithLabel, XcmFeeWithLabel } from '@entities/transaction';
-import { Select, Input, Identicon, Icon, Button, InputHint, AmountInput, HelpText } from '@shared/ui';
+import { AccountAddress, AccountSelectModal, ProxyWalletAlert, accountUtils } from '@entities/wallet';
+import { formatBalance, toAddress, toShortAddress, validateAddress } from '@shared/lib/utils';
+import { FeeWithLabel, MultisigDepositWithLabel, XcmFeeWithLabel } from '@entities/transaction';
+import { AmountInput, Button, HelpText, Icon, Identicon, Input, InputHint, Select } from '@shared/ui';
 import { SignatorySelector } from '@entities/operations';
 import { formModel } from '../model/form-model';
 

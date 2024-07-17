@@ -1,7 +1,7 @@
 import { memo } from 'react';
 
 import { useI18n } from '@app/providers';
-import { Voted, VoteChart, TrackInfo, votingService } from '@entities/governance';
+import { TrackInfo, VoteChart, Voted, votingService } from '@entities/governance';
 import { HeadlineText, Shimmering } from '@shared/ui';
 import { type OngoingReferendum } from '@shared/core';
 import { type AggregatedReferendum } from '../../types/structs';

@@ -1,9 +1,9 @@
-import { ReactNode, useEffect } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useUnit } from 'effector-react';
 
 import * as assetGuardModel from '../model/asset-guard';
-import type { Chain, Asset } from '@shared/core';
+import type { Asset, Chain } from '@shared/core';
 
 type Props = {
   redirectPath: string;

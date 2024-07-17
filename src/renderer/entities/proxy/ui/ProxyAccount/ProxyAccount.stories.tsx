@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { type ComponentMeta, type ComponentStory } from '@storybook/react';
 
 import { TEST_ACCOUNTS } from '@shared/lib/utils';
 import { ProxyAccount } from './ProxyAccount';

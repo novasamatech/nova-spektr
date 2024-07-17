@@ -1,11 +1,11 @@
 import {
+  type Chain,
+  type ChainId,
+  type ChainMetadata,
   ChainOptions,
-  Connection,
-  ConnectionType,
+  type Connection,
   ConnectionStatus,
-  ChainMetadata,
-  ChainId,
-  Chain,
+  ConnectionType,
 } from '@shared/core';
 import { RelayChains } from '@shared/lib/utils';
 

@@ -1,10 +1,16 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 
-import { storage, MultisigEventDS } from '@shared/api/storage';
-import { IMultisigEventService } from './common/types';
-import { MultisigEvent, MultisigTransactionKey, SigningStatus } from '@shared/core';
-import { Task } from '@shared/lib/hooks/useTaskQueue';
-import type { AccountId, CallHash, ChainId } from '@shared/core';
+import { type MultisigEventDS, storage } from '@shared/api/storage';
+import { type IMultisigEventService } from './common/types';
+import {
+  type AccountId,
+  type CallHash,
+  type ChainId,
+  type MultisigEvent,
+  type MultisigTransactionKey,
+  type SigningStatus,
+} from '@shared/core';
+import { type Task } from '@shared/lib/hooks/useTaskQueue';
 
 type Props = {
   addTask?: (task: Task) => void;

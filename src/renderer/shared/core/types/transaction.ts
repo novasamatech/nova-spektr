@@ -1,15 +1,15 @@
 import type {
-  Address,
-  ChainId,
-  HexString,
+  Account,
   AccountId,
+  Address,
   CallData,
   CallHash,
-  PartialBy,
-  Signatory,
+  ChainId,
+  HexString,
   MultisigAccount,
-  Account,
+  PartialBy,
   ProxiedAccount,
+  Signatory,
 } from '@shared/core';
 
 export const enum TransactionType {

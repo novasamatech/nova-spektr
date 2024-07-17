@@ -1,4 +1,4 @@
-import { fork, allSettled } from 'effector';
+import { allSettled, fork } from 'effector';
 
 import { currencyFormModel } from '../currency-form';
 import { currencyModel, priceProviderModel } from '@entities/price';

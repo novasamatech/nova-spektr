@@ -1,6 +1,11 @@
 import { OperationStatus } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { MultisigTransaction, MultisigTxFinalStatus, MultisigTxInitStatus, MultisigTxStatus } from '@shared/core';
+import {
+  type MultisigTransaction,
+  MultisigTxFinalStatus,
+  MultisigTxInitStatus,
+  type MultisigTxStatus,
+} from '@shared/core';
 
 const StatusTitle: Record<MultisigTxStatus, string> = {
   [MultisigTxInitStatus.SIGNING]: 'operation.status.signing',

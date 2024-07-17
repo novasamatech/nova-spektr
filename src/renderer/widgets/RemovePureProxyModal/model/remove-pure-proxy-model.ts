@@ -1,5 +1,5 @@
 import { combine, createEvent, createStore, sample, split } from 'effector';
-import { spread, delay } from 'patronum';
+import { delay, spread } from 'patronum';
 
 import { transactionService } from '@entities/transaction';
 import { toAddress, transferableAmount } from '@shared/lib/utils';
@@ -7,23 +7,23 @@ import { walletSelectModel } from '@features/wallets';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { balanceSubModel } from '@features/balances';
-import { Step, RemoveProxyStore } from '../lib/types';
+import { type RemoveProxyStore, Step } from '../lib/types';
 import { formModel } from './form-model';
 import { removePureProxiedConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { walletProviderModel } from '../../WalletDetails/model/wallet-provider-model';
 import {
-  Account,
-  BasketTransaction,
-  Chain,
-  ProxiedAccount,
-  ProxyAccount,
+  type Account,
+  type BasketTransaction,
+  type Chain,
+  type MultisigTxWrapper,
+  type ProxiedAccount,
+  type ProxyAccount,
+  type ProxyTxWrapper,
   ProxyType,
   ProxyVariant,
-  MultisigTxWrapper,
-  ProxyTxWrapper,
-  Transaction,
+  type Transaction,
   TransactionType,
-  TxWrapper,
+  type TxWrapper,
   WrapperKind,
 } from '@shared/core';
 import { warningModel } from './warning-model';

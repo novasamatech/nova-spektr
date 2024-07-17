@@ -1,16 +1,15 @@
-import { ApiPromise } from '@polkadot/api';
-import { createEffect, createStore, sample, createEvent, scopeBind, attach } from 'effector';
-import { once, combineEvents, spread, previous } from 'patronum';
+import { type ApiPromise } from '@polkadot/api';
+import { attach, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import { combineEvents, once, previous, spread } from 'patronum';
 import mapValues from 'lodash/mapValues';
 
-import type { AccountId, Balance, ChainId, Wallet, Chain, ID } from '@shared/core';
-import { ConnectionStatus } from '@shared/core';
+import type { AccountId, Balance, Chain, ChainId, type ConnectionStatus, ID, Wallet } from '@shared/core';
 import { walletModel } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { storageService } from '@shared/api/storage';
 import { balanceSubUtils } from '../lib/balance-sub-utils';
-import { Subscriptions, SubAccounts } from '../lib/types';
+import { type SubAccounts, type Subscriptions } from '../lib/types';
 import { balanceService } from '@shared/api/balances';
 import { isRejected } from '@shared/lib/utils';
 

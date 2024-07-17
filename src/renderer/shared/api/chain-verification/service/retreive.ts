@@ -1,7 +1,7 @@
 /* eslint-disable no-bitwise */
 import { u8aToHex } from '@polkadot/util';
 
-import { Node } from '../lib/types';
+import { type Node } from '../lib/types';
 import { NodeType } from '../lib/constants';
 import { getNodeType, keyLEToNibbles } from '../lib/utils';
 

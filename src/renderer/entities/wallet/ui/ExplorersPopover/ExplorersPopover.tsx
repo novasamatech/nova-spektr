@@ -1,8 +1,8 @@
-import { PropsWithChildren, ReactNode } from 'react';
+import { type PropsWithChildren, type ReactNode } from 'react';
 
-import { getAccountExplorer, toAddress, copyToClipboard, cnTw } from '@shared/lib/utils';
-import type { Address, Explorer, AccountId } from '@shared/core';
-import { ExplorerLink, IconButton, ContextMenu, HelpText } from '@shared/ui';
+import { cnTw, copyToClipboard, getAccountExplorer, toAddress } from '@shared/lib/utils';
+import type { AccountId, Address, Explorer } from '@shared/core';
+import { ContextMenu, ExplorerLink, HelpText, IconButton } from '@shared/ui';
 import { useI18n } from '@app/providers';
 
 type Props = {

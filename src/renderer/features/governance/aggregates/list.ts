@@ -3,14 +3,14 @@ import { inFlight, not, or, readonly } from 'patronum';
 
 import {
   approveThresholdModel,
-  supportThresholdModel,
   referendumModel,
+  supportThresholdModel,
   votingModel,
   votingService,
 } from '@entities/governance';
 import { networkSelectorModel } from '../model/networkSelector';
 import { titleModel } from '../model/title';
-import { AggregatedReferendum } from '../types/structs';
+import { type AggregatedReferendum } from '../types/structs';
 import { votingAggregate } from './voting';
 
 const $referendums = combine(

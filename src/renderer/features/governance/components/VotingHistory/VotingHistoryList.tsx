@@ -1,7 +1,7 @@
 import { memo, useDeferredValue, useMemo, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-import { Asset, Chain } from '@shared/core';
+import { type Asset, type Chain } from '@shared/core';
 import { formatBalance, performSearch, toAccountId } from '@shared/lib/utils';
 import { BodyText, FootnoteText, SearchInput } from '@shared/ui';
 import { SignatoryCard } from '@entities/signatory';

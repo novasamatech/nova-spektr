@@ -11,7 +11,7 @@ import { RemoveProxyForm } from './RemoveProxyForm';
 import { removeProxyUtils } from '../lib/remove-proxy-utils';
 import { removeProxyModel } from '../model/remove-proxy-model';
 import { OperationSign, OperationSubmit } from '@features/operations';
-import { basketUtils, RemoveProxyConfirm as Confirmation } from '@features/operations/OperationsConfirm';
+import { RemoveProxyConfirm as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
 import { OperationResult } from '@entities/transaction';
 
 export const RemoveProxy = () => {

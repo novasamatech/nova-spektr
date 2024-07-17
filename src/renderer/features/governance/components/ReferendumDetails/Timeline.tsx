@@ -1,9 +1,9 @@
 import { useStoreMap, useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { ReferendumId } from '@shared/core';
+import { type ReferendumId } from '@shared/core';
 import { FootnoteText, OperationStatus, Shimmering } from '@shared/ui';
-import { ReferendumTimelineRecordStatus } from '@shared/api/governance';
+import { type ReferendumTimelineRecordStatus } from '@shared/api/governance';
 import { detailsAggregate } from '../../aggregates/details';
 
 type Props = {

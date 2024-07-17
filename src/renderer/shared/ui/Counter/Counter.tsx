@@ -1,6 +1,6 @@
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 
-import { Variant } from './common/types';
+import { type Variant } from './common/types';
 import { BadgeStyles } from './common/constants';
 import { CaptionText } from '@shared/ui';
 import { cnTw } from '@shared/lib/utils';

@@ -1,19 +1,19 @@
-import { ComponentProps, useState, useEffect } from 'react';
+import { type ComponentProps, useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 import noop from 'lodash/noop';
 
-import { BaseModal, HeaderTitleText, Button, IconButton, StatusLabel } from '@shared/ui';
+import { BaseModal, Button, HeaderTitleText, IconButton, StatusLabel } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { OperationResult } from '@entities/transaction';
-import { ExtendedContact, ExtendedWallet } from './common/types';
-import { SelectSignatories, ConfirmSignatories, WalletForm } from './components';
+import { type ExtendedContact, type ExtendedWallet } from './common/types';
+import { ConfirmSignatories, SelectSignatories, WalletForm } from './components';
 import { contactModel } from '@entities/contact';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { walletModel } from '@entities/wallet';
 import { createMultisigWalletModel } from '../../model/create-multisig-wallet-model';
-import { matrixUtils, matrixModel } from '@entities/matrix';
-import { HexString } from '@shared/core';
+import { matrixModel, matrixUtils } from '@entities/matrix';
+import { type HexString } from '@shared/core';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 

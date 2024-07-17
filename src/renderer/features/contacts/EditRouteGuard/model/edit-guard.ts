@@ -1,8 +1,8 @@
 import { attach, createApi, createEffect, createEvent, createStore, sample } from 'effector';
-import { NavigateFunction } from 'react-router-dom';
+import { type NavigateFunction } from 'react-router-dom';
 
 import { contactModel } from '@entities/contact';
-import { Contact } from '@shared/core';
+import { type Contact } from '@shared/core';
 
 const validateUrlParams = createEvent<URLSearchParams>();
 const storeCleared = createEvent();

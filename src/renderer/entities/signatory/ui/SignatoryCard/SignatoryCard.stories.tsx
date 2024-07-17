@@ -1,4 +1,4 @@
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import { type ComponentMeta, type ComponentStory } from '@storybook/react';
 
 import { SignatoryCard } from './SignatoryCard';
 import { TEST_ADDRESS } from '@shared/lib/utils';

@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { useStoreMap, useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { DropdownOption, DropdownResult } from '@shared/ui/types';
+import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
 import { Button, MultiSelect } from '@shared/ui';
 import { getAvailableFiltersOptions } from '../lib/utils';
-import { FilterName, FiltersOptions } from '../common/types';
+import { type FilterName, type FiltersOptions } from '../common/types';
 import { basketFilterModel } from '../model/baket-filter-model';
 import { networkModel } from '@entities/network';
 

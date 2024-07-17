@@ -1,9 +1,9 @@
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
-import { type Chain, type TrackId, type TrackInfo } from '@shared/core';
-import { governanceService } from '@shared/api/governance';
+import { type Chain, type TrackId, type TrackInfo } from '@/shared/core';
+import { governanceService } from '@/shared/api/governance';
 
 type RequestTracksParams = {
   api: ApiPromise;

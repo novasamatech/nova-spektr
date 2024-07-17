@@ -2,13 +2,13 @@ import { allSettled, fork } from 'effector';
 
 import { networkModel } from '@entities/network';
 import {
-  ConnectionType,
   AccountType,
   ChainOptions,
-  WalletType,
-  SigningType,
-  CryptoType,
   ChainType,
+  ConnectionType,
+  CryptoType,
+  SigningType,
+  WalletType,
 } from '@shared/core';
 import { walletModel } from '@entities/wallet';
 import { multisigService } from '@entities/multisig';
