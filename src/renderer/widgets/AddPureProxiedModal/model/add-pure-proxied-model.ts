@@ -16,21 +16,18 @@ import {
   type Transaction,
 } from '@shared/core';
 import { toAddress } from '@shared/lib/utils';
-
 import { basketModel } from '@entities/basket/model/basket-model';
 import { subscriptionService } from '@entities/chain';
 import { networkModel } from '@entities/network';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { type ExtrinsicResultParams, transactionService } from '@entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-
 import { balanceSubModel } from '@features/balances';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { addPureProxiedConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { proxiesModel } from '@features/proxies';
 import { walletSelectModel } from '@features/wallets';
-
 import { addPureProxiedUtils } from '../lib/add-pure-proxied-utils';
 import { type AddPureProxiedStore, Step } from '../lib/types';
 

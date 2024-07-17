@@ -3,7 +3,6 @@ import { useUnit } from 'effector-react';
 import { memo, useEffect, useState } from 'react';
 
 import type { Asset, MultisigThreshold } from '@shared/core';
-
 import { AssetBalance } from '@entities/asset';
 import { priceProviderModel } from '@entities/price';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';

@@ -1,8 +1,6 @@
 import { useI18n } from '@app/providers';
-
 import type { Asset, AssetByChains } from '@shared/core';
 import { cnTw, formatBalance } from '@shared/lib/utils';
-
 import { AssetIcon } from '@entities/asset';
 
 type Props = {

@@ -3,9 +3,7 @@ import isEmpty from 'lodash/isEmpty';
 
 import { type GovernanceApi } from '@shared/api/governance';
 import { type Chain, type ChainId, type ReferendumId } from '@shared/core';
-
 import { governanceModel } from '@entities/governance';
-
 import { createChunksEffect } from '../utils/createChunksEffect';
 
 import { networkSelectorModel } from './networkSelector';

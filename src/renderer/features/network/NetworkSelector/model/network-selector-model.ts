@@ -3,7 +3,6 @@ import { spread } from 'patronum';
 
 import { storageService } from '@shared/api/storage';
 import { type ChainId, type Connection, ConnectionType, type RpcNode } from '@shared/core';
-
 import { networkModel, networkUtils } from '@entities/network';
 
 const lightClientSelected = createEvent<ChainId>();

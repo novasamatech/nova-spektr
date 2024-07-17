@@ -1,13 +1,10 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-
 import { useModalClose } from '@shared/lib/hooks';
 import { cnTw } from '@shared/lib/utils';
 import { BaseModal, HelpText, IconButton } from '@shared/ui';
-
 import { AccountAddress, ExplorersPopover, accountUtils } from '@entities/wallet';
-
 import { vaultDetailsModel } from '../../model/vault-details-model';
 
 export const ShardsList = () => {

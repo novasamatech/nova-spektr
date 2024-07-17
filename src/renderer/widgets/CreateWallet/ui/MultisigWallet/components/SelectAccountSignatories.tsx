@@ -3,7 +3,6 @@ import { groupBy, isEqual } from 'lodash';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { type Account, type Chain, type Contact, type ShardAccount, type Wallet } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
 import { RootExplorers, cnTw, includes, isEthereumAccountId, isStringsMatchQuery, toAddress } from '@shared/lib/utils';
@@ -21,14 +20,11 @@ import {
   Tabs,
 } from '@shared/ui';
 import { type TabItem } from '@shared/ui/types';
-
 import { EmptyContactList } from '@entities/contact';
 import { matrixModel } from '@entities/matrix';
 import { networkUtils } from '@entities/network';
 import { ContactItem, ExplorersPopover, WalletCardMd } from '@entities/wallet';
-
 import { CreateContactModal } from '@widgets/ManageContactModal';
-
 import { type ExtendedAccount, type ExtendedContact } from '../common/types';
 
 const enum SignatoryTabs {

@@ -3,7 +3,6 @@ import { createEffect, createEvent, createStore, sample } from 'effector';
 import { type GovernanceApi } from '@shared/api/governance';
 import type { Chain, ChainId, Referendum, ReferendumId } from '@shared/core';
 import { pickNestedValue, setNestedValue } from '@shared/lib/utils';
-
 import { governanceModel } from '@entities/governance';
 
 const $descriptions = createStore<Record<ChainId, Record<ReferendumId, string>>>({});

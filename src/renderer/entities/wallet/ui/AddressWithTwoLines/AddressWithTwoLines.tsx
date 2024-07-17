@@ -4,7 +4,6 @@ import { type ReactNode } from 'react';
 import { type AccountId, type Address, type SigningType } from '@shared/core';
 import { cnTw } from '@shared/lib/utils';
 import { Identicon } from '@shared/ui';
-
 import { getAddress } from '../AccountAddress/AccountAddress';
 
 type WithAccountId = {

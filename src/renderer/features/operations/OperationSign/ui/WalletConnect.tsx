@@ -3,7 +3,6 @@ import { useGate, useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { chainsService } from '@shared/api/network';
 import wallet_connect_confirm from '@shared/assets/video/wallet_connect_confirm.mp4';
 import wallet_connect_confirm_webm from '@shared/assets/video/wallet_connect_confirm.webm';
@@ -12,11 +11,9 @@ import { useCountdown } from '@shared/lib/hooks';
 import { ValidationErrors } from '@shared/lib/utils';
 import { Button, ConfirmModal, Countdown, FootnoteText, SmallTitleText, StatusModal } from '@shared/ui';
 import { Animation } from '@shared/ui/Animation/Animation';
-
 import { transactionService, useTransaction } from '@entities/transaction';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { DEFAULT_POLKADOT_METHODS, walletConnectModel, walletConnectUtils } from '@entities/walletConnect';
-
 import { operationSignUtils } from '../lib/operation-sign-utils';
 import { type InnerSigningProps } from '../lib/types';
 import { operationSignModel } from '../model/operation-sign-model';

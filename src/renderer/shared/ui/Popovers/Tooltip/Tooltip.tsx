@@ -2,7 +2,6 @@ import { type ComponentProps } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
 import { Popover } from '@shared/ui';
-
 import { type Horizontal } from '../common/types';
 import './Tooltip.css';
 

@@ -1,5 +1,4 @@
 import { type MultisigEvent, type MultisigTransactionKey } from '@shared/core';
-
 import { type ID, type IMultisigEventStorage, type MultisigEventDS, type TMultisigEvent } from '../lib/types';
 
 export const useMultisigEventStorage = (db: TMultisigEvent): IMultisigEventStorage => ({

@@ -1,7 +1,6 @@
 import { allSettled, fork } from 'effector';
 
 import { currencyModel, priceProviderModel } from '@entities/price';
-
 import { currencyFormModel } from '../currency-form';
 
 describe('features/currency/model/currency-form', () => {

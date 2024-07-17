@@ -6,7 +6,6 @@ import chains from '@shared/config/chains/chains.json';
 import type { BaseAccount, Chain, ChainAccount, ShardAccount } from '@shared/core';
 import { AccountType, ChainType, CryptoType } from '@shared/core';
 import { TEST_ACCOUNTS } from '@shared/lib/utils';
-
 import { balanceModel } from '@entities/balance';
 
 import { NetworkAssets } from './NetworkAssets';

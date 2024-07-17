@@ -18,15 +18,12 @@ import type {
   Transaction,
 } from '@shared/core';
 import { ZERO_BALANCE, formatAmount, getRelaychainAsset, toAddress, transferableAmount } from '@shared/lib/utils';
-
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';
 import { type StakingMap, useStakingData } from '@entities/staking';
 import { transactionBuilder, transactionService } from '@entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-
 import { UnstakeRules } from '@features/operations/OperationsValidation';
-
 import { type NetworkStore } from '../lib/types';
 
 type BalanceMap = { balance: string; stake: string };

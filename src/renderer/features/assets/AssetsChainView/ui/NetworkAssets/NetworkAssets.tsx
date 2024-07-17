@@ -3,18 +3,15 @@ import groupBy from 'lodash/groupBy';
 import { useEffect, useMemo, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { sumBalances } from '@shared/api/network/service/chainsService';
 import type { Account, AccountId, Asset, Balance, Chain } from '@shared/core';
 import { ZERO_BALANCE, cnTw, includes, totalAmount } from '@shared/lib/utils';
 import { Accordion, CaptionText, Icon, Tooltip } from '@shared/ui';
-
 import { balanceModel } from '@entities/balance';
 import { ChainTitle } from '@entities/chain';
 import { type ExtendedChain } from '@entities/network';
 import { currencyModel, priceProviderModel } from '@entities/price';
 import { accountUtils } from '@entities/wallet';
-
 import { balanceSorter } from '../../lib/utils';
 import { AssetCard } from '../AssetCard/AssetCard';
 import { NetworkFiatBalance } from '../NetworkFiatBalance';

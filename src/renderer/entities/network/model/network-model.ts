@@ -22,7 +22,6 @@ import {
   type NoID,
 } from '@shared/core';
 import { dictionary } from '@shared/lib/utils';
-
 import { networkUtils } from '../lib/network-utils';
 
 const networkStarted = createEvent();

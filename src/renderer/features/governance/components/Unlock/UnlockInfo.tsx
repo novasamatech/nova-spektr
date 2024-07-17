@@ -1,14 +1,11 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-
 import { UnlockChunkType } from '@shared/api/governance';
 import { getSecondsDuratonToBlock } from '@shared/lib/utils';
 import { Button, Duration, FootnoteText, Icon, Shimmering } from '@shared/ui';
-
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price';
-
 import { locksModel } from '../../model/locks';
 import { unlockModel } from '../../model/unlock';
 

@@ -16,11 +16,9 @@ import {
   TransactionType,
 } from '@shared/core';
 import { TEST_ACCOUNTS, getProxyTypes, isStringsMatchQuery, toAddress, transferableAmount } from '@shared/lib/utils';
-
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-
 import { RemoveProxyRules } from '@features/operations/OperationsValidation';
 import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
 import { walletSelectModel } from '@features/wallets';

@@ -3,7 +3,6 @@ import groupBy from 'lodash/groupBy';
 
 import { storageService } from '@shared/api/storage';
 import { type AccountId, type ID, type NoID, type ProxyAccount, type ProxyGroup } from '@shared/core';
-
 import { proxyUtils } from '../lib/proxy-utils';
 
 type ProxyStore = Record<AccountId, ProxyAccount[]>;

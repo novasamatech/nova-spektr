@@ -3,17 +3,14 @@ import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { type Chain, type MultisigAccount } from '@shared/core';
 import { formatBalance, toAddress, toShortAddress, validateAddress } from '@shared/lib/utils';
 import { AmountInput, Button, HelpText, Icon, Identicon, Input, InputHint, Select } from '@shared/ui';
-
 import { AssetBalance } from '@entities/asset';
 import { ChainTitle } from '@entities/chain';
 import { SignatorySelector } from '@entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel, XcmFeeWithLabel } from '@entities/transaction';
 import { AccountAddress, AccountSelectModal, ProxyWalletAlert, accountUtils } from '@entities/wallet';
-
 import { formModel } from '../model/form-model';
 
 type Props = {

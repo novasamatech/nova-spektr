@@ -2,13 +2,10 @@ import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import type { AccountId, ChainAccount, DraftAccount, ShardAccount } from '@shared/core';
 import { cnTw } from '@shared/lib/utils';
 import { Alert, BaseModal, Button, InfoLink, InputFile, InputHint } from '@shared/ui';
-
 import { TEMPLATE_GITHUB_LINK } from '@features/wallets/ImportKeys/lib/constants';
-
 import { importKeysUtils } from '../lib/import-keys-utils';
 import { importKeysModel } from '../model/import-keys-model';
 

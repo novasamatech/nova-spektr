@@ -1,7 +1,6 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 
 import { includes } from '@shared/lib/utils';
-
 import { networkModel } from '@entities/network';
 
 const formInitiated = createEvent();

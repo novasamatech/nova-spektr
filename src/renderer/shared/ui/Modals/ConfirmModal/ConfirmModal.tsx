@@ -2,7 +2,6 @@ import { type PropsWithChildren } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
 import { Button } from '@shared/ui';
-
 import { type Pallet } from '../../Buttons/common/types';
 import { BaseModal } from '../BaseModal/BaseModal';
 

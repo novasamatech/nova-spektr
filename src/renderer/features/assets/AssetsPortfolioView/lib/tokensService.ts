@@ -8,7 +8,6 @@ import tokensProd from '@shared/config/tokens/tokens.json';
 import tokensDev from '@shared/config/tokens/tokens_dev.json';
 import type { Account, AccountId, AssetBalance, AssetByChains, Balance, ChainId } from '@shared/core';
 import { ZERO_BALANCE, getBalanceBn, totalAmount } from '@shared/lib/utils';
-
 import { balanceUtils } from '@entities/balance';
 import { accountUtils } from '@entities/wallet';
 

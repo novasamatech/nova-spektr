@@ -24,12 +24,10 @@ import {
   toShortAddress,
   transferableAmount,
 } from '@shared/lib/utils';
-
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';
 import { transactionService } from '@entities/transaction';
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
-
 import { AddPureProxiedRules } from '@features/operations/OperationsValidation';
 import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
 import { walletSelectModel } from '@features/wallets';

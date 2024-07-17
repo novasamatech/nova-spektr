@@ -4,7 +4,6 @@ import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
-
 import { type LoginFlows, WELL_KNOWN_SERVERS, validateShortUserName } from '@shared/api/matrix';
 import {
   Alert,
@@ -22,9 +21,7 @@ import {
 } from '@shared/ui';
 import { type IconNames } from '@shared/ui/Icon/data';
 import type { ComboboxOption } from '@shared/ui/types';
-
 import { LoginStatus, matrixModel, matrixUtils } from '@entities/matrix';
-
 import { APP_CONFIG } from '../../../../../../app.config';
 import { matrixLoginModel } from '../model/matrix-login-model';
 

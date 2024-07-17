@@ -1,5 +1,4 @@
 import { useI18n } from '@/app/providers';
-
 import { Tooltip } from '@/shared/ui/Popovers';
 import { FootnoteText, HelpText } from '@/shared/ui/Typography';
 import '../common/styles.css';

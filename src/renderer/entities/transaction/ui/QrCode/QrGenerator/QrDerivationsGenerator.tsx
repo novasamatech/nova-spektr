@@ -1,5 +1,4 @@
 import { type Address } from '@shared/core';
-
 import { type DynamicDerivationRequestInfo } from '../common/types';
 
 import { DEFAULT_FRAME_DELAY } from './common/constants';

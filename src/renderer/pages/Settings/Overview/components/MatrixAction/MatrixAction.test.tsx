@@ -4,7 +4,6 @@ import { Provider } from 'effector-react';
 import { MemoryRouter } from 'react-router-dom';
 
 import { Paths } from '@shared/routes';
-
 import { LoginStatus, matrixModel } from '@entities/matrix';
 
 import { MatrixAction } from './MatrixAction';

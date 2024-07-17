@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { chainsService } from '@shared/api/network';
 import type { Account, Chain } from '@shared/core';
 import { isStringsMatchQuery } from '@shared/lib/utils';
-
 import { AssetsListView, EmptyAssetsState } from '@entities/asset';
 import { balanceModel } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';

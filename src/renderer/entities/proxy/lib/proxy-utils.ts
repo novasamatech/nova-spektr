@@ -3,7 +3,6 @@ import sortBy from 'lodash/sortBy';
 import type { NoID, PartialProxiedAccount, ProxyAccount, ProxyDeposits, ProxyGroup, Wallet } from '@shared/core';
 import { ProxyType, ProxyVariant } from '@shared/core';
 import { splitCamelCaseString, toAddress } from '@shared/lib/utils';
-
 import { accountUtils } from '../../wallet';
 
 import { ProxyTypeName } from './constants';

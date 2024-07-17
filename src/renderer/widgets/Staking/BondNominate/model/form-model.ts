@@ -14,13 +14,10 @@ import {
   transferableAmount,
   validateAddress,
 } from '@shared/lib/utils';
-
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel } from '@entities/network';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-
 import { BondNominateRules } from '@features/operations/OperationsValidation';
-
 import { type WalletData } from '../lib/types';
 
 type FormParams = {

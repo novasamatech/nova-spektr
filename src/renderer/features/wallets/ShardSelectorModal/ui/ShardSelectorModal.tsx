@@ -2,9 +2,7 @@ import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { BaseModal, Button } from '@shared/ui';
-
 import { type Callbacks, shardsModel } from '../model/shards-model';
 
 import { ShardSearch } from './ShardSearch';

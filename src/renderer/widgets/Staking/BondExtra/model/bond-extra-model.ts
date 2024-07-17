@@ -13,16 +13,13 @@ import {
   WrapperKind,
 } from '@shared/core';
 import { getRelaychainAsset, nonNullable } from '@shared/lib/utils';
-
 import { basketModel } from '@entities/basket/model/basket-model';
 import { networkModel } from '@entities/network';
 import { transactionBuilder, transactionService } from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
-
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { bondExtraConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
-
 import { bondExtraUtils } from '../lib/bond-extra-utils';
 import { type BondExtraData, type FeeData, Step, type WalletData } from '../lib/types';
 

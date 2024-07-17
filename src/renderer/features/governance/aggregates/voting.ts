@@ -1,10 +1,8 @@
 import { combine, sample } from 'effector';
 
 import { type VotingMap } from '@shared/core';
-
 import { votingModel } from '@entities/governance';
 import { accountUtils, walletModel } from '@entities/wallet';
-
 import { networkSelectorModel } from '../model/networkSelector';
 
 import { tracksAggregate } from './tracks';

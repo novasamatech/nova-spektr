@@ -1,9 +1,7 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 
 import { localStorageService } from '@shared/api/local-storage';
-
 import { AssetsListView } from '@entities/asset';
-
 import { ASSETS_PAGE_VIEW, HIDE_ZERO_BALANCES } from '../lib/constants';
 
 const hideZeroBalancesChanged = createEvent<boolean>();

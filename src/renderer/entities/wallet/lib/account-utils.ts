@@ -20,7 +20,6 @@ import type {
   WcAccount,
 } from '@shared/core';
 import { toAddress } from '@shared/lib/utils';
-
 import { networkUtils } from '@entities/network';
 
 import { walletUtils } from './wallet-utils';

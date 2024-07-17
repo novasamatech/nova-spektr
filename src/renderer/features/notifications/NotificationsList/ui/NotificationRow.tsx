@@ -1,7 +1,6 @@
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import type { MultisigCreated, Notification, ProxyAction } from '@shared/core';
 import { NotificationType } from '@shared/core';
 import { FootnoteText } from '@shared/ui';

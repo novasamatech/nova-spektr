@@ -7,7 +7,6 @@ import {
   polkassemblyApiService,
 } from '@shared/api/polkassembly';
 import { dictionary } from '@shared/lib/utils';
-
 import { type GovernanceApi, type ReferendumTimelineRecord, type ReferendumVote } from '../lib/types';
 
 const referendumDecisionMap: Record<PolkassemblyPostVote['decision'], ReferendumVote['decision']> = {

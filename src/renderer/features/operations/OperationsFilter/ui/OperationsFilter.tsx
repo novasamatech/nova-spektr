@@ -1,15 +1,12 @@
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { chainsService } from '@shared/api/network';
 import { type MultisigTransactionDS } from '@shared/api/storage';
 import { type ChainId, type MultisigTransaction, type Transaction, TransactionType } from '@shared/core';
 import { Button, MultiSelect } from '@shared/ui';
 import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
-
 import { TransferTypes, XcmTypes } from '@entities/transaction/lib/common/constants';
-
 import { UNKNOWN_TYPE } from '../lib/constants';
 import { getStatusOptions, getTransactionOptions } from '../lib/utils';
 

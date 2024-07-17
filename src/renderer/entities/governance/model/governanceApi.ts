@@ -2,7 +2,6 @@ import { createEffect, createEvent, createStore, sample } from 'effector';
 
 import { type GovernanceApi } from '@/shared/api/governance';
 import { localStorageService } from '@/shared/api/local-storage';
-
 import { GOVERNANCE_API_KEY, GovernanceApis } from '../lib/constants';
 import { type SourceType } from '../lib/types';
 

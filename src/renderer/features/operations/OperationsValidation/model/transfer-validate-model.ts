@@ -11,15 +11,11 @@ import {
   type TransactionType,
 } from '@shared/core';
 import { getAssetById, toAccountId, transferableAmount } from '@shared/lib/utils';
-
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel } from '@entities/network';
 import { transactionService } from '@entities/transaction';
-
 import { TransferRules } from '@features/operations/OperationsValidation';
-
 import { type BalanceMap, type NetworkStore } from '@widgets/Transfer/lib/types';
-
 import { validationUtils } from '../lib/validation-utils';
 import {
   type TransferAccountStore,

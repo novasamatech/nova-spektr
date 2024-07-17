@@ -1,7 +1,6 @@
 import { type ClipboardEvent, type ComponentPropsWithoutRef, type ReactNode, forwardRef, useId } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
-
 import { type Theme } from '../../Dropdowns/common/types';
 import { LabelText } from '../../Typography';
 import { CommonInputStyles, CommonInputStylesTheme } from '../common/styles';

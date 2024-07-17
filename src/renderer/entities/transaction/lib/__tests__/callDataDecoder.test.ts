@@ -3,7 +3,6 @@ import { MockProvider } from '@polkadot/rpc-provider/mock';
 import { TypeRegistry } from '@polkadot/types';
 
 import { TEST_ADDRESS } from '@shared/lib/utils';
-
 import { useCallDataDecoder } from '../callDataDecoder';
 
 import { metadata } from './metadata';

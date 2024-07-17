@@ -3,7 +3,6 @@ import { Fragment } from 'react';
 import { type TFunction } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
-
 import { ConnectionType } from '@shared/core';
 import type { RpcNode } from '@shared/core';
 import { useScrollTo } from '@shared/lib/hooks';
@@ -12,7 +11,6 @@ import { Button, FootnoteText, HelpText, Icon, IconButton } from '@shared/ui';
 import { OptionStyle, SelectButtonStyle } from '@shared/ui/Dropdowns/common/constants';
 import { CommonInputStyles, CommonInputStylesTheme } from '@shared/ui/Inputs/common/styles';
 import type { Theme } from '@shared/ui/types';
-
 import type { ConnectionItem, SelectorPayload } from '../lib/types';
 
 const TRANSITION_DURATION = 100;

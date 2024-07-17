@@ -7,11 +7,9 @@ import { balanceService } from '@shared/api/balances';
 import { storageService } from '@shared/api/storage';
 import type { AccountId, Balance, Chain, ChainId, ConnectionStatus, ID, Wallet } from '@shared/core';
 import { isRejected } from '@shared/lib/utils';
-
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';
 import { walletModel } from '@entities/wallet';
-
 import { balanceSubUtils } from '../lib/balance-sub-utils';
 import { type SubAccounts, type Subscriptions } from '../lib/types';
 

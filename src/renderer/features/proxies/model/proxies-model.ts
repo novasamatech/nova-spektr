@@ -31,13 +31,11 @@ import type {
   WalletsMap,
 } from '@shared/core';
 import { dictionary } from '@shared/lib/utils';
-
 import { balanceModel } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';
 import { notificationModel } from '@entities/notification';
 import { proxyModel, proxyUtils, pureProxiesService } from '@entities/proxy';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-
 import { proxiesUtils } from '../lib/proxies-utils';
 
 const workerStarted = createEvent();

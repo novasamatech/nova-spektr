@@ -3,9 +3,7 @@ import { allSettled, fork } from 'effector';
 import { networkModel } from '@entities/network';
 import { proxyModel } from '@entities/proxy';
 import { walletModel } from '@entities/wallet';
-
 import { walletSelectModel } from '@features/wallets';
-
 import { walletProviderModel } from '../wallet-provider-model';
 
 import { walletProviderMocks } from './mocks/wallet-provider-mocks';

@@ -4,7 +4,6 @@ import { Fragment } from 'react';
 import { cnTw } from '@shared/lib/utils';
 import { FootnoteText, Input } from '@shared/ui';
 import { type Props as InputProps } from '@shared/ui/Inputs/Input/Input';
-
 import {
   OptionStyle,
   OptionStyleTheme,

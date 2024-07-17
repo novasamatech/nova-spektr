@@ -3,7 +3,6 @@ import { useUnit } from 'effector-react';
 import type { AccountId, Asset, ChainId } from '@shared/core';
 import { cnTw, toAccountId, toAddress, transferableAmount } from '@shared/lib/utils';
 import { BodyText, Icon } from '@shared/ui';
-
 import { AssetBalance } from '@entities/asset';
 import { useBalance } from '@entities/balance';
 import { WalletIcon, walletModel } from '@entities/wallet';

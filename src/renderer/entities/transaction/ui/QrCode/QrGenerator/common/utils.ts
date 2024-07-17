@@ -6,7 +6,6 @@ import { type Encoder } from 'raptorq';
 
 import { CryptoType, CryptoTypeString, SigningType } from '@shared/core';
 import type { Address, ChainId } from '@shared/core';
-
 import { DYNAMIC_DERIVATIONS_REQUEST } from '../../common/constants';
 import { type DynamicDerivationRequestInfo } from '../../common/types';
 

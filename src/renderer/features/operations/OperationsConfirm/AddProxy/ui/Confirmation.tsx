@@ -2,16 +2,13 @@ import { useStoreMap } from 'effector-react';
 import { type ReactNode, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
-
 import { AssetBalance } from '@entities/asset';
 import { SignButton } from '@entities/operations';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { proxyUtils } from '@entities/proxy';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
 import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, accountUtils } from '@entities/wallet';
-
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {

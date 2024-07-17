@@ -2,7 +2,6 @@ import { type ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 
 import { useI18n } from '@app/providers';
-
 import { cnTw } from '@shared/lib/utils';
 import { BodyText, Icon } from '@shared/ui';
 import { type IconNames } from '@shared/ui/Icon/data';

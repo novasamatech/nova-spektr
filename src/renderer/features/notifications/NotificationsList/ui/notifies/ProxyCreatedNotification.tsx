@@ -2,15 +2,12 @@ import { useUnit } from 'effector-react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
-
 import { type ProxyAction, ProxyVariant, WalletType } from '@shared/core';
 import { toAddress } from '@shared/lib/utils';
 import { BodyText, Identicon } from '@shared/ui';
-
 import { ChainTitle } from '@entities/chain';
 import { networkModel } from '@entities/network';
 import { WalletIcon } from '@entities/wallet';
-
 import { ProxyTypeOperation } from '../../lib/constants';
 
 type Props = {

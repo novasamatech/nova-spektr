@@ -56,7 +56,7 @@ module.exports = {
     'import/order': [
       'error',
       {
-        alphabetize: { order: 'asc' },
+        alphabetize: { order: 'asc', orderImportKind: 'asc' },
         groups: ['builtin', 'external', 'parent', ['sibling', 'index']],
         pathGroups: [
           { group: 'parent', pattern: '@app/**', position: 'before' },
@@ -74,6 +74,7 @@ module.exports = {
           { group: 'parent', pattern: '@/pages/**', position: 'before' },
         ],
         'newlines-between': 'always',
+        distinctGroup: false,
       },
     ],
     'no-irregular-whitespace': 'off',

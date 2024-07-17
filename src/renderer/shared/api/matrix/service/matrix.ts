@@ -25,7 +25,6 @@ import type { IStore } from 'matrix-js-sdk/lib/store';
 import { SyncState } from 'matrix-js-sdk/lib/sync';
 
 import { nonNullable } from '@shared/lib/utils';
-
 import {
   BASE_MATRIX_URL,
   KEY_FILE_MAX_SIZE,

@@ -2,17 +2,14 @@ import { useUnit } from 'effector-react';
 import { Link } from 'react-router-dom';
 
 import { useI18n } from '@app/providers';
-
 import { useModalClose } from '@shared/lib/hooks';
 import { totalAmount } from '@shared/lib/utils';
 import { type PathType, Paths, createLink } from '@shared/routes';
 import { BaseModal, BodyText, FootnoteText, HeaderTitleText, SearchInput } from '@shared/ui';
-
 import { EmptyAssetsState } from '@entities/asset';
 import { ChainIcon } from '@entities/chain';
 import { networkModel } from '@entities/network';
 import { AssetFiatBalance } from '@entities/price';
-
 import { ModalType } from '../lib/types';
 import { assetTransactionUtils } from '../lib/utils';
 import { assetTransactionModel } from '../model/asset-transaction-model';

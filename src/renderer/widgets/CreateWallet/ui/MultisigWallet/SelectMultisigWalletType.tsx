@@ -1,9 +1,7 @@
 import { useState } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { BaseModal, BodyText, Button, HeaderTitleText, RadioGroup } from '@shared/ui';
-
 import { MatrixAutoLogin, MatrixLogin } from '@features/matrix';
 
 import { MultisigWalletType } from './common/constants';

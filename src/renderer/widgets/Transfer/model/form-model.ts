@@ -23,14 +23,11 @@ import {
   toShortAddress,
   transferableAmount,
 } from '@shared/lib/utils';
-
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';
 import { transactionBuilder, transactionService } from '@entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-
 import { TransferRules } from '@features/operations/OperationsValidation';
-
 import { type NetworkStore } from '../lib/types';
 
 import { xcmTransferModel } from './xcm-transfer-model';

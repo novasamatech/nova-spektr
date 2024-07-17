@@ -2,7 +2,6 @@ import { Disclosure, Transition } from '@headlessui/react';
 import { type ElementType, type PropsWithChildren, forwardRef } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
-
 import { Icon } from '../Icon/Icon';
 import { type IconNames } from '../Icon/data';
 

@@ -4,7 +4,6 @@ import { createForm } from 'effector-forms';
 import { validateFullUserName } from '@shared/api/matrix';
 import type { Contact } from '@shared/core';
 import { toAccountId, validateAddress } from '@shared/lib/utils';
-
 import { contactModel } from '@entities/contact';
 
 export type Callbacks = {

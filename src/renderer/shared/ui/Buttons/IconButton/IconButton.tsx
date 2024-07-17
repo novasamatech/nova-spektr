@@ -1,7 +1,6 @@
 import { type ComponentProps, type MouseEvent } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
-
 import { Icon } from '../../Icon/Icon';
 import './IconButton.css';
 

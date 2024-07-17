@@ -13,7 +13,6 @@ import {
   type ProxyAccount,
   ProxyVariant,
 } from '@shared/core';
-
 import { proxyWorker, state } from '../proxy-worker';
 
 jest.mock('@polkadot/rpc-provider', () => ({

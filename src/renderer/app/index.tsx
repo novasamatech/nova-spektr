@@ -3,16 +3,13 @@ import { HashRouter } from 'react-router-dom';
 
 import { logger } from '@shared/config/utils';
 import { kernelModel } from '@shared/core';
-
 import { basketModel } from '@entities/basket';
 import { governanceModel } from '@entities/governance';
 import { networkModel } from '@entities/network';
 import { notificationModel } from '@entities/notification';
 import { proxyModel } from '@entities/proxy';
 import { walletModel } from '@entities/wallet';
-
 import { multisigsModel } from '@processes/multisigs';
-
 import { assetsSettingsModel } from '@features/assets';
 import { proxiesModel } from '@features/proxies';
 

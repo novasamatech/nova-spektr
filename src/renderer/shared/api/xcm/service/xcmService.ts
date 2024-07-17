@@ -3,7 +3,6 @@ import { BN } from '@polkadot/util';
 import get from 'lodash/get';
 
 import { type XTokenPalletTransferArgs, type XcmPalletTransferArgs } from '@entities/transaction';
-
 import type { AccountId, Chain, ChainId, HexString } from '../../../core';
 import { getAssetId, getTypeName, getTypeVersion, toLocalChainId } from '../../../lib/utils';
 import { localStorageService } from '../../local-storage';

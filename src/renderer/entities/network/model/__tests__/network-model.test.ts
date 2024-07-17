@@ -10,7 +10,6 @@ import {
   ConnectionStatus,
   ConnectionType,
 } from '@shared/core';
-
 import { networkModel } from '../network-model';
 
 describe('entities/network/model/network-model', () => {

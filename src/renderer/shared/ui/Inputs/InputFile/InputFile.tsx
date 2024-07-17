@@ -1,7 +1,6 @@
 import { type ChangeEvent, type ComponentPropsWithoutRef, forwardRef, useState } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
-
 import { Icon } from '../../Icon/Icon';
 import { FootnoteText, TextBase } from '../../Typography';
 import { type HTMLInputFileProps } from '../common/types';

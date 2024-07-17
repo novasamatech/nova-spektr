@@ -4,11 +4,9 @@ import { memo, useEffect, useState } from 'react';
 
 import { proxyService } from '@shared/api/proxy';
 import type { Asset } from '@shared/core';
-
 import { AssetBalance } from '@entities/asset';
 import { priceProviderModel } from '@entities/price';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
-
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 
 type Props = {

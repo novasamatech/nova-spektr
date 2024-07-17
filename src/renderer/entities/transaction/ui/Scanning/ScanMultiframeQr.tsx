@@ -4,15 +4,11 @@ import init, { Encoder } from 'raptorq';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-
-import type { Address, BaseAccount, ChainId, ShardAccount, type Wallet } from '@shared/core';
+import type { Address, BaseAccount, ChainId, ShardAccount, Wallet } from '@shared/core';
 import { type TxMetadata, createTxMetadata, toAddress, upgradeNonce } from '@shared/lib/utils';
 import { Button, FootnoteText } from '@shared/ui';
-
 import { transactionService } from '@entities/transaction';
-
 import { type SigningPayload } from '@features/operations/OperationSign';
-
 import { WalletIcon, accountUtils, walletUtils } from '../../../wallet';
 import { QrMultiframeGenerator } from '../QrCode/QrGenerator/QrMultiframeTxGenerator';
 import { createMultipleSignPayload, createSubstrateSignPayload } from '../QrCode/QrGenerator/common/utils';

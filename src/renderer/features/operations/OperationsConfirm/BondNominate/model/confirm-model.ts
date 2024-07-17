@@ -11,7 +11,6 @@ import {
   type Validator,
   type Wallet,
 } from '@shared/core';
-
 import { networkModel } from '@entities/network';
 import { walletModel, walletUtils } from '@entities/wallet';
 

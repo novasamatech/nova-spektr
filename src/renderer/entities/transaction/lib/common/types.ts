@@ -9,11 +9,11 @@ import type {
   Address,
   CallData,
   ChainId,
-  type DecodedTransaction,
+  DecodedTransaction,
   HexString,
   Timepoint,
-  type Transaction,
-  type TransactionType,
+  Transaction,
+  TransactionType,
   TxWrappers_OLD,
 } from '@shared/core';
 

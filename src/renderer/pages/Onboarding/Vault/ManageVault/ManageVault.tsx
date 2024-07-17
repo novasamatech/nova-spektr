@@ -6,7 +6,6 @@ import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n, useStatusContext } from '@app/providers';
-
 import { chainsService } from '@shared/api/network';
 import {
   AccountType,
@@ -35,11 +34,9 @@ import {
   SmallTitleText,
 } from '@shared/ui';
 import { Animation } from '@shared/ui/Animation/Animation';
-
 import { ChainTitle } from '@entities/chain';
 import { type SeedInfo } from '@entities/transaction';
 import { DerivedAccount, RootAccountLg, accountUtils } from '@entities/wallet';
-
 import { DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@features/wallets';
 
 import { VaultInfoPopover } from './VaultInfoPopover';

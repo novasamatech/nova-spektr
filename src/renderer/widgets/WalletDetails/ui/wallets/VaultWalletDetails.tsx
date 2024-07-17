@@ -2,7 +2,6 @@ import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import type { BaseAccount, Chain, ChainAccount, DraftAccount, PolkadotVaultWallet, ShardAccount } from '@shared/core';
 import { KeyType } from '@shared/core';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
@@ -10,17 +9,13 @@ import { copyToClipboard, toAddress } from '@shared/lib/utils';
 import { BaseModal, ContextMenu, DropdownIconButton, HelpText, IconButton, Tabs } from '@shared/ui';
 import { type IconNames } from '@shared/ui/Icon/data';
 import { type TabItem } from '@shared/ui/types';
-
 import { networkModel } from '@entities/network';
 import { RootAccountLg, VaultAccountsList, WalletCardLg, accountUtils, permissionUtils } from '@entities/wallet';
-
 import { DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@features/wallets';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
-
 import { AddProxy, addProxyModel } from '@widgets/AddProxyModal';
 import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
-
 import { type VaultMap } from '../../lib/types';
 import { walletDetailsUtils } from '../../lib/utils';
 import { vaultDetailsModel } from '../../model/vault-details-model';

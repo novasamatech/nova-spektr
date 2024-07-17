@@ -3,9 +3,7 @@ import { useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { Shimmering } from '@shared/ui';
-
 import { walletModel } from '@entities/wallet';
-
 import { walletSelectModel } from '../model/wallet-select-model';
 
 import { WalletButton } from './WalletButton';

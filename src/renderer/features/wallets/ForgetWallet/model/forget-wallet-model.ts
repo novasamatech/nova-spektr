@@ -10,7 +10,6 @@ import {
   type ProxyGroup,
   type Wallet,
 } from '@shared/core';
-
 import { balanceModel } from '@entities/balance';
 import { useForgetMultisig } from '@entities/multisig';
 import { proxyModel } from '@entities/proxy';

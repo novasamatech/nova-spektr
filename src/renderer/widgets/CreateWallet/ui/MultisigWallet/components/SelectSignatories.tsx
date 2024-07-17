@@ -2,19 +2,15 @@ import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { type Account, type Contact, type Wallet, WalletType } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
 import { RootExplorers, cnTw, includes, isEthereumAccountId, toAddress } from '@shared/lib/utils';
 import { Button, Checkbox, FootnoteText, HelpText, Icon, SearchInput, SmallTitleText, Tabs, Tooltip } from '@shared/ui';
 import { type TabItem } from '@shared/ui/types';
-
 import { EmptyContactList } from '@entities/contact';
 import { matrixModel } from '@entities/matrix';
 import { ContactItem, ExplorersPopover, accountUtils, walletUtils } from '@entities/wallet';
-
 import { CreateContactModal } from '@widgets/ManageContactModal';
-
 import { type ExtendedContact, type ExtendedWallet } from '../common/types';
 
 import { WalletItem } from './WalletItem';

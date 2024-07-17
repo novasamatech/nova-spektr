@@ -2,13 +2,10 @@ import keyBy from 'lodash/keyBy';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import type { AccountId, ChainAccount, DraftAccount, ShardAccount } from '@shared/core';
 import { toAddress } from '@shared/lib/utils';
 import { BaseModal, Button, InfoLink, SmallTitleText } from '@shared/ui';
-
 import { type DdAddressInfoDecoded, QrDerivationsGenerator, TROUBLESHOOTING_URL } from '@entities/transaction';
-
 import { derivationAddressUtils } from '../lib/utils';
 
 import { DdKeyQrReader } from './DdKeyQrReader';

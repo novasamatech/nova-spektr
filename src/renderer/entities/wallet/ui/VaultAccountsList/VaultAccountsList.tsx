@@ -1,9 +1,7 @@
 import { useI18n } from '@app/providers';
-
 import type { Chain, ChainAccount, ChainId, ShardAccount } from '@shared/core';
 import { cnTw } from '@shared/lib/utils';
 import { Accordion, FootnoteText, HelpText } from '@shared/ui';
-
 import { ChainTitle } from '@entities/chain';
 import { DerivedAccount, ExplorersPopover, accountUtils } from '@entities/wallet';
 

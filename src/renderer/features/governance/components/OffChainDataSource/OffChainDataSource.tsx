@@ -3,10 +3,8 @@ import { useUnit } from 'effector-react';
 import { type FormEvent, useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { useModalClose } from '@shared/lib/hooks';
 import { BaseModal, Button, FootnoteText, HelpText, Icon, InputHint, Select } from '@shared/ui';
-
 import { offChainModel } from '../../model/offChain';
 
 import { Sources } from './constants';

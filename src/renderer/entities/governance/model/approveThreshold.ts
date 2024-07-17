@@ -14,7 +14,6 @@ import type {
   VotingThreshold,
 } from '@/shared/core';
 import { getCurrentBlockNumber } from '@/shared/lib/utils';
-
 import { referendumService } from '@/entities/governance';
 
 import { referendumModel } from './referendum';

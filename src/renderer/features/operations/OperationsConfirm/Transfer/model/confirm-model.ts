@@ -10,10 +10,8 @@ import {
   type Wallet,
 } from '@shared/core';
 import { transferableAmount } from '@shared/lib/utils';
-
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { walletModel, walletUtils } from '@entities/wallet';
-
 import {
   type BalanceMap,
   type NetworkStore,

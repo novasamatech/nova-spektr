@@ -3,15 +3,12 @@ import keyBy from 'lodash/keyBy';
 import { useMemo } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import wallet_connect_reconnect from '@shared/assets/video/wallet_connect_reconnect.mp4';
 import wallet_connect_reconnect_webm from '@shared/assets/video/wallet_connect_reconnect.webm';
 import type { AccountId, Chain, WalletConnectGroup } from '@shared/core';
 import { Button, FootnoteText, Icon, SmallTitleText } from '@shared/ui';
-
 import { networkModel } from '@entities/network';
 import { MultiAccountsList } from '@entities/wallet';
-
 import { wcDetailsUtils } from '../../lib/utils';
 import { wcDetailsModel } from '../../model/wc-details-model';
 

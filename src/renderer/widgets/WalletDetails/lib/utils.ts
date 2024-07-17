@@ -8,9 +8,7 @@ import {
   type ShardAccount,
   type Wallet,
 } from '@shared/core';
-
 import { accountUtils } from '@entities/wallet';
-
 import { downloadFiles, exportKeysUtils } from '@features/wallets/ExportKeys';
 
 import { ForgetStep, ReconnectStep } from './constants';

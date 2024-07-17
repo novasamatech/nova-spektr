@@ -1,7 +1,6 @@
 import { allSettled, fork } from 'effector';
 
 import { contactModel } from '@entities/contact';
-
 import { filterModel } from '../contact-filter';
 
 const contacts = [

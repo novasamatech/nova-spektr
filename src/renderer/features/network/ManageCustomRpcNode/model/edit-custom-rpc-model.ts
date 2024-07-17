@@ -6,9 +6,7 @@ import { delay, spread } from 'patronum';
 
 import { storageService } from '@shared/api/storage';
 import { type ChainId, type Connection, type HexString, type RpcNode } from '@shared/core';
-
 import { networkModel } from '@entities/network';
-
 import { CONNECTION_TIMEOUT, FieldRules } from '../lib/constants';
 import { customRpcUtils } from '../lib/custom-rpc-utils';
 import { RpcValidation } from '../lib/types';

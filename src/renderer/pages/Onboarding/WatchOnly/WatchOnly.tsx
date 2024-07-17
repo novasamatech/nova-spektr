@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
 import { useI18n } from '@app/providers';
-
 import type { AccountId, Chain } from '@shared/core';
 import { AccountType, ChainType, CryptoType, ErrorType, SigningType, WalletType } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
@@ -20,7 +19,6 @@ import {
   InputHint,
   SmallTitleText,
 } from '@shared/ui';
-
 import { networkModel, networkUtils } from '@entities/network';
 import { AccountsList, walletModel } from '@entities/wallet';
 

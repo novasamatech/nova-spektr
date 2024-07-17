@@ -1,5 +1,4 @@
 import { type BasketTransaction, TransactionType } from '@shared/core';
-
 import { Step } from '../types/basket-page-types';
 
 import { getCoreTx } from './utils';

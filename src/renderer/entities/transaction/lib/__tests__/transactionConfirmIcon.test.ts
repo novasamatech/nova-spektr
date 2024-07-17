@@ -1,5 +1,4 @@
 import { type Transaction, TransactionType } from '@shared/core';
-
 import { getIconName } from '../transactionConfirmIcon';
 
 describe('entities/transaction/lib/transactionConfirmIcon', () => {

@@ -3,13 +3,10 @@ import { useUnit } from 'effector-react';
 import { type FormEvent, useEffect, useMemo, useRef } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { KeyType } from '@shared/core';
 import { Button, Checkbox, FootnoteText, Input, InputHint, Select } from '@shared/ui';
-
 import { ChainTitle } from '@entities/chain';
 import { networkModel } from '@entities/network';
-
 import { constructorModel } from '../model/constructor-model';
 
 import { ShardInfoPopover } from './ShardInfoPopover';

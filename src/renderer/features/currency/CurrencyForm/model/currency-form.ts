@@ -3,7 +3,6 @@ import { createForm } from 'effector-forms';
 import { combineEvents, spread } from 'patronum';
 
 import { type CurrencyItem } from '@shared/api/price-provider';
-
 import { currencyModel, priceProviderModel } from '@entities/price';
 
 export type Callbacks = {

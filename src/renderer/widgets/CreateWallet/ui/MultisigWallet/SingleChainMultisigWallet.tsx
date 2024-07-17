@@ -3,18 +3,15 @@ import noop from 'lodash/noop';
 import { type ComponentProps, useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { type HexString } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
 import { DEFAULT_TRANSITION, dictionary } from '@shared/lib/utils';
 import { BaseModal, Button, HeaderTitleText, IconButton, StatusLabel } from '@shared/ui';
-
 import { contactModel } from '@entities/contact';
 import { matrixModel, matrixUtils } from '@entities/matrix';
 import { networkModel } from '@entities/network';
 import { OperationResult } from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
-
 import { createMultisigWalletModel } from '../../model/create-multisig-wallet-model';
 
 import { type ExtendedAccount, type ExtendedContact } from './common/types';

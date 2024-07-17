@@ -3,7 +3,6 @@ import { combine, createEffect, createEvent, createStore, restore, sample } from
 import { pending, spread } from 'patronum';
 
 import { type Asset, type Chain, type EraIndex, type Validator } from '@shared/core';
-
 import { networkModel, networkUtils } from '@entities/network';
 import { type ValidatorMap, validatorsService } from '@entities/staking';
 import { eraService } from '@entities/staking/api';

@@ -5,10 +5,8 @@ import { attach, combine, createEffect, createEvent, createStore, restore, sampl
 import { type XcmConfig, XcmTransferType, xcmService } from '@shared/api/xcm';
 import type { AccountId, Asset, Chain, ChainId } from '@shared/core';
 import { getParachainId, toLocalChainId } from '@shared/lib/utils';
-
 import { networkModel } from '@entities/network';
 import { xcmModel } from '@entities/xcm';
-
 import { xcmTransferUtils } from '../lib/xcm-transfer-utils';
 
 const xcmStarted = createEvent<{ chain: Chain; asset: Asset }>();

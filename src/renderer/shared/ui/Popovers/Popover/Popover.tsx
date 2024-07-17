@@ -5,7 +5,6 @@ import { createPortal } from 'react-dom';
 
 import { useDebounce } from '@shared/lib/hooks';
 import { cnTw } from '@shared/lib/utils';
-
 import { type Horizontal, type Vertical } from '../common/types';
 import { useParentScrollLock } from '../common/useParentScrollLock';
 

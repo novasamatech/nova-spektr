@@ -1,5 +1,4 @@
 import { useI18n } from '@app/providers';
-
 import { BodyText, Button, Icon } from '@shared/ui';
 
 export const FallbackScreen = () => {

@@ -4,11 +4,9 @@ import { type Store, createEffect, createEvent, sample } from 'effector';
 
 import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@shared/core';
 import { toAccountId } from '@shared/lib/utils';
-
 import { balanceModel } from '@entities/balance';
 import { networkModel } from '@entities/network';
 import { transactionService } from '@entities/transaction';
-
 import { RemoveProxyRules } from '../lib/remove-proxy-rules';
 import { validationUtils } from '../lib/validation-utils';
 import { type AccountStore, type ValidationResult } from '../types/types';

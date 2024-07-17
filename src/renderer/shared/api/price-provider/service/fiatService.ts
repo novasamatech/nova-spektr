@@ -1,6 +1,5 @@
 import { localStorageService } from '@shared/api/local-storage';
 import CURRENCY from '@shared/config/currency/currencies.json';
-
 import { ASSETS_PRICES_KEY, CURRENCY_CODE_KEY, FIAT_FLAG_KEY, PRICE_PROVIDER_KEY } from '../lib/constants';
 import { type CurrencyItem } from '../lib/types';
 

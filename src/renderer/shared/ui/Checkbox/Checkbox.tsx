@@ -1,7 +1,6 @@
 import { type ChangeEvent, type PropsWithChildren } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
-
 import { LabelText } from '../Typography';
 import './Checkbox.css';
 

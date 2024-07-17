@@ -2,7 +2,6 @@ import { type ApiPromise } from '@polkadot/api';
 import { combine, createEvent, restore } from 'effector';
 
 import { type Account, type Asset, type Chain, type ChainId, type ProxiedAccount, type Wallet } from '@shared/core';
-
 import { networkModel } from '@entities/network';
 import { walletModel, walletUtils } from '@entities/wallet';
 

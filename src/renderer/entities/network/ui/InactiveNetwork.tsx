@@ -1,7 +1,6 @@
 import cn from 'classnames';
 
 import { useI18n } from '@app/providers';
-
 import NoConnection from '@shared/assets/images/misc/no-connection.webp';
 import { Paths } from '@shared/routes';
 import { ButtonLink, FootnoteText } from '@shared/ui';

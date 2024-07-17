@@ -13,12 +13,10 @@ import {
   type Transaction,
 } from '@shared/core';
 import { redeemableAmount, toAccountId, transferableAmount } from '@shared/lib/utils';
-
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel } from '@entities/network';
 import { type StakingMap, eraService, useStakingData } from '@entities/staking';
 import { transactionService } from '@entities/transaction';
-
 import { validationUtils } from '../lib/validation-utils';
 import { WithdrawRules } from '../lib/withdraw-rules';
 import { type AmountFeeStore, type ValidationResult } from '../types/types';

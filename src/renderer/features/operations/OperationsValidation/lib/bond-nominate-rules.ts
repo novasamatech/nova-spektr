@@ -3,7 +3,6 @@ import { type Store } from 'effector';
 
 import { type Account, RewardsDestination, type ShardAccount } from '@shared/core';
 import { formatAmount, validateAddress } from '@shared/lib/utils';
-
 import {
   type AmountFeeStore,
   type BondAmountBalanceStore,

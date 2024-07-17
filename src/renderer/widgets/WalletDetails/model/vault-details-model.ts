@@ -13,9 +13,7 @@ import type {
   ShardAccount,
   Wallet,
 } from '@shared/core';
-
 import { accountUtils, walletModel } from '@entities/wallet';
-
 import { proxiesModel } from '@features/proxies';
 
 type AccountsCreatedParams = {

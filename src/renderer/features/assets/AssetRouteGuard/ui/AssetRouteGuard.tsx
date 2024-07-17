@@ -3,7 +3,6 @@ import { type ReactNode, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import type { Asset, Chain } from '@shared/core';
-
 import * as assetGuardModel from '../model/asset-guard';
 
 type Props = {

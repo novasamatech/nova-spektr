@@ -3,7 +3,6 @@ import uniqBy from 'lodash/uniqBy';
 import { useEffect, useMemo, useState } from 'react';
 
 import { useGraphql, useI18n } from '@app/providers';
-
 import {
   type Account,
   type Address,
@@ -18,7 +17,6 @@ import {
 import { useToggle } from '@shared/lib/hooks';
 import { getRelaychainAsset, toAddress } from '@shared/lib/utils';
 import { Header } from '@shared/ui';
-
 import { InactiveNetwork, networkUtils, useNetworkData } from '@entities/network';
 import { priceProviderModel } from '@entities/price';
 import {
@@ -31,9 +29,7 @@ import {
 } from '@entities/staking';
 import { eraService } from '@entities/staking/api';
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
-
 import * as Operations from '@widgets/Staking';
-
 import { type NominatorInfo, Operations as StakeOperations } from '../lib/types';
 
 import { AboutStaking } from './AboutStaking';

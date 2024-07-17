@@ -1,6 +1,5 @@
 import { cnTw, copyToClipboard, toShortAddress } from '@shared/lib/utils';
 import { IconButton, Truncate } from '@shared/ui';
-
 import { type AccountAddressProps, getAddress } from '../AccountAddress/AccountAddress';
 import { AddressWithTwoLines } from '../AddressWithTwoLines/AddressWithTwoLines';
 

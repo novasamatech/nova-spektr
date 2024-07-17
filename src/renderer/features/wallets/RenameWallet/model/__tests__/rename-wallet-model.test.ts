@@ -1,9 +1,7 @@
 import { allSettled, fork } from 'effector';
 
 import { storageService } from '@shared/api/storage';
-
 import { walletModel } from '@entities/wallet';
-
 import { renameWalletModel } from '../rename-wallet-model';
 
 import { walletMock } from './mocks/wallet-mock';

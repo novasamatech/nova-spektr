@@ -2,14 +2,12 @@ import cn from 'classnames';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-
 import { chainsService } from '@shared/api/network';
 import type { Address, MultisigAccount, MultisigTransaction, Transaction, Validator } from '@shared/core';
 import { TransactionType } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
 import { cnTw, copyToClipboard, getAssetById, truncate } from '@shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@shared/ui';
-
 import { AssetBalance } from '@entities/asset';
 import { ChainTitle } from '@entities/chain';
 import { matrixModel } from '@entities/matrix';
@@ -26,7 +24,6 @@ import {
   isXcmTransaction,
 } from '@entities/transaction';
 import { AddressWithExplorers, ExplorersPopover, WalletCardSm, walletModel } from '@entities/wallet';
-
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import {
   getDelegate,

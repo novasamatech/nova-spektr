@@ -3,10 +3,8 @@ import { useEffect, useState } from 'react';
 import type { Address, HexString } from '@shared/core';
 import { useCountdown } from '@shared/lib/hooks';
 import { ValidationErrors, toAddress } from '@shared/lib/utils';
-
 import { QrReaderWrapper, ScanMultiframeQr, ScanSingleframeQr, useTransaction } from '@entities/transaction';
 import { accountUtils, walletUtils } from '@entities/wallet';
-
 import { operationSignUtils } from '../lib/operation-sign-utils';
 import type { InnerSigningProps } from '../lib/types';
 

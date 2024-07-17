@@ -13,10 +13,8 @@ import {
   WalletType,
 } from '@shared/core';
 import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@shared/lib/utils';
-
 import { proxyModel } from '@entities/proxy';
 import { walletModel } from '@entities/wallet';
-
 import { forgetWalletModel } from '../forget-wallet-model';
 
 jest.mock('@entities/multisig', () => ({

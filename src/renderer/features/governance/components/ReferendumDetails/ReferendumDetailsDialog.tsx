@@ -2,14 +2,11 @@ import { useGate, useStoreMap } from 'effector-react';
 import { useState } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { type Chain } from '@shared/core';
 import { useModalClose } from '@shared/lib/hooks';
 import { pickNestedValue } from '@shared/lib/utils';
 import { BaseModal, Button, Plate } from '@shared/ui';
-
 import { referendumService } from '@entities/governance';
-
 import { detailsAggregate } from '../../aggregates/details';
 import { type AggregatedReferendum } from '../../types/structs';
 import { VotingHistoryDialog } from '../VotingHistory/VotingHistoryDialog';

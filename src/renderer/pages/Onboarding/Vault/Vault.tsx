@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { useToggle } from '@shared/lib/hooks';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { BaseModal } from '@shared/ui';
-
 import { type SeedInfo, VaultFeatures } from '@entities/transaction';
 
 import { ManageMultishard } from './ManageMultishard/ManageMultishard';

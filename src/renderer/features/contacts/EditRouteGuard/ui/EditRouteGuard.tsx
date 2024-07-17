@@ -3,7 +3,6 @@ import { type ReactNode, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import type { Contact } from '@shared/core';
-
 import * as editGuardModel from '../model/edit-guard';
 
 type Props = {

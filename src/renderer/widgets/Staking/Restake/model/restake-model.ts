@@ -3,14 +3,11 @@ import { delay, spread } from 'patronum';
 
 import { type BasketTransaction, type Transaction } from '@shared/core';
 import { getRelaychainAsset, nonNullable } from '@shared/lib/utils';
-
 import { basketModel } from '@entities/basket';
 import { walletModel, walletUtils } from '@entities/wallet';
-
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { restakeConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
-
 import { restakeUtils } from '../lib/restake-utils';
 import { type NetworkStore, type RestakeStore, Step } from '../lib/types';
 

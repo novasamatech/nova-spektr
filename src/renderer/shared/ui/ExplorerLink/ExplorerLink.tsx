@@ -1,7 +1,5 @@
 import { useI18n } from '@app/providers';
-
 import { FootnoteText, Icon } from '@shared/ui';
-
 import { cnTw } from '../../lib/utils';
 
 import { DefaultExplorer, ExplorerIcons } from './constants';

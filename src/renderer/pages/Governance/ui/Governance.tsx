@@ -2,11 +2,8 @@ import { useGate, useUnit } from 'effector-react';
 import { useState } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { Header, Plate } from '@shared/ui';
-
 import { InactiveNetwork } from '@entities/network';
-
 import {
   type AggregatedReferendum,
   CompletedReferendums,
@@ -19,7 +16,6 @@ import {
   ReferendumSearch,
   networkSelectorModel,
 } from '@features/governance';
-
 import { governancePageAggregate } from '../aggregates/governancePage';
 
 import { EmptyGovernance } from './EmptyGovernance';

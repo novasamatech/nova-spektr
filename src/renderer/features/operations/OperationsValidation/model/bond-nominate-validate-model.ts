@@ -4,11 +4,9 @@ import { type Store, createEffect, createEvent, sample } from 'effector';
 
 import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@shared/core';
 import { stakeableAmount, toAccountId, transferableAmount } from '@shared/lib/utils';
-
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel } from '@entities/network';
 import { transactionService } from '@entities/transaction';
-
 import { BondNominateRules } from '../lib/bond-nominate-rules';
 import { validationUtils } from '../lib/validation-utils';
 import { type AmountFeeStore, type ShardsBondBalanceStore, type ValidationResult } from '../types/types';

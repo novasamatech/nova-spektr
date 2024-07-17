@@ -18,7 +18,6 @@ import {
   type ProxyDeposits,
   ProxyVariant,
 } from '@shared/core';
-
 import { proxyWorkerUtils } from '../lib/worker-utils';
 
 export const proxyWorker = {

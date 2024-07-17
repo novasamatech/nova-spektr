@@ -1,12 +1,9 @@
 import { useI18n } from '@app/providers';
-
 import { type Asset, type OngoingReferendum } from '@shared/core';
 import { useModalClose } from '@shared/lib/hooks';
 import { copyToClipboard, formatBalance } from '@shared/lib/utils';
 import { BaseModal, DetailRow, IconButton, Separator, Truncate } from '@shared/ui';
-
 import { AddressWithName } from '@entities/wallet';
-
 import { type AggregatedReferendum } from '../../types/structs';
 
 type Props = {

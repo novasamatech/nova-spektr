@@ -5,7 +5,6 @@ import { spread } from 'patronum';
 
 import { governanceService } from '@shared/api/governance';
 import type { Address, TrackId } from '@shared/core';
-
 import { accountUtils, walletModel } from '@entities/wallet';
 
 import { networkSelectorModel } from './networkSelector';

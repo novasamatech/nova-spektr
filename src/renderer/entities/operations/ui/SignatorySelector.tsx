@@ -1,10 +1,8 @@
 import { useI18n } from '@app/providers';
-
 import { type Account, type Asset } from '@shared/core';
 import { toAddress } from '@shared/lib/utils';
 import { InputHint, Select } from '@shared/ui';
 import type { DropdownOption } from '@shared/ui/types';
-
 import { AssetBalance } from '../../asset';
 import { AccountAddress, accountUtils } from '../../wallet';
 

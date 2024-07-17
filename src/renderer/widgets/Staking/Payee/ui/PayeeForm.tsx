@@ -3,7 +3,6 @@ import { useUnit } from 'effector-react';
 import { type FormEvent, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { type Address, RewardsDestination } from '@shared/core';
 import { formatBalance, toAddress, toShortAddress, validateAddress } from '@shared/lib/utils';
 import {
@@ -20,14 +19,12 @@ import {
   Tooltip,
 } from '@shared/ui';
 import { type RadioOption } from '@shared/ui/types';
-
 import { AssetBalance } from '@entities/asset';
 import { SignatorySelector } from '@entities/operations';
 import { priceProviderModel } from '@entities/price';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { FeeLoader } from '@entities/transaction';
 import { AccountAddress, ProxyWalletAlert, accountUtils } from '@entities/wallet';
-
 import { formModel } from '../model/form-model';
 
 type Props = {

@@ -1,10 +1,8 @@
 import { type PropsWithChildren } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import type { ChainId } from '@shared/core';
 import { Button, Countdown, FootnoteText, Icon, InfoLink, Shimmering, SmallTitleText } from '@shared/ui';
-
 import { TROUBLESHOOTING_URL, getMetadataPortalMetadataUrl } from '../common/constants';
 
 type Props = {

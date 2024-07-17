@@ -1,13 +1,10 @@
 import { useState } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { type Asset, type Chain } from '@shared/core';
 import { formatBalance } from '@shared/lib/utils';
 import { Button, FootnoteText, Icon } from '@shared/ui';
-
 import { VoteChart, referendumService, votingService } from '@entities/governance';
-
 import { type AggregatedReferendum } from '../../types/structs';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 

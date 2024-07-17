@@ -8,9 +8,7 @@ import { localStorageService } from '@shared/api/local-storage';
 import { storageService } from '@shared/api/storage';
 import { type Account, type ID, type Wallet, type WcAccount, kernelModel } from '@shared/core';
 import { nonNullable } from '@shared/lib/utils';
-
 import { walletModel, walletUtils } from '@entities/wallet';
-
 import {
   DEFAULT_APP_METADATA,
   DEFAULT_LOGGER,

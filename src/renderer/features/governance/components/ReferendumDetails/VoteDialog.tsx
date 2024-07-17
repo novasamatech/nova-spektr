@@ -2,11 +2,9 @@ import { type PropsWithChildren } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
-
 import { type Chain, type Referendum } from '@shared/core';
 import { BaseModal, FootnoteText, HeaderTitleText, Icon, LabelHelpBox, Popover, SmallTitleText } from '@shared/ui';
 import { type IconNames } from '@shared/ui/Icon/data';
-
 import { ChainIcon } from '@entities/chain';
 
 type Props = {

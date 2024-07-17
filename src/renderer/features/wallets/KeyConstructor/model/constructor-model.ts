@@ -5,7 +5,6 @@ import { spread } from 'patronum';
 import type { Chain, ChainAccount, ShardAccount } from '@shared/core';
 import { AccountType, ChainType, CryptoType, KeyType } from '@shared/core';
 import { derivationHasPassword, validateDerivation } from '@shared/lib/utils';
-
 import { networkModel, networkUtils } from '@entities/network';
 import { KEY_NAMES, SHARDED_KEY_NAMES, accountUtils } from '@entities/wallet';
 

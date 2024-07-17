@@ -2,7 +2,6 @@ import { allSettled, fork } from 'effector';
 
 import { type CurrencyItem, fiatService } from '@shared/api/price-provider';
 import { kernelModel } from '@shared/core';
-
 import { currencyModel } from '../currency-model';
 
 describe('entities/price/model/currency-model', () => {

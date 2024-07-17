@@ -1,7 +1,6 @@
 import { allSettled, fork } from 'effector';
 
 import { networkModel } from '@entities/network';
-
 import { activeNetworksModel } from '../active-networks-model';
 
 import { networksMock } from './mocks/networks-mock';

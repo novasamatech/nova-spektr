@@ -5,7 +5,6 @@ import { combineEvents } from 'patronum';
 import { storageService } from '@shared/api/storage';
 import type { Account, BaseAccount, ChainAccount, ID, MultisigAccount, NoID, Wallet, WcAccount } from '@shared/core';
 import { dictionary } from '@shared/lib/utils';
-
 import { modelUtils } from '../lib/model-utils';
 
 type DbWallet = Omit<Wallet, 'accounts'>;

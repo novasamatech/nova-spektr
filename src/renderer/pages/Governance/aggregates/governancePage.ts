@@ -3,7 +3,6 @@ import { createGate } from 'effector-react';
 import { either, readonly } from 'patronum';
 
 import { filterModel, listAggregate, listService, networkSelectorModel, titleModel } from '@features/governance';
-
 import { governancePageUtils } from '../lib/governancePageUtils';
 
 const flow = createGate();

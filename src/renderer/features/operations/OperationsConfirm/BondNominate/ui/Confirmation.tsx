@@ -2,17 +2,14 @@ import { useStoreMap } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { useToggle } from '@shared/lib/hooks';
 import { cnTw, formatAmount } from '@shared/lib/utils';
 import { Button, CaptionText, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
-
 import { AssetBalance } from '@entities/asset';
 import { SignButton } from '@entities/operations';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { AccountsModal, SelectedValidatorsModal, StakingPopover, UnstakingDuration } from '@entities/staking';
 import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, accountUtils } from '@entities/wallet';
-
 import { type Config } from '../../../OperationsValidation';
 import { confirmModel } from '../model/confirm-model';
 

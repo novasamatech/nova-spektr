@@ -17,7 +17,6 @@ import {
   type ShardAccount,
 } from '@shared/core';
 import { toAccountId } from '@shared/lib/utils';
-
 import { KEY_NAMES, SHARDED_KEY_NAMES } from '@entities/wallet';
 
 import { type ErrorDetails } from './derivation-import-error';

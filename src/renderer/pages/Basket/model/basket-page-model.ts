@@ -4,12 +4,10 @@ import { delay, throttle } from 'patronum';
 
 import { type BasketTransaction, type ChainId, type ID, TransactionType } from '@shared/core';
 import { addUnique, removeFromCollection } from '@shared/lib/utils';
-
 import { basketModel } from '@entities/basket';
 import { networkModel, networkUtils } from '@entities/network';
 import { TransferTypes, XcmTypes, transactionService } from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
-
 import { basketFilterModel } from '@features/basket/BasketFilter';
 import {
   type ValidationResult,
@@ -26,7 +24,6 @@ import {
   unstakeValidateModel,
   withdrawValidateModel,
 } from '@features/operations/OperationsValidation';
-
 import { basketPageUtils } from '../lib/basket-page-utils';
 import { getCoreTx } from '../lib/utils';
 import { Step } from '../types/basket-page-types';

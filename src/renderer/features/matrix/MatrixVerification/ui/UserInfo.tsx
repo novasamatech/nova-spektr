@@ -1,10 +1,8 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-
 import { useToggle } from '@shared/lib/hooks';
 import { Button, FootnoteText, StatusLabel } from '@shared/ui';
-
 import { matrixModel } from '@entities/matrix';
 
 export const UserInfo = () => {

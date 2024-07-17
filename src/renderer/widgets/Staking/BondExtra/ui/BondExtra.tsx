@@ -2,16 +2,12 @@ import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { useModalClose } from '@shared/lib/hooks';
 import { BaseModal, Button } from '@shared/ui';
-
 import { OperationTitle } from '@entities/chain';
 import { OperationResult } from '@entities/transaction';
-
 import { OperationSign, OperationSubmit } from '@features/operations';
 import { BondExtraConfirmation as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
-
 import { bondExtraUtils } from '../lib/bond-extra-utils';
 import { Step } from '../lib/types';
 import { bondExtraModel } from '../model/bond-extra-model';

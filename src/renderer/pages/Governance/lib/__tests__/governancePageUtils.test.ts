@@ -1,7 +1,5 @@
 import { type OngoingReferendum, ReferendumType } from '@shared/core';
-
 import { type AggregatedReferendum, VoteStatus } from '@features/governance';
-
 import { governancePageUtils } from '../governancePageUtils';
 
 describe('pages/Governance/lib/governancePageUtils', () => {

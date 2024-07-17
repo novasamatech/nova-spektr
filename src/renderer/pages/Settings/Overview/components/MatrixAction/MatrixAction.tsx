@@ -2,11 +2,9 @@ import { useUnit } from 'effector-react';
 import { Link } from 'react-router-dom';
 
 import { useI18n } from '@app/providers';
-
 import { cnTw } from '@shared/lib/utils';
 import { Paths } from '@shared/routes';
 import { BodyText, FootnoteText, HelpText, Icon, Plate, StatusLabel } from '@shared/ui';
-
 import { matrixModel, matrixUtils } from '@entities/matrix';
 
 export const MatrixAction = () => {

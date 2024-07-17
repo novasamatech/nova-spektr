@@ -13,7 +13,6 @@ import {
   SigningType,
   WalletType,
 } from '@shared/core';
-
 import { matrixModel } from '@entities/matrix';
 import { networkModel, networkUtils } from '@entities/network';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';

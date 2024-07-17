@@ -17,20 +17,17 @@ import {
   WrapperKind,
 } from '@shared/core';
 import { toAddress, transferableAmount } from '@shared/lib/utils';
-
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { basketModel } from '@entities/basket/model/basket-model';
 import { networkModel } from '@entities/network';
 import { proxyModel } from '@entities/proxy';
 import { transactionService } from '@entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-
 import { balanceSubModel } from '@features/balances';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { removePureProxiedConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { walletSelectModel } from '@features/wallets';
-
 import { walletProviderModel } from '../../WalletDetails/model/wallet-provider-model';
 import { removePureProxyUtils } from '../lib/remove-pure-proxy-utils';
 import { type RemoveProxyStore, Step } from '../lib/types';

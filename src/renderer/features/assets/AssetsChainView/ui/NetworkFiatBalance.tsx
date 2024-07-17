@@ -3,10 +3,8 @@ import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import type { Asset, Balance } from '@shared/core';
 import { formatFiatBalance, getRoundedValue, totalAmount } from '@shared/lib/utils';
-
 import { currencyModel, priceProviderModel } from '@entities/price';
 import { FiatBalance } from '@entities/price/ui/FiatBalance';
 

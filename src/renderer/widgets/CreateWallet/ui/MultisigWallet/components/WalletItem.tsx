@@ -2,7 +2,6 @@ import { memo } from 'react';
 
 import { type WalletType } from '@shared/core';
 import { BodyText } from '@shared/ui';
-
 import { WalletIcon } from '@entities/wallet';
 
 type Props = {

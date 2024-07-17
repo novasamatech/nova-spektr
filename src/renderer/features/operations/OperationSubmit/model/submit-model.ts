@@ -14,12 +14,10 @@ import type {
   Transaction,
 } from '@shared/core';
 import { removeFromCollection } from '@shared/lib/utils';
-
 import { matrixModel, matrixUtils } from '@entities/matrix';
 import { buildMultisigTx } from '@entities/multisig';
 import { networkModel } from '@entities/network';
 import { type ExtrinsicResultParams, transactionService } from '@entities/transaction';
-
 import { ExtrinsicResult, SubmitStep } from '../lib/types';
 
 type Input = {

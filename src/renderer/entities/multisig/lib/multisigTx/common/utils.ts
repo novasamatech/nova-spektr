@@ -8,12 +8,11 @@ import type {
   ChainId,
   DecodedTransaction,
   MultisigAccount,
-  type MultisigEvent,
-  type MultisigTransaction,
-  type Transaction,
+  MultisigEvent,
+  MultisigTransaction,
+  Transaction,
 } from '@shared/core';
 import { getCreatedDate, toAccountId } from '@shared/lib/utils';
-
 import type { ExtrinsicResultParams } from '@entities/transaction';
 
 import { type PendingMultisigTransaction } from './types';

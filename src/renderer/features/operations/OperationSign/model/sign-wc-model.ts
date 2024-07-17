@@ -6,10 +6,8 @@ import { combineEvents } from 'patronum';
 import { chainsService } from '@shared/api/network';
 import { type HexString, type WcAccount } from '@shared/core';
 import { toAccountId } from '@shared/lib/utils';
-
 import { walletModel, walletUtils } from '@entities/wallet';
 import { type InitReconnectParams, walletConnectModel } from '@entities/walletConnect';
-
 import { operationSignUtils } from '../lib/operation-sign-utils';
 import { ReconnectStep } from '../lib/types';
 

@@ -1,7 +1,6 @@
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
-
 import { FootnoteText, InfoLink, LabelHelpBox, Popover, SmallTitleText } from '@shared/ui';
 
 const MATRIX = 'https://matrix.org/';

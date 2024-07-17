@@ -1,9 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-
 import { MultiSelect, Select } from '@shared/ui';
-
 import { filterModel } from '../../model/filter';
 
 import { trackOptions, voteOptions } from './constants';

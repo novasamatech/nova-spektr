@@ -2,11 +2,9 @@ import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { type Account, type MultisigAccount, type MultisigTransaction, type Transaction } from '@shared/core';
 import { getAssetById } from '@shared/lib/utils';
 import { DetailRow, FootnoteText, Icon } from '@shared/ui';
-
 import { getTransactionFromMultisigTx } from '@entities/multisig';
 import { type ExtendedChain } from '@entities/network';
 import { SignButton } from '@entities/operations';
@@ -14,11 +12,8 @@ import { priceProviderModel } from '@entities/price';
 import { Fee, FeeLoader, MultisigDepositWithLabel, XcmFee, isXcmTransaction } from '@entities/transaction';
 import { getIconName } from '@entities/transaction/lib/transactionConfirmIcon';
 import { walletModel } from '@entities/wallet';
-
 import { xcmTransferModel } from '@widgets/Transfer';
-
 import { TransactionAmount } from '@pages/Operations/components/TransactionAmount';
-
 import { Details } from '../Details';
 
 type Props = {

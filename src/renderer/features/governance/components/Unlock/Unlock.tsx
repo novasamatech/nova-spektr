@@ -2,14 +2,11 @@ import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { useModalClose } from '@shared/lib/hooks';
 import { Step, isStep } from '@shared/lib/utils';
 import { BaseModal, HeaderTitleText } from '@shared/ui';
-
 import { OperationTitle } from '@entities/chain';
 import { OperationResult } from '@entities/transaction';
-
 import { networkSelectorModel } from '../../model/networkSelector';
 import { unlockModel } from '../../model/unlock';
 

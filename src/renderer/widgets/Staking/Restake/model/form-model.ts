@@ -25,15 +25,12 @@ import {
   transferableAmount,
   unlockingAmount,
 } from '@shared/lib/utils';
-
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';
 import { type StakingMap, useStakingData } from '@entities/staking';
 import { transactionBuilder, transactionService } from '@entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-
 import { RestakeRules } from '@features/operations/OperationsValidation';
-
 import { type NetworkStore } from '../lib/types';
 
 type BalanceMap = { balance: string; stake: string };

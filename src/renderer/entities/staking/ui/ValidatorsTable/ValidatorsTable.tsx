@@ -1,9 +1,7 @@
 import { useI18n } from '@app/providers';
-
 import { type Asset, type Explorer, type Validator } from '@shared/core';
 import { cnTw, getComposedIdentity } from '@shared/lib/utils';
 import { BodyText, FootnoteText, HelpText, IconButton, Identicon, Truncate } from '@shared/ui';
-
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { ExplorersPopover } from '@entities/wallet';

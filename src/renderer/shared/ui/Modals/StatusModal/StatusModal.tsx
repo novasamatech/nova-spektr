@@ -3,7 +3,6 @@ import { Fragment, type PropsWithChildren, type ReactNode } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
 import { FootnoteText, SmallTitleText } from '@shared/ui';
-
 import { ModalBackdrop } from '../common/ModalBackdrop';
 import { ModalTransition } from '../common/ModalTransition';
 

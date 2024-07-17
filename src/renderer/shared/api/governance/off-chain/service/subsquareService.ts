@@ -7,7 +7,6 @@ import {
   subsquareApiService,
 } from '@shared/api/subsquare';
 import { dictionary } from '@shared/lib/utils';
-
 import { type SubsquareTimelineRecordStatus } from '../../../subsquare/lib/types';
 import {
   type GovernanceApi,

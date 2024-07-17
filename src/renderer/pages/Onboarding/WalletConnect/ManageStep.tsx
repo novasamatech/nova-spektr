@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
 import { useI18n, useStatusContext } from '@app/providers';
-
 import { chainsService } from '@shared/api/network';
 import {
   type AccountId,
@@ -19,7 +18,6 @@ import {
 import { toAccountId } from '@shared/lib/utils';
 import { Button, HeaderTitleText, Icon, Input, InputHint, SmallTitleText } from '@shared/ui';
 import { type IconNames } from '@shared/ui/Icon/data';
-
 import { MultiAccountsList, walletModel } from '@entities/wallet';
 
 const WalletLogo: Record<WalletTypeName, IconNames> = {

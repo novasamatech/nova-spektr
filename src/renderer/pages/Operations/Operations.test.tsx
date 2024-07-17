@@ -3,7 +3,6 @@ import { fork } from 'effector';
 import { Provider } from 'effector-react';
 
 import { TEST_ACCOUNTS } from '@shared/lib/utils';
-
 import { networkModel } from '@entities/network';
 
 import { Operations } from './Operations';

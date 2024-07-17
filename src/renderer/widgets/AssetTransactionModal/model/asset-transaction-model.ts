@@ -2,9 +2,7 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 
 import { type AssetByChains } from '@shared/core';
 import { includes } from '@shared/lib/utils';
-
 import { portfolioModel } from '@features/assets';
-
 import { ModalType, Step } from '../lib/types';
 
 const flowClosed = createEvent();

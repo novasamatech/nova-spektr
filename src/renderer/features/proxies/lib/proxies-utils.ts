@@ -10,7 +10,6 @@ import {
   type Wallet,
   type WalletType,
 } from '@shared/core';
-
 import { proxyUtils } from '@entities/proxy';
 import { walletUtils } from '@entities/wallet';
 

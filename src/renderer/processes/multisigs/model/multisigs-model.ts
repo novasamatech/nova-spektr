@@ -11,12 +11,10 @@ import {
   NotificationType,
   type Wallet,
 } from '@shared/core';
-
 import { type MultisigResult, multisigService } from '@entities/multisig';
 import { networkModel, networkUtils } from '@entities/network';
 import { notificationModel } from '@entities/notification';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-
 import { multisigUtils } from '../lib/mulitisigs-utils';
 
 type SaveMultisigParams = {

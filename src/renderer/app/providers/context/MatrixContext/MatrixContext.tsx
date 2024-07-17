@@ -2,7 +2,6 @@ import { useUnit } from 'effector-react';
 import { type PropsWithChildren, createContext, useEffect, useRef } from 'react';
 
 import { useMultisigChainContext } from '@app/providers';
-
 import {
   type ApprovePayload,
   type BaseMultisigPayload,
@@ -36,7 +35,6 @@ import {
   WalletType,
 } from '@shared/core';
 import { getCreatedDateFromApi, isEthereumAccountId, toAddress, validateCallData } from '@shared/lib/utils';
-
 import { contactModel } from '@entities/contact';
 import { LoginStatus, matrixModel } from '@entities/matrix';
 import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
@@ -44,7 +42,6 @@ import { networkModel } from '@entities/network';
 import { notificationModel } from '@entities/notification';
 import { useTransaction } from '@entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-
 import { matrixAutologinModel } from '@features/matrix';
 
 const MatrixContext = createContext({});

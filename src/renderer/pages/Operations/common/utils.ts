@@ -14,7 +14,6 @@ import {
   type Wallet,
 } from '@shared/core';
 import { toAddress } from '@shared/lib/utils';
-
 import { isProxyTransaction } from '@entities/transaction';
 import { accountUtils, walletUtils } from '@entities/wallet';
 

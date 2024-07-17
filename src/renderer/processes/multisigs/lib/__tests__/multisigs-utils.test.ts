@@ -1,5 +1,4 @@
 import { type Chain, ChainOptions } from '@shared/core';
-
 import { multisigUtils } from '../mulitisigs-utils';
 
 describe('features/multisigs/lib/multisigs-utils', () => {

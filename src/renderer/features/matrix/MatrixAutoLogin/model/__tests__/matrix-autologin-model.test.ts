@@ -1,7 +1,6 @@
 import { allSettled, fork } from 'effector';
 
 import { LoginStatus, matrixModel } from '@entities/matrix';
-
 import { AutoLoginStatus } from '../../lib/types';
 import { matrixAutologinModel } from '../matrix-autologin-model';
 

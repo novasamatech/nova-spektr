@@ -2,7 +2,6 @@ import { type PropsWithChildren, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
 import { cnTw } from '@shared/lib/utils';
-
 import { Padding, SizeClass, ViewClass } from '../common/constants';
 import { type Pallet, type Variant } from '../common/types';
 

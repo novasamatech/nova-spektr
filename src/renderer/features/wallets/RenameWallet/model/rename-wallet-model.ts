@@ -5,7 +5,6 @@ import { not } from 'patronum';
 import { storageService } from '@shared/api/storage';
 import { type Wallet } from '@shared/core';
 import { splice } from '@shared/lib/utils';
-
 import { walletModel } from '@entities/wallet';
 
 export type Callbacks = {

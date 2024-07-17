@@ -7,7 +7,6 @@ import { type ChainId, type MultisigAccount, MultisigTxFinalStatus, type Signing
 import { useDebounce, useTaskQueue } from '@shared/lib/hooks';
 import { type Task } from '@shared/lib/hooks/useTaskQueue';
 import { getCreatedDateFromApi, toAddress } from '@shared/lib/utils';
-
 import { subscriptionService } from '@entities/chain';
 import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
 import { networkModel, networkUtils } from '@entities/network';

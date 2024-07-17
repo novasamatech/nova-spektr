@@ -13,18 +13,15 @@ import {
   WrapperKind,
 } from '@shared/core';
 import { TEST_ADDRESS, getRelaychainAsset, nonNullable } from '@shared/lib/utils';
-
 import { basketModel } from '@entities/basket/model/basket-model';
 import { networkModel } from '@entities/network';
 import { validatorsService } from '@entities/staking';
 import { transactionBuilder, transactionService } from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
-
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { bondNominateConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { validatorsModel } from '@features/staking';
-
 import { bondUtils } from '../lib/bond-utils';
 import { type BondNominateData, type FeeData, Step, type WalletData } from '../lib/types';
 

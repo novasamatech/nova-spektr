@@ -3,7 +3,6 @@ import { useEffect } from 'react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
 import { useI18n } from '@app/providers';
-
 import {
   type AccountId,
   type Chain,
@@ -14,7 +13,6 @@ import {
 } from '@shared/core';
 import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@shared/ui';
 import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
-
 import { ChainTitle } from '@entities/chain';
 import { matrixModel } from '@entities/matrix';
 import { networkModel, networkUtils } from '@entities/network';

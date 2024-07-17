@@ -1,5 +1,4 @@
 import { type Account, type Chain, type Wallet } from '@shared/core';
-
 import { transactionService } from '@entities/transaction';
 import { accountUtils, walletUtils } from '@entities/wallet';
 

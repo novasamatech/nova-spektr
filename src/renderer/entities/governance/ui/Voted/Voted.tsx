@@ -1,5 +1,4 @@
 import { useI18n } from '@/app/providers';
-
 import { FootnoteText, Icon } from '@/shared/ui';
 
 type Props = {

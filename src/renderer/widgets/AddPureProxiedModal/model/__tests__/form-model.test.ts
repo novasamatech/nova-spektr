@@ -1,10 +1,8 @@
 import { allSettled, fork } from 'effector';
 
 import { ConnectionStatus } from '@shared/core';
-
 import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
-
 import { formModel } from '../form-model';
 
 import { initiatorWallet, signerWallet, testApi, testChain } from './mock';

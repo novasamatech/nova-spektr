@@ -1,9 +1,7 @@
 import { combine, sample } from 'effector';
 
 import { type ChainId } from '@shared/core';
-
 import { networkModel, networkUtils } from '@entities/network';
-
 import {
   activeNetworksModel,
   addCustomRpcModel,
@@ -14,7 +12,6 @@ import {
 } from '@features/network';
 import { removeCustomRpcModel } from '@features/network/ManageCustomRpcNode';
 import { type ConnectionItem, networkSelectorModel } from '@features/network/NetworkSelector';
-
 import { Predicates } from '../lib/constants';
 
 type ConnectionMap = {

@@ -6,10 +6,8 @@ import { combineEvents } from 'patronum';
 import { type ClaimTimeAt, type UnlockChunk, UnlockChunkType, claimScheduleService } from '@shared/api/governance';
 import { type Address, type ReferendumInfo, type TrackId, type TrackInfo, type VotingMap } from '@shared/core';
 import { Step, getCreatedDateFromApi, getCurrentBlockNumber } from '@shared/lib/utils';
-
 import { referendumModel } from '@entities/governance';
 import { walletModel } from '@entities/wallet';
-
 import { tracksAggregate } from '../aggregates/tracks';
 import { votingAggregate } from '../aggregates/voting';
 import { unlockService } from '../lib/unlock';

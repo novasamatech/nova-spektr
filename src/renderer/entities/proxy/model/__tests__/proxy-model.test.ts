@@ -3,7 +3,6 @@ import { allSettled, fork } from 'effector';
 import { storageService } from '@shared/api/storage';
 import { ProxyType } from '@shared/core';
 import type { AccountId, HexString, ProxyAccount, ProxyGroup } from '@shared/core';
-
 import { proxyModel } from '../proxy-model';
 
 const proxyMock = {

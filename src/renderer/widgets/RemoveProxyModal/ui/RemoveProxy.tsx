@@ -2,17 +2,13 @@ import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import type { Chain } from '@shared/core';
 import { useModalClose } from '@shared/lib/hooks';
 import { BaseModal, Button } from '@shared/ui';
-
 import { OperationTitle } from '@entities/chain';
 import { OperationResult } from '@entities/transaction';
-
 import { OperationSign, OperationSubmit } from '@features/operations';
 import { RemoveProxyConfirm as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
-
 import { removeProxyUtils } from '../lib/remove-proxy-utils';
 import { Step } from '../lib/types';
 import { removeProxyModel } from '../model/remove-proxy-model';

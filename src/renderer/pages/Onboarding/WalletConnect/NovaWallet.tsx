@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useI18n } from '@app/providers';
 import { useStatusContext } from '@app/providers/context/StatusContext';
-
 import { chainsService } from '@shared/api/network';
 import novawallet_onboarding_tutorial from '@shared/assets/video/novawallet_onboarding_tutorial.mp4';
 import novawallet_onboarding_tutorial_webm from '@shared/assets/video/novawallet_onboarding_tutorial.webm';
@@ -12,9 +11,7 @@ import { WalletType } from '@shared/core';
 import { usePrevious } from '@shared/lib/hooks';
 import { BaseModal, Button, HeaderTitleText, Loader, SmallTitleText } from '@shared/ui';
 import { Animation } from '@shared/ui/Animation/Animation';
-
 import { walletConnectModel, walletConnectUtils } from '@entities/walletConnect';
-
 import { wcOnboardingModel } from '@pages/Onboarding/WalletConnect/model/wc-onboarding-model';
 
 import { ManageStep } from './ManageStep';

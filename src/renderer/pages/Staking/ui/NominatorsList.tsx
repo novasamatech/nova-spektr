@@ -3,14 +3,11 @@ import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
-
 import type { Account, Address, Asset, BaseAccount, Explorer, ShardAccount } from '@shared/core';
 import { cnTw } from '@shared/lib/utils';
 import { FootnoteText, HelpText, Icon, Tooltip } from '@shared/ui';
-
 import { useStakingData } from '@entities/staking';
 import { AccountAddress, AddressWithName, accountUtils } from '@entities/wallet';
-
 import { type NominatorInfo } from '../lib/types';
 
 import { NominatorsItem } from './NominatorItem';

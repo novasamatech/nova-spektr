@@ -2,7 +2,6 @@ import { combine, createEvent, restore } from 'effector';
 
 import { basketModel } from '@entities/basket';
 import { walletModel } from '@entities/wallet';
-
 import { type SelectedFilters } from '../common/types';
 import { filterTx } from '../lib/utils';
 

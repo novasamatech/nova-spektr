@@ -28,7 +28,6 @@ import {
   WrapperKind,
 } from '@shared/core';
 import { type TxMetadata, createTxMetadata, dictionary, toAccountId } from '@shared/lib/utils';
-
 import { walletUtils } from '../../wallet';
 
 import { useCallDataDecoder } from './callDataDecoder';

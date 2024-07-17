@@ -2,15 +2,12 @@ import BigNumber from 'bignumber.js';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-
 import type { ID } from '@shared/core';
 import { formatFiatBalance } from '@shared/lib/utils';
 import { Shimmering } from '@shared/ui';
-
 import { priceProviderModel } from '@entities/price';
 import { FiatBalance } from '@entities/price/ui/FiatBalance';
 import { walletModel } from '@entities/wallet';
-
 import { walletSelectModel } from '../model/wallet-select-model';
 
 BigNumber.config({

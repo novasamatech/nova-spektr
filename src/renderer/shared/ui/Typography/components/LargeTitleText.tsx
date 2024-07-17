@@ -1,5 +1,4 @@
 import { cnTw } from '@shared/lib/utils';
-
 import { TextBase } from '../common/TextBase';
 import { type TypographyProps } from '../common/types';
 

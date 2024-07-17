@@ -1,5 +1,4 @@
 import { useI18n } from '@app/providers';
-
 import { BaseModal, Button, FootnoteText, SmallTitleText } from '@shared/ui';
 
 type Props = {

@@ -13,9 +13,7 @@ import {
 } from '@shared/core';
 import { type Task } from '@shared/lib/hooks/useTaskQueue';
 import { getCurrentBlockNumber, getExpectedBlockTime, toAddress } from '@shared/lib/utils';
-
 import { useTransaction } from '@entities/transaction/lib/transactionService';
-
 import { useMultisigEvent } from '../multisigEvent/multisigEventService';
 
 import { DEFAULT_BLOCK_HASH, MULTISIG_EXTRINSIC_CALL_INDEX, QUERY_INTERVAL } from './common/consts';

@@ -1,11 +1,8 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-
 import { BodyText, Icon } from '@shared/ui';
-
 import { listAggregate } from '@features/governance';
-
 import { governancePageAggregate } from '../aggregates/governancePage';
 
 export const EmptyGovernance = () => {

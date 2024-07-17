@@ -4,7 +4,6 @@ import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
 
 import { useI18n } from '@app/providers';
-
 import { cnTw } from '@shared/lib/utils';
 import { BodyText, Button, Checkbox, Icon, InfoLink } from '@shared/ui';
 

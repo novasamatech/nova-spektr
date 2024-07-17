@@ -6,14 +6,10 @@ import { useNavigate, useRoutes } from 'react-router-dom';
 import { WalletType } from '@shared/core';
 import { Paths, createLink } from '@shared/routes';
 import { FallbackScreen } from '@shared/ui';
-
 import { walletModel } from '@entities/wallet';
-
 import { walletPairingModel } from '@features/wallets';
-
 import { CreateWalletProvider } from '@widgets/CreateWallet';
 import { WalletDetailsProvider } from '@widgets/WalletDetails';
-
 import { ROUTES_CONFIG } from '@pages/index';
 
 import {

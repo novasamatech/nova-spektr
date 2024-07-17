@@ -11,7 +11,6 @@ import {
 } from '@substrate/txwrapper-polkadot';
 
 import { type Address, type CallData, type CallHash, type ProxyType, XcmPallets } from '@shared/core';
-
 import { XcmTransferType } from '../../api/xcm';
 
 import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './constants';

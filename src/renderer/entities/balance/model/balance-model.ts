@@ -3,7 +3,6 @@ import { throttle } from 'patronum';
 
 import { storageService } from '@shared/api/storage';
 import { type Balance, type ID } from '@shared/core';
-
 import { balanceUtils } from '../lib/balance-utils';
 import { BUFFER_DELAY, SAVE_TIMEOUT } from '../lib/constants';
 

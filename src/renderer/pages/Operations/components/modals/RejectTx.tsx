@@ -3,14 +3,12 @@ import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { type MultisigTransactionDS } from '@shared/api/storage';
 import type { Account, Address, HexString, MultisigAccount, Timepoint, Transaction } from '@shared/core';
 import { TransactionType } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
 import { getAssetById, toAddress, transferableAmount } from '@shared/lib/utils';
 import { BaseModal, Button } from '@shared/ui';
-
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { OperationTitle } from '@entities/chain';
 import { type ExtendedChain, networkModel } from '@entities/network';
@@ -23,9 +21,7 @@ import {
   validateBalance,
 } from '@entities/transaction';
 import { walletModel, walletUtils } from '@entities/wallet';
-
 import { SigningSwitch } from '@features/operations';
-
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { Submit } from '../ActionSteps/Submit';
 

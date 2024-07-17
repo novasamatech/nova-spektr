@@ -1,5 +1,4 @@
 import { useI18n } from '@/app/providers';
-
 import { type ReferendumId, type TrackId } from '@/shared/core';
 import { FootnoteText, Icon } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';

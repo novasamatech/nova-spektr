@@ -12,7 +12,6 @@ import sortBy from 'lodash/sortBy';
 
 import { type MultisigTxWrapper, type ProxyTxWrapper, type Transaction, TransactionType } from '@shared/core';
 import { toAddress } from '@shared/lib/utils';
-
 import { DEFAULT_FEE_ASSET_ITEM } from '@entities/transaction';
 import * as xcmMethods from '@entities/transaction/lib/common/xcmMethods';
 

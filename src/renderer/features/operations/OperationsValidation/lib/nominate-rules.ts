@@ -3,7 +3,6 @@ import { type Store } from 'effector';
 
 import { type Account } from '@shared/core';
 import { formatAmount } from '@shared/lib/utils';
-
 import { type ShardsBondBalanceStore, type ShardsProxyFeeStore, type SignatoryFeeStore } from '../types/types';
 
 import { balanceValidation, descriptionValidation } from './validation';

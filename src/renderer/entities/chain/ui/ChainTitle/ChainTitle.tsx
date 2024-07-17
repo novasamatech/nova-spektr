@@ -4,7 +4,6 @@ import { chainsService } from '@shared/api/network';
 import type { ChainId, Chain as ChainType } from '@shared/core';
 import { cnTw } from '@shared/lib/utils';
 import { TextBase } from '@shared/ui/Typography/common/TextBase';
-
 import { ChainIcon } from '@entities/chain';
 
 type WithChain = { chain: ChainType };

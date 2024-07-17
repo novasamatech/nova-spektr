@@ -1,7 +1,6 @@
 import { Navigate, type RouteObject } from 'react-router-dom';
 
 import { Paths } from '@shared/routes';
-
 import { MainLayout } from '@widgets/Layout';
 
 import { Contacts, CreateContact, EditContact } from './AddressBook';

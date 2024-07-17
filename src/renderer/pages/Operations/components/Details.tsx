@@ -2,7 +2,6 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import {
   type Account,
   type Address,
@@ -15,7 +14,6 @@ import {
 import { useToggle } from '@shared/lib/hooks';
 import { cnTw, toAccountId } from '@shared/lib/utils';
 import { CaptionText, DetailRow, FootnoteText, Icon } from '@shared/ui';
-
 import { ChainTitle } from '@entities/chain';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
 import { type ExtendedChain, networkModel, networkUtils } from '@entities/network';
@@ -31,7 +29,6 @@ import {
   isXcmTransaction,
 } from '@entities/transaction';
 import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, walletModel } from '@entities/wallet';
-
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { getDelegate, getDestination, getDestinationChain, getPayee, getProxyType, getSpawner } from '../common/utils';
 

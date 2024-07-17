@@ -2,21 +2,16 @@ import { useUnit } from 'effector-react';
 import noop from 'lodash/noop';
 
 import { useI18n } from '@app/providers';
-
 import { type ProxiedWallet, ProxyType, type Wallet } from '@shared/core';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { BaseModal, DropdownIconButton, FootnoteText, Icon, Tabs } from '@shared/ui';
 import { type IconNames } from '@shared/ui/Icon/data';
 import { type TabItem } from '@shared/ui/types';
-
 import { networkModel } from '@entities/network';
 import { AccountsList, WalletCardLg, WalletIcon, permissionUtils } from '@entities/wallet';
-
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
-
 import { AddProxy, addProxyModel } from '@widgets/AddProxyModal';
 import { AddPureProxied } from '@widgets/AddPureProxiedModal';
-
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { ProxiesList } from '../components/ProxiesList';

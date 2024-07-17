@@ -2,11 +2,9 @@ import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { useToggle } from '@shared/lib/hooks';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { BaseModal } from '@shared/ui';
-
 import { MatrixInfoPopover, matrixModel, matrixUtils } from '@entities/matrix';
 
 import { LoginForm } from './LoginForm';

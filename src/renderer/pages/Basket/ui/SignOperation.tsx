@@ -2,15 +2,12 @@ import { useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { type BasketTransaction, TransactionType } from '@shared/core';
 import { useModalClose } from '@shared/lib/hooks';
 import { BaseModal } from '@shared/ui';
-
 import { OperationTitle } from '@entities/chain';
 import { networkModel } from '@entities/network';
 import { TransferTypes, XcmTypes } from '@entities/transaction';
-
 import { OperationSign, OperationSubmit } from '@features/operations';
 import {
   AddProxyConfirm,
@@ -26,7 +23,6 @@ import {
   UnstakeConfirmation,
   WithdrawConfirmation,
 } from '@features/operations/OperationsConfirm';
-
 import { getOperationTitle } from '../lib/operation-title';
 import { signOperationsUtils } from '../lib/sign-operations-utils';
 import { getCoreTx } from '../lib/utils';

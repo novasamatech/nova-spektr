@@ -1,12 +1,9 @@
 import { memo } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { type OngoingReferendum } from '@shared/core';
 import { HeadlineText, Shimmering } from '@shared/ui';
-
 import { TrackInfo, VoteChart, Voted, votingService } from '@entities/governance';
-
 import { type AggregatedReferendum } from '../../types/structs';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 

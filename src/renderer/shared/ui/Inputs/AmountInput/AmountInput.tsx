@@ -2,7 +2,6 @@ import { useUnit } from 'effector-react';
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import type { Asset } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
 import {
@@ -17,10 +16,8 @@ import {
   validateSymbols,
 } from '@shared/lib/utils';
 import { IconButton } from '@shared/ui';
-
 import { AssetBalance, AssetIcon } from '@entities/asset';
 import { currencyModel, useCurrencyRate } from '@entities/price';
-
 import { FootnoteText, HelpText, TitleText } from '../../Typography';
 import { Input } from '../Input/Input';
 

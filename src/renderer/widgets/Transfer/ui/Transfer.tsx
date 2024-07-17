@@ -3,17 +3,13 @@ import { type ReactNode, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useI18n } from '@app/providers';
-
 import type { Asset, Chain } from '@shared/core';
 import { useModalClose } from '@shared/lib/hooks';
 import { BaseModal, Button } from '@shared/ui';
-
 import { OperationTitle } from '@entities/chain';
 import { OperationResult } from '@entities/transaction';
-
 import { OperationSign, OperationSubmit } from '@features/operations';
 import { TransferConfirm, basketUtils } from '@features/operations/OperationsConfirm';
-
 import { transferUtils } from '../lib/transfer-utils';
 import { Step } from '../lib/types';
 import { transferModel } from '../model/transfer-model';

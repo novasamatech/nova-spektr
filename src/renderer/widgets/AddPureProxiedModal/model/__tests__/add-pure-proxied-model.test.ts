@@ -3,11 +3,9 @@ import { allSettled, fork } from 'effector';
 
 import { storageService } from '@shared/api/storage';
 import { ConnectionStatus } from '@shared/core';
-
 import { subscriptionService } from '@entities/chain';
 import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
-
 import { Step } from '../../lib/types';
 import { addPureProxiedModel } from '../add-pure-proxied-model';
 

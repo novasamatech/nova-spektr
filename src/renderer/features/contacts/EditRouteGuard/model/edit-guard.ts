@@ -2,7 +2,6 @@ import { attach, createApi, createEffect, createEvent, createStore, sample } fro
 import { type NavigateFunction } from 'react-router-dom';
 
 import { type Contact } from '@shared/core';
-
 import { contactModel } from '@entities/contact';
 
 const validateUrlParams = createEvent<URLSearchParams>();

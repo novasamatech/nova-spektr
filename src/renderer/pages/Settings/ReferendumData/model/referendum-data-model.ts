@@ -4,7 +4,6 @@ import { type NavigateFunction } from 'react-router-dom';
 
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { Paths } from '@shared/routes';
-
 import { offChainModel } from '@features/governance';
 
 const $navigation = createStore<{ navigate: NavigateFunction } | null>(null);

@@ -1,7 +1,6 @@
 import { createEvent, createStore, sample } from 'effector';
 
 import { type ISecureMessenger, Matrix } from '@shared/api/matrix';
-
 import { LoginStatus } from '../lib/types';
 
 const loginStatusChanged = createEvent<LoginStatus>();

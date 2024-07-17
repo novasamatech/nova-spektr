@@ -1,7 +1,6 @@
 import { useUnit } from 'effector-react';
 
 import type { HexString } from '@shared/core';
-
 import { signModel } from '../model/sign-model';
 
 import { SigningSwitch } from './SigningSwitch';

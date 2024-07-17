@@ -2,9 +2,7 @@ import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { Button, Icon, SmallTitleText } from '@shared/ui';
-
 import { shardsModel } from '../model/shards-model';
 
 export const ShardSelectorButton = () => {

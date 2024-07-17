@@ -6,7 +6,6 @@ import { memo, useEffect, useState } from 'react';
 import { type XcmConfig, xcmService } from '@shared/api/xcm';
 import type { Asset, DecodedTransaction, Transaction } from '@shared/core';
 import { toLocalChainId } from '@shared/lib/utils';
-
 import { AssetBalance } from '@entities/asset';
 import { priceProviderModel } from '@entities/price';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';

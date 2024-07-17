@@ -2,14 +2,11 @@ import { allSettled, fork } from 'effector';
 
 import { storageService } from '@shared/api/storage';
 import { type BaseAccount, ConnectionStatus, ProxyType, type Transaction } from '@shared/core';
-
 import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
-
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { addProxyConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
-
 import { Step } from '../../lib/types';
 import { addProxyModel } from '../add-proxy-model';
 import { formModel } from '../form-model';

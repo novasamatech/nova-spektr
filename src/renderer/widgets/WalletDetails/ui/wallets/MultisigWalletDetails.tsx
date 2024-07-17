@@ -2,14 +2,12 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { type AccountId, type MultisigWallet, type Signatory, type Wallet } from '@shared/core';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { RootExplorers } from '@shared/lib/utils';
 import { BaseModal, DropdownIconButton, FootnoteText, HelpText, Tabs } from '@shared/ui';
 import { type IconNames } from '@shared/ui/Icon/data';
 import type { TabItem } from '@shared/ui/types';
-
 import { matrixModel, matrixUtils } from '@entities/matrix';
 import { networkModel, networkUtils } from '@entities/network';
 import {
@@ -21,14 +19,11 @@ import {
   accountUtils,
   permissionUtils,
 } from '@entities/wallet';
-
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatBalance';
-
 import { AddProxy, addProxyModel } from '@widgets/AddProxyModal';
 import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
-
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { ProxiesList } from '../components/ProxiesList';

@@ -2,7 +2,6 @@ import { type ApiPromise } from '@polkadot/api';
 import { useUnit } from 'effector-react';
 
 import { type Chain, type ChainId, type Connection, type ConnectionStatus } from '@shared/core';
-
 import { networkModel } from '../model/network-model';
 
 import { type ExtendedChain } from './types';

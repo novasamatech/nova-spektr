@@ -1,7 +1,6 @@
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
-
 import { FootnoteText, InfoLink } from '@shared/ui';
 
 const TERMS_AND_CONDITIONS = 'https://novaspektr.io/terms';

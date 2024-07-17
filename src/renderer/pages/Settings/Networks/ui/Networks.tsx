@@ -3,15 +3,12 @@ import { Trans } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import { useConfirmContext, useI18n } from '@app/providers';
-
 import type { ChainId, RpcNode } from '@shared/core';
 import { ConnectionType } from '@shared/core';
 import { useModalClose } from '@shared/lib/hooks';
 import { Paths } from '@shared/routes';
 import { BaseModal, InfoLink } from '@shared/ui';
-
 import { type ExtendedChain, networkModel, networkUtils } from '@entities/network';
-
 import {
   ActiveNetwork,
   AddCustomRpcModal,
@@ -30,7 +27,6 @@ import {
   removeCustomRpcModel,
 } from '@features/network';
 import { type SelectorPayload } from '@features/network/NetworkSelector';
-
 import { networksOverviewModel } from '../model/networks-overview-model';
 
 const MAX_LIGHT_CLIENTS = 3;

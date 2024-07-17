@@ -2,17 +2,13 @@ import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
-
 import { useModalClose } from '@shared/lib/hooks';
 import { BaseModal, Button } from '@shared/ui';
-
 import { OperationTitle } from '@entities/chain';
 import { OperationResult } from '@entities/transaction';
-
 import { OperationSign, OperationSubmit } from '@features/operations';
 import { NominateConfirmation as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
 import { Validators } from '@features/staking';
-
 import { nominateUtils } from '../lib/nominate-utils';
 import { Step } from '../lib/types';
 import { nominateModel } from '../model/nominate-model';
