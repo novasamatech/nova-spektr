@@ -366,6 +366,7 @@
       "proposer": "Proposer:",
       "support": "Support",
       "threshold": "Threshold",
+      "timeline": "Timeline",
       "vote": "Vote",
       "votedTokens": "{voted} of {total} {asset}",
       "votes": "{votes} votes",
@@ -402,6 +403,24 @@
       "wishForChange": "Wish for change"
     },
     "searchPlaceholder": "Search",
+    "timeline": {
+      "status": {
+        "All": "All",
+        "Approved": "Approved",
+        "Awarded": "Awarded",
+        "Cancelled": "Cancelled",
+        "ConfirmStarted": "Confirm started",
+        "Confirmed": "Confirmed",
+        "Created": "Created",
+        "Deciding": "Deciding",
+        "DecisionDepositPlaced": "Decision deposit placed",
+        "Executed": "Executed",
+        "Killed": "Killed",
+        "Rejected": "Rejected",
+        "Submitted": "Submitted",
+        "TimedOut": "Timed out"
+      }
+    },
     "title": "Governance",
     "voteHistory": {
       "listColumnAccount": "Account",

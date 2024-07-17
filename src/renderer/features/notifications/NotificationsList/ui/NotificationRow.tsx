@@ -1,4 +1,3 @@
-import { format } from 'date-fns';
 import { ReactNode } from 'react';
 
 import { FootnoteText } from '@shared/ui';
@@ -23,13 +22,13 @@ type Props = {
 };
 
 export const NotificationRow = ({ notification }: Props) => {
-  const { dateLocale } = useI18n();
+  const { formatDate } = useI18n();
 
   return (
     <li className="bg-block-background-default rounded p-4 flex justify-between">
       {Notifications[notification.type](notification)}
       <FootnoteText className="text-text-tertiary">
-        {format(new Date(notification.dateCreated || 0), 'p', { locale: dateLocale })}
+        {formatDate(new Date(notification.dateCreated || 0), 'p')}
       </FootnoteText>
     </li>
   );
