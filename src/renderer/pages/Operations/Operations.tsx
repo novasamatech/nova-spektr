@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import groupBy from 'lodash/groupBy';
-import { format } from 'date-fns';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
@@ -17,7 +16,7 @@ import { sortByDateDesc } from '@shared/lib/utils';
 import { MultisigEvent, MultisigTransactionKey } from '@shared/core';
 
 export const Operations = () => {
-  const { t, dateLocale } = useI18n();
+  const { t, formatDate } = useI18n();
 
   const activeWallet = useUnit(walletModel.$activeWallet);
   const chains = useUnit(networkModel.$chains);
@@ -50,7 +49,7 @@ export const Operations = () => {
   const groupedTxs = groupBy(filteredTxs, (tx) => {
     const date = tx.dateCreated || getEventsByTransaction(tx)[0]?.dateCreated || Date.now();
 
-    return format(new Date(date), 'PP', { locale: dateLocale });
+    return formatDate(new Date(date), 'PP');
   });
 
   useEffect(() => {

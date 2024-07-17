@@ -1,5 +1,4 @@
 import groupBy from 'lodash/groupBy';
-import { format } from 'date-fns';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
@@ -55,7 +54,7 @@ const getFilteredAccountsMap = (walletsMap: WalletsMap) => {
 };
 
 const LogModal = ({ isOpen, onClose, tx, account, connection, contacts }: Props) => {
-  const { t, dateLocale } = useI18n();
+  const { t, formatDate } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
 
@@ -73,9 +72,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts }: Props)
 
   const addressPrefix = connection?.addressPrefix || SS58_DEFAULT_PREFIX;
 
-  const groupedEvents = groupBy(events, ({ dateCreated }) =>
-    format(new Date(dateCreated || 0), 'PP', { locale: dateLocale }),
-  );
+  const groupedEvents = groupBy(events, ({ dateCreated }) => formatDate(new Date(dateCreated || 0), 'PP'));
 
   const getEventMessage = (event: MultisigEvent): string => {
     const isCreatedEvent =
@@ -142,7 +139,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts }: Props)
                           )}
                           <BodyText className="flex-1 text-text-secondary">{getEventMessage(event)}</BodyText>
                           <BodyText className="text-text-tertiary">
-                            {event.dateCreated && format(new Date(event.dateCreated), 'p', { locale: dateLocale })}
+                            {event.dateCreated && formatDate(new Date(event.dateCreated), 'p')}
                           </BodyText>
 
                           {event.extrinsicHash && connection?.explorers && (

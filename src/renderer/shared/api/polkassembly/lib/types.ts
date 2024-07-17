@@ -1,6 +1,6 @@
 import { Address, HexString } from '@shared/core';
 
-export type ProposalType =
+export type PolkassemblyProposalType =
   | 'democracy_proposals'
   | 'tech_committee_proposals'
   | 'treasury_proposals'
@@ -12,8 +12,9 @@ export type ProposalType =
   | 'child_bounties'
   | 'referendums_v2';
 
-export type TrackStatus =
+export type PolkassemblyTrackStatus =
   | 'All'
+  | 'Created'
   | 'Confirmed'
   | 'ConfirmStarted'
   | 'Cancelled'
@@ -24,9 +25,9 @@ export type TrackStatus =
   | 'Rejected'
   | 'TimedOut';
 
-export type VoteType = 'Motion' | 'Fellowship' | 'Referendum' | 'ReferendumV2' | 'DemocracyProposal';
+export type PolkassemblyVoteType = 'Motion' | 'Fellowship' | 'Referendum' | 'ReferendumV2' | 'DemocracyProposal';
 
-export type ListingOnChainPost = {
+export type PolkassemblyListingPost = {
   comments_count: number;
   created_at: string;
   curator: string | null;
@@ -40,7 +41,7 @@ export type ListingOnChainPost = {
     '👎': number;
   };
   proposer: Address;
-  status: TrackStatus;
+  status: PolkassemblyTrackStatus;
   title: string;
   topic: {
     name: string;
@@ -50,13 +51,13 @@ export type ListingOnChainPost = {
   user_id: number;
 };
 
-export type Status = {
+export type PolkassembyPostStatus = {
   timestamp: string;
-  status: TrackStatus;
+  status: PolkassemblyTrackStatus;
   block: number;
 };
 
-export type DetailedOnChainPost = {
+export type PolkassemblyDetailedPost = {
   bond: null;
   comments: unknown[];
   content: string;
@@ -90,10 +91,10 @@ export type DetailedOnChainPost = {
   proposal_arguments: null;
   proposer: Address;
   reward: null;
-  status: TrackStatus;
+  status: PolkassemblyTrackStatus;
   statusHistory: {
     timestamp: string;
-    status: TrackStatus;
+    status: PolkassemblyTrackStatus;
     block: number;
   }[];
   tally: {
@@ -106,8 +107,8 @@ export type DetailedOnChainPost = {
     created_at: string;
     hash: HexString;
     index: number;
-    statuses: Status[];
-    type: string;
+    statuses: PolkassembyPostStatus[];
+    type: PolkassemblyVoteType;
   }[];
   topic: {
     name: string;
@@ -119,24 +120,24 @@ export type DetailedOnChainPost = {
   title: string;
 };
 
-export type PostVote = {
+export type PolkassemblyPostVote = {
   decision: 'yes' | 'no' | 'abstain';
   voter: Address;
   balance: { value: string } | { abstain: string | null; aye: string; nay: string };
   lockPeriod: number | null;
 };
 
-export type PostVotesResponse = {
+export type PolkassemblyPostVotesResponse = {
   abstain: {
     count: number;
-    votes: PostVote[];
+    votes: PolkassemblyPostVote[];
   };
   yes: {
     count: number;
-    votes: PostVote[];
+    votes: PolkassemblyPostVote[];
   };
   no: {
     count: number;
-    votes: PostVote[];
+    votes: PolkassemblyPostVote[];
   };
 };

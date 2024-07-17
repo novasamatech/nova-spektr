@@ -1,5 +1,3 @@
-import { format } from 'date-fns';
-
 import { useI18n } from '@app/providers';
 import { FootnoteText, Accordion } from '@shared/ui';
 import { Status } from './Status';
@@ -19,7 +17,7 @@ type Props = {
 };
 
 const Operation = ({ tx, account }: Props) => {
-  const { dateLocale } = useI18n();
+  const { formatDate } = useI18n();
   const { getLiveEventsByKeys } = useMultisigEvent({});
 
   const events = getLiveEventsByKeys([tx]);
@@ -36,7 +34,7 @@ const Operation = ({ tx, account }: Props) => {
         <div className="h-[52px] flex gap-x-4 items-center w-full overflow-hidden">
           <div className="w-[58px] pr-1">
             <FootnoteText className="text-text-tertiary" align="right">
-              {format(date, 'p', { locale: dateLocale })}
+              {formatDate(date, 'p')}
             </FootnoteText>
           </div>
 

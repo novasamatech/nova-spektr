@@ -1,18 +1,22 @@
 import { BN } from '@polkadot/util';
 
-import type { Chain, ReferendumId } from '@shared/core';
-import type { GovernanceApi, ReferendumVote } from '../lib/types';
 import { dictionary } from '@shared/lib/utils';
-import { polkassemblyApiService, ListingOnChainPost, PostVote } from '../../../polkassembly';
+import {
+  polkassemblyApiService,
+  PolkassemblyListingPost,
+  PolkassemblyPostVote,
+  PolkassembyPostStatus,
+} from '@shared/api/polkassembly';
+import { GovernanceApi, ReferendumTimelineRecord, ReferendumVote } from '../lib/types';
 
-const referendumDecisionMap: Record<PostVote['decision'], ReferendumVote['decision']> = {
+const referendumDecisionMap: Record<PolkassemblyPostVote['decision'], ReferendumVote['decision']> = {
   abstain: 'abstain',
   yes: 'aye',
   no: 'nay',
 };
 
 const getReferendumList: GovernanceApi['getReferendumList'] = async (chain, callback) => {
-  function mapListingPost(data: ListingOnChainPost[]) {
+  function mapListingPost(data: PolkassemblyListingPost[]) {
     return dictionary(data, 'post_id', (item) => item.title);
   }
 
@@ -31,7 +35,7 @@ const getReferendumList: GovernanceApi['getReferendumList'] = async (chain, call
 };
 
 const getReferendumVotes: GovernanceApi['getReferendumVotes'] = (chain, referendumId, callback) => {
-  const mapVote = (votes: PostVote[]): ReferendumVote[] => {
+  const mapVote = (votes: PolkassemblyPostVote[]): ReferendumVote[] => {
     return votes.map(({ decision, voter, balance, lockPeriod }) => ({
       decision: referendumDecisionMap[decision],
       voter,
@@ -59,7 +63,7 @@ const getReferendumVotes: GovernanceApi['getReferendumVotes'] = (chain, referend
  * @param chain
  * @param referendumId referendum index
  */
-async function getReferendumDetails(chain: Chain, referendumId: ReferendumId): Promise<string | undefined> {
+const getReferendumDetails: GovernanceApi['getReferendumDetails'] = async (chain, referendumId) => {
   return polkassemblyApiService
     .fetchPost({
       network: chain.specName,
@@ -67,10 +71,28 @@ async function getReferendumDetails(chain: Chain, referendumId: ReferendumId): P
       proposalType: 'referendums_v2',
     })
     .then((r) => r.content);
-}
+};
+
+const mapTimeline = (timeline: PolkassembyPostStatus): ReferendumTimelineRecord => {
+  return {
+    status: timeline.status,
+    date: new Date(timeline.timestamp),
+  };
+};
+
+const getReferendumTimeline: GovernanceApi['getReferendumTimeline'] = async (chain, referendumId) => {
+  return polkassemblyApiService
+    .fetchPost({
+      network: chain.specName,
+      postId: referendumId,
+      proposalType: 'referendums_v2',
+    })
+    .then((r) => r.timeline.flatMap((timeline) => timeline.statuses.map(mapTimeline)));
+};
 
 export const polkassemblyService: GovernanceApi = {
   getReferendumList,
   getReferendumVotes,
   getReferendumDetails,
+  getReferendumTimeline,
 };
