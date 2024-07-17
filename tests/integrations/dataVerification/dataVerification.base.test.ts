@@ -1,16 +1,16 @@
-import { ApiPromise } from '@polkadot/api';
-import { AccountInfo } from '@polkadot/types/interfaces';
-import { Codec } from '@polkadot/types/types';
+import { type ApiPromise } from '@polkadot/api';
+import { type AccountInfo } from '@polkadot/types/interfaces';
+import { type Codec } from '@polkadot/types/types';
 
-import chains from '../../../src/renderer/shared/config/chains/chains.json';
 import { validate } from '../../../src/renderer/shared/api/chain-verification';
+import chains from '../../../src/renderer/shared/config/chains/chains.json';
 import {
-  getTestAccounts,
+  type ChainJSON,
+  type TestAccounts,
   TestAccountsURL,
-  prepareTestData,
   createWsConnection,
-  ChainJSON,
-  TestAccounts,
+  getTestAccounts,
+  prepareTestData,
 } from '../utils';
 
 const [_, polkadotParachains, kusamaParachains, polkadot, kusama] = prepareTestData(chains as ChainJSON[]);
@@ -60,7 +60,7 @@ describe('Verification function can verify parachains', () => {
     const parachainAccount = testAccounts.find((data) => data.chainId == parachain.chainId.slice(2));
     const storageKey = polkadotApi.query.system.account.key(parachainAccount?.account);
 
-    let data = (await parachainApi.query.system.account(parachainAccount?.account)) as AccountInfo;
+    const data = (await parachainApi.query.system.account(parachainAccount?.account)) as AccountInfo;
     // changing nonce
     const new_nonce_value = data.data.free as Codec;
     data.set('nonce', new_nonce_value);
@@ -74,7 +74,7 @@ describe('Verification function can verify parachains', () => {
     const parachainAccount = testAccounts.find((data) => data.chainId == parachain.chainId.slice(2));
     const storageKey = polkadotApi.query.system.account.key(parachainAccount?.account);
 
-    let data = (await parachainApi.query.system.account(parachainAccount?.account)) as AccountInfo;
+    const data = (await parachainApi.query.system.account(parachainAccount?.account)) as AccountInfo;
     // changing balance
     const new_balance_value = data.data.feeFrozen as Codec;
     data.data.set('free', new_balance_value);

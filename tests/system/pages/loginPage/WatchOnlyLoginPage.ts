@@ -1,9 +1,9 @@
-import { Page } from 'playwright';
+import { type Page } from 'playwright';
 
-import { LoginPageElements } from '../_elements/LoginPageElements';
 import { BasePage } from '../BasePage';
-import { WatchOnlyAssetsPage } from '../assetsPage/WatchOnlyAssetsPage';
 import { AssetsPageElements } from '../_elements/AssetsPageElements';
+import { type LoginPageElements } from '../_elements/LoginPageElements';
+import { WatchOnlyAssetsPage } from '../assetsPage/WatchOnlyAssetsPage';
 
 export class WatchOnlyLoginPage extends BasePage {
   public pageElements: LoginPageElements;

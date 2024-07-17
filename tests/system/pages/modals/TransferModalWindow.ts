@@ -1,11 +1,11 @@
-import { Page } from 'playwright';
 import { expect } from '@playwright/test';
+import { type Page } from 'playwright';
 
-import { BaseModal } from '../BaseModalWindow';
-import { BasePage } from '../BasePage';
-import { TransferModalElements } from '../_elements/TransferModalElements';
-import { ChainModel } from '../../data/chains/testChainModel';
+import { type ChainModel } from '../../data/chains/testChainModel';
 import { readConfig } from '../../utils/readConfig';
+import { BaseModal } from '../BaseModalWindow';
+import { type BasePage } from '../BasePage';
+import { TransferModalElements } from '../_elements/TransferModalElements';
 
 export class TransferModalWindow extends BaseModal {
   public pageElements: TransferModalElements;

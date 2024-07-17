@@ -1,4 +1,4 @@
-import { ChainJSON } from './types';
+import { type ChainJSON } from './types';
 
 export function prepareTestData(chains: ChainJSON[]): [ChainJSON[], ChainJSON[], ChainJSON[], ChainJSON, ChainJSON] {
   const kusamaId = '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe';

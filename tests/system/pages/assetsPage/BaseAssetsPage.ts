@@ -1,7 +1,7 @@
-import { Page } from 'playwright';
+import { type Page } from 'playwright';
 
 import { BasePage } from '../BasePage';
-import { AssetsPageElements } from '../_elements/AssetsPageElements';
+import { type AssetsPageElements } from '../_elements/AssetsPageElements';
 
 export class BaseAssetsPage extends BasePage {
   protected pageElements: AssetsPageElements;

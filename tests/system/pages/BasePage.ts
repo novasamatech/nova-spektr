@@ -1,6 +1,6 @@
-import { Page } from 'playwright';
+import { type Page } from 'playwright';
 
-import { BasePageElements } from './_elements/BasePageElements';
+import { type BasePageElements } from './_elements/BasePageElements';
 
 export abstract class BasePage {
   protected page: Page;
@@ -53,7 +53,7 @@ export abstract class BasePage {
     return this;
   }
 
-  async clickOnButtonBySelector(selector: string, force: boolean = false) {
+  async clickOnButtonBySelector(selector: string, force = false) {
     await this.page.locator(selector).getByRole('button').click({ force: force });
 
     return this;

@@ -1,17 +1,17 @@
-import { Page } from 'playwright';
+import { type Page } from 'playwright';
 
-import { BasePage } from '../BasePage';
-import { AssetsPageElements } from '../_elements/AssetsPageElements';
-import { BaseSettingsPage } from '../settingsPage/BaseSettingsPage';
-import { SettingsPageElements } from '../_elements/SettingsPageElements';
-import { WalletModalElements } from '../_elements/WalletModalElements';
-import { WalletModalWindow } from '../modals/WalletModalWindow';
-import { AssetsSettingsModalWindow } from '../modals/AssetsSettingsModalWindow';
-import { AssetsSettingsModalElements } from '../_elements/AssetsSettingsModalElements';
+import { type ChainModel } from '../../data/chains/testChainModel';
 import { readConfig } from '../../utils/readConfig';
-import { ChainModel } from '../../data/chains/testChainModel';
+import { BasePage } from '../BasePage';
+import { type AssetsPageElements } from '../_elements/AssetsPageElements';
+import { AssetsSettingsModalElements } from '../_elements/AssetsSettingsModalElements';
+import { SettingsPageElements } from '../_elements/SettingsPageElements';
 import { TransferModalElements } from '../_elements/TransferModalElements';
+import { WalletModalElements } from '../_elements/WalletModalElements';
+import { AssetsSettingsModalWindow } from '../modals/AssetsSettingsModalWindow';
 import { TransferModalWindow } from '../modals/TransferModalWindow';
+import { WalletModalWindow } from '../modals/WalletModalWindow';
+import { BaseSettingsPage } from '../settingsPage/BaseSettingsPage';
 
 export class VaultAssetsPage extends BasePage {
   public pageElements: AssetsPageElements;

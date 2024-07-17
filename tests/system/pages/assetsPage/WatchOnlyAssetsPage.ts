@@ -1,11 +1,11 @@
-import { Page } from 'playwright';
+import { type Page } from 'playwright';
 
 import { BasePage } from '../BasePage';
-import { AssetsPageElements } from '../_elements/AssetsPageElements';
-import { BaseSettingsPage } from '../settingsPage/BaseSettingsPage';
+import { type AssetsPageElements } from '../_elements/AssetsPageElements';
 import { SettingsPageElements } from '../_elements/SettingsPageElements';
 import { WalletModalElements } from '../_elements/WalletModalElements';
 import { WalletModalWindow } from '../modals/WalletModalWindow';
+import { BaseSettingsPage } from '../settingsPage/BaseSettingsPage';
 
 export class WatchOnlyAssetsPage extends BasePage {
   public pageElements: AssetsPageElements;

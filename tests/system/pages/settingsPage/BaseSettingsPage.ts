@@ -1,7 +1,7 @@
-import { Page } from 'playwright';
+import { type Page } from 'playwright';
 
 import { BasePage } from '../BasePage';
-import { SettingsPageElements } from '../_elements/SettingsPageElements';
+import { type SettingsPageElements } from '../_elements/SettingsPageElements';
 
 export class BaseSettingsPage extends BasePage {
   protected pageElements: SettingsPageElements;

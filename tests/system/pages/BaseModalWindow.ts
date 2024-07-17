@@ -1,6 +1,6 @@
-import { Page } from 'playwright';
+import { type Page } from 'playwright';
 
-import { BaseModalElements } from './_elements/BaseModalElements';
+import { type BaseModalElements } from './_elements/BaseModalElements';
 
 export abstract class BaseModal {
   protected page: Page;
