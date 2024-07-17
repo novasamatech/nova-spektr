@@ -1,6 +1,6 @@
 import { createEvent, createStore, sample, createEffect, restore } from 'effector';
 import { ApiPromise } from '@polkadot/api';
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { combineEvents } from 'patronum';
 
 import { Step, getCreatedDateFromApi, getCurrentBlockNumber } from '@shared/lib/utils';
@@ -21,6 +21,7 @@ const txSaved = createEvent();
 
 const $step = restore<Step>(stepChanged, Step.NONE);
 const $claimSchedule = createStore<UnlockChunk[]>([]).reset(walletModel.$activeWallet);
+const $totalUnlock = createStore<BN>(BN_ZERO);
 
 type Props = {
   api: ApiPromise;
@@ -108,6 +109,20 @@ sample({
 });
 
 sample({
+  clock: getClaimScheduleFx.doneData,
+  fn: (claimSchedule) => {
+    const unlockable = claimSchedule.reduce((acc, claim) => {
+      if (claim.type !== UnlockChunkType.CLAIMABLE) return acc;
+
+      return acc.add(claim.amount);
+    }, BN_ZERO);
+
+    return unlockable;
+  },
+  target: $totalUnlock,
+});
+
+sample({
   clock: flowStarted,
   fn: () => Step.INIT,
   target: stepChanged,
@@ -127,9 +142,10 @@ sample({
 
 export const unlockModel = {
   $step,
-  $claimSchedule,
+  $pendingSchedule: $claimSchedule.map((c) => c.filter((claim) => claim.type !== UnlockChunkType.CLAIMABLE)),
   $isLoading: getClaimScheduleFx.pending || referendumModel.$isReferendumsLoading,
   $isUnlockable: $claimSchedule.map((c) => c.some((claim) => claim.type === UnlockChunkType.CLAIMABLE)),
+  $totalUnlock,
 
   events: {
     flowStarted,
