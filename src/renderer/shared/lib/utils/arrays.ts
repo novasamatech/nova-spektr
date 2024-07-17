@@ -7,7 +7,7 @@ import type { KeysOfType } from '../../core/types/utility';
  * @param position at which position
  * @return {Array}
  */
-export function splice<T extends any>(collection: T[], item: T, position: number): T[] {
+export function splice<T>(collection: T[], item: T, position: number): T[] {
   return collection.slice(0, position).concat(item, collection.slice(position + 1));
 }
 
@@ -41,11 +41,11 @@ export function getRepeatedIndex(index: number, base: number): number {
   return Math.floor(index / base);
 }
 
-export function addUnique<T extends any>(collection: T[], item: T): T[] {
+export function addUnique<T>(collection: T[], item: T): T[] {
   return collection.includes(item) ? [...collection] : [...collection, item];
 }
 
-export function removeFromCollection<T extends any>(collection: T[], item: T): T[] {
+export function removeFromCollection<T>(collection: T[], item: T): T[] {
   return collection.filter((i) => i !== item);
 }
 

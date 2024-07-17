@@ -100,8 +100,7 @@ const startDataPreparationFx = createEffect(
       };
 
       if (coreTx.type in TransactionValidators) {
-        // TS thinks that transfer should be in TransactionValidators
-        // @ts-ignore`
+        // @ts-expect-error TS thinks that transfer should be in TransactionValidators
         const params = await TransactionValidators[coreTx.type]({
           transaction,
           wallets,

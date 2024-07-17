@@ -24,6 +24,7 @@ runAppSingleInstance(async () => {
 
   PLATFORM.IS_LINUX && app.disableHardwareAcceleration();
 
+  // eslint-disable-next-line prefer-const
   let mainWindow: BrowserWindow | undefined;
 
   setupLogger();

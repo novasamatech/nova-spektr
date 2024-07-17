@@ -428,7 +428,7 @@ sample({
     coreTx: $coreTx,
     txWrappers: $txWrappers,
   },
-  filter: ({ store, coreTx, txWrappers }: any) => {
+  filter: ({ store, coreTx, txWrappers }) => {
     return Boolean(store) && Boolean(coreTx) && Boolean(txWrappers);
   },
   fn: ({ store, coreTx, txWrappers }) => {

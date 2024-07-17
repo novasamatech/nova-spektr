@@ -119,8 +119,8 @@ function getAssetLocation(
   assets: Record<AssetName, AssetLocation>,
   amount: BN,
   isArray = true,
-): Object | undefined {
-  const PathMap: Record<PathType, () => Object | undefined> = {
+): NonNullable<unknown> | undefined {
+  const PathMap: Record<PathType, () => NonNullable<unknown> | undefined> = {
     relative: () => xcmUtils.getRelativeAssetLocation(assets[asset.assetLocation].multiLocation),
     absolute: () => xcmUtils.getAbsoluteAssetLocation(assets[asset.assetLocation].multiLocation),
     concrete: () => xcmUtils.getConcreteAssetLocation(asset.assetLocationPath.path),
@@ -148,7 +148,7 @@ function getVersionedDestinationLocation(
   originChain: Pick<Chain, 'parentId'>,
   destinationParaId?: number,
   accountId?: AccountId,
-): Object | undefined {
+) {
   const location = xcmUtils.getDestinationLocation(originChain, destinationParaId, accountId);
   const type = getTypeName(api, transferType, 'dest');
   const version = getTypeVersion(api, type || '');
@@ -158,11 +158,7 @@ function getVersionedDestinationLocation(
   return { [version]: location };
 }
 
-function getVersionedAccountLocation(
-  api: ApiPromise,
-  transferType: XcmTransferType,
-  accountId?: AccountId,
-): Object | undefined {
+function getVersionedAccountLocation(api: ApiPromise, transferType: XcmTransferType, accountId?: AccountId) {
   const location = xcmUtils.getAccountLocation(accountId);
   const type = getTypeName(api, transferType, 'dest');
   const version = getTypeVersion(api, type || '');
@@ -194,11 +190,11 @@ type XTokensPayload = ParsedPayload & {
 };
 
 function parseXcmPalletExtrinsic(args: Omit<XcmPalletTransferArgs, 'feeAssetItem' | 'weightLimit'>): XcmPalletPayload {
-  const xcmVersion = Object.keys(args.dest as Object)[0];
+  const xcmVersion = Object.keys(args.dest as NonNullable<unknown>)[0];
 
-  const assetInterior = get(args.assets, `${xcmVersion}[0].id.Concrete.interior`) as unknown as Object;
-  const destInterior = get(args.dest, `${xcmVersion}.interior`) as unknown as Object;
-  const beneficiaryInterior = get(args.beneficiary, `${xcmVersion}.interior`) as unknown as Object;
+  const assetInterior = get(args.assets, `${xcmVersion}[0].id.Concrete.interior`) as unknown as NonNullable<unknown>;
+  const destInterior = get(args.dest, `${xcmVersion}.interior`) as unknown as NonNullable<unknown>;
+  const beneficiaryInterior = get(args.beneficiary, `${xcmVersion}.interior`) as unknown as NonNullable<unknown>;
 
   const parsedPayload = {
     isRelayToken: assetInterior === 'Here',
@@ -226,10 +222,10 @@ function parseXcmPalletExtrinsic(args: Omit<XcmPalletTransferArgs, 'feeAssetItem
 }
 
 function parseXTokensExtrinsic(args: Omit<XTokenPalletTransferArgs, 'destWeight' | 'destWeightLimit'>): XTokensPayload {
-  const xcmVersion = Object.keys(args.dest as Object)[0];
+  const xcmVersion = Object.keys(args.dest as NonNullable<unknown>)[0];
 
-  const assetInterior = get(args.asset, `${xcmVersion}.id.Concrete.interior`) as unknown as Object;
-  const destInterior = get(args.dest, `${xcmVersion}.interior`) as unknown as Object;
+  const assetInterior = get(args.asset, `${xcmVersion}.id.Concrete.interior`) as unknown as NonNullable<unknown>;
+  const destInterior = get(args.dest, `${xcmVersion}.interior`) as unknown as NonNullable<unknown>;
 
   const parsedPayload = {
     isRelayToken: assetInterior === 'Here',

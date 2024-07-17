@@ -7,7 +7,7 @@ import { RadioOption, RadioResult } from './common/types';
 import { LabelText } from '@shared/ui';
 import './RadioGroup.css';
 
-type Props<T extends any = any> = {
+type Props<T = any> = {
   name?: string;
   label?: string;
   activeId?: string;
