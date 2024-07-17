@@ -2,7 +2,6 @@ import { type ApiPromise } from '@polkadot/api';
 import { type Vec } from '@polkadot/types';
 import { type AccountId32 } from '@polkadot/types/interfaces';
 
-import { MultisigTxInitStatus, TransactionType } from '@shared/core';
 import type {
   Address,
   ChainId,
@@ -12,6 +11,7 @@ import type {
   MultisigTransaction,
   Transaction,
 } from '@shared/core';
+import { MultisigTxInitStatus, TransactionType } from '@shared/core';
 import { getCreatedDate, toAccountId } from '@shared/lib/utils';
 import type { ExtrinsicResultParams } from '@entities/transaction';
 

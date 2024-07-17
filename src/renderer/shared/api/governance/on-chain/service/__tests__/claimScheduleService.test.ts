@@ -1,6 +1,5 @@
 import { BN, BN_EIGHT, BN_FIVE, BN_FOUR, BN_NINE, BN_ONE, BN_TEN, BN_THREE, BN_TWO, BN_ZERO } from '@polkadot/util';
 
-import { Conviction, ReferendumType, VotingType } from '@shared/core';
 import type {
   ApprovedReferendum,
   CastingVoting,
@@ -11,6 +10,7 @@ import type {
   TrackInfo,
   Voting,
 } from '@shared/core';
+import { Conviction, ReferendumType, VotingType } from '@shared/core';
 import {
   type ClaimTimeAt,
   type ClaimTimeUntil,

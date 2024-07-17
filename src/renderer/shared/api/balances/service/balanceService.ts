@@ -6,8 +6,8 @@ import { BN, hexToU8a } from '@polkadot/util';
 import noop from 'lodash/noop';
 import uniq from 'lodash/uniq';
 
-import { AssetType } from '@shared/core';
 import type { AccountId, Address, Asset, Balance, Chain, OrmlExtras } from '@shared/core';
+import { AssetType } from '@shared/core';
 import { getAssetId, getRepeatedIndex, toAddress } from '@shared/lib/utils';
 
 export const balanceService = {

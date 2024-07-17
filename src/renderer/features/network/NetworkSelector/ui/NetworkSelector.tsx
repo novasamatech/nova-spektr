@@ -3,8 +3,8 @@ import { Fragment } from 'react';
 import { type TFunction } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
-import { ConnectionType } from '@shared/core';
 import type { RpcNode } from '@shared/core';
+import { ConnectionType } from '@shared/core';
 import { useScrollTo } from '@shared/lib/hooks';
 import { cnTw } from '@shared/lib/utils';
 import { Button, FootnoteText, HelpText, Icon, IconButton } from '@shared/ui';

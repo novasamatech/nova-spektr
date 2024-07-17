@@ -3,7 +3,6 @@ import { createKeyMulti } from '@polkadot/util-crypto';
 import keyBy from 'lodash/keyBy';
 
 // TODO: resolve cross import
-import { AccountType, ChainType, CryptoType, ProxyType, ProxyVariant } from '@shared/core';
 import type {
   Account,
   AccountId,
@@ -19,6 +18,7 @@ import type {
   Wallet,
   WcAccount,
 } from '@shared/core';
+import { AccountType, ChainType, CryptoType, ProxyType, ProxyVariant } from '@shared/core';
 import { toAddress } from '@shared/lib/utils';
 import { networkUtils } from '@entities/network';
 

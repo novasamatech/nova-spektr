@@ -1,6 +1,5 @@
 import { type BN, BN_ZERO, bnMax } from '@polkadot/util';
 
-import { Conviction, ReferendumType, VoteType, VotingType } from '@shared/core';
 import type {
   AccountVote,
   ApprovedReferendum,
@@ -14,6 +13,7 @@ import type {
   StandardVote,
   Voting,
 } from '@shared/core';
+import { Conviction, ReferendumType, VoteType, VotingType } from '@shared/core';
 
 import type { ClaimTime, ClaimTimeAt } from './claim-types';
 

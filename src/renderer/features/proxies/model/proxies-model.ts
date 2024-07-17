@@ -5,16 +5,6 @@ import keyBy from 'lodash/keyBy';
 import { once, spread } from 'patronum';
 
 import { storageService } from '@shared/api/storage';
-import {
-  AccountType,
-  ChainType,
-  CryptoType,
-  ExternalType,
-  NotificationType,
-  ProxyVariant,
-  SigningType,
-  WalletType,
-} from '@shared/core';
 import type {
   Account,
   AccountId,
@@ -29,6 +19,16 @@ import type {
   ProxyGroup,
   Wallet,
   WalletsMap,
+} from '@shared/core';
+import {
+  AccountType,
+  ChainType,
+  CryptoType,
+  ExternalType,
+  NotificationType,
+  ProxyVariant,
+  SigningType,
+  WalletType,
 } from '@shared/core';
 import { dictionary } from '@shared/lib/utils';
 import { balanceModel } from '@entities/balance';
