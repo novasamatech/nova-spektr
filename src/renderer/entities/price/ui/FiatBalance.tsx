@@ -1,8 +1,10 @@
 import { useUnit } from 'effector-react';
 
-import { FootnoteText, Shimmering } from '@shared/ui';
-import { currencyModel } from '../model/currency-model';
 import { cnTw } from '@shared/lib/utils';
+import { FootnoteText, Shimmering } from '@shared/ui';
+
+import { currencyModel } from '../model/currency-model';
+
 import { Price } from './Price';
 
 type Props = {
@@ -14,7 +16,9 @@ type Props = {
 export const FiatBalance = ({ amount, className }: Props) => {
   const currency = useUnit(currencyModel.$activeCurrency);
 
-  if (!amount) return <Shimmering width={56} height={18} />;
+  if (!amount) {
+    return <Shimmering width={56} height={18} />;
+  }
 
   return (
     <FootnoteText className={cnTw('text-text-tertiary', className)}>

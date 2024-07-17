@@ -1,11 +1,15 @@
 import { memo } from 'react';
 
 import { useI18n } from '@app/providers';
-import { Voted } from '@entities/governance';
-import { FootnoteText, HeadlineText, Shimmering } from '@shared/ui';
+
 import { type CompletedReferendum } from '@shared/core';
+import { FootnoteText, HeadlineText, Shimmering } from '@shared/ui';
+
+import { Voted } from '@entities/governance';
+
 import { type AggregatedReferendum } from '../../types/structs';
 import { VotingStatusBadge } from '../VotingStatusBadge';
+
 import { ListItem } from './ListItem';
 
 type Props = {

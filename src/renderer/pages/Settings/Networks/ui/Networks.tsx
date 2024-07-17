@@ -1,16 +1,17 @@
-import { useNavigate } from 'react-router-dom';
-import { Trans } from 'react-i18next';
 import { useUnit } from 'effector-react';
+import { Trans } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 import { useConfirmContext, useI18n } from '@app/providers';
-import { Paths } from '@shared/routes';
-import { BaseModal, InfoLink } from '@shared/ui';
-import { useModalClose } from '@shared/lib/hooks';
+
 import type { ChainId, RpcNode } from '@shared/core';
 import { ConnectionType } from '@shared/core';
+import { useModalClose } from '@shared/lib/hooks';
+import { Paths } from '@shared/routes';
+import { BaseModal, InfoLink } from '@shared/ui';
+
 import { type ExtendedChain, networkModel, networkUtils } from '@entities/network';
-import { type SelectorPayload } from '@features/network/NetworkSelector';
-import { networksOverviewModel } from '../model/networks-overview-model';
+
 import {
   ActiveNetwork,
   AddCustomRpcModal,
@@ -28,6 +29,9 @@ import {
   networksFilterModel,
   removeCustomRpcModel,
 } from '@features/network';
+import { type SelectorPayload } from '@features/network/NetworkSelector';
+
+import { networksOverviewModel } from '../model/networks-overview-model';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -103,7 +107,9 @@ export const Networks = () => {
       } else if (networkUtils.isRpcConnection(connection) || networkUtils.isAutoBalanceConnection(connection)) {
         proceed = await confirmDisableNetwork(name);
       }
-      if (!proceed) return;
+      if (!proceed) {
+        return;
+      }
 
       networkSelectorModel.events.networkDisabled(connection.chainId);
     };
@@ -113,7 +119,9 @@ export const Networks = () => {
     return async (type: ConnectionType, node?: RpcNode): Promise<void> => {
       if (networkUtils.isLightClientConnection(connection)) {
         const proceed = await confirmDisableLightClient(name);
-        if (!proceed) return;
+        if (!proceed) {
+          return;
+        }
       }
 
       if (type === ConnectionType.LIGHT_CLIENT) {
@@ -121,7 +129,9 @@ export const Networks = () => {
 
         if (lightClientsAmount >= MAX_LIGHT_CLIENTS) {
           const proceed = await confirmEnableLightClient();
-          if (!proceed) return;
+          if (!proceed) {
+            return;
+          }
         }
       }
 
@@ -150,7 +160,9 @@ export const Networks = () => {
 
   const removeCustomNode = async (chainId: ChainId, node: RpcNode) => {
     const proceed = await confirmRemoveCustomNode(node.name);
-    if (!proceed) return;
+    if (!proceed) {
+      return;
+    }
 
     removeCustomRpcModel.events.rpcNodeRemoved({ chainId, node });
   };

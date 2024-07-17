@@ -1,10 +1,12 @@
-import { allSettled, fork } from 'effector';
 import { type ApiPromise } from '@polkadot/api';
+import { allSettled, fork } from 'effector';
 
 import { type Account, type Chain, SigningType, type Transaction, type Wallet, WalletType } from '@shared/core';
-import { transactionService } from '@entities/transaction';
+
 import { networkModel } from '@entities/network';
+import { transactionService } from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
+
 import { submitModel } from '../submit-model';
 
 jest.mock('@entities/transaction', () => ({

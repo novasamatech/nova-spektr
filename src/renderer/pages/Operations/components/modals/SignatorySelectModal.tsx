@@ -1,8 +1,10 @@
-import { BaseModal } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { SelectableSignatory } from '@entities/signatory';
-import { cnTw } from '@shared/lib/utils';
+
 import type { Account, Asset, Chain } from '@shared/core';
+import { cnTw } from '@shared/lib/utils';
+import { BaseModal } from '@shared/ui';
+
+import { SelectableSignatory } from '@entities/signatory';
 
 type Props = {
   isOpen: boolean;

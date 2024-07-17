@@ -1,9 +1,11 @@
 import { type ComponentProps } from 'react';
 
 import { useI18n } from '@app/providers';
-import { DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
-import { ProxyDeposit } from '../ProxyDeposit/ProxyDeposit';
+
 import { cnTw } from '@shared/lib/utils';
+import { DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
+
+import { ProxyDeposit } from '../ProxyDeposit/ProxyDeposit';
 
 type Props = ComponentProps<typeof ProxyDeposit> & {
   wrapperClassName?: string;

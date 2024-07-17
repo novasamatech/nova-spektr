@@ -1,7 +1,9 @@
 import { allSettled, fork } from 'effector';
 
 import { type AssetByChains } from '@shared/core';
+
 import { AssetsListView } from '@entities/asset';
+
 import { portfolioModel } from '../portfolio-model';
 
 const mockTokens = [

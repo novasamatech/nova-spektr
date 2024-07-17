@@ -1,10 +1,13 @@
 import { allSettled, fork } from 'effector';
 
-import { formModel } from '../form-model';
+import { ConnectionStatus } from '@shared/core';
+
 import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
+
+import { formModel } from '../form-model';
+
 import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
-import { ConnectionStatus } from '@shared/core';
 
 jest.mock('@shared/lib/utils', () => ({
   ...jest.requireActual('@shared/lib/utils'),

@@ -1,21 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
 import { useUnit } from 'effector-react';
 import uniqBy from 'lodash/uniqBy';
+import { useEffect, useMemo, useState } from 'react';
 
-import { Header } from '@shared/ui';
-import { getRelaychainAsset, toAddress } from '@shared/lib/utils';
 import { useGraphql, useI18n } from '@app/providers';
-import { useToggle } from '@shared/lib/hooks';
-import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
-import { priceProviderModel } from '@entities/price';
-import { InactiveNetwork, networkUtils, useNetworkData } from '@entities/network';
-import { eraService } from '@entities/staking/api';
-import { NetworkInfo } from './NetworkInfo';
-import { AboutStaking } from './AboutStaking';
-import { Actions } from './Actions';
-import { NominatorsList } from './NominatorsList';
-import { type NominatorInfo, Operations as StakeOperations } from '../lib/types';
-import * as Operations from '@widgets/Staking';
+
 import {
   type Account,
   type Address,
@@ -27,6 +15,12 @@ import {
   type Stake,
   type Validator,
 } from '@shared/core';
+import { useToggle } from '@shared/lib/hooks';
+import { getRelaychainAsset, toAddress } from '@shared/lib/utils';
+import { Header } from '@shared/ui';
+
+import { InactiveNetwork, networkUtils, useNetworkData } from '@entities/network';
+import { priceProviderModel } from '@entities/price';
 import {
   type StakingMap,
   type ValidatorMap,
@@ -35,6 +29,17 @@ import {
   useStakingRewards,
   validatorsService,
 } from '@entities/staking';
+import { eraService } from '@entities/staking/api';
+import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
+
+import * as Operations from '@widgets/Staking';
+
+import { type NominatorInfo, Operations as StakeOperations } from '../lib/types';
+
+import { AboutStaking } from './AboutStaking';
+import { Actions } from './Actions';
+import { NetworkInfo } from './NetworkInfo';
+import { NominatorsList } from './NominatorsList';
 
 export const Staking = () => {
   const { t } = useI18n();
@@ -72,7 +77,9 @@ export const Staking = () => {
       const isPolkadotVault = walletUtils.isPolkadotVault(activeWallet);
       const hasManyAccounts = collection.length > 1;
 
-      if (isPolkadotVault && isBaseAccount && hasManyAccounts) return false;
+      if (isPolkadotVault && isBaseAccount && hasManyAccounts) {
+        return false;
+      }
 
       return accountUtils.isChainIdMatch(account, chainId);
     }) || [];
@@ -86,7 +93,9 @@ export const Staking = () => {
   }, []);
 
   useEffect(() => {
-    if (!connection) return;
+    if (!connection) {
+      return;
+    }
 
     const isDisabled = networkUtils.isDisabledConnection(connection);
     const isError = networkUtils.isErrorStatus(connectionStatus);
@@ -95,7 +104,9 @@ export const Staking = () => {
   }, [chainId, connection]);
 
   useEffect(() => {
-    if (!chainId || !api?.isConnected) return;
+    if (!chainId || !api?.isConnected) {
+      return;
+    }
 
     let unsubEra: () => void | undefined;
     let unsubStaking: () => void | undefined;
@@ -119,7 +130,9 @@ export const Staking = () => {
   }, [chainId, api, activeWallet]);
 
   useEffect(() => {
-    if (!activeWallet) return;
+    if (!activeWallet) {
+      return;
+    }
 
     const isMultisig = walletUtils.isMultisig(activeWallet);
     const isNovaWallet = walletUtils.isNovaWallet(activeWallet);
@@ -135,16 +148,22 @@ export const Staking = () => {
   }, [chainId, activeWallet]);
 
   useEffect(() => {
-    if (!chainId || !api?.isConnected) return;
+    if (!chainId || !api?.isConnected) {
+      return;
+    }
 
     const era = chainEra[chainId];
-    if (!era) return;
+    if (!era) {
+      return;
+    }
 
     validatorsService.getValidatorsList(api, era).then(setValidators);
   }, [chainId, api, chainEra]);
 
   useEffect(() => {
-    if (!api || !selectedStash) return;
+    if (!api || !selectedStash) {
+      return;
+    }
 
     validatorsService
       .getNominators(api, selectedStash, networkUtils.isLightClientConnection(connection))
@@ -154,7 +173,9 @@ export const Staking = () => {
   }, [api, selectedStash]);
 
   const changeNetwork = (chain: Chain) => {
-    if (chain.chainId === chainId) return;
+    if (chain.chainId === chainId) {
+      return;
+    }
 
     changeClient(chain.chainId);
     setActiveChain(chain);
@@ -164,15 +185,21 @@ export const Staking = () => {
   };
 
   const openSelectedValidators = (stash?: Address) => {
-    if (!api || !stash) return;
+    if (!api || !stash) {
+      return;
+    }
 
     setSelectedStash(stash);
     toggleNominators();
   };
 
   const groupedAccounts = useMemo((): Account[] | (ChainAccount | ShardAccount[])[] => {
-    if (!activeWallet) return [];
-    if (!walletUtils.isPolkadotVault(activeWallet)) return accounts;
+    if (!activeWallet) {
+      return [];
+    }
+    if (!walletUtils.isPolkadotVault(activeWallet)) {
+      return accounts;
+    }
 
     return accountUtils.getAccountsAndShardGroups(accounts);
   }, [activeWallet, accounts]);
@@ -231,7 +258,9 @@ export const Staking = () => {
   );
 
   const navigateToStake = (operation: StakeOperations, addresses?: Address[]) => {
-    if (!activeChain || !activeWallet) return;
+    if (!activeChain || !activeWallet) {
+      return;
+    }
 
     if (addresses) {
       setSelectedNominators(addresses);

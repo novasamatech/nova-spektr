@@ -1,7 +1,8 @@
 import { allSettled, fork } from 'effector';
 
-import { type Notification, NotificationType } from '@shared/core';
 import { storageService } from '@shared/api/storage';
+import { type Notification, NotificationType } from '@shared/core';
+
 import { notificationModel } from '../notification-model';
 
 const notifications = [

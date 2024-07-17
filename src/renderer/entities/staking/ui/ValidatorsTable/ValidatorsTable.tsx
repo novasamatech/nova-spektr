@@ -1,10 +1,12 @@
+import { useI18n } from '@app/providers';
+
 import { type Asset, type Explorer, type Validator } from '@shared/core';
 import { cnTw, getComposedIdentity } from '@shared/lib/utils';
 import { BodyText, FootnoteText, HelpText, IconButton, Identicon, Truncate } from '@shared/ui';
+
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { ExplorersPopover } from '@entities/wallet';
-import { useI18n } from '@app/providers';
 
 const TABLE_GRID_CELLS = 'grid-cols-[1fr,128px,128px,40px]';
 

@@ -1,9 +1,10 @@
 import { type PropsWithChildren } from 'react';
 
-import { type Variant } from './common/types';
-import { BadgeStyles } from './common/constants';
-import { CaptionText } from '@shared/ui';
 import { cnTw } from '@shared/lib/utils';
+import { CaptionText } from '@shared/ui';
+
+import { BadgeStyles } from './common/constants';
+import { type Variant } from './common/types';
 
 type Props = {
   variant: Variant;

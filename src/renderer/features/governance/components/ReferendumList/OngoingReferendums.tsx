@@ -1,11 +1,14 @@
 import { memo, useDeferredValue } from 'react';
 
 import { useI18n } from '@app/providers';
-import { Accordion, CaptionText, Shimmering } from '@shared/ui';
+
 import { type OngoingReferendum } from '@shared/core';
+import { Accordion, CaptionText, Shimmering } from '@shared/ui';
+
 import { type AggregatedReferendum } from '../../types/structs';
-import { OngoingReferendumItem } from './OngoingReferendumItem';
+
 import { ListItemPlaceholder } from './ListItemPlaceholder';
+import { OngoingReferendumItem } from './OngoingReferendumItem';
 
 type Props = {
   referendums: AggregatedReferendum<OngoingReferendum>[];

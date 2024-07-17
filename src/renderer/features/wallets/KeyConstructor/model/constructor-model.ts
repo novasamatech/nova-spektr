@@ -1,11 +1,12 @@
-import { createForm } from 'effector-forms';
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { createForm } from 'effector-forms';
 import { spread } from 'patronum';
 
-import { networkModel, networkUtils } from '@entities/network';
 import type { Chain, ChainAccount, ShardAccount } from '@shared/core';
 import { AccountType, ChainType, CryptoType, KeyType } from '@shared/core';
 import { derivationHasPassword, validateDerivation } from '@shared/lib/utils';
+
+import { networkModel, networkUtils } from '@entities/network';
 import { KEY_NAMES, SHARDED_KEY_NAMES, accountUtils } from '@entities/wallet';
 
 const formInitiated = createEvent<Array<ChainAccount | ShardAccount>>();

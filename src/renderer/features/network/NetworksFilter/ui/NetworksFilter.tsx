@@ -1,9 +1,11 @@
-import { useEffect } from 'react';
 import { useUnit } from 'effector-react';
+import { useEffect } from 'react';
+
+import { useI18n } from '@app/providers';
+
+import { SearchInput } from '@shared/ui';
 
 import { networksFilterModel } from '../model/networks-filter-model';
-import { SearchInput } from '@shared/ui';
-import { useI18n } from '@app/providers';
 
 type Props = {
   className?: string;

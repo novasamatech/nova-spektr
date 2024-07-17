@@ -1,7 +1,9 @@
-import { Button, FootnoteText, Icon, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { ProxyPopover } from '@entities/proxy';
+
 import { cnTw } from '@shared/lib/utils';
+import { Button, FootnoteText, Icon, SmallTitleText } from '@shared/ui';
+
+import { ProxyPopover } from '@entities/proxy';
 
 type Props = {
   canCreateProxy?: boolean;

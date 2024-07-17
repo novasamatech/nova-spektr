@@ -1,7 +1,8 @@
-import { MemoryRouter } from 'react-router-dom';
 import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { MemoryRouter } from 'react-router-dom';
 
 import { Icon } from '../../Icon/Icon';
+
 import { ButtonWebLink } from './ButtonWebLink';
 
 export default {

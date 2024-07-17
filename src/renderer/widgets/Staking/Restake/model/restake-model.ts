@@ -1,16 +1,20 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { delay, spread } from 'patronum';
 
-import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@features/operations/OperationSubmit';
-import { type NetworkStore, type RestakeStore, Step } from '../lib/types';
-import { formModel } from './form-model';
-import { restakeConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
-import { getRelaychainAsset, nonNullable } from '@shared/lib/utils';
-import { restakeUtils } from '../lib/restake-utils';
 import { type BasketTransaction, type Transaction } from '@shared/core';
+import { getRelaychainAsset, nonNullable } from '@shared/lib/utils';
+
 import { basketModel } from '@entities/basket';
 import { walletModel, walletUtils } from '@entities/wallet';
+
+import { signModel } from '@features/operations/OperationSign/model/sign-model';
+import { submitModel } from '@features/operations/OperationSubmit';
+import { restakeConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
+
+import { restakeUtils } from '../lib/restake-utils';
+import { type NetworkStore, type RestakeStore, Step } from '../lib/types';
+
+import { formModel } from './form-model';
 
 const stepChanged = createEvent<Step>();
 

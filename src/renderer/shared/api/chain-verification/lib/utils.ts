@@ -1,5 +1,5 @@
-import { type Node } from './types';
 import { NodeType } from './constants';
+import { type Node } from './types';
 
 /**
  * Transform little endian byte array to nibbles array

@@ -1,4 +1,13 @@
 import {
+  ApolloClient,
+  ApolloProvider,
+  HttpLink,
+  InMemoryCache,
+  type NormalizedCacheObject,
+  from,
+} from '@apollo/client';
+import { onError } from '@apollo/client/link/error';
+import {
   type PropsWithChildren,
   createContext,
   useCallback,
@@ -8,18 +17,10 @@ import {
   useRef,
   useState,
 } from 'react';
-import {
-  ApolloClient,
-  ApolloProvider,
-  HttpLink,
-  InMemoryCache,
-  type NormalizedCacheObject,
-  from,
-} from '@apollo/client';
-import { onError } from '@apollo/client/link/error';
 
-import { type ChainId, ExternalType } from '@shared/core';
 import { chainsService } from '@shared/api/network';
+import { type ChainId, ExternalType } from '@shared/core';
+
 import { settingsStorage } from '@entities/settings';
 
 type GraphqlContextProps = {

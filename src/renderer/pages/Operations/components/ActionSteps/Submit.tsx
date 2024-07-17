@@ -1,17 +1,19 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type ComponentProps, useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
+import { type ComponentProps, useEffect, useState } from 'react';
 
 import { useI18n, useMultisigChainContext } from '@app/providers';
-import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
-import { useToggle } from '@shared/lib/hooks';
-import { Button, StatusModal } from '@shared/ui';
-import { Animation } from '@shared/ui/Animation/Animation';
+
 import type { Account, HexString, MultisigEvent, MultisigTransaction, SigningStatus, Transaction } from '@shared/core';
 import { MultisigTxFinalStatus, TransactionType } from '@shared/core';
-import { type ExtrinsicResultParams, transactionService } from '@entities/transaction';
-import { matrixModel } from '@entities/matrix';
+import { useToggle } from '@shared/lib/hooks';
 import { toAccountId } from '@shared/lib/utils';
+import { Button, StatusModal } from '@shared/ui';
+import { Animation } from '@shared/ui/Animation/Animation';
+
+import { matrixModel } from '@entities/matrix';
+import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
+import { type ExtrinsicResultParams, transactionService } from '@entities/transaction';
 
 type ResultProps = Pick<ComponentProps<typeof StatusModal>, 'title' | 'content' | 'description'>;
 
@@ -112,7 +114,9 @@ export const Submit = ({
   };
 
   const sendMultisigEvent = (updatedTx: MultisigTransaction, params: ExtrinsicResultParams, rejectReason?: string) => {
-    if (!tx || !updatedTx || !matrixRoomId) return;
+    if (!tx || !updatedTx || !matrixRoomId) {
+      return;
+    }
 
     const payload = {
       senderAccountId: toAccountId(tx.address),

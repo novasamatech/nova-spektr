@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react';
-import { useUnit } from 'effector-react';
 import BN from 'bignumber.js';
+import { useUnit } from 'effector-react';
+import { useEffect, useState } from 'react';
 
-import { formatFiatBalance, getRoundedValue, totalAmount } from '@shared/lib/utils';
-import { FiatBalance } from '@entities/price/ui/FiatBalance';
-import { currencyModel, priceProviderModel } from '@entities/price';
 import { useI18n } from '@app/providers';
+
 import type { Asset, Balance } from '@shared/core';
+import { formatFiatBalance, getRoundedValue, totalAmount } from '@shared/lib/utils';
+
+import { currencyModel, priceProviderModel } from '@entities/price';
+import { FiatBalance } from '@entities/price/ui/FiatBalance';
 
 type Props = {
   assets: Asset[];
@@ -25,7 +27,9 @@ export const NetworkFiatBalance = ({ assets, balances, className }: Props) => {
   useEffect(() => {
     // TODO: Move logic to model https://app.clickup.com/t/8692tr8x0
     const totalFiatAmount = assets.reduce<BN>((acc, asset) => {
-      if (!prices || !asset.priceId || !currency || !currency?.coingeckoId || !prices[asset.priceId]) return acc;
+      if (!prices || !asset.priceId || !currency || !currency?.coingeckoId || !prices[asset.priceId]) {
+        return acc;
+      }
 
       const price = prices[asset.priceId][currency.coingeckoId];
 
@@ -42,7 +46,9 @@ export const NetworkFiatBalance = ({ assets, balances, className }: Props) => {
     setFiatAmount(totalFiatAmount);
   }, [assets.length, prices, currency, balances]);
 
-  if (!fiatFlag) return null;
+  if (!fiatFlag) {
+    return null;
+  }
 
   const { value: formattedValue, suffix, decimalPlaces } = formatFiatBalance(fiatAmount.toString());
 

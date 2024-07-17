@@ -1,18 +1,23 @@
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
-import { BaseModal, Button } from '@shared/ui';
-import { useModalClose } from '@shared/lib/hooks';
-import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
+
 import type { Chain } from '@shared/core';
-import { OperationSign, OperationSubmit } from '@features/operations';
-import { Step } from '../lib/types';
-import { AddPureProxiedForm } from './AddPureProxiedForm';
-import { addPureProxiedUtils } from '../lib/add-pure-proxied-utils';
-import { addPureProxiedModel } from '../model/add-pure-proxied-model';
-import { AddPureProxiedConfirm, basketUtils } from '@features/operations/OperationsConfirm';
+import { useModalClose } from '@shared/lib/hooks';
+import { BaseModal, Button } from '@shared/ui';
+
+import { OperationTitle } from '@entities/chain';
 import { OperationResult } from '@entities/transaction';
+
+import { OperationSign, OperationSubmit } from '@features/operations';
+import { AddPureProxiedConfirm, basketUtils } from '@features/operations/OperationsConfirm';
+
+import { addPureProxiedUtils } from '../lib/add-pure-proxied-utils';
+import { Step } from '../lib/types';
+import { addPureProxiedModel } from '../model/add-pure-proxied-model';
+
+import { AddPureProxiedForm } from './AddPureProxiedForm';
 
 export const AddPureProxied = () => {
   const { t } = useI18n();
@@ -39,12 +44,16 @@ export const AddPureProxied = () => {
   }, [step]);
 
   const getModalTitle = (step: Step, chain?: Chain) => {
-    if (addPureProxiedUtils.isInitStep(step) || !chain) return t('operations.modalTitles.addPureProxy');
+    if (addPureProxiedUtils.isInitStep(step) || !chain) {
+      return t('operations.modalTitles.addPureProxy');
+    }
 
     return <OperationTitle title={t('operations.modalTitles.addPureProxyOn')} chainId={chain.chainId} />;
   };
 
-  if (addPureProxiedUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  if (addPureProxiedUtils.isSubmitStep(step)) {
+    return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  }
 
   if (addPureProxiedUtils.isBasketStep(step)) {
     return (

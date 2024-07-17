@@ -1,8 +1,10 @@
 import set from 'lodash/set';
 
 import type { Account, AccountId, BaseAccount, Chain, ChainAccount, ChainId, ID, ShardAccount } from '@shared/core';
-import { accountUtils } from '@entities/wallet';
 import { isStringsMatchQuery, toAddress } from '@shared/lib/utils';
+
+import { accountUtils } from '@entities/wallet';
+
 import { type ChainTuple, type ChainsMap, type RootTuple, type SelectedStruct } from './types';
 
 export const shardsUtils = {

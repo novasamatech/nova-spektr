@@ -1,11 +1,14 @@
-import { type Store } from 'effector';
 import { BN } from '@polkadot/util';
+import { type Store } from 'effector';
 
-import { descriptionValidation } from './validation';
 import { type AccountId, type Chain } from '@shared/core';
 import { transferableAmount } from '@shared/lib/utils';
+
 import { balanceUtils } from '@entities/balance';
+
 import { type SignatoryStore } from '../types/types';
+
+import { descriptionValidation } from './validation';
 
 export const RemovePureProxiedRules = {
   account: {

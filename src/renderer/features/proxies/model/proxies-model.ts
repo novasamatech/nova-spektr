@@ -1,9 +1,10 @@
-import { attach, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import { type Endpoint, createEndpoint } from '@remote-ui/rpc';
+import { attach, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import { GraphQLClient } from 'graphql-request';
 import keyBy from 'lodash/keyBy';
 import { once, spread } from 'patronum';
-import { GraphQLClient } from 'graphql-request';
 
+import { storageService } from '@shared/api/storage';
 import {
   AccountType,
   ChainType,
@@ -20,23 +21,24 @@ import type {
   Chain,
   ChainId,
   Connection,
-  type NoID,
+  NoID,
   PartialProxiedAccount,
   ProxiedAccount,
   ProxyAccount,
   ProxyDeposits,
-  type ProxyGroup,
+  ProxyGroup,
   Wallet,
   WalletsMap,
 } from '@shared/core';
-import { networkModel, networkUtils } from '@entities/network';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { proxyModel, proxyUtils, pureProxiesService } from '@entities/proxy';
-import { balanceModel } from '@entities/balance';
-import { notificationModel } from '@entities/notification';
-import { proxiesUtils } from '../lib/proxies-utils';
-import { storageService } from '@shared/api/storage';
 import { dictionary } from '@shared/lib/utils';
+
+import { balanceModel } from '@entities/balance';
+import { networkModel, networkUtils } from '@entities/network';
+import { notificationModel } from '@entities/notification';
+import { proxyModel, proxyUtils, pureProxiesService } from '@entities/proxy';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+
+import { proxiesUtils } from '../lib/proxies-utils';
 
 const workerStarted = createEvent();
 const connected = createEvent<ChainId>();

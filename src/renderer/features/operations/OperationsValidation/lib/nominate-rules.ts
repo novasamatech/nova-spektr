@@ -1,10 +1,12 @@
-import { type Store } from 'effector';
 import { BN } from '@polkadot/util';
+import { type Store } from 'effector';
 
-import { formatAmount } from '@shared/lib/utils';
-import { balanceValidation, descriptionValidation } from './validation';
 import { type Account } from '@shared/core';
+import { formatAmount } from '@shared/lib/utils';
+
 import { type ShardsBondBalanceStore, type ShardsProxyFeeStore, type SignatoryFeeStore } from '../types/types';
+
+import { balanceValidation, descriptionValidation } from './validation';
 
 export const NominateRules = {
   shards: {

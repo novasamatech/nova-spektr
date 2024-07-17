@@ -1,14 +1,16 @@
 import { hexToU8a, u8aToHex } from '@polkadot/util';
 import { BrowserCodeReader, BrowserQRCodeReader, type IScannerControls } from '@zxing/browser';
-import { useEffect, useRef } from 'react';
 import init from 'raptorq';
+import { useEffect, useRef } from 'react';
 
-import { cnTw } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
+
+import type { HexString } from '@shared/core';
+import { cnTw } from '@shared/lib/utils';
+
 import { ErrorFields } from '../common/constants';
 import { QR_READER_ERRORS } from '../common/errors';
 import { type DecodeCallback, type ErrorObject, QrError, type VideoInput } from '../common/types';
-import type { HexString } from '@shared/core';
 
 type Props = {
   size?: number;
@@ -48,7 +50,9 @@ export const QrSignatureReader = ({
   const videoStyle = { width: size + 'px', height: size + 'px' };
 
   const isQrErrorObject = (error: unknown): boolean => {
-    if (!error) return false;
+    if (!error) {
+      return false;
+    }
 
     return typeof error === 'object' && ErrorFields.CODE in error && ErrorFields.MESSAGE in error;
   };
@@ -76,10 +80,14 @@ export const QrSignatureReader = ({
   };
 
   const startScanning = async (): Promise<void> => {
-    if (!videoRef.current || !scannerRef.current) return;
+    if (!videoRef.current || !scannerRef.current) {
+      return;
+    }
 
     const decodeCallback: DecodeCallback = async (result): Promise<void> => {
-      if (!result || isComplete.current) return;
+      if (!result || isComplete.current) {
+        return;
+      }
 
       try {
         await init();
@@ -142,7 +150,9 @@ export const QrSignatureReader = ({
   }, []);
 
   useEffect(() => {
-    if (!cameraId) return;
+    if (!cameraId) {
+      return;
+    }
 
     (async () => {
       try {

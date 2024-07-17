@@ -10,8 +10,9 @@ import {
   uint8Array,
 } from 'parity-scale-codec';
 
-import { type AddressInfo, type DdAddressInfo, type DdSeedInfo, type SeedInfo } from './types';
 import { type ChainId, type CryptoType, CryptoTypeString } from '@shared/core';
+
+import { type AddressInfo, type DdAddressInfo, type DdSeedInfo, type SeedInfo } from './types';
 
 export const FRAME_KEY = 2;
 

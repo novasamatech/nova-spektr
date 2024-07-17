@@ -1,5 +1,7 @@
-import { type ExtendedChain } from '@entities/network';
 import { ConnectionType } from '@shared/core';
+
+import { type ExtendedChain } from '@entities/network';
+
 import { type ConnectionItem } from './types';
 
 export const networkSelectorUtils = {

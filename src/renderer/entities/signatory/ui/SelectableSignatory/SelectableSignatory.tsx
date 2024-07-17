@@ -1,12 +1,13 @@
 import { useUnit } from 'effector-react';
 
-import { WalletIcon, walletModel } from '@entities/wallet';
-import { BodyText, Icon } from '@shared/ui';
-import { cnTw, toAccountId, toAddress, transferableAmount } from '@shared/lib/utils';
 import type { AccountId, Asset, ChainId } from '@shared/core';
-// TODO: Fix layers
+import { cnTw, toAccountId, toAddress, transferableAmount } from '@shared/lib/utils';
+import { BodyText, Icon } from '@shared/ui';
+
 import { AssetBalance } from '@entities/asset';
 import { useBalance } from '@entities/balance';
+import { WalletIcon, walletModel } from '@entities/wallet';
+// TODO: Fix layers
 
 type Props<T> = {
   value: T;
@@ -38,7 +39,9 @@ export const SelectableSignatory = <T,>({
     assetId: asset.assetId.toString(),
   });
 
-  if (!signatoryWallet) return null;
+  if (!signatoryWallet) {
+    return null;
+  }
 
   return (
     <button

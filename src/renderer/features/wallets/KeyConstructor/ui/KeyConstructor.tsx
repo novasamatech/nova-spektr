@@ -1,13 +1,16 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
+import { useI18n } from '@app/providers';
+
+import { type ChainAccount, type DraftAccount, type ShardAccount } from '@shared/core';
 import { BaseModal, Button } from '@shared/ui';
+
+import { constructorModel } from '../model/constructor-model';
+
 import { KeyForm } from './KeyForm';
 import { KeysList } from './KeysList';
 import { WarningModal } from './WarningModal';
-import { constructorModel } from '../model/constructor-model';
-import { type ChainAccount, type DraftAccount, type ShardAccount } from '@shared/core';
-import { useI18n } from '@app/providers';
 
 type Props = {
   title: string;
@@ -29,7 +32,9 @@ export const KeyConstructor = ({ title, isOpen, existingKeys, onClose, onConfirm
   const keysToRemove = useUnit(constructorModel.$keysToRemove);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      return;
+    }
 
     constructorModel.events.formInitiated(existingKeys as Array<ChainAccount | ShardAccount>);
   }, [isOpen]);

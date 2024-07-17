@@ -1,13 +1,16 @@
-import { useMemo, useState } from 'react';
 import { useGate, useStoreMap, useUnit } from 'effector-react';
+import { useMemo, useState } from 'react';
 
-import { BaseModal, FootnoteText, Icon, Tabs } from '@shared/ui';
+import { useI18n } from '@app/providers';
+
+import { type Referendum } from '@shared/core';
 import { useModalClose } from '@shared/lib/hooks';
 import { cnTw } from '@shared/lib/utils';
-import { useI18n } from '@app/providers';
-import { type Referendum } from '@shared/core';
+import { BaseModal, FootnoteText, Icon, Tabs } from '@shared/ui';
 import { type TabItem } from '@shared/ui/Tabs/common/types';
+
 import { voteHistoryAggregate } from '../../aggregates/voteHistory';
+
 import { VotingHistoryList } from './VotingHistoryList';
 
 type Props = {

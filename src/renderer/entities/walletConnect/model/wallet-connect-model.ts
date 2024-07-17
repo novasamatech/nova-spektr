@@ -4,13 +4,13 @@ import { getSdkError } from '@walletconnect/utils';
 import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import keyBy from 'lodash/keyBy';
 
-import { nonNullable } from '@shared/lib/utils';
-import { type Account, type ID, type Wallet, type WcAccount, kernelModel } from '@shared/core';
 import { localStorageService } from '@shared/api/local-storage';
 import { storageService } from '@shared/api/storage';
+import { type Account, type ID, type Wallet, type WcAccount, kernelModel } from '@shared/core';
+import { nonNullable } from '@shared/lib/utils';
+
 import { walletModel, walletUtils } from '@entities/wallet';
-import { type InitConnectParams } from '../lib/types';
-import { walletConnectUtils } from '../lib/utils';
+
 import {
   DEFAULT_APP_METADATA,
   DEFAULT_LOGGER,
@@ -21,6 +21,8 @@ import {
   EXTEND_PAIRING,
   WALLETCONNECT_CLIENT_ID,
 } from '../lib/constants';
+import { type InitConnectParams } from '../lib/types';
+import { walletConnectUtils } from '../lib/utils';
 
 type SessionTopicParams = {
   accounts: Account[];

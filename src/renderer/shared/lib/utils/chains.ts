@@ -1,6 +1,7 @@
 import { WellKnownChain } from '@substrate/connect';
 
 import type { AccountId, Address, ChainId, Explorer, HexString } from '@shared/core';
+
 import { toAddress } from './address';
 import { RelayChains, SS58_DEFAULT_PREFIX } from './constants';
 

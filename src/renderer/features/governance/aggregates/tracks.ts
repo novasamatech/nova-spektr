@@ -1,6 +1,7 @@
 import { sample } from 'effector';
 
 import { tracksModel } from '@entities/governance';
+
 import { networkSelectorModel } from '../model/networkSelector';
 
 sample({

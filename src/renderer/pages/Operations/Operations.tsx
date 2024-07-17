@@ -1,19 +1,23 @@
-import { useEffect, useState } from 'react';
-import groupBy from 'lodash/groupBy';
 import { useUnit } from 'effector-react';
+import groupBy from 'lodash/groupBy';
+import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
+
+import { type MultisigTransactionDS } from '@shared/api/storage';
+import { type MultisigEvent, type MultisigTransactionKey } from '@shared/core';
+import { sortByDateDesc } from '@shared/lib/utils';
+import { FootnoteText, Header } from '@shared/ui';
+
+import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
+import { networkModel } from '@entities/network';
+import { priceProviderModel } from '@entities/price';
+import { accountUtils, walletModel } from '@entities/wallet';
+
+import { OperationsFilter } from '@features/operations';
+
 import EmptyOperations from './components/EmptyState/EmptyOperations';
 import Operation from './components/Operation';
-import { FootnoteText, Header } from '@shared/ui';
-import { type MultisigTransactionDS } from '@shared/api/storage';
-import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
-import { OperationsFilter } from '@features/operations';
-import { accountUtils, walletModel } from '@entities/wallet';
-import { priceProviderModel } from '@entities/price';
-import { networkModel } from '@entities/network';
-import { sortByDateDesc } from '@shared/lib/utils';
-import { type MultisigEvent, type MultisigTransactionKey } from '@shared/core';
 
 export const Operations = () => {
   const { t, formatDate } = useI18n();

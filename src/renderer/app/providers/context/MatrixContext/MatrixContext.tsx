@@ -1,13 +1,18 @@
-import { type PropsWithChildren, createContext, useEffect, useRef } from 'react';
 import { useUnit } from 'effector-react';
+import { type PropsWithChildren, createContext, useEffect, useRef } from 'react';
 
-import { getCreatedDateFromApi, isEthereumAccountId, toAddress, validateCallData } from '@shared/lib/utils';
-import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
 import { useMultisigChainContext } from '@app/providers';
-import { contactModel } from '@entities/contact';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { networkModel } from '@entities/network';
-import { notificationModel } from '@entities/notification';
+
+import {
+  type ApprovePayload,
+  type BaseMultisigPayload,
+  type CancelPayload,
+  type FinalApprovePayload,
+  type InvitePayload,
+  type MultisigPayload,
+  type SpektrExtras,
+  type UpdatePayload,
+} from '@shared/api/matrix';
 import {
   type AccountId,
   AccountType,
@@ -30,19 +35,17 @@ import {
   SigningType,
   WalletType,
 } from '@shared/core';
-import {
-  type ApprovePayload,
-  type BaseMultisigPayload,
-  type CancelPayload,
-  type FinalApprovePayload,
-  type InvitePayload,
-  type MultisigPayload,
-  type SpektrExtras,
-  type UpdatePayload,
-} from '@shared/api/matrix';
+import { getCreatedDateFromApi, isEthereumAccountId, toAddress, validateCallData } from '@shared/lib/utils';
+
+import { contactModel } from '@entities/contact';
 import { LoginStatus, matrixModel } from '@entities/matrix';
-import { matrixAutologinModel } from '@features/matrix';
+import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
+import { networkModel } from '@entities/network';
+import { notificationModel } from '@entities/notification';
 import { useTransaction } from '@entities/transaction';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+
+import { matrixAutologinModel } from '@features/matrix';
 
 const MatrixContext = createContext({});
 
@@ -220,12 +223,16 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const onMultisigEvent = async ({ type, content, sender }: MultisigPayload, extras: SpektrExtras | undefined) => {
     console.info('🚀 === onMultisigEvent - ', type, '\n Content: ', content);
 
-    if (!validateMatrixEvent(content, extras)) return;
+    if (!validateMatrixEvent(content, extras)) {
+      return;
+    }
 
     const multisigAccounts = walletUtils.getAccountsBy(walletsRef.current, (account) => {
       return account.accountId === extras?.mstAccount.accountId;
     });
-    if (multisigAccounts.length === 0 || !accountUtils.isMultisigAccount(multisigAccounts[0])) return;
+    if (multisigAccounts.length === 0 || !accountUtils.isMultisigAccount(multisigAccounts[0])) {
+      return;
+    }
 
     const multisigTx = await getMultisigTx(
       multisigAccounts[0].accountId,
@@ -253,7 +260,9 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     { callData, callHash, senderAccountId }: T,
     extras: SpektrExtras | undefined,
   ): boolean => {
-    if (!extras) return false;
+    if (!extras) {
+      return false;
+    }
 
     const { accountId, threshold, signatories } = extras.mstAccount;
     const senderIsSignatory = signatories.some((accountId) => accountId === senderAccountId);
@@ -330,11 +339,15 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   };
 
   const handleUpdateEvent = async ({ callData }: UpdatePayload, tx?: MultisigTransaction): Promise<void> => {
-    if (!tx) return;
+    if (!tx) {
+      return;
+    }
     console.log(`Start update call data for tx ${tx.callHash}`);
     const api = apisRef.current[tx.chainId];
 
-    if (!api || !callData || callData === tx.callData) return;
+    if (!api || !callData || callData === tx.callData) {
+      return;
+    }
     console.log(`Updating call data for tx ${tx.callHash}`);
     await updateCallData(api, tx, callData);
   };

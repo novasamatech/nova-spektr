@@ -1,9 +1,12 @@
 import { allSettled, fork } from 'effector';
 
-import { walletMock } from './mocks/wallet-mock';
-import { renameWalletModel } from '../rename-wallet-model';
-import { walletModel } from '@entities/wallet';
 import { storageService } from '@shared/api/storage';
+
+import { walletModel } from '@entities/wallet';
+
+import { renameWalletModel } from '../rename-wallet-model';
+
+import { walletMock } from './mocks/wallet-mock';
 
 describe('entities/wallet/model/wallet-model', () => {
   afterEach(() => {

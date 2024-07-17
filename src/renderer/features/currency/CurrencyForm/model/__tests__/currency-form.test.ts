@@ -1,7 +1,8 @@
 import { allSettled, fork } from 'effector';
 
-import { currencyFormModel } from '../currency-form';
 import { currencyModel, priceProviderModel } from '@entities/price';
+
+import { currencyFormModel } from '../currency-form';
 
 describe('features/currency/model/currency-form', () => {
   const config = [

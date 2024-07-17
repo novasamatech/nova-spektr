@@ -1,4 +1,5 @@
 import path from 'path';
+
 import { type BrowserWindow, app } from 'electron';
 
 import { APP_CONFIG } from '../../../app.config';

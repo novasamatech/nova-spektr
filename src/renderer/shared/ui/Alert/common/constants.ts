@@ -1,5 +1,6 @@
-import { type Variant } from './types';
 import { type IconNames } from '@shared/ui/Icon/data';
+
+import { type Variant } from './types';
 
 export const IconName: Record<Variant, IconNames> = {
   info: 'info',

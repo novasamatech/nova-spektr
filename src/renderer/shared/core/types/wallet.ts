@@ -1,4 +1,3 @@
-import type { ID } from './general';
 import type {
   Account,
   BaseAccount,
@@ -8,6 +7,7 @@ import type {
   ShardAccount,
   WcAccount,
 } from './account';
+import type { ID } from './general';
 
 export interface Wallet {
   id: ID;

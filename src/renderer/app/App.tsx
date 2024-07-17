@@ -1,14 +1,21 @@
+import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useNavigate, useRoutes } from 'react-router-dom';
-import { useUnit } from 'effector-react';
+
+import { WalletType } from '@shared/core';
+import { Paths, createLink } from '@shared/routes';
+import { FallbackScreen } from '@shared/ui';
+
+import { walletModel } from '@entities/wallet';
+
+import { walletPairingModel } from '@features/wallets';
 
 import { CreateWalletProvider } from '@widgets/CreateWallet';
 import { WalletDetailsProvider } from '@widgets/WalletDetails';
-import { walletModel } from '@entities/wallet';
+
 import { ROUTES_CONFIG } from '@pages/index';
-import { Paths, createLink } from '@shared/routes';
-import { FallbackScreen } from '@shared/ui';
+
 import {
   ConfirmDialogProvider,
   GraphqlProvider,
@@ -17,8 +24,6 @@ import {
   MultisigChainProvider,
   StatusModalProvider,
 } from './providers';
-import { walletPairingModel } from '@features/wallets';
-import { WalletType } from '@shared/core';
 
 const SPLASH_SCREEN_DELAY = 450;
 
@@ -37,7 +42,9 @@ export const App = () => {
 
   useEffect(() => {
     const url = new URL(window.location.href);
-    if (!url.searchParams.has('step') || !url.searchParams.has('loginToken')) return;
+    if (!url.searchParams.has('step') || !url.searchParams.has('loginToken')) {
+      return;
+    }
 
     const loginToken = url.searchParams.get('loginToken') as string;
     const step = url.searchParams.get('step') as string;
@@ -55,13 +62,17 @@ export const App = () => {
   }, []);
 
   useEffect(() => {
-    if (isLoadingWallets || wallets.length > 0) return;
+    if (isLoadingWallets || wallets.length > 0) {
+      return;
+    }
 
     navigate(Paths.ONBOARDING, { replace: true });
   }, [isLoadingWallets, wallets.length]);
 
   const getContent = () => {
-    if (splashScreenLoading || isLoadingWallets) return null;
+    if (splashScreenLoading || isLoadingWallets) {
+      return null;
+    }
 
     document.querySelector('.splash_placeholder')?.remove();
 

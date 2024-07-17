@@ -1,8 +1,14 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
-import { parse } from 'yaml';
 import groupBy from 'lodash/groupBy';
 import { reset } from 'patronum';
+import { parse } from 'yaml';
 
+import { type AccountId, type ChainAccount, type ChainId, type DraftAccount, type ShardAccount } from '@shared/core';
+import { toAccountId } from '@shared/lib/utils';
+
+import { PATH_ERRORS } from '../lib/constants';
+import { DerivationImportError, type ErrorDetails } from '../lib/derivation-import-error';
+import { importKeysUtils } from '../lib/import-keys-utils';
 import {
   DerivationValidationError,
   type DerivationWithPath,
@@ -10,11 +16,6 @@ import {
   type TypedImportedDerivation,
   ValidationError,
 } from '../lib/types';
-import { DerivationImportError, type ErrorDetails } from '../lib/derivation-import-error';
-import { type AccountId, type ChainAccount, type ChainId, type DraftAccount, type ShardAccount } from '@shared/core';
-import { importKeysUtils } from '../lib/import-keys-utils';
-import { toAccountId } from '@shared/lib/utils';
-import { PATH_ERRORS } from '../lib/constants';
 
 type SampleFnError = { error: DerivationImportError };
 type ExistingDerivations = {

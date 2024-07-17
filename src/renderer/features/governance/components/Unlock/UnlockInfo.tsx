@@ -1,11 +1,14 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { Button, Duration, FootnoteText, Icon, Shimmering } from '@shared/ui';
+
 import { UnlockChunkType } from '@shared/api/governance';
 import { getSecondsDuratonToBlock } from '@shared/lib/utils';
-import { AssetFiatBalance } from '@entities/price';
+import { Button, Duration, FootnoteText, Icon, Shimmering } from '@shared/ui';
+
 import { AssetBalance } from '@entities/asset';
+import { AssetFiatBalance } from '@entities/price';
+
 import { locksModel } from '../../model/locks';
 import { unlockModel } from '../../model/unlock';
 
@@ -18,7 +21,9 @@ export const UnlockInfo = () => {
   const isLoading = useUnit(unlockModel.$isLoading);
   const totalUnlock = useUnit(unlockModel.$totalUnlock);
 
-  if (!asset) return null;
+  if (!asset) {
+    return null;
+  }
 
   return (
     <div className="pb-4 px-5 flex flex-col gap-y-1 items-center">

@@ -1,7 +1,8 @@
-import { createApi, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
 import { type ApiPromise } from '@polkadot/api';
+import { createApi, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
 import { once } from 'patronum';
 
+import { type ISecureMessenger } from '@shared/api/matrix';
 import type {
   Account,
   Chain,
@@ -12,13 +13,14 @@ import type {
   MultisigTransaction,
   Transaction,
 } from '@shared/core';
-import { networkModel } from '@entities/network';
-import { buildMultisigTx } from '@entities/multisig';
-import { ExtrinsicResult, SubmitStep } from '../lib/types';
-import { type ExtrinsicResultParams, transactionService } from '@entities/transaction';
-import { matrixModel, matrixUtils } from '@entities/matrix';
-import { type ISecureMessenger } from '@shared/api/matrix';
 import { removeFromCollection } from '@shared/lib/utils';
+
+import { matrixModel, matrixUtils } from '@entities/matrix';
+import { buildMultisigTx } from '@entities/multisig';
+import { networkModel } from '@entities/network';
+import { type ExtrinsicResultParams, transactionService } from '@entities/transaction';
+
+import { ExtrinsicResult, SubmitStep } from '../lib/types';
 
 type Input = {
   chain: Chain;

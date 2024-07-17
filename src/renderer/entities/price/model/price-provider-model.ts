@@ -1,11 +1,13 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 
-import { PriceApiProvider } from '../lib/types';
-import { DEFAULT_ASSETS_PRICES, DEFAULT_FIAT_FLAG, DEFAULT_FIAT_PROVIDER } from '../lib/constants';
+import { chainsService } from '@shared/api/network';
 import { type PriceAdapter, type PriceObject, coingekoService, fiatService } from '@shared/api/price-provider';
 import { kernelModel } from '@shared/core';
-import { chainsService } from '@shared/api/network';
 import { nonNullable } from '@shared/lib/utils';
+
+import { DEFAULT_ASSETS_PRICES, DEFAULT_FIAT_FLAG, DEFAULT_FIAT_PROVIDER } from '../lib/constants';
+import { PriceApiProvider } from '../lib/types';
+
 import { currencyModel } from './currency-model';
 
 const $fiatFlag = createStore<boolean | null>(null);

@@ -2,6 +2,7 @@ import { Popover, Transition } from '@headlessui/react';
 import { Fragment, type KeyboardEvent, type MouseEvent, type PropsWithChildren, type ReactNode, useRef } from 'react';
 
 import { KeyboardKey, cnTw } from '@shared/lib/utils';
+
 import { FootnoteText } from '../Typography';
 
 type Props = {
@@ -62,7 +63,9 @@ type GroupProps = {
   active?: boolean;
 };
 const ContextGroup = ({ title, active = true, children }: PropsWithChildren<GroupProps>) => {
-  if (!active) return null;
+  if (!active) {
+    return null;
+  }
 
   return (
     <div className="pb-2 mb-2 border-b border-divider last:pb-0 last:mb-0 last:border-b-0">

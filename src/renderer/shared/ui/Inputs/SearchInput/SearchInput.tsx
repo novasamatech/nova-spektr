@@ -1,9 +1,10 @@
-import { forwardRef } from 'react';
 import cn from 'classnames';
+import { forwardRef } from 'react';
 
-import { Icon, IconButton, Input } from '@shared/ui';
-import { type Props as InputProps } from '../Input/Input';
 import { cnTw } from '@shared/lib/utils';
+import { Icon, IconButton, Input } from '@shared/ui';
+
+import { type Props as InputProps } from '../Input/Input';
 
 type Props = Omit<InputProps, 'prefixElement' | 'suffixElement'>;
 

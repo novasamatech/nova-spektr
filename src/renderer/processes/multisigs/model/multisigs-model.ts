@@ -1,6 +1,6 @@
 import { combine, createEffect, createEvent, sample, scopeBind } from 'effector';
-import { interval, once } from 'patronum';
 import { GraphQLClient } from 'graphql-request';
+import { interval, once } from 'patronum';
 
 import {
   type Chain,
@@ -11,10 +11,12 @@ import {
   NotificationType,
   type Wallet,
 } from '@shared/core';
-import { networkModel, networkUtils } from '@entities/network';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+
 import { type MultisigResult, multisigService } from '@entities/multisig';
+import { networkModel, networkUtils } from '@entities/network';
 import { notificationModel } from '@entities/notification';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+
 import { multisigUtils } from '../lib/mulitisigs-utils';
 
 type SaveMultisigParams = {

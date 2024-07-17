@@ -1,8 +1,14 @@
 import { hexToU8a, u8aConcat, u8aToU8a } from '@polkadot/util';
 import { decodeAddress } from '@polkadot/util-crypto';
+import { str } from 'parity-scale-codec';
 import qrcode from 'qrcode-generator';
 import { type Encoder } from 'raptorq';
-import { str } from 'parity-scale-codec';
+
+import { CryptoType, CryptoTypeString, SigningType } from '@shared/core';
+import type { Address, ChainId } from '@shared/core';
+
+import { DYNAMIC_DERIVATIONS_REQUEST } from '../../common/constants';
+import { type DynamicDerivationRequestInfo } from '../../common/types';
 
 import {
   CRYPTO_ECDSA,
@@ -13,10 +19,6 @@ import {
   FRAME_SIZE,
   SUBSTRATE_ID,
 } from './constants';
-import { CryptoType, CryptoTypeString, SigningType } from '@shared/core';
-import type { type Address, ChainId } from '@shared/core';
-import { type DynamicDerivationRequestInfo } from '../../common/types';
-import { DYNAMIC_DERIVATIONS_REQUEST } from '../../common/constants';
 
 const MULTIPART = new Uint8Array([0]);
 

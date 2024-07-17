@@ -1,5 +1,6 @@
-import { BodyText, Icon } from '@shared/ui';
 import { useI18n } from '@app/providers';
+
+import { BodyText, Icon } from '@shared/ui';
 
 export const EmptyBasket = () => {
   const { t } = useI18n();

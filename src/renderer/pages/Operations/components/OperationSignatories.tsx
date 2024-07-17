@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
+import { useEffect, useState } from 'react';
 
-import { BodyText, Button, CaptionText, FootnoteText, Icon, SmallTitleText } from '@shared/ui';
-import { AddressWithName, WalletIcon, walletModel } from '@entities/wallet';
-import { getSignatoryName } from '@pages/Operations/common/utils';
+import { useI18n } from '@app/providers';
+
 import {
   type AccountId,
   type MultisigAccount,
@@ -13,14 +12,19 @@ import {
   type SigningStatus,
   type Wallet,
 } from '@shared/core';
-import { type ExtendedChain } from '@entities/network';
-import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
 import { nonNullable } from '@shared/lib/utils';
+import { BodyText, Button, CaptionText, FootnoteText, Icon, SmallTitleText } from '@shared/ui';
+
 import { contactModel } from '@entities/contact';
-import LogModal from './LogModal';
 import { useMultisigEvent } from '@entities/multisig';
+import { type ExtendedChain } from '@entities/network';
 import { SignatoryCard, singnatoryUtils } from '@entities/signatory';
+import { AddressWithName, WalletIcon, walletModel } from '@entities/wallet';
+
+import { getSignatoryName } from '@pages/Operations/common/utils';
+
+import LogModal from './LogModal';
 
 type WalletSignatory = Signatory & { wallet: Wallet };
 

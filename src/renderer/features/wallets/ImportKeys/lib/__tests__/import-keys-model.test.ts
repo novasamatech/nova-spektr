@@ -2,6 +2,7 @@ import { allSettled, fork } from 'effector';
 
 import { importKeysModelMock } from '@features/wallets/ImportKeys/lib/mocks/import-keys-model.mock';
 import { DerivationValidationError, ValidationError } from '@features/wallets/ImportKeys/lib/types';
+
 import { importKeysModel } from '../../model/import-keys-model';
 
 describe('features/ImportKeys/lib/import-keys-model', () => {

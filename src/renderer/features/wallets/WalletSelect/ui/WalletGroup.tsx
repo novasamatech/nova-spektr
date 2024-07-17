@@ -1,10 +1,14 @@
-import { Accordion, CaptionText, Icon } from '@shared/ui';
 import { useI18n } from '@app/providers';
+
 import { type Wallet, type WalletFamily, WalletType } from '@shared/core';
+import { Accordion, CaptionText, Icon } from '@shared/ui';
+
 import { WalletCardMd, WalletIcon, walletUtils } from '@entities/wallet';
-import { WalletFiatBalance } from './WalletFiatBalance';
+
 import { walletSelectModel } from '../model/wallet-select-model';
+
 import { ProxiedTooltip } from './ProxiedTooltip';
+import { WalletFiatBalance } from './WalletFiatBalance';
 
 export const GroupLabels: Record<WalletFamily, string> = {
   [WalletType.POLKADOT_VAULT]: 'wallets.paritySignerLabel',

@@ -3,12 +3,14 @@ import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import cn from 'classnames';
 import { useState } from 'react';
 
+import { useI18n } from '@app/providers';
+
+import { CryptoTypeString } from '@shared/core';
+import { cnTw } from '@shared/lib/utils';
 import { Button, CaptionText, FootnoteText, Icon, Loader, Select } from '@shared/ui';
 import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
-import { useI18n } from '@app/providers';
-import { cnTw } from '@shared/lib/utils';
+
 import { type ErrorObject, QrError, QrReader, type SeedInfo, type VideoInput } from '@entities/transaction';
-import { CryptoTypeString } from '@shared/core';
 
 const enum CameraState {
   ACTIVE,
@@ -82,7 +84,9 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
             encodeAddress(qr.multiSigner.public);
           }
         }
-        if (qr.derivedKeys.length === 0) return;
+        if (qr.derivedKeys.length === 0) {
+          return;
+        }
 
         qr.derivedKeys.forEach(({ address }) => {
           const accountId = isHex(address) ? hexToU8a(address) : decodeAddress(address);

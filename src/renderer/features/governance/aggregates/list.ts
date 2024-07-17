@@ -8,9 +8,11 @@ import {
   votingModel,
   votingService,
 } from '@entities/governance';
+
 import { networkSelectorModel } from '../model/networkSelector';
 import { titleModel } from '../model/title';
 import { type AggregatedReferendum } from '../types/structs';
+
 import { votingAggregate } from './voting';
 
 const $referendums = combine(

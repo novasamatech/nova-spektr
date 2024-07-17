@@ -1,6 +1,7 @@
 import { type ComponentMeta, type ComponentStory } from '@storybook/react';
 
 import { Voted } from './Voted';
+
 export default {
   title: 'Voted',
   component: Voted,

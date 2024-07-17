@@ -11,7 +11,7 @@ import type {
   TrackInfo,
   Voting,
 } from '@shared/core';
-import { claimScheduleService } from '../claimScheduleService';
+
 import {
   type ClaimTimeAt,
   type ClaimTimeUntil,
@@ -19,6 +19,7 @@ import {
   type Unlock,
   UnlockChunkType,
 } from '../../lib/claim-types';
+import { claimScheduleService } from '../claimScheduleService';
 
 describe('shared/api/governance/claimScheduleService', () => {
   test('should handle empty case', () => {

@@ -1,6 +1,8 @@
-import { getAssetById } from '@shared/lib/utils';
-import { TransferTypes, XcmTypes } from '@entities/transaction';
 import { type BasketTransaction, type Chain, TransactionType } from '@shared/core';
+import { getAssetById } from '@shared/lib/utils';
+
+import { TransferTypes, XcmTypes } from '@entities/transaction';
+
 import { getCoreTx } from './utils';
 
 type Title = {

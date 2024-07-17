@@ -1,8 +1,10 @@
-import groupBy from 'lodash/groupBy';
 import { useUnit } from 'effector-react';
+import groupBy from 'lodash/groupBy';
 
 import { useI18n } from '@app/providers';
-import { type ExtendedChain } from '@entities/network';
+
+import { chainsService } from '@shared/api/network';
+import { type MultisigTransactionDS } from '@shared/api/storage';
 import {
   type Account,
   type AccountId,
@@ -13,16 +15,18 @@ import {
   type Wallet,
   type WalletsMap,
 } from '@shared/core';
-import { Status } from './Status';
-import { getSignatoryName } from '../common/utils';
-import { BaseModal, BodyText, ContextMenu, ExplorerLink, FootnoteText, IconButton, Identicon } from '@shared/ui';
 import { SS58_DEFAULT_PREFIX, getAssetById, getExtrinsicExplorer, sortByDateAsc, toAddress } from '@shared/lib/utils';
-import { useMultisigEvent } from '@entities/multisig';
-import { type MultisigTransactionDS } from '@shared/api/storage';
+import { BaseModal, BodyText, ContextMenu, ExplorerLink, FootnoteText, IconButton, Identicon } from '@shared/ui';
+
 import { AssetBalance } from '@entities/asset';
-import { WalletIcon, walletModel, walletUtils } from '@entities/wallet';
-import { chainsService } from '@shared/api/network';
+import { useMultisigEvent } from '@entities/multisig';
+import { type ExtendedChain } from '@entities/network';
 import { TransactionTitle, getTransactionAmount } from '@entities/transaction';
+import { WalletIcon, walletModel, walletUtils } from '@entities/wallet';
+
+import { getSignatoryName } from '../common/utils';
+
+import { Status } from './Status';
 
 type Props = {
   tx: MultisigTransactionDS;

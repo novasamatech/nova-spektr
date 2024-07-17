@@ -1,7 +1,8 @@
 import { type ComponentMeta, type ComponentStory } from '@storybook/react';
 
-import { DropdownButton } from './DropdownButton';
 import { type ButtonDropdownOption } from '../common/types';
+
+import { DropdownButton } from './DropdownButton';
 
 export default {
   title: 'Dropdown Button',

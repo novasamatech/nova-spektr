@@ -1,11 +1,16 @@
-import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import { type ApiPromise } from '@polkadot/api';
 import { type VoidFn } from '@polkadot/api/types';
+import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import { spread } from 'patronum';
 
+import {
+  ProviderType,
+  type ProviderWithMetadata,
+  chainsService,
+  metadataService,
+  networkService,
+} from '@shared/api/network';
 import { storageService } from '@shared/api/storage';
-import { dictionary } from '@shared/lib/utils';
-import { networkUtils } from '../lib/network-utils';
 import {
   type Chain,
   type ChainId,
@@ -16,13 +21,9 @@ import {
   type Metadata,
   type NoID,
 } from '@shared/core';
-import {
-  ProviderType,
-  type ProviderWithMetadata,
-  chainsService,
-  metadataService,
-  networkService,
-} from '@shared/api/network';
+import { dictionary } from '@shared/lib/utils';
+
+import { networkUtils } from '../lib/network-utils';
 
 const networkStarted = createEvent();
 const chainConnected = createEvent<ChainId>();

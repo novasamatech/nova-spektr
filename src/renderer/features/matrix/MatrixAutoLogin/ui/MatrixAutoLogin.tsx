@@ -2,12 +2,15 @@ import { useUnit } from 'effector-react';
 import noop from 'lodash/noop';
 
 import { useI18n } from '@app/providers';
+
 import { StatusModal } from '@shared/ui';
 import { Animation } from '@shared/ui/Animation/Animation';
+
 import { matrixModel, matrixUtils } from '@entities/matrix';
-import { matrixAutologinModel } from '../model/matrix-autologin-model';
+
 import { matrixAutologinUtils } from '../lib/matrix-autologin-utils';
 import { type AutoLoginStatus } from '../lib/types';
+import { matrixAutologinModel } from '../model/matrix-autologin-model';
 
 export const MatrixAutoLogin = () => {
   const { t } = useI18n();
@@ -26,7 +29,9 @@ export const MatrixAutoLogin = () => {
     return { variant: 'loading', loop: true } as const;
   };
 
-  if (!matrixUtils.isAutoLogin(loginStatus)) return null;
+  if (!matrixUtils.isAutoLogin(loginStatus)) {
+    return null;
+  }
 
   return (
     <StatusModal

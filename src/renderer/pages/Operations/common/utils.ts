@@ -1,6 +1,3 @@
-import { accountUtils, walletUtils } from '@entities/wallet';
-import { toAddress } from '@shared/lib/utils';
-import { isProxyTransaction } from '@entities/transaction';
 import {
   type Account,
   type AccountId,
@@ -16,6 +13,10 @@ import {
   type Signatory,
   type Wallet,
 } from '@shared/core';
+import { toAddress } from '@shared/lib/utils';
+
+import { isProxyTransaction } from '@entities/transaction';
+import { accountUtils, walletUtils } from '@entities/wallet';
 
 export const getMultisigExtrinsicLink = (
   callHash?: HexString,

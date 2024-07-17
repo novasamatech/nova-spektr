@@ -1,7 +1,9 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
+
 import { BodyText, Icon } from '@shared/ui';
+
 import { notificationModel } from '@entities/notification';
 
 export const EmptyNotifications = () => {
@@ -9,7 +11,9 @@ export const EmptyNotifications = () => {
 
   const notifications = useUnit(notificationModel.$notifications);
 
-  if (notifications.length > 0) return null;
+  if (notifications.length > 0) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col h-full items-center justify-center">

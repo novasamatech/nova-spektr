@@ -1,10 +1,11 @@
 import { allSettled, fork } from 'effector';
 
-import { kernelModel } from '@shared/core';
 import { type CurrencyItem, type PriceObject, coingekoService, fiatService } from '@shared/api/price-provider';
-import { priceProviderModel } from '../price-provider-model';
+import { kernelModel } from '@shared/core';
+
 import { PriceApiProvider } from '../../lib/types';
 import { currencyModel } from '../currency-model';
+import { priceProviderModel } from '../price-provider-model';
 
 describe('entities/price/model/price-provider-model', () => {
   const prices: PriceObject = {

@@ -1,5 +1,6 @@
-import { type ExtendedChain, networkUtils } from '@entities/network';
 import { type Chain, type ChainId, type Connection, type ConnectionStatus } from '@shared/core';
+
+import { type ExtendedChain, networkUtils } from '@entities/network';
 
 export const networksListUtils = {
   getExtendedChain,

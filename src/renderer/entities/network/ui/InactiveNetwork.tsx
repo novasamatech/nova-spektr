@@ -1,7 +1,8 @@
 import cn from 'classnames';
 
-import NoConnection from '@shared/assets/images/misc/no-connection.webp';
 import { useI18n } from '@app/providers';
+
+import NoConnection from '@shared/assets/images/misc/no-connection.webp';
 import { Paths } from '@shared/routes';
 import { ButtonLink, FootnoteText } from '@shared/ui';
 
@@ -14,7 +15,9 @@ type Props = {
 export const InactiveNetwork = ({ active, isLoading, className }: Props) => {
   const { t } = useI18n();
 
-  if (!active || isLoading) return null;
+  if (!active || isLoading) {
+    return null;
+  }
 
   return (
     <div className={cn('flex flex-col items-center justify-center', className)}>

@@ -1,11 +1,14 @@
 import { useUnit } from 'effector-react';
 
-import { FootnoteText, HelpText, Icon, IconButton, SmallTitleText } from '@shared/ui';
-import { constructorModel } from '../model/constructor-model';
-import { networkModel } from '@entities/network';
-import { ChainIcon } from '@entities/chain';
-import { accountUtils } from '@entities/wallet';
 import { useI18n } from '@app/providers';
+
+import { FootnoteText, HelpText, Icon, IconButton, SmallTitleText } from '@shared/ui';
+
+import { ChainIcon } from '@entities/chain';
+import { networkModel } from '@entities/network';
+import { accountUtils } from '@entities/wallet';
+
+import { constructorModel } from '../model/constructor-model';
 
 export const KeysList = () => {
   const { t } = useI18n();
@@ -36,7 +39,9 @@ export const KeysList = () => {
         {keys.map((key, index) => {
           const keyData = accountUtils.isAccountWithShards(key) ? key[0] : key;
 
-          if (!chains[keyData.chainId]) return;
+          if (!chains[keyData.chainId]) {
+            return;
+          }
 
           return (
             <li key={keyData.id || keyData.derivationPath} className="flex items-center gap-x-3 py-1.5 pl-2">

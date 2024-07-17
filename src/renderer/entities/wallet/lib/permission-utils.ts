@@ -1,6 +1,7 @@
 import { type Wallet } from '@shared/core';
-import { walletUtils } from './wallet-utils';
+
 import { accountUtils } from './account-utils';
+import { walletUtils } from './wallet-utils';
 
 export const permissionUtils = {
   canTransfer,

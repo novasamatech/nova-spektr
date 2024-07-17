@@ -1,9 +1,11 @@
+import { useI18n } from '@app/providers';
+
+import type { AccountId, Chain } from '@shared/core';
 import { cnTw } from '@shared/lib/utils';
+import { FootnoteText } from '@shared/ui';
+
 import { ChainTitle } from '@entities/chain';
 import { AddressWithExplorers } from '@entities/wallet';
-import { useI18n } from '@app/providers';
-import { FootnoteText } from '@shared/ui';
-import type { AccountId, Chain } from '@shared/core';
 
 type Props = {
   accountId: AccountId;

@@ -1,19 +1,23 @@
-import { type ComponentProps, useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
 import noop from 'lodash/noop';
+import { type ComponentProps, useEffect, useState } from 'react';
 
-import { BaseModal, Button, HeaderTitleText, IconButton, StatusLabel } from '@shared/ui';
 import { useI18n } from '@app/providers';
+
+import { type HexString } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
+import { DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { BaseModal, Button, HeaderTitleText, IconButton, StatusLabel } from '@shared/ui';
+
+import { contactModel } from '@entities/contact';
+import { matrixModel, matrixUtils } from '@entities/matrix';
 import { OperationResult } from '@entities/transaction';
+import { walletModel } from '@entities/wallet';
+
+import { createMultisigWalletModel } from '../../model/create-multisig-wallet-model';
+
 import { type ExtendedContact, type ExtendedWallet } from './common/types';
 import { ConfirmSignatories, SelectSignatories, WalletForm } from './components';
-import { contactModel } from '@entities/contact';
-import { DEFAULT_TRANSITION } from '@shared/lib/utils';
-import { walletModel } from '@entities/wallet';
-import { createMultisigWalletModel } from '../../model/create-multisig-wallet-model';
-import { matrixModel, matrixUtils } from '@entities/matrix';
-import { type HexString } from '@shared/core';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -93,8 +97,12 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
   };
 
   const getResultProps = (): OperationResultProps => {
-    if (isLoading) return { variant: 'loading' };
-    if (error) return { variant: 'error', description: error };
+    if (isLoading) {
+      return { variant: 'loading' };
+    }
+    if (error) {
+      return { variant: 'error', description: error };
+    }
 
     return { variant: 'success', description: t('createMultisigAccount.successMessage') };
   };

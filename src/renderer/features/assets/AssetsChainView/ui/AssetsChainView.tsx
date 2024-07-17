@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
+import { useEffect, useState } from 'react';
 
-import { isStringsMatchQuery } from '@shared/lib/utils';
-import type { Account, Chain } from '@shared/core';
 import { chainsService } from '@shared/api/network';
+import type { Account, Chain } from '@shared/core';
+import { isStringsMatchQuery } from '@shared/lib/utils';
+
+import { AssetsListView, EmptyAssetsState } from '@entities/asset';
 import { balanceModel } from '@entities/balance';
+import { networkModel, networkUtils } from '@entities/network';
 import { currencyModel, priceProviderModel } from '@entities/price';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { networkModel, networkUtils } from '@entities/network';
-import { AssetsListView, EmptyAssetsState } from '@entities/asset';
+
 import { NetworkAssets } from './NetworkAssets/NetworkAssets';
 
 type Props = {
@@ -30,7 +32,9 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
   const [sortedChains, setSortedChains] = useState<Chain[]>([]);
 
   useEffect(() => {
-    if (!activeWallet || assetsView !== AssetsListView.CHAIN_CENTRIC || !activeShards.length) return;
+    if (!activeWallet || assetsView !== AssetsListView.CHAIN_CENTRIC || !activeShards.length) {
+      return;
+    }
 
     const isMultisig = walletUtils.isMultisig(activeWallet);
 
@@ -45,7 +49,9 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
     });
 
     const filteredChains = availableChains.filter((c) => {
-      if (!connections[c.chainId]) return false;
+      if (!connections[c.chainId]) {
+        return false;
+      }
 
       const isDisabled = networkUtils.isDisabledConnection(connections[c.chainId]);
       const hasMultiPallet = !isMultisig || networkUtils.isMultisigSupported(c.options);
@@ -63,7 +69,9 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
     setSortedChains(sortedChains);
   }, [activeWallet, balances, assetsPrices, assetsView, activeShards]);
 
-  if (assetsView !== AssetsListView.CHAIN_CENTRIC || !activeShards.length) return null;
+  if (assetsView !== AssetsListView.CHAIN_CENTRIC || !activeShards.length) {
+    return null;
+  }
 
   const searchSymbolOnly = sortedChains.some((chain) => {
     return chain.assets.some((asset) => isStringsMatchQuery(query, [asset.symbol, asset.name]));

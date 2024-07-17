@@ -1,6 +1,6 @@
 import type { AccountId, ChainId, type ChainType, type CryptoType, ID, MultisigThreshold, NoID } from './general';
-import { type Signatory } from './signatory';
 import { type ProxyType, type ProxyVariant } from './proxy';
+import { type Signatory } from './signatory';
 
 export interface Account {
   id: ID;

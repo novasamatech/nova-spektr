@@ -2,17 +2,7 @@ import groupBy from 'lodash/groupBy';
 import unionBy from 'lodash/unionBy';
 import { type TFunction } from 'react-i18next';
 
-import {
-  DerivationValidationError,
-  type DerivationWithPath,
-  type ImportFileChain,
-  type ImportFileKey,
-  type ImportedDerivation,
-  type ParsedData,
-  type ParsedImportFile,
-  type TypedImportedDerivation,
-  ValidationError,
-} from './types';
+import { chainsService } from '@shared/api/network';
 import {
   type AccountId,
   AccountType,
@@ -26,10 +16,22 @@ import {
   KeyType,
   type ShardAccount,
 } from '@shared/core';
-import { chainsService } from '@shared/api/network';
 import { toAccountId } from '@shared/lib/utils';
-import { type ErrorDetails } from './derivation-import-error';
+
 import { KEY_NAMES, SHARDED_KEY_NAMES } from '@entities/wallet';
+
+import { type ErrorDetails } from './derivation-import-error';
+import {
+  DerivationValidationError,
+  type DerivationWithPath,
+  type ImportFileChain,
+  type ImportFileKey,
+  type ImportedDerivation,
+  type ParsedData,
+  type ParsedImportFile,
+  type TypedImportedDerivation,
+  ValidationError,
+} from './types';
 
 const IMPORT_FILE_VERSION = '1';
 

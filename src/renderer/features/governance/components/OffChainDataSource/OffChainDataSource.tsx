@@ -1,12 +1,15 @@
 import { useForm } from 'effector-forms';
-import { type FormEvent, useEffect } from 'react';
 import { useUnit } from 'effector-react';
+import { type FormEvent, useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
-import { BaseModal, Button, FootnoteText, HelpText, Icon, InputHint, Select } from '@shared/ui';
-import { offChainModel } from '../../model/offChain';
-import { Sources } from './constants';
+
 import { useModalClose } from '@shared/lib/hooks';
+import { BaseModal, Button, FootnoteText, HelpText, Icon, InputHint, Select } from '@shared/ui';
+
+import { offChainModel } from '../../model/offChain';
+
+import { Sources } from './constants';
 
 export const OffChainDataSource = () => {
   const { t } = useI18n();

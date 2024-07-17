@@ -1,3 +1,6 @@
+import { type ApiPromise } from '@polkadot/api';
+import { type SubmittableExtrinsic } from '@polkadot/api/types';
+import { methods as ormlMethods } from '@substrate/txwrapper-orml';
 import {
   type BaseTxInfo,
   type OptionsWithMeta,
@@ -5,16 +8,15 @@ import {
   defineMethod,
   methods,
 } from '@substrate/txwrapper-polkadot';
-import { type ApiPromise } from '@polkadot/api';
-import { methods as ormlMethods } from '@substrate/txwrapper-orml';
-import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import sortBy from 'lodash/sortBy';
 
 import { type MultisigTxWrapper, type ProxyTxWrapper, type Transaction, TransactionType } from '@shared/core';
-import { getMaxWeight, hasDestWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
-import * as xcmMethods from '@entities/transaction/lib/common/xcmMethods';
-import { DEFAULT_FEE_ASSET_ITEM } from '@entities/transaction';
 import { toAddress } from '@shared/lib/utils';
+
+import { DEFAULT_FEE_ASSET_ITEM } from '@entities/transaction';
+import * as xcmMethods from '@entities/transaction/lib/common/xcmMethods';
+
+import { getMaxWeight, hasDestWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
 
 type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
 type BondWithoutContollerArgs = Omit<Parameters<typeof methods.staking.bond>[0], 'controller'>;

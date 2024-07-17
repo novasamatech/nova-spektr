@@ -1,5 +1,5 @@
-import { combine, createEvent, restore } from 'effector';
 import { type ApiPromise } from '@polkadot/api';
+import { combine, createEvent, restore } from 'effector';
 
 import {
   type Account,
@@ -11,6 +11,7 @@ import {
   type Transaction,
   type Wallet,
 } from '@shared/core';
+
 import { networkModel } from '@entities/network';
 import { walletModel, walletUtils } from '@entities/wallet';
 

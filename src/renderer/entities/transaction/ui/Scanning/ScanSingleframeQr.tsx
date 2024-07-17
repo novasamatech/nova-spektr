@@ -2,13 +2,25 @@ import { type ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
+
+import { CryptoType } from '@shared/core';
+import type {
+  Account,
+  Address,
+  BaseAccount,
+  ChainAccount,
+  ChainId,
+  ShardAccount,
+  type Transaction,
+  Wallet,
+} from '@shared/core';
 import { Button, FootnoteText } from '@shared/ui';
+
 import { WalletIcon } from '@entities/wallet'; // TODO: cross import
-import type { Account, Address, BaseAccount, ChainAccount, ChainId, ShardAccount, Wallet } from '@shared/core';
-import { CryptoType, type Transaction } from '@shared/core';
-import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
-import { QrTxGenerator } from '../QrCode/QrGenerator/QrTxGenerator';
+
 import { transactionService } from '../../lib';
+import { QrTxGenerator } from '../QrCode/QrGenerator/QrTxGenerator';
+import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
 
 type Props = {
   api: ApiPromise;
@@ -40,7 +52,9 @@ export const ScanSingleframeQr = ({
   const [txPayload, setTxPayload] = useState<Uint8Array>();
 
   useEffect(() => {
-    if (txPayload) return;
+    if (txPayload) {
+      return;
+    }
 
     setupTransaction().catch(() => console.warn('ScanSingleframeQr | setupTransaction() failed'));
   }, [transaction, api]);

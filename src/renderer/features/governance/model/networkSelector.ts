@@ -1,6 +1,7 @@
 import { combine, createEvent, restore, sample } from 'effector';
 
 import { type Chain, type ConnectionStatus } from '@shared/core';
+
 import { networkModel, networkUtils } from '@entities/network';
 
 const chainChanged = createEvent<Chain>();

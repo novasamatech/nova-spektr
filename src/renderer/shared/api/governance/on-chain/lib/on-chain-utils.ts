@@ -1,6 +1,5 @@
 import { type BN, BN_ZERO, bnMax } from '@polkadot/util';
 
-import type { ClaimTime, ClaimTimeAt } from './claim-types';
 import { Conviction, ReferendumType, VoteType, VotingType } from '@shared/core';
 import type {
   AccountVote,
@@ -15,6 +14,8 @@ import type {
   StandardVote,
   Voting,
 } from '@shared/core';
+
+import type { ClaimTime, ClaimTimeAt } from './claim-types';
 
 export const onChainUtils = {
   isCasting,

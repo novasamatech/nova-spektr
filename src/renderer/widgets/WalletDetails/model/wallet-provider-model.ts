@@ -1,16 +1,19 @@
-import uniqBy from 'lodash/uniqBy';
-import mapValues from 'lodash/mapValues';
 import { combine, createEvent, createStore, sample } from 'effector';
 import { isEmpty } from 'lodash';
+import mapValues from 'lodash/mapValues';
+import uniqBy from 'lodash/uniqBy';
 
-import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
-import { walletSelectModel } from '@features/wallets';
-import { dictionary } from '@shared/lib/utils';
-import { walletDetailsUtils } from '../lib/utils';
-import type { MultishardMap, VaultMap } from '../lib/types';
-import { proxyModel, proxyUtils } from '@entities/proxy';
-import { networkModel } from '@entities/network';
 import type { AccountId, BaseAccount, ChainId, ProxyAccount, ProxyGroup, Signatory, Wallet } from '@shared/core';
+import { dictionary } from '@shared/lib/utils';
+
+import { networkModel } from '@entities/network';
+import { proxyModel, proxyUtils } from '@entities/proxy';
+import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
+
+import { walletSelectModel } from '@features/wallets';
+
+import type { MultishardMap, VaultMap } from '../lib/types';
+import { walletDetailsUtils } from '../lib/utils';
 
 const removeProxy = createEvent<ProxyAccount>();
 

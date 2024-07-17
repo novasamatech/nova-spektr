@@ -1,16 +1,18 @@
 import { Navigate, type RouteObject } from 'react-router-dom';
 
-import { MainLayout } from '@widgets/Layout';
 import { Paths } from '@shared/routes';
-import { Onboarding } from './Onboarding';
-import { Assets, ReceiveAsset, SendAsset } from './Assets';
-import { Operations } from './Operations/Operations';
-import { Notifications } from './Notifications/Notifications';
+
+import { MainLayout } from '@widgets/Layout';
+
 import { Contacts, CreateContact, EditContact } from './AddressBook';
-import { Currency, Matrix, Networks, ReferendumData, Overview as Settings } from './Settings';
-import { Governance } from './Governance';
-import { Staking } from './Staking';
+import { Assets, ReceiveAsset, SendAsset } from './Assets';
 import { Basket } from './Basket';
+import { Governance } from './Governance';
+import { Notifications } from './Notifications/Notifications';
+import { Onboarding } from './Onboarding';
+import { Operations } from './Operations/Operations';
+import { Currency, Matrix, Networks, ReferendumData, Overview as Settings } from './Settings';
+import { Staking } from './Staking';
 
 // React routes v6 hint:
 // https://github.com/remix-run/react-router/blob/main/docs/upgrading/v5.md#use-useroutes-instead-of-react-router-config

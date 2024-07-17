@@ -1,9 +1,10 @@
-import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { type ApiPromise } from '@polkadot/api';
-import { createForm } from 'effector-forms';
 import { BN } from '@polkadot/util';
+import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { createForm } from 'effector-forms';
 import { spread } from 'patronum';
 
+import { proxyService } from '@shared/api/proxy';
 import {
   type Account,
   type Address,
@@ -14,14 +15,15 @@ import {
   type Transaction,
   TransactionType,
 } from '@shared/core';
-import { networkModel, networkUtils } from '@entities/network';
-import { walletSelectModel } from '@features/wallets';
-import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { proxyService } from '@shared/api/proxy';
-import { balanceModel, balanceUtils } from '@entities/balance';
 import { TEST_ACCOUNTS, getProxyTypes, isStringsMatchQuery, toAddress, transferableAmount } from '@shared/lib/utils';
+
+import { balanceModel, balanceUtils } from '@entities/balance';
+import { networkModel, networkUtils } from '@entities/network';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+
 import { RemoveProxyRules } from '@features/operations/OperationsValidation';
+import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
+import { walletSelectModel } from '@features/wallets';
 
 type ProxyAccounts = {
   accounts: {

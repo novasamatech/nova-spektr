@@ -2,10 +2,12 @@ import { attach, combine, createApi, createEvent, createStore, sample } from 'ef
 import cloneDeep from 'lodash/cloneDeep';
 
 import type { Account, Wallet } from '@shared/core';
-import { walletModel, walletUtils } from '@entities/wallet';
+
 import { networkModel } from '@entities/network';
-import { shardsUtils } from '../lib/shards-utils';
+import { walletModel, walletUtils } from '@entities/wallet';
+
 import { selectorUtils } from '../lib/selector-utils';
+import { shardsUtils } from '../lib/shards-utils';
 import {
   type AccountToggleParams,
   type ChainToggleParams,

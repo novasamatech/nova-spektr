@@ -1,6 +1,7 @@
 import { type Wallet, type WalletFamily, WalletType } from '@shared/core';
-import { walletUtils } from '@entities/wallet';
 import { includes } from '@shared/lib/utils';
+
+import { walletUtils } from '@entities/wallet';
 
 export const walletSelectUtils = {
   getWalletByGroups,

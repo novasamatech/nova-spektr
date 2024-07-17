@@ -1,16 +1,18 @@
-import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
+import { useEffect, useState } from 'react';
+
+import { useI18n } from '@app/providers';
+
+import type { Asset, Chain } from '@shared/core';
+import { useToggle } from '@shared/lib/hooks';
+import { DEFAULT_TRANSITION, cnTw, copyToClipboard, toAddress } from '@shared/lib/utils';
+import { BaseModal, Button, FootnoteText, HelpText, Icon, Select } from '@shared/ui';
+import { DefaultExplorer, ExplorerIcons } from '@shared/ui/ExplorerLink/constants';
+import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
 
 import { OperationTitle } from '@entities/chain';
-import { DefaultExplorer, ExplorerIcons } from '@shared/ui/ExplorerLink/constants';
-import { BaseModal, Button, FootnoteText, HelpText, Icon, Select } from '@shared/ui';
-import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
-import { useI18n } from '@app/providers';
-import { DEFAULT_TRANSITION, cnTw, copyToClipboard, toAddress } from '@shared/lib/utils';
-import { AccountAddress, accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { useToggle } from '@shared/lib/hooks';
-import type { Asset, Chain } from '@shared/core';
 import { QrTextGenerator } from '@entities/transaction';
+import { AccountAddress, accountUtils, walletModel, walletUtils } from '@entities/wallet';
 
 type Props = {
   chain: Chain;
@@ -28,14 +30,18 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
   const [activeAccountsOptions, setActiveAccountsOptions] = useState<DropdownOption<number>[]>([]);
 
   useEffect(() => {
-    if (!wallet || walletUtils.isWatchOnly(wallet)) return;
+    if (!wallet || walletUtils.isWatchOnly(wallet)) {
+      return;
+    }
 
     const accounts = wallet?.accounts.reduce<DropdownOption[]>((acc, account, index) => {
       const isBaseAccount = accountUtils.isBaseAccount(account);
       const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
       const isChainMatch = accountUtils.isChainIdMatch(account, chain.chainId);
 
-      if (isPolkadotVault && isBaseAccount) return acc;
+      if (isPolkadotVault && isBaseAccount) {
+        return acc;
+      }
 
       if (isChainMatch) {
         const accountName = accountUtils.isShardAccount(account) ? undefined : account.name;
@@ -59,7 +65,9 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
       return acc;
     }, []);
 
-    if (accounts.length === 0) return;
+    if (accounts.length === 0) {
+      return;
+    }
 
     setActiveAccountsOptions(accounts);
     setActiveAccount({ id: accounts[0].id, value: accounts[0].value });

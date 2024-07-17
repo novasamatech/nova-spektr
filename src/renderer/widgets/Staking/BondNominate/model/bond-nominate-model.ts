@@ -1,15 +1,8 @@
-import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { type ApiPromise } from '@polkadot/api';
-import { delay, spread } from 'patronum';
 import { BN } from '@polkadot/util';
+import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { delay, spread } from 'patronum';
 
-import { walletModel } from '@entities/wallet';
-import { TEST_ADDRESS, getRelaychainAsset, nonNullable } from '@shared/lib/utils';
-import { networkModel } from '@entities/network';
-import { validatorsService } from '@entities/staking';
-import { submitModel } from '@features/operations/OperationSubmit';
-import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { validatorsModel } from '@features/staking';
 import {
   type Account,
   type BasketTransaction,
@@ -19,12 +12,23 @@ import {
   type TxWrapper,
   WrapperKind,
 } from '@shared/core';
-import { type BondNominateData, type FeeData, Step, type WalletData } from '../lib/types';
-import { bondUtils } from '../lib/bond-utils';
-import { formModel } from './form-model';
-import { bondNominateConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
-import { transactionBuilder, transactionService } from '@entities/transaction';
+import { TEST_ADDRESS, getRelaychainAsset, nonNullable } from '@shared/lib/utils';
+
 import { basketModel } from '@entities/basket/model/basket-model';
+import { networkModel } from '@entities/network';
+import { validatorsService } from '@entities/staking';
+import { transactionBuilder, transactionService } from '@entities/transaction';
+import { walletModel } from '@entities/wallet';
+
+import { signModel } from '@features/operations/OperationSign/model/sign-model';
+import { submitModel } from '@features/operations/OperationSubmit';
+import { bondNominateConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
+import { validatorsModel } from '@features/staking';
+
+import { bondUtils } from '../lib/bond-utils';
+import { type BondNominateData, type FeeData, Step, type WalletData } from '../lib/types';
+
+import { formModel } from './form-model';
 
 const stepChanged = createEvent<Step>();
 

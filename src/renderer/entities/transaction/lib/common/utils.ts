@@ -3,6 +3,8 @@ import { type SpRuntimeDispatchError } from '@polkadot/types/lookup';
 import { type TFunction } from 'react-i18next';
 
 import { type DecodedTransaction, type MultisigTransaction, type Transaction, TransactionType } from '@shared/core';
+import { formatSectionAndMethod } from '@shared/lib/utils';
+
 import {
   CONTROLLER_ARG_NAME,
   DEST_WEIGHT_ARG_NAME,
@@ -12,7 +14,6 @@ import {
   TransferTypes,
   XcmTypes,
 } from './constants';
-import { formatSectionAndMethod } from '@shared/lib/utils';
 
 export const decodeDispatchError = (error: SpRuntimeDispatchError, api: ApiPromise): string => {
   let errorInfo = error.toString();

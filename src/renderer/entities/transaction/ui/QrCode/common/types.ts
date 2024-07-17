@@ -2,6 +2,7 @@
 import { type DecodeContinuouslyCallback } from '@zxing/browser/esm/common/DecodeContinuouslyCallback';
 
 import type { Address, ChainId, CryptoType, CryptoTypeString } from '@shared/core';
+
 import type { VaultFeature } from './constants';
 
 export const enum QrError {

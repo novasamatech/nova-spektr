@@ -2,11 +2,14 @@ import { Popover } from '@headlessui/react';
 import { useUnit } from 'effector-react';
 import { type ReactNode, useEffect } from 'react';
 
-import { SearchInput, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
+
 import { type WalletFamily } from '@shared/core';
-import { WalletGroup } from './WalletGroup';
+import { SearchInput, SmallTitleText } from '@shared/ui';
+
 import { type Callbacks, walletSelectModel } from '../model/wallet-select-model';
+
+import { WalletGroup } from './WalletGroup';
 
 type Props = Callbacks & {
   action?: ReactNode;
@@ -34,7 +37,9 @@ export const WalletPanel = ({ action, onClose }: Props) => {
 
         <div className="flex flex-col divide-y divide-divider overflow-y-auto max-h-[530px] px-1">
           {Object.entries(filteredWalletGroups).map(([walletType, wallets]) => {
-            if (wallets.length === 0) return null;
+            if (wallets.length === 0) {
+              return null;
+            }
 
             return <WalletGroup key={walletType} type={walletType as WalletFamily} wallets={wallets} />;
           })}

@@ -1,8 +1,11 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
+
 import { FootnoteText, Icon, Plate, Shimmering } from '@shared/ui';
+
 import { AssetBalance } from '@entities/asset';
+
 import { delegationModel } from '../../aggregates/delegation';
 
 export const Delegations = () => {

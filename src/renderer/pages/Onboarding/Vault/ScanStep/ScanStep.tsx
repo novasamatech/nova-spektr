@@ -1,9 +1,12 @@
 import { useI18n } from '@app/providers';
-import KeyQrReader from '../KeyQrReader/KeyQrReader';
-import { Button, HeaderTitleText, SmallTitleText } from '@shared/ui';
+
 import onboarding_tutorial from '@shared/assets/video/onboarding_tutorial.mp4';
 import onboarding_tutorial_webm from '@shared/assets/video/onboarding_tutorial.webm';
+import { Button, HeaderTitleText, SmallTitleText } from '@shared/ui';
+
 import { type SeedInfo } from '@entities/transaction';
+
+import KeyQrReader from '../KeyQrReader/KeyQrReader';
 
 type Props = {
   onBack: () => void;

@@ -2,8 +2,9 @@ import { Identicon as PolkadotIdenticon } from '@polkadot/react-identicon';
 import { type IconTheme } from '@polkadot/react-identicon/types';
 import { type SyntheticEvent, useLayoutEffect, useRef } from 'react';
 
-import { cnTw, copyToClipboard, isEthereumAccountId } from '@shared/lib/utils';
 import { type AccountId, type Address } from '@shared/core';
+import { cnTw, copyToClipboard, isEthereumAccountId } from '@shared/lib/utils';
+
 import { Icon } from '../Icon/Icon';
 
 type Props = {
@@ -30,7 +31,9 @@ export const Identicon = ({
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
-    if (!wrapperRef.current) return;
+    if (!wrapperRef.current) {
+      return;
+    }
 
     wrapperRef.current.querySelector('circle')?.setAttribute('fill', 'none');
   }, []);

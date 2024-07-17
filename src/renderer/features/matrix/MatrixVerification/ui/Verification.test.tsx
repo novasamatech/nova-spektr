@@ -3,8 +3,9 @@ import userEvent from '@testing-library/user-event';
 import { type Scope, fork } from 'effector';
 import { Provider } from 'effector-react';
 
-import { Verification } from './Verification';
 import { matrixModel } from '@entities/matrix';
+
+import { Verification } from './Verification';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({

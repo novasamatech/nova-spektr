@@ -1,8 +1,10 @@
-import useGenerator from './common/useGenerator';
-import { DEFAULT_FRAME_DELAY } from './common/constants';
 import { type Address } from '@shared/core';
-import { createDynamicDerivationPayload } from './common/utils';
+
 import { type DynamicDerivationRequestInfo } from '../common/types';
+
+import { DEFAULT_FRAME_DELAY } from './common/constants';
+import useGenerator from './common/useGenerator';
+import { createDynamicDerivationPayload } from './common/utils';
 
 type Props = {
   address: Address;

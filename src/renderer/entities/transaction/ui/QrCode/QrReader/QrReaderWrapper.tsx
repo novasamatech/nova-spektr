@@ -1,16 +1,20 @@
 import cn from 'classnames';
 import React, { useEffect, useState } from 'react';
 
+import { useI18n } from '@app/providers';
+
+import type { HexString } from '@shared/core';
 import { ValidationErrors, cnTw } from '@shared/lib/utils';
 import { Button, CaptionText, Countdown, FootnoteText, Select, Shimmering, SmallTitleText } from '@shared/ui';
 import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
-import { useI18n } from '@app/providers';
-import { SignatureReaderError } from './SignatureReaderError';
-import { QrMultiframeSignatureReader } from './QrMultiframeSignatureReader';
+
 import { CameraAccessErrors, CameraError, WhiteTextButtonStyle } from '../common/constants';
 import { type ErrorObject, type Progress, QrError, type VideoInput } from '../common/types';
+
+import { QrMultiframeSignatureReader } from './QrMultiframeSignatureReader';
 import { QrSignatureReader } from './QrSignatureReader';
-import type { HexString } from '@shared/core';
+import { SignatureReaderError } from './SignatureReaderError';
+
 import './style.css';
 
 const RESULT_DELAY = 250;
@@ -77,7 +81,9 @@ export const QrReaderWrapper = ({ className, onResult, countdown, validationErro
   };
 
   const onScanResult = (qrPayload: HexString | HexString[]) => {
-    if (countdown === 0) return;
+    if (countdown === 0) {
+      return;
+    }
     setIsSuccess(true);
 
     try {

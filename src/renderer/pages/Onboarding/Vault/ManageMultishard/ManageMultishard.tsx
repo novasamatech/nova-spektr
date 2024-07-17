@@ -1,18 +1,20 @@
+import { u8aToHex } from '@polkadot/util';
 import cn from 'classnames';
+import keyBy from 'lodash/keyBy';
 import { useEffect, useState } from 'react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
-import { u8aToHex } from '@polkadot/util';
-import keyBy from 'lodash/keyBy';
 
 import { useI18n } from '@app/providers';
-import { ChainTitle } from '@entities/chain';
-import { RootExplorers, cnTw, toAccountId, toAddress } from '@shared/lib/utils';
-import { AddressWithExplorers, walletModel } from '@entities/wallet';
-import { Button, FootnoteText, HeaderTitleText, Icon, IconButton, Input, InputHint, SmallTitleText } from '@shared/ui';
+
+import { chainsService } from '@shared/api/network';
 import type { BaseAccount, Chain, ChainAccount, ChainId, HexString } from '@shared/core';
 import { AccountType, ChainType, CryptoType, ErrorType, KeyType, SigningType, WalletType } from '@shared/core';
+import { RootExplorers, cnTw, toAccountId, toAddress } from '@shared/lib/utils';
+import { Button, FootnoteText, HeaderTitleText, Icon, IconButton, Input, InputHint, SmallTitleText } from '@shared/ui';
+
+import { ChainTitle } from '@entities/chain';
 import { type AddressInfo, type CompactSeedInfo, type SeedInfo } from '@entities/transaction';
-import { chainsService } from '@shared/api/network';
+import { AddressWithExplorers, walletModel } from '@entities/wallet';
 
 type WalletForm = {
   walletName: string;
@@ -122,7 +124,9 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
         derivedKeys.forEach((_, derivedKeyIndex) => {
           const accountId = getAccountId(accountIndex, chainId, derivedKeyIndex);
           const rootAccountId = getAccountId(accountIndex);
-          if (accountNames[accountId]) return;
+          if (accountNames[accountId]) {
+            return;
+          }
 
           const accountName = `${accountNames[rootAccountId]}//${chainName.toLowerCase()}//${derivedKeyIndex + 1}`;
           updateAccountName(accountName, accountIndex, chainId, derivedKeyIndex);
@@ -272,7 +276,9 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
                 {Object.entries(chainsObject).map(([chainId, { explorers }]) => {
                   const derivedKeys = account.derivedKeys[chainId as ChainId];
 
-                  if (!derivedKeys) return;
+                  if (!derivedKeys) {
+                    return;
+                  }
 
                   return (
                     <div key={chainId}>

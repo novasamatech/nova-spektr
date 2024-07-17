@@ -4,16 +4,20 @@ import init, { Encoder } from 'raptorq';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-import { transactionService } from '@entities/transaction';
+
+import type { Address, BaseAccount, ChainId, ShardAccount, type Wallet } from '@shared/core';
 import { type TxMetadata, createTxMetadata, toAddress, upgradeNonce } from '@shared/lib/utils';
 import { Button, FootnoteText } from '@shared/ui';
-import type { Address, BaseAccount, ChainId, ShardAccount, type Wallet } from '@shared/core';
-import { createMultipleSignPayload, createSubstrateSignPayload } from '../QrCode/QrGenerator/common/utils';
-import { TRANSACTION_BULK } from '../QrCode/common/constants';
-import { QrMultiframeGenerator } from '../QrCode/QrGenerator/QrMultiframeTxGenerator';
-import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
-import { WalletIcon, accountUtils, walletUtils } from '../../../wallet';
+
+import { transactionService } from '@entities/transaction';
+
 import { type SigningPayload } from '@features/operations/OperationSign';
+
+import { WalletIcon, accountUtils, walletUtils } from '../../../wallet';
+import { QrMultiframeGenerator } from '../QrCode/QrGenerator/QrMultiframeTxGenerator';
+import { createMultipleSignPayload, createSubstrateSignPayload } from '../QrCode/QrGenerator/common/utils';
+import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
+import { TRANSACTION_BULK } from '../QrCode/common/constants';
 
 type Props = {
   apis: Record<ChainId, ApiPromise>;
@@ -41,7 +45,9 @@ export const ScanMultiframeQr = ({
   const [txPayloads, setTxPayloads] = useState<Uint8Array[]>([]);
 
   useEffect(() => {
-    if (txPayloads.length) return;
+    if (txPayloads.length) {
+      return;
+    }
 
     setupTransactions().catch(() => console.warn('ScanMultiQr | setupTransactions() failed'));
   }, []);
@@ -105,7 +111,9 @@ export const ScanMultiframeQr = ({
 
     const txRequests = await Promise.all(transactionPromises);
 
-    if (txRequests.length === 0) return;
+    if (txRequests.length === 0) {
+      return;
+    }
 
     await init();
 

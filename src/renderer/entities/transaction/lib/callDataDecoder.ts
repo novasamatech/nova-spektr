@@ -1,12 +1,12 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type Call } from '@polkadot/types/interfaces';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
-import { type HexString } from '@polkadot/util/types';
 import { type Type } from '@polkadot/types';
+import { type Call } from '@polkadot/types/interfaces';
+import { type HexString } from '@polkadot/util/types';
 
-import { type Address, type CallData, type ChainId, type DecodedTransaction, TransactionType } from '@shared/core';
-import { type ICallDataDecoder } from './common/types';
 import { xcmService } from '@shared/api/xcm';
+import { type Address, type CallData, type ChainId, type DecodedTransaction, TransactionType } from '@shared/core';
+
 import {
   BOND_WITH_CONTROLLER_ARGS_AMOUNT,
   MULTISIG_SECTION,
@@ -16,6 +16,7 @@ import {
   TRANSFER_SECTIONS,
   XCM_SECTIONS,
 } from './common/constants';
+import { type ICallDataDecoder } from './common/types';
 
 export const useCallDataDecoder = (): ICallDataDecoder => {
   const getDataFromCallData = (

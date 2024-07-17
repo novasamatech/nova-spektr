@@ -1,18 +1,21 @@
-import { createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { type ApiPromise } from '@polkadot/api';
 import { type BN, BN_ZERO } from '@polkadot/util';
+import { createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { combineEvents } from 'patronum';
 
-import { Step, getCreatedDateFromApi, getCurrentBlockNumber } from '@shared/lib/utils';
 import { type ClaimTimeAt, type UnlockChunk, UnlockChunkType, claimScheduleService } from '@shared/api/governance';
 import { type Address, type ReferendumInfo, type TrackId, type TrackInfo, type VotingMap } from '@shared/core';
-import { walletModel } from '@entities/wallet';
+import { Step, getCreatedDateFromApi, getCurrentBlockNumber } from '@shared/lib/utils';
+
 import { referendumModel } from '@entities/governance';
-import { unlockService } from '../lib/unlock';
-import { votingAggregate } from '../aggregates/voting';
+import { walletModel } from '@entities/wallet';
+
 import { tracksAggregate } from '../aggregates/tracks';
-import { networkSelectorModel } from './networkSelector';
+import { votingAggregate } from '../aggregates/voting';
+import { unlockService } from '../lib/unlock';
+
 import { locksModel } from './locks';
+import { networkSelectorModel } from './networkSelector';
 
 const stepChanged = createEvent<Step>();
 const flowStarted = createEvent();

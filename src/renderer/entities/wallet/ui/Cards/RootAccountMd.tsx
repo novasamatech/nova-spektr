@@ -1,8 +1,8 @@
 import { type MouseEvent } from 'react';
 
 import type { AccountId } from '@shared/core';
-import { BodyText, IconButton, Identicon } from '@shared/ui';
 import { SS58_PUBLIC_KEY_PREFIX, cnTw, toAddress } from '@shared/lib/utils';
+import { BodyText, IconButton, Identicon } from '@shared/ui';
 
 type Props = {
   name: string;
@@ -15,7 +15,9 @@ type Props = {
 export const RootAccountMd = ({ name, accountId, className, onClick, onInfoClick }: Props) => {
   const handleClick = (fn?: () => void) => {
     return (event: MouseEvent<HTMLButtonElement>) => {
-      if (!fn) return;
+      if (!fn) {
+        return;
+      }
 
       event.stopPropagation();
       fn();

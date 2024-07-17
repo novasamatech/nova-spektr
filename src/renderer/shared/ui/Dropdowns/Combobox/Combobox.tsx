@@ -1,10 +1,10 @@
-import { Fragment } from 'react';
 import { Combobox as HeadlessCombobox, Transition } from '@headlessui/react';
+import { Fragment } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
-import { type Props as InputProps } from '@shared/ui/Inputs/Input/Input';
-import { type ComboboxOption, type Position, type Theme } from '../common/types';
 import { FootnoteText, Input } from '@shared/ui';
+import { type Props as InputProps } from '@shared/ui/Inputs/Input/Input';
+
 import {
   OptionStyle,
   OptionStyleTheme,
@@ -12,6 +12,7 @@ import {
   OptionsContainerStyleTheme,
   ViewClass,
 } from '../common/constants';
+import { type ComboboxOption, type Position, type Theme } from '../common/types';
 
 type Props = Omit<InputProps, 'onChange' | 'value'> & {
   query?: string;

@@ -2,6 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
 import { Duration, Shimmering } from '@shared/ui';
+
 import { eraService } from '@entities/staking/api';
 
 type Props = {
@@ -14,7 +15,9 @@ export const TimeToEra = ({ api, era, className }: Props) => {
   const [seconds, setSeconds] = useState(0);
 
   useEffect(() => {
-    if (!api) return;
+    if (!api) {
+      return;
+    }
 
     eraService.getTimeToEra(api, era).then(setSeconds);
   }, [era, api]);

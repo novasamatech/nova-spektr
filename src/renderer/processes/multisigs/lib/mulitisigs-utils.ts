@@ -1,5 +1,5 @@
-import { isEthereumAccountId, toAddress } from '@shared/lib/utils';
 import { AccountType, type Chain, ChainOptions, ChainType, CryptoType, SigningType, WalletType } from '@shared/core';
+import { isEthereumAccountId, toAddress } from '@shared/lib/utils';
 
 export const multisigUtils = {
   isMultisigSupported,

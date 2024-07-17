@@ -8,9 +8,9 @@ import {
   useState,
 } from 'react';
 
-import { StatusModal } from '@shared/ui';
-import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
+import { DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { StatusModal } from '@shared/ui';
 
 export type StatusModalProps = {
   title: string;

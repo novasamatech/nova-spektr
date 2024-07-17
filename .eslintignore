@@ -10,4 +10,7 @@ coverage.txt
 junit.xml
 jest-unit-results.json
 
+*.svg
+*.html
+
 package.json

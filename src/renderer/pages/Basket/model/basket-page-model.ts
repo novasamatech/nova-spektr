@@ -1,12 +1,16 @@
-import { combine, createEffect, createEvent, createStore, restore, sample, split } from 'effector';
 import { type ApiPromise } from '@polkadot/api';
+import { combine, createEffect, createEvent, createStore, restore, sample, split } from 'effector';
 import { delay, throttle } from 'patronum';
 
-import { networkModel, networkUtils } from '@entities/network';
-import { walletModel } from '@entities/wallet';
-import { basketModel } from '@entities/basket';
 import { type BasketTransaction, type ChainId, type ID, TransactionType } from '@shared/core';
+import { addUnique, removeFromCollection } from '@shared/lib/utils';
+
+import { basketModel } from '@entities/basket';
+import { networkModel, networkUtils } from '@entities/network';
 import { TransferTypes, XcmTypes, transactionService } from '@entities/transaction';
+import { walletModel } from '@entities/wallet';
+
+import { basketFilterModel } from '@features/basket/BasketFilter';
 import {
   type ValidationResult,
   addProxyValidateModel,
@@ -22,12 +26,12 @@ import {
   unstakeValidateModel,
   withdrawValidateModel,
 } from '@features/operations/OperationsValidation';
-import { signOperationsModel } from './sign-operations-model';
-import { addUnique, removeFromCollection } from '@shared/lib/utils';
+
+import { basketPageUtils } from '../lib/basket-page-utils';
 import { getCoreTx } from '../lib/utils';
 import { Step } from '../types/basket-page-types';
-import { basketPageUtils } from '../lib/basket-page-utils';
-import { basketFilterModel } from '@features/basket/BasketFilter';
+
+import { signOperationsModel } from './sign-operations-model';
 
 type BasketTransactionsMap = {
   valid: BasketTransaction[];

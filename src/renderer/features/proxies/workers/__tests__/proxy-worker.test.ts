@@ -1,7 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import set from 'lodash/set';
 
-import { proxyWorker, state } from '../proxy-worker';
 import {
   AccountType,
   type BaseAccount,
@@ -14,6 +13,8 @@ import {
   type ProxyAccount,
   ProxyVariant,
 } from '@shared/core';
+
+import { proxyWorker, state } from '../proxy-worker';
 
 jest.mock('@polkadot/rpc-provider', () => ({
   ScProvider: function () {

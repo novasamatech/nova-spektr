@@ -1,7 +1,7 @@
 import { type PropsWithChildren, type ReactNode } from 'react';
 
-import { FootnoteText } from '@shared/ui';
 import { cnTw } from '@shared/lib/utils';
+import { FootnoteText } from '@shared/ui';
 
 type Props = {
   label: ReactNode;

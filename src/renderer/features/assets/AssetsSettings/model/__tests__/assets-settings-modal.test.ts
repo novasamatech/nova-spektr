@@ -1,7 +1,9 @@
 import { allSettled, fork } from 'effector';
 
 import { localStorageService } from '@shared/api/local-storage';
+
 import { AssetsListView } from '@entities/asset';
+
 import { assetsSettingsModel } from '../assets-settings-modal';
 
 describe('features/assets/AssetsSettings/model/assets-settings-model', () => {

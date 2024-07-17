@@ -1,7 +1,8 @@
 import { enGB } from 'date-fns/locale';
 
-import { type LanguageItem, type SupportedLocale } from './types';
 import enLocale from '../locales/en.json';
+
+import { type LanguageItem, type SupportedLocale } from './types';
 
 export const LOCALE_KEY = 'locale';
 

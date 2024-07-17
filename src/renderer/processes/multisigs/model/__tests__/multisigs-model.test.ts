@@ -1,6 +1,5 @@
 import { allSettled, fork } from 'effector';
 
-import { networkModel } from '@entities/network';
 import {
   AccountType,
   ChainOptions,
@@ -10,8 +9,11 @@ import {
   SigningType,
   WalletType,
 } from '@shared/core';
-import { walletModel } from '@entities/wallet';
+
 import { multisigService } from '@entities/multisig';
+import { networkModel } from '@entities/network';
+import { walletModel } from '@entities/wallet';
+
 import { multisigsModel } from '../multisigs-model';
 
 const signatories = [

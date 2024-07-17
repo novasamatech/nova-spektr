@@ -1,15 +1,11 @@
+import { useUnit } from 'effector-react';
+import { useEffect, useState } from 'react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 import { Trans } from 'react-i18next';
-import { useEffect, useState } from 'react';
-import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
+
 import { type LoginFlows, WELL_KNOWN_SERVERS, validateShortUserName } from '@shared/api/matrix';
-import type { ComboboxOption } from '@shared/ui/types';
-import { type IconNames } from '@shared/ui/Icon/data';
-import { LoginStatus, matrixModel, matrixUtils } from '@entities/matrix';
-import { matrixLoginModel } from '../model/matrix-login-model';
-import { APP_CONFIG } from '../../../../../../app.config';
 import {
   Alert,
   Button,
@@ -24,6 +20,13 @@ import {
   PasswordInput,
   Separator,
 } from '@shared/ui';
+import { type IconNames } from '@shared/ui/Icon/data';
+import type { ComboboxOption } from '@shared/ui/types';
+
+import { LoginStatus, matrixModel, matrixUtils } from '@entities/matrix';
+
+import { APP_CONFIG } from '../../../../../../app.config';
+import { matrixLoginModel } from '../model/matrix-login-model';
 
 const HOME_SERVERS = WELL_KNOWN_SERVERS.map((server) => ({
   id: server.domain,
@@ -132,7 +135,9 @@ export const LoginForm = ({ redirectStep }: Props) => {
   };
 
   const submitMatrixLogin: SubmitHandler<MatrixForm> = async ({ username, password }) => {
-    if (isHomeserverLoading) return;
+    if (isHomeserverLoading) {
+      return;
+    }
 
     setInProgress(true);
     setInvalidLogin(false);

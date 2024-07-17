@@ -1,12 +1,15 @@
 import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
-import { BodyText, Button, Checkbox, Icon, Loader, SearchInput, Shimmering, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { ValidatorsTable } from '@entities/staking';
-import { cnTw } from '@shared/lib/utils';
-import { validatorsModel } from '../model/validators-model';
+
 import { type Validator } from '@shared/core';
+import { cnTw } from '@shared/lib/utils';
+import { BodyText, Button, Checkbox, Icon, Loader, SearchInput, Shimmering, SmallTitleText } from '@shared/ui';
+
+import { ValidatorsTable } from '@entities/staking';
+
+import { validatorsModel } from '../model/validators-model';
 
 type Props = {
   onGoBack: () => void;
@@ -55,7 +58,9 @@ const Header = () => {
 const Spinner = () => {
   const isValidatorsLoading = useUnit(validatorsModel.$isValidatorsLoading);
 
-  if (!isValidatorsLoading) return null;
+  if (!isValidatorsLoading) {
+    return null;
+  }
 
   return (
     <div className="h-[288px] flex items-center justify-center">
@@ -70,7 +75,9 @@ const NoValidators = () => {
   const validators = useUnit(validatorsModel.$validators);
   const isValidatorsLoading = useUnit(validatorsModel.$isValidatorsLoading);
 
-  if (isValidatorsLoading || validators.length > 0) return null;
+  if (isValidatorsLoading || validators.length > 0) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col items-center justify-center gap-y-4">
@@ -85,7 +92,9 @@ const ValidatorsList = () => {
   const isValidatorsLoading = useUnit(validatorsModel.$isValidatorsLoading);
   const selectedValidators = useUnit(validatorsModel.$selectedValidators);
 
-  if (isValidatorsLoading || validators.length === 0) return null;
+  if (isValidatorsLoading || validators.length === 0) {
+    return null;
+  }
 
   return (
     <ValidatorsTable validators={validators}>

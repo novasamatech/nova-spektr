@@ -1,14 +1,14 @@
-import { BN } from '@polkadot/util';
 import { type ApiPromise } from '@polkadot/api';
+import { BN } from '@polkadot/util';
 import get from 'lodash/get';
 
-import { XCM_KEY, XCM_URL } from '../lib/constants';
 import { type XTokenPalletTransferArgs, type XcmPalletTransferArgs } from '@entities/transaction';
-import { chainsService } from '../../network';
-import { xcmUtils } from '../lib/xcm-utils';
+
 import type { AccountId, Chain, ChainId, HexString } from '../../../core';
-import { localStorageService } from '../../local-storage';
 import { getAssetId, getTypeName, getTypeVersion, toLocalChainId } from '../../../lib/utils';
+import { localStorageService } from '../../local-storage';
+import { chainsService } from '../../network';
+import { XCM_KEY, XCM_URL } from '../lib/constants';
 import {
   type AssetLocation,
   type AssetName,
@@ -19,6 +19,7 @@ import {
   type XcmTransfer,
   type XcmTransferType,
 } from '../lib/types';
+import { xcmUtils } from '../lib/xcm-utils';
 
 export const xcmService = {
   fetchXcmConfig,

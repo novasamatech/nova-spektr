@@ -1,14 +1,17 @@
 import { useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
-import { BaseModal } from '@shared/ui';
-import { useModalClose } from '@shared/lib/hooks';
-import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
+
 import { type BasketTransaction, TransactionType } from '@shared/core';
+import { useModalClose } from '@shared/lib/hooks';
+import { BaseModal } from '@shared/ui';
+
+import { OperationTitle } from '@entities/chain';
+import { networkModel } from '@entities/network';
+import { TransferTypes, XcmTypes } from '@entities/transaction';
+
 import { OperationSign, OperationSubmit } from '@features/operations';
-import { signOperationsUtils } from '../lib/sign-operations-utils';
-import { signOperationsModel } from '../model/sign-operations-model';
 import {
   AddProxyConfirm,
   AddPureProxiedConfirm,
@@ -23,11 +26,12 @@ import {
   UnstakeConfirmation,
   WithdrawConfirmation,
 } from '@features/operations/OperationsConfirm';
+
 import { getOperationTitle } from '../lib/operation-title';
-import { TransferTypes, XcmTypes } from '@entities/transaction';
-import { networkModel } from '@entities/network';
-import { Step } from '../types';
+import { signOperationsUtils } from '../lib/sign-operations-utils';
 import { getCoreTx } from '../lib/utils';
+import { signOperationsModel } from '../model/sign-operations-model';
+import { Step } from '../types';
 
 export const SignOperation = () => {
   const { t } = useI18n();
@@ -41,7 +45,9 @@ export const SignOperation = () => {
     signOperationsModel.output.flowFinished,
   );
 
-  if (signOperationsUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  if (signOperationsUtils.isSubmitStep(step)) {
+    return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  }
 
   const getModalTitle = (basketTransaction: BasketTransaction): string | ReactNode => {
     const chain = chains[basketTransaction.coreTx.chainId];

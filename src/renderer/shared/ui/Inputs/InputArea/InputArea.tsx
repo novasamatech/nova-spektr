@@ -1,9 +1,10 @@
 import { type ComponentPropsWithoutRef, forwardRef } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
-import { type HTMLTextAreaProps } from '../common/types';
-import { CommonInputStyles, CommonInputStylesTheme } from '../common/styles';
+
 import { type Theme } from '../../Dropdowns/common/types';
+import { CommonInputStyles, CommonInputStylesTheme } from '../common/styles';
+import { type HTMLTextAreaProps } from '../common/types';
 
 interface Props extends Pick<ComponentPropsWithoutRef<'textarea'>, HTMLTextAreaProps> {
   invalid?: boolean;

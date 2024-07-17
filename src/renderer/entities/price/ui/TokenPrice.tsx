@@ -1,11 +1,14 @@
 import { useStoreMap, useUnit } from 'effector-react';
 
-import { FootnoteText, Shimmering } from '@shared/ui';
-import { priceProviderModel } from '../model/price-provider-model';
-import { currencyModel } from '../model/currency-model';
-import { ZERO_BALANCE, cnTw, formatFiatBalance } from '@shared/lib/utils';
-import { FiatBalance } from './FiatBalance';
 import { useI18n } from '@app/providers';
+
+import { ZERO_BALANCE, cnTw, formatFiatBalance } from '@shared/lib/utils';
+import { FootnoteText, Shimmering } from '@shared/ui';
+
+import { currencyModel } from '../model/currency-model';
+import { priceProviderModel } from '../model/price-provider-model';
+
+import { FiatBalance } from './FiatBalance';
 
 type Props = {
   assetId?: string;
@@ -17,13 +20,17 @@ export const TokenPrice = ({ assetId, className, wrapperClassName }: Props) => {
   const { t } = useI18n();
   const currency = useUnit(currencyModel.$activeCurrency);
   const price = useStoreMap(priceProviderModel.$assetsPrices, (prices) => {
-    if (!currency || !prices) return;
+    if (!currency || !prices) {
+      return;
+    }
 
     return assetId && prices[assetId]?.[currency.coingeckoId];
   });
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
-  if (!fiatFlag) return null;
+  if (!fiatFlag) {
+    return null;
+  }
 
   if (!assetId) {
     return (
@@ -33,7 +40,9 @@ export const TokenPrice = ({ assetId, className, wrapperClassName }: Props) => {
     );
   }
 
-  if (!price) return <Shimmering width={56} height={18} />;
+  if (!price) {
+    return <Shimmering width={56} height={18} />;
+  }
 
   const isGrow = price.change >= 0;
   const changeToShow = price.change && `${isGrow ? '+' : ''}${price.change.toFixed(2)}`;

@@ -1,13 +1,14 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
-import { memo, useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
+import { memo, useEffect, useState } from 'react';
+
+import type { Asset, Transaction } from '@shared/core';
 
 import { AssetBalance } from '@entities/asset';
-import { FeeLoader, transactionService } from '@entities/transaction';
-import type { Asset, Transaction } from '@shared/core';
 import { priceProviderModel } from '@entities/price';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { FeeLoader, transactionService } from '@entities/transaction';
 
 type Props = {
   api?: ApiPromise;
@@ -39,7 +40,9 @@ export const Fee = memo(({ api, multiply = 1, asset, transaction, className, onF
   useEffect(() => {
     setIsLoading(true);
 
-    if (!api) return;
+    if (!api) {
+      return;
+    }
 
     if (!transaction?.address) {
       updateFee('0');
@@ -56,7 +59,9 @@ export const Fee = memo(({ api, multiply = 1, asset, transaction, className, onF
     }
   }, [transaction, api]);
 
-  if (isLoading) return <FeeLoader fiatFlag={Boolean(fiatFlag)} />;
+  if (isLoading) {
+    return <FeeLoader fiatFlag={Boolean(fiatFlag)} />;
+  }
 
   return (
     <div className="flex flex-col gap-y-0.5 items-end">

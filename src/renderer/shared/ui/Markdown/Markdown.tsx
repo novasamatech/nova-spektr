@@ -3,9 +3,10 @@ import ReactMarkdown, { type Components, type Options } from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
 
-import { BodyText, Button, Checkbox, Icon, InfoLink } from '@shared/ui';
-import { cnTw } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
+
+import { cnTw } from '@shared/lib/utils';
+import { BodyText, Button, Checkbox, Icon, InfoLink } from '@shared/ui';
 
 const rehypeOptions: Options['remarkRehypeOptions'] = { allowDangerousHtml: true };
 const rehypePlugins: Options['rehypePlugins'] = [rehypeRaw];

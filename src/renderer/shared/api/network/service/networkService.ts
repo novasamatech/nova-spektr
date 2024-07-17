@@ -4,8 +4,9 @@ import * as Sc from '@substrate/connect';
 
 import type { ChainId, HexString } from '@shared/core';
 import { getKnownChain } from '@shared/lib/utils';
-import { createCachedProvider } from '../provider/CachedProvider';
+
 import { ProviderType, type ProviderWithMetadata } from '../lib/types';
+import { createCachedProvider } from '../provider/CachedProvider';
 
 export const networkService = {
   createProvider,

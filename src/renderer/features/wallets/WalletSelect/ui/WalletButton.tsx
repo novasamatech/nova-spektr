@@ -1,9 +1,11 @@
 import { Popover } from '@headlessui/react';
 
 import type { Wallet } from '@shared/core';
-import { WalletFiatBalance } from './WalletFiatBalance';
 import { Icon } from '@shared/ui';
+
 import { WalletCardLg } from '@entities/wallet';
+
+import { WalletFiatBalance } from './WalletFiatBalance';
 
 type Props = {
   wallet: Wallet;

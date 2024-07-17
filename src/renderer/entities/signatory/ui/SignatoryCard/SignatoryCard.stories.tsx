@@ -1,7 +1,8 @@
 import { type ComponentMeta, type ComponentStory } from '@storybook/react';
 
-import { SignatoryCard } from './SignatoryCard';
 import { TEST_ADDRESS } from '@shared/lib/utils';
+
+import { SignatoryCard } from './SignatoryCard';
 
 export default {
   title: 'Signatory',

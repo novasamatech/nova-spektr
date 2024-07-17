@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
 import { objectSpread } from '@polkadot/util';
 import { xxhashAsHex } from '@polkadot/util-crypto';
 import { type Encoder } from 'raptorq';
+import { useEffect, useRef, useState } from 'react';
 
 import { TIMER_INC } from './constants';
 import { createFrames, getSvgString } from './utils';

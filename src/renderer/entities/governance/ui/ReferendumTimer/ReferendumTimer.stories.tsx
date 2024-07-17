@@ -1,6 +1,7 @@
 import { type ComponentMeta, type ComponentStory } from '@storybook/react';
 
 import { ReferendumTimer } from './ReferendumTimer';
+
 export default {
   title: 'ReferendumTimer',
   component: ReferendumTimer,

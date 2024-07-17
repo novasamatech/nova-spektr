@@ -1,21 +1,13 @@
+import { u8aToHex } from '@polkadot/util';
 import cn from 'classnames';
-import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
+import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { Trans } from 'react-i18next';
-import { u8aToHex } from '@polkadot/util';
 
 import { useI18n, useStatusContext } from '@app/providers';
-import { IS_MAC, copyToClipboard, dictionary, toAddress } from '@shared/lib/utils';
-import { VaultInfoPopover } from './VaultInfoPopover';
-import { useAltOrCtrlKeyPressed, useToggle } from '@shared/lib/hooks';
-import { manageVaultModel } from './model/manage-vault-model';
+
 import { chainsService } from '@shared/api/network';
-import { DerivedAccount, RootAccountLg, accountUtils } from '@entities/wallet';
-import { DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@features/wallets';
-import { Animation } from '@shared/ui/Animation/Animation';
-import { ChainTitle } from '@entities/chain';
-import { type SeedInfo } from '@entities/transaction';
 import {
   AccountType,
   type ChainAccount,
@@ -27,6 +19,8 @@ import {
   SigningType,
   WalletType,
 } from '@shared/core';
+import { useAltOrCtrlKeyPressed, useToggle } from '@shared/lib/hooks';
+import { IS_MAC, copyToClipboard, dictionary, toAddress } from '@shared/lib/utils';
 import {
   Accordion,
   Button,
@@ -40,6 +34,16 @@ import {
   InputHint,
   SmallTitleText,
 } from '@shared/ui';
+import { Animation } from '@shared/ui/Animation/Animation';
+
+import { ChainTitle } from '@entities/chain';
+import { type SeedInfo } from '@entities/transaction';
+import { DerivedAccount, RootAccountLg, accountUtils } from '@entities/wallet';
+
+import { DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@features/wallets';
+
+import { VaultInfoPopover } from './VaultInfoPopover';
+import { manageVaultModel } from './model/manage-vault-model';
 
 const STATUS_DELAY = 1500;
 
@@ -249,7 +253,9 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
 
           <div className="flex flex-col gap-2 divide-y ml-9">
             {chainElements.map(([chainId, chainAccounts]) => {
-              if (chainAccounts.length === 0) return;
+              if (chainAccounts.length === 0) {
+                return;
+              }
 
               return (
                 <Accordion key={chainId} className="pt-2">

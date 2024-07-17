@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
 import { type ApiPromise } from '@polkadot/api';
+import { useEffect, useState } from 'react';
+
+import { eraService, validatorsService } from '../api';
 
 import { type ValidatorMap } from './types';
-import { eraService, validatorsService } from '../api';
 
 export const useValidatorsMap = (api?: ApiPromise, isLightClient?: boolean): ValidatorMap => {
   const [era, setEra] = useState<number>();

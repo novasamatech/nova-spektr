@@ -1,18 +1,23 @@
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
-import { BaseModal, Button } from '@shared/ui';
-import { useModalClose } from '@shared/lib/hooks';
-import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
-import { OperationSign, OperationSubmit } from '@features/operations';
-import { Validators } from '@features/staking';
-import { NominateForm } from './NominateForm';
-import { nominateUtils } from '../lib/nominate-utils';
-import { nominateModel } from '../model/nominate-model';
-import { Step } from '../lib/types';
-import { NominateConfirmation as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
+
+import { useModalClose } from '@shared/lib/hooks';
+import { BaseModal, Button } from '@shared/ui';
+
+import { OperationTitle } from '@entities/chain';
 import { OperationResult } from '@entities/transaction';
+
+import { OperationSign, OperationSubmit } from '@features/operations';
+import { NominateConfirmation as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
+import { Validators } from '@features/staking';
+
+import { nominateUtils } from '../lib/nominate-utils';
+import { Step } from '../lib/types';
+import { nominateModel } from '../model/nominate-model';
+
+import { NominateForm } from './NominateForm';
 
 export const Nominate = () => {
   const { t } = useI18n();
@@ -34,9 +39,13 @@ export const Nominate = () => {
       return () => clearTimeout(timer);
     }
   }, [step]);
-  if (!walletData) return null;
+  if (!walletData) {
+    return null;
+  }
 
-  if (nominateUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  if (nominateUtils.isSubmitStep(step)) {
+    return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  }
   if (nominateUtils.isBasketStep(step)) {
     return (
       <OperationResult

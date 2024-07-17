@@ -1,8 +1,11 @@
 import { useUnit } from 'effector-react';
 
-import { Select } from '@shared/ui';
 import { useI18n } from '@app/providers';
+
+import { Select } from '@shared/ui';
+
 import { ChainTitle } from '@entities/chain';
+
 import { networkSelectorModel } from '../../model/networkSelector';
 
 export const NetworkSelector = () => {

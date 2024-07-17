@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { getValidatorsApy } from '../apyCalculator';
 import { type ApyValidator } from '../../lib/types';
+import { getValidatorsApy } from '../apyCalculator';
 
 describe('services/staking', () => {
   const mockApi = (totalIssuance: string) => {

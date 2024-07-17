@@ -1,14 +1,10 @@
-import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
+import { type ReactNode, useCallback, useEffect, useState } from 'react';
 
-import { AssetBalance, AssetIcon } from '@entities/asset';
 import { useI18n } from '@app/providers';
-import { FootnoteText, HelpText, TitleText } from '../../Typography';
-import { Input } from '../Input/Input';
-import { IconButton } from '@shared/ui';
-import { useToggle } from '@shared/lib/hooks';
-import { currencyModel, useCurrencyRate } from '@entities/price';
+
 import type { Asset } from '@shared/core';
+import { useToggle } from '@shared/lib/hooks';
 import {
   cleanAmount,
   cnTw,
@@ -20,6 +16,13 @@ import {
   validatePrecision,
   validateSymbols,
 } from '@shared/lib/utils';
+import { IconButton } from '@shared/ui';
+
+import { AssetBalance, AssetIcon } from '@entities/asset';
+import { currencyModel, useCurrencyRate } from '@entities/price';
+
+import { FootnoteText, HelpText, TitleText } from '../../Typography';
+import { Input } from '../Input/Input';
 
 type Props = {
   name?: string;
@@ -100,7 +103,9 @@ export const AmountInput = ({
   }, [value]);
 
   const getBalance = useCallback(() => {
-    if (!balance) return;
+    if (!balance) {
+      return;
+    }
 
     if (Array.isArray(balance)) {
       return (

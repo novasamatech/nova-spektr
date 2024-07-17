@@ -2,8 +2,6 @@ import { createEffect, createEvent, createStore, sample } from 'effector';
 
 import { chainsService } from '@shared/api/network';
 import { storageService } from '@shared/api/storage';
-import { accountUtils, walletModel } from '@entities/wallet';
-import { proxiesModel } from '@features/proxies';
 import type {
   Account,
   AccountId,
@@ -15,6 +13,10 @@ import type {
   ShardAccount,
   Wallet,
 } from '@shared/core';
+
+import { accountUtils, walletModel } from '@entities/wallet';
+
+import { proxiesModel } from '@features/proxies';
 
 type AccountsCreatedParams = {
   walletId: ID;

@@ -1,9 +1,10 @@
 import { type ApiPromise } from '@polkadot/api';
 import BigNumber from 'bignumber.js';
 
-import { type ApyValidator } from '../lib/types';
-import { DECAY_RATE, INTEREST_IDEAL, MINIMUM_INFLATION, STAKED_PORTION_IDEAL } from '../lib/constants';
 import type { Address } from '@shared/core';
+
+import { DECAY_RATE, INTEREST_IDEAL, MINIMUM_INFLATION, STAKED_PORTION_IDEAL } from '../lib/constants';
+import { type ApyValidator } from '../lib/types';
 
 const calculateYearlyInflation = (stakedPortion: number): number => {
   let calculatedInflation;

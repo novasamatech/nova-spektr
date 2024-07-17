@@ -2,11 +2,14 @@ import { combine, createEvent, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type ReferendumId } from '@shared/core';
+
 import { voteHistoryModel } from '@entities/governance';
+
 import { networkSelectorModel } from '../model/networkSelector';
-import { proposerIdentityAggregate } from './proposerIdentity';
 import { type AggregatedVoteHistory } from '../types/structs';
+
 import { detailsAggregate } from './details';
+import { proposerIdentityAggregate } from './proposerIdentity';
 
 const flow = createGate<{ referendumId: ReferendumId }>();
 

@@ -1,6 +1,7 @@
 import { BN } from '@polkadot/util';
 
 import { ZERO_BALANCE, formatAmount } from '@shared/lib/utils';
+
 import { type Config, type TransferFeeStore } from '../../types/types';
 
 export const balanceValidation = {

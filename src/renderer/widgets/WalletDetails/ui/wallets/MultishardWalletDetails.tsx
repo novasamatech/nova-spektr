@@ -1,22 +1,27 @@
 import { useUnit } from 'effector-react';
 
-import { BaseModal, DropdownIconButton, Tabs } from '@shared/ui';
-import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { MultishardAccountsList, WalletCardLg, permissionUtils } from '@entities/wallet';
 import { useI18n } from '@app/providers';
+
 import type { MultiShardWallet } from '@shared/core';
-import { RenameWalletModal } from '@features/wallets/RenameWallet';
+import { useModalClose, useToggle } from '@shared/lib/hooks';
+import { BaseModal, DropdownIconButton, Tabs } from '@shared/ui';
 import { type IconNames } from '@shared/ui/Icon/data';
-import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { type TabItem } from '@shared/ui/types';
+
 import { networkModel } from '@entities/network';
-import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
+import { MultishardAccountsList, WalletCardLg, permissionUtils } from '@entities/wallet';
+
+import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
+import { RenameWalletModal } from '@features/wallets/RenameWallet';
+
 import { AddProxy, addProxyModel } from '@widgets/AddProxyModal';
-import { ProxiesList } from '../components/ProxiesList';
-import { NoProxiesAction } from '../components/NoProxiesAction';
+import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
+
 import type { MultishardMap } from '../../lib/types';
 import { walletDetailsUtils } from '../../lib/utils';
 import { walletProviderModel } from '../../model/wallet-provider-model';
+import { NoProxiesAction } from '../components/NoProxiesAction';
+import { ProxiesList } from '../components/ProxiesList';
 
 type Props = {
   wallet: MultiShardWallet;

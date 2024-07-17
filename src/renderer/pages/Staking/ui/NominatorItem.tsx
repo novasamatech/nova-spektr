@@ -1,13 +1,16 @@
-import { type ReactNode } from 'react';
 import { useUnit } from 'effector-react';
+import { type ReactNode } from 'react';
 
 import { useI18n } from '@app/providers';
+
 import type { Account, Address, Asset, Explorer } from '@shared/core';
+import { cnTw } from '@shared/lib/utils';
 import { Checkbox, FootnoteText, Icon, IconButton, Plate, Shimmering } from '@shared/ui';
-import { ExplorersPopover, walletModel, walletUtils } from '@entities/wallet';
+
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
-import { cnTw } from '@shared/lib/utils';
+import { ExplorersPopover, walletModel, walletUtils } from '@entities/wallet';
+
 import { type NominatorInfo } from '../lib/types';
 
 type Props = {

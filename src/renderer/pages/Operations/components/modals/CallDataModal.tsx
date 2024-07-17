@@ -1,10 +1,11 @@
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
-import { BaseModal, Button, InputArea, InputHint } from '@shared/ui';
 import { useI18n } from '@app/providers';
+
 import { type MultisigTransactionDS } from '@shared/api/storage';
-import { validateCallData } from '@shared/lib/utils';
 import type { CallData } from '@shared/core';
+import { validateCallData } from '@shared/lib/utils';
+import { BaseModal, Button, InputArea, InputHint } from '@shared/ui';
 
 type CallDataForm = {
   callData: string;

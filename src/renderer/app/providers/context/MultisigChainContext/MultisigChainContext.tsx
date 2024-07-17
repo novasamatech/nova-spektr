@@ -1,16 +1,17 @@
-import { type PropsWithChildren, createContext, useContext, useEffect } from 'react';
 import { type VoidFn } from '@polkadot/api/types';
 import { type Event } from '@polkadot/types/interfaces';
 import { useUnit } from 'effector-react';
+import { type PropsWithChildren, createContext, useContext, useEffect } from 'react';
+
+import { type ChainId, type MultisigAccount, MultisigTxFinalStatus, type SigningStatus } from '@shared/core';
+import { useDebounce, useTaskQueue } from '@shared/lib/hooks';
+import { type Task } from '@shared/lib/hooks/useTaskQueue';
+import { getCreatedDateFromApi, toAddress } from '@shared/lib/utils';
 
 import { subscriptionService } from '@entities/chain';
 import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
-import { getCreatedDateFromApi, toAddress } from '@shared/lib/utils';
-import { useDebounce, useTaskQueue } from '@shared/lib/hooks';
-import { type Task } from '@shared/lib/hooks/useTaskQueue';
-import { type ChainId, type MultisigAccount, MultisigTxFinalStatus, type SigningStatus } from '@shared/core';
-import { accountUtils, walletModel } from '@entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
+import { accountUtils, walletModel } from '@entities/wallet';
 
 type MultisigChainContextProps = {
   addTask: (task: Task) => void;
@@ -50,7 +51,9 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     txs.forEach(async (tx) => {
       const api = apis[tx.chainId];
 
-      if (!api) return;
+      if (!api) {
+        return;
+      }
 
       if (tx.callData && !tx.transaction) {
         updateCallData(api, tx, tx.callData);
@@ -97,7 +100,9 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
 
     const tx = await getMultisigTx(account.accountId, chainId, callHash, blockCreated, indexCreated);
 
-    if (!tx) return;
+    if (!tx) {
+      return;
+    }
 
     const accountId = event.data[0].toHex();
 
@@ -134,7 +139,9 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
       const chain = chains[chainId as ChainId];
       const addressPrefix = chain?.addressPrefix;
 
-      if (!api?.query.multisig || !account || !addressPrefix?.toString()) return;
+      if (!api?.query.multisig || !account || !addressPrefix?.toString()) {
+        return;
+      }
 
       const unsubscribeMultisig = subscribeMultisigAccount(api, account as MultisigAccount);
       unsubscribeMultisigs.push(unsubscribeMultisig);

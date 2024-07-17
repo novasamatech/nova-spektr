@@ -1,16 +1,18 @@
+import { u8aToHex } from '@polkadot/util';
 import cn from 'classnames';
+import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
-import { u8aToHex } from '@polkadot/util';
-import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { Button, HeaderTitleText, IconButton, Input, InputHint, SmallTitleText } from '@shared/ui';
-import { AccountsList, walletModel } from '@entities/wallet';
+
 import type { Chain } from '@shared/core';
 import { AccountType, ChainType, CryptoType, CryptoTypeString, ErrorType, SigningType, WalletType } from '@shared/core';
-import { type SeedInfo } from '@entities/transaction';
+import { Button, HeaderTitleText, IconButton, Input, InputHint, SmallTitleText } from '@shared/ui';
+
 import { networkModel, networkUtils } from '@entities/network';
+import { type SeedInfo } from '@entities/transaction';
+import { AccountsList, walletModel } from '@entities/wallet';
 
 type WalletForm = {
   walletName: string;
@@ -53,7 +55,9 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
   }, []);
 
   const createWallet: SubmitHandler<WalletForm> = async ({ walletName }) => {
-    if (!accountId || accountId.length === 0) return;
+    if (!accountId || accountId.length === 0) {
+      return;
+    }
 
     walletModel.events.singleshardCreated({
       wallet: {

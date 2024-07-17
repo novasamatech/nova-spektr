@@ -1,23 +1,20 @@
-import { useEffect, useState } from 'react';
 import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
+import { useEffect, useState } from 'react';
 
-import { BaseModal, Button } from '@shared/ui';
 import { useI18n } from '@app/providers';
+
 import { type MultisigTransactionDS } from '@shared/api/storage';
-import { useToggle } from '@shared/lib/hooks';
-import { type ExtendedChain, networkModel } from '@entities/network';
-import { getAssetById, toAddress, transferableAmount } from '@shared/lib/utils';
-import RejectReasonModal from './RejectReasonModal';
-import { Submit } from '../ActionSteps/Submit';
-import { Confirmation } from '../ActionSteps/Confirmation';
-import { SigningSwitch } from '@features/operations';
-import { OperationTitle } from '@entities/chain';
-import { walletModel, walletUtils } from '@entities/wallet';
-import { priceProviderModel } from '@entities/price';
 import type { Account, Address, HexString, MultisigAccount, Timepoint, Transaction } from '@shared/core';
 import { TransactionType } from '@shared/core';
+import { useToggle } from '@shared/lib/hooks';
+import { getAssetById, toAddress, transferableAmount } from '@shared/lib/utils';
+import { BaseModal, Button } from '@shared/ui';
+
 import { balanceModel, balanceUtils } from '@entities/balance';
+import { OperationTitle } from '@entities/chain';
+import { type ExtendedChain, networkModel } from '@entities/network';
+import { priceProviderModel } from '@entities/price';
 import {
   OperationResult,
   getMultisigSignOperationTitle,
@@ -25,6 +22,14 @@ import {
   transactionService,
   validateBalance,
 } from '@entities/transaction';
+import { walletModel, walletUtils } from '@entities/wallet';
+
+import { SigningSwitch } from '@features/operations';
+
+import { Confirmation } from '../ActionSteps/Confirmation';
+import { Submit } from '../ActionSteps/Submit';
+
+import RejectReasonModal from './RejectReasonModal';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -140,7 +145,9 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   };
 
   const validateBalanceForFee = async (signAccount: Account): Promise<boolean> => {
-    if (!connection.api || !rejectTx || !signAccount.accountId || !nativeAsset) return false;
+    if (!connection.api || !rejectTx || !signAccount.accountId || !nativeAsset) {
+      return false;
+    }
 
     const fee = await transactionService.getTransactionFee(rejectTx, connection.api);
     const balance = balanceUtils.getBalance(
@@ -150,13 +157,17 @@ const RejectTx = ({ tx, account, connection }: Props) => {
       nativeAsset.assetId.toString(),
     );
 
-    if (!balance) return false;
+    if (!balance) {
+      return false;
+    }
 
     return new BN(fee).lte(new BN(transferableAmount(balance)));
   };
 
   const cancellable = tx.status === 'SIGNING' && signAccount;
-  if (!cancellable) return null;
+  if (!cancellable) {
+    return null;
+  }
 
   const handleRejectReason = async (reason: string) => {
     const isValid = await validateBalanceForFee(signAccount);

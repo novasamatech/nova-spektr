@@ -1,6 +1,7 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 
 import { isStringsMatchQuery } from '@shared/lib/utils';
+
 import { HOME_SERVERS } from '../lib/constants';
 
 const homeserverQueryChanged = createEvent<string>();

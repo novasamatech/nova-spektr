@@ -2,10 +2,10 @@ import { Listbox, Transition } from '@headlessui/react';
 import { Fragment, forwardRef, useId } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
+
 import { Icon } from '../../Icon/Icon';
-import { FootnoteText, LabelText } from '../../Typography';
-import { type DropdownOption, type DropdownResult, type Position, type Theme } from '../common/types';
 import { CommonInputStyles, CommonInputStylesTheme } from '../../Inputs/common/styles';
+import { FootnoteText, LabelText } from '../../Typography';
 import {
   ButtonTextEmptyStyle,
   ButtonTextFilledStyle,
@@ -17,6 +17,7 @@ import {
   SelectButtonStyle,
   ViewClass,
 } from '../common/constants';
+import { type DropdownOption, type DropdownResult, type Position, type Theme } from '../common/types';
 
 type Props<T = any> = {
   className?: string;
@@ -125,7 +126,9 @@ export const Select = forwardRef<HTMLButtonElement, Props>(
       </Listbox>
     );
 
-    if (!label) return selectElement;
+    if (!label) {
+      return selectElement;
+    }
 
     return (
       <div className="flex flex-col gap-y-2">

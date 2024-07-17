@@ -1,11 +1,13 @@
-import { spread } from 'patronum';
-import { createEffect, createStore, sample } from 'effector';
 import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_ZERO } from '@polkadot/util';
+import { createEffect, createStore, sample } from 'effector';
+import { spread } from 'patronum';
 
-import type { Address, TrackId } from '@shared/core';
 import { governanceService } from '@shared/api/governance';
+import type { Address, TrackId } from '@shared/core';
+
 import { accountUtils, walletModel } from '@entities/wallet';
+
 import { networkSelectorModel } from './networkSelector';
 
 const $totalLock = createStore<BN>(BN_ZERO);

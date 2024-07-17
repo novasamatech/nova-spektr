@@ -1,8 +1,10 @@
 import { allSettled, fork } from 'effector';
 
 import { networkModel } from '@entities/network';
-import { networksMock } from './mocks/networks-mock';
+
 import { inactiveNetworksModel } from '../inactive-networks-model';
+
+import { networksMock } from './mocks/networks-mock';
 
 describe('features/network/NetworksList/inactive-networks-model', () => {
   test('should update inactive networks on networksChanged', async () => {

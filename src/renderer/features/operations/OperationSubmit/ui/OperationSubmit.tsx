@@ -1,13 +1,16 @@
 import { useUnit } from 'effector-react';
 import { type ComponentProps, useEffect } from 'react';
 
-import { Button } from '@shared/ui';
 import { useI18n } from '@app/providers';
+
 import { useTaskQueue } from '@shared/lib/hooks';
-import { OperationResult } from '@entities/transaction';
+import { Button } from '@shared/ui';
+
 import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
-import { type SubmitStep } from '../lib/types';
+import { OperationResult } from '@entities/transaction';
+
 import { submitUtils } from '../lib/submit-utils';
+import { type SubmitStep } from '../lib/types';
 import { submitModel } from '../model/submit-model';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
@@ -36,7 +39,9 @@ export const OperationSubmit = ({ isOpen, onClose }: Props) => {
     submitModel.events.submitStarted();
   }, []);
 
-  if (!submitStore) return null;
+  if (!submitStore) {
+    return null;
+  }
 
   const getResultProps = (step: SubmitStep, message: string): ResultProps => {
     if (submitUtils.isLoadingStep(step)) {

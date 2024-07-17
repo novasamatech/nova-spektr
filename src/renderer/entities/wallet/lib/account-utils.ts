@@ -2,10 +2,7 @@ import { u8aToHex } from '@polkadot/util';
 import { createKeyMulti } from '@polkadot/util-crypto';
 import keyBy from 'lodash/keyBy';
 
-import { toAddress } from '@shared/lib/utils';
 // TODO: resolve cross import
-import { networkUtils } from '@entities/network';
-import { walletUtils } from './wallet-utils';
 import { AccountType, ChainType, CryptoType, ProxyType, ProxyVariant } from '@shared/core';
 import type {
   Account,
@@ -22,6 +19,11 @@ import type {
   Wallet,
   WcAccount,
 } from '@shared/core';
+import { toAddress } from '@shared/lib/utils';
+
+import { networkUtils } from '@entities/network';
+
+import { walletUtils } from './wallet-utils';
 
 export const accountUtils = {
   isBaseAccount,

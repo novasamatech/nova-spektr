@@ -2,9 +2,6 @@ import { type ApiPromise } from '@polkadot/api';
 import { type Vec } from '@polkadot/types';
 import { type AccountId32 } from '@polkadot/types/interfaces';
 
-import { type PendingMultisigTransaction } from './types';
-import { getCreatedDate, toAccountId } from '@shared/lib/utils';
-import type { ExtrinsicResultParams } from '@entities/transaction';
 import { MultisigTxInitStatus, TransactionType } from '@shared/core';
 import type {
   Address,
@@ -15,6 +12,11 @@ import type {
   type MultisigTransaction,
   type Transaction,
 } from '@shared/core';
+import { getCreatedDate, toAccountId } from '@shared/lib/utils';
+
+import type { ExtrinsicResultParams } from '@entities/transaction';
+
+import { type PendingMultisigTransaction } from './types';
 
 type MultisigTxResult = {
   transaction: MultisigTransaction;

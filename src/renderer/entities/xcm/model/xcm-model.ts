@@ -1,7 +1,7 @@
 import { createEffect, sample } from 'effector';
 
-import { kernelModel } from '@shared/core';
 import { type XcmConfig, xcmService } from '@shared/api/xcm';
+import { kernelModel } from '@shared/core';
 
 const getConfigFx = createEffect((): XcmConfig | null => {
   return xcmService.getXcmConfig();

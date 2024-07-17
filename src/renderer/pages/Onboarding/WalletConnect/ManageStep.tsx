@@ -3,11 +3,8 @@ import { useEffect, useState } from 'react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
 import { useI18n, useStatusContext } from '@app/providers';
-import { Button, HeaderTitleText, Icon, Input, InputHint, SmallTitleText } from '@shared/ui';
-import { toAccountId } from '@shared/lib/utils';
+
 import { chainsService } from '@shared/api/network';
-import { type IconNames } from '@shared/ui/Icon/data';
-import { MultiAccountsList, walletModel } from '@entities/wallet';
 import {
   type AccountId,
   AccountType,
@@ -19,6 +16,11 @@ import {
   WalletType,
   type WcAccount,
 } from '@shared/core';
+import { toAccountId } from '@shared/lib/utils';
+import { Button, HeaderTitleText, Icon, Input, InputHint, SmallTitleText } from '@shared/ui';
+import { type IconNames } from '@shared/ui/Icon/data';
+
+import { MultiAccountsList, walletModel } from '@entities/wallet';
 
 const WalletLogo: Record<WalletTypeName, IconNames> = {
   [WalletType.WALLET_CONNECT]: 'walletConnectOnboarding',

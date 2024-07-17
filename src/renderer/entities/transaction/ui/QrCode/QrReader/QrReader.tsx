@@ -3,9 +3,11 @@ import { BrowserCodeReader, BrowserQRCodeReader, type IScannerControls } from '@
 import init, { Decoder, EncodingPacket } from 'raptorq';
 import { useEffect, useRef } from 'react';
 
-import { cnTw, validateSignerFormat } from '@shared/lib/utils';
-import { CryptoTypeString } from '@shared/core';
 import { useI18n } from '@app/providers';
+
+import { CryptoTypeString } from '@shared/core';
+import { cnTw, validateSignerFormat } from '@shared/lib/utils';
+
 import {
   DYNAMIC_DERIVATIONS_ADDRESS_RESPONSE,
   EXPORT_ADDRESS,
@@ -23,6 +25,7 @@ import {
   type SeedInfo,
   type VideoInput,
 } from '../common/types';
+
 import RaptorFrame from './RaptorFrame';
 
 const enum Status {
@@ -80,7 +83,9 @@ export const QrReader = ({
   const sizeStyle = Array.isArray(size) ? { width: size[0], height: size[1] } : { width: size, height: size };
 
   const isQrErrorObject = (error: unknown): boolean => {
-    if (!error) return false;
+    if (!error) {
+      return false;
+    }
 
     return typeof error === 'object' && ErrorFields.CODE in error && ErrorFields.MESSAGE in error;
   };
@@ -91,7 +96,9 @@ export const QrReader = ({
   };
 
   const makeResultPayload = <T extends ScanResult>(data: T): Array<SeedInfo | DdSeedInfo> => {
-    if (Array.isArray(data)) return data;
+    if (Array.isArray(data)) {
+      return data;
+    }
 
     if (typeof data !== 'string') {
       const payload = { ...data.addr };
@@ -138,7 +145,9 @@ export const QrReader = ({
   };
 
   const handleSimpleQr = (signerAddress: string): boolean => {
-    if (!validateSignerFormat(signerAddress)) return false;
+    if (!validateSignerFormat(signerAddress)) {
+      return false;
+    }
 
     isComplete.current = true;
     onProgress?.({ decoded: 1, total: 1 });
@@ -194,7 +203,9 @@ export const QrReader = ({
       throw QR_READER_ERRORS[QrError.NOT_SAME_QR];
     }
 
-    if (collected.has(blockNumber)) return;
+    if (collected.has(blockNumber)) {
+      return;
+    }
 
     collected.add(blockNumber);
     onProgress?.({ decoded: collected.size, total });
@@ -239,26 +250,36 @@ export const QrReader = ({
   };
 
   const startScanning = async (): Promise<void> => {
-    if (!videoRef.current || !scannerRef.current) return;
+    if (!videoRef.current || !scannerRef.current) {
+      return;
+    }
 
     const decodeCallback: DecodeCallback = async (result): Promise<void> => {
-      if (!result || isComplete.current) return;
+      if (!result || isComplete.current) {
+        return;
+      }
 
       try {
         await init();
 
         const isSimpleQr = handleSimpleQr(result.getText());
-        if (isSimpleQr) return;
+        if (isSimpleQr) {
+          return;
+        }
 
         const resultMetadata = result.getResultMetadata().get(FRAME_KEY) as Uint8Array[];
-        if (resultMetadata.length > 1) return;
+        if (resultMetadata.length > 1) {
+          return;
+        }
 
         const frame = createFrame(resultMetadata);
 
         const stringPayload = JSON.stringify(frame.data.payload);
         const isPacketExist = packets.current.get(stringPayload);
 
-        if (isPacketExist) return;
+        if (isPacketExist) {
+          return;
+        }
 
         packets.current.set(stringPayload, frame.data.payload);
         const decodedPacket = EncodingPacket.deserialize(frame.data.payload);
@@ -328,7 +349,9 @@ export const QrReader = ({
   }, []);
 
   useEffect(() => {
-    if (!cameraId) return;
+    if (!cameraId) {
+      return;
+    }
 
     (async () => {
       try {

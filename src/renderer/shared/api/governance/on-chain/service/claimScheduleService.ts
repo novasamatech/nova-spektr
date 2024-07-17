@@ -1,11 +1,24 @@
 import { BN, BN_ZERO } from '@polkadot/util';
-import uniqWith from 'lodash/uniqWith';
+import clone from 'lodash/clone';
 import isEqual from 'lodash/isEqual';
 import orderBy from 'lodash/orderBy';
 import sortBy from 'lodash/sortBy';
-import clone from 'lodash/clone';
+import uniqWith from 'lodash/uniqWith';
 
-import { onChainUtils } from '../lib/on-chain-utils';
+import type {
+  AccountVote,
+  BlockHeight,
+  CastingVoting,
+  DelegatingVoting,
+  OngoingReferendum,
+  ReferendumInfo,
+  StandardVote,
+  TimedOutReferendum,
+  TrackId,
+  TrackInfo,
+  Voting,
+} from '@shared/core';
+
 import {
   type AffectTrack,
   type AffectVote,
@@ -23,19 +36,7 @@ import {
   type Unlock,
   UnlockChunkType,
 } from '../lib/claim-types';
-import type {
-  AccountVote,
-  BlockHeight,
-  CastingVoting,
-  DelegatingVoting,
-  OngoingReferendum,
-  ReferendumInfo,
-  StandardVote,
-  TimedOutReferendum,
-  TrackId,
-  TrackInfo,
-  Voting,
-} from '@shared/core';
+import { onChainUtils } from '../lib/on-chain-utils';
 
 export const claimScheduleService = {
   estimateClaimSchedule,

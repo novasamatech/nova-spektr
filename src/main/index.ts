@@ -2,15 +2,16 @@ import 'source-map-support/register';
 
 import { type BrowserWindow, app } from 'electron';
 
+import { APP_CONFIG } from '../../app.config';
+
+import { runAppSingleInstance } from './factories/instance';
 import { setupLogger } from './factories/logs';
-import { createWindow } from './factories/window';
+import { processUrl, registerDeepLinkProtocol } from './factories/protocol';
 import { setupApplication } from './factories/setup';
 import { setupAutoUpdater } from './factories/updater';
-import { runAppSingleInstance } from './factories/instance';
-import { processUrl, registerDeepLinkProtocol } from './factories/protocol';
-import { PLATFORM } from './shared/constants/platform';
+import { createWindow } from './factories/window';
 import { ENVIRONMENT } from './shared/constants/environment';
-import { APP_CONFIG } from '../../app.config';
+import { PLATFORM } from './shared/constants/platform';
 
 runAppSingleInstance(async () => {
   if (ENVIRONMENT.IS_DEV || ENVIRONMENT.IS_STAGE) {

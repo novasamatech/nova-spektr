@@ -1,12 +1,15 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { BaseModal } from '@shared/ui';
-import { MatrixInfoPopover, matrixModel, matrixUtils } from '@entities/matrix';
-import { UserInfo } from './UserInfo';
-import { Verification } from './Verification';
+
 import { useToggle } from '@shared/lib/hooks';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { BaseModal } from '@shared/ui';
+
+import { MatrixInfoPopover, matrixModel, matrixUtils } from '@entities/matrix';
+
+import { UserInfo } from './UserInfo';
+import { Verification } from './Verification';
 
 type Props = {
   onClose: () => void;
@@ -24,7 +27,9 @@ export const MatrixVerification = ({ onClose }: Props) => {
     setTimeout(onClose, DEFAULT_TRANSITION);
   };
 
-  if (!matrixUtils.isLoggedIn(loginStatus)) return null;
+  if (!matrixUtils.isLoggedIn(loginStatus)) {
+    return null;
+  }
 
   return (
     <BaseModal closeButton isOpen={isModalOpen} title={t('settings.matrix.generalTitle')} onClose={closeMatrixModal}>

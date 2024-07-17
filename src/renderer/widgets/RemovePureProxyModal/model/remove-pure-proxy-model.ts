@@ -1,16 +1,6 @@
 import { combine, createEvent, createStore, sample, split } from 'effector';
 import { delay, spread } from 'patronum';
 
-import { transactionService } from '@entities/transaction';
-import { toAddress, transferableAmount } from '@shared/lib/utils';
-import { walletSelectModel } from '@features/wallets';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { networkModel } from '@entities/network';
-import { balanceSubModel } from '@features/balances';
-import { type RemoveProxyStore, Step } from '../lib/types';
-import { formModel } from './form-model';
-import { removePureProxiedConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
-import { walletProviderModel } from '../../WalletDetails/model/wallet-provider-model';
 import {
   type Account,
   type BasketTransaction,
@@ -26,13 +16,27 @@ import {
   type TxWrapper,
   WrapperKind,
 } from '@shared/core';
-import { warningModel } from './warning-model';
+import { toAddress, transferableAmount } from '@shared/lib/utils';
+
+import { balanceModel, balanceUtils } from '@entities/balance';
+import { basketModel } from '@entities/basket/model/basket-model';
+import { networkModel } from '@entities/network';
 import { proxyModel } from '@entities/proxy';
+import { transactionService } from '@entities/transaction';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+
+import { balanceSubModel } from '@features/balances';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
-import { balanceModel, balanceUtils } from '@entities/balance';
+import { removePureProxiedConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
+import { walletSelectModel } from '@features/wallets';
+
+import { walletProviderModel } from '../../WalletDetails/model/wallet-provider-model';
 import { removePureProxyUtils } from '../lib/remove-pure-proxy-utils';
-import { basketModel } from '@entities/basket/model/basket-model';
+import { type RemoveProxyStore, Step } from '../lib/types';
+
+import { formModel } from './form-model';
+import { warningModel } from './warning-model';
 
 const stepChanged = createEvent<Step>();
 const wentBackFromConfirm = createEvent();

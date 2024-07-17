@@ -1,15 +1,18 @@
 import { useI18n } from '@app/providers';
-import { Accordion, FootnoteText } from '@shared/ui';
-import { Status } from './Status';
-import { OperationFullInfo } from './OperationFullInfo';
-import { type MultisigTransactionDS } from '@shared/api/storage';
-import { useMultisigEvent } from '@entities/multisig';
-import { ChainTitle, XcmChains } from '@entities/chain';
-import { TransactionTitle, getTransactionAmount, isXcmTransaction } from '@entities/transaction';
-import type { MultisigAccount } from '@shared/core';
+
 import { chainsService } from '@shared/api/network';
+import { type MultisigTransactionDS } from '@shared/api/storage';
+import type { MultisigAccount } from '@shared/core';
 import { getAssetById } from '@shared/lib/utils';
+import { Accordion, FootnoteText } from '@shared/ui';
+
 import { AssetBalance } from '@entities/asset';
+import { ChainTitle, XcmChains } from '@entities/chain';
+import { useMultisigEvent } from '@entities/multisig';
+import { TransactionTitle, getTransactionAmount, isXcmTransaction } from '@entities/transaction';
+
+import { OperationFullInfo } from './OperationFullInfo';
+import { Status } from './Status';
 
 type Props = {
   tx: MultisigTransactionDS;

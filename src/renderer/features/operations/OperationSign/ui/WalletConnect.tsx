@@ -1,23 +1,26 @@
-import { useEffect, useState } from 'react';
 import { type UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useGate, useUnit } from 'effector-react';
+import { useEffect, useState } from 'react';
 
-import { ValidationErrors } from '@shared/lib/utils';
-import { transactionService, useTransaction } from '@entities/transaction';
 import { useI18n } from '@app/providers';
-import { Button, ConfirmModal, Countdown, FootnoteText, SmallTitleText, StatusModal } from '@shared/ui';
-import { DEFAULT_POLKADOT_METHODS, walletConnectModel, walletConnectUtils } from '@entities/walletConnect';
+
 import { chainsService } from '@shared/api/network';
-import { useCountdown } from '@shared/lib/hooks';
 import wallet_connect_confirm from '@shared/assets/video/wallet_connect_confirm.mp4';
 import wallet_connect_confirm_webm from '@shared/assets/video/wallet_connect_confirm.webm';
 import { type HexString } from '@shared/core';
+import { useCountdown } from '@shared/lib/hooks';
+import { ValidationErrors } from '@shared/lib/utils';
+import { Button, ConfirmModal, Countdown, FootnoteText, SmallTitleText, StatusModal } from '@shared/ui';
 import { Animation } from '@shared/ui/Animation/Animation';
-import { type InnerSigningProps } from '../lib/types';
-import { signWcModel } from '../model/sign-wc-model';
-import { operationSignModel } from '../model/operation-sign-model';
-import { operationSignUtils } from '../lib/operation-sign-utils';
+
+import { transactionService, useTransaction } from '@entities/transaction';
 import { walletModel, walletUtils } from '@entities/wallet';
+import { DEFAULT_POLKADOT_METHODS, walletConnectModel, walletConnectUtils } from '@entities/walletConnect';
+
+import { operationSignUtils } from '../lib/operation-sign-utils';
+import { type InnerSigningProps } from '../lib/types';
+import { operationSignModel } from '../model/operation-sign-model';
+import { signWcModel } from '../model/sign-wc-model';
 
 export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack, onResult }: InnerSigningProps) => {
   const { t } = useI18n();
@@ -46,7 +49,9 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
   useGate(operationSignModel.SignerGate, account);
 
   useEffect(() => {
-    if (txPayload || !client) return;
+    if (txPayload || !client) {
+      return;
+    }
 
     const sessions = client.session.getAll();
     const storedAccount = walletUtils.getAccountsBy(wallets, (a) => a.walletId === account.walletId)[0];
@@ -102,7 +107,9 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
   };
 
   const signTransaction = async () => {
-    if (!api || !client || !session) return;
+    if (!api || !client || !session) {
+      return;
+    }
 
     signWcModel.events.signingStarted({
       client,

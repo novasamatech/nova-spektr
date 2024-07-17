@@ -1,6 +1,6 @@
 import { allSettled, fork } from 'effector';
 
-import { networkModel } from '@entities/network';
+import { storageService } from '@shared/api/storage';
 import {
   type AccountId,
   AccountType,
@@ -10,10 +10,12 @@ import {
   type ProxyAccount,
   ProxyType,
 } from '@shared/core';
-import { storageService } from '@shared/api/storage';
-import { proxiesModel } from '../proxies-model';
+
+import { networkModel } from '@entities/network';
 import { proxyModel } from '@entities/proxy';
 import { walletModel } from '@entities/wallet';
+
+import { proxiesModel } from '../proxies-model';
 
 jest.mock('@remote-ui/rpc', () => ({
   createEndpoint: jest.fn().mockReturnValue({

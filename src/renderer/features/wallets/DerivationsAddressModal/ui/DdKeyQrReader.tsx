@@ -2,10 +2,13 @@ import { hexToU8a, isHex } from '@polkadot/util';
 import { decodeAddress, encodeAddress, ethereumEncode } from '@polkadot/util-crypto';
 import { useState } from 'react';
 
+import { useI18n } from '@app/providers';
+
+import { CryptoType } from '@shared/core';
+import { cnTw } from '@shared/lib/utils';
 import { Button, CaptionText, FootnoteText, Icon, Loader, Select, SmallTitleText } from '@shared/ui';
 import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
-import { useI18n } from '@app/providers';
-import { cnTw } from '@shared/lib/utils';
+
 import {
   type DdAddressInfoDecoded,
   type DdSeedInfo,
@@ -15,7 +18,6 @@ import {
   type VideoInput,
   WhiteTextButtonStyle,
 } from '@entities/transaction';
-import { CryptoType } from '@shared/core';
 
 const enum CameraState {
   ACTIVE,
@@ -94,7 +96,9 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
           encodeAddress(qr.multiSigner.public);
         }
 
-        if (qr.dynamicDerivations.length === 0) return;
+        if (qr.dynamicDerivations.length === 0) {
+          return;
+        }
 
         const derivationsAddressInfo = qr.dynamicDerivations.map((addressInfo) => {
           const publicKey = isHex(addressInfo.publicKey.public)

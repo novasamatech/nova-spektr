@@ -1,7 +1,8 @@
-import { type SessionTypes } from '@walletconnect/types';
 import { hexToU8a, u8aToHex } from '@polkadot/util';
+import { type SessionTypes } from '@walletconnect/types';
 
 import { type HexString } from '@shared/core';
+
 import { ReconnectStep } from './types';
 
 export const operationSignUtils = {

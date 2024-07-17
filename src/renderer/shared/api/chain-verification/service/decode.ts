@@ -1,9 +1,7 @@
 /* eslint-disable no-bitwise */
-import { blake2AsU8a } from '@polkadot/util-crypto';
 import { u8aToHex } from '@polkadot/util';
+import { blake2AsU8a } from '@polkadot/util-crypto';
 
-import { type Node } from '../lib/types';
-import { getNodeType, keyLEToNibbles } from '../lib/utils';
 import {
   BRANCH_VARIANT,
   BRANCH_WITH_VALUE_VARIANT,
@@ -14,6 +12,8 @@ import {
   NodeType,
   VARIANTS,
 } from '../lib/constants';
+import { type Node } from '../lib/types';
+import { getNodeType, keyLEToNibbles } from '../lib/utils';
 
 const decodeHeaderByte = (header: number) => {
   // variants is a slice of all variants sorted in ascending

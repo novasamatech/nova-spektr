@@ -9,9 +9,11 @@ import {
   type ProxiedAccount,
   type Wallet,
 } from '@shared/core';
-import { walletModel, walletUtils } from '@entities/wallet';
-import { balanceModel, balanceUtils } from '@entities/balance';
 import { transferableAmount } from '@shared/lib/utils';
+
+import { balanceModel, balanceUtils } from '@entities/balance';
+import { walletModel, walletUtils } from '@entities/wallet';
+
 import {
   type BalanceMap,
   type NetworkStore,

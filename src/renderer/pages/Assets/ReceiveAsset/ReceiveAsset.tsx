@@ -1,10 +1,13 @@
-import { useNavigate } from 'react-router-dom';
 import { useUnit } from 'effector-react';
+import { useNavigate } from 'react-router-dom';
+
+import { Paths } from '@shared/routes';
+
+import { CheckPermission, OperationType, walletModel } from '@entities/wallet';
 
 import { AssetRouteGuard } from '@features/assets';
-import { Paths } from '@shared/routes';
+
 import { ReceiveAssetModal } from '@widgets/ReceiveAssetModal';
-import { CheckPermission, OperationType, walletModel } from '@entities/wallet';
 
 export const ReceiveAsset = () => {
   const navigate = useNavigate();

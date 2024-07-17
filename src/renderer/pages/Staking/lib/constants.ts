@@ -1,5 +1,6 @@
-import { Operations } from './types';
 import { type IconNames } from '@shared/ui/Icon/data';
+
+import { Operations } from './types';
 
 export const StashOperations: Operations[] = [Operations.BOND_EXTRA];
 

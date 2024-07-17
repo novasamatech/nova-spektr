@@ -1,7 +1,9 @@
 import type Client from '@walletconnect/sign-client';
 
 import type { Chain, ChainId, Wallet } from '@shared/core';
+
 import { walletUtils } from '@entities/wallet';
+
 import { FIRST_CHAIN_ID_SYMBOL, LAST_CHAIN_ID_SYMBOL } from './constants';
 
 export const walletConnectUtils = {

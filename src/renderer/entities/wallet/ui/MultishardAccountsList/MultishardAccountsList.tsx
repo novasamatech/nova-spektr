@@ -1,11 +1,13 @@
 import { useMemo } from 'react';
 
-import { RootExplorers, cnTw } from '@shared/lib/utils';
-import { ContactItem, ExplorersPopover } from '@entities/wallet';
 import { useI18n } from '@app/providers';
-import { Accordion, FootnoteText, HelpText } from '@shared/ui';
+
 import type { BaseAccount, Chain, ChainAccount, ChainId } from '@shared/core';
+import { RootExplorers, cnTw } from '@shared/lib/utils';
+import { Accordion, FootnoteText, HelpText } from '@shared/ui';
+
 import { ChainTitle } from '@entities/chain';
+import { ContactItem, ExplorersPopover } from '@entities/wallet';
 
 type Props = {
   chains: Chain[];
@@ -40,7 +42,9 @@ export const MultishardAccountsList = ({ chains, accounts, className }: Props) =
           <FootnoteText className="pl-10 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
 
           {chains.map((chain) => {
-            if (!chainMap[chain.chainId]) return;
+            if (!chainMap[chain.chainId]) {
+              return;
+            }
 
             return (
               <Accordion key={chain.chainId} isDefaultOpen className="pl-8">

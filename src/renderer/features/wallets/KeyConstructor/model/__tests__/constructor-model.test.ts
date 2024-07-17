@@ -1,9 +1,12 @@
 import { type Scope, allSettled, fork } from 'effector';
 
-import { constructorModel } from '../constructor-model';
 import { AccountType, type ChainAccount, ChainType, CryptoType, KeyType, type ShardAccount } from '@shared/core';
 import { TEST_CHAIN_ID } from '@shared/lib/utils';
+
 import { networkModel } from '@entities/network';
+
+import { constructorModel } from '../constructor-model';
+
 import { constructorMock } from './mocks/constructor-mock';
 
 describe('features/wallet/model/constructor-model', () => {

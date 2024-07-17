@@ -1,17 +1,22 @@
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
-import { BaseModal, Button } from '@shared/ui';
-import { useModalClose } from '@shared/lib/hooks';
-import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
-import { OperationSign, OperationSubmit } from '@features/operations';
-import { ReturnToStakeForm } from './RestakeForm';
-import { restakeUtils } from '../lib/restake-utils';
-import { restakeModel } from '../model/restake-model';
-import { Step } from '../lib/types';
-import { RestakeConfirmation as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
+
+import { useModalClose } from '@shared/lib/hooks';
+import { BaseModal, Button } from '@shared/ui';
+
+import { OperationTitle } from '@entities/chain';
 import { OperationResult } from '@entities/transaction';
+
+import { OperationSign, OperationSubmit } from '@features/operations';
+import { RestakeConfirmation as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
+
+import { restakeUtils } from '../lib/restake-utils';
+import { Step } from '../lib/types';
+import { restakeModel } from '../model/restake-model';
+
+import { ReturnToStakeForm } from './RestakeForm';
 
 export const Restake = () => {
   const { t } = useI18n();
@@ -34,9 +39,13 @@ export const Restake = () => {
     }
   }, [step]);
 
-  if (!networkStore) return null;
+  if (!networkStore) {
+    return null;
+  }
 
-  if (restakeUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  if (restakeUtils.isSubmitStep(step)) {
+    return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  }
   if (restakeUtils.isBasketStep(step)) {
     return (
       <OperationResult

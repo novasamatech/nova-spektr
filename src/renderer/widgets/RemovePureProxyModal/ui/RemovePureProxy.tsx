@@ -1,19 +1,24 @@
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
-import { BaseModal, Button } from '@shared/ui';
-import { useModalClose } from '@shared/lib/hooks';
-import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
+
 import type { Chain } from '@shared/core';
-import { Step } from '../lib/types';
-import { RemovePureProxyForm } from './RemovePureProxyForm';
-import { removePureProxyUtils } from '../lib/remove-pure-proxy-utils';
-import { removePureProxyModel } from '../model/remove-pure-proxy-model';
-import { Warning } from './Warning';
+import { useModalClose } from '@shared/lib/hooks';
+import { BaseModal, Button } from '@shared/ui';
+
+import { OperationTitle } from '@entities/chain';
+import { OperationResult } from '@entities/transaction';
+
 import { OperationSign, OperationSubmit } from '@features/operations';
 import { RemovePureProxiedConfirm as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
-import { OperationResult } from '@entities/transaction';
+
+import { removePureProxyUtils } from '../lib/remove-pure-proxy-utils';
+import { Step } from '../lib/types';
+import { removePureProxyModel } from '../model/remove-pure-proxy-model';
+
+import { RemovePureProxyForm } from './RemovePureProxyForm';
+import { Warning } from './Warning';
 
 export const RemovePureProxy = () => {
   const { t } = useI18n();
@@ -42,8 +47,9 @@ export const RemovePureProxy = () => {
   }, [step]);
 
   const getModalTitle = (step: Step, chain?: Chain) => {
-    if (removePureProxyUtils.isInitStep(step) || !chain)
+    if (removePureProxyUtils.isInitStep(step) || !chain) {
       return t(shouldRemovePureProxy ? 'operations.modalTitles.removePureProxy' : 'operations.modalTitles.removeProxy');
+    }
 
     return (
       <OperationTitle
@@ -55,7 +61,9 @@ export const RemovePureProxy = () => {
     );
   };
 
-  if (removePureProxyUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  if (removePureProxyUtils.isSubmitStep(step)) {
+    return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  }
 
   if (removePureProxyUtils.isBasketStep(step)) {
     return (

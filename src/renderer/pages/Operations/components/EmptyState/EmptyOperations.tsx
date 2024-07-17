@@ -1,6 +1,7 @@
-import { BodyText, Icon } from '@shared/ui';
 import { useI18n } from '@app/providers';
+
 import type { MultisigAccount } from '@shared/core';
+import { BodyText, Icon } from '@shared/ui';
 
 type Props = {
   multisigAccount?: MultisigAccount;

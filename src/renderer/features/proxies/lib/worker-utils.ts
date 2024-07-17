@@ -1,7 +1,7 @@
+import { type ApiPromise } from '@polkadot/api';
 import { u8aToHex } from '@polkadot/util';
 import { decodeAddress } from '@polkadot/util-crypto';
 import { WellKnownChain } from '@substrate/connect';
-import { type ApiPromise } from '@polkadot/api';
 
 import type { AccountId, ChainId, NoID, PartialProxiedAccount, ProxyAccount } from '@shared/core';
 

@@ -1,12 +1,14 @@
 import { type ApiPromise } from '@polkadot/api';
-import { memo, useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
+import { memo, useEffect, useState } from 'react';
+
+import { proxyService } from '@shared/api/proxy';
+import type { Asset } from '@shared/core';
 
 import { AssetBalance } from '@entities/asset';
-import type { Asset } from '@shared/core';
-import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
-import { proxyService } from '@shared/api/proxy';
 import { priceProviderModel } from '@entities/price';
+import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 
 type Props = {
@@ -42,7 +44,9 @@ export const ProxyDeposit = memo(
       }
     }, [api, deposit, proxyNumber]);
 
-    if (isLoading) return <FeeLoader fiatFlag={Boolean(fiatFlag)} />;
+    if (isLoading) {
+      return <FeeLoader fiatFlag={Boolean(fiatFlag)} />;
+    }
 
     return (
       <div className="flex flex-col gap-y-0.5 items-end">

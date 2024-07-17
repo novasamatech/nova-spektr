@@ -1,9 +1,11 @@
 import { type ReactNode, useEffect, useRef } from 'react';
 
-import { type ExtendedChain } from '@entities/network';
-import { Accordion, CaptionText, Counter } from '@shared/ui';
-import { networksListUtils } from '../lib/networks-list-utils';
 import { useToggle } from '@shared/lib/hooks';
+import { Accordion, CaptionText, Counter } from '@shared/ui';
+
+import { type ExtendedChain } from '@entities/network';
+
+import { networksListUtils } from '../lib/networks-list-utils';
 
 type Props = {
   title: string;
@@ -18,13 +20,19 @@ export const NetworkList = ({ title, query, networkList, children }: Props) => {
   const [isListOpen, toggleList] = useToggle(true);
 
   useEffect(() => {
-    if (!buttonRef.current) return;
-    if (isListOpen || !query) return;
+    if (!buttonRef.current) {
+      return;
+    }
+    if (isListOpen || !query) {
+      return;
+    }
 
     buttonRef.current.click();
   }, [query]);
 
-  if (networkList.length === 0) return null;
+  if (networkList.length === 0) {
+    return null;
+  }
 
   const { success, connecting, error } = networksListUtils.getStatusMetrics(networkList);
 

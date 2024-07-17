@@ -1,9 +1,9 @@
-import { createEffect, createEvent, createStore, sample } from 'effector';
 import { type ApiPromise } from '@polkadot/api';
+import { createEffect, createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
-import { type Address, type TrackId, type VotingMap } from '@/shared/core';
 import { governanceService } from '@/shared/api/governance';
+import { type Address, type TrackId, type VotingMap } from '@/shared/core';
 
 const $voting = createStore<VotingMap>({});
 

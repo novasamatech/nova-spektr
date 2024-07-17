@@ -1,9 +1,10 @@
 import { type PropsWithChildren, type ReactNode } from 'react';
 
-import { cnTw, copyToClipboard, getAccountExplorer, toAddress } from '@shared/lib/utils';
-import type { AccountId, Address, Explorer } from '@shared/core';
-import { ContextMenu, ExplorerLink, HelpText, IconButton } from '@shared/ui';
 import { useI18n } from '@app/providers';
+
+import type { AccountId, Address, Explorer } from '@shared/core';
+import { cnTw, copyToClipboard, getAccountExplorer, toAddress } from '@shared/lib/utils';
+import { ContextMenu, ExplorerLink, HelpText, IconButton } from '@shared/ui';
 
 type Props = {
   button: ReactNode;

@@ -2,17 +2,20 @@ import { useUnit } from 'effector-react';
 import { Link } from 'react-router-dom';
 
 import { useI18n } from '@app/providers';
-import { BaseModal, BodyText, FootnoteText, HeaderTitleText, SearchInput } from '@shared/ui';
+
 import { useModalClose } from '@shared/lib/hooks';
 import { totalAmount } from '@shared/lib/utils';
 import { type PathType, Paths, createLink } from '@shared/routes';
+import { BaseModal, BodyText, FootnoteText, HeaderTitleText, SearchInput } from '@shared/ui';
+
+import { EmptyAssetsState } from '@entities/asset';
 import { ChainIcon } from '@entities/chain';
 import { networkModel } from '@entities/network';
 import { AssetFiatBalance } from '@entities/price';
-import { EmptyAssetsState } from '@entities/asset';
-import { assetTransactionModel } from '../model/asset-transaction-model';
-import { assetTransactionUtils } from '../lib/utils';
+
 import { ModalType } from '../lib/types';
+import { assetTransactionUtils } from '../lib/utils';
+import { assetTransactionModel } from '../model/asset-transaction-model';
 
 type ModalDetailsProps = { title: string; path: PathType };
 
@@ -45,7 +48,9 @@ export const AssetTransactionModal = () => {
     assetTransactionModel.output.flowClosed,
   );
 
-  if (!assetWithChains || modalType === null) return null;
+  if (!assetWithChains || modalType === null) {
+    return null;
+  }
 
   const { title, path } = getModalDetails(modalType);
   const modalTitle = <HeaderTitleText>{t(title, { asset: assetWithChains.symbol })}</HeaderTitleText>;

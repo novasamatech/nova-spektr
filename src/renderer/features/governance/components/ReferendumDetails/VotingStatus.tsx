@@ -1,12 +1,16 @@
 import { useState } from 'react';
 
-import { VoteChart, referendumService, votingService } from '@entities/governance';
+import { useI18n } from '@app/providers';
+
+import { type Asset, type Chain } from '@shared/core';
 import { formatBalance } from '@shared/lib/utils';
 import { Button, FootnoteText, Icon } from '@shared/ui';
-import { useI18n } from '@app/providers';
-import { type Asset, type Chain } from '@shared/core';
-import { VotingStatusBadge } from '../VotingStatusBadge';
+
+import { VoteChart, referendumService, votingService } from '@entities/governance';
+
 import { type AggregatedReferendum } from '../../types/structs';
+import { VotingStatusBadge } from '../VotingStatusBadge';
+
 import { VoteDialog } from './VoteDialog';
 
 type Props = {

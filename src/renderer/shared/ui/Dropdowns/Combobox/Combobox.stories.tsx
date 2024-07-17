@@ -2,6 +2,7 @@ import { type ComponentMeta, type ComponentStory } from '@storybook/react';
 
 import { Icon } from '../../Icon/Icon';
 import { Identicon } from '../../Identicon/Identicon';
+
 import { Combobox } from './Combobox';
 
 export default {

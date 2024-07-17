@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 
 import { useI18n } from '@/app/providers';
 
+import { cnTw } from '@/shared/lib/utils';
 import { Duration, FootnoteText, Icon } from '@/shared/ui';
 import type { IconNames } from '@/shared/ui/types';
-import { cnTw } from '@/shared/lib/utils';
 
 type Status = 'approve' | 'reject' | 'execute';
 
@@ -37,7 +37,9 @@ export const ReferendumTimer = ({ status, time }: Props) => {
   const [countdown, setCountdown] = useState(time);
 
   useEffect(() => {
-    if (countdown === 0) return;
+    if (countdown === 0) {
+      return;
+    }
 
     const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
 

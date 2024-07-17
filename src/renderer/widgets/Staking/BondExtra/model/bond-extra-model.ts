@@ -1,13 +1,8 @@
-import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { type ApiPromise } from '@polkadot/api';
-import { delay, spread } from 'patronum';
 import { BN } from '@polkadot/util';
+import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { delay, spread } from 'patronum';
 
-import { walletModel } from '@entities/wallet';
-import { getRelaychainAsset, nonNullable } from '@shared/lib/utils';
-import { networkModel } from '@entities/network';
-import { submitModel } from '@features/operations/OperationSubmit';
-import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import {
   type Account,
   type BasketTransaction,
@@ -17,12 +12,21 @@ import {
   type TxWrapper,
   WrapperKind,
 } from '@shared/core';
-import { type BondExtraData, type FeeData, Step, type WalletData } from '../lib/types';
-import { bondExtraUtils } from '../lib/bond-extra-utils';
-import { formModel } from './form-model';
-import { bondExtraConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
-import { transactionBuilder, transactionService } from '@entities/transaction';
+import { getRelaychainAsset, nonNullable } from '@shared/lib/utils';
+
 import { basketModel } from '@entities/basket/model/basket-model';
+import { networkModel } from '@entities/network';
+import { transactionBuilder, transactionService } from '@entities/transaction';
+import { walletModel } from '@entities/wallet';
+
+import { signModel } from '@features/operations/OperationSign/model/sign-model';
+import { submitModel } from '@features/operations/OperationSubmit';
+import { bondExtraConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
+
+import { bondExtraUtils } from '../lib/bond-extra-utils';
+import { type BondExtraData, type FeeData, Step, type WalletData } from '../lib/types';
+
+import { formModel } from './form-model';
 
 const stepChanged = createEvent<Step>();
 

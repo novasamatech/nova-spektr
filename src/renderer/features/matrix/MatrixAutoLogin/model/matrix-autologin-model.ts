@@ -2,7 +2,9 @@ import { createEffect, createEvent, createStore, sample } from 'effector';
 import { delay, not, spread } from 'patronum';
 
 import { type ISecureMessenger } from '@shared/api/matrix';
+
 import { LoginStatus, matrixModel, matrixUtils } from '@entities/matrix';
+
 import { AUTO_LOGIN_DELAY } from '../lib/constants';
 import { AutoLoginStatus } from '../lib/types';
 

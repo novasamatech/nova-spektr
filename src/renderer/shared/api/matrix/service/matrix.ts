@@ -1,4 +1,5 @@
 import Olm from '@matrix-org/olm';
+import noop from 'lodash/noop';
 import {
   AuthType,
   AutoDiscovery,
@@ -17,12 +18,13 @@ import {
   Visibility,
   createClient,
 } from 'matrix-js-sdk';
-import { deriveKey } from 'matrix-js-sdk/lib/crypto/key_passphrase';
-import { SyncState } from 'matrix-js-sdk/lib/sync';
-import { logger } from 'matrix-js-sdk/lib/logger';
 import type { ISecretStorageKeyInfo } from 'matrix-js-sdk/lib/crypto/api';
+import { deriveKey } from 'matrix-js-sdk/lib/crypto/key_passphrase';
+import { logger } from 'matrix-js-sdk/lib/logger';
 import type { IStore } from 'matrix-js-sdk/lib/store';
-import noop from 'lodash/noop';
+import { SyncState } from 'matrix-js-sdk/lib/sync';
+
+import { nonNullable } from '@shared/lib/utils';
 
 import {
   BASE_MATRIX_URL,
@@ -32,9 +34,6 @@ import {
   WELL_KNOWN_SERVERS,
 } from '../lib/constants';
 import MATRIX_ERRORS from '../lib/errors';
-import CredentialStorage from './credentialStorage';
-import SecretStorage from './secretStorage';
-import { nonNullable } from '@shared/lib/utils';
 import {
   type ApprovePayload,
   type BaseMultisigPayload,
@@ -56,6 +55,9 @@ import {
   SpektrMultisigEvent,
   type UpdatePayload,
 } from '../lib/types';
+
+import CredentialStorage from './credentialStorage';
+import SecretStorage from './secretStorage';
 
 global.Olm = Olm;
 logger.disableAll();

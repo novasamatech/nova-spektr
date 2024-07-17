@@ -2,8 +2,9 @@
 import { type ElementType } from 'react';
 
 import { useI18n } from '@app/providers';
-import { timeUtils } from './common/utils';
+
 import { DurationFormat } from './common/types';
+import { timeUtils } from './common/utils';
 
 type Props = {
   as?: ElementType;

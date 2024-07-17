@@ -1,10 +1,13 @@
 import { allSettled, fork } from 'effector';
 
-import { shardsModel } from '../shards-model';
-import { shardsMock } from './mocks/shards-mock';
-import { walletModel } from '@entities/wallet';
 import { type ChainAccount, type ShardAccount } from '@shared/core';
+
 import { networkModel } from '@entities/network';
+import { walletModel } from '@entities/wallet';
+
+import { shardsModel } from '../shards-model';
+
+import { shardsMock } from './mocks/shards-mock';
 
 describe('features/wallet/model/shards-model', () => {
   test('should create $walletStructure for vaultAccounts with sorted chains', async () => {

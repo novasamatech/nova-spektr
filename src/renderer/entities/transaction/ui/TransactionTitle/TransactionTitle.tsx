@@ -1,10 +1,13 @@
 import { type PropsWithChildren } from 'react';
 
-import { BodyText, FootnoteText, Icon } from '@shared/ui';
 import { useI18n } from '@app/providers';
+
 import { type DecodedTransaction, type Transaction } from '@shared/core';
 import { cnTw } from '@shared/lib/utils';
+import { BodyText, FootnoteText, Icon } from '@shared/ui';
+
 import { getIconName } from '@entities/transaction/lib/transactionIcon';
+
 import { getTransactionTitle } from '../../lib';
 
 type Props = {

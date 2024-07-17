@@ -1,18 +1,11 @@
 import { useForm } from 'effector-forms';
-import { type FormEvent, useState } from 'react';
 import { useUnit } from 'effector-react';
+import { type FormEvent, useState } from 'react';
 
 import { useI18n } from '@app/providers';
+
 import { type Address, RewardsDestination } from '@shared/core';
-import { AccountAddress, ProxyWalletAlert, accountUtils } from '@entities/wallet';
 import { formatBalance, toAddress, toShortAddress, validateAddress } from '@shared/lib/utils';
-import { AssetBalance } from '@entities/asset';
-import { type RadioOption } from '@shared/ui/types';
-import { formModel } from '../model/form-model';
-import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
-import { FeeLoader } from '@entities/transaction';
-import { priceProviderModel } from '@entities/price';
-import { SignatorySelector } from '@entities/operations';
 import {
   Button,
   Combobox,
@@ -26,6 +19,16 @@ import {
   RadioGroup,
   Tooltip,
 } from '@shared/ui';
+import { type RadioOption } from '@shared/ui/types';
+
+import { AssetBalance } from '@entities/asset';
+import { SignatorySelector } from '@entities/operations';
+import { priceProviderModel } from '@entities/price';
+import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { FeeLoader } from '@entities/transaction';
+import { AccountAddress, ProxyWalletAlert, accountUtils } from '@entities/wallet';
+
+import { formModel } from '../model/form-model';
 
 type Props = {
   onGoBack: () => void;
@@ -66,7 +69,9 @@ const ProxyFeeAlert = () => {
   const network = useUnit(formModel.$networkStore);
   const proxyWallet = useUnit(formModel.$proxyWallet);
 
-  if (!network || !proxyWallet || !shards.hasError()) return null;
+  if (!network || !proxyWallet || !shards.hasError()) {
+    return null;
+  }
 
   const formattedFee = formatBalance(feeData.fee, network.asset.precision).value;
   const formattedBalance = formatBalance(balance, network.asset.precision).value;
@@ -92,7 +97,9 @@ const AccountsSelector = () => {
   const accounts = useUnit(formModel.$accounts);
   const network = useUnit(formModel.$networkStore);
 
-  if (!network || accounts.length <= 1) return null;
+  if (!network || accounts.length <= 1) {
+    return null;
+  }
 
   const options = accounts.map(({ account, balance }) => {
     const isShard = accountUtils.isShardAccount(account);
@@ -145,7 +152,9 @@ const Signatories = () => {
   const network = useUnit(formModel.$networkStore);
   const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!isMultisig || !network) return null;
+  if (!isMultisig || !network) {
+    return null;
+  }
 
   return (
     <SignatorySelector
@@ -174,7 +183,9 @@ const Destination = () => {
   const [payout, setPayout] = useState<Address>('');
   const [activeOptionId, setActiveOptionId] = useState<string>('0');
 
-  if (!network) return null;
+  if (!network) {
+    return null;
+  }
 
   const options: RadioOption<{ type: RewardsDestination; value: Address }>[] = [
     { title: t('staking.bond.restakeRewards'), value: '', rewardType: RewardsDestination.RESTAKE },
@@ -263,7 +274,9 @@ const Description = () => {
 
   const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!isMultisig) return null;
+  if (!isMultisig) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -297,7 +310,9 @@ const FeeSection = () => {
 
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
-  if (!network || shards.value.length === 0) return null;
+  if (!network || shards.value.length === 0) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-y-2">

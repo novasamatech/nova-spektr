@@ -1,10 +1,9 @@
-import { createEndpoint } from '@remote-ui/rpc';
+import { ApiPromise } from '@polkadot/api';
 import { ScProvider, WsProvider } from '@polkadot/rpc-provider';
 import { type ProviderInterface } from '@polkadot/rpc-provider/types';
-import { ApiPromise } from '@polkadot/api';
+import { createEndpoint } from '@remote-ui/rpc';
 import * as Sc from '@substrate/connect';
 
-import { proxyWorkerUtils } from '../lib/worker-utils';
 import {
   type AccountId,
   type BaseAccount,
@@ -19,6 +18,8 @@ import {
   type ProxyDeposits,
   ProxyVariant,
 } from '@shared/core';
+
+import { proxyWorkerUtils } from '../lib/worker-utils';
 
 export const proxyWorker = {
   initConnection,

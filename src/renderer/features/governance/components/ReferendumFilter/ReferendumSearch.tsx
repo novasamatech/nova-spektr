@@ -1,7 +1,9 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
+
 import { SearchInput } from '@shared/ui';
+
 import { filterModel } from '../../model/filter';
 
 export const ReferendumSearch = () => {

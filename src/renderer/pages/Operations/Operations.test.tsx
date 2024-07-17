@@ -3,8 +3,10 @@ import { fork } from 'effector';
 import { Provider } from 'effector-react';
 
 import { TEST_ACCOUNTS } from '@shared/lib/utils';
-import { Operations } from './Operations';
+
 import { networkModel } from '@entities/network';
+
+import { Operations } from './Operations';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({

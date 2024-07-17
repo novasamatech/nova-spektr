@@ -1,14 +1,16 @@
-import { attach, combine, createApi, createEffect, createEvent, createStore, sample } from 'effector';
 import BigNumber from 'bignumber.js';
+import { attach, combine, createApi, createEffect, createEvent, createStore, sample } from 'effector';
 import { once, previous } from 'patronum';
 
-import { dictionary, getRoundedValue, totalAmount } from '@shared/lib/utils';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { currencyModel, priceProviderModel } from '@entities/price';
-import type { Account, ID, Wallet } from '@shared/core';
-import { networkModel } from '@entities/network';
-import { balanceModel } from '@entities/balance';
 import { storageService } from '@shared/api/storage';
+import type { Account, ID, Wallet } from '@shared/core';
+import { dictionary, getRoundedValue, totalAmount } from '@shared/lib/utils';
+
+import { balanceModel } from '@entities/balance';
+import { networkModel } from '@entities/network';
+import { currencyModel, priceProviderModel } from '@entities/price';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+
 import { walletSelectUtils } from '../lib/wallet-select-utils';
 
 export type Callbacks = {

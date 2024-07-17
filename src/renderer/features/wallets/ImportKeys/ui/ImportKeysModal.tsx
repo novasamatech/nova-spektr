@@ -1,13 +1,16 @@
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
-import { Alert, BaseModal, Button, InfoLink, InputFile, InputHint } from '@shared/ui';
-import type { AccountId, ChainAccount, DraftAccount, ShardAccount } from '@shared/core';
 import { useI18n } from '@app/providers';
+
+import type { AccountId, ChainAccount, DraftAccount, ShardAccount } from '@shared/core';
 import { cnTw } from '@shared/lib/utils';
-import { importKeysModel } from '../model/import-keys-model';
-import { importKeysUtils } from '../lib/import-keys-utils';
+import { Alert, BaseModal, Button, InfoLink, InputFile, InputHint } from '@shared/ui';
+
 import { TEMPLATE_GITHUB_LINK } from '@features/wallets/ImportKeys/lib/constants';
+
+import { importKeysUtils } from '../lib/import-keys-utils';
+import { importKeysModel } from '../model/import-keys-model';
 
 type Props = {
   isOpen: boolean;
@@ -25,7 +28,9 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
   const successReport = useUnit(importKeysModel.$successReport);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      return;
+    }
 
     importKeysModel.events.resetValues({
       root: rootAccountId,
@@ -38,7 +43,9 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
   };
 
   const getReportText = () => {
-    if (!successReport) return;
+    if (!successReport) {
+      return;
+    }
 
     const addedKeys = t('dynamicDerivations.importKeys.report.addedKeys', { count: successReport.addedKeys });
     const updatedNetworks = t('dynamicDerivations.importKeys.report.updatedNetworks', {

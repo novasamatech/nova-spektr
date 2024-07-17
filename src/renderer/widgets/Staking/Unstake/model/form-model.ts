@@ -1,13 +1,10 @@
-import { attach, combine, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
-import { spread } from 'patronum';
-import { createForm } from 'effector-forms';
-import { BN } from '@polkadot/util';
 import { type ApiPromise } from '@polkadot/api';
+import { BN } from '@polkadot/util';
+import { attach, combine, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
+import { createForm } from 'effector-forms';
 import noop from 'lodash/noop';
+import { spread } from 'patronum';
 
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { balanceModel, balanceUtils } from '@entities/balance';
-import { networkModel, networkUtils } from '@entities/network';
 import type {
   Account,
   Address,
@@ -20,11 +17,17 @@ import type {
   ProxyTxWrapper,
   Transaction,
 } from '@shared/core';
-import { type StakingMap, useStakingData } from '@entities/staking';
 import { ZERO_BALANCE, formatAmount, getRelaychainAsset, toAddress, transferableAmount } from '@shared/lib/utils';
-import { type NetworkStore } from '../lib/types';
+
+import { balanceModel, balanceUtils } from '@entities/balance';
+import { networkModel, networkUtils } from '@entities/network';
+import { type StakingMap, useStakingData } from '@entities/staking';
 import { transactionBuilder, transactionService } from '@entities/transaction';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+
 import { UnstakeRules } from '@features/operations/OperationsValidation';
+
+import { type NetworkStore } from '../lib/types';
 
 type BalanceMap = { balance: string; stake: string };
 

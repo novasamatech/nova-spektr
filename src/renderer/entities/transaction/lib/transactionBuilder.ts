@@ -1,5 +1,3 @@
-import { TransferType } from './common/constants';
-import { TEST_ACCOUNTS, formatAmount, getAssetId, toAddress } from '@shared/lib/utils';
 import {
   type AccountId,
   type Address,
@@ -9,6 +7,9 @@ import {
   type Transaction,
   TransactionType,
 } from '@shared/core';
+import { TEST_ACCOUNTS, formatAmount, getAssetId, toAddress } from '@shared/lib/utils';
+
+import { TransferType } from './common/constants';
 
 export const transactionBuilder = {
   buildTransfer,

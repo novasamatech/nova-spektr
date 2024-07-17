@@ -1,9 +1,10 @@
 import { stringToU8a, u8aToHex } from '@polkadot/util';
 import { u8aConcat } from '@polkadot/util/u8a/concat';
 
-import { createFrames, createSignPayload, createSubstrateSignPayload, encodeNumber, getSvgString } from './utils';
 import { SigningType } from '@shared/core';
+
 import { SUBSTRATE_ID } from './constants';
+import { createFrames, createSignPayload, createSubstrateSignPayload, encodeNumber, getSvgString } from './utils';
 
 describe('QrCode/QrGenerator/onChainUtils', () => {
   test('should encodes 1 correctly', () => {

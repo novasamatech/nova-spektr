@@ -1,11 +1,13 @@
-import { allSettled, fork } from 'effector';
 import { hexToU8a } from '@polkadot/util';
+import { allSettled, fork } from 'effector';
 
-import { manageVaultModel } from '../manage-vault-model';
 import { AccountType, type ChainAccount, ChainType, CryptoType, KeyType } from '@shared/core';
 import { TEST_HASH } from '@shared/lib/utils';
-import { type SeedInfo } from '@entities/transaction';
+
 import { networkModel } from '@entities/network';
+import { type SeedInfo } from '@entities/transaction';
+
+import { manageVaultModel } from '../manage-vault-model';
 
 describe('pages/Onboarding/Vault/ManageVault/model/manage-vault-model', () => {
   const defaultKeys = [

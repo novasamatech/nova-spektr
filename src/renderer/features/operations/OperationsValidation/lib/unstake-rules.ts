@@ -1,8 +1,9 @@
-import { type Store } from 'effector';
 import { BN } from '@polkadot/util';
+import { type Store } from 'effector';
 
-import { formatAmount } from '@shared/lib/utils';
 import { type Account } from '@shared/core';
+import { formatAmount } from '@shared/lib/utils';
+
 import {
   type AmountFeeStore,
   type Config,
@@ -11,6 +12,7 @@ import {
   type SignatoryFeeStore,
   type UnstakeAmountBalanceRange,
 } from '../types/types';
+
 import { balanceValidation, descriptionValidation } from './validation';
 
 export const UnstakeRules = {

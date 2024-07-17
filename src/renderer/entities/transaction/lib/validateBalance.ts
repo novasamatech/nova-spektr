@@ -1,9 +1,10 @@
-import { BN } from '@polkadot/util';
 import { type ApiPromise } from '@polkadot/api';
+import { BN } from '@polkadot/util';
+
+import type { AccountId, Balance, ChainId, PartialBy, Transaction } from '@shared/core';
+import { ValidationErrors, toAccountId, transferableAmount } from '@shared/lib/utils';
 
 import { OperationError, type OperationErrorType } from '@entities/transaction';
-import { ValidationErrors, toAccountId, transferableAmount } from '@shared/lib/utils';
-import type { AccountId, Balance, ChainId, PartialBy, Transaction } from '@shared/core';
 
 type Props = {
   api: ApiPromise;

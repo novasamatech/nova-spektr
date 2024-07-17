@@ -1,6 +1,6 @@
+import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
-import { BN } from '@polkadot/util';
 import { spread } from 'patronum';
 
 import {
@@ -14,12 +14,6 @@ import {
   type Transaction,
   TransactionType,
 } from '@shared/core';
-import { networkModel, networkUtils } from '@entities/network';
-import { walletSelectModel } from '@features/wallets';
-import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
-import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
-import { transactionService } from '@entities/transaction';
-import { balanceModel, balanceUtils } from '@entities/balance';
 import {
   TEST_ACCOUNTS,
   ZERO_BALANCE,
@@ -30,7 +24,15 @@ import {
   toShortAddress,
   transferableAmount,
 } from '@shared/lib/utils';
+
+import { balanceModel, balanceUtils } from '@entities/balance';
+import { networkModel, networkUtils } from '@entities/network';
+import { transactionService } from '@entities/transaction';
+import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
+
 import { AddPureProxiedRules } from '@features/operations/OperationsValidation';
+import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
+import { walletSelectModel } from '@features/wallets';
 
 type FormParams = {
   chain: Chain;

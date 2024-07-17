@@ -1,4 +1,5 @@
 import { type Wallet, WalletType } from '@shared/core';
+
 import { walletUtils } from '../wallet-utils';
 
 describe('entities/wallet/lib/wallet-utils', () => {

@@ -1,14 +1,16 @@
 import { useUnit } from 'effector-react';
 
-import { walletSelectModel } from '@features/wallets';
 import { walletUtils } from '@entities/wallet';
-import { SimpleWalletDetails } from '../wallets/SimpleWalletDetails';
-import { MultisigWalletDetails } from '../wallets/MultisigWalletDetails';
-import { WalletConnectDetails } from '../wallets/WalletConnectDetails';
-import { MultishardWalletDetails } from '../wallets/MultishardWalletDetails';
-import { VaultWalletDetails } from '../wallets/VaultWalletDetails';
+
+import { walletSelectModel } from '@features/wallets';
+
 import { walletProviderModel } from '../../model/wallet-provider-model';
+import { MultishardWalletDetails } from '../wallets/MultishardWalletDetails';
+import { MultisigWalletDetails } from '../wallets/MultisigWalletDetails';
 import { ProxiedWalletDetails } from '../wallets/ProxiedWalletDetails';
+import { SimpleWalletDetails } from '../wallets/SimpleWalletDetails';
+import { VaultWalletDetails } from '../wallets/VaultWalletDetails';
+import { WalletConnectDetails } from '../wallets/WalletConnectDetails';
 
 export const WalletDetailsProvider = () => {
   const wallet = useUnit(walletSelectModel.$walletForDetails);
@@ -20,7 +22,9 @@ export const WalletDetailsProvider = () => {
   const signatoryAccounts = useUnit(walletProviderModel.$signatoryAccounts);
   const proxyWallet = useUnit(walletProviderModel.$proxyWallet);
 
-  if (!wallet) return null;
+  if (!wallet) {
+    return null;
+  }
 
   if (walletUtils.isWatchOnly(wallet) || walletUtils.isSingleShard(wallet)) {
     return <SimpleWalletDetails wallet={wallet} onClose={walletSelectModel.events.walletIdCleared} />;

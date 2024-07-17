@@ -1,17 +1,22 @@
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
-import { BaseModal, Button } from '@shared/ui';
-import { useModalClose } from '@shared/lib/hooks';
-import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
+
+import { useModalClose } from '@shared/lib/hooks';
+import { BaseModal, Button } from '@shared/ui';
+
+import { OperationTitle } from '@entities/chain';
+import { OperationResult } from '@entities/transaction';
+
 import { OperationSign, OperationSubmit } from '@features/operations';
-import { WithdrawForm } from './WithdrawForm';
+import { WithdrawConfirmation as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
+
+import { Step } from '../lib/types';
 import { withdrawUtils } from '../lib/withdraw-utils';
 import { withdrawModel } from '../model/withdraw-model';
-import { Step } from '../lib/types';
-import { WithdrawConfirmation as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
-import { OperationResult } from '@entities/transaction';
+
+import { WithdrawForm } from './WithdrawForm';
 
 export const Withdraw = () => {
   const { t } = useI18n();
@@ -34,9 +39,13 @@ export const Withdraw = () => {
     }
   }, [step]);
 
-  if (!networkStore) return null;
+  if (!networkStore) {
+    return null;
+  }
 
-  if (withdrawUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  if (withdrawUtils.isSubmitStep(step)) {
+    return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  }
   if (withdrawUtils.isBasketStep(step)) {
     return (
       <OperationResult

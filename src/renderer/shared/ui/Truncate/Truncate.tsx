@@ -1,5 +1,5 @@
-import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import debounce from 'lodash/debounce';
+import { type CSSProperties, useEffect, useRef, useState } from 'react';
 
 import { getContainerMeasurement, getTextMeasurement } from './utils';
 

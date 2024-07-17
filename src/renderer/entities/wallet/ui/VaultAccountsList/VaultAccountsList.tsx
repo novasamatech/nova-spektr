@@ -1,9 +1,11 @@
-import { cnTw } from '@shared/lib/utils';
-import { DerivedAccount, ExplorersPopover, accountUtils } from '@entities/wallet';
 import { useI18n } from '@app/providers';
-import { Accordion, FootnoteText, HelpText } from '@shared/ui';
-import { ChainTitle } from '@entities/chain';
+
 import type { Chain, ChainAccount, ChainId, ShardAccount } from '@shared/core';
+import { cnTw } from '@shared/lib/utils';
+import { Accordion, FootnoteText, HelpText } from '@shared/ui';
+
+import { ChainTitle } from '@entities/chain';
+import { DerivedAccount, ExplorersPopover, accountUtils } from '@entities/wallet';
 
 type Props = {
   chains: Chain[];
@@ -20,7 +22,9 @@ export const VaultAccountsList = ({ chains, accountsMap, className, onShardClick
       <FootnoteText className="pl-10 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
 
       {chains.map((chain) => {
-        if (!accountsMap[chain.chainId]) return;
+        if (!accountsMap[chain.chainId]) {
+          return;
+        }
 
         return (
           <Accordion key={chain.chainId} isDefaultOpen className="pl-8 pr-1">

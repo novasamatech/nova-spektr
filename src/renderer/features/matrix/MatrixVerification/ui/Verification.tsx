@@ -1,11 +1,13 @@
-import { useState } from 'react';
-import { type TFunction } from 'react-i18next';
-import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 import { useUnit } from 'effector-react';
+import { useState } from 'react';
+import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
+import { type TFunction } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
+
 import { Button, FootnoteText, Icon, Input, InputFile, InputHint, Tabs } from '@shared/ui';
 import { type TabItem } from '@shared/ui/types';
+
 import { matrixModel } from '@entities/matrix';
 
 type VerifyForm = {

@@ -1,11 +1,14 @@
 import { useUnit } from 'effector-react';
 
-import { BodyText, FootnoteText } from '@shared/ui';
 import { type AssetByChains } from '@shared/core';
-import { ChainIcon } from '@entities/chain';
+import { BodyText, FootnoteText } from '@shared/ui';
+
 import { AssetLinks } from '@entities/asset';
+import { ChainIcon } from '@entities/chain';
 import { networkModel } from '@entities/network';
+
 import { type AssetChain } from '../lib/types';
+
 import { AssembledAssetAmount } from './AssembledAssetAmount';
 
 type Props = {

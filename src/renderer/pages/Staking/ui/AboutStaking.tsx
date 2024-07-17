@@ -2,12 +2,14 @@ import { type ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { Duration, FootnoteText, Shimmering } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { useStakingData } from '@entities/staking';
-import { AssetBalance } from '@entities/asset';
+
 import type { Asset, EraIndex, Validator } from '@shared/core';
+import { Duration, FootnoteText, Shimmering } from '@shared/ui';
+
+import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { useStakingData } from '@entities/staking';
 
 type Props = {
   api?: ApiPromise;
@@ -33,7 +35,9 @@ export const AboutStaking = ({ api, era, asset, validators }: Props) => {
   // const [averageApy, setAverageApy] = useState('');
 
   useEffect(() => {
-    if (!api?.isConnected) return;
+    if (!api?.isConnected) {
+      return;
+    }
 
     getMinNominatorBond(api).then(setMinimumStake);
     setUnstakingPeriod(getUnbondingPeriod(api));
@@ -45,7 +49,9 @@ export const AboutStaking = ({ api, era, asset, validators }: Props) => {
   }, [api]);
 
   useEffect(() => {
-    if (!api?.isConnected || !era) return;
+    if (!api?.isConnected || !era) {
+      return;
+    }
 
     // getAvgApy(api, validators).then(setAverageApy);
     getTotalStaked(api, era).then(setTotalStaked);

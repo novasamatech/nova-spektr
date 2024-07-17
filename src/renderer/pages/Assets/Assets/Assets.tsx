@@ -1,9 +1,10 @@
-import { Outlet } from 'react-router-dom';
 import { useUnit } from 'effector-react';
+import { Outlet } from 'react-router-dom';
 
 import { useI18n } from '@app/providers';
+
 import { Header } from '@shared/ui';
-import { ShardSelectorButton, ShardSelectorModal } from '@features/wallets';
+
 import {
   AssetsChainView,
   AssetsPortfolioView,
@@ -12,7 +13,10 @@ import {
   assetsSearchModel,
   assetsSettingsModel,
 } from '@features/assets';
+import { ShardSelectorButton, ShardSelectorModal } from '@features/wallets';
+
 import { AssetTransactionModal } from '@widgets/AssetTransactionModal';
+
 import { assetsModel } from './model/assets-model';
 
 export const Assets = () => {

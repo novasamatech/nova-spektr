@@ -1,8 +1,8 @@
-import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { type ApiPromise } from '@polkadot/api';
+import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { Step } from '../types';
+import { proxyService } from '@shared/api/proxy';
 import {
   type Account,
   type AccountId,
@@ -19,10 +19,18 @@ import {
   type Validator,
   type Wallet,
 } from '@shared/core';
-import { walletModel, walletUtils } from '@entities/wallet';
-import { networkModel, networkUtils } from '@entities/network';
+import { type ChainError } from '@shared/core/types/basket';
 import { getAssetById, redeemableAmount, toAccountId } from '@shared/lib/utils';
+
+import { basketModel } from '@entities/basket';
+import { networkModel, networkUtils } from '@entities/network';
+import { eraService, useStakingData, validatorsService } from '@entities/staking';
 import { TransferTypes, XcmTypes, transactionService } from '@entities/transaction';
+import { walletModel, walletUtils } from '@entities/wallet';
+
+import { signModel } from '@features/operations/OperationSign/model/sign-model';
+import { submitModel } from '@features/operations/OperationSubmit';
+import { ExtrinsicResult } from '@features/operations/OperationSubmit/lib/types';
 import {
   addProxyConfirmModel,
   addPureProxiedConfirmModel,
@@ -37,14 +45,9 @@ import {
   unstakeConfirmModel,
   withdrawConfirmModel,
 } from '@features/operations/OperationsConfirm';
-import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@features/operations/OperationSubmit';
-import { basketModel } from '@entities/basket';
-import { ExtrinsicResult } from '@features/operations/OperationSubmit/lib/types';
-import { type ChainError } from '@shared/core/types/basket';
-import { proxyService } from '@shared/api/proxy';
+
 import { getCoreTx } from '../lib/utils';
-import { eraService, useStakingData, validatorsService } from '@entities/staking';
+import { Step } from '../types';
 
 type FeeMap = Record<ChainId, Record<TransactionType, string>>;
 

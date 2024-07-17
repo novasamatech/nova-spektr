@@ -1,17 +1,19 @@
 import { type ApiPromise } from '@polkadot/api';
 import { attach, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
-import { combineEvents, once, previous, spread } from 'patronum';
 import mapValues from 'lodash/mapValues';
+import { combineEvents, once, previous, spread } from 'patronum';
 
-import type { AccountId, Balance, Chain, ChainId, type ConnectionStatus, ID, Wallet } from '@shared/core';
-import { walletModel } from '@entities/wallet';
-import { networkModel, networkUtils } from '@entities/network';
-import { balanceModel, balanceUtils } from '@entities/balance';
+import { balanceService } from '@shared/api/balances';
 import { storageService } from '@shared/api/storage';
+import type { AccountId, Balance, Chain, ChainId, ConnectionStatus, ID, Wallet } from '@shared/core';
+import { isRejected } from '@shared/lib/utils';
+
+import { balanceModel, balanceUtils } from '@entities/balance';
+import { networkModel, networkUtils } from '@entities/network';
+import { walletModel } from '@entities/wallet';
+
 import { balanceSubUtils } from '../lib/balance-sub-utils';
 import { type SubAccounts, type Subscriptions } from '../lib/types';
-import { balanceService } from '@shared/api/balances';
-import { isRejected } from '@shared/lib/utils';
 
 const walletToUnsubSet = createEvent<Wallet>();
 const walletToSubSet = createEvent<Wallet>();

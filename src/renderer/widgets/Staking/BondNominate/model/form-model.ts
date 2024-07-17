@@ -1,13 +1,9 @@
-import { combine, createEvent, createStore, restore, sample } from 'effector';
-import { spread } from 'patronum';
-import { createForm } from 'effector-forms';
 import { BN } from '@polkadot/util';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { createForm } from 'effector-forms';
+import { spread } from 'patronum';
 
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { balanceModel, balanceUtils } from '@entities/balance';
-import { networkModel } from '@entities/network';
 import { type Account, type Address, type Asset, type Chain, type PartialBy, RewardsDestination } from '@shared/core';
-import { type WalletData } from '../lib/types';
 import {
   ZERO_BALANCE,
   formatAmount,
@@ -18,7 +14,14 @@ import {
   transferableAmount,
   validateAddress,
 } from '@shared/lib/utils';
+
+import { balanceModel, balanceUtils } from '@entities/balance';
+import { networkModel } from '@entities/network';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+
 import { BondNominateRules } from '@features/operations/OperationsValidation';
+
+import { type WalletData } from '../lib/types';
 
 type FormParams = {
   shards: Account[];

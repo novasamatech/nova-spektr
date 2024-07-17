@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type BN, BN_ZERO } from '@polkadot/util';
 import { type FrameSupportPreimagesBounded, type PalletReferendaCurve } from '@polkadot/types/lookup';
+import { type BN, BN_ZERO } from '@polkadot/util';
 
 import {
   type AccountVote,

@@ -1,6 +1,7 @@
 import { type ComponentMeta, type ComponentStory } from '@storybook/react';
 
 import { Identicon } from '../../Identicon/Identicon';
+
 import { MultiSelect } from './MultiSelect';
 
 export default {

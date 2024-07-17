@@ -1,6 +1,7 @@
 import type Client from '@walletconnect/sign-client';
 
 import { type Chain } from '@shared/core';
+
 import { walletConnectUtils } from '../utils';
 
 describe('entities/walletConnect/lib/onChainUtils', () => {

@@ -1,8 +1,11 @@
 import { useUnit } from 'effector-react';
 
 import { SigningType } from '@shared/core';
+
 import { walletModel } from '@entities/wallet';
+
 import { type InnerSigningProps, type SigningProps } from '../lib/types';
+
 import { Vault } from './Vault';
 import { WalletConnect } from './WalletConnect';
 
@@ -20,7 +23,9 @@ export const SigningSwitch = (props: SigningProps) => {
 
   const wallet = props.signerWallet || activeWallet;
 
-  if (!wallet) return null;
+  if (!wallet) {
+    return null;
+  }
 
   return SigningFlow[wallet.signingType]({ ...props, wallet });
 };

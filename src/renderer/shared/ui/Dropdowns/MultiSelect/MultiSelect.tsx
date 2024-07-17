@@ -2,11 +2,11 @@ import { Listbox, Transition } from '@headlessui/react';
 import { Fragment, useId } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
+
 import { Checkbox } from '../../Checkbox/Checkbox';
-import { CaptionText, FootnoteText, LabelText } from '../../Typography';
 import { Icon } from '../../Icon/Icon';
 import { CommonInputStyles, CommonInputStylesTheme } from '../../Inputs/common/styles';
-import { type DropdownOption, type DropdownResult, type Position, type Theme } from '../common/types';
+import { CaptionText, FootnoteText, LabelText } from '../../Typography';
 import {
   OptionStyle,
   OptionStyleTheme,
@@ -15,6 +15,7 @@ import {
   SelectButtonStyle,
   ViewClass,
 } from '../common/constants';
+import { type DropdownOption, type DropdownResult, type Position, type Theme } from '../common/types';
 
 type Props = {
   className?: string;
@@ -135,7 +136,9 @@ export const MultiSelect = ({
     </Listbox>
   );
 
-  if (!label) return selectElement;
+  if (!label) {
+    return selectElement;
+  }
 
   return (
     <div className="flex flex-col gap-y-2">

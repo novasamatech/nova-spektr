@@ -1,9 +1,10 @@
+import { useUnit } from 'effector-react';
 import { type ReactNode, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useUnit } from 'effector-react';
+
+import type { Asset, Chain } from '@shared/core';
 
 import * as assetGuardModel from '../model/asset-guard';
-import type { Asset, Chain } from '@shared/core';
 
 type Props = {
   redirectPath: string;
@@ -25,7 +26,9 @@ export const AssetRouteGuard = ({ redirectPath, children }: Props) => {
     };
   }, [searchParams]);
 
-  if (!chain || !asset) return null;
+  if (!chain || !asset) {
+    return null;
+  }
 
   return <>{typeof children === 'function' ? children(chain, asset) : children}</>;
 };

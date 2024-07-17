@@ -1,13 +1,16 @@
 import { type Scope, allSettled, fork } from 'effector';
 
-import { type Balance, ConnectionStatus } from '@shared/core';
-import { storageService } from '@shared/api/storage';
-import { walletModel } from '@entities/wallet';
-import { networkModel } from '@entities/network';
 import { balanceService } from '@shared/api/balances';
+import { storageService } from '@shared/api/storage';
+import { type Balance, ConnectionStatus } from '@shared/core';
+
 import { balanceModel } from '@entities/balance';
-import { balanceSubMock } from './mocks/balance-sub-mock';
+import { networkModel } from '@entities/network';
+import { walletModel } from '@entities/wallet';
+
 import { balanceSubModel } from '../balance-sub-model';
+
+import { balanceSubMock } from './mocks/balance-sub-mock';
 
 describe('features/balances/subscription/model/balance-sub-model', () => {
   const { wallets, newWallets, accounts } = balanceSubMock;

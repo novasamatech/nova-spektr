@@ -1,19 +1,23 @@
 import { useForm } from 'effector-forms';
-import { type FormEvent } from 'react';
 import { useUnit } from 'effector-react';
+import { type FormEvent } from 'react';
 
-import { Alert, Button, Combobox, Icon, Identicon, Input, InputHint, Select } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { ChainTitle } from '@entities/chain';
-import { ProxyPopover, proxyUtils } from '@entities/proxy';
-import { AccountAddress, accountUtils } from '@entities/wallet';
-import { toAddress, toShortAddress, validateAddress } from '@shared/lib/utils';
-import { formModel } from '../model/form-model';
-import { AssetBalance } from '@entities/asset';
+
 import { type MultisigAccount } from '@shared/core';
+import { toAddress, toShortAddress, validateAddress } from '@shared/lib/utils';
+import { Alert, Button, Combobox, Icon, Identicon, Input, InputHint, Select } from '@shared/ui';
+
+import { AssetBalance } from '@entities/asset';
+import { ChainTitle } from '@entities/chain';
 import { SignatorySelector } from '@entities/operations';
+import { ProxyPopover, proxyUtils } from '@entities/proxy';
 import { FeeWithLabel, MultisigDepositWithLabel, ProxyDepositWithLabel } from '@entities/transaction';
+import { AccountAddress, accountUtils } from '@entities/wallet';
+
 import { DESCRIPTION_LENGTH } from '@features/operations/OperationsValidation';
+
+import { formModel } from '../model/form-model';
 
 type Props = {
   onGoBack: () => void;
@@ -96,7 +100,9 @@ const AccountSelector = () => {
 
   const proxiedAccounts = useUnit(formModel.$proxiedAccounts);
 
-  if (proxiedAccounts.length <= 1) return null;
+  if (proxiedAccounts.length <= 1) {
+    return null;
+  }
 
   const options = proxiedAccounts.map(({ account, balance }) => {
     const isShard = accountUtils.isShardAccount(account);
@@ -144,7 +150,9 @@ const Signatories = () => {
   const signatories = useUnit(formModel.$signatories);
   const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!isMultisig) return null;
+  if (!isMultisig) {
+    return null;
+  }
 
   return (
     <SignatorySelector
@@ -262,7 +270,9 @@ const DescriptionInput = () => {
   } = useForm(formModel.$proxyForm);
   const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!isMultisig) return null;
+  if (!isMultisig) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-y-2">

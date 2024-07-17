@@ -1,10 +1,11 @@
 import { type ClipboardEvent, type ComponentPropsWithoutRef, type ReactNode, forwardRef, useId } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
-import { LabelText } from '../../Typography';
-import { type HTMLInputProps } from '../common/types';
+
 import { type Theme } from '../../Dropdowns/common/types';
+import { LabelText } from '../../Typography';
 import { CommonInputStyles, CommonInputStylesTheme } from '../common/styles';
+import { type HTMLInputProps } from '../common/types';
 
 type NewType = {
   label?: ReactNode;

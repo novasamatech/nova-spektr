@@ -2,10 +2,11 @@ import { attach, combine, createApi, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { not } from 'patronum';
 
-import { contactModel } from '@entities/contact';
+import { validateFullUserName } from '@shared/api/matrix';
 import { type Contact } from '@shared/core';
 import { toAccountId, validateAddress } from '@shared/lib/utils';
-import { validateFullUserName } from '@shared/api/matrix';
+
+import { contactModel } from '@entities/contact';
 
 export type Callbacks = {
   onSubmit: () => void;

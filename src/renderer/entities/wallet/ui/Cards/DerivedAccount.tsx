@@ -1,10 +1,11 @@
 import { type MouseEvent } from 'react';
 
-import { BodyText, CaptionText, FootnoteText, HelpText, Icon, IconButton, Identicon } from '@shared/ui';
-import { SS58_PUBLIC_KEY_PREFIX, cnTw, toAddress } from '@shared/lib/utils';
-import { type IconNames } from '@shared/ui/Icon/data';
 import type { ChainAccount, ShardAccount } from '@shared/core';
 import { KeyType } from '@shared/core';
+import { SS58_PUBLIC_KEY_PREFIX, cnTw, toAddress } from '@shared/lib/utils';
+import { BodyText, CaptionText, FootnoteText, HelpText, Icon, IconButton, Identicon } from '@shared/ui';
+import { type IconNames } from '@shared/ui/Icon/data';
+
 import { accountUtils } from '../../lib/account-utils';
 
 const KeyIcon: Record<KeyType, IconNames> = {
@@ -41,7 +42,9 @@ export const DerivedAccount = ({
 
   const handleClick = (fn?: () => void) => {
     return (event: MouseEvent<HTMLButtonElement>) => {
-      if (!fn) return;
+      if (!fn) {
+        return;
+      }
 
       event.stopPropagation();
       fn();

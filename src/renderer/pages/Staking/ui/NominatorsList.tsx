@@ -1,17 +1,21 @@
 import { type ApiPromise } from '@polkadot/api';
-import { Trans } from 'react-i18next';
 import { type ReactNode } from 'react';
+import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
+
+import type { Account, Address, Asset, BaseAccount, Explorer, ShardAccount } from '@shared/core';
 import { cnTw } from '@shared/lib/utils';
 import { FootnoteText, HelpText, Icon, Tooltip } from '@shared/ui';
-import type { Account, Address, Asset, BaseAccount, Explorer, ShardAccount } from '@shared/core';
+
 import { useStakingData } from '@entities/staking';
 import { AccountAddress, AddressWithName, accountUtils } from '@entities/wallet';
+
+import { type NominatorInfo } from '../lib/types';
+
 import { NominatorsItem } from './NominatorItem';
 import { ShardedList } from './ShardedList';
 import { TimeToEra } from './TimeToEra';
-import { type NominatorInfo } from '../lib/types';
 
 type Props = {
   nominators: Array<NominatorInfo<BaseAccount> | NominatorInfo<ShardAccount>[]>;
@@ -41,7 +45,9 @@ export const NominatorsList = ({
 
   const getUnstakeBadge = (stake: NominatorInfo<Account>) => {
     const nextUnstakingEra = getNextUnstakingEra(stake.unlocking, era);
-    if (!nextUnstakingEra) return;
+    if (!nextUnstakingEra) {
+      return;
+    }
 
     return (
       <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey="staking.tooltips.unstakeDescription" />}>
@@ -56,7 +62,9 @@ export const NominatorsList = ({
   };
 
   const getRedeemBadge = (stake: NominatorInfo<Account>) => {
-    if (!hasRedeem(stake.unlocking, era)) return;
+    if (!hasRedeem(stake.unlocking, era)) {
+      return;
+    }
 
     return (
       <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey="staking.tooltips.redeemDescription" />}>

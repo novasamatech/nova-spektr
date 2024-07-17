@@ -1,17 +1,21 @@
-import React from 'react';
 import { useUnit } from 'effector-react';
+import React from 'react';
 
 import { useI18n } from '@app/providers';
-import { Accordion, BodyText, FootnoteText, HelpText, Icon, IconButton, Plate, Tooltip } from '@shared/ui';
+
 import type { AssetByChains } from '@shared/core';
-import { CheckPermission, OperationType, walletModel } from '@entities/wallet';
-import { TokenPrice } from '@entities/price';
+import { Accordion, BodyText, FootnoteText, HelpText, Icon, IconButton, Plate, Tooltip } from '@shared/ui';
+
 import { AssetIcon } from '@entities/asset';
-import { networkModel } from '@entities/network';
 import { ChainIcon } from '@entities/chain';
-import { NetworkCard } from './NetworkCard';
-import { AssembledAssetAmount } from './AssembledAssetAmount';
+import { networkModel } from '@entities/network';
+import { TokenPrice } from '@entities/price';
+import { CheckPermission, OperationType, walletModel } from '@entities/wallet';
+
 import { portfolioModel } from '../model/portfolio-model';
+
+import { AssembledAssetAmount } from './AssembledAssetAmount';
+import { NetworkCard } from './NetworkCard';
 
 const IconButtonStyle =
   'hover:bg-transparent hover:text-icon-default focus:bg-transparent focus:text-icon-default active:bg-transparent active:text-icon-default';
@@ -42,7 +46,7 @@ export const TokenBalanceList = ({ asset }: Props) => {
         <Accordion.Button
           iconOpened="shelfDown"
           iconClosed="shelfRight"
-          buttonClass="sticky top-0 px-2 py-1.5 z-10 justify-end flex-row-reverse bg-white hover:bg-token-container-background 
+          buttonClass="sticky top-0 px-2 py-1.5 z-10 justify-end flex-row-reverse bg-white hover:bg-token-container-background
           rounded h-[52px] transition-shadow hover:shadow-card-shadow focus:shadow-card-shadow"
         >
           <div className="w-full items-center flex">

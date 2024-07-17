@@ -2,6 +2,7 @@ import { type PropsWithChildren } from 'react';
 
 import { Icon, StatusModal } from '@shared/ui';
 import { Animation } from '@shared/ui/Animation/Animation';
+
 import { VariantAnimationProps } from './common/constants';
 import { type Variant } from './common/types';
 

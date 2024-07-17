@@ -1,8 +1,8 @@
 import { type ApiPromise } from '@polkadot/api';
-import { BN, hexToU8a, u8aToHex } from '@polkadot/util';
+import { type Bytes, type Vec, type u32 } from '@polkadot/types';
 import { type Header } from '@polkadot/types/interfaces';
 import { type Codec } from '@polkadot/types/types';
-import { type Bytes, type Vec, type u32 } from '@polkadot/types';
+import { BN, hexToU8a, u8aToHex } from '@polkadot/util';
 
 import { buildTrie } from './decode';
 import { get } from './retreive';

@@ -2,13 +2,7 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { useI18n } from '@app/providers';
-import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, walletModel } from '@entities/wallet';
-import { CaptionText, DetailRow, FootnoteText, Icon } from '@shared/ui';
-import { useToggle } from '@shared/lib/hooks';
-import { cnTw, toAccountId } from '@shared/lib/utils';
-import { type ExtendedChain, networkModel, networkUtils } from '@entities/network';
-import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
-import { ChainTitle } from '@entities/chain';
+
 import {
   type Account,
   type Address,
@@ -18,10 +12,15 @@ import {
   type Validator,
   type Wallet,
 } from '@shared/core';
+import { useToggle } from '@shared/lib/hooks';
+import { cnTw, toAccountId } from '@shared/lib/utils';
+import { CaptionText, DetailRow, FootnoteText, Icon } from '@shared/ui';
+
+import { ChainTitle } from '@entities/chain';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
-import { SelectedValidatorsModal, useValidatorsMap } from '@entities/staking';
+import { type ExtendedChain, networkModel, networkUtils } from '@entities/network';
 import { proxyUtils } from '@entities/proxy';
-import { getDelegate, getDestination, getDestinationChain, getPayee, getProxyType, getSpawner } from '../common/utils';
+import { SelectedValidatorsModal, useValidatorsMap } from '@entities/staking';
 import {
   isAddProxyTransaction,
   isManageProxyTransaction,
@@ -31,6 +30,10 @@ import {
   isTransferTransaction,
   isXcmTransaction,
 } from '@entities/transaction';
+import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, walletModel } from '@entities/wallet';
+
+import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
+import { getDelegate, getDestination, getDestinationChain, getPayee, getProxyType, getSpawner } from '../common/utils';
 
 type Props = {
   tx: MultisigTransaction;
@@ -79,12 +82,16 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
     allValidators.filter((v) => (transaction?.args.targets || startStakingValidators).includes(v.address)) || [];
 
   const proxied = useMemo((): { wallet: Wallet; account: Account } | undefined => {
-    if (!tx.transaction || !isProxyTransaction(tx.transaction)) return undefined;
+    if (!tx.transaction || !isProxyTransaction(tx.transaction)) {
+      return undefined;
+    }
 
     const proxiedAccountId = toAccountId(tx.transaction.args.real);
     const { wallet, account } = wallets.reduce<{ wallet?: Wallet; account?: Account }>(
       (acc, wallet) => {
-        if (acc.wallet) return acc;
+        if (acc.wallet) {
+          return acc;
+        }
 
         const account = wallet.accounts.find((account) => account.accountId === proxiedAccountId);
 
@@ -93,7 +100,9 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
       { wallet: undefined, account: undefined },
     );
 
-    if (!wallet || !account) return undefined;
+    if (!wallet || !account) {
+      return undefined;
+    }
 
     return { wallet, account };
   }, [tx, wallets]);

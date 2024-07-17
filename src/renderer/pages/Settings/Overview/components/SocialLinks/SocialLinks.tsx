@@ -1,6 +1,7 @@
-import { BodyText, FootnoteText, HelpText, Icon, Plate } from '@shared/ui';
 import { useI18n } from '@app/providers';
+
 import { cnTw } from '@shared/lib/utils';
+import { BodyText, FootnoteText, HelpText, Icon, Plate } from '@shared/ui';
 
 const Links = [
   {

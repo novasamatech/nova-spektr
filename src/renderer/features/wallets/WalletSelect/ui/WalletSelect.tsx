@@ -1,12 +1,15 @@
-import { useUnit } from 'effector-react';
 import { Popover, Transition } from '@headlessui/react';
+import { useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
-import { walletModel } from '@entities/wallet';
 import { Shimmering } from '@shared/ui';
-import { WalletPanel } from './WalletPanel';
-import { WalletButton } from './WalletButton';
+
+import { walletModel } from '@entities/wallet';
+
 import { walletSelectModel } from '../model/wallet-select-model';
+
+import { WalletButton } from './WalletButton';
+import { WalletPanel } from './WalletPanel';
 
 type Props = {
   action?: ReactNode;

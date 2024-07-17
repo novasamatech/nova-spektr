@@ -1,6 +1,7 @@
 import { type TFunction } from 'react-i18next';
 
 import { MultisigTxFinalStatus, MultisigTxInitStatus, TransactionType } from '@shared/core';
+
 import { UNKNOWN_TYPE } from './constants';
 
 export const getStatusOptions = (t: TFunction) => {

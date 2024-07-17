@@ -1,7 +1,8 @@
-import { createEffect, createEvent, createStore, sample } from 'effector';
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
+import { createEffect, createEvent, createStore, sample } from 'effector';
 
+import { opengovThresholdService } from '@/shared/api/governance';
 import {
   type Chain,
   type ChainId,
@@ -12,7 +13,6 @@ import {
   type VotingThreshold,
 } from '@/shared/core';
 import { getCurrentBlockNumber } from '@/shared/lib/utils';
-import { opengovThresholdService } from '@/shared/api/governance';
 
 import { referendumService } from '@/entities/governance';
 

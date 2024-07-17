@@ -1,10 +1,13 @@
 import { useStoreMap } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { FootnoteText, Shimmering } from '@shared/ui';
+
 import { type ChainId, type Referendum } from '@shared/core';
+import { FootnoteText, Shimmering } from '@shared/ui';
+
 import { referendumService } from '@entities/governance';
 import { AccountAddress } from '@entities/wallet';
+
 import { detailsAggregate } from '../../aggregates/details';
 
 type Props = {

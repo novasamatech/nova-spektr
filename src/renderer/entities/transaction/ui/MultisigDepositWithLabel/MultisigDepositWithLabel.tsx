@@ -1,9 +1,11 @@
 import { type ComponentProps } from 'react';
 
 import { useI18n } from '@app/providers';
-import { DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
-import { MultisigDeposit } from '../MultisigDeposit/MultisigDeposit';
+
 import { cnTw } from '@shared/lib/utils';
+import { DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
+
+import { MultisigDeposit } from '../MultisigDeposit/MultisigDeposit';
 
 type Props = ComponentProps<typeof MultisigDeposit> & {
   wrapperClassName?: string;

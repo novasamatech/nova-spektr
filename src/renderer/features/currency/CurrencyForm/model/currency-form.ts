@@ -2,8 +2,9 @@ import { attach, combine, createApi, createEvent, createStore, sample } from 'ef
 import { createForm } from 'effector-forms';
 import { combineEvents, spread } from 'patronum';
 
-import { currencyModel, priceProviderModel } from '@entities/price';
 import { type CurrencyItem } from '@shared/api/price-provider';
+
+import { currencyModel, priceProviderModel } from '@entities/price';
 
 export type Callbacks = {
   onSubmit: () => void;

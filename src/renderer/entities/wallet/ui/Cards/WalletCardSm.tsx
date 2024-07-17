@@ -1,9 +1,10 @@
 import { type MouseEvent } from 'react';
 
 import { type Wallet } from '@shared/core';
-import { FootnoteText, IconButton } from '@shared/ui';
-import { WalletIcon } from '../WalletIcon/WalletIcon';
 import { cnTw } from '@shared/lib/utils';
+import { FootnoteText, IconButton } from '@shared/ui';
+
+import { WalletIcon } from '../WalletIcon/WalletIcon';
 
 type Props = {
   wallet: Wallet;
@@ -16,7 +17,9 @@ type Props = {
 export const WalletCardSm = ({ wallet, className, iconSize = 16, onClick, onInfoClick }: Props) => {
   const handleClick = (fn?: () => void) => {
     return (event: MouseEvent<HTMLButtonElement>) => {
-      if (!fn) return;
+      if (!fn) {
+        return;
+      }
 
       event.stopPropagation();
       fn();

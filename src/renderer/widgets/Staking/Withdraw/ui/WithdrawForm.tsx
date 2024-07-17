@@ -1,15 +1,18 @@
 import { useForm } from 'effector-forms';
-import { type FormEvent } from 'react';
 import { useUnit } from 'effector-react';
+import { type FormEvent } from 'react';
 
 import { useI18n } from '@app/providers';
+
 import { type MultisigAccount } from '@shared/core';
-import { AccountAddress, ProxyWalletAlert, accountUtils } from '@entities/wallet';
 import { formatBalance, toAddress, toShortAddress } from '@shared/lib/utils';
-import { AssetBalance } from '@entities/asset';
-import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
 import { AmountInput, Button, Input, InputHint, MultiSelect, Shimmering } from '@shared/ui';
+
+import { AssetBalance } from '@entities/asset';
 import { SignatorySelector } from '@entities/operations';
+import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
+import { AccountAddress, ProxyWalletAlert, accountUtils } from '@entities/wallet';
+
 import { formModel } from '../model/form-model';
 
 type Props = {
@@ -51,7 +54,9 @@ const ProxyFeeAlert = () => {
   const network = useUnit(formModel.$networkStore);
   const proxyWallet = useUnit(formModel.$proxyWallet);
 
-  if (!network || !proxyWallet || !shards.hasError()) return null;
+  if (!network || !proxyWallet || !shards.hasError()) {
+    return null;
+  }
 
   const formattedFee = formatBalance(fee, network.asset.precision).value;
   const formattedBalance = formatBalance(balance, network.asset.precision).value;
@@ -77,7 +82,9 @@ const AccountsSelector = () => {
   const accounts = useUnit(formModel.$accounts);
   const network = useUnit(formModel.$networkStore);
 
-  if (!network || accounts.length <= 1) return null;
+  if (!network || accounts.length <= 1) {
+    return null;
+  }
 
   const options = accounts.map(({ account, balances }) => {
     const isShard = accountUtils.isShardAccount(account);
@@ -130,7 +137,9 @@ const Signatories = () => {
   const network = useUnit(formModel.$networkStore);
   const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!isMultisig || !network) return null;
+  if (!isMultisig || !network) {
+    return null;
+  }
 
   return (
     <SignatorySelector
@@ -156,7 +165,9 @@ const Amount = () => {
   const isStakingLoading = useUnit(formModel.$isStakingLoading);
   const network = useUnit(formModel.$networkStore);
 
-  if (!network) return null;
+  if (!network) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -185,7 +196,9 @@ const Description = () => {
 
   const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!isMultisig) return null;
+  if (!isMultisig) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -217,7 +230,9 @@ const FeeSection = () => {
   const transactions = useUnit(formModel.$transactions);
   const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!network || shards.value.length === 0) return null;
+  if (!network || shards.value.length === 0) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-y-2">

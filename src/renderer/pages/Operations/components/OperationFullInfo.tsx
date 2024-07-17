@@ -1,20 +1,24 @@
 import { useUnit } from 'effector-react';
 
-import { Button, Icon, InfoLink, SmallTitleText } from '@shared/ui';
-import { OperationCardDetails } from './OperationCardDetails';
-import RejectTx from './modals/RejectTx';
-import ApproveTx from './modals/ApproveTx';
-import { getMultisigExtrinsicLink } from '../common/utils';
-import CallDataModal from './modals/CallDataModal';
 import { useI18n, useMultisigChainContext } from '@app/providers';
-import { useMultisigTx } from '@entities/multisig';
-import { useToggle } from '@shared/lib/hooks';
+
 import { type MultisigTransactionDS } from '@shared/api/storage';
 import type { CallData, MultisigAccount } from '@shared/core';
-import { OperationSignatories } from './OperationSignatories';
+import { useToggle } from '@shared/lib/hooks';
+import { Button, Icon, InfoLink, SmallTitleText } from '@shared/ui';
+
+import { matrixModel } from '@entities/matrix';
+import { useMultisigTx } from '@entities/multisig';
 import { useNetworkData } from '@entities/network';
 import { permissionUtils, walletModel } from '@entities/wallet';
-import { matrixModel } from '@entities/matrix';
+
+import { getMultisigExtrinsicLink } from '../common/utils';
+
+import { OperationCardDetails } from './OperationCardDetails';
+import { OperationSignatories } from './OperationSignatories';
+import ApproveTx from './modals/ApproveTx';
+import CallDataModal from './modals/CallDataModal';
+import RejectTx from './modals/RejectTx';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -36,11 +40,15 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
   const explorerLink = getMultisigExtrinsicLink(tx.callHash, tx.indexCreated, tx.blockCreated, chain?.explorers);
 
   const setupCallData = async (callData: CallData) => {
-    if (!api || !tx) return;
+    if (!api || !tx) {
+      return;
+    }
 
     updateCallData(api, tx, callData as CallData);
 
-    if (!account?.matrixRoomId) return;
+    if (!account?.matrixRoomId) {
+      return;
+    }
 
     matrix.sendUpdate(account?.matrixRoomId, {
       senderAccountId: tx.depositor || '0x00',

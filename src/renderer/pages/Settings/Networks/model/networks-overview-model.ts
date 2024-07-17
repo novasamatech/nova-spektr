@@ -1,10 +1,9 @@
 import { combine, sample } from 'effector';
 
 import { type ChainId } from '@shared/core';
-import { Predicates } from '../lib/constants';
+
 import { networkModel, networkUtils } from '@entities/network';
-import { type ConnectionItem, networkSelectorModel } from '@features/network/NetworkSelector';
-import { removeCustomRpcModel } from '@features/network/ManageCustomRpcNode';
+
 import {
   activeNetworksModel,
   addCustomRpcModel,
@@ -13,6 +12,10 @@ import {
   networkSelectorUtils,
   networksFilterModel,
 } from '@features/network';
+import { removeCustomRpcModel } from '@features/network/ManageCustomRpcNode';
+import { type ConnectionItem, networkSelectorModel } from '@features/network/NetworkSelector';
+
+import { Predicates } from '../lib/constants';
 
 type ConnectionMap = {
   [chainId: ChainId]: {
