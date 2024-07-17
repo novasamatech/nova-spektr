@@ -65,3 +65,7 @@ ul:focus-visible {
   left: 0;
   top: 0;
 }
+
+.scrollbar-stable {
+  scrollbar-gutter: stable both-edges;
+}
