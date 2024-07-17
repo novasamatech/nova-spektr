@@ -76,7 +76,7 @@ export const Basket = () => {
             </div>
           </div>
 
-          <div className="w-full mt-4 gap-4 flex flex-col items-center overflow-y-auto">
+          <div className="w-full mt-4 gap-4 flex flex-col items-center overflow-y-auto scrollbar-stable">
             <ul className="rounded-md flex divide-y flex-col gap-y-1.5 w-[736px]">
               {filteredTxs.map((tx) => (
                 <li key={tx.id} className="flex gap-x-4 px-3 bg-block-background-default">
