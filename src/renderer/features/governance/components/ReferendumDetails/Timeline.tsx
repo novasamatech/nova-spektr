@@ -1,5 +1,4 @@
 import { useStoreMap, useUnit } from 'effector-react';
-import { format } from 'date-fns';
 
 import { useI18n } from '@app/providers';
 import { ReferendumId } from '@shared/core';
@@ -29,7 +28,7 @@ const getStatusPalette = (status: ReferendumTimelineRecordStatus) => {
 };
 
 export const Timeline = ({ referendumId }: Props) => {
-  const { t } = useI18n();
+  const { t, formatDate } = useI18n();
 
   const isLoading = useUnit(detailsAggregate.$isTimelinesLoading);
   const timeline = useStoreMap({
@@ -50,7 +49,7 @@ export const Timeline = ({ referendumId }: Props) => {
       {!isLoading &&
         timeline.map((status) => (
           <div key={status.status} className="flex items-center justify-between">
-            <FootnoteText>{format(status.date, 'd MMM’yy, hh:mm')}</FootnoteText>
+            <FootnoteText>{formatDate(status.date, 'd MMM’yy, hh:mm')}</FootnoteText>
             <OperationStatus pallet={getStatusPalette(status.status)}>
               {/* eslint-disable-next-line i18next/no-literal-string */}
               {t(`governance.timeline.status.${status.status}`)}
