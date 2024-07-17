@@ -4,6 +4,7 @@ import { useI18n } from '@app/providers';
 import { Button, Duration, FootnoteText, Icon, Shimmering } from '@shared/ui';
 import { UnlockChunkType } from '@shared/api/governance';
 import { getSecondsDuratonToBlock } from '@shared/lib/utils';
+import { AssetFiatBalance } from '@entities/price';
 import { AssetBalance } from '@entities/asset';
 import { locksModel } from '../../model/locks';
 import { unlockModel } from '../../model/unlock';
@@ -13,37 +14,44 @@ export const UnlockInfo = () => {
 
   const totalLock = useUnit(locksModel.$totalLock);
   const asset = useUnit(locksModel.$asset);
-  const claimSchedule = useUnit(unlockModel.$claimSchedule);
+  const pendingSchedule = useUnit(unlockModel.$pendingSchedule);
   const isLoading = useUnit(unlockModel.$isLoading);
+  const totalUnlock = useUnit(unlockModel.$totalUnlock);
+
+  if (!asset) return null;
 
   return (
-    <div className="pb-4 px-5 flex flex-col gap-y-3 items-center my-4">
+    <div className="pb-4 px-5 flex flex-col gap-y-1 items-center">
       <Icon name="opengovVotingLock" size={60} />
-      {asset && <AssetBalance className="mb-3 text-large-title" value={totalLock.toString()} asset={asset} />}
+      <AssetBalance className="text-large-title mt-2" value={totalLock.toString()} asset={asset} />
+      <AssetFiatBalance className="mb-5" amount={totalLock.toString()} asset={asset} />
       {isLoading && <Shimmering width={250} height={20} />}
-      {asset &&
-        claimSchedule.length > 0 &&
-        claimSchedule.map((unlock) => (
+      <>
+        {!!totalUnlock && (
+          <div className="flex justify-between items-center self-stretch mb-3">
+            <AssetBalance value={totalUnlock.toString()} asset={asset} />
+            <FootnoteText className="text-text-positive">{t('governance.locks.unlockable')}</FootnoteText>
+          </div>
+        )}
+        {pendingSchedule.map((lock) => (
           <div
-            key={`${unlock.amount.toString()}-${unlock.type}`}
-            className="flex justify-between items-center self-stretch"
+            key={`${lock.amount.toString()}-${lock.type}-${lock.address}`}
+            className="flex justify-between items-center self-stretch mb-3"
           >
-            <AssetBalance value={unlock.amount.toString()} asset={asset} />
-            {unlock.type === UnlockChunkType.CLAIMABLE && (
-              <FootnoteText className="text-text-positive">{t('governance.locks.unlockable')}</FootnoteText>
-            )}
-            {unlock.type === UnlockChunkType.PENDING_DELIGATION && (
+            <AssetBalance value={lock.amount.toString()} asset={asset} />
+            {lock.type === UnlockChunkType.PENDING_DELIGATION && (
               <FootnoteText className="text-text-tertiary">{t('governance.locks.yourDelegation')}</FootnoteText>
             )}
-            {unlock.type === UnlockChunkType.PENDING_LOCK && (
+            {lock.type === UnlockChunkType.PENDING_LOCK && (
               <Duration
                 as={FootnoteText}
                 className="text-text-tertiary"
-                seconds={getSecondsDuratonToBlock(unlock.timeToBlock!)}
+                seconds={getSecondsDuratonToBlock(lock.timeToBlock!)}
               />
             )}
           </div>
         ))}
+      </>
       <ActionsSection />
     </div>
   );
@@ -55,7 +63,7 @@ const ActionsSection = () => {
   // const canUnlock = useUnit(unlockModel.$canUnlock);
 
   return (
-    <div className="flex self-end items-center mt-4">
+    <div className="flex self-end items-center mt-3">
       <Button type="submit" disabled={true}>
         {t('governance.locks.unlock')}
       </Button>
