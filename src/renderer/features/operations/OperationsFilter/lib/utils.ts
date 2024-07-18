@@ -102,6 +102,16 @@ export const getTransactionOptions = (t: TFunction) => {
       element: t('operations.titles.removePureProxy'),
     },
     {
+      id: TransactionType.UNLOCK,
+      value: TransactionType.UNLOCK,
+      element: t('operations.titles.unlock'),
+    },
+    {
+      id: TransactionType.REMOVE_VOTE,
+      value: TransactionType.REMOVE_VOTE,
+      element: t('operations.titles.unlock'),
+    },
+    {
       id: UNKNOWN_TYPE,
       value: UNKNOWN_TYPE,
       element: t('operations.titles.unknown'),
