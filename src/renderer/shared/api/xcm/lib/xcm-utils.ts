@@ -97,7 +97,7 @@ function sortJunctions(a: JunctionTypeKey, b: JunctionTypeKey): number {
   return JunctionHierarchyLevel[a] - JunctionHierarchyLevel[b];
 }
 
-function createJunctionFromObject(data: {}) {
+function createJunctionFromObject(data: Record<string, unknown>) {
   const entries = Object.entries(data);
 
   if (entries.length === 0) return 'Here';
@@ -119,7 +119,7 @@ function createJunctionFromObject(data: {}) {
   };
 }
 
-function getRelativeAssetLocation(assetLocation?: LocalMultiLocation): Object | undefined {
+function getRelativeAssetLocation(assetLocation?: LocalMultiLocation) {
   if (!assetLocation) return;
 
   const { parachainId: _, ...location } = assetLocation;
@@ -130,7 +130,7 @@ function getRelativeAssetLocation(assetLocation?: LocalMultiLocation): Object | 
   };
 }
 
-function getAbsoluteAssetLocation(assetLocation?: LocalMultiLocation): Object | undefined {
+function getAbsoluteAssetLocation(assetLocation?: LocalMultiLocation) {
   if (!assetLocation) return;
 
   return {
@@ -139,7 +139,7 @@ function getAbsoluteAssetLocation(assetLocation?: LocalMultiLocation): Object | 
   };
 }
 
-function getConcreteAssetLocation(assetLocation?: LocalMultiLocation): Object | undefined {
+function getConcreteAssetLocation(assetLocation?: LocalMultiLocation) {
   if (!assetLocation) return;
 
   const { parents, ...location } = assetLocation;
@@ -154,7 +154,7 @@ function getDestinationLocation(
   originChain: Pick<Chain, 'parentId'>,
   destinationParaId?: number,
   accountId?: AccountId,
-): Object | undefined {
+) {
   if (originChain.parentId && destinationParaId) {
     return getSiblingLocation(destinationParaId, accountId);
   }
@@ -170,7 +170,7 @@ function getDestinationLocation(
   return undefined;
 }
 
-function getAccountLocation(accountId?: AccountId): Object | undefined {
+function getAccountLocation(accountId?: AccountId) {
   const isEthereum = isEthereumAccountId(accountId);
 
   return {
@@ -186,7 +186,7 @@ function getAccountLocation(accountId?: AccountId): Object | undefined {
   };
 }
 
-function getChildLocation(parachainId: number, accountId?: AccountId): Object {
+function getChildLocation(parachainId: number, accountId?: AccountId) {
   const location: Record<string, any> = { parachainId };
   const isEthereum = isEthereumAccountId(accountId);
 
@@ -203,7 +203,7 @@ function getChildLocation(parachainId: number, accountId?: AccountId): Object {
   };
 }
 
-function getParentLocation(accountId?: AccountId): Object {
+function getParentLocation(accountId?: AccountId) {
   const location: Record<string, any> = {};
   const isEthereum = isEthereumAccountId(accountId);
 
@@ -220,7 +220,7 @@ function getParentLocation(accountId?: AccountId): Object {
   };
 }
 
-function getSiblingLocation(parachainId: number, accountId?: AccountId): Object {
+function getSiblingLocation(parachainId: number, accountId?: AccountId) {
   const location: Record<string, any> = { parachainId };
   const isEthereum = isEthereumAccountId(accountId);
 
@@ -237,8 +237,8 @@ function getSiblingLocation(parachainId: number, accountId?: AccountId): Object 
   };
 }
 
-function getJunctionCols<T extends Object>(interior: Object, path: string): T {
-  return Object.values(get(interior, path) as Object).reduce((acc, item) => {
+function getJunctionCols<T>(interior: Record<string, object>, path: string): T {
+  return Object.values(get(interior, path)).reduce((acc, item) => {
     return { ...acc, ...item };
   }, {});
 }

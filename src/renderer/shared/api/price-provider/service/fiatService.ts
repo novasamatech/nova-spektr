@@ -35,18 +35,18 @@ function saveFiatFlag(flag: boolean): boolean {
   return localStorageService.saveToStorage(FIAT_FLAG_KEY, flag);
 }
 
-function getPriceProvider<T extends any>(defaultFiatProvider: T): T {
+function getPriceProvider<T>(defaultFiatProvider: T): T {
   return localStorageService.getFromStorage(PRICE_PROVIDER_KEY, defaultFiatProvider);
 }
 
-function savePriceProvider<T extends any>(provider: T): T {
+function savePriceProvider<T>(provider: T): T {
   return localStorageService.saveToStorage(PRICE_PROVIDER_KEY, provider);
 }
 
-function getAssetsPrices<T extends any>(defaultPrices: T): T {
+function getAssetsPrices<T>(defaultPrices: T): T {
   return localStorageService.getFromStorage(ASSETS_PRICES_KEY, defaultPrices);
 }
 
-function saveAssetsPrices<T extends any>(prices: T): T {
+function saveAssetsPrices<T>(prices: T): T {
   return localStorageService.saveToStorage(ASSETS_PRICES_KEY, prices);
 }

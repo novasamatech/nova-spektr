@@ -22,12 +22,12 @@ export const useMultisigEventStorage = (db: TMultisigEvent): IMultisigEventStora
   },
 
   updateEvent: (event: MultisigEventDS): Promise<ID> => {
-    //@ts-ignore
+    // @ts-expect-error TODO fix
     return db.update(event.id, event);
   },
 
   deleteEvent: (id: ID): Promise<void> => {
-    //@ts-ignore
+    // @ts-expect-error TODO fix
     return db.delete([id]);
   },
 });

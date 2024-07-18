@@ -81,6 +81,7 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
 
     expect(scope.getState(addProxyModel.$step)).toEqual(Step.SUBMIT);
 
+    // @ts-expect-error TODO fix
     const action = allSettled(submitModel.output.formSubmitted, {
       scope,
       params: {

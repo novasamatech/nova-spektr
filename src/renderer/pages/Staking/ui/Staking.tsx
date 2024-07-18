@@ -188,8 +188,8 @@ export const Staking = () => {
       unlocking: staking[address]?.unlocking,
     });
 
-    // @ts-ignore
-    return groupedAccounts.reduce((acc, account) => {
+    // @ts-expect-error TODO fix
+    return groupedAccounts.reduce<NominatorInfo<any>[]>((acc, account) => {
       if (accountUtils.isAccountWithShards(account)) {
         const shardsGroup = account.map((shard) => {
           const address = toAddress(shard.accountId, { prefix: addressPrefix });

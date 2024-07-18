@@ -419,7 +419,7 @@ function toUnlockChunk(lock: ClaimableLock, currentBlockNumber: BlockHeight): Ch
   return { type: type, amount: lock.amount, claimableAt: lock.claimAt } as PendingChunk;
 }
 
-function claimableAt(claimAt: ClaimTime, at: BlockHeight): Boolean {
+function claimableAt(claimAt: ClaimTime, at: BlockHeight): boolean {
   return onChainUtils.isClaimAt(claimAt) ? claimAt.block <= at : false;
 }
 

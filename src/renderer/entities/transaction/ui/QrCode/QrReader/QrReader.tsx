@@ -129,7 +129,7 @@ export const QrReader = ({
     return cameras.length;
   };
 
-  const handleSimpleQr = (signerAddress: string): Boolean => {
+  const handleSimpleQr = (signerAddress: string): boolean => {
     if (!validateSignerFormat(signerAddress)) return false;
 
     isComplete.current = true;

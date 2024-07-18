@@ -235,7 +235,7 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
       }
 
       args.value = decoded.args[index++].toString();
-      let payee = decoded.args[index++].toString();
+      const payee = decoded.args[index++].toString();
 
       try {
         args.payee = JSON.parse(payee);

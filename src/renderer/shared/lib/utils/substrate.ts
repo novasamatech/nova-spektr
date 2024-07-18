@@ -136,7 +136,7 @@ export const getProxyTypes = (api: ApiPromise): ProxyType[] => {
 };
 
 export const getTypeEnumValues = <T extends string>(api: ApiPromise, typeName: string): T[] => {
-  // @ts-ignore
+  // @ts-expect-error TODO fix
   return api.createType(typeName).defKeys;
 };
 

@@ -12,16 +12,16 @@ declare global {
 const API = {
   username: process.env.USER,
   isAutoUpdateSupported: checkAutoUpdateSupported(),
-  getIsAutoUpdateEnabled: (): Promise<any> => {
+  getIsAutoUpdateEnabled: () => {
     return ipcRenderer.invoke('getStoreValue', AUTO_UPDATE_ENABLED);
   },
-  setIsAutoUpdateEnabled: (value: any): Promise<void> => {
+  setIsAutoUpdateEnabled: (value: any) => {
     return ipcRenderer.invoke('setStoreValue', AUTO_UPDATE_ENABLED, value);
   },
-  getStoreValue: (key: string): Promise<any> => {
+  getStoreValue: (key: string) => {
     return ipcRenderer.invoke('getStoreValue', key);
   },
-  setStoreValue: (key: string, value: any): Promise<void> => {
+  setStoreValue: (key: string, value: any) => {
     return ipcRenderer.invoke('setStoreValue', key, value);
   },
   onProtocolOpen: (callback: (value: string) => void) => {

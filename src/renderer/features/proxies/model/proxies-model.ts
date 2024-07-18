@@ -50,7 +50,7 @@ const $endpoint = createStore<Endpoint<any> | null>(null);
 const $deposits = createStore<ProxyDeposits[]>([]);
 
 const startWorkerFx = createEffect(() => {
-  // @ts-ignore
+  // @ts-expect-error TODO fix
   const worker = new Worker(new URL('@features/proxies/workers/proxy-worker', import.meta.url));
 
   return createEndpoint(worker, {
@@ -129,7 +129,7 @@ const getProxiesFx = createEffect(
 
       const pureProxiesMap = dictionary(pureProxies, 'accountId');
 
-      for (let i in proxiedAccountsToAdd) {
+      for (const i in proxiedAccountsToAdd) {
         const pureProxy = pureProxiesMap[proxiedAccountsToAdd[i].accountId];
         if (pureProxy) {
           proxiedAccountsToAdd[i].proxyVariant = ProxyVariant.PURE;

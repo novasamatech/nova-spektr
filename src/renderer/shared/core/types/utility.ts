@@ -12,4 +12,4 @@ export type ObjectValues<T extends object> = T[keyof T];
 
 export type OmitFirstArg<F> = F extends (first: any, ...args: infer P) => infer R ? (...args: P) => R : never;
 
-export type ArrayOfKeys<T extends Object> = { [K in keyof T]: T[K] | T[K][] };
+export type ArrayOfKeys<T> = { [K in keyof T]: T[K] | T[K][] };

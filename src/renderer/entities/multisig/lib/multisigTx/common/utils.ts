@@ -183,7 +183,7 @@ export const buildMultisigTx = (
 export const getTransactionFromMultisigTx = (tx: MultisigTransaction): Transaction | DecodedTransaction | undefined => {
   const NestedTransactionTypes = [TransactionType.BATCH_ALL, TransactionType.PROXY];
 
-  // @ts-ignore
+  // @ts-expect-error TODO fix
   if (!tx.transaction || !NestedTransactionTypes.includes(tx.transaction.type)) {
     return tx.transaction;
   }

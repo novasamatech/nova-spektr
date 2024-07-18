@@ -53,7 +53,7 @@ export const getUnsignedTransaction: Record<
   (transaction: Transaction, info: BaseTxInfo, options: OptionsWithMeta, api: ApiPromise) => UnsignedTransaction
 > = {
   [TransactionType.TRANSFER]: (transaction, info, options, api) => {
-    // @ts-ignore
+    // @ts-expect-error TODO fix
     return api.tx.balances.transferKeepAlive
       ? transferKeepAlive(
           {
@@ -378,7 +378,7 @@ export const getExtrinsic: Record<
     api.tx.currencies ? api.tx.currencies.transfer(dest, asset, value) : api.tx.tokens.transfer(dest, asset, value),
   [TransactionType.MULTISIG_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, callData, maxWeight }, api) => {
     return isOldMultisigPallet(api)
-      ? // @ts-ignore
+      ? // @ts-expect-error TODO fix
         api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, callData, false, maxWeight)
       : api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, callData, maxWeight);
   },
@@ -415,10 +415,9 @@ export const getExtrinsic: Record<
   },
   // controller arg removed from bond but changes not released yet
   // https://github.com/paritytech/substrate/pull/14039
-  // @ts-ignore
   [TransactionType.BOND]: ({ controller, value, payee }, api) =>
     isControllerMissing(api)
-      ? api.tx.staking.bond(value, payee) // @ts-ignore
+      ? api.tx.staking.bond(value, payee) // @ts-expect-error TODO fix
       : api.tx.staking.bond(controller, value, payee),
   [TransactionType.UNSTAKE]: ({ value }, api) => api.tx.staking.unbond(value),
   [TransactionType.STAKE_MORE]: ({ maxAdditional }, api) => api.tx.staking.bondExtra(maxAdditional),

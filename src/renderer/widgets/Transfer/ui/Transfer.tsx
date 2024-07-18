@@ -63,7 +63,7 @@ export const Transfer = ({ chain, asset }: Props) => {
     );
   }
 
-  const getModalTitle = (chain: Chain, asset: Asset, xcmChain?: Chain): String | ReactNode => {
+  const getModalTitle = (chain: Chain, asset: Asset, xcmChain?: Chain): string | ReactNode => {
     const operationTitle = xcmChain ? 'transfer.xcmTitle' : 'transfer.title';
 
     return <OperationTitle title={`${t(operationTitle, { asset: asset.symbol })}`} chainId={chain.chainId} />;

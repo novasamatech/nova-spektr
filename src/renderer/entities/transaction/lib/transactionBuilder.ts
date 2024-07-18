@@ -22,10 +22,10 @@ type TransferParams = {
   xcmData?: {
     args: {
       xcmFee: string;
-      xcmAsset?: Object;
+      xcmAsset?: NonNullable<unknown>;
       xcmWeight: string;
-      xcmDest?: Object;
-      xcmBeneficiary?: Object;
+      xcmDest?: NonNullable<unknown>;
+      xcmBeneficiary?: NonNullable<unknown>;
       destinationChain: ChainId;
     };
     transactionType: TransactionType;

@@ -36,7 +36,7 @@ export interface ClaimTimeUntil {
 
 export type GroupedClaimAffects = {
   trackId: TrackId;
-  hasPriorAffect: Boolean;
+  hasPriorAffect: boolean;
   votes: AffectVote[];
 };
 

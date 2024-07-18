@@ -3,7 +3,7 @@ export const localStorageService = {
   saveToStorage,
 };
 
-function getFromStorage<T extends any>(key: string, defaultValue: T): T {
+function getFromStorage<T>(key: string, defaultValue: T): T {
   const storageItem = localStorage.getItem(key);
 
   if (!storageItem) return defaultValue;
@@ -17,7 +17,7 @@ function getFromStorage<T extends any>(key: string, defaultValue: T): T {
   }
 }
 
-function saveToStorage<T extends any>(key: string, value: T): T {
+function saveToStorage<T>(key: string, value: T): T {
   localStorage.setItem(key, JSON.stringify(value));
 
   return value;

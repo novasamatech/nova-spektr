@@ -140,7 +140,7 @@ function getAccountsAndShardGroups(accounts: Account[]): Array<ChainAccount | Sh
     if (isBaseAccount(account)) return acc;
 
     if (!isShardAccount(account)) {
-      // @ts-ignore
+      // @ts-expect-error TODO fix
       acc.push(account);
 
       return acc;
