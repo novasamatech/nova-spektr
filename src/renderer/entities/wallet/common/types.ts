@@ -7,5 +7,6 @@ export const enum OperationType {
   REJECT_MULTISIG_TX = 'rejectMultisigTx',
   CREATE_ANY_PROXY = 'createAnyProxy',
   CREATE_NON_ANY_PROXY = 'createNonAnyProxy',
-  REMOV_PROXY = 'removeProxy',
+  REMOVE_PROXY = 'removeProxy',
+  UNLOCK = 'unlock',
 }

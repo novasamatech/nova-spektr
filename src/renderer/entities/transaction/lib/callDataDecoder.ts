@@ -361,6 +361,18 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
         call: decoded.args[2].toHex(),
       };
     },
+    [TransactionType.UNLOCK]: (decoded): Record<string, any> => {
+      return {
+        class: decoded.args[0].toString(),
+        target: decoded.args[1].toString(),
+      };
+    },
+    [TransactionType.REMOVE_VOTE]: (decoded): Record<string, any> => {
+      return {
+        class: decoded.args[0].toString(),
+        index: decoded.args[1].toString(),
+      };
+    },
   };
 
   const isBatchExtrinsic = (method: string, section: string): boolean => {

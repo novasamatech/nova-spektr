@@ -13,6 +13,7 @@ export const permissionUtils = {
   canCreateAnyProxy,
   canCreateNonAnyProxy,
   canRemoveProxy,
+  canUnlock,
 };
 
 function canTransfer(wallet: Wallet): boolean {
@@ -110,6 +111,18 @@ function canRemoveProxy(wallet: Wallet): boolean {
     const isNonTransfer = accountUtils.isNonTransferProxyType(wallet.accounts[0]);
 
     return isAnyProxy || isNonTransfer;
+  }
+
+  return true;
+}
+
+function canUnlock(wallet: Wallet): boolean {
+  if (walletUtils.isWatchOnly(wallet)) return false;
+  if (walletUtils.isProxied(wallet)) {
+    const isAnyProxy = accountUtils.isAnyProxyType(wallet.accounts[0]);
+    const isGovernanceProxy = accountUtils.isGovernanceProxyType(wallet.accounts[0]);
+
+    return isAnyProxy || isGovernanceProxy;
   }
 
   return true;

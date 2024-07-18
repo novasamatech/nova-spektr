@@ -154,6 +154,9 @@ const TransactionTitles: Record<TransactionType, string> = {
   [TransactionType.REMOVE_PROXY]: 'operations.titles.removeProxy',
   [TransactionType.REMOVE_PURE_PROXY]: 'operations.titles.removePureProxy',
   [TransactionType.PROXY]: 'operations.titles.proxy',
+  // Governance
+  [TransactionType.UNLOCK]: 'operations.titles.unlock',
+  [TransactionType.REMOVE_VOTE]: 'operations.titles.unlock',
 };
 
 const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => string> = {
@@ -194,6 +197,8 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.REMOVE_PROXY]: () => 'operations.modalTitles.removeProxy',
   [TransactionType.REMOVE_PURE_PROXY]: () => 'operations.modalTitles.removePureProxy',
   [TransactionType.PROXY]: () => 'operations.modalTitles.proxy',
+  [TransactionType.UNLOCK]: () => 'operations.modalTitles.unlockOn',
+  [TransactionType.REMOVE_VOTE]: () => 'operations.modalTitles.unlockOn',
 };
 
 export const getTransactionTitle = (transaction?: Transaction | DecodedTransaction): string => {
