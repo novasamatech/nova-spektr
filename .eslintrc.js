@@ -167,10 +167,7 @@ module.exports = {
         'unused-imports/no-unused-imports': 'error',
         '@typescript-eslint/consistent-type-imports': [
           'error',
-          {
-            prefer: 'type-imports',
-            fixStyle: 'inline-type-imports',
-          },
+          { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
         ],
         '@typescript-eslint/no-unused-vars': 'off',
         '@typescript-eslint/no-empty-interface': 'off',
@@ -183,6 +180,7 @@ module.exports = {
         'effector/enforce-effect-naming-convention': 'off',
         // it took around 4 seconds to check this single rule
         'effector/enforce-store-naming-convention': 'off',
+        'effector/keep-options-order': 'error',
       },
     },
   ],
