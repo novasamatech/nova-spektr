@@ -85,7 +85,7 @@ function isPureProxiedAccount(account: Partial<Account>): account is ProxiedAcco
 
 // Matchers
 
-function isAccountWithShards(accounts: ChainAccount | ShardAccount[]): accounts is ShardAccount[] {
+function isAccountWithShards(accounts: Account | ShardAccount[]): accounts is ShardAccount[] {
   return Array.isArray(accounts) && isShardAccount(accounts[0]);
 }
 

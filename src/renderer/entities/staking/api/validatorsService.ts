@@ -240,7 +240,6 @@ async function getParentIdentities(
     parentIdentities = await api.query.identity.identityOf.multi(identityAddresses);
   }
 
-  // @ts-expect-error TODO fix
   return parentIdentities.reduce<Record<Address, Identity>>((acc, identity, index) => {
     if (!identity || identity.isNone) return acc;
 
