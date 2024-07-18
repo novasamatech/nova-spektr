@@ -23,7 +23,7 @@ export const substrateChains = [
   { name: 'Subsocial' },
   { name: 'Integritee Parachain' },
   { name: 'Centrifuge Parachain' },
-  { name: 'HydraDX' },
+  { name: 'Hydration' },
   { name: 'Interlay' },
   { name: 'Phala' },
   { name: 'Turing' },
@@ -40,6 +40,10 @@ export const substrateChains = [
   { name: 'Kusama Bridge Hub' },
   { name: 'Polkadot Collectives' },
   { name: 'Kusama People' },
+  { name: 'Polimec' },
 ];
 
-export const ethChains = [{ name: 'Moonbeam' }, { name: 'Moonriver' }];
+export const ethChains = [
+  { name: 'Moonbeam' },
+  { name: 'Moonriver' },
+];

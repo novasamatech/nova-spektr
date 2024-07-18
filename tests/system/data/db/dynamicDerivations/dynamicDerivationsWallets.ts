@@ -34,5 +34,18 @@ export const vaultDPPolkadotTestAccount: IndexedDBData = {
       type: 'chain',
       walletId: 1,
     },
+    {
+      accountId: '0x16d1251b46aaaa1df34eb02b345e11fea6ef86b30dd1b9a77ef745d7eb004a6f',
+      baseId: 1,
+      chainId: '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e',
+      chainType: 0,
+      cryptoType: 0,
+      derivationPath: '//westend',
+      id: 3,
+      keyType: 'main',
+      name: 'Main',
+      type: 'chain',
+      walletId: 1,
+    },
   ],
 };

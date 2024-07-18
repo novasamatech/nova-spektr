@@ -14,6 +14,10 @@ on:
 env:
   CI: true
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   system-tests:
     runs-on: ubuntu-latest
@@ -39,15 +43,11 @@ jobs:
       - run: npx playwright install --with-deps
         if: steps.playwright-cache.outputs.cache-hit != 'true'
 
-      - name: Run Playwright tests for push event
-        if: github.event_name == 'push'
+      - name: Run Regression
+        if: github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
         run: npx playwright test --grep @regress
 
-      - name: Run Playwright tests for pull_request or workflow_dispatch event
-        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
-        run: npx playwright test
-
-      - name: Run Playwright tests for schedule event
+      - name: Run fee test
         if: github.event_name == 'schedule'
         run: npx playwright test --grep @fee-test
 
