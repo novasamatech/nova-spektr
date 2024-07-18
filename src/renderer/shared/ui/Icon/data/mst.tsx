@@ -1,3 +1,6 @@
+import OpenGovUnlockImg, {
+  ReactComponent as OpenGovUnlockSvg,
+} from '@shared/assets/images/functionals/opengov-unlock.svg';
 import ChangeValidatorsImg, {
   ReactComponent as ChangeValidatorsSvg,
 } from '@shared/assets/images/mst/change-validators-mst.svg';
@@ -28,6 +31,7 @@ const MstImages = {
   changeValidatorsMst: { svg: ChangeValidatorsSvg, img: ChangeValidatorsImg },
   returnToStakeMst: { svg: ReturnToStakeSvg, img: ReturnToStakeImg },
   proxyMst: { svg: DelegatedAuthoritiesSvg, img: DelegatedAuthoritiesImg },
+  unlockMst: { svg: OpenGovUnlockSvg, img: OpenGovUnlockImg },
 } as const;
 
 export type Mst = keyof typeof MstImages;
