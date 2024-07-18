@@ -36,7 +36,7 @@ interface RemoveVoteArgs extends Args {
    */
   class: number;
   /**
-   * index: The index of poll of the vote to be removed. - referendumIndex.
+   * index: The index of poll of the vote to be removed. - referendumId.
    */
   index: string;
 }
@@ -526,8 +526,8 @@ export const getExtrinsic: Record<
   [TransactionType.UNLOCK]: ({ target, trackId }, api) => {
     return api.tx.convictionVoting.unlock(trackId, target);
   },
-  [TransactionType.REMOVE_VOTE]: ({ trackId, referendumIndex }, api) => {
-    return api.tx.convictionVoting.removeVote(trackId, referendumIndex);
+  [TransactionType.REMOVE_VOTE]: ({ trackId, referendumId }, api) => {
+    return api.tx.convictionVoting.removeVote(trackId, referendumId);
   },
 };
 

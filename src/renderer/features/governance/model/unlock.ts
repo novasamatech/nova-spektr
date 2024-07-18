@@ -92,7 +92,7 @@ sample({
     referendums: referendumModel.$referendums,
     chain: networkSelectorModel.$governanceChain,
   },
-  filter: ({ api, chain }) => !!api && !!chain,
+  filter: ({ api, chain, referendums }) => !!api && !!chain && !!referendums,
   fn: ({ api, tracks, trackLocks, voting, referendums, chain }) => ({
     api: api!,
     tracks,
