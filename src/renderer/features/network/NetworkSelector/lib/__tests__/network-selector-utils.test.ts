@@ -1,6 +1,6 @@
 import { ConnectionStatus, ConnectionType } from '@shared/core';
+import { type ExtendedChain } from '@entities/network';
 import { networkSelectorUtils } from '../network-selector-utils';
-import { ExtendedChain } from '@entities/network';
 
 const defaultNetwork: ExtendedChain = {
   addressPrefix: 0,

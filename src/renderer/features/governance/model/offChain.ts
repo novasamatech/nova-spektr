@@ -1,7 +1,7 @@
+import { combine, createEvent, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
-import { sample, createEvent, combine, createStore } from 'effector';
 
-import { governanceModel, type SourceType } from '@entities/governance';
+import { type SourceType, governanceModel } from '@entities/governance';
 
 const flowStarted = createEvent();
 const flowClosed = createEvent();

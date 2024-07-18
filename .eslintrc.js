@@ -51,22 +51,32 @@ module.exports = {
     },
   },
   rules: {
+    'sort-imports': ['error', { ignoreDeclarationSort: true }],
     'import/no-unresolved': 'off',
+    'import/namespace': 'off',
+    'import/consistent-type-specifier-style': ['error', 'prefer-inline'],
     'import/order': [
       'error',
       {
-        groups: [
-          ['builtin', 'external'],
-          ['internal', 'sibling', 'parent', 'object', 'index'],
-        ],
+        alphabetize: { order: 'asc', orderImportKind: 'asc' },
+        groups: ['builtin', 'external', 'parent', ['sibling', 'index']],
         pathGroups: [
-          { group: 'sibling', pattern: '@/app/**', position: 'before' },
-          { group: 'sibling', pattern: '@/shared/**', position: 'before' },
-          { group: 'sibling', pattern: '@/entities/**', position: 'before' },
-          { group: 'sibling', pattern: '@/features/**', position: 'before' },
-          { group: 'sibling', pattern: '@/pages/**', position: 'before' },
+          { group: 'parent', pattern: '@app/**', position: 'before' },
+          { group: 'parent', pattern: '@shared/**', position: 'before' },
+          { group: 'parent', pattern: '@entities/**', position: 'before' },
+          { group: 'parent', pattern: '@processes/**', position: 'before' },
+          { group: 'parent', pattern: '@features/**', position: 'before' },
+          { group: 'parent', pattern: '@widgets/**', position: 'before' },
+          { group: 'parent', pattern: '@pages/**', position: 'before' },
+
+          { group: 'parent', pattern: '@/app/**', position: 'before' },
+          { group: 'parent', pattern: '@/shared/**', position: 'before' },
+          { group: 'parent', pattern: '@/entities/**', position: 'before' },
+          { group: 'parent', pattern: '@/features/**', position: 'before' },
+          { group: 'parent', pattern: '@/pages/**', position: 'before' },
         ],
         'newlines-between': 'always',
+        distinctGroup: false,
       },
     ],
     'no-irregular-whitespace': 'off',
@@ -155,16 +165,21 @@ module.exports = {
       },
       rules: {
         'unused-imports/no-unused-imports': 'error',
+        '@typescript-eslint/consistent-type-imports': [
+          'error',
+          { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
+        ],
         '@typescript-eslint/no-unused-vars': 'off',
         '@typescript-eslint/no-empty-interface': 'off',
         '@typescript-eslint/no-non-null-assertion': 'off',
         '@typescript-eslint/no-empty-function': 'off',
-        // TODO enable
-        '@typescript-eslint/no-unnecessary-type-constraint': 'warn',
+        '@typescript-eslint/no-explicit-any': 'warn',
+        '@typescript-eslint/no-unnecessary-type-constraint': 'error',
         // it took around 4 seconds to check this single rule
         'effector/enforce-effect-naming-convention': 'off',
         // it took around 4 seconds to check this single rule
         'effector/enforce-store-naming-convention': 'off',
+        'effector/keep-options-order': 'error',
       },
     },
   ],

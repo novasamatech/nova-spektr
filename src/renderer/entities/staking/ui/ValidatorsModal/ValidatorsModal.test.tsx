@@ -1,8 +1,9 @@
 import { render, screen } from '@testing-library/react';
 
-import { Validator } from '@shared/core/types/validator';
+import { type Asset } from '@shared/core';
+import { type Validator } from '@shared/core/types/validator';
+
 import { ValidatorsModal } from './ValidatorsModal';
-import type { Asset } from '@shared/core';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({

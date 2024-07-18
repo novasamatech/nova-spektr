@@ -3,6 +3,7 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@app/providers';
 import { MultiSelect, Select } from '@shared/ui';
 import { filterModel } from '../../model/filter';
+
 import { trackOptions, voteOptions } from './constants';
 
 export const ReferendumFilters = () => {
@@ -11,7 +12,9 @@ export const ReferendumFilters = () => {
   const selectedVoteId = useUnit(filterModel.$selectedVoteId);
   const query = useUnit(filterModel.$query);
 
-  if (query) return null;
+  if (query) {
+    return null;
+  }
 
   return (
     <div className="flex gap-x-4">

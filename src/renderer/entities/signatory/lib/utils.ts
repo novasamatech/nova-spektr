@@ -1,4 +1,4 @@
-import { AccountId, Wallet } from '@shared/core';
+import { type AccountId, type Wallet } from '@shared/core';
 import { walletUtils } from '@entities/wallet';
 
 export const singnatoryUtils = {

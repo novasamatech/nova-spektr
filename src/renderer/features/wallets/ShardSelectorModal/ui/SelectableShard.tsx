@@ -1,8 +1,8 @@
-import { cnTw, toAddress } from '@shared/lib/utils';
-import { BodyText, Checkbox, HelpText, Identicon, Truncate, IconButton } from '@shared/ui';
-import type { ChainAccount, ShardAccount, Explorer, BaseAccount, Wallet } from '@shared/core';
-import { ExplorersPopover, accountUtils, walletUtils } from '@entities/wallet';
 import { useI18n } from '@app/providers';
+import { type BaseAccount, type ChainAccount, type Explorer, type ShardAccount, type Wallet } from '@shared/core';
+import { cnTw, toAddress } from '@shared/lib/utils';
+import { BodyText, Checkbox, HelpText, IconButton, Identicon, Truncate } from '@shared/ui';
+import { ExplorersPopover, accountUtils, walletUtils } from '@entities/wallet';
 
 type Props = {
   wallet?: Wallet;

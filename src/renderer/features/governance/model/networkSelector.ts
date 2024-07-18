@@ -1,6 +1,6 @@
-import { createEvent, restore, combine, sample } from 'effector';
+import { combine, createEvent, restore, sample } from 'effector';
 
-import { type Chain, ConnectionStatus } from '@shared/core';
+import { type Chain, type ConnectionStatus } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 
 const chainChanged = createEvent<Chain>();
@@ -18,7 +18,7 @@ const $governanceChainApi = combine(
     apis: networkModel.$apis,
   },
   ({ chain, apis }) => {
-    return chain ? apis[chain.chainId] ?? null : null;
+    return chain ? (apis[chain.chainId] ?? null) : null;
   },
 );
 

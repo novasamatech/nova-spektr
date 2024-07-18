@@ -1,7 +1,7 @@
-import { BN } from '@polkadot/util';
+import { type BN } from '@polkadot/util';
 
-import type { BlockHeight, Address } from './general';
-import type { TrackId } from './track';
+import { type Address, type BlockHeight } from './general';
+import { type TrackId } from './track';
 
 export type ReferendumId = string;
 

@@ -1,5 +1,6 @@
-import { CONFIG } from './mock/xcmData';
 import { xcmUtils } from '../lib/xcm-utils';
+
+import { CONFIG } from './mock/xcmData';
 
 describe('shared/api/xcm/lib/xcm-utils', () => {
   test('should calculate correct fee for ACA from Acala to Parallel ', () => {

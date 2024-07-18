@@ -1,4 +1,4 @@
-import { validateDerivation, derivationHasPassword } from '@shared/lib/utils';
+import { derivationHasPassword, validateDerivation } from '@shared/lib/utils';
 
 describe('shared/lib/onChainUtils/derivation#validateDerivation', () => {
   // Array<[argument, result]>

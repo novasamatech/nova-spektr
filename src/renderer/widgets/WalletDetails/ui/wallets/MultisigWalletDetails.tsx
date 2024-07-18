@@ -1,22 +1,15 @@
-import { useMemo } from 'react';
 import { useUnit } from 'effector-react';
+import { useMemo } from 'react';
 
-import { Signatory, Wallet, AccountId, MultisigWallet } from '@shared/core';
-import { BaseModal, FootnoteText, Tabs, DropdownIconButton, HelpText } from '@shared/ui';
-import { RootExplorers } from '@shared/lib/utils';
-import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { useI18n } from '@app/providers';
-import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatBalance';
-import { IconNames } from '@shared/ui/Icon/data';
-import type { TabItem } from '@shared/ui/types';
-import { RenameWalletModal } from '@features/wallets/RenameWallet';
-import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
-import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
-import { ProxiesList } from '../components/ProxiesList';
-import { NoProxiesAction } from '../components/NoProxiesAction';
-import { walletProviderModel } from '../../model/wallet-provider-model';
-import { networkUtils, networkModel } from '@entities/network';
-import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
+import { type AccountId, type MultisigWallet, type Signatory, type Wallet } from '@shared/core';
+import { useModalClose, useToggle } from '@shared/lib/hooks';
+import { RootExplorers } from '@shared/lib/utils';
+import { BaseModal, DropdownIconButton, FootnoteText, HelpText, Tabs } from '@shared/ui';
+import { type IconNames } from '@shared/ui/Icon/data';
+import { type TabItem } from '@shared/ui/types';
+import { matrixModel, matrixUtils } from '@entities/matrix';
+import { networkModel, networkUtils } from '@entities/network';
 import {
   AccountsList,
   ContactItem,
@@ -26,7 +19,14 @@ import {
   accountUtils,
   permissionUtils,
 } from '@entities/wallet';
-import { matrixModel, matrixUtils } from '@entities/matrix';
+import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
+import { RenameWalletModal } from '@features/wallets/RenameWallet';
+import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatBalance';
+import { AddProxy, addProxyModel } from '@widgets/AddProxyModal';
+import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
+import { walletProviderModel } from '../../model/wallet-provider-model';
+import { NoProxiesAction } from '../components/NoProxiesAction';
+import { ProxiesList } from '../components/ProxiesList';
 
 type Props = {
   wallet: MultisigWallet;
@@ -70,7 +70,9 @@ export const MultisigWalletDetails = ({
     const anyProxy = permissionUtils.canCreateAnyProxy(wallet);
     const nonAnyProxy = permissionUtils.canCreateNonAnyProxy(wallet);
 
-    if (!singleChain) return anyProxy || nonAnyProxy;
+    if (!singleChain) {
+      return anyProxy || nonAnyProxy;
+    }
 
     return (anyProxy || nonAnyProxy) && networkUtils.isProxySupported(singleChain?.options);
   }, [singleChain]);
@@ -78,7 +80,9 @@ export const MultisigWalletDetails = ({
   const canCreatePureProxy = useMemo(() => {
     const anyProxy = permissionUtils.canCreateAnyProxy(wallet);
 
-    if (!singleChain) return anyProxy;
+    if (!singleChain) {
+      return anyProxy;
+    }
 
     return anyProxy && networkUtils.isPureProxySupported(singleChain?.options);
   }, [singleChain]);

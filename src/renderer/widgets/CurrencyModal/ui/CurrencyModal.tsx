@@ -1,7 +1,7 @@
-import { BaseModal } from '@shared/ui';
-import { useToggle } from '@shared/lib/hooks';
 import { useI18n } from '@app/providers';
+import { useToggle } from '@shared/lib/hooks';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { BaseModal } from '@shared/ui';
 import { CurrencyForm } from '@features/currency';
 
 type Props = {

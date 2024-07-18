@@ -1,7 +1,7 @@
-import { createStore, createEvent, sample, createEffect } from 'effector';
+import { createEffect, createEvent, createStore, sample } from 'effector';
 
 import { storageService } from '@shared/api/storage';
-import { NoID, Notification } from '@shared/core';
+import { type NoID, type Notification } from '@shared/core';
 
 const notificationsStarted = createEvent();
 const notificationsAdded = createEvent<NoID<Notification>[]>();

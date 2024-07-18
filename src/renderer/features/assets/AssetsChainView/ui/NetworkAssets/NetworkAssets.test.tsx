@@ -1,13 +1,14 @@
 import { act, render, screen } from '@testing-library/react';
-import { Provider } from 'effector-react';
 import { fork } from 'effector';
+import { Provider } from 'effector-react';
 
-import { TEST_ACCOUNTS } from '@shared/lib/utils';
 import chains from '@shared/config/chains/chains.json';
-import { NetworkAssets } from './NetworkAssets';
-import type { Chain, BaseAccount, ChainAccount, ShardAccount } from '@shared/core';
-import { ChainType, CryptoType, AccountType } from '@shared/core';
+import { type BaseAccount, type Chain, type ChainAccount, type ShardAccount } from '@shared/core';
+import { AccountType, ChainType, CryptoType } from '@shared/core';
+import { TEST_ACCOUNTS } from '@shared/lib/utils';
 import { balanceModel } from '@entities/balance';
+
+import { NetworkAssets } from './NetworkAssets';
 
 const testChain = chains.find((chain) => chain.assets.length > 1) as Chain;
 const testAsset = testChain.assets[0];

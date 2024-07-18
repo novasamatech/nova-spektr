@@ -1,24 +1,25 @@
 import Dexie from 'dexie';
 
-import { useTransactionStorage } from './transactionStorage';
-import { useMultisigEventStorage } from './multisigEventStorage';
-import { migrateEvents, migrateWallets } from '../migration';
 import {
-  DataStorage,
-  IStorage,
-  TWallet,
-  TContact,
-  TBalance,
-  TConnection,
-  TAccount,
-  TMultisigTransaction,
-  TNotification,
-  TMultisigEvent,
-  TMetadata,
-  TProxy,
-  TProxyGroup,
-  TBasketTransaction,
+  type DataStorage,
+  type IStorage,
+  type TAccount,
+  type TBalance,
+  type TBasketTransaction,
+  type TConnection,
+  type TContact,
+  type TMetadata,
+  type TMultisigEvent,
+  type TMultisigTransaction,
+  type TNotification,
+  type TProxy,
+  type TProxyGroup,
+  type TWallet,
 } from '../lib/types';
+import { migrateEvents, migrateWallets } from '../migration';
+
+import { useMultisigEventStorage } from './multisigEventStorage';
+import { useTransactionStorage } from './transactionStorage';
 
 class DexieStorage extends Dexie {
   connections: TConnection;

@@ -1,11 +1,12 @@
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import { Provider } from 'effector-react';
 import { fork } from 'effector';
+import { Provider } from 'effector-react';
+import { MemoryRouter } from 'react-router-dom';
+
+import { Paths } from '@shared/routes';
+import { LoginStatus, matrixModel } from '@entities/matrix';
 
 import { MatrixAction } from './MatrixAction';
-import { Paths } from '@shared/routes';
-import { matrixModel, LoginStatus } from '@entities/matrix';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({

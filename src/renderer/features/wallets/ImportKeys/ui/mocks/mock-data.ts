@@ -1,5 +1,5 @@
 import { KeyType } from '@shared/core';
-import { TypedImportedDerivation } from '../../lib/types';
+import { type TypedImportedDerivation } from '../../lib/types';
 
 // TODO removed when all derivations features merged and tested
 export const EXISTING_DERIVATIONS: TypedImportedDerivation[] = [

@@ -1,21 +1,21 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { BaseModal, DropdownIconButton, Tabs } from '@shared/ui';
-import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { AccountsList, WalletCardLg, accountUtils, permissionUtils, walletUtils } from '@entities/wallet';
-import { networkModel, networkUtils } from '@entities/network';
 import { useI18n } from '@app/providers';
-import type { Chain, SingleShardWallet, WatchOnlyWallet } from '@shared/core';
-import { IconNames } from '@shared/ui/Icon/data';
-import { RenameWalletModal } from '@features/wallets/RenameWallet';
+import { type Chain, type SingleShardWallet, type WatchOnlyWallet } from '@shared/core';
+import { useModalClose, useToggle } from '@shared/lib/hooks';
+import { BaseModal, DropdownIconButton, Tabs } from '@shared/ui';
+import { type IconNames } from '@shared/ui/Icon/data';
+import { type TabItem } from '@shared/ui/types';
+import { networkModel, networkUtils } from '@entities/network';
+import { AccountsList, WalletCardLg, accountUtils, permissionUtils, walletUtils } from '@entities/wallet';
 import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
-import { TabItem } from '@shared/ui/types';
-import { ProxiesList } from '../components/ProxiesList';
-import { NoProxiesAction } from '../components/NoProxiesAction';
-import { walletProviderModel } from '../../model/wallet-provider-model';
-import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
+import { RenameWalletModal } from '@features/wallets/RenameWallet';
+import { AddProxy, addProxyModel } from '@widgets/AddProxyModal';
 import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
+import { walletProviderModel } from '../../model/wallet-provider-model';
+import { NoProxiesAction } from '../components/NoProxiesAction';
+import { ProxiesList } from '../components/ProxiesList';
 
 type Props = {
   wallet: SingleShardWallet | WatchOnlyWallet;

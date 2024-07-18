@@ -1,8 +1,9 @@
 import { useUnit } from 'effector-react';
 
-import type { HexString } from '@shared/core';
-import { SigningSwitch } from './SigningSwitch';
+import { type HexString } from '@shared/core';
 import { signModel } from '../model/sign-model';
+
+import { SigningSwitch } from './SigningSwitch';
 
 type Props = {
   onGoBack: () => void;
@@ -13,7 +14,9 @@ export const OperationSign = ({ onGoBack }: Props) => {
   const signStore = useUnit(signModel.$signStore);
   const signerWallet = useUnit(signModel.$signerWallet);
 
-  if (!apis || !signStore || !signerWallet) return null;
+  if (!apis || !signStore || !signerWallet) {
+    return null;
+  }
 
   const onSignResult = (signatures: HexString[], txPayloads: Uint8Array[]) => {
     signModel.events.dataReceived({ signatures, txPayloads });

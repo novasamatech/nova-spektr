@@ -1,24 +1,25 @@
+import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useNavigate, useRoutes } from 'react-router-dom';
-import { useUnit } from 'effector-react';
 
-import { CreateWalletProvider } from '@widgets/CreateWallet';
-import { WalletDetailsProvider } from '@widgets/WalletDetails';
-import { walletModel } from '@entities/wallet';
-import { ROUTES_CONFIG } from '@pages/index';
+import { WalletType } from '@shared/core';
 import { Paths, createLink } from '@shared/routes';
 import { FallbackScreen } from '@shared/ui';
+import { walletModel } from '@entities/wallet';
+import { walletPairingModel } from '@features/wallets';
+import { CreateWalletProvider } from '@widgets/CreateWallet';
+import { WalletDetailsProvider } from '@widgets/WalletDetails';
+import { ROUTES_CONFIG } from '@pages/index';
+
 import {
   ConfirmDialogProvider,
-  StatusModalProvider,
-  I18Provider,
   GraphqlProvider,
-  MultisigChainProvider,
+  I18Provider,
   MatrixProvider,
+  MultisigChainProvider,
+  StatusModalProvider,
 } from './providers';
-import { walletPairingModel } from '@features/wallets';
-import { WalletType } from '@shared/core';
 
 const SPLASH_SCREEN_DELAY = 450;
 
@@ -61,7 +62,9 @@ export const App = () => {
   }, [isLoadingWallets, wallets.length]);
 
   const getContent = () => {
-    if (splashScreenLoading || isLoadingWallets) return null;
+    if (splashScreenLoading || isLoadingWallets) {
+      return null;
+    }
 
     document.querySelector('.splash_placeholder')?.remove();
 

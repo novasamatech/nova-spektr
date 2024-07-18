@@ -1,6 +1,6 @@
-import { BN } from '@polkadot/util';
+import { type BN } from '@polkadot/util';
 
-import { Address, Chain, ReferendumId } from '@shared/core';
+import { type Address, type Chain, type ReferendumId } from '@shared/core';
 
 export type ReferendumVote = {
   decision: 'aye' | 'nay' | 'abstain';

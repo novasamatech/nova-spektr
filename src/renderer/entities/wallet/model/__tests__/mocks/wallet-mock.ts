@@ -1,15 +1,15 @@
 import {
-  ID,
-  Wallet,
-  WalletType,
-  SigningType,
+  type Account,
   AccountType,
+  type BaseAccount,
+  type ChainAccount,
   ChainType,
   CryptoType,
+  type ID,
   KeyType,
-  Account,
-  BaseAccount,
-  ChainAccount,
+  SigningType,
+  type Wallet,
+  WalletType,
 } from '@shared/core';
 import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@shared/lib/utils';
 

@@ -1,6 +1,6 @@
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { type ApiPromise } from '@polkadot/api';
 import { BN_MILLION } from '@polkadot/util';
-import { ApiPromise } from '@polkadot/api';
+import { act, renderHook, waitFor } from '@testing-library/react';
 
 import { DEFAULT_QR_LIFETIME } from '@shared/lib/utils';
 import { useCountdown } from '../useCountdown';

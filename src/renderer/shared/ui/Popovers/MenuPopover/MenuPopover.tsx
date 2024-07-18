@@ -1,5 +1,5 @@
 import { Menu } from '@headlessui/react';
-import { PropsWithChildren, ReactNode, useRef, MouseEvent } from 'react';
+import { type MouseEvent, type PropsWithChildren, type ReactNode, useRef } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
 

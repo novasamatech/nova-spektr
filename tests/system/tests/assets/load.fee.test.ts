@@ -1,10 +1,10 @@
-import { chromium, Browser, Page, BrowserContext } from 'playwright';
 import { test } from '@playwright/test';
+import { type Browser, type BrowserContext, type Page, chromium } from 'playwright';
 
-import { BaseLoginPage } from '../../pages/loginPage/BaseLoginPage';
-import { LoginPageElements } from '../../pages/_elements/LoginPageElements';
 import { substrateChains } from '../../data/chains/chainsList';
-import { VaultAssetsPage } from '../../pages/assetsPage/VaultAssetsPage';
+import { LoginPageElements } from '../../pages/_elements/LoginPageElements';
+import { type VaultAssetsPage } from '../../pages/assetsPage/VaultAssetsPage';
+import { BaseLoginPage } from '../../pages/loginPage/BaseLoginPage';
 
 test.describe(
   'Load Transfer fee as Substrate Polkadot Vault',

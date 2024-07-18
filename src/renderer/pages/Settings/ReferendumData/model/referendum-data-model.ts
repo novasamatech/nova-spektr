@@ -1,10 +1,10 @@
-import { createStore, createApi, sample, attach } from 'effector';
-import { NavigateFunction } from 'react-router-dom';
+import { attach, createApi, createStore, sample } from 'effector';
 import { delay } from 'patronum';
+import { type NavigateFunction } from 'react-router-dom';
 
+import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { Paths } from '@shared/routes';
 import { offChainModel } from '@features/governance';
-import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 
 const $navigation = createStore<{ navigate: NavigateFunction } | null>(null);
 const navigationApi = createApi($navigation, {

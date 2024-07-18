@@ -1,15 +1,15 @@
-import { ReactNode, useState } from 'react';
 import { useStoreMap } from 'effector-react';
+import { type ReactNode, useState } from 'react';
 
-import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
-import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { SignButton } from '@entities/operations';
-import { AddressWithExplorers, WalletIcon, accountUtils, ExplorersPopover, WalletCardSm } from '@entities/wallet';
-import { proxyUtils } from '@entities/proxy';
-import { confirmModel } from '../model/confirm-model';
+import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
+import { SignButton } from '@entities/operations';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { proxyUtils } from '@entities/proxy';
+import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
+import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, accountUtils } from '@entities/wallet';
+import { confirmModel } from '../model/confirm-model';
 
 type Props = {
   id?: number;
@@ -53,7 +53,9 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
 
   const [isFeeLoading, setIsFeeLoading] = useState(true);
 
-  if (!confirmStore || !initiatorWallet) return null;
+  if (!confirmStore || !initiatorWallet) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5 w-modal">

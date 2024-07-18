@@ -1,7 +1,7 @@
-import { InitOptions } from 'i18next';
+import { type InitOptions } from 'i18next';
 
 import { LanguageOptions, Locales } from './lib/constants';
-import { ITranslationService, LanguageItem } from './lib/types';
+import { type ITranslationService, type LanguageItem } from './lib/types';
 import { useLocaleStorage } from './localeStorage';
 import { LocaleFiles } from './locales';
 

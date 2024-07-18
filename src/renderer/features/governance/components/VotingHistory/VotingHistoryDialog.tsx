@@ -1,13 +1,14 @@
-import { useMemo, useState } from 'react';
 import { useGate, useStoreMap, useUnit } from 'effector-react';
+import { useMemo, useState } from 'react';
 
-import { BaseModal, FootnoteText, Icon, Tabs } from '@shared/ui';
-import { useModalClose } from '@shared/lib/hooks';
-import { cnTw } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
 import { type Referendum } from '@shared/core';
+import { useModalClose } from '@shared/lib/hooks';
+import { cnTw } from '@shared/lib/utils';
+import { BaseModal, FootnoteText, Icon, Tabs } from '@shared/ui';
 import { type TabItem } from '@shared/ui/Tabs/common/types';
 import { voteHistoryAggregate } from '../../aggregates/voteHistory';
+
 import { VotingHistoryList } from './VotingHistoryList';
 
 type Props = {
@@ -33,7 +34,7 @@ export const VotingHistoryDialog = ({ referendum, onClose }: Props) => {
   const votingAsset = useStoreMap({
     store: voteHistoryAggregate.$votingAssets,
     keys: [chain?.chainId],
-    fn: (x, [chainId]) => (chainId ? x[chainId] ?? null : null),
+    fn: (x, [chainId]) => (chainId ? (x[chainId] ?? null) : null),
   });
 
   const isLoading = useUnit(voteHistoryAggregate.$voteHistoryLoading);

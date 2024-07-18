@@ -1,14 +1,14 @@
 import {
   AccountType,
-  ChainAccount,
-  ChainId,
+  type ChainAccount,
+  type ChainId,
   ChainType,
   CryptoType,
-  DraftAccount,
+  type DraftAccount,
   KeyType,
-  ShardAccount,
+  type ShardAccount,
 } from '@shared/core';
-import { DerivationWithPath } from '../types';
+import { type DerivationWithPath } from '../types';
 
 const chainId: ChainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
 

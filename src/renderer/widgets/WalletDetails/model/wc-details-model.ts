@@ -1,14 +1,14 @@
 import { createEvent, createStore, sample } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
-import { walletModel, walletUtils } from '@entities/wallet';
-import { walletConnectModel, InitConnectParams } from '@entities/walletConnect';
-import { ReconnectStep, ForgetStep } from '../lib/constants';
-import { walletSelectModel } from '@features/wallets';
-import type { Wallet, WcAccount } from '@shared/core';
 import { chainsService } from '@shared/api/network';
+import { type Wallet, type WcAccount } from '@shared/core';
 import { toAccountId } from '@shared/lib/utils';
 import { balanceModel } from '@entities/balance';
+import { walletModel, walletUtils } from '@entities/wallet';
+import { type InitConnectParams, walletConnectModel } from '@entities/walletConnect';
+import { walletSelectModel } from '@features/wallets';
+import { ForgetStep, ReconnectStep } from '../lib/constants';
 
 const reset = createEvent();
 const confirmReconnectShown = createEvent();

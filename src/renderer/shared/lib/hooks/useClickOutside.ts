@@ -1,4 +1,4 @@
-import { useEffect, RefObject } from 'react';
+import { type RefObject, useEffect } from 'react';
 
 /**
  * Observe provided element(s) and call callback function

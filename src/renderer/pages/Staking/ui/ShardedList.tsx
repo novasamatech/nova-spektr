@@ -1,15 +1,16 @@
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
-import type { Asset, Explorer, Address } from '@shared/core';
-import { FootnoteText, Checkbox, Accordion, Shimmering, Plate, Tooltip } from '@shared/ui';
-import { ShardAccount } from '@shared/core/types/account';
+import { type Address, type Asset, type Explorer } from '@shared/core';
+import { type ShardAccount } from '@shared/core/types/account';
+import { Accordion, Checkbox, FootnoteText, Plate, Shimmering, Tooltip } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { useStakingData } from '@entities/staking';
+import { type NominatorInfo } from '../lib/types';
+
 import { NominatorsItem } from './NominatorItem';
-import { NominatorInfo } from '../lib/types';
 
 type Props = {
   shardsStake: NominatorInfo<ShardAccount>[];
@@ -43,9 +44,15 @@ export const ShardedList = ({
 
   const shardsStats = shardsStake.reduce(
     (acc, shard) => {
-      if (getNextUnstakingEra(shard.unlocking, era)) acc.unstaking++;
-      if (hasRedeem(shard.unlocking, era)) acc.withdraw++;
-      if (shard.isSelected) acc.selected++;
+      if (getNextUnstakingEra(shard.unlocking, era)) {
+        acc.unstaking++;
+      }
+      if (hasRedeem(shard.unlocking, era)) {
+        acc.withdraw++;
+      }
+      if (shard.isSelected) {
+        acc.selected++;
+      }
 
       acc.totalReward += Number(shard.totalReward) || 0;
       acc.totalStake += Number(shard.totalStake) || 0;

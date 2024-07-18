@@ -1,6 +1,6 @@
 import { webcrypto } from 'node:crypto';
 
-import { AccountType, DraftAccount, KeyType, ShardAccount } from '@shared/core';
+import { AccountType, type DraftAccount, KeyType, type ShardAccount } from '@shared/core';
 import { importKeysUtils } from '../import-keys-utils';
 import { importKeysMocks } from '../mocks/import-keys-utils.mock';
 

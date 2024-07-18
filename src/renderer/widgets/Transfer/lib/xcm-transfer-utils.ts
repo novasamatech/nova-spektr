@@ -1,4 +1,4 @@
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
 
 import { XcmTransferType } from '@shared/api/xcm';
 import { TransactionType } from '@shared/core';

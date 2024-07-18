@@ -1,4 +1,4 @@
-import type { Address, ChainId } from './general';
+import { type Address, type ChainId } from './general';
 
 export type Stake = {
   address: Address;

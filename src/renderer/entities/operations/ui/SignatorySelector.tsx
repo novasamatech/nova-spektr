@@ -1,10 +1,10 @@
 import { useI18n } from '@app/providers';
+import { type Account, type Asset } from '@shared/core';
 import { toAddress } from '@shared/lib/utils';
-import { Select, InputHint } from '@shared/ui';
-import { Asset, Account } from '@shared/core';
-import type { DropdownOption } from '@shared/ui/types';
+import { InputHint, Select } from '@shared/ui';
+import { type DropdownOption } from '@shared/ui/types';
 import { AssetBalance } from '../../asset';
-import { accountUtils, AccountAddress } from '../../wallet';
+import { AccountAddress, accountUtils } from '../../wallet';
 
 type Props = {
   signatory?: Account;

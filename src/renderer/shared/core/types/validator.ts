@@ -1,5 +1,5 @@
-import type { Identity } from './identity';
-import type { Address, ChainId } from './general';
+import { type Address, type ChainId } from './general';
+import { type Identity } from './identity';
 
 export type Validator = {
   address: Address;

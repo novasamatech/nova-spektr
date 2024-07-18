@@ -1,7 +1,7 @@
-import { FootnoteText, Icon } from '@shared/ui';
-import { ReferendumId, TrackId } from '@shared/core';
-import { IconNames } from '@shared/ui/Icon/data';
-import { useI18n } from '@app/providers';
+import { useI18n } from '@/app/providers';
+import { type ReferendumId, type TrackId } from '@/shared/core';
+import { FootnoteText, Icon } from '@/shared/ui';
+import { type IconNames } from '@/shared/ui/Icon/data';
 
 function getTrackInfo(trackId: TrackId): { title: string; icon: IconNames } {
   const names: Record<TrackId, { title: string; icon: IconNames }> = {

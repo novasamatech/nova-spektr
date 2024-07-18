@@ -1,9 +1,9 @@
-import { PropsWithChildren, forwardRef, ElementType } from 'react';
 import { Disclosure, Transition } from '@headlessui/react';
+import { type ElementType, type PropsWithChildren, forwardRef } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
-import { IconNames } from '../Icon/data';
 import { Icon } from '../Icon/Icon';
+import { type IconNames } from '../Icon/data';
 
 type Props = {
   className?: string;

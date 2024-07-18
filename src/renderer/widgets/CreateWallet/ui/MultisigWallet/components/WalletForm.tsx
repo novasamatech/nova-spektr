@@ -1,15 +1,22 @@
-import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
+import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
-import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { DropdownOption, DropdownResult } from '@shared/ui/types';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { networkModel, networkUtils } from '@entities/network';
+import {
+  type AccountId,
+  type Chain,
+  type ChainId,
+  CryptoType,
+  type MultisigAccount,
+  type Signatory,
+} from '@shared/core';
+import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@shared/ui';
+import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
 import { ChainTitle } from '@entities/chain';
-import { CryptoType, Signatory, type AccountId, type Chain, type ChainId, type MultisigAccount } from '@shared/core';
 import { matrixModel } from '@entities/matrix';
+import { networkModel, networkUtils } from '@entities/network';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 
 type MultisigAccountForm = {
   name: string;
@@ -18,7 +25,9 @@ type MultisigAccountForm = {
 };
 
 const getThresholdOptions = (optionsAmount: number): DropdownOption<number>[] => {
-  if (optionsAmount === 0) return [];
+  if (optionsAmount === 0) {
+    return [];
+  }
 
   return Array.from({ length: optionsAmount }, (_, index) => ({
     id: index.toString(),

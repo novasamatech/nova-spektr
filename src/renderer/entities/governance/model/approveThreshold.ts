@@ -1,22 +1,23 @@
-import { createEffect, createEvent, createStore, sample } from 'effector';
-import { BN, BN_ZERO } from '@polkadot/util';
 import { type ApiPromise } from '@polkadot/api';
+import { BN, BN_ZERO } from '@polkadot/util';
+import { createEffect, createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
-import type {
-  Chain,
-  ChainId,
-  OngoingReferendum,
-  ReferendumId,
-  TrackId,
-  TrackInfo,
-  VotingThreshold,
-} from '@shared/core';
-import { getCurrentBlockNumber } from '@shared/lib/utils';
-import { opengovThresholdService } from '@shared/api/governance';
-import { referendumService } from '@entities/governance';
-import { tracksModel } from './tracks';
+import { opengovThresholdService } from '@/shared/api/governance';
+import {
+  type Chain,
+  type ChainId,
+  type OngoingReferendum,
+  type ReferendumId,
+  type TrackId,
+  type TrackInfo,
+  type VotingThreshold,
+} from '@/shared/core';
+import { getCurrentBlockNumber } from '@/shared/lib/utils';
+import { referendumService } from '@/entities/governance';
+
 import { referendumModel } from './referendum';
+import { tracksModel } from './tracks';
 
 const $approvalThresholds = createStore<Record<ChainId, Record<ReferendumId, VotingThreshold>>>({});
 
