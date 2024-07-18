@@ -1,9 +1,9 @@
 import { createChunkedRequest } from '../lib/createChunkedRequest';
 import {
-  SubsquareReferendumListResponse,
-  SubsquareSimpleReferendum,
-  SubsquareReferendumVote,
-  SubsquareFullReferendum,
+  type SubsquareFullReferendum,
+  type SubsquareReferendumListResponse,
+  type SubsquareReferendumVote,
+  type SubsquareSimpleReferendum,
 } from '../lib/types';
 
 type ChunkDataCallback<T> = (chunk: T, done: boolean) => unknown;

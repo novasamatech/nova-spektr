@@ -1,10 +1,10 @@
-import { Fragment, PropsWithChildren, ReactNode } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
+import { Fragment, type PropsWithChildren, type ReactNode } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
-import { ModalTransition } from '../common/ModalTransition';
-import { ModalBackdrop } from '../common/ModalBackdrop';
 import { HeaderTitleText, IconButton } from '@shared/ui';
+import { ModalBackdrop } from '../common/ModalBackdrop';
+import { ModalTransition } from '../common/ModalTransition';
 
 type Props = {
   isOpen: boolean;

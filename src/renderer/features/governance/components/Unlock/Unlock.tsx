@@ -2,13 +2,14 @@ import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
-import { BaseModal, HeaderTitleText } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { Step, isStep } from '@shared/lib/utils';
+import { BaseModal, HeaderTitleText } from '@shared/ui';
 import { OperationTitle } from '@entities/chain';
 import { OperationResult } from '@entities/transaction';
-import { unlockModel } from '../../model/unlock';
 import { networkSelectorModel } from '../../model/networkSelector';
+import { unlockModel } from '../../model/unlock';
+
 import { UnlockInfo } from './UnlockInfo';
 
 export const Unlock = () => {
@@ -31,7 +32,9 @@ export const Unlock = () => {
     }
   }, [step]);
 
-  if (!governanceChain) return null;
+  if (!governanceChain) {
+    return null;
+  }
 
   if (isStep(step, Step.BASKET)) {
     return (

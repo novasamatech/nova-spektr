@@ -1,16 +1,24 @@
-import uniqBy from 'lodash/uniqBy';
-import mapValues from 'lodash/mapValues';
 import { combine, createEvent, createStore, sample } from 'effector';
 import { isEmpty } from 'lodash';
+import mapValues from 'lodash/mapValues';
+import uniqBy from 'lodash/uniqBy';
 
+import {
+  type AccountId,
+  type BaseAccount,
+  type ChainId,
+  type ProxyAccount,
+  type ProxyGroup,
+  type Signatory,
+  type Wallet,
+} from '@shared/core';
+import { dictionary } from '@shared/lib/utils';
+import { networkModel } from '@entities/network';
+import { proxyModel, proxyUtils } from '@entities/proxy';
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
 import { walletSelectModel } from '@features/wallets';
-import { dictionary } from '@shared/lib/utils';
+import { type MultishardMap, type VaultMap } from '../lib/types';
 import { walletDetailsUtils } from '../lib/utils';
-import type { MultishardMap, VaultMap } from '../lib/types';
-import { proxyModel, proxyUtils } from '@entities/proxy';
-import { networkModel } from '@entities/network';
-import type { BaseAccount, Signatory, Wallet, AccountId, ProxyAccount, ChainId, ProxyGroup } from '@shared/core';
 
 const removeProxy = createEvent<ProxyAccount>();
 
@@ -146,15 +154,18 @@ const $walletProxyGroups = combine(
 
     // TODO: Find why it can be doubled sometimes https://github.com/novasamatech/nova-spektr/issues/1655
     const walletGroups = groups[wallet.id];
-    const filteredGroups = walletGroups.reduceRight((acc, group) => {
-      const id = `${group.chainId}_${group.proxiedAccountId}_${group.walletId}`;
+    const filteredGroups = walletGroups.reduceRight(
+      (acc, group) => {
+        const id = `${group.chainId}_${group.proxiedAccountId}_${group.walletId}`;
 
-      if (!acc[id]) {
-        acc[id] = group;
-      }
+        if (!acc[id]) {
+          acc[id] = group;
+        }
 
-      return acc;
-    }, {} as Record<string, ProxyGroup>);
+        return acc;
+      },
+      {} as Record<string, ProxyGroup>,
+    );
 
     return Object.values(filteredGroups);
   },

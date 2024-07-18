@@ -1,10 +1,16 @@
-import { ApiPromise } from '@polkadot/api';
-import { U8aFixed } from '@polkadot/types';
-import { PalletMultisigMultisig } from '@polkadot/types/lookup';
+import { type ApiPromise } from '@polkadot/api';
+import { type U8aFixed } from '@polkadot/types';
+import { type PalletMultisigMultisig } from '@polkadot/types/lookup';
 
-import { MultisigTransactionDS } from '@shared/api/storage';
-import { MultisigTransaction } from '@shared/core';
-import type { CallData, AccountId, ChainId, CallHash, MultisigAccount } from '@shared/core';
+import { type MultisigTransactionDS } from '@shared/api/storage';
+import {
+  type AccountId,
+  type CallData,
+  type CallHash,
+  type ChainId,
+  type MultisigAccount,
+  type MultisigTransaction,
+} from '@shared/core';
 
 export interface IMultisigTxService {
   subscribeMultisigAccount: (api: ApiPromise, account: MultisigAccount) => () => void;

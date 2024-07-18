@@ -1,16 +1,17 @@
-import { Store } from 'effector';
 import { BN } from '@polkadot/util';
+import { type Store } from 'effector';
 
+import { type Account } from '@shared/core';
 import { formatAmount, validateAddress } from '@shared/lib/utils';
-import { balanceValidation, descriptionValidation } from './validation';
-import { Account } from '@shared/core';
 import {
-  BalanceMap,
-  NetworkStore,
-  TransferAccountStore,
-  TransferAmountFeeStore,
-  TransferSignatoryFeeStore,
+  type BalanceMap,
+  type NetworkStore,
+  type TransferAccountStore,
+  type TransferAmountFeeStore,
+  type TransferSignatoryFeeStore,
 } from '../types/types';
+
+import { balanceValidation, descriptionValidation } from './validation';
 
 export const TransferRules = {
   account: {

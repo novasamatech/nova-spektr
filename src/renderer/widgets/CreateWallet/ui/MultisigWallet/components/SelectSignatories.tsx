@@ -1,18 +1,19 @@
-import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
+import { useEffect, useState } from 'react';
 
-import { cnTw, includes, toAddress, RootExplorers, isEthereumAccountId } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
+import { type Account, type Contact, type Wallet, WalletType } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
-import { Button, Checkbox, FootnoteText, Icon, SearchInput, SmallTitleText, Tabs, Tooltip, HelpText } from '@shared/ui';
-import { TabItem } from '@shared/ui/types';
-import { CreateContactModal } from '@widgets/ManageContactModal';
-import { ExtendedContact, ExtendedWallet } from '../common/types';
+import { RootExplorers, cnTw, includes, isEthereumAccountId, toAddress } from '@shared/lib/utils';
+import { Button, Checkbox, FootnoteText, HelpText, Icon, SearchInput, SmallTitleText, Tabs, Tooltip } from '@shared/ui';
+import { type TabItem } from '@shared/ui/types';
 import { EmptyContactList } from '@entities/contact';
-import { type Contact, type Wallet, type Account, WalletType } from '@shared/core';
-import { ContactItem, ExplorersPopover, accountUtils, walletUtils } from '@entities/wallet';
-import { WalletItem } from './WalletItem';
 import { matrixModel } from '@entities/matrix';
+import { ContactItem, ExplorersPopover, accountUtils, walletUtils } from '@entities/wallet';
+import { CreateContactModal } from '@widgets/ManageContactModal';
+import { type ExtendedContact, type ExtendedWallet } from '../common/types';
+
+import { WalletItem } from './WalletItem';
 
 const enum SignatoryTabs {
   WALLETS = 'wallets',
@@ -59,7 +60,9 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
       (acc, wallet, index) => {
         const walletAccounts = accounts.filter((a) => a.walletId === wallet.id);
 
-        if (!walletAccounts.length) return acc;
+        if (!walletAccounts.length) {
+          return acc;
+        }
 
         // TODO: Check why it can be empty
         const accountId = walletAccounts[0]?.accountId;

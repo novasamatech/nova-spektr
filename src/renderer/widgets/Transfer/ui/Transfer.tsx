@@ -1,19 +1,20 @@
 import { useUnit } from 'effector-react';
-import { ReactNode, useEffect } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { BaseModal, Button } from '@shared/ui';
-import { useModalClose } from '@shared/lib/hooks';
-import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
-import type { Chain, Asset } from '@shared/core';
-import { OperationSign, OperationSubmit } from '@features/operations';
-import { TransferForm } from './TransferForm';
-import { transferUtils } from '../lib/transfer-utils';
-import { transferModel } from '../model/transfer-model';
-import { Step } from '../lib/types';
-import { basketUtils, TransferConfirm } from '@features/operations/OperationsConfirm';
+import { type Asset, type Chain } from '@shared/core';
+import { useModalClose } from '@shared/lib/hooks';
+import { BaseModal, Button } from '@shared/ui';
+import { OperationTitle } from '@entities/chain';
 import { OperationResult } from '@entities/transaction';
+import { OperationSign, OperationSubmit } from '@features/operations';
+import { TransferConfirm, basketUtils } from '@features/operations/OperationsConfirm';
+import { transferUtils } from '../lib/transfer-utils';
+import { Step } from '../lib/types';
+import { transferModel } from '../model/transfer-model';
+
+import { TransferForm } from './TransferForm';
 
 type Props = {
   chain: Chain;
@@ -51,7 +52,9 @@ export const Transfer = ({ chain, asset }: Props) => {
     }
   }, [step]);
 
-  if (transferUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  if (transferUtils.isSubmitStep(step)) {
+    return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  }
   if (transferUtils.isBasketStep(step)) {
     return (
       <OperationResult

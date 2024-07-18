@@ -1,10 +1,12 @@
-import { PropsWithChildren } from 'react';
 import { RadioGroup as HeadlessRadioGroup } from '@headlessui/react';
+import { type PropsWithChildren } from 'react';
 
-import { Option } from './RadioOption';
-import { RadioCard } from './RadioCard';
-import { RadioOption, RadioResult } from './common/types';
 import { LabelText } from '@shared/ui';
+
+import { RadioCard } from './RadioCard';
+import { Option } from './RadioOption';
+import { type RadioOption, type RadioResult } from './common/types';
+
 import './RadioGroup.css';
 
 type Props<T = any> = {
@@ -33,7 +35,9 @@ const RadioGroupRoot = ({
     </HeadlessRadioGroup>
   );
 
-  if (!label) return radioElement;
+  if (!label) {
+    return radioElement;
+  }
 
   return (
     <div className="flex flex-col gap-y-2">

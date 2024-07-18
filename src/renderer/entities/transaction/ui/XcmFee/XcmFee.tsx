@@ -1,15 +1,15 @@
+import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
-import { useEffect, useState, memo } from 'react';
-import { ApiPromise } from '@polkadot/api';
 import { useUnit } from 'effector-react';
+import { memo, useEffect, useState } from 'react';
 
-import { AssetBalance } from '@entities/asset';
-import { FeeLoader } from '@entities/transaction';
-import { XcmConfig, xcmService } from '@shared/api/xcm';
+import { type XcmConfig, xcmService } from '@shared/api/xcm';
+import { type Asset, type DecodedTransaction, type Transaction } from '@shared/core';
 import { toLocalChainId } from '@shared/lib/utils';
-import type { Asset, DecodedTransaction, Transaction } from '@shared/core';
+import { AssetBalance } from '@entities/asset';
 import { priceProviderModel } from '@entities/price';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { FeeLoader } from '@entities/transaction';
 
 type Props = {
   api: ApiPromise;

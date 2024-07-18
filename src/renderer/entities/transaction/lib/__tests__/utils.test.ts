@@ -1,4 +1,4 @@
-import { Transaction, TransactionType } from '@shared/core';
+import { type Transaction, TransactionType } from '@shared/core';
 import {
   isAddProxyTransaction,
   isManageProxyTransaction,

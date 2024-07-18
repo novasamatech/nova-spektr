@@ -1,6 +1,6 @@
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
 
-import type { EraIndex } from '@shared/core';
+import { type EraIndex } from '@shared/core';
 
 export const eraService = {
   subscribeActiveEra,

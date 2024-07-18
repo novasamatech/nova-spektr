@@ -1,21 +1,22 @@
-import { ComponentProps, useState, useEffect } from 'react';
 import { useUnit } from 'effector-react';
 import noop from 'lodash/noop';
+import { type ComponentProps, useEffect, useState } from 'react';
 
-import { BaseModal, HeaderTitleText, Button, IconButton, StatusLabel } from '@shared/ui';
 import { useI18n } from '@app/providers';
+import { type HexString } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
-import { OperationResult } from '@entities/transaction';
-import { ExtendedAccount, ExtendedContact } from './common/types';
-import { ConfirmSignatories, WalletForm } from './components';
-import { contactModel } from '@entities/contact';
 import { DEFAULT_TRANSITION, dictionary } from '@shared/lib/utils';
-import { createMultisigWalletModel } from '../../model/create-multisig-wallet-model';
-import { SelectAccountSignatories } from './components/SelectAccountSignatories';
-import { walletModel } from '@entities/wallet';
+import { BaseModal, Button, HeaderTitleText, IconButton, StatusLabel } from '@shared/ui';
+import { contactModel } from '@entities/contact';
+import { matrixModel, matrixUtils } from '@entities/matrix';
 import { networkModel } from '@entities/network';
-import { matrixUtils, matrixModel } from '@entities/matrix';
-import { HexString } from '@shared/core';
+import { OperationResult } from '@entities/transaction';
+import { walletModel } from '@entities/wallet';
+import { createMultisigWalletModel } from '../../model/create-multisig-wallet-model';
+
+import { type ExtendedAccount, type ExtendedContact } from './common/types';
+import { ConfirmSignatories, WalletForm } from './components';
+import { SelectAccountSignatories } from './components/SelectAccountSignatories';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -89,8 +90,12 @@ export const SingleChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack 
   };
 
   const getResultProps = (): OperationResultProps => {
-    if (isLoading) return { variant: 'loading' };
-    if (error) return { variant: 'error', description: error };
+    if (isLoading) {
+      return { variant: 'loading' };
+    }
+    if (error) {
+      return { variant: 'error', description: error };
+    }
 
     return { variant: 'success', description: t('createMultisigAccount.successMessage') };
   };

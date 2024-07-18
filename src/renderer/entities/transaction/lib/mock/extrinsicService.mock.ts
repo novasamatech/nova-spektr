@@ -1,5 +1,5 @@
-import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
 import { TransactionType } from '@shared/core';
+import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
 
 export const extrinsicTests = [
   {

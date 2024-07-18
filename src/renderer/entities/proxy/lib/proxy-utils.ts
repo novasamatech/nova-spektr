@@ -1,10 +1,18 @@
 import sortBy from 'lodash/sortBy';
 
-import { splitCamelCaseString, toAddress } from '@shared/lib/utils';
-import type { ProxyAccount, NoID, ProxyGroup, Wallet, ProxyDeposits, PartialProxiedAccount } from '@shared/core';
+import {
+  type NoID,
+  type PartialProxiedAccount,
+  type ProxyAccount,
+  type ProxyDeposits,
+  type ProxyGroup,
+  type Wallet,
+} from '@shared/core';
 import { ProxyType, ProxyVariant } from '@shared/core';
-import { ProxyTypeName } from './constants';
+import { splitCamelCaseString, toAddress } from '@shared/lib/utils';
 import { accountUtils } from '../../wallet';
+
+import { ProxyTypeName } from './constants';
 
 export const proxyUtils = {
   isSameProxy,

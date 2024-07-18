@@ -1,5 +1,5 @@
 import { useI18n } from '@app/providers';
-import { Icon, BodyText } from '@shared/ui';
+import { BodyText, Icon } from '@shared/ui';
 
 export const EmptyAssetsState = () => {
   const { t } = useI18n();

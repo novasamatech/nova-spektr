@@ -1,5 +1,5 @@
-import type { RpcNode } from './chain';
-import type { ChainId, ID } from './general';
+import { type RpcNode } from './chain';
+import { type ChainId, type ID } from './general';
 
 export type Connection = {
   id: ID;

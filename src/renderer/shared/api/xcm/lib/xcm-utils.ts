@@ -1,20 +1,21 @@
+import { type ApiPromise } from '@polkadot/api';
+import { type Balance } from '@polkadot/types/interfaces';
 import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
 import get from 'lodash/get';
-import { ApiPromise } from '@polkadot/api';
-import { Balance } from '@polkadot/types/interfaces';
 
-import {
-  Instructions,
-  InstructionType,
-  XcmConfig,
-  AssetLocation,
-  XcmTransfer,
-  MultiLocation as LocalMultiLocation,
-  Action,
-} from './types';
-import type { Chain, AccountId } from '../../../core';
-import { isEthereumAccountId, getTypeVersion, TEST_ACCOUNTS } from '../../../lib/utils';
+import { type AccountId, type Chain } from '../../../core';
+import { TEST_ACCOUNTS, getTypeVersion, isEthereumAccountId } from '../../../lib/utils';
+
 import { INSTRUCTION_OBJECT } from './constants';
+import {
+  type Action,
+  type AssetLocation,
+  type InstructionType,
+  type Instructions,
+  type MultiLocation as LocalMultiLocation,
+  type XcmConfig,
+  type XcmTransfer,
+} from './types';
 
 export const xcmUtils = {
   getEstimatedWeight,

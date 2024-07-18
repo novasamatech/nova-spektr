@@ -1,21 +1,21 @@
 import { allSettled, fork } from 'effector';
 
+import { storageService } from '@shared/api/storage';
 import {
   AccountType,
+  type BaseAccount,
   ChainType,
   CryptoType,
   ProxyType,
   ProxyVariant,
   SigningType,
+  type Wallet,
   WalletType,
-  Wallet,
-  BaseAccount,
 } from '@shared/core';
-import { forgetWalletModel } from '../forget-wallet-model';
-import { storageService } from '@shared/api/storage';
 import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@shared/lib/utils';
-import { walletModel } from '@entities/wallet';
 import { proxyModel } from '@entities/proxy';
+import { walletModel } from '@entities/wallet';
+import { forgetWalletModel } from '../forget-wallet-model';
 
 jest.mock('@entities/multisig', () => ({
   useForgetMultisig: () => ({ deleteMultisigTxs: jest.fn() }),

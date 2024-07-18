@@ -1,5 +1,5 @@
-import { Referendum, VotingThreshold } from '@shared/core';
-import { ReferendumVote } from '@shared/api/governance';
+import { type ReferendumVote } from '@shared/api/governance';
+import { type Referendum, type VotingThreshold } from '@shared/core';
 
 export type AggregatedReferendum<T extends Referendum = Referendum> = T & {
   title: string | null;

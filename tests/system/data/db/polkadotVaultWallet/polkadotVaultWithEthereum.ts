@@ -1,4 +1,4 @@
-import { IndexedDBData } from '../../../utils/interactWithDatabase';
+import { type IndexedDBData } from '../../../utils/interactWithDatabase';
 
 export const vaultAndEthereumWallet: IndexedDBData = {
   database: 'spektr',

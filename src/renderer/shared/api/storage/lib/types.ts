@@ -1,20 +1,22 @@
-import { Table } from 'dexie';
+import { type Table } from 'dexie';
 
-import { MultisigEvent, MultisigTransaction, MultisigTransactionKey } from '@shared/core';
-import type {
-  ChainMetadata,
-  Contact,
-  Account,
-  AccountId,
-  BasketTransaction,
-  CallHash,
-  ChainId,
-  Balance,
-  ProxyAccount,
-  Connection,
-  Notification,
-  ProxyGroup,
-  Wallet,
+import {
+  type Account,
+  type AccountId,
+  type Balance,
+  type BasketTransaction,
+  type CallHash,
+  type ChainId,
+  type ChainMetadata,
+  type Connection,
+  type Contact,
+  type MultisigEvent,
+  type MultisigTransaction,
+  type MultisigTransactionKey,
+  type Notification,
+  type ProxyAccount,
+  type ProxyGroup,
+  type Wallet,
 } from '@shared/core';
 
 // =====================================================

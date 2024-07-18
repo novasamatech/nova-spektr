@@ -1,4 +1,4 @@
-import { act, screen, render, waitForElementToBeRemoved } from '@testing-library/react';
+import { act, render, screen, waitForElementToBeRemoved } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { Tooltip } from './Tooltip';

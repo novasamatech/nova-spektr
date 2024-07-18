@@ -1,33 +1,34 @@
+import { type ApiPromise } from '@polkadot/api';
 import { combine, createEffect, createEvent, createStore, restore, sample, split } from 'effector';
-import { ApiPromise } from '@polkadot/api';
 import { delay, throttle } from 'patronum';
 
-import { networkModel, networkUtils } from '@entities/network';
-import { walletModel } from '@entities/wallet';
+import { type BasketTransaction, type ChainId, type ID, TransactionType } from '@shared/core';
+import { addUnique, removeFromCollection } from '@shared/lib/utils';
 import { basketModel } from '@entities/basket';
-import { BasketTransaction, ChainId, ID, TransactionType } from '@shared/core';
+import { networkModel, networkUtils } from '@entities/network';
 import { TransferTypes, XcmTypes, transactionService } from '@entities/transaction';
+import { walletModel } from '@entities/wallet';
+import { basketFilterModel } from '@features/basket/BasketFilter';
 import {
-  transferValidateModel,
+  type ValidationResult,
   addProxyValidateModel,
   addPureProxiedValidateModel,
+  bondExtraValidateModel,
+  bondNominateValidateModel,
+  nominateValidateModel,
+  payeeValidateModel,
   removeProxyValidateModel,
   removePureProxiedValidateModel,
-  bondNominateValidateModel,
-  payeeValidateModel,
-  nominateValidateModel,
-  bondExtraValidateModel,
   restakeValidateModel,
+  transferValidateModel,
   unstakeValidateModel,
   withdrawValidateModel,
-  ValidationResult,
 } from '@features/operations/OperationsValidation';
-import { signOperationsModel } from './sign-operations-model';
-import { addUnique, removeFromCollection } from '@shared/lib/utils';
+import { basketPageUtils } from '../lib/basket-page-utils';
 import { getCoreTx } from '../lib/utils';
 import { Step } from '../types/basket-page-types';
-import { basketPageUtils } from '../lib/basket-page-utils';
-import { basketFilterModel } from '@features/basket/BasketFilter';
+
+import { signOperationsModel } from './sign-operations-model';
 
 type BasketTransactionsMap = {
   valid: BasketTransaction[];

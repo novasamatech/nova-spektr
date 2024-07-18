@@ -1,9 +1,9 @@
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
+import { useI18n } from '@app/providers';
+import { type AccountId, type ProxyType } from '@shared/core';
 import { cnTw, toAddress, toShortAddress } from '@shared/lib/utils';
 import { BodyText, HelpText, Identicon, Truncate } from '@shared/ui';
-import { AccountId, ProxyType } from '@shared/core';
-import { useI18n } from '@app/providers';
 import { proxyUtils } from '../../lib/proxy-utils';
 
 type Props = {

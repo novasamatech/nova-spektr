@@ -1,5 +1,5 @@
-import { Icon, FootnoteText } from '@shared/ui';
-import { useI18n } from '@app/providers';
+import { useI18n } from '@/app/providers';
+import { FootnoteText, Icon } from '@/shared/ui';
 
 type Props = {
   active: boolean;
@@ -8,7 +8,9 @@ type Props = {
 export const Voted = ({ active }: Props) => {
   const { t } = useI18n();
 
-  if (!active) return null;
+  if (!active) {
+    return null;
+  }
 
   return (
     <div className="flex gap-x-1 items-center">

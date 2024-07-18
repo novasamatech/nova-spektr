@@ -1,4 +1,4 @@
-import type { KeysOfType } from '../../core/types/utility';
+import { type KeysOfType } from '../../core/types/utility';
 
 /**
  * Get new array with item inserted at given position
@@ -24,17 +24,20 @@ export function dictionary<T extends Record<K, PropertyKey>, K extends KeysOfTyp
   property: K,
   predicate?: (item: T) => any,
 ): Record<T[K], any> {
-  return collection.reduce((acc, item) => {
-    const element = item[property];
+  return collection.reduce(
+    (acc, item) => {
+      const element = item[property];
 
-    if (predicate) {
-      acc[element] = predicate(item);
-    } else {
-      acc[element] = item;
-    }
+      if (predicate) {
+        acc[element] = predicate(item);
+      } else {
+        acc[element] = item;
+      }
 
-    return acc;
-  }, {} as Record<T[K], any>);
+      return acc;
+    },
+    {} as Record<T[K], any>,
+  );
 }
 
 export function getRepeatedIndex(index: number, base: number): number {

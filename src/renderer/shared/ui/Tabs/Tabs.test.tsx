@@ -1,8 +1,8 @@
-import { screen, render, act } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { Tabs } from './Tabs';
-import { TabItem } from './common/types';
+import { type TabItem } from './common/types';
 
 const tabItems: TabItem[] = [
   { id: '1', title: 'Tab 1 title', panel: <div>tab 1 content</div> },

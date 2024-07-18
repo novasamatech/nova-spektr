@@ -3,20 +3,21 @@ import { useState } from 'react';
 
 import { useI18n } from '@app/providers';
 import { type Chain } from '@shared/core';
+import { useModalClose } from '@shared/lib/hooks';
 import { pickNestedValue } from '@shared/lib/utils';
 import { BaseModal, Button, Plate } from '@shared/ui';
-import { useModalClose } from '@shared/lib/hooks';
 import { referendumService } from '@entities/governance';
-import { type AggregatedReferendum } from '../../types/structs';
 import { detailsAggregate } from '../../aggregates/details';
+import { type AggregatedReferendum } from '../../types/structs';
 import { VotingHistoryDialog } from '../VotingHistory/VotingHistoryDialog';
-import { ProposalDescription } from './ProposalDescription';
-import { VotingSummary } from './VotingSummary';
-import { VotingStatus } from './VotingStatus';
-import { DetailsCard } from './DetailsCard';
-import { ReferendumAdditional } from './ReferendumAdditional';
+
 import { AdvancedDialog } from './AdvancedDialog';
+import { DetailsCard } from './DetailsCard';
+import { ProposalDescription } from './ProposalDescription';
+import { ReferendumAdditional } from './ReferendumAdditional';
 import { Timeline } from './Timeline';
+import { VotingStatus } from './VotingStatus';
+import { VotingSummary } from './VotingSummary';
 
 type Props = {
   chain: Chain;

@@ -1,20 +1,20 @@
 import { useUnit } from 'effector-react';
 import noop from 'lodash/noop';
 
-import { ProxyType, Wallet, ProxiedWallet } from '@shared/core';
 import { useI18n } from '@app/providers';
-import { networkModel } from '@entities/network';
+import { type ProxiedWallet, ProxyType, type Wallet } from '@shared/core';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { IconNames } from '@shared/ui/Icon/data';
 import { BaseModal, DropdownIconButton, FootnoteText, Icon, Tabs } from '@shared/ui';
+import { type IconNames } from '@shared/ui/Icon/data';
+import { type TabItem } from '@shared/ui/types';
+import { networkModel } from '@entities/network';
 import { AccountsList, WalletCardLg, WalletIcon, permissionUtils } from '@entities/wallet';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
-import { TabItem } from '@shared/ui/types';
-import { ProxiesList } from '../components/ProxiesList';
-import { NoProxiesAction } from '../components/NoProxiesAction';
-import { walletProviderModel } from '../../model/wallet-provider-model';
 import { AddProxy, addProxyModel } from '@widgets/AddProxyModal';
 import { AddPureProxied } from '@widgets/AddPureProxiedModal';
+import { walletProviderModel } from '../../model/wallet-provider-model';
+import { NoProxiesAction } from '../components/NoProxiesAction';
+import { ProxiesList } from '../components/ProxiesList';
 
 const ProxyTypeOperation: Record<ProxyType, string> = {
   [ProxyType.ANY]: 'proxy.operations.any',

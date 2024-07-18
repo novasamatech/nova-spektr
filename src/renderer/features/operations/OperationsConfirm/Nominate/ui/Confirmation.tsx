@@ -1,15 +1,15 @@
 import { useStoreMap } from 'effector-react';
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
-import { Button, DetailRow, FootnoteText, Icon, Tooltip, CaptionText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { SignButton } from '@entities/operations';
-import { AddressWithExplorers, WalletIcon, ExplorersPopover, WalletCardSm, accountUtils } from '@entities/wallet';
-import { AssetBalance } from '@entities/asset';
-import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
-import { confirmModel } from '../model/confirm-model';
-import { StakingPopover, SelectedValidatorsModal, AccountsModal } from '@entities/staking';
 import { useToggle } from '@shared/lib/hooks';
+import { Button, CaptionText, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
+import { AssetBalance } from '@entities/asset';
+import { SignButton } from '@entities/operations';
+import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { AccountsModal, SelectedValidatorsModal, StakingPopover } from '@entities/staking';
+import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, accountUtils } from '@entities/wallet';
+import { confirmModel } from '../model/confirm-model';
 
 type Props = {
   id?: number;
@@ -48,7 +48,9 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const [isAccountsOpen, toggleAccounts] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
-  if (!confirmStore || !initiatorWallet) return null;
+  if (!confirmStore || !initiatorWallet) {
+    return null;
+  }
 
   return (
     <>

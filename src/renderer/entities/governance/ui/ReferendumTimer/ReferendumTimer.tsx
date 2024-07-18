@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 
-import { Icon, FootnoteText, Duration } from '@shared/ui';
-import type { IconNames } from '@shared/ui/types';
-import { useI18n } from '@app/providers';
-import { cnTw } from '@shared/lib/utils';
+import { useI18n } from '@/app/providers';
+import { cnTw } from '@/shared/lib/utils';
+import { Duration, FootnoteText, Icon } from '@/shared/ui';
+import { type IconNames } from '@/shared/ui/types';
 
 type Status = 'approve' | 'reject' | 'execute';
 

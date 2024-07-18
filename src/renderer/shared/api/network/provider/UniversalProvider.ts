@@ -1,11 +1,11 @@
 import {
-  ProviderInterface,
-  ProviderInterfaceCallback,
-  ProviderInterfaceEmitCb,
-  ProviderInterfaceEmitted,
+  type ProviderInterface,
+  type ProviderInterfaceCallback,
+  type ProviderInterfaceEmitCb,
+  type ProviderInterfaceEmitted,
 } from '@polkadot/rpc-provider/types';
 
-import { ProviderType, Subscription } from '../lib/types';
+import { ProviderType, type Subscription } from '../lib/types';
 
 export class UniversalProvider implements ProviderInterface {
   private wsProvider: ProviderInterface;

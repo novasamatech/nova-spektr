@@ -1,10 +1,10 @@
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 
-import { ExplorersPopover } from '@entities/wallet';
-import { Icon, HelpText } from '@shared/ui';
-import { cnTw } from '@shared/lib/utils';
-import type { Explorer, AccountId, SigningStatus } from '@shared/core';
 import { useI18n } from '@app/providers';
+import { type AccountId, type Explorer, type SigningStatus } from '@shared/core';
+import { cnTw } from '@shared/lib/utils';
+import { HelpText, Icon } from '@shared/ui';
+import { ExplorersPopover } from '@entities/wallet';
 
 const IconProps = {
   SIGNED: { className: 'group-hover:hidden text-text-positive', name: 'checkmarkOutline' },

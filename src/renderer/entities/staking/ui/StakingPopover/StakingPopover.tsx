@@ -1,6 +1,6 @@
-import { PropsWithChildren, ReactNode } from 'react';
+import { type PropsWithChildren, type ReactNode } from 'react';
 
-import { Popover, FootnoteText, LabelHelpBox } from '@shared/ui';
+import { FootnoteText, LabelHelpBox, Popover } from '@shared/ui';
 
 type Props = {
   labelText?: string;

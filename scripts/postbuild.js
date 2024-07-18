@@ -1,10 +1,11 @@
-const { resolve } = require('path');
 const { writeFile } = require('fs/promises');
+const { resolve } = require('path');
 
-const packageJSON = require('../package.json');
 const { APP_CONFIG } = require('../app.config');
+const packageJSON = require('../package.json');
 
 async function createPackageJSONDistVersion() {
+  // eslint-disable-next-line no-unused-vars
   const { main, scripts, dependencies, devDependencies, ...restOfPackageJSON } = packageJSON;
 
   const entry = main?.split('/')?.reverse()?.[0];

@@ -1,17 +1,18 @@
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
-import { BaseModal, Button } from '@shared/ui';
-import { useModalClose } from '@shared/lib/hooks';
-import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
+import { useModalClose } from '@shared/lib/hooks';
+import { BaseModal, Button } from '@shared/ui';
+import { OperationTitle } from '@entities/chain';
+import { OperationResult } from '@entities/transaction';
 import { OperationSign, OperationSubmit } from '@features/operations';
-import { UnstakeForm } from './UnstakeForm';
+import { UnstakeConfirmation as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
+import { Step } from '../lib/types';
 import { unstakeUtils } from '../lib/unstake-utils';
 import { unstakeModel } from '../model/unstake-model';
-import { Step } from '../lib/types';
-import { basketUtils, UnstakeConfirmation as Confirmation } from '@features/operations/OperationsConfirm';
-import { OperationResult } from '@entities/transaction';
+
+import { UnstakeForm } from './UnstakeForm';
 
 export const Unstake = () => {
   const { t } = useI18n();
@@ -34,9 +35,13 @@ export const Unstake = () => {
     }
   }, [step]);
 
-  if (!networkStore) return null;
+  if (!networkStore) {
+    return null;
+  }
 
-  if (unstakeUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  if (unstakeUtils.isSubmitStep(step)) {
+    return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  }
   if (unstakeUtils.isBasketStep(step)) {
     return (
       <OperationResult

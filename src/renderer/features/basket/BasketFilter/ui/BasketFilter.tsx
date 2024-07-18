@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react';
 import { useStoreMap, useUnit } from 'effector-react';
+import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-import { DropdownOption, DropdownResult } from '@shared/ui/types';
 import { Button, MultiSelect } from '@shared/ui';
-import { getAvailableFiltersOptions } from '../lib/utils';
-import { FilterName, FiltersOptions } from '../common/types';
-import { basketFilterModel } from '../model/baket-filter-model';
+import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
 import { networkModel } from '@entities/network';
+import { type FilterName, type FiltersOptions } from '../common/types';
+import { getAvailableFiltersOptions } from '../lib/utils';
+import { basketFilterModel } from '../model/baket-filter-model';
 
 const EmptyOptions: FiltersOptions = {
   status: new Set<DropdownOption>(),

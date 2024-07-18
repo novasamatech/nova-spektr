@@ -24,6 +24,6 @@
     "noEmit": true,
     "types": ["@testing-library/jest-dom"]
   },
-  "include": ["src", "webpack", "globals.d.ts"],
+  "include": ["src", "webpack", "tests", "globals.d.ts"],
   "exclude": ["node_modules"]
 }

@@ -1,10 +1,10 @@
-import { MouseEvent } from 'react';
+import { type MouseEvent } from 'react';
 
-import { BodyText, Identicon, IconButton, CaptionText, Icon, HelpText, FootnoteText } from '@shared/ui';
-import { cnTw, toAddress, SS58_PUBLIC_KEY_PREFIX } from '@shared/lib/utils';
-import { IconNames } from '@shared/ui/Icon/data';
-import type { ShardAccount, ChainAccount } from '@shared/core';
+import { type ChainAccount, type ShardAccount } from '@shared/core';
 import { KeyType } from '@shared/core';
+import { SS58_PUBLIC_KEY_PREFIX, cnTw, toAddress } from '@shared/lib/utils';
+import { BodyText, CaptionText, FootnoteText, HelpText, Icon, IconButton, Identicon } from '@shared/ui';
+import { type IconNames } from '@shared/ui/Icon/data';
 import { accountUtils } from '../../lib/account-utils';
 
 const KeyIcon: Record<KeyType, IconNames> = {
