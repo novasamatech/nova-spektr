@@ -1,45 +1,46 @@
+import { u8aToHex } from '@polkadot/util';
 import cn from 'classnames';
-import { FormEvent, useEffect, useState, useRef } from 'react';
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
+import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { Trans } from 'react-i18next';
-import { u8aToHex } from '@polkadot/util';
 
 import { useI18n, useStatusContext } from '@app/providers';
-import { toAddress, dictionary, IS_MAC, copyToClipboard } from '@shared/lib/utils';
-import { VaultInfoPopover } from './VaultInfoPopover';
-import { useAltOrCtrlKeyPressed, useToggle } from '@shared/lib/hooks';
-import { manageVaultModel } from './model/manage-vault-model';
 import { chainsService } from '@shared/api/network';
-import { RootAccountLg, accountUtils, DerivedAccount } from '@entities/wallet';
-import { KeyConstructor, DerivationsAddressModal, ImportKeysModal } from '@features/wallets';
-import { Animation } from '@shared/ui/Animation/Animation';
-import { ChainTitle } from '@entities/chain';
-import { SeedInfo } from '@entities/transaction';
 import {
-  ChainAccount,
-  ChainId,
-  ShardAccount,
-  DraftAccount,
-  WalletType,
-  SigningType,
-  CryptoType,
-  ChainType,
   AccountType,
+  type ChainAccount,
+  type ChainId,
+  ChainType,
+  CryptoType,
+  type DraftAccount,
+  type ShardAccount,
+  SigningType,
+  WalletType,
 } from '@shared/core';
+import { useAltOrCtrlKeyPressed, useToggle } from '@shared/lib/hooks';
+import { IS_MAC, copyToClipboard, dictionary, toAddress } from '@shared/lib/utils';
 import {
+  Accordion,
   Button,
+  ContextMenu,
+  FootnoteText,
+  HeaderTitleText,
+  HelpText,
+  Icon,
+  IconButton,
   Input,
   InputHint,
-  HeaderTitleText,
   SmallTitleText,
-  HelpText,
-  FootnoteText,
-  Icon,
-  ContextMenu,
-  IconButton,
-  Accordion,
 } from '@shared/ui';
+import { Animation } from '@shared/ui/Animation/Animation';
+import { ChainTitle } from '@entities/chain';
+import { type SeedInfo } from '@entities/transaction';
+import { DerivedAccount, RootAccountLg, accountUtils } from '@entities/wallet';
+import { DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@features/wallets';
+
+import { VaultInfoPopover } from './VaultInfoPopover';
+import { manageVaultModel } from './model/manage-vault-model';
 
 const STATUS_DELAY = 1500;
 

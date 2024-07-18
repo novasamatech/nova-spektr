@@ -1,14 +1,14 @@
 import { useStoreMap } from 'effector-react';
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
-import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { SignButton } from '@entities/operations';
-import { AddressWithExplorers, WalletIcon, ExplorersPopover, WalletCardSm, accountUtils } from '@entities/wallet';
 import { cnTw } from '@shared/lib/utils';
+import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
-import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { ChainTitle } from '@entities/chain';
+import { SignButton } from '@entities/operations';
+import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, accountUtils } from '@entities/wallet';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -51,7 +51,9 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     fn: (value, [id]) => value?.[id],
   });
 
-  if (!confirmStore || !initiatorWallet) return null;
+  if (!confirmStore || !initiatorWallet) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5 w-modal">

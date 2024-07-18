@@ -1,17 +1,18 @@
-import { createEvent, createStore, sample, restore, combine, createApi, attach } from 'effector';
-import { spread, delay, once } from 'patronum';
-import { NavigateFunction } from 'react-router-dom';
+import { attach, combine, createApi, createEvent, createStore, restore, sample } from 'effector';
+import { delay, once, spread } from 'patronum';
+import { type NavigateFunction } from 'react-router-dom';
 
-import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@features/operations/OperationSubmit';
+import { type BasketTransaction, type Transaction } from '@shared/core';
 import { Paths } from '@shared/routes';
-import { Step, TransferStore, NetworkStore } from '../lib/types';
-import { formModel } from './form-model';
-import { transferUtils } from '../lib/transfer-utils';
-import { BasketTransaction, Transaction } from '@shared/core';
 import { basketModel } from '@entities/basket';
 import { walletModel, walletUtils } from '@entities/wallet';
+import { signModel } from '@features/operations/OperationSign/model/sign-model';
+import { submitModel } from '@features/operations/OperationSubmit';
 import { transferConfirmModel } from '@features/operations/OperationsConfirm';
+import { transferUtils } from '../lib/transfer-utils';
+import { type NetworkStore, Step, type TransferStore } from '../lib/types';
+
+import { formModel } from './form-model';
 
 const $navigation = createStore<{ navigate: NavigateFunction } | null>(null);
 const navigationApi = createApi($navigation, {

@@ -1,4 +1,4 @@
-import { Options } from 'qr-code-styling';
+import { type Options } from 'qr-code-styling';
 
 import WalletTypeImages from '@shared/ui/Icon/data/walletType';
 

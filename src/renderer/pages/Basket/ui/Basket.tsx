@@ -1,15 +1,16 @@
-import { useEffect } from 'react';
 import { useUnit } from 'effector-react';
+import { useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
 import { Button, Checkbox, ConfirmModal, FootnoteText, Header, Icon, SmallTitleText } from '@shared/ui';
-import { Operation } from './Operation';
+import { BasketFilter, basketFilterModel } from '@features/basket/BasketFilter';
+import { basketPageUtils } from '../lib/basket-page-utils';
 import { basketPageModel } from '../model/basket-page-model';
+
 import { EmptyBasket } from './EmptyBasket';
+import { Operation } from './Operation';
 import { SignOperation } from './SignOperation';
 import { SignOperations } from './SignOperations';
-import { basketPageUtils } from '../lib/basket-page-utils';
-import { BasketFilter, basketFilterModel } from '@features/basket/BasketFilter';
 
 export const Basket = () => {
   const { t } = useI18n();

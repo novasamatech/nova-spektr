@@ -1,7 +1,8 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 
-import KeyQrReader from './KeyQrReader';
 import { QrError, QrReader } from '@entities/transaction';
+
+import KeyQrReader from './KeyQrReader';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({

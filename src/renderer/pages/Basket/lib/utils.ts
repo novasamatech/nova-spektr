@@ -1,4 +1,4 @@
-import { BasketTransaction, Transaction, TransactionType } from '@shared/core';
+import { type BasketTransaction, type Transaction, TransactionType } from '@shared/core';
 
 export const getCoreTx = (tx: BasketTransaction, types: TransactionType[]): Transaction => {
   return tx.coreTx.type === TransactionType.BATCH_ALL

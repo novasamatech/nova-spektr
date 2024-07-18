@@ -1,4 +1,4 @@
-import { createStore, createEvent, sample, combine } from 'effector';
+import { combine, createEvent, createStore, sample } from 'effector';
 
 import { isStringsMatchQuery } from '@shared/lib/utils';
 import { HOME_SERVERS } from '../lib/constants';

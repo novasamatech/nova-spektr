@@ -1,10 +1,10 @@
 import { useForm } from 'effector-forms';
-import { FormEvent, ClipboardEvent } from 'react';
 import { useUnit } from 'effector-react';
+import { type ClipboardEvent, type FormEvent } from 'react';
 import { Trans } from 'react-i18next';
 
-import { Button, Checkbox, FootnoteText, Input } from '@shared/ui';
 import { useI18n } from '@app/providers';
+import { Button, Checkbox, FootnoteText, Input } from '@shared/ui';
 import { warningModel } from '../model/warning-model';
 
 type Props = {

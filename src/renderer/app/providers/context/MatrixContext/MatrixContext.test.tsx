@@ -1,9 +1,10 @@
 import { act, render, screen } from '@testing-library/react';
-import { Provider } from 'effector-react';
 import { fork } from 'effector';
+import { Provider } from 'effector-react';
+
+import { matrixModel } from '@entities/matrix';
 
 import { MatrixProvider } from './MatrixContext';
-import { matrixModel } from '@entities/matrix';
 
 jest.mock('@entities/multisig', () => ({
   useMultisigTx: jest.fn().mockReturnValue({

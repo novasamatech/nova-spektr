@@ -2,8 +2,8 @@ import { type ApiPromise } from '@polkadot/api';
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
-import { type Address, Chain, type ChainId, type Identity, type Referendum } from '@shared/core';
-import { referendumService } from '@entities/governance';
+import { type Address, type Chain, type ChainId, type Identity, type Referendum } from '@/shared/core';
+import { referendumService } from '@/entities/governance';
 import { proposersService } from '../lib/proposersService';
 
 const $proposers = createStore<Record<ChainId, Record<Address, Identity>>>({});

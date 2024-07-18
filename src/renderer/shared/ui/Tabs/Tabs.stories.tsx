@@ -1,7 +1,7 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { type ComponentMeta, type ComponentStory } from '@storybook/react';
 
 import { Tabs } from './Tabs';
-import { TabItem } from './common/types';
+import { type TabItem } from './common/types';
 
 export default {
   title: 'Tabs',

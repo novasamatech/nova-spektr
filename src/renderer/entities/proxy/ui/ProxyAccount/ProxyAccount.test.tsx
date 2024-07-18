@@ -1,8 +1,9 @@
 import { render, screen } from '@testing-library/react';
 
-import { ProxyAccount } from './ProxyAccount';
-import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
 import { ProxyType } from '@shared/core';
+import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
+
+import { ProxyAccount } from './ProxyAccount';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({

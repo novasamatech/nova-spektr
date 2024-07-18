@@ -1,21 +1,21 @@
 import { combine, createApi, createEffect, createEvent, createStore, sample } from 'effector';
 import sortBy from 'lodash/sortBy';
 
+import { type ISecureMessenger } from '@shared/api/matrix';
 import {
+  type AccountId,
   AccountType,
-  ChainId,
+  type ChainId,
   ChainType,
   CryptoType,
-  Signatory,
+  type HexString,
+  type Signatory,
   SigningType,
   WalletType,
-  HexString,
-  AccountId,
 } from '@shared/core';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { networkModel, networkUtils } from '@entities/network';
-import { ISecureMessenger } from '@shared/api/matrix';
 import { matrixModel } from '@entities/matrix';
+import { networkModel, networkUtils } from '@entities/network';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 
 const reset = createEvent();
 

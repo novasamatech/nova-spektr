@@ -1,30 +1,31 @@
-import { createEvent, createStore, sample, restore, combine, createEffect } from 'effector';
-import { ApiPromise } from '@polkadot/api';
-import { spread, delay } from 'patronum';
+import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
+import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { delay, spread } from 'patronum';
 
-import { walletModel } from '@entities/wallet';
+import {
+  type Account,
+  type BasketTransaction,
+  type MultisigTxWrapper,
+  type ProxyTxWrapper,
+  type Transaction,
+  type TxWrapper,
+  WrapperKind,
+} from '@shared/core';
 import { TEST_ADDRESS, getRelaychainAsset, nonNullable } from '@shared/lib/utils';
+import { basketModel } from '@entities/basket/model/basket-model';
 import { networkModel } from '@entities/network';
 import { validatorsService } from '@entities/staking';
-import { submitModel } from '@features/operations/OperationSubmit';
-import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { validatorsModel } from '@features/staking';
-import {
-  Account,
-  BasketTransaction,
-  WrapperKind,
-  MultisigTxWrapper,
-  ProxyTxWrapper,
-  TxWrapper,
-  Transaction,
-} from '@shared/core';
-import { Step, BondNominateData, WalletData, FeeData } from '../lib/types';
-import { bondUtils } from '../lib/bond-utils';
-import { formModel } from './form-model';
-import { bondNominateConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { transactionBuilder, transactionService } from '@entities/transaction';
-import { basketModel } from '@entities/basket/model/basket-model';
+import { walletModel } from '@entities/wallet';
+import { signModel } from '@features/operations/OperationSign/model/sign-model';
+import { submitModel } from '@features/operations/OperationSubmit';
+import { bondNominateConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
+import { validatorsModel } from '@features/staking';
+import { bondUtils } from '../lib/bond-utils';
+import { type BondNominateData, type FeeData, Step, type WalletData } from '../lib/types';
+
+import { formModel } from './form-model';
 
 const stepChanged = createEvent<Step>();
 
@@ -408,7 +409,7 @@ sample({
           coreTx,
           txWrappers,
           groupId: Date.now(),
-        } as BasketTransaction),
+        }) as BasketTransaction,
     );
 
     return txs;

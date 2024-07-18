@@ -1,7 +1,8 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+
+import { TEST_CHAIN_ID } from '@shared/lib/utils';
 
 import { ChainTitle } from './ChainTitle';
-import { TEST_CHAIN_ID } from '@shared/lib/utils';
 
 export default {
   title: 'Chain',

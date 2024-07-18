@@ -1,4 +1,4 @@
-import { Chain, ChainOptions, Wallet, WalletType } from '@shared/core';
+import { type Chain, ChainOptions, type Wallet, WalletType } from '@shared/core';
 import { proxiesUtils } from '../proxies-utils';
 
 describe('features/proxies/lib/proxies-utils', () => {

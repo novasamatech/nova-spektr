@@ -1,8 +1,8 @@
-import type { ChainAccount, ShardAccount, DraftAccount } from '@shared/core';
+import { type ChainAccount, type DraftAccount, type ShardAccount } from '@shared/core';
 import { toAccountId } from '@shared/lib/utils';
 import {
-  DynamicDerivationRequestInfo,
-  DdAddressInfoDecoded,
+  type DdAddressInfoDecoded,
+  type DynamicDerivationRequestInfo,
   cryptoTypeToMultisignerIndex,
 } from '@entities/transaction';
 

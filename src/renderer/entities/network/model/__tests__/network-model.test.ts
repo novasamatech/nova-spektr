@@ -1,9 +1,16 @@
-import { fork, allSettled } from 'effector';
+import { allSettled, fork } from 'effector';
 
-import { networkModel } from '../network-model';
-import { chainsService, networkService, ProviderType, ProviderWithMetadata } from '@shared/api/network';
-import { Chain, ConnectionStatus, ChainMetadata, Connection, ConnectionType, ChainId } from '@shared/core';
+import { ProviderType, type ProviderWithMetadata, chainsService, networkService } from '@shared/api/network';
 import { storageService } from '@shared/api/storage';
+import {
+  type Chain,
+  type ChainId,
+  type ChainMetadata,
+  type Connection,
+  ConnectionStatus,
+  ConnectionType,
+} from '@shared/core';
+import { networkModel } from '../network-model';
 
 describe('entities/network/model/network-model', () => {
   const mockChainMap = {

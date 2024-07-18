@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 
-import { cnTw, RootExplorers } from '@shared/lib/utils';
-import { ContactItem, ExplorersPopover } from '@entities/wallet';
 import { useI18n } from '@app/providers';
+import { type BaseAccount, type Chain, type ChainAccount, type ChainId } from '@shared/core';
+import { RootExplorers, cnTw } from '@shared/lib/utils';
 import { Accordion, FootnoteText, HelpText } from '@shared/ui';
-import type { Chain, ChainAccount, ChainId, BaseAccount } from '@shared/core';
 import { ChainTitle } from '@entities/chain';
+import { ContactItem, ExplorersPopover } from '@entities/wallet';
 
 type Props = {
   chains: Chain[];

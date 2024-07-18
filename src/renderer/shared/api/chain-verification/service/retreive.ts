@@ -1,8 +1,8 @@
 /* eslint-disable no-bitwise */
 import { u8aToHex } from '@polkadot/util';
 
-import { Node } from '../lib/types';
 import { NodeType } from '../lib/constants';
+import { type Node } from '../lib/types';
 import { getNodeType, keyLEToNibbles } from '../lib/utils';
 
 // lenCommonPrefix returns the length of the

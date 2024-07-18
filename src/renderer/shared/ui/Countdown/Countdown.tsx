@@ -1,5 +1,5 @@
 import { useI18n } from '@app/providers';
-import { cnTw, addLeadingZero } from '@shared/lib/utils';
+import { addLeadingZero, cnTw } from '@shared/lib/utils';
 import { CaptionText, FootnoteText } from '@shared/ui';
 
 function secondsToMinutes(seconds: number): string {

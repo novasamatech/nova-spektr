@@ -1,14 +1,14 @@
 import { hexToU8a, u8aToHex } from '@polkadot/util';
-import { BrowserCodeReader, BrowserQRCodeReader, IScannerControls } from '@zxing/browser';
-import { useEffect, useRef } from 'react';
+import { BrowserCodeReader, BrowserQRCodeReader, type IScannerControls } from '@zxing/browser';
 import init from 'raptorq';
+import { useEffect, useRef } from 'react';
 
-import { cnTw } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
+import { type HexString } from '@shared/core';
+import { cnTw } from '@shared/lib/utils';
 import { ErrorFields } from '../common/constants';
 import { QR_READER_ERRORS } from '../common/errors';
-import { DecodeCallback, ErrorObject, QrError, VideoInput } from '../common/types';
-import type { HexString } from '@shared/core';
+import { type DecodeCallback, type ErrorObject, QrError, type VideoInput } from '../common/types';
 
 type Props = {
   size?: number;
@@ -48,7 +48,9 @@ export const QrSignatureReader = ({
   const videoStyle = { width: size + 'px', height: size + 'px' };
 
   const isQrErrorObject = (error: unknown): boolean => {
-    if (!error) return false;
+    if (!error) {
+      return false;
+    }
 
     return typeof error === 'object' && ErrorFields.CODE in error && ErrorFields.MESSAGE in error;
   };

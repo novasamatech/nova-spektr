@@ -1,19 +1,20 @@
-import { createEffect, createEvent, createStore, sample } from 'effector';
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
+import { createEffect, createEvent, createStore, sample } from 'effector';
 
+import { opengovThresholdService } from '@/shared/api/governance';
 import {
-  Chain,
+  type Chain,
   type ChainId,
-  OngoingReferendum,
-  ReferendumId,
-  TrackId,
-  TrackInfo,
-  VotingThreshold,
-} from '@shared/core';
-import { getCurrentBlockNumber } from '@shared/lib/utils';
-import { opengovThresholdService } from '@shared/api/governance';
-import { referendumService } from '@entities/governance';
+  type OngoingReferendum,
+  type ReferendumId,
+  type TrackId,
+  type TrackInfo,
+  type VotingThreshold,
+} from '@/shared/core';
+import { getCurrentBlockNumber } from '@/shared/lib/utils';
+import { referendumService } from '@/entities/governance';
+
 import { referendumModel } from './referendum';
 import { tracksModel } from './tracks';
 

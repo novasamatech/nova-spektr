@@ -1,10 +1,12 @@
 import { resolve } from 'path';
+
+import { type Configuration, type Configuration as WpConfig } from 'webpack';
+import { type Configuration as WdsConfig } from 'webpack-dev-server';
 import { merge } from 'webpack-merge';
-import { Configuration as WpConfig, Configuration } from 'webpack';
-import { Configuration as WdsConfig } from 'webpack-dev-server';
+
+import { APP_CONFIG } from '../app.config';
 
 import sharedConfig from './webpack.shared';
-import { APP_CONFIG } from '../app.config';
 
 const { FOLDERS } = APP_CONFIG;
 

@@ -1,13 +1,13 @@
 import { BN } from '@polkadot/util';
 
-import { dictionary } from '@shared/lib/utils';
 import {
+  type PolkassemblyListingPost,
+  type PolkassemblyPostVote,
+  type PolkassembyPostStatus,
   polkassemblyApiService,
-  PolkassemblyListingPost,
-  PolkassemblyPostVote,
-  PolkassembyPostStatus,
 } from '@shared/api/polkassembly';
-import { GovernanceApi, ReferendumTimelineRecord, ReferendumVote } from '../lib/types';
+import { dictionary } from '@shared/lib/utils';
+import { type GovernanceApi, type ReferendumTimelineRecord, type ReferendumVote } from '../lib/types';
 
 const referendumDecisionMap: Record<PolkassemblyPostVote['decision'], ReferendumVote['decision']> = {
   abstain: 'abstain',
@@ -39,7 +39,7 @@ const getReferendumVotes: GovernanceApi['getReferendumVotes'] = (chain, referend
     return votes.map(({ decision, voter, balance, lockPeriod }) => ({
       decision: referendumDecisionMap[decision],
       voter,
-      balance: new BN('value' in balance ? balance.value : balance.abstain ?? 0),
+      balance: new BN('value' in balance ? balance.value : (balance.abstain ?? 0)),
       conviction: typeof lockPeriod === 'number' ? (lockPeriod === 0 ? 0.1 : lockPeriod) : 0,
     }));
   };

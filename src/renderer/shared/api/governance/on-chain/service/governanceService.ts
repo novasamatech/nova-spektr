@@ -1,22 +1,27 @@
-import { ApiPromise } from '@polkadot/api';
-import { BN_ZERO, BN } from '@polkadot/util';
-import { FrameSupportPreimagesBounded, PalletReferendaCurve } from '@polkadot/types/lookup';
+import { type ApiPromise } from '@polkadot/api';
+import { type FrameSupportPreimagesBounded, type PalletReferendaCurve } from '@polkadot/types/lookup';
+import { type BN, BN_ZERO } from '@polkadot/util';
 
-import { ReferendumType, VoteType, TrackId, CastingVoting, VotingType, Referendum } from '@shared/core';
-import type {
-  Address,
-  StandardVote,
-  SplitVote,
-  SplitAbstainVote,
-  TrackInfo,
-  Voting,
-  AccountVote,
-  ReferendumId,
-  DelegatingVoting,
-  LinearDecreasingCurve,
-  VotingCurve,
-  SteppedDecreasingCurve,
-  ReciprocalCurve,
+import {
+  type AccountVote,
+  type Address,
+  type CastingVoting,
+  type DelegatingVoting,
+  type LinearDecreasingCurve,
+  type ReciprocalCurve,
+  type Referendum,
+  type ReferendumId,
+  ReferendumType,
+  type SplitAbstainVote,
+  type SplitVote,
+  type StandardVote,
+  type SteppedDecreasingCurve,
+  type TrackId,
+  type TrackInfo,
+  VoteType,
+  type Voting,
+  type VotingCurve,
+  VotingType,
 } from '@shared/core';
 
 export const governanceService = {

@@ -1,17 +1,20 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
+import { type Wallet, WalletType } from '@shared/core';
 import { FootnoteText } from '@shared/ui';
+import { AssetsListView, EmptyAssetsState } from '@entities/asset';
 import { priceProviderModel } from '@entities/price';
 import { walletModel } from '@entities/wallet';
-import { Wallet, WalletType } from '@shared/core';
-import { AssetsListView, EmptyAssetsState } from '@entities/asset';
-import { TokenBalanceList } from './TokenBalanceList';
-import { TokenBalance } from './TokenBalance';
 import { portfolioModel } from '../model/portfolio-model';
 
+import { TokenBalance } from './TokenBalance';
+import { TokenBalanceList } from './TokenBalanceList';
+
 const getColStyle = (wallet?: Wallet): string => {
-  if (!wallet) return '';
+  if (!wallet) {
+    return '';
+  }
   const colStyleMap: Partial<Record<WalletType, string>> = {
     [WalletType.WATCH_ONLY]: 'grid-cols-[1fr,100px,105px]',
     [WalletType.PROXIED]: 'grid-cols-[1fr,100px,105px,30px]',
@@ -29,7 +32,9 @@ export const AssetsPortfolioView = () => {
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const wallet = useUnit(walletModel.$activeWallet);
 
-  if (activeView !== AssetsListView.TOKEN_CENTRIC || accounts.length === 0) return null;
+  if (activeView !== AssetsListView.TOKEN_CENTRIC || accounts.length === 0) {
+    return null;
+  }
 
   const colStyle = getColStyle(wallet);
 

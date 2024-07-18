@@ -1,5 +1,5 @@
-import type { ProxyAccount, Wallet, ProxyDeposits, BaseAccount, WcAccount } from '@shared/core';
-import { ProxyType, WalletType, SigningType, AccountType, ChainType, CryptoType } from '@shared/core';
+import { type BaseAccount, type ProxyAccount, type ProxyDeposits, type Wallet, type WcAccount } from '@shared/core';
+import { AccountType, ChainType, CryptoType, ProxyType, SigningType, WalletType } from '@shared/core';
 import { TEST_ACCOUNTS } from '@shared/lib/utils';
 
 const oldProxy: ProxyAccount = {

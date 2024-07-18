@@ -1,7 +1,7 @@
-import { CSSProperties, useEffect, useRef, useState } from 'react';
 import debounce from 'lodash/debounce';
+import { type CSSProperties, useEffect, useRef, useState } from 'react';
 
-import { getTextMeasurement, getContainerMeasurement } from './utils';
+import { getContainerMeasurement, getTextMeasurement } from './utils';
 
 type Props = {
   text: string;

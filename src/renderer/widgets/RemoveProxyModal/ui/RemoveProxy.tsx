@@ -1,18 +1,19 @@
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
-import { BaseModal, Button } from '@shared/ui';
-import { useModalClose } from '@shared/lib/hooks';
-import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
-import type { Chain } from '@shared/core';
-import { Step } from '../lib/types';
-import { RemoveProxyForm } from './RemoveProxyForm';
-import { removeProxyUtils } from '../lib/remove-proxy-utils';
-import { removeProxyModel } from '../model/remove-proxy-model';
-import { OperationSign, OperationSubmit } from '@features/operations';
-import { basketUtils, RemoveProxyConfirm as Confirmation } from '@features/operations/OperationsConfirm';
+import { type Chain } from '@shared/core';
+import { useModalClose } from '@shared/lib/hooks';
+import { BaseModal, Button } from '@shared/ui';
+import { OperationTitle } from '@entities/chain';
 import { OperationResult } from '@entities/transaction';
+import { OperationSign, OperationSubmit } from '@features/operations';
+import { RemoveProxyConfirm as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
+import { removeProxyUtils } from '../lib/remove-proxy-utils';
+import { Step } from '../lib/types';
+import { removeProxyModel } from '../model/remove-proxy-model';
+
+import { RemoveProxyForm } from './RemoveProxyForm';
 
 export const RemoveProxy = () => {
   const { t } = useI18n();
@@ -40,12 +41,16 @@ export const RemoveProxy = () => {
   }, [step]);
 
   const getModalTitle = (step: Step, chain?: Chain) => {
-    if (removeProxyUtils.isInitStep(step) || !chain) return t('operations.modalTitles.removeProxy');
+    if (removeProxyUtils.isInitStep(step) || !chain) {
+      return t('operations.modalTitles.removeProxy');
+    }
 
     return <OperationTitle title={t('operations.modalTitles.removeProxyOn')} chainId={chain.chainId} />;
   };
 
-  if (removeProxyUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  if (removeProxyUtils.isSubmitStep(step)) {
+    return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  }
 
   if (removeProxyUtils.isBasketStep(step)) {
     return (

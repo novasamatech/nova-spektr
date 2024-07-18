@@ -1,7 +1,8 @@
 import { act, render, screen } from '@testing-library/react';
 
-import { ChainIcon } from './ChainIcon';
 import { TEST_CHAIN_ICON } from '@shared/lib/utils';
+
+import { ChainIcon } from './ChainIcon';
 
 describe('ui/ChainIcon', () => {
   test('should render component', async () => {

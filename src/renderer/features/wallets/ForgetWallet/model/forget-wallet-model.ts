@@ -1,12 +1,19 @@
-import { createEvent, sample, createEffect, createStore, createApi, attach, split } from 'effector';
+import { attach, createApi, createEffect, createEvent, createStore, sample, split } from 'effector';
 import uniq from 'lodash/uniq';
 import { spread } from 'patronum';
 
-import { AccountId, ID, MultisigAccount, ProxyAccount, ProxyGroup, Wallet } from '@shared/core';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import {
+  type AccountId,
+  type ID,
+  type MultisigAccount,
+  type ProxyAccount,
+  type ProxyGroup,
+  type Wallet,
+} from '@shared/core';
 import { balanceModel } from '@entities/balance';
 import { useForgetMultisig } from '@entities/multisig';
 import { proxyModel } from '@entities/proxy';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 
 const { deleteMultisigTxs } = useForgetMultisig();
 

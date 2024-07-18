@@ -1,5 +1,5 @@
-import { InitOptions } from 'i18next';
-import { Locale } from 'date-fns';
+import { type Locale } from 'date-fns';
+import { type InitOptions } from 'i18next';
 
 export type SupportedLocale = 'en';
 

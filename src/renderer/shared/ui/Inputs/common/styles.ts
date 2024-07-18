@@ -1,4 +1,4 @@
-import { Theme } from '../../Dropdowns/common/types';
+import { type Theme } from '../../Dropdowns/common/types';
 
 export const CommonInputStyles = 'py-[7px] px-3 text-footnote border rounded outline-offset-1';
 

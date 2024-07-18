@@ -1,5 +1,5 @@
-import { MultisigTransaction, AccountId, CallHash, ChainId } from '@shared/core';
-import { MultisigTransactionDS, IMultisigTransactionStorage, TMultisigTransaction } from '../lib/types';
+import { type AccountId, type CallHash, type ChainId, type MultisigTransaction } from '@shared/core';
+import { type IMultisigTransactionStorage, type MultisigTransactionDS, type TMultisigTransaction } from '../lib/types';
 
 export const useTransactionStorage = (db: TMultisigTransaction): IMultisigTransactionStorage => ({
   getMultisigTx: (

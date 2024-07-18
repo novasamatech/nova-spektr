@@ -10,7 +10,7 @@ const $proposers = combine(
     chain: networkSelectorModel.$governanceChain,
   },
   ({ proposers, chain }) => {
-    return chain ? proposers[chain.chainId] ?? {} : {};
+    return chain ? (proposers[chain.chainId] ?? {}) : {};
   },
 );
 

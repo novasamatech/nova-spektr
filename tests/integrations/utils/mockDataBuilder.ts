@@ -67,7 +67,9 @@ export class MockDataBuilder {
 
   buildMultisigAccount(threshold: number, signatoryNumber: number) {
     const baseAccount = this.buildAccount(false, false, 'signing_ms');
+    // @ts-expect-error TODO fix
     baseAccount['threshold'] = threshold;
+    // @ts-expect-error TODO fix
     baseAccount['signatories'] = this.generateSignatories(signatoryNumber);
 
     return baseAccount;

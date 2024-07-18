@@ -1,5 +1,5 @@
-import { createStore, createEvent, sample, createApi, createEffect } from 'effector';
-import { NavigateFunction } from 'react-router-dom';
+import { createApi, createEffect, createEvent, createStore, sample } from 'effector';
+import { type NavigateFunction } from 'react-router-dom';
 
 import { walletPairingModel } from '@features/wallets';
 

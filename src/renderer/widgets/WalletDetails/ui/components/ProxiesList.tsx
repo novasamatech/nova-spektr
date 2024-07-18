@@ -1,19 +1,20 @@
 import { useUnit } from 'effector-react';
 
-import { cnTw } from '@shared/lib/utils';
-import { ChainTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
-import { Accordion, ConfirmModal, FootnoteText, HelpText, SmallTitleText } from '@shared/ui';
-import { networkModel } from '@entities/network';
-import { AssetBalance } from '@entities/asset';
-import { walletProviderModel } from '../../model/wallet-provider-model';
-import { ProxyAccountWithActions } from './ProxyAccountWithActions';
+import { type ProxiedAccount, type ProxyAccount, ProxyType, ProxyVariant } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
-import { RemovePureProxy, removePureProxyModel } from '@widgets/RemovePureProxyModal';
-import { RemoveProxy, removeProxyModel } from '@widgets/RemoveProxyModal';
+import { cnTw } from '@shared/lib/utils';
+import { Accordion, ConfirmModal, FootnoteText, HelpText, SmallTitleText } from '@shared/ui';
+import { AssetBalance } from '@entities/asset';
+import { ChainTitle } from '@entities/chain';
+import { networkModel } from '@entities/network';
 import { accountUtils } from '@entities/wallet';
-import { ProxiedAccount, ProxyAccount, ProxyType, ProxyVariant } from '@shared/core';
 import { walletSelectModel } from '@features/wallets';
+import { RemoveProxy, removeProxyModel } from '@widgets/RemoveProxyModal';
+import { RemovePureProxy, removePureProxyModel } from '@widgets/RemovePureProxyModal';
+import { walletProviderModel } from '../../model/wallet-provider-model';
+
+import { ProxyAccountWithActions } from './ProxyAccountWithActions';
 
 type Props = {
   canCreateProxy?: boolean;
@@ -73,7 +74,9 @@ export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
 
       <ul className="flex flex-col h-full px-5 divide-y divide-divider overflow-y-auto overflow-x-hidden">
         {walletProxyGroups.map(({ chainId, totalDeposit }) => {
-          if (!chainsProxies[chainId]?.length) return;
+          if (!chainsProxies[chainId]?.length) {
+            return null;
+          }
 
           return (
             <li key={chainId} className="flex items-center py-2">

@@ -1,4 +1,4 @@
-import { Pallet, Variant } from './types';
+import { type Pallet, type Variant } from './types';
 
 // TODO add action state styles e.g. active, disabled
 export const ViewClass: Record<`${Variant}_${Pallet}`, string> = {

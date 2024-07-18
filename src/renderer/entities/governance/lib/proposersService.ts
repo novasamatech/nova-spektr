@@ -1,8 +1,8 @@
-import { u8aToString } from '@polkadot/util';
 import { type ApiPromise } from '@polkadot/api';
 import { type PalletIdentityRegistration } from '@polkadot/types/lookup';
+import { u8aToString } from '@polkadot/util';
 
-import type { Address, Identity, SubIdentity } from '@shared/core';
+import { type Address, type Identity, type SubIdentity } from '@/shared/core';
 
 async function getIdentities(api: ApiPromise, addresses: Address[]) {
   const subIdentities = await getSubIdentities(api, addresses);

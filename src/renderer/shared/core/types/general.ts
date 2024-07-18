@@ -1,5 +1,5 @@
 export type ID = number;
-export type NoID<T extends { id: K }, K extends any = ID> = Omit<T, 'id'>;
+export type NoID<T extends { id: K }, K = ID> = Omit<T, 'id'>;
 
 export type HexString = `0x${string}`;
 export type Metadata = HexString;

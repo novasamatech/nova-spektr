@@ -1,5 +1,5 @@
-import { FootnoteText, Icon, Popover, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
+import { FootnoteText, Icon, Popover, SmallTitleText } from '@shared/ui';
 
 export const VaultInfoPopover = () => {
   const { t } = useI18n();

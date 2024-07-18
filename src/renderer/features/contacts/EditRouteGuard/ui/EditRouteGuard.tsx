@@ -1,9 +1,9 @@
-import { ReactNode, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useUnit } from 'effector-react';
+import { type ReactNode, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
+import { type Contact } from '@shared/core';
 import * as editGuardModel from '../model/edit-guard';
-import type { Contact } from '@shared/core';
 
 type Props = {
   redirectPath: string;
@@ -24,7 +24,9 @@ export const EditRouteGuard = ({ redirectPath, children }: Props) => {
     };
   }, [searchParams]);
 
-  if (!contact) return null;
+  if (!contact) {
+    return null;
+  }
 
   return <>{typeof children === 'function' ? children(contact) : children}</>;
 };

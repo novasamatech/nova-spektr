@@ -1,16 +1,16 @@
 import { useForm } from 'effector-forms';
-import { FormEvent } from 'react';
 import { useUnit } from 'effector-react';
+import { type FormEvent } from 'react';
 
 import { useI18n } from '@app/providers';
-import { MultisigAccount, Chain } from '@shared/core';
+import { type Chain, type MultisigAccount } from '@shared/core';
+import { formatBalance, toAddress, toShortAddress, validateAddress } from '@shared/lib/utils';
+import { AmountInput, Button, HelpText, Icon, Identicon, Input, InputHint, Select } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
 import { ChainTitle } from '@entities/chain';
-import { accountUtils, AccountAddress, AccountSelectModal, ProxyWalletAlert } from '@entities/wallet';
-import { toAddress, toShortAddress, validateAddress, formatBalance } from '@shared/lib/utils';
-import { MultisigDepositWithLabel, FeeWithLabel, XcmFeeWithLabel } from '@entities/transaction';
-import { Select, Input, Identicon, Icon, Button, InputHint, AmountInput, HelpText } from '@shared/ui';
 import { SignatorySelector } from '@entities/operations';
+import { FeeWithLabel, MultisigDepositWithLabel, XcmFeeWithLabel } from '@entities/transaction';
+import { AccountAddress, AccountSelectModal, ProxyWalletAlert, accountUtils } from '@entities/wallet';
 import { formModel } from '../model/form-model';
 
 type Props = {
@@ -56,7 +56,9 @@ const ProxyFeeAlert = () => {
   const network = useUnit(formModel.$networkStore);
   const proxyWallet = useUnit(formModel.$proxyWallet);
 
-  if (!network || !proxyWallet || !account.hasError()) return null;
+  if (!network || !proxyWallet || !account.hasError()) {
+    return null;
+  }
 
   const formattedFee = formatBalance(fee, network.asset.precision).value;
   const formattedBalance = formatBalance(native, network.asset.precision).value;
@@ -82,7 +84,9 @@ const AccountSelector = () => {
   const accounts = useUnit(formModel.$accounts);
   const network = useUnit(formModel.$networkStore);
 
-  if (!network || accounts.length <= 1) return null;
+  if (!network || accounts.length <= 1) {
+    return null;
+  }
 
   const options = accounts.map(({ account, balances }) => {
     const isShard = accountUtils.isShardAccount(account);
@@ -130,7 +134,9 @@ const Signatories = () => {
   const isMultisig = useUnit(formModel.$isMultisig);
   const network = useUnit(formModel.$networkStore);
 
-  if (!isMultisig || !network) return null;
+  if (!isMultisig || !network) {
+    return null;
+  }
 
   return (
     <SignatorySelector
@@ -154,7 +160,9 @@ const XcmChainSelector = () => {
 
   const chains = useUnit(formModel.$chains);
 
-  if (chains.length <= 1) return null;
+  if (chains.length <= 1) {
+    return null;
+  }
 
   const getXcmOptions = (chains: Chain[]) => {
     const [nativeLabel, xcmLabel] = ['transfer.onChainPlaceholder', 'transfer.crossChainPlaceholder'].map(
@@ -239,7 +247,9 @@ const Amount = () => {
   const { balance } = useUnit(formModel.$accountBalance);
   const network = useUnit(formModel.$networkStore);
 
-  if (!network) return null;
+  if (!network) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -268,7 +278,9 @@ const Description = () => {
 
   const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!isMultisig) return null;
+  if (!isMultisig) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -303,7 +315,9 @@ const FeeSection = () => {
   const xcmConfig = useUnit(formModel.$xcmConfig);
   const xcmApi = useUnit(formModel.$xcmApi);
 
-  if (!network) return null;
+  if (!network) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -348,7 +362,9 @@ const MyselfAccountModal = () => {
   const destinationAccounts = useUnit(formModel.$destinationAccounts);
   const isMyselfXcmOpened = useUnit(formModel.$isMyselfXcmOpened);
 
-  if (!isXcm || !network || destinationAccounts.length === 0) return null;
+  if (!isXcm || !network || destinationAccounts.length === 0) {
+    return null;
+  }
 
   return (
     <AccountSelectModal

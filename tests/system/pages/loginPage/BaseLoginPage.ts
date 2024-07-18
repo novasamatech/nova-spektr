@@ -1,35 +1,27 @@
-import { Page } from 'playwright';
-
-import { LoginPageElements } from '../_elements/LoginPageElements';
-import { BasePage } from '../BasePage';
-import { PolkadotVaultLoginPage } from './PolkadotVaultLoginPage';
-import { WatchOnlyLoginPage } from './WatchOnlyLoginPage';
-import { WatchOnlyAssetsPage } from '../assetsPage/WatchOnlyAssetsPage';
 import { baseTestConfig } from '../../BaseTestConfig';
-import { VaultAssetsPage } from '../assetsPage/VaultAssetsPage';
 import {
-  vaultDPPolkadotTestWallet,
   vaultDPPolkadotTestAccount,
+  vaultDPPolkadotTestWallet,
 } from '../../data/db/dynamicDerivations/dynamicDerivationsWallets';
-import { IndexedDBData, injectDataInDatabase } from '../../utils/interactWithDatabase';
-import { AssetsPageElements } from '../_elements/AssetsPageElements';
 import {
-  vaultSubstrateWallet,
   vaultSubstrateAccount,
+  vaultSubstrateWallet,
 } from '../../data/db/polkadotVaultWallet/polkadotVaultSubstrateWallet';
 import {
   vaultAndEthereumAccount,
   vaultAndEthereumWallet,
 } from '../../data/db/polkadotVaultWallet/polkadotVaultWithEthereum';
+import { type IndexedDBData, injectDataInDatabase } from '../../utils/interactWithDatabase';
+import { BasePage } from '../BasePage';
+import { AssetsPageElements } from '../_elements/AssetsPageElements';
+import { type LoginPageElements } from '../_elements/LoginPageElements';
+import { VaultAssetsPage } from '../assetsPage/VaultAssetsPage';
+import { type WatchOnlyAssetsPage } from '../assetsPage/WatchOnlyAssetsPage';
 
-export class BaseLoginPage extends BasePage {
-  protected pageElements: LoginPageElements;
+import { PolkadotVaultLoginPage } from './PolkadotVaultLoginPage';
+import { WatchOnlyLoginPage } from './WatchOnlyLoginPage';
 
-  constructor(page: Page, pageElements: LoginPageElements) {
-    super(page);
-    this.pageElements = pageElements;
-  }
-
+export class BaseLoginPage extends BasePage<LoginPageElements> {
   public async gotoOnboarding(): Promise<BaseLoginPage> {
     await this.goto(this.pageElements.url);
     await this.page.getByText(this.pageElements.onboardingLabel).waitFor();

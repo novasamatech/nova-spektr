@@ -1,5 +1,5 @@
-import { AssetBalance } from './balance';
-import { ChainId } from './general';
+import { type AssetBalance } from './balance';
+import { type ChainId } from './general';
 
 export type Asset = {
   name: string;

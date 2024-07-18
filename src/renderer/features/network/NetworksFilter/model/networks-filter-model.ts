@@ -1,7 +1,7 @@
-import { createEvent, createStore, sample, combine } from 'effector';
+import { combine, createEvent, createStore, sample } from 'effector';
 
-import { networkModel } from '@entities/network';
 import { includes } from '@shared/lib/utils';
+import { networkModel } from '@entities/network';
 
 const formInitiated = createEvent();
 const queryChanged = createEvent<string>();

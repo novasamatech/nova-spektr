@@ -1,7 +1,7 @@
-import { ChainTitle } from '../ChainTitle/ChainTitle';
-import { HeaderTitleText } from '@shared/ui';
-import type { ChainId } from '@shared/core';
+import { type ChainId } from '@shared/core';
 import { cnTw } from '@shared/lib/utils';
+import { HeaderTitleText } from '@shared/ui';
+import { ChainTitle } from '../ChainTitle/ChainTitle';
 
 type Props = {
   title: string;

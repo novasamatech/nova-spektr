@@ -1,4 +1,4 @@
-import { ChainId, KeyType as DdKeyType } from '@shared/core';
+import { type ChainId, type KeyType as DdKeyType } from '@shared/core';
 
 export type ExportedDerivation = {
   key: {

@@ -1,14 +1,21 @@
-import { createApi, createEvent, createStore, sample, combine, createEffect, attach } from 'effector';
+import { attach, combine, createApi, createEffect, createEvent, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 
-import { accountUtils, KEY_NAMES, walletModel } from '@entities/wallet';
-import type { ChainAccount, ShardAccount, DraftAccount, BaseAccount, Wallet, NoID } from '@shared/core';
+import { storageService } from '@shared/api/storage';
+import {
+  type BaseAccount,
+  type ChainAccount,
+  type DraftAccount,
+  type NoID,
+  type ShardAccount,
+  type Wallet,
+} from '@shared/core';
 import { AccountType, ChainType, CryptoType, KeyType } from '@shared/core';
 import { dictionary } from '@shared/lib/utils';
-import { storageService } from '@shared/api/storage';
-import { SeedInfo } from '@entities/transaction';
-import { walletSelectModel } from '@features/wallets';
 import { networkModel, networkUtils } from '@entities/network';
+import { type SeedInfo } from '@entities/transaction';
+import { KEY_NAMES, accountUtils, walletModel } from '@entities/wallet';
+import { walletSelectModel } from '@features/wallets';
 
 const WALLET_NAME_MAX_LENGTH = 256;
 

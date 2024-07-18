@@ -1,24 +1,24 @@
+import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
-import { ApiPromise } from '@polkadot/api';
 import get from 'lodash/get';
 
-import { XCM_URL, XCM_KEY } from '../lib/constants';
-import { XcmPalletTransferArgs, XTokenPalletTransferArgs } from '@entities/transaction';
-import { chainsService } from '../../network';
-import { xcmUtils } from '../lib/xcm-utils';
-import type { AccountId, ChainId, Chain, HexString } from '../../../core';
+import { type XTokenPalletTransferArgs, type XcmPalletTransferArgs } from '@entities/transaction';
+import { type AccountId, type Chain, type ChainId, type HexString } from '../../../core';
+import { getAssetId, getTypeName, getTypeVersion, toLocalChainId } from '../../../lib/utils';
 import { localStorageService } from '../../local-storage';
-import { getTypeVersion, toLocalChainId, getTypeName, getAssetId } from '../../../lib/utils';
+import { chainsService } from '../../network';
+import { XCM_KEY, XCM_URL } from '../lib/constants';
 import {
-  XcmConfig,
-  AssetLocation,
-  AssetName,
-  AssetXCM,
-  ChainXCM,
-  XcmTransfer,
-  PathType,
-  XcmTransferType,
+  type AssetLocation,
+  type AssetName,
+  type AssetXCM,
+  type ChainXCM,
+  type PathType,
+  type XcmConfig,
+  type XcmTransfer,
+  type XcmTransferType,
 } from '../lib/types';
+import { xcmUtils } from '../lib/xcm-utils';
 
 export const xcmService = {
   fetchXcmConfig,

@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 
-import ScanStep from './ScanStep/ScanStep';
+import { useToggle } from '@shared/lib/hooks';
+import { DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { BaseModal } from '@shared/ui';
+import { type SeedInfo, VaultFeatures } from '@entities/transaction';
+
 import { ManageMultishard } from './ManageMultishard/ManageMultishard';
 import { ManageSingleshard } from './ManageSingleshard/ManageSingleshard';
 import { ManageVault } from './ManageVault/ManageVault';
-import { BaseModal } from '@shared/ui';
-import { DEFAULT_TRANSITION } from '@shared/lib/utils';
-import { useToggle } from '@shared/lib/hooks';
-import { SeedInfo, VaultFeatures } from '@entities/transaction';
+import ScanStep from './ScanStep/ScanStep';
 
 const isDynamicDerivationSupport = (seedInfo: SeedInfo): boolean => {
   const dynamicDerivationsExist = seedInfo.features?.some(

@@ -1,4 +1,4 @@
-import { Address, HexString } from '@shared/core';
+import { type Address, type HexString } from '@shared/core';
 
 export type PolkassemblyProposalType =
   | 'democracy_proposals'

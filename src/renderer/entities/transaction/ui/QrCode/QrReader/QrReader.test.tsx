@@ -3,6 +3,7 @@ import { BrowserCodeReader, BrowserQRCodeReader } from '@zxing/browser';
 
 import { QR_READER_ERRORS } from '../common/errors';
 import { QrError } from '../common/types';
+
 import { QrReader } from './QrReader';
 
 jest.mock('raptorq');

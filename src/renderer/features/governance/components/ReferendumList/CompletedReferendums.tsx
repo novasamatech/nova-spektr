@@ -1,9 +1,10 @@
 import { memo, useDeferredValue } from 'react';
 
 import { useI18n } from '@app/providers';
+import { type CompletedReferendum } from '@shared/core';
 import { Accordion, CaptionText, Shimmering } from '@shared/ui';
-import { CompletedReferendum } from '@shared/core';
-import { AggregatedReferendum } from '../../types/structs';
+import { type AggregatedReferendum } from '../../types/structs';
+
 import { CompletedReferendumItem } from './CompletedReferendumItem';
 import { ListItemPlaceholder } from './ListItemPlaceholder';
 

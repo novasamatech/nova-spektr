@@ -1,41 +1,41 @@
 import { BN, BN_ZERO } from '@polkadot/util';
-import uniqWith from 'lodash/uniqWith';
+import clone from 'lodash/clone';
 import isEqual from 'lodash/isEqual';
 import orderBy from 'lodash/orderBy';
 import sortBy from 'lodash/sortBy';
-import clone from 'lodash/clone';
+import uniqWith from 'lodash/uniqWith';
 
-import { onChainUtils } from '../lib/on-chain-utils';
 import {
+  type AccountVote,
+  type BlockHeight,
+  type CastingVoting,
+  type DelegatingVoting,
+  type OngoingReferendum,
+  type ReferendumInfo,
+  type StandardVote,
+  type TimedOutReferendum,
+  type TrackId,
+  type TrackInfo,
+  type Voting,
+} from '@shared/core';
+import {
+  type AffectTrack,
+  type AffectVote,
+  type Chunks,
+  type ClaimAction,
+  type ClaimAffect,
+  type ClaimTime,
+  type ClaimTimeAt,
+  type ClaimTimeUntil,
+  type ClaimableChunk,
   type ClaimableLock,
-  AffectVote,
-  AffectTrack,
-  ClaimTime,
-  ClaimTimeAt,
-  GroupedClaimAffects,
-  ClaimAffect,
-  ClaimAction,
-  Unlock,
-  RemoveVote,
-  PendingChunk,
-  ClaimableChunk,
-  ClaimTimeUntil,
-  Chunks,
+  type GroupedClaimAffects,
+  type PendingChunk,
+  type RemoveVote,
+  type Unlock,
   UnlockChunkType,
 } from '../lib/claim-types';
-import type {
-  BlockHeight,
-  ReferendumInfo,
-  TrackInfo,
-  Voting,
-  TrackId,
-  CastingVoting,
-  AccountVote,
-  TimedOutReferendum,
-  OngoingReferendum,
-  StandardVote,
-  DelegatingVoting,
-} from '@shared/core';
+import { onChainUtils } from '../lib/on-chain-utils';
 
 export const claimScheduleService = {
   estimateClaimSchedule,

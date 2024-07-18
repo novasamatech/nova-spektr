@@ -1,7 +1,8 @@
 import { render, screen } from '@testing-library/react';
 
-import { Transaction, TransactionType } from '@shared/core';
+import { type Transaction, TransactionType } from '@shared/core';
 import { TEST_ADDRESS, TEST_CHAIN_ID } from '@shared/lib/utils';
+
 import { TransactionTitle } from './TransactionTitle';
 
 jest.mock('@app/providers', () => ({

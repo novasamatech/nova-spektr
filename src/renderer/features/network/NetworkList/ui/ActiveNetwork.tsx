@@ -1,11 +1,11 @@
-import { PropsWithChildren } from 'react';
-import { TFunction } from 'react-i18next';
+import { type PropsWithChildren } from 'react';
+import { type TFunction } from 'react-i18next';
 
-import { ChainIcon } from '@entities/chain';
-import { ExtendedChain } from '@entities/network';
+import { useI18n } from '@app/providers';
 import { ConnectionStatus } from '@shared/core';
 import { BodyText, FootnoteText, HelpText, StatusLabel } from '@shared/ui';
-import { useI18n } from '@app/providers';
+import { ChainIcon } from '@entities/chain';
+import { type ExtendedChain } from '@entities/network';
 import './styles.css';
 
 const Status = {

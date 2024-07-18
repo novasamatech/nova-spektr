@@ -1,13 +1,13 @@
-import { KeyboardEvent } from 'react';
 import { useUnit } from 'effector-react';
+import { type KeyboardEvent } from 'react';
 
+import { useI18n } from '@app/providers';
+import { type Asset, type Balance, type ChainId } from '@shared/core';
+import { useToggle } from '@shared/lib/hooks';
+import { KeyboardKey, cnTw, totalAmount, transferableAmount } from '@shared/lib/utils';
 import { BodyText, Shimmering } from '@shared/ui';
 import { AssetBalance, AssetDetails, AssetIcon, AssetLinks } from '@entities/asset';
-import { useToggle } from '@shared/lib/hooks';
-import { cnTw, KeyboardKey, totalAmount, transferableAmount } from '@shared/lib/utils';
-import { useI18n } from '@app/providers';
-import { ChainId, Asset, Balance } from '@shared/core';
-import { priceProviderModel, AssetFiatBalance, TokenPrice } from '@entities/price';
+import { AssetFiatBalance, TokenPrice, priceProviderModel } from '@entities/price';
 
 type Props = {
   chainId: ChainId;

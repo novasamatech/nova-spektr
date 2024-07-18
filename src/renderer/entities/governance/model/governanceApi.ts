@@ -1,9 +1,9 @@
-import { createStore, createEvent, sample, createEffect } from 'effector';
+import { createEffect, createEvent, createStore, sample } from 'effector';
 
-import { GovernanceApi } from '@shared/api/governance';
-import { localStorageService } from '@shared/api/local-storage';
-import { type SourceType } from '../lib/types';
+import { type GovernanceApi } from '@/shared/api/governance';
+import { localStorageService } from '@/shared/api/local-storage';
 import { GOVERNANCE_API_KEY, GovernanceApis } from '../lib/constants';
+import { type SourceType } from '../lib/types';
 
 const governanceStarted = createEvent();
 const governanceApiChanged = createEvent<SourceType>();

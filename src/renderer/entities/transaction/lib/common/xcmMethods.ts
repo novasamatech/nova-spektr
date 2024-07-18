@@ -1,6 +1,11 @@
-import { BaseTxInfo, defineMethod, OptionsWithMeta, UnsignedTransaction } from '@substrate/txwrapper-polkadot';
+import {
+  type BaseTxInfo,
+  type OptionsWithMeta,
+  type UnsignedTransaction,
+  defineMethod,
+} from '@substrate/txwrapper-polkadot';
 
-import { XcmPalletTransferArgs, XcmPallet, XTokenPalletTransferArgs } from './types';
+import { type XTokenPalletTransferArgs, type XcmPallet, type XcmPalletTransferArgs } from './types';
 
 export function limitedReserveTransferAssets(
   pallet: XcmPallet,

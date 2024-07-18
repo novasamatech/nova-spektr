@@ -1,5 +1,5 @@
 import { getAccountExplorer, getExtrinsicExplorer } from '../chains';
-import { TEST_ADDRESS, TEST_ACCOUNTS, TEST_SUBSTRATE_ADDRESS, TEST_HASH } from '../constants';
+import { TEST_ACCOUNTS, TEST_ADDRESS, TEST_HASH, TEST_SUBSTRATE_ADDRESS } from '../constants';
 
 const explorers = [
   { name: 'Subscan', account: 'https://polkadot.subscan.io/account/{address}' },

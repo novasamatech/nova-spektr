@@ -1,22 +1,23 @@
-import { useState } from 'react';
 import { useGate, useUnit } from 'effector-react';
+import { useState } from 'react';
 
 import { useI18n } from '@app/providers';
 import { Header, Plate } from '@shared/ui';
 import { InactiveNetwork } from '@entities/network';
 import {
-  ReferendumSearch,
-  ReferendumFilters,
-  ReferendumDetailsDialog,
-  OngoingReferendums,
+  type AggregatedReferendum,
   CompletedReferendums,
-  NetworkSelector,
-  networkSelectorModel,
-  Locks,
-  AggregatedReferendum,
   Delegations,
+  Locks,
+  NetworkSelector,
+  OngoingReferendums,
+  ReferendumDetailsDialog,
+  ReferendumFilters,
+  ReferendumSearch,
+  networkSelectorModel,
 } from '@features/governance';
 import { governancePageAggregate } from '../aggregates/governancePage';
+
 import { EmptyGovernance } from './EmptyGovernance';
 
 export const Governance = () => {

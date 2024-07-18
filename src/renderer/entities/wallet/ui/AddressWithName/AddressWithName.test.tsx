@@ -1,7 +1,8 @@
 import { render, screen } from '@testing-library/react';
 
-import { AddressWithName } from './AddressWithName';
 import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
+
+import { AddressWithName } from './AddressWithName';
 
 describe('ui/Address', () => {
   test('should render component', () => {

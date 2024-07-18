@@ -1,4 +1,4 @@
-import { Wallet } from '@shared/core';
+import { type Wallet } from '@shared/core';
 import { walletUtils } from '@entities/wallet';
 
 export const basketUtils = {

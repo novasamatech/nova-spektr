@@ -1,6 +1,6 @@
-import { AccountId, ChainAccount, ChainId, ShardAccount } from '@shared/core';
-import { accountUtils } from '@entities/wallet';
 import { chainsService } from '@shared/api/network';
+import { type AccountId, type ChainAccount, type ChainId, type ShardAccount } from '@shared/core';
+import { accountUtils } from '@entities/wallet';
 
 export const exportKeysUtils = {
   getExportStructure,

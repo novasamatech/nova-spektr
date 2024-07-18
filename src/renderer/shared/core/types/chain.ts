@@ -1,5 +1,5 @@
-import type { Asset } from './asset';
-import type { ChainId, HexString } from './general';
+import { type Asset } from './asset';
+import { type ChainId, type HexString } from './general';
 
 export type Chain = {
   chainId: ChainId;

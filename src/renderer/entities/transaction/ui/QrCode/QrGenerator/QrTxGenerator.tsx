@@ -1,10 +1,11 @@
 import { u8aConcat } from '@polkadot/util';
 
-import useGenerator from './common/useGenerator';
+import { type ChainId, type SigningType } from '@shared/core';
+import { CryptoType } from '@shared/core';
+
 import { DEFAULT_FRAME_DELAY, SUBSTRATE_ID } from './common/constants';
+import useGenerator from './common/useGenerator';
 import { createSubstrateSignPayload } from './common/utils';
-import type { ChainId } from '@shared/core';
-import { CryptoType, SigningType } from '@shared/core';
 
 type Props = {
   address: string;
@@ -38,7 +39,9 @@ export const QrTxGenerator = ({
 
   const image = useGenerator(signPayload, skipEncoding, delay, bgColor);
 
-  if (!signPayload || !image) return null;
+  if (!signPayload || !image) {
+    return null;
+  }
 
   return <div style={{ width: size, height: size }} dangerouslySetInnerHTML={{ __html: image }} />;
 };

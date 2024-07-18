@@ -1,14 +1,14 @@
 import { useForm } from 'effector-forms';
-import { FormEvent } from 'react';
 import { useUnit } from 'effector-react';
+import { type FormEvent } from 'react';
 
-import { Button, Input, InputHint, Alert } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
-import { MultisigAccount } from '@shared/core';
+import { type MultisigAccount } from '@shared/core';
+import { Alert, Button, Input, InputHint } from '@shared/ui';
 import { SignatorySelector } from '@entities/operations';
-import { removeProxyModel } from '../model/remove-proxy-model';
+import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
 import { formModel } from '../model/form-model';
+import { removeProxyModel } from '../model/remove-proxy-model';
 
 type Props = {
   onGoBack: () => void;
@@ -47,7 +47,9 @@ const Signatories = () => {
   const chain = useUnit(removeProxyModel.$chain);
   const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!isMultisig || !chain) return null;
+  if (!isMultisig || !chain) {
+    return null;
+  }
 
   return (
     <SignatorySelector
@@ -71,7 +73,9 @@ const DescriptionInput = () => {
 
   const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!isMultisig) return null;
+  if (!isMultisig) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -100,7 +104,9 @@ const FeeSection = () => {
   const chain = useUnit(removeProxyModel.$chain);
   const account = useUnit(removeProxyModel.$realAccount);
 
-  if (!chain) return null;
+  if (!chain) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-y-2">

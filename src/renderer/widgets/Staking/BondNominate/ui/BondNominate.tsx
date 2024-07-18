@@ -1,18 +1,19 @@
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
-import { BaseModal, Button } from '@shared/ui';
-import { useModalClose } from '@shared/lib/hooks';
-import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
-import { OperationSign, OperationSubmit } from '@features/operations';
-import { Validators } from '@features/staking';
-import { BondForm } from './BondForm';
-import { bondUtils } from '../lib/bond-utils';
-import { bondNominateModel } from '../model/bond-nominate-model';
-import { Step } from '../lib/types';
-import { basketUtils, BondNominateConfirmation as Confirmation } from '@features/operations/OperationsConfirm';
+import { useModalClose } from '@shared/lib/hooks';
+import { BaseModal, Button } from '@shared/ui';
+import { OperationTitle } from '@entities/chain';
 import { OperationResult } from '@entities/transaction';
+import { OperationSign, OperationSubmit } from '@features/operations';
+import { BondNominateConfirmation as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
+import { Validators } from '@features/staking';
+import { bondUtils } from '../lib/bond-utils';
+import { Step } from '../lib/types';
+import { bondNominateModel } from '../model/bond-nominate-model';
+
+import { BondForm } from './BondForm';
 
 export const BondNominate = () => {
   const { t } = useI18n();
@@ -35,9 +36,13 @@ export const BondNominate = () => {
     }
   }, [step]);
 
-  if (!walletData) return null;
+  if (!walletData) {
+    return null;
+  }
 
-  if (bondUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  if (bondUtils.isSubmitStep(step)) {
+    return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  }
   if (bondUtils.isBasketStep(step)) {
     return (
       <OperationResult

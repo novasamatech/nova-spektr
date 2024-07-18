@@ -1,4 +1,4 @@
-import { DerivationValidationError, ValidationError } from '../lib/types';
+import { type DerivationValidationError, type ValidationError } from '../lib/types';
 
 export type ErrorDetails = Record<DerivationValidationError, string[]>;
 

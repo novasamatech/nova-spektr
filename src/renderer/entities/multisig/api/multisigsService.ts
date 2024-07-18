@@ -1,6 +1,7 @@
-import { GraphQLClient } from 'graphql-request';
+import { type GraphQLClient } from 'graphql-request';
 
-import type { AccountId } from '@shared/core';
+import { type AccountId } from '@shared/core';
+
 import { FILTER_MULTISIG_ACCOUNT_IDS } from './graphql/queries/multisigs';
 
 export const multisigService = {

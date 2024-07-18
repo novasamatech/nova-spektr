@@ -22,7 +22,10 @@ export const AssetIcon = ({ src, name, size = 32, className }: Props) => {
       <img
         src={src}
         className={cnTw('transition-opacity', !isImgLoaded && 'opacity-0')}
-        style={{ width: size, height: size }} // using width and height attr doesn't work properly for invisible img. It gets reset by tailwind @base styles
+        style={{
+          width: size,
+          height: size,
+        }} // using width and height attr doesn't work properly for invisible img. It gets reset by tailwind @base styles
         alt={name}
         onLoad={toggleImgLoaded}
       />

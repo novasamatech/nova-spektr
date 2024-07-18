@@ -1,18 +1,19 @@
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
-import { BaseModal, Button } from '@shared/ui';
-import { useModalClose } from '@shared/lib/hooks';
-import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
-import type { Chain } from '@shared/core';
-import { OperationSign, OperationSubmit } from '@features/operations';
-import { Step } from '../lib/types';
-import { AddProxyForm } from './AddProxyForm';
-import { addProxyUtils } from '../lib/add-proxy-utils';
-import { addProxyModel } from '../model/add-proxy-model';
-import { basketUtils, AddProxyConfirm } from '@features/operations/OperationsConfirm';
+import { type Chain } from '@shared/core';
+import { useModalClose } from '@shared/lib/hooks';
+import { BaseModal, Button } from '@shared/ui';
+import { OperationTitle } from '@entities/chain';
 import { OperationResult } from '@entities/transaction';
+import { OperationSign, OperationSubmit } from '@features/operations';
+import { AddProxyConfirm, basketUtils } from '@features/operations/OperationsConfirm';
+import { addProxyUtils } from '../lib/add-proxy-utils';
+import { Step } from '../lib/types';
+import { addProxyModel } from '../model/add-proxy-model';
+
+import { AddProxyForm } from './AddProxyForm';
 
 export const AddProxy = () => {
   const { t } = useI18n();
@@ -36,12 +37,16 @@ export const AddProxy = () => {
   }, [step]);
 
   const getModalTitle = (step: Step, chain?: Chain) => {
-    if (addProxyUtils.isInitStep(step) || !chain) return t('operations.modalTitles.addProxy');
+    if (addProxyUtils.isInitStep(step) || !chain) {
+      return t('operations.modalTitles.addProxy');
+    }
 
     return <OperationTitle title={t('operations.modalTitles.addProxyOn')} chainId={chain.chainId} />;
   };
 
-  if (addProxyUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  if (addProxyUtils.isSubmitStep(step)) {
+    return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  }
 
   if (addProxyUtils.isBasketStep(step)) {
     return (

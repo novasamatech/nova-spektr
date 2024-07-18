@@ -1,10 +1,10 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { throttle } from 'patronum';
 
-import { Balance, ID } from '@shared/core';
-import { SAVE_TIMEOUT, BUFFER_DELAY } from '../lib/constants';
 import { storageService } from '@shared/api/storage';
+import { type Balance, type ID } from '@shared/core';
 import { balanceUtils } from '../lib/balance-utils';
+import { BUFFER_DELAY, SAVE_TIMEOUT } from '../lib/constants';
 
 const balancesSet = createEvent<Balance[]>();
 const balancesUpdated = createEvent<Balance[]>();

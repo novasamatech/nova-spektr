@@ -1,9 +1,10 @@
-import { render, screen, act } from '@testing-library/react';
-import { Provider } from 'effector-react';
+import { act, render, screen } from '@testing-library/react';
 import { fork } from 'effector';
+import { Provider } from 'effector-react';
+
+import { matrixModel } from '@entities/matrix';
 
 import { UserInfo } from './UserInfo';
-import { matrixModel } from '@entities/matrix';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({

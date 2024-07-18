@@ -1,7 +1,7 @@
 import { BN_ZERO } from '@polkadot/util';
 
-import type { IVotingThreshold, SupportParams, AyesParams } from '../lib/threshold-types';
-import type { VotingThreshold } from '@shared/core';
+import { type VotingThreshold } from '@shared/core';
+import { type AyesParams, type IVotingThreshold, type SupportParams } from '../lib/threshold-types';
 
 export const fellowshipThresholdService: IVotingThreshold = {
   supportThreshold,

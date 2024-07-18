@@ -1,5 +1,6 @@
-const { resolve } = require('path');
 const { writeFile } = require('fs/promises');
+const { resolve } = require('path');
+
 const axios = require('axios');
 
 const SPEKTR_CONFIG_VERSION = process.env.CHAINS_VERSION || 'v1';

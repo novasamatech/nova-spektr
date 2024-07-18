@@ -1,13 +1,15 @@
 import { resolve } from 'path';
-import { merge } from 'webpack-merge';
-import webpack, { Configuration as WpConfig } from 'webpack';
-import { Configuration as WdsConfig } from 'webpack-dev-server';
+
+import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
-import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
+import webpack, { type Configuration as WpConfig } from 'webpack';
+import { type Configuration as WdsConfig } from 'webpack-dev-server';
+import { merge } from 'webpack-merge';
+
+import { APP_CONFIG } from '../app.config';
 
 import baseConfig from './webpack.shared';
-import { APP_CONFIG } from '../app.config';
 
 const { FOLDERS } = APP_CONFIG;
 

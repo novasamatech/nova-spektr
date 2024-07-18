@@ -1,12 +1,13 @@
-import { useEffect } from 'react';
 import { useUnit } from 'effector-react';
+import { useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
-import { BaseModal } from '@shared/ui';
-import { MatrixInfoPopover, matrixUtils, matrixModel } from '@entities/matrix';
-import { LoginForm } from './LoginForm';
 import { useToggle } from '@shared/lib/hooks';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { BaseModal } from '@shared/ui';
+import { MatrixInfoPopover, matrixModel, matrixUtils } from '@entities/matrix';
+
+import { LoginForm } from './LoginForm';
 
 type Props = {
   isOpen?: boolean;
@@ -40,7 +41,9 @@ export const MatrixLogin = ({ isOpen = true, zIndex, redirectStep, onClose }: Pr
     }
   };
 
-  if (!matrixUtils.isLoggedOut(loginStatus)) return null;
+  if (!matrixUtils.isLoggedOut(loginStatus)) {
+    return null;
+  }
 
   return (
     <BaseModal

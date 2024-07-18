@@ -1,5 +1,11 @@
-import { ReferendumType, CompletedReferendum } from '@shared/core';
-import type { ReferendumInfo, OngoingReferendum, RejectedReferendum, ApprovedReferendum } from '@shared/core';
+import {
+  type ApprovedReferendum,
+  type CompletedReferendum,
+  type OngoingReferendum,
+  type ReferendumInfo,
+  ReferendumType,
+  type RejectedReferendum,
+} from '@/shared/core';
 
 export const referendumService = {
   isOngoing,

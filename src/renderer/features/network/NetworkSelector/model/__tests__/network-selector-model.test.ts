@@ -1,8 +1,8 @@
-import { fork, allSettled } from 'effector';
+import { allSettled, fork } from 'effector';
 
-import { networkModel } from '@entities/network';
-import { ConnectionType, Connection, RpcNode } from '@shared/core';
 import { storageService } from '@shared/api/storage';
+import { type Connection, ConnectionType, type RpcNode } from '@shared/core';
+import { networkModel } from '@entities/network';
 import { networkSelectorModel } from '../network-selector-model';
 
 describe('features/network/NetworkSelector/model/network-selector-model', () => {

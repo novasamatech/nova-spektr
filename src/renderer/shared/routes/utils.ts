@@ -1,4 +1,4 @@
-import type { PathType } from './paths';
+import { type PathType } from './paths';
 
 /**
  * Create route link with url parameters and query string

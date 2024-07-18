@@ -1,7 +1,8 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+
+import { Icon } from '@shared/ui';
 
 import { Input } from './Input';
-import { Icon } from '@shared/ui';
 
 export default {
   title: 'Input',

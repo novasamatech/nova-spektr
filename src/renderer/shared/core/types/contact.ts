@@ -1,4 +1,4 @@
-import type { AccountId, Address, ID } from './general';
+import { type AccountId, type Address, type ID } from './general';
 
 export type Contact = {
   id: ID;

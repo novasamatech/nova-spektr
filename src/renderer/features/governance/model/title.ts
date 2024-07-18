@@ -1,10 +1,11 @@
 import { combine, createStore, sample } from 'effector';
 import isEmpty from 'lodash/isEmpty';
 
-import { type Chain, type ChainId, type ReferendumId } from '@shared/core';
 import { type GovernanceApi } from '@shared/api/governance';
+import { type Chain, type ChainId, type ReferendumId } from '@shared/core';
 import { governanceModel } from '@entities/governance';
 import { createChunksEffect } from '../utils/createChunksEffect';
+
 import { networkSelectorModel } from './networkSelector';
 
 const $titles = createStore<Record<ChainId, Record<ReferendumId, string>>>({});
@@ -14,7 +15,7 @@ const $referendumTitles = combine(
     titles: $titles,
     chain: networkSelectorModel.$governanceChain,
   },
-  ({ titles, chain }) => (chain ? titles[chain.chainId] ?? {} : {}),
+  ({ titles, chain }) => (chain ? (titles[chain.chainId] ?? {}) : {}),
 );
 
 const $loadedTitles = createStore<Record<ChainId, true>>({});

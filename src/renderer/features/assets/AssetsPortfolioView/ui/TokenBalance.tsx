@@ -1,12 +1,13 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { Icon, Tooltip, BodyText, Plate, FootnoteText, CaptionText } from '@shared/ui';
-import type { AssetByChains } from '@shared/core';
-import { TokenPrice } from '@entities/price';
+import { type AssetByChains } from '@shared/core';
+import { BodyText, CaptionText, FootnoteText, Icon, Plate, Tooltip } from '@shared/ui';
 import { AssetIcon, AssetLinks } from '@entities/asset';
-import { networkModel } from '@entities/network';
 import { ChainIcon } from '@entities/chain';
+import { networkModel } from '@entities/network';
+import { TokenPrice } from '@entities/price';
+
 import { AssembledAssetAmount } from './AssembledAssetAmount';
 
 type Props = {
@@ -21,7 +22,7 @@ export const TokenBalance = ({ asset }: Props) => {
 
   return (
     <Plate
-      className="p-0 z-10 h-[52px] w-full items-center flex pl-[30px] pr-2 
+      className="p-0 z-10 h-[52px] w-full items-center flex pl-[30px] pr-2
     transition-shadow hover:shadow-card-shadow focus:shadow-card-shadow"
     >
       <div className="flex gap-x-2 flex-1">

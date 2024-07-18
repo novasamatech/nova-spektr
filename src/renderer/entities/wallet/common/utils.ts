@@ -1,5 +1,6 @@
-import { Wallet } from '@shared/core';
+import { type Wallet } from '@shared/core';
 import { permissionUtils } from '../lib/permission-utils';
+
 import { OperationType } from './types';
 
 export function getOperationTypeFn(operationType: OperationType): (wallet: Wallet) => boolean {

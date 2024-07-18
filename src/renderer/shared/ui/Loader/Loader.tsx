@@ -1,5 +1,5 @@
-import { Icon } from '@shared/ui';
 import { cnTw } from '@shared/lib/utils';
+import { Icon } from '@shared/ui';
 
 type Props = {
   size?: number;

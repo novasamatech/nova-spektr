@@ -1,16 +1,14 @@
-import { Page } from 'playwright';
+import { type Page } from 'playwright';
 
 import { BaseModal } from '../BaseModalWindow';
-import { BasePage } from '../BasePage';
-import { AssetsSettingsModalElements } from '../_elements/AssetsSettingsModalElements';
+import { type BasePage } from '../BasePage';
+import { type AssetsSettingsModalElements } from '../_elements/AssetsSettingsModalElements';
 
-export class AssetsSettingsModalWindow extends BaseModal {
-  public pageElements: AssetsSettingsModalElements;
+export class AssetsSettingsModalWindow extends BaseModal<AssetsSettingsModalElements> {
   public previousPage: BasePage;
 
   constructor(page: Page, pageElements: AssetsSettingsModalElements, previousPage: BasePage) {
-    super(page);
-    this.pageElements = pageElements;
+    super(page, pageElements);
     this.previousPage = previousPage;
   }
 

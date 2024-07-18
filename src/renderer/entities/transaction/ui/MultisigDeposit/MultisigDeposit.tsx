@@ -1,12 +1,12 @@
-import { ApiPromise } from '@polkadot/api';
-import { useEffect, useState, memo } from 'react';
+import { type ApiPromise } from '@polkadot/api';
 import { useUnit } from 'effector-react';
+import { memo, useEffect, useState } from 'react';
 
+import { type Asset, type MultisigThreshold } from '@shared/core';
 import { AssetBalance } from '@entities/asset';
-import { FeeLoader, transactionService } from '@entities/transaction';
-import type { Asset, MultisigThreshold } from '@shared/core';
-import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { priceProviderModel } from '@entities/price';
+import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { FeeLoader, transactionService } from '@entities/transaction';
 
 type Props = {
   api?: ApiPromise;
@@ -34,7 +34,9 @@ export const MultisigDeposit = memo(({ api, asset, threshold, className, onDepos
     }
   }, [threshold, api]);
 
-  if (isLoading) return <FeeLoader fiatFlag={Boolean(fiatFlag)} />;
+  if (isLoading) {
+    return <FeeLoader fiatFlag={Boolean(fiatFlag)} />;
+  }
 
   return (
     <div className="flex flex-col gap-y-0.5 items-end">

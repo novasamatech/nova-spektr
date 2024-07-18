@@ -1,4 +1,4 @@
-import { BasePageElements } from './BasePageElements';
+import { type BasePageElements } from './BasePageElements';
 
 export class AssetsPageElements implements BasePageElements {
   url = '/#/assets';

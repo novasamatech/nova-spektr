@@ -1,4 +1,4 @@
-import { convertPriceToObjectView, convertPriceToDBView, getCurrencyChangeKey } from '../lib/utils';
+import { convertPriceToDBView, convertPriceToObjectView, getCurrencyChangeKey } from '../lib/utils';
 
 describe('shared/api/price-provider/lib/onChainUtils', () => {
   test('get correct change key', () => {

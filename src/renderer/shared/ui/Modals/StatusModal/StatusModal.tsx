@@ -1,10 +1,10 @@
-import { Fragment, PropsWithChildren, ReactNode } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
+import { Fragment, type PropsWithChildren, type ReactNode } from 'react';
 
-import { ModalTransition } from '../common/ModalTransition';
-import { ModalBackdrop } from '../common/ModalBackdrop';
-import { FootnoteText, SmallTitleText } from '@shared/ui';
 import { cnTw } from '@shared/lib/utils';
+import { FootnoteText, SmallTitleText } from '@shared/ui';
+import { ModalBackdrop } from '../common/ModalBackdrop';
+import { ModalTransition } from '../common/ModalTransition';
 
 type Props = {
   content?: ReactNode;

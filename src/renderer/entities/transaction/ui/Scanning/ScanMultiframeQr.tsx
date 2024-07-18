@@ -1,20 +1,19 @@
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
 import { u8aConcat } from '@polkadot/util';
 import init, { Encoder } from 'raptorq';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-import { transactionService } from '@entities/transaction';
-import { TxMetadata, createTxMetadata, toAddress, upgradeNonce } from '@shared/lib/utils';
+import { type Address, type BaseAccount, type ChainId, type ShardAccount, type Wallet } from '@shared/core';
+import { type TxMetadata, createTxMetadata, toAddress, upgradeNonce } from '@shared/lib/utils';
 import { Button, FootnoteText } from '@shared/ui';
-import type { ShardAccount, BaseAccount, ChainId, Address } from '@shared/core';
-import { Wallet } from '@shared/core';
-import { createSubstrateSignPayload, createMultipleSignPayload } from '../QrCode/QrGenerator/common/utils';
-import { TRANSACTION_BULK } from '../QrCode/common/constants';
-import { QrMultiframeGenerator } from '../QrCode/QrGenerator/QrMultiframeTxGenerator';
-import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
+import { transactionService } from '@entities/transaction';
+import { type SigningPayload } from '@features/operations/OperationSign';
 import { WalletIcon, accountUtils, walletUtils } from '../../../wallet';
-import { SigningPayload } from '@features/operations/OperationSign';
+import { QrMultiframeGenerator } from '../QrCode/QrGenerator/QrMultiframeTxGenerator';
+import { createMultipleSignPayload, createSubstrateSignPayload } from '../QrCode/QrGenerator/common/utils';
+import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
+import { TRANSACTION_BULK } from '../QrCode/common/constants';
 
 type Props = {
   apis: Record<ChainId, ApiPromise>;

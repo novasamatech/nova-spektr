@@ -1,8 +1,8 @@
-import { createEffect, sample, createEvent, createStore } from 'effector';
-import { delay, spread, not } from 'patronum';
+import { createEffect, createEvent, createStore, sample } from 'effector';
+import { delay, not, spread } from 'patronum';
 
-import { ISecureMessenger } from '@shared/api/matrix';
-import { matrixModel, LoginStatus, matrixUtils } from '@entities/matrix';
+import { type ISecureMessenger } from '@shared/api/matrix';
+import { LoginStatus, matrixModel, matrixUtils } from '@entities/matrix';
 import { AUTO_LOGIN_DELAY } from '../lib/constants';
 import { AutoLoginStatus } from '../lib/types';
 

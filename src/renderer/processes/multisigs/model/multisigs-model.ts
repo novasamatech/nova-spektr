@@ -1,12 +1,20 @@
 import { combine, createEffect, createEvent, sample, scopeBind } from 'effector';
-import { interval, once } from 'patronum';
 import { GraphQLClient } from 'graphql-request';
+import { interval, once } from 'patronum';
 
-import { Chain, MultisigAccount, NotificationType, ExternalType, Wallet, NoID, MultisigCreated } from '@shared/core';
+import {
+  type Chain,
+  ExternalType,
+  type MultisigAccount,
+  type MultisigCreated,
+  type NoID,
+  NotificationType,
+  type Wallet,
+} from '@shared/core';
+import { type MultisigResult, multisigService } from '@entities/multisig';
 import { networkModel, networkUtils } from '@entities/network';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { MultisigResult, multisigService } from '@entities/multisig';
 import { notificationModel } from '@entities/notification';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { multisigUtils } from '../lib/mulitisigs-utils';
 
 type SaveMultisigParams = {
@@ -44,9 +52,7 @@ const getMultisigsFx = createEffect(({ chains, wallets }: GetMultisigsParams) =>
     const multisigIndexerUrl = chain.externalApi?.[ExternalType.MULTISIG]?.[0]?.url;
     const boundMultisigSaved = scopeBind(multisigSaved, { safe: true });
 
-    if (!multisigIndexerUrl || !accounts.length) {
-      return;
-    }
+    if (!multisigIndexerUrl || !accounts.length) return;
 
     const client = new GraphQLClient(multisigIndexerUrl);
     const accountIds = accounts.map((account) => account.accountId);

@@ -1,7 +1,7 @@
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
 
-import { ValidationErrors } from '@shared/lib/utils';
-import type { Account, ChainId, HexString, Wallet, Transaction, Chain } from '@shared/core';
+import { type Account, type Chain, type ChainId, type HexString, type Transaction, type Wallet } from '@shared/core';
+import { type ValidationErrors } from '@shared/lib/utils';
 
 export const enum ReconnectStep {
   NOT_STARTED,

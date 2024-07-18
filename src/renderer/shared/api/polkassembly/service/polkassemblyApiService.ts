@@ -1,12 +1,12 @@
 import { createChunkedRequest } from '../lib/createChunkedRequest';
 import {
-  PolkassemblyListingPost,
-  PolkassemblyDetailedPost,
-  PolkassemblyProposalType,
-  PolkassemblyTrackStatus,
-  PolkassemblyVoteType,
-  PolkassemblyPostVotesResponse,
-  PolkassemblyPostVote,
+  type PolkassemblyDetailedPost,
+  type PolkassemblyListingPost,
+  type PolkassemblyPostVote,
+  type PolkassemblyPostVotesResponse,
+  type PolkassemblyProposalType,
+  type PolkassemblyTrackStatus,
+  type PolkassemblyVoteType,
 } from '../lib/types';
 
 type ChunkDataCallback<T> = (chunk: T, done: boolean) => unknown;

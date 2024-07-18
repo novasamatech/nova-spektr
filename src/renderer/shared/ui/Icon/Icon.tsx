@@ -1,5 +1,6 @@
-import AllIcons, { IconNames } from './data';
 import { cnTw } from '@shared/lib/utils';
+
+import AllIcons, { type IconNames } from './data';
 
 type Props = {
   as?: 'img' | 'svg';
@@ -10,7 +11,9 @@ type Props = {
 };
 
 export const Icon = ({ as = 'svg', name, size = 24, className, alt = '' }: Props) => {
-  if (!name) return null;
+  if (!name) {
+    return null;
+  }
 
   let iconType = as;
   let IconComponent = AllIcons[name][as];

@@ -3,12 +3,12 @@ import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import cn from 'classnames';
 import { useState } from 'react';
 
-import { Icon, Loader, Button, CaptionText, FootnoteText, Select } from '@shared/ui';
-import { DropdownOption, DropdownResult } from '@shared/ui/types';
 import { useI18n } from '@app/providers';
-import { cnTw } from '@shared/lib/utils';
-import { SeedInfo, VideoInput, ErrorObject, QrError, QrReader } from '@entities/transaction';
 import { CryptoTypeString } from '@shared/core';
+import { cnTw } from '@shared/lib/utils';
+import { Button, CaptionText, FootnoteText, Icon, Loader, Select } from '@shared/ui';
+import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
+import { type ErrorObject, QrError, QrReader, type SeedInfo, type VideoInput } from '@entities/transaction';
 
 const enum CameraState {
   ACTIVE,

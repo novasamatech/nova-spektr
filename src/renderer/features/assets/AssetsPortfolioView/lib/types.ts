@@ -1,6 +1,6 @@
-import BigNumber from 'bignumber.js';
+import type BigNumber from 'bignumber.js';
 
-import { AssetBalance, AssetByChains, ChainId } from '@shared/core';
+import { type AssetBalance, type AssetByChains, type ChainId } from '@shared/core';
 
 export type AssetChain = {
   chainId: ChainId;

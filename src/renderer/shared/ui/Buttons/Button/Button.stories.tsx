@@ -1,7 +1,9 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { type ComponentMeta, type ComponentStory } from '@storybook/react';
 
 import { Icon } from '@shared/ui';
+
 import { Button } from './Button';
+
 export default {
   title: 'Button',
   component: Button,

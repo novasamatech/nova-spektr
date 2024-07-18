@@ -1,10 +1,11 @@
 import { useStoreMap, useUnit } from 'effector-react';
 
-import { Markdown, Shimmering } from '@shared/ui';
-import { referendumService, TrackInfo } from '@entities/governance';
+import { type ChainId, type Referendum } from '@shared/core';
 import { pickNestedValue } from '@shared/lib/utils';
-import { ChainId, Referendum } from '@shared/core';
+import { Markdown, Shimmering } from '@shared/ui';
+import { TrackInfo, referendumService } from '@entities/governance';
 import { detailsAggregate } from '../../aggregates/details';
+
 import { ProposerName } from './ProposerName';
 
 type Props = {

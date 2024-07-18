@@ -1,13 +1,14 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
+import { useI18n } from '@app/providers';
+import { type ChainAccount, type DraftAccount, type ShardAccount } from '@shared/core';
 import { BaseModal, Button } from '@shared/ui';
+import { constructorModel } from '../model/constructor-model';
+
 import { KeyForm } from './KeyForm';
 import { KeysList } from './KeysList';
 import { WarningModal } from './WarningModal';
-import { constructorModel } from '../model/constructor-model';
-import { ChainAccount, ShardAccount, DraftAccount } from '@shared/core';
-import { useI18n } from '@app/providers';
 
 type Props = {
   title: string;

@@ -1,8 +1,9 @@
-import { fork, allSettled } from 'effector';
+import { allSettled, fork } from 'effector';
 
 import { networkModel } from '@entities/network';
-import { networksMock } from './mocks/networks-mock';
 import { activeNetworksModel } from '../active-networks-model';
+
+import { networksMock } from './mocks/networks-mock';
 
 describe('features/network/NetworksList/active-networks-model', () => {
   test('should update active networks on networksChanged', async () => {

@@ -1,9 +1,10 @@
 import uniqBy from 'lodash/uniqBy';
 
-import { Account, Wallet, ChainId, Chain, ID, MultisigAccount } from '@shared/core';
-import { accountUtils, walletUtils } from '@entities/wallet';
+import { type Account, type Chain, type ChainId, type ID, type MultisigAccount, type Wallet } from '@shared/core';
 import { dictionary } from '@shared/lib/utils';
-import { SubAccounts } from './types';
+import { accountUtils, walletUtils } from '@entities/wallet';
+
+import { type SubAccounts } from './types';
 
 export const balanceSubUtils = {
   getSiblingAccounts,

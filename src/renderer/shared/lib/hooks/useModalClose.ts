@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 

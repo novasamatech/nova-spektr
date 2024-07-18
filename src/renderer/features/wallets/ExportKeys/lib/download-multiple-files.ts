@@ -4,9 +4,7 @@ export const downloadFiles = (files: FileForDownload[]) => {
   const a = document.createElement('a');
 
   function downloadNext(index: number) {
-    if (index >= files.length) {
-      return;
-    }
+    if (index >= files.length) return;
 
     const file = files[index];
     const url = window.URL.createObjectURL(file.blob);

@@ -2,31 +2,26 @@ import cn from 'classnames';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { AddressWithExplorers, WalletCardSm, walletModel, ExplorersPopover } from '@entities/wallet';
-import { Icon, Button, FootnoteText, DetailRow } from '@shared/ui';
-import { copyToClipboard, truncate, cnTw, getAssetById } from '@shared/lib/utils';
+import { chainsService } from '@shared/api/network';
+import {
+  type Address,
+  type MultisigAccount,
+  type MultisigTransaction,
+  type Transaction,
+  type Validator,
+} from '@shared/core';
+import { TransactionType } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
-import { ExtendedChain, networkUtils, networkModel } from '@entities/network';
-import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
+import { cnTw, copyToClipboard, getAssetById, truncate } from '@shared/lib/utils';
+import { Button, DetailRow, FootnoteText, Icon } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
 import { ChainTitle } from '@entities/chain';
-import type { Address, MultisigAccount, Validator, MultisigTransaction, Transaction } from '@shared/core';
-import { TransactionType } from '@shared/core';
-import { getTransactionFromMultisigTx } from '@entities/multisig';
-import { useValidatorsMap, ValidatorsModal } from '@entities/staking';
-import { singnatoryUtils } from '@entities/signatory';
-import { chainsService } from '@shared/api/network';
-import { proxyUtils } from '@entities/proxy';
 import { matrixModel } from '@entities/matrix';
-import {
-  getMultisigExtrinsicLink,
-  getDestination,
-  getPayee,
-  getDelegate,
-  getDestinationChain,
-  getProxyType,
-  getSender,
-} from '../common/utils';
+import { getTransactionFromMultisigTx } from '@entities/multisig';
+import { type ExtendedChain, networkModel, networkUtils } from '@entities/network';
+import { proxyUtils } from '@entities/proxy';
+import { singnatoryUtils } from '@entities/signatory';
+import { ValidatorsModal, useValidatorsMap } from '@entities/staking';
 import {
   isAddProxyTransaction,
   isManageProxyTransaction,
@@ -34,6 +29,17 @@ import {
   isRemovePureProxyTransaction,
   isXcmTransaction,
 } from '@entities/transaction';
+import { AddressWithExplorers, ExplorersPopover, WalletCardSm, walletModel } from '@entities/wallet';
+import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
+import {
+  getDelegate,
+  getDestination,
+  getDestinationChain,
+  getMultisigExtrinsicLink,
+  getPayee,
+  getProxyType,
+  getSender,
+} from '../common/utils';
 
 type Props = {
   tx: MultisigTransaction;

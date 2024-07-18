@@ -1,15 +1,15 @@
-import { EventType, MatrixEvent, Room } from 'matrix-js-sdk';
+import { type EventType, type MatrixEvent, type Room } from 'matrix-js-sdk';
 
-import type {
-  HexString,
-  AccountId,
-  Timepoint,
-  MultisigThreshold,
-  CallHash,
-  CallData,
-  ChainId,
-  CryptoType,
-  MultisigTxStatus,
+import {
+  type AccountId,
+  type CallData,
+  type CallHash,
+  type ChainId,
+  type CryptoType,
+  type HexString,
+  type MultisigThreshold,
+  type MultisigTxStatus,
+  type Timepoint,
 } from '@shared/core';
 
 // =====================================================

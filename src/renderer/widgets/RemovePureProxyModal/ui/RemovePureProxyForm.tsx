@@ -1,15 +1,15 @@
 import { useForm } from 'effector-forms';
-import { FormEvent } from 'react';
 import { useUnit } from 'effector-react';
+import { type FormEvent } from 'react';
 
-import { Button, Input, InputHint, Alert } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
-import { MultisigAccount } from '@shared/core';
+import { type MultisigAccount } from '@shared/core';
+import { Alert, Button, Input, InputHint } from '@shared/ui';
 import { SignatorySelector } from '@entities/operations';
+import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
+import { DESCRIPTION_LENGTH } from '@features/operations/OperationsValidation';
 import { formModel } from '../model/form-model';
 import { removePureProxyModel } from '../model/remove-pure-proxy-model';
-import { DESCRIPTION_LENGTH } from '@features/operations/OperationsValidation';
 
 type Props = {
   onGoBack: () => void;
@@ -48,7 +48,9 @@ const Signatories = () => {
   const chain = useUnit(removePureProxyModel.$chain);
   const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!isMultisig || !chain) return null;
+  if (!isMultisig || !chain) {
+    return null;
+  }
 
   return (
     <SignatorySelector
@@ -71,7 +73,9 @@ const DescriptionInput = () => {
   } = useForm(formModel.$proxyForm);
   const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!isMultisig) return null;
+  if (!isMultisig) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -100,7 +104,9 @@ const FeeSection = () => {
   const chain = useUnit(removePureProxyModel.$chain);
   const account = useUnit(removePureProxyModel.$realAccount);
 
-  if (!chain) return null;
+  if (!chain) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-y-2">

@@ -1,4 +1,4 @@
-import { fork, allSettled } from 'effector';
+import { allSettled, fork } from 'effector';
 
 import { localStorageService } from '@shared/api/local-storage';
 import { AssetsListView } from '@entities/asset';

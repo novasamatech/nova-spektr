@@ -1,10 +1,10 @@
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_TWO } from '@polkadot/util';
 
-import { getExpectedBlockTime, getPalletAndCallByXcmTransferType } from '../substrate';
-import { DEFAULT_TIME, THRESHOLD } from '../constants';
 import { XcmTransferType } from '../../../api/xcm';
 import { XcmPallets } from '../../../core';
+import { DEFAULT_TIME, THRESHOLD } from '../constants';
+import { getExpectedBlockTime, getPalletAndCallByXcmTransferType } from '../substrate';
 
 describe('shared/lib/onChainUtils/substrate', () => {
   const blockTime = new BN(10_000);

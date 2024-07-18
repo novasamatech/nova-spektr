@@ -1,12 +1,13 @@
-import { PropsWithChildren, Children } from 'react';
+import { Children, type PropsWithChildren } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
 import { IconButton } from '../Buttons';
-import { HeadlineText } from '../Typography';
 import { Icon } from '../Icon/Icon';
-import { Variant } from './common/types';
-import { ViewStyle, IconStyle, IconName } from './common/constants';
+import { HeadlineText } from '../Typography';
+
 import { AlertItem } from './AlertItem';
+import { IconName, IconStyle, ViewStyle } from './common/constants';
+import { type Variant } from './common/types';
 
 type Props = {
   title: string;
@@ -17,7 +18,9 @@ type Props = {
 };
 
 const AlertRoot = ({ title, active, variant = 'info', className, children, onClose }: PropsWithChildren<Props>) => {
-  if (!active) return null;
+  if (!active) {
+    return null;
+  }
 
   const isList = Children.toArray(children).length > 0;
 

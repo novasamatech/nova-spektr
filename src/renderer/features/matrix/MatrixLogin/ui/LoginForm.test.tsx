@@ -1,10 +1,11 @@
-import { render, screen, act, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { type Scope, fork } from 'effector';
 import { Provider } from 'effector-react';
-import { fork, Scope } from 'effector';
+
+import { matrixModel } from '@entities/matrix';
 
 import { LoginForm } from './LoginForm';
-import { matrixModel } from '@entities/matrix';
 
 jest.mock('react-i18next', () => ({ Trans: (props: any) => props.i18nKey }));
 

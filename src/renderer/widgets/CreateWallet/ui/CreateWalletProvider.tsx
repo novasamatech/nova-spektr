@@ -1,17 +1,18 @@
-import { useEffect } from 'react';
 import { useUnit } from 'effector-react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import WatchOnly from '@pages/Onboarding/WatchOnly/WatchOnly';
+import { type WalletFamily, WalletType } from '@shared/core';
+import { Paths } from '@shared/routes';
+import { proxiesModel } from '@features/proxies';
+import { walletPairingModel } from '@features/wallets';
 import { Vault } from '@pages/Onboarding/Vault/Vault';
 import { NovaWallet } from '@pages/Onboarding/WalletConnect/NovaWallet';
 import { WalletConnect } from '@pages/Onboarding/WalletConnect/WalletConnect';
-import { MultisigWallet } from './MultisigWallet/MultisigWallet';
-import { WalletType, WalletFamily } from '@shared/core';
-import { walletPairingModel } from '@features/wallets';
-import { proxiesModel } from '@features/proxies';
-import { Paths } from '@shared/routes';
+import WatchOnly from '@pages/Onboarding/WatchOnly/WatchOnly';
 import { walletProviderModel } from '../model/wallet-provider-model';
+
+import { MultisigWallet } from './MultisigWallet/MultisigWallet';
 
 // TODO: Break down WatchOnly / Vault / CreateMultisig to widgets
 type ModalProps = {
@@ -35,7 +36,9 @@ export const CreateWalletProvider = () => {
     walletProviderModel.events.navigateApiChanged({ navigate, redirectPath: Paths.ASSETS });
   }, []);
 
-  if (!walletType) return null;
+  if (!walletType) {
+    return null;
+  }
 
   const props: ModalProps = {
     onClose: walletPairingModel.events.walletTypeCleared,

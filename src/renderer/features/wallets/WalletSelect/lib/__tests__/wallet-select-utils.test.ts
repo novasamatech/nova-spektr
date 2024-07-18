@@ -1,5 +1,5 @@
+import { type Wallet, WalletType } from '@shared/core';
 import { walletSelectUtils } from '../wallet-select-utils';
-import { WalletType, Wallet } from '@shared/core';
 
 describe('features/wallets/WalletSelect/lib/wallet-select-utils', () => {
   const wallets = [

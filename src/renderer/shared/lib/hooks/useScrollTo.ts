@@ -1,4 +1,4 @@
-import { useRef, RefObject, useCallback } from 'react';
+import { type RefObject, useCallback, useRef } from 'react';
 
 /**
  * Scrolls to Ref element

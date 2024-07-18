@@ -1,27 +1,28 @@
 import cn from 'classnames';
-import { useEffect, useState } from 'react';
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { useUnit } from 'effector-react';
+import { useEffect, useState } from 'react';
+import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
 import { useI18n } from '@app/providers';
-import { toAccountId, validateAddress, DEFAULT_TRANSITION, isEthereumAccountId } from '@shared/lib/utils';
-import { EmptyState } from './EmptyState';
-import { AccountsList, walletModel } from '@entities/wallet';
+import { type AccountId, type Chain } from '@shared/core';
+import { AccountType, ChainType, CryptoType, ErrorType, SigningType, WalletType } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
-import type { AccountId, Chain } from '@shared/core';
-import { ErrorType, CryptoType, ChainType, WalletType, SigningType, AccountType } from '@shared/core';
-import { networkModel, networkUtils } from '@entities/network';
+import { DEFAULT_TRANSITION, isEthereumAccountId, toAccountId, validateAddress } from '@shared/lib/utils';
 import {
-  Icon,
-  Identicon,
   BaseModal,
   Button,
+  HeaderTitleText,
+  Icon,
+  IconButton,
+  Identicon,
   Input,
   InputHint,
-  HeaderTitleText,
   SmallTitleText,
-  IconButton,
 } from '@shared/ui';
+import { networkModel, networkUtils } from '@entities/network';
+import { AccountsList, walletModel } from '@entities/wallet';
+
+import { EmptyState } from './EmptyState';
 
 type WalletForm = {
   walletName: string;

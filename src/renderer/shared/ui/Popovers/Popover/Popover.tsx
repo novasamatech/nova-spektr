@@ -1,12 +1,12 @@
 /* eslint-disable i18next/no-literal-string */
 import { Popover as Popup, Transition } from '@headlessui/react';
-import { AriaRole, Fragment, PropsWithChildren, ReactNode, useId, useRef, useState } from 'react';
+import { type AriaRole, Fragment, type PropsWithChildren, type ReactNode, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-import { cnTw } from '@shared/lib/utils';
 import { useDebounce } from '@shared/lib/hooks';
+import { cnTw } from '@shared/lib/utils';
+import { type Horizontal, type Vertical } from '../common/types';
 import { useParentScrollLock } from '../common/useParentScrollLock';
-import { Horizontal, Vertical } from '../common/types';
 
 const TranslateX: Record<Horizontal, string> = {
   left: '-translate-x-full',
@@ -53,7 +53,9 @@ export const Popover = ({
 
   const getPanelPosition = () => {
     const rect = ref.current?.getBoundingClientRect();
-    if (!rect) return {};
+    if (!rect) {
+      return {};
+    }
 
     return {
       top: vertical === 'up' ? `${rect.top - offsetPx}px` : `${rect.top + rect.height + offsetPx}px`,

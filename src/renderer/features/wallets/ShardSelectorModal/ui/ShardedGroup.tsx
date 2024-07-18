@@ -1,10 +1,11 @@
-import { ChangeEvent } from 'react';
 import { useUnit } from 'effector-react';
+import { type ChangeEvent } from 'react';
 
-import { Accordion, Checkbox, CaptionText, FootnoteText } from '@shared/ui';
-import { ShardAccount, Chain, ID } from '@shared/core';
-import { shardsModel } from '../model/shards-model';
+import { type Chain, type ID, type ShardAccount } from '@shared/core';
+import { Accordion, CaptionText, Checkbox, FootnoteText } from '@shared/ui';
 import { selectorUtils } from '../lib/selector-utils';
+import { shardsModel } from '../model/shards-model';
+
 import { SelectableShard } from './SelectableShard';
 
 type Props = {

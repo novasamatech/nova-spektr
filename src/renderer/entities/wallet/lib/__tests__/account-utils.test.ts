@@ -1,12 +1,12 @@
 import {
-  AccountId,
+  type Account,
+  type AccountId,
   AccountType,
-  ChainAccount,
+  type ChainAccount,
   ChainType,
   CryptoType,
   KeyType,
-  ShardAccount,
-  Account,
+  type ShardAccount,
 } from '@shared/core';
 import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@shared/lib/utils';
 import { accountUtils } from '@entities/wallet';

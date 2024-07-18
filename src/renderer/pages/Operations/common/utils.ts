@@ -1,21 +1,21 @@
-import { accountUtils, walletUtils } from '@entities/wallet';
+import {
+  type Account,
+  type AccountId,
+  type Address,
+  type Chain,
+  type ChainId,
+  type Contact,
+  type Explorer,
+  type HexString,
+  type MultisigEvent,
+  type MultisigTransaction,
+  type ProxyType,
+  type Signatory,
+  type Wallet,
+} from '@shared/core';
 import { toAddress } from '@shared/lib/utils';
 import { isProxyTransaction } from '@entities/transaction';
-import {
-  AccountId,
-  ChainId,
-  Contact,
-  Explorer,
-  HexString,
-  Signatory,
-  Wallet,
-  Address,
-  ProxyType,
-  Chain,
-  Account,
-  MultisigEvent,
-  MultisigTransaction,
-} from '@shared/core';
+import { accountUtils, walletUtils } from '@entities/wallet';
 
 export const getMultisigExtrinsicLink = (
   callHash?: HexString,

@@ -1,12 +1,21 @@
-import { ApiPromise } from '@polkadot/api';
-import { Vec } from '@polkadot/types';
-import { AccountId32 } from '@polkadot/types/interfaces';
+import { type ApiPromise } from '@polkadot/api';
+import { type Vec } from '@polkadot/types';
+import { type AccountId32 } from '@polkadot/types/interfaces';
 
-import { PendingMultisigTransaction } from './types';
+import {
+  type Address,
+  type ChainId,
+  type DecodedTransaction,
+  type MultisigAccount,
+  type MultisigEvent,
+  type MultisigTransaction,
+  type Transaction,
+} from '@shared/core';
+import { MultisigTxInitStatus, TransactionType } from '@shared/core';
 import { getCreatedDate, toAccountId } from '@shared/lib/utils';
-import type { ExtrinsicResultParams } from '@entities/transaction';
-import type { MultisigAccount, Address, ChainId, DecodedTransaction } from '@shared/core';
-import { MultisigEvent, MultisigTransaction, MultisigTxInitStatus, Transaction, TransactionType } from '@shared/core';
+import { type ExtrinsicResultParams } from '@entities/transaction';
+
+import { type PendingMultisigTransaction } from './types';
 
 type MultisigTxResult = {
   transaction: MultisigTransaction;
@@ -81,9 +90,8 @@ export const updateTransactionPayload = (
     transaction.indexCreated === indexCreated &&
     transaction.deposit === deposit.toString() &&
     transaction.depositor === depositor.toHex()
-  ) {
+  )
     return;
-  }
 
   return {
     ...transaction,

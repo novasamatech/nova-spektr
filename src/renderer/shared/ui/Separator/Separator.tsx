@@ -1,5 +1,5 @@
-import { CaptionText } from '../Typography';
 import { cnTw } from '../../lib/utils';
+import { CaptionText } from '../Typography';
 import './Separator.css';
 
 type Props = {

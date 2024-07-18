@@ -1,14 +1,15 @@
+import { type Event } from '@polkadot/types/interfaces';
 import { allSettled, fork } from 'effector';
-import { Event } from '@polkadot/types/interfaces';
 
-import { networkModel } from '@entities/network';
-import { walletModel } from '@entities/wallet';
 import { storageService } from '@shared/api/storage';
-import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
 import { ConnectionStatus } from '@shared/core';
 import { subscriptionService } from '@entities/chain';
+import { networkModel } from '@entities/network';
+import { walletModel } from '@entities/wallet';
 import { Step } from '../../lib/types';
 import { addPureProxiedModel } from '../add-pure-proxied-model';
+
+import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
 
 describe('widgets/AddPureProxyModal/model/add-pure-proxied-model', () => {
   beforeAll(() => {

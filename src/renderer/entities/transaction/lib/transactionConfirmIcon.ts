@@ -1,5 +1,5 @@
-import { DecodedTransaction, Transaction, TransactionType } from '@shared/core';
-import { IconNames } from '@shared/ui/Icon/data';
+import { type DecodedTransaction, type Transaction, TransactionType } from '@shared/core';
+import { type IconNames } from '@shared/ui/Icon/data';
 
 const TransactionIcons: Record<TransactionType, IconNames> = {
   // Transfer

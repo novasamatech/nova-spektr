@@ -1,4 +1,4 @@
-import { Variant } from './types';
+import { type Variant } from './types';
 
 export const DotStyles: Record<Variant, string> = {
   waiting: 'bg-icon-default',

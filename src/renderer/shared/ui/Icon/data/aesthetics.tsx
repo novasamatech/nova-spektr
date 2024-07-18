@@ -1,19 +1,19 @@
-import LoaderImg, { ReactComponent as LoaderSvg } from '@shared/assets/images/aesthetics/loader.svg';
-import FireImg, { ReactComponent as FireSvg } from '@shared/assets/images/aesthetics/fire.svg';
-import ClockImg, { ReactComponent as ClockSvg } from '@shared/assets/images/aesthetics/clock.svg';
-import GlobeImg, { ReactComponent as GlobeSvg } from '@shared/assets/images/aesthetics/globe.svg';
-import InfoImg, { ReactComponent as InfoSvg } from '@shared/assets/images/aesthetics/info.svg';
-import WarnImg, { ReactComponent as WarnSvg } from '@shared/assets/images/aesthetics/warning.svg';
 import ChatImg, { ReactComponent as ChatSvg } from '@shared/assets/images/aesthetics/chat.svg';
-import QuestionImg, { ReactComponent as QuestionSvg } from '@shared/assets/images/aesthetics/question.svg';
+import ClockImg, { ReactComponent as ClockSvg } from '@shared/assets/images/aesthetics/clock.svg';
+import FellowshipImg, { ReactComponent as FellowshipSvg } from '@shared/assets/images/aesthetics/fellowship.svg';
+import FireImg, { ReactComponent as FireSvg } from '@shared/assets/images/aesthetics/fire.svg';
+import GlobeImg, { ReactComponent as GlobeSvg } from '@shared/assets/images/aesthetics/globe.svg';
 import HotkeyCtrlImg, { ReactComponent as HotkeyCtrlSvg } from '@shared/assets/images/aesthetics/hotkey-ctrl.svg';
 import HotkeyOptionImg, { ReactComponent as HotkeyOptionSvg } from '@shared/assets/images/aesthetics/hotkey-option.svg';
-import FellowshipImg, { ReactComponent as FellowshipSvg } from '@shared/assets/images/aesthetics/fellowship.svg';
+import InfoImg, { ReactComponent as InfoSvg } from '@shared/assets/images/aesthetics/info.svg';
+import LoaderImg, { ReactComponent as LoaderSvg } from '@shared/assets/images/aesthetics/loader.svg';
 import PolkadotImg, { ReactComponent as PolkadotSvg } from '@shared/assets/images/aesthetics/polkadot.svg';
+import QuestionImg, { ReactComponent as QuestionSvg } from '@shared/assets/images/aesthetics/question.svg';
 import RocketImg, { ReactComponent as RocketSvg } from '@shared/assets/images/aesthetics/rocket.svg';
 import StakingImg, { ReactComponent as StakingSvg } from '@shared/assets/images/aesthetics/staking.svg';
 import TreasuryImg, { ReactComponent as TreasurySvg } from '@shared/assets/images/aesthetics/treasury.svg';
 import VotingImg, { ReactComponent as VotingSvg } from '@shared/assets/images/aesthetics/voting.svg';
+import WarnImg, { ReactComponent as WarnSvg } from '@shared/assets/images/aesthetics/warning.svg';
 
 const AestheticImages = {
   loader: { svg: LoaderSvg, img: LoaderImg },

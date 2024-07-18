@@ -1,18 +1,18 @@
-import { sample, combine } from 'effector';
+import { combine, sample } from 'effector';
 
-import { ChainId } from '@shared/core';
-import { Predicates } from '../lib/constants';
+import { type ChainId } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
-import { ConnectionItem, networkSelectorModel } from '@features/network/NetworkSelector';
-import { removeCustomRpcModel } from '@features/network/ManageCustomRpcNode';
 import {
-  networksFilterModel,
   activeNetworksModel,
+  addCustomRpcModel,
+  editCustomRpcModel,
   inactiveNetworksModel,
   networkSelectorUtils,
-  editCustomRpcModel,
-  addCustomRpcModel,
+  networksFilterModel,
 } from '@features/network';
+import { removeCustomRpcModel } from '@features/network/ManageCustomRpcNode';
+import { type ConnectionItem, networkSelectorModel } from '@features/network/NetworkSelector';
+import { Predicates } from '../lib/constants';
 
 type ConnectionMap = {
   [chainId: ChainId]: {

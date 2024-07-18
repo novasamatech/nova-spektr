@@ -1,17 +1,18 @@
-import { ForgetStep, ReconnectStep } from './constants';
-import { VaultMap, MultishardMap } from './types';
-import { accountUtils } from '@entities/wallet';
 import {
-  BaseAccount,
-  ChainId,
-  ChainAccount,
-  Wallet,
-  ShardAccount,
+  type BaseAccount,
+  type ChainAccount,
+  type ChainId,
   KeyType,
-  PolkadotVaultWallet,
-  MultiShardWallet,
+  type MultiShardWallet,
+  type PolkadotVaultWallet,
+  type ShardAccount,
+  type Wallet,
 } from '@shared/core';
+import { accountUtils } from '@entities/wallet';
 import { downloadFiles, exportKeysUtils } from '@features/wallets/ExportKeys';
+
+import { ForgetStep, ReconnectStep } from './constants';
+import { type MultishardMap, type VaultMap } from './types';
 
 export const wcDetailsUtils = {
   isNotStarted,

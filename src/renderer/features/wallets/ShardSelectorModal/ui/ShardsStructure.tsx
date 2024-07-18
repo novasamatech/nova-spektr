@@ -1,16 +1,17 @@
 import { useUnit } from 'effector-react';
 
-import { Accordion, Checkbox, FootnoteText } from '@shared/ui';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { ChainTitle } from '@entities/chain';
-import { RootExplorers } from '@shared/lib/utils';
-import { shardsModel } from '../model/shards-model';
-import { networkModel } from '@entities/network';
 import { useI18n } from '@app/providers';
-import { ShardedGroup } from './ShardedGroup';
-import { SelectableShard } from './SelectableShard';
+import { type AccountId, type ChainId, type ID } from '@shared/core';
+import { RootExplorers } from '@shared/lib/utils';
+import { Accordion, Checkbox, FootnoteText } from '@shared/ui';
+import { ChainTitle } from '@entities/chain';
+import { networkModel } from '@entities/network';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { selectorUtils } from '../lib/selector-utils';
-import type { ID, ChainId, AccountId } from '@shared/core';
+import { shardsModel } from '../model/shards-model';
+
+import { SelectableShard } from './SelectableShard';
+import { ShardedGroup } from './ShardedGroup';
 
 export const ShardsStructure = () => {
   const { t } = useI18n();

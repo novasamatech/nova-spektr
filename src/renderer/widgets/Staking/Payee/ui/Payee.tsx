@@ -1,17 +1,18 @@
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
-import { BaseModal, Button } from '@shared/ui';
-import { useModalClose } from '@shared/lib/hooks';
-import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
-import { OperationSign, OperationSubmit } from '@features/operations';
-import { PayeeForm } from './PayeeForm';
-import { payeeUtils } from '../lib/payee-utils';
-import { payeeModel } from '../model/payee-model';
-import { Step } from '../lib/types';
-import { basketUtils, PayeeConfirmation as Confirmation } from '@features/operations/OperationsConfirm';
+import { useModalClose } from '@shared/lib/hooks';
+import { BaseModal, Button } from '@shared/ui';
+import { OperationTitle } from '@entities/chain';
 import { OperationResult } from '@entities/transaction';
+import { OperationSign, OperationSubmit } from '@features/operations';
+import { PayeeConfirmation as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
+import { payeeUtils } from '../lib/payee-utils';
+import { Step } from '../lib/types';
+import { payeeModel } from '../model/payee-model';
+
+import { PayeeForm } from './PayeeForm';
 
 export const Payee = () => {
   const { t } = useI18n();
@@ -33,9 +34,13 @@ export const Payee = () => {
       return () => clearTimeout(timer);
     }
   }, [step]);
-  if (!walletData) return null;
+  if (!walletData) {
+    return null;
+  }
 
-  if (payeeUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  if (payeeUtils.isSubmitStep(step)) {
+    return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  }
   if (payeeUtils.isBasketStep(step)) {
     return (
       <OperationResult

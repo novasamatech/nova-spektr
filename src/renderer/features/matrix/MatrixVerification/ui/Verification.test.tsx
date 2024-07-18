@@ -1,10 +1,11 @@
-import { render, screen, act } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Scope, fork } from 'effector';
+import { type Scope, fork } from 'effector';
 import { Provider } from 'effector-react';
 
-import { Verification } from './Verification';
 import { matrixModel } from '@entities/matrix';
+
+import { Verification } from './Verification';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({

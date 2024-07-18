@@ -1,13 +1,13 @@
 import { createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { once } from 'patronum';
 
-import { Account, Balance, Chain, ChainId, AssetByChains, Wallet } from '@shared/core';
+import { type Account, type AssetByChains, type Balance, type Chain, type ChainId, type Wallet } from '@shared/core';
 import { includes } from '@shared/lib/utils';
-import { networkModel, networkUtils } from '@entities/network';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { AssetsListView } from '@entities/asset';
 import { balanceModel } from '@entities/balance';
+import { networkModel, networkUtils } from '@entities/network';
 import { currencyModel, priceProviderModel } from '@entities/price';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { tokensService } from '../lib/tokensService';
 
 const activeViewChanged = createEvent<AssetsListView>();

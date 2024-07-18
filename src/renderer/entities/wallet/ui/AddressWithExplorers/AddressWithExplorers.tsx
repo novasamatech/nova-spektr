@@ -1,9 +1,9 @@
-import { IconButton, HelpText } from '@shared/ui';
-import { cnTw } from '@shared/lib/utils';
-import { AccountAddressProps, AccountAddress, getAddress } from '../AccountAddress/AccountAddress';
-import type { Explorer } from '@shared/core';
-import { ExplorersPopover } from '../ExplorersPopover/ExplorersPopover';
 import { useI18n } from '@app/providers';
+import { type Explorer } from '@shared/core';
+import { cnTw } from '@shared/lib/utils';
+import { HelpText, IconButton } from '@shared/ui';
+import { AccountAddress, type AccountAddressProps, getAddress } from '../AccountAddress/AccountAddress';
+import { ExplorersPopover } from '../ExplorersPopover/ExplorersPopover';
 
 type Props = {
   explorers?: Explorer[];

@@ -1,5 +1,5 @@
-import { ID } from './general';
-import { Transaction, TxWrapper } from './transaction';
+import { type ID } from './general';
+import { type Transaction, type TxWrapper } from './transaction';
 
 export type BasketTransaction = {
   id: ID;

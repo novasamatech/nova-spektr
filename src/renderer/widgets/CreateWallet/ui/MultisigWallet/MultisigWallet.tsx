@@ -2,10 +2,11 @@ import { useState } from 'react';
 
 import { useToggle } from '@shared/lib/hooks';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
-import { SelectMultisigWalletType } from './SelectMultisigWalletType';
-import { MultisigWalletType } from './common/constants';
-import { SingleChainMultisigWallet } from './SingleChainMultisigWallet';
+
 import { MultiChainMultisigWallet } from './MultiChainMultisigWallet';
+import { SelectMultisigWalletType } from './SelectMultisigWalletType';
+import { SingleChainMultisigWallet } from './SingleChainMultisigWallet';
+import { MultisigWalletType } from './common/constants';
 
 type Props = {
   isOpen: boolean;

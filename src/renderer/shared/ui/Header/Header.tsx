@@ -1,7 +1,7 @@
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 
-import { TitleText } from '../Typography';
 import { cnTw } from '../../lib/utils';
+import { TitleText } from '../Typography';
 
 type Props = {
   title: string;

@@ -1,4 +1,4 @@
-import { ErrorObject, MatrixError } from './types';
+import { type ErrorObject, MatrixError } from './types';
 
 const MATRIX_ERRORS: Record<MatrixError, ErrorObject> = {
   [MatrixError.OLM_FAILED]: {

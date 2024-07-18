@@ -1,12 +1,20 @@
-import WatchOnlyBackgroundImg, {
-  ReactComponent as WatchOnlyBackgroundSvg,
-} from '@shared/assets/images/walletTypes/watchOnlyBackground.svg';
-import WatchOnlyOnboardingImg, {
-  ReactComponent as WatchOnlyOnboardingSvg,
-} from '@shared/assets/images/walletTypes/watchOnlyOnboardiing.svg';
+import LedgerOnboardingImg, {
+  ReactComponent as LedgerOnboardingSvg,
+} from '@shared/assets/images/walletTypes/ledgerOnboarding.svg';
 import MultisigBackgroundImg, {
   ReactComponent as MultisigBackgroundSvg,
 } from '@shared/assets/images/walletTypes/multisigBackground.svg';
+import NovaWalletImg, { ReactComponent as NovaWalletSvg } from '@shared/assets/images/walletTypes/novaWallet.svg';
+import NovaWalletBackgroundImg, {
+  ReactComponent as NovaWalletBackgroundSvg,
+} from '@shared/assets/images/walletTypes/novaWalletBackground.svg';
+import NovaWalletOnboardingImg, {
+  ReactComponent as NovaWalletOnboardingSvg,
+} from '@shared/assets/images/walletTypes/novaWalletOnboarding.svg';
+import ProxiedImg, { ReactComponent as ProxiedSvg } from '@shared/assets/images/walletTypes/proxied.svg';
+import ProxiedBackgroundImg, {
+  ReactComponent as ProxiedBackgroundSvg,
+} from '@shared/assets/images/walletTypes/proxiedBackground.svg';
 import VaultImg, { ReactComponent as VaultSvg } from '@shared/assets/images/walletTypes/vault.svg';
 import VaultBackgroundImg, {
   ReactComponent as VaultBackgroundSvg,
@@ -14,13 +22,6 @@ import VaultBackgroundImg, {
 import VaultOnboardingImg, {
   ReactComponent as VaultOnboardingSvg,
 } from '@shared/assets/images/walletTypes/vaultOnboarding.svg';
-import NovaWalletImg, { ReactComponent as NovaWalletSvg } from '@shared/assets/images/walletTypes/novaWallet.svg';
-import NovaWalletBackgroundImg, {
-  ReactComponent as NovaWalletBackgroundSvg,
-} from '@shared/assets/images/walletTypes/novaWalletBackground.svg';
-import LedgerOnboardingImg, {
-  ReactComponent as LedgerOnboardingSvg,
-} from '@shared/assets/images/walletTypes/ledgerOnboarding.svg';
 import WalletConnectImg, {
   ReactComponent as WalletConnectSvg,
 } from '@shared/assets/images/walletTypes/walletConnect.svg';
@@ -30,13 +31,12 @@ import WalletConnectBackgroundImg, {
 import WalletConnectOnboardingImg, {
   ReactComponent as WalletConnectOnboardingSvg,
 } from '@shared/assets/images/walletTypes/walletConnectOnboarding.svg';
-import NovaWalletOnboardingImg, {
-  ReactComponent as NovaWalletOnboardingSvg,
-} from '@shared/assets/images/walletTypes/novaWalletOnboarding.svg';
-import ProxiedImg, { ReactComponent as ProxiedSvg } from '@shared/assets/images/walletTypes/proxied.svg';
-import ProxiedBackgroundImg, {
-  ReactComponent as ProxiedBackgroundSvg,
-} from '@shared/assets/images/walletTypes/proxiedBackground.svg';
+import WatchOnlyBackgroundImg, {
+  ReactComponent as WatchOnlyBackgroundSvg,
+} from '@shared/assets/images/walletTypes/watchOnlyBackground.svg';
+import WatchOnlyOnboardingImg, {
+  ReactComponent as WatchOnlyOnboardingSvg,
+} from '@shared/assets/images/walletTypes/watchOnlyOnboardiing.svg';
 
 const WalletTypeImages = {
   watchOnlyBackground: { svg: WatchOnlyBackgroundSvg, img: WatchOnlyBackgroundImg },

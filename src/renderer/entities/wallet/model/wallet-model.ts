@@ -1,9 +1,18 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
-import { combineEvents } from 'patronum';
 import groupBy from 'lodash/groupBy';
+import { combineEvents } from 'patronum';
 
-import type { ID, MultisigAccount, NoID, Wallet, Account, BaseAccount, ChainAccount, WcAccount } from '@shared/core';
 import { storageService } from '@shared/api/storage';
+import {
+  type Account,
+  type BaseAccount,
+  type ChainAccount,
+  type ID,
+  type MultisigAccount,
+  type NoID,
+  type Wallet,
+  type WcAccount,
+} from '@shared/core';
 import { dictionary } from '@shared/lib/utils';
 import { modelUtils } from '../lib/model-utils';
 
@@ -155,7 +164,7 @@ sample({
   fn: ([accounts, wallets]) => {
     const accountsMap = groupBy(accounts, 'walletId');
 
-    return wallets.map((wallet) => ({ ...wallet, accounts: accountsMap[wallet.id] } as Wallet));
+    return wallets.map((wallet) => ({ ...wallet, accounts: accountsMap[wallet.id] }) as Wallet);
   },
   target: $wallets,
 });

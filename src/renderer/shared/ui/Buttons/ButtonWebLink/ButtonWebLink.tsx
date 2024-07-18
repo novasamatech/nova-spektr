@@ -1,8 +1,8 @@
-import { PropsWithChildren, ReactNode, ComponentPropsWithoutRef } from 'react';
+import { type ComponentPropsWithoutRef, type PropsWithChildren, type ReactNode } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
-import { ViewClass, SizeClass, Padding } from '../common/constants';
-import { Pallet, Variant } from '../common/types';
+import { Padding, SizeClass, ViewClass } from '../common/constants';
+import { type Pallet, type Variant } from '../common/types';
 
 export type HTMLAnchorProps = 'href' | 'target' | 'className';
 

@@ -1,6 +1,6 @@
-import { BN } from '@polkadot/util';
+import { type BN } from '@polkadot/util';
 
-import type { Tally, VotingThreshold, VotingCurve, BlockHeight } from '@shared/core';
+import { type BlockHeight, type Tally, type VotingCurve, type VotingThreshold } from '@shared/core';
 
 export type SupportParams = {
   supportCurve: VotingCurve;
