@@ -4,7 +4,7 @@ import init, { Encoder } from 'raptorq';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-import type { Address, BaseAccount, ChainId, ShardAccount, Wallet } from '@shared/core';
+import { type Address, type BaseAccount, type ChainId, type ShardAccount, type Wallet } from '@shared/core';
 import { type TxMetadata, createTxMetadata, toAddress, upgradeNonce } from '@shared/lib/utils';
 import { Button, FootnoteText } from '@shared/ui';
 import { transactionService } from '@entities/transaction';

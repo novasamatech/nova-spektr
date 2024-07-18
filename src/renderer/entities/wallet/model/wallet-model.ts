@@ -3,7 +3,16 @@ import groupBy from 'lodash/groupBy';
 import { combineEvents } from 'patronum';
 
 import { storageService } from '@shared/api/storage';
-import type { Account, BaseAccount, ChainAccount, ID, MultisigAccount, NoID, Wallet, WcAccount } from '@shared/core';
+import {
+  type Account,
+  type BaseAccount,
+  type ChainAccount,
+  type ID,
+  type MultisigAccount,
+  type NoID,
+  type Wallet,
+  type WcAccount,
+} from '@shared/core';
 import { dictionary } from '@shared/lib/utils';
 import { modelUtils } from '../lib/model-utils';
 

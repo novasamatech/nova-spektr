@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n, useMultisigChainContext } from '@app/providers';
 import { type MultisigTransactionDS } from '@shared/api/storage';
-import type { CallData, MultisigAccount } from '@shared/core';
+import { type CallData, type MultisigAccount } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
 import { Button, Icon, InfoLink, SmallTitleText } from '@shared/ui';
 import { matrixModel } from '@entities/matrix';

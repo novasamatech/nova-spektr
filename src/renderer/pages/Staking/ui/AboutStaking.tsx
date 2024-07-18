@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
-import type { Asset, EraIndex, Validator } from '@shared/core';
+import { type Asset, type EraIndex, type Validator } from '@shared/core';
 import { Duration, FootnoteText, Shimmering } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';

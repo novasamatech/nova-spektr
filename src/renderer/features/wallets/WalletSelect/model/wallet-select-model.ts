@@ -3,7 +3,7 @@ import { attach, combine, createApi, createEffect, createEvent, createStore, sam
 import { once, previous } from 'patronum';
 
 import { storageService } from '@shared/api/storage';
-import type { Account, ID, Wallet } from '@shared/core';
+import { type Account, type ID, type Wallet } from '@shared/core';
 import { dictionary, getRoundedValue, totalAmount } from '@shared/lib/utils';
 import { balanceModel } from '@entities/balance';
 import { networkModel } from '@entities/network';

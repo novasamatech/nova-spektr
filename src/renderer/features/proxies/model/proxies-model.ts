@@ -5,20 +5,20 @@ import keyBy from 'lodash/keyBy';
 import { once, spread } from 'patronum';
 
 import { storageService } from '@shared/api/storage';
-import type {
-  Account,
-  AccountId,
-  Chain,
-  ChainId,
-  Connection,
-  NoID,
-  PartialProxiedAccount,
-  ProxiedAccount,
-  ProxyAccount,
-  ProxyDeposits,
-  ProxyGroup,
-  Wallet,
-  WalletsMap,
+import {
+  type Account,
+  type AccountId,
+  type Chain,
+  type ChainId,
+  type Connection,
+  type NoID,
+  type PartialProxiedAccount,
+  type ProxiedAccount,
+  type ProxyAccount,
+  type ProxyDeposits,
+  type ProxyGroup,
+  type Wallet,
+  type WalletsMap,
 } from '@shared/core';
 import {
   AccountType,

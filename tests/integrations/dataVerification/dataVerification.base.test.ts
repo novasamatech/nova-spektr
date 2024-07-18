@@ -13,7 +13,7 @@ import {
   prepareTestData,
 } from '../utils';
 
-const [_, polkadotParachains, kusamaParachains, polkadot, kusama] = prepareTestData(chains as ChainJSON[]);
+const [_, polkadotParachains, kusamaParachains, polkadot, kusama] = prepareTestData(chains as unknown as ChainJSON[]);
 
 /**
  * Data Verification integration tests

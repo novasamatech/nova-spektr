@@ -1,7 +1,7 @@
 import { createEvent, createStore, sample } from 'effector';
 import { once } from 'patronum';
 
-import type { Account, Wallet } from '@shared/core';
+import { type Account, type Wallet } from '@shared/core';
 import { priceProviderModel } from '@entities/price';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { assetsSearchModel, assetsSettingsModel, portfolioModel } from '@features/assets';

@@ -2,7 +2,14 @@ import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-import type { BaseAccount, Chain, ChainAccount, DraftAccount, PolkadotVaultWallet, ShardAccount } from '@shared/core';
+import {
+  type BaseAccount,
+  type Chain,
+  type ChainAccount,
+  type DraftAccount,
+  type PolkadotVaultWallet,
+  type ShardAccount,
+} from '@shared/core';
 import { KeyType } from '@shared/core';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { copyToClipboard, toAddress } from '@shared/lib/utils';

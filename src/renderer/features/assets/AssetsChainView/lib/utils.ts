@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 
 import { type PriceObject } from '@shared/api/price-provider';
-import type { Asset, Balance } from '@shared/core';
+import { type Asset, type Balance } from '@shared/core';
 import { getBalanceBn, totalAmount } from '@shared/lib/utils';
 
 export const balanceSorter = (

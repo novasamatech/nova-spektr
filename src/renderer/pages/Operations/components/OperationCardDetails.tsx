@@ -3,7 +3,13 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { chainsService } from '@shared/api/network';
-import type { Address, MultisigAccount, MultisigTransaction, Transaction, Validator } from '@shared/core';
+import {
+  type Address,
+  type MultisigAccount,
+  type MultisigTransaction,
+  type Transaction,
+  type Validator,
+} from '@shared/core';
 import { TransactionType } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
 import { cnTw, copyToClipboard, getAssetById, truncate } from '@shared/lib/utils';

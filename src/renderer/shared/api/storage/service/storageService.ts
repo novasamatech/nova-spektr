@@ -1,6 +1,6 @@
 import { type IndexableType, type Table } from 'dexie';
 
-import type { NoID } from '@shared/core';
+import { type NoID } from '@shared/core';
 
 import { dexieStorage } from './dexie';
 

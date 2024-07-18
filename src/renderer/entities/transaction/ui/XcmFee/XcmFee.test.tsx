@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { act, render, screen } from '@testing-library/react';
 
 import { type ChainXCM, type XcmConfig } from '@shared/api/xcm';
-import type { Asset, Transaction } from '@shared/core';
+import { type Asset, type Transaction } from '@shared/core';
 
 import { XcmFee } from './XcmFee';
 

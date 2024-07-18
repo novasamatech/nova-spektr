@@ -1,7 +1,7 @@
 import { sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import type { Chain, Referendum } from '@shared/core';
+import { type Chain, type Referendum } from '@shared/core';
 import { descriptionsModel } from '../model/description';
 import { networkSelectorModel } from '../model/networkSelector';
 import { timelineModel } from '../model/timeline';

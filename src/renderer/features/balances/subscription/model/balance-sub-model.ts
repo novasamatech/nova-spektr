@@ -5,7 +5,15 @@ import { combineEvents, once, previous, spread } from 'patronum';
 
 import { balanceService } from '@shared/api/balances';
 import { storageService } from '@shared/api/storage';
-import type { AccountId, Balance, Chain, ChainId, ConnectionStatus, ID, Wallet } from '@shared/core';
+import {
+  type AccountId,
+  type Balance,
+  type Chain,
+  type ChainId,
+  type ConnectionStatus,
+  type ID,
+  type Wallet,
+} from '@shared/core';
 import { isRejected } from '@shared/lib/utils';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';

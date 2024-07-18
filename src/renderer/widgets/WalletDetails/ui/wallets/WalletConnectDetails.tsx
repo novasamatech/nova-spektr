@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
 import { chainsService } from '@shared/api/network';
-import type { WalletConnectGroup } from '@shared/core';
+import { type WalletConnectGroup } from '@shared/core';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import {
   BaseModal,

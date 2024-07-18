@@ -6,7 +6,7 @@ import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
 import { useI18n } from '@app/providers';
 import { chainsService } from '@shared/api/network';
-import type { BaseAccount, Chain, ChainAccount, ChainId, HexString } from '@shared/core';
+import { type BaseAccount, type Chain, type ChainAccount, type ChainId, type HexString } from '@shared/core';
 import { AccountType, ChainType, CryptoType, ErrorType, KeyType, SigningType, WalletType } from '@shared/core';
 import { RootExplorers, cnTw, toAccountId, toAddress } from '@shared/lib/utils';
 import { Button, FootnoteText, HeaderTitleText, Icon, IconButton, Input, InputHint, SmallTitleText } from '@shared/ui';

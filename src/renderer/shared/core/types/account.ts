@@ -1,4 +1,12 @@
-import type { AccountId, ChainId, ChainType, CryptoType, ID, MultisigThreshold, NoID } from './general';
+import {
+  type AccountId,
+  type ChainId,
+  type ChainType,
+  type CryptoType,
+  type ID,
+  type MultisigThreshold,
+  type NoID,
+} from './general';
 import { type ProxyType, type ProxyVariant } from './proxy';
 import { type Signatory } from './signatory';
 

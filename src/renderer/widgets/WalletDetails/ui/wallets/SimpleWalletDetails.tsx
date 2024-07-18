@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-import type { Chain, SingleShardWallet, WatchOnlyWallet } from '@shared/core';
+import { type Chain, type SingleShardWallet, type WatchOnlyWallet } from '@shared/core';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { BaseModal, DropdownIconButton, Tabs } from '@shared/ui';
 import { type IconNames } from '@shared/ui/Icon/data';

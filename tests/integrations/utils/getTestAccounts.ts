@@ -12,7 +12,7 @@ export async function getTestAccounts(url: string) {
   return <TestAccounts[]>(<unknown>accounts?.data);
 }
 
-export async function httpRequest(url): Promise<AxiosResponse | undefined> {
+export async function httpRequest(url: string): Promise<AxiosResponse | undefined> {
   try {
     const response = await axios.get(url);
 

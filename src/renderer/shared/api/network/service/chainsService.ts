@@ -8,7 +8,7 @@ import sortBy from 'lodash/sortBy';
 import { type PriceObject } from '@shared/api/price-provider';
 import chainsProd from '@shared/config/chains/chains.json';
 import chainsDev from '@shared/config/chains/chains_dev.json';
-import type { Balance, Chain, ChainId } from '@shared/core';
+import { type Balance, type Chain, type ChainId } from '@shared/core';
 import { ZERO_BALANCE, getRelaychainAsset, nonNullable, totalAmount } from '@shared/lib/utils';
 import { isKusama, isNameStartsWithNumber, isPolkadot, isTestnet } from '../lib/utils';
 

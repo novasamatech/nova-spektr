@@ -3,7 +3,7 @@ import { type PropsWithChildren } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
-import type { AssetByChains, AssetBalance as Balance } from '@shared/core';
+import { type AssetByChains, type AssetBalance as Balance } from '@shared/core';
 import { totalAmount, transferableAmount } from '@shared/lib/utils';
 import { Shimmering, Tooltip } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';

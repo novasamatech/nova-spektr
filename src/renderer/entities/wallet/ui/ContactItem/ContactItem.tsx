@@ -1,6 +1,6 @@
 import { type MouseEvent } from 'react';
 
-import type { AccountId, Address } from '@shared/core';
+import { type AccountId, type Address } from '@shared/core';
 import { cnTw, toAddress } from '@shared/lib/utils';
 import { BodyText, HelpText, IconButton, Identicon } from '@shared/ui';
 

@@ -3,7 +3,7 @@ import { type PropsWithChildren, useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
 import { chainsService } from '@shared/api/network';
-import type { Chain } from '@shared/core';
+import { type Chain } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
 import { getRelaychainAsset } from '@shared/lib/utils';
 import { FootnoteText, IconButton, Plate, Select, Shimmering } from '@shared/ui';

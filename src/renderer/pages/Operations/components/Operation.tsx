@@ -1,7 +1,7 @@
 import { useI18n } from '@app/providers';
 import { chainsService } from '@shared/api/network';
 import { type MultisigTransactionDS } from '@shared/api/storage';
-import type { MultisigAccount } from '@shared/core';
+import { type MultisigAccount } from '@shared/core';
 import { getAssetById } from '@shared/lib/utils';
 import { Accordion, FootnoteText } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';

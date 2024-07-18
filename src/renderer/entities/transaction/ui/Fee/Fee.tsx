@@ -3,7 +3,7 @@ import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { memo, useEffect, useState } from 'react';
 
-import type { Asset, Transaction } from '@shared/core';
+import { type Asset, type Transaction } from '@shared/core';
 import { AssetBalance } from '@entities/asset';
 import { priceProviderModel } from '@entities/price';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';

@@ -4,14 +4,14 @@ import { createEffect, createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
 import { opengovThresholdService } from '@/shared/api/governance';
-import type {
-  Chain,
-  ChainId,
-  OngoingReferendum,
-  ReferendumId,
-  TrackId,
-  TrackInfo,
-  VotingThreshold,
+import {
+  type Chain,
+  type ChainId,
+  type OngoingReferendum,
+  type ReferendumId,
+  type TrackId,
+  type TrackInfo,
+  type VotingThreshold,
 } from '@/shared/core';
 import { getCurrentBlockNumber } from '@/shared/lib/utils';
 import { referendumService } from '@/entities/governance';

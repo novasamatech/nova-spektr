@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { Link } from 'react-router-dom';
 
-import type { ChainId } from '@shared/core';
+import { type ChainId } from '@shared/core';
 import { Paths, createLink } from '@shared/routes';
 import { Icon } from '@shared/ui';
 import { CheckPermission, OperationType, walletModel } from '@entities/wallet';

@@ -1,4 +1,4 @@
-import type { ChainId } from '@shared/core';
+import { type ChainId } from '@shared/core';
 import { cnTw } from '@shared/lib/utils';
 import { Icon } from '@shared/ui';
 import { ChainTitle } from '../ChainTitle/ChainTitle';

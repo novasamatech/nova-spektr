@@ -1,5 +1,5 @@
 import { useI18n } from '@app/providers';
-import type { Explorer } from '@shared/core';
+import { type Explorer } from '@shared/core';
 import { cnTw } from '@shared/lib/utils';
 import { HelpText, IconButton } from '@shared/ui';
 import { AccountAddress, type AccountAddressProps, getAddress } from '../AccountAddress/AccountAddress';

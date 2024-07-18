@@ -2,15 +2,15 @@ import { type ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-import type {
-  Account,
-  Address,
-  BaseAccount,
-  ChainAccount,
-  ChainId,
-  ShardAccount,
-  Transaction,
-  Wallet,
+import {
+  type Account,
+  type Address,
+  type BaseAccount,
+  type ChainAccount,
+  type ChainId,
+  type ShardAccount,
+  type Transaction,
+  type Wallet,
 } from '@shared/core';
 import { CryptoType } from '@shared/core';
 import { Button, FootnoteText } from '@shared/ui';

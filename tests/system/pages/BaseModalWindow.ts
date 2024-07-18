@@ -5,7 +5,7 @@ import { type BaseModalElements } from './_elements/BaseModalElements';
 export abstract class BaseModal<T extends BaseModalElements = BaseModalElements> {
   constructor(
     protected page: Page,
-    protected pageElements: T,
+    public pageElements: T,
   ) {}
 
   async click(selector: string) {

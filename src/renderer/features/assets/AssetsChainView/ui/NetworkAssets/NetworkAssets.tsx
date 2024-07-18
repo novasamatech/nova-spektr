@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useI18n } from '@app/providers';
 import { sumBalances } from '@shared/api/network/service/chainsService';
-import type { Account, AccountId, Asset, Balance, Chain } from '@shared/core';
+import { type Account, type AccountId, type Asset, type Balance, type Chain } from '@shared/core';
 import { ZERO_BALANCE, cnTw, includes, totalAmount } from '@shared/lib/utils';
 import { Accordion, CaptionText, Icon, Tooltip } from '@shared/ui';
 import { balanceModel } from '@entities/balance';

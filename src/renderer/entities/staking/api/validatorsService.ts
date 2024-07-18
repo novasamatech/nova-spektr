@@ -5,7 +5,7 @@ import { type PalletIdentityRegistration } from '@polkadot/types/lookup';
 import { u8aToString } from '@polkadot/util';
 import merge from 'lodash/merge';
 
-import type { Address, EraIndex, Identity, SubIdentity, Validator } from '@shared/core';
+import { type Address, type EraIndex, type Identity, type SubIdentity, type Validator } from '@shared/core';
 import { DEFAULT_MAX_NOMINATORS, KUSAMA_MAX_NOMINATORS } from '../lib/constants';
 import { stakingUtils } from '../lib/staking-utils';
 import { type ValidatorMap } from '../lib/types';

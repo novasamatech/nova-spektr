@@ -1,6 +1,13 @@
 import sortBy from 'lodash/sortBy';
 
-import type { NoID, PartialProxiedAccount, ProxyAccount, ProxyDeposits, ProxyGroup, Wallet } from '@shared/core';
+import {
+  type NoID,
+  type PartialProxiedAccount,
+  type ProxyAccount,
+  type ProxyDeposits,
+  type ProxyGroup,
+  type Wallet,
+} from '@shared/core';
 import { ProxyType, ProxyVariant } from '@shared/core';
 import { splitCamelCaseString, toAddress } from '@shared/lib/utils';
 import { accountUtils } from '../../wallet';

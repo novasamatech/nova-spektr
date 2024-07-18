@@ -3,7 +3,7 @@ import { Trans } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import { useConfirmContext, useI18n } from '@app/providers';
-import type { ChainId, RpcNode } from '@shared/core';
+import { type ChainId, type RpcNode } from '@shared/core';
 import { ConnectionType } from '@shared/core';
 import { useModalClose } from '@shared/lib/hooks';
 import { Paths } from '@shared/routes';

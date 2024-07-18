@@ -1,7 +1,7 @@
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
-import type { Wallet } from '@shared/core';
+import { type Wallet } from '@shared/core';
 import { Alert, FootnoteText } from '@shared/ui';
 import { WalletIcon } from '../../index';
 

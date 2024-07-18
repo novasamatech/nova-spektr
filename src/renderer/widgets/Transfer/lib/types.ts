@@ -1,4 +1,4 @@
-import type { Account, Address, Asset, Chain, ProxiedAccount } from '@shared/core';
+import { type Account, type Address, type Asset, type Chain, type ProxiedAccount } from '@shared/core';
 
 export const enum Step {
   NONE,

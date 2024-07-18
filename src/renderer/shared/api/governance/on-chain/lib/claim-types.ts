@@ -1,6 +1,6 @@
 import { type BN } from '@polkadot/util';
 
-import type { Address, BlockHeight, ReferendumId, TrackId } from '@shared/core';
+import { type Address, type BlockHeight, type ReferendumId, type TrackId } from '@shared/core';
 
 export type ClaimableLock = {
   claimAt: ClaimTime;

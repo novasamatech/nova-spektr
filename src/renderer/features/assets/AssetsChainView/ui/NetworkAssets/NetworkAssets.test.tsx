@@ -3,7 +3,7 @@ import { fork } from 'effector';
 import { Provider } from 'effector-react';
 
 import chains from '@shared/config/chains/chains.json';
-import type { BaseAccount, Chain, ChainAccount, ShardAccount } from '@shared/core';
+import { type BaseAccount, type Chain, type ChainAccount, type ShardAccount } from '@shared/core';
 import { AccountType, ChainType, CryptoType } from '@shared/core';
 import { TEST_ACCOUNTS } from '@shared/lib/utils';
 import { balanceModel } from '@entities/balance';

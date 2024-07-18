@@ -4,7 +4,7 @@ import init from 'raptorq';
 import { useEffect, useRef } from 'react';
 
 import { useI18n } from '@app/providers';
-import type { HexString } from '@shared/core';
+import { type HexString } from '@shared/core';
 import { cnTw } from '@shared/lib/utils';
 import { ErrorFields } from '../common/constants';
 import { QR_READER_ERRORS } from '../common/errors';

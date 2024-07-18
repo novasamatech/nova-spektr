@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { act, render, screen } from '@testing-library/react';
 
-import type { Asset, Transaction } from '@shared/core';
+import { type Asset, type Transaction } from '@shared/core';
 
 import { Fee } from './Fee';
 

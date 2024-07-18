@@ -5,17 +5,17 @@ import { createForm } from 'effector-forms';
 import noop from 'lodash/noop';
 import { spread } from 'patronum';
 
-import type {
-  Account,
-  Address,
-  Asset,
-  Chain,
-  ChainId,
-  MultisigTxWrapper,
-  PartialBy,
-  ProxiedAccount,
-  ProxyTxWrapper,
-  Transaction,
+import {
+  type Account,
+  type Address,
+  type Asset,
+  type Chain,
+  type ChainId,
+  type MultisigTxWrapper,
+  type PartialBy,
+  type ProxiedAccount,
+  type ProxyTxWrapper,
+  type Transaction,
 } from '@shared/core';
 import {
   ZERO_BALANCE,

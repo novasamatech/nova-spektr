@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-import type { Asset } from '@shared/core';
+import { type Asset } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
 import {
   cleanAmount,

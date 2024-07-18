@@ -1,5 +1,5 @@
 import { useI18n } from '@app/providers';
-import type { Account, Chain } from '@shared/core';
+import { type Account, type Chain } from '@shared/core';
 import { cnTw } from '@shared/lib/utils';
 import { BaseModal, Icon } from '@shared/ui';
 import { accountUtils } from '../../lib/account-utils';

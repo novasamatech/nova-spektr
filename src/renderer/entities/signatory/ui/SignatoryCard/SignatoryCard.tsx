@@ -1,7 +1,7 @@
 import { type PropsWithChildren } from 'react';
 
 import { useI18n } from '@app/providers';
-import type { AccountId, Explorer, SigningStatus } from '@shared/core';
+import { type AccountId, type Explorer, type SigningStatus } from '@shared/core';
 import { cnTw } from '@shared/lib/utils';
 import { HelpText, Icon } from '@shared/ui';
 import { ExplorersPopover } from '@entities/wallet';

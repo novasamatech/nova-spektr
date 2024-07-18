@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
 import { useI18n } from '@app/providers';
-import type { AccountId, Chain } from '@shared/core';
+import { type AccountId, type Chain } from '@shared/core';
 import { AccountType, ChainType, CryptoType, ErrorType, SigningType, WalletType } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
 import { DEFAULT_TRANSITION, isEthereumAccountId, toAccountId, validateAddress } from '@shared/lib/utils';

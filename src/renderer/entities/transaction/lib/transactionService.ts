@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
-import type { SignerOptions } from '@polkadot/api/types/submittable';
+import { type SignerOptions } from '@polkadot/api/types/submittable';
 import { u32 } from '@polkadot/types';
 import { type Weight } from '@polkadot/types/interfaces';
 import { hexToU8a } from '@polkadot/util';

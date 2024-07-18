@@ -2,7 +2,7 @@ import { createEvent, createStore, sample } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
 import { chainsService } from '@shared/api/network';
-import type { Wallet, WcAccount } from '@shared/core';
+import { type Wallet, type WcAccount } from '@shared/core';
 import { toAccountId } from '@shared/lib/utils';
 import { balanceModel } from '@entities/balance';
 import { walletModel, walletUtils } from '@entities/wallet';

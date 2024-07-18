@@ -2,16 +2,16 @@ import { createEffect, createEvent, createStore, sample } from 'effector';
 
 import { chainsService } from '@shared/api/network';
 import { storageService } from '@shared/api/storage';
-import type {
-  Account,
-  AccountId,
-  Chain,
-  ChainAccount,
-  ChainId,
-  DraftAccount,
-  ID,
-  ShardAccount,
-  Wallet,
+import {
+  type Account,
+  type AccountId,
+  type Chain,
+  type ChainAccount,
+  type ChainId,
+  type DraftAccount,
+  type ID,
+  type ShardAccount,
+  type Wallet,
 } from '@shared/core';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { proxiesModel } from '@features/proxies';

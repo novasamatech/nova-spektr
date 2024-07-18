@@ -2,7 +2,7 @@ import { combine, createEffect, createEvent, createStore, sample } from 'effecto
 import { createForm } from 'effector-forms';
 import { spread } from 'patronum';
 
-import type { Chain, ChainAccount, ShardAccount } from '@shared/core';
+import { type Chain, type ChainAccount, type ShardAccount } from '@shared/core';
 import { AccountType, ChainType, CryptoType, KeyType } from '@shared/core';
 import { derivationHasPassword, validateDerivation } from '@shared/lib/utils';
 import { networkModel, networkUtils } from '@entities/network';

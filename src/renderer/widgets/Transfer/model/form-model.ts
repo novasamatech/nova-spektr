@@ -2,17 +2,17 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { spread } from 'patronum';
 
-import type {
-  Account,
-  AccountId,
-  Address,
-  Chain,
-  ChainId,
-  MultisigTxWrapper,
-  PartialBy,
-  ProxiedAccount,
-  ProxyTxWrapper,
-  Transaction,
+import {
+  type Account,
+  type AccountId,
+  type Address,
+  type Chain,
+  type ChainId,
+  type MultisigTxWrapper,
+  type PartialBy,
+  type ProxiedAccount,
+  type ProxyTxWrapper,
+  type Transaction,
 } from '@shared/core';
 import {
   ZERO_BALANCE,

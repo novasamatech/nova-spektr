@@ -1,9 +1,9 @@
 // eslint-disable-next-line import/named
 import { type DecodeContinuouslyCallback } from '@zxing/browser/esm/common/DecodeContinuouslyCallback';
 
-import type { Address, ChainId, CryptoType, CryptoTypeString } from '@shared/core';
+import { type Address, type ChainId, type CryptoType, type CryptoTypeString } from '@shared/core';
 
-import type { VaultFeature } from './constants';
+import { type VaultFeature } from './constants';
 
 export const enum QrError {
   USER_DENY,

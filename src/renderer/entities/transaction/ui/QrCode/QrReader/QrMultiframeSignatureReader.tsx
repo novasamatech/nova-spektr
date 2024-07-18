@@ -4,7 +4,7 @@ import init, { Decoder, EncodingPacket } from 'raptorq';
 import { useEffect, useRef } from 'react';
 
 import { useI18n } from '@app/providers';
-import type { HexString } from '@shared/core';
+import { type HexString } from '@shared/core';
 import { cnTw } from '@shared/lib/utils';
 import { CRYPTO_SR25519 } from '../QrGenerator/common/constants';
 import { ErrorFields, FRAME_KEY, SIGNED_TRANSACTION_BULK } from '../common/constants';

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { useI18n } from '@app/providers';
-import type { BaseAccount, Chain, ChainAccount, ChainId } from '@shared/core';
+import { type BaseAccount, type Chain, type ChainAccount, type ChainId } from '@shared/core';
 import { RootExplorers, cnTw } from '@shared/lib/utils';
 import { Accordion, FootnoteText, HelpText } from '@shared/ui';
 import { ChainTitle } from '@entities/chain';

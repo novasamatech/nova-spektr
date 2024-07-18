@@ -4,17 +4,17 @@ import { type Header, type Index, type Weight } from '@polkadot/types/interfaces
 import { type AnyJson } from '@polkadot/types/types';
 import { type Args } from '@substrate/txwrapper-polkadot';
 
-import type {
-  AccountId,
-  Address,
-  CallData,
-  ChainId,
-  DecodedTransaction,
-  HexString,
-  Timepoint,
-  Transaction,
-  TransactionType,
-  TxWrappers_OLD,
+import {
+  type AccountId,
+  type Address,
+  type CallData,
+  type ChainId,
+  type DecodedTransaction,
+  type HexString,
+  type Timepoint,
+  type Transaction,
+  type TransactionType,
+  type TxWrappers_OLD,
 } from '@shared/core';
 
 // =====================================================

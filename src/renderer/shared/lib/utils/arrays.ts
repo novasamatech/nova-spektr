@@ -1,4 +1,4 @@
-import type { KeysOfType } from '../../core/types/utility';
+import { type KeysOfType } from '../../core/types/utility';
 
 /**
  * Get new array with item inserted at given position

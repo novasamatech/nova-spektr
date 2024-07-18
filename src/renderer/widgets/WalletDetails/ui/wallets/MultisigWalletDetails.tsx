@@ -7,7 +7,7 @@ import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { RootExplorers } from '@shared/lib/utils';
 import { BaseModal, DropdownIconButton, FootnoteText, HelpText, Tabs } from '@shared/ui';
 import { type IconNames } from '@shared/ui/Icon/data';
-import type { TabItem } from '@shared/ui/types';
+import { type TabItem } from '@shared/ui/types';
 import { matrixModel, matrixUtils } from '@entities/matrix';
 import { networkModel, networkUtils } from '@entities/network';
 import {

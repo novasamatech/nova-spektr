@@ -1,4 +1,4 @@
-import type { ChainId } from '@shared/core';
+import { type ChainId } from '@shared/core';
 
 export const stakingUtils = {
   isKusamaChainId,

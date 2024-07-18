@@ -3,7 +3,7 @@ import { type ReactNode, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useI18n } from '@app/providers';
-import type { Asset, Chain } from '@shared/core';
+import { type Asset, type Chain } from '@shared/core';
 import { useModalClose } from '@shared/lib/hooks';
 import { BaseModal, Button } from '@shared/ui';
 import { OperationTitle } from '@entities/chain';

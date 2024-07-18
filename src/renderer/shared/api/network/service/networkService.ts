@@ -2,7 +2,7 @@ import { ApiPromise, ScProvider, WsProvider } from '@polkadot/api';
 import { type ProviderInterface } from '@polkadot/rpc-provider/types';
 import * as Sc from '@substrate/connect';
 
-import type { ChainId, HexString } from '@shared/core';
+import { type ChainId, type HexString } from '@shared/core';
 import { getKnownChain } from '@shared/lib/utils';
 import { ProviderType, type ProviderWithMetadata } from '../lib/types';
 import { createCachedProvider } from '../provider/CachedProvider';

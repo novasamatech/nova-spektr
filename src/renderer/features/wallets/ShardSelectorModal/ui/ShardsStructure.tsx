@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import type { AccountId, ChainId, ID } from '@shared/core';
+import { type AccountId, type ChainId, type ID } from '@shared/core';
 import { RootExplorers } from '@shared/lib/utils';
 import { Accordion, Checkbox, FootnoteText } from '@shared/ui';
 import { ChainTitle } from '@entities/chain';

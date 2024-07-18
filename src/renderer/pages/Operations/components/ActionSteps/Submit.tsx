@@ -3,7 +3,14 @@ import { useUnit } from 'effector-react';
 import { type ComponentProps, useEffect, useState } from 'react';
 
 import { useI18n, useMultisigChainContext } from '@app/providers';
-import type { Account, HexString, MultisigEvent, MultisigTransaction, SigningStatus, Transaction } from '@shared/core';
+import {
+  type Account,
+  type HexString,
+  type MultisigEvent,
+  type MultisigTransaction,
+  type SigningStatus,
+  type Transaction,
+} from '@shared/core';
 import { MultisigTxFinalStatus, TransactionType } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
 import { toAccountId } from '@shared/lib/utils';

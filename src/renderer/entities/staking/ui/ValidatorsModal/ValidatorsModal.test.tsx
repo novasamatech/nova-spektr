@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import type { Asset } from '@shared/core';
+import { type Asset } from '@shared/core';
 import { type Validator } from '@shared/core/types/validator';
 
 import { ValidatorsModal } from './ValidatorsModal';

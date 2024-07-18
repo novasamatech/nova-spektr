@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import type { MultiShardWallet } from '@shared/core';
+import { type MultiShardWallet } from '@shared/core';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { BaseModal, DropdownIconButton, Tabs } from '@shared/ui';
 import { type IconNames } from '@shared/ui/Icon/data';
@@ -12,7 +12,7 @@ import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
 import { RenameWalletModal } from '@features/wallets/RenameWallet';
 import { AddProxy, addProxyModel } from '@widgets/AddProxyModal';
 import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
-import type { MultishardMap } from '../../lib/types';
+import { type MultishardMap } from '../../lib/types';
 import { walletDetailsUtils } from '../../lib/utils';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';

@@ -3,7 +3,7 @@ import { BN } from '@polkadot/util';
 import { attach, combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 
 import { type XcmConfig, XcmTransferType, xcmService } from '@shared/api/xcm';
-import type { AccountId, Asset, Chain, ChainId } from '@shared/core';
+import { type AccountId, type Asset, type Chain, type ChainId } from '@shared/core';
 import { getParachainId, toLocalChainId } from '@shared/lib/utils';
 import { networkModel } from '@entities/network';
 import { xcmModel } from '@entities/xcm';

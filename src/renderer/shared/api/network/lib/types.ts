@@ -1,6 +1,6 @@
 import { type ProviderInterface, type ProviderInterfaceCallback } from '@polkadot/rpc-provider/types';
 
-import type { HexString } from '@shared/core';
+import { type HexString } from '@shared/core';
 
 export const enum ProviderType {
   WEB_SOCKET = 'ws',

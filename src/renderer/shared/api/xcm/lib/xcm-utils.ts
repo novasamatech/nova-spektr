@@ -3,7 +3,7 @@ import { type Balance } from '@polkadot/types/interfaces';
 import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
 import get from 'lodash/get';
 
-import type { AccountId, Chain } from '../../../core';
+import { type AccountId, type Chain } from '../../../core';
 import { TEST_ACCOUNTS, getTypeVersion, isEthereumAccountId } from '../../../lib/utils';
 
 import { INSTRUCTION_OBJECT } from './constants';

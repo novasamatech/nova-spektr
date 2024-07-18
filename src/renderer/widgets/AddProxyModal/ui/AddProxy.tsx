@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
-import type { Chain } from '@shared/core';
+import { type Chain } from '@shared/core';
 import { useModalClose } from '@shared/lib/hooks';
 import { BaseModal, Button } from '@shared/ui';
 import { OperationTitle } from '@entities/chain';

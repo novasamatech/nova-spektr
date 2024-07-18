@@ -53,6 +53,8 @@ module.exports = {
   rules: {
     'sort-imports': ['error', { ignoreDeclarationSort: true }],
     'import/no-unresolved': 'off',
+    'import/namespace': 'off',
+    'import/consistent-type-specifier-style': ['error', 'prefer-inline'],
     'import/order': [
       'error',
       {

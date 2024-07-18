@@ -20,7 +20,7 @@ import {
   Separator,
 } from '@shared/ui';
 import { type IconNames } from '@shared/ui/Icon/data';
-import type { ComboboxOption } from '@shared/ui/types';
+import { type ComboboxOption } from '@shared/ui/types';
 import { LoginStatus, matrixModel, matrixUtils } from '@entities/matrix';
 import { APP_CONFIG } from '../../../../../../app.config';
 import { matrixLoginModel } from '../model/matrix-login-model';

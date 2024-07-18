@@ -5,18 +5,18 @@ import orderBy from 'lodash/orderBy';
 import sortBy from 'lodash/sortBy';
 import uniqWith from 'lodash/uniqWith';
 
-import type {
-  AccountVote,
-  BlockHeight,
-  CastingVoting,
-  DelegatingVoting,
-  OngoingReferendum,
-  ReferendumInfo,
-  StandardVote,
-  TimedOutReferendum,
-  TrackId,
-  TrackInfo,
-  Voting,
+import {
+  type AccountVote,
+  type BlockHeight,
+  type CastingVoting,
+  type DelegatingVoting,
+  type OngoingReferendum,
+  type ReferendumInfo,
+  type StandardVote,
+  type TimedOutReferendum,
+  type TrackId,
+  type TrackInfo,
+  type Voting,
 } from '@shared/core';
 import {
   type AffectTrack,

@@ -18,10 +18,10 @@ import {
   Visibility,
   createClient,
 } from 'matrix-js-sdk';
-import type { ISecretStorageKeyInfo } from 'matrix-js-sdk/lib/crypto/api';
+import { type ISecretStorageKeyInfo } from 'matrix-js-sdk/lib/crypto/api';
 import { deriveKey } from 'matrix-js-sdk/lib/crypto/key_passphrase';
 import { logger } from 'matrix-js-sdk/lib/logger';
-import type { IStore } from 'matrix-js-sdk/lib/store';
+import { type IStore } from 'matrix-js-sdk/lib/store';
 import { SyncState } from 'matrix-js-sdk/lib/sync';
 
 import { nonNullable } from '@shared/lib/utils';

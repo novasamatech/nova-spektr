@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 
-import type { AccountId, Balance, ChainId, PartialBy, Transaction } from '@shared/core';
+import { type AccountId, type Balance, type ChainId, type PartialBy, type Transaction } from '@shared/core';
 import { ValidationErrors, toAccountId, transferableAmount } from '@shared/lib/utils';
 import { OperationError, type OperationErrorType } from '@entities/transaction';
 

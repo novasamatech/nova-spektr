@@ -3,20 +3,20 @@ import { createKeyMulti } from '@polkadot/util-crypto';
 import keyBy from 'lodash/keyBy';
 
 // TODO: resolve cross import
-import type {
-  Account,
-  AccountId,
-  BaseAccount,
-  Chain,
-  ChainAccount,
-  ChainId,
-  ID,
-  MultisigAccount,
-  MultisigThreshold,
-  ProxiedAccount,
-  ShardAccount,
-  Wallet,
-  WcAccount,
+import {
+  type Account,
+  type AccountId,
+  type BaseAccount,
+  type Chain,
+  type ChainAccount,
+  type ChainId,
+  type ID,
+  type MultisigAccount,
+  type MultisigThreshold,
+  type ProxiedAccount,
+  type ShardAccount,
+  type Wallet,
+  type WcAccount,
 } from '@shared/core';
 import { AccountType, ChainType, CryptoType, ProxyType, ProxyVariant } from '@shared/core';
 import { toAddress } from '@shared/lib/utils';

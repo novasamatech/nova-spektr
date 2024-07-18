@@ -1,6 +1,15 @@
 import set from 'lodash/set';
 
-import type { Account, AccountId, BaseAccount, Chain, ChainAccount, ChainId, ID, ShardAccount } from '@shared/core';
+import {
+  type Account,
+  type AccountId,
+  type BaseAccount,
+  type Chain,
+  type ChainAccount,
+  type ChainId,
+  type ID,
+  type ShardAccount,
+} from '@shared/core';
 import { isStringsMatchQuery, toAddress } from '@shared/lib/utils';
 import { accountUtils } from '@entities/wallet';
 

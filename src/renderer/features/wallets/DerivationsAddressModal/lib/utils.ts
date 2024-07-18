@@ -1,4 +1,4 @@
-import type { ChainAccount, DraftAccount, ShardAccount } from '@shared/core';
+import { type ChainAccount, type DraftAccount, type ShardAccount } from '@shared/core';
 import { toAccountId } from '@shared/lib/utils';
 import {
   type DdAddressInfoDecoded,

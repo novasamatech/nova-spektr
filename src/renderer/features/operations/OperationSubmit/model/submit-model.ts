@@ -3,15 +3,15 @@ import { createApi, createEffect, createEvent, createStore, restore, sample, sco
 import { once } from 'patronum';
 
 import { type ISecureMessenger } from '@shared/api/matrix';
-import type {
-  Account,
-  Chain,
-  ChainId,
-  HexString,
-  MultisigAccount,
-  MultisigEvent,
-  MultisigTransaction,
-  Transaction,
+import {
+  type Account,
+  type Chain,
+  type ChainId,
+  type HexString,
+  type MultisigAccount,
+  type MultisigEvent,
+  type MultisigTransaction,
+  type Transaction,
 } from '@shared/core';
 import { removeFromCollection } from '@shared/lib/utils';
 import { matrixModel, matrixUtils } from '@entities/matrix';

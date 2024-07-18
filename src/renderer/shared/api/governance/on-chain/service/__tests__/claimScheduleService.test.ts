@@ -1,14 +1,14 @@
 import { BN, BN_EIGHT, BN_FIVE, BN_FOUR, BN_NINE, BN_ONE, BN_TEN, BN_THREE, BN_TWO, BN_ZERO } from '@polkadot/util';
 
-import type {
-  ApprovedReferendum,
-  CastingVoting,
-  DelegatingVoting,
-  ReferendumInfo,
-  StandardVote,
-  TrackId,
-  TrackInfo,
-  Voting,
+import {
+  type ApprovedReferendum,
+  type CastingVoting,
+  type DelegatingVoting,
+  type ReferendumInfo,
+  type StandardVote,
+  type TrackId,
+  type TrackInfo,
+  type Voting,
 } from '@shared/core';
 import { Conviction, ReferendumType, VotingType } from '@shared/core';
 import {

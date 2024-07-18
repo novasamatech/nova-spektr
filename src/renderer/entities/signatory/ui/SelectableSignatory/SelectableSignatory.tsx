@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import type { AccountId, Asset, ChainId } from '@shared/core';
+import { type AccountId, type Asset, type ChainId } from '@shared/core';
 import { cnTw, toAccountId, toAddress, transferableAmount } from '@shared/lib/utils';
 import { BodyText, Icon } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';

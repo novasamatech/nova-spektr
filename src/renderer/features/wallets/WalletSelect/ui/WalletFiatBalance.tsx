@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import type { ID } from '@shared/core';
+import { type ID } from '@shared/core';
 import { formatFiatBalance } from '@shared/lib/utils';
 import { Shimmering } from '@shared/ui';
 import { priceProviderModel } from '@entities/price';

@@ -1,7 +1,7 @@
 import { allSettled, fork } from 'effector';
 
 import { storageService } from '@shared/api/storage';
-import type { AccountId, HexString, ProxyAccount, ProxyGroup } from '@shared/core';
+import { type AccountId, type HexString, type ProxyAccount, type ProxyGroup } from '@shared/core';
 import { ProxyType } from '@shared/core';
 import { proxyModel } from '../proxy-model';
 

@@ -2,7 +2,14 @@ import { attach, combine, createApi, createEffect, createEvent, createStore, sam
 import { createForm } from 'effector-forms';
 
 import { storageService } from '@shared/api/storage';
-import type { BaseAccount, ChainAccount, DraftAccount, NoID, ShardAccount, Wallet } from '@shared/core';
+import {
+  type BaseAccount,
+  type ChainAccount,
+  type DraftAccount,
+  type NoID,
+  type ShardAccount,
+  type Wallet,
+} from '@shared/core';
 import { AccountType, ChainType, CryptoType, KeyType } from '@shared/core';
 import { dictionary } from '@shared/lib/utils';
 import { networkModel, networkUtils } from '@entities/network';

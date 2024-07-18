@@ -3,7 +3,7 @@ import { u8aToHex } from '@polkadot/util';
 import { decodeAddress } from '@polkadot/util-crypto';
 import { WellKnownChain } from '@substrate/connect';
 
-import type { AccountId, ChainId, NoID, PartialProxiedAccount, ProxyAccount } from '@shared/core';
+import { type AccountId, type ChainId, type NoID, type PartialProxiedAccount, type ProxyAccount } from '@shared/core';
 
 export const proxyWorkerUtils = {
   toAccountId,

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
-import type { Address, Stake } from '@shared/core';
+import { type Address, type Stake } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
 import { toAccountId } from '@shared/lib/utils';
 import { BaseModal, Button, DropdownButton, Icon, SmallTitleText } from '@shared/ui';

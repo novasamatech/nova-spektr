@@ -2,7 +2,7 @@ import BN from 'bignumber.js';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import type { Asset, AssetByChains } from '@shared/core';
+import { type Asset, type AssetByChains } from '@shared/core';
 import { ZERO_BALANCE, formatFiatBalance } from '@shared/lib/utils';
 import { Shimmering } from '@shared/ui';
 import { currencyModel } from '../model/currency-model';
