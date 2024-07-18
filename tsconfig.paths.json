@@ -2,7 +2,7 @@
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
-      "@/*": ["./*"],
+      "@/*": ["./src/renderer/*"],
       "@renderer/*": ["./src/renderer/*"],
       "@app/*": ["./src/renderer/app/*"],
       "@pages/*": ["./src/renderer/pages/*"],
@@ -10,7 +10,7 @@
       "@widgets/*": ["./src/renderer/widgets/*"],
       "@features/*": ["./src/renderer/features/*"],
       "@entities/*": ["./src/renderer/entities/*"],
-      "@shared/*": ["./src/renderer/shared/*"],
+      "@shared/*": ["./src/renderer/shared/*"]
     }
   }
 }

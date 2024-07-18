@@ -101,7 +101,7 @@ sample({
   },
   fn: ({ wallets, signer, session }) => ({
     accounts: walletUtils.getAccountsBy(wallets, (a) => a.walletId === signer?.walletId),
-    topic: session?.topic!,
+    topic: session!.topic,
   }),
   target: walletConnectModel.events.sessionTopicUpdated,
 });
@@ -131,7 +131,7 @@ sample({
       } as WcAccount;
     });
 
-    return { walletId: signer?.walletId!, accounts: updatedAccounts };
+    return { walletId: signer!.walletId, accounts: updatedAccounts };
   },
   target: walletConnectModel.events.accountsUpdated,
 });

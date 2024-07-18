@@ -123,8 +123,7 @@ const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
     };
 
     if (coreTx.type in TransactionValidators) {
-      // TS thinks that transfer should be in TransactionValidators
-      // @ts-ignore`
+      // @ts-expect-error TS thinks that transfer should be in TransactionValidators
       TransactionValidators[coreTx.type]({
         id: tx.id,
         transaction: coreTx,

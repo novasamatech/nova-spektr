@@ -43,7 +43,7 @@ async function getValidatorsWithInfo(api: ApiPromise, era: EraIndex, isLightClie
   return merge(mergedValidators, identity, slashes);
 }
 
-function getValidatorFunction(api: ApiPromise): Function {
+function getValidatorFunction(api: ApiPromise): (era: EraIndex) => Promise<any> {
   return isOldRuntimeForValidators(api)
     ? (era: EraIndex) => getValidatorsStake_OLD(api, era)
     : (era: EraIndex) => getValidatorsStake(api, era);
@@ -134,7 +134,7 @@ function getDefaultValidatorsAmount(api: ApiPromise): number {
 
 function getMaxValidators(api: ApiPromise): number {
   if (api.consts.staking.maxNominations) {
-    // @ts-ignore
+    // @ts-expect-error TODO fix
     return api.consts.staking.maxNominations.toNumber();
   }
 
@@ -226,6 +226,7 @@ async function getParentIdentities(
     const identities = wrappedIdentities.reduce<Record<Address, Option<PalletIdentityRegistration>>>(
       (acc, [storageKey, identity]) => {
         const address = storageKey.args[0].toString();
+        // @ts-expect-error TODO fix
         acc[address] = identity;
 
         return acc;
@@ -239,6 +240,7 @@ async function getParentIdentities(
     parentIdentities = await api.query.identity.identityOf.multi(identityAddresses);
   }
 
+  // @ts-expect-error TODO fix
   return parentIdentities.reduce<Record<Address, Identity>>((acc, identity, index) => {
     if (!identity || identity.isNone) return acc;
 
@@ -303,7 +305,7 @@ function isOldRuntimeForValidators(api: ApiPromise): boolean {
 }
 
 function getMaxNominatorRewarded(api: ApiPromise): number {
-  // @ts-ignore
+  // @ts-expect-error TODO fix
   return api.consts.staking.maxNominatorRewardedPerValidator.toNumber();
 }
 

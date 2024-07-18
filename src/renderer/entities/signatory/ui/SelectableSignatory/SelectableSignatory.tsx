@@ -8,7 +8,7 @@ import type { AccountId, Asset, ChainId } from '@shared/core';
 import { AssetBalance } from '@entities/asset';
 import { useBalance } from '@entities/balance';
 
-type Props<T extends any> = {
+type Props<T> = {
   value: T;
   asset: Asset;
   accountId: AccountId;
@@ -18,7 +18,7 @@ type Props<T extends any> = {
   onSelected: (value: T) => void;
 };
 
-export const SelectableSignatory = <T extends any>({
+export const SelectableSignatory = <T,>({
   value,
   asset,
   accountId,

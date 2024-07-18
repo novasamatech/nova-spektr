@@ -16,7 +16,7 @@ export type ITransactionService = {
   getTxWeight: (transaction: Transaction, api: ApiPromise) => Promise<Weight>;
   getTransactionHash: (transaction: Transaction, api: ApiPromise) => HashData;
   decodeCallData: (api: ApiPromise, accountId: Address, callData: CallData) => DecodedTransaction;
-  verifySignature: (payload: Uint8Array, signature: HexString, accountId: AccountId) => Boolean;
+  verifySignature: (payload: Uint8Array, signature: HexString, accountId: AccountId) => boolean;
   setTxs: (txs: Transaction[]) => void;
   txs: Transaction[];
   setWrappers: (wrappers: TxWrappers_OLD[]) => void;

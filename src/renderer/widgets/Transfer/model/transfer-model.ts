@@ -196,8 +196,7 @@ sample({
     coreTx: $coreTx,
     txWrappers: formModel.$txWrappers,
   },
-  filter: ({ transferStore, coreTx, txWrappers }: any) =>
-    Boolean(transferStore) && Boolean(coreTx) && Boolean(txWrappers),
+  filter: ({ transferStore, coreTx, txWrappers }) => Boolean(transferStore) && Boolean(coreTx) && Boolean(txWrappers),
   fn: ({ transferStore, coreTx, txWrappers }) => {
     const tx = {
       initiatorWallet: transferStore!.account.walletId,

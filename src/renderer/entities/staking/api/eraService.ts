@@ -25,7 +25,7 @@ async function getActiveEra(api: ApiPromise): Promise<EraIndex | undefined> {
 
   if (eraData.isNone) return undefined;
 
-  // @ts-ignore
+  // @ts-expect-error TODO fix
   return eraData.unwrap().get('index').toNumber();
 }
 

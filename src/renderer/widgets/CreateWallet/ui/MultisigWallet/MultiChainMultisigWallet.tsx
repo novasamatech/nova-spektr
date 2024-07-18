@@ -13,6 +13,7 @@ import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { walletModel } from '@entities/wallet';
 import { createMultisigWalletModel } from '../../model/create-multisig-wallet-model';
 import { matrixUtils, matrixModel } from '@entities/matrix';
+import { HexString } from '@shared/core';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -84,7 +85,7 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
     setTimeout(params?.complete ? onComplete : params?.closeAll ? onClose : noop, DEFAULT_TRANSITION);
   };
 
-  const submitHandler = (args: any) => {
+  const submitHandler = (args: { name: string; threshold: number; creatorId: HexString }) => {
     toggleResultModal();
     setName(args.name);
 

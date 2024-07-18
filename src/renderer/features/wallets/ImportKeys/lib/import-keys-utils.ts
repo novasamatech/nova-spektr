@@ -298,7 +298,7 @@ function mergeChainDerivations(
 
 function renameDerivationPathKeyReviver(key: unknown, value: unknown) {
   if (key === 'derivation_path') {
-    // @ts-ignore
+    // @ts-expect-error TODO fix
     this['derivationPath'] = value;
     // when reviewer function returns undefined property deleted from the object
     // so old key 'derivation_path' is deleted and 'derivationPath' added

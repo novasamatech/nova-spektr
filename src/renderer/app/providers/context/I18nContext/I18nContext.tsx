@@ -27,7 +27,7 @@ type I18nContextProps = {
 
 const I18nContext = createContext<I18nContextProps>({} as I18nContextProps);
 
-export const I18Provider = ({ children }: PropsWithChildren<{}>) => {
+export const I18Provider = ({ children }: PropsWithChildren) => {
   const { t, i18n } = useTranslation();
   const { setLocale, getLocale, getLocales } = useTranslationService();
 

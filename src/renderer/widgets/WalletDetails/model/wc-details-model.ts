@@ -60,7 +60,7 @@ sample({
     step === ReconnectStep.RECONNECTING && Boolean(wallet) && Boolean(session?.topic),
   fn: ({ wallet, session }) => ({
     accounts: wallet!.accounts,
-    topic: session?.topic!,
+    topic: session!.topic,
   }),
   target: walletConnectModel.events.sessionTopicUpdated,
 });

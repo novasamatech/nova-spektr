@@ -37,7 +37,7 @@ function rotateLogs(oldLogFile: LogFile) {
   }
   try {
     const date = new Date().toISOString();
-    let newFileName = join(info.dir, info.name + '.' + date + info.ext);
+    const newFileName = join(info.dir, info.name + '.' + date + info.ext);
     renameSync(file, newFileName);
   } catch (error) {
     console.warn('Could not rotate log', error);

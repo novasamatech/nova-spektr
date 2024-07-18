@@ -77,10 +77,10 @@ async function signAndSubmit(
     .send((result) => {
       const { status, events, txHash, txIndex, blockNumber } = result as any;
 
-      let actualTxHash = txHash.toHex();
+      const actualTxHash = txHash.toHex();
+      const extrinsicIndex = txIndex;
       let isFinalApprove = false;
       let multisigError = '';
-      let extrinsicIndex = txIndex;
       let extrinsicSuccess = false;
 
       if (status.isInBlock) {
@@ -342,7 +342,7 @@ export const useTransaction = (): ITransactionService => {
     return weight;
   };
 
-  const verifySignature = (payload: Uint8Array, signature: HexString, accountId: AccountId): Boolean => {
+  const verifySignature = (payload: Uint8Array, signature: HexString, accountId: AccountId): boolean => {
     const payloadToVerify = payload.length > 256 ? blake2AsU8a(payload) : payload;
 
     return signatureVerify(payloadToVerify, signature, accountId).isValid;

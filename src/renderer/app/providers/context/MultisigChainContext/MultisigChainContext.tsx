@@ -16,8 +16,8 @@ type MultisigChainContextProps = {
   addTask: (task: Task) => void;
 };
 
-const MULTISIG_RESULT_SUCCESS: string = 'Ok';
-const MULTISIG_RESULT_ERROR: string = 'err';
+const MULTISIG_RESULT_SUCCESS = 'Ok';
+const MULTISIG_RESULT_ERROR = 'err';
 
 const MultisigChainContext = createContext<MultisigChainContextProps>({} as MultisigChainContextProps);
 

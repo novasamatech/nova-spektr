@@ -47,7 +47,7 @@ export const Combobox = ({
         <HeadlessCombobox.Input
           as={Input}
           displayValue={(option: ComboboxOption) => option.value}
-          // @ts-ignore onChange doesn't respect custom <Input /> onChange type
+          // @ts-expect-error onChange doesn't respect custom <Input /> onChange type
           onChange={onInput}
           {...inputProps}
         />

@@ -3,8 +3,20 @@ const path = require('path');
 
 const prettierConfig = fs.readFileSync('./.prettierrc', 'utf8');
 const prettierOptions = JSON.parse(prettierConfig);
-const checkI18n = process.env.I18N === 'true';
-const localePath = path.resolve('./src/renderer/shared/api/translation/locales/en.json');
+const localesPath = path.resolve('./src/renderer/shared/api/translation/locales');
+const defaultLocalePath = path.resolve(localesPath, 'en.json');
+
+const aliases = [
+  ['@', './renderer/'],
+  ['@renderer', './src/renderer/'],
+  ['@app', './src/renderer/app/'],
+  ['@pages', './src/renderer/pages/'],
+  ['@processes', './src/renderer/processes/'],
+  ['@widgets', './src/renderer/widgets/'],
+  ['@features', './src/renderer/features/'],
+  ['@entities', './src/renderer/entities/'],
+  ['@shared', './src/renderer/shared/'],
+];
 
 module.exports = {
   root: true,
@@ -16,52 +28,30 @@ module.exports = {
   globals: {
     JSX: 'readonly',
   },
-  parser: '@typescript-eslint/parser',
   extends: [
     'eslint:recommended',
-    'plugin:react/recommended',
     'plugin:import/recommended',
     'plugin:import/errors',
     'plugin:import/warnings',
-    'plugin:jest-dom/recommended',
-    'plugin:i18n-json/recommended',
-    'plugin:i18next/recommended',
-    'plugin:effector/recommended',
-    'plugin:effector/scope',
     'prettier',
   ],
-  plugins: ['effector', '@typescript-eslint', 'prettier', 'import', 'unused-imports', 'jest-dom', 'json'],
+  plugins: ['prettier', 'import'],
   parserOptions: {
     ecmaVersion: 2021,
-    sourceType: 'module',
-    project: './tsconfig.json',
-    tsconfigRootDir: __dirname,
-    createDefaultProgram: true,
   },
   settings: {
-    react: { version: 'detect' },
-
     'import/resolver': {
       alias: {
-        map: [
-          ['@', './'],
-          ['@renderer', './src/renderer/'],
-          ['@app', './src/renderer/app/'],
-          ['@pages', './src/renderer/pages/'],
-          ['@processes', './src/renderer/processes/'],
-          ['@widgets', './src/renderer/widgets/'],
-          ['@features', './src/renderer/features/'],
-          ['@entities', './src/renderer/entities/'],
-          ['@shared', './src/renderer/shared/'],
-        ],
-        extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+        map: aliases,
+        extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
       },
       node: {
-        extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+        extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
       },
     },
   },
   rules: {
+    'import/no-unresolved': 'off',
     'import/order': [
       'error',
       {
@@ -69,55 +59,113 @@ module.exports = {
           ['builtin', 'external'],
           ['internal', 'sibling', 'parent', 'object', 'index'],
         ],
+        pathGroups: [
+          { group: 'sibling', pattern: '@/app/**', position: 'before' },
+          { group: 'sibling', pattern: '@/shared/**', position: 'before' },
+          { group: 'sibling', pattern: '@/entities/**', position: 'before' },
+          { group: 'sibling', pattern: '@/features/**', position: 'before' },
+          { group: 'sibling', pattern: '@/pages/**', position: 'before' },
+        ],
         'newlines-between': 'always',
       },
     ],
-    'no-unused-vars': 'off',
     'no-irregular-whitespace': 'off',
     'newline-before-return': 'error',
-    '@typescript-eslint/no-empty-interface': 0,
     'prettier/prettier': ['error', prettierOptions],
-    'unused-imports/no-unused-imports': 'error',
-    'react/no-array-index-key': 'warn',
-    'react/display-name': 'off',
-    'react/prop-types': 'off',
-    'react/react-in-jsx-scope': 'off',
-    'react/jsx-sort-props': ['error', { callbacksLast: true, noSortAlphabetically: true }],
-    'react/function-component-definition': [
-      'error',
-      {
-        namedComponents: 'arrow-function',
-        unnamedComponents: 'arrow-function',
-      },
-    ],
-    'i18n-json/identical-keys': ['error', { filePath: localePath }],
-    'i18n-json/identical-placeholders': ['error', { filePath: localePath }],
-    'i18next/no-literal-string': [
-      checkI18n ? 'error' : 'off',
-      {
-        mode: 'jsx-text-only',
-        'should-validate-template': true,
-        'jsx-attributes': {
-          include: ['alt', 'aria-label', 'title', 'placeholder', 'label', 'description'],
-          exclude: ['data-testid', 'className'],
-        },
-        callees: {
-          exclude: ['Error', 'log', 'warn'],
-        },
-        words: {
-          exclude: ['[0-9!-/:-@[-`{-~]+', '[A-Z_-]+'],
-        },
-      },
-    ],
   },
-  ignorePatterns: [
-    '.vscode',
-    'coverage',
-    'release',
-    'node_modules',
-    'coverage.txt',
-    'junit.xml',
-    'jest-unit-results.json',
-    'package.json',
+  overrides: [
+    {
+      files: ['*.json'],
+      plugins: ['json'],
+      extends: ['plugin:json/recommended'],
+    },
+    {
+      files: [path.join('translation/locales', '**/*.json')],
+      extends: ['plugin:i18n-json/recommended'],
+      rules: {
+        'i18n-json/identical-keys': ['error', { filePath: defaultLocalePath }],
+        'i18n-json/identical-placeholders': ['error', { filePath: defaultLocalePath }],
+      },
+    },
+    {
+      files: ['*.test.ts', '*.test.tsx'],
+      plugins: ['jest-dom'],
+      extends: ['plugin:jest-dom/recommended'],
+    },
+    {
+      files: ['*.tsx'],
+      excludedFiles: ['*.stories.tsx', '*.test.tsx'],
+      plugins: ['i18next'],
+      extends: ['plugin:i18next/recommended'],
+      rules: {
+        'i18next/no-literal-string': [
+          'error',
+          {
+            mode: 'jsx-text-only',
+            'should-validate-template': true,
+            'jsx-attributes': {
+              include: ['alt', 'aria-label', 'title', 'placeholder', 'label', 'description'],
+              exclude: ['data-testid', 'className'],
+            },
+            callees: {
+              exclude: ['Error', 'log', 'warn'],
+            },
+            words: {
+              exclude: ['[0-9!-/:-@[-`{-~]+', '[A-Z_-]+'],
+            },
+          },
+        ],
+      },
+    },
+    {
+      files: ['*.tsx'],
+      plugins: ['react'],
+      extends: ['plugin:react/recommended'],
+      rules: {
+        'react/no-array-index-key': 'warn',
+        'react/display-name': 'off',
+        'react/prop-types': 'off',
+        'react/react-in-jsx-scope': 'off',
+        'react/jsx-sort-props': ['error', { callbacksLast: true, noSortAlphabetically: true }],
+        'react/function-component-definition': [
+          'error',
+          {
+            namedComponents: 'arrow-function',
+            unnamedComponents: 'arrow-function',
+          },
+        ],
+      },
+      settings: { react: { version: 'detect' } },
+    },
+    {
+      files: ['*.ts', '*.tsx'],
+      plugins: ['@typescript-eslint', 'effector', 'unused-imports'],
+      extends: [
+        'plugin:effector/recommended',
+        'plugin:effector/scope',
+        'plugin:@typescript-eslint/eslint-recommended',
+        'plugin:@typescript-eslint/recommended',
+      ],
+      parser: '@typescript-eslint/parser',
+      parserOptions: {
+        sourceType: 'module',
+        project: './tsconfig.json',
+        tsconfigRootDir: __dirname,
+        createDefaultProgram: true,
+      },
+      rules: {
+        'unused-imports/no-unused-imports': 'error',
+        '@typescript-eslint/no-unused-vars': 'off',
+        '@typescript-eslint/no-empty-interface': 'off',
+        '@typescript-eslint/no-non-null-assertion': 'off',
+        '@typescript-eslint/no-empty-function': 'off',
+        // TODO enable
+        '@typescript-eslint/no-unnecessary-type-constraint': 'warn',
+        // it took around 4 seconds to check this single rule
+        'effector/enforce-effect-naming-convention': 'off',
+        // it took around 4 seconds to check this single rule
+        'effector/enforce-store-naming-convention': 'off',
+      },
+    },
   ],
 };

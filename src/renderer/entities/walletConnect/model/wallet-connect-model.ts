@@ -301,7 +301,7 @@ sample({
   filter: (client, initData) => Boolean(client) && Boolean(initData?.approval),
   fn: ($client, initData) => ({
     client: $client!,
-    approval: initData?.approval!,
+    approval: initData!.approval,
   }),
   target: connectFx,
 });

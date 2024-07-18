@@ -108,8 +108,7 @@ const getPureProxyFx = createEffect(
         data: [undefined, toAddress(accountId, { prefix: api.registry.chainSS58 })],
       };
 
-      let unsubscribe: UnsubscribePromise;
-      unsubscribe = subscriptionService.subscribeEvents(api, pureCreatedParams, (event) => {
+      const unsubscribe: UnsubscribePromise = subscriptionService.subscribeEvents(api, pureCreatedParams, (event) => {
         unsubscribe?.then((fn) => fn());
 
         resolve({
@@ -340,7 +339,7 @@ sample({
     coreTx: $coreTx,
     txWrappers: formModel.$txWrappers,
   },
-  filter: ({ store, coreTx, txWrappers }: any) => {
+  filter: ({ store, coreTx, txWrappers }) => {
     return Boolean(store) && Boolean(coreTx) && Boolean(txWrappers);
   },
   fn: ({ store, coreTx, txWrappers }) => {

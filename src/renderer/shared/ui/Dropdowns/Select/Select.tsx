@@ -18,7 +18,7 @@ import {
   ViewClass,
 } from '../common/constants';
 
-type Props<T extends any = any> = {
+type Props<T = any> = {
   className?: string;
   placeholder: string;
   label?: string;

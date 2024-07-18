@@ -14,7 +14,7 @@ describe('service/locale/storage', () => {
     const wrongLocale = 'wrong_locale';
     const defaultLocale = 'en';
 
-    // @ts-ignore remove TS warning about wrong locale
+    // @ts-expect-error TODO fix remove TS warning about wrong locale
     setLocale(wrongLocale);
 
     expect(getLocale()).toEqual(defaultLocale);

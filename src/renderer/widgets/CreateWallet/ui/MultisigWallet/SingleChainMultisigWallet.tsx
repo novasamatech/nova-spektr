@@ -15,6 +15,7 @@ import { SelectAccountSignatories } from './components/SelectAccountSignatories'
 import { walletModel } from '@entities/wallet';
 import { networkModel } from '@entities/network';
 import { matrixUtils, matrixModel } from '@entities/matrix';
+import { HexString } from '@shared/core';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -101,7 +102,7 @@ export const SingleChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack 
     </div>
   );
 
-  const submitHandler = (args: any) => {
+  const submitHandler = (args: { name: string; threshold: number; creatorId: HexString }) => {
     toggleResultModal();
     setName(args.name);
 

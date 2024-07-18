@@ -43,7 +43,7 @@ export const SignOperation = () => {
 
   if (signOperationsUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
 
-  const getModalTitle = (basketTransaction: BasketTransaction): String | ReactNode => {
+  const getModalTitle = (basketTransaction: BasketTransaction): string | ReactNode => {
     const chain = chains[basketTransaction.coreTx.chainId];
 
     const { title, params } = getOperationTitle(basketTransaction, chain);
@@ -107,7 +107,7 @@ export const SignOperation = () => {
       ),
     };
 
-    // @ts-ignore
+    // @ts-expect-error not all types are used
     return Components[type];
   };
 

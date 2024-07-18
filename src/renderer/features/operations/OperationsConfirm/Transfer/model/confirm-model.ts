@@ -258,7 +258,7 @@ sample({
   },
   filter: ({ store }) => Boolean(store),
   fn: ({ store, balances }) => ({
-    store: store?.[0]!,
+    store: store![0],
     balances,
   }),
   target: validateFx,

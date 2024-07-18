@@ -38,6 +38,6 @@ export const getOperationTitle = (transaction: BasketTransaction, chain: Chain):
     [TransactionType.UNSTAKE]: 'operations.modalTitles.unstakeOn',
   };
 
-  // @ts-ignore
+  // @ts-expect-error TODO fix not all types used
   return { title: Title[type], params: { asset: asset?.symbol } };
 };

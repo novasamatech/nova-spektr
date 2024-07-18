@@ -56,7 +56,6 @@ function initConnection(chain?: Chain, connection?: Connection) {
           const knownChainId = proxyWorkerUtils.getKnownChain(chain.chainId);
 
           if (knownChainId) {
-            // @ts-ignore
             provider = new ScProvider(Sc, knownChainId);
             provider.connect();
           }
@@ -236,7 +235,7 @@ async function getProxies({
   };
 }
 
-// @ts-ignore
+// @ts-expect-error TODO fix
 const endpoint = createEndpoint(self);
 
 endpoint.expose({ initConnection, getProxies, disconnect });

@@ -66,7 +66,7 @@ export type DataStorage = {
 };
 
 export type ID = string;
-type WithID<T extends Object> = { id?: ID } & T;
+type WithID<T extends NonNullable<unknown>> = { id?: ID } & T;
 
 export type MultisigTransactionDS = WithID<MultisigTransaction>;
 export type MultisigEventDS = WithID<MultisigEvent>;

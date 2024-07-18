@@ -5,7 +5,7 @@
  * @return {String}
  */
 export const getOperatingSystem = (): string => {
-  // @ts-ignore
+  // @ts-expect-error userAgentData is not defined
   const platform = window.navigator.userAgentData?.platform;
 
   if (platform) return platform;

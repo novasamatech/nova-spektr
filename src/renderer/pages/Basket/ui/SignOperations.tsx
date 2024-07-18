@@ -49,15 +49,14 @@ export const SignOperations = () => {
 
   const scroll = (value: number) => {
     setTimeout(() =>
-      // TS doesn't recognize offsetLeft
-      // @ts-ignore
+      // @ts-expect-error TS doesn't recognize offsetLeft
       ref.current?.scrollTo({ left: ref.current?.childNodes[0].childNodes[value].offsetLeft - 16, behavior: 'smooth' }),
     );
   };
 
   if (signOperationsUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
 
-  const getModalTitle = (basketTransaction: BasketTransaction): String | ReactNode => {
+  const getModalTitle = (basketTransaction: BasketTransaction): string | ReactNode => {
     const chain = chains[basketTransaction.coreTx.chainId];
 
     const { title, params } = getOperationTitle(basketTransaction, chain);
@@ -96,7 +95,7 @@ export const SignOperations = () => {
       [TransactionType.UNSTAKE]: () => <UnstakeConfirmation id={transaction.id} hideSignButton />,
     };
 
-    // @ts-ignore
+    // @ts-expect-error not all types are used
     return Components[type];
   };
 
