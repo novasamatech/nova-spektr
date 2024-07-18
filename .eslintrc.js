@@ -75,13 +75,6 @@ module.exports = {
           { group: 'parent', pattern: '@/features/**', position: 'before' },
           { group: 'parent', pattern: '@/pages/**', position: 'before' },
         ],
-        pathGroups: [
-          { group: 'sibling', pattern: '@/app/**', position: 'before' },
-          { group: 'sibling', pattern: '@/shared/**', position: 'before' },
-          { group: 'sibling', pattern: '@/entities/**', position: 'before' },
-          { group: 'sibling', pattern: '@/features/**', position: 'before' },
-          { group: 'sibling', pattern: '@/pages/**', position: 'before' },
-        ],
         'newlines-between': 'always',
         distinctGroup: false,
       },
