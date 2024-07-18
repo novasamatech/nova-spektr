@@ -430,7 +430,7 @@ export const getUnsignedTransaction: Record<
     return removeVote(
       {
         class: transaction.args.trackId,
-        index: transaction.args.refIndex,
+        index: transaction.args.referendumId,
       },
       info,
       options,
