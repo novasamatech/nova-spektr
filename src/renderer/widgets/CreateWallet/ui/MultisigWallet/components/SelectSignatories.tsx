@@ -47,9 +47,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
   const selectedContactsList = Object.values(selectedContacts);
 
   useEffect(() => {
-    if (accounts.length === 0) {
-      return;
-    }
+    if (accounts.length === 0) return;
 
     const addressBookContacts = contacts
       .filter((c) => c.matrixId && !isEthereumAccountId(c.accountId))

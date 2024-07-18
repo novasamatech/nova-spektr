@@ -28,9 +28,7 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
   const [activeAccountsOptions, setActiveAccountsOptions] = useState<DropdownOption<number>[]>([]);
 
   useEffect(() => {
-    if (!wallet || walletUtils.isWatchOnly(wallet)) {
-      return;
-    }
+    if (!wallet || walletUtils.isWatchOnly(wallet)) return;
 
     const accounts = wallet?.accounts.reduce<DropdownOption[]>((acc, account, index) => {
       const isBaseAccount = accountUtils.isBaseAccount(account);
@@ -63,9 +61,7 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
       return acc;
     }, []);
 
-    if (accounts.length === 0) {
-      return;
-    }
+    if (accounts.length === 0) return;
 
     setActiveAccountsOptions(accounts);
     setActiveAccount({ id: accounts[0].id, value: accounts[0].value });

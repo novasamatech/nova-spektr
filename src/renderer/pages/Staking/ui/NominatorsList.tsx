@@ -49,9 +49,7 @@ export const NominatorsList = ({
 
   const getUnstakeBadge = (stake: NominatorInfo<Account>) => {
     const nextUnstakingEra = getNextUnstakingEra(stake.unlocking, era);
-    if (!nextUnstakingEra) {
-      return;
-    }
+    if (!nextUnstakingEra) return;
 
     return (
       <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey="staking.tooltips.unstakeDescription" />}>
@@ -66,9 +64,7 @@ export const NominatorsList = ({
   };
 
   const getRedeemBadge = (stake: NominatorInfo<Account>) => {
-    if (!hasRedeem(stake.unlocking, era)) {
-      return;
-    }
+    if (!hasRedeem(stake.unlocking, era)) return;
 
     return (
       <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey="staking.tooltips.redeemDescription" />}>

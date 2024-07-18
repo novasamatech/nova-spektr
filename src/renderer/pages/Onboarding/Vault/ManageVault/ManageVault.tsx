@@ -250,9 +250,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
 
           <div className="flex flex-col gap-2 divide-y ml-9">
             {chainElements.map(([chainId, chainAccounts]) => {
-              if (chainAccounts.length === 0) {
-                return;
-              }
+              if (chainAccounts.length === 0) return;
 
               return (
                 <Accordion key={chainId} className="pt-2">

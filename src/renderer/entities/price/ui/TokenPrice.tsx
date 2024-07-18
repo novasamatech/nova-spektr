@@ -18,9 +18,7 @@ export const TokenPrice = ({ assetId, className, wrapperClassName }: Props) => {
   const { t } = useI18n();
   const currency = useUnit(currencyModel.$activeCurrency);
   const price = useStoreMap(priceProviderModel.$assetsPrices, (prices) => {
-    if (!currency || !prices) {
-      return;
-    }
+    if (!currency || !prices) return;
 
     return assetId && prices[assetId]?.[currency.coingeckoId];
   });

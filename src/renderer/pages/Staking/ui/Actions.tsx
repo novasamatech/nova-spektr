@@ -109,9 +109,7 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
   };
 
   const onDeselectAccounts = () => {
-    if (!operation) {
-      return;
-    }
+    if (!operation) return;
 
     toggleIsDialogOpen();
 

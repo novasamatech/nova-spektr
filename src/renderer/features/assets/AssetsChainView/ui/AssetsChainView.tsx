@@ -31,9 +31,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
   const [sortedChains, setSortedChains] = useState<Chain[]>([]);
 
   useEffect(() => {
-    if (!activeWallet || assetsView !== AssetsListView.CHAIN_CENTRIC || !activeShards.length) {
-      return;
-    }
+    if (!activeWallet || assetsView !== AssetsListView.CHAIN_CENTRIC || !activeShards.length) return;
 
     const isMultisig = walletUtils.isMultisig(activeWallet);
 

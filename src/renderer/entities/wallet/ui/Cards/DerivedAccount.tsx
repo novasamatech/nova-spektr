@@ -41,9 +41,7 @@ export const DerivedAccount = ({
 
   const handleClick = (fn?: () => void) => {
     return (event: MouseEvent<HTMLButtonElement>) => {
-      if (!fn) {
-        return;
-      }
+      if (!fn) return;
 
       event.stopPropagation();
       fn();

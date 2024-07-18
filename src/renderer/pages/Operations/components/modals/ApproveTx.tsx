@@ -101,9 +101,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   useEffect(() => {
     setFeeTx(getMultisigTx(TEST_ADDRESS));
 
-    if (!signAccount?.accountId) {
-      return;
-    }
+    if (!signAccount?.accountId) return;
 
     setApproveTx(getMultisigTx(signAccount?.accountId));
   }, [tx, signAccount?.accountId, txWeight]);
@@ -111,9 +109,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const initWeight = async () => {
     let weight;
     try {
-      if (!tx.callData || !connection.api) {
-        return;
-      }
+      if (!tx.callData || !connection.api) return;
 
       const transaction = getTxFromCallData(connection.api, tx.callData);
 

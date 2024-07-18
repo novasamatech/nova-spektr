@@ -185,14 +185,10 @@ const decode = (reader: Uint8Array): Node => {
 };
 
 const loadProof = (proofHashToNode: Record<string, Node>, branch: Node | undefined) => {
-  if (!branch || getNodeType(branch) !== NodeType.BRANCH) {
-    return;
-  }
+  if (!branch || getNodeType(branch) !== NodeType.BRANCH) return;
 
   branch.children.forEach((child, i) => {
-    if (child === null) {
-      return;
-    }
+    if (child === null) return;
 
     const proofHash = u8aToHex(child.hashDigest);
     const node = proofHashToNode[proofHash];

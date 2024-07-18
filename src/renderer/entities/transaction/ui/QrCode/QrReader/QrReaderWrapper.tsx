@@ -79,9 +79,7 @@ export const QrReaderWrapper = ({ className, onResult, countdown, validationErro
   };
 
   const onScanResult = (qrPayload: HexString | HexString[]) => {
-    if (countdown === 0) {
-      return;
-    }
+    if (countdown === 0) return;
     setIsSuccess(true);
 
     try {

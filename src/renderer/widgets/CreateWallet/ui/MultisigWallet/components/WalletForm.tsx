@@ -114,9 +114,7 @@ export const WalletForm = ({
   const submitMstAccount: SubmitHandler<MultisigAccountForm> = ({ name, threshold }) => {
     const creator = signatories.find((s) => s.matrixId === matrix.userId);
 
-    if (!threshold || !creator) {
-      return;
-    }
+    if (!threshold || !creator) return;
 
     onSubmit({ name, threshold: threshold.value, creatorId: creator.accountId });
   };

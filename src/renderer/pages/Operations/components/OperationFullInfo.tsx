@@ -37,15 +37,11 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
   const explorerLink = getMultisigExtrinsicLink(tx.callHash, tx.indexCreated, tx.blockCreated, chain?.explorers);
 
   const setupCallData = async (callData: CallData) => {
-    if (!api || !tx) {
-      return;
-    }
+    if (!api || !tx) return;
 
     updateCallData(api, tx, callData as CallData);
 
-    if (!account?.matrixRoomId) {
-      return;
-    }
+    if (!account?.matrixRoomId) return;
 
     matrix.sendUpdate(account?.matrixRoomId, {
       senderAccountId: tx.depositor || '0x00',

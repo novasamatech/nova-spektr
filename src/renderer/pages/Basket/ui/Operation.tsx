@@ -30,9 +30,7 @@ export const Operation = ({ tx, errorText, validating, onClick, onTxRemoved }: P
   const disabled = errorText || validating;
 
   const onTxClicked = () => {
-    if (disabled) {
-      return;
-    }
+    if (disabled) return;
 
     onClick();
   };

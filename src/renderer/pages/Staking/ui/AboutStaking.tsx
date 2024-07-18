@@ -33,9 +33,7 @@ export const AboutStaking = ({ api, era, asset, validators }: Props) => {
   // const [averageApy, setAverageApy] = useState('');
 
   useEffect(() => {
-    if (!api?.isConnected) {
-      return;
-    }
+    if (!api?.isConnected) return;
 
     getMinNominatorBond(api).then(setMinimumStake);
     setUnstakingPeriod(getUnbondingPeriod(api));
@@ -47,9 +45,7 @@ export const AboutStaking = ({ api, era, asset, validators }: Props) => {
   }, [api]);
 
   useEffect(() => {
-    if (!api?.isConnected || !era) {
-      return;
-    }
+    if (!api?.isConnected || !era) return;
 
     // getAvgApy(api, validators).then(setAverageApy);
     getTotalStaked(api, era).then(setTotalStaked);

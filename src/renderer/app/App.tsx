@@ -38,9 +38,7 @@ export const App = () => {
 
   useEffect(() => {
     const url = new URL(window.location.href);
-    if (!url.searchParams.has('step') || !url.searchParams.has('loginToken')) {
-      return;
-    }
+    if (!url.searchParams.has('step') || !url.searchParams.has('loginToken')) return;
 
     const loginToken = url.searchParams.get('loginToken') as string;
     const step = url.searchParams.get('step') as string;
@@ -58,9 +56,7 @@ export const App = () => {
   }, []);
 
   useEffect(() => {
-    if (isLoadingWallets || wallets.length > 0) {
-      return;
-    }
+    if (isLoadingWallets || wallets.length > 0) return;
 
     navigate(Paths.ONBOARDING, { replace: true });
   }, [isLoadingWallets, wallets.length]);

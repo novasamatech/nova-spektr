@@ -25,9 +25,7 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
   const successReport = useUnit(importKeysModel.$successReport);
 
   useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
+    if (!isOpen) return;
 
     importKeysModel.events.resetValues({
       root: rootAccountId,
@@ -40,9 +38,7 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
   };
 
   const getReportText = () => {
-    if (!successReport) {
-      return;
-    }
+    if (!successReport) return;
 
     const addedKeys = t('dynamicDerivations.importKeys.report.addedKeys', { count: successReport.addedKeys });
     const updatedNetworks = t('dynamicDerivations.importKeys.report.updatedNetworks', {

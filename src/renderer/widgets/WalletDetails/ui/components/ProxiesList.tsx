@@ -54,9 +54,7 @@ export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
   const handleConfirm = () => {
     toggleIsRemoveConfirmOpen();
 
-    if (!proxyForRemoval || !wallet) {
-      return;
-    }
+    if (!proxyForRemoval || !wallet) return;
 
     const account = wallet.accounts.find((a) => {
       return (
@@ -77,7 +75,7 @@ export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
       <ul className="flex flex-col h-full px-5 divide-y divide-divider overflow-y-auto overflow-x-hidden">
         {walletProxyGroups.map(({ chainId, totalDeposit }) => {
           if (!chainsProxies[chainId]?.length) {
-            return;
+            return null;
           }
 
           return (

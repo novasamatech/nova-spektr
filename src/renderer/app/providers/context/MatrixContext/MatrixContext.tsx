@@ -220,16 +220,12 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const onMultisigEvent = async ({ type, content, sender }: MultisigPayload, extras: SpektrExtras | undefined) => {
     console.info('🚀 === onMultisigEvent - ', type, '\n Content: ', content);
 
-    if (!validateMatrixEvent(content, extras)) {
-      return;
-    }
+    if (!validateMatrixEvent(content, extras)) return;
 
     const multisigAccounts = walletUtils.getAccountsBy(walletsRef.current, (account) => {
       return account.accountId === extras?.mstAccount.accountId;
     });
-    if (multisigAccounts.length === 0 || !accountUtils.isMultisigAccount(multisigAccounts[0])) {
-      return;
-    }
+    if (multisigAccounts.length === 0 || !accountUtils.isMultisigAccount(multisigAccounts[0])) return;
 
     const multisigTx = await getMultisigTx(
       multisigAccounts[0].accountId,
@@ -336,15 +332,11 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   };
 
   const handleUpdateEvent = async ({ callData }: UpdatePayload, tx?: MultisigTransaction): Promise<void> => {
-    if (!tx) {
-      return;
-    }
+    if (!tx) return;
     console.log(`Start update call data for tx ${tx.callHash}`);
     const api = apisRef.current[tx.chainId];
 
-    if (!api || !callData || callData === tx.callData) {
-      return;
-    }
+    if (!api || !callData || callData === tx.callData) return;
     console.log(`Updating call data for tx ${tx.callHash}`);
     await updateCallData(api, tx, callData);
   };

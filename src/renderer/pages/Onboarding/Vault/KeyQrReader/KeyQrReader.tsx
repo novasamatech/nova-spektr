@@ -82,9 +82,7 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
             encodeAddress(qr.multiSigner.public);
           }
         }
-        if (qr.derivedKeys.length === 0) {
-          return;
-        }
+        if (qr.derivedKeys.length === 0) return;
 
         qr.derivedKeys.forEach(({ address }) => {
           const accountId = isHex(address) ? hexToU8a(address) : decodeAddress(address);

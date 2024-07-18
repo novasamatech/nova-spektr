@@ -50,9 +50,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     txs.forEach(async (tx) => {
       const api = apis[tx.chainId];
 
-      if (!api) {
-        return;
-      }
+      if (!api) return;
 
       if (tx.callData && !tx.transaction) {
         updateCallData(api, tx, tx.callData);
@@ -99,9 +97,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
 
     const tx = await getMultisigTx(account.accountId, chainId, callHash, blockCreated, indexCreated);
 
-    if (!tx) {
-      return;
-    }
+    if (!tx) return;
 
     const accountId = event.data[0].toHex();
 
@@ -138,9 +134,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
       const chain = chains[chainId as ChainId];
       const addressPrefix = chain?.addressPrefix;
 
-      if (!api?.query.multisig || !account || !addressPrefix?.toString()) {
-        return;
-      }
+      if (!api?.query.multisig || !account || !addressPrefix?.toString()) return;
 
       const unsubscribeMultisig = subscribeMultisigAccount(api, account as MultisigAccount);
       unsubscribeMultisigs.push(unsubscribeMultisig);

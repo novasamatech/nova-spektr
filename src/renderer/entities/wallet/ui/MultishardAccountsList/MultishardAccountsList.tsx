@@ -40,9 +40,7 @@ export const MultishardAccountsList = ({ chains, accounts, className }: Props) =
           <FootnoteText className="pl-10 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
 
           {chains.map((chain) => {
-            if (!chainMap[chain.chainId]) {
-              return;
-            }
+            if (!chainMap[chain.chainId]) return;
 
             return (
               <Accordion key={chain.chainId} isDefaultOpen className="pl-8">

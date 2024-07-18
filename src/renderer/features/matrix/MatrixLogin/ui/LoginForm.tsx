@@ -132,9 +132,7 @@ export const LoginForm = ({ redirectStep }: Props) => {
   };
 
   const submitMatrixLogin: SubmitHandler<MatrixForm> = async ({ username, password }) => {
-    if (isHomeserverLoading) {
-      return;
-    }
+    if (isHomeserverLoading) return;
 
     setInProgress(true);
     setInvalidLogin(false);

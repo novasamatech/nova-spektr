@@ -103,9 +103,7 @@ export const Networks = () => {
       } else if (networkUtils.isRpcConnection(connection) || networkUtils.isAutoBalanceConnection(connection)) {
         proceed = await confirmDisableNetwork(name);
       }
-      if (!proceed) {
-        return;
-      }
+      if (!proceed) return;
 
       networkSelectorModel.events.networkDisabled(connection.chainId);
     };
@@ -156,9 +154,7 @@ export const Networks = () => {
 
   const removeCustomNode = async (chainId: ChainId, node: RpcNode) => {
     const proceed = await confirmRemoveCustomNode(node.name);
-    if (!proceed) {
-      return;
-    }
+    if (!proceed) return;
 
     removeCustomRpcModel.events.rpcNodeRemoved({ chainId, node });
   };

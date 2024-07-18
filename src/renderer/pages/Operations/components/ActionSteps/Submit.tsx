@@ -119,9 +119,7 @@ export const Submit = ({
   };
 
   const sendMultisigEvent = (updatedTx: MultisigTransaction, params: ExtrinsicResultParams, rejectReason?: string) => {
-    if (!tx || !updatedTx || !matrixRoomId) {
-      return;
-    }
+    if (!tx || !updatedTx || !matrixRoomId) return;
 
     const payload = {
       senderAccountId: toAccountId(tx.address),

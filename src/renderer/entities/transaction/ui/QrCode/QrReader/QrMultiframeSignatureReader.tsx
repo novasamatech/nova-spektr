@@ -141,9 +141,7 @@ export const QrMultiframeSignatureReader = ({
       throw QR_READER_ERRORS[QrError.NOT_SAME_QR];
     }
 
-    if (collected.has(blockNumber)) {
-      return;
-    }
+    if (collected.has(blockNumber)) return;
 
     collected.add(blockNumber);
     onProgress?.({ decoded: collected.size, total });
@@ -189,14 +187,10 @@ export const QrMultiframeSignatureReader = ({
   };
 
   const startScanning = async (): Promise<void> => {
-    if (!videoRef.current || !scannerRef.current) {
-      return;
-    }
+    if (!videoRef.current || !scannerRef.current) return;
 
     const decodeCallback: DecodeCallback = async (result): Promise<void> => {
-      if (!result || isComplete.current) {
-        return;
-      }
+      if (!result || isComplete.current) return;
 
       try {
         await init();
@@ -205,9 +199,7 @@ export const QrMultiframeSignatureReader = ({
 
         const stringPayload = JSON.stringify(frame.data.payload);
         const isPacketExist = packets.current.get(stringPayload);
-        if (isPacketExist) {
-          return;
-        }
+        if (isPacketExist) return;
 
         packets.current.set(stringPayload, frame.data.payload);
         const decodedPacket = EncodingPacket.deserialize(frame.data.payload);
@@ -278,9 +270,7 @@ export const QrMultiframeSignatureReader = ({
   }, []);
 
   useEffect(() => {
-    if (!cameraId) {
-      return;
-    }
+    if (!cameraId) return;
 
     (async () => {
       try {

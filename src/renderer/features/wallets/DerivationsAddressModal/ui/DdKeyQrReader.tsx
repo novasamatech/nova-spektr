@@ -94,9 +94,7 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
           encodeAddress(qr.multiSigner.public);
         }
 
-        if (qr.dynamicDerivations.length === 0) {
-          return;
-        }
+        if (qr.dynamicDerivations.length === 0) return;
 
         const derivationsAddressInfo = qr.dynamicDerivations.map((addressInfo) => {
           const publicKey = isHex(addressInfo.publicKey.public)

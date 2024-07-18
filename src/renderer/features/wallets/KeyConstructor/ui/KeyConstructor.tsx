@@ -30,9 +30,7 @@ export const KeyConstructor = ({ title, isOpen, existingKeys, onClose, onConfirm
   const keysToRemove = useUnit(constructorModel.$keysToRemove);
 
   useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
+    if (!isOpen) return;
 
     constructorModel.events.formInitiated(existingKeys as Array<ChainAccount | ShardAccount>);
   }, [isOpen]);

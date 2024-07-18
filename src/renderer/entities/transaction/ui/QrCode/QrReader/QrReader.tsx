@@ -201,9 +201,7 @@ export const QrReader = ({
       throw QR_READER_ERRORS[QrError.NOT_SAME_QR];
     }
 
-    if (collected.has(blockNumber)) {
-      return;
-    }
+    if (collected.has(blockNumber)) return;
 
     collected.add(blockNumber);
     onProgress?.({ decoded: collected.size, total });
@@ -248,36 +246,26 @@ export const QrReader = ({
   };
 
   const startScanning = async (): Promise<void> => {
-    if (!videoRef.current || !scannerRef.current) {
-      return;
-    }
+    if (!videoRef.current || !scannerRef.current) return;
 
     const decodeCallback: DecodeCallback = async (result): Promise<void> => {
-      if (!result || isComplete.current) {
-        return;
-      }
+      if (!result || isComplete.current) return;
 
       try {
         await init();
 
         const isSimpleQr = handleSimpleQr(result.getText());
-        if (isSimpleQr) {
-          return;
-        }
+        if (isSimpleQr) return;
 
         const resultMetadata = result.getResultMetadata().get(FRAME_KEY) as Uint8Array[];
-        if (resultMetadata.length > 1) {
-          return;
-        }
+        if (resultMetadata.length > 1) return;
 
         const frame = createFrame(resultMetadata);
 
         const stringPayload = JSON.stringify(frame.data.payload);
         const isPacketExist = packets.current.get(stringPayload);
 
-        if (isPacketExist) {
-          return;
-        }
+        if (isPacketExist) return;
 
         packets.current.set(stringPayload, frame.data.payload);
         const decodedPacket = EncodingPacket.deserialize(frame.data.payload);
@@ -347,9 +335,7 @@ export const QrReader = ({
   }, []);
 
   useEffect(() => {
-    if (!cameraId) {
-      return;
-    }
+    if (!cameraId) return;
 
     (async () => {
       try {

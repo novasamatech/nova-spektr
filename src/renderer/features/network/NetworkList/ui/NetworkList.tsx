@@ -18,12 +18,8 @@ export const NetworkList = ({ title, query, networkList, children }: Props) => {
   const [isListOpen, toggleList] = useToggle(true);
 
   useEffect(() => {
-    if (!buttonRef.current) {
-      return;
-    }
-    if (isListOpen || !query) {
-      return;
-    }
+    if (!buttonRef.current) return;
+    if (isListOpen || !query) return;
 
     buttonRef.current.click();
   }, [query]);

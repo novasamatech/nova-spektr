@@ -69,9 +69,7 @@ export const Vault = ({ isOpen, onClose, onComplete }: Props) => {
   }, [isOpen]);
 
   useEffect(() => {
-    if (!qrPayload) {
-      return;
-    }
+    if (!qrPayload) return;
 
     const withoutDerivedKeys = qrPayload[0].derivedKeys.length === 0;
 

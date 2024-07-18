@@ -122,9 +122,7 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
         derivedKeys.forEach((_, derivedKeyIndex) => {
           const accountId = getAccountId(accountIndex, chainId, derivedKeyIndex);
           const rootAccountId = getAccountId(accountIndex);
-          if (accountNames[accountId]) {
-            return;
-          }
+          if (accountNames[accountId]) return;
 
           const accountName = `${accountNames[rootAccountId]}//${chainName.toLowerCase()}//${derivedKeyIndex + 1}`;
           updateAccountName(accountName, accountIndex, chainId, derivedKeyIndex);
@@ -274,9 +272,7 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
                 {Object.entries(chainsObject).map(([chainId, { explorers }]) => {
                   const derivedKeys = account.derivedKeys[chainId as ChainId];
 
-                  if (!derivedKeys) {
-                    return;
-                  }
+                  if (!derivedKeys) return;
 
                   return (
                     <div key={chainId}>

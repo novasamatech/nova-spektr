@@ -46,9 +46,7 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
   useGate(operationSignModel.SignerGate, account);
 
   useEffect(() => {
-    if (txPayload || !client) {
-      return;
-    }
+    if (txPayload || !client) return;
 
     const sessions = client.session.getAll();
     const storedAccount = walletUtils.getAccountsBy(wallets, (a) => a.walletId === account.walletId)[0];
@@ -104,9 +102,7 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
   };
 
   const signTransaction = async () => {
-    if (!api || !client || !session) {
-      return;
-    }
+    if (!api || !client || !session) return;
 
     signWcModel.events.signingStarted({
       client,

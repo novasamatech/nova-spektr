@@ -26,9 +26,7 @@ export const KeyForm = () => {
   const derivationEnabled = useUnit(constructorModel.$derivationEnabled);
 
   useEffect(() => {
-    if (!networkRef.current) {
-      return;
-    }
+    if (!networkRef.current) return;
 
     constructorModel.events.focusableSet(networkRef.current);
   }, []);

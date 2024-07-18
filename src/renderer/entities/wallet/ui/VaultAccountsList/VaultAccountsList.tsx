@@ -20,9 +20,7 @@ export const VaultAccountsList = ({ chains, accountsMap, className, onShardClick
       <FootnoteText className="pl-10 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
 
       {chains.map((chain) => {
-        if (!accountsMap[chain.chainId]) {
-          return;
-        }
+        if (!accountsMap[chain.chainId]) return;
 
         return (
           <Accordion key={chain.chainId} isDefaultOpen className="pl-8 pr-1">

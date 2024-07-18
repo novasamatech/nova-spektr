@@ -52,9 +52,7 @@ const getMultisigsFx = createEffect(({ chains, wallets }: GetMultisigsParams) =>
     const multisigIndexerUrl = chain.externalApi?.[ExternalType.MULTISIG]?.[0]?.url;
     const boundMultisigSaved = scopeBind(multisigSaved, { safe: true });
 
-    if (!multisigIndexerUrl || !accounts.length) {
-      return;
-    }
+    if (!multisigIndexerUrl || !accounts.length) return;
 
     const client = new GraphQLClient(multisigIndexerUrl);
     const accountIds = accounts.map((account) => account.accountId);

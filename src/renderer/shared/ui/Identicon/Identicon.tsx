@@ -30,9 +30,7 @@ export const Identicon = ({
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
-    if (!wrapperRef.current) {
-      return;
-    }
+    if (!wrapperRef.current) return;
 
     wrapperRef.current.querySelector('circle')?.setAttribute('fill', 'none');
   }, []);

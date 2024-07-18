@@ -49,9 +49,7 @@ export const ScanSingleframeQr = ({
   const [txPayload, setTxPayload] = useState<Uint8Array>();
 
   useEffect(() => {
-    if (txPayload) {
-      return;
-    }
+    if (txPayload) return;
 
     setupTransaction().catch(() => console.warn('ScanSingleframeQr | setupTransaction() failed'));
   }, [transaction, api]);

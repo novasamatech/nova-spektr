@@ -15,9 +15,7 @@ type Props = {
 export const RootAccountMd = ({ name, accountId, className, onClick, onInfoClick }: Props) => {
   const handleClick = (fn?: () => void) => {
     return (event: MouseEvent<HTMLButtonElement>) => {
-      if (!fn) {
-        return;
-      }
+      if (!fn) return;
 
       event.stopPropagation();
       fn();

@@ -41,9 +41,7 @@ export const ScanMultiframeQr = ({
   const [txPayloads, setTxPayloads] = useState<Uint8Array[]>([]);
 
   useEffect(() => {
-    if (txPayloads.length) {
-      return;
-    }
+    if (txPayloads.length) return;
 
     setupTransactions().catch(() => console.warn('ScanMultiQr | setupTransactions() failed'));
   }, []);
@@ -107,9 +105,7 @@ export const ScanMultiframeQr = ({
 
     const txRequests = await Promise.all(transactionPromises);
 
-    if (txRequests.length === 0) {
-      return;
-    }
+    if (txRequests.length === 0) return;
 
     await init();
 

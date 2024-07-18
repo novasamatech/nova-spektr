@@ -89,9 +89,7 @@ export const Staking = () => {
   }, []);
 
   useEffect(() => {
-    if (!connection) {
-      return;
-    }
+    if (!connection) return;
 
     const isDisabled = networkUtils.isDisabledConnection(connection);
     const isError = networkUtils.isErrorStatus(connectionStatus);
@@ -100,9 +98,7 @@ export const Staking = () => {
   }, [chainId, connection]);
 
   useEffect(() => {
-    if (!chainId || !api?.isConnected) {
-      return;
-    }
+    if (!chainId || !api?.isConnected) return;
 
     let unsubEra: () => void | undefined;
     let unsubStaking: () => void | undefined;
@@ -126,9 +122,7 @@ export const Staking = () => {
   }, [chainId, api, activeWallet]);
 
   useEffect(() => {
-    if (!activeWallet) {
-      return;
-    }
+    if (!activeWallet) return;
 
     const isMultisig = walletUtils.isMultisig(activeWallet);
     const isNovaWallet = walletUtils.isNovaWallet(activeWallet);
@@ -144,22 +138,16 @@ export const Staking = () => {
   }, [chainId, activeWallet]);
 
   useEffect(() => {
-    if (!chainId || !api?.isConnected) {
-      return;
-    }
+    if (!chainId || !api?.isConnected) return;
 
     const era = chainEra[chainId];
-    if (!era) {
-      return;
-    }
+    if (!era) return;
 
     validatorsService.getValidatorsList(api, era).then(setValidators);
   }, [chainId, api, chainEra]);
 
   useEffect(() => {
-    if (!api || !selectedStash) {
-      return;
-    }
+    if (!api || !selectedStash) return;
 
     validatorsService
       .getNominators(api, selectedStash, networkUtils.isLightClientConnection(connection))
@@ -169,9 +157,7 @@ export const Staking = () => {
   }, [api, selectedStash]);
 
   const changeNetwork = (chain: Chain) => {
-    if (chain.chainId === chainId) {
-      return;
-    }
+    if (chain.chainId === chainId) return;
 
     changeClient(chain.chainId);
     setActiveChain(chain);
@@ -181,9 +167,7 @@ export const Staking = () => {
   };
 
   const openSelectedValidators = (stash?: Address) => {
-    if (!api || !stash) {
-      return;
-    }
+    if (!api || !stash) return;
 
     setSelectedStash(stash);
     toggleNominators();
@@ -254,9 +238,7 @@ export const Staking = () => {
   );
 
   const navigateToStake = (operation: StakeOperations, addresses?: Address[]) => {
-    if (!activeChain || !activeWallet) {
-      return;
-    }
+    if (!activeChain || !activeWallet) return;
 
     if (addresses) {
       setSelectedNominators(addresses);

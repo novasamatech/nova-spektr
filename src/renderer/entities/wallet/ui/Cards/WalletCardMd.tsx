@@ -21,9 +21,7 @@ export const WalletCardMd = ({ wallet, description, prefix, hideIcon, className,
 
   const handleClick = (fn?: () => void) => {
     return (event: MouseEvent<HTMLButtonElement>) => {
-      if (!fn) {
-        return;
-      }
+      if (!fn) return;
 
       event.stopPropagation();
       fn();

@@ -14,9 +14,7 @@ export const TimeToEra = ({ api, era, className }: Props) => {
   const [seconds, setSeconds] = useState(0);
 
   useEffect(() => {
-    if (!api) {
-      return;
-    }
+    if (!api) return;
 
     eraService.getTimeToEra(api, era).then(setSeconds);
   }, [era, api]);

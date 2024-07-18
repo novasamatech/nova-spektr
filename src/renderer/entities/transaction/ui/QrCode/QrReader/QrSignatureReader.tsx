@@ -78,14 +78,10 @@ export const QrSignatureReader = ({
   };
 
   const startScanning = async (): Promise<void> => {
-    if (!videoRef.current || !scannerRef.current) {
-      return;
-    }
+    if (!videoRef.current || !scannerRef.current) return;
 
     const decodeCallback: DecodeCallback = async (result): Promise<void> => {
-      if (!result || isComplete.current) {
-        return;
-      }
+      if (!result || isComplete.current) return;
 
       try {
         await init();
@@ -148,9 +144,7 @@ export const QrSignatureReader = ({
   }, []);
 
   useEffect(() => {
-    if (!cameraId) {
-      return;
-    }
+    if (!cameraId) return;
 
     (async () => {
       try {

@@ -90,9 +90,8 @@ export const updateTransactionPayload = (
     transaction.indexCreated === indexCreated &&
     transaction.deposit === deposit.toString() &&
     transaction.depositor === depositor.toHex()
-  ) {
+  )
     return;
-  }
 
   return {
     ...transaction,

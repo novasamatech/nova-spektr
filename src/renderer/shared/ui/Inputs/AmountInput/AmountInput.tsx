@@ -100,9 +100,7 @@ export const AmountInput = ({
   }, [value]);
 
   const getBalance = useCallback(() => {
-    if (!balance) {
-      return;
-    }
+    if (!balance) return;
 
     if (Array.isArray(balance)) {
       return (
