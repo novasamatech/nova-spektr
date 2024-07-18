@@ -50,6 +50,7 @@ export const accountUtils = {
   isAnyProxyType,
   isNonTransferProxyType,
   isStakingProxyType,
+  isGovernanceProxyType,
 };
 
 // Account types
@@ -191,6 +192,10 @@ function isNonTransferProxyType(account: ProxiedAccount): boolean {
 
 function isStakingProxyType(account: ProxiedAccount): boolean {
   return account.proxyType === ProxyType.STAKING;
+}
+
+function isGovernanceProxyType(account: ProxiedAccount): boolean {
+  return account.proxyType === ProxyType.GOVERNANCE;
 }
 
 function isNonBaseVaultAccount(account: Account, wallet: Wallet): boolean {

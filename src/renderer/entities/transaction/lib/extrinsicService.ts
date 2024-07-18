@@ -1,4 +1,11 @@
-import { BaseTxInfo, defineMethod, methods, OptionsWithMeta, UnsignedTransaction } from '@substrate/txwrapper-polkadot';
+import {
+  Args,
+  BaseTxInfo,
+  defineMethod,
+  methods,
+  OptionsWithMeta,
+  UnsignedTransaction,
+} from '@substrate/txwrapper-polkadot';
 import { ApiPromise } from '@polkadot/api';
 import { methods as ormlMethods } from '@substrate/txwrapper-orml';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
@@ -12,6 +19,27 @@ import { toAddress } from '@shared/lib/utils';
 
 type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
 type BondWithoutContollerArgs = Omit<Parameters<typeof methods.staking.bond>[0], 'controller'>;
+interface UnlockArgs extends Args {
+  /**
+   *  class: The class of polls to unlock. - trackId.
+target: The account to remove the lock on.
+   */
+  class: number;
+  /**
+   * target: The account to remove the lock on. - address.
+   */
+  target: string;
+}
+interface RemoveVoteArgs extends Args {
+  /**
+   * class: Optional parameter, if given it indicates the class of the poll. For polls which have finished or are cancelled, this must be Some. - trackId.
+   */
+  class: number;
+  /**
+   * index: The index of poll of the vote to be removed. - referendumIndex.
+   */
+  index: string;
+}
 
 // TODO: change to substrate txwrapper method when it'll update
 const transferKeepAlive = (
@@ -42,6 +70,32 @@ const bondWithoutController = (
         args,
         name: 'bond',
         pallet: 'staking',
+      },
+      ...info,
+    },
+    options,
+  );
+
+const unlock = (args: UnlockArgs, info: BaseTxInfo, options: OptionsWithMeta): UnsignedTransaction =>
+  defineMethod(
+    {
+      method: {
+        args,
+        name: 'unlock',
+        pallet: 'convictionVoting',
+      },
+      ...info,
+    },
+    options,
+  );
+
+const removeVote = (args: RemoveVoteArgs, info: BaseTxInfo, options: OptionsWithMeta): UnsignedTransaction =>
+  defineMethod(
+    {
+      method: {
+        args,
+        name: 'removeVote',
+        pallet: 'convictionVoting',
       },
       ...info,
     },
@@ -348,7 +402,6 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
-
   [TransactionType.PROXY]: (transaction, info, options, api) => {
     const tx = transaction.args.transaction as Transaction;
     const call = getUnsignedTransaction[tx.type](tx, info, options, api).method;
@@ -358,6 +411,26 @@ export const getUnsignedTransaction: Record<
         real: transaction.args.real,
         forceProxyType: transaction.args.forceProxyType,
         call,
+      },
+      info,
+      options,
+    );
+  },
+  [TransactionType.UNLOCK]: (transaction, info, options) => {
+    return unlock(
+      {
+        class: transaction.args.trackId,
+        target: transaction.args.target,
+      },
+      info,
+      options,
+    );
+  },
+  [TransactionType.REMOVE_VOTE]: (transaction, info, options) => {
+    return removeVote(
+      {
+        class: transaction.args.trackId,
+        index: transaction.args.refIndex,
       },
       info,
       options,
@@ -449,6 +522,12 @@ export const getExtrinsic: Record<
   },
   [TransactionType.CREATE_PURE_PROXY]: ({ proxyType, delay, index }, api) => {
     return api.tx.proxy.createPure(proxyType, delay, index);
+  },
+  [TransactionType.UNLOCK]: ({ target, trackId }, api) => {
+    return api.tx.convictionVoting.unlock(trackId, target);
+  },
+  [TransactionType.REMOVE_VOTE]: ({ trackId, referendumIndex }, api) => {
+    return api.tx.convictionVoting.removeVote(trackId, referendumIndex);
   },
 };
 
