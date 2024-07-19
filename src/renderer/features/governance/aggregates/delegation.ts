@@ -1,7 +1,6 @@
 import { BN } from '@polkadot/util';
 import { combine } from 'effector';
 
-import { type DelegatingVoting, VotingType } from '@shared/core';
 import { networkSelectorModel } from '../model/networkSelector';
 
 import { votingAggregate } from './voting';
@@ -13,9 +12,9 @@ const $totalDelegations = combine(
   ({ voting }): string => {
     return Object.values(voting)
       .reduce<BN>((acc, value) => {
-        const voting = Object.values(value).find((v) => v.type === VotingType.DELEGATING);
+        const voting = Object.values(value).find((v) => v.type === 'delegating');
 
-        return voting ? acc.add((voting as DelegatingVoting).delegating.balance) : acc;
+        return voting ? acc.add(voting.delegating.balance) : acc;
       }, new BN(0))
       .toString();
   },

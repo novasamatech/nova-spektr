@@ -5,23 +5,16 @@ import { type BN, BN_ZERO } from '@polkadot/util';
 import {
   type AccountVote,
   type Address,
-  type CastingVoting,
-  type DelegatingVoting,
   type LinearDecreasingCurve,
   type ReciprocalCurve,
   type Referendum,
   type ReferendumId,
   ReferendumType,
-  type SplitAbstainVote,
-  type SplitVote,
-  type StandardVote,
   type SteppedDecreasingCurve,
   type TrackId,
   type TrackInfo,
-  VoteType,
   type Voting,
   type VotingCurve,
-  VotingType,
 } from '@shared/core';
 
 export const governanceService = {
@@ -165,12 +158,18 @@ async function getVotingFor(
 
   for (const [index, convictionVoting] of votings.entries()) {
     if (convictionVoting.isStorageFallback) continue;
+    const address = tuples[index]?.[0];
+    const trackId = tuples[index]?.[1];
+
+    if (!address || !trackId) {
+      continue;
+    }
 
     if (convictionVoting.isDelegating) {
       const delegation = convictionVoting.asDelegating;
 
-      result[tuples[index][0]][tuples[index][1]] = {
-        type: VotingType.DELEGATING,
+      result[address][trackId] = {
+        type: 'delegating',
         delegating: {
           balance: delegation.balance.toBn(),
           conviction: delegation.conviction.type,
@@ -180,46 +179,54 @@ async function getVotingFor(
             amount: delegation.prior[0].toBn(),
           },
         },
-      } as DelegatingVoting;
+      };
     }
 
     if (convictionVoting.isCasting) {
       const votes: Record<ReferendumId, AccountVote> = {};
-      for (const [referendumIndex, vote] of convictionVoting.asCasting.votes) {
+      for (const [index, vote] of convictionVoting.asCasting.votes) {
+        const referendumIndex = index.toString();
+
         if (vote.isStandard) {
           const standardVote = vote.asStandard;
-          votes[referendumIndex.toString()] = {
-            type: VoteType.Standard,
+          votes[referendumIndex] = {
+            type: 'standard',
+            track: trackId,
+            referendumIndex,
             vote: {
               type: standardVote.vote.isAye ? 'aye' : 'nay',
               conviction: standardVote.vote.conviction.type,
             },
             balance: standardVote.balance.toBn(),
-          } as StandardVote;
+          };
         }
 
         if (vote.isSplit) {
           const splitVote = vote.asSplit;
-          votes[referendumIndex.toString()] = {
-            type: VoteType.Split,
+          votes[referendumIndex] = {
+            type: 'split',
+            referendumIndex,
+            track: trackId,
             aye: splitVote.aye.toBn(),
             nay: splitVote.nay.toBn(),
-          } as SplitVote;
+          };
         }
 
         if (vote.isSplitAbstain) {
           const splitAbstainVote = vote.asSplitAbstain;
           votes[referendumIndex.toString()] = {
-            type: VoteType.SplitAbstain,
+            type: 'splitAbstain',
+            referendumIndex,
+            track: trackId,
             aye: splitAbstainVote.aye.toBn(),
             nay: splitAbstainVote.nay.toBn(),
             abstain: splitAbstainVote.abstain.toBn(),
-          } as SplitAbstainVote;
+          };
         }
       }
 
-      result[tuples[index][0]][tuples[index][1]] = {
-        type: VotingType.CASTING,
+      result[address][trackId] = {
+        type: 'casting',
         casting: {
           votes,
           prior: {
@@ -227,7 +234,7 @@ async function getVotingFor(
             amount: convictionVoting.asCasting.prior[0].toBn(),
           },
         },
-      } as CastingVoting;
+      };
     }
   }
 

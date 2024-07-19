@@ -114,9 +114,9 @@ export type {
   Referendum,
 } from './types/referendum';
 
-export { VotingType, VoteType, Conviction } from './types/voting';
 export type {
   Voting,
+  Conviction,
   CastingVoting,
   DelegatingVoting,
   AccountVote,

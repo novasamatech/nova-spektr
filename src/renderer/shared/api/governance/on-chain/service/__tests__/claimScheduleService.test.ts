@@ -10,7 +10,7 @@ import {
   type TrackInfo,
   type Voting,
 } from '@shared/core';
-import { Conviction, ReferendumType, VotingType } from '@shared/core';
+import { ReferendumType } from '@shared/core';
 import {
   type ClaimTimeAt,
   type ClaimTimeUntil,
@@ -44,7 +44,7 @@ describe('shared/api/governance/claimScheduleService', () => {
     const referendums: ReferendumInfo[] = [{ type: ReferendumType.Approved, referendumId: '123' }];
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
-        type: VotingType.CASTING,
+        type: 'casting',
         casting: {
           prior: { amount: BN_ZERO, unlockAt: 0 },
           votes: {
@@ -52,7 +52,7 @@ describe('shared/api/governance/claimScheduleService', () => {
               type: 'standard',
               track: '0',
               referendumIndex: '0',
-              vote: { type: 'aye', conviction: Conviction.None },
+              vote: { type: 'aye', conviction: 'None' },
               balance: BN_ONE,
             } as StandardVote,
           },
@@ -85,14 +85,14 @@ describe('shared/api/governance/claimScheduleService', () => {
   test('should handle both passed and not priors', () => {
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
-        type: VotingType.CASTING,
+        type: 'casting',
         casting: {
           prior: { amount: BN_TWO, unlockAt: 1000 },
           votes: {},
         },
       },
       1: {
-        type: VotingType.CASTING,
+        type: 'casting',
         casting: {
           prior: { amount: BN_ONE, unlockAt: 1100 },
           votes: {},
@@ -127,16 +127,17 @@ describe('shared/api/governance/claimScheduleService', () => {
   test('should extend votes by prior', () => {
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
-        type: VotingType.CASTING,
+        type: 'casting',
         casting: {
           prior: { amount: BN_ONE, unlockAt: 1100 },
           votes: {
             0: {
               type: 'standard',
               track: '0',
-              vote: { type: 'aye', conviction: Conviction.None },
+              referendumIndex: '0',
+              vote: { type: 'aye', conviction: 'None' },
               balance: BN_TWO,
-            } as StandardVote,
+            },
           },
         },
       },
@@ -169,7 +170,7 @@ describe('shared/api/governance/claimScheduleService', () => {
 
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
-        type: VotingType.CASTING,
+        type: 'casting',
         casting: {
           prior: { amount: BN_ZERO, unlockAt: 0 },
           votes: {
@@ -177,14 +178,14 @@ describe('shared/api/governance/claimScheduleService', () => {
               type: 'standard',
               track: '0',
               referendumIndex: '0',
-              vote: { type: 'aye', conviction: Conviction.None },
+              vote: { type: 'aye', conviction: 'None' },
               balance: BN_EIGHT,
             } as StandardVote,
             1: {
               type: 'standard',
               track: '0',
               referendumIndex: '1',
-              vote: { type: 'aye', conviction: Conviction.None },
+              vote: { type: 'aye', conviction: 'None' },
               balance: BN_TWO,
             } as StandardVote,
           },
@@ -220,7 +221,7 @@ describe('shared/api/governance/claimScheduleService', () => {
 
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
-        type: VotingType.CASTING,
+        type: 'casting',
         casting: {
           prior: { amount: BN_ONE, unlockAt: 1100 },
           votes: {
@@ -228,9 +229,9 @@ describe('shared/api/governance/claimScheduleService', () => {
               type: 'standard',
               track: '0',
               referendumIndex: '1',
-              vote: { type: 'aye', conviction: Conviction.None },
+              vote: { type: 'aye', conviction: 'None' },
               balance: BN_TWO,
-            } as StandardVote,
+            },
           },
         },
       },
@@ -266,7 +267,7 @@ describe('shared/api/governance/claimScheduleService', () => {
 
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
-        type: VotingType.CASTING,
+        type: 'casting',
         casting: {
           prior: { amount: BN_ZERO, unlockAt: 0 },
           votes: {
@@ -274,14 +275,14 @@ describe('shared/api/governance/claimScheduleService', () => {
               type: 'standard',
               track: '0',
               referendumIndex: '0',
-              vote: { type: 'aye', conviction: Conviction.None },
+              vote: { type: 'aye', conviction: 'None' },
               balance: BN_ONE,
             } as StandardVote,
           },
         },
       },
       1: {
-        type: VotingType.CASTING,
+        type: 'casting',
         casting: {
           prior: { amount: BN_ZERO, unlockAt: 0 },
           votes: {
@@ -289,7 +290,7 @@ describe('shared/api/governance/claimScheduleService', () => {
               type: 'standard',
               track: '1',
               referendumIndex: '1',
-              vote: { type: 'aye', conviction: Conviction.None },
+              vote: { type: 'aye', conviction: 'None' },
               balance: BN_TWO,
             } as StandardVote,
           },
@@ -331,7 +332,7 @@ describe('shared/api/governance/claimScheduleService', () => {
 
     const votingByTrack: Record<TrackId, CastingVoting> = {
       1: {
-        type: VotingType.CASTING,
+        type: 'casting',
         casting: {
           prior: { amount: BN_ZERO, unlockAt: 0 },
           votes: {
@@ -339,14 +340,14 @@ describe('shared/api/governance/claimScheduleService', () => {
               type: 'standard',
               track: '1',
               referendumIndex: '1',
-              vote: { type: 'aye', conviction: Conviction.None },
+              vote: { type: 'aye', conviction: 'None' },
               balance: BN_ONE,
             } as StandardVote,
           },
         },
       },
       2: {
-        type: VotingType.CASTING,
+        type: 'casting',
         casting: {
           prior: { amount: BN_ZERO, unlockAt: 0 },
           votes: {
@@ -354,14 +355,14 @@ describe('shared/api/governance/claimScheduleService', () => {
               type: 'standard',
               track: '2',
               referendumIndex: '2',
-              vote: { type: 'aye', conviction: Conviction.None },
+              vote: { type: 'aye', conviction: 'None' },
               balance: BN_TWO,
             } as StandardVote,
           },
         },
       },
       3: {
-        type: VotingType.CASTING,
+        type: 'casting',
         casting: {
           prior: { amount: BN_ZERO, unlockAt: 0 },
           votes: {
@@ -369,7 +370,7 @@ describe('shared/api/governance/claimScheduleService', () => {
               type: 'standard',
               track: '3',
               referendumIndex: '3',
-              vote: { type: 'aye', conviction: Conviction.None },
+              vote: { type: 'aye', conviction: 'None' },
               balance: BN_ONE,
             } as StandardVote,
           },
@@ -408,7 +409,7 @@ describe('shared/api/governance/claimScheduleService', () => {
   test('should take gap into account', () => {
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
-        type: VotingType.CASTING,
+        type: 'casting',
         casting: {
           prior: { amount: BN_ZERO, unlockAt: 0 },
           votes: {
@@ -416,7 +417,7 @@ describe('shared/api/governance/claimScheduleService', () => {
               type: 'standard',
               track: '0',
               referendumIndex: '0',
-              vote: { type: 'aye', conviction: Conviction.None },
+              vote: { type: 'aye', conviction: 'None' },
               balance: BN_TWO,
             } as StandardVote,
           },
@@ -449,7 +450,7 @@ describe('shared/api/governance/claimScheduleService', () => {
   test('gap should be limited with other locks', () => {
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
-        type: VotingType.CASTING,
+        type: 'casting',
         casting: {
           prior: { amount: BN_ZERO, unlockAt: 0 },
           votes: {
@@ -457,21 +458,21 @@ describe('shared/api/governance/claimScheduleService', () => {
               type: 'standard',
               track: '0',
               referendumIndex: '0',
-              vote: { type: 'aye', conviction: Conviction.None },
+              vote: { type: 'aye', conviction: 'None' },
               balance: BN_ONE,
             } as StandardVote,
           },
         },
       },
       1: {
-        type: VotingType.CASTING,
+        type: 'casting',
         casting: {
           prior: { amount: BN_TEN, unlockAt: 1000 },
           votes: {},
         },
       },
       2: {
-        type: VotingType.CASTING,
+        type: 'casting',
         casting: {
           prior: { amount: BN_ONE, unlockAt: 1100 },
           votes: {},
@@ -510,7 +511,7 @@ describe('shared/api/governance/claimScheduleService', () => {
   test('gap claim should be delayed', () => {
     const votingByTrack: Record<TrackId, CastingVoting> = {
       1: {
-        type: VotingType.CASTING,
+        type: 'casting',
         casting: {
           prior: { amount: BN_TEN, unlockAt: 1100 },
           votes: {},
@@ -540,7 +541,7 @@ describe('shared/api/governance/claimScheduleService', () => {
   test('should not duplicate unlock command with both prior and gap present', () => {
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
-        type: VotingType.CASTING,
+        type: 'casting',
         casting: {
           prior: { amount: BN_FIVE, unlockAt: 1050 },
           votes: {},
@@ -575,7 +576,7 @@ describe('shared/api/governance/claimScheduleService', () => {
     ];
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
-        type: VotingType.CASTING,
+        type: 'casting',
         casting: {
           prior: { amount: BN_ZERO, unlockAt: 0 },
           votes: {
@@ -583,21 +584,21 @@ describe('shared/api/governance/claimScheduleService', () => {
               type: 'standard',
               track: '0',
               referendumIndex: '0',
-              vote: { type: 'aye', conviction: Conviction.None },
+              vote: { type: 'aye', conviction: 'None' },
               balance: BN_THREE,
             } as StandardVote,
             1: {
               type: 'standard',
               track: '1',
               referendumIndex: '0',
-              vote: { type: 'aye', conviction: Conviction.None },
+              vote: { type: 'aye', conviction: 'None' },
               balance: BN_ONE,
             } as StandardVote,
             2: {
               type: 'standard',
               track: '2',
               referendumIndex: '0',
-              vote: { type: 'aye', conviction: Conviction.None },
+              vote: { type: 'aye', conviction: 'None' },
               balance: BN_TWO,
             } as StandardVote,
           },
@@ -642,7 +643,7 @@ describe('shared/api/governance/claimScheduleService', () => {
 
     const votingByTrack: Record<TrackId, CastingVoting> = {
       20: {
-        type: VotingType.CASTING,
+        type: 'casting',
         casting: {
           prior: { amount: BN_ZERO, unlockAt: 0 },
           votes: {
@@ -650,14 +651,14 @@ describe('shared/api/governance/claimScheduleService', () => {
               type: 'standard',
               track: '20',
               referendumIndex: '13',
-              vote: { type: 'aye', conviction: Conviction.None },
+              vote: { type: 'aye', conviction: 'None' },
               balance: BN_ONE,
             } as StandardVote,
           },
         },
       },
       21: {
-        type: VotingType.CASTING,
+        type: 'casting',
         casting: {
           prior: { amount: BN_ZERO, unlockAt: 0 },
           votes: {
@@ -665,7 +666,7 @@ describe('shared/api/governance/claimScheduleService', () => {
               type: 'standard',
               track: '21',
               referendumIndex: '5',
-              vote: { type: 'aye', conviction: Conviction.None },
+              vote: { type: 'aye', conviction: 'None' },
               balance: BN_TEN,
             } as StandardVote,
           },
@@ -705,12 +706,12 @@ describe('shared/api/governance/claimScheduleService', () => {
   test('should handle standalone delegation', () => {
     const votingByTrack: Record<TrackId, DelegatingVoting> = {
       0: {
-        type: VotingType.DELEGATING,
+        type: 'delegating',
         delegating: {
           prior: { amount: BN_ZERO, unlockAt: 0 },
           balance: BN_ONE,
           target: '123',
-          conviction: Conviction.None,
+          conviction: 'None',
         },
       },
     };
@@ -737,12 +738,12 @@ describe('shared/api/governance/claimScheduleService', () => {
   test('should take delegation prior lock into account', () => {
     const votingByTrack: Record<TrackId, DelegatingVoting> = {
       0: {
-        type: VotingType.DELEGATING,
+        type: 'delegating',
         delegating: {
           prior: { amount: BN_TEN, unlockAt: 1100 },
           balance: BN_ONE,
           target: '123',
-          conviction: Conviction.None,
+          conviction: 'None',
         },
       },
     };
@@ -774,12 +775,12 @@ describe('shared/api/governance/claimScheduleService', () => {
   test('delegation plus gap case', () => {
     const votingByTrack: Record<TrackId, DelegatingVoting> = {
       0: {
-        type: VotingType.DELEGATING,
+        type: 'delegating',
         delegating: {
           prior: { amount: BN_ZERO, unlockAt: 0 },
           balance: BN_ONE,
           target: '123',
-          conviction: Conviction.None,
+          conviction: 'None',
         },
       },
     };
@@ -812,16 +813,16 @@ describe('shared/api/governance/claimScheduleService', () => {
     const referendums: ApprovedReferendum[] = [{ type: ReferendumType.Approved, referendumId: '0', since: 1100 }];
     const votingByTrack: Record<TrackId, DelegatingVoting | CastingVoting> = {
       0: {
-        type: VotingType.DELEGATING,
+        type: 'delegating',
         delegating: {
           prior: { amount: BN_ZERO, unlockAt: 0 },
           balance: BN_ONE,
           target: '123',
-          conviction: Conviction.None,
+          conviction: 'None',
         },
       },
       1: {
-        type: VotingType.CASTING,
+        type: 'casting',
         casting: {
           prior: { amount: BN_TEN, unlockAt: 1000 },
           votes: {
@@ -829,7 +830,7 @@ describe('shared/api/governance/claimScheduleService', () => {
               type: 'standard',
               track: '1',
               referendumIndex: '0',
-              vote: { type: 'aye', conviction: Conviction.None },
+              vote: { type: 'aye', conviction: 'None' },
               balance: BN_FIVE,
             } as StandardVote,
           },

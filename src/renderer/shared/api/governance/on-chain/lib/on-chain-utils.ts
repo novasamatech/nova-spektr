@@ -4,16 +4,17 @@ import {
   type AccountVote,
   type ApprovedReferendum,
   type CastingVoting,
+  type Conviction,
   type DelegatingVoting,
   type OngoingReferendum,
   type ReferendumInfo,
+  ReferendumType,
   type RejectedReferendum,
   type SplitAbstainVote,
   type SplitVote,
   type StandardVote,
   type Voting,
 } from '@shared/core';
-import { Conviction, ReferendumType, VoteType, VotingType } from '@shared/core';
 
 import { type ClaimTime, type ClaimTimeAt } from './claim-types';
 
@@ -40,13 +41,13 @@ const enum Vote {
 
 function getLockPeriods(conviction: Conviction): number {
   return {
-    [Conviction.None]: 0,
-    [Conviction.Locked1x]: 1,
-    [Conviction.Locked2x]: 2,
-    [Conviction.Locked3x]: 4,
-    [Conviction.Locked4x]: 8,
-    [Conviction.Locked5x]: 16,
-    [Conviction.Locked6x]: 32,
+    None: 0,
+    Locked1x: 1,
+    Locked2x: 2,
+    Locked3x: 4,
+    Locked4x: 8,
+    Locked5x: 16,
+    Locked6x: 32,
   }[conviction];
 }
 
@@ -63,17 +64,17 @@ function test(vote: Vote, conviction: number): number | undefined {
 // Voting types
 
 function isCasting(voting: Voting): voting is CastingVoting {
-  return voting.type === VotingType.CASTING;
+  return voting.type === 'casting';
 }
 
 function isDelegating(voting: Voting): voting is DelegatingVoting {
-  return voting.type === VotingType.DELEGATING;
+  return voting.type === 'delegating';
 }
 
 // Voted types
 
 function isStandardVote(vote: AccountVote): vote is StandardVote {
-  return vote.type === VoteType.Standard;
+  return vote.type === 'standard';
 }
 
 // Claim time types
@@ -99,14 +100,14 @@ function isApproved(referendum: ReferendumInfo): referendum is ApprovedReferendu
 function getTotalLock(voting: Voting): BN {
   if (isCasting(voting)) {
     const maxVote = Object.values(voting.casting.votes).reduce<BN>((acc, vote) => {
-      if (vote.type === VoteType.Standard) {
+      if (vote.type === 'standard') {
         acc = bnMax((vote as StandardVote).balance, acc);
       }
-      if (vote.type === VoteType.Split) {
+      if (vote.type === 'split') {
         const splitVote = vote as SplitVote;
         acc = bnMax(splitVote.aye.add(splitVote.nay), acc);
       }
-      if (vote.type === VoteType.SplitAbstain) {
+      if (vote.type === 'splitAbstain') {
         const abstainVote = vote as SplitAbstainVote;
         acc = bnMax(abstainVote.aye.add(abstainVote.nay).add(abstainVote.abstain), acc);
       }
@@ -116,6 +117,7 @@ function getTotalLock(voting: Voting): BN {
 
     return bnMax(maxVote, voting.casting.prior.amount);
   }
+
   if (isDelegating(voting)) {
     return bnMax(voting.delegating.balance, voting.delegating.prior.amount);
   }
