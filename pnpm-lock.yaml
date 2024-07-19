@@ -191,6 +191,9 @@ importers:
       tailwindcss:
         specifier: ^3.4.4
         version: 3.4.4(ts-node@10.9.1(@swc/core@1.6.7(@swc/helpers@0.5.11))(@types/node@18.0.0)(typescript@5.5.3))
+      tsc-files:
+        specifier: 1.1.4
+        version: 1.1.4(typescript@5.5.3)
       units-css:
         specifier: ^0.4.0
         version: 0.4.0
@@ -10427,6 +10430,12 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
+
+  tsc-files@1.1.4:
+    resolution: {integrity: sha512-RePsRsOLru3BPpnf237y1Xe1oCGta8rmSYzM76kYo5tLGsv5R2r3s64yapYorGTPuuLyfS9NVbh9ydzmvNie2w==}
+    hasBin: true
+    peerDependencies:
+      typescript: '>=3'
 
   tsconfig-paths-webpack-plugin@4.0.0:
     resolution: {integrity: sha512-fw/7265mIWukrSHd0i+wSwx64kYUSAKPfxRDksjKIYTxSAp9W9/xcZVBF4Kl0eqQd5eBpAQ/oQrc5RyM/0c1GQ==}
@@ -24813,6 +24822,10 @@ snapshots:
 
   ts-pnp@1.2.0(typescript@5.5.3):
     optionalDependencies:
+      typescript: 5.5.3
+
+  tsc-files@1.1.4(typescript@5.5.3):
+    dependencies:
       typescript: 5.5.3
 
   tsconfig-paths-webpack-plugin@4.0.0:

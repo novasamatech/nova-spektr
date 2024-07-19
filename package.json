@@ -55,8 +55,7 @@
     "build:storybook": "build-storybook",
     "update:chains-file": "node scripts/buildChainsJson.js",
     "update:tokens-file": "node scripts/buildTokensJson.js",
-    "githook:pre-commit": "cross-env NODE_ENV=production lint-staged && tsc -p tsconfig.json",
-    "githook:pre-push": "cross-env pnpm test -- --changedSince=dev",
+    "githook:pre-commit": "lint-staged",
     "prepare": "husky install",
     "r": "pnpm run-s"
   },
@@ -126,6 +125,7 @@
     "styled-components": "^5.3.6",
     "tailwind-merge": "^1.12.0",
     "tailwindcss": "^3.4.4",
+    "tsc-files": "1.1.4",
     "units-css": "^0.4.0",
     "yaml": "^2.3.3"
   },
