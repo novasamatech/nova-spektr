@@ -2,7 +2,6 @@ import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { methods as ormlMethods } from '@substrate/txwrapper-orml';
 import {
-  type Args,
   type BaseTxInfo,
   type OptionsWithMeta,
   type UnsignedTransaction,
@@ -17,29 +16,10 @@ import { DEFAULT_FEE_ASSET_ITEM } from '@entities/transaction';
 import * as xcmMethods from '@entities/transaction/lib/common/xcmMethods';
 
 import { getMaxWeight, hasDestWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
+import { convictionVotingMethods } from './wrappers/convictionVoting';
 
 type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
 type BondWithoutContollerArgs = Omit<Parameters<typeof methods.staking.bond>[0], 'controller'>;
-interface UnlockArgs extends Args {
-  /**
-   *  class: The class of polls to unlock. - trackId.
-   */
-  class: number;
-  /**
-   * target: The account to remove the lock on. - address.
-   */
-  target: string;
-}
-interface RemoveVoteArgs extends Args {
-  /**
-   * class: Optional parameter, if given it indicates the class of the poll. For polls which have finished or are cancelled, this must be Some. - trackId.
-   */
-  class: number;
-  /**
-   * index: The index of poll of the vote to be removed. - referendumId.
-   */
-  index: string;
-}
 
 // TODO: change to substrate txwrapper method when it'll update
 const transferKeepAlive = (
@@ -70,32 +50,6 @@ const bondWithoutController = (
         args,
         name: 'bond',
         pallet: 'staking',
-      },
-      ...info,
-    },
-    options,
-  );
-
-const unlock = (args: UnlockArgs, info: BaseTxInfo, options: OptionsWithMeta): UnsignedTransaction =>
-  defineMethod(
-    {
-      method: {
-        args,
-        name: 'unlock',
-        pallet: 'convictionVoting',
-      },
-      ...info,
-    },
-    options,
-  );
-
-const removeVote = (args: RemoveVoteArgs, info: BaseTxInfo, options: OptionsWithMeta): UnsignedTransaction =>
-  defineMethod(
-    {
-      method: {
-        args,
-        name: 'removeVote',
-        pallet: 'convictionVoting',
       },
       ...info,
     },
@@ -417,7 +371,7 @@ export const getUnsignedTransaction: Record<
     );
   },
   [TransactionType.UNLOCK]: (transaction, info, options) => {
-    return unlock(
+    return convictionVotingMethods.unlock(
       {
         class: transaction.args.trackId,
         target: transaction.args.target,
@@ -426,11 +380,34 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
+
+  [TransactionType.DELEGATE]: (transaction, info, options) => {
+    return convictionVotingMethods.delegate(
+      {
+        class: transaction.args.track,
+        to: transaction.args.target,
+        conviction: transaction.args.conviction,
+        balance: transaction.args.balance,
+      },
+      info,
+      options,
+    );
+  },
   [TransactionType.REMOVE_VOTE]: (transaction, info, options) => {
-    return removeVote(
+    return convictionVotingMethods.removeVote(
       {
         class: transaction.args.trackId,
         index: transaction.args.referendumId,
+      },
+      info,
+      options,
+    );
+  },
+
+  [TransactionType.UNDELEGATE]: (transaction, info, options) => {
+    return convictionVotingMethods.undelegate(
+      {
+        class: transaction.args.track,
       },
       info,
       options,
@@ -528,6 +505,12 @@ export const getExtrinsic: Record<
   },
   [TransactionType.REMOVE_VOTE]: ({ trackId, referendumId }, api) => {
     return api.tx.convictionVoting.removeVote(trackId, referendumId);
+  },
+  [TransactionType.DELEGATE]: ({ track, target, conviction, balance }, api) => {
+    return api.tx.convictionVoting.delegate(track, target, conviction, balance);
+  },
+  [TransactionType.UNDELEGATE]: ({ track }, api) => {
+    return api.tx.convictionVoting.undelegate(track);
   },
 };
 

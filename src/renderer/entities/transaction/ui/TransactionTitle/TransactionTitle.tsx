@@ -16,7 +16,7 @@ type Props = {
 export const TransactionTitle = ({ tx, description, className, children }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
 
-  const title = getTransactionTitle(tx);
+  const title = getTransactionTitle(t, tx);
 
   return (
     <div className={cnTw('inline-flex gap-x-3 items-center', className)}>

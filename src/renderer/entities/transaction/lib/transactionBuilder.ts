@@ -20,6 +20,9 @@ export const transactionBuilder = {
   buildWithdraw,
   buildUnstake,
   buildSetPayee,
+  buildDelegate,
+  buildUndelegate,
+  buildEditDelegation,
 };
 
 type TransferParams = {
@@ -227,4 +230,93 @@ function buildBatchAll({ chain, accountId, transactions }: BatchParams): Transac
     type: TransactionType.BATCH_ALL,
     args: { transactions },
   };
+}
+
+type DelegateParams = {
+  chain: Chain;
+  accountId: AccountId;
+  tracks: number[];
+  target: Address;
+  conviction: number;
+  balance: string;
+};
+
+function buildDelegate({ chain, accountId, tracks, target, conviction, balance }: DelegateParams): Transaction {
+  const delegateTxs = tracks.map((track) => ({
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.DELEGATE,
+    args: {
+      track,
+      target,
+      conviction,
+      balance,
+    },
+  }));
+
+  if (delegateTxs.length === 1) return delegateTxs[0];
+
+  return buildBatchAll({ chain, accountId, transactions: delegateTxs });
+}
+
+type UndelegateParams = {
+  chain: Chain;
+  accountId: AccountId;
+  tracks: number[];
+};
+
+function buildUndelegate({ chain, accountId, tracks }: UndelegateParams): Transaction {
+  const undelegateTxs = tracks.map((track) => ({
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.UNDELEGATE,
+    args: {
+      track,
+    },
+  }));
+
+  if (undelegateTxs.length === 1) return undelegateTxs[0];
+
+  return buildBatchAll({ chain, accountId, transactions: undelegateTxs });
+}
+
+type EditDelegationParams = {
+  chain: Chain;
+  accountId: AccountId;
+  tracks: number[];
+  target: Address;
+  conviction: number;
+  balance: string;
+};
+
+function buildEditDelegation({
+  chain,
+  accountId,
+  tracks,
+  target,
+  conviction,
+  balance,
+}: EditDelegationParams): Transaction {
+  const undelegateTxs = tracks.map((track) => ({
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.UNDELEGATE,
+    args: {
+      track,
+    },
+  }));
+
+  const delegateTxs = tracks.map((track) => ({
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.DELEGATE,
+    args: {
+      track,
+      target,
+      conviction,
+      balance,
+    },
+  }));
+
+  return buildBatchAll({ chain, accountId, transactions: [...undelegateTxs, ...delegateTxs] });
 }
