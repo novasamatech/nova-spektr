@@ -24,6 +24,7 @@ export const XCM_SECTIONS = ['xcmPallet', 'polkadotXcm', 'xTokens'];
 export const STAKING_SECTION = 'staking';
 export const PROXY_SECTION = 'proxy';
 export const MULTISIG_SECTION = 'multisig';
+export const GOVERNANCE_SECTION = 'convictionVoting';
 
 export const TransferTypes = [TransactionType.TRANSFER, TransactionType.ASSET_TRANSFER, TransactionType.ORML_TRANSFER];
 
