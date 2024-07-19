@@ -3,8 +3,8 @@ const path = require('path');
 
 const prettierConfig = fs.readFileSync('./.prettierrc', 'utf8');
 const prettierOptions = JSON.parse(prettierConfig);
-const localesPath = path.resolve('./src/renderer/shared/api/translation/locales');
-const defaultLocalePath = path.resolve(localesPath, 'en.json');
+const localesPath = './src/renderer/shared/api/translation/locales';
+const defaultLocalePath = path.join(localesPath, 'en.json');
 
 const aliases = [
   ['@', './renderer/'],
@@ -90,11 +90,11 @@ module.exports = {
       extends: ['plugin:json/recommended'],
     },
     {
-      files: [path.join('translation/locales', '**/*.json')],
+      files: [path.join(localesPath, '/*.json')],
       extends: ['plugin:i18n-json/recommended'],
       rules: {
-        'i18n-json/identical-keys': ['error', { filePath: defaultLocalePath }],
-        'i18n-json/identical-placeholders': ['error', { filePath: defaultLocalePath }],
+        'i18n-json/identical-keys': ['error', { filePath: path.resolve(defaultLocalePath) }],
+        'i18n-json/identical-placeholders': ['error', { filePath: path.resolve(defaultLocalePath) }],
       },
     },
     {
