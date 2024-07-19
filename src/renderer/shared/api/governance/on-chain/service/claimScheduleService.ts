@@ -168,7 +168,7 @@ function castingClaimableLocks(
 
   const standardVotes = Object.entries(voting.casting.votes) as [string, StandardVote][];
 
-  const standardVoteLocks = standardVotes.map<ClaimableLock>(([referendumId, standardVote]) => {
+  const standardVoteLocks = standardVotes.flatMap<ClaimableLock>(([referendumId, standardVote]) => {
     const estimatedEnd = maxConvictionEndOf(
       currentBlockNumber,
       trackId,
@@ -179,13 +179,15 @@ function castingClaimableLocks(
       referendums.find((i) => i.referendumId === referendumId),
     );
 
+    if (!standardVote?.balance) return [];
+
     return {
       // we estimate whether prior will affect the vote when performing `removeVote`
       claimAt: {
         type: 'at',
         block: Math.max(estimatedEnd, (priorLock.claimAt as ClaimTimeAt).block),
       } as ClaimTime,
-      amount: standardVote.balance || BN_ZERO,
+      amount: standardVote.balance,
       affected: [{ trackId, type: 'vote', referendumId } as AffectVote],
     } as ClaimableLock;
   });
@@ -393,17 +395,29 @@ function toUnlockChunks(locks: ClaimableLock[], currentBlockNumber: BlockHeight)
   const nonClaimable = chunks.filter((chunk): chunk is PendingChunk => chunk.type !== UnlockChunkType.CLAIMABLE);
 
   // Fold all claimable chunks into a single one
-  const claimableChunk = claimable.reduce<ClaimableChunk>(
-    (acc, chunk) => {
-      acc.amount = acc.amount.add(chunk.amount);
-      acc.actions = acc.actions.concat(chunk.actions);
+  const initialClaimable: [BN, ClaimAction[]] = [BN_ZERO, []];
 
-      return acc;
-    },
-    { type: UnlockChunkType.CLAIMABLE, amount: BN_ZERO, actions: [] },
-  );
+  const [claimableAmount, claimableActions] = claimable.reduce(([amount, actions], unlockChunk) => {
+    if (unlockChunk.amount.isZero()) return [amount, actions];
+
+    const nextAmount = amount.add(unlockChunk.amount);
+    const nextActions = actions.concat(unlockChunk.actions);
+    return [nextAmount, nextActions];
+  }, initialClaimable);
+
+  const claimableChunk = constructClaimableChunk(claimableAmount, claimableActions);
 
   return claimableChunk.amount.isZero() ? nonClaimable : [claimableChunk, ...nonClaimable];
+}
+
+// We want to avoid doing multiple unlocks for the same track
+// For that we also need to move unlock() calls to the end
+function constructClaimableChunk(claimableAmount: BN, claimableActions: ClaimAction[]): ClaimableChunk {
+  return {
+    type: UnlockChunkType.CLAIMABLE,
+    amount: claimableAmount,
+    actions: claimableActions.sort((a, b) => (a.type === 'unlock' ? 1 : -1)),
+  };
 }
 
 function toUnlockChunk(lock: ClaimableLock, currentBlockNumber: BlockHeight): Chunks {
