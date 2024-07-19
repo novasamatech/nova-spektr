@@ -84,6 +84,19 @@ export const isProxyTransaction = (transaction?: Transaction | DecodedTransactio
   return transaction?.type === TransactionType.PROXY;
 };
 
+export const isEditDelegationTransaction = (transaction?: Transaction | DecodedTransaction): boolean => {
+  if (transaction?.type === TransactionType.BATCH_ALL) {
+    const delegateTx = transaction.args.transactions?.find((tx: Transaction) => tx.type === TransactionType.DELEGATE);
+    const undelegateTx = transaction.args.transactions?.find(
+      (tx: Transaction) => tx.type === TransactionType.UNDELEGATE,
+    );
+
+    return delegateTx && undelegateTx;
+  }
+
+  return false;
+};
+
 export const getTransactionAmount = (tx: Transaction | DecodedTransaction): string | null => {
   const txType = tx.type;
   if (!txType) return null;
@@ -212,15 +225,8 @@ export const getTransactionTitle = (t: TFunction, transaction?: Transaction | De
     return formatSectionAndMethod(transaction.section, transaction.method);
   }
 
-  if (transaction.type === TransactionType.BATCH_ALL) {
-    const delegateTx = transaction.args.transactions?.find((tx: Transaction) => tx.type === TransactionType.DELEGATE);
-    const undelegateTx = transaction.args.transactions?.find(
-      (tx: Transaction) => tx.type === TransactionType.UNDELEGATE,
-    );
-
-    if (delegateTx && undelegateTx) {
-      return t('operations.titles.editDelegation');
-    }
+  if (isEditDelegationTransaction(transaction)) {
+    return t('operations.titles.editDelegation');
   }
 
   if (transaction.type === TransactionType.BATCH_ALL) {
@@ -245,15 +251,8 @@ export const getModalTransactionTitle = (
     return formatSectionAndMethod(transaction.section, transaction.method);
   }
 
-  if (transaction.type === TransactionType.BATCH_ALL) {
-    const delegateTx = transaction.args.transactions?.find((tx: Transaction) => tx.type === TransactionType.DELEGATE);
-    const undelegateTx = transaction.args.transactions?.find(
-      (tx: Transaction) => tx.type === TransactionType.UNDELEGATE,
-    );
-
-    if (delegateTx && undelegateTx) {
-      return t('operations.modalTitles.editDelegationOn');
-    }
+  if (isEditDelegationTransaction(transaction)) {
+    return t('operations.modalTitles.editDelegationOn');
   }
 
   if (transaction.type === TransactionType.BATCH_ALL) {
