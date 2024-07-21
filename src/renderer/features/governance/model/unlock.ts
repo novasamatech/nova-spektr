@@ -1,13 +1,13 @@
-import { claimScheduleService, referendumModel } from '@entities/governance';
-import { walletModel } from '@entities/wallet';
 import { type ApiPromise } from '@polkadot/api';
 import { type BN, BN_ZERO } from '@polkadot/util';
-import { type ClaimTimeAt, type UnlockChunk, UnlockChunkType } from '@shared/api/governance';
-import { type Address, type Referendum, type TrackId, type TrackInfo, type VotingMap } from '@shared/core';
-import { Step, getCreatedDateFromApi, getCurrentBlockNumber } from '@shared/lib/utils';
 import { createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { combineEvents } from 'patronum';
 
+import { type ClaimTimeAt, type UnlockChunk, UnlockChunkType } from '@shared/api/governance';
+import { type Address, type Referendum, type TrackId, type TrackInfo, type VotingMap } from '@shared/core';
+import { Step, getCreatedDateFromApi, getCurrentBlockNumber } from '@shared/lib/utils';
+import { claimScheduleService, referendumModel } from '@entities/governance';
+import { walletModel } from '@entities/wallet';
 import { tracksAggregate } from '../aggregates/tracks';
 import { votingAggregate } from '../aggregates/voting';
 import { unlockService } from '../lib/unlock';

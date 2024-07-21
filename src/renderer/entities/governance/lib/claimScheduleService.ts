@@ -15,7 +15,6 @@ import {
   type GroupedClaimAffects,
   type PendingChunk,
   UnlockChunkType,
-  onChainUtils,
 } from '@/shared/api/governance';
 import {
   type AccountVote,
@@ -29,7 +28,9 @@ import {
   type Voting,
 } from '@/shared/core';
 
+import { locksService } from './lockService';
 import { referendumService } from './referendumService';
+import { votingService } from './votingService';
 
 export const claimScheduleService = {
   estimateClaimSchedule,
@@ -92,7 +93,7 @@ function individualClaimableLocks(
 
   return Object.entries(votingByTrack).flatMap(([trackId, voting]) => {
     const gapLock = gapClaimableLock({ currentBlockNumber, trackId, voting, gap: gapBetweenVotingAndLocked });
-    if (onChainUtils.isCasting(voting)) {
+    if (votingService.isCasting(voting)) {
       return gapLock.concat(
         castingClaimableLocks(
           currentBlockNumber,
@@ -105,7 +106,7 @@ function individualClaimableLocks(
         ),
       );
     }
-    if (onChainUtils.isDelegating(voting)) {
+    if (votingService.isDelegating(voting)) {
       return gapLock.concat(delegatingClaimableLocks(trackId, voting));
     }
 
@@ -119,7 +120,7 @@ function gapBetween(votingByTrack: Record<TrackId, Voting>, trackLocks: Record<T
   for (const [trackId, voting] of Object.entries(votingByTrack)) {
     const trackLock = trackLocks[trackId] || BN_ZERO;
 
-    gapByTrack[trackId] = BN.max(trackLock.sub(onChainUtils.getTotalLock(voting)), BN_ZERO);
+    gapByTrack[trackId] = BN.max(trackLock.sub(locksService.getTotalLock(voting)), BN_ZERO);
   }
 
   return gapByTrack;
@@ -139,7 +140,7 @@ function gapClaimableLock({ trackId, voting, gap, currentBlockNumber }: GapLockP
   return [
     {
       claimAt: { type: 'at', block: currentBlockNumber },
-      amount: trackGap.add(onChainUtils.getTotalLock(voting)),
+      amount: trackGap.add(locksService.getTotalLock(voting)),
       affected: [{ trackId, type: 'track' }],
     },
   ];
@@ -161,7 +162,7 @@ function castingClaimableLocks(
   } satisfies ClaimableLock;
 
   const votes = Object.values(voting.casting.votes);
-  const standardVotes = votes.filter(onChainUtils.isStandardVote);
+  const standardVotes = votes.filter(votingService.isStandardVote);
 
   const standardVoteLocks = standardVotes.map<ClaimableLock>((standardVote) => {
     const estimatedEnd = maxConvictionEndOf(
@@ -257,8 +258,8 @@ function completedReferendumLockDuration(
   lockPeriod: BlockHeight,
 ): BlockHeight {
   // vote has the same direction as outcome
-  if (onChainUtils.isStandardVote(vote) && vote.vote.type === referendumOutcome) {
-    return onChainUtils.getLockPeriods(vote.vote.conviction) * lockPeriod;
+  if (votingService.isStandardVote(vote) && vote.vote.type === referendumOutcome) {
+    return locksService.getLockPeriods(vote.vote.conviction) * lockPeriod;
   }
 
   return 0;
@@ -299,8 +300,8 @@ function maxOngoingConvictionEnd(
 }
 
 function voteMaxLockDuration(vote: AccountVote, lockPeriod: BlockHeight): BlockHeight {
-  if (onChainUtils.isStandardVote(vote)) {
-    return onChainUtils.getLockPeriods(vote.vote.conviction) * lockPeriod;
+  if (votingService.isStandardVote(vote)) {
+    return locksService.getLockPeriods(vote.vote.conviction) * lockPeriod;
   }
 
   return 0;
@@ -309,7 +310,7 @@ function voteMaxLockDuration(vote: AccountVote, lockPeriod: BlockHeight): BlockH
 // Step 2
 function combineSameUnlockAt(claimableLocks: ClaimableLock[]): [ClaimTime, ClaimableLock][] {
   const claimGroups = claimableLocks.reduce<Map<string, ClaimableLock[]>>((acc, lock) => {
-    const key = onChainUtils.isClaimAt(lock.claimAt)
+    const key = locksService.isClaimAt(lock.claimAt)
       ? `${lock.claimAt.type}_${lock.claimAt.block || '0'}`
       : lock.claimAt.type;
 
@@ -377,7 +378,7 @@ function constructUnlockSchedule(maxUnlockedByTime: [ClaimTime, ClaimableLock][]
 }
 
 function getClaimTimeSortKey(claimTime: ClaimTime): string {
-  return onChainUtils.isClaimAt(claimTime) ? `at-${claimTime.block}` : 'until';
+  return locksService.isClaimAt(claimTime) ? `at-${claimTime.block}` : 'until';
 }
 
 // Step 4
@@ -409,13 +410,13 @@ function toUnlockChunk(lock: ClaimableLock, currentBlockNumber: BlockHeight): Ch
       actions: toClaimActions(lock.affected),
     };
   }
-  const type = onChainUtils.isClaimAt(lock.claimAt) ? UnlockChunkType.PENDING_LOCK : UnlockChunkType.PENDING_DELIGATION;
+  const type = locksService.isClaimAt(lock.claimAt) ? UnlockChunkType.PENDING_LOCK : UnlockChunkType.PENDING_DELIGATION;
 
   return { type: type, amount: lock.amount, claimableAt: lock.claimAt };
 }
 
 function claimableAt(claimAt: ClaimTime, at: BlockHeight): boolean {
-  return onChainUtils.isClaimAt(claimAt) ? claimAt.block <= at : false;
+  return locksService.isClaimAt(claimAt) ? claimAt.block <= at : false;
 }
 
 function toClaimActions(claimAffects: ClaimAffect[]): ClaimAction[] {

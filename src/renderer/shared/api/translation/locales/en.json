@@ -440,6 +440,9 @@
       "title": "Vote on"
     },
     "walletVotes": {
+      "listColumnAccount": "Account",
+      "listColumnVote": "Vote",
+      "listColumnVotingPower": "Voting power",
       "title": "My votes"
     }
   },

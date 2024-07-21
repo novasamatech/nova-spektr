@@ -1,6 +1,6 @@
 import { BN, BN_EIGHT, BN_FIVE, BN_FOUR, BN_NINE, BN_ONE, BN_TEN, BN_THREE, BN_TWO, BN_ZERO } from '@polkadot/util';
 
-import { UnlockChunkType } from '@shared/api/governance';
+import { UnlockChunkType } from '@/shared/api/governance';
 import {
   type ApprovedReferendum,
   type CastingVoting,
@@ -13,7 +13,7 @@ import {
 import { ReferendumType } from '@/shared/core';
 import { claimScheduleService } from '../claimScheduleService';
 
-describe('shared/api/governance/claimScheduleService', () => {
+describe('claimScheduleService', () => {
   test('should handle empty case', () => {
     const referendums: Referendum[] = [{ type: ReferendumType.Approved, referendumId: '123' } as ApprovedReferendum];
     const tracks: Record<TrackId, TrackInfo> = {};

@@ -1,15 +1,20 @@
-import { type BN, BN_ZERO } from '@polkadot/util';
+import { BN } from '@polkadot/util';
 
-import { onChainUtils } from '@/shared/api/governance';
 import {
   type AccountVote,
   type Address,
+  type CastingVoting,
+  type DelegatingVoting,
   type ReferendumId,
+  type SplitAbstainVote,
+  type SplitVote,
+  type StandardVote,
   type Tally,
   type TrackId,
   type Voting,
   type VotingMap,
 } from '@/shared/core';
+import { toKeysRecord } from '@shared/lib/utils';
 
 const getVoteFractions = (tally: Tally, approve: BN): Record<'aye' | 'nay' | 'pass', number> => {
   const total = tally.ayes.add(tally.nays);
@@ -21,18 +26,19 @@ const getVoteFractions = (tally: Tally, approve: BN): Record<'aye' | 'nay' | 'pa
   return { aye, nay, pass };
 };
 
-function getVotedCount(tally: Tally, threshold: BN) {
-  return {
-    voted: tally.support,
-    of: threshold,
-  };
-}
+const getVotedCount = (tally: Tally, threshold: BN) => ({
+  voted: tally.support,
+  of: threshold,
+});
 
 const isReferendumVoted = (referendumId: ReferendumId, votings: Record<Address, Record<TrackId, Voting>>): boolean => {
   for (const votingMap of Object.values(votings)) {
     for (const voting of Object.values(votingMap)) {
-      if (onChainUtils.isCasting(voting) && voting.casting.votes[referendumId]) {
-        return true;
+      if (isCasting(voting)) {
+        const referendumVote = voting.casting.votes[referendumId];
+        if (referendumVote) {
+          return true;
+        }
       }
     }
   }
@@ -45,8 +51,11 @@ const getAllReferendumVotes = (referendumId: ReferendumId, votings: VotingMap) =
 
   for (const [address, votingMap] of Object.entries(votings)) {
     for (const voting of Object.values(votingMap)) {
-      if (onChainUtils.isCasting(voting) && voting.casting.votes[referendumId]) {
-        res[address] = voting.casting.votes[referendumId];
+      if (isCasting(voting)) {
+        const referendumVote = voting.casting.votes[referendumId];
+        if (referendumVote) {
+          res[address] = referendumVote;
+        }
       }
     }
   }
@@ -56,14 +65,18 @@ const getAllReferendumVotes = (referendumId: ReferendumId, votings: VotingMap) =
 
 const getReferendumVotesForAddresses = (referendumId: ReferendumId, addresses: Address[], votings: VotingMap) => {
   const res: Record<Address, AccountVote> = {};
+  const addressesMap = toKeysRecord(addresses);
 
   for (const [address, votingMap] of Object.entries(votings)) {
-    if (addresses.includes(address)) {
+    if (!(address in addressesMap)) {
       continue;
     }
     for (const voting of Object.values(votingMap)) {
-      if (onChainUtils.isCasting(voting) && voting.casting.votes[referendumId]) {
-        res[address] = voting.casting.votes[referendumId];
+      if (isCasting(voting)) {
+        const referendumVote = voting.casting.votes[referendumId];
+        if (referendumVote) {
+          res[address] = voting.casting.votes[referendumId];
+        }
       }
     }
   }
@@ -73,23 +86,43 @@ const getReferendumVotesForAddresses = (referendumId: ReferendumId, addresses: A
 
 const getVotesTotalBalance = (votes: Record<Address, AccountVote>) => {
   return Object.values(votes).reduce((acc, vote) => {
-    if (onChainUtils.isStandardVote(vote)) {
-      return acc.add(vote.balance);
+    if (isStandardVote(vote)) {
+      return acc.iadd(vote.balance);
     }
 
-    if (onChainUtils.isSplitVote(vote)) {
-      return acc.add(vote.aye).add(vote.nay);
+    if (isSplitVote(vote)) {
+      return acc.iadd(vote.aye).iadd(vote.nay);
     }
 
-    if (onChainUtils.isSplitAbstainVote(vote)) {
-      return acc.add(vote.aye).add(vote.nay).add(vote.abstain);
+    if (isSplitAbstainVote(vote)) {
+      return acc.iadd(vote.aye).iadd(vote.nay).iadd(vote.abstain);
     }
 
     return acc;
-  }, BN_ZERO);
+  }, new BN(0));
 };
 
+// Voting types
+
+const isCasting = (voting: Voting): voting is CastingVoting => voting.type === 'casting';
+
+const isDelegating = (voting: Voting): voting is DelegatingVoting => voting.type === 'delegating';
+
+// Voted types
+
+const isStandardVote = (vote: AccountVote): vote is StandardVote => vote.type === 'standard';
+
+const isSplitVote = (vote: AccountVote): vote is SplitVote => vote.type === 'split';
+
+const isSplitAbstainVote = (vote: AccountVote): vote is SplitAbstainVote => vote.type === 'splitAbstain';
+
 export const votingService = {
+  isCasting,
+  isDelegating,
+  isStandardVote,
+  isSplitVote,
+  isSplitAbstainVote,
+
   getVotedCount,
   getVoteFractions,
   isReferendumVoted,

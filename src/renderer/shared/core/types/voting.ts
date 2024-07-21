@@ -31,13 +31,10 @@ export type PriorLock = {
   unlockAt: BlockHeight;
 };
 
-type BasicAccountVote = {
+export type StandardVote = {
+  type: 'standard';
   track: string;
   referendumId: string;
-};
-
-export type StandardVote = BasicAccountVote & {
-  type: 'standard';
   vote: {
     type: 'aye' | 'nay';
     conviction: Conviction;
@@ -45,14 +42,18 @@ export type StandardVote = BasicAccountVote & {
   balance: BN;
 };
 
-export type SplitVote = BasicAccountVote & {
+export type SplitVote = {
   type: 'split';
+  track: string;
+  referendumId: string;
   aye: BN;
   nay: BN;
 };
 
-export type SplitAbstainVote = BasicAccountVote & {
+export type SplitAbstainVote = {
   type: 'splitAbstain';
+  track: string;
+  referendumId: string;
   aye: BN;
   nay: BN;
   abstain: BN;

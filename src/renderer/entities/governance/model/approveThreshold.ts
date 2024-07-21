@@ -13,8 +13,8 @@ import {
   type VotingThreshold,
 } from '@/shared/core';
 import { getCurrentBlockNumber } from '@/shared/lib/utils';
-import { referendumService } from '@/entities/governance';
 import { opengovThresholdService } from '../lib/opengovThresholdService';
+import { referendumService } from '../lib/referendumService';
 
 import { referendumModel } from './referendum';
 import { tracksModel } from './tracks';
