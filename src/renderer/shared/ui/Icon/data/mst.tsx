@@ -1,3 +1,11 @@
+import DelegateImg, { ReactComponent as DelegateSvg } from '@shared/assets/images/functionals/opengov-delegate.svg';
+import EditDelegationImg, {
+  ReactComponent as EditDelegationSvg,
+} from '@shared/assets/images/functionals/opengov-edit-delegation.svg';
+import UndelegateImg, {
+  ReactComponent as UndelegateSvg,
+} from '@shared/assets/images/functionals/opengov-undelegate.svg';
+import UnlockImg, { ReactComponent as UnlockSvg } from '@shared/assets/images/functionals/opengov-unlock.svg';
 import ChangeValidatorsImg, {
   ReactComponent as ChangeValidatorsSvg,
 } from '@shared/assets/images/mst/change-validators-mst.svg';
@@ -28,6 +36,10 @@ const MstImages = {
   changeValidatorsMst: { svg: ChangeValidatorsSvg, img: ChangeValidatorsImg },
   returnToStakeMst: { svg: ReturnToStakeSvg, img: ReturnToStakeImg },
   proxyMst: { svg: DelegatedAuthoritiesSvg, img: DelegatedAuthoritiesImg },
+  unlockMst: { svg: UnlockSvg, img: UnlockImg },
+  delegateMst: { svg: DelegateSvg, img: DelegateImg },
+  undelegateMst: { svg: UndelegateSvg, img: UndelegateImg },
+  editDelegationMst: { svg: EditDelegationSvg, img: EditDelegationImg },
 } as const;
 
 export type Mst = keyof typeof MstImages;

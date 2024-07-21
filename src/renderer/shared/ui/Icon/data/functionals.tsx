@@ -36,9 +36,6 @@ import OpenGovDelegationsImg, {
   ReactComponent as OpenGovDelegationsSvg,
 } from '@shared/assets/images/functionals/opengov-delegations.svg';
 import OpenGovLockImg, { ReactComponent as OpenGovLockSvg } from '@shared/assets/images/functionals/opengov-lock.svg';
-import OpenGovUnlockImg, {
-  ReactComponent as OpenGovUnlockSvg,
-} from '@shared/assets/images/functionals/opengov-unlock.svg';
 import OpenGovVotingLockImg, {
   ReactComponent as OpenGovVotingLockSvg,
 } from '@shared/assets/images/functionals/opengov-voting-lock.svg';
@@ -95,7 +92,6 @@ const FunctionalImages = {
   forget: { img: ForgetImg, svg: ForgetSvg },
   update: { svg: UpdateSvg, img: UpdateImg },
   opengovLock: { svg: OpenGovLockSvg, img: OpenGovLockImg },
-  opengovUnlock: { svg: OpenGovUnlockSvg, img: OpenGovUnlockImg },
   opengovVotingLock: { svg: OpenGovVotingLockSvg, img: OpenGovVotingLockImg },
   opengovDelegations: { svg: OpenGovDelegationsSvg, img: OpenGovDelegationsImg },
   voted: { svg: VotedSvg, img: VotedImg },

@@ -9,6 +9,7 @@ import { type Address, type CallData, type ChainId, type DecodedTransaction, Tra
 
 import {
   BOND_WITH_CONTROLLER_ARGS_AMOUNT,
+  GOVERNANCE_SECTION,
   MULTISIG_SECTION,
   OLD_MULTISIG_ARGS_AMOUNT,
   PROXY_SECTION,
@@ -361,6 +362,31 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
         call: decoded.args[2].toHex(),
       };
     },
+    [TransactionType.UNLOCK]: (decoded): Record<string, any> => {
+      return {
+        class: decoded.args[0].toString(),
+        target: decoded.args[1].toString(),
+      };
+    },
+    [TransactionType.REMOVE_VOTE]: (decoded): Record<string, any> => {
+      return {
+        class: decoded.args[0].toString(),
+        index: decoded.args[1].toString(),
+      };
+    },
+    [TransactionType.UNDELEGATE]: (decoded): Record<string, any> => {
+      return {
+        track: decoded.args[0].toString(),
+      };
+    },
+    [TransactionType.DELEGATE]: (decoded): Record<string, any> => {
+      return {
+        track: decoded.args[0].toString(),
+        target: decoded.args[1].toString(),
+        conviction: decoded.args[2].toString(),
+        balance: decoded.args[3].toString(),
+      };
+    },
   };
 
   const isBatchExtrinsic = (method: string, section: string): boolean => {
@@ -377,8 +403,9 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
     const xcmType = getXcmTxType(method, section);
     const proxyType = getProxyTxType(method, section);
     const multisigType = getMultisigTxType(method, section);
+    const governanceType = getGovernanceTxType(method, section);
 
-    return transferType || stakingType || xcmType || proxyType || multisigType;
+    return transferType || stakingType || xcmType || proxyType || multisigType || governanceType;
   };
 
   const getTransferTxType = (method: string, section: string): TransactionType | undefined => {
@@ -451,6 +478,17 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
       asMulti: TransactionType.MULTISIG_AS_MULTI,
       approveAsMulti: TransactionType.MULTISIG_APPROVE_AS_MULTI,
       cancelAsMulti: TransactionType.MULTISIG_CANCEL_AS_MULTI,
+    }[method];
+  };
+
+  const getGovernanceTxType = (method: string, section: string): TransactionType | undefined => {
+    if (GOVERNANCE_SECTION !== section) return;
+
+    return {
+      removeVote: TransactionType.REMOVE_VOTE,
+      unlock: TransactionType.UNLOCK,
+      delegate: TransactionType.DELEGATE,
+      undelegate: TransactionType.UNDELEGATE,
     }[method];
   };
 

@@ -16,6 +16,7 @@ import { DEFAULT_FEE_ASSET_ITEM } from '@entities/transaction';
 import * as xcmMethods from '@entities/transaction/lib/common/xcmMethods';
 
 import { getMaxWeight, hasDestWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
+import { convictionVotingMethods } from './wrappers/convictionVoting';
 
 type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
 type BondWithoutContollerArgs = Omit<Parameters<typeof methods.staking.bond>[0], 'controller'>;
@@ -355,7 +356,6 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
-
   [TransactionType.PROXY]: (transaction, info, options, api) => {
     const tx = transaction.args.transaction as Transaction;
     const call = getUnsignedTransaction[tx.type](tx, info, options, api).method;
@@ -365,6 +365,49 @@ export const getUnsignedTransaction: Record<
         real: transaction.args.real,
         forceProxyType: transaction.args.forceProxyType,
         call,
+      },
+      info,
+      options,
+    );
+  },
+  [TransactionType.UNLOCK]: (transaction, info, options) => {
+    return convictionVotingMethods.unlock(
+      {
+        class: transaction.args.trackId,
+        target: transaction.args.target,
+      },
+      info,
+      options,
+    );
+  },
+
+  [TransactionType.DELEGATE]: (transaction, info, options) => {
+    return convictionVotingMethods.delegate(
+      {
+        class: transaction.args.track,
+        to: transaction.args.target,
+        conviction: transaction.args.conviction,
+        balance: transaction.args.balance,
+      },
+      info,
+      options,
+    );
+  },
+  [TransactionType.REMOVE_VOTE]: (transaction, info, options) => {
+    return convictionVotingMethods.removeVote(
+      {
+        class: transaction.args.trackId,
+        index: transaction.args.referendumId,
+      },
+      info,
+      options,
+    );
+  },
+
+  [TransactionType.UNDELEGATE]: (transaction, info, options) => {
+    return convictionVotingMethods.undelegate(
+      {
+        class: transaction.args.track,
       },
       info,
       options,
@@ -456,6 +499,18 @@ export const getExtrinsic: Record<
   },
   [TransactionType.CREATE_PURE_PROXY]: ({ proxyType, delay, index }, api) => {
     return api.tx.proxy.createPure(proxyType, delay, index);
+  },
+  [TransactionType.UNLOCK]: ({ target, trackId }, api) => {
+    return api.tx.convictionVoting.unlock(trackId, target);
+  },
+  [TransactionType.REMOVE_VOTE]: ({ trackId, referendumId }, api) => {
+    return api.tx.convictionVoting.removeVote(trackId, referendumId);
+  },
+  [TransactionType.DELEGATE]: ({ track, target, conviction, balance }, api) => {
+    return api.tx.convictionVoting.delegate(track, target, conviction, balance);
+  },
+  [TransactionType.UNDELEGATE]: ({ track }, api) => {
+    return api.tx.convictionVoting.undelegate(track);
   },
 };
 
