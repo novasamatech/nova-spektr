@@ -103,7 +103,6 @@ export { ReferendumType } from './types/referendum';
 export type {
   Tally,
   ReferendumId,
-  ReferendumInfo,
   ApprovedReferendum,
   RejectedReferendum,
   OngoingReferendum,

@@ -1,6 +1,15 @@
-import { type BN } from '@polkadot/util';
+import { type BN, BN_ZERO } from '@polkadot/util';
 
-import { type Address, type ReferendumId, type Tally, type TrackId, type Voting } from '@/shared/core';
+import { onChainUtils } from '@/shared/api/governance';
+import {
+  type AccountVote,
+  type Address,
+  type ReferendumId,
+  type Tally,
+  type TrackId,
+  type Voting,
+  type VotingMap,
+} from '@/shared/core';
 
 const getVoteFractions = (tally: Tally, approve: BN): Record<'aye' | 'nay' | 'pass', number> => {
   const total = tally.ayes.add(tally.nays);
@@ -19,10 +28,10 @@ function getVotedCount(tally: Tally, threshold: BN) {
   };
 }
 
-const isReferendumVoted = (index: ReferendumId, votings: Record<Address, Record<TrackId, Voting>>): boolean => {
+const isReferendumVoted = (referendumId: ReferendumId, votings: Record<Address, Record<TrackId, Voting>>): boolean => {
   for (const votingMap of Object.values(votings)) {
     for (const voting of Object.values(votingMap)) {
-      if (voting.type === 'casting' && voting.casting.votes[index]) {
+      if (onChainUtils.isCasting(voting) && voting.casting.votes[referendumId]) {
         return true;
       }
     }
@@ -31,8 +40,60 @@ const isReferendumVoted = (index: ReferendumId, votings: Record<Address, Record<
   return false;
 };
 
+const getAllReferendumVotes = (referendumId: ReferendumId, votings: VotingMap) => {
+  const res: Record<Address, AccountVote> = {};
+
+  for (const [address, votingMap] of Object.entries(votings)) {
+    for (const voting of Object.values(votingMap)) {
+      if (onChainUtils.isCasting(voting) && voting.casting.votes[referendumId]) {
+        res[address] = voting.casting.votes[referendumId];
+      }
+    }
+  }
+
+  return res;
+};
+
+const getReferendumVotesForAddresses = (referendumId: ReferendumId, addresses: Address[], votings: VotingMap) => {
+  const res: Record<Address, AccountVote> = {};
+
+  for (const [address, votingMap] of Object.entries(votings)) {
+    if (addresses.includes(address)) {
+      continue;
+    }
+    for (const voting of Object.values(votingMap)) {
+      if (onChainUtils.isCasting(voting) && voting.casting.votes[referendumId]) {
+        res[address] = voting.casting.votes[referendumId];
+      }
+    }
+  }
+
+  return res;
+};
+
+const getVotesTotalBalance = (votes: Record<Address, AccountVote>) => {
+  return Object.values(votes).reduce((acc, vote) => {
+    if (onChainUtils.isStandardVote(vote)) {
+      return acc.add(vote.balance);
+    }
+
+    if (onChainUtils.isSplitVote(vote)) {
+      return acc.add(vote.aye).add(vote.nay);
+    }
+
+    if (onChainUtils.isSplitAbstainVote(vote)) {
+      return acc.add(vote.aye).add(vote.nay).add(vote.abstain);
+    }
+
+    return acc;
+  }, BN_ZERO);
+};
+
 export const votingService = {
   getVotedCount,
   getVoteFractions,
   isReferendumVoted,
+  getAllReferendumVotes,
+  getReferendumVotesForAddresses,
+  getVotesTotalBalance,
 };

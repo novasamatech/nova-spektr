@@ -1,28 +1,21 @@
 import { BN, BN_EIGHT, BN_FIVE, BN_FOUR, BN_NINE, BN_ONE, BN_TEN, BN_THREE, BN_TWO, BN_ZERO } from '@polkadot/util';
 
+import { UnlockChunkType } from '@shared/api/governance';
 import {
   type ApprovedReferendum,
   type CastingVoting,
   type DelegatingVoting,
-  type ReferendumInfo,
-  type StandardVote,
+  type Referendum,
   type TrackId,
   type TrackInfo,
   type Voting,
-} from '@shared/core';
-import { ReferendumType } from '@shared/core';
-import {
-  type ClaimTimeAt,
-  type ClaimTimeUntil,
-  type RemoveVote,
-  type Unlock,
-  UnlockChunkType,
-} from '../../lib/claim-types';
+} from '@/shared/core';
+import { ReferendumType } from '@/shared/core';
 import { claimScheduleService } from '../claimScheduleService';
 
 describe('shared/api/governance/claimScheduleService', () => {
   test('should handle empty case', () => {
-    const referendums: ReferendumInfo[] = [{ type: ReferendumType.Approved, referendumId: '123' }];
+    const referendums: Referendum[] = [{ type: ReferendumType.Approved, referendumId: '123' } as ApprovedReferendum];
     const tracks: Record<TrackId, TrackInfo> = {};
     const trackLocks: Record<TrackId, BN> = {};
     const votingByTrack: Record<TrackId, Voting> = {};
@@ -41,7 +34,7 @@ describe('shared/api/governance/claimScheduleService', () => {
   });
 
   test('should handle single claimable', () => {
-    const referendums: ReferendumInfo[] = [{ type: ReferendumType.Approved, referendumId: '123' }];
+    const referendums: Referendum[] = [{ type: ReferendumType.Approved, referendumId: '123' } as ApprovedReferendum];
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
         type: 'casting',
@@ -51,10 +44,10 @@ describe('shared/api/governance/claimScheduleService', () => {
             0: {
               type: 'standard',
               track: '0',
-              referendumIndex: '0',
+              referendumId: '0',
               vote: { type: 'aye', conviction: 'None' },
               balance: BN_ONE,
-            } as StandardVote,
+            },
           },
         },
       },
@@ -75,8 +68,8 @@ describe('shared/api/governance/claimScheduleService', () => {
         type: 'claimable',
         amount: BN_ONE,
         actions: [
-          { type: 'remove_vote', trackId: '0', referendumId: '0' } as RemoveVote,
-          { type: 'unlock', trackId: '0' } as Unlock,
+          { type: 'remove_vote', trackId: '0', referendumId: '0' },
+          { type: 'unlock', trackId: '0' },
         ],
       },
     ]);
@@ -114,7 +107,7 @@ describe('shared/api/governance/claimScheduleService', () => {
       {
         type: UnlockChunkType.CLAIMABLE,
         amount: BN_ONE,
-        actions: [{ type: 'unlock', trackId: '0' } as Unlock],
+        actions: [{ type: 'unlock', trackId: '0' }],
       },
       {
         type: UnlockChunkType.PENDING_LOCK,
@@ -134,7 +127,7 @@ describe('shared/api/governance/claimScheduleService', () => {
             0: {
               type: 'standard',
               track: '0',
-              referendumIndex: '0',
+              referendumId: '0',
               vote: { type: 'aye', conviction: 'None' },
               balance: BN_TWO,
             },
@@ -163,9 +156,9 @@ describe('shared/api/governance/claimScheduleService', () => {
   });
 
   test('should take max between two locks with same time', () => {
-    const referendums: ReferendumInfo[] = [
-      { type: ReferendumType.Approved, referendumId: '12' },
-      { type: ReferendumType.Approved, referendumId: '22' },
+    const referendums: Referendum[] = [
+      { type: ReferendumType.Approved, referendumId: '12' } as ApprovedReferendum,
+      { type: ReferendumType.Approved, referendumId: '22' } as ApprovedReferendum,
     ];
 
     const votingByTrack: Record<TrackId, CastingVoting> = {
@@ -177,17 +170,17 @@ describe('shared/api/governance/claimScheduleService', () => {
             0: {
               type: 'standard',
               track: '0',
-              referendumIndex: '0',
+              referendumId: '0',
               vote: { type: 'aye', conviction: 'None' },
               balance: BN_EIGHT,
-            } as StandardVote,
+            },
             1: {
               type: 'standard',
               track: '0',
-              referendumIndex: '1',
+              referendumId: '1',
               vote: { type: 'aye', conviction: 'None' },
               balance: BN_TWO,
-            } as StandardVote,
+            },
           },
         },
       },
@@ -208,16 +201,16 @@ describe('shared/api/governance/claimScheduleService', () => {
         type: UnlockChunkType.CLAIMABLE,
         amount: new BN(8),
         actions: [
-          { type: 'remove_vote', trackId: '0', referendumId: '0' } as RemoveVote,
-          { type: 'remove_vote', trackId: '0', referendumId: '1' } as RemoveVote,
-          { type: 'unlock', trackId: '0' } as Unlock,
+          { type: 'remove_vote', trackId: '0', referendumId: '0' },
+          { type: 'remove_vote', trackId: '0', referendumId: '1' },
+          { type: 'unlock', trackId: '0' },
         ],
       },
     ]);
   });
 
   test('should handle rejigged prior', () => {
-    const referendums: ReferendumInfo[] = [{ type: ReferendumType.Approved, referendumId: '123' }];
+    const referendums: Referendum[] = [{ type: ReferendumType.Approved, referendumId: '123' } as ApprovedReferendum];
 
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
@@ -228,7 +221,7 @@ describe('shared/api/governance/claimScheduleService', () => {
             1: {
               type: 'standard',
               track: '0',
-              referendumIndex: '1',
+              referendumId: '1',
               vote: { type: 'aye', conviction: 'None' },
               balance: BN_TWO,
             },
@@ -252,8 +245,8 @@ describe('shared/api/governance/claimScheduleService', () => {
         type: 'claimable',
         amount: BN_TWO,
         actions: [
-          { type: 'remove_vote', trackId: '0', referendumId: '1' } as RemoveVote,
-          { type: 'unlock', trackId: '0' } as Unlock,
+          { type: 'remove_vote', trackId: '0', referendumId: '1' },
+          { type: 'unlock', trackId: '0' },
         ],
       },
     ]);
@@ -274,10 +267,10 @@ describe('shared/api/governance/claimScheduleService', () => {
             0: {
               type: 'standard',
               track: '0',
-              referendumIndex: '0',
+              referendumId: '0',
               vote: { type: 'aye', conviction: 'None' },
               balance: BN_ONE,
-            } as StandardVote,
+            },
           },
         },
       },
@@ -289,10 +282,10 @@ describe('shared/api/governance/claimScheduleService', () => {
             1: {
               type: 'standard',
               track: '1',
-              referendumIndex: '1',
+              referendumId: '1',
               vote: { type: 'aye', conviction: 'None' },
               balance: BN_TWO,
-            } as StandardVote,
+            },
           },
         },
       },
@@ -313,11 +306,11 @@ describe('shared/api/governance/claimScheduleService', () => {
         type: 'claimable',
         amount: BN_TWO,
         actions: [
-          { type: 'remove_vote', trackId: '1', referendumId: '1' } as RemoveVote,
-          { type: 'unlock', trackId: '1' } as Unlock,
+          { type: 'remove_vote', trackId: '1', referendumId: '1' },
+          { type: 'unlock', trackId: '1' },
 
-          { type: 'remove_vote', trackId: '0', referendumId: '0' } as RemoveVote,
-          { type: 'unlock', trackId: '0' } as Unlock,
+          { type: 'remove_vote', trackId: '0', referendumId: '0' },
+          { type: 'unlock', trackId: '0' },
         ],
       },
     ]);
@@ -339,10 +332,10 @@ describe('shared/api/governance/claimScheduleService', () => {
             1: {
               type: 'standard',
               track: '1',
-              referendumIndex: '1',
+              referendumId: '1',
               vote: { type: 'aye', conviction: 'None' },
               balance: BN_ONE,
-            } as StandardVote,
+            },
           },
         },
       },
@@ -354,10 +347,10 @@ describe('shared/api/governance/claimScheduleService', () => {
             2: {
               type: 'standard',
               track: '2',
-              referendumIndex: '2',
+              referendumId: '2',
               vote: { type: 'aye', conviction: 'None' },
               balance: BN_TWO,
-            } as StandardVote,
+            },
           },
         },
       },
@@ -369,10 +362,10 @@ describe('shared/api/governance/claimScheduleService', () => {
             3: {
               type: 'standard',
               track: '3',
-              referendumIndex: '3',
+              referendumId: '3',
               vote: { type: 'aye', conviction: 'None' },
               balance: BN_ONE,
-            } as StandardVote,
+            },
           },
         },
       },
@@ -393,14 +386,14 @@ describe('shared/api/governance/claimScheduleService', () => {
         type: 'claimable',
         amount: BN_TWO,
         actions: [
-          { type: 'remove_vote', trackId: '2', referendumId: '2' } as RemoveVote,
-          { type: 'unlock', trackId: '2' } as Unlock,
+          { type: 'remove_vote', trackId: '2', referendumId: '2' },
+          { type: 'unlock', trackId: '2' },
 
-          { type: 'remove_vote', trackId: '1', referendumId: '1' } as RemoveVote,
-          { type: 'unlock', trackId: '1' } as Unlock,
+          { type: 'remove_vote', trackId: '1', referendumId: '1' },
+          { type: 'unlock', trackId: '1' },
 
-          { type: 'remove_vote', trackId: '3', referendumId: '3' } as RemoveVote,
-          { type: 'unlock', trackId: '3' } as Unlock,
+          { type: 'remove_vote', trackId: '3', referendumId: '3' },
+          { type: 'unlock', trackId: '3' },
         ],
       },
     ]);
@@ -416,10 +409,10 @@ describe('shared/api/governance/claimScheduleService', () => {
             0: {
               type: 'standard',
               track: '0',
-              referendumIndex: '0',
+              referendumId: '0',
               vote: { type: 'aye', conviction: 'None' },
               balance: BN_TWO,
-            } as StandardVote,
+            },
           },
         },
       },
@@ -440,8 +433,8 @@ describe('shared/api/governance/claimScheduleService', () => {
         type: 'claimable',
         amount: BN_TEN,
         actions: [
-          { type: 'remove_vote', trackId: '0', referendumId: '0' } as RemoveVote,
-          { type: 'unlock', trackId: '0' } as Unlock,
+          { type: 'remove_vote', trackId: '0', referendumId: '0' },
+          { type: 'unlock', trackId: '0' },
         ],
       },
     ]);
@@ -457,10 +450,10 @@ describe('shared/api/governance/claimScheduleService', () => {
             0: {
               type: 'standard',
               track: '0',
-              referendumIndex: '0',
+              referendumId: '0',
               vote: { type: 'aye', conviction: 'None' },
               balance: BN_ONE,
-            } as StandardVote,
+            },
           },
         },
       },
@@ -495,15 +488,15 @@ describe('shared/api/governance/claimScheduleService', () => {
         type: UnlockChunkType.CLAIMABLE,
         amount: BN_NINE,
         actions: [
-          { type: 'remove_vote', trackId: '0', referendumId: '0' } as RemoveVote,
-          { type: 'unlock', trackId: '0' } as Unlock,
-          { type: 'unlock', trackId: '1' } as Unlock,
+          { type: 'remove_vote', trackId: '0', referendumId: '0' },
+          { type: 'unlock', trackId: '0' },
+          { type: 'unlock', trackId: '1' },
         ],
       },
       {
         type: UnlockChunkType.PENDING_LOCK,
         amount: BN_ONE,
-        claimableAt: { type: 'at', block: 1100 } as ClaimTimeAt,
+        claimableAt: { type: 'at', block: 1100 },
       },
     ]);
   });
@@ -533,7 +526,7 @@ describe('shared/api/governance/claimScheduleService', () => {
       {
         type: UnlockChunkType.PENDING_LOCK,
         amount: BN_TEN,
-        claimableAt: { type: 'at', block: 1100 } as ClaimTimeAt,
+        claimableAt: { type: 'at', block: 1100 },
       },
     ]);
   });
@@ -563,7 +556,7 @@ describe('shared/api/governance/claimScheduleService', () => {
       {
         type: 'claimable',
         amount: BN_TEN,
-        actions: [{ type: 'unlock', trackId: '0' } as Unlock],
+        actions: [{ type: 'unlock', trackId: '0' }],
       },
     ]);
   });
@@ -583,24 +576,24 @@ describe('shared/api/governance/claimScheduleService', () => {
             0: {
               type: 'standard',
               track: '0',
-              referendumIndex: '0',
+              referendumId: '0',
               vote: { type: 'aye', conviction: 'None' },
               balance: BN_THREE,
-            } as StandardVote,
+            },
             1: {
               type: 'standard',
               track: '1',
-              referendumIndex: '0',
+              referendumId: '0',
               vote: { type: 'aye', conviction: 'None' },
               balance: BN_ONE,
-            } as StandardVote,
+            },
             2: {
               type: 'standard',
               track: '2',
-              referendumIndex: '0',
+              referendumId: '0',
               vote: { type: 'aye', conviction: 'None' },
               balance: BN_TWO,
-            } as StandardVote,
+            },
           },
         },
       },
@@ -620,17 +613,17 @@ describe('shared/api/governance/claimScheduleService', () => {
       {
         type: UnlockChunkType.PENDING_LOCK,
         amount: BN_ONE,
-        claimableAt: { type: 'at', block: 1100 } as ClaimTimeAt,
+        claimableAt: { type: 'at', block: 1100 },
       },
       {
         type: UnlockChunkType.PENDING_LOCK,
         amount: BN_ONE,
-        claimableAt: { type: 'at', block: 1200 } as ClaimTimeAt,
+        claimableAt: { type: 'at', block: 1200 },
       },
       {
         type: UnlockChunkType.PENDING_LOCK,
         amount: BN_ONE,
-        claimableAt: { type: 'at', block: 1300 } as ClaimTimeAt,
+        claimableAt: { type: 'at', block: 1300 },
       },
     ]);
   });
@@ -650,10 +643,10 @@ describe('shared/api/governance/claimScheduleService', () => {
             13: {
               type: 'standard',
               track: '20',
-              referendumIndex: '13',
+              referendumId: '13',
               vote: { type: 'aye', conviction: 'None' },
               balance: BN_ONE,
-            } as StandardVote,
+            },
           },
         },
       },
@@ -665,10 +658,10 @@ describe('shared/api/governance/claimScheduleService', () => {
             5: {
               type: 'standard',
               track: '21',
-              referendumIndex: '5',
+              referendumId: '5',
               vote: { type: 'aye', conviction: 'None' },
               balance: BN_TEN,
-            } as StandardVote,
+            },
           },
         },
       },
@@ -688,17 +681,17 @@ describe('shared/api/governance/claimScheduleService', () => {
       {
         type: UnlockChunkType.CLAIMABLE,
         amount: new BN(91),
-        actions: [{ type: 'unlock', trackId: '21' } as Unlock],
+        actions: [{ type: 'unlock', trackId: '21' }],
       },
       {
         type: UnlockChunkType.PENDING_LOCK,
         amount: BN_NINE,
-        claimableAt: { type: 'at', block: 1500 } as ClaimTimeAt,
+        claimableAt: { type: 'at', block: 1500 },
       },
       {
         type: UnlockChunkType.PENDING_LOCK,
         amount: BN_ONE,
-        claimableAt: { type: 'at', block: 2000 } as ClaimTimeAt,
+        claimableAt: { type: 'at', block: 2000 },
       },
     ]);
   });
@@ -730,7 +723,7 @@ describe('shared/api/governance/claimScheduleService', () => {
       {
         type: UnlockChunkType.PENDING_DELIGATION,
         amount: BN_ONE,
-        claimableAt: { type: 'until' } as ClaimTimeUntil,
+        claimableAt: { type: 'until' },
       },
     ]);
   });
@@ -762,12 +755,12 @@ describe('shared/api/governance/claimScheduleService', () => {
       {
         type: UnlockChunkType.PENDING_LOCK,
         amount: BN_NINE,
-        claimableAt: { type: 'at', block: 1100 } as ClaimTimeAt,
+        claimableAt: { type: 'at', block: 1100 },
       },
       {
         type: UnlockChunkType.PENDING_DELIGATION,
         amount: BN_ONE,
-        claimableAt: { type: 'until' } as ClaimTimeUntil,
+        claimableAt: { type: 'until' },
       },
     ]);
   });
@@ -799,12 +792,12 @@ describe('shared/api/governance/claimScheduleService', () => {
       {
         type: UnlockChunkType.CLAIMABLE,
         amount: BN_NINE,
-        actions: [{ type: 'unlock', trackId: '0' } as Unlock],
+        actions: [{ type: 'unlock', trackId: '0' }],
       },
       {
         type: UnlockChunkType.PENDING_DELIGATION,
         amount: BN_ONE,
-        claimableAt: { type: 'until' } as ClaimTimeUntil,
+        claimableAt: { type: 'until' },
       },
     ]);
   });
@@ -829,10 +822,10 @@ describe('shared/api/governance/claimScheduleService', () => {
             0: {
               type: 'standard',
               track: '1',
-              referendumIndex: '0',
+              referendumId: '0',
               vote: { type: 'aye', conviction: 'None' },
               balance: BN_FIVE,
-            } as StandardVote,
+            },
           },
         },
       },
@@ -853,19 +846,19 @@ describe('shared/api/governance/claimScheduleService', () => {
       {
         type: UnlockChunkType.CLAIMABLE,
         amount: BN_FIVE,
-        actions: [{ type: 'unlock', trackId: '1' } as Unlock],
+        actions: [{ type: 'unlock', trackId: '1' }],
       },
       // 4 is delayed until 1100 from track 1 votes
       {
         type: UnlockChunkType.PENDING_LOCK,
         amount: BN_FOUR,
-        claimableAt: { type: 'at', block: 1100 } as ClaimTimeAt,
+        claimableAt: { type: 'at', block: 1100 },
       },
       // 1 is delayed indefinitely because of track 1 delegation
       {
         type: UnlockChunkType.PENDING_DELIGATION,
         amount: BN_ONE,
-        claimableAt: { type: 'until' } as ClaimTimeUntil,
+        claimableAt: { type: 'until' },
       },
     ]);
   });

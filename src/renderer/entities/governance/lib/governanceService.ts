@@ -15,7 +15,7 @@ import {
   type TrackInfo,
   type Voting,
   type VotingCurve,
-} from '@shared/core';
+} from '@/shared/core';
 
 export const governanceService = {
   getReferendums,
@@ -158,9 +158,9 @@ async function getVotingFor(
 
   for (const [index, convictionVoting] of votings.entries()) {
     if (convictionVoting.isStorageFallback) continue;
+
     const address = tuples[index]?.[0];
     const trackId = tuples[index]?.[1];
-
     if (!address || !trackId) {
       continue;
     }
@@ -176,7 +176,7 @@ async function getVotingFor(
           target: delegation.target.toString(),
           prior: {
             unlockAt: delegation.prior[0].toNumber(),
-            amount: delegation.prior[0].toBn(),
+            amount: delegation.prior[1].toBn(),
           },
         },
       };
@@ -185,14 +185,14 @@ async function getVotingFor(
     if (convictionVoting.isCasting) {
       const votes: Record<ReferendumId, AccountVote> = {};
       for (const [index, vote] of convictionVoting.asCasting.votes) {
-        const referendumIndex = index.toString();
+        const referendumId = index.toString();
 
         if (vote.isStandard) {
           const standardVote = vote.asStandard;
-          votes[referendumIndex] = {
+          votes[referendumId] = {
             type: 'standard',
             track: trackId,
-            referendumIndex,
+            referendumId,
             vote: {
               type: standardVote.vote.isAye ? 'aye' : 'nay',
               conviction: standardVote.vote.conviction.type,
@@ -203,9 +203,9 @@ async function getVotingFor(
 
         if (vote.isSplit) {
           const splitVote = vote.asSplit;
-          votes[referendumIndex] = {
+          votes[referendumId] = {
             type: 'split',
-            referendumIndex,
+            referendumId,
             track: trackId,
             aye: splitVote.aye.toBn(),
             nay: splitVote.nay.toBn(),
@@ -214,9 +214,9 @@ async function getVotingFor(
 
         if (vote.isSplitAbstain) {
           const splitAbstainVote = vote.asSplitAbstain;
-          votes[referendumIndex.toString()] = {
+          votes[referendumId.toString()] = {
             type: 'splitAbstain',
-            referendumIndex,
+            referendumId,
             track: trackId,
             aye: splitAbstainVote.aye.toBn(),
             nay: splitAbstainVote.nay.toBn(),
@@ -231,7 +231,7 @@ async function getVotingFor(
           votes,
           prior: {
             unlockAt: convictionVoting.asCasting.prior[0].toNumber(),
-            amount: convictionVoting.asCasting.prior[0].toBn(),
+            amount: convictionVoting.asCasting.prior[1].toBn(),
           },
         },
       };
@@ -264,8 +264,8 @@ function getTracks(api: ApiPromise): Record<TrackId, TrackInfo> {
   const result: Record<TrackId, TrackInfo> = {};
 
   for (const [index, track] of tracks) {
-    let minApproval = {} as VotingCurve;
-    let minSupport = {} as VotingCurve;
+    let minApproval: VotingCurve | undefined;
+    let minSupport: VotingCurve | undefined;
 
     if (track.minApproval.isLinearDecreasing) minApproval = getLinearDecreasing(track.minApproval);
     if (track.minSupport.isLinearDecreasing) minSupport = getLinearDecreasing(track.minSupport);
@@ -275,6 +275,10 @@ function getTracks(api: ApiPromise): Record<TrackId, TrackInfo> {
 
     if (track.minApproval.isReciprocal) minApproval = getReciprocal(track.minApproval);
     if (track.minSupport.isReciprocal) minSupport = getReciprocal(track.minSupport);
+
+    if (!minApproval || !minSupport) {
+      throw new Error('Approval curve not found');
+    }
 
     result[index.toString()] = {
       name: track.name.toString(),

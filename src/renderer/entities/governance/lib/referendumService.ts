@@ -2,9 +2,10 @@ import {
   type ApprovedReferendum,
   type CompletedReferendum,
   type OngoingReferendum,
-  type ReferendumInfo,
+  type Referendum,
   ReferendumType,
   type RejectedReferendum,
+  type TimedOutReferendum,
 } from '@/shared/core';
 
 export const referendumService = {
@@ -12,24 +13,29 @@ export const referendumService = {
   isRejected,
   isApproved,
   isCompleted,
+  isTimedOut,
 
   getOperationStatus,
 };
 
-function isOngoing(referendum: ReferendumInfo): referendum is OngoingReferendum {
+function isOngoing(referendum: Referendum): referendum is OngoingReferendum {
   return referendum.type === ReferendumType.Ongoing;
 }
 
-function isRejected(referendum: ReferendumInfo): referendum is RejectedReferendum {
+function isRejected(referendum: Referendum): referendum is RejectedReferendum {
   return referendum.type === ReferendumType.Rejected;
 }
 
-function isApproved(referendum: ReferendumInfo): referendum is ApprovedReferendum {
+function isApproved(referendum: Referendum): referendum is ApprovedReferendum {
   return referendum.type === ReferendumType.Approved;
 }
 
-function isCompleted(referendum: ReferendumInfo): referendum is CompletedReferendum {
+function isCompleted(referendum: Referendum): referendum is CompletedReferendum {
   return referendum.type !== ReferendumType.Ongoing;
+}
+
+function isTimedOut(referendum: Referendum): referendum is TimedOutReferendum {
+  return referendum.type === ReferendumType.TimedOut;
 }
 
 // waiting for deposit, deciding, passing

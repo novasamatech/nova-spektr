@@ -19,7 +19,7 @@ export type DelegatingVoting = {
   delegating: {
     balance: BN;
     target: Address;
-    conviction: 'None' | 'Locked1x' | 'Locked2x' | 'Locked3x' | 'Locked4x' | 'Locked5x' | 'Locked6x';
+    conviction: Conviction;
     prior: PriorLock;
   };
 };
@@ -33,7 +33,7 @@ export type PriorLock = {
 
 type BasicAccountVote = {
   track: string;
-  referendumIndex: string;
+  referendumId: string;
 };
 
 export type StandardVote = BasicAccountVote & {

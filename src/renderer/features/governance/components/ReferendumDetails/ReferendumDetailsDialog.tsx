@@ -1,12 +1,12 @@
 import { useGate, useStoreMap } from 'effector-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useI18n } from '@app/providers';
 import { type Chain } from '@shared/core';
 import { useModalClose } from '@shared/lib/hooks';
-import { pickNestedValue } from '@shared/lib/utils';
+import { formatBalance, pickNestedValue } from '@shared/lib/utils';
 import { BaseModal, Button, Plate } from '@shared/ui';
-import { referendumService } from '@entities/governance';
+import { referendumService, votingService } from '@entities/governance';
 import { detailsAggregate } from '../../aggregates/details';
 import { type AggregatedReferendum } from '../../types/structs';
 import { VotingHistoryDialog } from '../VotingHistory/VotingHistoryDialog';
@@ -16,8 +16,10 @@ import { DetailsCard } from './DetailsCard';
 import { ProposalDescription } from './ProposalDescription';
 import { ReferendumAdditional } from './ReferendumAdditional';
 import { Timeline } from './Timeline';
+import { VotingBalance } from './VotingBalance';
 import { VotingStatus } from './VotingStatus';
 import { VotingSummary } from './VotingSummary';
+import { WalletVotesDialog } from './WalletVotesDialog';
 
 type Props = {
   chain: Chain;
@@ -28,6 +30,7 @@ type Props = {
 export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) => {
   useGate(detailsAggregate.gates.flow, { chain, referendum });
 
+  const [showWalletVotes, setShowWalletVotes] = useState(false);
   const [showVoteHistory, setShowVoteHistory] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -45,7 +48,18 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) =
     fn: (x, [chainId]) => x[chainId],
   });
 
+  const votes = useStoreMap({
+    store: detailsAggregate.$votes,
+    keys: [referendum.referendumId],
+    fn: (x, [referendumId]) => votingService.getAllReferendumVotes(referendumId, x),
+  });
+
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
+
+  const formattedVotes = useMemo(
+    () => formatBalance(votingService.getVotesTotalBalance(votes), votingAsset?.precision).formatted,
+    [votes, votingAsset],
+  );
 
   return (
     <BaseModal
@@ -63,6 +77,16 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) =
         </Plate>
 
         <div className="flex flex-row flex-wrap gap-4 basis-[350px] grow shrink-0">
+          {referendum.isVoted && (
+            <DetailsCard>
+              <VotingBalance votes={formattedVotes} onInfoClick={() => setShowWalletVotes(true)} />
+            </DetailsCard>
+          )}
+
+          <DetailsCard>
+            <VotingBalance votes={formattedVotes} onInfoClick={() => setShowWalletVotes(true)} />
+          </DetailsCard>
+
           <DetailsCard title={t('governance.referendum.votingStatus')}>
             <VotingStatus referendum={referendum} chain={chain} asset={votingAsset} />
           </DetailsCard>
@@ -96,7 +120,10 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) =
         </div>
       </div>
 
+      {showWalletVotes && <WalletVotesDialog referendum={referendum} onClose={() => setShowWalletVotes(false)} />}
+
       {showVoteHistory && <VotingHistoryDialog referendum={referendum} onClose={() => setShowVoteHistory(false)} />}
+
       {showAdvanced && referendumService.isOngoing(referendum) && votingAsset && (
         <AdvancedDialog asset={votingAsset} referendum={referendum} onClose={() => setShowAdvanced(false)} />
       )}

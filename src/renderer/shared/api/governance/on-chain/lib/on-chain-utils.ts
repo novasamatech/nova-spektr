@@ -2,14 +2,9 @@ import { type BN, BN_ZERO, bnMax } from '@polkadot/util';
 
 import {
   type AccountVote,
-  type ApprovedReferendum,
   type CastingVoting,
   type Conviction,
   type DelegatingVoting,
-  type OngoingReferendum,
-  type ReferendumInfo,
-  ReferendumType,
-  type RejectedReferendum,
   type SplitAbstainVote,
   type SplitVote,
   type StandardVote,
@@ -25,13 +20,21 @@ export const onChainUtils = {
   getLockPeriods,
 
   isStandardVote,
+  isSplitVote,
+  isSplitAbstainVote,
   isClaimAt,
 
-  isOngoing,
-  isRejected,
-  isApproved,
-
   test,
+};
+
+const lockPeroids = {
+  None: 0,
+  Locked1x: 1,
+  Locked2x: 2,
+  Locked3x: 4,
+  Locked4x: 8,
+  Locked5x: 16,
+  Locked6x: 32,
 };
 
 const enum Vote {
@@ -40,15 +43,7 @@ const enum Vote {
 }
 
 function getLockPeriods(conviction: Conviction): number {
-  return {
-    None: 0,
-    Locked1x: 1,
-    Locked2x: 2,
-    Locked3x: 4,
-    Locked4x: 8,
-    Locked5x: 16,
-    Locked6x: 32,
-  }[conviction];
+  return lockPeroids[conviction];
 }
 
 // Convert aye nay to on-chain values
@@ -77,39 +72,31 @@ function isStandardVote(vote: AccountVote): vote is StandardVote {
   return vote.type === 'standard';
 }
 
+function isSplitVote(vote: AccountVote): vote is SplitVote {
+  return vote.type === 'split';
+}
+
+function isSplitAbstainVote(vote: AccountVote): vote is SplitAbstainVote {
+  return vote.type === 'splitAbstain';
+}
+
 // Claim time types
 
 function isClaimAt(claim: ClaimTime): claim is ClaimTimeAt {
   return claim.type === 'at';
 }
 
-// Referendum statuses
-
-function isOngoing(referendum: ReferendumInfo): referendum is OngoingReferendum {
-  return referendum.type === ReferendumType.Ongoing;
-}
-
-function isRejected(referendum: ReferendumInfo): referendum is RejectedReferendum {
-  return referendum.type === ReferendumType.Rejected;
-}
-
-function isApproved(referendum: ReferendumInfo): referendum is ApprovedReferendum {
-  return referendum.type === ReferendumType.Approved;
-}
-
 function getTotalLock(voting: Voting): BN {
   if (isCasting(voting)) {
     const maxVote = Object.values(voting.casting.votes).reduce<BN>((acc, vote) => {
       if (vote.type === 'standard') {
-        acc = bnMax((vote as StandardVote).balance, acc);
+        acc = bnMax(vote.balance, acc);
       }
       if (vote.type === 'split') {
-        const splitVote = vote as SplitVote;
-        acc = bnMax(splitVote.aye.add(splitVote.nay), acc);
+        acc = bnMax(vote.aye.add(vote.nay), acc);
       }
       if (vote.type === 'splitAbstain') {
-        const abstainVote = vote as SplitAbstainVote;
-        acc = bnMax(abstainVote.aye.add(abstainVote.nay).add(abstainVote.abstain), acc);
+        acc = bnMax(vote.aye.add(vote.nay).add(vote.abstain), acc);
       }
 
       return acc;

@@ -6,17 +6,16 @@ const prettierOptions = JSON.parse(prettierConfig);
 const localesPath = './src/renderer/shared/api/translation/locales';
 const defaultLocalePath = path.join(localesPath, 'en.json');
 
-const aliases = [
-  ['@', './renderer/'],
-  ['@renderer', './src/renderer/'],
-  ['@app', './src/renderer/app/'],
-  ['@pages', './src/renderer/pages/'],
-  ['@processes', './src/renderer/processes/'],
-  ['@widgets', './src/renderer/widgets/'],
-  ['@features', './src/renderer/features/'],
-  ['@entities', './src/renderer/entities/'],
-  ['@shared', './src/renderer/shared/'],
-];
+const boundaryTypes = ['app', 'pages', 'processes', 'widgets', 'features', 'entities', 'shared'];
+
+const boundaries = boundaryTypes.map((type) => {
+  return {
+    type,
+    pattern: [`src/renderer/${type}/*`, `@${type}/*`, `@/${type}/*`],
+    // mode: 'folder',
+    // capture: ['name'],
+  };
+});
 
 module.exports = {
   root: true,
@@ -40,15 +39,10 @@ module.exports = {
     ecmaVersion: 2021,
   },
   settings: {
-    'import/resolver': {
-      alias: {
-        map: aliases,
-        extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
-      },
-      node: {
-        extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
-      },
+    'import/parsers': {
+      '@typescript-eslint/parser': ['.ts', '.tsx'],
     },
+    'boundaries/elements': boundaries,
   },
   rules: {
     'sort-imports': ['error', { ignoreDeclarationSort: true }],
@@ -149,12 +143,13 @@ module.exports = {
     },
     {
       files: ['*.ts', '*.tsx'],
-      plugins: ['@typescript-eslint', 'effector', 'unused-imports'],
+      plugins: ['@typescript-eslint', 'effector', 'unused-imports', 'boundaries'],
       extends: [
         'plugin:effector/recommended',
         'plugin:effector/scope',
         'plugin:@typescript-eslint/eslint-recommended',
         'plugin:@typescript-eslint/recommended',
+        'plugin:boundaries/recommended',
       ],
       parser: '@typescript-eslint/parser',
       parserOptions: {
@@ -180,6 +175,26 @@ module.exports = {
         // it took around 4 seconds to check this single rule
         'effector/enforce-store-naming-convention': 'off',
         'effector/keep-options-order': 'error',
+        'boundaries/element-types': [
+          'error',
+          {
+            default: 'disallow',
+            rules: [
+              {
+                from: 'entities',
+                allow: ['app', 'entities'],
+              },
+              {
+                from: 'features',
+                allow: ['app', 'shared', 'entities'],
+              },
+              {
+                from: 'pages',
+                allow: ['app', 'shared', 'entities', 'features'],
+              },
+            ],
+          },
+        ],
       },
     },
   ],

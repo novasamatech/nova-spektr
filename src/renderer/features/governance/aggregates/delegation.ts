@@ -7,7 +7,7 @@ import { votingAggregate } from './voting';
 
 const $totalDelegations = combine(
   {
-    voting: votingAggregate.$currentWalletVoting,
+    voting: votingAggregate.$activeWalletVotes,
   },
   ({ voting }): string => {
     return Object.values(voting)

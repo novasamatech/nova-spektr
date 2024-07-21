@@ -8,6 +8,7 @@ import { timelineModel } from '../model/timeline';
 import { titleModel } from '../model/title';
 
 import { proposerIdentityAggregate } from './proposerIdentity';
+import { votingAggregate } from './voting';
 
 const flow = createGate<{ chain: Chain; referendum: Referendum }>();
 
@@ -31,6 +32,7 @@ export const detailsAggregate = {
   $descriptions: descriptionsModel.$descriptions,
   $titles: titleModel.$titles,
   $timelines: timelineModel.$currentChainTimelines,
+  $votes: votingAggregate.$activeWalletVotes,
   $proposers: proposerIdentityAggregate.$proposers,
   $isTimelinesLoading: timelineModel.$isTimelineLoading,
   $isProposersLoading: proposerIdentityAggregate.$isProposersLoading,

@@ -7,9 +7,9 @@ import { networkSelectorModel } from '../model/networkSelector';
 
 import { tracksAggregate } from './tracks';
 
-const $currentWalletVoting = combine(
+const $activeWalletVotes = combine(
   {
-    voting: votingModel.$voting,
+    voting: votingModel.$votes,
     wallet: walletModel.$activeWallet,
     chain: networkSelectorModel.$governanceChain,
   },
@@ -48,8 +48,8 @@ sample({
 });
 
 export const votingAggregate = {
-  $currentWalletVoting,
-  $voting: votingModel.$voting,
+  $activeWalletVotes,
+  $votes: votingModel.$votes,
 
   events: {
     requestDone: votingModel.effects.requestVotingFx.done,
