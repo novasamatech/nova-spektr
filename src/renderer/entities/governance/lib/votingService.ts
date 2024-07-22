@@ -31,7 +31,7 @@ const calculateVotingPower = (balance: BN, conviction: Conviction) => {
   const votingCoefficient = getVotingPower(conviction);
 
   if (votingCoefficient < 1) {
-    return balance.muln(votingCoefficient * 10).divn(10);
+    return balance.muln(votingCoefficient * 10).idivn(10);
   }
 
   return balance.muln(votingCoefficient);
