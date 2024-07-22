@@ -16,14 +16,10 @@ import { votingAggregate } from './voting';
 const flow = createGate<{ referendumId: ReferendumId }>();
 
 const $chainVoteHistory = combine(
-  {
-    history: voteHistoryModel.$voteHistory,
-    chain: networkSelectorModel.$governanceChain,
-  },
-  ({ history, chain }) => {
-    if (!chain) {
-      return {};
-    }
+  voteHistoryModel.$voteHistory,
+  networkSelectorModel.$governanceChain,
+  (history, chain) => {
+    if (!chain) return {};
 
     return history[chain.chainId] ?? {};
   },

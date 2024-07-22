@@ -50,12 +50,13 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) =
     fn: (votes, [referendumId]) => votingService.getReferendumAccountVotes(referendumId, votes),
   });
 
-  const [isModalOpen, closeModal] = useModalClose(true, onClose);
+  const formattedVotes = useMemo(() => {
+    const balance = votingService.calculateAccountVotesTotalBalance(votes);
 
-  const formattedVotes = useMemo(
-    () => formatBalance(votingService.calculateAccountVotesTotalBalance(votes), votingAsset?.precision).formatted,
-    [votes, votingAsset],
-  );
+    return formatBalance(balance, votingAsset?.precision).formatted;
+  }, [votes, votingAsset]);
+
+  const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
   return (
     <BaseModal
