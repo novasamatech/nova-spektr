@@ -443,7 +443,9 @@
       "listColumnAccount": "Account",
       "listColumnVote": "Vote",
       "listColumnVotingPower": "Voting power",
-      "title": "My votes"
+      "title": "My votes",
+      "totalVotesCount": "{value} votes {symbol}",
+      "totalVotesCountConviction": "{value} × {conviction}"
     }
   },
   "log": {

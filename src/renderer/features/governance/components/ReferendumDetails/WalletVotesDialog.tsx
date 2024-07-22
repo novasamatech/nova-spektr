@@ -59,16 +59,16 @@ export const WalletVotesDialog = ({ referendum, asset, onClose }: Props) => {
         return (
           <>
             <AddressWithName className="px-2 py-3" addressFont="text-text-secondary" address={address} />
-            <BodyText className="px-2">{vote.decision}</BodyText>
-            <div>
+            <BodyText className="px-2">{t(`governance.referendum.${vote.decision}`)}</BodyText>
+            <div className="flex flex-col basis-32 shrink-0 px-2 gap-0.5 items-end">
               <BodyText className="whitespace-nowrap">
-                {t('governance.voteHistory.totalVotesCount', {
+                {t('governance.walletVotes.totalVotesCount', {
                   value: formatBalance(vote.votingPower, asset.precision).formatted,
                   symbol: asset.symbol,
                 })}
               </BodyText>
               <FootnoteText className="whitespace-nowrap text-text-tertiary">
-                {t('governance.voteHistory.totalVotesCountConviction', {
+                {t('governance.walletVotes.totalVotesCountConviction', {
                   value: `${formatBalance(vote.balance, asset.precision).formatted} ${asset.symbol}`,
                   conviction: vote.conviction,
                 })}
