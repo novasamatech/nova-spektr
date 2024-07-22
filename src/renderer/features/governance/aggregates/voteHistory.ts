@@ -6,9 +6,9 @@ import { type ReferendumId } from '@shared/core';
 import { voteHistoryModel, votingService } from '@entities/governance';
 import { votingListService } from '../lib/votingListService';
 import { networkSelectorModel } from '../model/networkSelector';
+import { votingAssetModel } from '../model/votingAsset';
 import { type AggregatedVoteHistory } from '../types/structs';
 
-import { detailsAggregate } from './details';
 import { proposerIdentityAggregate } from './proposerIdentity';
 import { tracksAggregate } from './tracks';
 import { votingAggregate } from './voting';
@@ -113,7 +113,7 @@ export const voteHistoryAggregate = {
   $voteHistory,
   $voteHistoryLoading: or(voteHistoryModel.$voteHistoryLoading, votingAggregate.$isLoading),
   $chain: networkSelectorModel.$governanceChain,
-  $votingAssets: detailsAggregate.$votingAssets,
+  $votingAsset: votingAssetModel.$votingAsset,
 
   events: {
     requestVoteHistory,

@@ -1,10 +1,10 @@
-import { useGate, useStoreMap } from 'effector-react';
+import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { useMemo, useState } from 'react';
 
 import { useI18n } from '@app/providers';
 import { type Chain } from '@shared/core';
 import { useModalClose } from '@shared/lib/hooks';
-import { formatBalance, pickNestedValue } from '@shared/lib/utils';
+import { formatBalance } from '@shared/lib/utils';
 import { BaseModal, Button, Plate } from '@shared/ui';
 import { referendumService, votingService } from '@entities/governance';
 import { detailsAggregate } from '../../aggregates/details';
@@ -36,22 +36,18 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) =
 
   const { t } = useI18n();
 
+  const votingAsset = useUnit(detailsAggregate.$votingAsset);
+
   const title = useStoreMap({
     store: detailsAggregate.$titles,
-    keys: [chain.chainId, referendum.referendumId],
-    fn: (x, [chainId, index]) => pickNestedValue(x, chainId, index),
-  });
-
-  const votingAsset = useStoreMap({
-    store: detailsAggregate.$votingAssets,
-    keys: [chain.chainId],
-    fn: (x, [chainId]) => x[chainId],
+    keys: [referendum.referendumId],
+    fn: (titles, [referendumId]) => titles[referendumId] ?? '',
   });
 
   const votes = useStoreMap({
     store: detailsAggregate.$votes,
     keys: [referendum.referendumId],
-    fn: (x, [referendumId]) => votingService.getReferendumAccountVotes(referendumId, x),
+    fn: (votes, [referendumId]) => votingService.getReferendumAccountVotes(referendumId, votes),
   });
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
