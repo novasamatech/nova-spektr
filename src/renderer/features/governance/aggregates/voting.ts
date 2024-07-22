@@ -19,12 +19,15 @@ const $activeWalletVotes = combine(
     }
 
     const addresses = accountUtils.getAddressesForWallet(wallet, chain);
+    const res: VotingMap = {};
 
-    return addresses.reduce<VotingMap>((acc, address) => {
-      acc[address] = voting[address];
+    for (const address of addresses) {
+      if (address in voting) {
+        res[address] = voting[address];
+      }
+    }
 
-      return acc;
-    }, {});
+    return res;
   },
 );
 
