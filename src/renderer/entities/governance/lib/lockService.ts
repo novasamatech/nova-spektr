@@ -15,21 +15,15 @@ const lockPeriod = {
   Locked6x: 32,
 };
 
-function getLockPeriods(conviction: Conviction): number {
-  return lockPeriod[conviction];
-}
+const getLockPeriods = (conviction: Conviction): number => lockPeriod[conviction];
 
 // Claim time types
 
-function isClaimAt(claim: ClaimTime): claim is ClaimTimeAt {
-  return claim.type === 'at';
-}
+const isClaimAt = (claim: ClaimTime): claim is ClaimTimeAt => claim.type === 'at';
 
-function isClaimUntil(claim: ClaimTime): claim is ClaimTimeUntil {
-  return claim.type === 'until';
-}
+const isClaimUntil = (claim: ClaimTime): claim is ClaimTimeUntil => claim.type === 'until';
 
-function getTotalLock(voting: Voting): BN {
+const getTotalLock = (voting: Voting): BN => {
   if (votingService.isCasting(voting)) {
     const maxVote = Object.values(voting.casting.votes).reduce<BN>((acc, vote) => {
       if (vote.type === 'standard') {
@@ -53,7 +47,7 @@ function getTotalLock(voting: Voting): BN {
   }
 
   return BN_ZERO;
-}
+};
 
 export const locksService = {
   getLockPeriods,
