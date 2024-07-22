@@ -9,7 +9,7 @@ import { tracksAggregate } from './tracks';
 
 const $activeWalletVotes = combine(
   {
-    voting: votingModel.$votes,
+    voting: votingModel.$voting,
     wallet: walletModel.$activeWallet,
     chain: networkSelectorModel.$governanceChain,
   },
@@ -40,7 +40,7 @@ sample({
   fn: ({ wallet, api, chain, tracks }) => {
     return {
       api: api!,
-      tracksIds: Object.keys(tracks),
+      tracks: Object.keys(tracks),
       addresses: accountUtils.getAddressesForWallet(wallet!, chain!),
     };
   },
@@ -49,9 +49,11 @@ sample({
 
 export const votingAggregate = {
   $activeWalletVotes,
-  $votes: votingModel.$votes,
+  $voting: votingModel.$voting,
+  $isLoading: votingModel.$isLoading,
 
   events: {
+    requestVoting: votingModel.events.requestVoting,
     requestDone: votingModel.effects.requestVotingFx.done,
     requestPending: votingModel.effects.requestVotingFx.pending,
   },

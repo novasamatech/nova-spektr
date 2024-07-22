@@ -34,6 +34,7 @@ export type PriorLock = {
 export type StandardVote = {
   type: 'standard';
   track: string;
+  address: Address;
   referendumId: string;
   vote: {
     type: 'aye' | 'nay';
@@ -45,6 +46,7 @@ export type StandardVote = {
 export type SplitVote = {
   type: 'split';
   track: string;
+  address: Address;
   referendumId: string;
   aye: BN;
   nay: BN;
@@ -53,6 +55,7 @@ export type SplitVote = {
 export type SplitAbstainVote = {
   type: 'splitAbstain';
   track: string;
+  address: Address;
   referendumId: string;
   aye: BN;
   nay: BN;

@@ -89,7 +89,7 @@ sample({
     api: networkSelectorModel.$governanceChainApi,
     tracks: tracksAggregate.$tracks,
     trackLocks: locksModel.$trackLocks,
-    voting: votingAggregate.$votes,
+    voting: votingAggregate.$voting,
     referendums: referendumModel.$referendums,
     chain: networkSelectorModel.$governanceChain,
   },

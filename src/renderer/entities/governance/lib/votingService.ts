@@ -4,6 +4,7 @@ import {
   type AccountVote,
   type Address,
   type CastingVoting,
+  type Conviction,
   type DelegatingVoting,
   type ReferendumId,
   type SplitAbstainVote,
@@ -15,6 +16,20 @@ import {
   type VotingMap,
 } from '@/shared/core';
 import { toKeysRecord } from '@shared/lib/utils';
+
+const convictions: Record<Conviction, number> = {
+  None: 0.1,
+  Locked1x: 1,
+  Locked2x: 2,
+  Locked3x: 3,
+  Locked4x: 4,
+  Locked5x: 5,
+  Locked6x: 6,
+};
+
+const getVotingPower = (conviction: Conviction) => {
+  return convictions[conviction];
+};
 
 const getVoteFractions = (tally: Tally, approve: BN): Record<'aye' | 'nay' | 'pass', number> => {
   const total = tally.ayes.add(tally.nays);
@@ -123,6 +138,7 @@ export const votingService = {
   isSplitVote,
   isSplitAbstainVote,
 
+  getVotingPower,
   getVotedCount,
   getVoteFractions,
   isReferendumVoted,

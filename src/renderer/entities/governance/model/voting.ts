@@ -9,14 +9,14 @@ const $voting = createStore<VotingMap>({});
 
 type VotingParams = {
   api: ApiPromise;
-  tracksIds: TrackId[];
+  tracks: TrackId[];
   addresses: Address[];
 };
 
 const requestVoting = createEvent<VotingParams>();
 
-const requestVotingFx = createEffect(({ api, tracksIds, addresses }: VotingParams): Promise<VotingMap> => {
-  return governanceService.getVotingFor(api, tracksIds, addresses);
+const requestVotingFx = createEffect(({ api, tracks, addresses }: VotingParams): Promise<VotingMap> => {
+  return governanceService.getVotingFor(api, tracks, addresses);
 });
 
 sample({
@@ -32,7 +32,8 @@ sample({
 });
 
 export const votingModel = {
-  $votes: readonly($voting),
+  $voting: readonly($voting),
+  $isLoading: requestVotingFx.pending,
 
   effects: {
     requestVotingFx,

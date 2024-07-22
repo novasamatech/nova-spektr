@@ -184,13 +184,14 @@ async function getVotingFor(
 
     if (convictionVoting.isCasting) {
       const votes: Record<ReferendumId, AccountVote> = {};
-      for (const [index, vote] of convictionVoting.asCasting.votes) {
-        const referendumId = index.toString();
+      for (const [referendumIndex, vote] of convictionVoting.asCasting.votes) {
+        const referendumId = referendumIndex.toString();
 
         if (vote.isStandard) {
           const standardVote = vote.asStandard;
           votes[referendumId] = {
             type: 'standard',
+            address,
             track: trackId,
             referendumId,
             vote: {
@@ -205,6 +206,7 @@ async function getVotingFor(
           const splitVote = vote.asSplit;
           votes[referendumId] = {
             type: 'split',
+            address,
             referendumId,
             track: trackId,
             aye: splitVote.aye.toBn(),
@@ -216,6 +218,7 @@ async function getVotingFor(
           const splitAbstainVote = vote.asSplitAbstain;
           votes[referendumId.toString()] = {
             type: 'splitAbstain',
+            address,
             referendumId,
             track: trackId,
             aye: splitAbstainVote.aye.toBn(),
