@@ -27,6 +27,16 @@ const convictions: Record<Conviction, number> = {
   Locked6x: 6,
 };
 
+const calculateVotingPower = (balance: BN, conviction: Conviction) => {
+  const votingCoefficient = getVotingPower(conviction);
+
+  if (votingCoefficient < 1) {
+    return balance.muln(votingCoefficient * 10).divn(10);
+  }
+
+  return balance.muln(votingCoefficient);
+};
+
 const getVotingPower = (conviction: Conviction) => {
   return convictions[conviction];
 };
@@ -102,15 +112,18 @@ const getReferendumVotesForAddresses = (referendumId: ReferendumId, addresses: A
 const getVotesTotalBalance = (votes: Record<Address, AccountVote>) => {
   return Object.values(votes).reduce((acc, vote) => {
     if (isStandardVote(vote)) {
-      return acc.iadd(vote.balance);
+      return acc.iadd(calculateVotingPower(vote.balance, vote.vote.conviction));
     }
 
     if (isSplitVote(vote)) {
-      return acc.iadd(vote.aye).iadd(vote.nay);
+      return acc.iadd(calculateVotingPower(vote.aye, 'None')).iadd(calculateVotingPower(vote.nay, 'None'));
     }
 
     if (isSplitAbstainVote(vote)) {
-      return acc.iadd(vote.aye).iadd(vote.nay).iadd(vote.abstain);
+      return acc
+        .iadd(calculateVotingPower(vote.aye, 'None'))
+        .iadd(calculateVotingPower(vote.nay, 'None'))
+        .iadd(calculateVotingPower(vote.abstain, 'None'));
     }
 
     return acc;
@@ -141,6 +154,7 @@ export const votingService = {
   getVotingPower,
   getVotedCount,
   getVoteFractions,
+  calculateVotingPower,
   isReferendumVoted,
   getAllReferendumVotes,
   getReferendumVotesForAddresses,
