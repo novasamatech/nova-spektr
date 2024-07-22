@@ -108,11 +108,13 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) =
             <Timeline referendumId={referendum.referendumId} />
           </DetailsCard>
 
-          <DetailsCard>
-            <Button className="p-0 h-auto w-fit" size="sm" variant="text" onClick={() => setShowAdvanced(true)}>
-              {t('governance.referendum.advanced')}
-            </Button>
-          </DetailsCard>
+          {referendumService.isOngoing(referendum) && votingAsset ? (
+            <DetailsCard>
+              <Button className="p-0 h-auto w-fit" size="sm" variant="text" onClick={() => setShowAdvanced(true)}>
+                {t('governance.referendum.advanced')}
+              </Button>
+            </DetailsCard>
+          ) : null}
         </div>
       </div>
 
