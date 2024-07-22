@@ -216,7 +216,7 @@ async function getVotingFor(
 
         if (vote.isSplitAbstain) {
           const splitAbstainVote = vote.asSplitAbstain;
-          votes[referendumId.toString()] = {
+          votes[referendumId] = {
             type: 'splitAbstain',
             address,
             referendumId,
