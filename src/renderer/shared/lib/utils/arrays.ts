@@ -58,7 +58,7 @@ export const sortByDateDesc = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]
 export const sortByDateAsc = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]): number =>
   new Date(dateA) > new Date(dateB) ? 1 : -1;
 
-export const toKeysRecord = <T extends string[]>(array: T): Record<keyof T, true> => {
+export const toKeysRecord = <T extends string[]>(array: T): Record<T[number], true> => {
   const res: Record<string, true> = {};
 
   for (let i = 0; i < array.length; i++) {
@@ -69,5 +69,5 @@ export const toKeysRecord = <T extends string[]>(array: T): Record<keyof T, true
     res[item] = true;
   }
 
-  return res as Record<keyof T, true>;
+  return res as Record<T[number], true>;
 };

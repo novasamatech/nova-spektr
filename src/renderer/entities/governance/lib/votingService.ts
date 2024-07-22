@@ -1,4 +1,4 @@
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 
 import {
   type AccountVote,
@@ -11,13 +11,12 @@ import {
   type SplitVote,
   type StandardVote,
   type Tally,
-  type TrackId,
   type Voting,
   type VotingMap,
 } from '@/shared/core';
 import { toKeysRecord } from '@shared/lib/utils';
 
-const convictions: Record<Conviction, number> = {
+const convictionMultipliers: Record<Conviction, number> = {
   None: 0.1,
   Locked1x: 1,
   Locked2x: 2,
@@ -27,21 +26,23 @@ const convictions: Record<Conviction, number> = {
   Locked6x: 6,
 };
 
-const calculateVotingPower = (balance: BN, conviction: Conviction) => {
-  const votingCoefficient = getVotingPower(conviction);
-
-  if (votingCoefficient < 1) {
-    return balance.muln(votingCoefficient * 10).idivn(10);
+const getAccountVoteConviction = (vote: AccountVote): Conviction => {
+  if (isStandardVote(vote)) {
+    return vote.vote.conviction;
   }
 
-  return balance.muln(votingCoefficient);
+  if (isSplitVote(vote) || isSplitAbstainVote(vote)) {
+    return 'None';
+  }
+
+  return 'None';
 };
 
-const getVotingPower = (conviction: Conviction) => {
-  return convictions[conviction];
+const getConvictionMultiplier = (conviction: Conviction) => {
+  return convictionMultipliers[conviction];
 };
 
-const getVoteFractions = (tally: Tally, approve: BN): Record<'aye' | 'nay' | 'pass', number> => {
+const getVoteFractions = (tally: Tally, approve: BN) => {
   const total = tally.ayes.add(tally.nays);
 
   const aye = tally.ayes.muln(10_000_000).div(total).toNumber() / 100_000;
@@ -53,11 +54,11 @@ const getVoteFractions = (tally: Tally, approve: BN): Record<'aye' | 'nay' | 'pa
 
 const getVotedCount = (tally: Tally, threshold: BN) => ({
   voted: tally.support,
-  of: threshold,
+  threshold,
 });
 
-const isReferendumVoted = (referendumId: ReferendumId, votings: Record<Address, Record<TrackId, Voting>>): boolean => {
-  for (const votingMap of Object.values(votings)) {
+const isReferendumVoted = (referendumId: ReferendumId, voting: VotingMap) => {
+  for (const votingMap of Object.values(voting)) {
     for (const voting of Object.values(votingMap)) {
       if (isCasting(voting)) {
         const referendumVote = voting.casting.votes[referendumId];
@@ -71,10 +72,10 @@ const isReferendumVoted = (referendumId: ReferendumId, votings: Record<Address, 
   return false;
 };
 
-const getAllReferendumVotes = (referendumId: ReferendumId, votings: VotingMap) => {
+const getReferendumAccountVotes = (referendumId: ReferendumId, voting: VotingMap) => {
   const res: Record<Address, AccountVote> = {};
 
-  for (const [address, votingMap] of Object.entries(votings)) {
+  for (const [address, votingMap] of Object.entries(voting)) {
     for (const voting of Object.values(votingMap)) {
       if (isCasting(voting)) {
         const referendumVote = voting.casting.votes[referendumId];
@@ -88,46 +89,52 @@ const getAllReferendumVotes = (referendumId: ReferendumId, votings: VotingMap) =
   return res;
 };
 
-const getReferendumVotesForAddresses = (referendumId: ReferendumId, addresses: Address[], votings: VotingMap) => {
-  const res: Record<Address, AccountVote> = {};
+const getReferendumAccountVotesForAddresses = (referendumId: ReferendumId, addresses: Address[], voting: VotingMap) => {
+  const allVotes = getReferendumAccountVotes(referendumId, voting);
   const addressesMap = toKeysRecord(addresses);
+  const res: Record<Address, AccountVote> = {};
 
-  for (const [address, votingMap] of Object.entries(votings)) {
-    if (!(address in addressesMap)) {
-      continue;
-    }
-    for (const voting of Object.values(votingMap)) {
-      if (isCasting(voting)) {
-        const referendumVote = voting.casting.votes[referendumId];
-        if (referendumVote) {
-          res[address] = voting.casting.votes[referendumId];
-        }
-      }
+  for (const [address, vote] of Object.entries(allVotes)) {
+    if (address in addressesMap) {
+      res[address] = vote;
     }
   }
 
   return res;
 };
 
-const getVotesTotalBalance = (votes: Record<Address, AccountVote>) => {
-  return Object.values(votes).reduce((acc, vote) => {
-    if (isStandardVote(vote)) {
-      return acc.iadd(calculateVotingPower(vote.balance, vote.vote.conviction));
-    }
+const calculateVotingPower = (balance: BN, conviction: Conviction) => {
+  const votingCoefficient = getConvictionMultiplier(conviction);
 
-    if (isSplitVote(vote)) {
-      return acc.iadd(calculateVotingPower(vote.aye, 'None')).iadd(calculateVotingPower(vote.nay, 'None'));
-    }
+  if (votingCoefficient < 1) {
+    return balance.muln(votingCoefficient * 100).idivn(100);
+  }
 
-    if (isSplitAbstainVote(vote)) {
-      return acc
-        .iadd(calculateVotingPower(vote.aye, 'None'))
-        .iadd(calculateVotingPower(vote.nay, 'None'))
-        .iadd(calculateVotingPower(vote.abstain, 'None'));
-    }
+  return balance.muln(votingCoefficient);
+};
 
-    return acc;
-  }, new BN(0));
+const calculateAccountVotePower = (vote: AccountVote) => {
+  const conviction = getAccountVoteConviction(vote);
+
+  if (isStandardVote(vote)) {
+    return calculateVotingPower(vote.balance, conviction);
+  }
+
+  if (isSplitVote(vote)) {
+    return calculateVotingPower(vote.aye, conviction).iadd(calculateVotingPower(vote.nay, conviction));
+  }
+
+  if (isSplitAbstainVote(vote)) {
+    return calculateVotingPower(vote.aye, conviction)
+      .iadd(calculateVotingPower(vote.nay, conviction))
+      .iadd(calculateVotingPower(vote.abstain, conviction));
+  }
+
+  return BN_ZERO;
+};
+
+const calculateAccountVotesTotalBalance = (votes: Record<Address, AccountVote>) => {
+  return Object.values(votes).reduce((acc, vote) => acc.iadd(calculateAccountVotePower(vote)), new BN(0));
 };
 
 // Voting types
@@ -150,13 +157,17 @@ export const votingService = {
   isStandardVote,
   isSplitVote,
   isSplitAbstainVote,
+  isReferendumVoted,
 
-  getVotingPower,
+  getAccountVoteConviction,
+  getConvictionMultiplier,
   getVotedCount,
   getVoteFractions,
+
+  getReferendumAccountVotes,
+  getReferendumAccountVotesForAddresses,
+
   calculateVotingPower,
-  isReferendumVoted,
-  getAllReferendumVotes,
-  getReferendumVotesForAddresses,
-  getVotesTotalBalance,
+  calculateAccountVotePower,
+  calculateAccountVotesTotalBalance,
 };

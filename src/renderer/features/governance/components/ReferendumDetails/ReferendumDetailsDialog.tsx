@@ -51,13 +51,13 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) =
   const votes = useStoreMap({
     store: detailsAggregate.$votes,
     keys: [referendum.referendumId],
-    fn: (x, [referendumId]) => votingService.getAllReferendumVotes(referendumId, x),
+    fn: (x, [referendumId]) => votingService.getReferendumAccountVotes(referendumId, x),
   });
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
   const formattedVotes = useMemo(
-    () => formatBalance(votingService.getVotesTotalBalance(votes), votingAsset?.precision).formatted,
+    () => formatBalance(votingService.calculateAccountVotesTotalBalance(votes), votingAsset?.precision).formatted,
     [votes, votingAsset],
   );
 

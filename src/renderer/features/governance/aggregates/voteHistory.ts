@@ -44,7 +44,7 @@ const $voteHistory = combine(
     const acc: Record<ReferendumId, AggregatedVoteHistory[]> = {};
 
     for (const [referendumId, historyList] of Object.entries(history)) {
-      const votes = votingService.getAllReferendumVotes(referendumId, voting);
+      const votes = votingService.getReferendumAccountVotes(referendumId, voting);
 
       acc[referendumId] = historyList.flatMap(({ voter }) => {
         const proposer = proposers[voter] ?? null;

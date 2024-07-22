@@ -24,7 +24,7 @@ export const WalletVotesDialog = ({ referendum, asset, onClose }: Props) => {
   const votes = useStoreMap({
     store: detailsAggregate.$votes,
     keys: [referendum.referendumId],
-    fn: (x, [referendumId]) => votingService.getAllReferendumVotes(referendumId, x),
+    fn: (x, [referendumId]) => votingService.getReferendumAccountVotes(referendumId, x),
   });
 
   const votesList = useMemo(

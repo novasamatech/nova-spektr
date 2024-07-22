@@ -4,26 +4,27 @@ import { type DecoupledVote } from '../types/structs';
 
 const getDecoupledVotesFromVote = (vote: AccountVote) => {
   const res: DecoupledVote[] = [];
+  const conviction = votingService.getAccountVoteConviction(vote);
+  const convictionMultiplier = votingService.getConvictionMultiplier(conviction);
 
   if (votingService.isStandardVote(vote)) {
     res.push({
       decision: vote.vote.type,
       voter: vote.address,
       balance: vote.balance,
-      conviction: votingService.getVotingPower(vote.vote.conviction),
-      votingPower: votingService.calculateVotingPower(vote.balance, vote.vote.conviction),
+      conviction: convictionMultiplier,
+      votingPower: votingService.calculateAccountVotePower(vote),
     });
   }
 
   if (votingService.isSplitVote(vote)) {
-    const conviction = 'None';
     if (!vote.aye.isZero()) {
       res.push({
         decision: 'aye',
         voter: vote.address,
         balance: vote.aye,
-        conviction: votingService.getVotingPower(conviction),
-        votingPower: votingService.calculateVotingPower(vote.aye, conviction),
+        conviction: convictionMultiplier,
+        votingPower: votingService.calculateAccountVotePower(vote),
       });
     }
     if (!vote.nay.isZero()) {
@@ -31,21 +32,20 @@ const getDecoupledVotesFromVote = (vote: AccountVote) => {
         decision: 'nay',
         voter: vote.address,
         balance: vote.nay,
-        conviction: votingService.getVotingPower(conviction),
-        votingPower: votingService.calculateVotingPower(vote.nay, conviction),
+        conviction: convictionMultiplier,
+        votingPower: votingService.calculateAccountVotePower(vote),
       });
     }
   }
 
   if (votingService.isSplitAbstainVote(vote)) {
-    const conviction = 'None';
     if (!vote.aye.isZero()) {
       res.push({
         decision: 'aye',
         voter: vote.address,
         balance: vote.aye,
-        conviction: votingService.getVotingPower(conviction),
-        votingPower: votingService.calculateVotingPower(vote.aye, conviction),
+        conviction: votingService.getConvictionMultiplier(conviction),
+        votingPower: votingService.calculateAccountVotePower(vote),
       });
     }
     if (!vote.nay.isZero()) {
@@ -53,7 +53,7 @@ const getDecoupledVotesFromVote = (vote: AccountVote) => {
         decision: 'nay',
         voter: vote.address,
         balance: vote.nay,
-        conviction: votingService.getVotingPower(conviction),
+        conviction: votingService.getConvictionMultiplier(conviction),
         votingPower: votingService.calculateVotingPower(vote.nay, conviction),
       });
     }
@@ -62,7 +62,7 @@ const getDecoupledVotesFromVote = (vote: AccountVote) => {
         decision: 'abstain',
         voter: vote.address,
         balance: vote.abstain,
-        conviction: votingService.getVotingPower(conviction),
+        conviction: votingService.getConvictionMultiplier(conviction),
         votingPower: votingService.calculateVotingPower(vote.abstain, conviction),
       });
     }

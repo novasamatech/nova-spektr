@@ -36,7 +36,7 @@ export const VotingStatus = ({ referendum, chain, asset }: Props) => {
       : null;
 
   const votedBalance = votedCount ? formatBalance(votedCount.voted, asset.precision, { K: true }) : null;
-  const supportThresholdBalance = votedCount ? formatBalance(votedCount.of, asset.precision, { K: true }) : null;
+  const supportThresholdBalance = votedCount ? formatBalance(votedCount.threshold, asset.precision, { K: true }) : null;
 
   return (
     <div className="flex flex-col items-start gap-6">
