@@ -83,10 +83,6 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) =
             </DetailsCard>
           )}
 
-          <DetailsCard>
-            <VotingBalance votes={formattedVotes} onInfoClick={() => setShowWalletVotes(true)} />
-          </DetailsCard>
-
           <DetailsCard title={t('governance.referendum.votingStatus')}>
             <VotingStatus referendum={referendum} chain={chain} asset={votingAsset} />
           </DetailsCard>
