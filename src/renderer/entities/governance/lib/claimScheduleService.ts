@@ -161,10 +161,9 @@ function castingClaimableLocks(
     affected: [{ trackId, type: 'track' }],
   } satisfies ClaimableLock;
 
-  const votes = Object.values(voting.casting.votes);
-  const standardVotes = votes.filter(votingService.isStandardVote);
+  const standardVotes = Object.entries(voting.casting.votes);
 
-  const standardVoteLocks = standardVotes.map<ClaimableLock>((standardVote) => {
+  const standardVoteLocks = standardVotes.map<ClaimableLock>(([referendumId, standardVote]) => {
     const estimatedEnd = maxConvictionEndOf(
       currentBlockNumber,
       trackId,
@@ -172,7 +171,7 @@ function castingClaimableLocks(
       standardVote,
       voteLockingPeriod,
       undecidingTimeout,
-      referendums.find((i) => i.referendumId === standardVote.referendumId),
+      referendums.find((i) => i.referendumId === referendumId),
     );
 
     return {
@@ -181,8 +180,8 @@ function castingClaimableLocks(
         type: 'at',
         block: Math.max(estimatedEnd, priorLock.claimAt.block),
       },
-      amount: standardVote.balance || BN_ZERO,
-      affected: [{ trackId, type: 'vote', referendumId: standardVote.referendumId }],
+      amount: votingService.isStandardVote(standardVote) ? standardVote.balance : BN_ZERO,
+      affected: [{ trackId, type: 'vote', referendumId }],
     };
   });
 
@@ -237,8 +236,11 @@ function referendumMaxConvictionEnd(
   if (referendumService.isApproved(referendum)) {
     return maxCompletedConvictionEnd(vote, 'aye', referendum.since, voteLockingPeriod);
   }
+  if (referendumService.isTimedOut(referendum)) {
+    return referendum.since;
+  }
 
-  return referendumService.isTimedOut(referendum) ? referendum.since : 0;
+  return 0;
 }
 
 function maxCompletedConvictionEnd(
@@ -428,13 +430,13 @@ function toClaimActions(claimAffects: ClaimAffect[]): ClaimAction[] {
     }
 
     if (trackAffects.votes.length > 0) {
-      for (const voteAffect of trackAffects.votes) {
+      trackAffects.votes.forEach((voteAffect) => {
         acc.push({
           type: 'remove_vote',
           trackId: voteAffect.trackId,
           referendumId: voteAffect.referendumId,
         });
-      }
+      });
 
       acc.push({ type: 'unlock', trackId: trackAffects.votes[0].trackId });
     }

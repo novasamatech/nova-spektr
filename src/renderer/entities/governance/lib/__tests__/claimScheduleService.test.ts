@@ -43,6 +43,7 @@ describe('claimScheduleService', () => {
           votes: {
             0: {
               type: 'standard',
+              address: '',
               track: '0',
               referendumId: '0',
               vote: { type: 'aye', conviction: 'None' },
@@ -126,6 +127,7 @@ describe('claimScheduleService', () => {
           votes: {
             0: {
               type: 'standard',
+              address: '',
               track: '0',
               referendumId: '0',
               vote: { type: 'aye', conviction: 'None' },
@@ -169,6 +171,7 @@ describe('claimScheduleService', () => {
           votes: {
             0: {
               type: 'standard',
+              address: '',
               track: '0',
               referendumId: '0',
               vote: { type: 'aye', conviction: 'None' },
@@ -176,6 +179,7 @@ describe('claimScheduleService', () => {
             },
             1: {
               type: 'standard',
+              address: '',
               track: '0',
               referendumId: '1',
               vote: { type: 'aye', conviction: 'None' },
@@ -220,6 +224,7 @@ describe('claimScheduleService', () => {
           votes: {
             1: {
               type: 'standard',
+              address: '',
               track: '0',
               referendumId: '1',
               vote: { type: 'aye', conviction: 'None' },
@@ -266,6 +271,7 @@ describe('claimScheduleService', () => {
           votes: {
             0: {
               type: 'standard',
+              address: '',
               track: '0',
               referendumId: '0',
               vote: { type: 'aye', conviction: 'None' },
@@ -281,6 +287,7 @@ describe('claimScheduleService', () => {
           votes: {
             1: {
               type: 'standard',
+              address: '',
               track: '1',
               referendumId: '1',
               vote: { type: 'aye', conviction: 'None' },
@@ -331,6 +338,7 @@ describe('claimScheduleService', () => {
           votes: {
             1: {
               type: 'standard',
+              address: '',
               track: '1',
               referendumId: '1',
               vote: { type: 'aye', conviction: 'None' },
@@ -346,6 +354,7 @@ describe('claimScheduleService', () => {
           votes: {
             2: {
               type: 'standard',
+              address: '',
               track: '2',
               referendumId: '2',
               vote: { type: 'aye', conviction: 'None' },
@@ -361,6 +370,7 @@ describe('claimScheduleService', () => {
           votes: {
             3: {
               type: 'standard',
+              address: '',
               track: '3',
               referendumId: '3',
               vote: { type: 'aye', conviction: 'None' },
@@ -408,6 +418,7 @@ describe('claimScheduleService', () => {
           votes: {
             0: {
               type: 'standard',
+              address: '',
               track: '0',
               referendumId: '0',
               vote: { type: 'aye', conviction: 'None' },
@@ -449,6 +460,7 @@ describe('claimScheduleService', () => {
           votes: {
             0: {
               type: 'standard',
+              address: '',
               track: '0',
               referendumId: '0',
               vote: { type: 'aye', conviction: 'None' },
@@ -575,6 +587,7 @@ describe('claimScheduleService', () => {
           votes: {
             0: {
               type: 'standard',
+              address: '',
               track: '0',
               referendumId: '0',
               vote: { type: 'aye', conviction: 'None' },
@@ -582,6 +595,7 @@ describe('claimScheduleService', () => {
             },
             1: {
               type: 'standard',
+              address: '',
               track: '1',
               referendumId: '0',
               vote: { type: 'aye', conviction: 'None' },
@@ -589,6 +603,7 @@ describe('claimScheduleService', () => {
             },
             2: {
               type: 'standard',
+              address: '',
               track: '2',
               referendumId: '0',
               vote: { type: 'aye', conviction: 'None' },
@@ -642,6 +657,7 @@ describe('claimScheduleService', () => {
           votes: {
             13: {
               type: 'standard',
+              address: '',
               track: '20',
               referendumId: '13',
               vote: { type: 'aye', conviction: 'None' },
@@ -657,6 +673,7 @@ describe('claimScheduleService', () => {
           votes: {
             5: {
               type: 'standard',
+              address: '',
               track: '21',
               referendumId: '5',
               vote: { type: 'aye', conviction: 'None' },
@@ -821,6 +838,7 @@ describe('claimScheduleService', () => {
           votes: {
             0: {
               type: 'standard',
+              address: '',
               track: '1',
               referendumId: '0',
               vote: { type: 'aye', conviction: 'None' },
