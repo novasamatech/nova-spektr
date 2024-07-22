@@ -2,7 +2,7 @@ import { useStoreMap } from 'effector-react';
 import { useMemo } from 'react';
 
 import { useI18n } from '@app/providers';
-import { type Referendum } from '@shared/core';
+import { type Asset, type Referendum } from '@shared/core';
 import { useModalClose } from '@shared/lib/hooks';
 import { BaseModal, BodyText, FootnoteText } from '@shared/ui';
 import { votingService } from '@entities/governance';
@@ -11,10 +11,11 @@ import { detailsAggregate } from '../../aggregates/details';
 
 type Props = {
   referendum: Referendum;
+  asset: Asset | null;
   onClose: VoidFunction;
 };
 
-export const WalletVotesDialog = ({ referendum, onClose }: Props) => {
+export const WalletVotesDialog = ({ referendum, asset, onClose }: Props) => {
   const { t } = useI18n();
   const [isOpen, closeModal] = useModalClose(true, onClose);
 
@@ -25,6 +26,10 @@ export const WalletVotesDialog = ({ referendum, onClose }: Props) => {
   });
 
   const votesList = useMemo(() => Object.entries(votes).map(([address, vote]) => ({ address, vote })), [votes]);
+
+  if (!asset) {
+    return null;
+  }
 
   return (
     <BaseModal
@@ -42,13 +47,28 @@ export const WalletVotesDialog = ({ referendum, onClose }: Props) => {
       <FootnoteText className="px-2 pb-1 text-text-tertiary text-end">
         {t('governance.walletVotes.listColumnVotingPower')}
       </FootnoteText>
-      {votesList.map(({ address, vote }) => (
-        <>
-          <AddressWithName className="px-2 py-3" addressFont="text-text-secondary" address={address} />
-          <BodyText className="px-2">{vote.type}</BodyText>
-          <BodyText className="px-2 text-end">{vote.track}</BodyText>
-        </>
-      ))}
+      {votesList.map(({ address, vote }) => {
+        return (
+          <>
+            <AddressWithName className="px-2 py-3" addressFont="text-text-secondary" address={address} />
+            <BodyText className="px-2">{vote.type}</BodyText>
+            <div>
+              <BodyText className="whitespace-nowrap">
+                {t('governance.voteHistory.totalVotesCount', {
+                  value: formattedVotingPower.formatted,
+                  symbol: asset.symbol,
+                })}
+              </BodyText>
+              <FootnoteText className="whitespace-nowrap text-text-tertiary">
+                {t('governance.voteHistory.totalVotesCountConviction', {
+                  value: `${formattedBalance.formatted} ${asset.symbol}`,
+                  conviction,
+                })}
+              </FootnoteText>
+            </div>
+          </>
+        );
+      })}
     </BaseModal>
   );
 };

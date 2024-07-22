@@ -39,7 +39,7 @@ function isTimedOut(referendum: Referendum): referendum is TimedOutReferendum {
 }
 
 // waiting for deposit, deciding, passing
-function getOperationStatus(referendum: OngoingReferendum): string {
+function getOperationStatus(referendum: OngoingReferendum) {
   if (!referendum.decisionDeposit) return 'no_deposit';
 
   if (referendum.deciding) return 'no_deposit';

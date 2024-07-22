@@ -120,7 +120,9 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) =
         </div>
       </div>
 
-      {showWalletVotes && <WalletVotesDialog referendum={referendum} onClose={() => setShowWalletVotes(false)} />}
+      {showWalletVotes && (
+        <WalletVotesDialog referendum={referendum} asset={votingAsset} onClose={() => setShowWalletVotes(false)} />
+      )}
 
       {showVoteHistory && <VotingHistoryDialog referendum={referendum} onClose={() => setShowVoteHistory(false)} />}
 

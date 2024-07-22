@@ -10,7 +10,7 @@ import { claimScheduleService, referendumModel } from '@entities/governance';
 import { walletModel } from '@entities/wallet';
 import { tracksAggregate } from '../aggregates/tracks';
 import { votingAggregate } from '../aggregates/voting';
-import { unlockService } from '../lib/unlock';
+import { unlockService } from '../lib/unlockService';
 
 import { locksModel } from './locks';
 import { networkSelectorModel } from './networkSelector';

@@ -67,14 +67,14 @@ export const VotingHistoryList = memo<Props>(({ items, asset, chain, loading }) 
                         <AddressWithName address={voter} type="adaptive" name={name ?? undefined} />
                       </SignatoryCard>
                     </div>
-                    <div className="flex flex-col basis-32 shrink-0 px-2 gap-0.5">
-                      <BodyText className="whitespace-nowrap text-right">
+                    <div className="flex flex-col basis-32 shrink-0 px-2 gap-0.5 items-end">
+                      <BodyText className="whitespace-nowrap">
                         {t('governance.voteHistory.totalVotesCount', {
                           value: formattedVotingPower.formatted,
                           symbol: asset.symbol,
                         })}
                       </BodyText>
-                      <FootnoteText className="whitespace-nowrap text-right text-text-tertiary">
+                      <FootnoteText className="whitespace-nowrap text-text-tertiary">
                         {t('governance.voteHistory.totalVotesCountConviction', {
                           value: `${formattedBalance.formatted} ${asset.symbol}`,
                           conviction,
