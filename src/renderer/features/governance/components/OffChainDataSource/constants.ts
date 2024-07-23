@@ -1,7 +1,7 @@
 import { type IconNames } from '@shared/ui/Icon/data';
-import { type SourceType } from '@entities/governance';
+import { type GovernanceApiSource } from '@entities/governance';
 
-export const Sources: Record<SourceType, { title: string; icon: IconNames }> = {
+export const Sources: Record<GovernanceApiSource, { title: string; icon: IconNames }> = {
   polkassembly: {
     title: 'Polkassembly',
     icon: 'polkassembly',

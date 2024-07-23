@@ -7,7 +7,7 @@ import { networkSelectorModel } from '../model/networkSelector';
 
 import { tracksAggregate } from './tracks';
 
-const $currentWalletVoting = combine(
+const $activeWalletVotes = combine(
   {
     voting: votingModel.$voting,
     wallet: walletModel.$activeWallet,
@@ -19,12 +19,15 @@ const $currentWalletVoting = combine(
     }
 
     const addresses = accountUtils.getAddressesForWallet(wallet, chain);
+    const res: VotingMap = {};
 
-    return addresses.reduce<VotingMap>((acc, address) => {
-      acc[address] = voting[address];
+    for (const address of addresses) {
+      if (address in voting) {
+        res[address] = voting[address];
+      }
+    }
 
-      return acc;
-    }, {});
+    return res;
   },
 );
 
@@ -40,7 +43,7 @@ sample({
   fn: ({ wallet, api, chain, tracks }) => {
     return {
       api: api!,
-      tracksIds: Object.keys(tracks),
+      tracks: Object.keys(tracks),
       addresses: accountUtils.getAddressesForWallet(wallet!, chain!),
     };
   },
@@ -48,10 +51,12 @@ sample({
 });
 
 export const votingAggregate = {
-  $currentWalletVoting,
+  $activeWalletVotes,
   $voting: votingModel.$voting,
+  $isLoading: votingModel.$isLoading,
 
   events: {
+    requestVoting: votingModel.events.requestVoting,
     requestDone: votingModel.effects.requestVotingFx.done,
     requestPending: votingModel.effects.requestVotingFx.pending,
   },

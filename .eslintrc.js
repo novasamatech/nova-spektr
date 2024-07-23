@@ -3,78 +3,49 @@ const path = require('path');
 
 const prettierConfig = fs.readFileSync('./.prettierrc', 'utf8');
 const prettierOptions = JSON.parse(prettierConfig);
-const localesPath = path.resolve('./src/renderer/shared/api/translation/locales');
-const defaultLocalePath = path.resolve(localesPath, 'en.json');
+const localesPath = './src/renderer/shared/api/translation/locales';
+const defaultLocalePath = path.join(localesPath, 'en.json');
 
-const aliases = [
-  ['@', './renderer/'],
-  ['@renderer', './src/renderer/'],
-  ['@app', './src/renderer/app/'],
-  ['@pages', './src/renderer/pages/'],
-  ['@processes', './src/renderer/processes/'],
-  ['@widgets', './src/renderer/widgets/'],
-  ['@features', './src/renderer/features/'],
-  ['@entities', './src/renderer/entities/'],
-  ['@shared', './src/renderer/shared/'],
-];
+const boundaryTypes = ['app', 'shared', 'entities', 'processes', 'features', 'widgets', 'pages'];
+
+const boundaries = boundaryTypes.map((type) => ({
+  type,
+  pattern: `src/renderer/${type}/*`,
+}));
 
 module.exports = {
   root: true,
   env: {
     browser: true,
-    node: true,
-    jest: true,
-  },
-  globals: {
-    JSX: 'readonly',
   },
   extends: [
     'eslint:recommended',
-    'plugin:import/recommended',
-    'plugin:import/errors',
-    'plugin:import/warnings',
+    'plugin:import-x/recommended',
+    'plugin:import-x/errors',
+    'plugin:import-x/warnings',
     'prettier',
   ],
-  plugins: ['prettier', 'import'],
+  plugins: ['prettier', 'import-x'],
   parserOptions: {
-    ecmaVersion: 2021,
-  },
-  settings: {
-    'import/resolver': {
-      alias: {
-        map: aliases,
-        extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
-      },
-      node: {
-        extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
-      },
-    },
+    sourceType: 'module',
+    ecmaVersion: 2022,
   },
   rules: {
     'sort-imports': ['error', { ignoreDeclarationSort: true }],
-    'import/no-unresolved': 'off',
-    'import/namespace': 'off',
-    'import/consistent-type-specifier-style': ['error', 'prefer-inline'],
-    'import/order': [
+    'import-x/no-unresolved': 'off',
+    'import-x/named': 'off',
+    'import-x/namespace': 'off',
+    'import-x/consistent-type-specifier-style': ['error', 'prefer-inline'],
+    'import-x/order': [
       'error',
       {
         alphabetize: { order: 'asc', orderImportKind: 'asc' },
         groups: ['builtin', 'external', 'parent', ['sibling', 'index']],
-        pathGroups: [
-          { group: 'parent', pattern: '@app/**', position: 'before' },
-          { group: 'parent', pattern: '@shared/**', position: 'before' },
-          { group: 'parent', pattern: '@entities/**', position: 'before' },
-          { group: 'parent', pattern: '@processes/**', position: 'before' },
-          { group: 'parent', pattern: '@features/**', position: 'before' },
-          { group: 'parent', pattern: '@widgets/**', position: 'before' },
-          { group: 'parent', pattern: '@pages/**', position: 'before' },
-
-          { group: 'parent', pattern: '@/app/**', position: 'before' },
-          { group: 'parent', pattern: '@/shared/**', position: 'before' },
-          { group: 'parent', pattern: '@/entities/**', position: 'before' },
-          { group: 'parent', pattern: '@/features/**', position: 'before' },
-          { group: 'parent', pattern: '@/pages/**', position: 'before' },
-        ],
+        pathGroups: boundaryTypes.map((type) => ({
+          group: 'parent',
+          pattern: `@{/${type},${type}}/**`,
+          position: 'before',
+        })),
         'newlines-between': 'always',
         distinctGroup: false,
       },
@@ -90,17 +61,26 @@ module.exports = {
       extends: ['plugin:json/recommended'],
     },
     {
-      files: [path.join('translation/locales', '**/*.json')],
+      files: ['*.js'],
+      env: {
+        node: true,
+      },
+    },
+    {
+      files: [path.join(localesPath, '/*.json')],
       extends: ['plugin:i18n-json/recommended'],
       rules: {
-        'i18n-json/identical-keys': ['error', { filePath: defaultLocalePath }],
-        'i18n-json/identical-placeholders': ['error', { filePath: defaultLocalePath }],
+        'i18n-json/identical-keys': ['error', { filePath: path.resolve(defaultLocalePath) }],
+        'i18n-json/identical-placeholders': ['error', { filePath: path.resolve(defaultLocalePath) }],
       },
     },
     {
       files: ['*.test.ts', '*.test.tsx'],
       plugins: ['jest-dom'],
       extends: ['plugin:jest-dom/recommended'],
+      env: {
+        jest: true,
+      },
     },
     {
       files: ['*.tsx'],
@@ -131,6 +111,9 @@ module.exports = {
       files: ['*.tsx'],
       plugins: ['react'],
       extends: ['plugin:react/recommended'],
+      globals: {
+        JSX: 'readonly',
+      },
       rules: {
         'react/no-array-index-key': 'warn',
         'react/display-name': 'off',
@@ -149,12 +132,14 @@ module.exports = {
     },
     {
       files: ['*.ts', '*.tsx'],
-      plugins: ['@typescript-eslint', 'effector', 'unused-imports'],
+      plugins: ['@typescript-eslint', 'effector', 'unused-imports', 'boundaries'],
       extends: [
+        'plugin:import-x/typescript',
         'plugin:effector/recommended',
         'plugin:effector/scope',
         'plugin:@typescript-eslint/eslint-recommended',
         'plugin:@typescript-eslint/recommended',
+        'plugin:boundaries/recommended',
       ],
       parser: '@typescript-eslint/parser',
       parserOptions: {
@@ -169,6 +154,7 @@ module.exports = {
           'error',
           { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
         ],
+        // validated by typescript
         '@typescript-eslint/no-unused-vars': 'off',
         '@typescript-eslint/no-empty-interface': 'off',
         '@typescript-eslint/no-non-null-assertion': 'off',
@@ -180,6 +166,62 @@ module.exports = {
         // it took around 4 seconds to check this single rule
         'effector/enforce-store-naming-convention': 'off',
         'effector/keep-options-order': 'error',
+        // validated by typescript
+        'import-x/export': 'off',
+        // restricted by our code style
+        'import-x/default': 'off',
+        'boundaries/element-types': [
+          'error',
+          {
+            default: 'disallow',
+            rules: [
+              {
+                from: 'app',
+                allow: [/* TODO fix */ 'shared', /* TODO fix */ 'entities', /* TODO fix */ 'features'],
+              },
+              {
+                from: 'shared',
+                allow: ['app', 'shared', /* TODO fix */ 'entities'],
+              },
+              {
+                from: 'entities',
+                allow: ['app', 'shared', 'entities', /* TODO fix */ 'features'],
+              },
+              {
+                from: 'processes',
+                allow: ['app', 'shared', 'entities'],
+              },
+              {
+                from: 'features',
+                allow: ['app', 'shared', 'entities', /* TODO fix */ 'widgets', /* TODO fix */ 'features'],
+              },
+              {
+                from: 'pages',
+                allow: ['app', 'shared', 'entities', 'features', 'widgets'],
+              },
+              {
+                from: 'widgets',
+                allow: ['app', 'shared', 'entities', 'features', /* TODO fix */ 'pages', 'widgets'],
+              },
+            ],
+          },
+        ],
+      },
+      settings: {
+        'import-x/resolver': {
+          typescript: true,
+          node: {
+            extensions: ['.ts', '.tsx', '.js'],
+          },
+        },
+        // for resolving in eslint-plugin-boundaries
+        'import/resolver': {
+          typescript: true,
+          node: {
+            extensions: ['.ts', '.tsx', '.js'],
+          },
+        },
+        'boundaries/elements': boundaries,
       },
     },
   ],

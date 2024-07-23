@@ -21,7 +21,7 @@ const $referendums = combine(
     approvalThresholds: approveThresholdModel.$approvalThresholds,
     supportThresholds: supportThresholdModel.$supportThresholds,
     chain: networkSelectorModel.$governanceChain,
-    voting: votingAggregate.$voting,
+    voting: votingAggregate.$activeWalletVotes,
   },
   ({ referendums, chain, titles, approvalThresholds, supportThresholds, voting }): AggregatedReferendum[] => {
     if (!chain) {

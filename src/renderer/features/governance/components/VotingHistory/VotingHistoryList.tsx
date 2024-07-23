@@ -51,11 +51,7 @@ export const VotingHistoryList = memo<Props>(({ items, asset, chain, loading }) 
             {shouldRenderLoader && <VotingHistoryListPlaceholder />}
             {shouldRenderEmptyState && <VotingHistoryListEmptyState />}
             {shouldRenderList &&
-              deferredItems.map(({ voter, balance, conviction, name }) => {
-                const votingPowerBalance = balance.muln(conviction * 10).divn(10);
-                const formattedVotingPower = formatBalance(votingPowerBalance, asset.precision);
-                const formattedBalance = formatBalance(balance, asset.precision);
-
+              deferredItems.map(({ voter, balance, votingPower, conviction, name }) => {
                 return (
                   <div key={voter} className="flex">
                     <div className="grow shrink min-w-0">
@@ -67,16 +63,16 @@ export const VotingHistoryList = memo<Props>(({ items, asset, chain, loading }) 
                         <AddressWithName address={voter} type="adaptive" name={name ?? undefined} />
                       </SignatoryCard>
                     </div>
-                    <div className="flex flex-col basis-32 shrink-0 px-2 gap-0.5">
-                      <BodyText className="whitespace-nowrap text-right">
+                    <div className="flex flex-col basis-32 shrink-0 px-2 gap-0.5 items-end">
+                      <BodyText className="whitespace-nowrap">
                         {t('governance.voteHistory.totalVotesCount', {
-                          value: formattedVotingPower.formatted,
+                          value: formatBalance(votingPower, asset.precision).formatted,
                           symbol: asset.symbol,
                         })}
                       </BodyText>
-                      <FootnoteText className="whitespace-nowrap text-right text-text-tertiary">
+                      <FootnoteText className="whitespace-nowrap text-text-tertiary">
                         {t('governance.voteHistory.totalVotesCountConviction', {
-                          value: `${formattedBalance.formatted} ${asset.symbol}`,
+                          value: `${formatBalance(balance, asset.precision).formatted} ${asset.symbol}`,
                           conviction,
                         })}
                       </FootnoteText>

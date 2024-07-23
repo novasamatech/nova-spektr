@@ -31,12 +31,7 @@ export const VotingHistoryDialog = ({ referendum, onClose }: Props) => {
     fn: (x, [referendumId]) => x[referendumId] ?? [],
   });
 
-  const votingAsset = useStoreMap({
-    store: voteHistoryAggregate.$votingAssets,
-    keys: [chain?.chainId],
-    fn: (x, [chainId]) => (chainId ? (x[chainId] ?? null) : null),
-  });
-
+  const votingAsset = useUnit(voteHistoryAggregate.$votingAsset);
   const isLoading = useUnit(voteHistoryAggregate.$voteHistoryLoading);
 
   const ayes = useMemo(() => voteHistory.filter((history) => history.decision === 'aye'), [voteHistory]);

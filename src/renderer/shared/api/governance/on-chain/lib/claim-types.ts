@@ -9,25 +9,24 @@ export type ClaimableLock = {
   affected: ClaimAffect[];
 };
 
-export interface ClaimAffect {
-  trackId: TrackId;
-  type: 'track' | 'vote';
-}
-
-export interface AffectTrack extends ClaimAffect {
+export interface AffectTrack {
   type: 'track';
+  trackId: TrackId;
 }
 
-export interface AffectVote extends ClaimAffect {
+export interface AffectVote {
   type: 'vote';
+  trackId: TrackId;
   referendumId: ReferendumId;
 }
+
+export type ClaimAffect = AffectTrack | AffectVote;
 
 export type ClaimTime = ClaimTimeAt | ClaimTimeUntil;
 
 export interface ClaimTimeAt {
-  block: BlockHeight;
   type: 'at';
+  block: BlockHeight;
 }
 
 export interface ClaimTimeUntil {
@@ -41,20 +40,19 @@ export type GroupedClaimAffects = {
 };
 
 // Claim action
-export interface ClaimAction {
-  type: 'unlock' | 'remove_vote';
-}
 
-export interface Unlock extends ClaimAction {
+export type Unlock = {
   type: 'unlock';
   trackId: TrackId;
-}
+};
 
-export interface RemoveVote extends ClaimAction {
+export type RemoveVote = {
   type: 'remove_vote';
   trackId: TrackId;
   referendumId: ReferendumId;
-}
+};
+
+export type ClaimAction = Unlock | RemoveVote;
 
 // Unlock chunk
 export enum UnlockChunkType {

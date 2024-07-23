@@ -1,9 +1,9 @@
 import { type BN, BN_BILLION, bnMax, bnMin } from '@polkadot/util';
 
-import { type BlockHeight, type VotingCurve, type VotingThreshold } from '@shared/core';
-import { type AyesParams, type IVotingThreshold, type SupportParams } from '../lib/threshold-types';
+import { type AyesParams, type SupportParams } from '@/shared/api/governance';
+import { type BlockHeight, type VotingCurve, type VotingThreshold } from '@/shared/core';
 
-export const opengovThresholdService: IVotingThreshold = {
+export const opengovThresholdService = {
   supportThreshold,
   ayesFractionThreshold,
 };

@@ -5,11 +5,9 @@ import { proposerIdentityModel } from '@entities/governance';
 import { networkSelectorModel } from '../model/networkSelector';
 
 const $proposers = combine(
-  {
-    proposers: proposerIdentityModel.$proposers,
-    chain: networkSelectorModel.$governanceChain,
-  },
-  ({ proposers, chain }) => {
+  proposerIdentityModel.$proposers,
+  networkSelectorModel.$governanceChain,
+  (proposers, chain) => {
     return chain ? (proposers[chain.chainId] ?? {}) : {};
   },
 );

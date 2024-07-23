@@ -3,8 +3,8 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { createEffect, createStore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { governanceService } from '@shared/api/governance';
 import { type Address, type TrackId } from '@shared/core';
+import { governanceService } from '@entities/governance';
 import { accountUtils, walletModel } from '@entities/wallet';
 
 import { networkSelectorModel } from './networkSelector';

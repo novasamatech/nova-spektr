@@ -14,5 +14,9 @@ export { ReferendumTimer } from './ui/ReferendumTimer/ReferendumTimer';
 
 export { referendumService } from './lib/referendumService';
 export { votingService } from './lib/votingService';
+export { governanceService } from './lib/governanceService';
+export { claimScheduleService } from './lib/claimScheduleService';
+export { fellowshipThresholdService } from './lib/fellowshipThresholdService';
+export { opengovThresholdService } from './lib/opengovThresholdService';
 
-export type { SourceType } from './lib/types';
+export type { GovernanceApiSource } from './types/governanceApiSource';

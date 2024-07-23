@@ -18,6 +18,6 @@ export { OffChainDataSource } from './components/OffChainDataSource';
 export { CompletedReferendums, OngoingReferendums } from './components/ReferendumList';
 export { VotingHistoryDialog } from './components/VotingHistory/VotingHistoryDialog';
 
-export { listService } from './lib/list';
+export { listService } from './lib/listService';
 
 export { type AggregatedReferendum } from './types/structs';
