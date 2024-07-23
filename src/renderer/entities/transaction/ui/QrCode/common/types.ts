@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/named
 import { type DecodeContinuouslyCallback } from '@zxing/browser/esm/common/DecodeContinuouslyCallback';
 
 import { type Address, type ChainId, type CryptoType, type CryptoTypeString } from '@shared/core';

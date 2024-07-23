@@ -3,14 +3,14 @@ import { type BN, BN_ZERO } from '@polkadot/util';
 import { createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
-import { type ClaimTimeAt, type UnlockChunk, UnlockChunkType, claimScheduleService } from '@shared/api/governance';
-import { type Address, type ReferendumInfo, type TrackId, type TrackInfo, type VotingMap } from '@shared/core';
+import { type ClaimTimeAt, type UnlockChunk, UnlockChunkType } from '@shared/api/governance';
+import { type Address, type Referendum, type TrackId, type TrackInfo, type VotingMap } from '@shared/core';
 import { Step, getCreatedDateFromApi, getCurrentBlockNumber } from '@shared/lib/utils';
-import { referendumModel } from '@entities/governance';
+import { claimScheduleService, referendumModel } from '@entities/governance';
 import { walletModel } from '@entities/wallet';
 import { tracksAggregate } from '../../aggregates/tracks';
 import { votingAggregate } from '../../aggregates/voting';
-import { unlockService } from '../../lib/unlock';
+import { unlockService } from '../../lib/unlockService';
 import { locksModel } from '../locks';
 import { networkSelectorModel } from '../networkSelector';
 
@@ -28,7 +28,7 @@ const $totalUnlock = createStore<BN>(BN_ZERO);
 
 type Props = {
   api: ApiPromise;
-  referendums: ReferendumInfo[];
+  referendums: Referendum[];
   tracks: Record<TrackId, TrackInfo>;
   trackLocks: Record<Address, Record<TrackId, BN>>;
   voting: VotingMap;

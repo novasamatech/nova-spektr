@@ -3912,7 +3912,7 @@
       "history": [
         {
           "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-hydra__bm92Y"
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-hydra"
         }
       ],
       "proxy": [
@@ -4882,15 +4882,15 @@
     "chainId": "0x6408de7737c59c238890533af25896a2c20608d8b380bb01029acb392781063e",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Rococo_Testnet.svg",
     "options": [
-      "testnet"
+      "testnet",
+      "governance",
+      "regular_proxy",
+      "pure_proxy"
     ],
     "nodes": [
       {
         "url": "wss://rococo-rpc.polkadot.io/",
-        "name": "Rococo node",
-        "features": [
-          "noTls12"
-        ]
+        "name": "Rococo node"
       }
     ],
     "assets": [
@@ -5379,10 +5379,7 @@
       },
       {
         "url": "wss://rococo-asset-hub-rpc.polkadot.io",
-        "name": "Parity node",
-        "features": [
-          "noTls12"
-        ]
+        "name": "Parity node"
       }
     ],
     "assets": [
@@ -6220,10 +6217,7 @@
     "nodes": [
       {
         "url": "wss://kusama-people-rpc.polkadot.io",
-        "name": "Parity node",
-        "features": [
-          "noTls12"
-        ]
+        "name": "Parity node"
       },
       {
         "url": "wss://ksm-rpc.stakeworld.io/people",
@@ -6238,32 +6232,6 @@
         "priceId": "kusama",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Kusama_(KSM).svg",
         "name": "Kusama"
-      }
-    ]
-  },
-  {
-    "name": "Ledger Novasama Testnet",
-    "specName": "westend",
-    "addressPrefix": 42,
-    "chainId": "0xd67c91ca75c199ff1ee9555567dfad21b9033165c39977170ec8d3f6c1fa433c",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_Testnet.svg",
-    "options": [
-      "testnet",
-      "governance"
-    ],
-    "nodes": [
-      {
-        "url": "wss://rpc-test-network-1.novasamatech.org",
-        "name": "Novasama node"
-      }
-    ],
-    "assets": [
-      {
-        "assetId": 0,
-        "symbol": "WND",
-        "precision": 12,
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Westend_(WND).svg",
-        "name": "Westend"
       }
     ]
   },
@@ -6309,6 +6277,39 @@
         {
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet---polymec"
+        }
+      ]
+    }
+  },
+  {
+    "name": "Novasama Testnet - Governance",
+    "specName": "westend",
+    "addressPrefix": 42,
+    "chainId": "0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_Testnet.svg",
+    "options": [
+      "testnet"
+    ],
+    "nodes": [
+      {
+        "url": "wss://rpc-test-network-1.novasamatech.org",
+        "name": "Novasama node"
+      }
+    ],
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "WND",
+        "precision": 12,
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Westend_(WND).svg",
+        "name": "Westend"
+      }
+    ],
+    "externalApi": {
+      "governance": [
+        {
+          "type": "subsquare",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-test-gov"
         }
       ]
     }

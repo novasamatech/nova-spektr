@@ -3,17 +3,7 @@ import uniqBy from 'lodash/uniqBy';
 import { useEffect, useMemo, useState } from 'react';
 
 import { useGraphql, useI18n } from '@app/providers';
-import {
-  type Account,
-  type Address,
-  type BaseAccount,
-  type Chain,
-  type ChainAccount,
-  type ChainId,
-  type ShardAccount,
-  type Stake,
-  type Validator,
-} from '@shared/core';
+import { type Account, type Address, type Chain, type ChainId, type Stake, type Validator } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
 import { getRelaychainAsset, toAddress } from '@shared/lib/utils';
 import { Header } from '@shared/ui';
@@ -173,7 +163,7 @@ export const Staking = () => {
     toggleNominators();
   };
 
-  const groupedAccounts = useMemo((): Account[] | (ChainAccount | ShardAccount[])[] => {
+  const groupedAccounts = useMemo(() => {
     if (!activeWallet) {
       return [];
     }
@@ -185,7 +175,7 @@ export const Staking = () => {
   }, [activeWallet, accounts]);
 
   const nominatorsInfo = useMemo(() => {
-    const getInfo = <T extends BaseAccount | ShardAccount>(address: Address, account: T): NominatorInfo<T> => ({
+    const getInfo = <T extends Account>(address: Address, account: T): NominatorInfo<T> => ({
       address,
       account,
       stash: staking[address]?.stash,
@@ -195,7 +185,6 @@ export const Staking = () => {
       unlocking: staking[address]?.unlocking,
     });
 
-    // @ts-expect-error TODO fix
     return groupedAccounts.reduce<NominatorInfo<any>[]>((acc, account) => {
       if (accountUtils.isAccountWithShards(account)) {
         const shardsGroup = account.map((shard) => {
@@ -204,6 +193,7 @@ export const Staking = () => {
           return getInfo(address, shard);
         });
 
+        // @ts-expect-error TODO fix
         acc.push(shardsGroup);
       } else {
         const address = toAddress(account.accountId, { prefix: addressPrefix });

@@ -1,5 +1,6 @@
-import { type ReferendumVote } from '@shared/api/governance';
-import { type Referendum, type VotingThreshold } from '@shared/core';
+import { type BN } from '@polkadot/util';
+
+import { type Address, type Referendum, type VotingThreshold } from '@shared/core';
 
 export type AggregatedReferendum<T extends Referendum = Referendum> = T & {
   title: string | null;
@@ -8,6 +9,14 @@ export type AggregatedReferendum<T extends Referendum = Referendum> = T & {
   isVoted: boolean;
 };
 
-export type AggregatedVoteHistory = ReferendumVote & {
+export type DecoupledVote = {
+  decision: 'aye' | 'nay' | 'abstain';
+  voter: Address;
+  balance: BN;
+  votingPower: BN;
+  conviction: number;
+};
+
+export type AggregatedVoteHistory = DecoupledVote & {
   name: string | null;
 };
