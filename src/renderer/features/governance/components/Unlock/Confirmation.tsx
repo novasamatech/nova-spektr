@@ -3,14 +3,14 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@app/providers';
+import { type MultisigAccount } from '@/shared/core';
 import { cnTw } from '@shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, ValueIndicator } from '@shared/ui';
-import { AssetBalance } from '@entities/asset';
-import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
-import { type MultisigAccount } from '@/shared/core';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
 import { AddressWithExplorers, WalletIcon } from '@/entities/wallet';
-import { basketUtils } from '../../../operations/OperationsConfirm';
+import { AssetBalance } from '@entities/asset';
+import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { basketUtils } from '@/features/operations/OperationsConfirm';
 import { locksModel } from '../../model/locks';
 import { confirmModel } from '../../model/unlock/confirm-model';
 import { unlockModel } from '../../model/unlock/unlock';

@@ -8,12 +8,12 @@ import { toAccountId, transferableAmount } from '@shared/lib/utils';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel } from '@entities/network';
 import { transactionService } from '@entities/transaction';
-import { UnlockRules } from '@features/governance/lib/unlock-rules';
 import {
   type AmountFeeStore,
   type ValidationResult,
   validationUtils,
 } from '@/features/operations/OperationsValidation';
+import { UnlockRules } from '@features/governance/lib/unlock-rules';
 
 const validationStarted = createEvent<{ id: ID; transaction: Transaction; signerOptions?: Partial<SignerOptions> }>();
 const txValidated = createEvent<{ id: ID; result: ValidationResult }>();

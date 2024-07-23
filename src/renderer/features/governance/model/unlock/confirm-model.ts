@@ -13,9 +13,9 @@ import {
   type Wallet,
 } from '@shared/core';
 import { ZERO_BALANCE } from '@shared/lib/utils';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { UnlockRules } from '../../lib/unlock-rules';
 
 type Input = {

@@ -1,7 +1,8 @@
+/* eslint-disable i18next/no-literal-string */
 import { BN } from '@polkadot/util';
 
-import { FootnoteText, Icon } from '@shared/ui';
 import { type Asset } from '@/shared/core';
+import { FootnoteText, Icon } from '@shared/ui';
 import { AssetBalance } from '@/entities/asset';
 
 type Props = {
@@ -18,7 +19,6 @@ export const ValueIndicator = ({ from, to, asset }: Props) => {
     <div className="flex flex-col items-end">
       <FootnoteText>
         <AssetBalance value={from} asset={asset} showSymbol={false} />
-        {/* eslint-disable-next-line i18next/no-literal-string */}
         &rarr; <AssetBalance value={to} asset={asset} showSymbol={false} />
         {asset.symbol}
       </FootnoteText>
