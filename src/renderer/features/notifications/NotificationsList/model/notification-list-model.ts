@@ -1,4 +1,5 @@
-import { enGB, format } from 'date-fns';
+import { format } from 'date-fns';
+import { enGB } from 'date-fns/locale';
 import { combine } from 'effector';
 import groupBy from 'lodash/groupBy';
 import orderBy from 'lodash/orderBy';
