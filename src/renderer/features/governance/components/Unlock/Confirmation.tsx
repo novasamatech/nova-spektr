@@ -133,10 +133,10 @@ export const Confirmation = ({ id = 0, onGoBack }: Props) => {
           </DetailRow>
         )} */}
         <hr className="border-filter-border w-full pr-2" />
-        <DetailRow label={t('governance.operations.transferable')}>
-          <ValueIndicator from={'0'} to={'0'} asset={networkStore.asset} />
+        <DetailRow label={t('governance.operations.transferable')} wrapperClassName="items-start">
+          <ValueIndicator from="0" to={totalUnlock.toString()} asset={networkStore.asset} />
         </DetailRow>
-        <DetailRow label={t('governance.locks.governanceLock')}>
+        <DetailRow label={t('governance.locks.governanceLock')} wrapperClassName="items-start">
           <ValueIndicator
             from={totalLock.toString()}
             to={totalLock.sub(totalUnlock).toString()}
