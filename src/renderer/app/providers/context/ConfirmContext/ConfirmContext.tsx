@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -58,8 +59,10 @@ export const ConfirmDialogProvider = ({ children }: PropsWithChildren) => {
     });
   }, []);
 
+  const value = useMemo(() => ({ confirm }), [confirm]);
+
   return (
-    <ConfirmDialog.Provider value={{ confirm }}>
+    <ConfirmDialog.Provider value={value}>
       {children}
 
       <ConfirmModal

@@ -1,6 +1,6 @@
 import { useI18n } from '@app/providers';
 import { addLeadingZero, cnTw } from '@shared/lib/utils';
-import { CaptionText, FootnoteText } from '@shared/ui';
+import { CaptionText, FootnoteText } from '../Typography';
 
 function secondsToMinutes(seconds: number): string {
   const minutes = Math.floor(seconds / 60);

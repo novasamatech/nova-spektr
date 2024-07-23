@@ -75,7 +75,7 @@ module.exports = {
       },
     },
     {
-      files: ['*.test.ts', '*.test.tsx'],
+      files: ['*.test.ts', '*.test.tsx', 'jest*.js'],
       plugins: ['jest-dom'],
       extends: ['plugin:jest-dom/recommended'],
       env: {
@@ -115,6 +115,8 @@ module.exports = {
         JSX: 'readonly',
       },
       rules: {
+        'react/jsx-no-constructed-context-values': 'error',
+        'react/jsx-curly-brace-presence': ['error', { props: 'never', children: 'ignore' }],
         'react/no-array-index-key': 'warn',
         'react/display-name': 'off',
         'react/prop-types': 'off',

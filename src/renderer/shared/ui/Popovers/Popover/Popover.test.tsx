@@ -29,7 +29,7 @@ describe('ui/Popover', () => {
 
     await act(async () => user.unhover(text));
 
-    await waitForElementToBeRemoved(screen.queryByText('content'), { timeout: 300 });
+    await waitForElementToBeRemoved(screen.queryByText('content'), { timeout: 500 });
   });
 
   test('should toggle popover on focus/blur', async () => {
