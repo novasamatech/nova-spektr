@@ -4,8 +4,6 @@ import { or, spread } from 'patronum';
 import { UnlockChunkType } from '@shared/api/governance';
 import { Step } from '@shared/lib/utils';
 import { referendumModel } from '@/entities/governance';
-import { locksModel } from '../model/locks';
-import { networkSelectorModel } from '../model/networkSelector';
 import { unlockModel } from '../model/unlock/unlock';
 
 import { unlockConfirmAggregate } from './unlockConfirm';
@@ -36,30 +34,28 @@ sample({
 });
 
 sample({
-  clock: flowFinished,
-  fn: () => Step.NONE,
-  target: stepChanged,
-});
-
-sample({
   clock: unlockConfirm,
   source: {
-    chain: networkSelectorModel.$governanceChain,
-    asset: locksModel.$asset,
     unlockableClaims: unlockModel.$claimSchedule.map((c) =>
       c.filter((claim) => claim.type === UnlockChunkType.CLAIMABLE),
     ),
     totalUnlock: unlockModel.$totalUnlock,
   },
-  filter: ({ chain, asset, totalUnlock }) => !!chain && !!asset && !totalUnlock.isZero(),
-  fn: ({ chain, unlockableClaims, asset, totalUnlock }) => ({
-    event: { chain: chain!, unlockableClaims, asset: asset!, amount: totalUnlock.toString() },
+  filter: ({ totalUnlock }) => !totalUnlock.isZero(),
+  fn: ({ unlockableClaims, totalUnlock }) => ({
+    event: { unlockableClaims, amount: totalUnlock.toString() },
     step: Step.CONFIRM,
   }),
   target: spread({
     event: unlockConfirmAggregate.events.formInitiated,
     step: stepChanged,
   }),
+});
+
+sample({
+  clock: flowFinished,
+  fn: () => Step.NONE,
+  target: stepChanged,
 });
 
 export const unlockAggregate = {

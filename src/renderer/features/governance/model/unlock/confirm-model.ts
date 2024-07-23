@@ -1,12 +1,12 @@
 import { combine, createStore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { type Asset, type Chain, type MultisigTxWrapper, type ProxyTxWrapper, type Wallet } from '@shared/core';
+import { type MultisigTxWrapper, type ProxyTxWrapper, type Wallet } from '@shared/core';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { networkSelectorModel } from '../networkSelector';
 
-const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 const $isMultisig = createStore<boolean>(false);
 const $isProxy = createStore<boolean>(false);
 
@@ -14,10 +14,10 @@ const $isProxy = createStore<boolean>(false);
 const $shards = combine(
   {
     activeWallet: walletModel.$activeWallet,
-    network: $networkStore,
+    chain: networkSelectorModel.$governanceChain,
   },
-  ({ activeWallet, network }) => {
-    if (!network?.chain || !activeWallet) return [];
+  ({ activeWallet, chain }) => {
+    if (!chain || !activeWallet) return [];
 
     return (
       activeWallet.accounts.filter((account, _, collection) => {
@@ -29,7 +29,7 @@ const $shards = combine(
           return false;
         }
 
-        return accountUtils.isChainIdMatch(account, network.chain.chainId);
+        return accountUtils.isChainIdMatch(account, chain.chainId);
       }) || []
     );
   },
@@ -39,12 +39,12 @@ const $txWrappers = combine(
   {
     wallet: walletModel.$activeWallet,
     wallets: walletModel.$wallets,
-    network: $networkStore,
+    chain: networkSelectorModel.$governanceChain,
     shards: $shards,
     // signatories: $selectedSignatories,
   },
-  ({ wallet, wallets, network, shards }) => {
-    if (!wallet || !network?.chain || shards.length !== 1) return [];
+  ({ wallet, wallets, chain, shards }) => {
+    if (!wallet || !chain || shards.length !== 1) return [];
 
     const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
       walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
@@ -52,7 +52,7 @@ const $txWrappers = combine(
         const isBase = accountUtils.isBaseAccount(a);
         const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
-        return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, network.chain);
+        return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, chain);
       },
     });
 
@@ -140,10 +140,10 @@ const $proxiedWallet = combine(
 const $api = combine(
   {
     apis: networkModel.$apis,
-    network: $networkStore,
+    chain: networkSelectorModel.$governanceChain,
   },
-  ({ apis, network }) => {
-    return network ? apis[network.chain.chainId] : undefined;
+  ({ apis, chain }) => {
+    return chain ? apis[chain.chainId] : undefined;
   },
   { skipVoid: false },
 );
@@ -162,7 +162,6 @@ sample({
 
 export const confirmModel = {
   $api,
-  $networkStore,
   $isMultisig,
   $isProxy,
   $initiatorWallets,

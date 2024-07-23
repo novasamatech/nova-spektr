@@ -15,7 +15,9 @@ import { basketUtils } from '@/features/operations/OperationsConfirm';
 import { unlockAggregate } from '../../aggregates/unlock';
 import { unlockConfirmAggregate } from '../../aggregates/unlockConfirm';
 import { locksModel } from '../../model/locks';
+import { networkSelectorModel } from '../../model/networkSelector';
 import { confirmModel } from '../../model/unlock/confirm-model';
+import { votingAssetModel } from '../../model/votingAsset';
 
 type Props = {
   id?: number;
@@ -40,11 +42,13 @@ export const Confirmation = ({ id = 0, onGoBack }: Props) => {
   });
 
   const proxiedWallet = useUnit(confirmModel.$proxiedWallet);
-  const networkStore = useUnit(confirmModel.$networkStore);
+  const chain = useUnit(networkSelectorModel.$governanceChain);
+  const asset = useUnit(votingAssetModel.$votingAsset);
+
   const totalUnlock = useUnit(unlockAggregate.$totalUnlock);
   const totalLock = useUnit(locksModel.$totalLock);
 
-  if (!initiatorWallet || !networkStore) return null;
+  if (!initiatorWallet || !chain || !asset) return null;
 
   return (
     <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5 w-modal">
@@ -54,10 +58,10 @@ export const Confirmation = ({ id = 0, onGoBack }: Props) => {
         <div className={cnTw('flex flex-col gap-y-1 items-center')}>
           <AssetBalance
             value={totalUnlock.toString()}
-            asset={networkStore.asset}
+            asset={asset}
             className="font-manrope text-text-primary text-[32px] leading-[36px] font-bold"
           />
-          <AssetFiatBalance asset={networkStore.asset} amount={totalUnlock.toString()} className="text-headline" />
+          <AssetFiatBalance asset={asset} amount={totalUnlock.toString()} className="text-headline" />
         </div>
 
         {/* <FootnoteText className="py-2 px-3 rounded bg-block-background ml-3 text-text-secondary">
@@ -76,10 +80,10 @@ export const Confirmation = ({ id = 0, onGoBack }: Props) => {
             <DetailRow label={t('transfer.senderProxiedAccount')}>
               <AddressWithExplorers
                 type="short"
-                explorers={networkStore.chain.explorers}
+                explorers={chain.explorers}
                 addressFont="text-footnote text-inherit"
                 accountId={proxiedWallet.accounts[0].accountId}
-                addressPrefix={networkStore.chain.addressPrefix}
+                addressPrefix={chain.addressPrefix}
                 wrapperClassName="text-text-secondary"
               />
             </DetailRow>
@@ -94,10 +98,10 @@ export const Confirmation = ({ id = 0, onGoBack }: Props) => {
             <DetailRow label={t('transfer.signingAccount')}>
               <AddressWithExplorers
                 type="short"
-                explorers={networkStore.chain.explorers}
+                explorers={chain.explorers}
                 addressFont="text-footnote text-inherit"
                 accountId={realAccount.accountId}
-                addressPrefix={networkStore.chain.addressPrefix}
+                addressPrefix={chain.addressPrefix}
                 wrapperClassName="text-text-secondary"
               />
             </DetailRow>
@@ -114,10 +118,10 @@ export const Confirmation = ({ id = 0, onGoBack }: Props) => {
             <DetailRow label={t('operation.details.account')}>
               <AddressWithExplorers
                 type="short"
-                explorers={networkStore.chain.explorers}
+                explorers={chain.explorers}
                 addressFont="text-footnote text-inherit"
                 accountId={realAccount.accountId}
-                addressPrefix={networkStore.chain.addressPrefix}
+                addressPrefix={chain.addressPrefix}
                 wrapperClassName="text-text-secondary"
               />
             </DetailRow>
@@ -136,14 +140,10 @@ export const Confirmation = ({ id = 0, onGoBack }: Props) => {
         )} */}
         <hr className="border-filter-border w-full pr-2" />
         <DetailRow label={t('governance.operations.transferable')} wrapperClassName="items-start">
-          <ValueIndicator from="0" to={totalUnlock.toString()} asset={networkStore.asset} />
+          <ValueIndicator from="0" to={totalUnlock.toString()} asset={asset} />
         </DetailRow>
         <DetailRow label={t('governance.locks.governanceLock')} wrapperClassName="items-start">
-          <ValueIndicator
-            from={totalLock.toString()}
-            to={totalLock.sub(totalUnlock).toString()}
-            asset={networkStore.asset}
-          />
+          <ValueIndicator from={totalLock.toString()} to={totalLock.sub(totalUnlock).toString()} asset={asset} />
         </DetailRow>
         <hr className="border-filter-border w-full pr-2" />
         <FeeSection />
@@ -181,11 +181,11 @@ const FeeSection = () => {
   } = useForm(unlockConfirmAggregate.$confirmForm);
 
   const api = useUnit(confirmModel.$api);
-  const network = useUnit(confirmModel.$networkStore);
+  const chain = useUnit(networkSelectorModel.$governanceChain);
   const transactions = useUnit(unlockConfirmAggregate.$transactions);
   const isMultisig = useUnit(confirmModel.$isMultisig);
 
-  if (!network || shards.value.length === 0) {
+  if (!chain || shards.value.length === 0) {
     return null;
   }
 
@@ -194,7 +194,7 @@ const FeeSection = () => {
       {isMultisig && (
         <MultisigDepositWithLabel
           api={api}
-          asset={network.chain.assets[0]}
+          asset={chain.assets[0]}
           threshold={(shards.value[0] as MultisigAccount).threshold || 1}
           onDepositChange={unlockConfirmAggregate.events.multisigDepositChanged}
         />
@@ -203,7 +203,7 @@ const FeeSection = () => {
       <FeeWithLabel
         label={t('staking.networkFee', { count: shards.value.length || 1 })}
         api={api}
-        asset={network.chain.assets[0]}
+        asset={chain.assets[0]}
         transaction={transactions?.[0]?.wrappedTx}
         onFeeChange={unlockConfirmAggregate.events.feeChanged}
         onFeeLoading={unlockConfirmAggregate.events.isFeeLoadingChanged}
@@ -213,7 +213,7 @@ const FeeSection = () => {
         <FeeWithLabel
           label={t('staking.networkFeeTotal')}
           api={api}
-          asset={network.chain.assets[0]}
+          asset={chain.assets[0]}
           multiply={transactions.length}
           transaction={transactions[0].wrappedTx}
           onFeeChange={unlockConfirmAggregate.events.totalFeeChanged}

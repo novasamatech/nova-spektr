@@ -3,22 +3,19 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 
 import { type UnlockChunk } from '@/shared/api/governance';
-import { type Account, type Asset, type Chain } from '@/shared/core';
+import { type Account } from '@/shared/core';
 import { ZERO_BALANCE } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { UnlockRules } from '../lib/unlock-rules';
+import { networkSelectorModel } from '../model/networkSelector';
 import { confirmModel } from '../model/unlock/confirm-model';
 
 type Input = {
   id?: number;
-  chain: Chain;
-  asset: Asset;
   unlockableClaims: UnlockChunk[];
   amount: string;
 };
-
-type BalanceMap = { balance: string; withdraw: string };
 
 type FormParams = {
   shards: Account[];
@@ -35,7 +32,7 @@ const totalFeeChanged = createEvent<string>();
 const multisigDepositChanged = createEvent<string>();
 const isFeeLoadingChanged = createEvent<boolean>();
 
-const $accountsBalances = createStore<BalanceMap[]>([]);
+const $accountsBalances = createStore<string[]>([]);
 const $signatoryBalance = createStore<string>(ZERO_BALANCE);
 const $proxyBalance = createStore<string>(ZERO_BALANCE);
 
@@ -134,28 +131,28 @@ const $confirmForm = createForm<FormParams>({
 
 const $isChainConnected = combine(
   {
-    network: confirmModel.$networkStore,
+    chain: networkSelectorModel.$governanceChain,
     statuses: networkModel.$connectionStatuses,
   },
-  ({ network, statuses }) => {
-    if (!network) return false;
+  ({ chain, statuses }) => {
+    if (!chain) return false;
 
-    return networkUtils.isConnectedStatus(statuses[network.chain.chainId]);
+    return networkUtils.isConnectedStatus(statuses[chain.chainId]);
   },
 );
 
 const $pureTxs = combine(
   {
-    network: confirmModel.$networkStore,
+    chain: networkSelectorModel.$governanceChain,
     form: $confirmForm.$values,
     isConnected: $isChainConnected,
   },
-  ({ network, form, isConnected }) => {
-    if (!network || !isConnected) return undefined;
+  ({ chain, form, isConnected }) => {
+    if (!chain || !isConnected) return undefined;
 
     return form.shards.map((shard) => {
       return transactionBuilder.buildWithdraw({
-        chain: network.chain,
+        chain,
         accountId: shard.accountId,
       });
     });
@@ -166,17 +163,17 @@ const $pureTxs = combine(
 const $transactions = combine(
   {
     apis: networkModel.$apis,
-    networkStore: confirmModel.$networkStore,
+    chain: networkSelectorModel.$governanceChain,
     pureTxs: $pureTxs,
     txWrappers: confirmModel.$txWrappers,
   },
-  ({ apis, networkStore, pureTxs, txWrappers }) => {
-    if (!networkStore || !pureTxs) return undefined;
+  ({ apis, chain, pureTxs, txWrappers }) => {
+    if (!chain || !pureTxs) return undefined;
 
     return pureTxs.map((tx) =>
       transactionService.getWrappedTransaction({
-        api: apis[networkStore.chain.chainId],
-        addressPrefix: networkStore.chain.addressPrefix,
+        api: apis[chain.chainId],
+        addressPrefix: chain.addressPrefix,
         transaction: tx,
         txWrappers,
       }),
@@ -195,12 +192,6 @@ sample({
   source: confirmModel.$shards,
   filter: (shards) => shards.length > 0,
   target: $confirmForm.fields.shards.onChange,
-});
-
-sample({
-  clock: formInitiated,
-  fn: ({ chain, asset }) => ({ chain, asset }),
-  target: confirmModel.$networkStore,
 });
 
 const $canSubmit = combine(
