@@ -8,8 +8,9 @@ import { BaseModal, HeaderTitleText } from '@shared/ui';
 import { OperationTitle } from '@entities/chain';
 import { OperationResult } from '@entities/transaction';
 import { networkSelectorModel } from '../../model/networkSelector';
-import { unlockModel } from '../../model/unlock';
+import { unlockModel } from '../../model/unlock/unlock';
 
+import { Confirmation } from './Confirmation';
 import { UnlockInfo } from './UnlockInfo';
 
 export const Unlock = () => {
@@ -56,6 +57,7 @@ export const Unlock = () => {
   return (
     <BaseModal closeButton contentClass="" isOpen={isModalOpen} title={title} onClose={closeModal}>
       {isStep(step, Step.INIT) && <UnlockInfo />}
+      {isStep(step, Step.CONFIRM) && <Confirmation onGoBack={() => unlockModel.events.stepChanged(Step.INIT)} />}
     </BaseModal>
   );
 };

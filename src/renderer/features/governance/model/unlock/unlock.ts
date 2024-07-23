@@ -1,23 +1,25 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type BN, BN_ZERO } from '@polkadot/util';
 import { createEffect, createEvent, createStore, restore, sample } from 'effector';
-import { combineEvents } from 'patronum';
+import { combineEvents, spread } from 'patronum';
 
 import { type ClaimTimeAt, type UnlockChunk, UnlockChunkType, claimScheduleService } from '@shared/api/governance';
 import { type Address, type ReferendumInfo, type TrackId, type TrackInfo, type VotingMap } from '@shared/core';
 import { Step, getCreatedDateFromApi, getCurrentBlockNumber } from '@shared/lib/utils';
 import { referendumModel } from '@entities/governance';
 import { walletModel } from '@entities/wallet';
-import { tracksAggregate } from '../aggregates/tracks';
-import { votingAggregate } from '../aggregates/voting';
-import { unlockService } from '../lib/unlock';
+import { tracksAggregate } from '../../aggregates/tracks';
+import { votingAggregate } from '../../aggregates/voting';
+import { unlockService } from '../../lib/unlock';
+import { locksModel } from '../locks';
+import { networkSelectorModel } from '../networkSelector';
 
-import { locksModel } from './locks';
-import { networkSelectorModel } from './networkSelector';
+import { confirmModel } from './confirm-model';
 
-const stepChanged = createEvent<Step>();
 const flowStarted = createEvent();
 const flowFinished = createEvent();
+const stepChanged = createEvent<Step>();
+const unlockConfirm = createEvent();
 const txSaved = createEvent();
 
 const $step = restore<Step>(stepChanged, Step.NONE);
@@ -65,21 +67,6 @@ const getClaimScheduleFx = createEffect(
   },
 );
 
-// const $unlockStore = createStore<UnlockStore | null>(null);
-
-// const $initiatorWallet = combine(
-//   {
-//     store: $unlockStore,
-//     wallets: walletModel.$wallets,
-//   },
-//   ({ store, wallets }) => {
-//     if (!store) return undefined;
-
-//     return walletUtils.getWalletById(wallets, store.shards[0].walletId);
-//   },
-//   { skipVoid: false },
-// );
-
 sample({
   clock: [
     referendumModel.events.requestDone,
@@ -93,7 +80,7 @@ sample({
     referendums: referendumModel.$referendums,
     chain: networkSelectorModel.$governanceChain,
   },
-  filter: ({ api, chain, referendums }) => !!api && !!chain && !!referendums,
+  filter: ({ api, chain, referendums }) => !!api && !!chain && !!referendums[chain!.chainId],
   fn: ({ api, tracks, trackLocks, voting, referendums, chain }) => ({
     api: api!,
     tracks,
@@ -130,15 +117,39 @@ sample({
 });
 
 sample({
+  clock: txSaved,
+  fn: () => Step.BASKET,
+  target: stepChanged,
+});
+
+sample({
+  clock: stepChanged,
+  target: $step,
+});
+
+sample({
   clock: flowFinished,
   fn: () => Step.NONE,
   target: stepChanged,
 });
 
 sample({
-  clock: txSaved,
-  fn: () => Step.BASKET,
-  target: stepChanged,
+  clock: unlockConfirm,
+  source: {
+    chain: networkSelectorModel.$governanceChain,
+    asset: locksModel.$asset,
+    unlockableClaims: $claimSchedule.map((c) => c.filter((claim) => claim.type === UnlockChunkType.CLAIMABLE)),
+    totalUnlock: $totalUnlock,
+  },
+  filter: ({ chain, asset, totalUnlock }) => !!chain && !!asset,
+  fn: ({ chain, unlockableClaims, asset, totalUnlock }) => ({
+    event: { chain: chain!, unlockableClaims, asset: asset!, amount: totalUnlock.toString() },
+    step: Step.CONFIRM,
+  }),
+  target: spread({
+    event: confirmModel.events.formInitiated,
+    step: stepChanged,
+  }),
 });
 
 export const unlockModel = {
@@ -151,6 +162,8 @@ export const unlockModel = {
   events: {
     flowStarted,
     stepChanged,
+    unlockConfirm,
+    txSaved,
   },
   output: {
     flowFinished,

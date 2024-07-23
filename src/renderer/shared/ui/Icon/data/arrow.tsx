@@ -2,6 +2,8 @@ import CrossChainImg, { ReactComponent as CrossChainSvg } from '@shared/assets/i
 import ArrowCurveLeftRightImg, {
   ReactComponent as ArrowCurveLeftRightSvg,
 } from '@shared/assets/images/arrows/curve-left-right.svg';
+import arrowDoubleDownImg, { ReactComponent as arrowDoubleDownSvg } from '@shared/assets/images/arrows/double-down.svg';
+import arrowDoubleUpImg, { ReactComponent as arrowDoubleUpSvg } from '@shared/assets/images/arrows/double-up.svg';
 import ArrowLeftImg, { ReactComponent as ArrowLeftSvg } from '@shared/assets/images/arrows/left.svg';
 import ReceiveArrowImg, { ReactComponent as ReceiveArrowSvg } from '@shared/assets/images/arrows/receive-arrow.svg';
 import ArrowRightImg, { ReactComponent as ArrowRightSvg } from '@shared/assets/images/arrows/right.svg';
@@ -16,6 +18,8 @@ const ArrowImages = {
   swapArrow: { svg: SwapArrowSvg, img: SwapArrowImg },
   crossChain: { svg: CrossChainSvg, img: CrossChainImg },
   arrowCurveLeftRight: { svg: ArrowCurveLeftRightSvg, img: ArrowCurveLeftRightImg },
+  arrowDoubleDown: { svg: arrowDoubleDownSvg, img: arrowDoubleDownImg },
+  arrowDoubleUp: { svg: arrowDoubleUpSvg, img: arrowDoubleUpImg },
 } as const;
 
 export type Arrow = keyof typeof ArrowImages;
