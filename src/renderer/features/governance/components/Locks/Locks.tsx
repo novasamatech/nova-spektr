@@ -3,8 +3,8 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@app/providers';
 import { FootnoteText, Icon, Plate, Shimmering } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
+import { unlockAggregate } from '../../aggregates/unlock';
 import { locksModel } from '../../model/locks';
-import { unlockModel } from '../../model/unlock/unlock';
 import { Unlock } from '../Unlock/Unlock';
 
 export const Locks = () => {
@@ -13,11 +13,11 @@ export const Locks = () => {
   const asset = useUnit(locksModel.$asset);
   const totalLock = useUnit(locksModel.$totalLock);
   const isLoading = useUnit(locksModel.$isLoading);
-  const isUnlockable = useUnit(unlockModel.$isUnlockable);
+  const isUnlockable = useUnit(unlockAggregate.$isUnlockable);
 
   return (
     <>
-      <button disabled={isLoading || totalLock.isZero()} onClick={() => unlockModel.events.flowStarted()}>
+      <button disabled={isLoading || totalLock.isZero()} onClick={() => unlockAggregate.events.flowStarted()}>
         <Plate className="w-[240px] h-[90px] pt-3 px-4 pb-4.5 flex justify-between items-center">
           <div className="flex flex-col gap-y-2 items-start">
             <div className="flex gap-x-1 items-center">

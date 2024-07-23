@@ -12,10 +12,10 @@ import { AddressWithExplorers, WalletIcon } from '@/entities/wallet';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { basketUtils } from '@/features/operations/OperationsConfirm';
-import { confirmUnlockAggregate } from '../../aggregates/unlock';
+import { unlockAggregate } from '../../aggregates/unlock';
+import { unlockConfirmAggregate } from '../../aggregates/unlockConfirm';
 import { locksModel } from '../../model/locks';
 import { confirmModel } from '../../model/unlock/confirm-model';
-import { unlockModel } from '../../model/unlock/unlock';
 
 type Props = {
   id?: number;
@@ -41,7 +41,7 @@ export const Confirmation = ({ id = 0, onGoBack }: Props) => {
 
   const proxiedWallet = useUnit(confirmModel.$proxiedWallet);
   const networkStore = useUnit(confirmModel.$networkStore);
-  const totalUnlock = useUnit(unlockModel.$totalUnlock);
+  const totalUnlock = useUnit(unlockAggregate.$totalUnlock);
   const totalLock = useUnit(locksModel.$totalLock);
 
   if (!initiatorWallet || !networkStore) return null;
@@ -158,7 +158,7 @@ export const Confirmation = ({ id = 0, onGoBack }: Props) => {
 
         <div className="flex gap-4">
           {initiatorWallet && basketUtils.isBasketAvailable(initiatorWallet) && (
-            <Button pallet="secondary" onClick={() => unlockModel.events.txSaved()}>
+            <Button pallet="secondary" onClick={() => unlockAggregate.events.txSaved()}>
               {t('operation.addToBasket')}
             </Button>
           )}
@@ -178,11 +178,11 @@ const FeeSection = () => {
 
   const {
     fields: { shards },
-  } = useForm(confirmUnlockAggregate.$confirmForm);
+  } = useForm(unlockConfirmAggregate.$confirmForm);
 
   const api = useUnit(confirmModel.$api);
   const network = useUnit(confirmModel.$networkStore);
-  const transactions = useUnit(confirmUnlockAggregate.$transactions);
+  const transactions = useUnit(unlockConfirmAggregate.$transactions);
   const isMultisig = useUnit(confirmModel.$isMultisig);
 
   if (!network || shards.value.length === 0) {
@@ -196,7 +196,7 @@ const FeeSection = () => {
           api={api}
           asset={network.chain.assets[0]}
           threshold={(shards.value[0] as MultisigAccount).threshold || 1}
-          onDepositChange={confirmUnlockAggregate.events.multisigDepositChanged}
+          onDepositChange={unlockConfirmAggregate.events.multisigDepositChanged}
         />
       )}
 
@@ -205,8 +205,8 @@ const FeeSection = () => {
         api={api}
         asset={network.chain.assets[0]}
         transaction={transactions?.[0]?.wrappedTx}
-        onFeeChange={confirmUnlockAggregate.events.feeChanged}
-        onFeeLoading={confirmUnlockAggregate.events.isFeeLoadingChanged}
+        onFeeChange={unlockConfirmAggregate.events.feeChanged}
+        onFeeLoading={unlockConfirmAggregate.events.isFeeLoadingChanged}
       />
 
       {transactions && transactions.length > 1 && (
@@ -216,8 +216,8 @@ const FeeSection = () => {
           asset={network.chain.assets[0]}
           multiply={transactions.length}
           transaction={transactions[0].wrappedTx}
-          onFeeChange={confirmUnlockAggregate.events.totalFeeChanged}
-          onFeeLoading={confirmUnlockAggregate.events.isFeeLoadingChanged}
+          onFeeChange={unlockConfirmAggregate.events.totalFeeChanged}
+          onFeeLoading={unlockConfirmAggregate.events.isFeeLoadingChanged}
         />
       )}
     </div>

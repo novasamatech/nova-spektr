@@ -117,11 +117,11 @@ const $proxiedWallet = combine(
 
 // const $signerWallet = combine(
 //   {
-//     store: $confirmStore,
+//     shards: $shards,
 //     wallets: walletModel.$wallets,
 //   },
-//   ({ store, wallets }) => {
-//     if (!store) return {};
+//   ({ shards, wallets }) => {
+//     if (!shards) return {};
 //     // formData.signatory.accountId ? formData.signatory : undefined;
 //     return store.reduce<Record<number, Wallet>>((acc, storeItem, index) => {
 //       const wallet = walletUtils.getWalletById(wallets, storeItem.signatory?.walletId || storeItem.account.walletId);

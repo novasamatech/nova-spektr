@@ -1,232 +1,84 @@
-import { BN } from '@polkadot/util';
-import { combine, createEvent, createStore, restore, sample } from 'effector';
-import { createForm } from 'effector-forms';
+import { createEvent, restore, sample } from 'effector';
+import { or, spread } from 'patronum';
 
-import { type UnlockChunk } from '@/shared/api/governance';
-import { type Account, type Asset, type Chain } from '@/shared/core';
-import { ZERO_BALANCE } from '@/shared/lib/utils';
-import { networkModel, networkUtils } from '@/entities/network';
-import { transactionBuilder, transactionService } from '@/entities/transaction';
-import { UnlockRules } from '../lib/unlock-rules';
-import { confirmModel } from '../model/unlock/confirm-model';
+import { UnlockChunkType } from '@shared/api/governance';
+import { Step } from '@shared/lib/utils';
+import { referendumModel } from '@/entities/governance';
+import { locksModel } from '../model/locks';
+import { networkSelectorModel } from '../model/networkSelector';
+import { unlockModel } from '../model/unlock/unlock';
 
-type Input = {
-  id?: number;
-  chain: Chain;
-  asset: Asset;
-  unlockableClaims: UnlockChunk[];
-  amount: string;
-};
+import { unlockConfirmAggregate } from './unlockConfirm';
 
-type BalanceMap = { balance: string; withdraw: string };
+const flowStarted = createEvent();
+const flowFinished = createEvent();
+const stepChanged = createEvent<Step>();
+const unlockConfirm = createEvent();
+const txSaved = createEvent();
 
-type FormParams = {
-  shards: Account[];
-  signatory: Account;
-  amount: string;
-  description: string;
-};
-
-const formInitiated = createEvent<Input>();
-const formSubmitted = createEvent();
-
-const feeChanged = createEvent<string>();
-const totalFeeChanged = createEvent<string>();
-const multisigDepositChanged = createEvent<string>();
-const isFeeLoadingChanged = createEvent<boolean>();
-
-const $accountsBalances = createStore<BalanceMap[]>([]);
-const $signatoryBalance = createStore<string>(ZERO_BALANCE);
-const $proxyBalance = createStore<string>(ZERO_BALANCE);
-
-const $fee = restore(feeChanged, ZERO_BALANCE);
-const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
-const $isFeeLoading = restore(isFeeLoadingChanged, true);
-
-const $confirmForm = createForm<FormParams>({
-  fields: {
-    shards: {
-      init: [] satisfies Account[],
-      rules: [
-        {
-          name: 'noProxyFee',
-          source: combine({
-            fee: $fee,
-            isProxy: confirmModel.$isProxy,
-            proxyBalance: $proxyBalance,
-          }),
-          validator: (_s, _f, { isProxy, proxyBalance, fee }) => {
-            if (!isProxy) return true;
-
-            return new BN(fee).lte(new BN(proxyBalance));
-          },
-        },
-      ],
-    },
-    signatory: {
-      init: {} as Account,
-      rules: [
-        {
-          name: 'noSignatorySelected',
-          errorText: 'transfer.noSignatoryError',
-          source: confirmModel.$isMultisig,
-          validator: (signatory, _, isMultisig) => {
-            if (!isMultisig) return true;
-
-            return Object.keys(signatory).length > 0;
-          },
-        },
-        {
-          name: 'notEnoughTokens',
-          errorText: 'proxy.addProxy.notEnoughMultisigTokens',
-          source: combine({
-            fee: $fee,
-            isMultisig: confirmModel.$isMultisig,
-            multisigDeposit: $multisigDeposit,
-            signatoryBalance: $signatoryBalance,
-          }),
-          validator: (_s, _f, { fee, isMultisig, signatoryBalance, multisigDeposit }) => {
-            if (!isMultisig) return true;
-
-            return new BN(multisigDeposit).add(new BN(fee)).lte(new BN(signatoryBalance));
-          },
-        },
-      ],
-    },
-    amount: {
-      init: '',
-      rules: [
-        {
-          name: 'required',
-          errorText: 'transfer.requiredAmountError',
-          validator: Boolean,
-        },
-        {
-          name: 'notZero',
-          errorText: 'transfer.notZeroAmountError',
-          validator: (value) => value !== ZERO_BALANCE,
-        },
-        {
-          name: 'insufficientBalanceForFee',
-          errorText: 'transfer.notEnoughBalanceForFeeError',
-          source: combine({
-            fee: $fee,
-            isMultisig: confirmModel.$isMultisig,
-            accountsBalances: $accountsBalances,
-          }),
-          validator: (value, form, { fee, isMultisig, accountsBalances }) => {
-            if (isMultisig) return true;
-
-            return form.shards.every((_: Account, index: number) => {
-              return new BN(fee).lte(new BN(accountsBalances[index].balance));
-            });
-          },
-        },
-      ],
-    },
-    description: {
-      init: '',
-      rules: [UnlockRules.description.maxLength],
-    },
-  },
-  validateOn: ['submit'],
-});
-
-const $isChainConnected = combine(
-  {
-    network: confirmModel.$networkStore,
-    statuses: networkModel.$connectionStatuses,
-  },
-  ({ network, statuses }) => {
-    if (!network) return false;
-
-    return networkUtils.isConnectedStatus(statuses[network.chain.chainId]);
-  },
-);
-
-const $pureTxs = combine(
-  {
-    network: confirmModel.$networkStore,
-    form: $confirmForm.$values,
-    isConnected: $isChainConnected,
-  },
-  ({ network, form, isConnected }) => {
-    if (!network || !isConnected) return undefined;
-
-    return form.shards.map((shard) => {
-      return transactionBuilder.buildWithdraw({
-        chain: network.chain,
-        accountId: shard.accountId,
-      });
-    });
-  },
-  { skipVoid: false },
-);
-
-const $transactions = combine(
-  {
-    apis: networkModel.$apis,
-    networkStore: confirmModel.$networkStore,
-    pureTxs: $pureTxs,
-    txWrappers: confirmModel.$txWrappers,
-  },
-  ({ apis, networkStore, pureTxs, txWrappers }) => {
-    if (!networkStore || !pureTxs) return undefined;
-
-    return pureTxs.map((tx) =>
-      transactionService.getWrappedTransaction({
-        api: apis[networkStore.chain.chainId],
-        addressPrefix: networkStore.chain.addressPrefix,
-        transaction: tx,
-        txWrappers,
-      }),
-    );
-  },
-  { skipVoid: false },
-);
+const $step = restore<Step>(stepChanged, Step.NONE);
 
 sample({
-  clock: formInitiated,
-  target: $confirmForm.reset,
+  clock: flowStarted,
+  fn: () => Step.INIT,
+  target: stepChanged,
 });
 
 sample({
-  clock: formInitiated,
-  source: confirmModel.$shards,
-  filter: (shards) => shards.length > 0,
-  target: $confirmForm.fields.shards.onChange,
+  clock: txSaved,
+  fn: () => Step.BASKET,
+  target: stepChanged,
 });
 
 sample({
-  clock: formInitiated,
-  fn: ({ chain, asset }) => ({ chain, asset }),
-  target: confirmModel.$networkStore,
+  clock: stepChanged,
+  target: $step,
 });
 
-const $canSubmit = combine(
-  {
-    isFormValid: $confirmForm.$isValid,
-    isFeeLoading: $isFeeLoading,
-  },
-  ({ isFormValid, isFeeLoading }) => {
-    return isFormValid && !isFeeLoading;
-  },
-);
+sample({
+  clock: flowFinished,
+  fn: () => Step.NONE,
+  target: stepChanged,
+});
 
-export const confirmUnlockAggregate = {
-  $confirmForm,
-  $canSubmit,
-  $transactions,
+sample({
+  clock: unlockConfirm,
+  source: {
+    chain: networkSelectorModel.$governanceChain,
+    asset: locksModel.$asset,
+    unlockableClaims: unlockModel.$claimSchedule.map((c) =>
+      c.filter((claim) => claim.type === UnlockChunkType.CLAIMABLE),
+    ),
+    totalUnlock: unlockModel.$totalUnlock,
+  },
+  filter: ({ chain, asset, totalUnlock }) => !!chain && !!asset && !totalUnlock.isZero(),
+  fn: ({ chain, unlockableClaims, asset, totalUnlock }) => ({
+    event: { chain: chain!, unlockableClaims, asset: asset!, amount: totalUnlock.toString() },
+    step: Step.CONFIRM,
+  }),
+  target: spread({
+    event: unlockConfirmAggregate.events.formInitiated,
+    step: stepChanged,
+  }),
+});
+
+export const unlockAggregate = {
+  $step,
+  $totalUnlock: unlockModel.$totalUnlock,
+  $isLoading: or(unlockModel.$isLoading, referendumModel.$isReferendumsLoading),
+  $isUnlockable: unlockModel.$claimSchedule.map((c) => c.some((claim) => claim.type === UnlockChunkType.CLAIMABLE)),
+  $pendingSchedule: unlockModel.$claimSchedule.map((c) =>
+    c.filter((claim) => claim.type !== UnlockChunkType.CLAIMABLE),
+  ),
 
   events: {
-    formInitiated,
-    feeChanged,
-    totalFeeChanged,
-    multisigDepositChanged,
-    isFeeLoadingChanged,
+    flowStarted,
+    stepChanged,
+    unlockConfirm,
+    txSaved,
   },
 
   output: {
-    formSubmitted,
+    flowFinished,
   },
 };
