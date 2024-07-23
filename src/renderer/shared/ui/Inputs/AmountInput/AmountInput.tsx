@@ -15,9 +15,9 @@ import {
   validatePrecision,
   validateSymbols,
 } from '@shared/lib/utils';
-import { IconButton } from '@shared/ui';
 import { AssetBalance, AssetIcon } from '@entities/asset';
 import { currencyModel, useCurrencyRate } from '@entities/price';
+import { IconButton } from '../../Buttons';
 import { FootnoteText, HelpText, TitleText } from '../../Typography';
 import { Input } from '../Input/Input';
 

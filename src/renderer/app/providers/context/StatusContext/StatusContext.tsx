@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -54,8 +55,10 @@ export const StatusModalProvider = ({ children }: PropsWithChildren) => {
     });
   }, []);
 
+  const value = useMemo(() => ({ showStatus }), [showStatus]);
+
   return (
-    <StatusDialog.Provider value={{ showStatus }}>
+    <StatusDialog.Provider value={value}>
       {children}
 
       <StatusModal

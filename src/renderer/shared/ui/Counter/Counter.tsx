@@ -1,7 +1,7 @@
 import { type PropsWithChildren } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
-import { CaptionText } from '@shared/ui';
+import { CaptionText } from '../Typography';
 
 import { BadgeStyles } from './common/constants';
 import { type Variant } from './common/types';

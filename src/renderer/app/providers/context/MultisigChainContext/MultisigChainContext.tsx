@@ -22,7 +22,7 @@ const MULTISIG_RESULT_ERROR = 'err';
 const MultisigChainContext = createContext<MultisigChainContextProps>({} as MultisigChainContextProps);
 
 export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
-  const { addTask } = useTaskQueue();
+  const taskQueue = useTaskQueue();
   const {
     subscribeMultisigAccount,
     updateMultisigTx,
@@ -30,13 +30,13 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     getLiveAccountMultisigTxs,
     updateCallData,
     updateCallDataFromChain,
-  } = useMultisigTx({ addTask });
+  } = useMultisigTx(taskQueue);
   const activeWallet = useUnit(walletModel.$activeWallet);
   const apis = useUnit(networkModel.$apis);
   const chains = useUnit(networkModel.$chains);
   const connectionStatuses = useUnit(networkModel.$connectionStatuses);
 
-  const { updateEvent, getEvents, addEventWithQueue } = useMultisigEvent({ addTask });
+  const { updateEvent, getEvents, addEventWithQueue } = useMultisigEvent(taskQueue);
 
   const debouncedApis = useDebounce(apis, 1000);
   const debouncedConnectionStatuses = useDebounce(connectionStatuses, 1000);
@@ -193,7 +193,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     };
   }, [availableConnectionsAmount, account]);
 
-  return <MultisigChainContext.Provider value={{ addTask }}>{children}</MultisigChainContext.Provider>;
+  return <MultisigChainContext.Provider value={taskQueue}>{children}</MultisigChainContext.Provider>;
 };
 
 export const useMultisigChainContext = () => useContext<MultisigChainContextProps>(MultisigChainContext);
