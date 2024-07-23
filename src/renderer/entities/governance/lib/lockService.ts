@@ -5,17 +5,17 @@ import { type Conviction, type Voting } from '@shared/core';
 
 import { votingService } from './votingService';
 
-const lockPeriod = {
-  None: 0,
-  Locked1x: 1,
-  Locked2x: 2,
-  Locked3x: 4,
-  Locked4x: 8,
-  Locked5x: 16,
-  Locked6x: 32,
-};
+enum LockPeriod {
+  None = 0,
+  Locked1x = 1,
+  Locked2x = 2,
+  Locked3x = 4,
+  Locked4x = 8,
+  Locked5x = 16,
+  Locked6x = 32,
+}
 
-const getLockPeriods = (conviction: Conviction): number => lockPeriod[conviction];
+const getLockPeriods = (conviction: Conviction): number => LockPeriod[conviction];
 
 // Claim time types
 

@@ -8,7 +8,7 @@ import { formatBalance } from '@shared/lib/utils';
 import { BaseModal, BodyText, FootnoteText } from '@shared/ui';
 import { votingService } from '@entities/governance';
 import { AddressWithName } from '@entities/wallet';
-import { walletVotesAggregate } from '../../aggregates/walletVotes';
+import { detailsAggregate } from '../../aggregates/details';
 import { votingListService } from '../../lib/votingListService';
 
 type Props = {
@@ -22,7 +22,7 @@ export const WalletVotesDialog = ({ referendum, asset, onClose }: Props) => {
   const [isOpen, closeModal] = useModalClose(true, onClose);
 
   const votes = useStoreMap({
-    store: walletVotesAggregate.$votes,
+    store: detailsAggregate.$votes,
     keys: [referendum.referendumId],
     fn: (votes, [referendumId]) => votingService.getReferendumAccountVotes(referendumId, votes),
   });

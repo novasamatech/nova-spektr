@@ -51,7 +51,7 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) =
   });
 
   const formattedVotes = useMemo(() => {
-    const balance = votingService.calculateAccountVotesTotalBalance(votes);
+    const balance = votingService.calculateAccountVotesTotalBalance(Object.values(votes));
 
     return formatBalance(balance, votingAsset?.precision).formatted;
   }, [votes, votingAsset]);
@@ -84,7 +84,7 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) =
             <VotingStatus referendum={referendum} chain={chain} asset={votingAsset} />
           </DetailsCard>
 
-          {referendumService.isOngoing(referendum) && votingAsset && (
+          {referendumService.isOngoing(referendum) && !!votingAsset && (
             <DetailsCard
               title={t('governance.referendum.votingSummary')}
               action={
@@ -105,13 +105,13 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) =
             <Timeline referendumId={referendum.referendumId} />
           </DetailsCard>
 
-          {referendumService.isOngoing(referendum) && votingAsset ? (
+          {referendumService.isOngoing(referendum) && !!votingAsset && (
             <DetailsCard>
               <Button className="p-0 h-auto w-fit" size="sm" variant="text" onClick={() => setShowAdvanced(true)}>
                 {t('governance.referendum.advanced')}
               </Button>
             </DetailsCard>
-          ) : null}
+          )}
         </div>
       </div>
 
@@ -121,7 +121,7 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) =
 
       {showVoteHistory && <VotingHistoryDialog referendum={referendum} onClose={() => setShowVoteHistory(false)} />}
 
-      {showAdvanced && referendumService.isOngoing(referendum) && votingAsset && (
+      {showAdvanced && referendumService.isOngoing(referendum) && !!votingAsset && (
         <AdvancedDialog asset={votingAsset} referendum={referendum} onClose={() => setShowAdvanced(false)} />
       )}
     </BaseModal>

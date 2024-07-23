@@ -16,15 +16,15 @@ import {
 } from '@/shared/core';
 import { toKeysRecord } from '@shared/lib/utils';
 
-const convictionMultipliers: Record<Conviction, number> = {
-  None: 0.1,
-  Locked1x: 1,
-  Locked2x: 2,
-  Locked3x: 3,
-  Locked4x: 4,
-  Locked5x: 5,
-  Locked6x: 6,
-};
+enum ConvictionMultiplier {
+  None = 0.1,
+  Locked1x = 1,
+  Locked2x = 2,
+  Locked3x = 3,
+  Locked4x = 4,
+  Locked5x = 5,
+  Locked6x = 6,
+}
 
 const getAccountVoteConviction = (vote: AccountVote): Conviction => {
   if (isStandardVote(vote)) {
@@ -38,9 +38,7 @@ const getAccountVoteConviction = (vote: AccountVote): Conviction => {
   return 'None';
 };
 
-const getConvictionMultiplier = (conviction: Conviction) => {
-  return convictionMultipliers[conviction];
-};
+const getConvictionMultiplier = (conviction: Conviction): number => ConvictionMultiplier[conviction];
 
 const getVoteFractions = (tally: Tally, approve: BN) => {
   const total = tally.ayes.add(tally.nays);
@@ -133,8 +131,8 @@ const calculateAccountVotePower = (vote: AccountVote) => {
   return BN_ZERO;
 };
 
-const calculateAccountVotesTotalBalance = (votes: Record<Address, AccountVote>) => {
-  return Object.values(votes).reduce((acc, vote) => acc.iadd(calculateAccountVotePower(vote)), new BN(0));
+const calculateAccountVotesTotalBalance = (votes: AccountVote[]) => {
+  return votes.reduce((acc, vote) => acc.iadd(calculateAccountVotePower(vote)), new BN(0));
 };
 
 // Voting types
