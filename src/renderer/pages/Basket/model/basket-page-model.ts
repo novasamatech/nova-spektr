@@ -8,6 +8,7 @@ import { basketModel } from '@entities/basket';
 import { networkModel, networkUtils } from '@entities/network';
 import { TransferTypes, XcmTypes, transactionService } from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
+import { unlockValidateModel } from '@/features/governance';
 import { basketFilterModel } from '@features/basket/BasketFilter';
 import {
   type ValidationResult,
@@ -121,6 +122,7 @@ const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
       [TransactionType.RESTAKE]: restakeValidateModel.events.validationStarted,
       [TransactionType.UNSTAKE]: unstakeValidateModel.events.validationStarted,
       [TransactionType.REDEEM]: withdrawValidateModel.events.validationStarted,
+      [TransactionType.UNLOCK]: unlockValidateModel.events.validationStarted,
     };
 
     if (coreTx.type in TransactionValidators) {
@@ -155,6 +157,7 @@ const txValidated = [
   restakeValidateModel.output.txValidated,
   unstakeValidateModel.output.txValidated,
   withdrawValidateModel.output.txValidated,
+  unlockValidateModel.output.txValidated,
 ];
 
 sample({

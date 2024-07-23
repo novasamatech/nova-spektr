@@ -44,7 +44,7 @@ export const Confirmation = ({ id = 0, onGoBack }: Props) => {
   const proxiedWallet = useUnit(confirmModel.$proxiedWallet);
   const chain = useUnit(networkSelectorModel.$governanceChain);
   const asset = useUnit(votingAssetModel.$votingAsset);
-
+  const transferableAmount = useUnit(unlockConfirmAggregate.$transferableAmount);
   const totalUnlock = useUnit(unlockAggregate.$totalUnlock);
   const totalLock = useUnit(locksModel.$totalLock);
 
@@ -140,7 +140,11 @@ export const Confirmation = ({ id = 0, onGoBack }: Props) => {
         )} */}
         <hr className="border-filter-border w-full pr-2" />
         <DetailRow label={t('governance.operations.transferable')} wrapperClassName="items-start">
-          <ValueIndicator from="0" to={totalUnlock.toString()} asset={asset} />
+          <ValueIndicator
+            from={transferableAmount.toString()}
+            to={transferableAmount.add(totalUnlock).toString()}
+            asset={asset}
+          />
         </DetailRow>
         <DetailRow label={t('governance.locks.governanceLock')} wrapperClassName="items-start">
           <ValueIndicator from={totalLock.toString()} to={totalLock.sub(totalUnlock).toString()} asset={asset} />

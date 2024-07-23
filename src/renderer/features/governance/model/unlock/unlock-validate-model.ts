@@ -92,7 +92,7 @@ sample({
   target: txValidated,
 });
 
-export const withdrawValidateModel = {
+export const unlockValidateModel = {
   events: {
     validationStarted,
   },

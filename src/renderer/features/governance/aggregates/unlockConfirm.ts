@@ -1,15 +1,17 @@
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 
 import { type UnlockChunk } from '@/shared/api/governance';
 import { type Account } from '@/shared/core';
-import { ZERO_BALANCE } from '@/shared/lib/utils';
+import { ZERO_BALANCE, transferableAmount } from '@/shared/lib/utils';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { UnlockRules } from '../lib/unlock-rules';
 import { networkSelectorModel } from '../model/networkSelector';
 import { confirmModel } from '../model/unlock/confirm-model';
+import { votingAssetModel } from '../model/votingAsset';
 
 type Input = {
   id?: number;
@@ -194,6 +196,24 @@ sample({
   target: $confirmForm.fields.shards.onChange,
 });
 
+const $transferableAmount = combine(
+  {
+    asset: votingAssetModel.$votingAsset,
+    chain: networkSelectorModel.$governanceChain,
+    shards: confirmModel.$shards,
+    balances: balanceModel.$balances,
+  },
+  ({ asset, chain, shards, balances }) => {
+    if (!asset || !shards || !chain) return BN_ZERO;
+
+    return shards.reduce((acc, shard) => {
+      const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId.toString());
+
+      return acc.add(new BN(transferableAmount(balance)));
+    }, BN_ZERO);
+  },
+);
+
 const $canSubmit = combine(
   {
     isFormValid: $confirmForm.$isValid,
@@ -208,6 +228,7 @@ export const unlockConfirmAggregate = {
   $confirmForm,
   $canSubmit,
   $transactions,
+  $transferableAmount,
 
   events: {
     formInitiated,

@@ -1,4 +1,5 @@
 import { format } from 'date-fns';
+// eslint-disable-next-line import-x/no-duplicates
 import { enGB } from 'date-fns/locale';
 import { combine } from 'effector';
 import groupBy from 'lodash/groupBy';
