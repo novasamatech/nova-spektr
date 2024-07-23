@@ -1,9 +1,9 @@
-import type { Config } from 'tailwindcss';
-import defaultTheme from 'tailwindcss/defaultTheme';
 import headlessPlugin from '@headlessui/tailwindcss';
+import { type Config } from 'tailwindcss';
+import defaultTheme from 'tailwindcss/defaultTheme';
 
-import fontSizes from './tw-config-consts/font-sizes';
 import colors from './tw-config-consts/colors';
+import fontSizes from './tw-config-consts/font-sizes';
 
 const tailwindConfig: Config = {
   mode: 'jit',

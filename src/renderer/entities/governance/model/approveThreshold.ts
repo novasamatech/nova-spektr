@@ -3,7 +3,6 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
-import { opengovThresholdService } from '@/shared/api/governance';
 import {
   type Chain,
   type ChainId,
@@ -14,7 +13,8 @@ import {
   type VotingThreshold,
 } from '@/shared/core';
 import { getCurrentBlockNumber } from '@/shared/lib/utils';
-import { referendumService } from '@/entities/governance';
+import { opengovThresholdService } from '../lib/opengovThresholdService';
+import { referendumService } from '../lib/referendumService';
 
 import { referendumModel } from './referendum';
 import { tracksModel } from './tracks';

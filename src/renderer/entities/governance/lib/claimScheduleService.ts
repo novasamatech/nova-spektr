@@ -6,36 +6,31 @@ import sortBy from 'lodash/sortBy';
 import uniqWith from 'lodash/uniqWith';
 
 import {
+  type Chunks,
+  type ClaimAction,
+  type ClaimAffect,
+  type ClaimTime,
+  type ClaimableChunk,
+  type ClaimableLock,
+  type GroupedClaimAffects,
+  type PendingChunk,
+  UnlockChunkType,
+} from '@/shared/api/governance';
+import {
   type AccountVote,
   type BlockHeight,
   type CastingVoting,
   type DelegatingVoting,
   type OngoingReferendum,
-  type ReferendumInfo,
-  type StandardVote,
-  type TimedOutReferendum,
+  type Referendum,
   type TrackId,
   type TrackInfo,
   type Voting,
-} from '@shared/core';
-import {
-  type AffectTrack,
-  type AffectVote,
-  type Chunks,
-  type ClaimAction,
-  type ClaimAffect,
-  type ClaimTime,
-  type ClaimTimeAt,
-  type ClaimTimeUntil,
-  type ClaimableChunk,
-  type ClaimableLock,
-  type GroupedClaimAffects,
-  type PendingChunk,
-  type RemoveVote,
-  type Unlock,
-  UnlockChunkType,
-} from '../lib/claim-types';
-import { onChainUtils } from '../lib/on-chain-utils';
+} from '@/shared/core';
+
+import { locksService } from './lockService';
+import { referendumService } from './referendumService';
+import { votingService } from './votingService';
 
 export const claimScheduleService = {
   estimateClaimSchedule,
@@ -43,7 +38,7 @@ export const claimScheduleService = {
 
 type ClaimParams = {
   currentBlockNumber: BlockHeight;
-  referendums: ReferendumInfo[];
+  referendums: Referendum[];
   tracks: Record<TrackId, TrackInfo>;
   trackLocks: Record<TrackId, BN>;
   votingByTrack: Record<TrackId, Voting>;
@@ -87,7 +82,7 @@ function estimateClaimSchedule({
 // Step 1
 function individualClaimableLocks(
   currentBlockNumber: BlockHeight,
-  referendums: ReferendumInfo[],
+  referendums: Referendum[],
   votingByTrack: Record<TrackId, Voting>,
   tracks: Record<TrackId, TrackInfo>,
   trackLocks: Record<TrackId, BN>,
@@ -98,7 +93,7 @@ function individualClaimableLocks(
 
   return Object.entries(votingByTrack).flatMap(([trackId, voting]) => {
     const gapLock = gapClaimableLock({ currentBlockNumber, trackId, voting, gap: gapBetweenVotingAndLocked });
-    if (onChainUtils.isCasting(voting)) {
+    if (votingService.isCasting(voting)) {
       return gapLock.concat(
         castingClaimableLocks(
           currentBlockNumber,
@@ -111,7 +106,7 @@ function individualClaimableLocks(
         ),
       );
     }
-    if (onChainUtils.isDelegating(voting)) {
+    if (votingService.isDelegating(voting)) {
       return gapLock.concat(delegatingClaimableLocks(trackId, voting));
     }
 
@@ -125,7 +120,7 @@ function gapBetween(votingByTrack: Record<TrackId, Voting>, trackLocks: Record<T
   for (const [trackId, voting] of Object.entries(votingByTrack)) {
     const trackLock = trackLocks[trackId] || BN_ZERO;
 
-    gapByTrack[trackId] = BN.max(trackLock.sub(onChainUtils.getTotalLock(voting)), BN_ZERO);
+    gapByTrack[trackId] = BN.max(trackLock.sub(locksService.getTotalLock(voting)), BN_ZERO);
   }
 
   return gapByTrack;
@@ -144,29 +139,29 @@ function gapClaimableLock({ trackId, voting, gap, currentBlockNumber }: GapLockP
 
   return [
     {
-      claimAt: { type: 'at', block: currentBlockNumber } as ClaimTime,
-      amount: trackGap.add(onChainUtils.getTotalLock(voting)),
-      affected: [{ trackId, type: 'track' } as AffectTrack],
+      claimAt: { type: 'at', block: currentBlockNumber },
+      amount: trackGap.add(locksService.getTotalLock(voting)),
+      affected: [{ trackId, type: 'track' }],
     },
   ];
 }
 
 function castingClaimableLocks(
   currentBlockNumber: BlockHeight,
-  referendums: ReferendumInfo[],
+  referendums: Referendum[],
   trackId: TrackId,
   tracks: Record<TrackId, TrackInfo>,
   voting: CastingVoting,
   voteLockingPeriod: BlockHeight,
   undecidingTimeout: BlockHeight,
 ): ClaimableLock[] {
-  const priorLock: ClaimableLock = {
-    claimAt: { type: 'at', block: voting.casting.prior.unlockAt } as ClaimTime,
+  const priorLock = {
+    claimAt: { type: 'at', block: voting.casting.prior.unlockAt },
     amount: voting.casting.prior.amount,
-    affected: [{ trackId, type: 'track' } as AffectTrack],
-  };
+    affected: [{ trackId, type: 'track' }],
+  } satisfies ClaimableLock;
 
-  const standardVotes = Object.entries(voting.casting.votes) as [string, StandardVote][];
+  const standardVotes = Object.entries(voting.casting.votes);
 
   const standardVoteLocks = standardVotes.map<ClaimableLock>(([referendumId, standardVote]) => {
     const estimatedEnd = maxConvictionEndOf(
@@ -183,11 +178,11 @@ function castingClaimableLocks(
       // we estimate whether prior will affect the vote when performing `removeVote`
       claimAt: {
         type: 'at',
-        block: Math.max(estimatedEnd, (priorLock.claimAt as ClaimTimeAt).block),
-      } as ClaimTime,
-      amount: standardVote.balance || BN_ZERO,
-      affected: [{ trackId, type: 'vote', referendumId } as AffectVote],
-    } as ClaimableLock;
+        block: Math.max(estimatedEnd, priorLock.claimAt.block),
+      },
+      amount: votingService.isStandardVote(standardVote) ? standardVote.balance : BN_ZERO,
+      affected: [{ trackId, type: 'vote', referendumId }],
+    };
   });
 
   return priorLock.amount.isZero() ? standardVoteLocks : [priorLock, ...standardVoteLocks];
@@ -195,16 +190,16 @@ function castingClaimableLocks(
 
 function delegatingClaimableLocks(trackId: TrackId, voting: DelegatingVoting): ClaimableLock[] {
   const delegationLock = {
-    claimAt: { type: 'until' } as ClaimTimeUntil,
+    claimAt: { type: 'until' },
     amount: voting.delegating.balance,
     affected: [],
-  } as ClaimableLock;
+  } satisfies ClaimableLock;
 
   const priorLock = {
-    claimAt: { type: 'at', block: voting.delegating.prior.unlockAt } as ClaimTimeAt,
+    claimAt: { type: 'at', block: voting.delegating.prior.unlockAt },
     amount: voting.delegating.prior.amount,
-    affected: [{ type: 'track', trackId } as AffectTrack],
-  } as ClaimableLock;
+    affected: [{ type: 'track', trackId }],
+  } satisfies ClaimableLock;
 
   return priorLock.amount.isZero() ? [delegationLock] : [delegationLock, priorLock];
 }
@@ -216,7 +211,7 @@ function maxConvictionEndOf(
   vote: AccountVote,
   voteLockingPeriod: BlockHeight,
   undecidingTimeout: BlockHeight,
-  referendum?: ReferendumInfo,
+  referendum?: Referendum,
 ): BlockHeight {
   // referendum is not in the map, which means it is cancelled and votes can be unlocked immediately
   return referendum
@@ -225,24 +220,27 @@ function maxConvictionEndOf(
 }
 
 function referendumMaxConvictionEnd(
-  referendum: ReferendumInfo,
+  referendum: Referendum,
   trackId: TrackId,
   tracks: Record<TrackId, TrackInfo>,
   vote: AccountVote,
   voteLockingPeriod: BlockHeight,
   undecidingTimeout: BlockHeight,
 ): BlockHeight {
-  if (onChainUtils.isOngoing(referendum)) {
+  if (referendumService.isOngoing(referendum)) {
     return maxOngoingConvictionEnd(referendum, vote, trackId, tracks, voteLockingPeriod, undecidingTimeout);
   }
-  if (onChainUtils.isRejected(referendum)) {
+  if (referendumService.isRejected(referendum)) {
     return maxCompletedConvictionEnd(vote, 'nay', referendum.since, voteLockingPeriod);
   }
-  if (onChainUtils.isApproved(referendum)) {
+  if (referendumService.isApproved(referendum)) {
     return maxCompletedConvictionEnd(vote, 'aye', referendum.since, voteLockingPeriod);
   }
+  if (referendumService.isTimedOut(referendum)) {
+    return referendum.since;
+  }
 
-  return (referendum as TimedOutReferendum).since;
+  return 0;
 }
 
 function maxCompletedConvictionEnd(
@@ -262,8 +260,8 @@ function completedReferendumLockDuration(
   lockPeriod: BlockHeight,
 ): BlockHeight {
   // vote has the same direction as outcome
-  if (onChainUtils.isStandardVote(vote) && vote.vote.type === referendumOutcome) {
-    return onChainUtils.getLockPeriods(vote.vote.conviction) * lockPeriod;
+  if (votingService.isStandardVote(vote) && vote.vote.type === referendumOutcome) {
+    return locksService.getLockPeriods(vote.vote.conviction) * lockPeriod;
   }
 
   return 0;
@@ -304,8 +302,8 @@ function maxOngoingConvictionEnd(
 }
 
 function voteMaxLockDuration(vote: AccountVote, lockPeriod: BlockHeight): BlockHeight {
-  if (onChainUtils.isStandardVote(vote)) {
-    return onChainUtils.getLockPeriods(vote.vote.conviction) * lockPeriod;
+  if (votingService.isStandardVote(vote)) {
+    return locksService.getLockPeriods(vote.vote.conviction) * lockPeriod;
   }
 
   return 0;
@@ -314,7 +312,7 @@ function voteMaxLockDuration(vote: AccountVote, lockPeriod: BlockHeight): BlockH
 // Step 2
 function combineSameUnlockAt(claimableLocks: ClaimableLock[]): [ClaimTime, ClaimableLock][] {
   const claimGroups = claimableLocks.reduce<Map<string, ClaimableLock[]>>((acc, lock) => {
-    const key = onChainUtils.isClaimAt(lock.claimAt)
+    const key = locksService.isClaimAt(lock.claimAt)
       ? `${lock.claimAt.type}_${lock.claimAt.block || '0'}`
       : lock.claimAt.type;
 
@@ -382,7 +380,7 @@ function constructUnlockSchedule(maxUnlockedByTime: [ClaimTime, ClaimableLock][]
 }
 
 function getClaimTimeSortKey(claimTime: ClaimTime): string {
-  return onChainUtils.isClaimAt(claimTime) ? `at-${claimTime.block}` : 'until';
+  return locksService.isClaimAt(claimTime) ? `at-${claimTime.block}` : 'until';
 }
 
 // Step 4
@@ -414,20 +412,20 @@ function toUnlockChunk(lock: ClaimableLock, currentBlockNumber: BlockHeight): Ch
       actions: toClaimActions(lock.affected),
     };
   }
-  const type = onChainUtils.isClaimAt(lock.claimAt) ? UnlockChunkType.PENDING_LOCK : UnlockChunkType.PENDING_DELIGATION;
+  const type = locksService.isClaimAt(lock.claimAt) ? UnlockChunkType.PENDING_LOCK : UnlockChunkType.PENDING_DELIGATION;
 
-  return { type: type, amount: lock.amount, claimableAt: lock.claimAt } as PendingChunk;
+  return { type: type, amount: lock.amount, claimableAt: lock.claimAt };
 }
 
 function claimableAt(claimAt: ClaimTime, at: BlockHeight): boolean {
-  return onChainUtils.isClaimAt(claimAt) ? claimAt.block <= at : false;
+  return locksService.isClaimAt(claimAt) ? claimAt.block <= at : false;
 }
 
 function toClaimActions(claimAffects: ClaimAffect[]): ClaimAction[] {
   return groupByTrack(claimAffects).reduce<ClaimAction[]>((acc, trackAffects) => {
     if (trackAffects.hasPriorAffect) {
       if (trackAffects.votes.length === 0) {
-        acc.push({ type: 'unlock', trackId: trackAffects.trackId } as Unlock);
+        acc.push({ type: 'unlock', trackId: trackAffects.trackId });
       }
     }
 
@@ -437,10 +435,10 @@ function toClaimActions(claimAffects: ClaimAffect[]): ClaimAction[] {
           type: 'remove_vote',
           trackId: voteAffect.trackId,
           referendumId: voteAffect.referendumId,
-        } as RemoveVote);
+        });
       });
 
-      acc.push({ type: 'unlock', trackId: trackAffects.votes[0].trackId } as Unlock);
+      acc.push({ type: 'unlock', trackId: trackAffects.votes[0].trackId });
     }
 
     return acc;
@@ -462,7 +460,7 @@ function groupByTrack(claimAffects: ClaimAffect[]): GroupedClaimAffects[] {
     return {
       trackId,
       hasPriorAffect: trackAffects.some((t) => t.type === 'track'),
-      votes: trackAffects.filter((t) => t.type === 'vote') as AffectVote[],
-    } as GroupedClaimAffects;
+      votes: trackAffects.filter((t) => t.type === 'vote'),
+    };
   });
 }

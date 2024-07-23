@@ -5,24 +5,17 @@ import { type BN, BN_ZERO } from '@polkadot/util';
 import {
   type AccountVote,
   type Address,
-  type CastingVoting,
-  type DelegatingVoting,
   type LinearDecreasingCurve,
   type ReciprocalCurve,
   type Referendum,
   type ReferendumId,
   ReferendumType,
-  type SplitAbstainVote,
-  type SplitVote,
-  type StandardVote,
   type SteppedDecreasingCurve,
   type TrackId,
   type TrackInfo,
-  VoteType,
   type Voting,
   type VotingCurve,
-  VotingType,
-} from '@shared/core';
+} from '@/shared/core';
 
 export const governanceService = {
   getReferendums,
@@ -166,68 +159,85 @@ async function getVotingFor(
   for (const [index, convictionVoting] of votings.entries()) {
     if (convictionVoting.isStorageFallback) continue;
 
+    const address = tuples[index]?.[0];
+    const trackId = tuples[index]?.[1];
+    if (!address || !trackId) {
+      continue;
+    }
+
     if (convictionVoting.isDelegating) {
       const delegation = convictionVoting.asDelegating;
 
-      result[tuples[index][0]][tuples[index][1]] = {
-        type: VotingType.DELEGATING,
+      result[address][trackId] = {
+        type: 'delegating',
         delegating: {
           balance: delegation.balance.toBn(),
           conviction: delegation.conviction.type,
           target: delegation.target.toString(),
           prior: {
             unlockAt: delegation.prior[0].toNumber(),
-            amount: delegation.prior[0].toBn(),
+            amount: delegation.prior[1].toBn(),
           },
         },
-      } as DelegatingVoting;
+      };
     }
 
     if (convictionVoting.isCasting) {
       const votes: Record<ReferendumId, AccountVote> = {};
       for (const [referendumIndex, vote] of convictionVoting.asCasting.votes) {
+        const referendumId = referendumIndex.toString();
+
         if (vote.isStandard) {
           const standardVote = vote.asStandard;
-          votes[referendumIndex.toString()] = {
-            type: VoteType.Standard,
+          votes[referendumId] = {
+            type: 'standard',
+            address,
+            track: trackId,
+            referendumId,
             vote: {
               type: standardVote.vote.isAye ? 'aye' : 'nay',
               conviction: standardVote.vote.conviction.type,
             },
             balance: standardVote.balance.toBn(),
-          } as StandardVote;
+          };
         }
 
         if (vote.isSplit) {
           const splitVote = vote.asSplit;
-          votes[referendumIndex.toString()] = {
-            type: VoteType.Split,
+          votes[referendumId] = {
+            type: 'split',
+            address,
+            referendumId,
+            track: trackId,
             aye: splitVote.aye.toBn(),
             nay: splitVote.nay.toBn(),
-          } as SplitVote;
+          };
         }
 
         if (vote.isSplitAbstain) {
           const splitAbstainVote = vote.asSplitAbstain;
-          votes[referendumIndex.toString()] = {
-            type: VoteType.SplitAbstain,
+          votes[referendumId] = {
+            type: 'splitAbstain',
+            address,
+            referendumId,
+            track: trackId,
             aye: splitAbstainVote.aye.toBn(),
             nay: splitAbstainVote.nay.toBn(),
             abstain: splitAbstainVote.abstain.toBn(),
-          } as SplitAbstainVote;
+          };
         }
       }
 
-      result[tuples[index][0]][tuples[index][1]] = {
-        type: VotingType.CASTING,
+      result[address][trackId] = {
+        type: 'casting',
         casting: {
           votes,
           prior: {
             unlockAt: convictionVoting.asCasting.prior[0].toNumber(),
-            amount: convictionVoting.asCasting.prior[0].toBn(),
+            amount: convictionVoting.asCasting.prior[1].toBn(),
           },
         },
-      } as CastingVoting;
+      };
     }
   }
 
@@ -257,8 +267,8 @@ function getTracks(api: ApiPromise): Record<TrackId, TrackInfo> {
   const result: Record<TrackId, TrackInfo> = {};
 
   for (const [index, track] of tracks) {
-    let minApproval = {} as VotingCurve;
-    let minSupport = {} as VotingCurve;
+    let minApproval: VotingCurve | undefined;
+    let minSupport: VotingCurve | undefined;
 
     if (track.minApproval.isLinearDecreasing) minApproval = getLinearDecreasing(track.minApproval);
     if (track.minSupport.isLinearDecreasing) minSupport = getLinearDecreasing(track.minSupport);
@@ -268,6 +278,10 @@ function getTracks(api: ApiPromise): Record<TrackId, TrackInfo> {
 
     if (track.minApproval.isReciprocal) minApproval = getReciprocal(track.minApproval);
     if (track.minSupport.isReciprocal) minSupport = getReciprocal(track.minSupport);
+
+    if (!minApproval || !minSupport) {
+      throw new Error('Approval curve not found');
+    }
 
     result[index.toString()] = {
       name: track.name.toString(),
