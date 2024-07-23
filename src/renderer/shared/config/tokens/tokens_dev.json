@@ -376,8 +376,8 @@
         "assetSymbol": "WND"
       },
       {
-        "chainId": "0xd67c91ca75c199ff1ee9555567dfad21b9033165c39977170ec8d3f6c1fa433c",
-        "name": "Ledger Novasama Testnet",
+        "chainId": "0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42",
+        "name": "Novasama Testnet - Governance",
         "assetId": 0,
         "assetSymbol": "WND"
       }
