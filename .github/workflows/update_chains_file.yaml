@@ -36,6 +36,12 @@ jobs:
 
       - name: 📝 Update tokens file
         run: pnpm update:tokens-file
+      
+      - uses: tibdex/github-app-token@v1
+        id: generate-token
+        with:
+          app_id: ${{ secrets.NOVASAMA_APP_ID }}
+          private_key: ${{ secrets.NOVASAMA_APP_PRIVATE_KEY }}
 
       - name: ➡️ Make pull request
         uses: ./.github/workflows/make-pull-request
@@ -44,4 +50,4 @@ jobs:
           commit_message: "ci: update json files"
           pr_title: "Update json files"
           branch_name: update-config-files
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ steps.generate-token.outputs.token }}
