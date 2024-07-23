@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { type PropsWithChildren, createContext, useEffect, useRef } from 'react';
+import { type PropsWithChildren, useEffect, useRef } from 'react';
 
 import { useMultisigChainContext } from '@app/providers';
 import {
@@ -43,8 +43,6 @@ import { notificationModel } from '@entities/notification';
 import { useTransaction } from '@entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { matrixAutologinModel } from '@features/matrix';
-
-const MatrixContext = createContext({});
 
 export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const matrix = useUnit(matrixModel.$matrix);
@@ -592,5 +590,5 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     }
   }, []);
 
-  return <MatrixContext.Provider value={{}}>{children}</MatrixContext.Provider>;
+  return <>{children}</>;
 };

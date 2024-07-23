@@ -2,7 +2,8 @@ import { Dialog, Transition } from '@headlessui/react';
 import { Fragment, type PropsWithChildren, type ReactNode } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
-import { HeaderTitleText, IconButton } from '@shared/ui';
+import { IconButton } from '../../Buttons';
+import { HeaderTitleText } from '../../Typography';
 import { ModalBackdrop } from '../common/ModalBackdrop';
 import { ModalTransition } from '../common/ModalTransition';
 

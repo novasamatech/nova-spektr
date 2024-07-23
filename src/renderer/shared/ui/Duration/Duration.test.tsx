@@ -10,7 +10,7 @@ jest.mock('@app/providers', () => ({
 
 describe('ui/Duration', () => {
   test('should render component', () => {
-    render(<Duration seconds={'1'} />);
+    render(<Duration seconds="1" />);
 
     const durationValue = screen.getByText('time.minutesSeconds');
     expect(durationValue).toBeInTheDocument();

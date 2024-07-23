@@ -27,7 +27,7 @@ export const RadioCard = ({ option, children }: PropsWithChildren<Props>) => {
           )}
         >
           <div className="flex justify-between items-center">
-            <TitleText as="p" className={'text-tab-text-accent'}>
+            <TitleText as="p" className="text-tab-text-accent">
               {title}
             </TitleText>
 

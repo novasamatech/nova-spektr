@@ -5,7 +5,11 @@ import remarkGfm from 'remark-gfm';
 
 import { useI18n } from '@app/providers';
 import { cnTw } from '@shared/lib/utils';
-import { BodyText, Button, Checkbox, Icon, InfoLink } from '@shared/ui';
+import { Button } from '../Buttons';
+import { Checkbox } from '../Checkbox/Checkbox';
+import { Icon } from '../Icon/Icon';
+import { InfoLink } from '../InfoLink/InfoLink';
+import { BodyText } from '../Typography';
 
 const rehypeOptions: Options['remarkRehypeOptions'] = { allowDangerousHtml: true };
 const rehypePlugins: Options['rehypePlugins'] = [rehypeRaw];

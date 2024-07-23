@@ -61,6 +61,7 @@ export const I18Provider = ({ children }: PropsWithChildren) => {
     return fnsFormatDate(date, format, mergedOptions);
   };
 
+  // eslint-disable-next-line react/jsx-no-constructed-context-values
   const value: I18nContextProps = {
     t,
     locale,

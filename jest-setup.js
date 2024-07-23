@@ -1,6 +1,6 @@
 import 'whatwg-fetch';
-import { TextDecoder } from 'util';
 import crypto from 'crypto';
+import { TextDecoder } from 'util';
 
 global.IntersectionObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
