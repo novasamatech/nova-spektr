@@ -3237,8 +3237,8 @@
     ],
     "nodes": [
       {
-        "url": "wss://fullnode.parachain.centrifuge.io",
-        "name": "Centrifuge node"
+        "url": "wss://centrifuge-rpc.dwellir.com",
+        "name": "Dwellir node"
       },
       {
         "url": "wss://centrifuge-parachain.api.onfinality.io/public-ws",
@@ -5826,10 +5826,7 @@
     "nodes": [
       {
         "url": "wss://kusama-people-rpc.polkadot.io",
-        "name": "Parity node",
-        "features": [
-          "noTls12"
-        ]
+        "name": "Parity node"
       },
       {
         "url": "wss://ksm-rpc.stakeworld.io/people",
