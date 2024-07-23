@@ -6,7 +6,7 @@ import { getSecondsDuratonToBlock } from '@shared/lib/utils';
 import { Button, Duration, FootnoteText, Icon, Shimmering } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price';
-import { walletModel } from '@entities/wallet';
+import { permissionUtils, walletModel } from '@entities/wallet';
 import { locksModel } from '../../model/locks';
 import { unlockModel } from '../../model/unlock/unlock';
 
@@ -66,11 +66,11 @@ const ActionsSection = () => {
   const isUnlockable = useUnit(unlockModel.$isUnlockable);
   const activeWallet = useUnit(walletModel.$activeWallet);
 
-  // if (!activeWallet || !permissionUtils.canUnlock(activeWallet)) return null;
+  if (!activeWallet || !permissionUtils.canUnlock(activeWallet)) return null;
 
   return (
     <div className="flex self-end items-center mt-3">
-      <Button type="submit" disabled={false} onClick={() => unlockModel.events.unlockConfirm()}>
+      <Button type="submit" disabled={isUnlockable} onClick={() => unlockModel.events.unlockConfirm()}>
         {t('governance.locks.unlock')}
       </Button>
     </div>

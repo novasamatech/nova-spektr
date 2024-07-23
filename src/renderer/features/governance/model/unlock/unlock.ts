@@ -9,12 +9,11 @@ import { Step, getCreatedDateFromApi, getCurrentBlockNumber } from '@shared/lib/
 import { claimScheduleService, referendumModel } from '@entities/governance';
 import { walletModel } from '@entities/wallet';
 import { tracksAggregate } from '../../aggregates/tracks';
+import { confirmUnlockAggregate } from '../../aggregates/unlock';
 import { votingAggregate } from '../../aggregates/voting';
 import { unlockService } from '../../lib/unlockService';
 import { locksModel } from '../locks';
 import { networkSelectorModel } from '../networkSelector';
-
-import { confirmModel } from './confirm-model';
 
 const flowStarted = createEvent();
 const flowFinished = createEvent();
@@ -147,7 +146,7 @@ sample({
     step: Step.CONFIRM,
   }),
   target: spread({
-    event: confirmModel.events.formInitiated,
+    event: confirmUnlockAggregate.events.formInitiated,
     step: stepChanged,
   }),
 });
