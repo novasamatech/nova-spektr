@@ -151,8 +151,6 @@ const $shards = combine(
     network: $networkStore,
   },
   ({ activeWallet, network }) => {
-    console.log('wallet', { activeWallet, network });
-
     if (!network?.chain || !activeWallet) return [];
 
     return (
@@ -180,8 +178,6 @@ const $txWrappers = combine(
     // signatories: $selectedSignatories,
   },
   ({ wallet, wallets, network, shards }) => {
-    console.log('tx', { wallet, wallets, network, shards });
-
     if (!wallet || !network?.chain || shards.length !== 1) return [];
 
     const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
@@ -208,8 +204,6 @@ const $realAccounts = combine(
     shards: $shards,
   },
   ({ txWrappers, shards }) => {
-    console.log(txWrappers, shards);
-
     if (shards.length === 0) return [];
     if (txWrappers.length === 0) return shards;
 
@@ -227,8 +221,6 @@ const $initiatorWallets = combine(
     wallets: walletModel.$wallets,
   },
   ({ accounts, wallets }) => {
-    console.log(accounts, wallets);
-
     if (!accounts) return {};
 
     return accounts.reduce<Record<number, Wallet>>((acc, account, index) => {
@@ -309,8 +301,6 @@ const $pureTxs = combine(
     isConnected: $isChainConnected,
   },
   ({ network, form, isConnected }) => {
-    console.log('pure', { network, form, isConnected });
-
     if (!network || !isConnected) return undefined;
 
     return form.shards.map((shard) => {
