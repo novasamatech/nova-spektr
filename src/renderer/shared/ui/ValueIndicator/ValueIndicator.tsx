@@ -12,7 +12,7 @@ type Props = {
 
 export const ValueIndicator = ({ from, to, asset }: Props) => {
   const changeValue = new BN(from).sub(new BN(to));
-  const iconName = changeValue.isNeg() ? 'arrowDoubleDown' : 'arrowDoubleUp';
+  const iconName = from > to ? 'arrowDoubleDown' : 'arrowDoubleUp';
 
   return (
     <div className="flex flex-col items-end">
