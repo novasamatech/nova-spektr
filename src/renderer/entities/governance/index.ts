@@ -8,9 +8,10 @@ export { supportThresholdModel } from './model/supportThreshold';
 export { proposerIdentityModel } from './model/proposerIdentity';
 
 export { Voted } from './ui/Voted/Voted';
-export { TrackInfo } from './ui/TrackInfo/TrackInfo';
+export { TrackInfo } from './ui/TrackInfo';
 export { VoteChart } from './ui/VoteCharts';
 export { ReferendumTimer } from './ui/ReferendumTimer/ReferendumTimer';
+export { ValueIndicator } from './ui//ValueIndicator';
 
 export { referendumService } from './lib/referendumService';
 export { votingService } from './lib/votingService';

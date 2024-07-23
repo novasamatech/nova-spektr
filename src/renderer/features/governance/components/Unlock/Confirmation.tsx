@@ -5,12 +5,14 @@ import { type ReactNode } from 'react';
 import { useI18n } from '@app/providers';
 import { type MultisigAccount } from '@/shared/core';
 import { cnTw } from '@shared/lib/utils';
-import { Button, DetailRow, FootnoteText, Icon, ValueIndicator } from '@shared/ui';
+import { Button, DetailRow, FootnoteText, Icon } from '@shared/ui';
+import { ValueIndicator } from '@/entities/governance';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
 import { AddressWithExplorers, WalletIcon } from '@/entities/wallet';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { basketUtils } from '@/features/operations/OperationsConfirm';
+import { confirmUnlockAggregate } from '../../aggregates/unlock';
 import { locksModel } from '../../model/locks';
 import { confirmModel } from '../../model/unlock/confirm-model';
 import { unlockModel } from '../../model/unlock/unlock';
@@ -176,11 +178,11 @@ const FeeSection = () => {
 
   const {
     fields: { shards },
-  } = useForm(confirmModel.$confirmForm);
+  } = useForm(confirmUnlockAggregate.$confirmForm);
 
   const api = useUnit(confirmModel.$api);
   const network = useUnit(confirmModel.$networkStore);
-  const transactions = useUnit(confirmModel.$transactions);
+  const transactions = useUnit(confirmUnlockAggregate.$transactions);
   const isMultisig = useUnit(confirmModel.$isMultisig);
 
   if (!network || shards.value.length === 0) {
@@ -194,7 +196,7 @@ const FeeSection = () => {
           api={api}
           asset={network.chain.assets[0]}
           threshold={(shards.value[0] as MultisigAccount).threshold || 1}
-          onDepositChange={confirmModel.events.multisigDepositChanged}
+          onDepositChange={confirmUnlockAggregate.events.multisigDepositChanged}
         />
       )}
 
@@ -203,8 +205,8 @@ const FeeSection = () => {
         api={api}
         asset={network.chain.assets[0]}
         transaction={transactions?.[0]?.wrappedTx}
-        onFeeChange={confirmModel.events.feeChanged}
-        onFeeLoading={confirmModel.events.isFeeLoadingChanged}
+        onFeeChange={confirmUnlockAggregate.events.feeChanged}
+        onFeeLoading={confirmUnlockAggregate.events.isFeeLoadingChanged}
       />
 
       {transactions && transactions.length > 1 && (
@@ -214,8 +216,8 @@ const FeeSection = () => {
           asset={network.chain.assets[0]}
           multiply={transactions.length}
           transaction={transactions[0].wrappedTx}
-          onFeeChange={confirmModel.events.totalFeeChanged}
-          onFeeLoading={confirmModel.events.isFeeLoadingChanged}
+          onFeeChange={confirmUnlockAggregate.events.totalFeeChanged}
+          onFeeLoading={confirmUnlockAggregate.events.isFeeLoadingChanged}
         />
       )}
     </div>
