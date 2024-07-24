@@ -8,6 +8,7 @@ export { titleModel } from './model/title';
 export { filterModel } from './model/filter';
 export { networkSelectorModel } from './model/networkSelector';
 export { offChainModel } from './model/offChain';
+export { unlockValidateModel } from './model/unlock/unlock-validate-model';
 
 export { Locks } from './components/Locks';
 export { Delegations } from './components/Delegations';

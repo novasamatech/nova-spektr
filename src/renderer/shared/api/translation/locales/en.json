@@ -355,6 +355,9 @@
       "sourceError": "Data source is required",
       "title": "Referendum data"
     },
+    "operations": {
+      "transferable": "Transferable"
+    },
     "referendum": {
       "abstain": "Abstain",
       "additional": "Additional",
@@ -660,7 +663,8 @@
       "senderProxiedWallet": "Sender wallet (proxied)",
       "timePoint": "Time Point",
       "toNetwork": "To network",
-      "validators": "Validators"
+      "validators": "Validators",
+      "wallet": "Wallet"
     },
     "detailsTitle": "Details",
     "explorerLink": "View in explorer",

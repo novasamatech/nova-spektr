@@ -7,21 +7,22 @@ import { Step, isStep } from '@shared/lib/utils';
 import { BaseModal, HeaderTitleText } from '@shared/ui';
 import { OperationTitle } from '@entities/chain';
 import { OperationResult } from '@entities/transaction';
+import { unlockAggregate } from '../../aggregates/unlock';
 import { networkSelectorModel } from '../../model/networkSelector';
-import { unlockModel } from '../../model/unlock';
 
+import { Confirmation } from './Confirmation';
 import { UnlockInfo } from './UnlockInfo';
 
 export const Unlock = () => {
   const { t } = useI18n();
 
-  const step = useUnit(unlockModel.$step);
+  const step = useUnit(unlockAggregate.$step);
   const governanceChain = useUnit(networkSelectorModel.$governanceChain);
 
-  const [isModalOpen, closeModal] = useModalClose(!isStep(step, Step.NONE), unlockModel.output.flowFinished);
+  const [isModalOpen, closeModal] = useModalClose(!isStep(step, Step.NONE), unlockAggregate.output.flowFinished);
   const [isBasketModalOpen, closeBasketModal] = useModalClose(
     isStep(step, Step.BASKET),
-    unlockModel.output.flowFinished,
+    unlockAggregate.output.flowFinished,
   );
 
   useEffect(() => {
@@ -56,6 +57,7 @@ export const Unlock = () => {
   return (
     <BaseModal closeButton contentClass="" isOpen={isModalOpen} title={title} onClose={closeModal}>
       {isStep(step, Step.INIT) && <UnlockInfo />}
+      {isStep(step, Step.CONFIRM) && <Confirmation onGoBack={() => unlockAggregate.events.stepChanged(Step.INIT)} />}
     </BaseModal>
   );
 };
