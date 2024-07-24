@@ -1,26 +1,17 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type BN, BN_ZERO } from '@polkadot/util';
-import { createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { createEffect, createStore, sample } from 'effector';
 import { combineEvents } from 'patronum';
 
 import { type ClaimTimeAt, type UnlockChunk, UnlockChunkType } from '@shared/api/governance';
 import { type Address, type Referendum, type TrackId, type TrackInfo, type VotingMap } from '@shared/core';
-import { Step, getCreatedDateFromApi, getCurrentBlockNumber } from '@shared/lib/utils';
-import { claimScheduleService, referendumModel } from '@entities/governance';
+import { getCreatedDateFromApi, getCurrentBlockNumber } from '@shared/lib/utils';
+import { claimScheduleService, referendumModel, tracksModel, votingModel } from '@entities/governance';
 import { walletModel } from '@entities/wallet';
-import { tracksAggregate } from '../aggregates/tracks';
-import { votingAggregate } from '../aggregates/voting';
-import { unlockService } from '../lib/unlockService';
+import { unlockService } from '../../lib/unlockService';
+import { locksModel } from '../locks';
+import { networkSelectorModel } from '../networkSelector';
 
-import { locksModel } from './locks';
-import { networkSelectorModel } from './networkSelector';
-
-const stepChanged = createEvent<Step>();
-const flowStarted = createEvent();
-const flowFinished = createEvent();
-const txSaved = createEvent();
-
-const $step = restore<Step>(stepChanged, Step.NONE);
 const $claimSchedule = createStore<UnlockChunk[]>([]).reset(walletModel.$activeWallet);
 const $totalUnlock = createStore<BN>(BN_ZERO);
 
@@ -65,35 +56,20 @@ const getClaimScheduleFx = createEffect(
   },
 );
 
-// const $unlockStore = createStore<UnlockStore | null>(null);
-
-// const $initiatorWallet = combine(
-//   {
-//     store: $unlockStore,
-//     wallets: walletModel.$wallets,
-//   },
-//   ({ store, wallets }) => {
-//     if (!store) return undefined;
-
-//     return walletUtils.getWalletById(wallets, store.shards[0].walletId);
-//   },
-//   { skipVoid: false },
-// );
-
 sample({
   clock: [
     referendumModel.events.requestDone,
-    combineEvents([locksModel.events.requestDone, votingAggregate.events.requestDone]),
+    combineEvents([locksModel.events.requestDone, votingModel.effects.requestVotingFx.done]),
   ],
   source: {
     api: networkSelectorModel.$governanceChainApi,
-    tracks: tracksAggregate.$tracks,
+    tracks: tracksModel.$tracks,
     trackLocks: locksModel.$trackLocks,
-    voting: votingAggregate.$voting,
+    voting: votingModel.$voting,
     referendums: referendumModel.$referendums,
     chain: networkSelectorModel.$governanceChain,
   },
-  filter: ({ api, chain, referendums }) => !!api && !!chain && !!referendums,
+  filter: ({ api, chain, referendums }) => !!api && !!chain && !!referendums[chain!.chainId],
   fn: ({ api, tracks, trackLocks, voting, referendums, chain }) => ({
     api: api!,
     tracks,
@@ -123,36 +99,8 @@ sample({
   target: $totalUnlock,
 });
 
-sample({
-  clock: flowStarted,
-  fn: () => Step.INIT,
-  target: stepChanged,
-});
-
-sample({
-  clock: flowFinished,
-  fn: () => Step.NONE,
-  target: stepChanged,
-});
-
-sample({
-  clock: txSaved,
-  fn: () => Step.BASKET,
-  target: stepChanged,
-});
-
 export const unlockModel = {
-  $step,
-  $pendingSchedule: $claimSchedule.map((c) => c.filter((claim) => claim.type !== UnlockChunkType.CLAIMABLE)),
-  $isLoading: getClaimScheduleFx.pending || referendumModel.$isReferendumsLoading,
-  $isUnlockable: $claimSchedule.map((c) => c.some((claim) => claim.type === UnlockChunkType.CLAIMABLE)),
+  $isLoading: getClaimScheduleFx.pending,
   $totalUnlock,
-
-  events: {
-    flowStarted,
-    stepChanged,
-  },
-  output: {
-    flowFinished,
-  },
+  $claimSchedule,
 };

@@ -6,17 +6,18 @@ import { getSecondsDuratonToBlock } from '@shared/lib/utils';
 import { Button, Duration, FootnoteText, Icon, Shimmering } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price';
+import { permissionUtils, walletModel } from '@entities/wallet';
+import { unlockAggregate } from '../../aggregates/unlock';
 import { locksModel } from '../../model/locks';
-import { unlockModel } from '../../model/unlock';
 
 export const UnlockInfo = () => {
   const { t } = useI18n();
 
   const totalLock = useUnit(locksModel.$totalLock);
   const asset = useUnit(locksModel.$asset);
-  const pendingSchedule = useUnit(unlockModel.$pendingSchedule);
-  const isLoading = useUnit(unlockModel.$isLoading);
-  const totalUnlock = useUnit(unlockModel.$totalUnlock);
+  const pendingSchedule = useUnit(unlockAggregate.$pendingSchedule);
+  const isLoading = useUnit(unlockAggregate.$isLoading);
+  const totalUnlock = useUnit(unlockAggregate.$totalUnlock);
 
   if (!asset) {
     return null;
@@ -62,11 +63,14 @@ export const UnlockInfo = () => {
 const ActionsSection = () => {
   const { t } = useI18n();
 
-  // const canUnlock = useUnit(unlockModel.$canUnlock);
+  const isUnlockable = useUnit(unlockAggregate.$isUnlockable);
+  const activeWallet = useUnit(walletModel.$activeWallet);
+
+  if (!activeWallet || !permissionUtils.canUnlock(activeWallet)) return null;
 
   return (
     <div className="flex self-end items-center mt-3">
-      <Button type="submit" disabled={true}>
+      <Button type="submit" disabled={isUnlockable} onClick={() => unlockAggregate.events.unlockConfirm()}>
         {t('governance.locks.unlock')}
       </Button>
     </div>
