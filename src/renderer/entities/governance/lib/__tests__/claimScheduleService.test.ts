@@ -37,18 +37,15 @@ describe('claimScheduleService', () => {
     const referendums: Referendum[] = [{ type: ReferendumType.Approved, referendumId: '123' } as ApprovedReferendum];
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
-        type: 'casting',
-        casting: {
-          prior: { amount: BN_ZERO, unlockAt: 0 },
-          votes: {
-            0: {
-              type: 'standard',
-              address: '',
-              track: '0',
-              referendumId: '0',
-              vote: { type: 'aye', conviction: 'None' },
-              balance: BN_ONE,
-            },
+        type: 'Casting',
+        address: '',
+        track: '0',
+        prior: { amount: BN_ZERO, unlockAt: 0 },
+        votes: {
+          0: {
+            type: 'Standard',
+            balance: BN_ONE,
+            vote: { aye: true, conviction: 'None' },
           },
         },
       },
@@ -79,18 +76,18 @@ describe('claimScheduleService', () => {
   test('should handle both passed and not priors', () => {
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
-        type: 'casting',
-        casting: {
-          prior: { amount: BN_TWO, unlockAt: 1000 },
-          votes: {},
-        },
+        type: 'Casting',
+        address: '',
+        track: '0',
+        prior: { amount: BN_TWO, unlockAt: 1000 },
+        votes: {},
       },
       1: {
-        type: 'casting',
-        casting: {
-          prior: { amount: BN_ONE, unlockAt: 1100 },
-          votes: {},
-        },
+        type: 'Casting',
+        address: '',
+        track: '0',
+        prior: { amount: BN_ONE, unlockAt: 1100 },
+        votes: {},
       },
     };
 
@@ -121,18 +118,15 @@ describe('claimScheduleService', () => {
   test('should extend votes by prior', () => {
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
-        type: 'casting',
-        casting: {
-          prior: { amount: BN_ONE, unlockAt: 1100 },
-          votes: {
-            0: {
-              type: 'standard',
-              address: '',
-              track: '0',
-              referendumId: '0',
-              vote: { type: 'aye', conviction: 'None' },
-              balance: BN_TWO,
-            },
+        type: 'Casting',
+        address: '',
+        track: '0',
+        prior: { amount: BN_ONE, unlockAt: 1100 },
+        votes: {
+          0: {
+            type: 'Standard',
+            balance: BN_TWO,
+            vote: { aye: true, conviction: 'None' },
           },
         },
       },
@@ -165,26 +159,20 @@ describe('claimScheduleService', () => {
 
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
-        type: 'casting',
-        casting: {
-          prior: { amount: BN_ZERO, unlockAt: 0 },
-          votes: {
-            0: {
-              type: 'standard',
-              address: '',
-              track: '0',
-              referendumId: '0',
-              vote: { type: 'aye', conviction: 'None' },
-              balance: BN_EIGHT,
-            },
-            1: {
-              type: 'standard',
-              address: '',
-              track: '0',
-              referendumId: '1',
-              vote: { type: 'aye', conviction: 'None' },
-              balance: BN_TWO,
-            },
+        type: 'Casting',
+        prior: { amount: BN_ZERO, unlockAt: 0 },
+        address: '',
+        track: '0',
+        votes: {
+          0: {
+            type: 'Standard',
+            balance: BN_EIGHT,
+            vote: { aye: true, conviction: 'None' },
+          },
+          1: {
+            type: 'Standard',
+            balance: BN_TWO,
+            vote: { aye: true, conviction: 'None' },
           },
         },
       },
@@ -218,18 +206,15 @@ describe('claimScheduleService', () => {
 
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
-        type: 'casting',
-        casting: {
-          prior: { amount: BN_ONE, unlockAt: 1100 },
-          votes: {
-            1: {
-              type: 'standard',
-              address: '',
-              track: '0',
-              referendumId: '1',
-              vote: { type: 'aye', conviction: 'None' },
-              balance: BN_TWO,
-            },
+        type: 'Casting',
+        address: '',
+        track: '0',
+        prior: { amount: BN_ONE, unlockAt: 1100 },
+        votes: {
+          1: {
+            type: 'Standard',
+            vote: { aye: true, conviction: 'None' },
+            balance: BN_TWO,
           },
         },
       },
@@ -265,34 +250,28 @@ describe('claimScheduleService', () => {
 
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
-        type: 'casting',
-        casting: {
-          prior: { amount: BN_ZERO, unlockAt: 0 },
-          votes: {
-            0: {
-              type: 'standard',
-              address: '',
-              track: '0',
-              referendumId: '0',
-              vote: { type: 'aye', conviction: 'None' },
-              balance: BN_ONE,
-            },
+        type: 'Casting',
+        address: '',
+        track: '0',
+        prior: { amount: BN_ZERO, unlockAt: 0 },
+        votes: {
+          0: {
+            type: 'Standard',
+            vote: { aye: true, conviction: 'None' },
+            balance: BN_ONE,
           },
         },
       },
       1: {
-        type: 'casting',
-        casting: {
-          prior: { amount: BN_ZERO, unlockAt: 0 },
-          votes: {
-            1: {
-              type: 'standard',
-              address: '',
-              track: '1',
-              referendumId: '1',
-              vote: { type: 'aye', conviction: 'None' },
-              balance: BN_TWO,
-            },
+        type: 'Casting',
+        track: '0',
+        address: '',
+        prior: { amount: BN_ZERO, unlockAt: 0 },
+        votes: {
+          1: {
+            type: 'Standard',
+            vote: { aye: true, conviction: 'None' },
+            balance: BN_TWO,
           },
         },
       },
@@ -332,50 +311,41 @@ describe('claimScheduleService', () => {
 
     const votingByTrack: Record<TrackId, CastingVoting> = {
       1: {
-        type: 'casting',
-        casting: {
-          prior: { amount: BN_ZERO, unlockAt: 0 },
-          votes: {
-            1: {
-              type: 'standard',
-              address: '',
-              track: '1',
-              referendumId: '1',
-              vote: { type: 'aye', conviction: 'None' },
-              balance: BN_ONE,
-            },
+        type: 'Casting',
+        address: '',
+        track: '1',
+        prior: { amount: BN_ZERO, unlockAt: 0 },
+        votes: {
+          1: {
+            type: 'Standard',
+            vote: { aye: true, conviction: 'None' },
+            balance: BN_ONE,
           },
         },
       },
       2: {
-        type: 'casting',
-        casting: {
-          prior: { amount: BN_ZERO, unlockAt: 0 },
-          votes: {
-            2: {
-              type: 'standard',
-              address: '',
-              track: '2',
-              referendumId: '2',
-              vote: { type: 'aye', conviction: 'None' },
-              balance: BN_TWO,
-            },
+        type: 'Casting',
+        address: '',
+        track: '2',
+        prior: { amount: BN_ZERO, unlockAt: 0 },
+        votes: {
+          2: {
+            type: 'Standard',
+            vote: { aye: true, conviction: 'None' },
+            balance: BN_TWO,
           },
         },
       },
       3: {
-        type: 'casting',
-        casting: {
-          prior: { amount: BN_ZERO, unlockAt: 0 },
-          votes: {
-            3: {
-              type: 'standard',
-              address: '',
-              track: '3',
-              referendumId: '3',
-              vote: { type: 'aye', conviction: 'None' },
-              balance: BN_ONE,
-            },
+        type: 'Casting',
+        address: '',
+        track: '3',
+        prior: { amount: BN_ZERO, unlockAt: 0 },
+        votes: {
+          3: {
+            type: 'Standard',
+            vote: { aye: true, conviction: 'None' },
+            balance: BN_ONE,
           },
         },
       },
@@ -412,18 +382,15 @@ describe('claimScheduleService', () => {
   test('should take gap into account', () => {
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
-        type: 'casting',
-        casting: {
-          prior: { amount: BN_ZERO, unlockAt: 0 },
-          votes: {
-            0: {
-              type: 'standard',
-              address: '',
-              track: '0',
-              referendumId: '0',
-              vote: { type: 'aye', conviction: 'None' },
-              balance: BN_TWO,
-            },
+        type: 'Casting',
+        address: '',
+        track: '0',
+        prior: { amount: BN_ZERO, unlockAt: 0 },
+        votes: {
+          0: {
+            type: 'Standard',
+            vote: { aye: true, conviction: 'None' },
+            balance: BN_TWO,
           },
         },
       },
@@ -454,34 +421,31 @@ describe('claimScheduleService', () => {
   test('gap should be limited with other locks', () => {
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
-        type: 'casting',
-        casting: {
-          prior: { amount: BN_ZERO, unlockAt: 0 },
-          votes: {
-            0: {
-              type: 'standard',
-              address: '',
-              track: '0',
-              referendumId: '0',
-              vote: { type: 'aye', conviction: 'None' },
-              balance: BN_ONE,
-            },
+        type: 'Casting',
+        address: '',
+        track: '0',
+        prior: { amount: BN_ZERO, unlockAt: 0 },
+        votes: {
+          0: {
+            type: 'Standard',
+            vote: { aye: true, conviction: 'None' },
+            balance: BN_ONE,
           },
         },
       },
       1: {
-        type: 'casting',
-        casting: {
-          prior: { amount: BN_TEN, unlockAt: 1000 },
-          votes: {},
-        },
+        type: 'Casting',
+        address: '',
+        track: '0',
+        prior: { amount: BN_TEN, unlockAt: 1000 },
+        votes: {},
       },
       2: {
-        type: 'casting',
-        casting: {
-          prior: { amount: BN_ONE, unlockAt: 1100 },
-          votes: {},
-        },
+        type: 'Casting',
+        address: '',
+        track: '0',
+        prior: { amount: BN_ONE, unlockAt: 1100 },
+        votes: {},
       },
     };
 
@@ -516,11 +480,11 @@ describe('claimScheduleService', () => {
   test('gap claim should be delayed', () => {
     const votingByTrack: Record<TrackId, CastingVoting> = {
       1: {
-        type: 'casting',
-        casting: {
-          prior: { amount: BN_TEN, unlockAt: 1100 },
-          votes: {},
-        },
+        type: 'Casting',
+        address: '',
+        track: '0',
+        prior: { amount: BN_TEN, unlockAt: 1100 },
+        votes: {},
       },
     };
 
@@ -546,11 +510,11 @@ describe('claimScheduleService', () => {
   test('should not duplicate unlock command with both prior and gap present', () => {
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
-        type: 'casting',
-        casting: {
-          prior: { amount: BN_FIVE, unlockAt: 1050 },
-          votes: {},
-        },
+        type: 'Casting',
+        address: '',
+        track: '0',
+        prior: { amount: BN_FIVE, unlockAt: 1050 },
+        votes: {},
       },
     };
 
@@ -581,34 +545,25 @@ describe('claimScheduleService', () => {
     ];
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
-        type: 'casting',
-        casting: {
-          prior: { amount: BN_ZERO, unlockAt: 0 },
-          votes: {
-            0: {
-              type: 'standard',
-              address: '',
-              track: '0',
-              referendumId: '0',
-              vote: { type: 'aye', conviction: 'None' },
-              balance: BN_THREE,
-            },
-            1: {
-              type: 'standard',
-              address: '',
-              track: '1',
-              referendumId: '0',
-              vote: { type: 'aye', conviction: 'None' },
-              balance: BN_ONE,
-            },
-            2: {
-              type: 'standard',
-              address: '',
-              track: '2',
-              referendumId: '0',
-              vote: { type: 'aye', conviction: 'None' },
-              balance: BN_TWO,
-            },
+        type: 'Casting',
+        address: '',
+        track: '0',
+        prior: { amount: BN_ZERO, unlockAt: 0 },
+        votes: {
+          0: {
+            type: 'Standard',
+            vote: { aye: true, conviction: 'None' },
+            balance: BN_THREE,
+          },
+          1: {
+            type: 'Standard',
+            vote: { aye: true, conviction: 'None' },
+            balance: BN_ONE,
+          },
+          2: {
+            type: 'Standard',
+            vote: { aye: true, conviction: 'None' },
+            balance: BN_TWO,
           },
         },
       },
@@ -651,34 +606,28 @@ describe('claimScheduleService', () => {
 
     const votingByTrack: Record<TrackId, CastingVoting> = {
       20: {
-        type: 'casting',
-        casting: {
-          prior: { amount: BN_ZERO, unlockAt: 0 },
-          votes: {
-            13: {
-              type: 'standard',
-              address: '',
-              track: '20',
-              referendumId: '13',
-              vote: { type: 'aye', conviction: 'None' },
-              balance: BN_ONE,
-            },
+        type: 'Casting',
+        address: '',
+        track: '20',
+        prior: { amount: BN_ZERO, unlockAt: 0 },
+        votes: {
+          13: {
+            type: 'Standard',
+            vote: { aye: true, conviction: 'None' },
+            balance: BN_ONE,
           },
         },
       },
       21: {
-        type: 'casting',
-        casting: {
-          prior: { amount: BN_ZERO, unlockAt: 0 },
-          votes: {
-            5: {
-              type: 'standard',
-              address: '',
-              track: '21',
-              referendumId: '5',
-              vote: { type: 'aye', conviction: 'None' },
-              balance: BN_TEN,
-            },
+        type: 'Casting',
+        address: '',
+        track: '21',
+        prior: { amount: BN_ZERO, unlockAt: 0 },
+        votes: {
+          5: {
+            type: 'Standard',
+            vote: { aye: true, conviction: 'None' },
+            balance: BN_TEN,
           },
         },
       },
@@ -716,13 +665,13 @@ describe('claimScheduleService', () => {
   test('should handle standalone delegation', () => {
     const votingByTrack: Record<TrackId, DelegatingVoting> = {
       0: {
-        type: 'delegating',
-        delegating: {
-          prior: { amount: BN_ZERO, unlockAt: 0 },
-          balance: BN_ONE,
-          target: '123',
-          conviction: 'None',
-        },
+        type: 'Delegating',
+        address: '',
+        track: '0',
+        prior: { amount: BN_ZERO, unlockAt: 0 },
+        balance: BN_ONE,
+        target: '123',
+        conviction: 'None',
       },
     };
 
@@ -748,13 +697,13 @@ describe('claimScheduleService', () => {
   test('should take delegation prior lock into account', () => {
     const votingByTrack: Record<TrackId, DelegatingVoting> = {
       0: {
-        type: 'delegating',
-        delegating: {
-          prior: { amount: BN_TEN, unlockAt: 1100 },
-          balance: BN_ONE,
-          target: '123',
-          conviction: 'None',
-        },
+        type: 'Delegating',
+        track: '0',
+        address: '',
+        prior: { amount: BN_TEN, unlockAt: 1100 },
+        balance: BN_ONE,
+        target: '123',
+        conviction: 'None',
       },
     };
 
@@ -785,13 +734,13 @@ describe('claimScheduleService', () => {
   test('delegation plus gap case', () => {
     const votingByTrack: Record<TrackId, DelegatingVoting> = {
       0: {
-        type: 'delegating',
-        delegating: {
-          prior: { amount: BN_ZERO, unlockAt: 0 },
-          balance: BN_ONE,
-          target: '123',
-          conviction: 'None',
-        },
+        type: 'Delegating',
+        address: '',
+        track: '0',
+        prior: { amount: BN_ZERO, unlockAt: 0 },
+        balance: BN_ONE,
+        target: '123',
+        conviction: 'None',
       },
     };
 
@@ -823,27 +772,24 @@ describe('claimScheduleService', () => {
     const referendums: ApprovedReferendum[] = [{ type: ReferendumType.Approved, referendumId: '0', since: 1100 }];
     const votingByTrack: Record<TrackId, DelegatingVoting | CastingVoting> = {
       0: {
-        type: 'delegating',
-        delegating: {
-          prior: { amount: BN_ZERO, unlockAt: 0 },
-          balance: BN_ONE,
-          target: '123',
-          conviction: 'None',
-        },
+        type: 'Delegating',
+        address: '',
+        track: '0',
+        prior: { amount: BN_ZERO, unlockAt: 0 },
+        balance: BN_ONE,
+        target: '123',
+        conviction: 'None',
       },
       1: {
-        type: 'casting',
-        casting: {
-          prior: { amount: BN_TEN, unlockAt: 1000 },
-          votes: {
-            0: {
-              type: 'standard',
-              address: '',
-              track: '1',
-              referendumId: '0',
-              vote: { type: 'aye', conviction: 'None' },
-              balance: BN_FIVE,
-            },
+        type: 'Casting',
+        address: '',
+        track: '1',
+        prior: { amount: BN_TEN, unlockAt: 1000 },
+        votes: {
+          0: {
+            type: 'Standard',
+            vote: { aye: true, conviction: 'None' },
+            balance: BN_FIVE,
           },
         },
       },

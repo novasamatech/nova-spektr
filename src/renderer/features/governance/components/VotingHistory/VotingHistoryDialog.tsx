@@ -17,7 +17,7 @@ type Props = {
 };
 
 export const VotingHistoryDialog = ({ referendum, onClose }: Props) => {
-  useGate(voteHistoryAggregate.gates.flow, { referendumId: referendum.referendumId });
+  useGate(voteHistoryAggregate.gates.flow, { referendum });
 
   const { t } = useI18n();
   const [showModal, closeModal] = useModalClose(true, onClose);

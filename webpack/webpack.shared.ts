@@ -1,4 +1,4 @@
-// eslint-disable-next-line import/default
+// eslint-disable-next-line import-x/default
 import CopyPlugin from 'copy-webpack-plugin';
 import SimpleProgressWebpackPlugin from 'simple-progress-webpack-plugin';
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';

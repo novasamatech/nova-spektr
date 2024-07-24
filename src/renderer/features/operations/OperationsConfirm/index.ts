@@ -1,4 +1,7 @@
 export { basketUtils } from './lib/basket-utils';
+export { createTransactionConfirmStore } from './lib/createTransactionConfirmStore';
+
+export { ConfirmDetails } from './common/ConfirmDetails';
 
 export * from './Transfer';
 export * from './AddProxy';
@@ -13,3 +16,4 @@ export * from './Restake';
 export * from './BondExtra';
 export * from './Unstake';
 export * from './Withdraw';
+export * from './Referendum/Vote';

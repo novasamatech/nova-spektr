@@ -25,6 +25,7 @@ const getReferendumList: GovernanceApi['getReferendumList'] = async (chain, call
       {
         network: chain.specName,
         proposalType: 'referendums_v2',
+        limit: 50,
         sortBy: 'newest',
       },
       (data, done) => {

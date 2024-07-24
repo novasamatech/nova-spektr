@@ -39,11 +39,22 @@ sample({
           : [],
     };
   },
-  target: requestProposersFx,
+  target: requestProposers,
 });
 
 sample({
   clock: requestProposers,
+  source: $proposers,
+  fn: (proposers, { api, chain, addresses }) => {
+    const chainProposers = proposers[chain.chainId] ?? {};
+    const filteredAddresses = addresses.filter((a) => !(a in chainProposers));
+
+    return {
+      api,
+      chain,
+      addresses: filteredAddresses,
+    };
+  },
   target: requestProposersFx,
 });
 

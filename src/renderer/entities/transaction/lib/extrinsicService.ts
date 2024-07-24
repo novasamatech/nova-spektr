@@ -393,7 +393,29 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
-  [TransactionType.REMOVE_VOTE]: (transaction, info, options) => {
+  [TransactionType.VOTE]: (transaction, info, options) => {
+    return convictionVotingMethods.vote(
+      {
+        pollIndex: transaction.args.referendum,
+        name: transaction.args.track,
+        vote: transaction.args.vote,
+      },
+      info,
+      options,
+    );
+  },
+  [TransactionType.REVOTE]: (transaction, info, options) => {
+    return convictionVotingMethods.vote(
+      {
+        pollIndex: parseInt(transaction.args.track),
+        name: transaction.args.referendum,
+        vote: transaction.args.vote,
+      },
+      info,
+      options,
+    );
+  },
+  [TransactionType.RETRACT_VOTE]: (transaction, info, options) => {
     return convictionVotingMethods.removeVote(
       {
         class: transaction.args.trackId,
@@ -503,7 +525,18 @@ export const getExtrinsic: Record<
   [TransactionType.UNLOCK]: ({ target, trackId }, api) => {
     return api.tx.convictionVoting.unlock(trackId, target);
   },
-  [TransactionType.REMOVE_VOTE]: ({ trackId, referendumId }, api) => {
+  [TransactionType.VOTE]: ({ referendum, vote }, api) => {
+    return api.tx.convictionVoting.vote(referendum, vote);
+  },
+  [TransactionType.REVOTE]: ({ trackId, referendumId, vote }, api) => {
+    const calls = [
+      api.tx.convictionVoting.removeVote(trackId, referendumId),
+      api.tx.convictionVoting.vote(referendumId, vote),
+    ];
+
+    return api.tx.utility.batchAll(calls);
+  },
+  [TransactionType.RETRACT_VOTE]: ({ trackId, referendumId }, api) => {
     return api.tx.convictionVoting.removeVote(trackId, referendumId);
   },
   [TransactionType.DELEGATE]: ({ track, target, conviction, balance }, api) => {
@@ -514,13 +547,18 @@ export const getExtrinsic: Record<
   },
 };
 
-type WrapAsMultiParams = {
+type WrapAsMultiParams<T extends Transaction = Transaction> = {
   api: ApiPromise;
   addressPrefix: number;
-  transaction: Transaction;
+  transaction: T;
   txWrapper: MultisigTxWrapper;
 };
-export const wrapAsMulti = ({ api, addressPrefix, transaction, txWrapper }: WrapAsMultiParams): Transaction => {
+export const wrapAsMulti = <T extends Transaction = Transaction>({
+  api,
+  addressPrefix,
+  transaction,
+  txWrapper,
+}: WrapAsMultiParams<T>): Transaction => {
   let callData = '';
   let callHash = '';
   try {

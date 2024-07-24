@@ -6,6 +6,8 @@ import {
   defineMethod,
 } from '@substrate/txwrapper-polkadot';
 
+import { type TransactionVote } from '../../../governance';
+
 interface UnlockArgs extends Args {
   /**
    *  class: The class of polls to unlock. - trackId.
@@ -29,6 +31,37 @@ const unlock = (args: UnlockArgs, info: BaseTxInfo, options: OptionsWithMeta): U
     },
     options,
   );
+
+interface VoteArgs extends Args {
+  /**
+   * class: Optional parameter, if given it indicates the class of the poll. For polls which have finished or are cancelled, this must be Some. - trackId.
+   */
+  pollIndex: number;
+
+  /**
+   * index: The index of poll of the vote. - track.
+   */
+  name: string;
+
+  /**
+   * vote: Describes vote to submit.
+   */
+  vote: TransactionVote;
+}
+
+const vote = (args: VoteArgs, info: BaseTxInfo, options: OptionsWithMeta): UnsignedTransaction => {
+  return defineMethod(
+    {
+      method: {
+        args,
+        name: 'vote',
+        pallet: 'convictionVoting',
+      },
+      ...info,
+    },
+    options,
+  );
+};
 
 interface RemoveVoteArgs extends Args {
   /**
@@ -108,6 +141,7 @@ const undelegate = (args: UndelegateArgs, info: BaseTxInfo, options: OptionsWith
 
 export const convictionVotingMethods = {
   unlock,
+  vote,
   removeVote,
   delegate,
   undelegate,

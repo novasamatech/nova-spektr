@@ -54,6 +54,7 @@ sample({
 });
 
 export const governancePageAggregate = {
+  $all: $displayedCurrentReferendums,
   $ongoing: readonly($ongoing),
   $completed: readonly($completed),
   $isLoading: listAggregate.$isLoading,

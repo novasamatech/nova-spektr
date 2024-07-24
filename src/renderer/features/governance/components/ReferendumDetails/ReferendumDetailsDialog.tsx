@@ -17,17 +17,18 @@ import { ProposalDescription } from './ProposalDescription';
 import { ReferendumAdditional } from './ReferendumAdditional';
 import { Timeline } from './Timeline';
 import { VotingBalance } from './VotingBalance';
-import { VotingStatus } from './VotingStatus';
+import { type VoteRequestParams, VotingStatus } from './VotingStatus';
 import { VotingSummary } from './VotingSummary';
 import { WalletVotesDialog } from './WalletVotesDialog';
 
 type Props = {
   chain: Chain;
   referendum: AggregatedReferendum;
+  onVoteRequest: (params: VoteRequestParams) => unknown;
   onClose: VoidFunction;
 };
 
-export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) => {
+export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onClose }: Props) => {
   useGate(detailsAggregate.gates.flow, { chain, referendum });
 
   const [showWalletVotes, setShowWalletVotes] = useState(false);
@@ -37,6 +38,7 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) =
   const { t } = useI18n();
 
   const votingAsset = useUnit(detailsAggregate.$votingAsset);
+  const canVote = useUnit(detailsAggregate.$canVote);
 
   const title = useStoreMap({
     store: detailsAggregate.$titles,
@@ -81,7 +83,13 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) =
           )}
 
           <DetailsCard title={t('governance.referendum.votingStatus')}>
-            <VotingStatus referendum={referendum} chain={chain} asset={votingAsset} />
+            <VotingStatus
+              referendum={referendum}
+              chain={chain}
+              asset={votingAsset}
+              canVote={canVote}
+              onVoteRequest={onVoteRequest}
+            />
           </DetailsCard>
 
           {referendumService.isOngoing(referendum) && !!votingAsset && (

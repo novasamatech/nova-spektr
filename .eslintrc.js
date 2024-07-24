@@ -115,6 +115,8 @@ module.exports = {
         JSX: 'readonly',
       },
       rules: {
+        // TODO make error
+        'react/jsx-no-useless-fragment': 'warn',
         'react/jsx-no-constructed-context-values': 'error',
         'react/jsx-curly-brace-presence': ['error', { props: 'never', children: 'ignore' }],
         'react/no-array-index-key': 'warn',
@@ -151,27 +153,39 @@ module.exports = {
         createDefaultProgram: true,
       },
       rules: {
+        // Imports
         'unused-imports/no-unused-imports': 'error',
         '@typescript-eslint/consistent-type-imports': [
           'error',
           { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
         ],
-        // validated by typescript
-        '@typescript-eslint/no-unused-vars': 'off',
+        // Validated by typescript
+        'import-x/export': 'off',
+        // Restricted by our code style
+        'import-x/default': 'off',
+        'import-x/no-useless-path-segments': 'error',
+
+        // TODO enable noUnusedParameters in tsconfig.json and turn of this rule afterwards.
+        '@typescript-eslint/no-unused-vars': 'warn',
+
+        // Validated by typescript
         '@typescript-eslint/no-empty-interface': 'off',
         '@typescript-eslint/no-non-null-assertion': 'off',
         '@typescript-eslint/no-empty-function': 'off',
         '@typescript-eslint/no-explicit-any': 'warn',
         '@typescript-eslint/no-unnecessary-type-constraint': 'error',
-        // it took around 4 seconds to check this single rule
-        'effector/enforce-effect-naming-convention': 'off',
-        // it took around 4 seconds to check this single rule
-        'effector/enforce-store-naming-convention': 'off',
+
+        // Stricter rules
+        'effector/no-watch': 'error',
         'effector/keep-options-order': 'error',
-        // validated by typescript
-        'import-x/export': 'off',
-        // restricted by our code style
-        'import-x/default': 'off',
+
+        // Removed rules
+        // Took around 4 seconds to check this single rule
+        'effector/enforce-effect-naming-convention': 'off',
+        // Took around 4 seconds to check this single rule
+        'effector/enforce-store-naming-convention': 'off',
+
+        // Boundaries setup
         'boundaries/element-types': [
           'error',
           {
@@ -216,7 +230,7 @@ module.exports = {
             extensions: ['.ts', '.tsx', '.js'],
           },
         },
-        // for resolving in eslint-plugin-boundaries
+        // For resolving in eslint-plugin-boundaries
         'import/resolver': {
           typescript: true,
           node: {
@@ -224,6 +238,14 @@ module.exports = {
           },
         },
         'boundaries/elements': boundaries,
+      },
+    },
+    {
+      files: ['*.ts', '*.tsx'],
+      excludedFiles: ['*.test.ts', '*.test.tsx', '**/mocks/*.ts'],
+      rules: {
+        // TODO error
+        '@typescript-eslint/consistent-type-assertions': ['off', { assertionStyle: 'never' }],
       },
     },
   ],

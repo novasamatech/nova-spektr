@@ -162,7 +162,7 @@ function getWalletsFilteredAccounts(
       });
 
       if (accounts.length > 0) {
-        acc.push({ ...wallet, accounts } as Wallet);
+        acc.push({ ...wallet, accounts });
       }
     }
 
