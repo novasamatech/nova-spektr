@@ -1,75 +1,62 @@
-name: Making a pull request
-description: That action create a pull request with all changes
+name: Make pull request
+description: Create commit and make pull-request
 inputs:
-  commit_path:
-    description: 'Path to the files that will be committed'
+  commit-files:
+    description: "Which files will add to commit"
     required: true
-  commit_message:
-    description: 'Message for commit'
+  commit-message:
+    description: "Message for creating a commit"
     required: true
-    default: 'Updating'
-  branch_name:
-    description: 'Name for creating branch'
+  app-id:
+    description: "Id for getting access to GitHub app"
     required: true
-    default: 'update'
-  destination_branch:
-    description: 'Name for destination branch'
+  app-token:
+    description: "Token for getting access to GitHub app"
+    required: true
+  branch-name:
+    description: "Name for branch for creating a commit"
+    required: true
+  pr-base:
+    description: "Base branch for creating PR"
+    required: true
+  pr-title:
+    description: "Title for creating Pull Request"
+    required: true
+  pr-body:
+    description: "Body for creating Pull Request"
+    required: true
+  pr-reviewer:
+    description: "Reviewers for creating PR, support comma delimiter"
     required: false
-    default: 'dev'
-  second_destination_branch:
-    description: 'Name for second destination branch in order to sync data'
-    required: false
-  pr_title:
-    description: 'Title for pull request'
-    required: true
-  github_token:
-    description: 'Token for making operations with GitHub'
-    required: true
+    default: "stepanLav,leohar"
+outputs:
+  pr-url:
+    description: "The URL of the created pull request"
+    value: ${{ steps.create-pull-request.outputs.pull-request-url }}
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
-    - name: Commit files
-      id: commit
-      continue-on-error: true
-      run: |
-        git config --local user.email "140433189+novasama-bot[bot]@users.noreply.github.com"
-        git config --local user.name "novasama-bot"
-        git add ${{ inputs.commit_path }}
-        git commit -m "${{ inputs.commit_message }}"
-      shell: bash
-
-    - name: Push changes
-      if: steps.commit.outcome == 'success'
-      uses: ad-m/github-push-action@master
+    - uses: tibdex/github-app-token@v1
+      id: generate-token
       with:
-        github_token: ${{ inputs.github_token }}
-        branch: refs/heads/${{ inputs.branch_name }}-${{github.run_number}}
+        app_id: ${{ inputs.app-id }}
+        private_key: ${{ inputs.app-token }}
 
-    - name: Pull Request
-      id: mpr
-      uses: repo-sync/pull-request@v2
-      if: steps.commit.outcome == 'success'
+    - name: Create Pull Request
+      id: create-pull-request
+      uses: peter-evans/create-pull-request@v5
       with:
-        source_branch: '${{ inputs.branch_name }}-${{github.run_number}}'
-        destination_branch: ${{ inputs.destination_branch }}
-        pr_title: ${{ inputs.pr_title }}
-        pr_body: |
-          That pull-request was generated automatically 🤖
-        pr_reviewer: "stepanLav,pgolovkin,tuul-wq,Asmadek"
-        pr_draft: false
-        github_token: ${{ inputs.github_token }}
-
-    - name: Second Pull Request
-      if: steps.commit.outcome == 'success' && inputs.second_destination_branch
-      uses: repo-sync/pull-request@v2
-      with:
-        source_branch: '${{ inputs.branch_name }}-${{github.run_number}}'
-        destination_branch: ${{ inputs.second_destination_branch }}
-        pr_title: 'PR in order to sync ${{ inputs.commit_path }}'
-        pr_body: |
-          That pull-request was generated automatically 🤖
-          Main PR is: ${{ steps.mpr.outputs.pr_url }}
-        pr_reviewer: "stepanLav,pgolovkin,tuul-wq,Asmadek"
-        pr_draft: false
-        github_token: ${{ inputs.github_token }}
+        token: ${{ steps.generate-token.outputs.token }}
+        commit-message: ${{ inputs.commit-message }}
+        add-paths: ${{ inputs.commit-files }}
+        committer: novasama-bot <140433189+novasama-bot[bot]@users.noreply.github.com>
+        author: novasama-bot <140433189+novasama-bot[bot]@users.noreply.github.com>
+        signoff: false
+        branch: ${{ inputs.branch-name }}
+        delete-branch: true
+        title: ${{ inputs.pr-title }}
+        body: ${{ inputs.pr-body }}
+        reviewers: ${{ inputs.pr-reviewer }}
+        draft: false
+        base: ${{ inputs.pr-base }}
