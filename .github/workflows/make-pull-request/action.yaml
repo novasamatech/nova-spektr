@@ -28,7 +28,7 @@ inputs:
   pr-reviewer:
     description: "Reviewers for creating PR, support comma delimiter"
     required: false
-    default: "stepanLav,leohar"
+    default: "stepanLav,tuul-wq,Asmadek,johnthecat,pgolovkin,sokolova-an"
 outputs:
   pr-url:
     description: "The URL of the created pull request"
