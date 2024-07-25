@@ -886,14 +886,14 @@
     "precision": 12,
     "priceId": "ausd-seed-karura",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Kusama.svg",
-    "symbol": "aSEED",
+    "symbol": "aSEEDk",
     "isTestToken": false,
     "chains": [
       {
         "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
         "name": "Karura",
         "assetId": 1,
-        "assetSymbol": "aSEED",
+        "assetSymbol": "aSEEDk",
         "type": "orml",
         "typeExtras": {
           "currencyIdScale": "0x0081",
@@ -906,7 +906,7 @@
         "chainId": "0xf1cf9022c7ebb34b162d5b5e34e705a5a740b2d0ecc1009fb89023e62a488108",
         "name": "Shiden",
         "assetId": 7,
-        "assetSymbol": "aSEED",
+        "assetSymbol": "aSEEDk",
         "type": "statemine",
         "typeExtras": {
           "assetId": "18446744073709551616"
@@ -916,7 +916,7 @@
         "chainId": "0x9f28c6a68e0fc9646eff64935684f6eeeece527e37bbe1f213d22caa1d9d6bed",
         "name": "Bifrost Kusama",
         "assetId": 5,
-        "assetSymbol": "aSEED",
+        "assetSymbol": "aSEEDk",
         "type": "orml",
         "typeExtras": {
           "currencyIdScale": "0x0302",
@@ -929,7 +929,7 @@
         "chainId": "0x9af9a64e6e4da8e3073901c3ff0cc4c3aad9563786d89daf6ad820b6e14a0b8b",
         "name": "Kintsugi",
         "assetId": 5,
-        "assetSymbol": "aSEED",
+        "assetSymbol": "aSEEDk",
         "type": "orml",
         "typeExtras": {
           "currencyIdScale": "0x0101000000",
@@ -942,7 +942,7 @@
         "chainId": "0x64a1c658a48b2e70a7fb1ad4c39eea35022568c20fc44a6e2e3d0a57aee6053b",
         "name": "Parallel Heiko",
         "assetId": 2,
-        "assetSymbol": "aSEED",
+        "assetSymbol": "aSEEDk",
         "type": "statemine",
         "typeExtras": {
           "assetId": "103"
@@ -952,7 +952,7 @@
         "chainId": "0xa85cfb9b9fd4d622a5b28289a02347af987d8f73fa3108450e2b4a11c1ce5755",
         "name": "Basilisk",
         "assetId": 2,
-        "assetSymbol": "aSEED",
+        "assetSymbol": "aSEEDk",
         "type": "orml",
         "typeExtras": {
           "currencyIdScale": "0x02000000",
@@ -965,7 +965,7 @@
         "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
         "name": "Khala",
         "assetId": 5,
-        "assetSymbol": "aSEED",
+        "assetSymbol": "aSEEDk",
         "type": "statemine",
         "typeExtras": {
           "assetId": "4"
@@ -975,7 +975,7 @@
         "chainId": "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
         "name": "Turing",
         "assetId": 2,
-        "assetSymbol": "aSEED",
+        "assetSymbol": "aSEEDk",
         "type": "orml",
         "typeExtras": {
           "currencyIdScale": "0x02000000",
@@ -988,7 +988,7 @@
         "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
         "name": "Moonriver",
         "assetId": 8,
-        "assetSymbol": "xcaSEED",
+        "assetSymbol": "xcaSEEDk",
         "type": "statemine",
         "typeExtras": {
           "assetId": "214920334981412447805621250067209749032"
@@ -2720,14 +2720,14 @@
     "precision": 12,
     "priceId": "ausd-seed-acala",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Polkadot.svg",
-    "symbol": "aSEED",
+    "symbol": "aSEEDp",
     "isTestToken": false,
     "chains": [
       {
         "chainId": "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
         "name": "Acala",
         "assetId": 2,
-        "assetSymbol": "aSEED",
+        "assetSymbol": "aSEEDp",
         "type": "orml",
         "typeExtras": {
           "currencyIdScale": "0x0001",
@@ -2740,7 +2740,7 @@
         "chainId": "0x9eb76c5184c4ab8679d2d5d819fdf90b9c001403e9e17da2e14b6d8aec4029c6",
         "name": "Astar",
         "assetId": 8,
-        "assetSymbol": "aSEED",
+        "assetSymbol": "aSEEDp",
         "type": "statemine",
         "typeExtras": {
           "assetId": "18446744073709551617"
@@ -2750,7 +2750,7 @@
         "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
         "name": "Parallel",
         "assetId": 4,
-        "assetSymbol": "aSEED",
+        "assetSymbol": "aSEEDp",
         "type": "statemine",
         "typeExtras": {
           "assetId": "104"
@@ -2760,7 +2760,7 @@
         "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
         "name": "Moonbeam",
         "assetId": 2,
-        "assetSymbol": "xcaSEED",
+        "assetSymbol": "xcaSEEDp",
         "type": "statemine",
         "typeExtras": {
           "assetId": "110021739665376159354538090254163045594"
@@ -2832,19 +2832,6 @@
           "currencyIdScale": "0x0801",
           "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000000000",
-          "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0xcceae7f3b9947cdb67369c026ef78efa5f34a08fe5808d373c04421ecf4f1aaf",
-        "name": "Amplitude",
-        "assetId": 10,
-        "assetSymbol": "GLMR",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0106",
-          "currencyIdType": "SpacewalkPrimitivesCurrencyId",
-          "existentialDeposit": "1000",
           "transfersEnabled": true
         }
       },

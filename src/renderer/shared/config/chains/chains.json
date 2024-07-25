@@ -85,6 +85,12 @@
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-polkadot"
         }
       ],
+      "governance-delegations": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-polkadot-gov"
+        }
+      ],
       "proxy": [
         {
           "type": "subquery",
@@ -177,6 +183,12 @@
         {
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kusama"
+        }
+      ],
+      "governance-delegations": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kusama-governance2"
         }
       ],
       "proxy": [
@@ -416,7 +428,7 @@
       },
       {
         "assetId": 1,
-        "symbol": "aSEED",
+        "symbol": "aSEEDk",
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-karura",
@@ -917,7 +929,7 @@
       },
       {
         "assetId": 7,
-        "symbol": "aSEED",
+        "symbol": "aSEEDk",
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-karura",
@@ -1104,7 +1116,7 @@
       },
       {
         "assetId": 5,
-        "symbol": "aSEED",
+        "symbol": "aSEEDk",
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-karura",
@@ -1302,7 +1314,7 @@
       },
       {
         "assetId": 2,
-        "symbol": "aSEED",
+        "symbol": "aSEEDk",
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-karura",
@@ -1466,7 +1478,7 @@
       },
       {
         "assetId": 2,
-        "symbol": "aSEED",
+        "symbol": "aSEEDk",
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-karura",
@@ -1586,10 +1598,14 @@
     ],
     "explorers": [
       {
-        "name": "Subscan",
-        "extrinsic": "https://parallel-heiko.subscan.io/extrinsic/{hash}",
-        "account": "https://parallel-heiko.subscan.io/account/{address}",
-        "multisig": "https://parallel-heiko.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
+        "name": "Statescan",
+        "account": "https://heiko.statescan.io/#/accounts/{address}",
+        "extrinsic": "https://heiko.statescan.io/#/extrinsics/{hash}",
+        "event": "https://heiko.statescan.io/#/events/{event}"
+      },
+      {
+        "name": "Sub.ID",
+        "account": "https://sub.id/{address}"
       }
     ],
     "externalApi": {
@@ -1688,7 +1704,7 @@
       },
       {
         "assetId": 5,
-        "symbol": "aSEED",
+        "symbol": "aSEEDk",
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-karura",
@@ -2020,7 +2036,7 @@
       },
       {
         "assetId": 2,
-        "symbol": "aSEED",
+        "symbol": "aSEEDp",
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-acala",
@@ -2370,7 +2386,7 @@
       },
       {
         "assetId": 8,
-        "symbol": "aSEED",
+        "symbol": "aSEEDp",
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-acala",
@@ -2525,7 +2541,7 @@
       },
       {
         "assetId": 4,
-        "symbol": "aSEED",
+        "symbol": "aSEEDp",
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-acala",
@@ -2633,10 +2649,10 @@
     ],
     "explorers": [
       {
-        "name": "Subscan",
-        "extrinsic": "https://parallel.subscan.io/extrinsic/{hash}",
-        "account": "https://parallel.subscan.io/account/{address}",
-        "multisig": "https://parallel.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
+        "name": "Statescan",
+        "account": "https://parallel.statescan.io/#/accounts/{address}",
+        "extrinsic": "https://parallel.statescan.io/#/extrinsics/{hash}",
+        "event": "https://parallel.statescan.io/#/events/{event}"
       },
       {
         "name": "Sub.ID",
@@ -2948,7 +2964,7 @@
       },
       {
         "assetId": 5,
-        "symbol": "aSEED",
+        "symbol": "aSEEDk",
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-karura",
@@ -3032,9 +3048,7 @@
     "chainId": "0x1bf2a2ecb4a868de66ea8610f2ce7c8c43706561b6476031315f6640fe38e060",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Zeitgeist.svg",
-    "options": [
-      "multisig"
-    ],
+    "options": [],
     "nodes": [
       {
         "url": "wss://zeitgeist-rpc.dwellir.com",
@@ -4119,7 +4133,7 @@
       },
       {
         "assetId": 2,
-        "symbol": "aSEED",
+        "symbol": "aSEEDk",
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-karura",
@@ -4892,6 +4906,50 @@
           "transfersEnabled": true
         },
         "name": "USD Coin"
+      },
+      {
+        "assetId": 11,
+        "symbol": "GLMR",
+        "precision": 18,
+        "type": "orml",
+        "priceId": "moonbeam",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Moonbeam_(GLMR).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0106",
+          "currencyIdType": "SpacewalkPrimitivesCurrencyId",
+          "existentialDeposit": "1000",
+          "transfersEnabled": true
+        },
+        "name": "Moonbeam"
+      },
+      {
+        "assetId": 12,
+        "symbol": "PINK",
+        "precision": 10,
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Pink.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0107",
+          "currencyIdType": "SpacewalkPrimitivesCurrencyId",
+          "existentialDeposit": "1000",
+          "transfersEnabled": true
+        },
+        "name": "PINK"
+      },
+      {
+        "assetId": 13,
+        "symbol": "HDX",
+        "precision": 12,
+        "type": "orml",
+        "priceId": "hydradx",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/HydraDX_(HDX).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0108",
+          "currencyIdType": "SpacewalkPrimitivesCurrencyId",
+          "existentialDeposit": "1000",
+          "transfersEnabled": true
+        },
+        "name": "HydraDX"
       }
     ],
     "externalApi": {
@@ -5150,10 +5208,6 @@
       {
         "url": "wss://moonbeam.public.blastapi.io",
         "name": "Blast node"
-      },
-      {
-        "url": "wss://1rpc.io/glmr",
-        "name": "Automata 1RPC node"
       }
     ],
     "assets": [
@@ -5179,7 +5233,7 @@
       },
       {
         "assetId": 2,
-        "symbol": "xcaSEED",
+        "symbol": "xcaSEEDp",
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-acala",
@@ -5473,6 +5527,12 @@
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-moonbeam"
         }
+      ],
+      "governance-delegations": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-moonbeam-gov"
+        }
       ]
     }
   },
@@ -5602,7 +5662,7 @@
       },
       {
         "assetId": 8,
-        "symbol": "xcaSEED",
+        "symbol": "xcaSEEDk",
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-karura",
@@ -5810,6 +5870,12 @@
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-moonriver"
         }
+      ],
+      "governance-delegations": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-moonriver-gov"
+        }
       ]
     }
   },
@@ -5851,7 +5917,9 @@
     "chainId": "0x7eb9354488318e7549c722669dcbdcdc526f1fef1420e7944667212f3601fdbd",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polimec.svg",
-    "options": [],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://rpc.polimec.org",
@@ -5866,13 +5934,53 @@
         "priceId": "polimec",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/PLMC.svg",
         "name": "Polimec token"
+      },
+      {
+        "assetId": 1,
+        "symbol": "DOT",
+        "precision": 10,
+        "type": "statemine",
+        "priceId": "polkadot",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
+        "typeExtras": {
+          "assetId": "10",
+          "palletName": "ForeignAssets"
+        },
+        "name": "Polkadot"
+      },
+      {
+        "assetId": 2,
+        "symbol": "USDT",
+        "precision": 6,
+        "type": "statemine",
+        "priceId": "tether",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
+        "typeExtras": {
+          "assetId": "1984",
+          "palletName": "ForeignAssets"
+        },
+        "name": "USD Tether"
+      },
+      {
+        "assetId": 3,
+        "symbol": "USDC",
+        "precision": 6,
+        "type": "statemine",
+        "priceId": "usd-coin",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDC.svg",
+        "typeExtras": {
+          "assetId": "1337",
+          "palletName": "ForeignAssets"
+        },
+        "name": "USD Coin"
       }
     ],
     "explorers": [
       {
-        "name": "Statescan",
-        "account": "https://polimec.statescan.io/#/accounts/{address}",
-        "event": "https://polimec.statescan.io/#/events/{event}"
+        "name": "Polimec explorer",
+        "account": "https://explorer.polimec.org/polimec/account/{address}",
+        "event": "https://explorer.polimec.org/polimec/event/{event}",
+        "extrinsic": "https://explorer.polimec.org/polimec/extrinsic/{hash}"
       }
     ],
     "externalApi": {
