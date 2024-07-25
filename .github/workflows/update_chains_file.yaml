@@ -10,7 +10,6 @@ on:
         default: v1
   schedule:
     - cron: '0 8 * * 1'
-  pull_request:
 
 jobs:
   update-files:
