@@ -62,7 +62,7 @@ export const GraphqlProvider = ({ children }: PropsWithChildren) => {
     const stakingChainId = settingsStorage.getStakingNetwork();
 
     chainUrls.current = chainsData.reduce((acc, chain) => {
-      const subqueryMatch = chain.externalApi?.[ExternalType.STAKING].find((api) => api.type === 'subquery');
+      const subqueryMatch = chain.externalApi?.[ExternalType.STAKING]?.find((api) => api.type === 'subquery');
 
       if (subqueryMatch) {
         return { ...acc, [chain.chainId]: subqueryMatch.url };
