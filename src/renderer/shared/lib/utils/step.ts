@@ -5,6 +5,7 @@ export const enum Step {
   SIGN,
   SUBMIT,
   BASKET,
+  LIST,
 }
 
 /**

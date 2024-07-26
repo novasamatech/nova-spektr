@@ -22,7 +22,7 @@ const $totalDelegations = combine(
 );
 
 export const delegationModel = {
-  $isLoading: votingAggregate.events.requestPending,
+  $isLoading: votingAggregate.$isLoading,
   $asset: votingAssetModel.$votingAsset,
   $totalDelegations,
 };
