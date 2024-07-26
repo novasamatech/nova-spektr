@@ -1,6 +1,6 @@
 {
-  "src/**/*": [
+  "src/**/*.{ts,tsx}": [
     "pnpm exec tsc-files -p tsconfig.json --noEmit",
-    "pnpm exec eslint"
+    "pnpm lint:generic"
   ]
 }
