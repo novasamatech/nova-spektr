@@ -85,6 +85,12 @@
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-polkadot"
         }
       ],
+      "governance-delegations": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-polkadot-gov"
+        }
+      ],
       "proxy": [
         {
           "type": "subquery",
@@ -177,6 +183,12 @@
         {
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kusama"
+        }
+      ],
+      "governance-delegations": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kusama-governance2"
         }
       ],
       "proxy": [
@@ -512,7 +524,7 @@
       },
       {
         "assetId": 1,
-        "symbol": "aSEED",
+        "symbol": "aSEEDk",
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-karura",
@@ -1013,7 +1025,7 @@
       },
       {
         "assetId": 7,
-        "symbol": "aSEED",
+        "symbol": "aSEEDk",
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-karura",
@@ -1200,7 +1212,7 @@
       },
       {
         "assetId": 5,
-        "symbol": "aSEED",
+        "symbol": "aSEEDk",
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-karura",
@@ -1452,7 +1464,7 @@
       },
       {
         "assetId": 5,
-        "symbol": "aSEED",
+        "symbol": "aSEEDk",
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-karura",
@@ -1567,7 +1579,7 @@
       },
       {
         "assetId": 2,
-        "symbol": "aSEED",
+        "symbol": "aSEEDk",
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-karura",
@@ -1687,10 +1699,14 @@
     ],
     "explorers": [
       {
-        "name": "Subscan",
-        "extrinsic": "https://parallel-heiko.subscan.io/extrinsic/{hash}",
-        "account": "https://parallel-heiko.subscan.io/account/{address}",
-        "multisig": "https://parallel-heiko.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
+        "name": "Statescan",
+        "account": "https://heiko.statescan.io/#/accounts/{address}",
+        "extrinsic": "https://heiko.statescan.io/#/extrinsics/{hash}",
+        "event": "https://heiko.statescan.io/#/events/{event}"
+      },
+      {
+        "name": "Sub.ID",
+        "account": "https://sub.id/{address}"
       }
     ],
     "externalApi": {
@@ -1748,7 +1764,7 @@
       },
       {
         "assetId": 2,
-        "symbol": "aSEED",
+        "symbol": "aSEEDk",
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-karura",
@@ -1961,7 +1977,7 @@
       },
       {
         "assetId": 5,
-        "symbol": "aSEED",
+        "symbol": "aSEEDk",
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-karura",
@@ -2293,7 +2309,7 @@
       },
       {
         "assetId": 2,
-        "symbol": "aSEED",
+        "symbol": "aSEEDp",
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-acala",
@@ -2639,7 +2655,7 @@
       },
       {
         "assetId": 8,
-        "symbol": "aSEED",
+        "symbol": "aSEEDp",
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-acala",
@@ -2794,7 +2810,7 @@
       },
       {
         "assetId": 4,
-        "symbol": "aSEED",
+        "symbol": "aSEEDp",
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-acala",
@@ -2902,10 +2918,10 @@
     ],
     "explorers": [
       {
-        "name": "Subscan",
-        "extrinsic": "https://parallel.subscan.io/extrinsic/{hash}",
-        "account": "https://parallel.subscan.io/account/{address}",
-        "multisig": "https://parallel.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
+        "name": "Statescan",
+        "account": "https://parallel.statescan.io/#/accounts/{address}",
+        "extrinsic": "https://parallel.statescan.io/#/extrinsics/{hash}",
+        "event": "https://parallel.statescan.io/#/events/{event}"
       },
       {
         "name": "Sub.ID",
@@ -4244,7 +4260,7 @@
       },
       {
         "assetId": 2,
-        "symbol": "aSEED",
+        "symbol": "aSEEDk",
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-karura",
@@ -4990,21 +5006,6 @@
           "transfersEnabled": true
         },
         "name": "USD Tether"
-      },
-      {
-        "assetId": 10,
-        "symbol": "GLMR",
-        "precision": 18,
-        "type": "orml",
-        "priceId": "moonbeam",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Moonbeam_(GLMR).svg",
-        "typeExtras": {
-          "currencyIdScale": "0x0106",
-          "currencyIdType": "SpacewalkPrimitivesCurrencyId",
-          "existentialDeposit": "1000",
-          "transfersEnabled": true
-        },
-        "name": "Moonbeam"
       }
     ],
     "externalApi": {
@@ -5546,7 +5547,7 @@
       },
       {
         "assetId": 8,
-        "symbol": "xcaSEED",
+        "symbol": "xcaSEEDk",
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-karura",
@@ -5754,6 +5755,12 @@
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-moonriver"
         }
+      ],
+      "governance-delegations": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-moonriver-gov"
+        }
       ]
     }
   },
@@ -5836,10 +5843,6 @@
       {
         "url": "wss://moonbeam.public.blastapi.io",
         "name": "Blast node"
-      },
-      {
-        "url": "wss://1rpc.io/glmr",
-        "name": "Automata 1RPC node"
       }
     ],
     "assets": [
@@ -5865,7 +5868,7 @@
       },
       {
         "assetId": 2,
-        "symbol": "xcaSEED",
+        "symbol": "xcaSEEDp",
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-acala",
@@ -6159,6 +6162,12 @@
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-moonbeam"
         }
+      ],
+      "governance-delegations": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-moonbeam-gov"
+        }
       ]
     }
   },
@@ -6242,7 +6251,9 @@
     "chainId": "0x7eb9354488318e7549c722669dcbdcdc526f1fef1420e7944667212f3601fdbd",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polimec.svg",
-    "options": [],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://rpc.polimec.org",
@@ -6261,9 +6272,10 @@
     ],
     "explorers": [
       {
-        "name": "Statescan",
-        "account": "https://polimec.statescan.io/#/accounts/{address}",
-        "event": "https://polimec.statescan.io/#/events/{event}"
+        "name": "Polimec explorer",
+        "account": "https://explorer.polimec.org/polimec/account/{address}",
+        "event": "https://explorer.polimec.org/polimec/event/{event}",
+        "extrinsic": "https://explorer.polimec.org/polimec/extrinsic/{hash}"
       }
     ],
     "externalApi": {
@@ -6288,7 +6300,8 @@
     "chainId": "0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_Testnet.svg",
     "options": [
-      "testnet"
+      "testnet",
+      "governance"
     ],
     "nodes": [
       {
@@ -6301,14 +6314,21 @@
         "assetId": 0,
         "symbol": "WND",
         "precision": 12,
+        "staking": "relaychain",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Westend_(WND).svg",
         "name": "Westend"
       }
     ],
     "externalApi": {
-      "governance": [
+      "staking": [
         {
-          "type": "subsquare",
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-westend"
+        }
+      ],
+      "governance-delegations": [
+        {
+          "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-test-gov"
         }
       ]
