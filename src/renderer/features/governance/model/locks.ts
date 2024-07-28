@@ -22,8 +22,6 @@ const getTrackLocksFx = createEffect(({ api, addresses }: Props): Promise<Record
   return governanceService.getTrackLocks(api, addresses);
 });
 
-const $asset = networkSelectorModel.$governanceChain?.map((chain) => (chain && chain.assets[0]) || null);
-
 sample({
   clock: [networkSelectorModel.$governanceChainApi, walletModel.$activeWallet],
   source: {
@@ -62,7 +60,6 @@ sample({
 });
 
 export const locksModel = {
-  $asset,
   $isLoading,
   $totalLock,
   $trackLocks,

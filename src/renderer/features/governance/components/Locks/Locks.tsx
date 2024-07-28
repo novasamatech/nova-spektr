@@ -5,12 +5,13 @@ import { FootnoteText, Icon, Plate, Shimmering } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
 import { unlockAggregate } from '../../aggregates/unlock';
 import { locksModel } from '../../model/locks';
+import { votingAssetModel } from '../../model/votingAsset';
 import { Unlock } from '../Unlock/Unlock';
 
 export const Locks = () => {
   const { t } = useI18n();
 
-  const asset = useUnit(locksModel.$asset);
+  const asset = useUnit(votingAssetModel.$votingAsset);
   const totalLock = useUnit(locksModel.$totalLock);
   const isLoading = useUnit(locksModel.$isLoading);
   const isUnlockable = useUnit(unlockAggregate.$isUnlockable);

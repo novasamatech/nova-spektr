@@ -356,6 +356,7 @@
       "title": "Referendum data"
     },
     "operations": {
+      "selectPlaceholder": "Select",
       "transferable": "Transferable"
     },
     "referendum": {
@@ -674,6 +675,7 @@
     "inProgress": "Submitting approval...",
     "logButton": "Log",
     "networkFee": "Network fee",
+    "networkFeeTotal": "Total network fee",
     "proxyFeeErrorDescription": "Delegated authority<wallet />doesn't have enough balance to pay the network fee of {fee} {symbol}<br />Available balance to pay fee: {balance} {symbol}",
     "proxyFeeErrorTitle": "Not enough tokens to pay the fee",
     "rejectButton": "Reject",

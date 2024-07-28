@@ -1,17 +1,19 @@
 import { createEvent, restore, sample } from 'effector';
 import { or, spread } from 'patronum';
 
-import { UnlockChunkType } from '@shared/api/governance';
+import { type ClaimChunkWithAddress, UnlockChunkType } from '@shared/api/governance';
 import { Step } from '@shared/lib/utils';
 import { referendumModel } from '@/entities/governance';
 import { unlockModel } from '../model/unlock/unlock';
 
 import { unlockConfirmAggregate } from './unlockConfirm';
+import { unlockFormAggregate } from './unlockForm';
 
 const flowStarted = createEvent();
 const flowFinished = createEvent();
+
 const stepChanged = createEvent<Step>();
-const unlockConfirm = createEvent();
+const unlockFormStarted = createEvent();
 const txSaved = createEvent();
 
 const $step = restore<Step>(stepChanged, Step.NONE);
@@ -29,21 +31,27 @@ sample({
 });
 
 sample({
+  clock: unlockFormStarted,
+  fn: () => Step.SELECT,
+  target: stepChanged,
+});
+
+sample({
   clock: stepChanged,
   target: $step,
 });
 
 sample({
-  clock: unlockConfirm,
-  source: {
-    unlockableClaims: unlockModel.$claimSchedule.map((c) =>
-      c.filter((claim) => claim.type === UnlockChunkType.CLAIMABLE),
-    ),
-    totalUnlock: unlockModel.$totalUnlock,
-  },
-  filter: ({ totalUnlock }) => !totalUnlock.isZero(),
-  fn: ({ unlockableClaims, totalUnlock }) => ({
-    event: { unlockableClaims, amount: totalUnlock.toString() },
+  clock: unlockFormStarted,
+  source: unlockModel.$claimSchedule,
+  fn: (claims) => claims.filter((claim) => claim.type === UnlockChunkType.CLAIMABLE) as ClaimChunkWithAddress[],
+  target: unlockFormAggregate.events.formInitiated,
+});
+
+sample({
+  clock: unlockFormAggregate.output.formSubmitted,
+  fn: ({ formData }) => ({
+    event: [formData],
     step: Step.CONFIRM,
   }),
   target: spread({
@@ -70,7 +78,7 @@ export const unlockAggregate = {
   events: {
     flowStarted,
     stepChanged,
-    unlockConfirm,
+    unlockFormStarted,
     txSaved,
   },
 
