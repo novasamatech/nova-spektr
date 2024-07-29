@@ -383,7 +383,7 @@ sample({
 sample({
   clock: delay(submitModel.output.formSubmitted, 2000),
   source: $step,
-  filter: (step) => createMultisigUtils.isSubmitStep(step),
+  filter: (step) => createMultisigUtils.isStep(step, Step.SUBMIT),
   target: flowFinished,
 });
 

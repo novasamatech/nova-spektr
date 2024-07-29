@@ -4,6 +4,7 @@ import { type Account, type Chain, ConnectionStatus } from '@shared/core';
 import { toAddress } from '@shared/lib/utils';
 import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
+import { ExtrinsicResult } from '@/features/operations/OperationSubmit/lib/types';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { Step } from '../../lib/types';
@@ -90,15 +91,21 @@ describe('widgets/CreateWallet/model/form-model', () => {
 
     const action = allSettled(submitModel.output.formSubmitted, {
       scope,
-      params: {
-        timepoint: {
-          height: 1,
-          index: 1,
+      params: [
+        {
+          id: 1,
+          result: ExtrinsicResult.SUCCESS,
+          params: {
+            timepoint: {
+              height: 1,
+              index: 1,
+            },
+            extrinsicHash: '0x00',
+            isFinalApprove: true,
+            multisigError: '',
+          },
         },
-        extrinsicHash: '0x00',
-        isFinalApprove: true,
-        multisigError: '',
-      },
+      ],
     });
 
     await jest.runAllTimersAsync();

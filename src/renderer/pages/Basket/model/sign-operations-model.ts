@@ -853,17 +853,16 @@ sample({
   clock: signModel.output.formSubmitted,
   source: {
     transactions: $transactions,
-    chains: networkModel.$chains,
     wallets: walletModel.$wallets,
   },
   filter: ({ transactions }) => {
     return Boolean(transactions) && transactions.length > 0;
   },
-  fn: ({ transactions, chains, wallets }, signParams) => {
+  fn: ({ transactions, wallets }, signParams) => {
     return {
       event: {
         ...signParams,
-        chain: chains[transactions[0].coreTx.chainId],
+        chainId: transactions[0].coreTx.chainId,
         account: walletUtils.getAccountsBy(
           wallets,
           (account: Account, wallet: Wallet) =>

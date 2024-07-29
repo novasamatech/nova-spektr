@@ -1,14 +1,9 @@
 import { useUnit } from 'effector-react';
-import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-import { isEthereumAccountId } from '@/shared/lib/utils';
 import { type Chain } from '@shared/core';
 import { Button, Icon } from '@shared/ui';
-import { contactModel } from '@entities/contact';
-import { networkUtils } from '@entities/network';
 import { signatoryModel } from '../../../model/signatory-model';
-import { type ExtendedContact } from '../common/types';
 
 import { Signatory } from './Signatory';
 
@@ -26,22 +21,22 @@ type Props = {
 export const SelectSignatories = ({ chain }: Props) => {
   const { t } = useI18n();
 
-  const [contactList, setContactList] = useState<ExtendedContact[]>([]);
+  // const [contactList, setContactList] = useState<ExtendedContact[]>([]);
   const signatories = useUnit(signatoryModel.$signatories);
-  const contacts = useUnit(contactModel.$contacts);
+  // const contacts = useUnit(contactModel.$contacts);
 
-  useEffect(() => {
-    const addressBookContacts = contacts
-      .filter((c) => {
-        const isEthereumContact = isEthereumAccountId(c.accountId);
-        const isEthereumChain = networkUtils.isEthereumBased(chain?.options);
+  // useEffect(() => {
+  //   const addressBookContacts = contacts
+  //     .filter((c) => {
+  //       const isEthereumContact = isEthereumAccountId(c.accountId);
+  //       const isEthereumChain = networkUtils.isEthereumBased(chain?.options);
 
-        return isEthereumContact === isEthereumChain;
-      })
-      .map((contact, index) => ({ ...contact, index: index.toString() }));
+  //       return isEthereumContact === isEthereumChain;
+  //     })
+  //     .map((contact, index) => ({ ...contact, index: index.toString() }));
 
-    setContactList(addressBookContacts);
-  }, [contacts.length, chain]);
+  //   setContactList(addressBookContacts);
+  // }, [contacts.length, chain]);
 
   //       return !isEthereumAccountId(c.accountId);
   //     })
