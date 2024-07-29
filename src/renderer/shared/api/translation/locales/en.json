@@ -320,6 +320,12 @@
       },
       "emptyDescription": "Update the search or cancel filtering",
       "emptyTitle": "Nothing was found",
+      "sort": {
+        "delegations": "Delegations",
+        "placeholder": "Sort by",
+        "voted": "Voted last 30 days",
+        "votes": "Delegated votes"
+      },
       "title": "Add delegation on"
     },
     "additional": {

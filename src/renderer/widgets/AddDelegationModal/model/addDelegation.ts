@@ -5,30 +5,35 @@ import { readonly } from 'patronum';
 import { Step, includesMultiple } from '@/shared/lib/utils';
 import { delegateRegistryModel } from '@/entities/governance/model/delegateRegistry';
 import { networkSelectorModel } from '@/features/governance';
+import { SortProp, SortType } from '../common/constants';
 
 const flowFinished = createEvent();
 const flowStarted = createEvent();
 const stepChanged = createEvent<Step>();
 const queryChanged = createEvent<string>();
+const sortTypeChanged = createEvent<SortType>();
 
 const $step = restore(stepChanged, Step.NONE);
 const $query = restore(queryChanged, '');
+const $sortType = restore(sortTypeChanged, null);
 
 const $delegateList = combine(
   {
     list: delegateRegistryModel.$delegateRegistry,
     query: $query,
+    sortType: $sortType,
   },
-  ({ list, query }) => {
+  ({ list, query, sortType }) => {
     const result = list.filter((delegate) =>
       includesMultiple([delegate.accountId, delegate.address, delegate.name, delegate.shortDescription], query),
     );
 
     const grouped = groupBy(result, (delegate) => !!delegate.name);
+    const sortProp = SortProp[sortType || SortType.DELEGATIONS];
 
     return [
-      ...sortBy(grouped['true'], (delegate) => delegate.delegators || 0).reverse(),
-      ...sortBy(grouped['false'], (delegate) => delegate.delegators || 0).reverse(),
+      ...sortBy(grouped['true'], (delegate) => delegate[sortProp] || 0).reverse(),
+      ...sortBy(grouped['false'], (delegate) => delegate[sortProp] || 0).reverse(),
     ];
   },
 );
@@ -54,13 +59,16 @@ sample({
 
 export const addDelegationModel = {
   $isListLoading: delegateRegistryModel.$isRegistryLoading,
-  $delegateList,
+  $delegateList: readonly($delegateList),
   $step: readonly($step),
-  $query,
+  $query: readonly($query),
+  $sortType: readonly($sortType),
 
   events: {
     flowStarted,
     queryChanged,
+    sortTypeChanged,
+    sortTypeReset: $sortType.reinit,
   },
 
   output: {
