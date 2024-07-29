@@ -56,7 +56,7 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
     setTimeout(params?.complete ? onComplete : params?.closeAll ? onClose : noop, DEFAULT_TRANSITION);
   };
 
-  if (createMultisigUtils.isSubmitStep(activeStep)) {
+  if (createMultisigUtils.isStep(activeStep, Step.SUBMIT)) {
     return <OperationSubmit isOpen={isModalOpen} onClose={closeMultisigModal} />;
   }
 
@@ -85,13 +85,13 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
         title={modalTitle}
         isOpen={isModalOpen}
         contentClass="flex"
-        panelClass={createMultisigUtils.isSignStep(activeStep) ? 'w-[440px]' : 'w-[784px]'}
+        panelClass={createMultisigUtils.isStep(activeStep, Step.SIGN) ? 'w-[440px]' : 'w-[784px]'}
         onClose={closeMultisigModal}
       >
-        {createMultisigUtils.isNameNetworkStep(activeStep) && <NameNetworkSelection />}
-        {createMultisigUtils.isSignatoriesThresholdStep(activeStep) && <SelectSignatoriesThreshold />}
-        {createMultisigUtils.isConfirmStep(activeStep) && <ConfirmationStep chain={chain.value} />}
-        {createMultisigUtils.isSignStep(activeStep) && (
+        {createMultisigUtils.isStep(activeStep, Step.NAME_NETWORK) && <NameNetworkSelection />}
+        {createMultisigUtils.isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold />}
+        {createMultisigUtils.isStep(activeStep, Step.CONFIRM) && <ConfirmationStep chain={chain.value} />}
+        {createMultisigUtils.isStep(activeStep, Step.SIGN) && (
           <OperationSign onGoBack={() => flowModel.events.stepChanged(Step.CONFIRM)} />
         )}
       </BaseModal>

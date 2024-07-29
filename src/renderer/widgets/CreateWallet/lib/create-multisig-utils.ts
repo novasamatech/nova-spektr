@@ -1,32 +1,18 @@
 import { Step } from './types';
 
 export const createMultisigUtils = {
-  isSignStep,
-  isSubmitStep,
-  isConfirmStep,
-  isNameNetworkStep,
-  isSignatoriesThresholdStep,
+  isStep,
   isNotFirstStep,
 };
 
-function isConfirmStep(step: Step) {
-  return step === Step.CONFIRM;
-}
-
-function isSignatoriesThresholdStep(step: Step) {
-  return step === Step.SIGNATORIES_THRESHOLD;
-}
-
-function isNameNetworkStep(step: Step) {
-  return step === Step.NAME_NETWORK;
-}
-
-function isSignStep(step: Step) {
-  return step === Step.SIGN;
-}
-
-function isSubmitStep(step: Step) {
-  return step === Step.SUBMIT;
+/**
+ * Check if current step equal to the target step
+ * @param step  current step
+ * @param targetStep target step
+ * @return {boolean}
+ */
+function isStep(step: Step, targetStep: Step): boolean {
+  return step === targetStep;
 }
 
 function isNotFirstStep(step: Step) {
