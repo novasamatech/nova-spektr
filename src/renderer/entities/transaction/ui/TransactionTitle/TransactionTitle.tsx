@@ -1,9 +1,9 @@
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 
-import { Icon, BodyText, FootnoteText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { DecodedTransaction, Transaction } from '@shared/core';
+import { type DecodedTransaction, type Transaction } from '@shared/core';
 import { cnTw } from '@shared/lib/utils';
+import { BodyText, FootnoteText, Icon } from '@shared/ui';
 import { getIconName } from '@entities/transaction/lib/transactionIcon';
 import { getTransactionTitle } from '../../lib';
 
@@ -16,7 +16,7 @@ type Props = {
 export const TransactionTitle = ({ tx, description, className, children }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
 
-  const title = getTransactionTitle(tx);
+  const title = getTransactionTitle(t, tx);
 
   return (
     <div className={cnTw('inline-flex gap-x-3 items-center', className)}>

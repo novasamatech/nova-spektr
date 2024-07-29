@@ -1,16 +1,16 @@
-import { useUnit } from 'effector-react';
 import { useForm } from 'effector-forms';
-import { FormEvent } from 'react';
+import { useUnit } from 'effector-react';
+import { type FormEvent } from 'react';
 
-import { Button, FootnoteText, Input, InputHint, Select, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { DropdownOption } from '@shared/ui/types';
-import { networkModel, networkUtils } from '@entities/network';
-import { ChainTitle } from '@entities/chain';
 import { type Chain } from '@shared/core';
-import { formModel } from '../../model/form-model';
-import { flowModel } from '../../model/flow-model';
+import { Button, FootnoteText, Input, InputHint, Select, SmallTitleText } from '@shared/ui';
+import { type DropdownOption } from '@shared/ui/types';
+import { ChainTitle } from '@entities/chain';
+import { networkModel, networkUtils } from '@entities/network';
 import { Step } from '../../lib/types';
+import { flowModel } from '../../model/flow-model';
+import { formModel } from '../../model/form-model';
 
 const getChainOptions = (chains: Chain[]): DropdownOption<Chain>[] => {
   return chains

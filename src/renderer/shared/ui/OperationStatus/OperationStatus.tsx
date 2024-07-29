@@ -1,7 +1,7 @@
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 
-import { CaptionText } from '@shared/ui';
 import { cnTw } from '@shared/lib/utils';
+import { CaptionText } from '../Typography';
 
 type Pallet = 'default' | 'success' | 'error';
 

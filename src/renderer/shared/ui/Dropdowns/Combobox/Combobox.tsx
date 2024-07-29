@@ -1,17 +1,17 @@
+import { Combobox as HeadlessCombobox, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
-import { Transition, Combobox as HeadlessCombobox } from '@headlessui/react';
 
 import { cnTw } from '@shared/lib/utils';
-import { Props as InputProps } from '@shared/ui/Inputs/Input/Input';
-import { Position, ComboboxOption, Theme } from '../common/types';
-import { FootnoteText, Input } from '@shared/ui';
+import { Input, type Props as InputProps } from '../../Inputs/Input/Input';
+import { FootnoteText } from '../../Typography';
 import {
-  OptionsContainerStyle,
-  OptionsContainerStyleTheme,
   OptionStyle,
   OptionStyleTheme,
+  OptionsContainerStyle,
+  OptionsContainerStyleTheme,
   ViewClass,
 } from '../common/constants';
+import { type ComboboxOption, type Position, type Theme } from '../common/types';
 
 type Props = Omit<InputProps, 'onChange' | 'value'> & {
   query?: string;
@@ -47,7 +47,7 @@ export const Combobox = ({
         <HeadlessCombobox.Input
           as={Input}
           displayValue={(option: ComboboxOption) => option.value}
-          // @ts-ignore onChange doesn't respect custom <Input /> onChange type
+          // @ts-expect-error onChange doesn't respect custom <Input /> onChange type
           onChange={onInput}
           {...inputProps}
         />

@@ -2,13 +2,11 @@ import { type ApiPromise } from '@polkadot/api';
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
-import { type Address, Chain, type ChainId, type Identity, type Referendum } from '@shared/core';
-import { referendumService } from '@entities/governance';
+import { type Address, type Chain, type ChainId, type Identity, type Referendum } from '@shared/core';
 import { proposersService } from '../lib/proposersService';
+import { referendumService } from '../lib/referendumService';
 
 const $proposers = createStore<Record<ChainId, Record<Address, Identity>>>({});
-
-const requestProposer = createEvent<{ referendum: Referendum; chain: Chain; api: ApiPromise }>();
 
 type GetProposersParams = {
   api: ApiPromise;
@@ -16,12 +14,15 @@ type GetProposersParams = {
   addresses: Address[];
 };
 
+const requestReferendumProposer = createEvent<{ referendum: Referendum; chain: Chain; api: ApiPromise }>();
+const requestProposers = createEvent<GetProposersParams>();
+
 const requestProposersFx = createEffect(({ api, addresses }: GetProposersParams) => {
   return proposersService.getIdentities(api, addresses);
 });
 
 sample({
-  clock: requestProposer,
+  clock: requestReferendumProposer,
   filter: ({ referendum }) => referendumService.isOngoing(referendum),
   fn: ({ api, chain, referendum }) => {
     return {
@@ -33,6 +34,11 @@ sample({
           : [],
     };
   },
+  target: requestProposersFx,
+});
+
+sample({
+  clock: requestProposers,
   target: requestProposersFx,
 });
 
@@ -50,6 +56,8 @@ export const proposerIdentityModel = {
   $isProposersLoading: requestProposersFx.pending,
 
   events: {
-    requestProposer,
+    proposersRequestDone: requestProposersFx.done,
+    requestReferendumProposer,
+    requestProposers,
   },
 };

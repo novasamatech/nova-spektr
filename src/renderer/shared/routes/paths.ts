@@ -1,4 +1,4 @@
-import type { ObjectValues } from '../core';
+import { type ObjectValues } from '../core';
 
 export const Paths = {
   ROOT: '/',

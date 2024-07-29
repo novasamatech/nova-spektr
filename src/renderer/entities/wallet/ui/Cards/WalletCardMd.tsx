@@ -1,10 +1,10 @@
-import { ReactNode, MouseEvent } from 'react';
+import { type MouseEvent, type ReactNode } from 'react';
 
-import type { Wallet } from '@shared/core';
-import { FootnoteText, IconButton } from '@shared/ui';
+import { type Wallet } from '@shared/core';
 import { cnTw } from '@shared/lib/utils';
-import { WalletIcon } from '../WalletIcon/WalletIcon';
+import { FootnoteText, IconButton } from '@shared/ui';
 import { walletUtils } from '@entities/wallet';
+import { WalletIcon } from '../WalletIcon/WalletIcon';
 
 type Props = {
   wallet: Wallet;

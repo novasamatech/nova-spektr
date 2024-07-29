@@ -1,7 +1,7 @@
+import { combine, createEvent, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
-import { sample, createEvent, combine, createStore } from 'effector';
 
-import { governanceModel, type SourceType } from '@entities/governance';
+import { type GovernanceApiSource, governanceModel } from '@entities/governance';
 
 const flowStarted = createEvent();
 const flowClosed = createEvent();
@@ -11,7 +11,7 @@ const $isFlowStarted = createStore(false).reset(flowClosed);
 const $offChainForm = createForm({
   fields: {
     source: {
-      init: '' as SourceType,
+      init: '' as GovernanceApiSource,
       rules: [
         {
           name: 'required',

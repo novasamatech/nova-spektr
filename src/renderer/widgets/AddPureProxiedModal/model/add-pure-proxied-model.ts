@@ -1,36 +1,37 @@
+import { type ApiPromise } from '@polkadot/api';
+import { type UnsubscribePromise } from '@polkadot/api/types';
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { combineEvents, delay, spread } from 'patronum';
-import { ApiPromise } from '@polkadot/api';
-import { UnsubscribePromise } from '@polkadot/api/types';
 
-import { toAddress } from '@shared/lib/utils';
-import { walletSelectModel } from '@features/wallets';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import {
-  type ProxyGroup,
+  type Account,
+  type AccountId,
+  type BasketTransaction,
   type NoID,
+  type PartialProxiedAccount,
+  type ProxyGroup,
   ProxyType,
-  AccountId,
-  PartialProxiedAccount,
   ProxyVariant,
-  Timepoint,
-  Account,
-  BasketTransaction,
-  Transaction,
+  type Timepoint,
+  type Transaction,
 } from '@shared/core';
-import { proxyModel, proxyUtils } from '@entities/proxy';
-import { networkModel } from '@entities/network';
-import { balanceSubModel } from '@features/balances';
-import { proxiesModel } from '@features/proxies';
-import { Step, AddPureProxiedStore } from '../lib/types';
-import { addPureProxiedUtils } from '../lib/add-pure-proxied-utils';
-import { formModel } from './form-model';
-import { addPureProxiedConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
+import { toAddress } from '@shared/lib/utils';
+import { basketModel } from '@entities/basket/model/basket-model';
 import { subscriptionService } from '@entities/chain';
+import { networkModel } from '@entities/network';
+import { proxyModel, proxyUtils } from '@entities/proxy';
+import { type ExtrinsicResultParams, transactionService } from '@entities/transaction';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { balanceSubModel } from '@features/balances';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
-import { basketModel } from '@entities/basket/model/basket-model';
-import { ExtrinsicResultParams, transactionService } from '@entities/transaction';
+import { addPureProxiedConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
+import { proxiesModel } from '@features/proxies';
+import { walletSelectModel } from '@features/wallets';
+import { addPureProxiedUtils } from '../lib/add-pure-proxied-utils';
+import { type AddPureProxiedStore, Step } from '../lib/types';
+
+import { formModel } from './form-model';
 
 const stepChanged = createEvent<Step>();
 
@@ -108,8 +109,7 @@ const getPureProxyFx = createEffect(
         data: [undefined, toAddress(accountId, { prefix: api.registry.chainSS58 })],
       };
 
-      let unsubscribe: UnsubscribePromise;
-      unsubscribe = subscriptionService.subscribeEvents(api, pureCreatedParams, (event) => {
+      const unsubscribe: UnsubscribePromise = subscriptionService.subscribeEvents(api, pureCreatedParams, (event) => {
         unsubscribe?.then((fn) => fn());
 
         resolve({
@@ -340,7 +340,7 @@ sample({
     coreTx: $coreTx,
     txWrappers: formModel.$txWrappers,
   },
-  filter: ({ store, coreTx, txWrappers }: any) => {
+  filter: ({ store, coreTx, txWrappers }) => {
     return Boolean(store) && Boolean(coreTx) && Boolean(txWrappers);
   },
   fn: ({ store, coreTx, txWrappers }) => {

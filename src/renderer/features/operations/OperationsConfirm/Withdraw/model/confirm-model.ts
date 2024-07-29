@@ -1,6 +1,6 @@
-import { createEvent, combine, sample, restore } from 'effector';
+import { combine, createEvent, restore, sample } from 'effector';
 
-import { Chain, Account, Asset, type ProxiedAccount, Wallet } from '@shared/core';
+import { type Account, type Asset, type Chain, type ProxiedAccount, type Wallet } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
 
 type Input = {
@@ -92,12 +92,7 @@ const $signerWallets = combine(
     if (!store) return {};
 
     return store.reduce<Record<number, Wallet>>((acc, storeItem, index) => {
-      if (!storeItem.proxiedAccount || (!storeItem.signatory?.walletId && !storeItem.shards[0]?.walletId)) return acc;
-
-      const wallet = walletUtils.getWalletById(
-        wallets,
-        (storeItem.signatory?.walletId || storeItem.shards[0]?.walletId)!,
-      );
+      const wallet = walletUtils.getWalletById(wallets, storeItem.signatory?.walletId || storeItem.shards[0]?.walletId);
       if (!wallet) return acc;
 
       const id = storeItem.id ?? index;

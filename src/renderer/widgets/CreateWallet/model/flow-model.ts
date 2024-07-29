@@ -3,29 +3,30 @@ import sortBy from 'lodash/sortBy';
 import { delay, spread } from 'patronum';
 
 import {
-  Account,
+  type Account,
   AccountType,
-  ChainId,
+  type ChainId,
   ChainType,
   CryptoType,
-  MultisigAccount,
-  Signatory,
+  type MultisigAccount,
+  type Signatory,
   SigningType,
-  Transaction,
+  type Transaction,
   TransactionType,
   WalletType,
   WrapperKind,
 } from '@shared/core';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { networkModel, networkUtils } from '@entities/network';
-import { AddMultisigStore, FormSubmitEvent, Step } from '../lib/types';
-import { formModel } from './form-model';
-import { transactionService } from '@entities/transaction';
 import { SS58_DEFAULT_PREFIX, TEST_ACCOUNTS, ZERO_BALANCE, toAccountId, toAddress } from '@shared/lib/utils';
-import { confirmModel } from './confirm-model';
+import { networkModel, networkUtils } from '@entities/network';
+import { transactionService } from '@entities/transaction';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { createMultisigUtils } from '../lib/create-multisig-utils';
+import { type AddMultisigStore, type FormSubmitEvent, Step } from '../lib/types';
+
+import { confirmModel } from './confirm-model';
+import { formModel } from './form-model';
 import { signatoryModel } from './signatory-model';
 
 const stepChanged = createEvent<Step>();

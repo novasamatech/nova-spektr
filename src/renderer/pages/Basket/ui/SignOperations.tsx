@@ -1,13 +1,16 @@
-import { ReactNode, useRef, useState } from 'react';
 import { useUnit } from 'effector-react';
+import { type ReactNode, useRef, useState } from 'react';
 
-import { BaseModal, HeaderTitleText, IconButton } from '@shared/ui';
-import { useModalClose } from '@shared/lib/hooks';
 import { useI18n } from '@app/providers';
-import { TransactionType, WalletType, type BasketTransaction } from '@shared/core';
+import { type BasketTransaction, TransactionType, WalletType } from '@shared/core';
+import { useModalClose } from '@shared/lib/hooks';
+import { cnTw } from '@shared/lib/utils';
+import { BaseModal, HeaderTitleText, IconButton } from '@shared/ui';
+import { OperationTitle } from '@entities/chain';
+import { networkModel } from '@entities/network';
+import { SignButton } from '@entities/operations';
+import { TransferTypes, XcmTypes } from '@entities/transaction';
 import { OperationSign, OperationSubmit } from '@features/operations';
-import { signOperationsUtils } from '../lib/sign-operations-utils';
-import { signOperationsModel } from '../model/sign-operations-model';
 import {
   AddProxyConfirm,
   AddPureProxiedConfirm,
@@ -22,14 +25,11 @@ import {
   UnstakeConfirmation,
   WithdrawConfirmation,
 } from '@features/operations/OperationsConfirm';
-import { TransferTypes, XcmTypes } from '@entities/transaction';
-import { networkModel } from '@entities/network';
-import { OperationTitle } from '@entities/chain';
 import { getOperationTitle } from '../lib/operation-title';
-import { cnTw } from '@shared/lib/utils';
-import { Step } from '../types';
-import { SignButton } from '@entities/operations';
+import { signOperationsUtils } from '../lib/sign-operations-utils';
 import { getCoreTx } from '../lib/utils';
+import { signOperationsModel } from '../model/sign-operations-model';
+import { Step } from '../types';
 
 export const SignOperations = () => {
   const { t } = useI18n();
@@ -49,15 +49,16 @@ export const SignOperations = () => {
 
   const scroll = (value: number) => {
     setTimeout(() =>
-      // TS doesn't recognize offsetLeft
-      // @ts-ignore
+      // @ts-expect-error TS doesn't recognize offsetLeft
       ref.current?.scrollTo({ left: ref.current?.childNodes[0].childNodes[value].offsetLeft - 16, behavior: 'smooth' }),
     );
   };
 
-  if (signOperationsUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  if (signOperationsUtils.isSubmitStep(step)) {
+    return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  }
 
-  const getModalTitle = (basketTransaction: BasketTransaction): String | ReactNode => {
+  const getModalTitle = (basketTransaction: BasketTransaction): string | ReactNode => {
     const chain = chains[basketTransaction.coreTx.chainId];
 
     const { title, params } = getOperationTitle(basketTransaction, chain);
@@ -96,7 +97,7 @@ export const SignOperations = () => {
       [TransactionType.UNSTAKE]: () => <UnstakeConfirmation id={transaction.id} hideSignButton />,
     };
 
-    // @ts-ignore
+    // @ts-expect-error not all types are used
     return Components[type];
   };
 

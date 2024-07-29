@@ -1,9 +1,10 @@
+import { type ApiPromise } from '@polkadot/api';
 import { act, render, screen } from '@testing-library/react';
-import { ApiPromise } from '@polkadot/api';
+
+import { type ChainXCM, type XcmConfig } from '@shared/api/xcm';
+import { type Asset, type Transaction } from '@shared/core';
 
 import { XcmFee } from './XcmFee';
-import { ChainXCM, XcmConfig } from '@shared/api/xcm';
-import type { Asset, Transaction } from '@shared/core';
 
 jest.mock('@app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({

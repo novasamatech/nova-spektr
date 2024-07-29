@@ -1,4 +1,4 @@
-import type { Config } from 'jest';
+import { type Config } from 'jest';
 
 const swcConfig = {
   sourceMaps: 'inline',
@@ -44,6 +44,7 @@ const config: Config = {
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '^raptorq$': '<rootDir>/node_modules/raptorq/raptorq.js',
+    '^@/(.*)$': '<rootDir>/src/renderer/$1',
     '^@renderer(.*)$': '<rootDir>/src/renderer/$1',
     '^@app(.*)$': '<rootDir>/src/renderer/app/$1',
     '^@pages(.*)$': '<rootDir>/src/renderer/pages/$1',

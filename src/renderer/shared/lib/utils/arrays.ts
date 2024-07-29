@@ -1,4 +1,4 @@
-import type { KeysOfType } from '../../core/types/utility';
+import { type KeysOfType } from '../../core/types/utility';
 
 /**
  * Get new array with item inserted at given position
@@ -7,7 +7,7 @@ import type { KeysOfType } from '../../core/types/utility';
  * @param position at which position
  * @return {Array}
  */
-export function splice<T extends any>(collection: T[], item: T, position: number): T[] {
+export function splice<T>(collection: T[], item: T, position: number): T[] {
   return collection.slice(0, position).concat(item, collection.slice(position + 1));
 }
 
@@ -24,28 +24,31 @@ export function dictionary<T extends Record<K, PropertyKey>, K extends KeysOfTyp
   property: K,
   predicate?: (item: T) => any,
 ): Record<T[K], any> {
-  return collection.reduce((acc, item) => {
-    const element = item[property];
+  return collection.reduce(
+    (acc, item) => {
+      const element = item[property];
 
-    if (predicate) {
-      acc[element] = predicate(item);
-    } else {
-      acc[element] = item;
-    }
+      if (predicate) {
+        acc[element] = predicate(item);
+      } else {
+        acc[element] = item;
+      }
 
-    return acc;
-  }, {} as Record<T[K], any>);
+      return acc;
+    },
+    {} as Record<T[K], any>,
+  );
 }
 
 export function getRepeatedIndex(index: number, base: number): number {
   return Math.floor(index / base);
 }
 
-export function addUnique<T extends any>(collection: T[], item: T): T[] {
+export function addUnique<T>(collection: T[], item: T): T[] {
   return collection.includes(item) ? [...collection] : [...collection, item];
 }
 
-export function removeFromCollection<T extends any>(collection: T[], item: T): T[] {
+export function removeFromCollection<T>(collection: T[], item: T): T[] {
   return collection.filter((i) => i !== item);
 }
 
@@ -54,3 +57,17 @@ export const sortByDateDesc = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]
 
 export const sortByDateAsc = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]): number =>
   new Date(dateA) > new Date(dateB) ? 1 : -1;
+
+export const toKeysRecord = <T extends string[]>(array: T): Record<T[number], true> => {
+  const res: Record<string, true> = {};
+
+  for (let i = 0; i < array.length; i++) {
+    const item = array[i];
+    if (!item) {
+      continue;
+    }
+    res[item] = true;
+  }
+
+  return res as Record<T[number], true>;
+};

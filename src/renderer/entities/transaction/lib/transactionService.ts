@@ -1,34 +1,36 @@
-import { useState } from 'react';
-import { ApiPromise } from '@polkadot/api';
-import { SubmittableExtrinsic } from '@polkadot/api/types';
-import { hexToU8a } from '@polkadot/util';
-import { construct, UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import { Weight } from '@polkadot/types/interfaces';
-import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
-import type { SignerOptions } from '@polkadot/api/types/submittable';
+import { type ApiPromise } from '@polkadot/api';
+import { type SubmittableExtrinsic } from '@polkadot/api/types';
+import { type SignerOptions } from '@polkadot/api/types/submittable';
 import { u32 } from '@polkadot/types';
+import { type Weight } from '@polkadot/types/interfaces';
+import { hexToU8a } from '@polkadot/util';
+import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
+import { type UnsignedTransaction, construct } from '@substrate/txwrapper-polkadot';
+import { useState } from 'react';
 
-import { Transaction, WrapperKind } from '@shared/core';
-import { createTxMetadata, toAccountId, dictionary, TxMetadata } from '@shared/lib/utils';
-import { getExtrinsic, getUnsignedTransaction, wrapAsMulti, wrapAsProxy } from './extrinsicService';
-import { decodeDispatchError } from './common/utils';
-import { useCallDataDecoder } from './callDataDecoder';
-import { walletUtils } from '../../wallet';
-import type {
-  AccountId,
-  HexString,
-  MultisigThreshold,
-  Wallet,
-  MultisigAccount,
-  ProxiedAccount,
-  Account,
-  TxWrappers_OLD,
-  WrapAsMulti,
-  TxWrapper,
-  MultisigTxWrapper,
-  ProxyTxWrapper,
+import {
+  type Account,
+  type AccountId,
+  type HexString,
+  type MultisigAccount,
+  type MultisigThreshold,
+  type MultisigTxWrapper,
+  type ProxiedAccount,
+  type ProxyTxWrapper,
+  type Transaction,
+  type TxWrapper,
+  type TxWrappers_OLD,
+  type Wallet,
+  type WrapAsMulti,
+  WrapperKind,
 } from '@shared/core';
-import { HashData, ITransactionService } from './common/types';
+import { type TxMetadata, createTxMetadata, dictionary, toAccountId } from '@shared/lib/utils';
+import { walletUtils } from '../../wallet';
+
+import { useCallDataDecoder } from './callDataDecoder';
+import { type HashData, type ITransactionService } from './common/types';
+import { decodeDispatchError } from './common/utils';
+import { getExtrinsic, getUnsignedTransaction, wrapAsMulti, wrapAsProxy } from './extrinsicService';
 
 export const transactionService = {
   hasMultisig,
@@ -75,10 +77,10 @@ async function signAndSubmit(
     .send((result) => {
       const { status, events, txHash, txIndex, blockNumber } = result as any;
 
-      let actualTxHash = txHash.toHex();
+      const actualTxHash = txHash.toHex();
+      const extrinsicIndex = txIndex;
       let isFinalApprove = false;
       let multisigError = '';
-      let extrinsicIndex = txIndex;
       let extrinsicSuccess = false;
 
       if (status.isInBlock) {
@@ -340,7 +342,7 @@ export const useTransaction = (): ITransactionService => {
     return weight;
   };
 
-  const verifySignature = (payload: Uint8Array, signature: HexString, accountId: AccountId): Boolean => {
+  const verifySignature = (payload: Uint8Array, signature: HexString, accountId: AccountId): boolean => {
     const payloadToVerify = payload.length > 256 ? blake2AsU8a(payload) : payload;
 
     return signatureVerify(payloadToVerify, signature, accountId).isValid;

@@ -1,6 +1,6 @@
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
 
-import { Chain, ChainOptions, SigningType, Wallet, WalletType } from '@shared/core';
+import { type Chain, ChainOptions, SigningType, type Wallet, WalletType } from '@shared/core';
 
 export const testApi = {
   key: 'test-api',

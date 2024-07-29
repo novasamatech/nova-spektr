@@ -1,9 +1,10 @@
 import { allSettled, fork } from 'effector';
 
-import { confirmModel } from '../confirm-model';
+import { type Account, type Chain } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
-import { Account, Chain } from '@shared/core';
+import { confirmModel } from '../confirm-model';
+
 import { initiatorWallet, signerWallet, testApi } from './mock';
 
 describe('widgets/CreateWallet/model/confirm-model', () => {

@@ -1,6 +1,6 @@
-import { Transaction } from 'dexie';
+import { type Transaction } from 'dexie';
 
-import { MultisigEventDS } from '../lib/types';
+import { type MultisigEventDS } from '../lib/types';
 
 /**
  * Remove events from MultisigTransactions

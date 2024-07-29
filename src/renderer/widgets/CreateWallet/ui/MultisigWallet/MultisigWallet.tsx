@@ -1,21 +1,22 @@
 import { useForm } from 'effector-forms';
-import { useEffect } from 'react';
 import { useUnit } from 'effector-react';
 import noop from 'lodash/noop';
+import { useEffect } from 'react';
 
-import { BaseModal, HeaderTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
+import { DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { BaseModal, HeaderTitleText } from '@shared/ui';
+import { ChainTitle } from '@entities/chain';
+import { OperationSign, OperationSubmit } from '@features/operations';
+import { createMultisigUtils } from '../../lib/create-multisig-utils';
+import { Step } from '../../lib/types';
+import { flowModel } from '../../model/flow-model';
+import { formModel } from '../../model/form-model';
+
 import { ConfirmationStep } from './ConfirmationStep';
 import { NameNetworkSelection } from './NameNetworkSelection';
-import { DEFAULT_TRANSITION } from '@shared/lib/utils';
-import { flowModel } from '../../model/flow-model';
-import { createMultisigUtils } from '../../lib/create-multisig-utils';
-import { formModel } from '../../model/form-model';
 import { SelectSignatoriesThreshold } from './SelectSignatoriesThreshold';
-import { Step } from '../../lib/types';
-import { OperationSign, OperationSubmit } from '@features/operations';
-import { ChainTitle } from '@entities/chain';
 
 type Props = {
   isOpen: boolean;

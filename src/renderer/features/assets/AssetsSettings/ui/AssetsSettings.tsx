@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
-import { Switch, IconButton, MenuPopover, Select, FootnoteText } from '@shared/ui';
 import { useI18n } from '@app/providers';
+import { FootnoteText, IconButton, MenuPopover, Select, Switch } from '@shared/ui';
 import { AssetsListView } from '@entities/asset';
 import { assetsSettingsModel } from '../model/assets-settings-modal';
 

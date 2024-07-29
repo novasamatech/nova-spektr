@@ -1,81 +1,99 @@
+import { BN } from '@polkadot/util';
+
+import {
+  type SubsquareReferendumVote,
+  type SubsquareSimpleReferendum,
+  type SubsquareTimelineRecord,
+  subsquareApiService,
+} from '@shared/api/subsquare';
 import { dictionary } from '@shared/lib/utils';
-import type { Chain } from '@shared/core';
-import type { IGovernanceApi } from '../lib/types';
-import { offChainUtils } from '../lib/off-chain-utils';
+import { type SubsquareTimelineRecordStatus } from '../../../subsquare/lib/types';
+import {
+  type GovernanceApi,
+  type ReferendumTimelineRecord,
+  type ReferendumTimelineRecordStatus,
+  type ReferendumVote,
+} from '../lib/types';
 
-type SubsquareData = {
-  total: number;
-  items: {
-    title: string;
-    referendumIndex: string;
-  }[];
+const getReferendumList: GovernanceApi['getReferendumList'] = async (chain, callback) => {
+  const network = chain.specName;
+
+  const parseSubsquareData = (data: SubsquareSimpleReferendum[]) =>
+    dictionary(data, 'referendumIndex', (item) => item.title);
+
+  return subsquareApiService
+    .fetchReferendumList({ network }, (data, done) => callback(parseSubsquareData(data), done))
+    .then(parseSubsquareData);
 };
 
-/**
- * Request referendum list without details
- * Subsquare can give us only 100 units of data each round
- * Ping their API to check "total" referendums and request remaining with Promise.allSettled
- * @param chain chainId value
- * @param callback returns portions of data
- */
-const getReferendumList: IGovernanceApi['getReferendumList'] = async (chain, callback) => {
-  const chainName = chain.specName;
-  const pageSize = 100;
-
-  if (chainName) {
-    const getApiUrl = (chainName: string, page: number, size = 100): string => {
-      return `https://${chainName}.subsquare.io/api/gov2/referendums?page=${page}&page_size=${size}&simple=true`;
-    };
-
-    const ping: SubsquareData = await fetch(getApiUrl(chainName, 1, pageSize), {
-      method: 'GET',
-      mode: 'same-origin',
-    }).then((r) => r.json());
-    const totalPages = Math.ceil(ping.total / pageSize);
-
-    callback(parseSubsquareData(ping), totalPages === 1);
-
-    return offChainUtils.createChunkedTasks({
-      items: Array.from({ length: totalPages - 1 }),
-      chunkSize: 6,
-      task: (_, index) => {
-        return fetch(getApiUrl(chainName, index + 2, pageSize), { method: 'GET', mode: 'no-cors' })
-          .then((res) => res.json())
-          .then((data: SubsquareData) => {
-            callback(parseSubsquareData(data), index === totalPages - 1);
-          });
-      },
-    });
-  }
-};
-
-function parseSubsquareData(data: SubsquareData) {
-  return dictionary(data.items, 'referendumIndex', (item) => item.title);
-}
-
-/**
- * Request referendum details
- * @param chain chainId value
- * @param index referendum index
- * @return {Promise}
- */
-async function getReferendumDetails(chain: Chain, index: string): Promise<string | undefined> {
-  const chainName = chain.specName;
-  if (!chainName) return undefined;
-
-  const apiUrl = `https://${chainName}.subsquare.io/api/gov2/referendums/${index}`;
-
+const getReferendumDetails: GovernanceApi['getReferendumDetails'] = async (chain, referendumId) => {
+  const network = chain.specName;
   try {
-    const details = await fetch(apiUrl).then((r) => r.json());
+    const details = await subsquareApiService.fetchReferendum({ network, referendumId });
 
     return details.content;
   } catch {
     return undefined;
   }
-}
+};
 
-// TODO: use callback to return the data, instead of waiting all at once
-export const subsquareService: IGovernanceApi = {
+const getReferendumVotes: GovernanceApi['getReferendumVotes'] = (chain, referendumId, callback) => {
+  const network = chain.specName;
+
+  const mapVote = (vote: SubsquareReferendumVote): ReferendumVote => {
+    let balance: BN | null = null;
+    let decision: ReferendumVote['decision'] = 'abstain';
+
+    if ('votes' in vote) {
+      balance = new BN(vote.votes);
+      decision = vote.aye ? 'aye' : 'nay';
+    } else {
+      const ayeBalance = new BN(vote.ayeBalance);
+      const nayBalance = new BN(vote.nayBalance);
+      balance = ayeBalance.add(nayBalance);
+      decision = 'abstain';
+    }
+
+    return {
+      voter: vote.account,
+      balance,
+      decision,
+      conviction: vote.conviction,
+    };
+  };
+
+  return subsquareApiService
+    .fetchReferendumVotes({ network, referendumId }, (data, done) => callback(data.map(mapVote), done))
+    .then((data) => data.map(mapVote));
+};
+
+const getReferendumTimeline: GovernanceApi['getReferendumTimeline'] = async (chain, referendumId) => {
+  const mapStatus = (status: SubsquareTimelineRecordStatus): ReferendumTimelineRecordStatus => {
+    switch (status) {
+      case 'Placed':
+        return 'DecisionDepositPlaced';
+      case 'DecisionStarted':
+        return 'Deciding';
+      default:
+        return status;
+    }
+  };
+
+  const mapTimeline = (timeline: SubsquareTimelineRecord): ReferendumTimelineRecord => {
+    return {
+      status: mapStatus(timeline.name),
+      date: new Date(timeline.indexer.blockTime),
+    };
+  };
+
+  return subsquareApiService
+    .fetchReferendum({ network: chain.specName, referendumId })
+    .then((r) => r.onchainData.timeline.map(mapTimeline));
+};
+
+export const subsquareService: GovernanceApi = {
   getReferendumList,
+  getReferendumVotes,
   getReferendumDetails,
+  getReferendumTimeline,
 };

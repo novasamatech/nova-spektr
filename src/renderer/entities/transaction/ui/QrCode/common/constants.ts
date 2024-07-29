@@ -1,8 +1,18 @@
-import { array, Codec, object, option, sizedUint8Array, str, taggedUnion, u8, uint8Array } from 'parity-scale-codec';
+import {
+  type Codec,
+  array,
+  object,
+  option,
+  sizedUint8Array,
+  str,
+  taggedUnion,
+  u8,
+  uint8Array,
+} from 'parity-scale-codec';
 
-import { AddressInfo, DdAddressInfo, DdSeedInfo, SeedInfo } from './types';
-import { CryptoType, CryptoTypeString } from '@shared/core';
-import type { ChainId } from '@shared/core';
+import { type ChainId, type CryptoType, CryptoTypeString } from '@shared/core';
+
+import { type AddressInfo, type DdAddressInfo, type DdSeedInfo, type SeedInfo } from './types';
 
 export const FRAME_KEY = 2;
 

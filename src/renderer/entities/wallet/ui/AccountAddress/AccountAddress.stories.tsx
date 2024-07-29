@@ -1,7 +1,8 @@
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+
+import { TEST_ACCOUNTS } from '@shared/lib/utils';
 
 import { AccountAddress } from './AccountAddress';
-import { TEST_ACCOUNTS } from '@shared/lib/utils';
 
 export default {
   title: 'Address',

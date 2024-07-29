@@ -1,8 +1,12 @@
 import { allSettled, fork } from 'effector';
 
-import { formModel } from '../form-model';
+import { ConnectionStatus } from '@shared/core';
+import { toAddress } from '@shared/lib/utils';
 import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
+import { formModel } from '../form-model';
+import { signatoryModel } from '../signatory-model';
+
 import {
   initiatorWallet,
   multisigWallet,
@@ -12,9 +16,6 @@ import {
   testChain,
   wrongChainWallet,
 } from './mock';
-import { ConnectionStatus } from '@shared/core';
-import { toAddress } from '@shared/lib/utils';
-import { signatoryModel } from '../signatory-model';
 
 jest.mock('@shared/lib/utils', () => ({
   ...jest.requireActual('@shared/lib/utils'),

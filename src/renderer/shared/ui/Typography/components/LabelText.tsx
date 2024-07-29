@@ -1,4 +1,4 @@
-import { DetailedHTMLProps, LabelHTMLAttributes } from 'react';
+import { type DetailedHTMLProps, type LabelHTMLAttributes } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
 

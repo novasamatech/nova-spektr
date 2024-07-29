@@ -1,9 +1,9 @@
 import { useState } from 'react';
 
 import { useI18n } from '@app/providers';
-import { Input, Combobox, Identicon, Icon, IconButton } from '@shared/ui';
-import { signatoryModel } from '../../../model/signatory-model';
 import { validateAddress } from '@shared/lib/utils';
+import { Combobox, Icon, IconButton, Identicon, Input } from '@shared/ui';
+import { signatoryModel } from '../../../model/signatory-model';
 
 interface Props {
   index: number;

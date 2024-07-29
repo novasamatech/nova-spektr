@@ -1,9 +1,9 @@
-import { useState, ChangeEvent, ComponentPropsWithoutRef, forwardRef } from 'react';
+import { type ChangeEvent, type ComponentPropsWithoutRef, forwardRef, useState } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
-import { HTMLInputFileProps } from '../common/types';
 import { Icon } from '../../Icon/Icon';
 import { FootnoteText, TextBase } from '../../Typography';
+import { type HTMLInputFileProps } from '../common/types';
 
 interface Props extends Pick<ComponentPropsWithoutRef<'input'>, HTMLInputFileProps> {
   invalid?: boolean;

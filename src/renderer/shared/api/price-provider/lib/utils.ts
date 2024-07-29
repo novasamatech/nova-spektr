@@ -1,4 +1,4 @@
-import { PriceObject, PriceDB } from './types';
+import { type PriceDB, type PriceObject } from './types';
 
 export function getCurrencyChangeKey(currency: string): string {
   return `${currency}_24h_change`;

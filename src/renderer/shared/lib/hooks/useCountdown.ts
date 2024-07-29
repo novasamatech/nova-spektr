@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
+import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_THOUSAND } from '@polkadot/util';
-import { ApiPromise } from '@polkadot/api';
+import { useCallback, useEffect, useState } from 'react';
 
 import { DEFAULT_QR_LIFETIME, getExpectedBlockTime } from '@shared/lib/utils';
 

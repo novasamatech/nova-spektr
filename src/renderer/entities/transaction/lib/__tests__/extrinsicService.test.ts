@@ -1,10 +1,11 @@
 import { ApiPromise } from '@polkadot/api';
-import { TypeRegistry } from '@polkadot/types';
 import { MockProvider } from '@polkadot/rpc-provider/mock';
+import { TypeRegistry } from '@polkadot/types';
 
-import { metadata } from './metadata';
 import { getExtrinsic } from '../extrinsicService';
 import { extrinsicTests } from '../mock/extrinsicService.mock';
+
+import { metadata } from './metadata';
 
 describe('entities/transaction/lib/extrinsicService', () => {
   const registry = new TypeRegistry();

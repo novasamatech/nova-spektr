@@ -1,84 +1,98 @@
-import type { Chain, ReferendumId } from '@shared/core';
-import type { IGovernanceApi } from '../lib/types';
+import { BN } from '@polkadot/util';
+
+import {
+  type PolkassemblyListingPost,
+  type PolkassemblyPostVote,
+  type PolkassembyPostStatus,
+  polkassemblyApiService,
+} from '@shared/api/polkassembly';
 import { dictionary } from '@shared/lib/utils';
-import { offChainUtils } from '../lib/off-chain-utils';
+import { type GovernanceApi, type ReferendumTimelineRecord, type ReferendumVote } from '../lib/types';
 
-type PolkassemblyData = {
-  count: number;
-  posts: {
-    title: string;
-    post_id: string;
-  }[];
+const referendumDecisionMap: Record<PolkassemblyPostVote['decision'], ReferendumVote['decision']> = {
+  abstain: 'abstain',
+  yes: 'aye',
+  no: 'nay',
 };
-/**
- * Request referendum list without details 100 units of data each round
- * Ping their API to check "total" referendums and request remaining with Promise.allSettled
- * @param chain
- * @param callback returns portions of data
- */
-const getReferendumList: IGovernanceApi['getReferendumList'] = async (chain, callback) => {
-  const chainName = chain.specName;
-  const pageSize = 100;
 
-  if (chainName) {
-    const getApiUrl = (page: number, size = pageSize) => {
-      return `https://api.polkassembly.io/api/v1/listing/on-chain-posts?proposalType=referendums_v2&page=${page}&listingLimit=${size}&sortBy=newest`;
-    };
-
-    const headers = new Headers();
-    headers.append('x-network', chainName);
-    headers.append('Cache-Control', 'public, max-age=600, must-revalidate');
-
-    const ping: PolkassemblyData = await fetch(getApiUrl(1), { method: 'GET', headers }).then((r) => r.json());
-    const totalPages = Math.ceil(ping.count / pageSize);
-
-    callback(parsePolkassemblyData(ping), totalPages === 1);
-
-    return offChainUtils.createChunkedTasks({
-      items: Array.from({ length: totalPages - 1 }),
-      chunkSize: 6,
-      task: (_, index) => {
-        return fetch(getApiUrl(index + 2), { method: 'GET', headers })
-          .then((res) => res.json())
-          .then((data: PolkassemblyData) => {
-            callback(parsePolkassemblyData(data), index === totalPages - 1);
-          });
-      },
-    });
+const getReferendumList: GovernanceApi['getReferendumList'] = async (chain, callback) => {
+  function mapListingPost(data: PolkassemblyListingPost[]) {
+    return dictionary(data, 'post_id', (item) => item.title);
   }
+
+  return polkassemblyApiService
+    .fetchPostsList(
+      {
+        network: chain.specName,
+        proposalType: 'referendums_v2',
+        sortBy: 'newest',
+      },
+      (data, done) => {
+        callback(mapListingPost(data), done);
+      },
+    )
+    .then(mapListingPost);
 };
 
-function parsePolkassemblyData(data: PolkassemblyData) {
-  return dictionary(data.posts, 'post_id', (item) => item.title);
-}
+const getReferendumVotes: GovernanceApi['getReferendumVotes'] = (chain, referendumId, callback) => {
+  const mapVote = (votes: PolkassemblyPostVote[]): ReferendumVote[] => {
+    return votes.map(({ decision, voter, balance, lockPeriod }) => ({
+      decision: referendumDecisionMap[decision],
+      voter,
+      balance: new BN('value' in balance ? balance.value : (balance.abstain ?? 0)),
+      conviction: typeof lockPeriod === 'number' ? (lockPeriod === 0 ? 0.1 : lockPeriod) : 0,
+    }));
+  };
+
+  return polkassemblyApiService
+    .fetchPostVotes(
+      {
+        network: chain.specName,
+        postId: referendumId,
+        voteType: 'ReferendumV2',
+      },
+      (data, done) => {
+        callback(mapVote(data), done);
+      },
+    )
+    .then(mapVote);
+};
 
 /**
  * Request referendum details
  * @param chain
  * @param referendumId referendum index
- * @return {Promise}
  */
-async function getReferendumDetails(chain: Chain, referendumId: ReferendumId): Promise<string | undefined> {
-  const chainName = chain.specName;
-  if (!chainName) return undefined;
+const getReferendumDetails: GovernanceApi['getReferendumDetails'] = async (chain, referendumId) => {
+  return polkassemblyApiService
+    .fetchPost({
+      network: chain.specName,
+      postId: referendumId,
+      proposalType: 'referendums_v2',
+    })
+    .then((r) => r.content);
+};
 
-  try {
-    const headers = new Headers();
-    headers.append('x-network', chainName);
-    headers.append('Cache-Control', 'public, max-age=600, must-revalidate');
+const mapTimeline = (timeline: PolkassembyPostStatus): ReferendumTimelineRecord => {
+  return {
+    status: timeline.status,
+    date: new Date(timeline.timestamp),
+  };
+};
 
-    const apiUrl = `https://api.polkassembly.io/api/v1/posts/on-chain-post?proposalType=referendums_v2&postId=${referendumId}`;
+const getReferendumTimeline: GovernanceApi['getReferendumTimeline'] = async (chain, referendumId) => {
+  return polkassemblyApiService
+    .fetchPost({
+      network: chain.specName,
+      postId: referendumId,
+      proposalType: 'referendums_v2',
+    })
+    .then((r) => r.timeline.flatMap((timeline) => timeline.statuses.map(mapTimeline)));
+};
 
-    const details = await (await fetch(apiUrl, { method: 'GET', headers })).json();
-
-    return details.content;
-  } catch {
-    return undefined;
-  }
-}
-
-// TODO: use callback to return the data, instead of waiting all at once
-export const polkassemblyService: IGovernanceApi = {
+export const polkassemblyService: GovernanceApi = {
   getReferendumList,
+  getReferendumVotes,
   getReferendumDetails,
+  getReferendumTimeline,
 };

@@ -1,4 +1,4 @@
-import { act, screen, render, waitForElementToBeRemoved } from '@testing-library/react';
+import { act, render, screen, waitForElementToBeRemoved } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { Popover } from './Popover';
@@ -29,7 +29,7 @@ describe('ui/Popover', () => {
 
     await act(async () => user.unhover(text));
 
-    await waitForElementToBeRemoved(screen.queryByText('content'), { timeout: 300 });
+    await waitForElementToBeRemoved(screen.queryByText('content'), { timeout: 500 });
   });
 
   test('should toggle popover on focus/blur', async () => {

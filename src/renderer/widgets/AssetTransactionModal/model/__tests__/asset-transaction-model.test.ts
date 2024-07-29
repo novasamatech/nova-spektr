@@ -1,6 +1,6 @@
 import { allSettled, fork } from 'effector';
 
-import { AssetByChains } from '@shared/core';
+import { type AssetByChains } from '@shared/core';
 import { portfolioModel } from '@features/assets';
 import { ModalType, Step } from '../../lib/types';
 import { assetTransactionModel } from '../asset-transaction-model';

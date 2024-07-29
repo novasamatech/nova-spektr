@@ -1,5 +1,6 @@
+import { type ChainId } from '@shared/core';
+
 import { UserSettings } from './lib/types';
-import type { ChainId } from '@shared/core';
 
 // TODO: should be removed
 // Access STAKING_NETWORK on page directly

@@ -1,5 +1,6 @@
-import { Position, Theme } from './types';
 import { cnTw } from '@shared/lib/utils';
+
+import { type Position, type Theme } from './types';
 
 export const ViewClass: Record<Exclude<Position, 'auto'>, string> = {
   up: 'bottom-full mb-2.5',

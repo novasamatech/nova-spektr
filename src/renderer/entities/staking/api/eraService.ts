@@ -1,6 +1,6 @@
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
 
-import type { EraIndex } from '@shared/core';
+import { type EraIndex } from '@shared/core';
 
 export const eraService = {
   subscribeActiveEra,
@@ -25,7 +25,7 @@ async function getActiveEra(api: ApiPromise): Promise<EraIndex | undefined> {
 
   if (eraData.isNone) return undefined;
 
-  // @ts-ignore
+  // @ts-expect-error TODO fix
   return eraData.unwrap().get('index').toNumber();
 }
 

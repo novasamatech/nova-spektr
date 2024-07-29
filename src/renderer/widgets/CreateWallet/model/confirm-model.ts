@@ -1,8 +1,8 @@
-import { createEvent, combine, restore } from 'effector';
+import { combine, createEvent, restore } from 'effector';
 
 import { networkModel } from '@entities/network';
 import { walletModel, walletUtils } from '@entities/wallet';
-import { AddMultisigStore } from '../lib/types';
+import { type AddMultisigStore } from '../lib/types';
 
 const formInitiated = createEvent<AddMultisigStore>();
 const formSubmitted = createEvent();

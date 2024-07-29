@@ -1,17 +1,17 @@
-import { PropsWithChildren, useEffect, useState } from 'react';
 import { BN, BN_ZERO } from '@polkadot/util';
+import { type PropsWithChildren, useEffect, useState } from 'react';
 
-import { Select, FootnoteText, Plate, IconButton, Shimmering } from '@shared/ui';
-import { DropdownOption, DropdownResult } from '@shared/ui/types';
-import { getRelaychainAsset } from '@shared/lib/utils';
-import { chainsService } from '@shared/api/network';
-import { settingsStorage } from '@entities/settings';
-import { ChainTitle } from '@entities/chain';
-import { useToggle } from '@shared/lib/hooks';
 import { useI18n } from '@app/providers';
+import { chainsService } from '@shared/api/network';
+import { type Chain } from '@shared/core';
+import { useToggle } from '@shared/lib/hooks';
+import { getRelaychainAsset } from '@shared/lib/utils';
+import { FootnoteText, IconButton, Plate, Select, Shimmering } from '@shared/ui';
+import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
 import { AssetBalance } from '@entities/asset';
-import type { Chain } from '@shared/core';
+import { ChainTitle } from '@entities/chain';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { settingsStorage } from '@entities/settings';
 
 const getTotal = (values: string[]): BN => {
   return values.reduce((acc, value) => acc.add(new BN(value || 0)), BN_ZERO);

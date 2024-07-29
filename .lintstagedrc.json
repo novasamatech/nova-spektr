@@ -1,5 +1,6 @@
 {
-  "*.{ts,js,tsx,jsx,json,html,css,yml}": ["pretty-quick --pattern '**/*.*(js|tx|jsx|tsx|json|html|css|yml)' --staged"],
-  "src/renderer/**/*.tsx": ["pnpm lint:i18n-tsx"],
-  "src/renderer/shared/api/translation/locales/*.json": ["pnpm lint:i18n-fix"]
+  "src/**/*.{ts,tsx}": [
+    "pnpm exec tsc-files -p tsconfig.json --noEmit",
+    "pnpm lint:generic"
+  ]
 }

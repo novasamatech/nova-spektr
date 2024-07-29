@@ -1,6 +1,6 @@
-import { Variant } from './types';
+import { type Variant } from './types';
 
-export const VariantAnimationProps: Record<Variant, Object> = {
+export const VariantAnimationProps: Record<Variant, NonNullable<unknown>> = {
   success: {},
   error: {},
   warning: {},

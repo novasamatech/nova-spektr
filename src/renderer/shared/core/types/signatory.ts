@@ -1,4 +1,4 @@
-import type { AccountId, Address } from './general';
+import { type AccountId, type Address } from './general';
 
 export type Signatory = {
   name?: string;

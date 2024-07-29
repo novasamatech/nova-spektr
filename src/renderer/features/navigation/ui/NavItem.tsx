@@ -1,10 +1,10 @@
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 
-import { Icon, BodyText } from '@shared/ui';
-import { IconNames } from '@shared/ui/Icon/data';
 import { useI18n } from '@app/providers';
 import { cnTw } from '@shared/lib/utils';
+import { BodyText, Icon } from '@shared/ui';
+import { type IconNames } from '@shared/ui/Icon/data';
 
 export type Props = {
   title: string;

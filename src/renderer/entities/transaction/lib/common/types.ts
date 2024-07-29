@@ -1,11 +1,19 @@
-import { ApiPromise } from '@polkadot/api';
-import { Args } from '@substrate/txwrapper-polkadot';
-import { Header, Index, Weight } from '@polkadot/types/interfaces';
-import { SubmittableExtrinsic } from '@polkadot/api/types';
-import { AnyJson } from '@polkadot/types/types';
+import { type ApiPromise } from '@polkadot/api';
+import { type SubmittableExtrinsic } from '@polkadot/api/types';
+import { type Header, type Index, type Weight } from '@polkadot/types/interfaces';
+import { type AnyJson } from '@polkadot/types/types';
+import { type Args } from '@substrate/txwrapper-polkadot';
 
-import type { Address, CallData, HexString, Timepoint, AccountId, TxWrappers_OLD } from '@shared/core';
-import { DecodedTransaction, Transaction } from '@shared/core';
+import {
+  type AccountId,
+  type Address,
+  type CallData,
+  type DecodedTransaction,
+  type HexString,
+  type Timepoint,
+  type Transaction,
+  type TxWrappers_OLD,
+} from '@shared/core';
 
 // =====================================================
 // =========== ITransactionService interface ===========
@@ -16,7 +24,7 @@ export type ITransactionService = {
   getTxWeight: (transaction: Transaction, api: ApiPromise) => Promise<Weight>;
   getTransactionHash: (transaction: Transaction, api: ApiPromise) => HashData;
   decodeCallData: (api: ApiPromise, accountId: Address, callData: CallData) => DecodedTransaction;
-  verifySignature: (payload: Uint8Array, signature: HexString, accountId: AccountId) => Boolean;
+  verifySignature: (payload: Uint8Array, signature: HexString, accountId: AccountId) => boolean;
   setTxs: (txs: Transaction[]) => void;
   txs: Transaction[];
   setWrappers: (wrappers: TxWrappers_OLD[]) => void;

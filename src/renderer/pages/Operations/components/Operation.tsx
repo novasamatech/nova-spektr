@@ -1,16 +1,15 @@
-import { format } from 'date-fns';
-
 import { useI18n } from '@app/providers';
-import { FootnoteText, Accordion } from '@shared/ui';
-import OperationFullInfo from './OperationFullInfo';
-import { MultisigTransactionDS } from '@shared/api/storage';
-import { useMultisigEvent } from '@entities/multisig';
-import { ChainTitle, XcmChains } from '@entities/chain';
-import { TransactionTitle, getTransactionAmount, isXcmTransaction } from '@entities/transaction';
-import type { MultisigAccount } from '@shared/core';
 import { chainsService } from '@shared/api/network';
+import { type MultisigTransactionDS } from '@shared/api/storage';
+import { type MultisigAccount } from '@shared/core';
 import { getAssetById } from '@shared/lib/utils';
+import { Accordion, FootnoteText } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
+import { ChainTitle, XcmChains } from '@entities/chain';
+import { useMultisigEvent } from '@entities/multisig';
+import { TransactionTitle, getTransactionAmount, isXcmTransaction } from '@entities/transaction';
+
+import OperationFullInfo from './OperationFullInfo';
 import { Status } from './Status';
 
 type Props = {
@@ -19,7 +18,7 @@ type Props = {
 };
 
 const Operation = ({ tx, account }: Props) => {
-  const { dateLocale } = useI18n();
+  const { formatDate } = useI18n();
   const { getLiveEventsByKeys } = useMultisigEvent({});
 
   const events = getLiveEventsByKeys([tx]);
@@ -36,7 +35,7 @@ const Operation = ({ tx, account }: Props) => {
         <div className="h-[52px] flex gap-x-4 items-center w-full overflow-hidden">
           <div className="w-[58px] pr-1">
             <FootnoteText className="text-text-tertiary" align="right">
-              {format(date, 'p', { locale: dateLocale })}
+              {formatDate(date, 'p')}
             </FootnoteText>
           </div>
 

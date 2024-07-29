@@ -1,7 +1,7 @@
+import { useI18n } from '@app/providers';
+import { type Asset, type AssetByChains } from '@shared/core';
 import { cnTw, formatBalance } from '@shared/lib/utils';
 import { AssetIcon } from '@entities/asset';
-import { useI18n } from '@app/providers';
-import type { Asset, AssetByChains } from '@shared/core';
 
 type Props = {
   value: string;
@@ -24,7 +24,9 @@ export const AssetBalance = ({
 }: Props) => {
   const { t } = useI18n();
 
-  if (!asset) return null;
+  if (!asset) {
+    return null;
+  }
 
   const { precision, symbol, icon, name } = asset;
   const { value: formattedValue, decimalPlaces, suffix } = formatBalance(value, precision);
@@ -40,7 +42,9 @@ export const AssetBalance = ({
     </span>
   );
 
-  if (!showIcon) return balance;
+  if (!showIcon) {
+    return balance;
+  }
 
   return (
     <span className={cnTw('flex items-center gap-x-2', wrapperClassName)}>

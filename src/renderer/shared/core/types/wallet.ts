@@ -1,13 +1,13 @@
-import type { ID } from './general';
-import type {
-  BaseAccount,
-  ShardAccount,
-  ChainAccount,
-  MultisigAccount,
-  ProxiedAccount,
-  WcAccount,
-  Account,
+import {
+  type Account,
+  type BaseAccount,
+  type ChainAccount,
+  type MultisigAccount,
+  type ProxiedAccount,
+  type ShardAccount,
+  type WcAccount,
 } from './account';
+import { type ID } from './general';
 
 export interface Wallet {
   id: ID;

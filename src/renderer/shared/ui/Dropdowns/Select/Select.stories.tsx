@@ -1,6 +1,7 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { type ComponentMeta, type ComponentStory } from '@storybook/react';
 
 import { Identicon } from '../../Identicon/Identicon';
+
 import { Select } from './Select';
 
 export default {

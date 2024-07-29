@@ -1,16 +1,17 @@
-import { BrowserCodeReader, BrowserQRCodeReader, IScannerControls } from '@zxing/browser';
+import { u8aToHex } from '@polkadot/util';
+import { BrowserCodeReader, BrowserQRCodeReader, type IScannerControls } from '@zxing/browser';
 import init, { Decoder, EncodingPacket } from 'raptorq';
 import { useEffect, useRef } from 'react';
-import { u8aToHex } from '@polkadot/util';
+
+import { useI18n } from '@app/providers';
+import { type HexString } from '@shared/core';
+import { cnTw } from '@shared/lib/utils';
+import { CRYPTO_SR25519 } from '../QrGenerator/common/constants';
+import { ErrorFields, FRAME_KEY, SIGNED_TRANSACTION_BULK } from '../common/constants';
+import { QR_READER_ERRORS } from '../common/errors';
+import { type DecodeCallback, type ErrorObject, type Progress, QrError, type VideoInput } from '../common/types';
 
 import RaptorFrame from './RaptorFrame';
-import { cnTw } from '@shared/lib/utils';
-import { useI18n } from '@app/providers';
-import { QR_READER_ERRORS } from '../common/errors';
-import { ErrorFields, FRAME_KEY, SIGNED_TRANSACTION_BULK } from '../common/constants';
-import { DecodeCallback, ErrorObject, Progress, QrError, VideoInput } from '../common/types';
-import { CRYPTO_SR25519 } from '../QrGenerator/common/constants';
-import type { HexString } from '@shared/core';
 
 const enum Status {
   'FIRST_FRAME',
@@ -61,7 +62,9 @@ export const QrMultiframeSignatureReader = ({
   const isComplete = useRef(false);
 
   const isQrErrorObject = (error: unknown): boolean => {
-    if (!error) return false;
+    if (!error) {
+      return false;
+    }
 
     return typeof error === 'object' && ErrorFields.CODE in error && ErrorFields.MESSAGE in error;
   };

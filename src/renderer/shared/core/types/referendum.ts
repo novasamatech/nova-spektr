@@ -1,18 +1,15 @@
-import { BN } from '@polkadot/util';
+import { type BN } from '@polkadot/util';
 
-import type { BlockHeight, Address } from './general';
-import type { TrackId } from './track';
+import { type Address, type BlockHeight } from './general';
+import { type TrackId } from './track';
 
 export type ReferendumId = string;
 
-export interface ReferendumInfo {
-  type: ReferendumType;
-  referendumId: ReferendumId;
-}
-
-export interface OngoingReferendum extends ReferendumInfo {
+export type OngoingReferendum = {
   type: ReferendumType.Ongoing;
+  referendumId: ReferendumId;
   track: TrackId;
+  proposal: string;
   submitted: BlockHeight;
   submissionDeposit: Deposit | null;
   decisionDeposit: Deposit | null;
@@ -26,32 +23,37 @@ export interface OngoingReferendum extends ReferendumInfo {
     confirming: BlockHeight;
   } | null;
   tally: Tally;
-}
+};
 
-export interface RejectedReferendum extends ReferendumInfo {
+export type RejectedReferendum = {
   type: ReferendumType.Rejected;
+  referendumId: ReferendumId;
   since: BlockHeight;
-}
+};
 
-export interface ApprovedReferendum extends ReferendumInfo {
+export type ApprovedReferendum = {
   type: ReferendumType.Approved;
+  referendumId: ReferendumId;
   since: BlockHeight;
-}
+};
 
-export interface CancelledReferendum extends ReferendumInfo {
+export type CancelledReferendum = {
   type: ReferendumType.Cancelled;
+  referendumId: ReferendumId;
   since: BlockHeight;
-}
+};
 
-export interface TimedOutReferendum extends ReferendumInfo {
+export type TimedOutReferendum = {
   type: ReferendumType.TimedOut;
+  referendumId: ReferendumId;
   since: BlockHeight;
-}
+};
 
-export interface KilledReferendum extends ReferendumInfo {
+export type KilledReferendum = {
   type: ReferendumType.Killed;
+  referendumId: ReferendumId;
   since: BlockHeight;
-}
+};
 
 export type CompletedReferendum =
   | RejectedReferendum

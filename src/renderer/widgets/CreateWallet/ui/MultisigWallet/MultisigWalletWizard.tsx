@@ -1,5 +1,6 @@
 import { useToggle } from '@shared/lib/hooks';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
+
 import { MultisigWallet } from './MultisigWallet';
 
 type Props = {

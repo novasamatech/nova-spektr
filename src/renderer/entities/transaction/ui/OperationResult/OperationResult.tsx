@@ -1,9 +1,10 @@
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 
 import { Icon, StatusModal } from '@shared/ui';
 import { Animation } from '@shared/ui/Animation/Animation';
+
 import { VariantAnimationProps } from './common/constants';
-import { Variant } from './common/types';
+import { type Variant } from './common/types';
 
 type Props = {
   title: string;
@@ -24,7 +25,7 @@ export const OperationResult = ({
   <StatusModal
     content={
       variant === 'warning' ? (
-        <Icon name="warn" size={48} />
+        <Icon name="warn" size={48} className="m-4" />
       ) : (
         <Animation variant={variant} {...VariantAnimationProps[variant]} />
       )

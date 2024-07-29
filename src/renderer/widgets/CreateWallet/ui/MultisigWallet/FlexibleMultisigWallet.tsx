@@ -1,17 +1,19 @@
-import { ComponentProps, useState, useEffect } from 'react';
 import { useUnit } from 'effector-react';
 import noop from 'lodash/noop';
+import { type ComponentProps, useEffect, useState } from 'react';
 
-import { BaseModal, HeaderTitleText, Button, IconButton } from '@shared/ui';
 import { useI18n } from '@app/providers';
+import { type HexString } from '@/shared/core';
 import { useToggle } from '@shared/lib/hooks';
+import { DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { BaseModal, Button, HeaderTitleText, IconButton } from '@shared/ui';
 import { OperationResult } from '@entities/transaction';
-import { ExtendedContact, ExtendedWallet } from './common/types';
+import { flowModel } from '../../model/flow-model';
+
 import { ConfirmationStep } from './ConfirmationStep';
 import { NameNetworkSelection } from './NameNetworkSelection';
 import { SelectSignatoriesThreshold } from './SelectSignatoriesThreshold';
-import { DEFAULT_TRANSITION } from '@shared/lib/utils';
-import { flowModel } from '../../model/flow-model';
+import { type ExtendedContact, type ExtendedWallet } from './common/types';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -65,8 +67,23 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
     setTimeout(params?.complete ? onComplete : params?.closeAll ? onClose : noop, DEFAULT_TRANSITION);
   };
 
+  const submitHandler = (args: { name: string; threshold: number; creatorId: HexString }) => {
+    toggleResultModal();
+    setName(args.name);
+
+    // createMultisigWalletModel.events.walletCreated(args);
+  };
+
   const getResultProps = (): OperationResultProps => {
     if (error) return { variant: 'error', description: error };
+
+    // if (isLoading) {
+    //   return { variant: 'loading' };
+    // }
+
+    if (error) {
+      return { variant: 'error', description: error };
+    }
 
     return { variant: 'success', description: t('createMultisigAccount.successMessage') };
   };
@@ -98,11 +115,9 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
           />
 
           {/* Should be before SelectSignatories to avoid hidden nova wallet icon */}
-          {activeStep === Step.CONFIRMATION && (
-            <ConfirmationStep wallets={signatoryWallets} contacts={signatoryContacts} />
-          )}
+          {activeStep === Step.CONFIRMATION && <ConfirmationStep />}
 
-          <SelectSignatoriesThreshold signatories={signatories} />
+          <SelectSignatoriesThreshold />
         </section>
       </BaseModal>
 

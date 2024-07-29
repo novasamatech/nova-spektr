@@ -1,8 +1,16 @@
-import { createEvent, combine, restore } from 'effector';
-import { ApiPromise } from '@polkadot/api';
-import { BN } from '@polkadot/util';
+import { type ApiPromise } from '@polkadot/api';
+import { type BN } from '@polkadot/util';
+import { combine, createEvent, restore } from 'effector';
 
-import { Chain, Account, Asset, type ProxiedAccount, Validator, Wallet, ChainId } from '@shared/core';
+import {
+  type Account,
+  type Asset,
+  type Chain,
+  type ChainId,
+  type ProxiedAccount,
+  type Validator,
+  type Wallet,
+} from '@shared/core';
 import { networkModel } from '@entities/network';
 import { walletModel, walletUtils } from '@entities/wallet';
 
@@ -49,17 +57,20 @@ const $apis = combine(
   ({ apis, store }) => {
     if (!store) return {};
 
-    return store.reduce((acc, payload) => {
-      const chainId = payload.chain.chainId;
-      const api = apis[chainId];
+    return store.reduce(
+      (acc, payload) => {
+        const chainId = payload.chain.chainId;
+        const api = apis[chainId];
 
-      if (!api) return acc;
+        if (!api) return acc;
 
-      return {
-        ...acc,
-        [chainId]: api,
-      };
-    }, {} as Record<ChainId, ApiPromise>);
+        return {
+          ...acc,
+          [chainId]: api,
+        };
+      },
+      {} as Record<ChainId, ApiPromise>,
+    );
   },
 );
 
@@ -118,8 +129,6 @@ const $signerWallets = combine(
     if (!store) return {};
 
     return store.reduce<Record<number, Wallet>>((acc, storeItem, index) => {
-      if (!storeItem.proxiedAccount) return acc;
-
       const wallet = walletUtils.getWalletById(wallets, storeItem.signatory?.walletId || storeItem.shards[0].walletId);
       if (!wallet) return acc;
 

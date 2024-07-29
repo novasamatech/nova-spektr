@@ -1,17 +1,25 @@
-import { Store, createEffect, createEvent, restore, sample, scopeBind } from 'effector';
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
+import { type SignerOptions } from '@polkadot/api/submittable/types';
+import { type Store, createEffect, createEvent, restore, sample, scopeBind } from 'effector';
 import { combineEvents } from 'patronum';
-import { SignerOptions } from '@polkadot/api/submittable/types';
 
-import { Address, Asset, Balance, Chain, ChainId, ID, Transaction } from '@shared/core';
+import {
+  type Address,
+  type Asset,
+  type Balance,
+  type Chain,
+  type ChainId,
+  type ID,
+  type Transaction,
+} from '@shared/core';
 import { redeemableAmount, toAccountId, transferableAmount } from '@shared/lib/utils';
-import { balanceModel } from '@entities/balance';
+import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel } from '@entities/network';
-import { WithdrawRules } from '../lib/withdraw-rules';
+import { type StakingMap, eraService, useStakingData } from '@entities/staking';
 import { transactionService } from '@entities/transaction';
-import { AmountFeeStore, ValidationResult } from '../types/types';
 import { validationUtils } from '../lib/validation-utils';
-import { StakingMap, eraService, useStakingData } from '@entities/staking';
+import { WithdrawRules } from '../lib/withdraw-rules';
+import { type AmountFeeStore, type ValidationResult } from '../types/types';
 
 const validationStarted = createEvent<{ id: ID; transaction: Transaction; signerOptions?: Partial<SignerOptions> }>();
 const txValidated = createEvent<{ id: ID; result: ValidationResult }>();
@@ -53,9 +61,7 @@ const validateFx = createEffect(
     const accountId = toAccountId(transaction.address);
     const fee = await transactionService.getTransactionFee(transaction, api, signerOptions);
 
-    const shardBalance = balances.find(
-      (balance) => balance.accountId === accountId && balance.assetId === asset.assetId.toString(),
-    );
+    const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
 
     const rules = [
       {

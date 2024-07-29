@@ -1,13 +1,14 @@
+import { type AccountId } from '@shared/core';
+
 import {
-  CheckedCounter,
-  SelectedStruct,
-  RootToggleParams,
-  ChainToggleParams,
-  AccountToggleParams,
-  ShardedToggleParams,
-  ShardToggleParams,
+  type AccountToggleParams,
+  type ChainToggleParams,
+  type CheckedCounter,
+  type RootToggleParams,
+  type SelectedStruct,
+  type ShardToggleParams,
+  type ShardedToggleParams,
 } from './types';
-import type { AccountId } from '@shared/core';
 
 export const selectorUtils = {
   getSelectedAll,

@@ -1,4 +1,4 @@
-import { ChainId, Chain, Wallet, AccountType, Account, CryptoType } from '@shared/core';
+import { type Account, AccountType, type Chain, type ChainId, CryptoType, type Wallet } from '@shared/core';
 import { TEST_ACCOUNTS } from '@shared/lib/utils';
 
 const accounts = [

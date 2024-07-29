@@ -1,14 +1,14 @@
-import { ReactNode, useState } from 'react';
 import { useStoreMap } from 'effector-react';
+import { type ReactNode, useState } from 'react';
 
-import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
-import { Button, DetailRow, FootnoteText, Icon } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { SignButton } from '@entities/operations';
-import { AddressWithExplorers, WalletIcon, accountUtils, ExplorersPopover, WalletCardSm } from '@entities/wallet';
-import { proxyUtils } from '@entities/proxy';
-import { confirmModel } from '../model/confirm-model';
 import { toAddress } from '@shared/lib/utils';
+import { Button, DetailRow, FootnoteText, Icon } from '@shared/ui';
+import { SignButton } from '@entities/operations';
+import { proxyUtils } from '@entities/proxy';
+import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
+import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, accountUtils } from '@entities/wallet';
+import { confirmModel } from '../model/confirm-model';
 
 type Props = {
   id?: number;
@@ -46,13 +46,15 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
 
   const api = useStoreMap({
     store: confirmModel.$apis,
-    keys: [confirmStore.chain?.chainId],
+    keys: [confirmStore?.chain?.chainId],
     fn: (value, [chainId]) => chainId && value?.[chainId],
   });
 
   const [isFeeLoading, setIsFeeLoading] = useState(true);
 
-  if (!confirmStore || !initiatorWallet || !confirmStore.chain?.chainId) return null;
+  if (!confirmStore || !initiatorWallet || !confirmStore?.chain?.chainId) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5">

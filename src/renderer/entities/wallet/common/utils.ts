@@ -1,5 +1,6 @@
-import { Wallet } from '@shared/core';
+import { type Wallet } from '@shared/core';
 import { permissionUtils } from '../lib/permission-utils';
+
 import { OperationType } from './types';
 
 export function getOperationTypeFn(operationType: OperationType): (wallet: Wallet) => boolean {
@@ -12,6 +13,7 @@ export function getOperationTypeFn(operationType: OperationType): (wallet: Walle
     [OperationType.REJECT_MULTISIG_TX]: permissionUtils.canRejectMultisigTx,
     [OperationType.CREATE_ANY_PROXY]: permissionUtils.canCreateAnyProxy,
     [OperationType.CREATE_NON_ANY_PROXY]: permissionUtils.canCreateNonAnyProxy,
-    [OperationType.REMOV_PROXY]: permissionUtils.canRemoveProxy,
+    [OperationType.REMOVE_PROXY]: permissionUtils.canRemoveProxy,
+    [OperationType.UNLOCK]: permissionUtils.canUnlock,
   }[operationType];
 }

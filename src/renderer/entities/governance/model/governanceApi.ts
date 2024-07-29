@@ -1,21 +1,27 @@
-import { createStore, createEvent, sample, createEffect } from 'effector';
+import { createEffect, createEvent, createStore, sample } from 'effector';
 
-import { IGovernanceApi } from '@shared/api/governance';
-import { localStorageService } from '@shared/api/local-storage';
-import { type SourceType } from '../lib/types';
-import { GOVERNANCE_API_KEY, GovernanceApis } from '../lib/constants';
+import { type GovernanceApi, polkassemblyService, subsquareService } from '@/shared/api/governance';
+import { localStorageService } from '@/shared/api/local-storage';
+import { type GovernanceApiSource } from '../types/governanceApiSource';
+
+export const GOVERNANCE_API_KEY = 'governance_api';
+
+export const GovernanceApis: Record<GovernanceApiSource, GovernanceApi> = {
+  polkassembly: polkassemblyService,
+  subsquare: subsquareService,
+};
 
 const governanceStarted = createEvent();
-const governanceApiChanged = createEvent<SourceType>();
+const governanceApiChanged = createEvent<GovernanceApiSource>();
 
-const $governanceApi = createStore<{ type: SourceType; service: IGovernanceApi } | null>(null);
+const $governanceApi = createStore<{ type: GovernanceApiSource; service: GovernanceApi } | null>(null);
 
-const getGovernanceApiFx = createEffect((): SourceType => {
-  return localStorageService.getFromStorage<SourceType>(GOVERNANCE_API_KEY, 'polkassembly');
+const getGovernanceApiFx = createEffect((): GovernanceApiSource => {
+  return localStorageService.getFromStorage<GovernanceApiSource>(GOVERNANCE_API_KEY, 'polkassembly');
 });
 
-const saveGovernanceApiFx = createEffect((sourceType: SourceType): SourceType => {
-  return localStorageService.saveToStorage<SourceType>(GOVERNANCE_API_KEY, sourceType);
+const saveGovernanceApiFx = createEffect((sourceType: GovernanceApiSource) => {
+  return localStorageService.saveToStorage<GovernanceApiSource>(GOVERNANCE_API_KEY, sourceType);
 });
 
 sample({

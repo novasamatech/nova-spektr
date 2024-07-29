@@ -1,7 +1,8 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { type ComponentMeta, type ComponentStory } from '@storybook/react';
 import { enGB } from 'date-fns/locale';
 
-import { LanguageItem } from '@shared/api/translation/lib/types';
+import { type LanguageItem } from '@shared/api/translation/lib/types';
+
 import { LanguageSwitcher } from './LanguageSwitcher';
 
 const languages: LanguageItem[] = [

@@ -1,14 +1,15 @@
-import { createForm } from 'effector-forms';
 import { combine, createEvent } from 'effector';
+import { createForm } from 'effector-forms';
 import { sample } from 'lodash';
 
-import { Chain, CryptoType, MultisigAccount } from '@shared/core';
 import chains from '@shared/config/chains/chains.json';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { networkUtils } from '@entities/network';
-import { FormParams } from '../lib/types';
-import { signatoryModel } from './signatory-model';
+import { type Chain, CryptoType, type MultisigAccount } from '@shared/core';
 import { toAccountId } from '@shared/lib/utils';
+import { networkUtils } from '@entities/network';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { type FormParams } from '../lib/types';
+
+import { signatoryModel } from './signatory-model';
 
 const $createMultisigForm = createForm<FormParams>({
   fields: {

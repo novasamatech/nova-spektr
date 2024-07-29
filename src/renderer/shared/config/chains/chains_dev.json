@@ -85,6 +85,12 @@
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-polkadot"
         }
       ],
+      "governance-delegations": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-polkadot-gov"
+        }
+      ],
       "proxy": [
         {
           "type": "subquery",
@@ -177,6 +183,12 @@
         {
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kusama"
+        }
+      ],
+      "governance-delegations": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kusama-governance2"
         }
       ],
       "proxy": [
@@ -512,7 +524,7 @@
       },
       {
         "assetId": 1,
-        "symbol": "aSEED",
+        "symbol": "aSEEDk",
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-karura",
@@ -1013,7 +1025,7 @@
       },
       {
         "assetId": 7,
-        "symbol": "aSEED",
+        "symbol": "aSEEDk",
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-karura",
@@ -1200,7 +1212,7 @@
       },
       {
         "assetId": 5,
-        "symbol": "aSEED",
+        "symbol": "aSEEDk",
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-karura",
@@ -1452,7 +1464,7 @@
       },
       {
         "assetId": 5,
-        "symbol": "aSEED",
+        "symbol": "aSEEDk",
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-karura",
@@ -1567,7 +1579,7 @@
       },
       {
         "assetId": 2,
-        "symbol": "aSEED",
+        "symbol": "aSEEDk",
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-karura",
@@ -1687,10 +1699,14 @@
     ],
     "explorers": [
       {
-        "name": "Subscan",
-        "extrinsic": "https://parallel-heiko.subscan.io/extrinsic/{hash}",
-        "account": "https://parallel-heiko.subscan.io/account/{address}",
-        "multisig": "https://parallel-heiko.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
+        "name": "Statescan",
+        "account": "https://heiko.statescan.io/#/accounts/{address}",
+        "extrinsic": "https://heiko.statescan.io/#/extrinsics/{hash}",
+        "event": "https://heiko.statescan.io/#/events/{event}"
+      },
+      {
+        "name": "Sub.ID",
+        "account": "https://sub.id/{address}"
       }
     ],
     "externalApi": {
@@ -1748,7 +1764,7 @@
       },
       {
         "assetId": 2,
-        "symbol": "aSEED",
+        "symbol": "aSEEDk",
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-karura",
@@ -1961,7 +1977,7 @@
       },
       {
         "assetId": 5,
-        "symbol": "aSEED",
+        "symbol": "aSEEDk",
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-karura",
@@ -2293,7 +2309,7 @@
       },
       {
         "assetId": 2,
-        "symbol": "aSEED",
+        "symbol": "aSEEDp",
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-acala",
@@ -2639,7 +2655,7 @@
       },
       {
         "assetId": 8,
-        "symbol": "aSEED",
+        "symbol": "aSEEDp",
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-acala",
@@ -2794,7 +2810,7 @@
       },
       {
         "assetId": 4,
-        "symbol": "aSEED",
+        "symbol": "aSEEDp",
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-acala",
@@ -2902,10 +2918,10 @@
     ],
     "explorers": [
       {
-        "name": "Subscan",
-        "extrinsic": "https://parallel.subscan.io/extrinsic/{hash}",
-        "account": "https://parallel.subscan.io/account/{address}",
-        "multisig": "https://parallel.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
+        "name": "Statescan",
+        "account": "https://parallel.statescan.io/#/accounts/{address}",
+        "extrinsic": "https://parallel.statescan.io/#/extrinsics/{hash}",
+        "event": "https://parallel.statescan.io/#/events/{event}"
       },
       {
         "name": "Sub.ID",
@@ -3912,7 +3928,7 @@
       "history": [
         {
           "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-hydra__bm92Y"
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-hydra"
         }
       ],
       "proxy": [
@@ -4244,7 +4260,7 @@
       },
       {
         "assetId": 2,
-        "symbol": "aSEED",
+        "symbol": "aSEEDk",
         "precision": 12,
         "type": "orml",
         "priceId": "ausd-seed-karura",
@@ -4882,15 +4898,15 @@
     "chainId": "0x6408de7737c59c238890533af25896a2c20608d8b380bb01029acb392781063e",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Rococo_Testnet.svg",
     "options": [
-      "testnet"
+      "testnet",
+      "governance",
+      "regular_proxy",
+      "pure_proxy"
     ],
     "nodes": [
       {
         "url": "wss://rococo-rpc.polkadot.io/",
-        "name": "Rococo node",
-        "features": [
-          "noTls12"
-        ]
+        "name": "Rococo node"
       }
     ],
     "assets": [
@@ -4990,21 +5006,6 @@
           "transfersEnabled": true
         },
         "name": "USD Tether"
-      },
-      {
-        "assetId": 10,
-        "symbol": "GLMR",
-        "precision": 18,
-        "type": "orml",
-        "priceId": "moonbeam",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Moonbeam_(GLMR).svg",
-        "typeExtras": {
-          "currencyIdScale": "0x0106",
-          "currencyIdType": "SpacewalkPrimitivesCurrencyId",
-          "existentialDeposit": "1000",
-          "transfersEnabled": true
-        },
-        "name": "Moonbeam"
       }
     ],
     "externalApi": {
@@ -5379,10 +5380,7 @@
       },
       {
         "url": "wss://rococo-asset-hub-rpc.polkadot.io",
-        "name": "Parity node",
-        "features": [
-          "noTls12"
-        ]
+        "name": "Parity node"
       }
     ],
     "assets": [
@@ -5549,7 +5547,7 @@
       },
       {
         "assetId": 8,
-        "symbol": "xcaSEED",
+        "symbol": "xcaSEEDk",
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-karura",
@@ -5757,6 +5755,12 @@
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-moonriver"
         }
+      ],
+      "governance-delegations": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-moonriver-gov"
+        }
       ]
     }
   },
@@ -5839,10 +5843,6 @@
       {
         "url": "wss://moonbeam.public.blastapi.io",
         "name": "Blast node"
-      },
-      {
-        "url": "wss://1rpc.io/glmr",
-        "name": "Automata 1RPC node"
       }
     ],
     "assets": [
@@ -5868,7 +5868,7 @@
       },
       {
         "assetId": 2,
-        "symbol": "xcaSEED",
+        "symbol": "xcaSEEDp",
         "precision": 12,
         "type": "statemine",
         "priceId": "ausd-seed-acala",
@@ -6162,6 +6162,12 @@
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-moonbeam"
         }
+      ],
+      "governance-delegations": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-moonbeam-gov"
+        }
       ]
     }
   },
@@ -6220,10 +6226,7 @@
     "nodes": [
       {
         "url": "wss://kusama-people-rpc.polkadot.io",
-        "name": "Parity node",
-        "features": [
-          "noTls12"
-        ]
+        "name": "Parity node"
       },
       {
         "url": "wss://ksm-rpc.stakeworld.io/people",
@@ -6242,39 +6245,15 @@
     ]
   },
   {
-    "name": "Ledger Novasama Testnet",
-    "specName": "westend",
-    "addressPrefix": 42,
-    "chainId": "0xd67c91ca75c199ff1ee9555567dfad21b9033165c39977170ec8d3f6c1fa433c",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_Testnet.svg",
-    "options": [
-      "testnet",
-      "governance"
-    ],
-    "nodes": [
-      {
-        "url": "wss://rpc-test-network-1.novasamatech.org",
-        "name": "Novasama node"
-      }
-    ],
-    "assets": [
-      {
-        "assetId": 0,
-        "symbol": "WND",
-        "precision": 12,
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Westend_(WND).svg",
-        "name": "Westend"
-      }
-    ]
-  },
-  {
     "name": "Polimec",
     "specName": "polkadot",
     "addressPrefix": 41,
     "chainId": "0x7eb9354488318e7549c722669dcbdcdc526f1fef1420e7944667212f3601fdbd",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polimec.svg",
-    "options": [],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://rpc.polimec.org",
@@ -6293,9 +6272,10 @@
     ],
     "explorers": [
       {
-        "name": "Statescan",
-        "account": "https://polimec.statescan.io/#/accounts/{address}",
-        "event": "https://polimec.statescan.io/#/events/{event}"
+        "name": "Polimec explorer",
+        "account": "https://explorer.polimec.org/polimec/account/{address}",
+        "event": "https://explorer.polimec.org/polimec/event/{event}",
+        "extrinsic": "https://explorer.polimec.org/polimec/extrinsic/{hash}"
       }
     ],
     "externalApi": {
@@ -6309,6 +6289,47 @@
         {
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet---polymec"
+        }
+      ]
+    }
+  },
+  {
+    "name": "Novasama Testnet - Governance",
+    "specName": "westend",
+    "addressPrefix": 42,
+    "chainId": "0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_Testnet.svg",
+    "options": [
+      "testnet",
+      "governance"
+    ],
+    "nodes": [
+      {
+        "url": "wss://rpc-test-network-1.novasamatech.org",
+        "name": "Novasama node"
+      }
+    ],
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "WND",
+        "precision": 12,
+        "staking": "relaychain",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Westend_(WND).svg",
+        "name": "Westend"
+      }
+    ],
+    "externalApi": {
+      "staking": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-westend"
+        }
+      ],
+      "governance-delegations": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-test-gov"
         }
       ]
     }

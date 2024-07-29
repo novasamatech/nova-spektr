@@ -1,13 +1,13 @@
-import { FormEvent } from 'react';
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
+import { type FormEvent } from 'react';
 
-import { BaseModal, Button, Input, InputHint, Alert } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { OperationTitle } from '@entities/chain';
-import { addCustomRpcModel } from '../model/add-custom-rpc-model';
-import { customRpcUtils } from '../lib/custom-rpc-utils';
 import { useModalClose } from '@shared/lib/hooks';
+import { Alert, BaseModal, Button, Input, InputHint } from '@shared/ui';
+import { OperationTitle } from '@entities/chain';
+import { customRpcUtils } from '../lib/custom-rpc-utils';
+import { addCustomRpcModel } from '../model/add-custom-rpc-model';
 
 export const AddCustomRpcModal = () => {
   const { t } = useI18n();
@@ -24,7 +24,9 @@ export const AddCustomRpcModal = () => {
     submit();
   };
 
-  if (!chainId) return null;
+  if (!chainId) {
+    return null;
+  }
 
   return (
     <BaseModal
@@ -108,7 +110,9 @@ const Alerts = () => {
   const chainName = useUnit(addCustomRpcModel.$chainName);
   const rpcValidation = useUnit(addCustomRpcModel.$rpcValidation);
 
-  if (!chainName || !rpcValidation) return null;
+  if (!chainName || !rpcValidation) {
+    return null;
+  }
 
   return (
     <>

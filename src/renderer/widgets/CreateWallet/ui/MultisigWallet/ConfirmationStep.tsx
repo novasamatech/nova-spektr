@@ -1,19 +1,20 @@
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 
-import { cnTw, RootExplorers } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
+import { type Chain, WalletType } from '@shared/core';
+import { RootExplorers, cnTw } from '@shared/lib/utils';
 import { BodyText, Button, FootnoteText, SmallTitleText } from '@shared/ui';
-import { WalletItem } from './components/WalletItem';
-import { ContactItem, ExplorersPopover } from '@entities/wallet';
-import { Chain, WalletType } from '@shared/core';
-import { flowModel } from '../../model/flow-model';
-import { Step } from '../../lib/types';
-import { formModel } from '../../model/form-model';
-import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
 import { SignButton } from '@entities/operations';
+import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
+import { ContactItem, ExplorersPopover } from '@entities/wallet';
+import { Step } from '../../lib/types';
 import { confirmModel } from '../../model/confirm-model';
+import { flowModel } from '../../model/flow-model';
+import { formModel } from '../../model/form-model';
 import { signatoryModel } from '../../model/signatory-model';
+
+import { WalletItem } from './components/WalletItem';
 
 type Props = {
   chain?: Chain;

@@ -1,32 +1,35 @@
+import { type ApiPromise } from '@polkadot/api';
 import { combine, createEffect, createEvent, createStore, restore, sample, split } from 'effector';
-import { ApiPromise } from '@polkadot/api';
-import { throttle } from 'patronum';
+import { delay, throttle } from 'patronum';
 
-import { networkModel, networkUtils } from '@entities/network';
-import { walletModel } from '@entities/wallet';
+import { type BasketTransaction, type ChainId, type ID, TransactionType } from '@shared/core';
+import { addUnique, removeFromCollection } from '@shared/lib/utils';
 import { basketModel } from '@entities/basket';
-import { BasketTransaction, ChainId, ID, TransactionType } from '@shared/core';
+import { networkModel, networkUtils } from '@entities/network';
 import { TransferTypes, XcmTypes, transactionService } from '@entities/transaction';
+import { walletModel } from '@entities/wallet';
+import { unlockValidateModel } from '@/features/governance';
+import { basketFilterModel } from '@features/basket/BasketFilter';
 import {
-  transferValidateModel,
+  type ValidationResult,
   addProxyValidateModel,
   addPureProxiedValidateModel,
+  bondExtraValidateModel,
+  bondNominateValidateModel,
+  nominateValidateModel,
+  payeeValidateModel,
   removeProxyValidateModel,
   removePureProxiedValidateModel,
-  bondNominateValidateModel,
-  payeeValidateModel,
-  nominateValidateModel,
-  bondExtraValidateModel,
   restakeValidateModel,
+  transferValidateModel,
   unstakeValidateModel,
   withdrawValidateModel,
-  ValidationResult,
 } from '@features/operations/OperationsValidation';
-import { signOperationsModel } from './sign-operations-model';
-import { addUnique, removeFromCollection } from '@shared/lib/utils';
+import { basketPageUtils } from '../lib/basket-page-utils';
 import { getCoreTx } from '../lib/utils';
 import { Step } from '../types/basket-page-types';
-import { basketPageUtils } from '../lib/basket-page-utils';
+
+import { signOperationsModel } from './sign-operations-model';
 
 type BasketTransactionsMap = {
   valid: BasketTransaction[];
@@ -52,14 +55,14 @@ const txRemoved = createEvent<BasketTransaction>();
 const stepChanged = createEvent<Step>();
 
 const $step = restore(stepChanged, Step.SELECT);
-const $selectedTxs = createStore<number[]>([]);
-const $invalidTxs = createStore<Map<ID, ValidationResult>>(new Map());
+const $selectedTxs = createStore<number[]>([]).reset(walletModel.$activeWallet);
+const $invalidTxs = createStore<Map<ID, ValidationResult>>(new Map()).reset(walletModel.$activeWallet);
 const $validTxs = createStore<BasketTransaction[]>([]);
 const $validatingTxs = createStore<number[]>([]);
 const $validationWarningShown = createStore<boolean>(false);
-const $alreadyValidatedTxs = createStore<number[]>([]);
+const $alreadyValidatedTxs = createStore<number[]>([]).reset(walletModel.$activeWallet);
 const $txToRemove = restore(removeTxStarted, null).reset([removeTxCancelled, txRemoved]);
-const $feeMap = createStore<FeeMap>({});
+const $feeMap = createStore<FeeMap>({}).reset(walletModel.$activeWallet);
 const $connectedChains = createStore('');
 
 const getFeeMapFx = createEffect(
@@ -119,11 +122,11 @@ const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
       [TransactionType.RESTAKE]: restakeValidateModel.events.validationStarted,
       [TransactionType.UNSTAKE]: unstakeValidateModel.events.validationStarted,
       [TransactionType.REDEEM]: withdrawValidateModel.events.validationStarted,
+      [TransactionType.UNLOCK]: unlockValidateModel.events.validationStarted,
     };
 
     if (coreTx.type in TransactionValidators) {
-      // TS thinks that transfer should be in TransactionValidators
-      // @ts-ignore`
+      // @ts-expect-error TS thinks that transfer should be in TransactionValidators
       TransactionValidators[coreTx.type]({
         id: tx.id,
         transaction: coreTx,
@@ -154,6 +157,7 @@ const txValidated = [
   restakeValidateModel.output.txValidated,
   unstakeValidateModel.output.txValidated,
   withdrawValidateModel.output.txValidated,
+  unlockValidateModel.output.txValidated,
 ];
 
 sample({
@@ -188,7 +192,7 @@ sample({
 });
 
 sample({
-  clock: $connectedChains,
+  clock: [$connectedChains, $basketTransactions],
   source: { apis: networkModel.$apis, transactions: $basketTransactions, feeMap: $feeMap },
   fn: ({ apis, transactions, feeMap }) => ({ apis, transactions, feeMap }),
   target: getFeeMapFx,
@@ -200,9 +204,15 @@ sample({
 });
 
 sample({
+  clock: $invalidTxs,
+  fn: (invalidTxs) => [...invalidTxs.keys()],
+  target: basketFilterModel.events.invalidTxsSet,
+});
+
+sample({
   clock: allSelected,
   source: {
-    txs: $basketTransactions,
+    txs: basketFilterModel.$filteredTxs,
     selectedTxs: $selectedTxs,
     invalidTxs: $invalidTxs,
     validatingTxs: $validatingTxs,
@@ -219,7 +229,11 @@ sample({
 });
 
 sample({
-  clock: [$basketTransactions, $connectedChains],
+  clock: [
+    $connectedChains,
+    // HOOK: delay to wait until update balances for new wallet
+    delay($basketTransactions, 1000),
+  ],
   target: validationStarted,
 });
 

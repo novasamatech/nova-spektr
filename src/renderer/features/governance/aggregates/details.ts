@@ -1,28 +1,36 @@
 import { sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import type { Chain, Referendum } from '@shared/core';
-import { proposerIdentityAggregate } from './proposer-identity';
-import { networkSelectorModel } from '../model/networkSelector';
+import { type Chain, type Referendum } from '@shared/core';
 import { descriptionsModel } from '../model/description';
+import { timelineModel } from '../model/timeline';
 import { titleModel } from '../model/title';
+import { votingAssetModel } from '../model/votingAsset';
+
+import { proposerIdentityAggregate } from './proposerIdentity';
+import { votingAggregate } from './voting';
 
 const flow = createGate<{ chain: Chain; referendum: Referendum }>();
 
-const $votingAssets = networkSelectorModel.$governanceChains.map((chains) => {
-  return Object.fromEntries(chains.map((chain) => [chain.chainId, chain.assets.at(0) ?? null]));
+sample({
+  clock: flow.open,
+  target: [proposerIdentityAggregate.events.requestReferendumProposer, descriptionsModel.events.requestDescription],
 });
 
 sample({
   clock: flow.open,
-  target: [proposerIdentityAggregate.events.requestProposer, descriptionsModel.events.requestDescription],
+  fn: ({ referendum }) => ({ referendumId: referendum.referendumId }),
+  target: timelineModel.events.requestTimeline,
 });
 
 export const detailsAggregate = {
-  $votingAssets,
+  $votingAsset: votingAssetModel.$votingAsset,
   $descriptions: descriptionsModel.$descriptions,
-  $titles: titleModel.$titles,
+  $titles: titleModel.$referendumTitles,
+  $timelines: timelineModel.$currentChainTimelines,
+  $votes: votingAggregate.$activeWalletVotes,
   $proposers: proposerIdentityAggregate.$proposers,
+  $isTimelinesLoading: timelineModel.$isTimelineLoading,
   $isProposersLoading: proposerIdentityAggregate.$isProposersLoading,
   $isDescriptionLoading: descriptionsModel.$isDescriptionLoading,
 

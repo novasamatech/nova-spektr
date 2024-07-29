@@ -1,6 +1,6 @@
-import { BN } from '@polkadot/util';
+import { type BN } from '@polkadot/util';
 
-import type { BlockHeight, ReferendumId, TrackId } from '@shared/core';
+import { type Address, type BlockHeight, type ReferendumId, type TrackId } from '@shared/core';
 
 export type ClaimableLock = {
   claimAt: ClaimTime;
@@ -9,72 +9,79 @@ export type ClaimableLock = {
   affected: ClaimAffect[];
 };
 
-export interface ClaimAffect {
-  trackId: TrackId;
-  type: 'track' | 'vote';
-}
-
-export interface AffectTrack extends ClaimAffect {
+export interface AffectTrack {
   type: 'track';
+  trackId: TrackId;
 }
 
-export interface AffectVote extends ClaimAffect {
+export interface AffectVote {
   type: 'vote';
+  trackId: TrackId;
   referendumId: ReferendumId;
 }
 
-export interface ClaimTime {
-  type: 'at' | 'until';
-}
+export type ClaimAffect = AffectTrack | AffectVote;
 
-export interface ClaimTimeAt extends ClaimTime {
-  block: BlockHeight;
+export type ClaimTime = ClaimTimeAt | ClaimTimeUntil;
+
+export interface ClaimTimeAt {
   type: 'at';
+  block: BlockHeight;
 }
 
-export interface ClaimTimeUntil extends ClaimTime {
+export interface ClaimTimeUntil {
   type: 'until';
 }
 
 export type GroupedClaimAffects = {
   trackId: TrackId;
-  hasPriorAffect: Boolean;
+  hasPriorAffect: boolean;
   votes: AffectVote[];
 };
 
 // Claim action
-export interface ClaimAction {
-  type: 'unlock' | 'remove_vote';
-}
 
-export interface Unlock extends ClaimAction {
+export type Unlock = {
   type: 'unlock';
   trackId: TrackId;
-}
+};
 
-export interface RemoveVote extends ClaimAction {
+export type RemoveVote = {
   type: 'remove_vote';
   trackId: TrackId;
   referendumId: ReferendumId;
-}
+};
+
+export type ClaimAction = Unlock | RemoveVote;
 
 // Unlock chunk
-export interface UnlockChunk {
-  type: 'claimable' | 'pending';
+export enum UnlockChunkType {
+  CLAIMABLE = 'claimable',
+  PENDING_DELIGATION = 'pendingDelagation',
+  PENDING_LOCK = 'pendingLock',
 }
 
-export interface ClaimableChunk extends UnlockChunk {
-  type: 'claimable';
+export interface ClaimableChunk {
+  type: UnlockChunkType.CLAIMABLE;
   amount: BN;
   actions: ClaimAction[];
 }
 
-export interface PendingChunk extends UnlockChunk {
-  type: 'pending';
+export interface PendingChunk {
+  type: UnlockChunkType.PENDING_DELIGATION | UnlockChunkType.PENDING_LOCK;
   amount: BN;
   claimableAt: ClaimTime;
 }
 
-export interface ClaimSchedule {
-  chunks: UnlockChunk[];
+export interface PendingChunkWithAddress extends PendingChunk {
+  address: Address;
+  timeToBlock?: number;
 }
+
+export interface ClaimChunkWithAddress extends ClaimableChunk {
+  address: Address;
+}
+
+export type Chunks = ClaimableChunk | PendingChunk;
+
+export type UnlockChunk = ClaimChunkWithAddress | PendingChunkWithAddress;

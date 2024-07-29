@@ -1,11 +1,18 @@
-import { ApiPromise } from '@polkadot/api';
-import { BaseTxInfo, getRegistry, GetRegistryOpts, OptionsWithMeta, TypeRegistry } from '@substrate/txwrapper-polkadot';
-import { isHex, hexToU8a, bnMin, BN_TWO, BN } from '@polkadot/util';
+import { type ApiPromise } from '@polkadot/api';
+import { type u32 } from '@polkadot/types';
+import { type BN, BN_TWO, bnMin, hexToU8a, isHex } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
-import { u32 } from '@polkadot/types';
+import {
+  type BaseTxInfo,
+  type GetRegistryOpts,
+  type OptionsWithMeta,
+  type TypeRegistry,
+  getRegistry,
+} from '@substrate/txwrapper-polkadot';
 
-import { Address, CallData, CallHash, XcmPallets, ProxyType } from '@shared/core';
+import { type Address, type CallData, type CallHash, type ProxyType, XcmPallets } from '@shared/core';
 import { XcmTransferType } from '../../api/xcm';
+
 import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './constants';
 
 export type TxMetadata = { registry: TypeRegistry; options: OptionsWithMeta; info: BaseTxInfo };
@@ -136,7 +143,7 @@ export const getProxyTypes = (api: ApiPromise): ProxyType[] => {
 };
 
 export const getTypeEnumValues = <T extends string>(api: ApiPromise, typeName: string): T[] => {
-  // @ts-ignore
+  // @ts-expect-error TODO fix
   return api.createType(typeName).defKeys;
 };
 
@@ -180,4 +187,11 @@ export const upgradeNonce = (metadata: TxMetadata, index: number): TxMetadata =>
       nonce: Number(metadata.info.nonce) + Number(index),
     },
   };
+};
+
+export const getSecondsDuratonToBlock = (timeToBlock: number): number => {
+  const currentTime = Date.now();
+  const time = timeToBlock - currentTime;
+
+  return Math.floor(time / 1000);
 };

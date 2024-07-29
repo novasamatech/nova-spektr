@@ -1,17 +1,18 @@
 import { allSettled, fork } from 'effector';
 
+import { type Account, type Chain, ConnectionStatus } from '@shared/core';
+import { toAddress } from '@shared/lib/utils';
 import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
-import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
-import { Account, Chain, ConnectionStatus } from '@shared/core';
-import { Step } from '../../lib/types';
-import { formModel } from '../form-model';
-import { flowModel } from '../flow-model';
-import { confirmModel } from '../confirm-model';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
+import { Step } from '../../lib/types';
+import { confirmModel } from '../confirm-model';
+import { flowModel } from '../flow-model';
+import { formModel } from '../form-model';
 import { signatoryModel } from '../signatory-model';
-import { toAddress } from '@shared/lib/utils';
+
+import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
 
 jest.mock('@entities/transaction/lib/extrinsicService', () => ({
   ...jest.requireActual('@entities/transaction/lib/extrinsicService'),

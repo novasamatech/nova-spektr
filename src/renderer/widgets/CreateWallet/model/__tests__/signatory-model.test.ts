@@ -1,9 +1,10 @@
 import { allSettled, fork } from 'effector';
 
-import { walletModel } from '@entities/wallet';
-import { initiatorWallet, signatoryWallet, signerWallet } from './mock';
 import { toAddress } from '@shared/lib/utils';
+import { walletModel } from '@entities/wallet';
 import { signatoryModel } from '../signatory-model';
+
+import { initiatorWallet, signatoryWallet, signerWallet } from './mock';
 
 describe('widgets/CreateWallet/model/signatory-model', () => {
   beforeEach(() => {

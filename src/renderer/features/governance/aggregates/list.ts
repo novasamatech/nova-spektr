@@ -3,14 +3,15 @@ import { inFlight, not, or, readonly } from 'patronum';
 
 import {
   approveThresholdModel,
-  supportThresholdModel,
   referendumModel,
+  supportThresholdModel,
   votingModel,
   votingService,
 } from '@entities/governance';
 import { networkSelectorModel } from '../model/networkSelector';
 import { titleModel } from '../model/title';
-import { AggregatedReferendum } from '../types/structs';
+import { type AggregatedReferendum } from '../types/structs';
+
 import { votingAggregate } from './voting';
 
 const $referendums = combine(
@@ -20,7 +21,7 @@ const $referendums = combine(
     approvalThresholds: approveThresholdModel.$approvalThresholds,
     supportThresholds: supportThresholdModel.$supportThresholds,
     chain: networkSelectorModel.$governanceChain,
-    voting: votingAggregate.$voting,
+    voting: votingAggregate.$activeWalletVotes,
   },
   ({ referendums, chain, titles, approvalThresholds, supportThresholds, voting }): AggregatedReferendum[] => {
     if (!chain) {
@@ -34,7 +35,7 @@ const $referendums = combine(
 
     return referendumsInChain.map((referendum) => {
       return {
-        referendum,
+        ...referendum,
         title: titlesInChain[referendum.referendumId] ?? null,
         approvalThreshold: approvalInChain[referendum.referendumId] ?? null,
         supportThreshold: supportInChain[referendum.referendumId] ?? null,

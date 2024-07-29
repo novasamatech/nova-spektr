@@ -1,4 +1,4 @@
-import { Account, Chain, Transaction } from '@shared/core';
+import { type Account, type Chain, type Transaction } from '@shared/core';
 
 export const enum Step {
   NAME_NETWORK,

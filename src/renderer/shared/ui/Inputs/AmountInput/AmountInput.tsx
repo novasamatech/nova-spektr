@@ -1,14 +1,9 @@
-import { useCallback, useEffect, useState, ReactNode } from 'react';
 import { useUnit } from 'effector-react';
+import { type ReactNode, useCallback, useEffect, useState } from 'react';
 
-import { AssetBalance, AssetIcon } from '@entities/asset';
 import { useI18n } from '@app/providers';
-import { FootnoteText, HelpText, TitleText } from '../../Typography';
-import { Input } from '../Input/Input';
-import { IconButton } from '@shared/ui';
+import { type Asset } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
-import { currencyModel, useCurrencyRate } from '@entities/price';
-import type { Asset } from '@shared/core';
 import {
   cleanAmount,
   cnTw,
@@ -20,6 +15,11 @@ import {
   validatePrecision,
   validateSymbols,
 } from '@shared/lib/utils';
+import { AssetBalance, AssetIcon } from '@entities/asset';
+import { currencyModel, useCurrencyRate } from '@entities/price';
+import { IconButton } from '../../Buttons';
+import { FootnoteText, HelpText, TitleText } from '../../Typography';
+import { Input } from '../Input/Input';
 
 type Props = {
   name?: string;

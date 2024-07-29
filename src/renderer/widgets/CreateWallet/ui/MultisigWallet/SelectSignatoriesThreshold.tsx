@@ -1,15 +1,16 @@
-import { useUnit } from 'effector-react';
 import { useForm } from 'effector-forms';
-import { FormEvent } from 'react';
+import { useUnit } from 'effector-react';
+import { type FormEvent } from 'react';
 
-import { Alert, Button, InputHint, Select, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { formModel } from '../../model/form-model';
-import { flowModel } from '../../model/flow-model';
-import { SelectSignatories } from './components/SelectSignatories';
+import { Alert, Button, InputHint, Select, SmallTitleText } from '@shared/ui';
+import { type DropdownOption } from '@shared/ui/types';
 import { Step } from '../../lib/types';
-import { DropdownOption } from '@shared/ui/types';
+import { flowModel } from '../../model/flow-model';
+import { formModel } from '../../model/form-model';
 import { signatoryModel } from '../../model/signatory-model';
+
+import { SelectSignatories } from './components/SelectSignatories';
 
 const getThresholdOptions = (optionsAmount: number): DropdownOption<number>[] => {
   if (optionsAmount === 0) return [];
