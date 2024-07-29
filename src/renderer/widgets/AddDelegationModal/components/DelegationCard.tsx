@@ -3,9 +3,10 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@/app/providers';
 import { type DelegateAccount } from '@/shared/api/governance';
 import { cnTw } from '@/shared/lib/utils';
-import { BodyText, Card, FootnoteText, HeadlineText, Icon, Identicon, Truncate } from '@/shared/ui';
+import { BodyText, CaptionText, Card, FootnoteText, HeadlineText, Icon, Identicon, Truncate } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { networkSelectorModel } from '@/features/governance';
+import { addDelegationUtils } from '../common/utils';
 
 type Props = {
   delegate: DelegateAccount;
@@ -22,7 +23,7 @@ export const DelegationCard = ({ delegate }: Props) => {
         <div className="flex gap-3">
           {delegate.name ? (
             <>
-              {delegate.image && !delegate.image.includes('default') ? (
+              {delegate.image && !addDelegationUtils.isDefaultImage(delegate.image) ? (
                 <img src={delegate.image} alt={delegate.name} className={cnTw('w-11.5 h-11.5 rounded-full')} />
               ) : (
                 <div
@@ -50,7 +51,18 @@ export const DelegationCard = ({ delegate }: Props) => {
                 </div>
               )}
             </HeadlineText>
-            <div></div>
+            {delegate.name && (
+              <CaptionText
+                className={cnTw(
+                  'rounded-full uppercase px-2 py-1',
+                  delegate.isOrganization
+                    ? 'bg-badge-orange-background-default text-text-warning'
+                    : 'bg-badge-background text-icon-accent',
+                )}
+              >
+                {t('governance.addDelegation.card.' + (delegate.isOrganization ? 'organization' : 'individual'))}
+              </CaptionText>
+            )}
           </div>
         </div>
         <div className="flex flex-col gap-2.5">

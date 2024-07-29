@@ -313,6 +313,8 @@
       "actionButton": "Add delegation",
       "card": {
         "delegations": "Delegations",
+        "individual": "Individual",
+        "organization": "Organization",
         "voted": "Voted last 30 days",
         "votes": "Delegated votes"
       },
