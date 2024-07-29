@@ -1,5 +1,5 @@
-import { ProxiedAccount } from './account';
-import { AccountId, ID, ChainId } from './general';
+import { type ProxiedAccount } from './account';
+import { type AccountId, type ChainId, type ID } from './general';
 
 export type ProxyGroup = {
   id: ID;

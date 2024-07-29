@@ -1,5 +1,7 @@
-import { DecodedTransaction, Transaction, TransactionType } from '@shared/core';
-import { IconNames } from '@shared/ui/Icon/data';
+import { type DecodedTransaction, type Transaction, TransactionType } from '@shared/core';
+import { type IconNames } from '@shared/ui/Icon/data';
+
+import { isEditDelegationTransaction } from './common/utils';
 
 const TransactionIcons: Record<TransactionType, IconNames> = {
   // Transfer
@@ -32,10 +34,19 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.REMOVE_PROXY]: 'proxyMst',
   [TransactionType.REMOVE_PURE_PROXY]: 'proxyMst',
   [TransactionType.PROXY]: 'unknownMst',
+  // Governance
+  [TransactionType.UNLOCK]: 'unlockMst',
+  [TransactionType.REMOVE_VOTE]: 'unlockMst',
+  [TransactionType.DELEGATE]: 'delegateMst',
+  [TransactionType.UNDELEGATE]: 'undelegateMst',
 };
 
 export const getIconName = (transaction?: Transaction | DecodedTransaction): IconNames => {
   if (!transaction?.type) return 'question';
+
+  if (isEditDelegationTransaction(transaction)) {
+    return 'editDelegationMst';
+  }
 
   if (transaction.type === TransactionType.BATCH_ALL) {
     return getIconName(transaction?.args?.transactions?.[0]);

@@ -1,4 +1,5 @@
 import { permissionUtils } from '../permission-utils';
+
 import { permissionMocks } from './mocks/permission-mock';
 
 describe('shared/api/permission/permission-utils', () => {
@@ -337,12 +338,12 @@ describe('shared/api/permission/permission-utils', () => {
       {
         testName: 'should return correct values for approve multisig tx for anyProxyAccount',
         wallet: { ...wallets.proxiedWallet, accounts: [accounts.anyProxyAccount] },
-        result: true,
+        result: false,
       },
       {
         testName: 'should return correct values for approve multisig tx for nonTransferProxyAccount',
         wallet: { ...wallets.proxiedWallet, accounts: [accounts.nonTransferProxyAccount] },
-        result: true,
+        result: false,
       },
       {
         testName: 'should return correct values for approve multisig tx for stakingProxyAccount',
@@ -419,12 +420,12 @@ describe('shared/api/permission/permission-utils', () => {
       {
         testName: 'should return correct values for reject multisig tx for anyProxyAccount',
         wallet: { ...wallets.proxiedWallet, accounts: [accounts.anyProxyAccount] },
-        result: true,
+        result: false,
       },
       {
         testName: 'should return correct values for reject multisig tx for nonTransferProxyAccount',
         wallet: { ...wallets.proxiedWallet, accounts: [accounts.nonTransferProxyAccount] },
-        result: true,
+        result: false,
       },
       {
         testName: 'should return correct values for reject multisig tx for stakingProxyAccount',

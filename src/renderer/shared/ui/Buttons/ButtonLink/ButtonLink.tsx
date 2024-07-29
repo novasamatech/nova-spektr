@@ -1,9 +1,9 @@
-import { PropsWithChildren, ReactNode } from 'react';
+import { type PropsWithChildren, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
 import { cnTw } from '@shared/lib/utils';
-import { ViewClass, SizeClass, Padding } from '../common/constants';
-import { Pallet, Variant } from '../common/types';
+import { Padding, SizeClass, ViewClass } from '../common/constants';
+import { type Pallet, type Variant } from '../common/types';
 
 type Props = {
   to: string;

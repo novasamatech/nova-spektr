@@ -1,7 +1,8 @@
 import { useState } from 'react';
 
-import { BaseModal, HeaderTitleText, Button, RadioGroup, BodyText } from '@shared/ui';
 import { useI18n } from '@app/providers';
+import { BaseModal, BodyText, Button, HeaderTitleText, RadioGroup } from '@shared/ui';
+
 import { MultisigWalletType } from './common/constants';
 
 type Props = {

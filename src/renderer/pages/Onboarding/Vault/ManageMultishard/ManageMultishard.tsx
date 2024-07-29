@@ -1,18 +1,18 @@
-import cn from 'classnames';
-import { useEffect, useState } from 'react';
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { u8aToHex } from '@polkadot/util';
+import cn from 'classnames';
 import keyBy from 'lodash/keyBy';
+import { useEffect, useState } from 'react';
+import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
 import { useI18n } from '@app/providers';
-import { ChainTitle } from '@entities/chain';
-import { toAccountId, toAddress, cnTw, RootExplorers } from '@shared/lib/utils';
-import { walletModel, AddressWithExplorers } from '@entities/wallet';
-import { Button, Input, InputHint, HeaderTitleText, SmallTitleText, IconButton, FootnoteText, Icon } from '@shared/ui';
-import type { ChainId, HexString, ChainAccount, BaseAccount, Chain } from '@shared/core';
-import { CryptoType, ChainType, AccountType, WalletType, SigningType, ErrorType, KeyType } from '@shared/core';
-import { SeedInfo, CompactSeedInfo, AddressInfo } from '@entities/transaction';
 import { chainsService } from '@shared/api/network';
+import { type BaseAccount, type Chain, type ChainAccount, type ChainId, type HexString } from '@shared/core';
+import { AccountType, ChainType, CryptoType, ErrorType, KeyType, SigningType, WalletType } from '@shared/core';
+import { RootExplorers, cnTw, toAccountId, toAddress } from '@shared/lib/utils';
+import { Button, FootnoteText, HeaderTitleText, Icon, IconButton, Input, InputHint, SmallTitleText } from '@shared/ui';
+import { ChainTitle } from '@entities/chain';
+import { type AddressInfo, type CompactSeedInfo, type SeedInfo } from '@entities/transaction';
+import { AddressWithExplorers, walletModel } from '@entities/wallet';
 
 type WalletForm = {
   walletName: string;

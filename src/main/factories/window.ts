@@ -1,10 +1,12 @@
 import { join } from 'path';
-import { session, shell, BrowserWindow, Menu } from 'electron';
+
+import { BrowserWindow, Menu, session, shell } from 'electron';
 import windowStateKeeper from 'electron-window-state';
 
-import { buildMenuTemplate } from './menu';
 import { APP_CONFIG } from '../../../app.config';
 import { ENVIRONMENT } from '../shared/constants/environment';
+
+import { buildMenuTemplate } from './menu';
 
 export function createWindow(): BrowserWindow {
   const { MAIN, TITLE, RENDERER } = APP_CONFIG;

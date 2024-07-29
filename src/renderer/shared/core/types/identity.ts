@@ -1,4 +1,4 @@
-import type { Address } from './general';
+import { type Address } from './general';
 
 export type Identity = {
   subName: string;

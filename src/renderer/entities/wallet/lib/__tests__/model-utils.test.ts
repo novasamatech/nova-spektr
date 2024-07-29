@@ -1,6 +1,6 @@
-import { modelUtils } from '../model-utils';
-import { AccountType, ChainType, CryptoType, KeyType, BaseAccount, ChainAccount } from '@shared/core';
+import { AccountType, type BaseAccount, type ChainAccount, ChainType, CryptoType, KeyType } from '@shared/core';
 import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@shared/lib/utils';
+import { modelUtils } from '../model-utils';
 const accounts = [
   {
     name: 'My base account',

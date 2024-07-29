@@ -1,7 +1,7 @@
 import { useI18n } from '@app/providers';
-import { BaseModal, BodyText, Identicon, Truncate } from '@shared/ui';
+import { type Account, type AccountId, type Asset, type ChainId } from '@shared/core';
 import { cnTw, stakeableAmount, toAddress } from '@shared/lib/utils';
-import type { Asset, ChainId, AccountId, Account } from '@shared/core';
+import { BaseModal, BodyText, Identicon, Truncate } from '@shared/ui';
 import { AssetBalance } from '../../../asset';
 import { useAssetBalances } from '../../../balance';
 

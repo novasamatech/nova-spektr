@@ -1,7 +1,7 @@
-import CURRENCY from '@shared/config/currency/currencies.json';
 import { localStorageService } from '@shared/api/local-storage';
-import { CurrencyItem } from '../lib/types';
-import { CURRENCY_CODE_KEY, FIAT_FLAG_KEY, PRICE_PROVIDER_KEY, ASSETS_PRICES_KEY } from '../lib/constants';
+import CURRENCY from '@shared/config/currency/currencies.json';
+import { ASSETS_PRICES_KEY, CURRENCY_CODE_KEY, FIAT_FLAG_KEY, PRICE_PROVIDER_KEY } from '../lib/constants';
+import { type CurrencyItem } from '../lib/types';
 
 export const fiatService = {
   getCurrencyConfig,
@@ -35,18 +35,18 @@ function saveFiatFlag(flag: boolean): boolean {
   return localStorageService.saveToStorage(FIAT_FLAG_KEY, flag);
 }
 
-function getPriceProvider<T extends any>(defaultFiatProvider: T): T {
+function getPriceProvider<T>(defaultFiatProvider: T): T {
   return localStorageService.getFromStorage(PRICE_PROVIDER_KEY, defaultFiatProvider);
 }
 
-function savePriceProvider<T extends any>(provider: T): T {
+function savePriceProvider<T>(provider: T): T {
   return localStorageService.saveToStorage(PRICE_PROVIDER_KEY, provider);
 }
 
-function getAssetsPrices<T extends any>(defaultPrices: T): T {
+function getAssetsPrices<T>(defaultPrices: T): T {
   return localStorageService.getFromStorage(ASSETS_PRICES_KEY, defaultPrices);
 }
 
-function saveAssetsPrices<T extends any>(prices: T): T {
+function saveAssetsPrices<T>(prices: T): T {
   return localStorageService.saveToStorage(ASSETS_PRICES_KEY, prices);
 }

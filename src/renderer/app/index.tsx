@@ -1,18 +1,19 @@
 import { createRoot } from 'react-dom/client';
 import { HashRouter } from 'react-router-dom';
 
-import { App } from './App';
-import { kernelModel } from '@shared/core';
-import { walletModel } from '@entities/wallet';
-import { networkModel } from '@entities/network';
-import { proxyModel } from '@entities/proxy';
-import { notificationModel } from '@entities/notification';
-import { basketModel } from '@entities/basket';
-import { proxiesModel } from '@features/proxies';
-import { assetsSettingsModel } from '@features/assets';
-import { governanceModel } from '@entities/governance';
-import { multisigsModel } from '@processes/multisigs';
 import { logger } from '@shared/config/utils';
+import { kernelModel } from '@shared/core';
+import { basketModel } from '@entities/basket';
+import { governanceModel } from '@entities/governance';
+import { networkModel } from '@entities/network';
+import { notificationModel } from '@entities/notification';
+import { proxyModel } from '@entities/proxy';
+import { walletModel } from '@entities/wallet';
+import { multisigsModel } from '@processes/multisigs';
+import { assetsSettingsModel } from '@features/assets';
+import { proxiesModel } from '@features/proxies';
+
+import { App } from './App';
 import '@features/balances';
 import './i18n';
 import './index.css';

@@ -1,18 +1,19 @@
-import { ApiPromise } from '@polkadot/api';
-import { SpRuntimeDispatchError } from '@polkadot/types/lookup';
-import { TFunction } from 'react-i18next';
+import { type ApiPromise } from '@polkadot/api';
+import { type SpRuntimeDispatchError } from '@polkadot/types/lookup';
+import { type TFunction } from 'react-i18next';
 
-import { Transaction, DecodedTransaction, TransactionType, MultisigTransaction } from '@shared/core';
+import { type DecodedTransaction, type MultisigTransaction, type Transaction, TransactionType } from '@shared/core';
+import { formatSectionAndMethod } from '@shared/lib/utils';
+
 import {
-  MAX_WEIGHT,
-  OLD_MULTISIG_ARGS_AMOUNT,
   CONTROLLER_ARG_NAME,
   DEST_WEIGHT_ARG_NAME,
-  XcmTypes,
-  TransferTypes,
+  MAX_WEIGHT,
   ManageProxyTypes,
+  OLD_MULTISIG_ARGS_AMOUNT,
+  TransferTypes,
+  XcmTypes,
 } from './constants';
-import { formatSectionAndMethod } from '@shared/lib/utils';
 
 export const decodeDispatchError = (error: SpRuntimeDispatchError, api: ApiPromise): string => {
   let errorInfo = error.toString();
@@ -81,6 +82,19 @@ export const isRemovePureProxyTransaction = (transaction?: Transaction | Decoded
 
 export const isProxyTransaction = (transaction?: Transaction | DecodedTransaction): boolean => {
   return transaction?.type === TransactionType.PROXY;
+};
+
+export const isEditDelegationTransaction = (transaction?: Transaction | DecodedTransaction): boolean => {
+  if (transaction?.type === TransactionType.BATCH_ALL) {
+    const delegateTx = transaction.args.transactions?.find((tx: Transaction) => tx.type === TransactionType.DELEGATE);
+    const undelegateTx = transaction.args.transactions?.find(
+      (tx: Transaction) => tx.type === TransactionType.UNDELEGATE,
+    );
+
+    return delegateTx && undelegateTx;
+  }
+
+  return false;
 };
 
 export const getTransactionAmount = (tx: Transaction | DecodedTransaction): string | null => {
@@ -153,6 +167,11 @@ const TransactionTitles: Record<TransactionType, string> = {
   [TransactionType.REMOVE_PROXY]: 'operations.titles.removeProxy',
   [TransactionType.REMOVE_PURE_PROXY]: 'operations.titles.removePureProxy',
   [TransactionType.PROXY]: 'operations.titles.proxy',
+  // Governance
+  [TransactionType.UNLOCK]: 'operations.titles.unlock',
+  [TransactionType.REMOVE_VOTE]: 'operations.titles.unlock',
+  [TransactionType.DELEGATE]: 'operations.titles.delegate',
+  [TransactionType.UNDELEGATE]: 'operations.titles.undelegate',
 };
 
 const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => string> = {
@@ -193,13 +212,21 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.REMOVE_PROXY]: () => 'operations.modalTitles.removeProxy',
   [TransactionType.REMOVE_PURE_PROXY]: () => 'operations.modalTitles.removePureProxy',
   [TransactionType.PROXY]: () => 'operations.modalTitles.proxy',
+  [TransactionType.UNLOCK]: () => 'operations.modalTitles.unlockOn',
+  [TransactionType.REMOVE_VOTE]: () => 'operations.modalTitles.unlockOn',
+  [TransactionType.DELEGATE]: () => 'operations.modalTitles.delegateOn',
+  [TransactionType.UNDELEGATE]: () => 'operations.modalTitles.undelegateOn',
 };
 
-export const getTransactionTitle = (transaction?: Transaction | DecodedTransaction): string => {
+export const getTransactionTitle = (t: TFunction, transaction?: Transaction | DecodedTransaction): string => {
   if (!transaction) return TRANSACTION_UNKNOWN;
 
   if (!transaction.type) {
     return formatSectionAndMethod(transaction.section, transaction.method);
+  }
+
+  if (isEditDelegationTransaction(transaction)) {
+    return t('operations.titles.editDelegation');
   }
 
   if (transaction.type === TransactionType.BATCH_ALL) {
@@ -215,12 +242,17 @@ export const getTransactionTitle = (transaction?: Transaction | DecodedTransacti
 
 export const getModalTransactionTitle = (
   crossChain: boolean,
+  t: TFunction,
   transaction?: Transaction | DecodedTransaction,
 ): string => {
   if (!transaction) return TRANSACTION_UNKNOWN;
 
   if (!transaction.type) {
     return formatSectionAndMethod(transaction.section, transaction.method);
+  }
+
+  if (isEditDelegationTransaction(transaction)) {
+    return t('operations.modalTitles.editDelegationOn');
   }
 
   if (transaction.type === TransactionType.BATCH_ALL) {
@@ -240,7 +272,7 @@ export const getMultisigSignOperationTitle = (
   type?: TransactionType,
   transaction?: MultisigTransaction,
 ) => {
-  const innerTxTitle = getModalTransactionTitle(crossChain, transaction?.transaction);
+  const innerTxTitle = getModalTransactionTitle(crossChain, t, transaction?.transaction);
 
   if (type === TransactionType.MULTISIG_AS_MULTI || type === TransactionType.MULTISIG_APPROVE_AS_MULTI) {
     return `${t('operations.modalTitles.approve')} ${t(innerTxTitle)}`;

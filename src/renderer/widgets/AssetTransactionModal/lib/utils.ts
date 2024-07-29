@@ -1,7 +1,8 @@
-import { TFunction } from 'i18next';
+import { type TFunction } from 'i18next';
 
 import { formatBalance, totalAmount } from '@shared/lib/utils';
-import type { AssetChain } from '@features/assets/AssetsPortfolioView';
+import { type AssetChain } from '@features/assets/AssetsPortfolioView';
+
 import { Step } from './types';
 
 export const assetTransactionUtils = {

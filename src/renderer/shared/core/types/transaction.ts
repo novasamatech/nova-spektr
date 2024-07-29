@@ -1,15 +1,15 @@
-import type {
-  Address,
-  ChainId,
-  HexString,
-  AccountId,
-  CallData,
-  CallHash,
-  PartialBy,
-  Signatory,
-  MultisigAccount,
-  Account,
-  ProxiedAccount,
+import {
+  type Account,
+  type AccountId,
+  type Address,
+  type CallData,
+  type CallHash,
+  type ChainId,
+  type HexString,
+  type MultisigAccount,
+  type PartialBy,
+  type ProxiedAccount,
+  type Signatory,
 } from '@shared/core';
 
 export const enum TransactionType {
@@ -42,6 +42,11 @@ export const enum TransactionType {
   PROXY = 'proxy',
   CREATE_PURE_PROXY = 'create_pure_proxy',
   REMOVE_PURE_PROXY = 'kill_pure_proxy',
+
+  UNLOCK = 'unlock',
+  REMOVE_VOTE = 'remove_vote',
+  DELEGATE = 'delegate',
+  UNDELEGATE = 'undelegate',
 }
 
 export type SigningStatus =

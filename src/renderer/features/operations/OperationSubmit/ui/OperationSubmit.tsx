@@ -1,13 +1,13 @@
 import { useUnit } from 'effector-react';
-import { ComponentProps, useEffect } from 'react';
+import { type ComponentProps, useEffect } from 'react';
 
-import { Button } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { useTaskQueue } from '@shared/lib/hooks';
+import { Button } from '@shared/ui';
+import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
 import { OperationResult } from '@entities/transaction';
-import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
-import { SubmitStep } from '../lib/types';
 import { submitUtils } from '../lib/submit-utils';
+import { type SubmitStep } from '../lib/types';
 import { submitModel } from '../model/submit-model';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
@@ -36,7 +36,9 @@ export const OperationSubmit = ({ isOpen, onClose }: Props) => {
     submitModel.events.submitStarted();
   }, []);
 
-  if (!submitStore) return null;
+  if (!submitStore) {
+    return null;
+  }
 
   const getResultProps = (step: SubmitStep, message: string): ResultProps => {
     if (submitUtils.isLoadingStep(step)) {
@@ -47,7 +49,7 @@ export const OperationSubmit = ({ isOpen, onClose }: Props) => {
       return { title: t('transfer.successMessage'), variant: 'success' };
     }
 
-    if (submitUtils.iswarningStep(step)) {
+    if (submitUtils.isWarningStep(step)) {
       return {
         title: t('transfer.warningTitle', { failed: failedTxs.length, all: submitStore.txPayloads.length }),
         variant: 'warning',

@@ -1,8 +1,8 @@
-import { createStore, createEffect, sample, createEvent } from 'effector';
+import { createEffect, createEvent, createStore, sample } from 'effector';
 
-import type { Chain, ChainId, Referendum, ReferendumId } from '@shared/core';
+import { type GovernanceApi } from '@shared/api/governance';
+import { type Chain, type ChainId, type Referendum, type ReferendumId } from '@shared/core';
 import { pickNestedValue, setNestedValue } from '@shared/lib/utils';
-import { IGovernanceApi } from '@shared/api/governance';
 import { governanceModel } from '@entities/governance';
 
 const $descriptions = createStore<Record<ChainId, Record<ReferendumId, string>>>({});
@@ -10,7 +10,7 @@ const $descriptions = createStore<Record<ChainId, Record<ReferendumId, string>>>
 const requestDescription = createEvent<{ referendum: Referendum; chain: Chain }>();
 
 type RequestDescriptionsParams = {
-  service: IGovernanceApi;
+  service: GovernanceApi;
   chain: Chain;
   index: ReferendumId;
 };

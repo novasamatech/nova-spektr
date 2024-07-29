@@ -1,7 +1,7 @@
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 
-import { FootnoteText } from '../Typography';
 import { cnTw } from '@shared/lib/utils';
+import { FootnoteText } from '../Typography';
 
 type Props = {
   active?: boolean;
@@ -10,7 +10,9 @@ type Props = {
 };
 
 export const AlertItem = ({ active = true, withDot = true, children, className }: PropsWithChildren<Props>) => {
-  if (!active) return null;
+  if (!active) {
+    return null;
+  }
 
   return (
     <li className={cnTw('flex gap-x-1', className)}>

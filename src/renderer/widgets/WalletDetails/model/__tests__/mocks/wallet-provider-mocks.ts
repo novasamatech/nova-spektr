@@ -1,16 +1,16 @@
 import {
-  AccountId,
-  MultisigWallet,
-  ProxyAccount,
-  Wallet,
-  ChainAccount,
-  KeyType,
+  type AccountId,
   AccountType,
+  type BaseAccount,
+  type ChainAccount,
+  KeyType,
+  type MultisigWallet,
+  type ProxiedAccount,
+  type ProxyAccount,
   ProxyType,
   SigningType,
+  type Wallet,
   WalletType,
-  ProxiedAccount,
-  BaseAccount,
 } from '@shared/core';
 import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
 

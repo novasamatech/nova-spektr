@@ -1,10 +1,10 @@
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
-import { FootnoteText } from '@shared/ui';
-import { HelpText } from '@shared/ui/Typography';
+import { FootnoteText, HelpText } from '../Typography';
+
 import { DotStyles, TitleStyles } from './common/constants';
-import { Variant } from './common/types';
+import { type Variant } from './common/types';
 
 type Props = {
   title: string | ReactNode;

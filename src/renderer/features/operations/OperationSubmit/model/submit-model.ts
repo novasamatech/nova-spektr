@@ -1,21 +1,22 @@
-import { createEvent, createEffect, restore, sample, scopeBind, createStore, createApi } from 'effector';
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
+import { createApi, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
 import { once } from 'patronum';
 
-import type {
-  Chain,
-  Account,
-  HexString,
-  MultisigAccount,
-  Transaction,
-  MultisigTransaction,
-  MultisigEvent,
+import {
+  type Account,
+  type Chain,
+  type ChainId,
+  type HexString,
+  type MultisigAccount,
+  type MultisigEvent,
+  type MultisigTransaction,
+  type Transaction,
 } from '@shared/core';
-import { networkModel } from '@entities/network';
-import { buildMultisigTx } from '@entities/multisig';
-import { ExtrinsicResult, SubmitStep } from '../lib/types';
-import { ExtrinsicResultParams, transactionService } from '@entities/transaction';
 import { removeFromCollection } from '@shared/lib/utils';
+import { buildMultisigTx } from '@entities/multisig';
+import { networkModel } from '@entities/network';
+import { type ExtrinsicResultParams, transactionService } from '@entities/transaction';
+import { ExtrinsicResult, SubmitStep } from '../lib/types';
 
 type Input = {
   chain: Chain;
@@ -44,7 +45,7 @@ const $submitStore = restore<Input>(formInitiated, null);
 
 const $submitStep = createStore<{ step: SubmitStep; message: string }>({ step: SubmitStep.LOADING, message: '' });
 const $submittingTxs = createStore<number[]>([]);
-const $results = createStore<Result[]>([]);
+const $results = createStore<Result[]>([]).reset(formInitiated);
 
 type Callbacks = {
   addMultisigTx: (tx: MultisigTransaction) => Promise<void>;
@@ -56,24 +57,30 @@ const $hooksApi = createApi($hooks, {
 });
 
 type SignAndSubmitExtrinsicParams = {
-  api: ApiPromise;
+  apis: Record<ChainId, ApiPromise>;
   wrappedTxs: Transaction[];
   txPayloads: Uint8Array[];
   signatures: HexString[];
 };
 const signAndSubmitExtrinsicsFx = createEffect(
-  ({ api, wrappedTxs, txPayloads, signatures }: SignAndSubmitExtrinsicParams): void => {
+  ({ apis, wrappedTxs, txPayloads, signatures }: SignAndSubmitExtrinsicParams): void => {
     const boundExtrinsicSucceeded = scopeBind(extrinsicSucceeded, { safe: true });
     const boundExtrinsicFailed = scopeBind(extrinsicFailed, { safe: true });
 
     wrappedTxs.forEach((transaction, index) => {
-      transactionService.signAndSubmit(transaction, signatures[index], txPayloads[index], api, (executed, params) => {
-        if (executed) {
-          boundExtrinsicSucceeded({ id: index, params: params as ExtrinsicResultParams });
-        } else {
-          boundExtrinsicFailed({ id: index, params: params as string });
-        }
-      });
+      transactionService.signAndSubmit(
+        transaction,
+        signatures[index],
+        txPayloads[index],
+        apis[transaction.chainId],
+        (executed, params) => {
+          if (executed) {
+            boundExtrinsicSucceeded({ id: index, params: params as ExtrinsicResultParams });
+          } else {
+            boundExtrinsicFailed({ id: index, params: params as string });
+          }
+        },
+      );
     });
   },
 );
@@ -138,7 +145,7 @@ sample({
   },
   filter: ({ params }) => Boolean(params),
   fn: ({ apis, params }) => ({
-    api: apis[params!.chain.chainId],
+    apis,
     signatures: params!.signatures,
     wrappedTxs: params!.wrappedTxs,
     coreTxs: params!.coreTxs,
@@ -146,12 +153,6 @@ sample({
   }),
   target: signAndSubmitExtrinsicsFx,
 });
-
-// sample({
-//   clock: extrinsicFailed,
-//   fn: ({ params: message }) => ({ step: SubmitStep.ERROR, message }),
-//   target: $submitStep,
-// });
 
 sample({
   clock: [extrinsicSucceeded, extrinsicFailed],

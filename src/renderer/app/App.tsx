@@ -1,20 +1,21 @@
+import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useNavigate, useRoutes } from 'react-router-dom';
-import { useUnit } from 'effector-react';
 
-import { CreateWalletProvider } from '@widgets/CreateWallet';
-import { WalletDetailsProvider } from '@widgets/WalletDetails';
-import { walletModel } from '@entities/wallet';
-import { ROUTES_CONFIG } from '@pages/index';
 import { Paths } from '@shared/routes';
 import { FallbackScreen } from '@shared/ui';
+import { walletModel } from '@entities/wallet';
+import { CreateWalletProvider } from '@widgets/CreateWallet';
+import { WalletDetailsProvider } from '@widgets/WalletDetails';
+import { ROUTES_CONFIG } from '@pages/index';
+
 import {
   ConfirmDialogProvider,
-  StatusModalProvider,
-  I18Provider,
   GraphqlProvider,
+  I18Provider,
   MultisigChainProvider,
+  StatusModalProvider,
 } from './providers';
 
 const SPLASH_SCREEN_DELAY = 450;
@@ -39,7 +40,9 @@ export const App = () => {
   }, [isLoadingWallets, wallets.length]);
 
   const getContent = () => {
-    if (splashScreenLoading || isLoadingWallets) return null;
+    if (splashScreenLoading || isLoadingWallets) {
+      return null;
+    }
 
     document.querySelector('.splash_placeholder')?.remove();
 

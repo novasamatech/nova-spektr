@@ -1,28 +1,34 @@
+import { type ApiPromise } from '@polkadot/api';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
-import { ApiPromise } from '@polkadot/api';
 import { spread } from 'patronum';
 
-import { Step } from '../types';
+import { proxyService } from '@shared/api/proxy';
 import {
-  Account,
-  AccountId,
-  Address,
-  Asset,
-  BasketTransaction,
-  Chain,
-  ChainId,
-  Connection,
-  ProxiedAccount,
-  ProxyType,
-  Transaction,
+  type Account,
+  type AccountId,
+  type Address,
+  type Asset,
+  type BasketTransaction,
+  type Chain,
+  type ChainId,
+  type Connection,
+  type ProxiedAccount,
+  type ProxyType,
+  type Transaction,
   TransactionType,
-  Validator,
-  Wallet,
+  type Validator,
+  type Wallet,
 } from '@shared/core';
-import { walletModel, walletUtils } from '@entities/wallet';
-import { networkModel, networkUtils } from '@entities/network';
+import { type ChainError } from '@shared/core/types/basket';
 import { getAssetById, redeemableAmount, toAccountId } from '@shared/lib/utils';
+import { basketModel } from '@entities/basket';
+import { networkModel, networkUtils } from '@entities/network';
+import { eraService, useStakingData, validatorsService } from '@entities/staking';
 import { TransferTypes, XcmTypes, transactionService } from '@entities/transaction';
+import { walletModel, walletUtils } from '@entities/wallet';
+import { signModel } from '@features/operations/OperationSign/model/sign-model';
+import { submitModel } from '@features/operations/OperationSubmit';
+import { ExtrinsicResult } from '@features/operations/OperationSubmit/lib/types';
 import {
   addProxyConfirmModel,
   addPureProxiedConfirmModel,
@@ -37,14 +43,8 @@ import {
   unstakeConfirmModel,
   withdrawConfirmModel,
 } from '@features/operations/OperationsConfirm';
-import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@features/operations/OperationSubmit';
-import { basketModel } from '@entities/basket';
-import { ExtrinsicResult } from '@features/operations/OperationSubmit/lib/types';
-import { ChainError } from '@shared/core/types/basket';
-import { proxyService } from '@shared/api/proxy';
 import { getCoreTx } from '../lib/utils';
-import { eraService, useStakingData, validatorsService } from '@entities/staking';
+import { Step } from '../types';
 
 type FeeMap = Record<ChainId, Record<TransactionType, string>>;
 
@@ -100,8 +100,7 @@ const startDataPreparationFx = createEffect(
       };
 
       if (coreTx.type in TransactionValidators) {
-        // TS thinks that transfer should be in TransactionValidators
-        // @ts-ignore`
+        // @ts-expect-error TS thinks that transfer should be in TransactionValidators
         const params = await TransactionValidators[coreTx.type]({
           transaction,
           wallets,
@@ -661,21 +660,10 @@ sample({
 sample({
   clock: startDataPreparationFx.doneData,
   filter: (dataParams) => {
-    return (
-      dataParams?.filter((tx) => {
-        return tx.type === TransactionType.ADD_PROXY;
-      }).length > 0
-    );
+    return dataParams?.filter((tx) => tx.type === TransactionType.ADD_PROXY).length > 0;
   },
-
   fn: (dataParams) => {
-    return (
-      dataParams
-        ?.filter((tx) => {
-          return tx.type === TransactionType.ADD_PROXY;
-        })
-        .map((tx) => tx.params) || []
-    );
+    return dataParams?.filter((tx) => tx.type === TransactionType.ADD_PROXY).map((tx) => tx.params) || [];
   },
   target: addProxyConfirmModel.events.formInitiated,
 });
@@ -685,21 +673,10 @@ sample({
 sample({
   clock: startDataPreparationFx.doneData,
   filter: (dataParams) => {
-    return (
-      dataParams?.filter((tx) => {
-        return tx.type === TransactionType.CREATE_PURE_PROXY;
-      }).length > 0
-    );
+    return dataParams?.filter((tx) => tx.type === TransactionType.CREATE_PURE_PROXY).length > 0;
   },
-
   fn: (dataParams) => {
-    return (
-      dataParams
-        ?.filter((tx) => {
-          return tx.type === TransactionType.CREATE_PURE_PROXY;
-        })
-        .map((tx) => tx.params) || []
-    );
+    return dataParams?.filter((tx) => tx.type === TransactionType.CREATE_PURE_PROXY).map((tx) => tx.params) || [];
   },
   target: addPureProxiedConfirmModel.events.formInitiated,
 });
@@ -709,21 +686,10 @@ sample({
 sample({
   clock: startDataPreparationFx.doneData,
   filter: (dataParams) => {
-    return (
-      dataParams?.filter((tx) => {
-        return tx.type === TransactionType.REMOVE_PROXY;
-      }).length > 0
-    );
+    return dataParams?.filter((tx) => tx.type === TransactionType.REMOVE_PROXY).length > 0;
   },
-
   fn: (dataParams) => {
-    return (
-      dataParams
-        ?.filter((tx) => {
-          return tx.type === TransactionType.REMOVE_PROXY;
-        })
-        .map((tx) => tx.params) || []
-    );
+    return dataParams?.filter((tx) => tx.type === TransactionType.REMOVE_PROXY).map((tx) => tx.params) || [];
   },
   target: removeProxyConfirmModel.events.formInitiated,
 });
@@ -733,21 +699,10 @@ sample({
 sample({
   clock: startDataPreparationFx.doneData,
   filter: (dataParams) => {
-    return (
-      dataParams?.filter((tx) => {
-        return tx.type === TransactionType.REMOVE_PURE_PROXY;
-      }).length > 0
-    );
+    return dataParams?.filter((tx) => tx.type === TransactionType.REMOVE_PURE_PROXY).length > 0;
   },
-
   fn: (dataParams) => {
-    return (
-      dataParams
-        ?.filter((tx) => {
-          return tx.type === TransactionType.REMOVE_PURE_PROXY;
-        })
-        .map((tx) => tx.params) || []
-    );
+    return dataParams?.filter((tx) => tx.type === TransactionType.REMOVE_PURE_PROXY).map((tx) => tx.params) || [];
   },
   target: removePureProxiedConfirmModel.events.formInitiated,
 });
@@ -757,24 +712,10 @@ sample({
 sample({
   clock: startDataPreparationFx.doneData,
   filter: (dataParams) => {
-    return (
-      dataParams?.filter((tx) => {
-        return tx.type === TransactionType.BOND;
-      }).length > 0
-    );
+    return dataParams?.filter((tx) => tx.type === TransactionType.BOND).length > 0;
   },
-
   fn: (dataParams) => {
-    return (
-      dataParams
-        ?.filter((tx) => {
-          return (
-            tx.type === TransactionType.BOND ||
-            tx.params.transactions.find((tx: Transaction) => tx.type === TransactionType.BOND)
-          );
-        })
-        .map((tx) => tx.params) || []
-    );
+    return dataParams?.filter((tx) => tx.type === TransactionType.BOND).map((tx) => tx.params) || [];
   },
   target: bondNominateConfirmModel.events.formInitiated,
 });
@@ -784,21 +725,10 @@ sample({
 sample({
   clock: startDataPreparationFx.doneData,
   filter: (dataParams) => {
-    return (
-      dataParams?.filter((tx) => {
-        return tx.type === TransactionType.NOMINATE;
-      }).length > 0
-    );
+    return dataParams?.filter((tx) => tx.type === TransactionType.NOMINATE).length > 0;
   },
-
   fn: (dataParams) => {
-    return (
-      dataParams
-        ?.filter((tx) => {
-          return tx.type === TransactionType.NOMINATE;
-        })
-        .map((tx) => tx.params) || []
-    );
+    return dataParams?.filter((tx) => tx.type === TransactionType.NOMINATE).map((tx) => tx.params) || [];
   },
   target: nominateConfirmModel.events.formInitiated,
 });
@@ -808,21 +738,10 @@ sample({
 sample({
   clock: startDataPreparationFx.doneData,
   filter: (dataParams) => {
-    return (
-      dataParams?.filter((tx) => {
-        return tx.type === TransactionType.DESTINATION;
-      }).length > 0
-    );
+    return dataParams?.filter((tx) => tx.type === TransactionType.DESTINATION).length > 0;
   },
-
   fn: (dataParams) => {
-    return (
-      dataParams
-        ?.filter((tx) => {
-          return tx.type === TransactionType.DESTINATION;
-        })
-        .map((tx) => tx.params) || []
-    );
+    return dataParams?.filter((tx) => tx.type === TransactionType.DESTINATION).map((tx) => tx.params) || [];
   },
   target: payeeConfirmModel.events.formInitiated,
 });
@@ -832,21 +751,10 @@ sample({
 sample({
   clock: startDataPreparationFx.doneData,
   filter: (dataParams) => {
-    return (
-      dataParams?.filter((tx) => {
-        return tx.type === TransactionType.STAKE_MORE;
-      }).length > 0
-    );
+    return dataParams?.filter((tx) => tx.type === TransactionType.STAKE_MORE).length > 0;
   },
-
   fn: (dataParams) => {
-    return (
-      dataParams
-        ?.filter((tx) => {
-          return tx.type === TransactionType.STAKE_MORE;
-        })
-        .map((tx) => tx.params) || []
-    );
+    return dataParams?.filter((tx) => tx.type === TransactionType.STAKE_MORE).map((tx) => tx.params) || [];
   },
   target: bondExtraConfirmModel.events.formInitiated,
 });
@@ -856,24 +764,10 @@ sample({
 sample({
   clock: startDataPreparationFx.doneData,
   filter: (dataParams) => {
-    return (
-      dataParams?.filter((tx) => {
-        return tx.type === TransactionType.UNSTAKE;
-      }).length > 0
-    );
+    return dataParams?.filter((tx) => tx.type === TransactionType.UNSTAKE).length > 0;
   },
-
   fn: (dataParams) => {
-    return (
-      dataParams
-        ?.filter((tx) => {
-          return (
-            tx.type === TransactionType.UNSTAKE ||
-            tx.params.transactions.find((tx: Transaction) => tx.type === TransactionType.UNSTAKE)
-          );
-        })
-        .map((tx) => tx.params) || []
-    );
+    return dataParams?.filter((tx) => tx.type === TransactionType.UNSTAKE).map((tx) => tx.params) || [];
   },
   target: unstakeConfirmModel.events.formInitiated,
 });
@@ -883,21 +777,10 @@ sample({
 sample({
   clock: startDataPreparationFx.doneData,
   filter: (dataParams) => {
-    return (
-      dataParams?.filter((tx) => {
-        return tx.type === TransactionType.RESTAKE;
-      }).length > 0
-    );
+    return dataParams?.filter((tx) => tx.type === TransactionType.RESTAKE).length > 0;
   },
-
   fn: (dataParams) => {
-    return (
-      dataParams
-        ?.filter((tx) => {
-          return tx.type === TransactionType.RESTAKE;
-        })
-        .map((tx) => tx.params) || []
-    );
+    return dataParams?.filter((tx) => tx.type === TransactionType.RESTAKE).map((tx) => tx.params) || [];
   },
   target: restakeConfirmModel.events.formInitiated,
 });
@@ -907,21 +790,10 @@ sample({
 sample({
   clock: startDataPreparationFx.doneData,
   filter: (dataParams) => {
-    return (
-      dataParams?.filter((tx) => {
-        return tx.type === TransactionType.REDEEM;
-      }).length > 0
-    );
+    return dataParams?.filter((tx) => tx.type === TransactionType.REDEEM).length > 0;
   },
-
   fn: (dataParams) => {
-    return (
-      dataParams
-        ?.filter((tx) => {
-          return tx.type === TransactionType.REDEEM;
-        })
-        .map((tx) => tx.params) || []
-    );
+    return dataParams?.filter((tx) => tx.type === TransactionType.REDEEM).map((tx) => tx.params) || [];
   },
   target: withdrawConfirmModel.events.formInitiated,
 });

@@ -1,9 +1,9 @@
-import UpImg, { ReactComponent as UpSvg } from '@shared/assets/images/chevron/up.svg';
-import RightImg, { ReactComponent as RightSvg } from '@shared/assets/images/chevron/right.svg';
 import DownImg, { ReactComponent as DownSvg } from '@shared/assets/images/chevron/down.svg';
 import LeftImg, { ReactComponent as LeftSvg } from '@shared/assets/images/chevron/left.svg';
+import RightImg, { ReactComponent as RightSvg } from '@shared/assets/images/chevron/right.svg';
 import ShelfDownImg, { ReactComponent as ShelfDownSvg } from '@shared/assets/images/chevron/shelfDown.svg';
 import ShelfRightImg, { ReactComponent as ShelfRightSvg } from '@shared/assets/images/chevron/shelfRight.svg';
+import UpImg, { ReactComponent as UpSvg } from '@shared/assets/images/chevron/up.svg';
 
 const ChevronImages = {
   up: { svg: UpSvg, img: UpImg },

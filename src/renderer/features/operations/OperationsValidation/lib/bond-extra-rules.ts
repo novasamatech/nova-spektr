@@ -1,17 +1,18 @@
-import { Store } from 'effector';
 import { BN } from '@polkadot/util';
+import { type Store } from 'effector';
 
+import { type Account } from '@shared/core';
 import { formatAmount } from '@shared/lib/utils';
-import { balanceValidation, descriptionValidation } from './validation';
-import { Account } from '@shared/core';
 import {
-  BondAmountBalanceStore,
-  AmountFeeStore,
-  Config,
-  ShardsBondBalanceStore,
-  ShardsProxyFeeStore,
-  SignatoryFeeStore,
+  type AmountFeeStore,
+  type BondAmountBalanceStore,
+  type Config,
+  type ShardsBondBalanceStore,
+  type ShardsProxyFeeStore,
+  type SignatoryFeeStore,
 } from '../types/types';
+
+import { balanceValidation, descriptionValidation } from './validation';
 
 export const BondExtraRules = {
   shards: {

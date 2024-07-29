@@ -1,9 +1,17 @@
 import { combine, createApi, createEffect, createEvent, createStore, sample } from 'effector';
 import sortBy from 'lodash/sortBy';
 
-import { AccountType, ChainId, ChainType, CryptoType, Signatory, SigningType, WalletType } from '@shared/core';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import {
+  AccountType,
+  type ChainId,
+  ChainType,
+  CryptoType,
+  type Signatory,
+  SigningType,
+  WalletType,
+} from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 
 const reset = createEvent();
 

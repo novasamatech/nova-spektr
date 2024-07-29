@@ -1,42 +1,42 @@
+import { type Endpoint, createEndpoint } from '@remote-ui/rpc';
 import { attach, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
-import { Endpoint, createEndpoint } from '@remote-ui/rpc';
+import { GraphQLClient } from 'graphql-request';
 import keyBy from 'lodash/keyBy';
 import { once, spread } from 'patronum';
-import { GraphQLClient } from 'graphql-request';
 
-import type {
-  AccountId,
-  Chain,
-  ChainId,
-  Connection,
-  PartialProxiedAccount,
-  ProxiedAccount,
-  ProxyAccount,
-  ProxyDeposits,
-  Wallet,
-  WalletsMap,
-  Account,
+import { storageService } from '@shared/api/storage';
+import {
+  type Account,
+  type AccountId,
+  type Chain,
+  type ChainId,
+  type Connection,
+  type NoID,
+  type PartialProxiedAccount,
+  type ProxiedAccount,
+  type ProxyAccount,
+  type ProxyDeposits,
+  type ProxyGroup,
+  type Wallet,
+  type WalletsMap,
 } from '@shared/core';
 import {
   AccountType,
   ChainType,
   CryptoType,
+  ExternalType,
+  NotificationType,
+  ProxyVariant,
   SigningType,
   WalletType,
-  NotificationType,
-  NoID,
-  ProxyGroup,
-  ProxyVariant,
-  ExternalType,
 } from '@shared/core';
-import { networkModel, networkUtils } from '@entities/network';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { proxyModel, proxyUtils, pureProxiesService } from '@entities/proxy';
-import { balanceModel } from '@entities/balance';
-import { notificationModel } from '@entities/notification';
-import { proxiesUtils } from '../lib/proxies-utils';
-import { storageService } from '@shared/api/storage';
 import { dictionary } from '@shared/lib/utils';
+import { balanceModel } from '@entities/balance';
+import { networkModel, networkUtils } from '@entities/network';
+import { notificationModel } from '@entities/notification';
+import { proxyModel, proxyUtils, pureProxiesService } from '@entities/proxy';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { proxiesUtils } from '../lib/proxies-utils';
 
 const workerStarted = createEvent();
 const connected = createEvent<ChainId>();
@@ -50,7 +50,7 @@ const $endpoint = createStore<Endpoint<any> | null>(null);
 const $deposits = createStore<ProxyDeposits[]>([]);
 
 const startWorkerFx = createEffect(() => {
-  // @ts-ignore
+  // @ts-expect-error TODO fix
   const worker = new Worker(new URL('@features/proxies/workers/proxy-worker', import.meta.url));
 
   return createEndpoint(worker, {
@@ -129,7 +129,7 @@ const getProxiesFx = createEffect(
 
       const pureProxiesMap = dictionary(pureProxies, 'accountId');
 
-      for (let i in proxiedAccountsToAdd) {
+      for (const i in proxiedAccountsToAdd) {
         const pureProxy = pureProxiesMap[proxiedAccountsToAdd[i].accountId];
         if (pureProxy) {
           proxiedAccountsToAdd[i].proxyVariant = ProxyVariant.PURE;
@@ -316,7 +316,7 @@ sample({
   fn: (wallets, data) => {
     const accountsMap = dictionary(data.accounts, 'walletId');
 
-    const newWallets = data.wallets.map((wallet) => ({ ...wallet, accounts: [accountsMap[wallet.id]] } as Wallet));
+    const newWallets = data.wallets.map((wallet) => ({ ...wallet, accounts: [accountsMap[wallet.id]] }) as Wallet);
 
     return wallets.concat(newWallets);
   },

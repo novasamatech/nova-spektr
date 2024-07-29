@@ -1,7 +1,7 @@
+import { type ChainId } from '@shared/core';
+import { cnTw } from '@shared/lib/utils';
 import { Icon } from '@shared/ui';
 import { ChainTitle } from '../ChainTitle/ChainTitle';
-import { cnTw } from '@shared/lib/utils';
-import type { ChainId } from '@shared/core';
 
 type Props = {
   chainIdFrom: ChainId;

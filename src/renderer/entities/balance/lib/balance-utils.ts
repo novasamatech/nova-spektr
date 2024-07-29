@@ -1,6 +1,6 @@
 import keyBy from 'lodash/keyBy';
 
-import type { AccountId, Balance, ChainId, OmitFirstArg } from '@shared/core';
+import { type AccountId, type Balance, type ChainId, type OmitFirstArg } from '@shared/core';
 
 export const balanceUtils = {
   getAssetBalances,

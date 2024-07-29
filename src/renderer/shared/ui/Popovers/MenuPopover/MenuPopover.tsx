@@ -1,5 +1,5 @@
 import { Menu } from '@headlessui/react';
-import { PropsWithChildren, ReactNode, useRef, MouseEvent } from 'react';
+import { type MouseEvent, type PropsWithChildren, type ReactNode, useRef } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
 
@@ -25,7 +25,7 @@ export const MenuPopover = ({
 }: PropsWithChildren<Props>) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const onMenuClick = (e: MouseEvent<HTMLButtonElement>) => {
+  const onMenuClick = (e: MouseEvent<HTMLElement>) => {
     e.stopPropagation();
     setTimeout(() => menuRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
   };

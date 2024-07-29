@@ -1,5 +1,12 @@
-import { ID, MultisigEventDS } from '@shared/api/storage';
-import { AccountId, CallHash, ChainId, MultisigEvent, MultisigTransactionKey, SigningStatus } from '@shared/core';
+import { type ID, type MultisigEventDS } from '@shared/api/storage';
+import {
+  type AccountId,
+  type CallHash,
+  type ChainId,
+  type MultisigEvent,
+  type MultisigTransactionKey,
+  type SigningStatus,
+} from '@shared/core';
 
 export interface IMultisigEventService {
   getEvent: (eventId: ID) => Promise<MultisigEventDS | undefined>;

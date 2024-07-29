@@ -1,5 +1,5 @@
-import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
 import { TransactionType } from '@shared/core';
+import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
 
 export const extrinsicTests = [
   {
@@ -163,5 +163,23 @@ export const extrinsicTests = [
     },
     transactionType: TransactionType.BATCH_ALL,
     callData: '0x1802080602070010a5d4e80606',
+  },
+  {
+    testName: 'should create extrinsic for unlock tx and get call data',
+    args: {
+      class: 1,
+      target: TEST_ACCOUNTS[0],
+    },
+    transactionType: TransactionType.UNLOCK,
+    callData: '0x140300000008eb319467ea54784cd9edfbd03bbcc53f7a021ed8d9ed2ca97b6ae46b3f6014',
+  },
+  {
+    testName: 'should create extrinsic for remove vote tx and get call data',
+    args: {
+      class: 1,
+      index: '123',
+    },
+    transactionType: TransactionType.REMOVE_VOTE,
+    callData: '0x14040000000000',
   },
 ];

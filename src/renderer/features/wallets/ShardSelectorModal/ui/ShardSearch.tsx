@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
-import { SearchInput } from '@shared/ui';
 import { useI18n } from '@app/providers';
+import { SearchInput } from '@shared/ui';
 import { shardsModel } from '../model/shards-model';
 
 export const ShardSearch = () => {

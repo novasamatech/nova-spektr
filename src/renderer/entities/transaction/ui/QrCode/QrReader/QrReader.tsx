@@ -1,20 +1,29 @@
 import { decodeAddress } from '@polkadot/util-crypto';
-import { BrowserCodeReader, BrowserQRCodeReader, IScannerControls } from '@zxing/browser';
+import { BrowserCodeReader, BrowserQRCodeReader, type IScannerControls } from '@zxing/browser';
 import init, { Decoder, EncodingPacket } from 'raptorq';
 import { useEffect, useRef } from 'react';
 
-import { cnTw, validateSignerFormat } from '@shared/lib/utils';
-import { CryptoTypeString } from '@shared/core';
 import { useI18n } from '@app/providers';
+import { CryptoTypeString } from '@shared/core';
+import { cnTw, validateSignerFormat } from '@shared/lib/utils';
 import {
   DYNAMIC_DERIVATIONS_ADDRESS_RESPONSE,
-  ErrorFields,
   EXPORT_ADDRESS,
+  ErrorFields,
   FRAME_KEY,
-  VaultFeature,
+  type VaultFeature,
 } from '../common/constants';
 import { QR_READER_ERRORS } from '../common/errors';
-import { DdSeedInfo, DecodeCallback, ErrorObject, Progress, QrError, SeedInfo, VideoInput } from '../common/types';
+import {
+  type DdSeedInfo,
+  type DecodeCallback,
+  type ErrorObject,
+  type Progress,
+  QrError,
+  type SeedInfo,
+  type VideoInput,
+} from '../common/types';
+
 import RaptorFrame from './RaptorFrame';
 
 const enum Status {
@@ -72,7 +81,9 @@ export const QrReader = ({
   const sizeStyle = Array.isArray(size) ? { width: size[0], height: size[1] } : { width: size, height: size };
 
   const isQrErrorObject = (error: unknown): boolean => {
-    if (!error) return false;
+    if (!error) {
+      return false;
+    }
 
     return typeof error === 'object' && ErrorFields.CODE in error && ErrorFields.MESSAGE in error;
   };
@@ -83,7 +94,9 @@ export const QrReader = ({
   };
 
   const makeResultPayload = <T extends ScanResult>(data: T): Array<SeedInfo | DdSeedInfo> => {
-    if (Array.isArray(data)) return data;
+    if (Array.isArray(data)) {
+      return data;
+    }
 
     if (typeof data !== 'string') {
       const payload = { ...data.addr };
@@ -129,8 +142,10 @@ export const QrReader = ({
     return cameras.length;
   };
 
-  const handleSimpleQr = (signerAddress: string): Boolean => {
-    if (!validateSignerFormat(signerAddress)) return false;
+  const handleSimpleQr = (signerAddress: string): boolean => {
+    if (!validateSignerFormat(signerAddress)) {
+      return false;
+    }
 
     isComplete.current = true;
     onProgress?.({ decoded: 1, total: 1 });

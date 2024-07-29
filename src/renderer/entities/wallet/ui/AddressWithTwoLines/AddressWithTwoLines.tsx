@@ -1,11 +1,10 @@
-import { ReactNode } from 'react';
-import { IconTheme } from '@polkadot/react-identicon/types';
+import { type IconTheme } from '@polkadot/react-identicon/types';
+import { type ReactNode } from 'react';
 
+import { type AccountId, type Address, type SigningType } from '@shared/core';
 import { cnTw } from '@shared/lib/utils';
 import { Identicon } from '@shared/ui';
-import { SigningType } from '@shared/core';
 import { getAddress } from '../AccountAddress/AccountAddress';
-import type { AccountId, Address } from '@shared/core';
 
 type WithAccountId = {
   accountId: AccountId;
@@ -39,7 +38,7 @@ export const AddressWithTwoLines = ({
   ...props
 }: Props) => {
   return (
-    <div className={cnTw('flex items-center gap-x-2', className)}>
+    <div className={cnTw('flex items-center gap-x-2 min-w-0', className)}>
       {showIcon && (
         <Identicon theme={iconTheme} address={getAddress(props)} size={size} background={false} canCopy={canCopy} />
       )}

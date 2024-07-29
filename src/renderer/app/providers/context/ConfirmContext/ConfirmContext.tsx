@@ -1,8 +1,17 @@
-import { createContext, PropsWithChildren, useCallback, useContext, useRef, useState, ReactNode } from 'react';
+import {
+  type PropsWithChildren,
+  type ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
-import { ConfirmModal, SmallTitleText, FootnoteText } from '@shared/ui';
-import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 import { useToggle } from '@shared/lib/hooks';
+import { DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { ConfirmModal, FootnoteText, SmallTitleText } from '@shared/ui';
 
 type Pallet = 'primary' | 'secondary' | 'error';
 
@@ -33,7 +42,7 @@ export const ConfirmDialogProvider = ({ children }: PropsWithChildren) => {
 
   const [dialogState, setDialogState] = useState<ConfirmDialogProps>(defaultState);
 
-  const fn = useRef<(choice: any) => void>();
+  const fn = useRef<(choice: boolean) => void>();
 
   const confirm = useCallback((data: ConfirmDialogProps): Promise<boolean> => {
     return new Promise((resolve) => {
@@ -50,8 +59,10 @@ export const ConfirmDialogProvider = ({ children }: PropsWithChildren) => {
     });
   }, []);
 
+  const value = useMemo(() => ({ confirm }), [confirm]);
+
   return (
-    <ConfirmDialog.Provider value={{ confirm }}>
+    <ConfirmDialog.Provider value={value}>
       {children}
 
       <ConfirmModal

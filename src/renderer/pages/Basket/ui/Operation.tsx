@@ -1,14 +1,14 @@
 import { Trans } from 'react-i18next';
 
+import { useI18n } from '@app/providers';
+import { chainsService } from '@shared/api/network';
+import { type BasketTransaction, TransactionType } from '@shared/core';
+import { type ChainError } from '@shared/core/types/basket';
+import { cnTw, getAssetById } from '@shared/lib/utils';
+import { HelpText, IconButton, Shimmering, Tooltip } from '@shared/ui';
+import { AssetBalance } from '@entities/asset';
 import { ChainTitle, XcmChains } from '@entities/chain';
 import { TransactionTitle, getTransactionAmount, isXcmTransaction } from '@entities/transaction';
-import { chainsService } from '@shared/api/network';
-import { cnTw, getAssetById } from '@shared/lib/utils';
-import { AssetBalance } from '@entities/asset';
-import { BasketTransaction, TransactionType } from '@shared/core';
-import { HelpText, IconButton, Shimmering, Tooltip } from '@shared/ui';
-import { useI18n } from '@app/providers';
-import { ChainError } from '@shared/core/types/basket';
 import { getCoreTx } from '../lib/utils';
 
 type Props = {
@@ -50,7 +50,7 @@ export const Operation = ({ tx, errorText, validating, onClick, onTxRemoved }: P
     if (errorText) {
       return (
         <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey={errorText} />}>
-          <div className="flex gap-x-1 items-center rounded-md bg-badge-red-background-default px-2 py-0.5">
+          <div className="w-[106px] flex gap-x-1 items-center justify-center rounded-md bg-badge-red-background-default px-2 py-0.5">
             <HelpText className="text-text-negative">{t('basket.validationError')} </HelpText>
           </div>
         </Tooltip>
@@ -60,11 +60,12 @@ export const Operation = ({ tx, errorText, validating, onClick, onTxRemoved }: P
     if (tx.error) {
       return (
         <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey={tx.error.message} />}>
-          <div className="flex gap-x-1 items-center rounded-md bg-badge-orange-background-default px-2 py-0.5">
+          <div className="w-[106px] flex gap-x-1 items-center justify-center rounded-md bg-badge-orange-background-default px-2 py-0.5">
             <HelpText className="text-text-warning">
               {t('basket.chainError', {
                 date: (tx.error as ChainError).dateCreated
-                  ? new Date((tx.error as ChainError).dateCreated).toLocaleDateString()
+                  ? // TODO: Use formatDate from i18n
+                    new Date((tx.error as ChainError).dateCreated).toLocaleDateString()
                   : '',
               })}
             </HelpText>

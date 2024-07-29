@@ -1,16 +1,16 @@
 import { useStoreMap } from 'effector-react';
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
-import { Button, DetailRow, FootnoteText, Icon, Tooltip, CaptionText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { SignButton } from '@entities/operations';
-import { AddressWithExplorers, WalletIcon, ExplorersPopover, WalletCardSm, accountUtils } from '@entities/wallet';
-import { cnTw } from '@shared/lib/utils';
-import { AssetBalance } from '@entities/asset';
-import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
-import { confirmModel } from '../model/confirm-model';
-import { AccountsModal, StakingPopover, UnstakingDuration } from '@entities/staking';
 import { useToggle } from '@shared/lib/hooks';
+import { cnTw } from '@shared/lib/utils';
+import { Button, CaptionText, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
+import { AssetBalance } from '@entities/asset';
+import { SignButton } from '@entities/operations';
+import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { AccountsModal, StakingPopover, UnstakingDuration } from '@entities/staking';
+import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, accountUtils } from '@entities/wallet';
+import { confirmModel } from '../model/confirm-model';
 
 type Props = {
   id?: number;
@@ -48,13 +48,15 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
   const api = useStoreMap({
     store: confirmModel.$apis,
-    keys: [confirmStore.chain.chainId],
+    keys: [confirmStore?.chain?.chainId],
     fn: (value, [chainId]) => value?.[chainId],
   });
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
 
-  if (!confirmStore || !initiatorWallet) return null;
+  if (!confirmStore || !initiatorWallet) {
+    return null;
+  }
 
   return (
     <>

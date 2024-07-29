@@ -2,28 +2,35 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { useI18n } from '@app/providers';
-import { AddressWithExplorers, WalletCardSm, WalletIcon, walletModel, ExplorersPopover } from '@entities/wallet';
-import { Icon, FootnoteText, DetailRow, CaptionText } from '@shared/ui';
+import {
+  type Account,
+  type Address,
+  type MultisigAccount,
+  type MultisigTransaction,
+  type Transaction,
+  type Validator,
+  type Wallet,
+} from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
 import { cnTw, toAccountId } from '@shared/lib/utils';
-import { ExtendedChain, networkUtils, networkModel } from '@entities/network';
-import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
+import { CaptionText, DetailRow, FootnoteText, Icon } from '@shared/ui';
 import { ChainTitle } from '@entities/chain';
-import { Wallet, Account } from '@shared/core';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
-import type { Address, MultisigAccount, Validator, MultisigTransaction, Transaction } from '@shared/core';
-import { useValidatorsMap, SelectedValidatorsModal } from '@entities/staking';
+import { type ExtendedChain, networkModel, networkUtils } from '@entities/network';
 import { proxyUtils } from '@entities/proxy';
-import { getDestination, getPayee, getDelegate, getProxyType, getDestinationChain, getSpawner } from '../common/utils';
+import { SelectedValidatorsModal, useValidatorsMap } from '@entities/staking';
 import {
-  isXcmTransaction,
-  isTransferTransaction,
-  isManageProxyTransaction,
   isAddProxyTransaction,
+  isManageProxyTransaction,
+  isProxyTransaction,
   isRemoveProxyTransaction,
   isRemovePureProxyTransaction,
-  isProxyTransaction,
+  isTransferTransaction,
+  isXcmTransaction,
 } from '@entities/transaction';
+import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, walletModel } from '@entities/wallet';
+import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
+import { getDelegate, getDestination, getDestinationChain, getPayee, getProxyType, getSpawner } from '../common/utils';
 
 type Props = {
   tx: MultisigTransaction;
@@ -72,12 +79,16 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
     allValidators.filter((v) => (transaction?.args.targets || startStakingValidators).includes(v.address)) || [];
 
   const proxied = useMemo((): { wallet: Wallet; account: Account } | undefined => {
-    if (!tx.transaction || !isProxyTransaction(tx.transaction)) return undefined;
+    if (!tx.transaction || !isProxyTransaction(tx.transaction)) {
+      return undefined;
+    }
 
     const proxiedAccountId = toAccountId(tx.transaction.args.real);
     const { wallet, account } = wallets.reduce<{ wallet?: Wallet; account?: Account }>(
       (acc, wallet) => {
-        if (acc.wallet) return acc;
+        if (acc.wallet) {
+          return acc;
+        }
 
         const account = wallet.accounts.find((account) => account.accountId === proxiedAccountId);
 
@@ -86,7 +97,9 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
       { wallet: undefined, account: undefined },
     );
 
-    if (!wallet || !account) return undefined;
+    if (!wallet || !account) {
+      return undefined;
+    }
 
     return { wallet, account };
   }, [tx, wallets]);

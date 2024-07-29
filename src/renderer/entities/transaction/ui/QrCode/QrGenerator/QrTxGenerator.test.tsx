@@ -1,7 +1,8 @@
 import { render } from '@testing-library/react';
 
-import { QrTxGenerator } from './QrTxGenerator';
 import { SigningType } from '@shared/core';
+
+import { QrTxGenerator } from './QrTxGenerator';
 
 describe('ui/QrTxGenerator', () => {
   test('should render transaction qr', () => {

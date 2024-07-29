@@ -1,6 +1,6 @@
-import { Button, FootnoteText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { CameraError, CameraErrorText, CameraAccessErrors } from '../common/constants';
+import { Button, FootnoteText } from '@shared/ui';
+import { CameraAccessErrors, type CameraError, CameraErrorText } from '../common/constants';
 
 type Props = {
   error?: CameraError;
@@ -11,7 +11,9 @@ type Props = {
 export const SignatureReaderError = ({ error, onTryAgain, isCameraOn }: Props) => {
   const { t } = useI18n();
 
-  if (!error) return null;
+  if (!error) {
+    return null;
+  }
 
   return (
     <>

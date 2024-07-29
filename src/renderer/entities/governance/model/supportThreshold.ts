@@ -1,19 +1,20 @@
-import { createEffect, createEvent, createStore, sample } from 'effector';
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
+import { createEffect, createEvent, createStore, sample } from 'effector';
 
 import {
-  Chain,
+  type Chain,
   type ChainId,
-  OngoingReferendum,
-  ReferendumId,
-  TrackId,
-  TrackInfo,
-  VotingThreshold,
-} from '@shared/core';
-import { getCurrentBlockNumber } from '@shared/lib/utils';
-import { opengovThresholdService } from '@shared/api/governance';
-import { referendumService } from '@entities/governance';
+  type OngoingReferendum,
+  type ReferendumId,
+  type TrackId,
+  type TrackInfo,
+  type VotingThreshold,
+} from '@/shared/core';
+import { getCurrentBlockNumber } from '@/shared/lib/utils';
+import { opengovThresholdService } from '../lib/opengovThresholdService';
+import { referendumService } from '../lib/referendumService';
+
 import { referendumModel } from './referendum';
 import { tracksModel } from './tracks';
 
@@ -39,12 +40,17 @@ const requestSupportThresholdsFx = createEffect(
     const result: Record<ReferendumId, VotingThreshold> = {};
 
     for (const referendum of referendums) {
+      const track = tracks[referendum.track];
+      if (!track) {
+        continue;
+      }
+
       result[referendum.referendumId] = opengovThresholdService.supportThreshold({
         supportCurve: tracks[referendum.track].minSupport,
         tally: referendum.tally,
         totalIssuance: totalIssuance.toBn().sub(inactiveIssuance.toBn()),
         blockDifference: referendum.deciding?.since ? blockNumber - referendum.deciding.since : 0,
-        decisionPeriod: new BN(tracks[referendum.track].decisionPeriod),
+        decisionPeriod: new BN(track.decisionPeriod),
       });
     }
 

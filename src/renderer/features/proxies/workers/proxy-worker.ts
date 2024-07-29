@@ -1,24 +1,24 @@
-import { createEndpoint } from '@remote-ui/rpc';
-import { ScProvider, WsProvider } from '@polkadot/rpc-provider';
-import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { ApiPromise } from '@polkadot/api';
+import { ScProvider, WsProvider } from '@polkadot/rpc-provider';
+import { type ProviderInterface } from '@polkadot/rpc-provider/types';
+import { createEndpoint } from '@remote-ui/rpc';
 import * as Sc from '@substrate/connect';
 
-import { proxyWorkerUtils } from '../lib/worker-utils';
 import {
-  Chain,
-  ChainId,
-  Connection,
+  type AccountId,
+  type BaseAccount,
+  type Chain,
+  type ChainId,
+  type Connection,
   ConnectionType,
-  ProxyAccount,
-  ProxiedAccount,
-  BaseAccount,
-  AccountId,
-  NoID,
-  PartialProxiedAccount,
+  type NoID,
+  type PartialProxiedAccount,
+  type ProxiedAccount,
+  type ProxyAccount,
+  type ProxyDeposits,
   ProxyVariant,
-  ProxyDeposits,
 } from '@shared/core';
+import { proxyWorkerUtils } from '../lib/worker-utils';
 
 export const proxyWorker = {
   initConnection,
@@ -56,7 +56,6 @@ function initConnection(chain?: Chain, connection?: Connection) {
           const knownChainId = proxyWorkerUtils.getKnownChain(chain.chainId);
 
           if (knownChainId) {
-            // @ts-ignore
             provider = new ScProvider(Sc, knownChainId);
             provider.connect();
           }
@@ -209,7 +208,9 @@ async function getProxies({
   }
 
   const proxiesToRemove = proxies.filter((p) => !existingProxies.some((ep) => proxyWorkerUtils.isSameProxy(p, ep)));
-  console.log(`proxy-worker ${api.genesisHash}: 🔵 proxy accounts to remove: `, proxiesToRemove);
+  if (proxiesToRemove.length) {
+    console.log(`proxy-worker ${api.genesisHash}: 🔵 proxy accounts to remove: `, proxiesToRemove);
+  }
 
   const proxiedAccountsToRemove = Object.values(proxiedAccounts).filter((p) => {
     return !existingProxiedAccounts.some(
@@ -221,7 +222,9 @@ async function getProxies({
         ep.proxyType === p.proxyType,
     );
   });
-  console.log(`proxy-worker ${api.genesisHash}: 🟣 proxied accounts to remove: `, proxiedAccountsToRemove);
+  if (proxiedAccountsToRemove.length) {
+    console.log(`proxy-worker ${api.genesisHash}: 🟣 proxied accounts to remove: `, proxiedAccountsToRemove);
+  }
 
   return {
     proxiesToAdd,
@@ -232,7 +235,7 @@ async function getProxies({
   };
 }
 
-// @ts-ignore
+// @ts-expect-error TODO fix
 const endpoint = createEndpoint(self);
 
 endpoint.expose({ initConnection, getProxies, disconnect });

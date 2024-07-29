@@ -1,83 +1,67 @@
-import { BN } from '@polkadot/util';
+import { type BN } from '@polkadot/util';
 
-import type { BlockHeight, Address } from './general';
-import type { ReferendumId } from './referendum';
-import { TrackId } from './track';
+import { type Address, type BlockHeight } from './general';
+import { type ReferendumId } from './referendum';
+import { type TrackId } from './track';
 
-export interface Voting {
-  type: VotingType;
-}
+export type Conviction = 'None' | 'Locked1x' | 'Locked2x' | 'Locked3x' | 'Locked4x' | 'Locked5x' | 'Locked6x';
 
-export interface CastingVoting extends Voting {
-  type: VotingType.CASTING;
+export type CastingVoting = {
+  type: 'casting';
   casting: {
     votes: Record<ReferendumId, AccountVote>;
     prior: PriorLock;
   };
-}
+};
 
-export interface DelegatingVoting extends Voting {
-  type: VotingType.DELEGATING;
+export type DelegatingVoting = {
+  type: 'delegating';
   delegating: {
     balance: BN;
     target: Address;
     conviction: Conviction;
     prior: PriorLock;
   };
-}
+};
 
-export const enum VotingType {
-  CASTING = 'casting',
-  DELEGATING = 'delegating',
-}
+export type Voting = CastingVoting | DelegatingVoting;
 
 export type PriorLock = {
   amount: BN;
   unlockAt: BlockHeight;
 };
 
-export interface AccountVote {
+export type StandardVote = {
+  type: 'standard';
   track: string;
-  referendumIndex: string;
-  type: VoteType;
-}
-
-export interface StandardVote extends AccountVote {
-  type: VoteType.Standard;
+  address: Address;
+  referendumId: string;
   vote: {
     type: 'aye' | 'nay';
     conviction: Conviction;
   };
   balance: BN;
-}
+};
 
-export interface SplitVote extends AccountVote {
-  type: VoteType.Split;
+export type SplitVote = {
+  type: 'split';
+  track: string;
+  address: Address;
+  referendumId: string;
   aye: BN;
   nay: BN;
-}
+};
 
-export interface SplitAbstainVote extends AccountVote {
-  type: VoteType.SplitAbstain;
+export type SplitAbstainVote = {
+  type: 'splitAbstain';
+  track: string;
+  address: Address;
+  referendumId: string;
   aye: BN;
   nay: BN;
   abstain: BN;
-}
+};
 
-export const enum VoteType {
-  Standard = 'standard',
-  Split = 'split',
-  SplitAbstain = 'split_abstain',
-}
+export type AccountVote = StandardVote | SplitVote | SplitAbstainVote;
 
 export type VotingMap = Record<Address, Record<TrackId, Voting>>;
-
-export const enum Conviction {
-  None = 'None',
-  Locked1x = 'locked_1x',
-  Locked2x = 'locked_2x',
-  Locked3x = 'locked_3x',
-  Locked4x = 'locked_4x',
-  Locked5x = 'locked_5x',
-  Locked6x = 'locked_6x',
-}

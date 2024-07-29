@@ -1,20 +1,23 @@
-import { useState } from 'react';
 import { useGate, useUnit } from 'effector-react';
+import { useState } from 'react';
 
 import { useI18n } from '@app/providers';
 import { Header, Plate } from '@shared/ui';
 import { InactiveNetwork } from '@entities/network';
 import {
-  ReferendumSearch,
-  ReferendumFilters,
-  ReferendumDetails,
-  OngoingReferendums,
+  type AggregatedReferendum,
   CompletedReferendums,
+  Delegations,
+  Locks,
   NetworkSelector,
+  OngoingReferendums,
+  ReferendumDetailsDialog,
+  ReferendumFilters,
+  ReferendumSearch,
   networkSelectorModel,
 } from '@features/governance';
-import { Referendum } from '@shared/core';
 import { governancePageAggregate } from '../aggregates/governancePage';
+
 import { EmptyGovernance } from './EmptyGovernance';
 
 export const Governance = () => {
@@ -22,7 +25,7 @@ export const Governance = () => {
 
   const { t } = useI18n();
 
-  const [selectedReferendum, setSelectedReferendum] = useState<Referendum | null>(null);
+  const [selectedReferendum, setSelectedReferendum] = useState<AggregatedReferendum | null>(null);
   const isApiConnected = useUnit(networkSelectorModel.$isApiConnected);
   const governanceChain = useUnit(networkSelectorModel.$governanceChain);
 
@@ -43,11 +46,8 @@ export const Governance = () => {
             <Plate className="w-[240px] h-[90px] pt-3 px-4 pb-4.5">
               <NetworkSelector />
             </Plate>
-            {/*<Plate className="w-[240px]">*/}
-            {/*  */}
-            {/*</Plate>*/}
-            {/*<Locks onClick={() => console.log('Go to Unlock')} />*/}
-            {/*<Delegations onClick={() => console.log('Go to Delegate')} />*/}
+            <Locks />
+            <Delegations />
           </div>
 
           <div className="mt-5 mb-4">
@@ -75,7 +75,7 @@ export const Governance = () => {
       </div>
 
       {selectedReferendum && governanceChain && (
-        <ReferendumDetails
+        <ReferendumDetailsDialog
           referendum={selectedReferendum}
           chain={governanceChain}
           onClose={() => setSelectedReferendum(null)}

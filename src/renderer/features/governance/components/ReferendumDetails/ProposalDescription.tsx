@@ -1,10 +1,11 @@
 import { useStoreMap, useUnit } from 'effector-react';
 
-import { Loader, Markdown } from '@shared/ui';
-import { referendumService, TrackInfo } from '@entities/governance';
+import { type ChainId, type Referendum } from '@shared/core';
 import { pickNestedValue } from '@shared/lib/utils';
-import { ChainId, Referendum } from '@shared/core';
+import { Markdown, Shimmering } from '@shared/ui';
+import { TrackInfo, referendumService } from '@entities/governance';
 import { detailsAggregate } from '../../aggregates/details';
+
 import { ProposerName } from './ProposerName';
 
 type Props = {
@@ -29,8 +30,13 @@ export const ProposalDescription = ({ chainId, referendum }: Props) => {
       </div>
 
       {isDescriptionLoading && (
-        <div className="flex justify-center items-center min-h-32">
-          <Loader color="primary" size={25} />
+        <div className="flex flex-col gap-4">
+          <Shimmering height={44} />
+          <div className="flex flex-col gap-3">
+            <Shimmering height={18} />
+            <Shimmering height={18} width={240} />
+            <Shimmering height={300} />
+          </div>
         </div>
       )}
 

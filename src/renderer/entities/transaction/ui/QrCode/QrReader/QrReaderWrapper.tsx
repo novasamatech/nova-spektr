@@ -1,16 +1,18 @@
 import cn from 'classnames';
 import React, { useEffect, useState } from 'react';
 
-import { cnTw, ValidationErrors } from '@shared/lib/utils';
-import { Shimmering, Button, CaptionText, FootnoteText, Select, SmallTitleText, Countdown } from '@shared/ui';
-import { DropdownOption, DropdownResult } from '@shared/ui/types';
 import { useI18n } from '@app/providers';
-import { SignatureReaderError } from './SignatureReaderError';
+import { type HexString } from '@shared/core';
+import { ValidationErrors, cnTw } from '@shared/lib/utils';
+import { Button, CaptionText, Countdown, FootnoteText, Select, Shimmering, SmallTitleText } from '@shared/ui';
+import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
+import { CameraAccessErrors, CameraError, WhiteTextButtonStyle } from '../common/constants';
+import { type ErrorObject, type Progress, QrError, type VideoInput } from '../common/types';
+
 import { QrMultiframeSignatureReader } from './QrMultiframeSignatureReader';
-import { CameraError, CameraAccessErrors, WhiteTextButtonStyle } from '../common/constants';
-import { ErrorObject, Progress, QrError, VideoInput } from '../common/types';
 import { QrSignatureReader } from './QrSignatureReader';
-import type { HexString } from '@shared/core';
+import { SignatureReaderError } from './SignatureReaderError';
+
 import './style.css';
 
 const RESULT_DELAY = 250;

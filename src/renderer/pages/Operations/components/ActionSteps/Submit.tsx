@@ -1,14 +1,21 @@
-import { ApiPromise } from '@polkadot/api';
-import { useEffect, useState, ComponentProps } from 'react';
+import { type ApiPromise } from '@polkadot/api';
+import { type ComponentProps, useEffect, useState } from 'react';
 
 import { useI18n, useMultisigChainContext } from '@app/providers';
-import { useMultisigTx, useMultisigEvent } from '@entities/multisig';
+import {
+  type Account,
+  type HexString,
+  type MultisigEvent,
+  type MultisigTransaction,
+  type SigningStatus,
+  type Transaction,
+} from '@shared/core';
+import { MultisigTxFinalStatus, TransactionType } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
 import { Button, StatusModal } from '@shared/ui';
 import { Animation } from '@shared/ui/Animation/Animation';
-import type { HexString, Account, MultisigEvent, MultisigTransaction, SigningStatus, Transaction } from '@shared/core';
-import { TransactionType, MultisigTxFinalStatus } from '@shared/core';
-import { ExtrinsicResultParams, transactionService } from '@entities/transaction';
+import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
+import { type ExtrinsicResultParams, transactionService } from '@entities/transaction';
 
 type ResultProps = Pick<ComponentProps<typeof StatusModal>, 'title' | 'content' | 'description'>;
 

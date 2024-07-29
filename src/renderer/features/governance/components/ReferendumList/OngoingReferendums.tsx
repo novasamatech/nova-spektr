@@ -1,17 +1,18 @@
 import { memo, useDeferredValue } from 'react';
 
 import { useI18n } from '@app/providers';
+import { type OngoingReferendum } from '@shared/core';
 import { Accordion, CaptionText, Shimmering } from '@shared/ui';
-import type { OngoingReferendum } from '@shared/core';
-import { AggregatedReferendum } from '../../types/structs';
-import { OngoingReferendumItem } from './OngoingReferendumItem';
+import { type AggregatedReferendum } from '../../types/structs';
+
 import { ListItemPlaceholder } from './ListItemPlaceholder';
+import { OngoingReferendumItem } from './OngoingReferendumItem';
 
 type Props = {
   referendums: AggregatedReferendum<OngoingReferendum>[];
   isLoading: boolean;
   isTitlesLoading: boolean;
-  onSelect: (value: OngoingReferendum) => void;
+  onSelect: (value: AggregatedReferendum<OngoingReferendum>) => void;
 };
 
 const placeholder = Array.from({ length: 4 }, (_, index) => (
@@ -46,9 +47,9 @@ export const OngoingReferendums = memo<Props>(({ referendums, isLoading, isTitle
         {isLoading && placeholder}
 
         {!isLoading &&
-          deferredReferendums.map((item) => (
-            <li key={item.referendum.referendumId}>
-              <OngoingReferendumItem item={item} isTitlesLoading={isTitlesLoading} onSelect={onSelect} />
+          deferredReferendums.map((referendum) => (
+            <li key={referendum.referendumId}>
+              <OngoingReferendumItem referendum={referendum} isTitlesLoading={isTitlesLoading} onSelect={onSelect} />
             </li>
           ))}
       </Accordion.Content>
