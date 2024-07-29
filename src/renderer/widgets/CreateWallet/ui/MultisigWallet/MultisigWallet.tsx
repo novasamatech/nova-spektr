@@ -55,8 +55,9 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
     setTimeout(params?.complete ? onComplete : params?.closeAll ? onClose : noop, DEFAULT_TRANSITION);
   };
 
-  if (createMultisigUtils.isSubmitStep(activeStep))
+  if (createMultisigUtils.isSubmitStep(activeStep)) {
     return <OperationSubmit isOpen={isModalOpen} onClose={closeMultisigModal} />;
+  }
 
   const modalTitle = (
     <div className="flex justify-between items-center py-3 w-[464px] bg-white rounded-tl-lg rounded-tr-lg">

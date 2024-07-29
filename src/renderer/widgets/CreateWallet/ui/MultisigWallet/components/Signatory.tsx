@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { validateAddress } from '@polkadot/util-crypto';
 
 import { useI18n } from '@app/providers';
 import { Input, Combobox, Identicon, Icon, IconButton } from '@shared/ui';
 import { signatoryModel } from '../../../model/signatory-model';
+import { validateAddress } from '@shared/lib/utils';
 
 interface Props {
   index: number;
@@ -27,18 +27,18 @@ export const Signatory = ({ index, onDelete, canBeDeleted = true }: Props) => {
   };
 
   const onAddressChange = (newAddress: string) => {
-    try {
-      validateAddress(newAddress);
-      setAddress(newAddress);
-      signatoryModel.events.signatoriesChanged({
-        index,
-        name,
-        address: newAddress,
-      });
-    } catch {
-      // do nothing wrong address
+    if (!validateAddress(newAddress)) {
       setAddress('');
+
+      return;
     }
+
+    setAddress(newAddress);
+    signatoryModel.events.signatoriesChanged({
+      index,
+      name,
+      address: newAddress,
+    });
   };
 
   // const options = proxyAccounts.map((proxyAccount) => {

@@ -32,8 +32,6 @@ export const NameNetworkSelection = () => {
   } = useForm(formModel.$createMultisigForm);
 
   const chainOptions = getChainOptions(Object.values(chains));
-  const canContinue = name.isValid;
-
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
     submit();
@@ -77,7 +75,7 @@ export const NameNetworkSelection = () => {
         <div className="flex justify-end items-center mt-auto">
           <Button
             key="create"
-            disabled={!canContinue}
+            disabled={!name.isValid}
             onClick={() => flowModel.events.stepChanged(Step.SIGNATORIES_THRESHOLD)}
           >
             {t('createMultisigAccount.continueButton')}

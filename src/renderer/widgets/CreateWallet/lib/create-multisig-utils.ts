@@ -30,5 +30,5 @@ function isSubmitStep(step: Step) {
 }
 
 function isNotFirstStep(step: Step) {
-  return step > Step.NAME_NETWORK;
+  return step !== Step.NAME_NETWORK;
 }

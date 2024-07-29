@@ -21,7 +21,7 @@ import { networkModel, networkUtils } from '@entities/network';
 import { AddMultisigStore, FormSubmitEvent, Step } from '../lib/types';
 import { formModel } from './form-model';
 import { transactionService } from '@entities/transaction';
-import { TEST_ACCOUNTS, ZERO_BALANCE, toAccountId, toAddress } from '@shared/lib/utils';
+import { SS58_DEFAULT_PREFIX, TEST_ACCOUNTS, ZERO_BALANCE, toAccountId, toAddress } from '@shared/lib/utils';
 import { confirmModel } from './confirm-model';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
@@ -239,16 +239,20 @@ sample({
     signatories: signatoryModel.$signatories,
     chain: formModel.$createMultisigForm.fields.chain.$value,
   },
-  fn: ({ signatories, chain, name, threshold }) => ({
-    name,
-    threshold,
-    chainId: chain.chainId,
-    signatories: sortBy(
+  fn: ({ signatories, chain, name, threshold }) => {
+    const sortedSignatories = sortBy(
       Array.from(signatories.values()).map((a) => ({ address: a.address, accountId: toAccountId(a.address) })),
       'accountId',
-    ),
-    isEthereumChain: networkUtils.isEthereumBased(chain.options),
-  }),
+    );
+
+    return {
+      name,
+      threshold,
+      chainId: chain.chainId,
+      signatories: sortedSignatories,
+      isEthereumChain: networkUtils.isEthereumBased(chain.options),
+    };
+  },
   target: createWalletFx,
 });
 
