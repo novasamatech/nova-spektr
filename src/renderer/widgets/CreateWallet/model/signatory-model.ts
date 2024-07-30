@@ -7,7 +7,7 @@ import { type SignatoryInfo } from '../lib/types';
 const signatoriesChanged = createEvent<SignatoryInfo>();
 const signatoryDeleted = createEvent<number>();
 
-const $signatories = createStore<Map<number, Omit<SignatoryInfo, 'index'>>>(new Map([]));
+const $signatories = createStore<Map<number, Omit<SignatoryInfo, 'index'>>>(new Map([[0, { name: '', address: '' }]]));
 
 const $hasOwnSignatory = combine(
   { wallets: walletModel.$wallets, signatories: $signatories },
