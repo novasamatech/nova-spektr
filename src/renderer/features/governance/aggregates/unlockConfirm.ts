@@ -1,241 +1,123 @@
-import { BN, BN_ZERO } from '@polkadot/util';
-import { combine, createEvent, createStore, restore, sample } from 'effector';
-import { createForm } from 'effector-forms';
+import { type BN } from '@polkadot/util';
+import { combine, createEvent, restore, sample } from 'effector';
 
-import { type UnlockChunk } from '@/shared/api/governance';
-import { type Account } from '@/shared/core';
-import { ZERO_BALANCE, transferableAmount } from '@/shared/lib/utils';
-import { balanceModel, balanceUtils } from '@/entities/balance';
-import { networkModel, networkUtils } from '@/entities/network';
-import { transactionBuilder, transactionService } from '@/entities/transaction';
-import { UnlockRules } from '../lib/unlock-rules';
-import { networkSelectorModel } from '../model/networkSelector';
-import { confirmModel } from '../model/unlock/confirm-model';
-import { votingAssetModel } from '../model/votingAsset';
+import { type Account, type ProxiedAccount, type Wallet } from '@shared/core';
+import { walletModel, walletUtils } from '@entities/wallet';
 
 type Input = {
   id?: number;
-  unlockableClaims: UnlockChunk[];
-  amount: string;
-};
-
-type FormParams = {
   shards: Account[];
-  signatory: Account;
   amount: string;
   description: string;
+  proxiedAccount?: ProxiedAccount;
+  signatory?: Account;
+
+  fee: string;
+  totalFee: string;
+  multisigDeposit: string;
+  transferableAmount: BN;
 };
 
-const formInitiated = createEvent<Input>();
+const formInitiated = createEvent<Input[]>();
 const formSubmitted = createEvent();
 
-const feeChanged = createEvent<string>();
-const totalFeeChanged = createEvent<string>();
-const multisigDepositChanged = createEvent<string>();
-const isFeeLoadingChanged = createEvent<boolean>();
+const $confirmStore = restore(formInitiated, null);
 
-const $accountsBalances = createStore<string[]>([]);
-const $signatoryBalance = createStore<string>(ZERO_BALANCE);
-const $proxyBalance = createStore<string>(ZERO_BALANCE);
-
-const $fee = restore(feeChanged, ZERO_BALANCE);
-const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
-const $isFeeLoading = restore(isFeeLoadingChanged, true);
-
-const $confirmForm = createForm<FormParams>({
-  fields: {
-    shards: {
-      init: [] satisfies Account[],
-      rules: [
-        {
-          name: 'noProxyFee',
-          source: combine({
-            fee: $fee,
-            isProxy: confirmModel.$isProxy,
-            proxyBalance: $proxyBalance,
-          }),
-          validator: (_s, _f, { isProxy, proxyBalance, fee }) => {
-            if (!isProxy) return true;
-
-            return new BN(fee).lte(new BN(proxyBalance));
-          },
-        },
-      ],
-    },
-    signatory: {
-      init: {} as Account,
-      rules: [
-        {
-          name: 'noSignatorySelected',
-          errorText: 'transfer.noSignatoryError',
-          source: confirmModel.$isMultisig,
-          validator: (signatory, _, isMultisig) => {
-            if (!isMultisig) return true;
-
-            return Object.keys(signatory).length > 0;
-          },
-        },
-        {
-          name: 'notEnoughTokens',
-          errorText: 'proxy.addProxy.notEnoughMultisigTokens',
-          source: combine({
-            fee: $fee,
-            isMultisig: confirmModel.$isMultisig,
-            multisigDeposit: $multisigDeposit,
-            signatoryBalance: $signatoryBalance,
-          }),
-          validator: (_s, _f, { fee, isMultisig, signatoryBalance, multisigDeposit }) => {
-            if (!isMultisig) return true;
-
-            return new BN(multisigDeposit).add(new BN(fee)).lte(new BN(signatoryBalance));
-          },
-        },
-      ],
-    },
-    amount: {
-      init: '',
-      rules: [
-        {
-          name: 'required',
-          errorText: 'transfer.requiredAmountError',
-          validator: Boolean,
-        },
-        {
-          name: 'notZero',
-          errorText: 'transfer.notZeroAmountError',
-          validator: (value) => value !== ZERO_BALANCE,
-        },
-        {
-          name: 'insufficientBalanceForFee',
-          errorText: 'transfer.notEnoughBalanceForFeeError',
-          source: combine({
-            fee: $fee,
-            isMultisig: confirmModel.$isMultisig,
-            accountsBalances: $accountsBalances,
-          }),
-          validator: (value, form, { fee, isMultisig, accountsBalances }) => {
-            if (isMultisig) return true;
-
-            return form.shards.every((_: Account, index: number) => {
-              return new BN(fee).lte(new BN(accountsBalances[index].balance));
-            });
-          },
-        },
-      ],
-    },
-    description: {
-      init: '',
-      rules: [UnlockRules.description.maxLength],
-    },
-  },
-  validateOn: ['submit'],
-});
-
-const $isChainConnected = combine(
-  {
-    chain: networkSelectorModel.$governanceChain,
-    statuses: networkModel.$connectionStatuses,
-  },
-  ({ chain, statuses }) => {
-    if (!chain) return false;
-
-    return networkUtils.isConnectedStatus(statuses[chain.chainId]);
-  },
-);
-
-const $pureTxs = combine(
-  {
-    chain: networkSelectorModel.$governanceChain,
-    form: $confirmForm.$values,
-    isConnected: $isChainConnected,
-  },
-  ({ chain, form, isConnected }) => {
-    if (!chain || !isConnected) return undefined;
-
-    return form.shards.map((shard) => {
-      return transactionBuilder.buildWithdraw({
-        chain,
-        accountId: shard.accountId,
-      });
-    });
-  },
-  { skipVoid: false },
-);
-
-const $transactions = combine(
-  {
-    apis: networkModel.$apis,
-    chain: networkSelectorModel.$governanceChain,
-    pureTxs: $pureTxs,
-    txWrappers: confirmModel.$txWrappers,
-  },
-  ({ apis, chain, pureTxs, txWrappers }) => {
-    if (!chain || !pureTxs) return undefined;
-
-    return pureTxs.map((tx) =>
-      transactionService.getWrappedTransaction({
-        api: apis[chain.chainId],
-        addressPrefix: chain.addressPrefix,
-        transaction: tx,
-        txWrappers,
+const $storeMap = combine($confirmStore, (store) => {
+  return (
+    store?.reduce<Record<number, Input>>(
+      (acc, input, index) => ({
+        ...acc,
+        [input.id ?? index]: input,
       }),
-    );
+      {},
+    ) || {}
+  );
+});
+
+const $initiatorWallets = combine(
+  {
+    store: $confirmStore,
+    wallets: walletModel.$wallets,
   },
-  { skipVoid: false },
+  ({ store, wallets }) => {
+    if (!store) return {};
+
+    return store.reduce<Record<number, Wallet>>((acc, storeItem, index) => {
+      if (!storeItem.shards[0]) return acc;
+
+      const wallet = walletUtils.getWalletById(wallets, storeItem.shards[0]?.walletId);
+      if (!wallet) return acc;
+
+      const id = storeItem.id ?? index;
+
+      return {
+        ...acc,
+        [id]: wallet,
+      };
+    }, {});
+  },
+);
+
+const $proxiedWallets = combine(
+  {
+    store: $confirmStore,
+    wallets: walletModel.$wallets,
+  },
+  ({ store, wallets }) => {
+    if (!store) return {};
+
+    return store.reduce<Record<number, Wallet>>((acc, storeItem, index) => {
+      if (!storeItem.proxiedAccount) return acc;
+
+      const wallet = walletUtils.getWalletById(wallets, storeItem.proxiedAccount.walletId);
+      if (!wallet) return acc;
+
+      const id = storeItem.id ?? index;
+
+      return {
+        ...acc,
+        [id]: wallet,
+      };
+    }, {});
+  },
+);
+
+const $signerWallets = combine(
+  {
+    store: $confirmStore,
+    wallets: walletModel.$wallets,
+  },
+  ({ store, wallets }) => {
+    if (!store) return {};
+
+    return store.reduce<Record<number, Wallet>>((acc, storeItem, index) => {
+      const wallet = walletUtils.getWalletById(wallets, storeItem.signatory?.walletId || storeItem.shards[0]?.walletId);
+      if (!wallet) return acc;
+
+      const id = storeItem.id ?? index;
+
+      return {
+        ...acc,
+        [id]: wallet,
+      };
+    }, {});
+  },
 );
 
 sample({
   clock: formInitiated,
-  target: $confirmForm.reset,
+  target: $confirmStore,
 });
-
-sample({
-  clock: formInitiated,
-  source: confirmModel.$shards,
-  filter: (shards) => shards.length > 0,
-  target: $confirmForm.fields.shards.onChange,
-});
-
-const $transferableAmount = combine(
-  {
-    asset: votingAssetModel.$votingAsset,
-    chain: networkSelectorModel.$governanceChain,
-    shards: confirmModel.$shards,
-    balances: balanceModel.$balances,
-  },
-  ({ asset, chain, shards, balances }) => {
-    if (!asset || !shards || !chain) return BN_ZERO;
-
-    return shards.reduce((acc, shard) => {
-      const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId.toString());
-
-      return acc.add(new BN(transferableAmount(balance)));
-    }, BN_ZERO);
-  },
-);
-
-const $canSubmit = combine(
-  {
-    isFormValid: $confirmForm.$isValid,
-    isFeeLoading: $isFeeLoading,
-  },
-  ({ isFormValid, isFeeLoading }) => {
-    return isFormValid && !isFeeLoading;
-  },
-);
 
 export const unlockConfirmAggregate = {
-  $confirmForm,
-  $canSubmit,
-  $transactions,
-  $transferableAmount,
+  $confirmStore: $storeMap,
+  $initiatorWallets,
+  $signerWallets,
+  $proxiedWallets,
 
   events: {
     formInitiated,
-    feeChanged,
-    totalFeeChanged,
-    multisigDepositChanged,
-    isFeeLoadingChanged,
   },
 
   output: {

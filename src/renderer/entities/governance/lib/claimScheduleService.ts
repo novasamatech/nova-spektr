@@ -66,10 +66,11 @@ function estimateClaimSchedule({
     voteLockingPeriod,
     undecidingTimeout,
   );
+  const filtredClaimableLocks = claimableLocks.filter(({ amount }) => !amount.isZero());
 
   // step 2 - fold all locks with same lockAt
   // { 1500: 1 KSM, 1200: 2 KSM, 1000: 1 KSM }
-  const maxUnlockedByTime = combineSameUnlockAt(claimableLocks);
+  const maxUnlockedByTime = combineSameUnlockAt(filtredClaimableLocks);
 
   // step 3 - convert individual schedule to global
   // [(1500, 1 KSM), (1200, 1 KSM)]

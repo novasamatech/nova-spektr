@@ -121,8 +121,9 @@ function canUnlock(wallet: Wallet): boolean {
   if (walletUtils.isProxied(wallet)) {
     const isAnyProxy = accountUtils.isAnyProxyType(wallet.accounts[0]);
     const isGovernanceProxy = accountUtils.isGovernanceProxyType(wallet.accounts[0]);
+    const isNonTransferProxy = accountUtils.isNonTransferProxyType(wallet.accounts[0]);
 
-    return isAnyProxy || isGovernanceProxy;
+    return isAnyProxy || isGovernanceProxy || isNonTransferProxy;
   }
 
   return true;

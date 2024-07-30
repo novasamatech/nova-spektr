@@ -1,6 +1,7 @@
 export const enum Step {
   NONE,
   INIT,
+  SELECT,
   CONFIRM,
   SIGN,
   SUBMIT,
