@@ -1,6 +1,5 @@
-import { combine, createEvent } from 'effector';
+import { combine } from 'effector';
 import { createForm } from 'effector-forms';
-import { sample } from 'lodash';
 
 import chains from '@shared/config/chains/chains.json';
 import { type Chain, CryptoType, type MultisigAccount } from '@shared/core';
@@ -38,8 +37,6 @@ const $createMultisigForm = createForm<FormParams>({
   },
   validateOn: ['submit'],
 });
-
-const formSubmitted = createEvent<void>();
 
 const $multisigAccountId = combine(
   {
@@ -96,19 +93,12 @@ const $availableAccounts = combine(
   },
 );
 
-sample({
-  clock: $createMultisigForm.submit,
-  source: $createMultisigForm.$isValid,
-  filter: (isValid: boolean) => isValid,
-  target: formSubmitted,
-});
-
 export const formModel = {
   $createMultisigForm,
   $multisigAccountId,
   $multisigAlreadyExists,
   $availableAccounts,
   output: {
-    formSubmitted,
+    formSubmitted: $createMultisigForm.formValidated,
   },
 };
