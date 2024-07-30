@@ -1,11 +1,15 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { FootnoteText, Icon, Plate, Shimmering } from '@shared/ui';
+import { FootnoteText, Icon, Plate, Shimmering, SmallTitleText } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
 import { delegationModel } from '../../aggregates/delegation';
 
-export const Delegations = () => {
+type Props = {
+  onClick: () => void;
+};
+
+export const Delegations = ({ onClick }: Props) => {
   const { t } = useI18n();
 
   const totalDelegation = useUnit(delegationModel.$totalDelegations);
@@ -13,7 +17,7 @@ export const Delegations = () => {
   const isLoading = useUnit(delegationModel.$isLoading);
 
   return (
-    <button onClick={() => console.log('Go to Delegate')}>
+    <button onClick={onClick}>
       <Plate className="w-[240px] h-[90px] pt-3 px-4 pb-4.5 flex justify-between items-center">
         <div className="flex flex-col gap-y-2 items-start">
           <div className="flex gap-x-1 items-center">
@@ -22,7 +26,13 @@ export const Delegations = () => {
           </div>
 
           {isLoading && <Shimmering width={120} height={20} />}
-          {!isLoading && asset && <AssetBalance className="text-small-title" value={totalDelegation} asset={asset} />}
+          {!isLoading &&
+            asset &&
+            (totalDelegation !== '0' ? (
+              <AssetBalance className="text-small-title" value={totalDelegation} asset={asset} />
+            ) : (
+              <SmallTitleText>{t('governance.addDelegation.actionButton')}</SmallTitleText>
+            ))}
         </div>
 
         <Icon name="arrowRight" />

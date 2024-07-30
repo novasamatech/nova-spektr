@@ -294,6 +294,7 @@
       "availableLabel": "Available:",
       "descriptionLabel": "Description",
       "descriptionPlaceholder": "Choose an operation description",
+      "searchPlaceholder": "Search",
       "signerLabel": "Select signer",
       "transferableLabel": "Transferable"
     },
@@ -308,6 +309,25 @@
     }
   },
   "governance": {
+    "addDelegation": {
+      "actionButton": "Add delegation",
+      "card": {
+        "delegations": "Delegations",
+        "individual": "Individual",
+        "organization": "Organization",
+        "voted": "Voted last 30 days",
+        "votes": "Delegated votes"
+      },
+      "emptyDescription": "Update the search or cancel filtering",
+      "emptyTitle": "Nothing was found",
+      "sort": {
+        "delegations": "Delegations",
+        "placeholder": "Sort by",
+        "voted": "Voted last 30 days",
+        "votes": "Delegated votes"
+      },
+      "title": "Add delegation on"
+    },
     "additional": {
       "polkassemblyLink": "https://{network}.polkassembly.io/referenda/{referendumId}",
       "polkassemblyLinkTitle": "View in Polkassembly",

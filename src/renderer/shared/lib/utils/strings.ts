@@ -67,6 +67,10 @@ export const includes = (value?: string, searchString = ''): boolean => {
   return value.toLowerCase().includes(searchString.toLowerCase());
 };
 
+export const includesMultiple = (values: Array<string | undefined>, searchString = ''): boolean => {
+  return values.some((value) => includes(value, searchString));
+};
+
 /**
  * Truncate text leaving fixed number of characters
  * @param text text to truncate
