@@ -36,13 +36,11 @@ export const DelegationList = () => {
 
   return (
     <div className="h-full flex flex-col">
-      {isListLoading && (
+      {isListLoading ? (
         <div className="h-full flex items-center justify-center">
           <Loader color="primary" size={25} />
         </div>
-      )}
-
-      {!isListLoading && (
+      ) : (
         <>
           <SearchInput
             wrapperClass="mx-5 mb-4"

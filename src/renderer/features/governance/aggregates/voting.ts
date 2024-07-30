@@ -1,7 +1,7 @@
 import { combine, sample } from 'effector';
 
-import { type VotingMap } from '@shared/core';
-import { votingModel } from '@entities/governance';
+import { type Address, type VotingMap } from '@shared/core';
+import { votingModel, votingService } from '@entities/governance';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { networkSelectorModel } from '../model/networkSelector';
 
@@ -31,6 +31,25 @@ const $activeWalletVotes = combine(
   },
 );
 
+const $delegationsList = combine(
+  {
+    voting: $activeWalletVotes,
+  },
+  ({ voting }): Address[] => {
+    const res = new Set<Address>();
+
+    for (const voteList of Object.values(voting)) {
+      for (const vote of Object.values(voteList)) {
+        if (votingService.isDelegating(vote)) {
+          res.add(vote.delegating.target);
+        }
+      }
+    }
+
+    return [...res];
+  },
+);
+
 sample({
   clock: [tracksAggregate.$tracks, walletModel.$activeWallet],
   source: {
@@ -52,6 +71,7 @@ sample({
 
 export const votingAggregate = {
   $activeWalletVotes,
+  $delegationsList,
   $voting: votingModel.$voting,
   $isLoading: votingModel.$isLoading,
 

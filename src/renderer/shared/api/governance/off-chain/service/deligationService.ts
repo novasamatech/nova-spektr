@@ -1,7 +1,7 @@
 import { GraphQLClient } from 'graphql-request';
 
 import { dictionary } from '@/shared/lib/utils';
-import { type Chain } from '@shared/core';
+import { type Chain, ExternalType } from '@shared/core';
 import { type DelegateAccount, type DelegateDetails, type DelegateStat, type DelegationApi } from '../lib/types';
 
 import { GET_DELEGATE_LIST } from './delegation/queries';
@@ -10,20 +10,17 @@ const DELEGATE_REGISTRY_URL =
   'https://raw.githubusercontent.com/novasamatech/opengov-delegate-registry/master/registry';
 
 async function getDelegatesFromRegistry(chain: Chain): Promise<DelegateDetails[]> {
-  try {
-    const normalizedName = chain.name.toLowerCase();
+  const normalizedName = chain.name.toLowerCase();
 
-    const response = await fetch(`${DELEGATE_REGISTRY_URL}/${normalizedName}.json`);
-
-    return (await response.json()) as DelegateDetails[];
-  } catch (e) {
-    return [];
-  }
+  return fetch(`${DELEGATE_REGISTRY_URL}/${normalizedName}.json`)
+    .then((res) => res.json())
+    .catch(() => []);
 }
 
 async function getDelegatesFromExternalSource(chain: Chain, blockNumber: number): Promise<DelegateStat[]> {
-  const sourceType = chain.externalApi?.['governance-delegations']?.[0]?.type;
-  const sourceUrl = chain.externalApi?.['governance-delegations']?.[0]?.url;
+  const externalApi = chain.externalApi?.[ExternalType.DELEGATIONS]?.at(0);
+  const sourceType = externalApi?.type;
+  const sourceUrl = externalApi?.url;
 
   if (sourceType === 'subquery' && sourceUrl) {
     try {

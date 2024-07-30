@@ -4,7 +4,7 @@ import { readonly } from 'patronum';
 
 import { Step, includesMultiple } from '@/shared/lib/utils';
 import { delegateRegistryModel } from '@/entities/governance/model/delegateRegistry';
-import { networkSelectorModel } from '@/features/governance';
+import { networkSelectorModel, votingAggregate } from '@/features/governance';
 import { SortProp, SortType } from '../common/constants';
 
 const flowFinished = createEvent();
@@ -20,15 +20,23 @@ const $sortType = restore(sortTypeChanged, null);
 const $delegateList = combine(
   {
     list: delegateRegistryModel.$delegateRegistry,
+    delegationsList: votingAggregate.$delegationsList,
     query: $query,
     sortType: $sortType,
   },
-  ({ list, query, sortType }) => {
-    const result = list.filter((delegate) =>
-      includesMultiple([delegate.accountId, delegate.address, delegate.name, delegate.shortDescription], query),
-    );
+  ({ list, delegationsList, query, sortType }) => {
+    const delegatedList = delegationsList
+      ? list.filter((delegate) => delegationsList.includes(delegate.accountId))
+      : list;
 
-    const grouped = groupBy(result, (delegate) => !!delegate.name);
+    const searched =
+      delegationsList.length === 0 || query
+        ? list.filter((delegate) =>
+            includesMultiple([delegate.accountId, delegate.address, delegate.name, delegate.shortDescription], query),
+          )
+        : delegatedList;
+
+    const grouped = groupBy(searched, (delegate) => !!delegate.name);
     const sortProp = SortProp[sortType || SortType.DELEGATIONS];
 
     return [
