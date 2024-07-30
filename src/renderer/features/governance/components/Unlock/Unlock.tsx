@@ -11,6 +11,7 @@ import { unlockAggregate } from '../../aggregates/unlock';
 import { networkSelectorModel } from '../../model/networkSelector';
 
 import { Confirmation } from './Confirmation';
+import { UnlockForm } from './UnlockForm';
 import { UnlockInfo } from './UnlockInfo';
 
 export const Unlock = () => {
@@ -57,7 +58,8 @@ export const Unlock = () => {
   return (
     <BaseModal closeButton contentClass="" isOpen={isModalOpen} title={title} onClose={closeModal}>
       {isStep(step, Step.INIT) && <UnlockInfo />}
-      {isStep(step, Step.CONFIRM) && <Confirmation onGoBack={() => unlockAggregate.events.stepChanged(Step.INIT)} />}
+      {isStep(step, Step.SELECT) && <UnlockForm onGoBack={() => unlockAggregate.events.stepChanged(Step.INIT)} />}
+      {isStep(step, Step.CONFIRM) && <Confirmation onGoBack={() => unlockAggregate.events.stepChanged(Step.SELECT)} />}
     </BaseModal>
   );
 };
