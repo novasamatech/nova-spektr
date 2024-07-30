@@ -2,7 +2,10 @@ import { combine, createEvent, restore, sample } from 'effector';
 import { groupBy, sortBy } from 'lodash';
 import { readonly } from 'patronum';
 
+import { type DelegateAccount } from '@/shared/api/governance';
+import { type Address } from '@/shared/core';
 import { Step, includesMultiple } from '@/shared/lib/utils';
+import { votingService } from '@/entities/governance';
 import { delegateRegistryModel } from '@/entities/governance/model/delegateRegistry';
 import { networkSelectorModel, votingAggregate } from '@/features/governance';
 import { SortProp, SortType } from '../common/constants';
@@ -20,18 +23,36 @@ const $sortType = restore(sortTypeChanged, null);
 const $delegateList = combine(
   {
     list: delegateRegistryModel.$delegateRegistry,
-    delegationsList: votingAggregate.$delegationsList,
+    activeVotes: votingAggregate.$activeWalletVotes,
     query: $query,
     sortType: $sortType,
   },
-  ({ list, delegationsList, query, sortType }) => {
-    const delegatedList = delegationsList
-      ? list.filter((delegate) => delegationsList.includes(delegate.accountId))
-      : list;
+  ({ list, activeVotes, query, sortType }) => {
+    const activeDelegationsSet = new Set<Address>();
+
+    for (const voteList of Object.values(activeVotes)) {
+      for (const vote of Object.values(voteList)) {
+        if (votingService.isDelegating(vote)) {
+          activeDelegationsSet.add(vote.delegating.target);
+        }
+      }
+    }
+
+    const activeDelegationsList = [...activeDelegationsSet];
+    const addresses = new Set(list.map((d) => d.accountId));
+
+    const delegationsList = [
+      ...list,
+      ...activeDelegationsList.filter((d) => !addresses.has(d)).map((d) => ({ accountId: d }) as DelegateAccount),
+    ];
+
+    const delegatedList = activeDelegationsList
+      ? delegationsList.filter((delegate) => activeDelegationsList.includes(delegate.accountId))
+      : delegationsList;
 
     const searched =
-      delegationsList.length === 0 || query
-        ? list.filter((delegate) =>
+      activeDelegationsList.length === 0 || query
+        ? delegationsList.filter((delegate) =>
             includesMultiple([delegate.accountId, delegate.address, delegate.name, delegate.shortDescription], query),
           )
         : delegatedList;
