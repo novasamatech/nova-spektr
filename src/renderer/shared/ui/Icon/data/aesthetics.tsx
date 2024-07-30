@@ -5,8 +5,10 @@ import FireImg, { ReactComponent as FireSvg } from '@shared/assets/images/aesthe
 import GlobeImg, { ReactComponent as GlobeSvg } from '@shared/assets/images/aesthetics/globe.svg';
 import HotkeyCtrlImg, { ReactComponent as HotkeyCtrlSvg } from '@shared/assets/images/aesthetics/hotkey-ctrl.svg';
 import HotkeyOptionImg, { ReactComponent as HotkeyOptionSvg } from '@shared/assets/images/aesthetics/hotkey-option.svg';
+import IndividualImg, { ReactComponent as IndividualSvg } from '@shared/assets/images/aesthetics/individual.svg';
 import InfoImg, { ReactComponent as InfoSvg } from '@shared/assets/images/aesthetics/info.svg';
 import LoaderImg, { ReactComponent as LoaderSvg } from '@shared/assets/images/aesthetics/loader.svg';
+import OrganizationImg, { ReactComponent as OrganizationSvg } from '@shared/assets/images/aesthetics/organization.svg';
 import PolkadotImg, { ReactComponent as PolkadotSvg } from '@shared/assets/images/aesthetics/polkadot.svg';
 import QuestionImg, { ReactComponent as QuestionSvg } from '@shared/assets/images/aesthetics/question.svg';
 import RocketImg, { ReactComponent as RocketSvg } from '@shared/assets/images/aesthetics/rocket.svg';
@@ -32,6 +34,8 @@ const AestheticImages = {
   stake: { svg: StakingSvg, img: StakingImg },
   treasury: { svg: TreasurySvg, img: TreasuryImg },
   voting: { svg: VotingSvg, img: VotingImg },
+  individual: { svg: IndividualSvg, img: IndividualImg },
+  organization: { svg: OrganizationSvg, img: OrganizationImg },
 } as const;
 
 export type Aesthetic = keyof typeof AestheticImages;
