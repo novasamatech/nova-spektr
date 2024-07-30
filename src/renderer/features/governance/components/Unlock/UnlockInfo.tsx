@@ -71,7 +71,7 @@ const ActionsSection = () => {
 
   return (
     <div className="flex self-end items-center mt-3">
-      <Button type="submit" disabled={isUnlockable} onClick={() => unlockAggregate.events.unlockFormStarted()}>
+      <Button type="submit" disabled={!isUnlockable} onClick={() => unlockAggregate.events.unlockFormStarted()}>
         {t('governance.locks.unlock')}
       </Button>
     </div>

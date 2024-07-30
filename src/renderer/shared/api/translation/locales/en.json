@@ -345,7 +345,7 @@
       "title": "Unlock on",
       "unlock": "Unlock",
       "unlockable": "Unlockable",
-      "yourDeligation": "Your Deligation"
+      "yourDelegation": "Your Delegation"
     },
     "offChainDataSource": {
       "formDescription": "Nova Spektr may use different off-chain data sources for getting referendum data",
