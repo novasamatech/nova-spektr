@@ -282,6 +282,7 @@ const $isChainConnected = combine(
   },
 );
 
+// TODO: make sure it works for proxy
 const $pureTxs = combine(
   {
     chain: networkSelectorModel.$governanceChain,

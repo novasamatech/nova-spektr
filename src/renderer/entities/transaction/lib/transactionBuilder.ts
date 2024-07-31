@@ -352,7 +352,7 @@ function buildUnlock({ chain, accountId, actions }: UnlockParams): Transaction {
       type: TransactionType.UNLOCK,
       args: {
         trackId: action.trackId,
-        target: toAddress(accountId, { prefix: chain.addressPrefix }), //check if this is correct target for proxy
+        target: toAddress(accountId, { prefix: chain.addressPrefix }),
       },
     };
   });
