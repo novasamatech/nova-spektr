@@ -23,7 +23,7 @@ export const StepLabels = memo<Props>(({ steps, renderLabel, min, stepSize }) =>
 
       return (
         // eslint-disable-next-line react/no-array-index-key
-        <div key={value} className="flex justify-center h-fit w-2 mx-1 rounded-full bg-icon-button">
+        <div key={value} className="flex justify-center h-fit w-2 mx-1">
           {renderLabel(value, i)}
         </div>
       );

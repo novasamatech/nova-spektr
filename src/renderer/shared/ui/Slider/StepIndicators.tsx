@@ -19,7 +19,9 @@ export const StepIndicators = memo<Props>(({ steps }) => {
     ));
   }, [steps]);
 
-  return nodes.length > 0 ? (
-    <div className="flex absolute w-full justify-between pointer-events-none">{nodes}</div>
-  ) : null;
+  if (nodes.length === 0) {
+    return null;
+  }
+
+  return <div className="flex absolute w-full justify-between pointer-events-none">{nodes}</div>;
 });
