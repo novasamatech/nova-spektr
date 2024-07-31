@@ -86,15 +86,13 @@ sample({
 });
 
 sample({
-  clock: getClaimScheduleFx.doneData,
+  clock: $claimSchedule.updates,
   fn: (claimSchedule) => {
-    const unlockable = claimSchedule.reduce((acc, claim) => {
+    return claimSchedule.reduce((acc, claim) => {
       if (claim.type !== UnlockChunkType.CLAIMABLE) return acc;
 
       return acc.add(claim.amount);
     }, BN_ZERO);
-
-    return unlockable;
   },
   target: $totalUnlock,
 });

@@ -1,31 +1,17 @@
-import { type BN } from '@polkadot/util';
 import { combine, createEvent, restore, sample } from 'effector';
 
-import { type Account, type ProxiedAccount, type Wallet } from '@shared/core';
+import { type Wallet } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
+import { type UnlockFormData } from '../types/structs';
 
-type Input = {
-  id?: number;
-  shards: Account[];
-  amount: string;
-  description: string;
-  proxiedAccount?: ProxiedAccount;
-  signatory?: Account;
-
-  fee: string;
-  totalFee: string;
-  multisigDeposit: string;
-  transferableAmount: BN;
-};
-
-const formInitiated = createEvent<Input[]>();
+const formInitiated = createEvent<UnlockFormData[]>();
 const formSubmitted = createEvent();
 
 const $confirmStore = restore(formInitiated, null);
 
 const $storeMap = combine($confirmStore, (store) => {
   return (
-    store?.reduce<Record<number, Input>>(
+    store?.reduce<Record<number, UnlockFormData>>(
       (acc, input, index) => ({
         ...acc,
         [input.id ?? index]: input,
