@@ -6321,11 +6321,11 @@
     ],
     "externalApi": {
       "staking": [
-          {
-            "type": "subquery",
-            "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-westend"
-          }
-        ],
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-westend"
+        }
+      ],
       "governance-delegations": [
         {
           "type": "subquery",
