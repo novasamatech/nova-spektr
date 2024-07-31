@@ -1,6 +1,5 @@
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
-import { type FormEvent } from 'react';
 
 import { useI18n } from '@app/providers';
 import { type Chain } from '@shared/core';
@@ -28,14 +27,9 @@ export const NameNetworkSelection = () => {
   const chains = useUnit(networkModel.$chains);
   const {
     fields: { name, chain },
-    submit,
   } = useForm(formModel.$createMultisigForm);
 
   const chainOptions = getChainOptions(Object.values(chains));
-  const submitForm = (event: FormEvent) => {
-    event.preventDefault();
-    submit();
-  };
 
   return (
     <section className="flex flex-col flex-1 h-full">
@@ -45,7 +39,7 @@ export const NameNetworkSelection = () => {
       <SmallTitleText className="px-5 pb-6 mb-6 text-text-tertiary font-medium border-b border-container-border">
         {t('createMultisigAccount.nameNetworkDescription')}
       </SmallTitleText>
-      <form id="multisigForm" className="flex flex-col px-5 pb-6 gap-y-4 h-full" onSubmit={submitForm}>
+      <form id="multisigForm" className="flex flex-col px-5 pb-6 gap-y-4 h-full">
         <div className="flex gap-x-4 items-end">
           <Input
             className="w-[360px]"

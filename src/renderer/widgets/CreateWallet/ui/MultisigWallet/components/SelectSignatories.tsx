@@ -15,67 +15,13 @@ import { Signatory } from './Signatory';
 // }
 
 type Props = {
-  chain?: Chain;
+  chain: Chain;
 };
 
 export const SelectSignatories = ({ chain }: Props) => {
   const { t } = useI18n();
 
-  // const [contactList, setContactList] = useState<ExtendedContact[]>([]);
   const signatories = useUnit(signatoryModel.$signatories);
-  // const contacts = useUnit(contactModel.$contacts);
-
-  // useEffect(() => {
-  //   const addressBookContacts = contacts
-  //     .filter((c) => {
-  //       const isEthereumContact = isEthereumAccountId(c.accountId);
-  //       const isEthereumChain = networkUtils.isEthereumBased(chain?.options);
-
-  //       return isEthereumContact === isEthereumChain;
-  //     })
-  //     .map((contact, index) => ({ ...contact, index: index.toString() }));
-
-  //   setContactList(addressBookContacts);
-  // }, [contacts.length, chain]);
-
-  //       return !isEthereumAccountId(c.accountId);
-  //     })
-  //     .map((contact, index) => ({ ...contact, index: index.toString() }));
-
-  //   const { available, disabled } = wallets.reduce<{
-  //     available: ExtendedWallet[];
-  //     disabled: Wallet[];
-  //   }>(
-  //     (acc, wallet, index) => {
-  //       const walletAccounts = accounts.filter((a) => a.walletId === wallet.id);
-
-  //       if (!walletAccounts.length) return acc;
-
-  //       // TODO: Check why it can be empty
-  //       const accountId = walletAccounts[0]?.accountId;
-  //       const isSameAccounts = walletAccounts.every((a) => a.accountId === accountId);
-  //       const isEvmAccount = accountUtils.isEthereumBased(walletAccounts[0]);
-
-  //       if (isSameAccounts && !isEvmAccount && walletUtils.isValidSignatory(wallet)) {
-  //         acc.available.push({
-  //           ...wallet,
-  //           index: index.toString(),
-  //           address: toAddress(accountId),
-  //           accountId: accountId,
-  //         });
-  //       } else {
-  //         acc.disabled.push(wallet);
-  //       }
-
-  //       return acc;
-  //     },
-  //     { available: [], disabled: [] },
-  //   );
-
-  //   setContactList(addressBookContacts);
-  //   setAvailableWallets(available);
-  //   setDisabledWallets(disabled);
-  // }, [accounts.length, contacts.length, wallets.length]);
 
   const onAddSignatoryClick = () => {
     signatoryModel.events.signatoriesChanged({ index: signatories.size, name: '', address: '' });
