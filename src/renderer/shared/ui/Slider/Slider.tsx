@@ -7,7 +7,7 @@ import { StepIndicators } from './StepIndicators';
 import { StepLabels } from './StepLabels';
 import { countSteps } from './helpers';
 
-type RageValue = [start: number, end: number];
+type RangeValue = [start: number, end: number];
 
 type SimpleProps = {
   range?: never;
@@ -17,23 +17,45 @@ type SimpleProps = {
 
 type RangeProps = {
   range: true;
-  value: RageValue;
-  onChange: (value: RageValue) => void;
+  value: RangeValue;
+  onChange: (value: RangeValue) => void;
 };
 
 type Props = (SimpleProps | RangeProps) & {
+  /**
+   * Render function for labels, placed on top of each step.
+   * `value` and `index` may differ, if `step` prop is not equal 1.
+   */
   renderLabel?: (value: number, index: number) => ReactNode;
-  disabled?: boolean;
+  /**
+   * Step size between values.
+   * e.g.
+   * ```
+   * min = 0
+   * max = 6
+   * step = 2
+   * possible values = 0, 2, 4, 6
+   * ```
+   *
+   * @default 1
+   */
   step?: number;
+  /**
+   * @default 0
+   */
   min?: number;
+  /**
+   * @default 10
+   */
   max?: number;
+  disabled?: boolean;
 };
 
 export const Slider = forwardRef<HTMLSpanElement, Props>(
-  ({ value, min = 0, max = 10, disabled, range, renderLabel, step: stepSize, onChange }, ref) => {
+  ({ value, min = 0, max = 10, disabled, range, renderLabel, step: stepSize = 1, onChange }, ref) => {
     const fixedValue = range ? value : [value];
 
-    const handleChange = (value: RageValue) => {
+    const handleChange = (value: RangeValue) => {
       if (range) {
         onChange(value);
       } else {
@@ -41,10 +63,10 @@ export const Slider = forwardRef<HTMLSpanElement, Props>(
       }
     };
 
-    const isStartFilled = range ? value[0] === min : true;
-    const isEndFilled = range ? value[1] === max : value === max;
+    const isStartFilled = range ? value.at(0) === min : true;
+    const isEndFilled = range ? value.at(1) === max : value === max;
 
-    const totalSteps = countSteps(min, max, stepSize ?? 1);
+    const totalSteps = countSteps(min, max, stepSize);
 
     return (
       <div className="flex flex-col w-full gap-2">

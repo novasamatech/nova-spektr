@@ -3,11 +3,11 @@ import { type ReactNode, memo, useMemo } from 'react';
 type Props = {
   steps: number;
   min: number;
-  stepSize?: number;
+  stepSize: number;
   renderLabel?: (value: number, index: number) => ReactNode;
 };
 
-export const StepLabels = memo<Props>(({ steps, renderLabel, min, stepSize = 1 }) => {
+export const StepLabels = memo<Props>(({ steps, renderLabel, min, stepSize }) => {
   const nodes = useMemo(() => {
     if (!renderLabel) {
       return [];
@@ -30,5 +30,9 @@ export const StepLabels = memo<Props>(({ steps, renderLabel, min, stepSize = 1 }
     });
   }, [renderLabel, steps, min, stepSize]);
 
-  return nodes.length > 0 ? <div className="flex px-2 w-full justify-between pointer-events-none">{nodes}</div> : null;
+  if (nodes.length === 0) {
+    return null;
+  }
+
+  return <div className="flex px-2 w-full justify-between pointer-events-none">{nodes}</div>;
 });
