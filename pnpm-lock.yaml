@@ -45,8 +45,8 @@ importers:
         specifier: ^1.4.4
         version: 1.4.4
       '@substrate/connect':
-        specifier: ^0.8.1
-        version: 0.8.1
+        specifier: ^1.1.0
+        version: 1.1.0
       '@substrate/txwrapper-orml':
         specifier: ^7.4.0
         version: 7.4.0(@polkadot/util-crypto@12.6.2(@polkadot/util@12.6.2))(@polkadot/util@12.6.2)
@@ -2684,29 +2684,32 @@ packages:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
 
-  '@substrate/connect-extension-protocol@1.0.1':
-    resolution: {integrity: sha512-161JhCC1csjH3GE5mPLEd7HbWtwNSPJBg3p1Ksz9SFlTzj/bgEwudiRN2y5i0MoLGCIJRYKyKGMxVnd29PzNjg==}
-
   '@substrate/connect-extension-protocol@2.0.0':
     resolution: {integrity: sha512-nKu8pDrE3LNCEgJjZe1iGXzaD6OSIDD4Xzz/yo4KO9mQ6LBvf49BVrt4qxBFGL6++NneLiWUZGoh+VSd4PyVIg==}
-
-  '@substrate/connect-known-chains@1.0.3':
-    resolution: {integrity: sha512-GWw4Nk4OWU8peSya7WcMWnIKiXXAkPExRlMRaUc8wYZo77cwWqRz+ltiGyGaXyE3PLx/5ityvDmNkl2a4MAHrA==}
 
   '@substrate/connect-known-chains@1.1.4':
     resolution: {integrity: sha512-iT+BdKqvKl/uBLd8BAJysFM1BaMZXRkaXBP2B7V7ob/EyNs5h0EMhTVbO6MJxV/IEOg5OKsyl6FUqQK7pKnqyw==}
 
-  '@substrate/connect@0.8.1':
-    resolution: {integrity: sha512-DyrBlQyHkL3fySdQTFmLp1tUhNR4lXJ8Pcxzbmmy6sLRZgq415DB15wqojfWfe5sOqTk/hOlLsBxfb1wC6O+aw==}
+  '@substrate/connect-known-chains@1.2.0':
+    resolution: {integrity: sha512-BgcTHKteSAcEQs5ySNTYOO6ODQHVHwPgDrjYQhL0r8ZygY4cyXa5e2O//3tXNJiDopFHdqO8FBAy2Gbht0i0PA==}
 
   '@substrate/connect@0.8.10':
     resolution: {integrity: sha512-DIyQ13DDlXqVFnLV+S6/JDgiGowVRRrh18kahieJxhgvzcWicw5eLc6jpfQ0moVVLBYkO7rctB5Wreldwpva8w==}
     deprecated: versions below 1.x are no longer maintained
 
+  '@substrate/connect@1.1.0':
+    resolution: {integrity: sha512-WBEXB8SV07v2oJ4AfYob7QDW4ZGNRA9mq+6Jw2B2rQgpFCHQ920g+mL3ifhDYLre4FF9AUII6qSUGd90EEnMAg==}
+
+  '@substrate/discovery@0.0.1':
+    resolution: {integrity: sha512-ba6Zv2EBs+7KFGg6NJSD4yRy7BztBxvDLsK5for4tgDCbqZMpolTHDLL9RGCHLoeFf5zfsuqnhAhsjVWz8c+vw==}
+
   '@substrate/light-client-extension-helpers@0.0.6':
     resolution: {integrity: sha512-girltEuxQ1BvkJWmc8JJlk4ZxnlGXc/wkLcNguhY+UoDEMBK0LsdtfzQKIfrIehi4QdeSBlFEFBoI4RqPmsZzA==}
     peerDependencies:
       smoldot: 2.x
+
+  '@substrate/smoldot-discovery@1.0.0':
+    resolution: {integrity: sha512-vdXsTP5r8A7jL9GIy8EkSnmjzAdTSoOK6douQxXRky7VV5QFnMCqZDXWBq0yzBdtU90kgqcoKX8M/RQZhJaftQ==}
 
   '@substrate/ss58-registry@1.44.0':
     resolution: {integrity: sha512-7lQ/7mMCzVNSEfDS4BCqnRnKCFKpcOaPrxMeGTXHX1YQzM/m2BBHjbK2C3dJvjv7GYxMiaTq/HdWQj1xS6ss+A==}
@@ -9906,11 +9909,11 @@ packages:
     resolution: {integrity: sha512-94hK0Hh8rPqQl2xXc3HsaBoOXKV20MToPkcXvwbISWLEs+64sBq5kFgn2kJDHb1Pry9yrP0dxrCI9RRci7RXKg==}
     engines: {node: '>= 6.0.0', npm: '>= 3.0.0'}
 
-  smoldot@2.0.13:
-    resolution: {integrity: sha512-B+hqMuMbvsEBC7zBdlD7jCmui3eMIWVOK3gDAyHT+qQdO3mm5kUNgl5z3hjGJ97w47ZnILkaPFI/gu4p9Yttzw==}
-
   smoldot@2.0.22:
     resolution: {integrity: sha512-B50vRgTY6v3baYH6uCgL15tfaag5tcS2o/P5q1OiXcKGv1axZDfz2dzzMuIkVpyMR2ug11F6EAtQlmYBQd292g==}
+
+  smoldot@2.0.29:
+    resolution: {integrity: sha512-CKpRpFTcgP/9WL53X1iDSNq4/xjYd47XhYwZBhb92sAsCN8GNFeEnCdw568mvAt08wQt8UIMXXWo3hO/esDexg==}
 
   snapdragon-node@2.1.1:
     resolution: {integrity: sha512-O27l4xaMYt/RSQ5TR3vpWCAB5Kb/czIcqUFOM/C4fYcLnbZUc1PkjTAMjof2pBWaSTwOUd6qUHcFGVGj7aIwnw==}
@@ -15027,24 +15030,12 @@ snapshots:
       regenerator-runtime: 0.13.9
       resolve-from: 5.0.0
 
-  '@substrate/connect-extension-protocol@1.0.1': {}
-
-  '@substrate/connect-extension-protocol@2.0.0':
-    optional: true
-
-  '@substrate/connect-known-chains@1.0.3': {}
+  '@substrate/connect-extension-protocol@2.0.0': {}
 
   '@substrate/connect-known-chains@1.1.4':
     optional: true
 
-  '@substrate/connect@0.8.1':
-    dependencies:
-      '@substrate/connect-extension-protocol': 1.0.1
-      '@substrate/connect-known-chains': 1.0.3
-      smoldot: 2.0.13
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
+  '@substrate/connect-known-chains@1.2.0': {}
 
   '@substrate/connect@0.8.10':
     dependencies:
@@ -15057,6 +15048,18 @@ snapshots:
       - utf-8-validate
     optional: true
 
+  '@substrate/connect@1.1.0':
+    dependencies:
+      '@substrate/connect-extension-protocol': 2.0.0
+      '@substrate/connect-known-chains': 1.2.0
+      '@substrate/smoldot-discovery': 1.0.0
+      smoldot: 2.0.29
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
+  '@substrate/discovery@0.0.1': {}
+
   '@substrate/light-client-extension-helpers@0.0.6(smoldot@2.0.22)':
     dependencies:
       '@polkadot-api/json-rpc-provider': 0.0.1
@@ -15068,6 +15071,10 @@ snapshots:
       rxjs: 7.8.1
       smoldot: 2.0.22
     optional: true
+
+  '@substrate/smoldot-discovery@1.0.0':
+    dependencies:
+      '@substrate/discovery': 0.0.1
 
   '@substrate/ss58-registry@1.44.0': {}
 
@@ -24324,13 +24331,6 @@ snapshots:
   smart-buffer@4.2.0:
     optional: true
 
-  smoldot@2.0.13:
-    dependencies:
-      ws: 8.15.0
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-
   smoldot@2.0.22:
     dependencies:
       ws: 8.16.0
@@ -24338,6 +24338,13 @@ snapshots:
       - bufferutil
       - utf-8-validate
     optional: true
+
+  smoldot@2.0.29:
+    dependencies:
+      ws: 8.16.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   snapdragon-node@2.1.1:
     dependencies:
