@@ -26,13 +26,6 @@ const $createMultisigForm = createForm<FormParams>({
     },
     name: {
       init: '',
-      rules: [
-        {
-          name: 'notEmpty',
-          validator: (name) => name !== '',
-          errorText: 'createMultisigAccount.disabledError.emptyName',
-        },
-      ],
     },
   },
   validateOn: ['submit'],

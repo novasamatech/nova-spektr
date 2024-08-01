@@ -30,6 +30,7 @@ export const NameNetworkSelection = () => {
   } = useForm(formModel.$createMultisigForm);
 
   const chainOptions = getChainOptions(Object.values(chains));
+  const isNameError = name.isTouched && !name.value;
 
   return (
     <section className="flex flex-col flex-1 h-full">
@@ -45,12 +46,12 @@ export const NameNetworkSelection = () => {
             className="w-[360px]"
             placeholder={t('createMultisigAccount.namePlaceholder')}
             label={t('createMultisigAccount.walletNameLabel')}
-            invalid={!!name.hasError()}
+            invalid={isNameError}
             value={name.value}
             onChange={name.onChange}
           />
-          <InputHint variant="error" active={!!name.hasError()}>
-            {name.errorText()}
+          <InputHint variant="error" active={isNameError}>
+            {t('createMultisigAccount.disabledError.emptyName')}
           </InputHint>
         </div>
         <div className="flex gap-x-4 items-end">
@@ -69,7 +70,7 @@ export const NameNetworkSelection = () => {
         <div className="flex justify-end items-center mt-auto">
           <Button
             key="create"
-            disabled={!name.isValid}
+            disabled={isNameError || !name.isTouched}
             onClick={() => flowModel.events.stepChanged(Step.SIGNATORIES_THRESHOLD)}
           >
             {t('createMultisigAccount.continueButton')}
