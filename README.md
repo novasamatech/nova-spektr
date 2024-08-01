@@ -156,7 +156,7 @@ Log files help to solve your problem. Logs are collected in the `nova-spektr.log
 2. Windows `%USERPROFILE%\AppData\Roaming\nova-spektr\logs\nova-spektr.log`
 3. Linux `~/.config/nova-spektr/logs/nova-spektr.log`
 
-Sharing logs when you're contacting the support will speed up the problem fix.
+Sharing logs when you're contacting the support will speed up the problem-fixing process.
 
 # Contributing
 Contributing guide is described in the [CONTRIBUTING.md](https://github.com/novasamatech/nova-spektr/blob/dev/CONTRIBUTING.md)
