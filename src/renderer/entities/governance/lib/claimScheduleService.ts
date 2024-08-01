@@ -214,7 +214,7 @@ function maxConvictionEndOf(
   undecidingTimeout: BlockHeight,
   referendum?: Referendum,
 ): BlockHeight {
-  // referendum is not in the map, which means it is cancelled and votes can be unlocked immediately
+  // referendum is not in the map, which means it is canceled and votes can be unlocked immediately
   return referendum
     ? referendumMaxConvictionEnd(referendum, trackId, tracks, vote, voteLockingPeriod, undecidingTimeout)
     : currentBlockNumber;
