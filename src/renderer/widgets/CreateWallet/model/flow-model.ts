@@ -388,9 +388,19 @@ sample({
 });
 
 sample({
-  clock: flowFinished,
+  clock: delay(flowFinished, 2000),
   fn: () => Step.NAME_NETWORK,
   target: stepChanged,
+});
+
+sample({
+  clock: delay(flowFinished, 2000),
+  target: signatoryModel.$signatories.reinit,
+});
+
+sample({
+  clock: delay(flowFinished, 2000),
+  target: formModel.$createMultisigForm.reset,
 });
 
 export const flowModel = {

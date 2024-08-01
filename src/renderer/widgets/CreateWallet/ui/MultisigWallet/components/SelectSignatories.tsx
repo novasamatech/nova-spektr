@@ -24,6 +24,8 @@ export const SelectSignatories = ({ chain }: Props) => {
     signatoryModel.events.signatoryDeleted(index);
   };
 
+  console.log('signatories', signatories);
+
   return (
     <div className="max-h-full flex flex-col flex-1">
       <div className="flex flex-col gap-2">

@@ -21,11 +21,12 @@ interface Props {
 
 export const Signatory = ({ index, onDelete, isOwnAccount = false }: Props) => {
   const { t } = useI18n();
-  const [name, setName] = useState('');
-  const [address, setAddress] = useState('');
   const [query, setQuery] = useState('');
   const [options, setOptions] = useState<ComboboxOption[]>([]);
 
+  const signatory = useUnit(signatoryModel.$signatories).get(index);
+  const [address, setAddress] = useState(signatory?.address || '');
+  const [name, setName] = useState(signatory?.name || '');
   const wallets = useUnit(walletModel.$wallets);
   const {
     fields: { chain },
