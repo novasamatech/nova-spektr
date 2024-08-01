@@ -13,11 +13,11 @@ import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, accou
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { basketUtils } from '@/features/operations/OperationsConfirm';
-import { unlockAggregate } from '../../aggregates/unlock';
-import { unlockConfirmAggregate } from '../../aggregates/unlockConfirm';
-import { locksModel } from '../../model/locks';
-import { networkSelectorModel } from '../../model/networkSelector';
-import { votingAssetModel } from '../../model/votingAsset';
+import { locksModel } from '@features/governance/model/locks';
+import { networkSelectorModel } from '@features/governance/model/networkSelector';
+import { votingAssetModel } from '@features/governance/model/votingAsset';
+import { unlockAggregate } from '../aggregates/unlock';
+import { unlockConfirmAggregate } from '../aggregates/unlockConfirm';
 
 type Props = {
   id?: number;

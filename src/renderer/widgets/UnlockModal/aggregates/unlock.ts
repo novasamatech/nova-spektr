@@ -5,14 +5,14 @@ import { type Transaction } from '@/shared/core';
 import { type ClaimChunkWithAddress, UnlockChunkType } from '@shared/api/governance';
 import { Step, isStep, nonNullable } from '@shared/lib/utils';
 import { referendumModel } from '@/entities/governance';
-import { signModel } from '../../operations/OperationSign/model/sign-model';
-import { submitModel } from '../../operations/OperationSubmit';
-import { submitUtils } from '../../operations/OperationSubmit/lib/submit-utils';
-import { networkSelectorModel } from '../model/networkSelector';
-import { unlockModel } from '../model/unlock/unlock';
-import { type UnlockFormData } from '../types/structs';
+import { locksModel } from '@features/governance/model/locks';
+import { networkSelectorModel } from '@features/governance/model/networkSelector';
+import { unlockModel } from '@features/governance/model/unlock/unlock';
+import { type UnlockFormData } from '@features/governance/types/structs';
+import { signModel } from '@features/operations/OperationSign/model/sign-model';
+import { submitModel } from '@features/operations/OperationSubmit';
+import { submitUtils } from '@features/operations/OperationSubmit/lib/submit-utils';
 
-import { locksModel } from './../model/locks';
 import { unlockConfirmAggregate } from './unlockConfirm';
 import { unlockFormAggregate } from './unlockForm';
 
@@ -180,10 +180,11 @@ sample({
   },
   filter: ({ unlockData }, { step }) => !!unlockData && submitUtils.isSuccessStep(step),
   fn: ({ chunks, unlockData }) => {
-    return chunks.filter(
-      (chunk) =>
-        chunk.type === UnlockChunkType.CLAIMABLE && unlockData!.shards.some((shard) => shard.address !== chunk.address),
-    );
+    return chunks.filter((chunk) => {
+      return (
+        chunk.type === UnlockChunkType.CLAIMABLE && unlockData!.shards.some((shard) => shard.address !== chunk.address)
+      );
+    });
   },
   target: [unlockModel.$claimSchedule, locksModel.events.getTracksLocks],
 });
@@ -198,7 +199,7 @@ export const unlockAggregate = {
   $step,
   $totalUnlock: unlockModel.$totalUnlock,
   $isLoading: or(unlockModel.$isLoading, referendumModel.$isReferendumsLoading),
-  $isUnlockable: unlockModel.$claimSchedule.map((c) => c.some((claim) => claim.type === UnlockChunkType.CLAIMABLE)),
+  $isUnlockable: unlockModel.$isUnlockable,
   $pendingSchedule,
 
   events: {

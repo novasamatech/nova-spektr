@@ -17,10 +17,10 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { UnlockRules } from '../lib/unlock-rules';
-import { networkSelectorModel } from '../model/networkSelector';
-import { votingAssetModel } from '../model/votingAsset';
-import { type AccountWithClaim } from '../types/structs';
+import { UnlockRules } from '@features/governance/lib/unlock-rules';
+import { networkSelectorModel } from '@features/governance/model/networkSelector';
+import { votingAssetModel } from '@features/governance/model/votingAsset';
+import { type AccountWithClaim } from '@features/governance/types/structs';
 
 type Accounts = {
   account: AccountWithClaim;

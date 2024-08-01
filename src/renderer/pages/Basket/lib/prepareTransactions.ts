@@ -22,7 +22,7 @@ import { getAssetById, redeemableAmount, toAccountId } from '@shared/lib/utils';
 import { networkUtils } from '@entities/network';
 import { eraService, useStakingData, validatorsService } from '@entities/staking';
 import { transactionService } from '@entities/transaction';
-import { type UnlockFormData } from '@/features/governance/types/structs';
+import { type UnlockFormData } from '@features/governance/types/structs';
 
 import { getCoreTx } from './utils';
 

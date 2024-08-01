@@ -17,7 +17,6 @@ import { basketModel } from '@entities/basket';
 import { networkModel } from '@entities/network';
 import { TransferTypes, XcmTypes } from '@entities/transaction';
 import { walletModel, walletUtils } from '@entities/wallet';
-import { unlockConfirmAggregate } from '@/features/governance/aggregates/unlockConfirm';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { ExtrinsicResult } from '@features/operations/OperationSubmit/lib/types';
@@ -35,6 +34,7 @@ import {
   unstakeConfirmModel,
   withdrawConfirmModel,
 } from '@features/operations/OperationsConfirm';
+import { unlockConfirmAggregate } from '@/widgets/UnlockModal/aggregates/unlockConfirm';
 import { prepareTransaction } from '../lib/prepareTransactions';
 import { getCoreTx } from '../lib/utils';
 import { Step } from '../types';

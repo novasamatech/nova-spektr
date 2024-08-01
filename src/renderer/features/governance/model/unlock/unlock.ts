@@ -101,4 +101,5 @@ export const unlockModel = {
   $isLoading: getClaimScheduleFx.pending,
   $totalUnlock,
   $claimSchedule,
+  $isUnlockable: $claimSchedule.map((c) => c.some((claim) => claim.type === UnlockChunkType.CLAIMABLE)),
 };

@@ -2,7 +2,7 @@ import { combine, createEvent, restore, sample } from 'effector';
 
 import { type Wallet } from '@shared/core';
 import { walletModel, walletUtils } from '@entities/wallet';
-import { type UnlockFormData } from '../types/structs';
+import { type UnlockFormData } from '@features/governance/types/structs';
 
 const formInitiated = createEvent<UnlockFormData[]>();
 const formSubmitted = createEvent();
