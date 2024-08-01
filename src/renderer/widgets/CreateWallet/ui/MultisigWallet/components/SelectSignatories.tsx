@@ -7,13 +7,6 @@ import { signatoryModel } from '../../../model/signatory-model';
 
 import { Signatory } from './Signatory';
 
-// import { WalletItem } from './WalletItem';
-
-// const enum SignatoryTabs {
-//   WALLETS = 'wallets',
-//   CONTACTS = 'contacts',
-// }
-
 type Props = {
   chain: Chain;
 };
@@ -35,7 +28,7 @@ export const SelectSignatories = ({ chain }: Props) => {
     <div className="max-h-full flex flex-col flex-1">
       <div className="flex flex-col gap-2">
         {Array.from(signatories.keys()).map((key) => (
-          <Signatory key={key} index={key} canBeDeleted={key !== 0} onDelete={() => onDeleteSignatoryClick(key)} />
+          <Signatory key={key} index={key} isOwnAccount={key === 0} onDelete={() => onDeleteSignatoryClick(key)} />
         ))}
       </div>
       <div>

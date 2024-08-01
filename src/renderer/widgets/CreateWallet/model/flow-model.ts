@@ -59,8 +59,6 @@ const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $addMultisigStore = createStore<AddMultisigStore | null>(null).reset(flowFinished);
 
-// $selected signer will be taken into account in case we have
-// several accountSignatories. Otherwise it is the first accountSignatory
 const $signer = combine(
   {
     signatories: signatoryModel.$signatories,
@@ -82,10 +80,12 @@ const $signer = combine(
 const $signerWallet = combine(
   { signer: $signer, wallets: walletModel.$wallets },
   ({ signer, wallets }) => {
-    return walletUtils.getWalletFilteredAccounts(wallets, {
+    const res = walletUtils.getWalletFilteredAccounts(wallets, {
       accountFn: (a) => a.accountId === signer?.accountId,
       walletFn: (w) => walletUtils.isValidSignatory(w),
     });
+
+    return res;
   },
   { skipVoid: false },
 );
