@@ -3,10 +3,9 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { spread } from 'patronum';
 
-import { type ClaimAction, type ClaimChunkWithAddress } from '@/shared/api/governance';
+import { type ClaimChunkWithAddress } from '@/shared/api/governance';
 import {
   type Account,
-  type Address,
   type MultisigTxWrapper,
   type PartialBy,
   type ProxiedAccount,
@@ -18,15 +17,10 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { UnlockRules } from '../lib/unlock-rules';
-import { networkSelectorModel } from '../model/networkSelector';
-import { votingAssetModel } from '../model/votingAsset';
-
-type AccountWithClaim = Account & {
-  amount?: string;
-  actions?: ClaimAction[];
-  address?: Address;
-};
+import { UnlockRules } from '@features/governance/lib/unlock-rules';
+import { networkSelectorModel } from '@features/governance/model/networkSelector';
+import { votingAssetModel } from '@features/governance/model/votingAsset';
+import { type AccountWithClaim } from '@features/governance/types/structs';
 
 type Accounts = {
   account: AccountWithClaim;
@@ -288,18 +282,20 @@ const $isChainConnected = combine(
   },
 );
 
+// TODO: make sure it works for proxy
 const $pureTxs = combine(
   {
     chain: networkSelectorModel.$governanceChain,
-    form: $unlockForm.$values,
+    shards: $unlockForm.fields.shards.$value,
     isConnected: $isChainConnected,
   },
-  ({ chain, form, isConnected }) => {
-    if (!chain || !isConnected) return undefined;
+  ({ chain, shards, isConnected }) => {
+    if (!chain || !isConnected || !shards) return undefined;
 
-    return form.shards.map((shard) => {
-      return transactionBuilder.buildWithdraw({
-        chain,
+    return shards.map((shard) => {
+      return transactionBuilder.buildUnlock({
+        actions: shard.actions || [],
+        chain: chain,
         accountId: shard.accountId,
       });
     });
