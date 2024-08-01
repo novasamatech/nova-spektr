@@ -10,9 +10,9 @@ import { AssetBalance } from '@entities/asset';
 import { SignatorySelector } from '@entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
 import { AccountAddress, ProxyWalletAlert, accountUtils } from '@entities/wallet';
-import { unlockFormAggregate } from '../../aggregates/unlockForm';
-import { networkSelectorModel } from '../../model/networkSelector';
-import { votingAssetModel } from '../../model/votingAsset';
+import { networkSelectorModel } from '@features/governance/model/networkSelector';
+import { votingAssetModel } from '@features/governance/model/votingAsset';
+import { unlockFormAggregate } from '../aggregates/unlockForm';
 
 type Props = {
   onGoBack: () => void;
