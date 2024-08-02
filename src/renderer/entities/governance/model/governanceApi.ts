@@ -17,7 +17,7 @@ const governanceApiChanged = createEvent<GovernanceApiSource>();
 const $governanceApi = createStore<{ type: GovernanceApiSource; service: GovernanceApi } | null>(null);
 
 const getGovernanceApiFx = createEffect((): GovernanceApiSource => {
-  return localStorageService.getFromStorage<GovernanceApiSource>(GOVERNANCE_API_KEY, 'polkassembly');
+  return localStorageService.getFromStorage<GovernanceApiSource>(GOVERNANCE_API_KEY, 'subsquare');
 });
 
 const saveGovernanceApiFx = createEffect((sourceType: GovernanceApiSource) => {
