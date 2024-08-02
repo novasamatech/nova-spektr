@@ -140,6 +140,11 @@ const $transaction = combine(
   ({ apis, chain, remarkTx, signatories, signer, threshold, multisigAccountId }) => {
     if (!chain || !remarkTx || !signer) return undefined;
 
+    const signatoriesWrapped = Array.from(signatories.values()).map((s) => ({
+      accountId: toAccountId(s.address),
+      adress: s.address,
+    }));
+
     return transactionService.getWrappedTransaction({
       api: apis[chain.chainId],
       addressPrefix: chain.addressPrefix,
@@ -147,7 +152,11 @@ const $transaction = combine(
       txWrappers: [
         {
           kind: WrapperKind.MULTISIG,
-          multisigAccount: { accountId: multisigAccountId, signatories, threshold } as unknown as MultisigAccount,
+          multisigAccount: {
+            accountId: multisigAccountId,
+            signatories: signatoriesWrapped,
+            threshold,
+          } as unknown as MultisigAccount,
           signatories: Array.from(signatories.values()).map((s) => ({
             accountId: toAccountId(s.address),
           })) as Account[],
