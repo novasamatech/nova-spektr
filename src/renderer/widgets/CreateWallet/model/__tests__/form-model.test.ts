@@ -39,9 +39,7 @@ describe('widgets/CreateWallet/model/form-model', () => {
     await allSettled(formModel.$createMultisigForm.fields.name.onChange, { scope, params: '' });
     await allSettled(formModel.$createMultisigForm.submit, { scope });
 
-    expect(scope.getState(formModel.$createMultisigForm.fields.name.$errorText)).toEqual(
-      scope.getState(formModel.$createMultisigForm.fields.name.$errors)[0].errorText,
-    );
+    expect(scope.getState(formModel.$createMultisigForm.fields.name.$errors)[0].rule).toEqual('notEmpty');
   });
 
   test('should error out for low threshold', async () => {

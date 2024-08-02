@@ -26,6 +26,12 @@ const $createMultisigForm = createForm<FormParams>({
     },
     name: {
       init: '',
+      rules: [
+        {
+          name: 'notEmpty',
+          validator: (name) => name !== '',
+        },
+      ],
     },
   },
   validateOn: ['submit'],
