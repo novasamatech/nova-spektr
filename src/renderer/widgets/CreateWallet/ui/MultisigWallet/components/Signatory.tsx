@@ -5,10 +5,12 @@ import { useEffect, useState } from 'react';
 import { useI18n } from '@app/providers';
 import { type ChainAccount, type WalletFamily } from '@/shared/core';
 import { type ComboboxOption } from '@/shared/ui/types';
-import { toAddress, validateAddress } from '@shared/lib/utils';
+import { toAccountId, toAddress, validateAddress } from '@shared/lib/utils';
 import { CaptionText, Combobox, Icon, IconButton, Identicon, Input } from '@shared/ui';
 import { AddressWithName, WalletIcon, walletModel, walletUtils } from '@/entities/wallet';
+import { contactModel } from '@entities/contact';
 import { GroupLabels } from '@/features/wallets/WalletSelect/ui/WalletGroup';
+import { filterModel } from '@features/contacts';
 import { walletSelectUtils } from '@features/wallets/WalletSelect/lib/wallet-select-utils';
 import { formModel } from '@/widgets/CreateWallet/model/form-model';
 import { signatoryModel } from '../../../model/signatory-model';
@@ -24,6 +26,7 @@ export const Signatory = ({ index, onDelete, isOwnAccount = false }: Props) => {
   const [query, setQuery] = useState('');
   const [options, setOptions] = useState<ComboboxOption[]>([]);
 
+  const [contacts, contactsFiltered] = useUnit([contactModel.$contacts, filterModel.$contactsFiltered]);
   const signatory = useUnit(signatoryModel.$signatories).get(index);
   const [address, setAddress] = useState(signatory?.address || '');
   const [name, setName] = useState(signatory?.name || '');
@@ -31,6 +34,14 @@ export const Signatory = ({ index, onDelete, isOwnAccount = false }: Props) => {
   const {
     fields: { chain },
   } = useForm(formModel.$createMultisigForm);
+
+  const ownAccountName =
+    walletUtils.getWalletsFilteredAccounts(wallets, {
+      walletFn: (w) => !walletUtils.isWatchOnly(w) && !walletUtils.isMultisig(w),
+      accountFn: (a) => toAccountId(address) === a.accountId,
+    })?.[0]?.name || '';
+
+  const contactAccountName = contacts.filter((contact) => contact.address === address)?.[0]?.name || '';
 
   useEffect(() => {
     if (!isOwnAccount || wallets.length === 0) return;
@@ -84,6 +95,24 @@ export const Signatory = ({ index, onDelete, isOwnAccount = false }: Props) => {
     setOptions(opts);
   }, [query, wallets, isOwnAccount, t]);
 
+  // initiate the query form in case of not own account
+  useEffect(() => {
+    if (isOwnAccount || contacts.length === 0) return;
+    filterModel.events.formInitiated();
+  }, [isOwnAccount, filterModel, contacts]);
+
+  // list of contacts in case of not own account
+  useEffect(() => {
+    if (isOwnAccount || contacts.length === 0) return;
+    setOptions(
+      contactsFiltered.map(({ name, address }) => ({
+        id: index.toString(),
+        element: <AddressWithName name={name} address={address} />,
+        value: address,
+      })),
+    );
+  }, [query, isOwnAccount, contacts, contactsFiltered]);
+
   const onNameChange = (newName: string) => {
     setName(newName);
     signatoryModel.events.signatoriesChanged({
@@ -94,6 +123,8 @@ export const Signatory = ({ index, onDelete, isOwnAccount = false }: Props) => {
   };
 
   const onAddressChange = (newAddress: string) => {
+    setName('');
+
     if (!validateAddress(newAddress)) {
       setAddress('');
 
@@ -106,6 +137,11 @@ export const Signatory = ({ index, onDelete, isOwnAccount = false }: Props) => {
       name,
       address: newAddress,
     });
+  };
+
+  const handleQueryChange = (newQuery: string) => {
+    setQuery(newQuery);
+    filterModel.events.queryChanged(newQuery);
   };
 
   const prefixElement = (
@@ -132,7 +168,8 @@ export const Signatory = ({ index, onDelete, isOwnAccount = false }: Props) => {
           label={t('addressBook.createContact.nameLabel')}
           placeholder={t('addressBook.createContact.namePlaceholder')}
           invalid={false}
-          value={name}
+          value={!!ownAccountName || !!contactAccountName ? ownAccountName || contactAccountName : name}
+          disabled={!!ownAccountName || !!contactAccountName}
           onChange={onNameChange}
         />
       </div>
@@ -147,7 +184,7 @@ export const Signatory = ({ index, onDelete, isOwnAccount = false }: Props) => {
         onChange={({ value }) => {
           onAddressChange(value);
         }}
-        onInput={setQuery}
+        onInput={handleQueryChange}
       />
       {!isOwnAccount && onDelete && (
         <IconButton className="mt-4 ml-2" name="delete" size={20} onClick={() => onDelete(index)} />

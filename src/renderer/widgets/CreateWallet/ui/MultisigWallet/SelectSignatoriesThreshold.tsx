@@ -32,7 +32,7 @@ export const SelectSignatoriesThreshold = () => {
   const signatoriesMap = useUnit(signatoryModel.$signatories);
   const signatories = Array.from(signatoriesMap.values());
   const {
-    fields: { chain, threshold },
+    fields: { threshold },
     submit,
   } = useForm(formModel.$createMultisigForm);
   const multisigAlreadyExists = useUnit(formModel.$multisigAlreadyExists);
@@ -57,7 +57,7 @@ export const SelectSignatoriesThreshold = () => {
         {t('createMultisigAccount.signatoryThresholdDescription')}
       </SmallTitleText>
       <div className="flex flex-col gap-y-4 px-5 py-4">
-        <SelectSignatories chain={chain.value} />
+        <SelectSignatories />
         <div className="flex gap-x-4 items-end">
           <Alert
             active={!hasOwnSignatory && signatories.length > 0}

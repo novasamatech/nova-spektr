@@ -1,17 +1,12 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { type Chain } from '@shared/core';
 import { Button, Icon } from '@shared/ui';
 import { signatoryModel } from '../../../model/signatory-model';
 
 import { Signatory } from './Signatory';
 
-type Props = {
-  chain: Chain;
-};
-
-export const SelectSignatories = ({ chain }: Props) => {
+export const SelectSignatories = () => {
   const { t } = useI18n();
 
   const signatories = useUnit(signatoryModel.$signatories);
