@@ -52,10 +52,6 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
     }
   }, [isOpen]);
 
-  useEffect(() => {
-    flowModel.events.callbacksChanged({ onComplete });
-  }, [onComplete]);
-
   const closeMultisigModal = (params: { complete?: boolean; closeAll?: boolean } = { closeAll: true }) => {
     toggleIsModalOpen();
 
