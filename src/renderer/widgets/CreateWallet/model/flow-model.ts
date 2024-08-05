@@ -1,4 +1,4 @@
-import { combine, createApi, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import sortBy from 'lodash/sortBy';
 import { delay, spread } from 'patronum';
 
@@ -36,10 +36,6 @@ const isFeeLoadingChanged = createEvent<boolean>();
 const formSubmitted = createEvent<FormSubmitEvent>();
 const flowFinished = createEvent();
 
-export type Callbacks = {
-  onComplete: () => void;
-};
-
 const walletCreated = createEvent<{
   name: string;
   threshold: number;
@@ -48,10 +44,6 @@ const $step = restore(stepChanged, Step.NAME_NETWORK).reset(flowFinished);
 const $fee = restore(feeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
-const $callbacks = createStore<Callbacks | null>(null).reset(flowFinished);
-const callbacksApi = createApi($callbacks, {
-  callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
-});
 
 const $error = createStore('').reset(flowFinished);
 const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
@@ -422,7 +414,6 @@ export const flowModel = {
   $signer,
   $signerWallet,
   events: {
-    callbacksChanged: callbacksApi.callbacksChanged,
     walletCreated,
     stepChanged,
     feeChanged,

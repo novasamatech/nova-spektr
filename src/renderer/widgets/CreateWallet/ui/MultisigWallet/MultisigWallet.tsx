@@ -1,11 +1,9 @@
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
-import noop from 'lodash/noop';
 import { useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
-import { useToggle } from '@shared/lib/hooks';
-import { DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { useModalClose } from '@shared/lib/hooks';
 import { BaseModal, HeaderTitleText } from '@shared/ui';
 import { ChainTitle } from '@entities/chain';
 import { OperationSign, OperationSubmit } from '@features/operations';
@@ -21,10 +19,9 @@ import { SelectSignatoriesThreshold } from './SelectSignatoriesThreshold';
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  onComplete: () => void;
 };
 
-export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
+export const MultisigWallet = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
 
   const {
@@ -32,32 +29,21 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
   } = useForm(formModel.$createMultisigForm);
   const activeStep = useUnit(flowModel.$step);
 
-  const [isModalOpen, toggleIsModalOpen] = useToggle(isOpen);
+  const handleClose = () => {
+    onClose();
+    flowModel.output.flowFinished();
+  };
+
+  const [isModalOpen, closeModal] = useModalClose(isOpen, handleClose);
 
   useEffect(() => {
-    flowModel.events.callbacksChanged({ onComplete });
-  }, [onComplete]);
-
-  useEffect(() => {
-    if (isOpen && !isModalOpen) {
-      toggleIsModalOpen();
-    }
-
     if (!isOpen && isModalOpen) {
-      closeMultisigModal({ closeAll: false });
-      flowModel.output.flowFinished();
+      closeModal();
     }
   }, [isOpen]);
 
-  const closeMultisigModal = (params: { complete?: boolean; closeAll?: boolean } = { closeAll: true }) => {
-    toggleIsModalOpen();
-    flowModel.output.flowFinished();
-
-    setTimeout(params?.complete ? onComplete : params?.closeAll ? onClose : noop, DEFAULT_TRANSITION);
-  };
-
   if (createMultisigUtils.isStep(activeStep, Step.SUBMIT)) {
-    return <OperationSubmit isOpen={isModalOpen} onClose={closeMultisigModal} />;
+    return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
   }
 
   const modalTitle = (
@@ -86,7 +72,7 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
         isOpen={isModalOpen}
         contentClass="flex"
         panelClass={createMultisigUtils.isStep(activeStep, Step.SIGN) ? 'w-[440px]' : 'w-[784px]'}
-        onClose={closeMultisigModal}
+        onClose={closeModal}
       >
         {createMultisigUtils.isStep(activeStep, Step.NAME_NETWORK) && <NameNetworkSelection />}
         {createMultisigUtils.isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold />}
