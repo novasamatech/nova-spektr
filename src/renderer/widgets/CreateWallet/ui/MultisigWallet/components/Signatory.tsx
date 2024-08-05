@@ -123,8 +123,6 @@ export const Signatory = ({ index, onDelete, isOwnAccount = false }: Props) => {
   };
 
   const onAddressChange = (newAddress: string) => {
-    setName('');
-
     if (!validateAddress(newAddress)) {
       setAddress('');
 

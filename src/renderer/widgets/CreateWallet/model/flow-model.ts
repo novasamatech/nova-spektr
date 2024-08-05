@@ -7,6 +7,7 @@ import {
   AccountType,
   type ChainId,
   ChainType,
+  type Contact,
   CryptoType,
   type MultisigAccount,
   type Signatory,
@@ -17,6 +18,7 @@ import {
   WrapperKind,
 } from '@shared/core';
 import { SS58_DEFAULT_PREFIX, TEST_ACCOUNTS, ZERO_BALANCE, toAccountId, toAddress } from '@shared/lib/utils';
+import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@entities/network';
 import { transactionService } from '@entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
@@ -386,6 +388,30 @@ sample({
   source: $step,
   filter: (step) => createMultisigUtils.isStep(step, Step.SUBMIT),
   target: flowFinished,
+});
+
+sample({
+  clock: signModel.output.formSubmitted,
+  source: {
+    signatories: signatoryModel.$signatories,
+    contacts: contactModel.$contacts,
+  },
+  fn: ({ signatories, contacts }) => {
+    const contactsToSave = Array.from(signatories.values())
+      .slice(1)
+      .filter((signatory) => !contacts.some((contact) => contact.accountId === toAccountId(signatory.address)))
+      .map(
+        ({ address, name }) =>
+          ({
+            address: address,
+            name: name,
+            accountId: toAccountId(address),
+          }) as Contact,
+      );
+
+    return contactsToSave;
+  },
+  target: contactModel.effects.createContactsFx,
 });
 
 sample({
