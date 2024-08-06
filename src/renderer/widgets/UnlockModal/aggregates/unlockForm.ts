@@ -6,6 +6,8 @@ import { spread } from 'patronum';
 import { type ClaimChunkWithAddress } from '@/shared/api/governance';
 import {
   type Account,
+  type Asset,
+  type Chain,
   type MultisigTxWrapper,
   type PartialBy,
   type ProxiedAccount,
@@ -17,6 +19,8 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { locksModel } from '@/features/governance/model/locks';
+import { unlockModel } from '@/features/governance/model/unlock/unlock';
 import { UnlockRules } from '@features/governance/lib/unlock-rules';
 import { networkSelectorModel } from '@features/governance/model/networkSelector';
 import { votingAssetModel } from '@features/governance/model/votingAsset';
@@ -41,11 +45,13 @@ type FormSubmitEvent = {
     coreTx: Transaction;
   }[];
   formData: PartialBy<FormParams, 'signatory'> & {
+    chain: Chain;
+    asset: Asset;
     fee: string;
+    totalLock: BN;
     totalFee: string;
     multisigDeposit: string;
     proxiedAccount?: ProxiedAccount;
-    transferableAmount: BN;
   };
 };
 
@@ -57,7 +63,6 @@ const totalFeeChanged = createEvent<string>();
 const multisigDepositChanged = createEvent<string>();
 const isFeeLoadingChanged = createEvent<boolean>();
 
-const $accountsBalances = createStore<string[]>([]);
 const $signatoryBalance = createStore<string>(ZERO_BALANCE);
 const $proxyBalance = createStore<string>(ZERO_BALANCE);
 
@@ -145,8 +150,16 @@ const $unlockForm = createForm<FormParams>({
           validator: (value, form, { fee, isMultisig, accounts }) => {
             if (isMultisig) return true;
 
+            const accountsBalances = (accounts as Accounts[]).reduce<string[]>((acc, { account, balance }) => {
+              if (form.shards.includes(account)) {
+                acc.push(balance);
+              }
+
+              return acc;
+            }, []);
+
             return form.shards.every((_: AccountWithClaim, index: number) => {
-              return new BN(fee).lte(new BN(accounts[index]?.balance));
+              return new BN(fee).lte(new BN(accountsBalances[index]));
             });
           },
         },
@@ -282,7 +295,6 @@ const $isChainConnected = combine(
   },
 );
 
-// TODO: make sure it works for proxy
 const $pureTxs = combine(
   {
     chain: networkSelectorModel.$governanceChain,
@@ -297,6 +309,7 @@ const $pureTxs = combine(
         actions: shard.actions || [],
         chain: chain,
         accountId: shard.accountId,
+        amount: shard.amount || '0',
       });
     });
   },
@@ -345,36 +358,34 @@ sample({
 
 sample({
   clock: formInitiated,
+  source: unlockModel.$totalUnlock,
+  fn: (totalUnlock) => totalUnlock.toString(),
+  target: $unlockForm.fields.amount.onChange,
+});
+
+sample({
+  clock: formInitiated,
   source: { shards: $shards, chain: networkSelectorModel.$governanceChain },
   filter: ({ shards, chain }) => shards.length > 0 && !!chain,
   fn: ({ shards, chain }, claims) => {
-    let amount = BN_ZERO;
-
-    const shardsWithClaim = claims.reduce<AccountWithClaim[]>((acc, claim) => {
+    return claims.reduce<AccountWithClaim[]>((acc, claim) => {
       const shard = shards.find(
         (shard) => claim.address === toAddress(shard.accountId, { prefix: chain!.addressPrefix }),
       );
 
       if (!shard) return acc;
-      amount = amount.add(claim.amount);
 
       return [...acc, { ...shard, actions: claim.actions, amount: claim.amount.toString(), address: claim.address }];
     }, []);
-
-    return { shardsWithClaim, amount: amount.toString() };
   },
-  target: spread({
-    shardsWithClaim: $unlockForm.fields.shards.onChange,
-    amount: $unlockForm.fields.amount.onChange,
-  }),
+  target: $unlockForm.fields.shards.onChange,
 });
 
 sample({
-  clock: $unlockForm.fields.shards.$value,
+  clock: formInitiated,
   source: {
     chain: networkSelectorModel.$governanceChain,
     asset: votingAssetModel.$votingAsset,
-    wallet: walletModel.$activeWallet,
     shards: $unlockForm.fields.shards.$value,
     balances: balanceModel.$balances,
   },
@@ -415,6 +426,14 @@ sample({
   target: $unlockForm.fields.amount.resetErrors,
 });
 
+sample({
+  clock: $unlockForm.fields.shards.onChange,
+  fn: (shards) => {
+    return shards.reduce((acc, shard) => acc.add(new BN(shard.amount || BN_ZERO)), BN_ZERO).toString();
+  },
+  target: $unlockForm.fields.amount.onChange,
+});
+
 const $canSubmit = combine(
   {
     isFormValid: $unlockForm.$isValid,
@@ -439,9 +458,34 @@ sample({
 });
 
 sample({
+  source: {
+    isProxy: $isProxy,
+    balances: balanceModel.$balances,
+    chain: networkSelectorModel.$governanceChain,
+    asset: votingAssetModel.$votingAsset,
+    proxyAccounts: $realAccounts,
+  },
+  filter: ({ isProxy, chain, asset, proxyAccounts }) => {
+    return isProxy && !!chain && !!asset && proxyAccounts.length > 0;
+  },
+  fn: ({ balances, chain, asset, proxyAccounts }) => {
+    const balance = balanceUtils.getBalance(
+      balances,
+      proxyAccounts[0].accountId,
+      chain!.chainId,
+      asset!.assetId.toString(),
+    );
+
+    return transferableAmount(balance);
+  },
+  target: $proxyBalance,
+});
+
+sample({
   clock: $unlockForm.formValidated,
   source: {
     realAccounts: $realAccounts,
+    chain: networkSelectorModel.$governanceChain,
     asset: votingAssetModel.$votingAsset,
     transactions: $transactions,
     isProxy: $isProxy,
@@ -449,11 +493,12 @@ sample({
     totalFee: $totalFee,
     multisigDeposit: $multisigDeposit,
     accounts: $accounts,
+    totalLock: locksModel.$totalLock,
   },
   filter: ({ asset, transactions }) => {
     return Boolean(asset) && Boolean(transactions);
   },
-  fn: ({ realAccounts, accounts, asset, transactions, isProxy, ...fee }, formData) => {
+  fn: ({ realAccounts, accounts, asset, chain, transactions, totalLock, isProxy, ...fee }, formData) => {
     const { shards, ...rest } = formData;
 
     const signatory = formData.signatory.accountId ? formData.signatory : undefined;
@@ -473,9 +518,9 @@ sample({
         amount: formData.amount,
         signatory,
         description,
-        transferableAmount: accounts.reduce((acc, { account, balance }) => {
-          return acc.add(new BN(balance));
-        }, BN_ZERO),
+        chain: chain!,
+        asset: asset!,
+        totalLock,
 
         ...(isProxy && { proxiedAccount: shards[0] as ProxiedAccount }),
       },
@@ -502,7 +547,6 @@ export const unlockFormAggregate = {
   $selectedSignatories,
   $signatories,
 
-  $accountsBalances,
   $proxyBalance,
   $signatoryBalance,
 

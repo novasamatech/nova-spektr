@@ -1,9 +1,10 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { delay, or, spread } from 'patronum';
 
-import { type Transaction } from '@/shared/core';
+import { type BasketTransaction, type Transaction } from '@/shared/core';
 import { type ClaimChunkWithAddress, UnlockChunkType } from '@shared/api/governance';
 import { Step, isStep, nonNullable } from '@shared/lib/utils';
+import { basketModel } from '@/entities/basket';
 import { referendumModel } from '@/entities/governance';
 import { locksModel } from '@features/governance/model/locks';
 import { networkSelectorModel } from '@features/governance/model/networkSelector';
@@ -41,12 +42,6 @@ sample({
 });
 
 sample({
-  clock: txSaved,
-  fn: () => Step.BASKET,
-  target: stepChanged,
-});
-
-sample({
   clock: unlockFormStarted,
   fn: () => Step.SELECT,
   target: stepChanged,
@@ -69,7 +64,10 @@ sample({
   fn: ({ transactions, formData }) => {
     const wrappedTxs = transactions.map((tx) => tx.wrappedTx);
     const multisigTxs = transactions.map((tx) => tx.multisigTx).filter(nonNullable);
-    const coreTxs = transactions.map((tx) => tx.coreTx);
+    const coreTxs = transactions.map((tx) => ({
+      ...tx.coreTx,
+      args: { ...tx.coreTx.args, assetId: formData.asset.assetId },
+    }));
 
     return {
       wrappedTxs,
@@ -176,13 +174,20 @@ sample({
   clock: submitModel.$submitStep,
   source: {
     chunks: unlockModel.$claimSchedule,
+    chain: networkSelectorModel.$governanceChain,
     unlockData: $unlockData,
+    step: $step,
   },
-  filter: ({ unlockData }, { step }) => !!unlockData && submitUtils.isSuccessStep(step),
-  fn: ({ chunks, unlockData }) => {
+  filter: ({ unlockData, step, chain }, { step: submitStep }) =>
+    !!unlockData &&
+    isStep(step, Step.SUBMIT) &&
+    submitUtils.isSuccessStep(submitStep) &&
+    chain?.chainId === unlockData.chain.chainId,
+  fn: ({ chunks, unlockData, chain }, { step }) => {
     return chunks.filter((chunk) => {
       return (
-        chunk.type === UnlockChunkType.CLAIMABLE && unlockData!.shards.some((shard) => shard.address !== chunk.address)
+        chunk.type === UnlockChunkType.CLAIMABLE &&
+        unlockData!.shards.some((shard) => (shard.address || unlockData!.proxiedAccount?.address) !== chunk.address)
       );
     });
   },
@@ -195,9 +200,42 @@ sample({
   target: stepChanged,
 });
 
+// Basket
+
+sample({
+  clock: txSaved,
+  source: {
+    unlockData: $unlockData,
+    coreTxs: $coreTxs,
+    txWrappers: unlockFormAggregate.$txWrappers,
+  },
+  filter: ({ unlockData, coreTxs, txWrappers }: any) => {
+    return !!unlockData && !!coreTxs && !!txWrappers;
+  },
+  fn: ({ unlockData, coreTxs, txWrappers }) => {
+    const txs = coreTxs!.map(
+      (coreTx) =>
+        ({
+          initiatorWallet: unlockData!.shards[0].walletId,
+          coreTx,
+          txWrappers,
+          groupId: Date.now(),
+        }) as BasketTransaction,
+    );
+
+    return txs;
+  },
+  target: basketModel.events.transactionsCreated,
+});
+
+sample({
+  clock: txSaved,
+  fn: () => Step.BASKET,
+  target: stepChanged,
+});
+
 export const unlockAggregate = {
   $step,
-  $totalUnlock: unlockModel.$totalUnlock,
   $isLoading: or(unlockModel.$isLoading, referendumModel.$isReferendumsLoading),
   $isUnlockable: unlockModel.$isUnlockable,
   $pendingSchedule,
