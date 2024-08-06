@@ -1,3 +1,4 @@
+import { type ClaimAction } from '@/shared/api/governance';
 import {
   type AccountId,
   type Address,
@@ -23,6 +24,7 @@ export const transactionBuilder = {
   buildDelegate,
   buildUndelegate,
   buildEditDelegation,
+  buildUnlock,
 };
 
 type TransferParams = {
@@ -319,4 +321,43 @@ function buildEditDelegation({
   }));
 
   return buildBatchAll({ chain, accountId, transactions: [...undelegateTxs, ...delegateTxs] });
+}
+
+type UnlockParams = {
+  chain: Chain;
+  accountId: AccountId;
+  actions: ClaimAction[];
+};
+
+function buildUnlock({ chain, accountId, actions }: UnlockParams): Transaction {
+  const unlockTxs = actions.map((action) => {
+    const transaction = {
+      chainId: chain.chainId,
+      address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    };
+
+    if (action.type === 'remove_vote') {
+      return {
+        ...transaction,
+        type: TransactionType.REMOVE_VOTE,
+        args: {
+          trackId: action.trackId,
+          referendumId: action.referendumId,
+        },
+      };
+    }
+
+    return {
+      ...transaction,
+      type: TransactionType.UNLOCK,
+      args: {
+        trackId: action.trackId,
+        target: toAddress(accountId, { prefix: chain.addressPrefix }),
+      },
+    };
+  });
+
+  if (unlockTxs.length === 1) return unlockTxs[0];
+
+  return buildBatchAll({ chain, accountId, transactions: unlockTxs });
 }

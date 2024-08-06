@@ -7,13 +7,15 @@ import { Step, isStep } from '@shared/lib/utils';
 import { BaseModal, HeaderTitleText } from '@shared/ui';
 import { OperationTitle } from '@entities/chain';
 import { OperationResult } from '@entities/transaction';
-import { unlockAggregate } from '../../aggregates/unlock';
-import { networkSelectorModel } from '../../model/networkSelector';
+import { networkSelectorModel } from '@features/governance/model/networkSelector';
+import { OperationSign, OperationSubmit } from '@features/operations';
+import { unlockAggregate } from '../aggregates/unlock';
 
 import { Confirmation } from './Confirmation';
+import { UnlockForm } from './UnlockForm';
 import { UnlockInfo } from './UnlockInfo';
 
-export const Unlock = () => {
+export const UnlockModal = () => {
   const { t } = useI18n();
 
   const step = useUnit(unlockAggregate.$step);
@@ -37,6 +39,10 @@ export const Unlock = () => {
     return null;
   }
 
+  if (isStep(step, Step.SUBMIT)) {
+    return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  }
+
   if (isStep(step, Step.BASKET)) {
     return (
       <OperationResult
@@ -57,7 +63,9 @@ export const Unlock = () => {
   return (
     <BaseModal closeButton contentClass="" isOpen={isModalOpen} title={title} onClose={closeModal}>
       {isStep(step, Step.INIT) && <UnlockInfo />}
-      {isStep(step, Step.CONFIRM) && <Confirmation onGoBack={() => unlockAggregate.events.stepChanged(Step.INIT)} />}
+      {isStep(step, Step.SELECT) && <UnlockForm onGoBack={() => unlockAggregate.events.stepChanged(Step.INIT)} />}
+      {isStep(step, Step.CONFIRM) && <Confirmation onGoBack={() => unlockAggregate.events.stepChanged(Step.SELECT)} />}
+      {isStep(step, Step.SIGN) && <OperationSign onGoBack={() => unlockAggregate.events.stepChanged(Step.CONFIRM)} />}
     </BaseModal>
   );
 };

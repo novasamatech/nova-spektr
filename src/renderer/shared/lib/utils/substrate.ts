@@ -124,6 +124,15 @@ export const getCreatedDateFromApi = async (neededBlock: number, api: ApiPromise
   return getCreatedDate(neededBlock, currentBlock, blockTime.toNumber());
 };
 
+export const getTimeFromBlock = async (neededTime: number, api: ApiPromise): Promise<number> => {
+  const currentBlock = await getCurrentBlockNumber(api);
+  const blockTime = getExpectedBlockTime(api);
+
+  const completedBlocks = Math.ceil(neededTime / blockTime.toNumber());
+
+  return Math.max(0, currentBlock - completedBlocks);
+};
+
 export const getTypeVersion = (api: ApiPromise, typeName: string): string => {
   const enumValues = getTypeEnumValues(api, typeName);
   const supportedVersions = enumValues.filter((value) => SUPPORTED_VERSIONS.includes(value));
