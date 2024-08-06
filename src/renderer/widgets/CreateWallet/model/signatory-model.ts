@@ -22,10 +22,11 @@ sample({
   clock: signatoriesChanged,
   source: $signatories,
   fn: (signatories, { index, name, address }) => {
-    signatories.set(index, { name, address });
-
     // we need to return new Map to trigger re-render
-    return new Map(signatories);
+    const newMap = new Map(signatories);
+    newMap.set(index, { name, address });
+
+    return newMap;
   },
   target: $signatories,
 });
@@ -35,10 +36,11 @@ sample({
   source: $signatories,
   filter: (signatories, index) => signatories.has(index),
   fn: (signatories, index) => {
-    signatories.delete(index);
-
     // we need to return new Map to trigger re-render
-    return new Map(signatories);
+    const newMap = new Map(signatories);
+    newMap.delete(index);
+
+    return newMap;
   },
   target: $signatories,
 });
