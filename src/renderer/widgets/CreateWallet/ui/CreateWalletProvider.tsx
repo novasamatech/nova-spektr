@@ -12,7 +12,7 @@ import { WalletConnect } from '@pages/Onboarding/WalletConnect/WalletConnect';
 import WatchOnly from '@pages/Onboarding/WatchOnly/WatchOnly';
 import { walletProviderModel } from '../model/wallet-provider-model';
 
-import { MultisigWalletWizard } from './MultisigWallet/MultisigWalletWizard';
+import { MultisigWallet } from './MultisigWallet/MultisigWallet';
 
 // TODO: Break down WatchOnly / Vault / CreateMultisig to widgets
 type ModalProps = {
@@ -22,7 +22,7 @@ type ModalProps = {
 const WalletModals: Record<WalletFamily, (props: ModalProps) => JSX.Element | null> = {
   [WalletType.POLKADOT_VAULT]: (props) => <Vault isOpen {...props} />,
   [WalletType.WATCH_ONLY]: (props) => <WatchOnly isOpen {...props} />,
-  [WalletType.MULTISIG]: (props) => <MultisigWalletWizard isOpen {...props} />,
+  [WalletType.MULTISIG]: (props) => <MultisigWallet isOpen {...props} />,
   [WalletType.WALLET_CONNECT]: (props) => <WalletConnect isOpen {...props} />,
   [WalletType.NOVA_WALLET]: (props) => <NovaWallet isOpen {...props} />,
   [WalletType.PROXIED]: () => null,

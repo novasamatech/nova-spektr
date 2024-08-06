@@ -3,6 +3,7 @@ import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
+import { DEFAULT_TRANSITION } from '@/shared/lib/utils';
 import { useModalClose } from '@shared/lib/hooks';
 import { BaseModal, HeaderTitleText } from '@shared/ui';
 import { ChainTitle } from '@entities/chain';
@@ -19,22 +20,17 @@ import { SelectSignatoriesThreshold } from './SelectSignatoriesThreshold';
 type Props = {
   isOpen: boolean;
   onClose: () => void;
+  onComplete: () => void;
 };
 
-export const MultisigWallet = ({ isOpen, onClose }: Props) => {
+export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
 
+  const [isModalOpen, closeModal] = useModalClose(isOpen, flowModel.output.flowFinished);
   const {
     fields: { chain },
   } = useForm(formModel.$createMultisigForm);
   const activeStep = useUnit(flowModel.$step);
-
-  const handleClose = () => {
-    onClose();
-    flowModel.output.flowFinished();
-  };
-
-  const [isModalOpen, closeModal] = useModalClose(isOpen, handleClose);
 
   useEffect(() => {
     if (!isOpen && isModalOpen) {
@@ -42,8 +38,13 @@ export const MultisigWallet = ({ isOpen, onClose }: Props) => {
     }
   }, [isOpen]);
 
+  const handleClose = (params?: { complete: boolean }) => {
+    closeModal();
+    setTimeout(params?.complete ? onComplete : onClose, DEFAULT_TRANSITION);
+  };
+
   if (createMultisigUtils.isStep(activeStep, Step.SUBMIT)) {
-    return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+    return <OperationSubmit isOpen={isModalOpen} onClose={() => handleClose({ complete: true })} />;
   }
 
   const modalTitle = (
@@ -72,7 +73,7 @@ export const MultisigWallet = ({ isOpen, onClose }: Props) => {
         isOpen={isModalOpen}
         contentClass="flex"
         panelClass={createMultisigUtils.isStep(activeStep, Step.SIGN) ? 'w-[440px]' : 'w-[784px]'}
-        onClose={closeModal}
+        onClose={handleClose}
       >
         {createMultisigUtils.isStep(activeStep, Step.NAME_NETWORK) && <NameNetworkSelection />}
         {createMultisigUtils.isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold />}
