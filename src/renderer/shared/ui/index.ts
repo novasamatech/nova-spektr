@@ -22,6 +22,7 @@ export {
 } from './Typography';
 
 export { Plate } from './Plate/Plate';
+export { Card } from './Card/Card';
 export { OperationStatus } from './OperationStatus/OperationStatus';
 export { Separator } from './Separator/Separator';
 export { InputHint } from './InputHint/InputHint';
@@ -50,6 +51,7 @@ export { Truncate } from './Truncate/Truncate';
 export { Countdown } from './Countdown/Countdown';
 export { Tabs } from './Tabs/Tabs';
 export { Markdown } from './Markdown/Markdown';
+export { Slider } from './Slider/Slider';
 
 // FIXME: Animation component exported separately.
 // Adding them to this file causes to crash all tests which use anything from that file

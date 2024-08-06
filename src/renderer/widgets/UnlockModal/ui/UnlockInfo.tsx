@@ -7,14 +7,15 @@ import { Button, Duration, FootnoteText, Icon, Shimmering } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price';
 import { permissionUtils, walletModel } from '@entities/wallet';
-import { unlockAggregate } from '../../aggregates/unlock';
-import { locksModel } from '../../model/locks';
+import { locksModel } from '@features/governance/model/locks';
+import { votingAssetModel } from '@features/governance/model/votingAsset';
+import { unlockAggregate } from '../aggregates/unlock';
 
 export const UnlockInfo = () => {
   const { t } = useI18n();
 
   const totalLock = useUnit(locksModel.$totalLock);
-  const asset = useUnit(locksModel.$asset);
+  const asset = useUnit(votingAssetModel.$votingAsset);
   const pendingSchedule = useUnit(unlockAggregate.$pendingSchedule);
   const isLoading = useUnit(unlockAggregate.$isLoading);
   const totalUnlock = useUnit(unlockAggregate.$totalUnlock);
@@ -70,7 +71,7 @@ const ActionsSection = () => {
 
   return (
     <div className="flex self-end items-center mt-3">
-      <Button type="submit" disabled={isUnlockable} onClick={() => unlockAggregate.events.unlockConfirm()}>
+      <Button type="submit" disabled={!isUnlockable} onClick={() => unlockAggregate.events.unlockFormStarted()}>
         {t('governance.locks.unlock')}
       </Button>
     </div>

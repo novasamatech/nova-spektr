@@ -86,15 +86,13 @@ sample({
 });
 
 sample({
-  clock: getClaimScheduleFx.doneData,
+  clock: $claimSchedule.updates,
   fn: (claimSchedule) => {
-    const unlockable = claimSchedule.reduce((acc, claim) => {
+    return claimSchedule.reduce((acc, claim) => {
       if (claim.type !== UnlockChunkType.CLAIMABLE) return acc;
 
       return acc.add(claim.amount);
     }, BN_ZERO);
-
-    return unlockable;
   },
   target: $totalUnlock,
 });
@@ -103,4 +101,5 @@ export const unlockModel = {
   $isLoading: getClaimScheduleFx.pending,
   $totalUnlock,
   $claimSchedule,
+  $isUnlockable: $claimSchedule.map((c) => c.some((claim) => claim.type === UnlockChunkType.CLAIMABLE)),
 };

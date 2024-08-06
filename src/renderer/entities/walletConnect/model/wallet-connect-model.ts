@@ -155,10 +155,8 @@ const updateWcAccountsFx = createEffect(
   async ({ wallet, accounts }: UpdateParams): Promise<WcAccount[] | undefined> => {
     const oldAccountIds = wallet.accounts.map((account) => account.id);
 
-    const [_, newAccounts] = await Promise.all([
-      storageService.accounts.deleteAll(oldAccountIds),
-      storageService.accounts.createAll(accounts),
-    ]);
+    await storageService.accounts.deleteAll(oldAccountIds);
+    const newAccounts = await storageService.accounts.createAll(accounts);
 
     return newAccounts as WcAccount[];
   },

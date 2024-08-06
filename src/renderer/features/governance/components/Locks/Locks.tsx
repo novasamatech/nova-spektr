@@ -3,21 +3,25 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@app/providers';
 import { FootnoteText, Icon, Plate, Shimmering } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
-import { unlockAggregate } from '../../aggregates/unlock';
 import { locksModel } from '../../model/locks';
-import { Unlock } from '../Unlock/Unlock';
+import { unlockModel } from '../../model/unlock/unlock';
+import { votingAssetModel } from '../../model/votingAsset';
 
-export const Locks = () => {
+type Props = {
+  onClick: () => void;
+};
+
+export const Locks = ({ onClick }: Props) => {
   const { t } = useI18n();
 
-  const asset = useUnit(locksModel.$asset);
+  const asset = useUnit(votingAssetModel.$votingAsset);
   const totalLock = useUnit(locksModel.$totalLock);
   const isLoading = useUnit(locksModel.$isLoading);
-  const isUnlockable = useUnit(unlockAggregate.$isUnlockable);
+  const isUnlockable = useUnit(unlockModel.$isUnlockable);
 
   return (
     <>
-      <button disabled={isLoading || totalLock.isZero()} onClick={() => unlockAggregate.events.flowStarted()}>
+      <button disabled={isLoading || totalLock.isZero()} onClick={onClick}>
         <Plate className="w-[240px] h-[90px] pt-3 px-4 pb-4.5 flex justify-between items-center">
           <div className="flex flex-col gap-y-2 items-start">
             <div className="flex gap-x-1 items-center">
@@ -35,8 +39,6 @@ export const Locks = () => {
           <Icon name="arrowRight" />
         </Plate>
       </button>
-
-      <Unlock />
     </>
   );
 };

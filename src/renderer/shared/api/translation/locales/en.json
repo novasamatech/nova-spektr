@@ -298,6 +298,7 @@
       "availableLabel": "Available:",
       "descriptionLabel": "Description",
       "descriptionPlaceholder": "Choose an operation description",
+      "searchPlaceholder": "Search",
       "signerLabel": "Select signer",
       "transferableLabel": "Transferable"
     },
@@ -312,6 +313,25 @@
     }
   },
   "governance": {
+    "addDelegation": {
+      "actionButton": "Add delegation",
+      "card": {
+        "delegations": "Delegations",
+        "individual": "Individual",
+        "organization": "Organization",
+        "voted": "Voted last 30 days",
+        "votes": "Delegated votes"
+      },
+      "emptyDescription": "Update the search or cancel filtering",
+      "emptyTitle": "Nothing was found",
+      "sort": {
+        "delegations": "Delegations",
+        "placeholder": "Sort by",
+        "voted": "Voted last 30 days",
+        "votes": "Delegated votes"
+      },
+      "title": "Add delegation on"
+    },
     "additional": {
       "polkassemblyLink": "https://{network}.polkassembly.io/referenda/{referendumId}",
       "polkassemblyLinkTitle": "View in Polkassembly",
@@ -349,7 +369,7 @@
       "title": "Unlock on",
       "unlock": "Unlock",
       "unlockable": "Unlockable",
-      "yourDeligation": "Your Deligation"
+      "yourDelegation": "Your Delegation"
     },
     "offChainDataSource": {
       "formDescription": "Nova Spektr may use different off-chain data sources for getting referendum data",
@@ -360,6 +380,7 @@
       "title": "Referendum data"
     },
     "operations": {
+      "selectPlaceholder": "Select",
       "transferable": "Transferable"
     },
     "referendum": {
@@ -675,6 +696,7 @@
     "inProgress": "Submitting approval...",
     "logButton": "Log",
     "networkFee": "Network fee",
+    "networkFeeTotal": "Total network fee",
     "proxyFeeErrorDescription": "Delegated authority<wallet />doesn't have enough balance to pay the network fee of {fee} {symbol}<br />Available balance to pay fee: {balance} {symbol}",
     "proxyFeeErrorTitle": "Not enough tokens to pay the fee",
     "rejectButton": "Reject",
