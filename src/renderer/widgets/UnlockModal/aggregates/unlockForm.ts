@@ -57,6 +57,7 @@ type FormSubmitEvent = {
 
 const formInitiated = createEvent<ClaimChunkWithAddress[]>();
 const formSubmitted = createEvent<FormSubmitEvent>();
+const formCleared = createEvent();
 
 const feeChanged = createEvent<string>();
 const totalFeeChanged = createEvent<string>();
@@ -354,7 +355,7 @@ const $api = combine(
 
 sample({
   clock: formInitiated,
-  target: $unlockForm.reset,
+  target: [$unlockForm.reset, $selectedSignatories.reinit],
 });
 
 sample({
@@ -530,6 +531,11 @@ sample({
   target: formSubmitted,
 });
 
+sample({
+  clock: formCleared,
+  target: [$unlockForm.reset, $selectedSignatories.reinit],
+});
+
 export const unlockFormAggregate = {
   $unlockForm,
   $api,
@@ -553,6 +559,7 @@ export const unlockFormAggregate = {
 
   events: {
     formInitiated,
+    formCleared,
     feeChanged,
     totalFeeChanged,
     multisigDepositChanged,

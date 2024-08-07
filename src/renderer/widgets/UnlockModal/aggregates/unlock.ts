@@ -198,7 +198,7 @@ sample({
 sample({
   clock: flowFinished,
   fn: () => Step.NONE,
-  target: stepChanged,
+  target: [stepChanged, unlockFormAggregate.events.formCleared],
 });
 
 // Basket
