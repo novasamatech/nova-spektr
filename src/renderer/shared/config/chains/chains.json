@@ -97,6 +97,9 @@
           "url": "https://api.subquery.network/sq/nova-wallet/novasama-polkadot-proxy"
         }
       ]
+    },
+    "additional": {
+      "identityChain": "67fa177a097bfa18f77ea95ab56e9bcdfeb0e5b8a40e46298bb93e16b6fc5008"
     }
   },
   {
@@ -197,6 +200,9 @@
           "url": "https://api.subquery.network/sq/nova-wallet/novasama-kusama-proxy"
         }
       ]
+    },
+    "additional": {
+      "identityChain": "c1af4cb4eb3918e5db15086c0cc5ec17fb334f728b7c65dd44bfe1e174ff8b3f"
     }
   },
   {
@@ -1453,7 +1459,7 @@
     "nodes": [
       {
         "url": "wss://heiko-rpc.parallel.fi",
-        "name": "Parallel"
+        "name": "Parallel node"
       }
     ],
     "assets": [
@@ -2883,7 +2889,7 @@
     "nodes": [
       {
         "url": "wss://api-kusama.interlay.io/parachain",
-        "name": "Kintsugi Labs"
+        "name": "Kintsugi Labs node"
       }
     ],
     "assets": [
@@ -3051,8 +3057,8 @@
     "options": [],
     "nodes": [
       {
-        "url": "wss://zeitgeist-rpc.dwellir.com",
-        "name": "Dwellir node"
+        "url": "wss://main.rpc.zeitgeist.pm/ws",
+        "name": "Zeitgeist node"
       },
       {
         "url": "wss://zeitgeist.api.onfinality.io/public-ws",
@@ -3106,7 +3112,7 @@
     "nodes": [
       {
         "url": "wss://rpc.litmus-parachain.litentry.io",
-        "name": "Litenry node"
+        "name": "Litentry node"
       }
     ],
     "assets": [
@@ -3309,7 +3315,7 @@
       },
       {
         "url": "wss://rpc.hydradx.cloud",
-        "name": "Calactic Council node"
+        "name": "Galactic Council node"
       },
       {
         "url": "wss://hydradx.paras.ibp.network",
@@ -5997,5 +6003,46 @@
         }
       ]
     }
+  },
+  {
+    "name": "Polkadot People",
+    "specName": "polkadot",
+    "addressPrefix": 0,
+    "chainId": "0x67fa177a097bfa18f77ea95ab56e9bcdfeb0e5b8a40e46298bb93e16b6fc5008",
+    "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polkadot_People.svg",
+    "options": [],
+    "nodes": [
+      {
+        "url": "wss://polkadot-people-rpc.polkadot.io",
+        "name": "Parity node"
+      },
+      {
+        "url": "wss://sys.ibp.network/people-polkadot",
+        "name": "IBP network node"
+      },
+      {
+        "url": "wss://sys.dotters.network/people-polkadot",
+        "name": "Dotters Net node"
+      },
+      {
+        "url": "wss://rpc-people-polkadot.luckyfriday.io",
+        "name": "LuckyFriday node"
+      },
+      {
+        "url": "wss://people-polkadot.public.curie.radiumblock.co/ws",
+        "name": "Radium node"
+      }
+    ],
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "DOT",
+        "precision": 10,
+        "priceId": "polkadot",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
+        "name": "Polkadot"
+      }
+    ]
   }
 ]
