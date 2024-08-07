@@ -77,7 +77,7 @@ export const NominatorsItem = ({
         )}
       </div>
       <ExplorersPopover
-        button={<IconButton name="info" />}
+        button={<IconButton name="details" />}
         address={stake.address}
         addressPrefix={addressPrefix}
         explorers={explorers}
