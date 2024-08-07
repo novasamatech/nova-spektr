@@ -66,7 +66,7 @@ export const WalletCardMd = ({ wallet, description, prefix, hideIcon, className,
             'absolute right-2 opacity-0 transition-opacity',
             'group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100',
           )}
-          name="info"
+          name="details"
           onClick={handleClick(onInfoClick)}
         />
       )}
