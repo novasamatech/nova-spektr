@@ -6,17 +6,19 @@ import { Step, isStep } from '@/shared/lib/utils';
 import { BaseModal } from '@/shared/ui';
 import { OperationTitle } from '@/entities/chain';
 import { networkSelectorModel } from '@/features/governance';
-import { addDelegationModel } from '../model/addDelegation';
+import { delegateModel } from '@/widgets/DelegateModal/model/delegate-model';
+import { Delegate } from '@/widgets/DelegateModal/ui/Delegate';
+import { delegationModel } from '../model/delegation-model';
 
 import { DelegationList } from './DelegationList';
 
-export const AddDelegationModal = () => {
+export const DelegationModal = () => {
   const { t } = useI18n();
 
-  const step = useUnit(addDelegationModel.$step);
+  const step = useUnit(delegationModel.$step);
   const chain = useUnit(networkSelectorModel.$governanceChain);
 
-  const [isModalOpen, closeModal] = useModalClose(!isStep(step, Step.NONE), addDelegationModel.output.flowFinished);
+  const [isModalOpen, closeModal] = useModalClose(!isStep(step, Step.NONE), delegationModel.output.flowFinished);
 
   return (
     <BaseModal
@@ -28,7 +30,9 @@ export const AddDelegationModal = () => {
       title={chain && <OperationTitle title={t('governance.addDelegation.title')} chainId={chain.chainId} />}
       onClose={closeModal}
     >
-      {isStep(step, Step.LIST) && <DelegationList />}
+      <DelegationList onClick={delegateModel.events.flowStarted} />
+
+      <Delegate />
     </BaseModal>
   );
 };

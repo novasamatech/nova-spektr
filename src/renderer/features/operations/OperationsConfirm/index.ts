@@ -13,3 +13,5 @@ export * from './Restake';
 export * from './BondExtra';
 export * from './Unstake';
 export * from './Withdraw';
+
+export * from './Delegate';

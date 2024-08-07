@@ -48,8 +48,16 @@ export function addUnique<T>(collection: T[], item: T): T[] {
   return collection.includes(item) ? [...collection] : [...collection, item];
 }
 
+export function addUniqueItems<T>(collection: T[], items: T[]): T[] {
+  return items.reduce((acc, item) => addUnique(acc, item), [...collection]);
+}
+
 export function removeFromCollection<T>(collection: T[], item: T): T[] {
   return collection.filter((i) => i !== item);
+}
+
+export function removeItemsFromCollection<T>(collection: T[], items: T[]): T[] {
+  return collection.filter((i) => !items.includes(i));
 }
 
 export const sortByDateDesc = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]): number =>

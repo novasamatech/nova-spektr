@@ -4,6 +4,7 @@ import { spread } from 'patronum';
 
 import {
   type Account,
+  type Balance,
   type BasketTransaction,
   type Chain,
   type ChainId,
@@ -13,6 +14,7 @@ import {
 } from '@shared/core';
 import { type ChainError } from '@shared/core/types/basket';
 import { toAccountId } from '@shared/lib/utils';
+import { balanceModel } from '@/entities/balance';
 import { basketModel } from '@entities/basket';
 import { networkModel } from '@entities/network';
 import { TransferTypes, XcmTypes } from '@entities/transaction';
@@ -25,6 +27,7 @@ import {
   addPureProxiedConfirmModel,
   bondExtraConfirmModel,
   bondNominateConfirmModel,
+  delegateConfirmModel,
   nominateConfirmModel,
   payeeConfirmModel,
   removeProxyConfirmModel,
@@ -55,14 +58,15 @@ type PrepareDataParams = {
   transactions: BasketTransaction[];
   connections: Record<ChainId, Connection>;
   feeMap: FeeMap;
+  balances: Balance[];
 };
 
 const startDataPreparationFx = createEffect(
-  async ({ transactions, wallets, chains, apis, connections, feeMap }: PrepareDataParams) => {
+  async ({ transactions, wallets, chains, apis, connections, feeMap, balances }: PrepareDataParams) => {
     const dataParams = [];
 
     for (const transaction of transactions) {
-      const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE, TransactionType.BOND]);
+      const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE, TransactionType.BOND, TransactionType.DELEGATE]);
 
       if (TransferTypes.includes(coreTx.type) || XcmTypes.includes(coreTx.type)) {
         const params = await prepareTransaction.prepareTransferTransactionData({
@@ -72,6 +76,7 @@ const startDataPreparationFx = createEffect(
           apis,
           connections,
           feeMap,
+          balances,
         });
 
         dataParams.push({ type: TransactionType.TRANSFER, params });
@@ -91,6 +96,7 @@ const startDataPreparationFx = createEffect(
         [TransactionType.UNSTAKE]: prepareTransaction.prepareUnstakeTransaction,
         [TransactionType.REDEEM]: prepareTransaction.prepareWithdrawTransaction,
         [TransactionType.UNLOCK]: prepareTransaction.prepareUnlockTransaction,
+        [TransactionType.DELEGATE]: prepareTransaction.prepareDelegateTransaction,
       };
 
       if (coreTx.type in TransactionValidators) {
@@ -102,6 +108,7 @@ const startDataPreparationFx = createEffect(
           apis,
           connections,
           feeMap,
+          balances,
         });
 
         dataParams.push({ type: coreTx.type, params });
@@ -121,18 +128,20 @@ const $txDataParams = combine({
   apis: networkModel.$apis,
   connections: networkModel.$connections,
   signerOptions: $signerOptions,
+  balances: balanceModel.$balances,
 });
 
 sample({
   clock: flowStarted,
   source: $txDataParams,
-  fn: ({ wallets, chains, apis, connections }, { transactions, feeMap }) => ({
+  fn: ({ wallets, chains, apis, connections, balances }, { transactions, feeMap }) => ({
     transactions,
     wallets,
     chains,
     apis,
     connections,
     feeMap,
+    balances,
   }),
   target: startDataPreparationFx,
 });
@@ -336,6 +345,19 @@ sample({
   target: unlockConfirmAggregate.events.formInitiated,
 });
 
+// Delegate
+
+sample({
+  clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.DELEGATE).length > 0;
+  },
+  fn: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.DELEGATE).map((tx) => tx.params) || [];
+  },
+  target: delegateConfirmModel.events.formInitiated,
+});
+
 sample({
   clock: flowFinished,
   fn: () => Step.NONE,
@@ -356,6 +378,7 @@ sample({
     restakeConfirmModel.output.formSubmitted,
     unstakeConfirmModel.output.formSubmitted,
     withdrawConfirmModel.output.formSubmitted,
+    delegateConfirmModel.output.formSubmitted,
     txsConfirmed,
   ],
   source: {

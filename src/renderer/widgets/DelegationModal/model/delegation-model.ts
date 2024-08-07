@@ -8,6 +8,7 @@ import { Step, includesMultiple } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
 import { delegateRegistryModel } from '@/entities/governance/model/delegateRegistry';
 import { networkSelectorModel, votingAggregate } from '@/features/governance';
+import { delegateModel } from '@/widgets/DelegateModal/model/delegate-model';
 import { SortProp, SortType } from '../common/constants';
 
 const flowFinished = createEvent();
@@ -15,10 +16,12 @@ const flowStarted = createEvent();
 const stepChanged = createEvent<Step>();
 const queryChanged = createEvent<string>();
 const sortTypeChanged = createEvent<SortType>();
+const selectDelegate = createEvent<DelegateAccount>();
 
 const $step = restore(stepChanged, Step.NONE);
 const $query = restore(queryChanged, '');
 const $sortType = restore(sortTypeChanged, null);
+const $delegate = restore(selectDelegate, null);
 
 const $delegateList = combine(
   {
@@ -86,7 +89,12 @@ sample({
   target: stepChanged,
 });
 
-export const addDelegationModel = {
+sample({
+  clock: selectDelegate,
+  target: delegateModel.events.flowStarted,
+});
+
+export const delegationModel = {
   $isListLoading: delegateRegistryModel.$isRegistryLoading,
   $delegateList: readonly($delegateList),
   $step: readonly($step),
@@ -98,6 +106,7 @@ export const addDelegationModel = {
     queryChanged,
     sortTypeChanged,
     sortTypeReset: $sortType.reinit,
+    selectDelegate,
   },
 
   output: {

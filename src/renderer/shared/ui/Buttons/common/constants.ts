@@ -7,6 +7,11 @@ export const ViewClass: Record<`${Variant}_${Pallet}`, string> = {
     'text-primary-button-background-default hover:text-primary-button-background-hover active:text-primary-button-background-active disabled:text-primary-button-background-inactive border-transparent bg-transparent px-2 py-1',
   text_error: '',
   text_secondary: '', // IDK if it's going to be a thing later, leave it here for now
+  chip_primary:
+    'text-tab-text-accent border border-primary-button-background-default bg-badge-background active:bg-badge-background-hover active:border-primary-button-background-hover hover:bg-badge-background-hover hover:border-primary-button-background-hover ',
+  chip_secondary:
+    'text-text-secondary border border-secondary-button-background hover:bg-hover active:bg-hover hover:border-secondary-button-background-hover active:border-secondary-button-background-active ',
+  chip_error: '',
   fill_primary:
     'text-button-text border-0 bg-primary-button-background-default active:bg-bg-primary-button-background-inactive hover:bg-primary-button-background-hover disabled:bg-primary-button-background-inactive',
   fill_secondary:

@@ -16,6 +16,7 @@ import {
   addPureProxiedValidateModel,
   bondExtraValidateModel,
   bondNominateValidateModel,
+  delegateValidateModel,
   nominateValidateModel,
   payeeValidateModel,
   removeProxyValidateModel,
@@ -100,7 +101,7 @@ type ValidateParams = { transactions: BasketTransaction[]; feeMap: FeeMap };
 
 const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
   for (const tx of transactions) {
-    const coreTx = getCoreTx(tx, [TransactionType.BOND, TransactionType.UNSTAKE]);
+    const coreTx = getCoreTx(tx, [TransactionType.BOND, TransactionType.UNSTAKE, TransactionType.DELEGATE]);
 
     if (TransferTypes.includes(coreTx.type) || XcmTypes.includes(coreTx.type)) {
       transferValidateModel.events.validationStarted({
@@ -123,6 +124,7 @@ const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
       [TransactionType.UNSTAKE]: unstakeValidateModel.events.validationStarted,
       [TransactionType.REDEEM]: withdrawValidateModel.events.validationStarted,
       [TransactionType.UNLOCK]: unlockValidateModel.events.validationStarted,
+      [TransactionType.DELEGATE]: delegateValidateModel.events.validationStarted,
     };
 
     if (coreTx.type in TransactionValidators) {
@@ -158,6 +160,7 @@ const txValidated = [
   unstakeValidateModel.output.txValidated,
   withdrawValidateModel.output.txValidated,
   unlockValidateModel.output.txValidated,
+  delegateValidateModel.output.txValidated,
 ];
 
 sample({

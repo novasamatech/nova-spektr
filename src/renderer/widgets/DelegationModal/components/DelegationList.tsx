@@ -1,20 +1,25 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/app/providers';
+import { type DelegateAccount } from '@/shared/api/governance';
 import { Button, Loader, SearchInput, Select } from '@/shared/ui';
 import { SortType } from '../common/constants';
-import { addDelegationModel } from '../model/addDelegation';
+import { delegationModel } from '../model/delegation-model';
 
 import { DelegationCard } from './DelegationCard';
 import { EmptyState } from './EmptyState';
 
-export const DelegationList = () => {
+type Props = {
+  onClick: (delegate: DelegateAccount) => void;
+};
+
+export const DelegationList = ({ onClick }: Props) => {
   const { t } = useI18n();
 
-  const delegationList = useUnit(addDelegationModel.$delegateList);
-  const isListLoading = useUnit(addDelegationModel.$isListLoading);
-  const query = useUnit(addDelegationModel.$query);
-  const sortType = useUnit(addDelegationModel.$sortType);
+  const delegationList = useUnit(delegationModel.$delegateList);
+  const isListLoading = useUnit(delegationModel.$isListLoading);
+  const query = useUnit(delegationModel.$query);
+  const sortType = useUnit(delegationModel.$sortType);
 
   const options = [
     {
@@ -46,7 +51,7 @@ export const DelegationList = () => {
             wrapperClass="mx-5 mb-4"
             value={query}
             placeholder={t('general.input.searchPlaceholder')}
-            onChange={addDelegationModel.events.queryChanged}
+            onChange={delegationModel.events.queryChanged}
           />
 
           <div className="flex justify-between items-center mx-5 mb-6">
@@ -55,11 +60,11 @@ export const DelegationList = () => {
               placeholder={t('governance.addDelegation.sort.placeholder')}
               selectedId={sortType || undefined}
               options={options}
-              onChange={({ value }) => addDelegationModel.events.sortTypeChanged(value)}
+              onChange={({ value }) => delegationModel.events.sortTypeChanged(value)}
             />
 
             {sortType && (
-              <Button className="h-8" variant="text" onClick={() => addDelegationModel.events.sortTypeReset()}>
+              <Button className="h-8" variant="text" onClick={() => delegationModel.events.sortTypeReset()}>
                 {t('operations.filters.clearAll')}
               </Button>
             )}
@@ -68,7 +73,9 @@ export const DelegationList = () => {
           <div className="flex flex-col items-center h-full overflow-y-auto scrollbar-stable">
             <ul className="flex flex-col w-[400px] gap-y-2">
               {delegationList.map((delegate) => (
-                <DelegationCard key={delegate.accountId} delegate={delegate} />
+                <button key={delegate.accountId} onClick={() => onClick(delegate)}>
+                  <DelegationCard key={delegate.accountId} delegate={delegate} />
+                </button>
               ))}
             </ul>
 

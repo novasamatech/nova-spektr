@@ -40,6 +40,18 @@ const getAccountVoteConviction = (vote: AccountVote): Conviction => {
 
 const getConvictionMultiplier = (conviction: Conviction): number => ConvictionMultiplier[conviction];
 
+const getConviction = (conviction: number): Conviction => {
+  return ({
+    0.1: 'None',
+    1: 'Locked1x',
+    2: 'Locked2x',
+    3: 'Locked3x',
+    4: 'Locked4x',
+    5: 'Locked5x',
+    6: 'Locked6x',
+  }[conviction] || 'None') as Conviction;
+};
+
 const getVoteFractions = (tally: Tally, approve: BN) => {
   const total = tally.ayes.add(tally.nays);
 
@@ -159,6 +171,7 @@ export const votingService = {
 
   getAccountVoteConviction,
   getConvictionMultiplier,
+  getConviction,
   getVotedCount,
   getVoteFractions,
 

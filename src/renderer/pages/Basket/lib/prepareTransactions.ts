@@ -7,6 +7,7 @@ import {
   type AccountId,
   type Address,
   type Asset,
+  type Balance,
   type BasketTransaction,
   type Chain,
   type ChainId,
@@ -18,7 +19,8 @@ import {
   type Validator,
   type Wallet,
 } from '@shared/core';
-import { getAssetById, redeemableAmount, toAccountId } from '@shared/lib/utils';
+import { getAssetById, redeemableAmount, toAccountId, transferableAmount } from '@shared/lib/utils';
+import { balanceUtils } from '@/entities/balance';
 import { networkUtils } from '@entities/network';
 import { eraService, useStakingData, validatorsService } from '@entities/staking';
 import { transactionService } from '@entities/transaction';
@@ -35,6 +37,7 @@ type PrepareDataParams = {
   transactions: BasketTransaction[];
   connections: Record<ChainId, Connection>;
   feeMap: FeeMap;
+  balances: Balance[];
 };
 
 type DataParams = Omit<PrepareDataParams, 'transactions'> & { transaction: BasketTransaction };
@@ -67,6 +70,7 @@ export const prepareTransaction = {
   prepareUnstakeTransaction,
   preparePayeeTransaction,
   prepareUnlockTransaction,
+  prepareDelegateTransaction,
 };
 
 async function prepareTransferTransactionData({ transaction, wallets, chains, apis, feeMap }: DataParams) {
@@ -540,4 +544,56 @@ async function prepareUnlockTransaction({ transaction, wallets, apis, feeMap }: 
     multisigDeposit: '0',
     transferableAmount: BN_ZERO,
   } satisfies UnlockFormData;
+}
+
+type DelegateInput = {
+  id?: number;
+  chain: Chain;
+  asset: Asset;
+  shards: Account[];
+  transferable: string;
+
+  tracks: number[];
+  target: Address;
+  conviction: number;
+  balance: string;
+
+  description: string;
+
+  fee: string;
+  totalFee: string;
+  multisigDeposit: string;
+};
+
+async function prepareDelegateTransaction({ transaction, wallets, chains, apis, feeMap, balances }: DataParams) {
+  const chainId = transaction.coreTx.chainId as ChainId;
+  const fee =
+    feeMap[chainId][transaction.coreTx.type] ||
+    (await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]));
+
+  const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
+  const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+  const chain = chains[chainId]!;
+  const asset = chains[chainId]!.assets[0];
+  const transferable = transferableAmount(
+    balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId.toString()),
+  );
+
+  return {
+    id: transaction.id,
+    chain,
+    asset,
+    transferable,
+
+    shards: [account!],
+    balance: transaction.coreTx.args.transactions[0].args.balance,
+    conviction: transaction.coreTx.args.transactions[0].args.conviction,
+    target: transaction.coreTx.args.transactions[0].args.target,
+    tracks: transaction.coreTx.args.transactions.map((t: Transaction) => t.args.track),
+    description: '',
+
+    fee,
+    totalFee: '0',
+    multisigDeposit: '0',
+  } satisfies DelegateInput;
 }

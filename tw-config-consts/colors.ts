@@ -80,6 +80,7 @@ export default {
   'block-background-hover': 'var(--block-background-hover)',
   'block-background': 'var(--block-background)',
   'badge-background': 'var(--badge-background)',
+  'badge-background-hover': 'var(--badge-background-hover)',
   'badge-red-background-default': 'var(--badge-red-background-default)',
   'badge-orange-background-default': 'var(--badge-orange-background-default)',
   'extended-block-background': 'var(--extended-block-background)',

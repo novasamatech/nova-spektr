@@ -10,7 +10,7 @@ type Title = {
 };
 
 export const getOperationTitle = (transaction: BasketTransaction, chain: Chain): Title => {
-  const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE, TransactionType.BOND]);
+  const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE, TransactionType.BOND, TransactionType.DELEGATE]);
 
   const type = coreTx.type;
   const asset = getAssetById(coreTx.args.assetId, chain.assets);
@@ -40,6 +40,7 @@ export const getOperationTitle = (transaction: BasketTransaction, chain: Chain):
     // Governance
     [TransactionType.UNLOCK]: 'operations.modalTitles.unlockOn',
     [TransactionType.REMOVE_VOTE]: 'operations.modalTitles.unlockOn',
+    [TransactionType.DELEGATE]: 'operations.modalTitles.delegateOn',
   };
 
   // @ts-expect-error TODO fix not all types used

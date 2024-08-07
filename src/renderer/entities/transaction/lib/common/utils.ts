@@ -97,6 +97,18 @@ export const isEditDelegationTransaction = (transaction?: Transaction | DecodedT
   return false;
 };
 
+export const isDelegateTransaction = (transaction?: Transaction | DecodedTransaction): boolean => {
+  if (transaction?.type === TransactionType.BATCH_ALL) {
+    return !!transaction.args.transactions?.find((tx: Transaction) => tx.type === TransactionType.DELEGATE);
+  }
+
+  if (transaction?.type === TransactionType.DELEGATE) {
+    return true;
+  }
+
+  return false;
+};
+
 export const getTransactionAmount = (tx: Transaction | DecodedTransaction): string | null => {
   const txType = tx.type;
   if (!txType) return null;
@@ -108,9 +120,15 @@ export const getTransactionAmount = (tx: Transaction | DecodedTransaction): stri
   ) {
     return tx.args.value;
   }
+
   if (txType === TransactionType.STAKE_MORE) {
     return tx.args.maxAdditional;
   }
+
+  if (tx.type === TransactionType.DELEGATE) {
+    return tx.args.balance;
+  }
+
   if (txType === TransactionType.BATCH_ALL) {
     // multi staking tx made with batch all:
     // unstake - chill, unbond
@@ -119,11 +137,13 @@ export const getTransactionAmount = (tx: Transaction | DecodedTransaction): stri
     if (!transactions) return null;
 
     const txMatch = transactions.find(
-      (tx: Transaction) => tx.type === TransactionType.BOND || tx.type === TransactionType.UNSTAKE,
+      (tx: Transaction) =>
+        tx.type === TransactionType.BOND || tx.type === TransactionType.UNSTAKE || tx.type === TransactionType.DELEGATE,
     );
 
     return getTransactionAmount(txMatch);
   }
+
   if (txType === TransactionType.PROXY) {
     const transaction = tx.args?.transaction;
     if (!transaction) return null;
@@ -230,11 +250,11 @@ export const getTransactionTitle = (t: TFunction, transaction?: Transaction | De
   }
 
   if (transaction.type === TransactionType.BATCH_ALL) {
-    return getTransactionTitle(transaction.args?.transactions?.[0]);
+    return getTransactionTitle(t, transaction.args?.transactions?.[0]);
   }
 
   if (transaction.type === TransactionType.PROXY) {
-    return getTransactionTitle(transaction.args?.transaction);
+    return getTransactionTitle(t, transaction.args?.transaction);
   }
 
   return TransactionTitles[transaction.type];
@@ -256,11 +276,11 @@ export const getModalTransactionTitle = (
   }
 
   if (transaction.type === TransactionType.BATCH_ALL) {
-    return getModalTransactionTitle(crossChain, transaction.args?.transactions?.[0]);
+    return getModalTransactionTitle(crossChain, t, transaction.args?.transactions?.[0]);
   }
 
   if (transaction.type === TransactionType.PROXY) {
-    return getModalTransactionTitle(crossChain, transaction.args?.transaction);
+    return getModalTransactionTitle(crossChain, t, transaction.args?.transaction);
   }
 
   return TransactionTitlesModal[transaction.type](crossChain);

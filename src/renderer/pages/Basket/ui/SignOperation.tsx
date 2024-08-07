@@ -14,6 +14,7 @@ import {
   AddPureProxiedConfirm,
   BondExtraConfirmation,
   BondNominateConfirmation,
+  DelegateConfirmation,
   NominateConfirmation,
   PayeeConfirmation,
   RemoveProxyConfirm,
@@ -54,7 +55,7 @@ export const SignOperation = () => {
   };
 
   const getConfirmScreen = (transaction: BasketTransaction) => {
-    const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE, TransactionType.BOND]);
+    const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE, TransactionType.BOND, TransactionType.DELEGATE]);
 
     const type = coreTx.type;
     const config = { withFormatAmount: false };
@@ -106,6 +107,13 @@ export const SignOperation = () => {
       ),
       [TransactionType.UNSTAKE]: () => (
         <UnstakeConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
+      ),
+      [TransactionType.DELEGATE]: () => (
+        <DelegateConfirmation
+          id={transaction.id}
+          config={config}
+          onGoBack={() => signOperationsModel.output.flowFinished()}
+        />
       ),
     };
 

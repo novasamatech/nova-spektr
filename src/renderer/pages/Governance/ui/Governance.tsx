@@ -16,8 +16,8 @@ import {
   ReferendumSearch,
   networkSelectorModel,
 } from '@features/governance';
-import { AddDelegationModal } from '@/widgets/AddDelegationModal/components/AddDelegationModal';
-import { addDelegationModel } from '@/widgets/AddDelegationModal/model/addDelegation';
+import { DelegationModal } from '@/widgets/DelegationModal/components/DelegationModal';
+import { delegationModel } from '@/widgets/DelegationModal/model/delegation-model';
 import { UnlockModal, unlockAggregate } from '@/widgets/UnlockModal';
 import { governancePageAggregate } from '../aggregates/governancePage';
 
@@ -50,7 +50,7 @@ export const Governance = () => {
               <NetworkSelector />
             </Plate>
             <Locks onClick={unlockAggregate.events.flowStarted} />
-            <Delegations onClick={addDelegationModel.events.flowStarted} />
+            <Delegations onClick={delegationModel.events.flowStarted} />
           </div>
 
           <div className="mt-5 mb-4">
@@ -85,7 +85,7 @@ export const Governance = () => {
         />
       )}
 
-      <AddDelegationModal />
+      <DelegationModal />
       <UnlockModal />
     </div>
   );

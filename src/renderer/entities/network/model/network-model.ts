@@ -18,6 +18,7 @@ import {
   type Connection,
   ConnectionStatus,
   ConnectionType,
+  type ID,
   type Metadata,
   type NoID,
 } from '@shared/core';
@@ -84,6 +85,10 @@ const unsubscribeMetadataFx = createEffect((unsubscribe: VoidFn) => {
 
 const saveMetadataFx = createEffect((metadata: NoID<ChainMetadata>): Promise<ChainMetadata | undefined> => {
   return storageService.metadata.put(metadata);
+});
+
+const removeMetadataFx = createEffect((ids: ID[]): Promise<ID[] | undefined> => {
+  return storageService.metadata.deleteAll(ids);
 });
 
 type ProviderMetadataParams = {
@@ -388,12 +393,24 @@ sample({
   fn: (_, metadata) => metadata,
   target: saveMetadataFx,
 });
+
 sample({
   clock: saveMetadataFx.doneData,
   source: $metadata,
   filter: (_, newMetadata) => Boolean(newMetadata),
-  fn: (metadata, newMetadata) => metadata.concat(newMetadata!),
-  target: $metadata,
+  fn: (metadata, newMetadata) => {
+    const oldMetadata = metadata.filter(({ chainId }) => chainId === newMetadata!.chainId).map(({ id }) => id);
+    const cleanMetadata = metadata.filter(({ chainId }) => chainId !== newMetadata!.chainId);
+
+    return {
+      metadata: [...cleanMetadata, newMetadata!],
+      oldMetadata,
+    };
+  },
+  target: spread({
+    metadata: $metadata,
+    oldMetadata: removeMetadataFx,
+  }),
 });
 
 sample({
