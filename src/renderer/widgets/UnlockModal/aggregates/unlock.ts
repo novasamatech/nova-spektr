@@ -148,7 +148,7 @@ sample({
     return {
       event: {
         ...signParams,
-        chain: unlockData.chain!,
+        chainId: unlockData.chain!.chainId,
         account: unlockData.unlockData!.shards[0],
         signatory: unlockData.unlockData!.signatory,
         description: unlockData.unlockData!.description,
