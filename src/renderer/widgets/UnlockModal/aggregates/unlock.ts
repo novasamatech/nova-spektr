@@ -185,9 +185,10 @@ sample({
     chain?.chainId === unlockData.chain.chainId,
   fn: ({ chunks, unlockData }) => {
     return chunks.filter((chunk) => {
-      return (
-        chunk.type === UnlockChunkType.CLAIMABLE &&
-        unlockData!.shards.some((shard) => (shard.address || unlockData!.proxiedAccount?.address) !== chunk.address)
+      if (chunk.type !== UnlockChunkType.CLAIMABLE) return true;
+
+      return !unlockData!.shards.some(
+        (shard) => (shard.address || unlockData!.proxiedAccount?.address) === chunk.address,
       );
     });
   },

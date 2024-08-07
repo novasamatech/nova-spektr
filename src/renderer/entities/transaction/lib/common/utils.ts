@@ -97,7 +97,7 @@ export const isEditDelegationTransaction = (transaction?: Transaction | DecodedT
   return false;
 };
 
-export const isBatchAllWrapped = (type: TransactionType) => {
+export const isWrappedInBatchAll = (type: TransactionType) => {
   const batchAllOperations = new Set([TransactionType.UNSTAKE, TransactionType.BOND, TransactionType.UNLOCK]);
 
   return batchAllOperations.has(type);
@@ -130,7 +130,7 @@ export const getTransactionAmount = (tx: Transaction | DecodedTransaction): stri
     const transactions = tx.args?.transactions;
     if (!transactions) return null;
 
-    const txMatch = transactions.find((tx: Transaction) => isBatchAllWrapped(tx.type));
+    const txMatch = transactions.find((tx: Transaction) => isWrappedInBatchAll(tx.type));
 
     return getTransactionAmount(txMatch);
   }
@@ -241,7 +241,7 @@ export const getTransactionTitle = (t: TFunction, transaction?: Transaction | De
 
   if (transaction.type === TransactionType.BATCH_ALL) {
     const transactions = transaction.args?.transactions;
-    const txMatch = transactions.find((tx: Transaction) => isBatchAllWrapped(tx.type));
+    const txMatch = transactions.find((tx: Transaction) => isWrappedInBatchAll(tx.type));
 
     return getTransactionTitle(t, txMatch);
   }
