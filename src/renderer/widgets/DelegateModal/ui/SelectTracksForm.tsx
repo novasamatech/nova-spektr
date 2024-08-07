@@ -20,6 +20,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
   const chain = useUnit(selectTracksModel.$chain);
   const tracks = useUnit(selectTracksModel.$tracks);
   const accounts = useUnit(selectTracksModel.$accounts);
+  const votedTracks = useUnit(selectTracksModel.$votedTracks);
 
   return (
     <BaseModal
@@ -81,6 +82,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
               <Checkbox
                 key={track.id}
                 checked={tracks.includes(Number(track.id))}
+                disabled={votedTracks.includes(track.id)}
                 onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
               >
                 <div className="w-full flex items-center justify-between">
@@ -97,6 +99,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
               <Checkbox
                 key={track.id}
                 checked={tracks.includes(Number(track.id))}
+                disabled={votedTracks.includes(track.id)}
                 onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
               >
                 <div className="w-full flex items-center justify-between">
@@ -113,6 +116,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
               <Checkbox
                 key={track.id}
                 checked={tracks.includes(Number(track.id))}
+                disabled={votedTracks.includes(track.id)}
                 onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
               >
                 <div className="w-full flex items-center justify-between">
@@ -129,6 +133,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
               <Checkbox
                 key={track.id}
                 checked={tracks.includes(Number(track.id))}
+                disabled={votedTracks.includes(track.id)}
                 onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
               >
                 <div className="w-full flex items-center justify-between">
