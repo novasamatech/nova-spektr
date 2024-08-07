@@ -6303,7 +6303,8 @@
       "testnet",
       "governance",
       "regular_proxy",
-      "pure_proxy"
+      "pure_proxy",
+      "multisig"
     ],
     "nodes": [
       {

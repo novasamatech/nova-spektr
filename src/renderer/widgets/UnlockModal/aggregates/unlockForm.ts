@@ -14,7 +14,7 @@ import {
   type ProxyTxWrapper,
   type Transaction,
 } from '@/shared/core';
-import { ZERO_BALANCE, toAddress, transferableAmount } from '@/shared/lib/utils';
+import { ZERO_BALANCE, formatBalance, toAddress, transferableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
@@ -205,7 +205,7 @@ const $txWrappers = combine(
     shards: $shards,
     signatories: $selectedSignatories,
   },
-  ({ wallet, wallets, chain, shards }) => {
+  ({ wallet, wallets, chain, shards, signatories }) => {
     if (!wallet || !chain || shards.length !== 1) return [];
 
     const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
@@ -222,6 +222,7 @@ const $txWrappers = combine(
       wallet,
       wallets: filteredWallets || [],
       account: shards[0],
+      signatories,
     });
   },
 );
@@ -309,7 +310,7 @@ const $pureTxs = combine(
         actions: shard.actions || [],
         chain: chain,
         accountId: shard.accountId,
-        amount: shard.amount || '0',
+        amount: shard.amount || ZERO_BALANCE,
       });
     });
   },
@@ -502,7 +503,7 @@ sample({
     const { shards, ...rest } = formData;
 
     const signatory = formData.signatory.accountId ? formData.signatory : undefined;
-    const defaultText = `Unlock ${formData.amount} ${asset!.symbol}`;
+    const defaultText = `Unlock ${formatBalance(formData.amount, asset!.precision).formatted} ${asset!.symbol}`;
     const description = signatory ? formData.description || defaultText : '';
 
     return {

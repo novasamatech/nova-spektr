@@ -183,7 +183,7 @@ sample({
     isStep(step, Step.SUBMIT) &&
     submitUtils.isSuccessStep(submitStep) &&
     chain?.chainId === unlockData.chain.chainId,
-  fn: ({ chunks, unlockData, chain }, { step }) => {
+  fn: ({ chunks, unlockData }) => {
     return chunks.filter((chunk) => {
       return (
         chunk.type === UnlockChunkType.CLAIMABLE &&

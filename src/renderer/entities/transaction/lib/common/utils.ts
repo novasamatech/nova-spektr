@@ -240,11 +240,14 @@ export const getTransactionTitle = (t: TFunction, transaction?: Transaction | De
   }
 
   if (transaction.type === TransactionType.BATCH_ALL) {
-    return getTransactionTitle(transaction.args?.transactions?.[0]);
+    const transactions = transaction.args?.transactions;
+    const txMatch = transactions.find((tx: Transaction) => isBatchAllWrapped(tx.type));
+
+    return getTransactionTitle(t, txMatch);
   }
 
   if (transaction.type === TransactionType.PROXY) {
-    return getTransactionTitle(transaction.args?.transaction);
+    return getTransactionTitle(t, transaction.args?.transaction);
   }
 
   return TransactionTitles[transaction.type];
