@@ -13,7 +13,12 @@ export type Chain = {
   addressPrefix: number;
   externalApi?: Record<ExternalType, ExternalValue[]>;
   options?: ChainOptions[];
+  additional?: Record<AdditionalType, `0x${string}`>;
 };
+
+export const enum AdditionalType {
+  IDENTITY_CHAIN = 'identityChain',
+}
 
 export const enum ChainOptions {
   TESTNET = 'testnet',
