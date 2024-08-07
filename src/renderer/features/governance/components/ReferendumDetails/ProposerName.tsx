@@ -1,4 +1,4 @@
-import { useStoreMap, useUnit } from 'effector-react';
+import { useStoreMap } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { type Referendum } from '@shared/core';
@@ -23,11 +23,6 @@ export const ProposerName = ({ referendum }: Props) => {
         : null;
     },
   });
-
-  const details = useUnit(detailsAggregate.$proposers);
-  console.log('referendum', referendum);
-  console.log('proposer', proposer);
-  console.log('details', details);
 
   const isProposerLoading = useStoreMap({
     store: detailsAggregate.$isProposersLoading,
