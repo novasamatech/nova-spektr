@@ -2,7 +2,7 @@ import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
 import { chainsService } from '@shared/api/network';
-import { type BasketTransaction, TransactionType } from '@shared/core';
+import { type BasketTransaction } from '@shared/core';
 import { type ChainError } from '@shared/core/types/basket';
 import { cnTw, getAssetById } from '@shared/lib/utils';
 import { HelpText, IconButton, Shimmering, Tooltip } from '@shared/ui';
@@ -22,7 +22,7 @@ type Props = {
 export const Operation = ({ tx, errorText, validating, onClick, onTxRemoved }: Props) => {
   const { t } = useI18n();
 
-  const coreTx = getCoreTx(tx, [TransactionType.UNSTAKE, TransactionType.BOND]);
+  const coreTx = getCoreTx(tx);
 
   const asset = getAssetById(coreTx.args.asset, chainsService.getChainById(coreTx.chainId)?.assets);
   const amount = getTransactionAmount(coreTx);

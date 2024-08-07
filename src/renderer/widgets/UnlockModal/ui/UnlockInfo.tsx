@@ -7,6 +7,7 @@ import { Button, Duration, FootnoteText, Icon, Shimmering } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price';
 import { permissionUtils, walletModel } from '@entities/wallet';
+import { unlockModel } from '@/features/governance/model/unlock/unlock';
 import { locksModel } from '@features/governance/model/locks';
 import { votingAssetModel } from '@features/governance/model/votingAsset';
 import { unlockAggregate } from '../aggregates/unlock';
@@ -18,7 +19,7 @@ export const UnlockInfo = () => {
   const asset = useUnit(votingAssetModel.$votingAsset);
   const pendingSchedule = useUnit(unlockAggregate.$pendingSchedule);
   const isLoading = useUnit(unlockAggregate.$isLoading);
-  const totalUnlock = useUnit(unlockAggregate.$totalUnlock);
+  const totalUnlock = useUnit(unlockModel.$totalUnlock);
 
   if (!asset) {
     return null;
