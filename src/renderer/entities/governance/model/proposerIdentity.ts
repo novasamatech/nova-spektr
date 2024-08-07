@@ -26,7 +26,7 @@ sample({
   filter: ({ referendum }) => referendumService.isOngoing(referendum),
   fn: ({ api, chain, referendum }) => {
     return {
-      api: api,
+      api,
       chain,
       addresses:
         referendumService.isOngoing(referendum) && referendum.submissionDeposit
@@ -46,6 +46,10 @@ sample({
   clock: requestProposersFx.done,
   source: $proposers,
   fn: (proposers, { params, result }) => {
+    console.log('proposers', proposers);
+    console.log('params', params);
+    console.log('result', result);
+
     return { ...proposers, [params.chain.chainId]: { ...proposers[params.chain.chainId], ...result } };
   },
   target: $proposers,

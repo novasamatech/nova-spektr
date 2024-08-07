@@ -1,18 +1,17 @@
-import { useStoreMap } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { type ChainId, type Referendum } from '@shared/core';
+import { type Referendum } from '@shared/core';
 import { FootnoteText, Shimmering } from '@shared/ui';
 import { referendumService } from '@entities/governance';
 import { AccountAddress } from '@entities/wallet';
 import { detailsAggregate } from '../../aggregates/details';
 
 type Props = {
-  chainId: ChainId;
   referendum: Referendum;
 };
 
-export const ProposerName = ({ chainId, referendum }: Props) => {
+export const ProposerName = ({ referendum }: Props) => {
   const { t } = useI18n();
 
   const proposer = useStoreMap({
@@ -24,6 +23,11 @@ export const ProposerName = ({ chainId, referendum }: Props) => {
         : null;
     },
   });
+
+  const details = useUnit(detailsAggregate.$proposers);
+  console.log('referendum', referendum);
+  console.log('proposer', proposer);
+  console.log('details', details);
 
   const isProposerLoading = useStoreMap({
     store: detailsAggregate.$isProposersLoading,
