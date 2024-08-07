@@ -113,7 +113,7 @@ const AccountsSelector = () => {
       <MultiSelect
         label={t('operation.selectAccountLabel')}
         placeholder={t('operation.selectAccount')}
-        multiPlaceholder={t('governance.operations.selectAccount')}
+        multiPlaceholder={t('governance.operations.selectPlaceholder')}
         invalid={shards.hasError()}
         selectedIds={shards.value.map((acc) => acc.id.toString())}
         options={options}

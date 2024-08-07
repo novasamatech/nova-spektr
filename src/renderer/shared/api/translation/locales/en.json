@@ -362,6 +362,7 @@
     "locks": {
       "governanceLock": "Governance lock",
       "lock": "Lock",
+      "noLockedAmount": "No available locked token",
       "title": "Unlock on",
       "unlock": "Unlock",
       "unlockable": "Unlockable",
@@ -784,6 +785,7 @@
       "removeProxyOn": "Revoke delegated authority (proxy) on",
       "removePureProxy": "Revoke delegated authority (pure proxy)",
       "removePureProxyOn": "Revoke delegated authority (pure proxy) on",
+      "removeVoteOn": "Remove Vote",
       "restakeOn": "Restake { asset } on",
       "stakeMoreOn": "Stake More { asset } on",
       "startStakingOn": "Start Staking { asset } on",
@@ -791,7 +793,7 @@
       "transferOn": "Transfer { asset } on",
       "undelegateOn": "Revoke delegation on",
       "unknownOn": "Unknown Operation on",
-      "unlockOn": "Unlock { asset } on",
+      "unlockOn": "Unlock on",
       "unstakeOn": "Unstake { asset } on"
     },
     "noOperationsDescription": "Your operation history will appear here",
@@ -811,6 +813,7 @@
       "redeem": "Withdraw Unstaked",
       "removeProxy": "Revoke delegated authority (proxy)",
       "removePureProxy": "Revoke delegated authority (pure proxy)",
+      "removeVote": "Remove vote",
       "restake": "Restake",
       "stakeMore": "Stake More",
       "startStaking": "Start Staking",

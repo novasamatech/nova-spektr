@@ -10,7 +10,7 @@ type Title = {
 };
 
 export const getOperationTitle = (transaction: BasketTransaction, chain: Chain): Title => {
-  const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE, TransactionType.BOND]);
+  const coreTx = getCoreTx(transaction);
 
   const type = coreTx.type;
   const asset = getAssetById(coreTx.args.assetId, chain.assets);

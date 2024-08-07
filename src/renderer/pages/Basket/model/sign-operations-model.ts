@@ -62,7 +62,7 @@ const startDataPreparationFx = createEffect(
     const dataParams = [];
 
     for (const transaction of transactions) {
-      const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE, TransactionType.BOND]);
+      const coreTx = getCoreTx(transaction);
 
       if (TransferTypes.includes(coreTx.type) || XcmTypes.includes(coreTx.type)) {
         const params = await prepareTransaction.prepareTransferTransactionData({
@@ -356,6 +356,7 @@ sample({
     restakeConfirmModel.output.formSubmitted,
     unstakeConfirmModel.output.formSubmitted,
     withdrawConfirmModel.output.formSubmitted,
+    unlockConfirmAggregate.output.formSubmitted,
     txsConfirmed,
   ],
   source: {

@@ -100,7 +100,7 @@ type ValidateParams = { transactions: BasketTransaction[]; feeMap: FeeMap };
 
 const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
   for (const tx of transactions) {
-    const coreTx = getCoreTx(tx, [TransactionType.BOND, TransactionType.UNSTAKE]);
+    const coreTx = getCoreTx(tx);
 
     if (TransferTypes.includes(coreTx.type) || XcmTypes.includes(coreTx.type)) {
       transferValidateModel.events.validationStarted({

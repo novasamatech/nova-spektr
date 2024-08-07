@@ -23,6 +23,7 @@ import {
   UnstakeConfirmation,
   WithdrawConfirmation,
 } from '@features/operations/OperationsConfirm';
+import { UnlockConfirmation } from '@/widgets/UnlockModal/ui/UnlockConfirmation';
 import { getOperationTitle } from '../lib/operation-title';
 import { signOperationsUtils } from '../lib/sign-operations-utils';
 import { getCoreTx } from '../lib/utils';
@@ -54,7 +55,7 @@ export const SignOperation = () => {
   };
 
   const getConfirmScreen = (transaction: BasketTransaction) => {
-    const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE, TransactionType.BOND]);
+    const coreTx = getCoreTx(transaction);
 
     const type = coreTx.type;
     const config = { withFormatAmount: false };
@@ -106,6 +107,9 @@ export const SignOperation = () => {
       ),
       [TransactionType.UNSTAKE]: () => (
         <UnstakeConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
+      ),
+      [TransactionType.UNLOCK]: () => (
+        <UnlockConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
       ),
     };
 

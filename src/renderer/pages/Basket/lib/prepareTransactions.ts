@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { BN_ZERO } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 
 import { proxyService } from '@shared/api/proxy';
 import {
@@ -19,6 +19,7 @@ import {
   type Wallet,
 } from '@shared/core';
 import { getAssetById, redeemableAmount, toAccountId } from '@shared/lib/utils';
+import { governanceService } from '@/entities/governance';
 import { networkUtils } from '@entities/network';
 import { eraService, useStakingData, validatorsService } from '@entities/staking';
 import { transactionService } from '@entities/transaction';
@@ -414,7 +415,7 @@ type UnstakeInput = {
 };
 
 async function prepareUnstakeTransaction({ transaction, wallets, chains, apis, feeMap }: DataParams) {
-  const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE]);
+  const coreTx = getCoreTx(transaction);
 
   const chainId = coreTx.chainId as ChainId;
   const fee =
@@ -519,25 +520,36 @@ async function prepareWithdrawTransaction({ transaction, wallets, chains, apis, 
   } as WithdrawInput;
 }
 
-// TODO add transaction details
-async function prepareUnlockTransaction({ transaction, wallets, apis, feeMap }: DataParams) {
+async function prepareUnlockTransaction({ transaction, wallets, chains, apis, feeMap }: DataParams) {
+  const coreTx = getCoreTx(transaction);
+
   const chainId = transaction.coreTx.chainId as ChainId;
   const fee =
     feeMap[chainId][transaction.coreTx.type] ||
     (await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]));
 
+  const address = transaction.coreTx.address;
   const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-  const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+  const account = wallet.accounts.find((a) => a.accountId === toAccountId(address));
+
+  const totalLock = await governanceService.getTrackLocks(apis[chainId], [address]).then((data) => {
+    const lock = data[address];
+    const totalLock = Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
+
+    return totalLock;
+  });
 
   return {
     id: transaction.id,
     shards: [account!],
-    amount: '0',
+    amount: coreTx.args.value,
     description: '',
+    chain: chains[chainId]!,
+    asset: getAssetById(transaction.coreTx.args.assetId, chains[chainId]!.assets)!,
 
     fee,
+    totalLock,
     totalFee: '0',
     multisigDeposit: '0',
-    transferableAmount: BN_ZERO,
   } satisfies UnlockFormData;
 }

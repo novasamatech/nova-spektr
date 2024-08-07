@@ -6,6 +6,7 @@ import { type MultisigTransactionDS } from '@shared/api/storage';
 import { type ChainId, type MultisigTransaction, type Transaction, TransactionType } from '@shared/core';
 import { Button, MultiSelect } from '@shared/ui';
 import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
+import { isWrappedInBatchAll } from '@/entities/transaction';
 import { TransferTypes, XcmTypes } from '@entities/transaction/lib/common/constants';
 import { UNKNOWN_TYPE } from '../lib/constants';
 import { getStatusOptions, getTransactionOptions } from '../lib/utils';
@@ -74,7 +75,7 @@ export const OperationsFilter = ({ txs, onChange }: Props) => {
 
     if (tx.transaction.type === TransactionType.BATCH_ALL) {
       const txMatch = tx.transaction.args?.transactions?.find((tx: Transaction) => {
-        return tx.type === TransactionType.BOND || tx.type === TransactionType.UNSTAKE;
+        return isWrappedInBatchAll(tx.type);
       });
 
       return txMatch?.type || UNKNOWN_TYPE;
