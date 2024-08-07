@@ -109,14 +109,30 @@ export const isDelegateTransaction = (transaction?: Transaction | DecodedTransac
   return false;
 };
 
+export const isWrappedInBatchAll = (type: TransactionType) => {
+  const batchAllOperations = new Set([
+    TransactionType.UNSTAKE,
+    TransactionType.BOND,
+    TransactionType.UNLOCK,
+    TransactionType.DELEGATE,
+  ]);
+
+  return batchAllOperations.has(type);
+};
+
 export const getTransactionAmount = (tx: Transaction | DecodedTransaction): string | null => {
-  const txType = tx.type;
+  const txType = tx?.type;
   if (!txType) return null;
 
   if (
-    [...TransferTypes, ...XcmTypes, TransactionType.BOND, TransactionType.RESTAKE, TransactionType.UNSTAKE].includes(
-      txType,
-    )
+    [
+      ...TransferTypes,
+      ...XcmTypes,
+      TransactionType.BOND,
+      TransactionType.RESTAKE,
+      TransactionType.UNSTAKE,
+      TransactionType.UNLOCK,
+    ].includes(txType)
   ) {
     return tx.args.value;
   }
@@ -130,16 +146,14 @@ export const getTransactionAmount = (tx: Transaction | DecodedTransaction): stri
   }
 
   if (txType === TransactionType.BATCH_ALL) {
-    // multi staking tx made with batch all:
+    // multi tx made with batch all:
     // unstake - chill, unbond
     // start staking - bond, nominate
+    // unlock - unlock, remove_vote
     const transactions = tx.args?.transactions;
     if (!transactions) return null;
 
-    const txMatch = transactions.find(
-      (tx: Transaction) =>
-        tx.type === TransactionType.BOND || tx.type === TransactionType.UNSTAKE || tx.type === TransactionType.DELEGATE,
-    );
+    const txMatch = transactions.find((tx: Transaction) => isWrappedInBatchAll(tx.type));
 
     return getTransactionAmount(txMatch);
   }
@@ -189,7 +203,7 @@ const TransactionTitles: Record<TransactionType, string> = {
   [TransactionType.PROXY]: 'operations.titles.proxy',
   // Governance
   [TransactionType.UNLOCK]: 'operations.titles.unlock',
-  [TransactionType.REMOVE_VOTE]: 'operations.titles.unlock',
+  [TransactionType.REMOVE_VOTE]: 'operations.titles.removeVote',
   [TransactionType.DELEGATE]: 'operations.titles.delegate',
   [TransactionType.UNDELEGATE]: 'operations.titles.undelegate',
 };
@@ -233,7 +247,7 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.REMOVE_PURE_PROXY]: () => 'operations.modalTitles.removePureProxy',
   [TransactionType.PROXY]: () => 'operations.modalTitles.proxy',
   [TransactionType.UNLOCK]: () => 'operations.modalTitles.unlockOn',
-  [TransactionType.REMOVE_VOTE]: () => 'operations.modalTitles.unlockOn',
+  [TransactionType.REMOVE_VOTE]: () => 'operations.modalTitles.removeVoteOn',
   [TransactionType.DELEGATE]: () => 'operations.modalTitles.delegateOn',
   [TransactionType.UNDELEGATE]: () => 'operations.modalTitles.undelegateOn',
 };
@@ -250,7 +264,10 @@ export const getTransactionTitle = (t: TFunction, transaction?: Transaction | De
   }
 
   if (transaction.type === TransactionType.BATCH_ALL) {
-    return getTransactionTitle(t, transaction.args?.transactions?.[0]);
+    const transactions = transaction.args?.transactions;
+    const txMatch = transactions.find((tx: Transaction) => isWrappedInBatchAll(tx.type));
+
+    return getTransactionTitle(t, txMatch);
   }
 
   if (transaction.type === TransactionType.PROXY) {

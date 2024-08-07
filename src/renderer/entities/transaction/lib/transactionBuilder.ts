@@ -327,9 +327,10 @@ type UnlockParams = {
   chain: Chain;
   accountId: AccountId;
   actions: ClaimAction[];
+  amount: string;
 };
 
-function buildUnlock({ chain, accountId, actions }: UnlockParams): Transaction {
+function buildUnlock({ chain, accountId, actions, amount: value }: UnlockParams): Transaction {
   const unlockTxs = actions.map((action) => {
     const transaction = {
       chainId: chain.chainId,
@@ -343,6 +344,7 @@ function buildUnlock({ chain, accountId, actions }: UnlockParams): Transaction {
         args: {
           trackId: action.trackId,
           referendumId: action.referendumId,
+          value,
         },
       };
     }
@@ -353,6 +355,7 @@ function buildUnlock({ chain, accountId, actions }: UnlockParams): Transaction {
       args: {
         trackId: action.trackId,
         target: toAddress(accountId, { prefix: chain.addressPrefix }),
+        value,
       },
     };
   });

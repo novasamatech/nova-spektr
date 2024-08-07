@@ -1,4 +1,4 @@
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { type Store } from 'effector';
 
 import { type Account } from '@shared/core';
@@ -70,6 +70,14 @@ export const UnlockRules = {
         return form.shards.every((_: Account, index: number) => {
           return feeBN.lte(new BN(accountsBalances[index]));
         });
+      },
+    }),
+    noLockedAmount: (source: Store<BN>) => ({
+      name: 'noLockedAmount',
+      errorText: 'governance.locks.noLockedAmount',
+      source,
+      validator: (_v: string, form: any, totalLock: BN) => {
+        return totalLock.sub(new BN(form.amount)).gte(BN_ZERO);
       },
     }),
   },

@@ -26,6 +26,7 @@ import {
   UnstakeConfirmation,
   WithdrawConfirmation,
 } from '@features/operations/OperationsConfirm';
+import { UnlockConfirmation } from '@/widgets/UnlockModal/ui/UnlockConfirmation';
 import { getOperationTitle } from '../lib/operation-title';
 import { signOperationsUtils } from '../lib/sign-operations-utils';
 import { getCoreTx } from '../lib/utils';
@@ -74,7 +75,7 @@ export const SignOperations = () => {
   };
 
   const getConfirmScreen = (transaction: BasketTransaction) => {
-    const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE, TransactionType.BOND, TransactionType.DELEGATE]);
+    const coreTx = getCoreTx(transaction);
     const type = coreTx.type;
     const config = { withFormatAmount: false };
 
@@ -97,6 +98,7 @@ export const SignOperations = () => {
       [TransactionType.DESTINATION]: () => <PayeeConfirmation id={transaction.id} hideSignButton />,
       [TransactionType.UNSTAKE]: () => <UnstakeConfirmation id={transaction.id} hideSignButton />,
       [TransactionType.DELEGATE]: () => <DelegateConfirmation id={transaction.id} hideSignButton config={config} />,
+      [TransactionType.UNLOCK]: () => <UnlockConfirmation id={transaction.id} hideSignButton />,
     };
 
     // @ts-expect-error not all types are used

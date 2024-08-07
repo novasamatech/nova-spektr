@@ -88,7 +88,7 @@
       "governance-delegations": [
         {
           "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-polkadot-gov"
+          "url": "https://subquery-governance-polkadot-prod.novasamatech.org"
         }
       ],
       "proxy": [
@@ -97,6 +97,9 @@
           "url": "https://api.subquery.network/sq/nova-wallet/novasama-polkadot-proxy"
         }
       ]
+    },
+    "additional": {
+      "identityChain": "0x67fa177a097bfa18f77ea95ab56e9bcdfeb0e5b8a40e46298bb93e16b6fc5008"
     }
   },
   {
@@ -188,7 +191,7 @@
       "governance-delegations": [
         {
           "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kusama-governance2"
+          "url": "https://subquery-governance-kusama-prod.novasamatech.org"
         }
       ],
       "proxy": [
@@ -197,6 +200,9 @@
           "url": "https://api.subquery.network/sq/nova-wallet/novasama-kusama-proxy"
         }
       ]
+    },
+    "additional": {
+      "identityChain": "0xc1af4cb4eb3918e5db15086c0cc5ec17fb334f728b7c65dd44bfe1e174ff8b3f"
     }
   },
   {
@@ -271,6 +277,9 @@
           "url": "https://api.subquery.network/sq/nova-wallet/novasama-westend-proxy"
         }
       ]
+    },
+    "additional": {
+      "identityChain": "0x1eb6fb0ba5187434de017a70cb84d4f47142df1d571d0ef9e7e1407f2b80b93c"
     }
   },
   {
@@ -1383,7 +1392,7 @@
     "nodes": [
       {
         "url": "wss://api-kusama.interlay.io/parachain",
-        "name": "Kintsugi Labs"
+        "name": "Kintsugi Labs node"
       }
     ],
     "assets": [
@@ -1554,7 +1563,7 @@
     "nodes": [
       {
         "url": "wss://heiko-rpc.parallel.fi",
-        "name": "Parallel"
+        "name": "Parallel node"
       }
     ],
     "assets": [
@@ -3163,8 +3172,8 @@
     ],
     "nodes": [
       {
-        "url": "wss://zeitgeist-rpc.dwellir.com",
-        "name": "Dwellir node"
+        "url": "wss://main.rpc.zeitgeist.pm/ws",
+        "name": "Zeitgeist node"
       },
       {
         "url": "wss://zeitgeist.api.onfinality.io/public-ws",
@@ -3218,7 +3227,7 @@
     "nodes": [
       {
         "url": "wss://rpc.litmus-parachain.litentry.io",
-        "name": "Litenry node"
+        "name": "Litentry node"
       }
     ],
     "assets": [
@@ -3421,7 +3430,7 @@
       },
       {
         "url": "wss://rpc.hydradx.cloud",
-        "name": "Calactic Council node"
+        "name": "Galactic Council node"
       },
       {
         "url": "wss://hydradx.paras.ibp.network",
@@ -6301,7 +6310,10 @@
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_Testnet.svg",
     "options": [
       "testnet",
-      "governance"
+      "governance",
+      "regular_proxy",
+      "pure_proxy",
+      "multisig"
     ],
     "nodes": [
       {
@@ -6320,12 +6332,6 @@
       }
     ],
     "externalApi": {
-      "staking": [
-        {
-          "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-westend"
-        }
-      ],
       "governance-delegations": [
         {
           "type": "subquery",
@@ -6333,5 +6339,80 @@
         }
       ]
     }
+  },
+  {
+    "name": "Polkadot People",
+    "specName": "polkadot",
+    "addressPrefix": 0,
+    "chainId": "0x67fa177a097bfa18f77ea95ab56e9bcdfeb0e5b8a40e46298bb93e16b6fc5008",
+    "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polkadot_People.svg",
+    "options": [],
+    "nodes": [
+      {
+        "url": "wss://polkadot-people-rpc.polkadot.io",
+        "name": "Parity node"
+      },
+      {
+        "url": "wss://sys.ibp.network/people-polkadot",
+        "name": "IBP network node"
+      },
+      {
+        "url": "wss://sys.dotters.network/people-polkadot",
+        "name": "Dotters Net node"
+      },
+      {
+        "url": "wss://rpc-people-polkadot.luckyfriday.io",
+        "name": "LuckyFriday node"
+      },
+      {
+        "url": "wss://people-polkadot.public.curie.radiumblock.co/ws",
+        "name": "Radium node"
+      }
+    ],
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "DOT",
+        "precision": 10,
+        "priceId": "polkadot",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
+        "name": "Polkadot"
+      }
+    ]
+  },
+  {
+    "name": "Westend People",
+    "specName": "westend",
+    "addressPrefix": 42,
+    "chainId": "0x1eb6fb0ba5187434de017a70cb84d4f47142df1d571d0ef9e7e1407f2b80b93c",
+    "parentId": "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_People.svg",
+    "options": [
+      "testnet"
+    ],
+    "nodes": [
+      {
+        "url": "wss://people-westend-rpc.dwellir.com",
+        "name": "Dwellir node"
+      },
+      {
+        "url": "wss://sys.ibp.network/people-westend",
+        "name": "IBP1 node"
+      },
+      {
+        "url": "wss://sys.dotters.network/people-westend",
+        "name": "IBP2 node"
+      }
+    ],
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "WND",
+        "precision": 12,
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Westend_(WND).svg",
+        "name": "Westend"
+      }
+    ]
   }
 ]

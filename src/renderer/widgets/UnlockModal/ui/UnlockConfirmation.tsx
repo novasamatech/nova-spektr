@@ -1,5 +1,5 @@
 import { BN } from '@polkadot/util';
-import { useStoreMap, useUnit } from 'effector-react';
+import { useStoreMap } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@app/providers';
@@ -13,10 +13,6 @@ import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, accou
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { basketUtils } from '@/features/operations/OperationsConfirm';
-import { locksModel } from '@features/governance/model/locks';
-import { networkSelectorModel } from '@features/governance/model/networkSelector';
-import { votingAssetModel } from '@features/governance/model/votingAsset';
-import { unlockAggregate } from '../aggregates/unlock';
 import { unlockConfirmAggregate } from '../aggregates/unlockConfirm';
 
 type Props = {
@@ -26,7 +22,7 @@ type Props = {
   onGoBack?: () => void;
 };
 
-export const Confirmation = ({ id = 0, onGoBack }: Props) => {
+export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButton, onGoBack }: Props) => {
   const { t } = useI18n();
 
   const confirmStore = useStoreMap({
@@ -53,12 +49,17 @@ export const Confirmation = ({ id = 0, onGoBack }: Props) => {
     fn: (value, [id]) => value?.[id],
   });
 
-  const chain = useUnit(networkSelectorModel.$governanceChain);
-  const asset = useUnit(votingAssetModel.$votingAsset);
-  const totalLock = useUnit(locksModel.$totalLock);
+  const transferableAmount = useStoreMap({
+    store: unlockConfirmAggregate.$transferableAmount,
+    keys: [id],
+    fn: (value, [id]) => value?.[id],
+  });
+
   const [isAccountsOpen, toggleAccounts] = useToggle();
 
-  if (!confirmStore || !initiatorWallet || !chain || !asset) return null;
+  if (!confirmStore || !initiatorWallet || !confirmStore.chain) return null;
+
+  const { chain, asset, amount, shards, totalLock } = confirmStore;
 
   return (
     <>
@@ -68,11 +69,11 @@ export const Confirmation = ({ id = 0, onGoBack }: Props) => {
 
           <div className={cnTw('flex flex-col gap-y-1 items-center')}>
             <AssetBalance
-              value={confirmStore.amount}
+              value={amount}
               asset={asset}
               className="font-manrope text-text-primary text-[32px] leading-[36px] font-bold"
             />
-            <AssetFiatBalance asset={asset} amount={confirmStore.amount} className="text-headline" />
+            <AssetFiatBalance asset={asset} amount={amount} className="text-headline" />
           </div>
 
           <FootnoteText className="py-2 px-3 rounded bg-block-background ml-3 text-text-secondary">
@@ -127,7 +128,7 @@ export const Confirmation = ({ id = 0, onGoBack }: Props) => {
               </DetailRow>
 
               <DetailRow label={t('operation.details.account')}>
-                {confirmStore.shards.length > 1 ? (
+                {shards.length > 1 ? (
                   <button
                     type="button"
                     className={cnTw(
@@ -137,7 +138,7 @@ export const Confirmation = ({ id = 0, onGoBack }: Props) => {
                     onClick={toggleAccounts}
                   >
                     <div className="rounded-[30px] px-1.5 py-[1px] bg-icon-accent">
-                      <CaptionText className="text-white">{confirmStore.shards.length}</CaptionText>
+                      <CaptionText className="text-white">{shards.length}</CaptionText>
                     </div>
                     <Icon className="group-hover:text-icon-hover" name="info" size={16} />
                   </button>
@@ -145,9 +146,9 @@ export const Confirmation = ({ id = 0, onGoBack }: Props) => {
                   <AddressWithExplorers
                     type="short"
                     wrapperClassName="text-text-secondary"
-                    // addressFont="text-footnote text-inherit"
+                    addressFont="text-footnote text-inherit"
                     explorers={chain.explorers}
-                    accountId={confirmStore.shards[0].accountId}
+                    accountId={shards[0].accountId}
                     addressPrefix={chain.addressPrefix}
                   />
                 )}
@@ -170,17 +171,13 @@ export const Confirmation = ({ id = 0, onGoBack }: Props) => {
 
           <DetailRow label={t('governance.operations.transferable')} wrapperClassName="items-start">
             <ValueIndicator
-              from={confirmStore.transferableAmount.toString()}
-              to={confirmStore.transferableAmount.add(new BN(confirmStore.amount)).toString()}
+              from={transferableAmount.toString()}
+              to={transferableAmount.add(new BN(amount)).toString()}
               asset={asset}
             />
           </DetailRow>
           <DetailRow label={t('governance.locks.governanceLock')} wrapperClassName="items-start">
-            <ValueIndicator
-              from={totalLock.toString()}
-              to={totalLock.sub(new BN(confirmStore.amount)).toString()}
-              asset={asset}
-            />
+            <ValueIndicator from={totalLock.toString()} to={totalLock.sub(new BN(amount)).toString()} asset={asset} />
           </DetailRow>
 
           {/* TODO: add undelegate period */}
@@ -194,14 +191,14 @@ export const Confirmation = ({ id = 0, onGoBack }: Props) => {
 
           <hr className="border-filter-border w-full pr-2" />
 
-          {accountUtils.isMultisigAccount(confirmStore.shards[0]) && (
+          {accountUtils.isMultisigAccount(shards[0]) && (
             <DetailRow
               className="text-text-primary"
               label={
                 <>
                   <Icon className="text-text-tertiary" name="lock" size={12} />
-                  <FootnoteText className="text-text-tertiary">{t('staking.multisigDepositLabel')}</FootnoteText>
-                  <Tooltip content={t('staking.tooltips.depositDescription')} offsetPx={-90}>
+                  <FootnoteText className="text-text-tertiary">{t('operation.details.deposit')}</FootnoteText>
+                  <Tooltip content={t('transfer.networkDepositHint')} offsetPx={-90}>
                     <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
                   </Tooltip>
                 </>
@@ -217,7 +214,7 @@ export const Confirmation = ({ id = 0, onGoBack }: Props) => {
           <DetailRow
             label={
               <FootnoteText className="text-text-tertiary">
-                {t('staking.networkFee', { count: confirmStore.shards.length || 1 })}
+                {t('operation.networkFee', { count: shards.length || 1 })}
               </FootnoteText>
             }
             className="text-text-primary"
@@ -228,9 +225,9 @@ export const Confirmation = ({ id = 0, onGoBack }: Props) => {
             </div>
           </DetailRow>
 
-          {confirmStore.shards.length > 1 && (
+          {shards.length > 1 && (
             <DetailRow
-              label={<FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>}
+              label={<FootnoteText className="text-text-tertiary">{t('operation.networkFeeTotal')}</FootnoteText>}
               className="text-text-primary"
             >
               <div className="flex flex-col gap-y-0.5 items-end">
@@ -249,24 +246,21 @@ export const Confirmation = ({ id = 0, onGoBack }: Props) => {
           )}
 
           <div className="flex gap-4">
-            {basketUtils.isBasketAvailable(initiatorWallet) && (
-              <Button pallet="secondary" onClick={() => unlockAggregate.events.txSaved()}>
-                {t('operation.addToBasket')}
-              </Button>
+            {basketUtils.isBasketAvailable(initiatorWallet) && secondaryActionButton}
+            {!hideSignButton && (
+              <SignButton
+                isDefault={basketUtils.isBasketAvailable(initiatorWallet) && Boolean(secondaryActionButton)}
+                type={(signerWallet || initiatorWallet).type}
+                onClick={unlockConfirmAggregate.output.formSubmitted}
+              />
             )}
-
-            <SignButton
-              isDefault={basketUtils.isBasketAvailable(initiatorWallet)}
-              type={(signerWallet || initiatorWallet).type}
-              onClick={unlockConfirmAggregate.output.formSubmitted}
-            />
           </div>
         </div>
       </div>
 
       <AccountsModal
         isOpen={isAccountsOpen}
-        accounts={confirmStore.shards}
+        accounts={shards}
         chainId={chain.chainId}
         asset={asset}
         addressPrefix={chain.addressPrefix}
