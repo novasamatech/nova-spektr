@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
-import { DEFAULT_TRANSITION } from '@/shared/lib/utils';
+import { DEFAULT_TRANSITION, isStep } from '@/shared/lib/utils';
 import { useModalClose } from '@shared/lib/hooks';
 import { BaseModal, HeaderTitleText } from '@shared/ui';
 import { ChainTitle } from '@entities/chain';
@@ -43,7 +43,7 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
     setTimeout(params?.complete ? onComplete : onClose, DEFAULT_TRANSITION);
   };
 
-  if (createMultisigUtils.isStep(activeStep, Step.SUBMIT)) {
+  if (isStep(activeStep, Step.SUBMIT)) {
     return <OperationSubmit isOpen={isModalOpen} onClose={() => handleClose({ complete: true })} />;
   }
 
@@ -72,15 +72,13 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
         title={modalTitle}
         isOpen={isModalOpen}
         contentClass="flex"
-        panelClass={createMultisigUtils.isStep(activeStep, Step.SIGN) ? 'w-[440px]' : 'w-[784px]'}
+        panelClass={isStep(activeStep, Step.SIGN) ? 'w-[440px]' : 'w-[784px]'}
         onClose={handleClose}
       >
-        {createMultisigUtils.isStep(activeStep, Step.NAME_NETWORK) && <NameNetworkSelection />}
-        {createMultisigUtils.isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold />}
-        {createMultisigUtils.isStep(activeStep, Step.CONFIRM) && <ConfirmationStep chain={chain.value} />}
-        {createMultisigUtils.isStep(activeStep, Step.SIGN) && (
-          <OperationSign onGoBack={() => flowModel.events.stepChanged(Step.CONFIRM)} />
-        )}
+        {isStep(activeStep, Step.NAME_NETWORK) && <NameNetworkSelection />}
+        {isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold />}
+        {isStep(activeStep, Step.CONFIRM) && <ConfirmationStep chain={chain.value} />}
+        {isStep(activeStep, Step.SIGN) && <OperationSign onGoBack={() => flowModel.events.stepChanged(Step.CONFIRM)} />}
       </BaseModal>
     </>
   );

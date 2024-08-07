@@ -17,14 +17,13 @@ import {
   WalletType,
   WrapperKind,
 } from '@shared/core';
-import { SS58_DEFAULT_PREFIX, TEST_ACCOUNTS, ZERO_BALANCE, toAccountId, toAddress } from '@shared/lib/utils';
+import { SS58_DEFAULT_PREFIX, TEST_ACCOUNTS, ZERO_BALANCE, isStep, toAccountId, toAddress } from '@shared/lib/utils';
 import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@entities/network';
 import { transactionService } from '@entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
-import { createMultisigUtils } from '../lib/create-multisig-utils';
 import { type AddMultisigStore, type FormSubmitEvent, Step } from '../lib/types';
 
 import { confirmModel } from './confirm-model';
@@ -386,7 +385,7 @@ sample({
 sample({
   clock: delay(submitModel.output.formSubmitted, 2000),
   source: $step,
-  filter: (step) => createMultisigUtils.isStep(step, Step.SUBMIT),
+  filter: (step) => isStep(step, Step.SUBMIT),
   target: flowFinished,
 });
 
