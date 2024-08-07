@@ -34,7 +34,7 @@ export const AddressWithExplorers = ({
         addressFont="text-text-secondary group-hover:text-text-primary group-focus-within:text-text-primary"
         {...addressProps}
       />
-      <IconButton name="info" />
+      <IconButton name="details" />
     </div>
   );
 
