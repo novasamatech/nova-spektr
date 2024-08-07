@@ -247,7 +247,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
       )}
 
       {delegationTracks && (
-        <DetailRow label={t('operation.details.delegationVotes')} className={valueClass}>
+        <DetailRow label={t('operation.details.delegationTracks')} className={valueClass}>
           <div className="rounded-[30px] px-1.5 py-[1px] bg-icon-accent">
             <CaptionText className="text-white">{delegationTracks.length}</CaptionText>
           </div>

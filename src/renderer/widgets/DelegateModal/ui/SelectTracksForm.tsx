@@ -192,6 +192,7 @@ const AccountsSelector = () => {
     <>
       <div className="flex gap-6 px-5 items-end">
         <div className="flex flex-1 flex-col gap-y-2">
+          {/* TODO: Update multiselect for PV accounts */}
           <MultiSelect
             label={t('governance.addDelegation.accountLabel')}
             placeholder={t('governance.addDelegation.accountPlaceholder')}
