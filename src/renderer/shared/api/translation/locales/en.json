@@ -384,6 +384,7 @@
       "governanceLock": "Governance lock",
       "lock": "Lock",
       "title": "Unlock on",
+      "undelegatePeriod": "Undelegate period",
       "unlock": "Unlock",
       "unlockable": "Unlockable",
       "yourDelegation": "Your Delegation"

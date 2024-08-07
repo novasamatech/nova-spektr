@@ -14,12 +14,12 @@ import { getAssetById, toAccountId, transferableAmount } from '@shared/lib/utils
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel } from '@entities/network';
 import { transactionService } from '@entities/transaction';
-import { TransferRules } from '@features/operations/OperationsValidation';
 import { type BalanceMap, type NetworkStore } from '@widgets/Transfer/lib/types';
+import { DelegateRules } from '../lib/delegate-rules';
 import { validationUtils } from '../lib/validation-utils';
 import {
+  type DelegateFeeStore,
   type TransferAccountStore,
-  type TransferAmountFeeStore,
   type TransferSignatoryFeeStore,
   type ValidationResult,
 } from '../types/types';
@@ -49,7 +49,7 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
     {
       value: transaction.address,
       form: {},
-      ...TransferRules.account.noProxyFee({} as Store<TransferAccountStore>),
+      ...DelegateRules.account.noProxyFee({} as Store<TransferAccountStore>),
       source: {
         fee,
         // TODO: Add support proxy
@@ -60,7 +60,7 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
     {
       value: undefined,
       form: {},
-      ...TransferRules.signatory.notEnoughTokens({} as Store<TransferSignatoryFeeStore>),
+      ...DelegateRules.signatory.notEnoughTokens({} as Store<TransferSignatoryFeeStore>),
       source: {
         fee,
         isMultisig: false,
@@ -69,9 +69,9 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
       } as TransferSignatoryFeeStore,
     },
     {
-      value: transaction.args.value,
+      value: transaction.args.balance,
       form: {},
-      ...TransferRules.amount.notEnoughBalance({} as Store<{ network: NetworkStore | null; balance: BalanceMap }>, {
+      ...DelegateRules.amount.notEnoughBalance({} as Store<{ network: NetworkStore | null; balance: BalanceMap }>, {
         withFormatAmount: false,
       }),
       source: {
@@ -89,29 +89,20 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
     {
       value: transaction.args.value,
       form: {},
-      ...TransferRules.amount.insufficientBalanceForFee({} as Store<TransferAmountFeeStore>, {
+      ...DelegateRules.amount.insufficientBalanceForFee({} as Store<DelegateFeeStore>, {
         withFormatAmount: false,
       }),
       source: {
         network: { chain, asset },
-        // TODO: ADd support multisig
-        isMultisig: false,
-        multisigDeposit: '0',
         fee,
-        xcmFee: transaction.args.xcmData?.args.xcmFee || '0',
+        isMultisig: false,
         // TODO: Add support proxy
-        isProxy: false,
-        isNative: chain.assets[0].assetId === asset.assetId,
-        isXcm: Boolean(transaction.args.xcmData),
         balance: {
           native: transferableAmount(
             balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0].assetId.toFixed()),
           ),
-          balance: transferableAmount(
-            balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toFixed()),
-          ),
         },
-      } as TransferAmountFeeStore,
+      } as DelegateFeeStore,
     },
   ];
 

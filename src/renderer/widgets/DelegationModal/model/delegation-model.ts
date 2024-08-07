@@ -21,7 +21,6 @@ const selectDelegate = createEvent<DelegateAccount>();
 const $step = restore(stepChanged, Step.NONE);
 const $query = restore(queryChanged, '');
 const $sortType = restore(sortTypeChanged, null);
-const $delegate = restore(selectDelegate, null);
 
 const $delegateList = combine(
   {

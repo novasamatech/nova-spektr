@@ -5,9 +5,9 @@ import { type Account } from '@shared/core';
 import { formatAmount } from '@shared/lib/utils';
 import {
   type BalanceMap,
+  type DelegateFeeStore,
   type NetworkStore,
   type TransferAccountStore,
-  type TransferAmountFeeStore,
   type TransferSignatoryFeeStore,
 } from '../types/types';
 
@@ -83,17 +83,13 @@ export const DelegateRules = {
       },
     }),
     insufficientBalanceForFee: (
-      source: Store<TransferAmountFeeStore>,
+      source: Store<DelegateFeeStore>,
       config: { withFormatAmount: boolean } = { withFormatAmount: true },
     ) => ({
       name: 'insufficientBalanceForFee',
       errorText: 'transfer.notEnoughBalanceForFeeError',
       source,
-      validator: (
-        amount: string,
-        _: any,
-        { network, isNative, isProxy, isMultisig, isXcm, balance, fee, xcmFee }: TransferAmountFeeStore,
-      ) => {
+      validator: (amount: string, _: any, { network, balance, fee, isMultisig }: DelegateFeeStore) => {
         if (!network) return false;
 
         return balanceValidation.insufficientBalanceForFee(
@@ -101,12 +97,12 @@ export const DelegateRules = {
             amount,
             asset: network.asset,
             balance: balance.native,
-            xcmFee,
             fee,
-            isNative,
-            isProxy,
+            xcmFee: '0',
+            isNative: true,
+            isProxy: false,
             isMultisig,
-            isXcm,
+            isXcm: false,
           },
           config,
         );

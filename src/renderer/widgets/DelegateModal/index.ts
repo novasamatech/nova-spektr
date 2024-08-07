@@ -1,2 +1,2 @@
-export { BondNominate } from './ui/BondNominate';
-export { bondNominateModel } from './model/bond-nominate-model';
+export { Delegate } from './ui/Delegate';
+export { delegateModel } from './model/delegate-model';
