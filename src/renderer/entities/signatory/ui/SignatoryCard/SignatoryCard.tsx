@@ -40,7 +40,7 @@ export const SignatoryCard = ({
       )}
     >
       {children}
-      <Icon name="info" size={16} className="text-icon-hover transition-opacity opacity-0 group-hover:opacity-100" />
+      <Icon name="details" size={16} className="text-icon-hover transition-opacity opacity-0 group-hover:opacity-100" />
       {status && status in IconProps && <Icon size={16} {...IconProps[status as keyof typeof IconProps]} />}
     </div>
   );
