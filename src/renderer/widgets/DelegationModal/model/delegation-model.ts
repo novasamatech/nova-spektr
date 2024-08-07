@@ -17,10 +17,15 @@ const stepChanged = createEvent<Step>();
 const queryChanged = createEvent<string>();
 const sortTypeChanged = createEvent<SortType>();
 const selectDelegate = createEvent<DelegateAccount>();
+const customDelegateChanged = createEvent<Address>();
+const openCustomModal = createEvent();
+const closeCustomModal = createEvent();
+const createCustomDelegate = createEvent();
 
 const $step = restore(stepChanged, Step.NONE);
 const $query = restore(queryChanged, '');
 const $sortType = restore(sortTypeChanged, null);
+const $customDelegate = restore(customDelegateChanged, null).reset(openCustomModal);
 
 const $delegateList = combine(
   {
@@ -93,12 +98,38 @@ sample({
   target: delegateModel.events.flowStarted,
 });
 
+sample({
+  clock: openCustomModal,
+  fn: () => Step.CUSTOM_DELEGATION,
+  target: $step,
+});
+
+sample({
+  clock: closeCustomModal,
+  fn: () => Step.LIST,
+  target: $step,
+});
+
+sample({
+  clock: createCustomDelegate,
+  source: $customDelegate,
+  fn: (delegate) =>
+    ({
+      accountId: delegate,
+      delegators: [],
+      delegatorVotes: [],
+      delegateVotes: 0,
+    }) as DelegateAccount,
+  target: delegateModel.events.flowStarted,
+});
+
 export const delegationModel = {
   $isListLoading: delegateRegistryModel.$isRegistryLoading,
   $delegateList: readonly($delegateList),
   $step: readonly($step),
   $query: readonly($query),
   $sortType: readonly($sortType),
+  $customDelegate: readonly($customDelegate),
 
   events: {
     flowStarted,
@@ -106,6 +137,11 @@ export const delegationModel = {
     sortTypeChanged,
     sortTypeReset: $sortType.reinit,
     selectDelegate,
+
+    customDelegateChanged,
+    openCustomModal,
+    closeCustomModal,
+    createCustomDelegate,
   },
 
   output: {

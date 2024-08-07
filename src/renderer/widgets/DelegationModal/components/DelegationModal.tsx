@@ -10,6 +10,7 @@ import { delegateModel } from '@/widgets/DelegateModal/model/delegate-model';
 import { Delegate } from '@/widgets/DelegateModal/ui/Delegate';
 import { delegationModel } from '../model/delegation-model';
 
+import { AddCustomDelegationModel } from './AddCustomDelegationModal';
 import { DelegationList } from './DelegationList';
 
 export const DelegationModal = () => {
@@ -31,9 +32,13 @@ export const DelegationModal = () => {
       onClose={closeModal}
     >
       {/* TODO: open delegate info  */}
-      <DelegationList onClick={delegateModel.events.flowStarted} />
+      <DelegationList
+        onClick={delegateModel.events.flowStarted}
+        onAddCustomClick={delegationModel.events.openCustomModal}
+      />
 
       <Delegate />
+      <AddCustomDelegationModel />
     </BaseModal>
   );
 };

@@ -313,6 +313,7 @@
       "accountLabel": "Your accounts",
       "accountPlaceholder": "Select",
       "actionButton": "Add delegation",
+      "addCustom": "Add custom",
       "balanceValue": "<balance /> × {conviction}x",
       "card": {
         "delegations": "Delegations",
@@ -327,6 +328,9 @@
       },
       "continueButton": "Continue",
       "convictionLabel": "Conviction",
+      "customDelegationLabel": "Delegate to",
+      "customDelegationPlaceholder": "Enter address",
+      "customDelegationTitle": "Add custom delegation on",
       "emptyDescription": "Update the search or cancel filtering",
       "emptyTitle": "Nothing was found",
       "formTitle": "Step 2. Select the number of votes and the multiplier.",

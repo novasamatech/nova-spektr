@@ -8,6 +8,7 @@ export const enum Step {
   BASKET,
   LIST,
   SELECT_TRACK,
+  CUSTOM_DELEGATION,
 }
 
 /**

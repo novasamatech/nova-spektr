@@ -11,9 +11,10 @@ import { EmptyState } from './EmptyState';
 
 type Props = {
   onClick: (delegate: DelegateAccount) => void;
+  onAddCustomClick: () => void;
 };
 
-export const DelegationList = ({ onClick }: Props) => {
+export const DelegationList = ({ onClick, onAddCustomClick }: Props) => {
   const { t } = useI18n();
 
   const delegationList = useUnit(delegationModel.$delegateList);
@@ -47,12 +48,18 @@ export const DelegationList = ({ onClick }: Props) => {
         </div>
       ) : (
         <>
-          <SearchInput
-            wrapperClass="mx-5 mb-4"
-            value={query}
-            placeholder={t('general.input.searchPlaceholder')}
-            onChange={delegationModel.events.queryChanged}
-          />
+          <div className="flex gap-4 mx-5 mb-4 items-center">
+            <SearchInput
+              wrapperClass="flex-1"
+              value={query}
+              placeholder={t('general.input.searchPlaceholder')}
+              onChange={delegationModel.events.queryChanged}
+            />
+
+            <Button pallet="primary" variant="text" onClick={onAddCustomClick}>
+              {t('governance.addDelegation.addCustom')}
+            </Button>
+          </div>
 
           <div className="flex justify-between items-center mx-5 mb-6">
             <Select
