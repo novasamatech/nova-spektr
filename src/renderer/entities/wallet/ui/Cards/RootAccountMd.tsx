@@ -44,7 +44,7 @@ export const RootAccountMd = ({ name, accountId, className, onClick, onInfoClick
         <BodyText className="text-text-secondary truncate pr-5">{name}</BodyText>
       </button>
 
-      <IconButton name="info" className="absolute right-2 mx-1.5" onClick={onInfoClick} />
+      <IconButton name="details" className="absolute right-2 mx-1.5" onClick={onInfoClick} />
     </div>
   );
 };

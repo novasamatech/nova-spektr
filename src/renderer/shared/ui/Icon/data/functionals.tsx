@@ -14,6 +14,7 @@ import CloseImg, { ReactComponent as CloseSvg } from '@shared/assets/images/func
 import CopyImg, { ReactComponent as CopySvg } from '@shared/assets/images/functionals/copy.svg';
 import CurrencyImg, { ReactComponent as CurrencySvg } from '@shared/assets/images/functionals/currency.svg';
 import DeleteImg, { ReactComponent as DeleteSvg } from '@shared/assets/images/functionals/delete.svg';
+import DetailsImg, { ReactComponent as DetailsSvg } from '@shared/assets/images/functionals/details.svg';
 import EditKeysImg, { ReactComponent as EditKeysSvg } from '@shared/assets/images/functionals/edit-keys.svg';
 import EditImg, { ReactComponent as EditSvg } from '@shared/assets/images/functionals/edit.svg';
 import EmptyIdenticonImg, {
@@ -98,6 +99,7 @@ const FunctionalImages = {
   thumbUp: { svg: ThumbUpSvg, img: ThumbUpImg },
   thumbDown: { svg: ThumbDownSvg, img: ThumbDownImg },
   minusCircle: { svg: MinusCircleSvg, img: MinusCircleImg },
+  details: { svg: DetailsSvg, img: DetailsImg },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

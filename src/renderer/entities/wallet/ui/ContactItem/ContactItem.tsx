@@ -48,7 +48,7 @@ export const ContactItem = ({
         </div>
       </div>
 
-      <IconButton name="info" className="mx-1.5" onClick={onInfoClick} />
+      <IconButton name="details" className="mx-1.5" onClick={onInfoClick} />
     </div>
   );
 };

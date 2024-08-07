@@ -159,6 +159,12 @@
         "typeExtras": {
           "assetId": "42259045809535163221576417993425387648"
         }
+      },
+      {
+        "chainId": "0x67fa177a097bfa18f77ea95ab56e9bcdfeb0e5b8a40e46298bb93e16b6fc5008",
+        "name": "Polkadot People",
+        "assetId": 0,
+        "assetSymbol": "DOT"
       }
     ]
   },
@@ -378,6 +384,12 @@
       {
         "chainId": "0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42",
         "name": "Novasama Testnet - Governance",
+        "assetId": 0,
+        "assetSymbol": "WND"
+      },
+      {
+        "chainId": "0x1eb6fb0ba5187434de017a70cb84d4f47142df1d571d0ef9e7e1407f2b80b93c",
+        "name": "Westend People",
         "assetId": 0,
         "assetSymbol": "WND"
       }

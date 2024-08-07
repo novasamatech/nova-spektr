@@ -42,7 +42,7 @@ export const WalletCardSm = ({ wallet, className, iconSize = 16, onClick, onInfo
           {wallet.name}
         </FootnoteText>
       </button>
-      <IconButton className={cnTw('absolute right-2')} name="info" size={16} onClick={handleClick(onInfoClick)} />
+      <IconButton className={cnTw('absolute right-2')} name="details" size={16} onClick={handleClick(onInfoClick)} />
     </div>
   );
 };

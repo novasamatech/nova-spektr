@@ -110,7 +110,7 @@ export const DerivedAccount = ({
               'group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100',
               showSuffix && 'hidden',
             )}
-            name="info"
+            name="details"
             onClick={onInfoClick}
           />
         )}
