@@ -34,17 +34,17 @@ const unlock = (args: UnlockArgs, info: BaseTxInfo, options: OptionsWithMeta): U
 
 interface VoteArgs extends Args {
   /**
-   * class: Optional parameter, if given it indicates the class of the poll. For polls which have finished or are cancelled, this must be Some. - trackId.
+   * pollIndex: referendum id
    */
   pollIndex: number;
 
   /**
-   * index: The index of poll of the vote. - track.
+   * name: unknown
    */
   name: string;
 
   /**
-   * vote: Describes vote to submit.
+   * vote: describes vote to submit.
    */
   vote: TransactionVote;
 }
