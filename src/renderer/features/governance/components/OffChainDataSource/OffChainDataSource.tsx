@@ -28,7 +28,7 @@ export const OffChainDataSource = () => {
 
   return (
     <BaseModal isOpen={isModalOpen} closeButton title={t('governance.offChainDataSource.title')} onClose={closeModal}>
-      <form id="offchain-datasource" className="flex flex-col gap-y-4 pt-4" onSubmit={submitForm}>
+      <form id="offchain-datasource" className="flex flex-col gap-y-4 pt-4 pb-2" onSubmit={submitForm}>
         <div>
           <FootnoteText>{t('governance.offChainDataSource.formTitle')}</FootnoteText>
           <HelpText className="text-text-tertiary">{t('governance.offChainDataSource.formDescription')}</HelpText>
