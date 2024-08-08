@@ -10,6 +10,8 @@ import { referendumModel } from '@entities/governance';
 import { votingAggregate } from '@features/governance/aggregates/voting';
 import { locksModel } from '@features/governance/model/locks';
 import { networkSelectorModel } from '@features/governance/model/networkSelector';
+import { type SigningPayload, signModel } from '@features/operations/OperationSign';
+import { submitModel } from '@features/operations/OperationSubmit';
 import { voteConfirmModel } from '@features/operations/OperationsConfirm';
 
 import { voteFormAggregate } from './voteForm';
@@ -63,7 +65,7 @@ sample({
 });
 
 sample({
-  clock: form.formValidated,
+  clock: voteFormAggregate.events.formSubmitted,
   fn: () => Step.CONFIRM,
   target: setStep,
 });
@@ -114,6 +116,55 @@ sample({
 });
 
 // Data bindings
+
+sample({
+  clock: voteConfirmModel.events.sign,
+  source: { confirms: voteConfirmModel.$confirmMap },
+  fn: ({ confirms }): { signingPayloads: SigningPayload[] } => {
+    const confirm = confirms[0];
+    if (!confirm) {
+      return { signingPayloads: [] };
+    }
+
+    const { meta } = confirm;
+
+    return {
+      signingPayloads: [
+        {
+          account: meta.account,
+          chain: meta.chain,
+          transaction: meta.wrappedTransactions.wrappedTx,
+          signatory: meta.signatory,
+        },
+      ],
+    };
+  },
+  target: signModel.events.formInitiated,
+});
+
+sample({
+  clock: signModel.output.formSubmitted,
+  source: voteConfirmModel.$confirmMap,
+  filter: (stores) => nonNullable(stores[0]),
+  fn: (stores, signParams) => {
+    const store = stores[0];
+    const { meta } = store;
+
+    return {
+      signatures: signParams.signatures,
+      txPayloads: signParams.txPayloads,
+
+      chain: meta.chain,
+      account: meta.account,
+      signatory: meta.signatory,
+      description: meta.description,
+      wrappedTxs: [meta.wrappedTransactions.wrappedTx],
+      coreTxs: [meta.wrappedTransactions.coreTx],
+      multisigTxs: meta.wrappedTransactions.multisigTx ? [meta.wrappedTransactions.multisigTx] : [],
+    };
+  },
+  target: submitModel.events.formInitiated,
+});
 
 sample({
   clock: voteConfirmModel.events.submitFinished,

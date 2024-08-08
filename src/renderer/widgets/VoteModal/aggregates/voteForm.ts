@@ -1,15 +1,16 @@
 import { BN, BN_ZERO } from '@polkadot/util';
-import { combine, createStore, sample } from 'effector';
+import { combine, createEvent, createStore, sample } from 'effector';
 import { isNil } from 'lodash';
 import { and, empty, not, reset } from 'patronum';
 
 import { type Conviction, type OngoingReferendum } from '@shared/core';
+import { nonNullable } from '@shared/lib/utils';
 import { balanceModel } from '@entities/balance';
 import { voteTransactionService } from '@entities/governance';
-import { transactionBuilder } from '@entities/transaction';
+import { type WrappedTransactions, transactionBuilder } from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
 import { createFeeCalculator } from '@features/governance/lib/createFeeCalculator';
-import { createTransactionForm } from '@features/governance/lib/createTransactionForm';
+import { type BasicFormParams, createTransactionForm } from '@features/governance/lib/createTransactionForm';
 import { locksModel } from '@features/governance/model/locks';
 import { networkSelectorModel } from '@features/governance/model/networkSelector';
 import { voteValidateModel } from '@features/governance/model/vote/voteValidateModel';
@@ -23,12 +24,19 @@ type Form = {
   decision: 'aye' | 'nay' | 'abstain' | null;
 };
 
+type FormInput = {
+  form: BasicFormParams & Form;
+  wrappedTransactions: WrappedTransactions;
+};
+
 const $initialAmount = createStore(BN_ZERO);
 const $initialConviction = createStore<Conviction>('None');
 const $referendum = createStore<OngoingReferendum | null>(null);
 const $availableBalance = createStore(BN_ZERO);
 
 const $canSubmit = createStore(false);
+
+const formSubmitted = createEvent<FormInput>();
 
 const transactionForm = createTransactionForm<Form>({
   $asset: votingAssetModel.$votingAsset,
@@ -81,16 +89,6 @@ const transactionForm = createTransactionForm<Form>({
             source: $availableBalance,
             validator: (value, _, balance: BN) => value.lte(balance),
           },
-          // {
-          //   name: 'insufficientBalanceForFee',
-          //   errorText: 'transfer.notEnoughBalanceForFeeError',
-          //   source: $accountsBalances,
-          //   validator: (value, form, accountsBalances) => {
-          //     return form.shards.every((_: Account, index: number) => {
-          //       return value.lte(new BN(accountsBalances[index].balance));
-          //     });
-          //   },
-          // },
         ],
       },
       conviction: { init: 'Locked1x' },
@@ -112,7 +110,7 @@ const {
 });
 
 sample({
-  clock: [form.fields.account.$value, form.fields.signatory.$value],
+  clock: [form.fields.account.onChange, form.fields.signatory.onChange],
   source: {
     referendum: $referendum,
     locks: locksModel.$trackLocks,
@@ -154,6 +152,22 @@ sample({
     not(empty(networkSelectorModel.$governanceChain)),
   ),
   target: $canSubmit,
+});
+
+sample({
+  clock: form.formValidated,
+  source: {
+    form: form.$values,
+    wrappedTransactions: transaction.$wrappedTransactions,
+  },
+  filter: ({ wrappedTransactions }) => nonNullable(wrappedTransactions),
+  fn: ({ form, wrappedTransactions }) => {
+    return {
+      form,
+      wrappedTransactions: wrappedTransactions!,
+    };
+  },
+  target: formSubmitted,
 });
 
 sample({
@@ -207,4 +221,8 @@ export const voteFormAggregate = {
   $availableBalance,
 
   $canSubmit,
+
+  events: {
+    formSubmitted,
+  },
 };

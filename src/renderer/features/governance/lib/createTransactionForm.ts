@@ -272,12 +272,9 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
   // @ts-expect-error Types mismatch somehow
   sample({
     clock: reinitForm,
-    source: {
-      accounts: $accounts,
-      field: form.fields.account.$value,
-    },
-    filter: ({ field, accounts }) => !field && accounts.length > 0,
-    fn: ({ accounts }) => accounts.at(0)?.account ?? null,
+    source: $accounts,
+    filter: (accounts) => accounts.length > 0,
+    fn: (accounts) => accounts.at(0)?.account ?? null,
     target: form.fields.account.onChange,
   });
 

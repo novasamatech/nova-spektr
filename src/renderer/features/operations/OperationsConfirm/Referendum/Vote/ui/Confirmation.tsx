@@ -75,7 +75,11 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         </DetailRow>
         <hr className="border-filter-border w-full pr-2" />
         <DetailRow label={t('governance.vote.field.networkFee')}>
-          <Fee asset={confirm.meta.asset} transaction={confirm.meta.wrappedTransactions.wrappedTx} />
+          <Fee
+            api={confirm.meta.api}
+            asset={confirm.meta.asset}
+            transaction={confirm.meta.wrappedTransactions.wrappedTx}
+          />
         </DetailRow>
       </ConfirmDetails>
 
@@ -94,7 +98,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
               isDefault={Boolean(secondaryActionButton)}
               type={(confirm.wallets.signer || confirm.wallets.initiator)?.type}
               onClick={() => {
-                confirmModel.events.sign({ id });
+                confirmModel.events.sign();
               }}
             />
           )}
