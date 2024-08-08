@@ -21,7 +21,7 @@ const $totalDelegations = combine(
   },
 );
 
-export const delegationModel = {
+export const delegationAggregate = {
   $isLoading: votingAggregate.$isLoading,
   $asset: votingAssetModel.$votingAsset,
   $totalDelegations,

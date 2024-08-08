@@ -6,8 +6,7 @@ import { type DelegateAccount } from '@/shared/api/governance';
 import { type Address } from '@/shared/core';
 import { Step, includesMultiple } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
-import { delegateRegistryModel } from '@/entities/governance/model/delegateRegistry';
-import { networkSelectorModel, votingAggregate } from '@/features/governance';
+import { delegateRegistryAggregate, networkSelectorModel, votingAggregate } from '@/features/governance';
 import { delegateModel } from '@/widgets/DelegateModal/model/delegate-model';
 import { SortProp, SortType } from '../common/constants';
 
@@ -29,7 +28,7 @@ const $customDelegate = restore(customDelegateChanged, null).reset(openCustomMod
 
 const $delegateList = combine(
   {
-    list: delegateRegistryModel.$delegateRegistry,
+    list: delegateRegistryAggregate.$delegateRegistry,
     activeVotes: votingAggregate.$activeWalletVotes,
     query: $query,
     sortType: $sortType,
@@ -78,7 +77,7 @@ sample({
   clock: flowStarted,
   source: networkSelectorModel.$governanceChain,
   filter: (chain) => !!chain,
-  target: delegateRegistryModel.events.requestDelegateRegistry,
+  target: delegateRegistryAggregate.events.requestDelegateRegistry,
 });
 
 sample({
@@ -124,7 +123,7 @@ sample({
 });
 
 export const delegationModel = {
-  $isListLoading: delegateRegistryModel.$isRegistryLoading,
+  $isListLoading: delegateRegistryAggregate.$isRegistryLoading,
   $delegateList: readonly($delegateList),
   $step: readonly($step),
   $query: readonly($query),

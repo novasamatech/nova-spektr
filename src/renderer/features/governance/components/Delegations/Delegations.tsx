@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@app/providers';
 import { FootnoteText, Icon, Plate, Shimmering, SmallTitleText } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
-import { delegationModel } from '../../aggregates/delegation';
+import { delegationAggregate } from '../../aggregates/delegation';
 
 type Props = {
   onClick: () => void;
@@ -12,9 +12,9 @@ type Props = {
 export const Delegations = ({ onClick }: Props) => {
   const { t } = useI18n();
 
-  const totalDelegation = useUnit(delegationModel.$totalDelegations);
-  const asset = useUnit(delegationModel.$asset);
-  const isLoading = useUnit(delegationModel.$isLoading);
+  const totalDelegation = useUnit(delegationAggregate.$totalDelegations);
+  const asset = useUnit(delegationAggregate.$asset);
+  const isLoading = useUnit(delegationAggregate.$isLoading);
 
   return (
     <button onClick={onClick}>
