@@ -14,6 +14,7 @@ export type ReferendumTimelineRecordStatus =
   | 'Confirmed'
   | 'Created'
   | 'ConfirmStarted'
+  | 'ConfirmAborted'
   | 'Cancelled'
   | 'Deciding'
   | 'DecisionDepositPlaced'
