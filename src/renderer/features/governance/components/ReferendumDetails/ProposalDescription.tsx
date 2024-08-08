@@ -24,7 +24,7 @@ export const ProposalDescription = ({ chainId, referendum }: Props) => {
   return (
     <div>
       <div className="flex items-center mb-4">
-        <ProposerName chainId={chainId} referendum={referendum} />
+        <ProposerName referendum={referendum} />
         <div className="grow" />
         {referendumService.isOngoing(referendum) && <TrackInfo trackId={referendum.track} />}
       </div>
