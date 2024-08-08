@@ -24,7 +24,7 @@ const createCustomDelegate = createEvent();
 const $step = restore(stepChanged, Step.NONE);
 const $query = restore(queryChanged, '');
 const $sortType = restore(sortTypeChanged, null);
-const $customDelegate = restore(customDelegateChanged, null).reset(openCustomModal);
+const $customDelegate = restore(customDelegateChanged, '').reset(openCustomModal);
 
 const $delegateList = combine(
   {

@@ -219,15 +219,7 @@ export const Confirmation = ({
           <DetailRow label={t('governance.operations.transferable')} wrapperClassName="items-start">
             <ValueIndicator
               from={confirmStore.transferable}
-              to={new BN(confirmStore.transferable)
-                .sub(
-                  new BN(
-                    config.withFormatAmount
-                      ? formatAmount(confirmStore.balance, confirmStore.asset.precision)
-                      : confirmStore.balance,
-                  ),
-                )
-                .toString()}
+              to={new BN(confirmStore.transferable).sub(new BN(amountValue)).toString()}
               asset={confirmStore.asset}
             />
           </DetailRow>
@@ -235,15 +227,7 @@ export const Confirmation = ({
           <DetailRow label={t('governance.locks.governanceLock')} wrapperClassName="items-start">
             <ValueIndicator
               from={totalLock.toString()}
-              to={new BN(totalLock)
-                .add(
-                  new BN(
-                    config.withFormatAmount
-                      ? formatAmount(confirmStore.balance, confirmStore.asset.precision)
-                      : confirmStore.balance,
-                  ),
-                )
-                .toString()}
+              to={new BN(totalLock).add(new BN(amountValue)).toString()}
               asset={confirmStore.asset}
             />
           </DetailRow>

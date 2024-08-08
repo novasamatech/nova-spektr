@@ -14,7 +14,7 @@ export const AddCustomDelegationModel = () => {
   const step = useUnit(delegationModel.$step);
   const chain = useUnit(networkSelectorModel.$governanceChain);
   const customDelegate = useUnit(delegationModel.$customDelegate);
-  const isValidAddress = validateAddress(customDelegate || '');
+  const isValidAddress = validateAddress(customDelegate);
 
   const [isModalOpen, closeModal] = useModalClose(
     isStep(step, Step.CUSTOM_DELEGATION),
@@ -24,7 +24,7 @@ export const AddCustomDelegationModel = () => {
   const prefixElement = (
     <div className="flex h-auto items-center">
       {isValidAddress ? (
-        <Identicon className="mr-2" size={20} address={customDelegate || ''} background={false} />
+        <Identicon className="mr-2" size={20} address={customDelegate} background={false} />
       ) : (
         <Icon className="mr-2" size={20} name="emptyIdenticon" />
       )}
@@ -49,7 +49,7 @@ export const AddCustomDelegationModel = () => {
           label={t('governance.addDelegation.customDelegationLabel')}
           placeholder={t('governance.addDelegation.customDelegationPlaceholder')}
           invalid={!!customDelegate && !isValidAddress}
-          value={customDelegate || ''}
+          value={customDelegate}
           prefixElement={prefixElement}
           onChange={delegationModel.events.customDelegateChanged}
         />
