@@ -17,3 +17,5 @@ export * from './BondExtra';
 export * from './Unstake';
 export * from './Withdraw';
 export * from './Referendum/Vote';
+
+export { type ConfirmInfo } from './lib/createTransactionConfirmStore';

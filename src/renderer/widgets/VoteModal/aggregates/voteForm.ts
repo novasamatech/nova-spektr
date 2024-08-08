@@ -164,12 +164,14 @@ sample({
     initialAmount: $initialAmount,
     asset: votingAssetModel.$votingAsset,
     chain: networkSelectorModel.$governanceChain,
+    api: networkSelectorModel.$governanceChainApi,
     wrappedTransactions: transaction.$wrappedTransactions,
   },
-  filter: ({ form, chain, asset, wrappedTransactions }) =>
-    !!form.account && !!form.decision && !!chain && !!asset && !!wrappedTransactions,
-  fn: ({ form, initialConviction, initialAmount, asset, chain, wrappedTransactions }): VoteConfirm => {
+  filter: ({ form, chain, asset, api, wrappedTransactions }) =>
+    !!form.account && !!form.decision && !!chain && !!asset && !!api && !!wrappedTransactions,
+  fn: ({ form, initialConviction, initialAmount, asset, chain, api, wrappedTransactions }): VoteConfirm => {
     return {
+      api: api!,
       account: form.account!,
       initialAmount,
       asset: asset!,

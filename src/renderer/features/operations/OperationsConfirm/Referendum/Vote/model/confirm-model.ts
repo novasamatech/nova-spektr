@@ -1,14 +1,16 @@
+import { type ApiPromise } from '@polkadot/api';
 import { type BN } from '@polkadot/util';
 import { sample } from 'effector';
 
-import { type Asset, type Conviction } from '@shared/core';
-import { nonNullable } from '@shared/lib/utils';
-import { walletModel } from '@entities/wallet';
+import { type Asset, type Conviction } from '@/shared/core';
+import { nonNullable } from '@/shared/lib/utils';
+import { walletModel } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
-import { type ConfirmInfo, createTransactionConfirmStore } from '../../../lib/createTransactionConfirmStore';
+import { type ConfirmInfo, createTransactionConfirmStore } from '@/features/operations/OperationsConfirm';
 
 export type VoteConfirm = ConfirmInfo & {
+  api: ApiPromise;
   asset: Asset;
   initialAmount: BN;
   initialConviction: Conviction;
