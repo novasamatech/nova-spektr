@@ -17,6 +17,7 @@ export type PolkassemblyTrackStatus =
   | 'Created'
   | 'Confirmed'
   | 'ConfirmStarted'
+  | 'ConfirmAborted'
   | 'Cancelled'
   | 'Deciding'
   | 'DecisionDepositPlaced'

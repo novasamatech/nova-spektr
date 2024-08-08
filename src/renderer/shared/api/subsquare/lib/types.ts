@@ -4,6 +4,7 @@ export type SubsquareTimelineRecordStatus =
   | 'All'
   | 'Confirmed'
   | 'ConfirmStarted'
+  | 'ConfirmAborted'
   | 'Cancelled'
   | 'DecisionStarted'
   | 'Placed'
