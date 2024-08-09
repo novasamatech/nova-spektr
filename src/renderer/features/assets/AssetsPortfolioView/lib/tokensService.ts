@@ -1,4 +1,4 @@
-import BigNumber from 'bignumber.js';
+import { default as BigNumber } from 'bignumber.js';
 import { concat, orderBy, sortBy } from 'lodash';
 
 import { isKusama, isNameStartsWithNumber, isPolkadot } from '@shared/api/network/lib/utils';

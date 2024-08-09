@@ -50,7 +50,9 @@ function getValidatorFunction(api: ApiPromise): (era: EraIndex) => Promise<any> 
 }
 
 /**
- * Gets Validators information including nominators that will receive rewards (runtime pre1_4_0)
+ * Gets Validators information including nominators that will receive rewards
+ * (runtime pre1_4_0)
+ *
  * @deprecated Will become deprecated after runtime upgrade for DOT/KSM
  */
 async function getValidatorsStake_OLD(api: ApiPromise, era: EraIndex): Promise<ValidatorMap> {

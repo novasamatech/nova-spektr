@@ -122,10 +122,10 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList className="h-[379px] mt-6" canCreateProxy={canCreateProxy} />
+        <ProxiesList className="mt-6 h-[379px]" canCreateProxy={canCreateProxy} />
       ) : (
         <NoProxiesAction
-          className="h-[379px] mt-6"
+          className="mt-6 h-[379px]"
           canCreateProxy={canCreateProxy}
           onAddProxy={addProxyModel.events.flowStarted}
         />
@@ -143,11 +143,11 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
       isOpen={isModalOpen}
       onClose={closeModal}
     >
-      <div className="flex flex-col gap-y-4 h-full w-full">
-        <div className="py-6 px-5 border-b border-divider">
+      <div className="flex h-full w-full flex-col gap-y-4">
+        <div className="border-b border-divider px-5 py-6">
           <WalletCardLg full wallet={wallet} />
         </div>
-        <div className="px-3 flex-1">
+        <div className="flex-1 px-3">
           <Tabs
             items={tabItems}
             panelClassName=""

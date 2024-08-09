@@ -5,9 +5,9 @@ export const EmptyState = () => {
   const { t } = useI18n();
 
   return (
-    <div className="flex flex-col items-center justify-center gap-y-4 h-full">
+    <div className="flex h-full flex-col items-center justify-center gap-y-4">
       <Icon as="img" name="emptyList" alt={t('addressBook.contactList.noContactsLabel')} size={178} />
-      <BodyText className="text-text-tertiary w-[300px] text-center">{t('onboarding.watchOnly.emptyState')}</BodyText>
+      <BodyText className="w-[300px] text-center text-text-tertiary">{t('onboarding.watchOnly.emptyState')}</BodyText>
     </div>
   );
 };

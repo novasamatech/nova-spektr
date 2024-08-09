@@ -37,14 +37,14 @@ export const ButtonCard = forwardRef<HTMLButtonElement, PropsWithChildren<Props>
         tabIndex={tabIndex}
         disabled={disabled}
         className={cnTw(
-          'appearance-none flex flex-col items-center gap-2 px-6 py-4 rounded-lg',
+          'flex appearance-none flex-col items-center gap-2 rounded-lg px-6 py-4',
           'disabled:bg-secondary-button-background disabled:text-text-tertiary',
           {
             'bg-secondary-positive-button-background text-text-positive hover:bg-secondary-positive-button-background-hover active:bg-secondary-positive-button-background-active':
               pallet === 'positive',
             'bg-secondary-negative-button-background text-text-negative hover:bg-secondary-negative-button-background-hover active:bg-secondary-negative-button-background-active':
               pallet === 'negative',
-            'bg-secondary-button-background hover:bg-secondary-button-background-hover active:bg-secondary-button-background-active text-text-primary':
+            'bg-secondary-button-background text-text-primary hover:bg-secondary-button-background-hover active:bg-secondary-button-background-active':
               pallet === 'secondary',
           },
           className,

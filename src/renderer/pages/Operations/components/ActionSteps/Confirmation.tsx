@@ -43,13 +43,13 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
 
   return (
     <div className="flex flex-col items-center gap-y-3">
-      <div className="flex flex-col items-center gap-y-3 mb-6">
+      <div className="mb-6 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name={getIconName(tx.transaction)} size={60} />
 
         {tx.transaction && <TransactionAmount tx={tx.transaction} />}
 
         {tx.description && (
-          <FootnoteText className="py-2 px-3 rounded bg-block-background ml-3 text-text-secondary">
+          <FootnoteText className="ml-3 rounded bg-block-background px-3 py-2 text-text-secondary">
             {tx.description}
           </FootnoteText>
         )}
@@ -86,7 +86,7 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
         </DetailRow>
       )}
 
-      <SignButton disabled={!isFeeLoaded} className="mt-3 ml-auto" type={wallet?.type} onClick={onSign} />
+      <SignButton disabled={!isFeeLoaded} className="ml-auto mt-3" type={wallet?.type} onClick={onSign} />
     </div>
   );
 };

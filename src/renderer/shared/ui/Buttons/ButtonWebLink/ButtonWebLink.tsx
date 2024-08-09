@@ -28,7 +28,7 @@ export const ButtonWebLink = ({
   suffixElement,
 }: PropsWithChildren<Props>) => {
   const classes = cnTw(
-    'flex items-center justify-center gap-x-2 font-medium select-none outline-offset-1',
+    'flex select-none items-center justify-center gap-x-2 font-medium outline-offset-1',
     SizeClass[size],
     variant !== 'text' && Padding[size],
     ViewClass[`${variant}_${pallet}`],

@@ -45,7 +45,7 @@ export const Identicon = ({
       theme={theme || defaultTheme}
       value={address}
       size={background ? size * 0.75 : size}
-      className="pointer-events-none rounded-full overflow-hidden"
+      className="pointer-events-none overflow-hidden rounded-full"
     />
   ) : (
     <Icon name="emptyIdenticon" size={size} />
@@ -55,7 +55,7 @@ export const Identicon = ({
     return (
       <div
         ref={wrapperRef}
-        className={cnTw('relative flex justify-center items-center', background && 'bg-white rounded-full', className)}
+        className={cnTw('relative flex items-center justify-center', background && 'rounded-full bg-white', className)}
         style={{ width: size, height: size }}
         data-testid={`identicon-${address}`}
       >
@@ -69,8 +69,8 @@ export const Identicon = ({
       <button
         type="button"
         className={cnTw(
-          'relative flex justify-center items-center cursor-copy rounded-sm',
-          background && 'bg-white rounded-full',
+          'relative flex cursor-copy items-center justify-center rounded-sm',
+          background && 'rounded-full bg-white',
           buttonClassName,
         )}
         style={{ width: size, height: size }}

@@ -84,7 +84,9 @@ export const getSignatoryAccounts = (
       const legacySignatoryAccount = filteredAccounts.find(
         (a) => accountUtils.isChainAccount(a) && a.chainId === chainId,
       );
-      legacySignatoryAccount && acc.push(legacySignatoryAccount);
+      if (legacySignatoryAccount) {
+        acc.push(legacySignatoryAccount);
+      }
     }
 
     return acc;

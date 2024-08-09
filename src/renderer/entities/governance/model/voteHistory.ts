@@ -46,7 +46,7 @@ sample({
 
 export const voteHistoryModel = {
   $voteHistory: readonly($voteHistory),
-  $voteHistoryLoading: requestVoteHistoryFx.pending,
+  $isLoading: requestVoteHistoryFx.pending,
 
   events: {
     requestVoteHistory,

@@ -75,8 +75,8 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
   });
 
   return (
-    <div className="flex flex-col gap-y-4 w-full h-full overflow-y-scroll">
-      <ul className="flex flex-col gap-y-4 items-center w-full py-4">
+    <div className="flex h-full w-full flex-col gap-y-4 overflow-y-scroll">
+      <ul className="flex w-full flex-col items-center gap-y-4 py-4">
         {sortedChains.map((chain) => (
           <NetworkAssets
             key={chain.chainId}

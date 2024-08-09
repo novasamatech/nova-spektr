@@ -5,10 +5,11 @@ import { useI18n } from '@app/providers';
 import { type Referendum } from '@shared/core';
 import { useModalClose } from '@shared/lib/hooks';
 import { cnTw } from '@shared/lib/utils';
-import { BaseModal, FootnoteText, Icon, Tabs } from '@shared/ui';
+import { BaseModal, Icon, Tabs } from '@shared/ui';
 import { type TabItem } from '@shared/ui/Tabs/common/types';
 import { voteHistoryAggregate } from '../../aggregates/voteHistory';
 
+import { VoteCount } from './VoteCount';
 import { VotingHistoryList } from './VotingHistoryList';
 
 type Props = {
@@ -32,7 +33,7 @@ export const VotingHistoryDialog = ({ referendum, onClose }: Props) => {
   });
 
   const votingAsset = useUnit(voteHistoryAggregate.$votingAsset);
-  const isLoading = useUnit(voteHistoryAggregate.$voteHistoryLoading);
+  const isLoading = useUnit(voteHistoryAggregate.$isLoading);
 
   const ayes = useMemo(() => voteHistory.filter((history) => history.decision === 'aye'), [voteHistory]);
   const nays = useMemo(() => voteHistory.filter((history) => history.decision === 'nay'), [voteHistory]);
@@ -45,9 +46,7 @@ export const VotingHistoryDialog = ({ referendum, onClose }: Props) => {
         <span className="flex items-center gap-1">
           <Icon name="thumbUp" size={16} className={cnTw(selectedTab === 0 && 'text-icon-positive')} />
           <span>{t('governance.referendum.ayes')}</span>
-          <FootnoteText as="span" className="text-text-tertiary">
-            {ayes.length}
-          </FootnoteText>
+          <VoteCount count={ayes.length} loading={isLoading} />
         </span>
       ),
       panel: <VotingHistoryList chain={chain} asset={votingAsset} items={ayes} loading={isLoading} />,
@@ -58,9 +57,7 @@ export const VotingHistoryDialog = ({ referendum, onClose }: Props) => {
         <span className="flex items-center gap-1">
           <Icon name="thumbDown" size={16} className={cnTw(selectedTab === 1 && 'text-icon-negative')} />
           <span>{t('governance.referendum.nays')}</span>
-          <FootnoteText as="span" className="text-text-tertiary">
-            {nays.length}
-          </FootnoteText>
+          <VoteCount count={nays.length} loading={isLoading} />
         </span>
       ),
       panel: <VotingHistoryList chain={chain} asset={votingAsset} items={nays} loading={isLoading} />,
@@ -71,9 +68,7 @@ export const VotingHistoryDialog = ({ referendum, onClose }: Props) => {
         <span className="flex items-center gap-1">
           <Icon name="minusCircle" size={16} />
           <span>{t('governance.referendum.abstain')}</span>
-          <FootnoteText as="span" className="text-text-tertiary">
-            {abstain.length}
-          </FootnoteText>
+          <VoteCount count={abstain.length} loading={isLoading} />
         </span>
       ),
       panel: <VotingHistoryList chain={chain} asset={votingAsset} items={abstain} loading={isLoading} />,

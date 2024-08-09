@@ -206,7 +206,7 @@ export const Staking = () => {
 
   const selectedStakes = selectedNominators.reduce<Stake[]>((acc, address) => {
     const stake = staking[address];
-    stake ? acc.push(stake) : acc.push({ address } as Stake);
+    acc.push(stake ?? ({ address } as Stake));
 
     return acc;
   }, []);
@@ -274,11 +274,11 @@ export const Staking = () => {
 
   return (
     <>
-      <div className="h-full flex flex-col">
+      <div className="flex h-full flex-col">
         <Header title={t('staking.title')} />
 
-        <div className="overflow-y-auto w-full h-full mt-6">
-          <section className="flex flex-col gap-y-6 mx-auto h-full w-[546px]">
+        <div className="mt-6 h-full w-full overflow-y-auto">
+          <section className="mx-auto flex h-full w-[546px] flex-col gap-y-6">
             <NetworkInfo
               rewards={Object.values(rewards)}
               isRewardsLoading={isRewardsLoading}
@@ -317,7 +317,7 @@ export const Staking = () => {
               </>
             )}
 
-            <InactiveNetwork active={!networkIsActive} className="flex-grow mb-28" />
+            <InactiveNetwork active={!networkIsActive} className="mb-28 flex-grow" />
           </section>
         </div>
       </div>

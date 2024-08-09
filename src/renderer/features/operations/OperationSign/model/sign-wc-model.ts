@@ -118,7 +118,10 @@ sample({
   },
   filter: ({ signer }) => Boolean(signer?.walletId),
   fn: ({ signer, wallets, newAccounts }) => {
-    const { id, ...oldAccountParams } = walletUtils.getAccountsBy(wallets, (a) => a.walletId === signer?.walletId)[0];
+    const { id: _, ...oldAccountParams } = walletUtils.getAccountsBy(
+      wallets,
+      (a) => a.walletId === signer?.walletId,
+    )[0];
 
     const updatedAccounts = newAccounts.map((account) => {
       const [_, chainId, address] = account.split(':');

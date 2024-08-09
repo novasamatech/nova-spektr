@@ -44,12 +44,12 @@ export const ProxyAccountWithActions = ({ account, chain, canCreateProxy, onRemo
                 address={account.accountId}
                 explorers={chain.explorers}
                 addressPrefix={chain.addressPrefix}
-                className="-mt-10 -mr-1"
+                className="-mr-1 -mt-10"
                 button={<DropdownIconButton.Option option={openInfoAction} />}
               >
                 <ExplorersPopover.Group title={t('walletDetails.common.proxiedAddressTitle')}>
                   <div className="flex items-center gap-x-2">
-                    <HelpText className="text-text-secondary break-all">{proxiedAddress}</HelpText>
+                    <HelpText className="break-all text-text-secondary">{proxiedAddress}</HelpText>
                     <IconButton
                       className="shrink-0"
                       name="copy"

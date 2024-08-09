@@ -39,7 +39,7 @@ export const VotingHistoryList = memo<Props>(({ items, asset, chain, loading }) 
   return (
     <div className="flex flex-col gap-6 pt-6">
       <SearchInput placeholder={t('governance.searchPlaceholder')} value={query} onChange={setQuery} />
-      <div className="overflow-y-auto min-h-0">
+      <div className="min-h-0 overflow-y-auto">
         <div className="flex flex-col gap-2">
           <div className="flex justify-between px-2">
             <FootnoteText className="text-text-tertiary">{t('governance.voteHistory.listColumnAccount')}</FootnoteText>
@@ -54,7 +54,7 @@ export const VotingHistoryList = memo<Props>(({ items, asset, chain, loading }) 
               deferredItems.map(({ voter, balance, votingPower, conviction, name }) => {
                 return (
                   <div key={voter} className="flex">
-                    <div className="grow shrink min-w-0">
+                    <div className="min-w-0 shrink grow">
                       <SignatoryCard
                         className="min-h-11.5"
                         accountId={toAccountId(voter)}
@@ -63,7 +63,7 @@ export const VotingHistoryList = memo<Props>(({ items, asset, chain, loading }) 
                         <AddressWithName address={voter} type="adaptive" name={name ?? undefined} />
                       </SignatoryCard>
                     </div>
-                    <div className="flex flex-col basis-32 shrink-0 px-2 gap-0.5 items-end">
+                    <div className="flex shrink-0 basis-32 flex-col items-end gap-0.5 px-2">
                       <BodyText className="whitespace-nowrap">
                         {t('governance.voteHistory.totalVotesCount', {
                           value: formatBalance(votingPower, asset.precision).formatted,

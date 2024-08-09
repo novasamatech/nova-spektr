@@ -1,22 +1,22 @@
 .checkbox:checked::before {
-  content: '✓';
-  color: inherit;
   display: block;
   width: 100%;
-  line-height: 16px;
+  content: '✓';
+  color: inherit;
   font-weight: bold;
   font-size: 14px;
+  line-height: 16px;
   text-align: center;
 }
 
 input.checkbox.semi-checked::before {
-  content: '-';
-  color: inherit;
   display: block;
   width: 100%;
-  line-height: 16px;
+  content: '-';
+  color: inherit;
   font-weight: bold;
   font-size: 14px;
+  line-height: 16px;
   text-align: center;
 }
 

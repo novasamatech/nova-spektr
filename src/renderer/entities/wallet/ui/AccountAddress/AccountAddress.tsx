@@ -61,18 +61,18 @@ export const AccountAddress = ({
   const typeIsAdaptive = type === 'adaptive';
   const addressToShow = type === 'short' ? toShortAddress(currentAddress, symbols) : currentAddress;
 
-  const nameContent = name && <p className={cnTw('text-footnote text-text-primary truncate', addressFont)}>{name}</p>;
+  const nameContent = name && <p className={cnTw('truncate text-footnote text-text-primary', addressFont)}>{name}</p>;
 
   const addressContent = typeIsAdaptive ? (
     <Truncate
-      className={cnTw('transition-colors text-footnote text-inherit', addressFont)}
+      className={cnTw('text-footnote text-inherit transition-colors', addressFont)}
       ellipsis="..."
       start={4}
       end={4}
       text={addressToShow}
     />
   ) : (
-    <p className={cnTw('transition-colors inline-block break-all text-footnote text-inherit truncate', addressFont)}>
+    <p className={cnTw('inline-block truncate break-all text-footnote text-inherit transition-colors', addressFont)}>
       {addressToShow}
     </p>
   );

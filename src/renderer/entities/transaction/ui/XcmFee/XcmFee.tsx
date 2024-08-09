@@ -81,7 +81,7 @@ export const XcmFee = memo(
     const totalFee = new BN(fee).muln(multiply).toString();
 
     return (
-      <div className="flex flex-col gap-y-0.5 items-end">
+      <div className="flex flex-col items-end gap-y-0.5">
         <AssetBalance value={totalFee} asset={asset} className={className} />
         <AssetFiatBalance asset={asset} amount={totalFee} />
       </div>

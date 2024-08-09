@@ -15,7 +15,7 @@ export const InputArea = forwardRef<HTMLTextAreaElement, Props>(
   ({ className, invalid, theme = 'light', onChange, ...props }, ref) => (
     <textarea
       className={cnTw(
-        'resize-none text-footnote flex-1',
+        'flex-1 resize-none text-footnote',
         CommonInputStyles,
         CommonInputStylesTheme[theme],
         'focus-within:enabled:border-active-container-border',

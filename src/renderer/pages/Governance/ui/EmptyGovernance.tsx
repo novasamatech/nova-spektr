@@ -16,7 +16,7 @@ export const EmptyGovernance = () => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center gap-y-8 w-full h-full">
+    <div className="flex h-full w-full flex-col items-center justify-center gap-y-8">
       <Icon as="img" name="emptyList" alt={t('governance.emptyStateLabel')} size={178} />
       <BodyText align="center" className="text-text-tertiary">
         {t('governance.emptyStateLabel')}

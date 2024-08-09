@@ -40,7 +40,7 @@ export const AssetsSettings = () => {
           >
             {t('balances.hideZeroBalancesLabel')}
           </Switch>
-          <hr className="border-divider -mx-3 my-4" />
+          <hr className="-mx-3 my-4 border-divider" />
           <Select
             label={t('balances.pageView')}
             selectedId={assetsView.toString()}
@@ -53,7 +53,7 @@ export const AssetsSettings = () => {
     >
       <div className="relative">
         <IconButton name="settingsLite" className="p-1.5" />
-        {hideZeroBalances && <span className="absolute rounded-full w-1.5 h-1.5 right-0 top-0 bg-icon-accent" />}
+        {hideZeroBalances && <span className="absolute right-0 top-0 h-1.5 w-1.5 rounded-full bg-icon-accent" />}
       </div>
     </MenuPopover>
   );

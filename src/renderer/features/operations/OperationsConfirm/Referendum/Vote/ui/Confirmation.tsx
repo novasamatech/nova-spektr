@@ -45,15 +45,15 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const conviction = 'Standard' in vote ? vote.Standard.vote.conviction : 'None';
 
   return (
-    <div className="flex flex-col items-center gap-4 py-4 px-5">
-      <div className="flex flex-col items-center gap-y-3 mb-2">
+    <div className="flex flex-col items-center gap-4 px-5 py-4">
+      <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name="voteMst" size={60} />
 
-        <div className={cnTw('flex flex-col gap-y-1 items-center')}>
+        <div className={cnTw('flex flex-col items-center gap-y-1')}>
           <AssetBalance
             value={votingService.calculateVotingPower(amount, conviction)}
             asset={confirm.meta.asset}
-            className="font-manrope text-text-primary text-[32px] leading-[36px] font-bold"
+            className="font-manrope text-[32px] font-bold leading-[36px] text-text-primary"
           />
           <HeadlineText className="text-text-tertiary">
             {t('general.actions.multiply', {
@@ -65,7 +65,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
       </div>
 
       <ConfirmDetails confirm={confirm}>
-        <hr className="border-filter-border w-full pr-2" />
+        <hr className="w-full border-filter-border pr-2" />
         <DetailRow label="Vote">{t(`governance.referendum.${decision}`)}</DetailRow>
         <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.governanceLock')}>
           <BalanceDiff from={initialAmount.toString()} to={amount.toString()} asset={asset} />
@@ -73,7 +73,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.lockingPeriod')}>
           <LockPeriodDiff from={initialConviction} to={conviction} />
         </DetailRow>
-        <hr className="border-filter-border w-full pr-2" />
+        <hr className="w-full border-filter-border pr-2" />
         <DetailRow label={t('governance.vote.field.networkFee')}>
           <Fee
             api={confirm.meta.api}
@@ -83,7 +83,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         </DetailRow>
       </ConfirmDetails>
 
-      <div className="flex w-full justify-between mt-3">
+      <div className="mt-3 flex w-full justify-between">
         {onGoBack && (
           <Button variant="text" onClick={onGoBack}>
             {t('operation.goBackButton')}

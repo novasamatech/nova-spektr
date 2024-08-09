@@ -260,7 +260,7 @@ async function estimateFeeFromApi(
 
   try {
     paymentInfo = await api.tx[pallet].execute(message, 0).paymentInfo(TEST_ACCOUNTS[0]);
-  } catch (e) {
+  } catch {
     paymentInfo = await api.tx[pallet].execute(message, { refTime: '0', proofSize: '0' }).paymentInfo(TEST_ACCOUNTS[0]);
   }
 

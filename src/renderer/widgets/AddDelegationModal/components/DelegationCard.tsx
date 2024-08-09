@@ -25,7 +25,7 @@ export const DelegationCard = ({ delegate }: Props) => {
   const delegateBadge = delegate.name && (
     <CaptionText
       className={cnTw(
-        'rounded-full uppercase px-2 py-1',
+        'rounded-full px-2 py-1 uppercase',
         delegate.isOrganization
           ? 'bg-badge-orange-background-default text-text-warning'
           : 'bg-badge-background text-icon-accent',
@@ -41,7 +41,7 @@ export const DelegationCard = ({ delegate }: Props) => {
         <div className="flex gap-3">
           <DelegateIcon delegate={delegate} />
 
-          <div className="flex gap-2.5 items-center">
+          <div className="flex items-center gap-2.5">
             <HeadlineText>{delegateTitle}</HeadlineText>
 
             {delegateBadge}
@@ -61,7 +61,7 @@ export const DelegationCard = ({ delegate }: Props) => {
             )}
 
             {delegate.delegatorVotes && (
-              <div className="flex pl-6 flex-col gap-1">
+              <div className="flex flex-col gap-1 pl-6">
                 <FootnoteText className="text-text-secondary">{t('governance.addDelegation.card.votes')}</FootnoteText>
                 <BodyText>
                   <AssetBalance
@@ -74,7 +74,7 @@ export const DelegationCard = ({ delegate }: Props) => {
             )}
 
             {delegate.delegateVotes && (
-              <div className="flex pl-6 flex-col gap-1">
+              <div className="flex flex-col gap-1 pl-6">
                 <FootnoteText className="text-text-secondary">{t('governance.addDelegation.card.voted')}</FootnoteText>
                 <BodyText>{delegate.delegateVotes}</BodyText>
               </div>
@@ -92,7 +92,7 @@ export const DelegateIcon = ({ delegate }: Props) => {
   if (addDelegationUtils.isDefaultImage(delegate.image)) {
     <div
       className={cnTw(
-        'w-11.5 h-11.5 flex items-center justify-center rounded-full',
+        'flex h-11.5 w-11.5 items-center justify-center rounded-full',
         delegate.isOrganization ? 'bg-badge-orange-background-default' : 'bg-badge-background',
       )}
     >
@@ -104,5 +104,5 @@ export const DelegateIcon = ({ delegate }: Props) => {
     </div>;
   }
 
-  return <img src={delegate.image} alt={delegate.name} className={cnTw('w-11.5 h-11.5 rounded-full')} />;
+  return <img src={delegate.image} alt={delegate.name} className={cnTw('h-11.5 w-11.5 rounded-full')} />;
 };

@@ -44,7 +44,7 @@ export const VotingStatus = ({ referendum, asset, chain, canVote, onVoteRequest 
       <VotingStatusBadge passing={isPassing} referendum={referendum} />
       {votedFractions && <VoteChart bgColor="icon-button" descriptionPosition="bottom" {...votedFractions} />}
       {votedBalance && supportThresholdBalance && (
-        <div className="flex items-center gap-1.5 flex-wrap w-full">
+        <div className="flex w-full flex-wrap items-center gap-1.5">
           <Icon name="checkmarkOutline" size={18} className="text-icon-positive" />
           <FootnoteText className="text-text-secondary">{t('governance.referendum.threshold')}</FootnoteText>
           <FootnoteText className="grow text-end">
@@ -64,7 +64,7 @@ export const VotingStatus = ({ referendum, asset, chain, canVote, onVoteRequest 
       )}
 
       {canVote && referendumService.isOngoing(referendum) && !!asset && referendum.isVoted && (
-        <div className="flex flex-col gap-4 w-full justify-stretch">
+        <div className="flex w-full flex-col justify-stretch gap-4">
           <Button className="w-full">{t('governance.referendum.revote')}</Button>
 
           <Button className="w-full" pallet="secondary">

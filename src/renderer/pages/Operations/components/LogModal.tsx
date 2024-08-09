@@ -110,7 +110,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts }: Props)
       isOpen={isOpen}
       onClose={onClose}
     >
-      <div className="flex gap-2 items-center justify-between px-4 py-3">
+      <div className="flex items-center justify-between gap-2 px-4 py-3">
         <TransactionTitle className="overflow-hidden" tx={transaction} description={description}>
           {asset && amount && <AssetBalance value={amount} asset={asset} className="truncate" />}
         </TransactionTitle>
@@ -118,12 +118,12 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts }: Props)
         <Status className="shrink-0" status={status} signed={approvals.length} threshold={account?.threshold || 0} />
       </div>
 
-      <div className="bg-main-app-background p-5 flex flex-col gap-y-4 min-h-[464px] max-h-[600px] overflow-y-scroll">
+      <div className="flex max-h-[600px] min-h-[464px] flex-col gap-y-4 overflow-y-scroll bg-main-app-background p-5">
         {Object.entries(groupedEvents)
           .sort(sortByDateAsc<MultisigEvent>)
           .map(([date, events]) => (
             <section className="w-full" key={date}>
-              <FootnoteText as="h4" className="text-text-tertiary mb-4">
+              <FootnoteText as="h4" className="mb-4 text-text-tertiary">
                 {date}
               </FootnoteText>
 
@@ -136,7 +136,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts }: Props)
 
                     return (
                       <li key={`${event.accountId}_${event.status}`} className="flex flex-col">
-                        <div className="flex gap-x-2 w-full items-center">
+                        <div className="flex w-full items-center gap-x-2">
                           {wallet ? (
                             <WalletIcon type={wallet.type} size={16} />
                           ) : (

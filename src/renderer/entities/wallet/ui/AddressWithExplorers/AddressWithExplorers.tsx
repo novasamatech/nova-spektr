@@ -7,25 +7,18 @@ import { ExplorersPopover } from '../ExplorersPopover/ExplorersPopover';
 
 type Props = {
   explorers?: Explorer[];
-  position?: string;
   wrapperClassName?: string;
   matrixId?: string;
 } & AccountAddressProps;
 
-export const AddressWithExplorers = ({
-  explorers = [],
-  position,
-  wrapperClassName,
-  matrixId,
-  ...addressProps
-}: Props) => {
+export const AddressWithExplorers = ({ explorers = [], wrapperClassName, matrixId, ...addressProps }: Props) => {
   const { t } = useI18n();
 
   const button = (
     <div
       className={cnTw(
-        'group flex items-center gap-x-1 px-2 h-6 rounded cursor-pointer transition-colors',
-        'hover:bg-action-background-hover focus-within:bg-action-background-hover',
+        'group flex h-6 cursor-pointer items-center gap-x-1 rounded px-2 transition-colors',
+        'focus-within:bg-action-background-hover hover:bg-action-background-hover',
         wrapperClassName,
       )}
     >
@@ -41,7 +34,7 @@ export const AddressWithExplorers = ({
   return (
     <ExplorersPopover button={button} address={getAddress(addressProps)} explorers={explorers}>
       <ExplorersPopover.Group active={Boolean(matrixId)} title={t('general.explorers.matrixIdTitle')}>
-        <HelpText className="text-text-secondary break-all">{matrixId}</HelpText>
+        <HelpText className="break-all text-text-secondary">{matrixId}</HelpText>
       </ExplorersPopover.Group>
     </ExplorersPopover>
   );

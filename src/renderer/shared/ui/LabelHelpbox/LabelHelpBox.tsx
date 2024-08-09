@@ -12,7 +12,7 @@ export const LabelHelpBox = forwardRef<HTMLDivElement, Props>(({ className, chil
   <div
     ref={ref}
     className={cnTw(
-      'flex gap-x-1 items-center rounded-md py-0.5 px-2 group outline-offset-1 w-fit max-w-full',
+      'group flex w-fit max-w-full items-center gap-x-1 rounded-md px-2 py-0.5 outline-offset-1',
       'bg-secondary-button-background hover:bg-secondary-button-background-hover active:bg-secondary-button-background-active',
       className,
     )}

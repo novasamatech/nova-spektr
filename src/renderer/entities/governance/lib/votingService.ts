@@ -44,7 +44,11 @@ const getAccountVoteConviction = (vote: AccountVote): Conviction => {
     return vote.vote.conviction;
   }
 
-  if (isSplitVote(vote) || isSplitAbstainVote(vote)) {
+  if (isSplitVote(vote)) {
+    return 'Locked1x';
+  }
+
+  if (isSplitAbstainVote(vote)) {
     return 'None';
   }
 
