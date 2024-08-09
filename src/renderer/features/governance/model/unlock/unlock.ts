@@ -1,18 +1,17 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type BN, BN_ZERO } from '@polkadot/util';
-import { createEffect, createStore, sample } from 'effector';
+import { combine, createEffect, createStore, sample } from 'effector';
 import { combineEvents } from 'patronum';
 
 import { type ClaimTimeAt, type UnlockChunk, UnlockChunkType } from '@shared/api/governance';
 import { type Address, type Referendum, type TrackId, type TrackInfo, type VotingMap } from '@shared/core';
 import { getCreatedDateFromApi, getCurrentBlockNumber } from '@shared/lib/utils';
 import { claimScheduleService, referendumModel, tracksModel, votingModel } from '@entities/governance';
-import { walletModel } from '@entities/wallet';
 import { unlockService } from '../../lib/unlockService';
 import { locksModel } from '../locks';
 import { networkSelectorModel } from '../networkSelector';
 
-const $claimSchedule = createStore<UnlockChunk[]>([]).reset(walletModel.$activeWallet);
+const $claimSchedule = createStore<UnlockChunk[]>([]);
 const $totalUnlock = createStore<BN>(BN_ZERO);
 
 type Props = {
@@ -65,11 +64,13 @@ sample({
     api: networkSelectorModel.$governanceChainApi,
     tracks: tracksModel.$tracks,
     trackLocks: locksModel.$trackLocks,
+    totalLock: locksModel.$totalLock,
     voting: votingModel.$voting,
     referendums: referendumModel.$referendums,
     chain: networkSelectorModel.$governanceChain,
   },
-  filter: ({ api, chain, referendums }) => !!api && !!chain && !!referendums[chain!.chainId],
+  filter: ({ api, chain, referendums, totalLock }) =>
+    !!api && !!chain && !!referendums[chain!.chainId] && !totalLock.isZero(),
   fn: ({ api, tracks, trackLocks, voting, referendums, chain }) => ({
     api: api!,
     tracks,
@@ -86,6 +87,11 @@ sample({
 });
 
 sample({
+  clock: locksModel.$totalLock.updates,
+  target: [$claimSchedule.reinit, $totalUnlock.reinit],
+});
+
+sample({
   clock: $claimSchedule.updates,
   fn: (claimSchedule) => {
     return claimSchedule.reduce((acc, claim) => {
@@ -98,8 +104,8 @@ sample({
 });
 
 export const unlockModel = {
-  $isLoading: getClaimScheduleFx.pending,
+  $isLoading: locksModel.$isLoading || getClaimScheduleFx.pending,
   $totalUnlock,
   $claimSchedule,
-  $isUnlockable: $claimSchedule.map((c) => c.some((claim) => claim.type === UnlockChunkType.CLAIMABLE)),
+  $isUnlockable: combine($totalUnlock, (totalUnlock) => !totalUnlock.isZero()),
 };
