@@ -374,6 +374,7 @@
       "title": "Unlock on",
       "unlock": "Unlock",
       "unlockable": "Unlockable",
+      "unlockableIn": "Unlockable in",
       "yourDelegation": "Your Delegation"
     },
     "offChainDataSource": {
