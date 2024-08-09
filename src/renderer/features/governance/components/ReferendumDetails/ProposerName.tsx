@@ -1,7 +1,8 @@
 import { useStoreMap } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { type Referendum } from '@shared/core';
+import { toAddress } from '@/shared/lib/utils';
+import { type OngoingReferendum, type Referendum } from '@shared/core';
 import { FootnoteText, Shimmering } from '@shared/ui';
 import { referendumService } from '@entities/governance';
 import { AccountAddress } from '@entities/wallet';
@@ -30,20 +31,27 @@ export const ProposerName = ({ referendum }: Props) => {
     fn: (loading, [proposer]) => loading && !proposer,
   });
 
-  if (!isProposerLoading && !proposer) {
-    return null;
-  }
-
-  const proposerName = proposer ? (
+  const proposerName = proposer?.parent ? (
     <AccountAddress
       addressFont="text-text-secondary"
       size={16}
       address={proposer.parent.address}
       name={proposer.parent.name || proposer.email || proposer.twitter || proposer.parent.address}
     />
+  ) : (referendum as OngoingReferendum)?.submissionDeposit?.who ? (
+    <AccountAddress
+      addressFont="text-text-secondary"
+      size={16}
+      address={(referendum as OngoingReferendum).submissionDeposit!.who}
+      name={toAddress((referendum as OngoingReferendum).submissionDeposit!.who, { chunk: 6 })}
+    />
   ) : null;
 
   const proposerLoader = isProposerLoading ? <Shimmering height={18} width={70} /> : null;
+
+  console.log('proposerName', proposerName);
+
+  if (!proposerName && !proposerLoader) return null;
 
   return (
     <div className="flex items-center gap-2">
