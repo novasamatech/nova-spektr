@@ -13,7 +13,7 @@ const getTracksLocks = createEvent();
 
 const $totalLock = createStore<BN>(BN_ZERO);
 const $trackLocks = createStore<Record<Address, Record<TrackId, BN>>>({});
-const $isLoading = createStore(true).reset(networkSelectorModel.events.chainChanged || walletModel.$activeWallet);
+const $isLoading = createStore(true);
 
 type Props = {
   api: ApiPromise;
@@ -26,7 +26,7 @@ const getTrackLocksFx = createEffect(({ api, addresses }: Props): Promise<Record
 
 sample({
   clock: [networkSelectorModel.$governanceChainApi, walletModel.$activeWallet],
-  target: getTracksLocks,
+  target: [getTracksLocks, $isLoading.reinit],
 });
 
 sample({

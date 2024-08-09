@@ -172,17 +172,15 @@ export const WalletForm = ({
               control={control}
               rules={{ required: true }}
               render={({ field: { value, onChange } }) => (
-                <>
-                  <Select
-                    placeholder={t('createMultisigAccount.chainPlaceholder')}
-                    label={t('createMultisigAccount.chainName')}
-                    className="w-[204px]"
-                    selectedId={value}
-                    options={chainOptions}
-                    disabled={!isActive}
-                    onChange={({ id }) => onChange(id)}
-                  />
-                </>
+                <Select
+                  placeholder={t('createMultisigAccount.chainPlaceholder')}
+                  label={t('createMultisigAccount.chainName')}
+                  className="w-[204px]"
+                  selectedId={value}
+                  options={chainOptions}
+                  disabled={!isActive}
+                  onChange={({ id }) => onChange(id)}
+                />
               )}
             />
             <InputHint className="flex-1" active>

@@ -1,7 +1,8 @@
 import { useUnit } from 'effector-react';
+import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-import { UnlockChunkType } from '@shared/api/governance';
+import { type PendingChunkWithAddress, UnlockChunkType } from '@shared/api/governance';
 import { getSecondsDuratonToBlock } from '@shared/lib/utils';
 import { Button, Duration, FootnoteText, Icon, Shimmering } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
@@ -31,32 +32,24 @@ export const UnlockInfo = () => {
       <AssetBalance className="text-large-title mt-2" value={totalLock.toString()} asset={asset} />
       <AssetFiatBalance className="mb-5" amount={totalLock.toString()} asset={asset} />
       {isLoading && <Shimmering width={250} height={20} />}
-      <>
-        {!totalUnlock.isZero() && (
-          <div className="flex justify-between items-center self-stretch mb-3">
-            <AssetBalance value={totalUnlock.toString()} asset={asset} />
-            <FootnoteText className="text-text-positive">{t('governance.locks.unlockable')}</FootnoteText>
-          </div>
-        )}
-        {pendingSchedule.map((lock) => (
-          <div
-            key={`${lock.amount.toString()}-${lock.type}-${lock.address}`}
-            className="flex justify-between items-center self-stretch mb-3"
-          >
-            <AssetBalance value={lock.amount.toString()} asset={asset} />
-            {lock.type === UnlockChunkType.PENDING_DELIGATION && (
-              <FootnoteText className="text-text-tertiary">{t('governance.locks.yourDelegation')}</FootnoteText>
-            )}
-            {lock.type === UnlockChunkType.PENDING_LOCK && (
-              <Duration
-                as={FootnoteText}
-                className="text-text-tertiary"
-                seconds={getSecondsDuratonToBlock(lock.timeToBlock!)}
-              />
-            )}
-          </div>
-        ))}
-      </>
+      {!totalUnlock.isZero() && (
+        <div className="flex justify-between items-center self-stretch mb-3">
+          <AssetBalance value={totalUnlock.toString()} asset={asset} />
+          <FootnoteText className="text-text-positive">{t('governance.locks.unlockable')}</FootnoteText>
+        </div>
+      )}
+      {pendingSchedule.map((lock) => (
+        <div
+          key={`${lock.amount.toString()}-${lock.type}-${lock.address}`}
+          className="flex justify-between items-center self-stretch mb-3"
+        >
+          <AssetBalance value={lock.amount.toString()} asset={asset} />
+          {lock.type === UnlockChunkType.PENDING_DELIGATION && (
+            <FootnoteText className="text-text-tertiary">{t('governance.locks.yourDelegation')}</FootnoteText>
+          )}
+          {lock.type === UnlockChunkType.PENDING_LOCK && <UnlockCountdown lock={lock} />}
+        </div>
+      ))}
       <ActionsSection />
     </div>
   );
@@ -76,5 +69,27 @@ const ActionsSection = () => {
         {t('governance.locks.unlock')}
       </Button>
     </div>
+  );
+};
+
+const UnlockCountdown = ({ lock }: { lock: PendingChunkWithAddress }) => {
+  const { t } = useI18n();
+
+  const [countdown, setCountdown] = useState(getSecondsDuratonToBlock(lock.timeToBlock || 0));
+
+  useEffect(() => {
+    if (countdown === 0) return;
+
+    const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [countdown]);
+
+  return (
+    <FootnoteText className="text-text-tertiary">
+      {t('governance.locks.unlockableIn')} <Duration as="span" className="text-text-tertiary" seconds={countdown} />
+    </FootnoteText>
   );
 };
