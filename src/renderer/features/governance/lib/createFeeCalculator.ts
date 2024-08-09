@@ -12,6 +12,7 @@ type Params = {
   $api: Store<ApiPromise | null>;
 };
 
+// TODO discuss api for factories
 export const createFeeCalculator = ({ $transaction, $api }: Params) => {
   type RequestParams = {
     api: ApiPromise;
