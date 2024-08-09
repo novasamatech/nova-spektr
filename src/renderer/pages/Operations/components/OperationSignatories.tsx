@@ -17,7 +17,7 @@ import { BodyText, Button, CaptionText, FootnoteText, Icon, SmallTitleText } fro
 import { contactModel } from '@entities/contact';
 import { useMultisigEvent } from '@entities/multisig';
 import { type ExtendedChain } from '@entities/network';
-import { SignatoryCard, singnatoryUtils } from '@entities/signatory';
+import { SignatoryCard, signatoryUtils } from '@entities/signatory';
 import { AddressWithName, WalletIcon, walletModel } from '@entities/wallet';
 import { getSignatoryName } from '@pages/Operations/common/utils';
 
@@ -48,7 +48,7 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
   const cancellation = events.filter((e) => e.status === 'CANCELLED');
 
   const walletSignatories: WalletSignatory[] = signatoriesList.reduce((acc: WalletSignatory[], signatory) => {
-    const signatoryWallet = singnatoryUtils.getSignatoryWallet(wallets, signatory.accountId);
+    const signatoryWallet = signatoryUtils.getSignatoryWallet(wallets, signatory.accountId);
 
     if (signatoryWallet) {
       acc.push({ ...signatory, wallet: signatoryWallet });

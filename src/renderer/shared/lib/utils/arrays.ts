@@ -44,8 +44,16 @@ export function getRepeatedIndex(index: number, base: number): number {
   return Math.floor(index / base);
 }
 
-export function addUnique<T>(collection: T[], item: T): T[] {
-  return collection.includes(item) ? [...collection] : [...collection, item];
+export function addUnique<T>(collection: T[], item: T, compareKeyFn: (x: T) => unknown = (x) => x): T[] {
+  const valueToCompare = compareKeyFn(item);
+
+  for (let i = 0; i < collection.length; i++) {
+    if (compareKeyFn(collection[i]) === valueToCompare) {
+      return splice(collection, item, i);
+    }
+  }
+
+  return [...collection, item];
 }
 
 export function removeFromCollection<T>(collection: T[], item: T): T[] {

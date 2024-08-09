@@ -2,8 +2,8 @@ import { combine, createEvent, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { or } from 'patronum';
 
-import { type ReferendumId } from '@shared/core';
-import { voteHistoryModel, votingService } from '@entities/governance';
+import { type Referendum, type ReferendumId } from '@shared/core';
+import { referendumService, voteHistoryModel, votingService } from '@entities/governance';
 import { votingListService } from '../lib/votingListService';
 import { networkSelectorModel } from '../model/networkSelector';
 import { votingAssetModel } from '../model/votingAsset';
@@ -13,7 +13,7 @@ import { proposerIdentityAggregate } from './proposerIdentity';
 import { tracksAggregate } from './tracks';
 import { votingAggregate } from './voting';
 
-const flow = createGate<{ referendumId: ReferendumId }>();
+const flow = createGate<{ referendum: Referendum }>();
 
 const $chainVoteHistory = combine(
   voteHistoryModel.$voteHistory,
@@ -40,7 +40,7 @@ const $voteHistory = combine(
     const acc: Record<ReferendumId, AggregatedVoteHistory[]> = {};
 
     for (const [referendumId, historyList] of Object.entries(history)) {
-      const votes = votingService.getReferendumAccountVotes(referendumId, voting);
+      const votes = votingService.getReferendumVoting(referendumId, voting);
 
       acc[referendumId] = historyList.flatMap(({ voter }) => {
         const proposer = proposers[voter] ?? null;
@@ -49,7 +49,7 @@ const $voteHistory = combine(
           return [];
         }
 
-        const splitVotes = votingListService.getDecoupledVotesFromVote(vote);
+        const splitVotes = votingListService.getDecoupledVotesFromVote(referendumId, vote);
 
         return splitVotes.map((vote) => {
           return {
@@ -64,14 +64,14 @@ const $voteHistory = combine(
   },
 );
 
-const requestVoteHistory = createEvent<{ referendumId: ReferendumId }>();
+const requestVoteHistory = createEvent<{ referendum: Referendum }>();
 
 sample({
   clock: requestVoteHistory,
   source: networkSelectorModel.$governanceChain,
   filter: (chain) => !!chain,
-  fn: (chain, { referendumId }) => ({
-    referendumId,
+  fn: (chain, { referendum }) => ({
+    referendum,
     chain: chain!,
   }),
   target: voteHistoryModel.events.requestVoteHistory,
@@ -87,15 +87,10 @@ sample({
 
 sample({
   clock: voteHistoryModel.events.voteHistoryRequestDone,
-  source: {
-    api: networkSelectorModel.$governanceChainApi,
-    tracks: tracksAggregate.$tracks,
-  },
-  filter: ({ api }) => !!api,
-  fn: ({ api, tracks }, { result: history }) => ({
+  source: tracksAggregate.$tracks,
+  fn: (tracks, { params, result: history }) => ({
     addresses: history.map((x) => x.voter),
-    tracks: Object.keys(tracks),
-    api: api!,
+    tracks: referendumService.isOngoing(params.referendum) ? [params.referendum.track] : Object.keys(tracks),
   }),
   target: votingAggregate.events.requestVoting,
 });

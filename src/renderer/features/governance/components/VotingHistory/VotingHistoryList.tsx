@@ -2,7 +2,7 @@ import { memo, useDeferredValue, useMemo, useState } from 'react';
 
 import { useI18n } from '@app/providers';
 import { type Asset, type Chain } from '@shared/core';
-import { formatBalance, performSearch, toAccountId } from '@shared/lib/utils';
+import { formatAsset, formatBalance, performSearch, toAccountId } from '@shared/lib/utils';
 import { BodyText, FootnoteText, SearchInput } from '@shared/ui';
 import { SignatoryCard } from '@entities/signatory';
 import { AddressWithName } from '@entities/wallet';
@@ -67,13 +67,12 @@ export const VotingHistoryList = memo<Props>(({ items, asset, chain, loading }) 
                       <BodyText className="whitespace-nowrap">
                         {t('governance.voteHistory.totalVotesCount', {
                           value: formatBalance(votingPower, asset.precision).formatted,
-                          symbol: asset.symbol,
                         })}
                       </BodyText>
                       <FootnoteText className="whitespace-nowrap text-text-tertiary">
-                        {t('governance.voteHistory.totalVotesCountConviction', {
-                          value: `${formatBalance(balance, asset.precision).formatted} ${asset.symbol}`,
-                          conviction,
+                        {t('general.actions.multiply', {
+                          value: formatAsset(balance, asset),
+                          multiplier: conviction,
                         })}
                       </FootnoteText>
                     </div>

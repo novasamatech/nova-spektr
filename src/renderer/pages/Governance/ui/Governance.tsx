@@ -1,11 +1,12 @@
 import { useGate, useUnit } from 'effector-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useI18n } from '@app/providers';
+import { type Referendum, type ReferendumId } from '@shared/core';
 import { Header, Plate } from '@shared/ui';
+import { referendumService } from '@entities/governance';
 import { InactiveNetwork } from '@entities/network';
 import {
-  type AggregatedReferendum,
   CompletedReferendums,
   Delegations,
   Locks,
@@ -15,10 +16,12 @@ import {
   ReferendumFilters,
   ReferendumSearch,
   networkSelectorModel,
+  votingAssetModel,
 } from '@features/governance';
 import { AddDelegationModal } from '@/widgets/AddDelegationModal/components/AddDelegationModal';
 import { addDelegationModel } from '@/widgets/AddDelegationModal/model/addDelegation';
 import { UnlockModal, unlockAggregate } from '@/widgets/UnlockModal';
+import { VoteModal } from '@widgets/VoteModal';
 import { governancePageAggregate } from '../aggregates/governancePage';
 
 import { EmptyGovernance } from './EmptyGovernance';
@@ -28,14 +31,27 @@ export const Governance = () => {
 
   const { t } = useI18n();
 
-  const [selectedReferendum, setSelectedReferendum] = useState<AggregatedReferendum | null>(null);
+  const [selectedReferendumId, setSelectedReferendumId] = useState<ReferendumId | null>(null);
+  const [showVoteModal, setShowVoteModal] = useState(false);
   const isApiConnected = useUnit(networkSelectorModel.$isApiConnected);
-  const governanceChain = useUnit(networkSelectorModel.$governanceChain);
+  const chain = useUnit(networkSelectorModel.$governanceChain);
+  const asset = useUnit(votingAssetModel.$votingAsset);
 
   const isLoading = useUnit(governancePageAggregate.$isLoading);
   const isTitlesLoading = useUnit(governancePageAggregate.$isTitlesLoading);
+  const all = useUnit(governancePageAggregate.$all);
   const ongoing = useUnit(governancePageAggregate.$ongoing);
   const completed = useUnit(governancePageAggregate.$completed);
+
+  const selectReferendum = (referendum: Referendum) => {
+    setSelectedReferendumId(referendum.referendumId);
+  };
+
+  const selectedReferendum = useMemo(() => {
+    if (!selectedReferendumId) return null;
+
+    return all.find((x) => x.referendumId === selectedReferendumId) ?? null;
+  }, [all, selectedReferendumId]);
 
   return (
     <div className="h-full flex flex-col">
@@ -62,13 +78,13 @@ export const Governance = () => {
               referendums={ongoing}
               isTitlesLoading={isTitlesLoading}
               isLoading={isLoading}
-              onSelect={setSelectedReferendum}
+              onSelect={selectReferendum}
             />
             <CompletedReferendums
               referendums={completed}
               isTitlesLoading={isTitlesLoading}
               isLoading={isLoading}
-              onSelect={setSelectedReferendum}
+              onSelect={selectReferendum}
             />
           </div>
 
@@ -77,11 +93,24 @@ export const Governance = () => {
         </section>
       </div>
 
-      {selectedReferendum && governanceChain && (
+      {selectedReferendum && chain && (
         <ReferendumDetailsDialog
           referendum={selectedReferendum}
-          chain={governanceChain}
-          onClose={() => setSelectedReferendum(null)}
+          chain={chain}
+          onVoteRequest={() => setShowVoteModal(true)}
+          onClose={() => {
+            setShowVoteModal(false);
+            setSelectedReferendumId(null);
+          }}
+        />
+      )}
+
+      {selectedReferendum && referendumService.isOngoing(selectedReferendum) && chain && asset && showVoteModal && (
+        <VoteModal
+          referendum={selectedReferendum}
+          chain={chain}
+          asset={asset}
+          onClose={() => setShowVoteModal(false)}
         />
       )}
 

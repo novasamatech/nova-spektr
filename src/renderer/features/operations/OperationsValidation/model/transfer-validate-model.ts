@@ -14,8 +14,8 @@ import { getAssetById, toAccountId, transferableAmount } from '@shared/lib/utils
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel } from '@entities/network';
 import { transactionService } from '@entities/transaction';
-import { TransferRules } from '@features/operations/OperationsValidation';
 import { type BalanceMap, type NetworkStore } from '@widgets/Transfer/lib/types';
+import { TransferRules } from '../lib/transfer-rules';
 import { validationUtils } from '../lib/validation-utils';
 import {
   type TransferAccountStore,

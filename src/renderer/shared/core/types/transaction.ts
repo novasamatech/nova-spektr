@@ -44,7 +44,9 @@ export const enum TransactionType {
   REMOVE_PURE_PROXY = 'kill_pure_proxy',
 
   UNLOCK = 'unlock',
-  REMOVE_VOTE = 'remove_vote',
+  VOTE = 'vote',
+  REVOTE = 'revote',
+  RETRACT_VOTE = 'remove_vote',
   DELEGATE = 'delegate',
   UNDELEGATE = 'undelegate',
 }
@@ -72,11 +74,11 @@ export type MultisigTxStatus = MultisigTxInitStatus | MultisigTxFinalStatus;
 
 // TODO: extend args for all Transaction types
 // TODO: use it for send transaction
-export type Transaction = {
+export type Transaction<Args extends NonNullable<unknown> = Record<string, any>> = {
   chainId: ChainId;
   address: Address;
   type: TransactionType;
-  args: Record<string, any>;
+  args: Args;
 };
 
 // TODO: use it for decoding only

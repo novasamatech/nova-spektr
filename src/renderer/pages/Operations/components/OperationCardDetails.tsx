@@ -20,7 +20,7 @@ import { matrixModel } from '@entities/matrix';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
 import { type ExtendedChain, networkModel, networkUtils } from '@entities/network';
 import { proxyUtils } from '@entities/proxy';
-import { singnatoryUtils } from '@entities/signatory';
+import { signatoryUtils } from '@entities/signatory';
 import { ValidatorsModal, useValidatorsMap } from '@entities/staking';
 import {
   isAddProxyTransaction,
@@ -96,7 +96,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
 
   const valueClass = 'text-text-secondary';
   const depositorWallet =
-    depositorSignatory && singnatoryUtils.getSignatoryWallet(wallets, depositorSignatory.accountId);
+    depositorSignatory && signatoryUtils.getSignatoryWallet(wallets, depositorSignatory.accountId);
 
   return (
     <dl className="flex flex-col gap-y-1 w-full">

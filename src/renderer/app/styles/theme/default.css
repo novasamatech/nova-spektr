@@ -28,6 +28,7 @@
   --icon-positive: rgb(1, 166, 62);
   --icon-warning: rgb(246, 143, 7);
   --icon-negative: rgb(245, 33, 99);
+  --icon-blue-line: rgba(70, 73, 246, 0.24);
 
   /* BUTTON */
   /* primary */
@@ -39,11 +40,21 @@
   --secondary-button-background: rgba(69, 69, 137, 0.06);
   --secondary-button-background-hover: rgba(69, 69, 137, 0.12);
   --secondary-button-background-active: rgba(69, 69, 137, 0.16);
-  --scroll-background-default: rgba(69, 69, 137, 0.48);
+  /* secondary-positive */
+  --secondary-positive-button-background: rgba(1, 166, 62, 0.06);
+  --secondary-positive-button-background-hover: rgba(1, 166, 62, 0.12);
+  --secondary-positive-button-background-active: rgba(1, 166, 62, 0.16);
+  /* secondary-negative */
+  --secondary-negative-button-background: rgba(245, 33, 99, 0.06);
+  --secondary-negative-button-background-hover: rgba(245, 33, 99, 0.1);
+  --secondary-negative-button-background-active: rgba(245, 33, 99, 0.16);
+  /* white */
   --white-button-background-default: #ffffff;
   --white-button-background-hover: rgba(255, 255, 255, 0.8);
   --white-button-background-active: rgba(255, 255, 255, 0.64);
   --white-button-background-disabled: rgba(255, 255, 255, 0.48);
+
+  --scroll-background-default: rgba(69, 69, 137, 0.48);
 
   /* BORDER */
   --token-container-border: rgba(69, 69, 137, 0.06);

@@ -1,10 +1,12 @@
+import { type BN } from '@polkadot/util';
+
 import { useI18n } from '@app/providers';
 import { type Asset, type AssetByChains } from '@shared/core';
 import { cnTw, formatBalance } from '@shared/lib/utils';
 import { AssetIcon } from '@entities/asset';
 
 type Props = {
-  value: string;
+  value: BN | string;
   asset?: Asset | AssetByChains; // maybe change type to Asset | number to allow pass just asset id and then get asset by id
   className?: string;
   showIcon?: boolean;

@@ -2,6 +2,7 @@ import { sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type Chain, type Referendum } from '@shared/core';
+import { permissionUtils, walletModel } from '@entities/wallet';
 import { descriptionsModel } from '../model/description';
 import { timelineModel } from '../model/timeline';
 import { titleModel } from '../model/title';
@@ -11,6 +12,8 @@ import { proposerIdentityAggregate } from './proposerIdentity';
 import { votingAggregate } from './voting';
 
 const flow = createGate<{ chain: Chain; referendum: Referendum }>();
+
+const $canVote = walletModel.$activeWallet.map((wallet) => (wallet ? permissionUtils.canVote(wallet) : false));
 
 sample({
   clock: flow.open,
@@ -33,6 +36,7 @@ export const detailsAggregate = {
   $isTimelinesLoading: timelineModel.$isTimelineLoading,
   $isProposersLoading: proposerIdentityAggregate.$isProposersLoading,
   $isDescriptionLoading: descriptionsModel.$isDescriptionLoading,
+  $canVote,
 
   gates: { flow },
 };
