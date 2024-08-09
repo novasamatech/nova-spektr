@@ -5,7 +5,8 @@ import { type GovernanceApi, type ReferendumTimelineRecord } from '@shared/api/g
 import { type Chain, type ChainId, type ReferendumId } from '@shared/core';
 import { setNestedValue } from '@shared/lib/utils';
 import { governanceModel } from '@entities/governance';
-import { networkSelectorModel } from '../model/networkSelector';
+
+import { networkSelectorModel } from './networkSelector';
 
 const $timelines = createStore<Record<ChainId, Record<ReferendumId, ReferendumTimelineRecord[]>>>({});
 

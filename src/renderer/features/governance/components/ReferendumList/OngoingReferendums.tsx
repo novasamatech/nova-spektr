@@ -1,4 +1,4 @@
-import { memo, useDeferredValue } from 'react';
+import { memo } from 'react';
 
 import { useI18n } from '@app/providers';
 import { type OngoingReferendum } from '@shared/core';
@@ -23,9 +23,8 @@ const placeholder = Array.from({ length: 4 }, (_, index) => (
 
 export const OngoingReferendums = memo<Props>(({ referendums, isLoading, isTitlesLoading, onSelect }) => {
   const { t } = useI18n();
-  const deferredReferendums = useDeferredValue(referendums);
 
-  if (deferredReferendums.length === 0) {
+  if (referendums.length === 0) {
     return null;
   }
 
@@ -44,10 +43,10 @@ export const OngoingReferendums = memo<Props>(({ referendums, isLoading, isTitle
         </div>
       </Accordion.Button>
       <Accordion.Content as="ul" className="flex flex-col gap-y-2">
-        {isLoading && placeholder}
+        {!!isLoading && placeholder}
 
         {!isLoading &&
-          deferredReferendums.map((referendum) => (
+          referendums.map((referendum) => (
             <li key={referendum.referendumId}>
               <OngoingReferendumItem referendum={referendum} isTitlesLoading={isTitlesLoading} onSelect={onSelect} />
             </li>

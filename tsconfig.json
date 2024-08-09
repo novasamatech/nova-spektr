@@ -11,6 +11,8 @@
     "pretty": true,
     "importHelpers": true,
     "noUnusedLocals": true,
+    // TODO turn on
+    "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,

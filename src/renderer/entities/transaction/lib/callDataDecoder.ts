@@ -368,7 +368,19 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
         target: decoded.args[1].toString(),
       };
     },
-    [TransactionType.REMOVE_VOTE]: (decoded): Record<string, any> => {
+    [TransactionType.VOTE]: (decoded): Record<string, any> => {
+      return {
+        pollIndex: decoded.args[0].toString(),
+        vote: decoded.args[1].toHuman(),
+      };
+    },
+    [TransactionType.REVOTE]: (decoded): Record<string, any> => {
+      return {
+        pollIndex: decoded.args[0].toString(),
+        vote: decoded.args[1].toHuman(),
+      };
+    },
+    [TransactionType.RETRACT_VOTE]: (decoded): Record<string, any> => {
       return {
         class: decoded.args[0].toString(),
         index: decoded.args[1].toString(),
@@ -485,7 +497,7 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
     if (GOVERNANCE_SECTION !== section) return;
 
     return {
-      removeVote: TransactionType.REMOVE_VOTE,
+      removeVote: TransactionType.RETRACT_VOTE,
       unlock: TransactionType.UNLOCK,
       delegate: TransactionType.DELEGATE,
       undelegate: TransactionType.UNDELEGATE,

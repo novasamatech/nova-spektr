@@ -1,4 +1,4 @@
-import { createChunkedRequest } from '../lib/createChunkedRequest';
+import { createQueuedRequest } from '@/shared/lib/utils';
 import {
   type SubsquareFullReferendum,
   type SubsquareReferendumListResponse,
@@ -42,11 +42,10 @@ const fetchReferendumList = async (
 
   const requestParams = { method: 'GET' };
 
-  return createChunkedRequest<SubsquareReferendumListResponse, SubsquareSimpleReferendum>({
+  return createQueuedRequest<SubsquareReferendumListResponse, SubsquareSimpleReferendum>({
     makeRequest: (index) => fetch(getApiUrl(index + 1, pageSize), requestParams).then((res) => res.json()),
     getRecords: (res) => res.items,
-    getTotalRequests: (res) => Math.ceil(Math.min(res.total, limit) / pageSize),
-    chunkSize: 5,
+    getTotalRequests: (res) => Math.ceil(res.total / pageSize),
     callback,
   });
 };

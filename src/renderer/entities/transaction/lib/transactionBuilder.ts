@@ -5,10 +5,13 @@ import {
   type Asset,
   type Chain,
   type ChainId,
+  type ReferendumId,
+  type TrackId,
   type Transaction,
   TransactionType,
 } from '@shared/core';
 import { TEST_ACCOUNTS, formatAmount, getAssetId, toAddress } from '@shared/lib/utils';
+import { type TransactionVote, type VoteTransaction } from '@/entities/governance';
 
 import { TransferType } from './common/constants';
 
@@ -25,6 +28,8 @@ export const transactionBuilder = {
   buildUndelegate,
   buildEditDelegation,
   buildUnlock,
+  buildVote,
+  buildRetractVote,
 };
 
 type TransferParams = {
@@ -340,7 +345,7 @@ function buildUnlock({ chain, accountId, actions, amount: value }: UnlockParams)
     if (action.type === 'remove_vote') {
       return {
         ...transaction,
-        type: TransactionType.REMOVE_VOTE,
+        type: TransactionType.RETRACT_VOTE,
         args: {
           trackId: action.trackId,
           referendumId: action.referendumId,
@@ -363,4 +368,43 @@ function buildUnlock({ chain, accountId, actions, amount: value }: UnlockParams)
   if (unlockTxs.length === 1) return unlockTxs[0];
 
   return buildBatchAll({ chain, accountId, transactions: unlockTxs });
+}
+
+type VoteParams = {
+  chain: Chain;
+  accountId: AccountId;
+  trackId: TrackId;
+  referendumId: ReferendumId;
+  vote: TransactionVote;
+};
+
+function buildVote({ chain, accountId, referendumId, trackId, vote }: VoteParams): VoteTransaction {
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.VOTE,
+    args: {
+      track: trackId,
+      referendum: referendumId,
+      vote,
+    },
+  };
+}
+
+type RetractVoteParams = {
+  chain: Chain;
+  accountId: AccountId;
+  referendumId: ReferendumId;
+  trackId: TrackId;
+  conviction: number;
+  balance: string;
+};
+
+function buildRetractVote({ chain, accountId, trackId, referendumId }: RetractVoteParams): Transaction {
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.RETRACT_VOTE,
+    args: { class: trackId, index: referendumId },
+  };
 }

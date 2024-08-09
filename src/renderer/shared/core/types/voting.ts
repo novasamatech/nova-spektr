@@ -7,21 +7,21 @@ import { type TrackId } from './track';
 export type Conviction = 'None' | 'Locked1x' | 'Locked2x' | 'Locked3x' | 'Locked4x' | 'Locked5x' | 'Locked6x';
 
 export type CastingVoting = {
-  type: 'casting';
-  casting: {
-    votes: Record<ReferendumId, AccountVote>;
-    prior: PriorLock;
-  };
+  type: 'Casting';
+  track: string;
+  address: Address;
+  votes: Record<ReferendumId, AccountVote>;
+  prior: PriorLock;
 };
 
 export type DelegatingVoting = {
-  type: 'delegating';
-  delegating: {
-    balance: BN;
-    target: Address;
-    conviction: Conviction;
-    prior: PriorLock;
-  };
+  type: 'Delegating';
+  track: string;
+  address: Address;
+  balance: BN;
+  target: Address;
+  conviction: Conviction;
+  prior: PriorLock;
 };
 
 export type Voting = CastingVoting | DelegatingVoting;
@@ -32,31 +32,22 @@ export type PriorLock = {
 };
 
 export type StandardVote = {
-  type: 'standard';
-  track: string;
-  address: Address;
-  referendumId: string;
+  type: 'Standard';
   vote: {
-    type: 'aye' | 'nay';
+    aye: boolean;
     conviction: Conviction;
   };
   balance: BN;
 };
 
 export type SplitVote = {
-  type: 'split';
-  track: string;
-  address: Address;
-  referendumId: string;
+  type: 'Split';
   aye: BN;
   nay: BN;
 };
 
 export type SplitAbstainVote = {
-  type: 'splitAbstain';
-  track: string;
-  address: Address;
-  referendumId: string;
+  type: 'SplitAbstain';
   aye: BN;
   nay: BN;
   abstain: BN;

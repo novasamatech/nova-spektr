@@ -2,10 +2,13 @@ import DelegateImg, { ReactComponent as DelegateSvg } from '@shared/assets/image
 import EditDelegationImg, {
   ReactComponent as EditDelegationSvg,
 } from '@shared/assets/images/functionals/opengov-edit-delegation.svg';
+import RetractImg, { ReactComponent as RetractSvg } from '@shared/assets/images/functionals/opengov-retract.svg';
+import RevoteImg, { ReactComponent as RevoteSvg } from '@shared/assets/images/functionals/opengov-revote.svg';
 import UndelegateImg, {
   ReactComponent as UndelegateSvg,
 } from '@shared/assets/images/functionals/opengov-undelegate.svg';
 import UnlockImg, { ReactComponent as UnlockSvg } from '@shared/assets/images/functionals/opengov-unlock.svg';
+import VoteImg, { ReactComponent as VoteSvg } from '@shared/assets/images/functionals/opengov-vote.svg';
 import ChangeValidatorsImg, {
   ReactComponent as ChangeValidatorsSvg,
 } from '@shared/assets/images/mst/change-validators-mst.svg';
@@ -36,6 +39,9 @@ const MstImages = {
   changeValidatorsMst: { svg: ChangeValidatorsSvg, img: ChangeValidatorsImg },
   returnToStakeMst: { svg: ReturnToStakeSvg, img: ReturnToStakeImg },
   proxyMst: { svg: DelegatedAuthoritiesSvg, img: DelegatedAuthoritiesImg },
+  voteMst: { svg: VoteSvg, img: VoteImg },
+  revoteMst: { svg: RevoteSvg, img: RevoteImg },
+  retractMst: { svg: RetractSvg, img: RetractImg },
   unlockMst: { svg: UnlockSvg, img: UnlockImg },
   delegateMst: { svg: DelegateSvg, img: DelegateImg },
   undelegateMst: { svg: UndelegateSvg, img: UndelegateImg },

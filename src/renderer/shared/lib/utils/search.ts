@@ -37,11 +37,15 @@ export const performSearch = <T extends object>({ records, query, queryMinLength
       switch (typeof field) {
         case 'string':
         case 'number': {
-          const result = field.toString().toLowerCase().includes(normalizedQuery);
-          if (result) {
-            found = true;
-            weight += weights[key] ?? 0;
+          const value = field.toString().toLowerCase();
+          const result = value.indexOf(normalizedQuery);
+
+          if (result === -1) {
+            continue;
           }
+
+          found = true;
+          weight += (weights[key] ?? 0) + (value.length - result) * 0.1;
           break;
         }
       }

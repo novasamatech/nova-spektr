@@ -157,12 +157,12 @@ function castingClaimableLocks(
   undecidingTimeout: BlockHeight,
 ): ClaimableLock[] {
   const priorLock = {
-    claimAt: { type: 'at', block: voting.casting.prior.unlockAt },
-    amount: voting.casting.prior.amount,
+    claimAt: { type: 'at', block: voting.prior.unlockAt },
+    amount: voting.prior.amount,
     affected: [{ trackId, type: 'track' }],
   } satisfies ClaimableLock;
 
-  const standardVotes = Object.entries(voting.casting.votes);
+  const standardVotes = Object.entries(voting.votes);
 
   const standardVoteLocks = standardVotes.map<ClaimableLock>(([referendumId, standardVote]) => {
     const estimatedEnd = maxConvictionEndOf(
@@ -192,13 +192,13 @@ function castingClaimableLocks(
 function delegatingClaimableLocks(trackId: TrackId, voting: DelegatingVoting): ClaimableLock[] {
   const delegationLock = {
     claimAt: { type: 'until' },
-    amount: voting.delegating.balance,
+    amount: voting.balance,
     affected: [],
   } satisfies ClaimableLock;
 
   const priorLock = {
-    claimAt: { type: 'at', block: voting.delegating.prior.unlockAt },
-    amount: voting.delegating.prior.amount,
+    claimAt: { type: 'at', block: voting.prior.unlockAt },
+    amount: voting.prior.amount,
     affected: [{ type: 'track', trackId }],
   } satisfies ClaimableLock;
 
@@ -261,7 +261,7 @@ function completedReferendumLockDuration(
   lockPeriod: BlockHeight,
 ): BlockHeight {
   // vote has the same direction as outcome
-  if (votingService.isStandardVote(vote) && vote.vote.type === referendumOutcome) {
+  if (votingService.isStandardVote(vote) && vote.vote.aye === (referendumOutcome === 'aye')) {
     return locksService.getLockPeriods(vote.vote.conviction) * lockPeriod;
   }
 

@@ -15,7 +15,7 @@ const $totalDelegations = combine(
       .reduce((acc, value) => {
         const voting = Object.values(value).find(votingService.isDelegating);
 
-        return voting ? acc.add(voting.delegating.balance) : acc;
+        return voting ? acc.iadd(voting.balance) : acc;
       }, new BN(0))
       .toString();
   },

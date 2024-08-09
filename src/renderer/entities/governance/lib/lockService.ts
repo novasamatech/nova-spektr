@@ -25,25 +25,25 @@ const isClaimUntil = (claim: ClaimTime): claim is ClaimTimeUntil => claim.type =
 
 const getTotalLock = (voting: Voting): BN => {
   if (votingService.isCasting(voting)) {
-    const maxVote = Object.values(voting.casting.votes).reduce<BN>((acc, vote) => {
-      if (vote.type === 'standard') {
+    const maxVote = Object.values(voting.votes).reduce<BN>((acc, vote) => {
+      if (votingService.isStandardVote(vote)) {
         acc = bnMax(vote.balance, acc);
       }
-      if (vote.type === 'split') {
+      if (votingService.isSplitVote(vote)) {
         acc = bnMax(vote.aye.add(vote.nay), acc);
       }
-      if (vote.type === 'splitAbstain') {
+      if (votingService.isSplitAbstainVote(vote)) {
         acc = bnMax(vote.aye.add(vote.nay).add(vote.abstain), acc);
       }
 
       return acc;
     }, BN_ZERO);
 
-    return bnMax(maxVote, voting.casting.prior.amount);
+    return bnMax(maxVote, voting.prior.amount);
   }
 
   if (votingService.isDelegating(voting)) {
-    return bnMax(voting.delegating.balance, voting.delegating.prior.amount);
+    return bnMax(voting.balance, voting.prior.amount);
   }
 
   return BN_ZERO;

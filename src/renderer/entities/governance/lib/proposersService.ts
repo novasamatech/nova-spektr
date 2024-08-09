@@ -5,6 +5,10 @@ import { u8aToString } from '@polkadot/util';
 import { type Address, type Identity, type SubIdentity } from '@/shared/core';
 
 async function getIdentities(api: ApiPromise, addresses: Address[]) {
+  if (addresses.length === 0) {
+    return {};
+  }
+
   const subIdentities = await getSubIdentities(api, addresses);
 
   return getParentIdentities(api, subIdentities);

@@ -1,5 +1,9 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type FrameSupportPreimagesBounded, type PalletReferendaCurve } from '@polkadot/types/lookup';
+import {
+  type FrameSupportPreimagesBounded,
+  type PalletReferendaCurve,
+  type PalletReferendaReferendumInfoConvictionVotingTally,
+} from '@polkadot/types/lookup';
 import { type BN, BN_ZERO } from '@polkadot/util';
 
 import {
@@ -19,6 +23,7 @@ import {
 
 export const governanceService = {
   getReferendums,
+  getReferendum,
   getVotingFor,
   getTrackLocks,
   getTracks,
@@ -38,6 +43,102 @@ function getProposalHex(proposal: FrameSupportPreimagesBounded) {
   return '';
 }
 
+const mapReferendum = (
+  referendumId: ReferendumId,
+  palette: PalletReferendaReferendumInfoConvictionVotingTally,
+): Referendum | null => {
+  if (palette.isOngoing) {
+    const ongoing = palette.asOngoing;
+    const deciding = ongoing.deciding.unwrapOr(null);
+    const decisionDeposit = ongoing.decisionDeposit.unwrapOr(null);
+    const proposal = getProposalHex(ongoing.proposal);
+
+    return {
+      referendumId,
+      type: ReferendumType.Ongoing,
+      track: ongoing.track.toString(),
+      proposal,
+      submitted: ongoing.submitted.toNumber(),
+      enactment: {
+        value: ongoing.enactment.isAfter ? ongoing.enactment.asAfter.toBn() : ongoing.enactment.asAt.toBn(),
+        type: ongoing.enactment.type,
+      },
+      inQueue: ongoing.inQueue.toPrimitive(),
+      deciding: deciding
+        ? {
+            since: deciding.since.toNumber(),
+            confirming: deciding.confirming.unwrapOr(BN_ZERO).toNumber(),
+          }
+        : null,
+      tally: {
+        ayes: ongoing.tally.ayes.toBn(),
+        nays: ongoing.tally.nays.toBn(),
+        support: ongoing.tally.support.toBn(),
+      },
+      decisionDeposit: decisionDeposit
+        ? {
+            who: decisionDeposit.who.toString(),
+            amount: decisionDeposit.amount.toBn(),
+          }
+        : null,
+      submissionDeposit: {
+        who: ongoing.submissionDeposit.who.toString(),
+        amount: ongoing.submissionDeposit.amount.toBn(),
+      },
+    };
+  }
+
+  if (palette.isRejected) {
+    const rejected = palette.asRejected;
+
+    return {
+      referendumId,
+      type: ReferendumType.Rejected,
+      since: rejected[0].toNumber(),
+    };
+  }
+
+  if (palette.isApproved) {
+    const approved = palette.asApproved;
+
+    return {
+      referendumId,
+      type: ReferendumType.Approved,
+      since: approved[0].toNumber(),
+    };
+  }
+
+  if (palette.isCancelled) {
+    const cancelled = palette.asCancelled;
+
+    return {
+      referendumId,
+      type: ReferendumType.Cancelled,
+      since: cancelled[0].toNumber(),
+    };
+  }
+
+  if (palette.isTimedOut) {
+    const timedOut = palette.asTimedOut;
+
+    return {
+      referendumId,
+      type: ReferendumType.TimedOut,
+      since: timedOut[0].toNumber(),
+    };
+  }
+
+  if (palette.isKilled) {
+    return {
+      referendumId,
+      type: ReferendumType.Killed,
+      since: palette.asKilled.toNumber(),
+    };
+  }
+
+  return null;
+};
+
 async function getReferendums(api: ApiPromise): Promise<Referendum[]> {
   const referendums = await api.query.referenda.referendumInfoFor.entries();
 
@@ -46,100 +147,26 @@ async function getReferendums(api: ApiPromise): Promise<Referendum[]> {
   for (const [refIndex, option] of referendums) {
     if (option.isNone) continue;
 
-    const referendum = option.unwrap();
+    const pallet = option.unwrap();
     const referendumId = refIndex.args[0].toString();
+    const referendum = mapReferendum(referendumId, pallet);
 
-    if (referendum.isOngoing) {
-      const ongoing = referendum.asOngoing;
-      const deciding = ongoing.deciding.unwrapOr(null);
-      const decisionDeposit = ongoing.decisionDeposit.unwrapOr(null);
-      const proposal = getProposalHex(ongoing.proposal);
-
-      result.push({
-        referendumId,
-        type: ReferendumType.Ongoing,
-        track: ongoing.track.toString(),
-        proposal,
-        submitted: ongoing.submitted.toNumber(),
-        enactment: {
-          value: ongoing.enactment.isAfter ? ongoing.enactment.asAfter.toBn() : ongoing.enactment.asAt.toBn(),
-          type: ongoing.enactment.type,
-        },
-        inQueue: ongoing.inQueue.toPrimitive(),
-        deciding: deciding
-          ? {
-              since: deciding.since.toNumber(),
-              confirming: deciding.confirming.unwrapOr(BN_ZERO).toNumber(),
-            }
-          : null,
-        tally: {
-          ayes: ongoing.tally.ayes.toBn(),
-          nays: ongoing.tally.nays.toBn(),
-          support: ongoing.tally.support.toBn(),
-        },
-        decisionDeposit: decisionDeposit
-          ? {
-              who: decisionDeposit.who.toString(),
-              amount: decisionDeposit.amount.toBn(),
-            }
-          : null,
-        submissionDeposit: {
-          who: ongoing.submissionDeposit.who.toString(),
-          amount: ongoing.submissionDeposit.amount.toBn(),
-        },
-      });
-    }
-
-    if (referendum.isRejected) {
-      const rejected = referendum.asRejected;
-
-      result.push({
-        referendumId,
-        type: ReferendumType.Rejected,
-        since: rejected[0].toNumber(),
-      });
-    }
-
-    if (referendum.isApproved) {
-      const approved = referendum.asApproved;
-
-      result.push({
-        referendumId,
-        type: ReferendumType.Approved,
-        since: approved[0].toNumber(),
-      });
-    }
-
-    if (referendum.isCancelled) {
-      const cancelled = referendum.asCancelled;
-
-      result.push({
-        referendumId,
-        type: ReferendumType.Cancelled,
-        since: cancelled[0].toNumber(),
-      });
-    }
-
-    if (referendum.isTimedOut) {
-      const timedOut = referendum.asTimedOut;
-
-      result.push({
-        referendumId,
-        type: ReferendumType.TimedOut,
-        since: timedOut[0].toNumber(),
-      });
-    }
-
-    if (referendum.isKilled) {
-      result.push({
-        referendumId,
-        type: ReferendumType.Killed,
-        since: referendum.asKilled.toNumber(),
-      });
+    if (referendum) {
+      result.push(referendum);
     }
   }
 
   return result;
+}
+
+async function getReferendum(id: ReferendumId, api: ApiPromise): Promise<Referendum | null> {
+  const palette = await api.query.referenda.referendumInfoFor(parseInt(id));
+
+  if (palette.isNone) {
+    return null;
+  }
+
+  return mapReferendum(id, palette.unwrap());
 }
 
 async function getVotingFor(
@@ -169,15 +196,15 @@ async function getVotingFor(
       const delegation = convictionVoting.asDelegating;
 
       result[address][trackId] = {
-        type: 'delegating',
-        delegating: {
-          balance: delegation.balance.toBn(),
-          conviction: delegation.conviction.type,
-          target: delegation.target.toString(),
-          prior: {
-            unlockAt: delegation.prior[0].toNumber(),
-            amount: delegation.prior[1].toBn(),
-          },
+        type: 'Delegating',
+        address,
+        track: trackId,
+        balance: delegation.balance.toBn(),
+        conviction: delegation.conviction.type,
+        target: delegation.target.toString(),
+        prior: {
+          unlockAt: delegation.prior[0].toNumber(),
+          amount: delegation.prior[1].toBn(),
         },
       };
     }
@@ -190,12 +217,9 @@ async function getVotingFor(
         if (vote.isStandard) {
           const standardVote = vote.asStandard;
           votes[referendumId] = {
-            type: 'standard',
-            address,
-            track: trackId,
-            referendumId,
+            type: 'Standard',
             vote: {
-              type: standardVote.vote.isAye ? 'aye' : 'nay',
+              aye: standardVote.vote.isAye,
               conviction: standardVote.vote.conviction.type,
             },
             balance: standardVote.balance.toBn(),
@@ -205,10 +229,7 @@ async function getVotingFor(
         if (vote.isSplit) {
           const splitVote = vote.asSplit;
           votes[referendumId] = {
-            type: 'split',
-            address,
-            referendumId,
-            track: trackId,
+            type: 'Split',
             aye: splitVote.aye.toBn(),
             nay: splitVote.nay.toBn(),
           };
@@ -217,10 +238,7 @@ async function getVotingFor(
         if (vote.isSplitAbstain) {
           const splitAbstainVote = vote.asSplitAbstain;
           votes[referendumId] = {
-            type: 'splitAbstain',
-            address,
-            referendumId,
-            track: trackId,
+            type: 'SplitAbstain',
             aye: splitAbstainVote.aye.toBn(),
             nay: splitAbstainVote.nay.toBn(),
             abstain: splitAbstainVote.abstain.toBn(),
@@ -229,13 +247,13 @@ async function getVotingFor(
       }
 
       result[address][trackId] = {
-        type: 'casting',
-        casting: {
-          votes,
-          prior: {
-            unlockAt: convictionVoting.asCasting.prior[0].toNumber(),
-            amount: convictionVoting.asCasting.prior[1].toBn(),
-          },
+        type: 'Casting',
+        track: trackId,
+        address,
+        votes,
+        prior: {
+          unlockAt: convictionVoting.asCasting.prior[0].toNumber(),
+          amount: convictionVoting.asCasting.prior[1].toBn(),
         },
       };
     }

@@ -4,6 +4,7 @@ import {
   type AccountVote,
   type Address,
   type CastingVoting,
+  type Chain,
   type Conviction,
   type DelegatingVoting,
   type ReferendumId,
@@ -25,6 +26,18 @@ enum ConvictionMultiplier {
   Locked5x = 5,
   Locked6x = 6,
 }
+
+const convictionList = [
+  'None',
+  'Locked1x',
+  'Locked2x',
+  'Locked3x',
+  'Locked4x',
+  'Locked5x',
+  'Locked6x',
+] as const satisfies Conviction[];
+
+const getConvictionList = () => convictionList;
 
 const getAccountVoteConviction = (vote: AccountVote): Conviction => {
   if (isStandardVote(vote)) {
@@ -59,7 +72,7 @@ const isReferendumVoted = (referendumId: ReferendumId, voting: VotingMap) => {
   for (const votingMap of Object.values(voting)) {
     for (const voting of Object.values(votingMap)) {
       if (isCasting(voting)) {
-        const referendumVote = voting.casting.votes[referendumId];
+        const referendumVote = voting.votes[referendumId];
         if (referendumVote) {
           return true;
         }
@@ -76,7 +89,7 @@ const getReferendumAccountVotes = (referendumId: ReferendumId, voting: VotingMap
   for (const [address, votingMap] of Object.entries(voting)) {
     for (const voting of Object.values(votingMap)) {
       if (isCasting(voting)) {
-        const referendumVote = voting.casting.votes[referendumId];
+        const referendumVote = voting.votes[referendumId];
         if (referendumVote) {
           res[address] = referendumVote;
         }
@@ -85,6 +98,40 @@ const getReferendumAccountVotes = (referendumId: ReferendumId, voting: VotingMap
   }
 
   return res;
+};
+
+const getReferendumVoting = (referendumId: ReferendumId, voting: VotingMap) => {
+  const res: Record<Address, Voting> = {};
+
+  for (const [address, votingMap] of Object.entries(voting)) {
+    for (const voting of Object.values(votingMap)) {
+      if (isCasting(voting)) {
+        if (referendumId in voting.votes) {
+          res[address] = voting;
+        }
+      }
+    }
+  }
+
+  return res;
+};
+
+const getReferendumVote = (referendumId: ReferendumId, address: Address, voting: VotingMap) => {
+  for (const [votingAddress, votingMap] of Object.entries(voting)) {
+    if (votingAddress !== address) {
+      continue;
+    }
+
+    for (const voting of Object.values(votingMap)) {
+      if (isCasting(voting)) {
+        if (referendumId in voting.votes) {
+          return voting.votes[referendumId];
+        }
+      }
+    }
+  }
+
+  return null;
 };
 
 const getReferendumAccountVotesForAddresses = (referendumId: ReferendumId, addresses: Address[], voting: VotingMap) => {
@@ -135,19 +182,21 @@ const calculateAccountVotesTotalBalance = (votes: AccountVote[]) => {
   return votes.reduce((acc, vote) => acc.iadd(calculateAccountVotePower(vote)), new BN(0));
 };
 
+const getVotingAsset = (chain: Chain) => chain.assets.at(0) ?? null;
+
 // Voting types
 
-const isCasting = (voting: Voting): voting is CastingVoting => voting.type === 'casting';
+const isCasting = (voting: Voting): voting is CastingVoting => voting.type === 'Casting';
 
-const isDelegating = (voting: Voting): voting is DelegatingVoting => voting.type === 'delegating';
+const isDelegating = (voting: Voting): voting is DelegatingVoting => voting.type === 'Delegating';
 
 // Voted types
 
-const isStandardVote = (vote: AccountVote): vote is StandardVote => vote.type === 'standard';
+const isStandardVote = (vote: AccountVote): vote is StandardVote => vote.type === 'Standard';
 
-const isSplitVote = (vote: AccountVote): vote is SplitVote => vote.type === 'split';
+const isSplitVote = (vote: AccountVote): vote is SplitVote => vote.type === 'Split';
 
-const isSplitAbstainVote = (vote: AccountVote): vote is SplitAbstainVote => vote.type === 'splitAbstain';
+const isSplitAbstainVote = (vote: AccountVote): vote is SplitAbstainVote => vote.type === 'SplitAbstain';
 
 export const votingService = {
   isCasting,
@@ -157,11 +206,15 @@ export const votingService = {
   isSplitAbstainVote,
   isReferendumVoted,
 
+  getConvictionList,
   getAccountVoteConviction,
   getConvictionMultiplier,
   getVotedCount,
   getVoteFractions,
+  getVotingAsset,
 
+  getReferendumVote,
+  getReferendumVoting,
   getReferendumAccountVotes,
   getReferendumAccountVotesForAddresses,
 

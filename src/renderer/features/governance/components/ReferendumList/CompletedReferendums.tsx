@@ -30,7 +30,7 @@ export const CompletedReferendums = memo<Props>(({ referendums, isLoading, isTit
   }
 
   return (
-    <Accordion isDefaultOpen>
+    <Accordion>
       <Accordion.Button buttonClass="py-1.5 px-2 mb-2">
         <div className="flex items-center gap-x-2 w-full">
           <CaptionText className="uppercase text-text-secondary tracking-[0.75px] font-semibold">
@@ -44,7 +44,7 @@ export const CompletedReferendums = memo<Props>(({ referendums, isLoading, isTit
         </div>
       </Accordion.Button>
       <Accordion.Content as="ul" className="flex flex-col gap-y-2">
-        {isLoading && placeholder}
+        {!!isLoading && placeholder}
 
         {!isLoading &&
           deferredReferendums.map((referendum) => (

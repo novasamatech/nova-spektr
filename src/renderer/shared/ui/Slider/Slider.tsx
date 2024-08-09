@@ -87,6 +87,7 @@ export const Slider = forwardRef<HTMLSpanElement, Props>(
             step={stepSize}
             min={min}
             max={max}
+            disabled={disabled}
             minStepsBetweenThumbs={1}
             onValueChange={handleChange}
           >

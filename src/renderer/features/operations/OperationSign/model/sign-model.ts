@@ -12,7 +12,7 @@ type Input = {
   signingPayloads: SigningPayload[];
 };
 
-type SignatureData = {
+export type SignatureData = {
   signatures: HexString[];
   txPayloads: Uint8Array[];
 };

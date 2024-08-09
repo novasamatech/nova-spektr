@@ -1,4 +1,4 @@
-import { createChunkedRequest } from '../lib/createChunkedRequest';
+import { createQueuedRequest } from '@/shared/lib/utils';
 import {
   type PolkassemblyDetailedPost,
   type PolkassemblyListingPost,
@@ -61,11 +61,10 @@ const fetchPostsList = async (
 
   const requestParams = { method: 'GET', headers: createHeaders(network) };
 
-  return createChunkedRequest<{ count: number; posts: PolkassemblyListingPost[] }, PolkassemblyListingPost>({
+  return createQueuedRequest<{ count: number; posts: PolkassemblyListingPost[] }, PolkassemblyListingPost>({
     makeRequest: (index) => fetch(getApiUrl(index + 1, pageSize), requestParams).then((res) => res.json()),
     getRecords: (res) => res.posts,
-    getTotalRequests: (res) => Math.ceil(Math.min(res.count, limit) / pageSize),
-    chunkSize: 5,
+    getTotalRequests: (res) => Math.ceil(res.count / pageSize),
     callback,
   });
 };

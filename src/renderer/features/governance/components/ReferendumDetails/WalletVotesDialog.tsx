@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { useI18n } from '@app/providers';
 import { type Asset, type Referendum } from '@shared/core';
 import { useModalClose } from '@shared/lib/hooks';
-import { formatBalance } from '@shared/lib/utils';
+import { formatAsset, formatBalance } from '@shared/lib/utils';
 import { BaseModal, BodyText, FootnoteText } from '@shared/ui';
 import { votingService } from '@entities/governance';
 import { AddressWithName } from '@entities/wallet';
@@ -24,15 +24,17 @@ export const WalletVotesDialog = ({ referendum, asset, onClose }: Props) => {
   const votes = useStoreMap({
     store: detailsAggregate.$votes,
     keys: [referendum.referendumId],
-    fn: (votes, [referendumId]) => votingService.getReferendumAccountVotes(referendumId, votes),
+    fn: (votes, [referendumId]) => votingService.getReferendumVoting(referendumId, votes),
   });
 
   const votesList = useMemo(
     () =>
       Object.entries(votes).flatMap(([address, vote]) => {
-        return votingListService.getDecoupledVotesFromVote(vote).map((vote) => ({ address, vote }));
+        return votingListService
+          .getDecoupledVotesFromVote(referendum.referendumId, vote)
+          .map((vote) => ({ address, vote }));
       }),
-    [votes],
+    [votes, referendum],
   );
 
   if (!asset) {
@@ -58,19 +60,25 @@ export const WalletVotesDialog = ({ referendum, asset, onClose }: Props) => {
       {votesList.map(({ address, vote }) => {
         return (
           <>
-            <AddressWithName className="px-2 py-3" addressFont="text-text-secondary" address={address} />
-            <BodyText className="px-2">{t(`governance.referendum.${vote.decision}`)}</BodyText>
-            <div className="flex flex-col basis-32 shrink-0 px-2 gap-0.5 items-end">
+            <AddressWithName
+              key={`address-${address}`}
+              className="px-2 py-3"
+              addressFont="text-text-secondary"
+              address={address}
+            />
+            <BodyText key={`decision-${address}`} className="px-2">
+              {t(`governance.referendum.${vote.decision}`)}
+            </BodyText>
+            <div key={`votingPower-${address}`} className="flex flex-col shrink-0 px-2 gap-0.5 items-end">
               <BodyText className="whitespace-nowrap">
                 {t('governance.walletVotes.totalVotesCount', {
                   value: formatBalance(vote.votingPower, asset.precision).formatted,
-                  symbol: asset.symbol,
                 })}
               </BodyText>
               <FootnoteText className="whitespace-nowrap text-text-tertiary">
-                {t('governance.walletVotes.totalVotesCountConviction', {
-                  value: `${formatBalance(vote.balance, asset.precision).formatted} ${asset.symbol}`,
-                  conviction: vote.conviction,
+                {t('general.actions.multiply', {
+                  value: formatAsset(vote.balance, asset),
+                  multiplier: vote.conviction,
                 })}
               </FootnoteText>
             </div>
