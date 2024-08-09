@@ -8,8 +8,8 @@ on:
   schedule:
     - cron: '0 6 * * *' # 9:00 GMT+3
   pull_request:
-    # paths:
-    #   - 'tests/**'
+    paths:
+      - 'tests/**'
 
 env:
   CI: true
