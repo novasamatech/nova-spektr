@@ -72,7 +72,7 @@ export const MultiSelect = ({
     return (
       <span className="flex items-center gap-x-2">
         <FootnoteText as="span">{multiPlaceholder || placeholder}</FootnoteText>
-        <CaptionText as="span" className="px-1.5 leading-4 h-4 rounded-[30px] bg-icon-accent text-white" align="center">
+        <CaptionText as="span" className="h-4 rounded-[30px] bg-icon-accent px-1.5 leading-4 text-white" align="center">
           {selectedOptions.length}
         </CaptionText>
       </span>
@@ -92,7 +92,7 @@ export const MultiSelect = ({
               SelectButtonStyle[theme].disabled,
               CommonInputStyles,
               CommonInputStylesTheme[theme],
-              'w-full inline-flex items-center gap-x-2 justify-between pr-2 py-2',
+              'inline-flex w-full items-center justify-between gap-x-2 py-2 pr-2',
             )}
             tabIndex={tabIndex}
           >
@@ -119,7 +119,7 @@ export const MultiSelect = ({
                       readOnly
                       checked={selected}
                       className={cnTw(
-                        'w-full pointer-events-none',
+                        'pointer-events-none w-full',
                         selected ? 'text-text-primary' : 'text-text-secondary',
                       )}
                     >

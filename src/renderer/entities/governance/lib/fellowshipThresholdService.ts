@@ -8,10 +8,10 @@ export const fellowshipThresholdService = {
   ayesFractionThreshold,
 };
 
-function supportThreshold(params: SupportParams): VotingThreshold {
+function supportThreshold(_: SupportParams): VotingThreshold {
   return { value: BN_ZERO, passing: false, curve: null };
 }
 
-function ayesFractionThreshold(params: AyesParams): VotingThreshold {
+function ayesFractionThreshold(_: AyesParams): VotingThreshold {
   return { value: BN_ZERO, passing: false, curve: null };
 }

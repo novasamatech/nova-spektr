@@ -30,7 +30,7 @@ export const AccountSelectModal = ({ isOpen, accounts, chain, onClose, onSelect 
           <li key={account.id}>
             <button
               className={cnTw(
-                'group flex items-center px-2 py-1.5 rounded w-full text-text-secondary',
+                'group flex w-full items-center rounded px-2 py-1.5 text-text-secondary',
                 'hover:bg-action-background-hover active:text-text-primary',
               )}
               onClick={() => onSelect(account)}

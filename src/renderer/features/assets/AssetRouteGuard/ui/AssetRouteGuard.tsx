@@ -29,5 +29,6 @@ export const AssetRouteGuard = ({ redirectPath, children }: Props) => {
     return null;
   }
 
+  // eslint-disable-next-line react/jsx-no-useless-fragment
   return <>{typeof children === 'function' ? children(chain, asset) : children}</>;
 };

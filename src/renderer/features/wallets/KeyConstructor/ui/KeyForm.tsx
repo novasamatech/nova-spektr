@@ -84,7 +84,7 @@ export const KeyForm = () => {
 
   return (
     <form onSubmit={submitForm}>
-      <div className="flex items-start gap-x-6 mb-4">
+      <div className="mb-4 flex items-start gap-x-6">
         <Select
           ref={networkRef}
           className="w-[228px]"
@@ -108,7 +108,7 @@ export const KeyForm = () => {
             {t(keyType?.errorText())}
           </InputHint>
         </div>
-        <div className="flex items-center gap-x-1 py-2 mt-6.5">
+        <div className="mt-6.5 flex items-center gap-x-1 py-2">
           <Checkbox
             disabled={!isKeyTypeSharded}
             checked={isSharded?.value}

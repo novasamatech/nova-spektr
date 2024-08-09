@@ -21,7 +21,7 @@ export const NavItem = ({ title, link, icon, badge }: Props) => {
       to={link}
       className={({ isActive }) =>
         cnTw(
-          'flex items-center px-3.5 py-2.5 outline-offset-reduced cursor-pointer select-none rounded-md hover:bg-tab-background',
+          'flex cursor-pointer select-none items-center rounded-md px-3.5 py-2.5 outline-offset-reduced hover:bg-tab-background',
           isActive && 'bg-tab-background',
         )
       }

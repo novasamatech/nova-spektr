@@ -28,5 +28,6 @@ export const EditRouteGuard = ({ redirectPath, children }: Props) => {
     return null;
   }
 
+  // eslint-disable-next-line react/jsx-no-useless-fragment
   return <>{typeof children === 'function' ? children(contact) : children}</>;
 };

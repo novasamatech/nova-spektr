@@ -42,7 +42,7 @@ export const BasketFilter = () => {
     selectedOptions.network.length || selectedOptions.status.length || selectedOptions.type.length;
 
   return (
-    <div className="flex items-center gap-2 w-[736px] h-9 ">
+    <div className="flex h-9 w-[736px] items-center gap-2">
       <MultiSelect
         className="w-[210px]"
         placeholder={t('operations.filters.operationTypePlaceholder')}
@@ -69,7 +69,7 @@ export const BasketFilter = () => {
       />
 
       {Boolean(filtersSelected) && (
-        <Button variant="text" className="ml-auto py-0 h-8.5" onClick={clearFilters}>
+        <Button variant="text" className="ml-auto h-8.5 py-0" onClick={clearFilters}>
           {t('operations.filters.clearAll')}
         </Button>
       )}

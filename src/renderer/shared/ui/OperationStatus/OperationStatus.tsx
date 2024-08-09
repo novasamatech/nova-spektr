@@ -18,7 +18,7 @@ type Props = {
 
 export const OperationStatus = ({ pallet, className, children }: PropsWithChildren<Props>) => {
   return (
-    <div className="flex items-center h-5 px-2.5 rounded-[20px] border border-shade-8">
+    <div className="flex h-5 items-center rounded-[20px] border border-shade-8 px-2.5">
       <CaptionText align="center" className={cnTw('uppercase', StatusColor[pallet], className)}>
         {children}
       </CaptionText>

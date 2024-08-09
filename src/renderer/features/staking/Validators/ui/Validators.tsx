@@ -14,7 +14,7 @@ type Props = {
 
 export const Validators = ({ onGoBack }: Props) => {
   return (
-    <div className="w-[784px] max-h-[660px] py-4">
+    <div className="max-h-[660px] w-[784px] py-4">
       <Header />
       <Spinner />
       <NoValidators />
@@ -60,7 +60,7 @@ const Spinner = () => {
   }
 
   return (
-    <div className="h-[288px] flex items-center justify-center">
+    <div className="flex h-[288px] items-center justify-center">
       <Loader color="primary" size={25} />
     </div>
   );
@@ -117,13 +117,13 @@ const RowItem = memo(({ validator, rowStyle, isChecked }: RowProps) => {
   const asset = useUnit(validatorsModel.$asset);
 
   return (
-    <li className="pl-5 hover:bg-hover group">
+    <li className="group pl-5 hover:bg-hover">
       <Checkbox
         checked={isChecked}
         disabled={validator.blocked}
         onChange={() => validatorsModel.events.validatorToggled(validator)}
       >
-        <div className={cnTw(rowStyle, 'pl-0 hover:bg-transparent flex-1')}>
+        <div className={cnTw(rowStyle, 'flex-1 pl-0 hover:bg-transparent')}>
           <ValidatorsTable.Row validator={validator} asset={asset || undefined} explorers={chain?.explorers} />
         </div>
       </Checkbox>
@@ -138,7 +138,7 @@ const ActionsSection = ({ onGoBack }: Props) => {
   const canSubmit = useUnit(validatorsModel.$canSubmit);
 
   return (
-    <div className="flex justify-between mt-7 px-5">
+    <div className="mt-7 flex justify-between px-5">
       <Button variant="text" onClick={onGoBack}>
         {t('staking.bond.backButton')}
       </Button>

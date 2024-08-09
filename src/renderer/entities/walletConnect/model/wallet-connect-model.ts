@@ -191,7 +191,7 @@ const initConnectFx = createEffect(
 
 type ConnectParams = {
   client: Client;
-  approval: () => Promise<any>;
+  approval: () => Promise<unknown>;
   onConnect?: () => void;
 };
 type ConnectResult = {
@@ -238,11 +238,11 @@ sample({
   clock: updateWcAccountsFx.done,
   source: walletModel.$wallets,
   filter: (_, { result: accounts }) => Boolean(accounts?.length),
-  fn: (wallets, { result, params }) => {
-    return wallets.map((wallet) => {
+  fn: (wallets, { params }) => {
+    return wallets.map<Wallet>((wallet) => {
       if (wallet.id !== params.wallet.id) return wallet;
 
-      return { ...wallet, accounts: params.accounts } as Wallet;
+      return { ...wallet, accounts: params.accounts };
     });
   },
   target: walletModel.$wallets,

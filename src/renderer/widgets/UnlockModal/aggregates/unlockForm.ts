@@ -494,13 +494,12 @@ sample({
     fee: $fee,
     totalFee: $totalFee,
     multisigDeposit: $multisigDeposit,
-    accounts: $accounts,
     totalLock: locksModel.$totalLock,
   },
   filter: ({ asset, transactions }) => {
     return Boolean(asset) && Boolean(transactions);
   },
-  fn: ({ realAccounts, accounts, asset, chain, transactions, totalLock, isProxy, ...fee }, formData) => {
+  fn: ({ realAccounts, asset, chain, transactions, totalLock, isProxy, ...fee }, formData) => {
     const { shards, ...rest } = formData;
 
     const signatory = formData.signatory.accountId ? formData.signatory : undefined;

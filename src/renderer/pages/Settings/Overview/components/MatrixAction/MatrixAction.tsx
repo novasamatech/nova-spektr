@@ -21,7 +21,7 @@ export const MatrixAction = () => {
         <Link
           to={Paths.MATRIX}
           className={cnTw(
-            'w-full grid grid-flow-col grid-cols-[auto,1fr,auto] items-center gap-x-2 p-3 rounded-md',
+            'grid w-full grid-flow-col grid-cols-[auto,1fr,auto] items-center gap-x-2 rounded-md p-3',
             'transition hover:shadow-card-shadow focus:shadow-card-shadow',
           )}
         >

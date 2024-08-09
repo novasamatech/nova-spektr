@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import BigNumber from 'bignumber.js';
+import { default as BigNumber } from 'bignumber.js';
 
 import { type Address } from '@shared/core';
 import { DECAY_RATE, INTEREST_IDEAL, MINIMUM_INFLATION, STAKED_PORTION_IDEAL } from '../lib/constants';
@@ -71,9 +71,11 @@ const getMedianCommission = (validators: ApyValidator[]): number => {
 
 /**
  * Get APY for list of validators
+ *
  * @param api ApiPromise to make RPC calls
- * @param validators list of validators
- * @return {Promise}
+ * @param validators List of validators
+ *
+ * @returns {Promise}
  */
 export const getValidatorsApy = async (
   api: ApiPromise,
@@ -91,9 +93,11 @@ export const getValidatorsApy = async (
 
 /**
  * Get average APY
+ *
  * @param api ApiPromise to make RPC calls
- * @param validators array of calculated APYs'
- * @return {Promise}
+ * @param validators Array of calculated APYs'
+ *
+ * @returns {Promise}
  */
 export const getAvgApy = async (api: ApiPromise, validators: ApyValidator[]): Promise<string> => {
   if (validators.length === 0) return '';

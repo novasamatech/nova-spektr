@@ -17,6 +17,7 @@ export const CheckPermission = ({ operationType, wallet, redirectPath, children 
   }
 
   if (getOperationTypeFn(operationType)(wallet)) {
+    // eslint-disable-next-line react/jsx-no-useless-fragment
     return <>{children}</>;
   }
 

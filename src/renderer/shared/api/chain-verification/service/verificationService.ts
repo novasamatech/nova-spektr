@@ -55,13 +55,15 @@ const getProof = async (api: ApiPromise, storageKey: string, hash: string): Prom
 };
 
 /**
- * Verify data from relay chain by proof and state root
- * Returns true if retrieved value is equal to value from relay chain
- * @param proof - proof from parachain
- * @param root - state root from relay chain
- * @param key - key to retrieve
- * @param value - value from relay chain
- * @return {Boolean}
+ * Verify data from relay chain by proof and state root Returns true if
+ * retrieved value is equal to value from relay chain
+ *
+ * @param proof - Proof from parachain
+ * @param root - State root from relay chain
+ * @param key - Key to retrieve
+ * @param value - Value from relay chain
+ *
+ * @returns {Boolean}
  */
 export const verify = (proof: Uint8Array[] | undefined, root: Uint8Array, key: string, value: Uint8Array): boolean => {
   if (!proof) return false;

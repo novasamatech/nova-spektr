@@ -35,7 +35,7 @@ export const ConfirmModal = ({
     onClose={onClose}
   >
     {children}
-    <div className="flex gap-x-3 mt-4">
+    <div className="mt-4 flex gap-x-3">
       {cancelText && (
         <Button className="flex-1" variant="fill" pallet="secondary" size="sm" onClick={onClose}>
           {cancelText}

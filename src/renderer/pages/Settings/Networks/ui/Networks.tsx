@@ -187,7 +187,7 @@ export const Networks = () => {
     >
       <NetworksFilter className="mx-5" />
 
-      <div className="flex flex-col gap-y-4 px-3 pb-4 pt-1 mt-5 h-[454px] overflow-y-auto">
+      <div className="mt-5 flex h-[454px] flex-col gap-y-4 overflow-y-auto px-3 pb-4 pt-1">
         <NetworkList
           query={filterQuery}
           title={t('settings.networks.disabledNetworksLabel')}

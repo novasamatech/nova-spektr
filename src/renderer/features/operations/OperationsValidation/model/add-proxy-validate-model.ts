@@ -29,7 +29,6 @@ const validateFx = createEffect(
     id,
     api,
     chain,
-    asset,
     transaction,
     balances,
     signerOptions,

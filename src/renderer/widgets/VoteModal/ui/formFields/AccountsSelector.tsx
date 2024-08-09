@@ -32,7 +32,7 @@ export const AccountsSelector = ({ value, accounts, asset, chain, hasError, erro
           id: account.id.toString(),
           value: account,
           element: (
-            <div className="flex justify-between w-full" key={account.id}>
+            <div className="flex w-full justify-between" key={account.id}>
               <AccountAddress
                 size={20}
                 type="short"

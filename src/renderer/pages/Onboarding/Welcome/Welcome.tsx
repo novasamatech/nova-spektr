@@ -36,7 +36,7 @@ export const Welcome = () => {
 
   return (
     <div className="flex h-screen w-screen">
-      <div className="w-[512px] flex flex-col p-10 h-full">
+      <div className="flex h-full w-[512px] flex-col p-10">
         <TitleText className="mb-8">{t('onboarding.welcome.title')}</TitleText>
 
         {/* TODO: move Cards to WalletPairing feature */}
@@ -76,13 +76,13 @@ export const Welcome = () => {
           />
         </div>
 
-        <div className="flex-1 flex items-end">
+        <div className="flex flex-1 items-end">
           <PrivacyPolicy />
         </div>
       </div>
       <div
         ref={logo}
-        className="relative flex-1 flex flex-col h-full bg-input-background-disabled justify-center items-end logo-background"
+        className="logo-background relative flex h-full flex-1 flex-col items-end justify-center bg-input-background-disabled"
       >
         <div className={cnTw('relative w-fit', fixed ? `pr-[225px]` : 'self-center')}>
           <Icon name="logoTitle" className="-scale-y-100" size={LOGO_WIDTH} />

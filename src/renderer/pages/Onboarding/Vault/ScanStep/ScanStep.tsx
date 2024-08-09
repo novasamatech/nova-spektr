@@ -15,7 +15,7 @@ const ScanStep = ({ onBack, onNextStep }: Props) => {
 
   return (
     <>
-      <div className="w-[472px] flex flex-col px-5 py-4 bg-white rounded-l-lg">
+      <div className="flex w-[472px] flex-col rounded-l-lg bg-white px-5 py-4">
         <HeaderTitleText className="mb-10">{t('onboarding.vault.title')}</HeaderTitleText>
         <SmallTitleText className="mb-6">{t('onboarding.vault.scanTitle')}</SmallTitleText>
 
@@ -23,15 +23,15 @@ const ScanStep = ({ onBack, onNextStep }: Props) => {
           <KeyQrReader className="rounded-2lg" size={[432, 288]} onResult={onNextStep} />
         </div>
 
-        <div className="flex-1 flex justify-between items-end">
+        <div className="flex flex-1 items-end justify-between">
           <Button variant="text" onClick={onBack}>
             {t('onboarding.backButton')}
           </Button>
         </div>
       </div>
 
-      <div className="w-[472px] flex flex-col bg-black">
-        <video className="object-contain h-full" autoPlay loop>
+      <div className="flex w-[472px] flex-col bg-black">
+        <video className="h-full object-contain" autoPlay loop>
           <source src={onboarding_tutorial_webm} type="video/webm" />
           <source src={onboarding_tutorial} type="video/mp4" />
         </video>

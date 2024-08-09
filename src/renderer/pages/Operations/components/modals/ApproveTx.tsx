@@ -114,7 +114,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
       const transaction = getTxFromCallData(connection.api, tx.callData);
 
       weight = await getExtrinsicWeight(transaction);
-    } catch (e) {
+    } catch {
       if (tx.transaction?.args && connection.api) {
         weight = await getTxWeight(tx.transaction as Transaction, connection.api);
       } else {

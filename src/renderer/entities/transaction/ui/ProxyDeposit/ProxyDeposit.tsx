@@ -47,7 +47,7 @@ export const ProxyDeposit = memo(
     }
 
     return (
-      <div className="flex flex-col gap-y-0.5 items-end">
+      <div className="flex flex-col items-end gap-y-0.5">
         <AssetBalance value={proxyDeposit} asset={asset} className={className} />
         <AssetFiatBalance asset={asset} amount={proxyDeposit} />
       </div>

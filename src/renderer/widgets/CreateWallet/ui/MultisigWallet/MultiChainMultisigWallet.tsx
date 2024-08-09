@@ -105,7 +105,7 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
   };
 
   const modalTitle = (
-    <div className="flex justify-between items-center px-5 py-3 w-[464px] bg-white rounded-tl-lg">
+    <div className="flex w-[464px] items-center justify-between rounded-tl-lg bg-white px-5 py-3">
       <HeaderTitleText className="py-[3px]">{t('createMultisigAccount.title')}</HeaderTitleText>
       {matrixUtils.isLoggedIn(loginStatus) && <StatusLabel title={matrix.userId || ''} variant="success" />}
     </div>
@@ -130,11 +130,11 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
           onSubmit={submitHandler}
         />
 
-        <section className="relative flex flex-col px-5 py-4 flex-1 bg-input-background-disabled h-full">
+        <section className="relative flex h-full flex-1 flex-col bg-input-background-disabled px-5 py-4">
           <IconButton
             name="close"
             size={20}
-            className="absolute right-3 -top-10 m-1"
+            className="absolute -top-10 right-3 m-1"
             onClick={() => closeMultisigModal()}
           />
 

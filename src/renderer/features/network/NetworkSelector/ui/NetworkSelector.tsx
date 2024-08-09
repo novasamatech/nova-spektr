@@ -54,7 +54,7 @@ export const NetworkSelector = ({
               SelectButtonStyle[theme].disabled,
               CommonInputStyles,
               CommonInputStylesTheme[theme],
-              'w-[248px] flex items-center gap-x-2 justify-between',
+              'flex w-[248px] items-center justify-between gap-x-2',
             )}
             onClick={scroll}
           >
@@ -76,7 +76,7 @@ export const NetworkSelector = ({
           >
             <div
               ref={ref}
-              className="mt-1 absolute z-20 py-1 px-1 w-full border border-token-container-border rounded bg-input-background shadow-card-shadow"
+              className="absolute z-20 mt-1 w-full rounded border border-token-container-border bg-input-background px-1 py-1 shadow-card-shadow"
             >
               <Listbox.Options className="max-h-64 overflow-y-auto overscroll-contain">
                 {connectionList.map((data) => {
@@ -88,15 +88,15 @@ export const NetworkSelector = ({
                       value={data}
                       className={cnTw(
                         OptionStyle,
-                        'ui-selected:bg-selected-background ui-active:bg-action-background-hover mb-1 last:mb-0',
+                        'mb-1 last:mb-0 ui-selected:bg-selected-background ui-active:bg-action-background-hover',
                       )}
                     >
                       <div className="flex items-center gap-x-4">
-                        <div className="flex flex-col justify-center overflow-hidden flex-1 h-8 pr-1">
-                          <FootnoteText className="text-text-secondary truncate">
+                        <div className="flex h-8 flex-1 flex-col justify-center overflow-hidden pr-1">
+                          <FootnoteText className="truncate text-text-secondary">
                             {Title[type](t, node?.name)}
                           </FootnoteText>
-                          <HelpText className="text-text-tertiary truncate">{node?.url}</HelpText>
+                          <HelpText className="truncate text-text-tertiary">{node?.url}</HelpText>
                         </div>
                         {node && isCustom && (
                           <>
@@ -124,7 +124,7 @@ export const NetworkSelector = ({
               <Button
                 size="sm"
                 variant="text"
-                className="w-full h-8.5 justify-center"
+                className="h-8.5 w-full justify-center"
                 suffixElement={<Icon name="add" size={16} />}
                 onClick={onAddCustomNode}
               >

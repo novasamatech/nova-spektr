@@ -23,15 +23,15 @@ export const Tooltip = ({
   <Popover
     role="tooltip"
     offsetPx={offsetPx}
-    contentClass={cnTw('py-1 px-2', contentClass)}
+    contentClass={cnTw('px-2 py-1', contentClass)}
     wrapperClass={wrapperClass}
     panelClass={cnTw(
-      'max-w-[184px] bg-switch-background-active rounded w-max rounded border-none shadow-none',
+      'w-max max-w-[184px] rounded border-none bg-switch-background-active shadow-none',
       'spektr-arrow spektr-arrow__' + pointer,
       'spektr-arrow__' + arrow,
       panelClass,
     )}
-    content={<div className=" text-help-text text-white">{content}</div>}
+    content={<div className="text-help-text text-white">{content}</div>}
   >
     {children}
   </Popover>

@@ -31,14 +31,14 @@ export const OngoingReferendums = memo<Props>(({ referendums, isLoading, isTitle
   return (
     <Accordion isDefaultOpen>
       <Accordion.Button buttonClass="py-1.5 px-2 mb-2">
-        <div className="flex items-center gap-x-2 w-full">
-          <CaptionText className="uppercase text-text-secondary tracking-[0.75px] font-semibold">
+        <div className="flex w-full items-center gap-x-2">
+          <CaptionText className="font-semibold uppercase tracking-[0.75px] text-text-secondary">
             {t('governance.referendums.ongoing')}
           </CaptionText>
           {isLoading ? (
             <Shimmering width={25} height={12} />
           ) : (
-            <CaptionText className="text-text-tertiary font-semibold">{referendums.length}</CaptionText>
+            <CaptionText className="font-semibold text-text-tertiary">{referendums.length}</CaptionText>
           )}
         </div>
       </Accordion.Button>

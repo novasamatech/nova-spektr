@@ -9,6 +9,7 @@ export function prepareTestData(chains: ChainJSON[]): [ChainJSON[], ChainJSON[],
 
   const [polkadotParachains, kusamaParachains] = chains.reduce(
     (acc, currentChain) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       currentChain.parentId === polkadotId
         ? acc[0].push(currentChain)
         : currentChain.parentId === kusamaId

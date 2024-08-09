@@ -27,12 +27,12 @@ export const WalletGroup = ({ type, wallets }: Props) => {
   return (
     <Accordion isDefaultOpen>
       <Accordion.Button buttonClass="px-2 py-1.5 my-2 rounded hover:bg-action-background-hover focus:bg-action-background-hover">
-        <div className="flex gap-x-2 items-center">
+        <div className="flex items-center gap-x-2">
           <WalletIcon type={type} />
-          <CaptionText className="text-text-secondary  font-semibold uppercase">
+          <CaptionText className="font-semibold uppercase text-text-secondary">
             {t(GroupLabels[type as WalletFamily])}
           </CaptionText>
-          <CaptionText className="text-text-tertiary font-semibold">{wallets.length}</CaptionText>
+          <CaptionText className="font-semibold text-text-tertiary">{wallets.length}</CaptionText>
           {walletUtils.isProxied(wallets[0]) && <ProxiedTooltip />}
         </div>
       </Accordion.Button>
@@ -44,13 +44,13 @@ export const WalletGroup = ({ type, wallets }: Props) => {
                 hideIcon
                 wallet={wallet}
                 description={
-                  <WalletFiatBalance walletId={wallet.id} className="text-help-text max-w-[215px] truncate" />
+                  <WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />
                 }
                 prefix={
                   wallet.isActive ? (
-                    <Icon name="checkmark" className="text-icon-accent shrink-0" size={20} />
+                    <Icon name="checkmark" className="shrink-0 text-icon-accent" size={20} />
                   ) : (
-                    <div className="w-5 h-5 row-span-2 shrink-0" />
+                    <div className="row-span-2 h-5 w-5 shrink-0" />
                   )
                 }
                 onClick={() => walletSelectModel.events.walletSelected(wallet.id)}

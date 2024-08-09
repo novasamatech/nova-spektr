@@ -215,7 +215,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     }
   };
 
-  const onMultisigEvent = async ({ type, content, sender }: MultisigPayload, extras: SpektrExtras | undefined) => {
+  const onMultisigEvent = async ({ type, content }: MultisigPayload, extras: SpektrExtras | undefined) => {
     console.info('🚀 === onMultisigEvent - ', type, '\n Content: ', content);
 
     if (!validateMatrixEvent(content, extras)) return;
@@ -590,5 +590,6 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     }
   }, []);
 
+  // eslint-disable-next-line react/jsx-no-useless-fragment
   return <>{children}</>;
 };

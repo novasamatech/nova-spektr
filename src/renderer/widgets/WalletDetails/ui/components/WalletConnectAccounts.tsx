@@ -48,7 +48,7 @@ export const WalletConnectAccounts = ({ wallet }: Props) => {
       )}
 
       {wcDetailsUtils.isReadyToReconnect(reconnectStep, wallet.isConnected) && (
-        <div className="flex flex-col h-[390px] w-[208px] justify-center items-center mx-auto mt-6">
+        <div className="mx-auto mt-6 flex h-[390px] w-[208px] flex-col items-center justify-center">
           <Icon name="document" size={64} className="mb-6 text-icon-default" />
           <SmallTitleText className="mb-2">{t('walletDetails.walletConnect.disconnectedTitle')}</SmallTitleText>
           <FootnoteText className="mb-4 text-text-tertiary" align="center">
@@ -61,8 +61,8 @@ export const WalletConnectAccounts = ({ wallet }: Props) => {
       )}
 
       {wcDetailsUtils.isReconnecting(reconnectStep) && (
-        <div className="flex flex-col h-[419px] justify-center items-center">
-          <video className="object-contain h-[420px]" autoPlay loop>
+        <div className="flex h-[419px] flex-col items-center justify-center">
+          <video className="h-[420px] object-contain" autoPlay loop>
             <source src={wallet_connect_reconnect_webm} type="video/webm" />
             <source src={wallet_connect_reconnect} type="video/mp4" />
           </video>

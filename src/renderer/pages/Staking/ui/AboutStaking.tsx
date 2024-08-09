@@ -101,17 +101,17 @@ export const AboutStaking = ({ api, era, asset, validators }: Props) => {
       {/*  </div>*/}
       {/*</div>*/}
 
-      <div className="grid grid-cols-2 gap-y-3 gap-x-6">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-3">
         <div className="flex justify-between gap-x-1">
           <FootnoteText className="text-text-secondary">{t('staking.about.totalStakedLabel')}</FootnoteText>
-          <div className="flex flex-col justify-self-end items-end">
+          <div className="flex flex-col items-end justify-self-end">
             {totalStaked && asset ? (
-              <div className="flex flex-col gap-y-0.5 items-end">
+              <div className="flex flex-col items-end gap-y-0.5">
                 <AssetBalance value={totalStaked} asset={asset} className="text-footnote" />
                 <AssetFiatBalance amount={totalStaked} asset={asset} />
               </div>
             ) : (
-              <div className="flex flex-col gap-y-0.5 items-end">
+              <div className="flex flex-col items-end gap-y-0.5">
                 <Shimmering width={100} height={16} />
                 <Shimmering width={56} height={16} />
               </div>
@@ -121,14 +121,14 @@ export const AboutStaking = ({ api, era, asset, validators }: Props) => {
 
         <div className="flex justify-between gap-x-1">
           <FootnoteText className="text-text-secondary">{t('staking.about.minimumStakeLabel')}</FootnoteText>
-          <div className="flex flex-col justify-self-end items-end">
+          <div className="flex flex-col items-end justify-self-end">
             {minimumStake && asset ? (
-              <div className="flex flex-col gap-y-0.5 items-end">
+              <div className="flex flex-col items-end gap-y-0.5">
                 <AssetBalance value={minimumStake} asset={asset} className="text-footnote" />
                 <AssetFiatBalance amount={minimumStake} asset={asset} />
               </div>
             ) : (
-              <div className="flex flex-col gap-y-0.5 items-end">
+              <div className="flex flex-col items-end gap-y-0.5">
                 <Shimmering width={100} height={16} />
                 <Shimmering width={56} height={16} />
               </div>

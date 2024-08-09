@@ -25,6 +25,7 @@ export const DropdownButton = ({ options, title, disabled, className, ...buttonP
       {({ open }) => (
         <div className={cn('relative', open && 'z-10')}>
           <Menu.Button
+            ref={ref}
             as={Button}
             disabled={disabled}
             suffixElement={<Icon name={open ? 'up' : 'down'} size={16} className="text-inherit" />}
@@ -36,7 +37,7 @@ export const DropdownButton = ({ options, title, disabled, className, ...buttonP
           <Menu.Items
             as="ul"
             className={cn(
-              'w-full p-1 mt-1 z-10 absolute rounded border border-token-container-border',
+              'absolute z-10 mt-1 w-full rounded border border-token-container-border p-1',
               'bg-token-container-background shadow-card-shadow',
             )}
           >
@@ -52,17 +53,17 @@ export const DropdownButton = ({ options, title, disabled, className, ...buttonP
                 <Menu.Item
                   as="li"
                   key={opt.id}
-                  className="rounded ui-active:bg-action-background-hover hover:bg-action-background-hover mb-0.5 last:mb-0"
+                  className="mb-0.5 rounded last:mb-0 hover:bg-action-background-hover ui-active:bg-action-background-hover"
                 >
                   {/* TODO maybe try to refactor to avoid duplicating option children */}
                   {/* FIXME: click from keyboard is ignored */}
                   {'to' in opt ? (
-                    <Link to={opt.to} className="flex items-center gap-x-1.5 w-full p-2">
+                    <Link to={opt.to} className="flex w-full items-center gap-x-1.5 p-2">
                       {iconComponent}
                       <FootnoteText className="text-text-secondary">{opt.title}</FootnoteText>
                     </Link>
                   ) : (
-                    <button className="flex items-center gap-x-1.5 w-full p-2" onClick={opt.onClick}>
+                    <button className="flex w-full items-center gap-x-1.5 p-2" onClick={opt.onClick}>
                       {iconComponent}
                       <FootnoteText className="text-text-secondary">{opt.title}</FootnoteText>
                     </button>

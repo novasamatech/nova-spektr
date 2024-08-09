@@ -72,7 +72,7 @@ export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
         <FootnoteText className="flex-1 px-2 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
       </div>
 
-      <ul className="flex flex-col h-full px-5 divide-y divide-divider overflow-y-auto overflow-x-hidden">
+      <ul className="flex h-full flex-col divide-y divide-divider overflow-y-auto overflow-x-hidden px-5">
         {walletProxyGroups.map(({ chainId, totalDeposit }) => {
           if (!chainsProxies[chainId]?.length) {
             return null;
@@ -82,7 +82,7 @@ export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
             <li key={chainId} className="flex items-center py-2">
               <Accordion isDefaultOpen>
                 <Accordion.Button buttonClass="p-2 rounded hover:bg-action-background-hover focus:bg-action-background-hover">
-                  <div className="flex gap-x-2 items-center justify-between pr-2">
+                  <div className="flex items-center justify-between gap-x-2 pr-2">
                     <ChainTitle className="flex-1" fontClass="text-text-primary" chain={chains[chainId]} />
                     <HelpText className="text-text-tertiary">
                       {t('walletDetails.common.proxyDeposit')}

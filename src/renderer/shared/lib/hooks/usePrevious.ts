@@ -2,8 +2,10 @@ import { useEffect, useRef } from 'react';
 
 /**
  * Store previous value
- * @param value arbitrary value
- * @return {Any}
+ *
+ * @param value Arbitrary value
+ *
+ * @returns {Any}
  */
 export function usePrevious<T>(value: T): T {
   const ref: any = useRef<T>();

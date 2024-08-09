@@ -109,10 +109,9 @@ sample({
   clock: forgetButtonClicked,
   source: {
     wallet: walletSelectModel.$walletForDetails,
-    wallets: walletModel.$wallets,
   },
   filter: ({ wallet }) => Boolean(wallet),
-  fn: ({ wallet, wallets }) => ({
+  fn: ({ wallet }) => ({
     sessionTopic: wallet!.accounts[0].signingExtras?.sessionTopic,
     pairingTopic: wallet!.accounts[0].signingExtras?.pairingTopic,
   }),

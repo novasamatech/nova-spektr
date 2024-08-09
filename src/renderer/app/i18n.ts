@@ -5,6 +5,7 @@ import { useTranslationService } from '@shared/api/translation/translationServic
 
 const { getConfig } = useTranslationService();
 
+// eslint-disable-next-line import-x/no-named-as-default-member
 i18next
   .use(initReactI18next)
   .init(getConfig())

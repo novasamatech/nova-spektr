@@ -15,7 +15,7 @@ export const AssetLinks = ({ assetId, chainId }: Props) => {
   const activeWallet = useUnit(walletModel.$activeWallet);
 
   return (
-    <div className="flex gap-x-2 ml-3">
+    <div className="ml-3 flex gap-x-2">
       <CheckPermission operationType={OperationType.TRANSFER} wallet={activeWallet}>
         <Link
           to={createLink(Paths.TRANSFER_ASSET, {}, { chainId: [chainId], assetId: [assetId] })}

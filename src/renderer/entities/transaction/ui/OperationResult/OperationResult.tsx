@@ -40,7 +40,9 @@ export const OperationResult = ({
 
     if (autoCloseTimeout) {
       closingTimeout.current = setTimeout(() => {
-        mounted && onClose();
+        if (mounted) {
+          onClose();
+        }
       }, autoCloseTimeout);
     }
 

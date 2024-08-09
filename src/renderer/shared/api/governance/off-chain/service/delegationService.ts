@@ -36,7 +36,7 @@ async function getDelegatesFromExternalSource(chain: Chain, blockNumber: number)
           delegateVotes: delegateVotes.totalCount,
         })) || []
       );
-    } catch (e) {
+    } catch {
       return [];
     }
   }

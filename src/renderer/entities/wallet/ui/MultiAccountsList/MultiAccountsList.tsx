@@ -26,7 +26,7 @@ export const MultiAccountsList = ({ accounts, className, headerClassName }: Prop
         <FootnoteText className="w-[214px] text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
       </div>
 
-      <ul className={cnTw('flex flex-col z-0 divide-y divide-divider overflow-y-auto overflow-x-hidden', className)}>
+      <ul className={cnTw('z-0 flex flex-col divide-y divide-divider overflow-y-auto overflow-x-hidden', className)}>
         {accounts.map(({ chain, accountId }) => {
           const { chainId, addressPrefix, explorers } = chain;
 
@@ -37,7 +37,6 @@ export const MultiAccountsList = ({ accounts, className, headerClassName }: Prop
               <div className="w-[214]">
                 <AddressWithExplorers
                   type="adaptive"
-                  position="right-0"
                   className="w-[160px]"
                   accountId={accountId}
                   addressPrefix={addressPrefix}
