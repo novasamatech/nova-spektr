@@ -1,5 +1,4 @@
 import { useUnit } from 'effector-react';
-import React from 'react';
 
 import { useI18n } from '@app/providers';
 import { type AssetByChains } from '@shared/core';

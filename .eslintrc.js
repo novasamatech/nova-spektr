@@ -32,6 +32,7 @@ module.exports = {
     'import-x/no-unresolved': 'off',
     'import-x/named': 'off',
     'import-x/namespace': 'off',
+    'import-x/no-named-as-default': 'error',
     'import-x/consistent-type-specifier-style': ['error', 'prefer-inline'],
     'import-x/order': [
       'error',
@@ -124,8 +125,7 @@ module.exports = {
         JSX: 'readonly',
       },
       rules: {
-        // TODO make error
-        'react/jsx-no-useless-fragment': 'warn',
+        'react/jsx-no-useless-fragment': 'error',
         'react/jsx-no-constructed-context-values': 'error',
         'react/jsx-curly-brace-presence': ['error', { props: 'never', children: 'ignore' }],
         'react/no-array-index-key': 'warn',

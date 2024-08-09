@@ -182,7 +182,7 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
 
     return {
       title: '',
-      content: <></>,
+      content: null,
       onClose: () => {},
     };
   };
