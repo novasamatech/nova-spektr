@@ -2,7 +2,7 @@ import { useStoreMap } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { toAddress } from '@/shared/lib/utils';
-import { type OngoingReferendum, type Referendum } from '@shared/core';
+import { type Referendum } from '@shared/core';
 import { FootnoteText, Shimmering } from '@shared/ui';
 import { referendumService } from '@entities/governance';
 import { AccountAddress } from '@entities/wallet';
@@ -10,9 +10,10 @@ import { detailsAggregate } from '../../aggregates/details';
 
 type Props = {
   referendum: Referendum;
+  addressPrefix: number;
 };
 
-export const ProposerName = ({ referendum }: Props) => {
+export const ProposerName = ({ referendum, addressPrefix }: Props) => {
   const { t } = useI18n();
 
   const proposer = useStoreMap({
@@ -38,12 +39,12 @@ export const ProposerName = ({ referendum }: Props) => {
       address={proposer.parent.address}
       name={proposer.parent.name || proposer.email || proposer.twitter || proposer.parent.address}
     />
-  ) : (referendum as OngoingReferendum)?.submissionDeposit?.who ? (
+  ) : referendumService.isOngoing(referendum) && referendum.submissionDeposit?.who ? (
     <AccountAddress
       addressFont="text-text-secondary"
       size={16}
-      address={(referendum as OngoingReferendum).submissionDeposit!.who}
-      name={toAddress((referendum as OngoingReferendum).submissionDeposit!.who, { chunk: 6 })}
+      address={referendum.submissionDeposit.who}
+      name={toAddress(referendum.submissionDeposit!.who, { chunk: 6, prefix: addressPrefix })}
     />
   ) : null;
 
