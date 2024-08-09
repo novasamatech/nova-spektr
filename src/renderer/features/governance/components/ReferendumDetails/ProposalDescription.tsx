@@ -3,6 +3,7 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { type ChainId, type Referendum } from '@shared/core';
 import { pickNestedValue } from '@shared/lib/utils';
 import { Markdown, Shimmering } from '@shared/ui';
+import { networkModel } from '@/entities/network';
 import { TrackInfo, referendumService } from '@entities/governance';
 import { detailsAggregate } from '../../aggregates/details';
 
@@ -15,6 +16,8 @@ type Props = {
 
 export const ProposalDescription = ({ chainId, referendum }: Props) => {
   const isDescriptionLoading = useUnit(detailsAggregate.$isDescriptionLoading);
+  const addressPrefix = useUnit(networkModel.$chains)[chainId]?.addressPrefix;
+
   const description = useStoreMap({
     store: detailsAggregate.$descriptions,
     keys: [chainId, referendum.referendumId],
@@ -24,7 +27,7 @@ export const ProposalDescription = ({ chainId, referendum }: Props) => {
   return (
     <div>
       <div className="mb-4 flex items-center">
-        <ProposerName referendum={referendum} />
+        <ProposerName referendum={referendum} addressPrefix={addressPrefix} />
         <div className="grow" />
         {referendumService.isOngoing(referendum) && <TrackInfo trackId={referendum.track} />}
       </div>
