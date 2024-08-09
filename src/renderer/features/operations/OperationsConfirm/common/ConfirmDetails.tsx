@@ -14,7 +14,7 @@ export const ConfirmDetails = ({ confirm, children }: Props) => {
   const { meta, wallets } = confirm;
 
   return (
-    <dl className="flex flex-col gap-y-4 w-full">
+    <dl className="flex w-full flex-col gap-y-4">
       {wallets.proxied && meta.proxiedAccount && (
         <>
           <DetailRow label={t('transfer.senderProxiedWallet')} className="flex gap-x-2">
@@ -33,7 +33,7 @@ export const ConfirmDetails = ({ confirm, children }: Props) => {
             />
           </DetailRow>
 
-          <hr className="border-filter-border w-full pr-2" />
+          <hr className="w-full border-filter-border pr-2" />
 
           {wallets.initiator && (
             <DetailRow label={t('transfer.signingWallet')} className="flex gap-x-2">

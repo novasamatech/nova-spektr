@@ -17,7 +17,7 @@ export const Shimmering = ({ width, height, circle, className }: Props) => {
 
   return (
     <span
-      className={cnTw('h-full w-full block spektr-shimmer', circle ? 'rounded-full' : 'rounded-[10px]', className)}
+      className={cnTw('spektr-shimmer block h-full w-full', circle ? 'rounded-full' : 'rounded-[10px]', className)}
       style={{ width: formattedWidth, height: circle ? formattedWidth : formattedHeight }}
       data-testid="shimmer"
     />

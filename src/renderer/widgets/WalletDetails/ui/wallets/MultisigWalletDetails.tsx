@@ -139,17 +139,17 @@ export const MultisigWalletDetails = ({
     title: t('walletDetails.multisig.signatoriesTab'),
     panel: (
       <div className="flex flex-col">
-        <FootnoteText className="text-text-tertiary px-5">
+        <FootnoteText className="px-5 text-text-tertiary">
           {t('walletDetails.multisig.thresholdLabel', {
             min: multisigAccount.threshold,
             max: multisigAccount.signatories.length,
           })}
         </FootnoteText>
 
-        <div className="overflow-y-auto mt-4 h-[337px]">
+        <div className="mt-4 h-[337px] overflow-y-auto">
           {!singleChain && signatoryWallets.length > 0 && (
             <div className="flex flex-col gap-y-2">
-              <FootnoteText className="text-text-tertiary px-5">
+              <FootnoteText className="px-5 text-text-tertiary">
                 {t('walletDetails.multisig.walletsGroup')} {signatoryWallets.length}
               </FootnoteText>
 
@@ -181,7 +181,7 @@ export const MultisigWalletDetails = ({
 
           {singleChain && signatoryAccounts?.length && (
             <div className="flex flex-col gap-y-2 px-5">
-              <FootnoteText className="text-text-tertiary ">
+              <FootnoteText className="text-text-tertiary">
                 {t('walletDetails.multisig.accountsGroup')} {signatoryAccounts.length}
               </FootnoteText>
 
@@ -213,7 +213,7 @@ export const MultisigWalletDetails = ({
           )}
 
           {signatoryContacts.length > 0 && (
-            <div className="flex flex-col gap-y-2 mt-4 px-5">
+            <div className="mt-4 flex flex-col gap-y-2 px-5">
               <FootnoteText className="text-text-tertiary">
                 {t('walletDetails.multisig.contactsGroup')} {signatoryContacts.length}
               </FootnoteText>
@@ -230,7 +230,7 @@ export const MultisigWalletDetails = ({
                         active={Boolean(signatory.matrixId)}
                         title={t('general.explorers.matrixIdTitle')}
                       >
-                        <HelpText className="text-text-secondary break-all">{signatory.matrixId}</HelpText>
+                        <HelpText className="break-all text-text-secondary">{signatory.matrixId}</HelpText>
                       </ExplorersPopover.Group>
                     </ExplorersPopover>
                   </li>
@@ -273,8 +273,8 @@ export const MultisigWalletDetails = ({
       isOpen={isModalOpen}
       onClose={closeModal}
     >
-      <div className="flex flex-col gap-y-4 w-full">
-        <div className="py-6 px-5 border-b border-divider">
+      <div className="flex w-full flex-col gap-y-4">
+        <div className="border-b border-divider px-5 py-6">
           <WalletCardLg wallet={wallet} />
         </div>
 

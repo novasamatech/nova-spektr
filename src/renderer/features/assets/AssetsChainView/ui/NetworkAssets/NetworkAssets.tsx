@@ -97,10 +97,10 @@ export const NetworkAssets = ({ chain, accounts, query, hideZeroBalances, search
         <Accordion.Button
           buttonClass={cnTw(
             'sticky top-0 z-10 bg-background-default px-2 py-1.5',
-            'transition-colors rounded hover:bg-block-background-hover focus-visible:bg-block-background-hover',
+            'rounded transition-colors hover:bg-block-background-hover focus-visible:bg-block-background-hover',
           )}
         >
-          <div className="flex items-center justify-between gap-x-2 w-full">
+          <div className="flex w-full items-center justify-between gap-x-2">
             <div className="flex items-center gap-x-2">
               <ChainTitle chain={chain} fontClass="text-caption uppercase" as="h2" iconSize={20} />
 

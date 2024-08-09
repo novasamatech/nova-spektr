@@ -11,9 +11,11 @@ const createBigNumber = (value: BnArgument): BN => {
 
 /**
  * Big number utility function to be used in sorting
- * @param first value one
- * @param second value two
- * @return {Number}
+ *
+ * @param first Value one
+ * @param second Value two
+ *
+ * @returns {Number}
  */
 export const bigNumberSorter = (first: BnArgument, second: BnArgument): number => {
   if (!first || !second) return 0;

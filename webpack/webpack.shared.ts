@@ -1,8 +1,7 @@
-// eslint-disable-next-line import-x/default
-import CopyPlugin from 'copy-webpack-plugin';
+import { default as CopyPlugin } from 'copy-webpack-plugin';
 import SimpleProgressWebpackPlugin from 'simple-progress-webpack-plugin';
-import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
-import webpack, { type Configuration } from 'webpack';
+import { default as TsconfigPathsPlugin } from 'tsconfig-paths-webpack-plugin';
+import { type Configuration, default as webpack } from 'webpack';
 
 import { APP_CONFIG } from '../app.config';
 

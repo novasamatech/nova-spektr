@@ -57,16 +57,16 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
   }
 
   return (
-    <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5">
-      <div className="flex flex-col items-center gap-y-3 mb-2">
+    <div className="flex flex-col items-center gap-y-4 px-5 pb-4 pt-4">
+      <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon name="proxyConfirm" size={60} />
 
-        <FootnoteText className="py-2 px-3 rounded bg-block-background ml-3 text-text-secondary">
+        <FootnoteText className="ml-3 rounded bg-block-background px-3 py-2 text-text-secondary">
           {confirmStore.description}
         </FootnoteText>
       </div>
 
-      <dl className="flex flex-col gap-y-4 w-full">
+      <dl className="flex w-full flex-col gap-y-4">
         {proxiedWallet && confirmStore.proxiedAccount && (
           <>
             <DetailRow label={t('transfer.senderProxiedWallet')} className="flex gap-x-2">
@@ -85,7 +85,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
               />
             </DetailRow>
 
-            <hr className="border-filter-border w-full pr-2" />
+            <hr className="w-full border-filter-border pr-2" />
 
             <DetailRow label={t('transfer.signingWallet')} className="flex gap-x-2">
               <WalletIcon type={initiatorWallet.type} size={16} />
@@ -136,7 +136,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
           </DetailRow>
         )}
 
-        <hr className="border-filter-border w-full pr-2" />
+        <hr className="w-full border-filter-border pr-2" />
 
         <DetailRow label={t('proxy.details.accessType')} className="pr-2">
           <FootnoteText>{t(proxyUtils.getProxyTypeName(confirmStore.proxyType))}</FootnoteText>
@@ -152,7 +152,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
           />
         </DetailRow>
 
-        <hr className="border-filter-border w-full pr-2" />
+        <hr className="w-full border-filter-border pr-2" />
 
         {accountUtils.isMultisigAccount(confirmStore.account!) && (
           <MultisigDepositWithLabel
@@ -170,7 +170,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
         />
       </dl>
 
-      <div className="flex w-full justify-between mt-3">
+      <div className="mt-3 flex w-full justify-between">
         {onGoBack && (
           <Button variant="text" onClick={onGoBack}>
             {t('operation.goBackButton')}

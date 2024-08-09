@@ -54,7 +54,7 @@ export const WalletVotesDialog = ({ referendum, asset, onClose }: Props) => {
         {t('governance.walletVotes.listColumnAccount')}
       </FootnoteText>
       <FootnoteText className="px-2 pb-1 text-text-tertiary">{t('governance.walletVotes.listColumnVote')}</FootnoteText>
-      <FootnoteText className="px-2 pb-1 text-text-tertiary text-end">
+      <FootnoteText className="px-2 pb-1 text-end text-text-tertiary">
         {t('governance.walletVotes.listColumnVotingPower')}
       </FootnoteText>
       {votesList.map(({ address, vote }) => {
@@ -69,7 +69,7 @@ export const WalletVotesDialog = ({ referendum, asset, onClose }: Props) => {
             <BodyText key={`decision-${address}`} className="px-2">
               {t(`governance.referendum.${vote.decision}`)}
             </BodyText>
-            <div key={`votingPower-${address}`} className="flex flex-col shrink-0 px-2 gap-0.5 items-end">
+            <div key={`votingPower-${address}`} className="flex shrink-0 flex-col items-end gap-0.5 px-2">
               <BodyText className="whitespace-nowrap">
                 {t('governance.walletVotes.totalVotesCount', {
                   value: formatBalance(vote.votingPower, asset.precision).formatted,

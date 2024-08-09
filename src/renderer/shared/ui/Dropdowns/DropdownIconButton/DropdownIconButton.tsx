@@ -44,7 +44,7 @@ const DropdownItems = ({ className, children }: PropsWithChildren<ItemsProps>) =
       <Menu.Items
         as="ul"
         className={cnTw(
-          'min-w-max w-full absolute right-0 z-10 p-1 mt-1 rounded border border-token-container-border',
+          'absolute right-0 z-10 mt-1 w-full min-w-max rounded border border-token-container-border p-1',
           'bg-token-container-background shadow-card-shadow',
           className,
         )}
@@ -63,7 +63,7 @@ const DropdownItem = ({ className, children }: PropsWithChildren<ItemProps>) => 
     <Menu.Item
       as="li"
       className={cnTw(
-        'rounded ui-active:bg-action-background-hover hover:bg-action-background-hover mb-0.5 last:mb-0',
+        'mb-0.5 rounded last:mb-0 hover:bg-action-background-hover ui-active:bg-action-background-hover',
         className,
       )}
     >
@@ -77,7 +77,7 @@ type OptionProps = {
 };
 const DropdownOption = ({ option }: OptionProps) => {
   return (
-    <button className="flex items-center gap-x-1.5 w-full p-2" onClick={option.onClick}>
+    <button className="flex w-full items-center gap-x-1.5 p-2" onClick={option.onClick}>
       <Icon name={option.icon} size={20} className="text-icon-accent" />
       <FootnoteText className="text-text-secondary">{option.title}</FootnoteText>
     </button>

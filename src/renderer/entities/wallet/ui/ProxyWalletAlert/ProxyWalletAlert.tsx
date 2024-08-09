@@ -17,9 +17,9 @@ export const ProxyWalletAlert = ({ wallet, fee, balance, symbol, onClose }: Prop
   const { t } = useI18n();
 
   const component = (
-    <span className="inline-flex gap-x-1 items-center mx-1 align-bottom max-w-[200px]">
+    <span className="mx-1 inline-flex max-w-[200px] items-center gap-x-1 align-bottom">
       <WalletIcon className="shrink-0" type={wallet.type} size={16} />
-      <FootnoteText as="span" className="text-text-secondary transition-colors truncate">
+      <FootnoteText as="span" className="truncate text-text-secondary transition-colors">
         {wallet.name}
       </FootnoteText>
     </span>
@@ -27,7 +27,7 @@ export const ProxyWalletAlert = ({ wallet, fee, balance, symbol, onClose }: Prop
 
   return (
     <Alert active title={t('operation.proxyFeeErrorTitle')} variant="warn" onClose={onClose}>
-      <FootnoteText className="text-text-secondary tracking-tight max-w-full">
+      <FootnoteText className="max-w-full tracking-tight text-text-secondary">
         <Trans
           t={t}
           i18nKey="operation.proxyFeeErrorDescription"

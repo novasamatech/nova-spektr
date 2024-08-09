@@ -93,7 +93,7 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
       {isVault && wallet?.accounts.length > 1 && (
         <Select
           placeholder={t('receive.selectWalletPlaceholder')}
-          className="w-full mb-6"
+          className="mb-6 w-full"
           disabled={activeAccountsOptions.length === 1}
           selectedId={activeAccount?.id}
           options={activeAccountsOptions}
@@ -101,7 +101,7 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
         />
       )}
 
-      <FootnoteText className="w-[240px] mb-4" align="center">
+      <FootnoteText className="mb-4 w-[240px]" align="center">
         {/* eslint-disable-next-line i18next/no-literal-string */}
         {t('receive.sendOnlyLabel')} {asset.symbol} ({asset.name}) {t('receive.chainLabel', { name: chain.name })}
       </FootnoteText>
@@ -114,7 +114,7 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
       />
 
       {(chain.explorers || []).length > 0 && (
-        <ul className="flex gap-x-2 mb-4">
+        <ul className="mb-4 flex gap-x-2">
           {chain.explorers?.map(({ name, account }) => (
             <li aria-label={t('receive.explorerLinkLabel', { name })} key={name} className="flex">
               <a
@@ -130,7 +130,7 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
         </ul>
       )}
 
-      <HelpText className="w-[240px] text-text-secondary break-all mb-2" align="center">
+      <HelpText className="mb-2 w-[240px] break-all text-text-secondary" align="center">
         {toAddress(accountId, { prefix })}
       </HelpText>
 

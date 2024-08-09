@@ -22,14 +22,14 @@ export const Locks = ({ onClick }: Props) => {
 
   return (
     <button disabled={isLoading || totalLock.isZero()} onClick={onClick}>
-      <Plate className="w-[240px] h-[90px] pt-3 px-4 pb-4.5 flex justify-between items-center">
-        <div className="flex flex-col gap-y-2 items-start">
-          <div className="flex gap-x-1 items-center">
+      <Plate className="flex h-[90px] w-[240px] items-center justify-between px-4 pb-4.5 pt-3">
+        <div className="flex flex-col items-start gap-y-2">
+          <div className="flex items-center gap-x-1">
             <Icon name="opengovLock" size={16} />
             <FootnoteText>{t('governance.locks.lock')}</FootnoteText>
             {isUnlockLoading && <Shimmering width={100} height={15} />}
             {!isUnlockLoading && isUnlockable && (
-              <FootnoteText className="text-text-positive ml-1">{t('governance.locks.unlockable')}</FootnoteText>
+              <FootnoteText className="ml-1 text-text-positive">{t('governance.locks.unlockable')}</FootnoteText>
             )}
           </div>
           {isLoading && <Shimmering width={120} height={20} />}

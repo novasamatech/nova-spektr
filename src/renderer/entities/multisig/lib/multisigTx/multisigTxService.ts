@@ -184,7 +184,7 @@ export const useMultisigTx = ({ addTask }: Props): IMultisigTxService => {
     const query = () => {
       try {
         return getMultisigTxs(where);
-      } catch (error) {
+      } catch {
         console.warn('Error trying to get multisig transactions');
 
         return Promise.resolve([]);
@@ -198,7 +198,7 @@ export const useMultisigTx = ({ addTask }: Props): IMultisigTxService => {
     const query = () => {
       try {
         return getAccountMultisigTxs(accountIds);
-      } catch (error) {
+      } catch {
         console.warn('Error trying to get multisig transactions');
 
         return Promise.resolve([]);

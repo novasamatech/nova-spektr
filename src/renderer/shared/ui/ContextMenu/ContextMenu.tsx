@@ -45,8 +45,8 @@ const ContextMenuRoot = ({ button, children, className }: PropsWithChildren<Prop
         <Popover.Panel
           ref={popoverRef}
           className={cnTw(
-            'absolute right-0 z-10 -mt-3 py-4 px-2.5 rounded-md w-[230px]',
-            'bg-token-container-background border border-token-container-border shadow-card-shadow',
+            'absolute right-0 z-10 -mt-3 w-[230px] rounded-md px-2.5 py-4',
+            'border border-token-container-border bg-token-container-background shadow-card-shadow',
             className,
           )}
         >
@@ -67,8 +67,8 @@ const ContextGroup = ({ title, active = true, children }: PropsWithChildren<Grou
   }
 
   return (
-    <div className="pb-2 mb-2 border-b border-divider last:pb-0 last:mb-0 last:border-b-0">
-      {title && <FootnoteText className="text-text-tertiary pb-[2px]">{title}</FootnoteText>}
+    <div className="mb-2 border-b border-divider pb-2 last:mb-0 last:border-b-0 last:pb-0">
+      {title && <FootnoteText className="pb-[2px] text-text-tertiary">{title}</FootnoteText>}
       {children}
     </div>
   );

@@ -63,25 +63,25 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
 
   return (
     <>
-      <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5 w-modal">
-        <div className="flex flex-col items-center gap-y-3 mb-2">
+      <div className="flex w-modal flex-col items-center gap-y-4 px-5 pb-4 pt-4">
+        <div className="mb-2 flex flex-col items-center gap-y-3">
           <Icon className="text-icon-default" name="unlockMst" size={60} />
 
-          <div className={cnTw('flex flex-col gap-y-1 items-center')}>
+          <div className={cnTw('flex flex-col items-center gap-y-1')}>
             <AssetBalance
               value={amount}
               asset={asset}
-              className="font-manrope text-text-primary text-[32px] leading-[36px] font-bold"
+              className="font-manrope text-[32px] font-bold leading-[36px] text-text-primary"
             />
             <AssetFiatBalance asset={asset} amount={amount} className="text-headline" />
           </div>
 
-          <FootnoteText className="py-2 px-3 rounded bg-block-background ml-3 text-text-secondary">
+          <FootnoteText className="ml-3 rounded bg-block-background px-3 py-2 text-text-secondary">
             {confirmStore.description}
           </FootnoteText>
         </div>
 
-        <dl className="flex flex-col gap-y-4 w-full">
+        <dl className="flex w-full flex-col gap-y-4">
           {proxiedWallet && confirmStore.proxiedAccount && (
             <>
               <DetailRow label={t('transfer.senderProxiedWallet')} className="flex gap-x-2">
@@ -100,7 +100,7 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
                 />
               </DetailRow>
 
-              <hr className="border-filter-border w-full pr-2" />
+              <hr className="w-full border-filter-border pr-2" />
 
               <DetailRow label={t('transfer.signingWallet')} className="flex gap-x-2">
                 <WalletIcon type={initiatorWallet.type} size={16} />
@@ -133,11 +133,11 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
                     type="button"
                     className={cnTw(
                       'flex items-center gap-x-1',
-                      'group hover:bg-action-background-hover px-2 py-1 rounded',
+                      'group rounded px-2 py-1 hover:bg-action-background-hover',
                     )}
                     onClick={toggleAccounts}
                   >
-                    <div className="rounded-[30px] px-1.5 py-[1px] bg-icon-accent">
+                    <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
                       <CaptionText className="text-white">{shards.length}</CaptionText>
                     </div>
                     <Icon className="group-hover:text-icon-hover" name="info" size={16} />
@@ -167,7 +167,7 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
             </DetailRow>
           )}
 
-          <hr className="border-filter-border w-full pr-2" />
+          <hr className="w-full border-filter-border pr-2" />
 
           <DetailRow label={t('governance.operations.transferable')} wrapperClassName="items-start">
             <ValueIndicator
@@ -180,7 +180,7 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
             <ValueIndicator from={totalLock.toString()} to={totalLock.sub(new BN(amount)).toString()} asset={asset} />
           </DetailRow>
 
-          <hr className="border-filter-border w-full pr-2" />
+          <hr className="w-full border-filter-border pr-2" />
 
           {accountUtils.isMultisigAccount(shards[0]) && (
             <DetailRow
@@ -190,12 +190,12 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
                   <Icon className="text-text-tertiary" name="lock" size={12} />
                   <FootnoteText className="text-text-tertiary">{t('operation.details.deposit')}</FootnoteText>
                   <Tooltip content={t('transfer.networkDepositHint')} offsetPx={-90}>
-                    <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
+                    <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
                   </Tooltip>
                 </>
               }
             >
-              <div className="flex flex-col gap-y-0.5 items-end">
+              <div className="flex flex-col items-end gap-y-0.5">
                 <AssetBalance value={confirmStore.multisigDeposit} asset={chain.assets[0]} />
                 <AssetFiatBalance asset={chain.assets[0]} amount={confirmStore.multisigDeposit} />
               </div>
@@ -210,7 +210,7 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
             }
             className="text-text-primary"
           >
-            <div className="flex flex-col gap-y-0.5 items-end">
+            <div className="flex flex-col items-end gap-y-0.5">
               <AssetBalance value={confirmStore.fee} asset={chain.assets[0]} />
               <AssetFiatBalance asset={chain.assets[0]} amount={confirmStore.fee} />
             </div>
@@ -221,7 +221,7 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
               label={<FootnoteText className="text-text-tertiary">{t('operation.networkFeeTotal')}</FootnoteText>}
               className="text-text-primary"
             >
-              <div className="flex flex-col gap-y-0.5 items-end">
+              <div className="flex flex-col items-end gap-y-0.5">
                 <AssetBalance value={confirmStore.totalFee} asset={chain.assets[0]} />
                 <AssetFiatBalance asset={chain.assets[0]} amount={confirmStore.totalFee} />
               </div>
@@ -229,7 +229,7 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
           )}
         </dl>
 
-        <div className="flex w-full justify-between mt-3">
+        <div className="mt-3 flex w-full justify-between">
           {onGoBack && (
             <Button variant="text" onClick={onGoBack}>
               {t('operation.goBackButton')}

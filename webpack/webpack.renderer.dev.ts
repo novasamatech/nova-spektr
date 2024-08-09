@@ -2,7 +2,7 @@ import { resolve } from 'path';
 
 import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
 import HTMLWebpackPlugin from 'html-webpack-plugin';
-import webpack, { type Configuration as WpConfig } from 'webpack';
+import { type Configuration as WpConfig, default as webpack } from 'webpack';
 import { type Configuration as WdsConfig } from 'webpack-dev-server';
 import { merge } from 'webpack-merge';
 

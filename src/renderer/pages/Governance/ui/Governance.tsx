@@ -54,22 +54,22 @@ export const Governance = () => {
   }, [all, selectedReferendumId]);
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex h-full flex-col">
       <Header title={t('governance.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
         <ReferendumSearch />
       </Header>
 
-      <div className="overflow-y-auto w-full h-full py-6">
-        <section className="flex flex-col h-full w-[736px] mx-auto">
-          <div className="flex gap-x-3 mb-2">
-            <Plate className="w-[240px] h-[90px] pt-3 px-4 pb-4.5">
+      <div className="h-full w-full overflow-y-auto py-6">
+        <section className="mx-auto flex h-full w-[736px] flex-col">
+          <div className="mb-2 flex gap-x-3">
+            <Plate className="h-[90px] w-[240px] px-4 pb-4.5 pt-3">
               <NetworkSelector />
             </Plate>
             <Locks onClick={unlockAggregate.events.flowStarted} />
             <Delegations onClick={addDelegationModel.events.flowStarted} />
           </div>
 
-          <div className="mt-5 mb-4">
+          <div className="mb-4 mt-5">
             <ReferendumFilters />
           </div>
 

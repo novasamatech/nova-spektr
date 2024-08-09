@@ -36,8 +36,8 @@ export const Navigation = () => {
   ];
 
   return (
-    <nav className="overflow-y-auto h-full">
-      <ul className="flex flex-col gap-2 h-full">
+    <nav className="h-full overflow-y-auto">
+      <ul className="flex h-full flex-col gap-2">
         {NavItems.map(({ icon, title, link, badge }) => (
           <li key={title}>
             <NavItem icon={icon} title={title} link={link} badge={badge} />

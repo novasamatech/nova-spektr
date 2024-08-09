@@ -169,7 +169,7 @@ export const Verification = () => {
         </div>
       </div>
 
-      {sessionIsVerified && <Icon name="matrixFull" className="!w-[56px] text-[#00000066] mt-3" size={24} />}
+      {sessionIsVerified && <Icon name="matrixFull" className="mt-3 !w-[56px] text-[#00000066]" size={24} />}
 
       {!sessionIsVerified && (
         <form className="flex flex-col gap-y-2" onSubmit={handleSubmit(submitVerification)}>
@@ -187,7 +187,7 @@ export const Verification = () => {
             {t('settings.matrix.verificationHint')}
           </InputHint>
 
-          <div className="flex justify-between items-center pt-3 mt-2">
+          <div className="mt-2 flex items-center justify-between pt-3">
             <Icon name="matrixFull" className="!w-[56px] text-[#00000066]" size={24} />
             <Button type="submit" disabled={!isValid}>
               {t('settings.matrix.verifyButton')}

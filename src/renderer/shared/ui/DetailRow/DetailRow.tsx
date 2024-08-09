@@ -10,7 +10,7 @@ type Props = {
 };
 
 export const DetailRow = ({ label, className, wrapperClassName, children }: PropsWithChildren<Props>) => (
-  <div className={cnTw('flex justify-between items-center w-full', wrapperClassName)}>
+  <div className={cnTw('flex w-full items-center justify-between', wrapperClassName)}>
     {typeof label === 'string' ? (
       <FootnoteText as="dt" className="text-text-tertiary">
         {label}
@@ -20,7 +20,7 @@ export const DetailRow = ({ label, className, wrapperClassName, children }: Prop
     )}
 
     {typeof children === 'string' ? (
-      <FootnoteText as="dd" align="right" className={cnTw('justify-end py-[3px] px-2', className)}>
+      <FootnoteText as="dd" align="right" className={cnTw('justify-end px-2 py-[3px]', className)}>
         {children}
       </FootnoteText>
     ) : (

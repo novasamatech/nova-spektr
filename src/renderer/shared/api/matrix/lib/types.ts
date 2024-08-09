@@ -178,9 +178,9 @@ export interface FinalApprovePayload extends ApprovePayload {
   callOutcome: MultisigTxStatus;
 }
 
-export interface CancelPayload extends ApprovePayload {}
+export type CancelPayload = ApprovePayload;
 
-export interface UpdatePayload extends BaseMultisigPayload {}
+export type UpdatePayload = BaseMultisigPayload;
 
 type MatrixEventPayload = {
   eventId: string;

@@ -70,12 +70,12 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onCl
       closeButton
       onClose={closeModal}
     >
-      <div className="flex flex-wrap-reverse items-end gap-4 p-6 min-h-full">
-        <Plate className="min-h-0 min-w-80 basis-[530px] grow p-6 shadow-card-shadow border-filter-border">
+      <div className="flex min-h-full flex-wrap-reverse items-end gap-4 p-6">
+        <Plate className="min-h-0 min-w-80 grow basis-[530px] border-filter-border p-6 shadow-card-shadow">
           <ProposalDescription chainId={chain.chainId} referendum={referendum} />
         </Plate>
 
-        <div className="flex flex-row flex-wrap gap-4 basis-[350px] grow shrink-0">
+        <div className="flex shrink-0 grow basis-[350px] flex-row flex-wrap gap-4">
           {referendum.isVoted && (
             <DetailsCard>
               <VotingBalance votes={formattedVotes} onInfoClick={() => setShowWalletVotes(true)} />
@@ -96,7 +96,7 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onCl
             <DetailsCard
               title={t('governance.referendum.votingSummary')}
               action={
-                <Button variant="text" size="sm" className="p-0 h-fit" onClick={() => setShowVoteHistory(true)}>
+                <Button variant="text" size="sm" className="h-fit p-0" onClick={() => setShowVoteHistory(true)}>
                   {t('governance.voteHistory.viewVoteHistory')}
                 </Button>
               }
@@ -115,7 +115,7 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onCl
 
           {referendumService.isOngoing(referendum) && !!votingAsset && (
             <DetailsCard>
-              <Button className="p-0 h-auto w-fit" size="sm" variant="text" onClick={() => setShowAdvanced(true)}>
+              <Button className="h-auto w-fit p-0" size="sm" variant="text" onClick={() => setShowAdvanced(true)}>
                 {t('governance.referendum.advanced')}
               </Button>
             </DetailsCard>

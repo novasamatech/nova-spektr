@@ -48,7 +48,7 @@ export const SelectWalletPairing = () => {
   return (
     <DropdownButton
       options={getDropdownOptions(t)}
-      className="w-[140px] py-2 h-8.5"
+      className="h-8.5 w-[140px] py-2"
       title={t('wallets.addButtonTitle')}
     />
   );

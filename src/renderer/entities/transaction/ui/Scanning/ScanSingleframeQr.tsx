@@ -69,15 +69,15 @@ export const ScanSingleframeQr = ({
   };
 
   return (
-    <div className="flex flex-col items-center w-full">
+    <div className="flex w-full flex-col items-center">
       {account && (
-        <div className="flex items-center justify-center mb-1 h-8 w-full">
-          <div className="flex h-full justify-center items-center gap-x-0.5 ">
+        <div className="mb-1 flex h-8 w-full items-center justify-center">
+          <div className="flex h-full items-center justify-center gap-x-0.5">
             <FootnoteText className="text-text-secondary">{t('signing.signer')}</FootnoteText>
 
-            <div className="w-full flex gap-x-2 items-center px-2">
+            <div className="flex w-full items-center gap-x-2 px-2">
               <WalletIcon className="shrink-0" type={signerWallet.type} size={16} />
-              <FootnoteText className="text-text-secondary w-max">{signerWallet.name}</FootnoteText>
+              <FootnoteText className="w-max text-text-secondary">{signerWallet.name}</FootnoteText>
             </div>
           </div>
         </div>
@@ -96,7 +96,7 @@ export const ScanSingleframeQr = ({
         )}
       </QrGeneratorContainer>
 
-      <div className="flex w-full justify-between mt-3 pl-2">
+      <div className="mt-3 flex w-full justify-between pl-2">
         <Button variant="text" onClick={onGoBack}>
           {t('operation.goBackButton')}
         </Button>

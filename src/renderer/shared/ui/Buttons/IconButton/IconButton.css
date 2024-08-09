@@ -1,11 +1,11 @@
 .spektr-icon-button::before {
-  content: '';
   display: block;
   position: absolute;
-  width: max(26px, 125%);
-  height: max(26px, 125%);
+  top: 50%;
+  left: 50%;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  left: 50%;
-  top: 50%;
+  width: max(26px, 125%);
+  height: max(26px, 125%);
+  content: '';
 }
