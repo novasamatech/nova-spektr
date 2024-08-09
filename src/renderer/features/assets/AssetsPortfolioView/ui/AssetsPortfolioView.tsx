@@ -39,18 +39,18 @@ export const AssetsPortfolioView = () => {
   const colStyle = getColStyle(wallet);
 
   return (
-    <div className="flex flex-col gap-y-2 items-center w-full py-4">
-      <div className={`grid items-center w-[548px] pl-[35px] pr-4 ${colStyle}`}>
+    <div className="flex w-full flex-col items-center gap-y-2 py-4">
+      <div className={`grid w-[548px] items-center pl-[35px] pr-4 ${colStyle}`}>
         <FootnoteText className="text-text-tertiary">{t('balances.token')}</FootnoteText>
         <FootnoteText className="text-text-tertiary" align="right">
           {fiatFlag && t('balances.price')}
         </FootnoteText>
-        <FootnoteText className="text-text-tertiary col-end-4" align="right">
+        <FootnoteText className="col-end-4 text-text-tertiary" align="right">
           {t('balances.balance')}
         </FootnoteText>
       </div>
 
-      <ul className="flex flex-col gap-y-4 items-center w-full">
+      <ul className="flex w-full flex-col items-center gap-y-4">
         {sortedTokens.map((asset) => (
           <li key={`${asset.priceId || ''}${asset.symbol}`} className="w-[548px]">
             {asset.chains.length === 1 ? <TokenBalance asset={asset} /> : <TokenBalanceList asset={asset} />}

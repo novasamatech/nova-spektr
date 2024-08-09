@@ -215,13 +215,13 @@ function getStructForMultishard<T>(accounts: Account[], chainsMap: ChainsMap<T>)
 
 function getSelectedShards(struct: SelectedStruct, accounts: Account[]): BaseAccount[] {
   const selectedMap = Object.values(struct).reduce<Record<AccountId, boolean>>((acc, chainMap) => {
-    const { total, checked, ...chains } = chainMap;
+    const { total: _total, checked: _checked, ...chains } = chainMap;
     Object.values(chains).forEach((chain) => {
       const { accounts, sharded = {} } = chain;
       Object.assign(acc, accounts);
 
       Object.values(sharded).forEach((shard) => {
-        const { total, checked, ...shards } = shard;
+        const { total: _total, checked: _checked, ...shards } = shard;
         Object.assign(acc, shards);
       });
     });

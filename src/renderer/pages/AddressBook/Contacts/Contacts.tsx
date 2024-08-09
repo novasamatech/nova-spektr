@@ -16,7 +16,7 @@ export const Contacts = () => {
 
   return (
     <>
-      <div className="h-full flex flex-col">
+      <div className="flex h-full flex-col">
         <Header title={t('addressBook.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
           <div className="flex items-center gap-4">
             <ContactFilter />
@@ -24,8 +24,8 @@ export const Contacts = () => {
           </div>
         </Header>
 
-        <section className="overflow-y-auto w-full h-full mt-4">
-          <div className="flex flex-col gap-y-4 w-[546px] mx-auto h-full">
+        <section className="mt-4 h-full w-full overflow-y-auto">
+          <div className="mx-auto flex h-full w-[546px] flex-col gap-y-4">
             {!hasContacts && <EmptyContactList />}
 
             {hasContacts && !hasContactsFiltered && <EmptyFilteredContacts />}

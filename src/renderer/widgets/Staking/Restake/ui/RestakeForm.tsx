@@ -25,15 +25,15 @@ export const ReturnToStakeForm = ({ onGoBack }: Props) => {
   };
 
   return (
-    <div className="pb-4 px-5">
-      <form id="transfer-form" className="flex flex-col gap-y-4 mt-4" onSubmit={submitForm}>
+    <div className="px-5 pb-4">
+      <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
         <ProxyFeeAlert />
         <AccountsSelector />
         <Signatories />
         <Amount />
         <Description />
       </form>
-      <div className="flex flex-col gap-y-6 pt-6 pb-4">
+      <div className="flex flex-col gap-y-6 pb-4 pt-6">
         <FeeSection />
       </div>
       <ActionsSection onGoBack={onGoBack} />
@@ -91,7 +91,7 @@ const AccountsSelector = () => {
       id: account.id.toString(),
       value: account,
       element: (
-        <div className="flex justify-between w-full" key={account.id}>
+        <div className="flex w-full justify-between" key={account.id}>
           <AccountAddress
             size={20}
             type="short"
@@ -272,7 +272,7 @@ const ActionsSection = ({ onGoBack }: Props) => {
   const canSubmit = useUnit(formModel.$canSubmit);
 
   return (
-    <div className="flex justify-between items-center mt-4">
+    <div className="mt-4 flex items-center justify-between">
       <Button variant="text" onClick={onGoBack}>
         {t('operation.goBackButton')}
       </Button>

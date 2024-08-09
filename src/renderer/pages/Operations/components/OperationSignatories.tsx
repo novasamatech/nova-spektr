@@ -65,7 +65,9 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
 
     if (cancellation.length) {
       const cancelSignatories = signatories.find((s) => s.accountId === cancellation[0].accountId);
-      cancelSignatories && tempCancellation.push(cancelSignatories);
+      if (cancelSignatories) {
+        tempCancellation.push(cancelSignatories);
+      }
     }
 
     const tempApprovals = approvals
@@ -87,8 +89,8 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
   };
 
   return (
-    <div className="flex flex-col w-[320px] px-2 py-4">
-      <div className="flex justify-between items-center mb-3">
+    <div className="flex w-[320px] flex-col px-2 py-4">
+      <div className="mb-3 flex items-center justify-between">
         <SmallTitleText>{t('operation.signatoriesTitle')}</SmallTitleText>
 
         <Button
@@ -97,7 +99,7 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
           size="sm"
           prefixElement={<Icon name="chat" size={16} />}
           suffixElement={
-            <CaptionText className="!text-white bg-chip-icon rounded-full pt-[1px] pb-[2px] px-1.5">
+            <CaptionText className="rounded-full bg-chip-icon px-1.5 pb-[2px] pt-[1px] !text-white">
               {events.length}
             </CaptionText>
           }
@@ -110,7 +112,7 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
       <div className="flex flex-col gap-y-2">
         {Boolean(walletSignatories.length) && (
           <>
-            <FootnoteText className="text-text-tertiary mb-2" as="h4">
+            <FootnoteText className="mb-2 text-text-tertiary" as="h4">
               {t('operation.walletSignatoriesTitle')}
             </FootnoteText>
             <ul className="flex flex-col gap-y-2">
@@ -123,7 +125,7 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
                   explorers={connection.explorers}
                 >
                   <WalletIcon type={signatory.wallet.type} size={20} />
-                  <BodyText className="text-inherit mr-auto">{signatory.wallet.name}</BodyText>
+                  <BodyText className="mr-auto text-inherit">{signatory.wallet.name}</BodyText>
                 </SignatoryCard>
               ))}
             </ul>
@@ -132,7 +134,7 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
 
         {Boolean(contactSignatories.length) && (
           <>
-            <FootnoteText className="text-text-tertiary mb-2" as="h4">
+            <FootnoteText className="mb-2 text-text-tertiary" as="h4">
               {t('operation.contactSignatoriesTitle')}
             </FootnoteText>
             <ul className="flex flex-col gap-y-2">

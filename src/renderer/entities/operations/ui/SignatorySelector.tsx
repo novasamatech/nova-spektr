@@ -40,7 +40,7 @@ export const SignatorySelector = ({
           id: signer.id.toString(),
           value: signer,
           element: (
-            <div className="flex justify-between items-center w-full">
+            <div className="flex w-full items-center justify-between">
               <AccountAddress
                 size={20}
                 type="short"

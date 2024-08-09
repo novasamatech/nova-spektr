@@ -118,8 +118,8 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
       isOpen={isModalOpen}
       onClose={closeModal}
     >
-      <div className="flex flex-col gap-y-4 w-full">
-        <div className="py-6 px-5 border-b border-divider">
+      <div className="flex w-full flex-col gap-y-4">
+        <div className="border-b border-divider px-5 py-6">
           <WalletCardLg wallet={wallet} />
         </div>
         {walletUtils.isWatchOnly(wallet) && !hasProxies ? (

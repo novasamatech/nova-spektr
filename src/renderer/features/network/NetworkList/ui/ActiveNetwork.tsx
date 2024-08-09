@@ -45,10 +45,10 @@ export const ActiveNetwork = ({ networkItem, children }: PropsWithChildren<Props
   return (
     <div className="flex items-center py-3">
       <ChainIcon src={networkItem.icon} name={networkItem.name} size={26} />
-      <div className="flex flex-col ml-2 mr-auto pr-2 overflow-hidden">
+      <div className="ml-2 mr-auto flex flex-col overflow-hidden pr-2">
         <BodyText className="truncate">{networkItem.name}</BodyText>
         {networkItem.connection.activeNode && (
-          <HelpText className="text-text-tertiary truncate">{networkItem.connection.activeNode.url}</HelpText>
+          <HelpText className="truncate text-text-tertiary">{networkItem.connection.activeNode.url}</HelpText>
         )}
       </div>
       <StatusLabel

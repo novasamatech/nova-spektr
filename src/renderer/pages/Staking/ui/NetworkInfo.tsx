@@ -86,7 +86,7 @@ export const NetworkInfo = ({
   ];
 
   return (
-    <Plate className="flex flex-col gap-y-3 w-full">
+    <Plate className="flex w-full flex-col gap-y-3">
       <div className="grid grid-cols-[178px,repeat(2,122px),28px] items-center gap-x-6">
         <div className="flex flex-col gap-y-2">
           <FootnoteText className="text-text-secondary">{t('staking.overview.networkLabel')}</FootnoteText>
@@ -111,7 +111,7 @@ export const NetworkInfo = ({
           ) : (
             <div key={title} className="text-left">
               <FootnoteText className="text-text-secondary">{title}</FootnoteText>
-              <AssetBalance value={amount.toString()} asset={asset} className="text-small-title font-manrope" />
+              <AssetBalance value={amount.toString()} asset={asset} className="font-manrope text-small-title" />
               <AssetFiatBalance amount={amount.toString()} asset={asset} />
             </div>
           ),
@@ -121,7 +121,7 @@ export const NetworkInfo = ({
 
       {isChildrenShown && (
         <>
-          <hr className="border-divider -mx-3" />
+          <hr className="-mx-3 border-divider" />
           {children}
         </>
       )}

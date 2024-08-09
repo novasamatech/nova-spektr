@@ -2,22 +2,26 @@ import { type KeysOfType } from '../../core/types/utility';
 
 /**
  * Get new array with item inserted at given position
- * @param collection array of items
- * @param item value to be inserted
- * @param position at which position
- * @return {Array}
+ *
+ * @param collection Array of items
+ * @param item Value to be inserted
+ * @param position At which position
+ *
+ * @returns {Array}
  */
 export function splice<T>(collection: T[], item: T, position: number): T[] {
   return collection.slice(0, position).concat(item, collection.slice(position + 1));
 }
 
 /**
- * Create dictionary with given key and value
- * Keys can only be type of string, number or symbol
- * @param collection array of items
- * @param property field to be used as key
- * @param predicate transformer function
- * @return {Object}
+ * Create dictionary with given key and value Keys can only
+ * be type of string, number or symbol
+ *
+ * @param collection Array of items
+ * @param property Field to be used as key
+ * @param predicate Transformer function
+ *
+ * @returns {Object}
  */
 export function dictionary<T extends Record<K, PropertyKey>, K extends KeysOfType<T, PropertyKey>>(
   collection: T[],

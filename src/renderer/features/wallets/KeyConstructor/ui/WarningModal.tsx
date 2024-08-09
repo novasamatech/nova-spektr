@@ -16,10 +16,10 @@ export const WarningModal = ({ isOpen, onClose, onConfirm }: Props) => {
       title={<SmallTitleText>{t('dynamicDerivations.constructor.warnModalTitle')}</SmallTitleText>}
       onClose={onClose}
     >
-      <FootnoteText className="text-text-tertiary text-center pt-2 pb-4">
+      <FootnoteText className="pb-4 pt-2 text-center text-text-tertiary">
         {t('dynamicDerivations.constructor.warnModalDescription')}
       </FootnoteText>
-      <div className="flex gap-x-4 items-center justify-center">
+      <div className="flex items-center justify-center gap-x-4">
         <Button size="sm" variant="text" className="w-[88px]" onClick={onClose}>
           {t('dynamicDerivations.constructor.warnModalCancelButton')}{' '}
         </Button>

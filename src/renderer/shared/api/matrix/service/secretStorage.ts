@@ -15,8 +15,9 @@ class SecretStorage implements ISecretStorage {
 
   /**
    * Save private key to the storage
-   * @param keyId key value
-   * @param privateKey private key value
+   *
+   * @param keyId Key value
+   * @param privateKey Private key value
    */
   public storePrivateKey(keyId: string, privateKey: Uint8Array | unknown): void | never {
     if (!(privateKey instanceof Uint8Array)) {
@@ -27,8 +28,10 @@ class SecretStorage implements ISecretStorage {
 
   /**
    * Check is private key already saved
-   * @param keyId key value
-   * @return {Boolean}
+   *
+   * @param keyId Key value
+   *
+   * @returns {Boolean}
    */
   public hasPrivateKey(keyId: string): boolean {
     return this.secretStorage.get(keyId) instanceof Uint8Array;
@@ -36,8 +39,10 @@ class SecretStorage implements ISecretStorage {
 
   /**
    * Retrieve private key from storage
-   * @param keyId key value
-   * @return {Uint8Array | undefined}
+   *
+   * @param keyId Key value
+   *
+   * @returns {Uint8Array | undefined}
    */
   public getPrivateKey(keyId: string): Uint8Array | undefined {
     return this.secretStorage.get(keyId);
@@ -45,7 +50,8 @@ class SecretStorage implements ISecretStorage {
 
   /**
    * Delete private key from storage
-   * @param keyId key value
+   *
+   * @param keyId Key value
    */
   public deletePrivateKey(keyId: string): void {
     this.secretStorage.delete(keyId);
@@ -60,7 +66,8 @@ class SecretStorage implements ISecretStorage {
 
   /**
    * Get object with callbacks to work with storage
-   * @return {Object}
+   *
+   * @returns {Object}
    */
   public get cryptoCallbacks() {
     return {
@@ -71,8 +78,10 @@ class SecretStorage implements ISecretStorage {
 
   /**
    * Get tuple of keyId and privateKey from storage
-   * @param value keys to search
-   * @return {Promise}
+   *
+   * @param value Keys to search
+   *
+   * @returns {Promise}
    */
   private async getSecretStorageKey(value: { keys: Record<string, any> }): Promise<[string, Uint8Array] | null> {
     const keyId = Object.keys(value.keys).find(this.hasPrivateKey);
@@ -86,9 +95,10 @@ class SecretStorage implements ISecretStorage {
 
   /**
    * Save private key to the storage
-   * @param keyId key value
-   * @param keyInfo key info
-   * @param privateKey private key value
+   *
+   * @param keyId Key value
+   * @param keyInfo Key info
+   * @param privateKey Private key value
    */
   private cacheSecretStorageKey(keyId: string, keyInfo: any, privateKey: Uint8Array): void {
     this.secretStorage.set(keyId, privateKey);

@@ -24,12 +24,13 @@ type RangeProps = {
 type Props = (SimpleProps | RangeProps) & {
   /**
    * Render function for labels, placed on top of each step.
-   * `value` and `index` may differ, if `step` prop is not equal 1.
+   * `value` and `index` may differ, if `step` prop is not
+   * equal 1.
    */
   renderLabel?: (value: number, index: number) => ReactNode;
   /**
-   * Step size between values.
-   * e.g.
+   * Step size between values. e.g.
+   *
    * ```
    * min = 0
    * max = 6
@@ -69,10 +70,10 @@ export const Slider = forwardRef<HTMLSpanElement, Props>(
     const totalSteps = countSteps(min, max, stepSize);
 
     return (
-      <div className="flex flex-col w-full gap-2">
+      <div className="flex w-full flex-col gap-2">
         <StepLabels min={min} stepSize={stepSize} steps={totalSteps} renderLabel={renderLabel} />
 
-        <div className="flex items-center relative w-full h-4">
+        <div className="relative flex h-4 w-full items-center">
           <div
             className={cnTw(
               'h-2 w-2 rounded-s',
@@ -82,7 +83,7 @@ export const Slider = forwardRef<HTMLSpanElement, Props>(
 
           <RadixSlider.Root
             ref={ref}
-            className="flex items-center relative w-full h-full"
+            className="relative flex h-full w-full items-center"
             value={fixedValue}
             step={stepSize}
             min={min}
@@ -91,8 +92,8 @@ export const Slider = forwardRef<HTMLSpanElement, Props>(
             minStepsBetweenThumbs={1}
             onValueChange={handleChange}
           >
-            <RadixSlider.Track className={cnTw('block relative w-full h-2 bg-icon-blue-line')}>
-              <RadixSlider.Range className="block absolute ps-2 h-full bg-primary-button-background-default" />
+            <RadixSlider.Track className={cnTw('relative block h-2 w-full bg-icon-blue-line')}>
+              <RadixSlider.Range className="absolute block h-full bg-primary-button-background-default ps-2" />
             </RadixSlider.Track>
 
             <StepIndicators steps={totalSteps} />
@@ -101,7 +102,7 @@ export const Slider = forwardRef<HTMLSpanElement, Props>(
               <RadixSlider.Thumb
                 key={i}
                 className={cnTw(
-                  'block relative w-5 h-5 border-2 rounded-full border-white-button-background-default',
+                  'relative block h-5 w-5 rounded-full border-2 border-white-button-background-default',
                   'bg-primary-button-background-default',
                   'hover:bg-primary-button-background-hover',
                   'active:bg-primary-button-background-active',

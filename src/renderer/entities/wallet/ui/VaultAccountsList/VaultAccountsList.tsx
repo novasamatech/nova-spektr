@@ -50,7 +50,7 @@ export const VaultAccountsList = ({ chains, accountsMap, className, onShardClick
                       }
                     >
                       <ExplorersPopover.Group title={t('general.explorers.derivationTitle')}>
-                        <HelpText className="text-text-secondary break-all">
+                        <HelpText className="break-all text-text-secondary">
                           {accountUtils.getDerivationPath(account)}
                         </HelpText>
                       </ExplorersPopover.Group>
@@ -59,7 +59,7 @@ export const VaultAccountsList = ({ chains, accountsMap, className, onShardClick
                 );
               })}
 
-              <hr className="border-divider my-1 w-full" />
+              <hr className="my-1 w-full border-divider" />
             </Accordion.Content>
           </Accordion>
         );

@@ -53,7 +53,7 @@ export const VoteForm = ({ chain, asset, hasDelegated = false }: Props) => {
 
   return (
     <>
-      <div className="flex flex-col px-5 py-4 gap-6">
+      <div className="flex flex-col gap-6 px-5 py-4">
         <div className="flex">
           <Popover offsetPx={5} horizontal="right" panelClass="w-90" content={<AboutVoting />}>
             <LabelHelpBox>{t('governance.voting.aboutLabel')}</LabelHelpBox>
@@ -115,7 +115,7 @@ export const VoteForm = ({ chain, asset, hasDelegated = false }: Props) => {
         <Alert active={hasDelegated} title="Already delegating votes" variant="error">
           {t('governance.vote.delegationError')}
         </Alert>
-        <div className="flex gap-4 shrink-0">
+        <div className="flex shrink-0 gap-4">
           <ButtonCard
             className="grow basis-0"
             icon="thumbDown"

@@ -188,7 +188,7 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
   };
 
   return (
-    <div className="flex flex-col items-center p-4 gap-y-2.5 w-[440px] rounded-b-lg">
+    <div className="flex w-[440px] flex-col items-center gap-y-2.5 rounded-b-lg p-4">
       <SmallTitleText>
         {t('operation.walletConnect.signTitle', {
           walletName,
@@ -198,15 +198,15 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
       <Countdown countdown={txPayload ? countdown : 0} />
 
       <div className="relative">
-        <video className="object-contain h-[240px]" autoPlay loop>
+        <video className="h-[240px] object-contain" autoPlay loop>
           <source src={wallet_connect_confirm_webm} type="video/webm" />
           <source src={wallet_connect_confirm} type="video/mp4" />
         </video>
 
         {validationError === ValidationErrors.EXPIRED && (
           <>
-            <div className="absolute top-0 left-0 right-0 bottom-0 bg-white opacity-70" />
-            <div className="absolute top-0 left-0 right-0 bottom-0 gap-4 flex flex-col items-center justify-center">
+            <div className="absolute bottom-0 left-0 right-0 top-0 bg-white opacity-70" />
+            <div className="absolute bottom-0 left-0 right-0 top-0 flex flex-col items-center justify-center gap-4">
               <FootnoteText>{t('operation.walletConnect.expiredDescription')}</FootnoteText>
               <Button size="sm" onClick={onGoBack}>
                 {t('operation.walletConnect.tryAgainButton')}
@@ -216,7 +216,7 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
         )}
       </div>
 
-      <div className="flex w-full justify-between mt-5">
+      <div className="mt-5 flex w-full justify-between">
         <Button variant="text" onClick={onGoBack}>
           {t('operation.goBackButton')}
         </Button>

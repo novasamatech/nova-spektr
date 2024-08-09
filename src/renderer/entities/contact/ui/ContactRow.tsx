@@ -21,7 +21,7 @@ export const ContactRow = ({ contact, children }: PropsWithChildren<Props>) => {
           </div>
         </div>
       </div>
-      <BodyText className="text-text-primary p-3 truncate">{contact.matrixId || '-'}</BodyText>
+      <BodyText className="truncate p-3 text-text-primary">{contact.matrixId || '-'}</BodyText>
       {children}
     </Plate>
   );

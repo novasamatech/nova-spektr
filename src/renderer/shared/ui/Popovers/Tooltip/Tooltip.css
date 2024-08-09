@@ -1,11 +1,11 @@
 .spektr-arrow::before {
-  content: '';
   display: block;
+  position: absolute;
+  border-right: 6px solid transparent;
+  border-left: 6px solid transparent;
   width: 0;
   height: 0;
-  position: absolute;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
+  content: '';
 }
 
 .spektr-arrow__center::before {
@@ -20,11 +20,11 @@
 }
 
 .spektr-arrow__up::before {
-  border-bottom: 8px solid var(--switch-background-active);
   top: -7px;
+  border-bottom: 8px solid var(--switch-background-active);
 }
 
 .spektr-arrow__down::before {
-  border-top: 8px solid var(--switch-background-active);
   bottom: -7px;
+  border-top: 8px solid var(--switch-background-active);
 }

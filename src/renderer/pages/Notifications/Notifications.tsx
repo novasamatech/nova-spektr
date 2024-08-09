@@ -6,7 +6,7 @@ export const Notifications = () => {
   const { t } = useI18n();
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex h-full flex-col">
       <Header title={t('notifications.title')} />
 
       <NotificationsList />

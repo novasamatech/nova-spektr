@@ -168,11 +168,14 @@ type TxWrappersParams = {
   signatories?: Account[];
 };
 /**
- * Get array of transaction wrappers (proxy/multisig)
- * Every wrapper recursively calls getTxWrappers until it finds regular account
- * @param wallet wallet that requires wrapping
- * @param params wallets, accounts and signatories
- * @return {Array}
+ * Get array of transaction wrappers (proxy/multisig) Every
+ * wrapper recursively calls getTxWrappers until it finds
+ * regular account
+ *
+ * @param wallet Wallet that requires wrapping
+ * @param params Wallets, accounts and signatories
+ *
+ * @returns {Array}
  */
 function getTxWrappers({ wallet, ...params }: TxWrappersParams): TxWrapper[] {
   if (walletUtils.isMultisig(wallet)) {
