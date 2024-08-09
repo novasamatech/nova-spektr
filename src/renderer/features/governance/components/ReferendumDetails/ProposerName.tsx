@@ -49,8 +49,6 @@ export const ProposerName = ({ referendum }: Props) => {
 
   const proposerLoader = isProposerLoading ? <Shimmering height={18} width={70} /> : null;
 
-  console.log('proposerName', proposerName);
-
   if (!proposerName && !proposerLoader) return null;
 
   return (
