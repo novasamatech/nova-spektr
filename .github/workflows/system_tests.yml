@@ -19,6 +19,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: KengoTODA/actions-setup-docker-compose@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build compose
         run: docker-compose up -d
       - name: ⚙️ Install dependencies
