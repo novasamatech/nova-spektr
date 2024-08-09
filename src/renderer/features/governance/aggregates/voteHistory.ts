@@ -102,7 +102,7 @@ sample({
 
 export const voteHistoryAggregate = {
   $voteHistory,
-  $voteHistoryLoading: or(voteHistoryModel.$voteHistoryLoading, votingAggregate.$isLoading),
+  $isLoading: or(voteHistoryModel.$isLoading, votingAggregate.$isLoading),
   $chain: networkSelectorModel.$governanceChain,
   $votingAsset: votingAssetModel.$votingAsset,
 
