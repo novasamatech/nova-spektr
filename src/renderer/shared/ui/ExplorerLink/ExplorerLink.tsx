@@ -20,7 +20,7 @@ export const ExplorerLink = ({ name, href }: Props) => {
   return (
     <a
       className={cnTw(
-        'group flex items-center gap-x-1.5 px-1.5 py-[3px] select-none rounded-md transition-colors',
+        'group flex select-none items-center gap-x-1.5 rounded-md px-1.5 py-[3px] transition-colors',
         'hover:bg-action-background-hover focus:bg-action-background-hover',
       )}
       href={href}

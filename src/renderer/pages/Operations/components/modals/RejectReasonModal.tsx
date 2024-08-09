@@ -46,7 +46,7 @@ const RejectReasonModal = ({ isOpen, onClose, onSubmit }: Props) => {
       panelClass="w-[370px]"
       onClose={closeHandler}
     >
-      <form id="rejectReasonForm" className="flex flex-col mt-2 gap-y-4" onSubmit={handleSubmit(submitHandler)}>
+      <form id="rejectReasonForm" className="mt-2 flex flex-col gap-y-4" onSubmit={handleSubmit(submitHandler)}>
         <Controller
           name="reason"
           control={control}

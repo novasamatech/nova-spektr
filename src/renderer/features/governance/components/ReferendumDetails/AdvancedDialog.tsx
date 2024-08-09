@@ -73,7 +73,7 @@ export const AdvancedDialog = ({ asset, referendum, onClose }: Props) => {
         <DetailRow label={t('governance.advanced.fields.electrorate')}>{electrorate}</DetailRow>
 
         <DetailRow label={t('governance.advanced.fields.callHash')}>
-          <div className="flex items-center gap-1 text-text-secondary w-32">
+          <div className="flex w-32 items-center gap-1 text-text-secondary">
             <Truncate className="text-footnote" start={6} end={5} text={proposal} />
             <IconButton name="copy" onClick={() => copyToClipboard(proposal)} />
           </div>

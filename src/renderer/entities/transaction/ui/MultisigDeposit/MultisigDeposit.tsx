@@ -39,7 +39,7 @@ export const MultisigDeposit = memo(({ api, asset, threshold, className, onDepos
   }
 
   return (
-    <div className="flex flex-col gap-y-0.5 items-end">
+    <div className="flex flex-col items-end gap-y-0.5">
       <AssetBalance value={deposit} asset={asset} className={className} />
       <AssetFiatBalance asset={asset} amount={deposit} />
     </div>

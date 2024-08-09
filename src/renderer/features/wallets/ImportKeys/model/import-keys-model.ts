@@ -202,7 +202,7 @@ sample({
 sample({
   clock: validateDerivationsFx.doneData,
   source: $existingDerivations,
-  filter: (existingDerivations, importedDerivations) => Boolean(existingDerivations),
+  filter: (existingDerivations) => Boolean(existingDerivations),
   fn: (existingDerivations, importedDerivations) => ({ imported: importedDerivations, existing: existingDerivations! }),
   target: mergePathsFx,
 });

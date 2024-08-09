@@ -28,7 +28,7 @@ export const CompletedReferendumItem = memo<Props>(({ referendum, isTitlesLoadin
 
   return (
     <ListItem onClick={() => onSelect(referendum)}>
-      <div className="flex items-center gap-x-2 w-full">
+      <div className="flex w-full items-center gap-x-2">
         <Voted active={referendum.isVoted} />
         <VotingStatusBadge referendum={referendum} />
         <FootnoteText className="ml-auto text-text-secondary">#{referendum.referendumId}</FootnoteText>

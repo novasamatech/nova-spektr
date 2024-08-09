@@ -189,13 +189,13 @@ export const LoginForm = ({ redirectStep }: Props) => {
         />
 
         {!credentialsFlow && (
-          <p className="text-center text-shade-40 text-sm py-4">
+          <p className="py-4 text-center text-sm text-shade-40">
             <Trans t={t} i18nKey="settings.matrix.loginNotAvailable" values={{ homeserver }} />
           </p>
         )}
 
         {credentialsFlow && isHomeserverLoading && (
-          <div className="w-full h-[136px] flex items-center justify-center">
+          <div className="flex h-[136px] w-full items-center justify-center">
             <Loader color="primary" />
           </div>
         )}
@@ -252,7 +252,7 @@ export const LoginForm = ({ redirectStep }: Props) => {
         )}
       </form>
 
-      <div className="flex flex-col gap-y-6 mt-6">
+      <div className="mt-6 flex flex-col gap-y-6">
         {ssoFlows.length > 0 && (
           <div className="flex flex-col gap-y-6">
             <Separator text="or sign in" />
@@ -283,7 +283,7 @@ export const LoginForm = ({ redirectStep }: Props) => {
         </FootnoteText>
       </div>
 
-      <div className="flex justify-between items-center pt-3">
+      <div className="flex items-center justify-between pt-3">
         <Icon name="matrixFull" className="!w-[56px] text-[#00000066]" size={24} />
         <Button form="matrixLogin" type="submit" isLoading={inProgress} disabled={logInDisabled || inProgress}>
           {t('settings.matrix.logInButton')}

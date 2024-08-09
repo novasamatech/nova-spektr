@@ -10,7 +10,7 @@ type Props = {
 };
 
 export const OperationTitle = ({ title, chainId, className }: Props) => (
-  <div className={cnTw('flex flex-1 items-center h-7 truncate', className)}>
+  <div className={cnTw('flex h-7 flex-1 items-center truncate', className)}>
     <HeaderTitleText>{title}</HeaderTitleText>
     <ChainTitle
       chainId={chainId}

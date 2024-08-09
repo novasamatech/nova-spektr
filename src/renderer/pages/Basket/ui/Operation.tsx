@@ -50,7 +50,7 @@ export const Operation = ({ tx, errorText, validating, onClick, onTxRemoved }: P
     if (errorText) {
       return (
         <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey={errorText} />}>
-          <div className="w-[106px] flex gap-x-1 items-center justify-center rounded-md bg-badge-red-background-default px-2 py-0.5">
+          <div className="flex w-[106px] items-center justify-center gap-x-1 rounded-md bg-badge-red-background-default px-2 py-0.5">
             <HelpText className="text-text-negative">{t('basket.validationError')} </HelpText>
           </div>
         </Tooltip>
@@ -60,7 +60,7 @@ export const Operation = ({ tx, errorText, validating, onClick, onTxRemoved }: P
     if (tx.error) {
       return (
         <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey={tx.error.message} />}>
-          <div className="w-[106px] flex gap-x-1 items-center justify-center rounded-md bg-badge-orange-background-default px-2 py-0.5">
+          <div className="flex w-[106px] items-center justify-center gap-x-1 rounded-md bg-badge-orange-background-default px-2 py-0.5">
             <HelpText className="text-text-warning">
               {t('basket.chainError', {
                 date: (tx.error as ChainError).dateCreated
@@ -77,7 +77,7 @@ export const Operation = ({ tx, errorText, validating, onClick, onTxRemoved }: P
 
   return (
     <div
-      className={cnTw('h-[52px] flex gap-x-4 items-center w-full overflow-hidden ', !disabled && 'cursor-pointer')}
+      className={cnTw('flex h-[52px] w-full items-center gap-x-4 overflow-hidden', !disabled && 'cursor-pointer')}
       onClick={onTxClicked}
     >
       <TransactionTitle className="flex-1 overflow-hidden" tx={coreTx} />
@@ -94,7 +94,7 @@ export const Operation = ({ tx, errorText, validating, onClick, onTxRemoved }: P
         <ChainTitle chainId={coreTx.chainId} className="w-[114px]" />
       )}
 
-      <div className="w-[106px] flex justify-center">{getStatus()}</div>
+      <div className="flex w-[106px] justify-center">{getStatus()}</div>
 
       <IconButton name="delete" onClick={handleTxRemoved} />
     </div>

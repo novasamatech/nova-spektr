@@ -19,16 +19,16 @@ export const TransactionTitle = ({ tx, description, className, children }: Props
   const title = getTransactionTitle(t, tx);
 
   return (
-    <div className={cnTw('inline-flex gap-x-3 items-center', className)}>
-      <div className="flex items-center justify-center shrink-0 w-7 h-7 box-content rounded-full border border-token-container-border">
+    <div className={cnTw('inline-flex items-center gap-x-3', className)}>
+      <div className="box-content flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-token-container-border">
         <Icon name={getIconName(tx)} size={20} />
       </div>
-      <div className="flex flex-col gap-y-0.5 justify-center overflow-hidden">
-        <div className="flex gap-x-1 items-center">
+      <div className="flex flex-col justify-center gap-y-0.5 overflow-hidden">
+        <div className="flex items-center gap-x-1">
           <BodyText className={cnTw('whitespace-nowrap', !children && 'truncate')}>{t(title)}</BodyText>
           {children}
         </div>
-        {description && <FootnoteText className="text-text-tertiary truncate">{description} </FootnoteText>}
+        {description && <FootnoteText className="truncate text-text-tertiary">{description} </FootnoteText>}
       </div>
     </div>
   );

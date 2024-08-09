@@ -18,7 +18,7 @@ export const EmptyNetworks = () => {
   }
 
   return (
-    <div className="flex flex-col items-center mx-auto pt-12 pb-15 px-2">
+    <div className="mx-auto flex flex-col items-center px-2 pb-15 pt-12">
       <Icon as="img" name="emptyList" alt={t('settings.networks.emptyStateLabel')} size={178} />
       <BodyText className="w-52 text-center text-text-tertiary">{t('settings.networks.emptyStateLabel')}</BodyText>
     </div>

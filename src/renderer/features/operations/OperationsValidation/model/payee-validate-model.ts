@@ -23,29 +23,27 @@ type ValidateParams = {
   signerOptions?: Partial<SignerOptions>;
 };
 
-const validateFx = createEffect(
-  async ({ id, api, chain, asset, transaction, balances, signerOptions }: ValidateParams) => {
-    const accountId = toAccountId(transaction.address);
-    const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
+const validateFx = createEffect(async ({ id, chain, asset, transaction, balances }: ValidateParams) => {
+  const accountId = toAccountId(transaction.address);
+  const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
 
-    const rules = [
-      {
-        value: [{ accountId }],
-        form: {
-          amount: transaction.args.amount,
-        },
-        ...PayeeRules.shards.noBondBalance({} as Store<ShardsBondBalanceStore>),
-        source: {
-          isProxy: false,
-          network: { chain, asset },
-          accountsBalances: [stakeableAmount(shardBalance)],
-        } as ShardsBondBalanceStore,
+  const rules = [
+    {
+      value: [{ accountId }],
+      form: {
+        amount: transaction.args.amount,
       },
-    ];
+      ...PayeeRules.shards.noBondBalance({} as Store<ShardsBondBalanceStore>),
+      source: {
+        isProxy: false,
+        network: { chain, asset },
+        accountsBalances: [stakeableAmount(shardBalance)],
+      } as ShardsBondBalanceStore,
+    },
+  ];
 
-    return { id, result: validationUtils.applyValidationRules(rules) };
-  },
-);
+  return { id, result: validationUtils.applyValidationRules(rules) };
+});
 
 sample({
   clock: validationStarted,

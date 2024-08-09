@@ -17,7 +17,9 @@ export const useValidatorsMap = (api?: ApiPromise, isLightClient?: boolean): Val
     }
 
     return () => {
-      api && unsubEra?.();
+      if (api && unsubEra) {
+        unsubEra();
+      }
     };
   }, []);
 

@@ -51,7 +51,7 @@ export const VoteChart = ({
 
   if (descriptionPosition === 'bottom') {
     return (
-      <div className="flex flex-col gap-1 w-full">
+      <div className="flex w-full flex-col gap-1">
         {chartNode}
         <div className="flex justify-between">
           <div className="flex flex-col items-start">

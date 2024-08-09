@@ -1,6 +1,6 @@
 import { resolve } from 'path';
 
-import webpack, { type Configuration, type Configuration as WpConfig } from 'webpack';
+import { type Configuration, type Configuration as WpConfig, default as webpack } from 'webpack';
 import { type Configuration as WdsConfig } from 'webpack-dev-server';
 import { merge } from 'webpack-merge';
 

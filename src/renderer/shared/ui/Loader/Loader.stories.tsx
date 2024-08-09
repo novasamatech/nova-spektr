@@ -8,7 +8,7 @@ export default {
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [
     (Story) => (
-      <div className="mt-28 mx-auto w-[200px] bg-gray-200 rounded-lg">
+      <div className="mx-auto mt-28 w-[200px] rounded-lg bg-gray-200">
         <Story />
       </div>
     ),

@@ -45,12 +45,12 @@ export const NominatorsItem = ({
           checked={stake.isSelected}
           onChange={(event) => onToggleNominator(stake.address, event.target?.checked)}
         >
-          <div className="grid grid-cols-[minmax(10px,1fr),auto] max-w-[207px]">{content}</div>
+          <div className="grid max-w-[207px] grid-cols-[minmax(10px,1fr),auto]">{content}</div>
         </Checkbox>
       ) : (
-        <div className="grid grid-cols-[minmax(10px,1fr),auto] items-center gap-x-2 max-w-[222px]">{content}</div>
+        <div className="grid max-w-[222px] grid-cols-[minmax(10px,1fr),auto] items-center gap-x-2">{content}</div>
       )}
-      <div className="justify-self-end flex flex-col items-end gap-y-0.5">
+      <div className="flex flex-col items-end gap-y-0.5 justify-self-end">
         {!stake.totalStake || !asset ? (
           <>
             <Shimmering width={82} height={15} />
@@ -63,7 +63,7 @@ export const NominatorsItem = ({
           </>
         )}
       </div>
-      <div className="justify-self-end flex flex-col items-end gap-y-0.5">
+      <div className="flex flex-col items-end gap-y-0.5 justify-self-end">
         {!stake.totalReward || !asset ? (
           <>
             <Shimmering width={82} height={15} />
@@ -86,7 +86,7 @@ export const NominatorsItem = ({
           <button
             type="button"
             className={cnTw(
-              'group flex items-center gap-x-2 px-2 py-1 w-full h-full rounded-md transition-colors',
+              'group flex h-full w-full items-center gap-x-2 rounded-md px-2 py-1 transition-colors',
               'hover:bg-action-background-hover focus:bg-action-background-hover',
             )}
             onClick={() => onCheckValidators(stake.stash)}

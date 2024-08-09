@@ -202,9 +202,11 @@ const loadProof = (proofHashToNode: Record<string, Node>, branch: Node | undefin
 
 /**
  * Get decoded trie root from proof encoded nodes
- * @param proofEncodedNodes - proof encoded nodes from parachain
- * @param root - state root from relay chain
- * @return {Object}
+ *
+ * @param proofEncodedNodes - Proof encoded nodes from parachain
+ * @param root - State root from relay chain
+ *
+ * @returns {Object}
  */
 export const buildTrie = (proofEncodedNodes: Uint8Array[], root: Uint8Array): Node => {
   if (proofEncodedNodes.length === 0) {

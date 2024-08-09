@@ -12,7 +12,7 @@ type Props = {
 };
 
 export const Counter = ({ variant, className, children }: PropsWithChildren<Props>) => (
-  <div className={cnTw('flex items-center justify-center rounded-[30px] px-1.5 h-4', BadgeStyles[variant], className)}>
+  <div className={cnTw('flex h-4 items-center justify-center rounded-[30px] px-1.5', BadgeStyles[variant], className)}>
     {['string', 'number'].includes(typeof children) ? (
       <CaptionText className="text-white">{children}</CaptionText>
     ) : (

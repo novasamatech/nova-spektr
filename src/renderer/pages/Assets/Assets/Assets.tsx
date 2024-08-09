@@ -26,7 +26,7 @@ export const Assets = () => {
 
   return (
     <>
-      <section className="h-full flex flex-col">
+      <section className="flex h-full flex-col">
         <Header title={t('balances.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
           <div className="flex items-center gap-x-3">
             <AssetsSearch />
@@ -34,7 +34,7 @@ export const Assets = () => {
           </div>
         </Header>
         <ShardSelectorButton />
-        <div className="flex flex-col gap-y-4 w-full h-full overflow-y-scroll">
+        <div className="flex h-full w-full flex-col gap-y-4 overflow-y-scroll">
           <AssetsPortfolioView />
           <AssetsChainView
             query={query}

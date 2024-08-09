@@ -1,5 +1,5 @@
 import { BN } from '@polkadot/util';
-import BigNumber from 'bignumber.js';
+import { default as BigNumber } from 'bignumber.js';
 import concat from 'lodash/concat';
 import keyBy from 'lodash/keyBy';
 import orderBy from 'lodash/orderBy';

@@ -5,9 +5,9 @@ export const VotingHistoryListPlaceholder = () => {
     <>
       {Array.from({ length: 4 }).map((_, index) => (
         // eslint-disable-next-line react/no-array-index-key
-        <div key={index} className="flex gap-5 items-center h-11.5">
+        <div key={index} className="flex h-11.5 items-center gap-5">
           <Shimmering height={20} />
-          <Shimmering className="basis-32 shrink-0" height={20} />
+          <Shimmering className="shrink-0 basis-32" height={20} />
         </div>
       ))}
     </>

@@ -82,7 +82,7 @@ export const CurrencyForm = ({ onSubmit }: Props) => {
         onChange={({ value }) => currency?.onChange(value.id)}
       />
 
-      <Button className="w-fit ml-auto" type="submit" disabled={!isFormValid}>
+      <Button className="ml-auto w-fit" type="submit" disabled={!isFormValid}>
         {t('settings.currency.save')}
       </Button>
     </form>

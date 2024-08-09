@@ -66,7 +66,7 @@ export const SignOperations = () => {
 
     return (
       <OperationTitle
-        className="justify-center my-3"
+        className="my-3 justify-center"
         title={`${t(title, { ...params })}`}
         chainId={basketTransaction.coreTx.chainId}
       />
@@ -148,12 +148,12 @@ export const SignOperations = () => {
     >
       {signOperationsUtils.isConfirmStep(step) && (
         <>
-          <div className="bg-background-default overflow-x-hidden py-4" ref={ref}>
+          <div className="overflow-x-hidden bg-background-default py-4" ref={ref}>
             {transactions.length > 0 && signOperationsUtils.isConfirmStep(step) && (
-              <div className="flex gap-2 first:ml-4 ">
+              <div className="flex gap-2 first:ml-4">
                 {transactions.map((t) => (
-                  <div key={t.id} className="flex flex-col h-[622px]  last-of-type:pr-4">
-                    <div className="w-[440px] bg-white rounded-lg shadow-shadow-2 max-h-full overflow-y-auto">
+                  <div key={t.id} className="flex h-[622px] flex-col last-of-type:pr-4">
+                    <div className="max-h-full w-[440px] overflow-y-auto rounded-lg bg-white shadow-shadow-2">
                       {getModalTitle(t)}
                       {getConfirmScreen(t)?.()}
                     </div>
@@ -163,18 +163,18 @@ export const SignOperations = () => {
             )}
           </div>
 
-          <div className="flex justify-between bg-white pt-3 px-5 pb-4 rounded-lg">
+          <div className="flex justify-between rounded-lg bg-white px-5 pb-4 pt-3">
             <div className="flex gap-2">
               <IconButton
                 size={20}
-                className="border w-[42px] h-[42px] flex items-center justify-center"
+                className="flex h-[42px] w-[42px] items-center justify-center border"
                 name="left"
                 onClick={previousTx}
               />
               <div
                 className={cnTw(
-                  'rounded-full font-semibold border border-divider w-[77px] h-[42px]',
-                  'text-text-secondary flex items-center justify-center',
+                  'h-[42px] w-[77px] rounded-full border border-divider font-semibold',
+                  'flex items-center justify-center text-text-secondary',
                   'shadow-shadow-1',
                 )}
               >
@@ -182,7 +182,7 @@ export const SignOperations = () => {
               </div>
               <IconButton
                 size={20}
-                className="border w-[42px] h-[42px] flex items-center justify-center"
+                className="flex h-[42px] w-[42px] items-center justify-center border"
                 name="right"
                 onClick={nextTx}
               />

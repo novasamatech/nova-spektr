@@ -1,4 +1,5 @@
 .spektr-shimmer {
+  animation: spektr-slide 2.2s linear infinite forwards;
   background: linear-gradient(
     90deg,
     rgba(69, 69, 137, 0.06) 0%,
@@ -6,7 +7,6 @@
     rgba(69, 69, 137, 0.06) 100%
   );
   background-size: 1400px 100%;
-  animation: spektr-slide 2.2s linear infinite forwards;
 }
 
 @keyframes spektr-slide {

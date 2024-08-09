@@ -5,9 +5,9 @@ export const EmptyState = () => {
   const { t } = useI18n();
 
   return (
-    <div className="flex flex-col items-center justify-center gap-6 w-full h-full">
+    <div className="flex h-full w-full flex-col items-center justify-center gap-6">
       <Icon name="document" alt={t('settings.networks.emptyStateLabel')} size={64} />
-      <div className="flex flex-col items-center gap-2 max-w-[340px]">
+      <div className="flex max-w-[340px] flex-col items-center gap-2">
         <SmallTitleText>{t('governance.addDelegation.emptyTitle')}</SmallTitleText>
         <FootnoteText className="text-center text-text-tertiary">
           {t('governance.addDelegation.emptyDescription')}

@@ -5,7 +5,7 @@ export const VotingHistoryListEmptyState = () => {
   const { t } = useI18n();
 
   return (
-    <div className="flex flex-col gap-2 items-center justify-center min-h-32">
+    <div className="flex min-h-32 flex-col items-center justify-center gap-2">
       <Icon as="img" name="emptyList" size={64} />
       <FootnoteText>{t('governance.voteHistory.listEmptyState')}</FootnoteText>
     </div>

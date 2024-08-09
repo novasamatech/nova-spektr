@@ -40,10 +40,10 @@ export const SelectableShard = ({
   const content = (
     <div className="flex items-center gap-x-2">
       <Identicon address={address} theme={theme} size={20} background={false} canCopy={false} />
-      <div className={cnTw('truncate mr-auto', className)}>
+      <div className={cnTw('mr-auto truncate', className)}>
         {account.name && !isShard && <BodyText>{account.name}</BodyText>}
         {truncate ? (
-          <Truncate text={address} className="text-text-tertiary text-help-text" />
+          <Truncate text={address} className="text-help-text text-text-tertiary" />
         ) : (
           <HelpText className="text-text-tertiary">{address}</HelpText>
         )}
@@ -56,8 +56,8 @@ export const SelectableShard = ({
   return (
     <div
       className={cnTw(
-        'group flex gap-x-1 px-2 py-1.5 rounded transition-colors cursor-pointer',
-        'hover:bg-action-background-hover focus-within:bg-action-background-hover',
+        'group flex cursor-pointer gap-x-1 rounded px-2 py-1.5 transition-colors',
+        'focus-within:bg-action-background-hover hover:bg-action-background-hover',
       )}
     >
       <Checkbox checked={checked} semiChecked={semiChecked} onChange={(event) => onChange(event.target.checked)} />
@@ -68,7 +68,7 @@ export const SelectableShard = ({
         explorers={explorers}
       >
         <ExplorersPopover.Group active={isSharded} title={t('general.explorers.derivationTitle')}>
-          <HelpText className="text-text-secondary break-all">{isSharded && account.derivationPath}</HelpText>
+          <HelpText className="break-all text-text-secondary">{isSharded && account.derivationPath}</HelpText>
         </ExplorersPopover.Group>
       </ExplorersPopover>
     </div>

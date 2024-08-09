@@ -110,19 +110,20 @@ function getAccountsBy(wallets: Wallet[], accountFn: (account: Account, wallet: 
 }
 
 /**
- * Returns a Wallet object that matches the provided predicates.
- * If no matching Wallet is found, returns undefined.
+ * Returns a Wallet object that matches the provided predicates. If no matching
+ * Wallet is found, returns undefined.
  *
  * @param {Wallet[]} wallets - The array of Wallet objects to search through
  * @param {Object} predicates - The predicates to filter Wallets and Accounts
- * @param {function} predicates.walletFn - A function that takes a Wallet
- *   object and returns a boolean indicating whether it should be included in
- *   the result. Defaults to undefined.
+ * @param {function} predicates.walletFn - A function that takes a Wallet object
+ *   and returns a boolean indicating whether it should be included in the
+ *   result. Defaults to undefined.
  * @param {function} predicates.accountFn - A function that takes an Account
  *   object and its parent Wallet object and returns a boolean indicating
  *   whether it should be included in the result. Defaults to undefined.
- * @return {Wallet|undefined} - The matching Wallet object, or undefined if no
- *   matching Wallet is found.
+ *
+ * @returns {Wallet | undefined} - The matching Wallet object, or undefined if
+ *   no matching Wallet is found.
  */
 function getWalletFilteredAccounts(
   wallets: Wallet[],

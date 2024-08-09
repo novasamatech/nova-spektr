@@ -99,7 +99,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
     depositorSignatory && signatoryUtils.getSignatoryWallet(wallets, depositorSignatory.accountId);
 
   return (
-    <dl className="flex flex-col gap-y-1 w-full">
+    <dl className="flex w-full flex-col gap-y-1">
       {description && (
         <div className={DescriptionBlockStyle}>
           <FootnoteText as="dt" className="text-text-tertiary">
@@ -224,7 +224,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
           <DetailRow label={t('operation.details.validators')} className={valueClass}>
             <button
               type="button"
-              className={cn('flex gap-x-1 items-center text-text-secondary', InteractionStyle)}
+              className={cn('flex items-center gap-x-1 text-text-secondary', InteractionStyle)}
               onClick={toggleValidators}
             >
               <FootnoteText as="span" className="text-inherit">
@@ -266,7 +266,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         pallet="primary"
         size="sm"
         suffixElement={<Icon name={isAdvancedShown ? 'up' : 'down'} size={16} />}
-        className="text-action-text-default hover:text-action-text-default w-fit -ml-2"
+        className="-ml-2 w-fit text-action-text-default hover:text-action-text-default"
         onClick={toggleAdvanced}
       >
         {t('operation.advanced')}
@@ -278,7 +278,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
             <DetailRow label={t('operation.details.callHash')} className={valueClass}>
               <button
                 type="button"
-                className={cn('flex gap-x-1 items-center group', InteractionStyle)}
+                className={cn('group flex items-center gap-x-1', InteractionStyle)}
                 onClick={() => copyToClipboard(callHash)}
               >
                 <FootnoteText className="text-inherit">{truncate(callHash, 7, 8)}</FootnoteText>
@@ -291,7 +291,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
             <DetailRow label={t('operation.details.callData')} className={valueClass}>
               <button
                 type="button"
-                className={cn('flex gap-x-1 items-center group', InteractionStyle)}
+                className={cn('group flex items-center gap-x-1', InteractionStyle)}
                 onClick={() => copyToClipboard(callData)}
               >
                 <FootnoteText className="text-inherit">{truncate(callData, 7, 8)}</FootnoteText>
@@ -332,7 +332,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
                 value={deposit}
                 asset={defaultAsset}
                 showIcon={false}
-                className="text-footnote text-text-secondary py-[3px]"
+                className="py-[3px] text-footnote text-text-secondary"
               />
             </DetailRow>
           )}
@@ -343,7 +343,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
             <DetailRow label={t('operation.details.timePoint')} className={valueClass}>
               {extrinsicLink ? (
                 <a
-                  className={cn('flex gap-x-1 items-center group', InteractionStyle)}
+                  className={cn('group flex items-center gap-x-1', InteractionStyle)}
                   href={extrinsicLink}
                   target="_blank"
                   rel="noopener noreferrer"

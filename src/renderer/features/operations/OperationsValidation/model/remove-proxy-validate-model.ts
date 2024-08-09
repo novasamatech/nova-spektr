@@ -24,30 +24,28 @@ type ValidateParams = {
   signerOptions?: Partial<SignerOptions>;
 };
 
-const validateFx = createEffect(
-  async ({ id, api, chain, asset, transaction, balances, signerOptions }: ValidateParams) => {
-    const accountId = toAccountId(transaction.address);
-    const fee = await transactionService.getTransactionFee(transaction, api, signerOptions);
+const validateFx = createEffect(async ({ id, api, chain, transaction, balances, signerOptions }: ValidateParams) => {
+  const accountId = toAccountId(transaction.address);
+  const fee = await transactionService.getTransactionFee(transaction, api, signerOptions);
 
-    const rules = [
-      {
-        value: { accountId },
-        form: {
-          chain,
-        },
-        ...RemoveProxyRules.account.notEnoughTokens({} as Store<AccountStore>),
-        source: {
-          fee,
-          isMultisig: false,
-          proxyDeposit: '0',
-          balances,
-        } as AccountStore,
+  const rules = [
+    {
+      value: { accountId },
+      form: {
+        chain,
       },
-    ];
+      ...RemoveProxyRules.account.notEnoughTokens({} as Store<AccountStore>),
+      source: {
+        fee,
+        isMultisig: false,
+        proxyDeposit: '0',
+        balances,
+      } as AccountStore,
+    },
+  ];
 
-    return { id, result: validationUtils.applyValidationRules(rules) };
-  },
-);
+  return { id, result: validationUtils.applyValidationRules(rules) };
+});
 
 sample({
   clock: validationStarted,

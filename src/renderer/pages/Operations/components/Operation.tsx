@@ -30,9 +30,9 @@ const Operation = ({ tx, account }: Props) => {
   const amount = tx.transaction && getTransactionAmount(tx.transaction);
 
   return (
-    <Accordion className="bg-block-background-default transition-shadow rounded hover:shadow-card-shadow focus-visible:shadow-card-shadow">
+    <Accordion className="rounded bg-block-background-default transition-shadow hover:shadow-card-shadow focus-visible:shadow-card-shadow">
       <Accordion.Button buttonClass="px-2" iconWrapper="px-1.5">
-        <div className="h-[52px] flex gap-x-4 items-center w-full overflow-hidden">
+        <div className="flex h-[52px] w-full items-center gap-x-4 overflow-hidden">
           <div className="w-[58px] pr-1">
             <FootnoteText className="text-text-tertiary" align="right">
               {formatDate(date, 'p')}
@@ -57,7 +57,7 @@ const Operation = ({ tx, account }: Props) => {
             <ChainTitle chainId={tx.chainId} className="w-[114px]" />
           )}
 
-          <div className="flex justify-end w-[120px]">
+          <div className="flex w-[120px] justify-end">
             <Status status={tx.status} signed={approvals.length} threshold={account?.threshold || 0} />
           </div>
         </div>

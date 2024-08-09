@@ -21,7 +21,7 @@ export const ValueIndicator = ({ from, to, asset }: Props) => {
       to={<AssetBalance value={to} asset={asset} showSymbol={false} className="text-inherit" />}
       diff={<AssetBalance value={changeValue.abs().toString()} asset={asset} className="text-inherit" />}
       suffix={asset.symbol}
-      positive={to <= from}
+      positive={to > from}
     />
   );
 };

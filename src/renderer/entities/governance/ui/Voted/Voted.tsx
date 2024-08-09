@@ -14,7 +14,7 @@ export const Voted = ({ active, votes }: Props) => {
   }
 
   return (
-    <div className="flex gap-x-1 items-center">
+    <div className="flex items-center gap-x-1">
       <Icon name="voted" size={16} className="text-icon-accent" />
       {votes ? (
         <>

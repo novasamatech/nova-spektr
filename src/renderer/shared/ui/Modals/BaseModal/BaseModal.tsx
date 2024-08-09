@@ -38,17 +38,17 @@ export const BaseModal = ({
       <Dialog.Portal>
         <Dialog.Overlay
           className={cnTw(
-            'fixed inset-0 overflow-hidden flex min-h-full items-center justify-center p-4',
+            'fixed inset-0 flex min-h-full items-center justify-center overflow-hidden p-4',
             'bg-dim-background',
-            'animate-in fade-in duration-300',
+            'duration-300 animate-in fade-in',
             zIndex,
           )}
         >
           <Dialog.Content
             style={panelStyle}
             className={cnTw(
-              'transform rounded-lg bg-white text-left align-middle shadow-modal transition-all w-[440px]',
-              'animate-in fade-in zoom-in-95 duration-300',
+              'w-[440px] transform rounded-lg bg-white text-left align-middle shadow-modal transition-all',
+              'duration-300 animate-in fade-in zoom-in-95',
               panelClass,
             )}
           >
@@ -56,12 +56,12 @@ export const BaseModal = ({
               <Dialog.Title asChild>
                 <header className={cnTw('flex items-center justify-between', headerClass)}>
                   {title && typeof title === 'string' && (
-                    <HeaderTitleText className="text-text-primary font-bold truncate py-1">{title}</HeaderTitleText>
+                    <HeaderTitleText className="truncate py-1 font-bold text-text-primary">{title}</HeaderTitleText>
                   )}
 
                   {title && typeof title !== 'string' && title}
 
-                  <div className="flex items-center gap-x-4 h-7.5 z-20">
+                  <div className="z-20 flex h-7.5 items-center gap-x-4">
                     {actionButton}
 
                     {closeButton && (

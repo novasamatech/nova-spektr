@@ -13,11 +13,13 @@ import {
 import { truncate } from './strings';
 
 /**
- * Format address or accountId with prefix and chunk size
- * Example: chunk = 6, would produce address like  1ChFWe...X7iTVZ
- * @param value account address or accountId
- * @param params chunk and prefix (default is 42)
- * @return {String}
+ * Format address or accountId with prefix and chunk size Example: chunk = 6,
+ * would produce address like 1ChFWe...X7iTVZ
+ *
+ * @param value Account address or accountId
+ * @param params Chunk and prefix (default is 42)
+ *
+ * @returns {String}
  */
 export const toAddress = (value: Address | AccountId, params?: { chunk?: number; prefix?: number }): Address => {
   const chunkValue = params?.chunk;
@@ -36,9 +38,11 @@ export const toAddress = (value: Address | AccountId, params?: { chunk?: number;
 /**
  * Get short address representation
  * `5DXYNRXmNmFLFxxUjMXSzKh3vqHRDfDGGbY3BnSdQcta1SkX --> 5DXYNR...ta1SkX`
- * @param address value to make short
- * @param chunk how many letters should be visible from start/end
- * @return {String}
+ *
+ * @param address Value to make short
+ * @param chunk How many letters should be visible from start/end
+ *
+ * @returns {String}
  */
 export const toShortAddress = (address: Address, chunk = 6): string => {
   return address.length < 13 ? address : truncate(address, chunk, chunk);
@@ -46,8 +50,10 @@ export const toShortAddress = (address: Address, chunk = 6): string => {
 
 /**
  * Check is account's address valid
- * @param address account's address
- * @return {Boolean}
+ *
+ * @param address Account's address
+ *
+ * @returns {Boolean}
  */
 export const validateAddress = (address?: Address | AccountId): boolean => {
   if (!address) return false;
@@ -63,15 +69,17 @@ export const validateAddress = (address?: Address | AccountId): boolean => {
     const [isValid, endPos, ss58Length] = checkAddressChecksum(decoded);
 
     return isValid && Boolean(decoded.slice(ss58Length, endPos));
-  } catch (error) {
+  } catch {
     return false;
   }
 };
 
 /**
  * Try to get account id of the address
- * @param address account's address
- * @return {String}
+ *
+ * @param address Account's address
+ *
+ * @returns {String}
  */
 export const toAccountId = (address: Address): AccountId => {
   try {
@@ -83,8 +91,10 @@ export const toAccountId = (address: Address): AccountId => {
 
 /**
  * Check is public key correct
- * @param accountId public key to check
- * @return {Boolean}
+ *
+ * @param accountId Public key to check
+ *
+ * @returns {Boolean}
  */
 export const isCorrectAccountId = (accountId?: AccountId): boolean => {
   if (!accountId) return false;
@@ -99,7 +109,7 @@ export const isEthereumAccountId = (accountId?: AccountId): boolean => {
 
   try {
     return hexToU8a(accountId).length === 20;
-  } catch (e) {
+  } catch {
     return false;
   }
 };

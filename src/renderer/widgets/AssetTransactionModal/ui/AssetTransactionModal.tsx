@@ -67,7 +67,7 @@ export const AssetTransactionModal = () => {
         className="w-full"
         onChange={assetTransactionModel.events.queryChanged}
       />
-      <FootnoteText className="text-text-tertiary pt-4 pb-2">{t('portfolilo.selectNetworkLabel')}</FootnoteText>
+      <FootnoteText className="pb-2 pt-4 text-text-tertiary">{t('portfolilo.selectNetworkLabel')}</FootnoteText>
       <ul>
         {assetWithChains.chains.map((chain) => (
           <li
@@ -79,8 +79,8 @@ export const AssetTransactionModal = () => {
               to={createLink(path, {}, { chainId: [chain.chainId], assetId: [chain.assetId] })}
               onClick={() => assetTransactionModel.output.flowClosed()}
             >
-              <div className="flex items-center py-1.5 px-2">
-                <div className="flex items-center gap-x-2 px-2 py-1 mr-auto">
+              <div className="flex items-center px-2 py-1.5">
+                <div className="mr-auto flex items-center gap-x-2 px-2 py-1">
                   <ChainIcon src={chains[chain.chainId].icon} name={chain.name} size={24} />
                   <BodyText className="text-inherit">{chain.name}</BodyText>
                 </div>

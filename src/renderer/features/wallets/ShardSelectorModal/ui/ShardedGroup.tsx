@@ -41,12 +41,12 @@ export const ShardedGroup = ({ rootId, accounts, chain }: Props) => {
     <Accordion className="ml-6 w-auto rounded">
       <div className="flex rounded hover:bg-action-background-hover">
         <Checkbox
-          className="p-2 w-full"
+          className="w-full p-2"
           checked={selectorUtils.isChecked(shardedGroup)}
           semiChecked={selectorUtils.isSemiChecked(shardedGroup)}
           onChange={toggleSharded}
         >
-          <div className="flex items-center justify-center w-7.5 h-5 rounded-2lg bg-input-background-disabled">
+          <div className="flex h-5 w-7.5 items-center justify-center rounded-2lg bg-input-background-disabled">
             <CaptionText className="text-text-secondary">{accounts.length}</CaptionText>
           </div>
           <FootnoteText className="text-text-tertiary">{accounts[0].name}</FootnoteText>

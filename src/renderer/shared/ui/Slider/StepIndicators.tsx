@@ -15,7 +15,7 @@ export const StepIndicators = memo<Props>(({ steps }) => {
 
     return Array.from({ length: steps }).map((_, i) => (
       // eslint-disable-next-line react/no-array-index-key
-      <div key={i} className="h-1 w-1 mx-1.5 rounded-full bg-icon-button" />
+      <div key={i} className="mx-1.5 h-1 w-1 rounded-full bg-icon-button" />
     ));
   }, [steps]);
 
@@ -23,5 +23,5 @@ export const StepIndicators = memo<Props>(({ steps }) => {
     return null;
   }
 
-  return <div className="flex absolute w-full justify-between pointer-events-none">{nodes}</div>;
+  return <div className="pointer-events-none absolute flex w-full justify-between">{nodes}</div>;
 });

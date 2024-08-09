@@ -21,16 +21,13 @@ export const TokenBalance = ({ asset }: Props) => {
   const chains = useUnit(networkModel.$chains);
 
   return (
-    <Plate
-      className="p-0 z-10 h-[52px] w-full items-center flex pl-[30px] pr-2
-    transition-shadow hover:shadow-card-shadow focus:shadow-card-shadow"
-    >
-      <div className="flex gap-x-2 flex-1">
+    <Plate className="z-10 flex h-[52px] w-full items-center p-0 pl-[30px] pr-2 transition-shadow hover:shadow-card-shadow focus:shadow-card-shadow">
+      <div className="flex flex-1 gap-x-2">
         <div className="flex items-center gap-x-2">
           <AssetIcon src={asset.icon} name={asset.name} />
           <div>
             <BodyText>{chain.assetSymbol}</BodyText>
-            <div className="flex items-center gap-x-1.5 mr-3">
+            <div className="mr-3 flex items-center gap-x-1.5">
               <FootnoteText className="text-text-tertiary">{chain.name}</FootnoteText>
               <ChainIcon src={chains[chain.chainId].icon} name={chain.name} size={18} />
               {chain.balance?.verified && (
@@ -50,7 +47,7 @@ export const TokenBalance = ({ asset }: Props) => {
         wrapperClassName="flex-col gap-0.5 items-end px-2 w-[100px]"
         className="text-text-primar text-right"
       />
-      <div className="flex flex-col items-end w-[100px]">
+      <div className="flex w-[100px] flex-col items-end">
         <AssembledAssetAmount asset={asset} balance={chain.balance} />
       </div>
       <AssetLinks assetId={asset.chains[0].assetId} chainId={chain.chainId} />

@@ -27,13 +27,11 @@ export const useMultisigEvent = ({ addTask }: Props): IMultisigEventService => {
 
   const getLiveEvents = <T extends MultisigEvent>(where?: Partial<T>): MultisigEventDS[] => {
     const query = () => {
-      try {
-        return getEvents(where);
-      } catch (error) {
+      return getEvents(where).catch(() => {
         console.warn('Error trying to get multisig events');
 
-        return Promise.resolve([]);
-      }
+        return [];
+      });
     };
 
     return useLiveQuery(query, [], []);
@@ -57,7 +55,7 @@ export const useMultisigEvent = ({ addTask }: Props): IMultisigEventService => {
           txBlock,
           txIndex,
         });
-      } catch (error) {
+      } catch {
         console.warn('Error trying to get multisig events');
 
         return Promise.resolve([]);
@@ -69,13 +67,11 @@ export const useMultisigEvent = ({ addTask }: Props): IMultisigEventService => {
 
   const getLiveEventsByKeys = (keys: MultisigTransactionKey[]): MultisigEventDS[] => {
     const query = () => {
-      try {
-        return getEventsByKeys(keys);
-      } catch (error) {
+      return getEventsByKeys(keys).catch(() => {
         console.warn('Error trying to get multisig events');
 
-        return Promise.resolve([]);
-      }
+        return [];
+      });
     };
 
     return useLiveQuery(

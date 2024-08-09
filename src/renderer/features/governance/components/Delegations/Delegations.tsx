@@ -18,9 +18,9 @@ export const Delegations = ({ onClick }: Props) => {
 
   return (
     <button onClick={onClick}>
-      <Plate className="w-[240px] h-[90px] pt-3 px-4 pb-4.5 flex justify-between items-center">
-        <div className="flex flex-col gap-y-2 items-start">
-          <div className="flex gap-x-1 items-center">
+      <Plate className="flex h-[90px] w-[240px] items-center justify-between px-4 pb-4.5 pt-3">
+        <div className="flex flex-col items-start gap-y-2">
+          <div className="flex items-center gap-x-1">
             <Icon size={16} name="opengovDelegations" />
             <FootnoteText>{t('governance.delegations')}</FootnoteText>
           </div>

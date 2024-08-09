@@ -10,7 +10,7 @@ import { detailsAggregate } from '../../aggregates/details';
 
 type Props = {
   referendum: Referendum;
-  addressPrefix: number;
+  addressPrefix?: number;
 };
 
 export const ProposerName = ({ referendum, addressPrefix }: Props) => {

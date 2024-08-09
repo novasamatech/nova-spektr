@@ -6,5 +6,12 @@
   "useTabs": false,
   "trailingComma": "all",
   "arrowParens": "always",
-  "endOfLine": "lf"
+  "endOfLine": "lf",
+  "plugins": ["prettier-plugin-jsdoc", "prettier-plugin-css-order", "prettier-plugin-tailwindcss"],
+  "tailwindConfig": "./tailwind.config.ts",
+  "tailwindFunctions": ["cnTw"],
+  "jsdocCommentLineStrategy": "keep",
+  "jsdocPreferCodeFences": true,
+  "jsdocSeparateTagGroups": true,
+  "jsdocPrintWidth": 80
 }

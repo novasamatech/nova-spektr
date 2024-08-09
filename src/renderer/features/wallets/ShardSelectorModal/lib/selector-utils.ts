@@ -28,7 +28,7 @@ function getSelectedAll(struct: SelectedStruct, value: boolean): SelectedStruct 
 }
 
 function getSelectedRoot(struct: SelectedStruct, { root, value }: RootToggleParams): SelectedStruct {
-  const { checked, total, ...chains } = struct[root];
+  const { checked: _checked, total, ...chains } = struct[root];
   struct[root].checked = value ? total : 0;
 
   Object.values(chains).forEach((chains) => {
@@ -40,7 +40,7 @@ function getSelectedRoot(struct: SelectedStruct, { root, value }: RootTogglePara
     });
 
     Object.values(sharded).forEach((group) => {
-      const { total, checked, ...rest } = group;
+      const { total, checked: _checked, ...rest } = group;
       group.checked = value ? total : 0;
 
       Object.keys(rest).forEach((accountId) => {
@@ -59,7 +59,7 @@ function getSelectedChain(struct: SelectedStruct, { root, chainId, value }: Chai
   });
 
   Object.values(chain.sharded).forEach((group) => {
-    const { total, checked, ...rest } = group;
+    const { total, checked: _checked, ...rest } = group;
     group.checked = value ? total : 0;
 
     Object.keys(rest).forEach((accountId) => {

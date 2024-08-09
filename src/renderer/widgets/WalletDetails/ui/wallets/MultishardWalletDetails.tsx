@@ -90,10 +90,10 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList className="h-[371px] mt-4" canCreateProxy={canCreateProxy} />
+        <ProxiesList className="mt-4 h-[371px]" canCreateProxy={canCreateProxy} />
       ) : (
         <NoProxiesAction
-          className="h-[371px] mt-4"
+          className="mt-4 h-[371px]"
           canCreateProxy={canCreateProxy}
           onAddProxy={addProxyModel.events.flowStarted}
         />
@@ -111,8 +111,8 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
       isOpen={isModalOpen}
       onClose={closeModal}
     >
-      <div className="flex flex-col gap-y-4 w-full">
-        <div className="py-6 px-5 border-b border-divider">
+      <div className="flex w-full flex-col gap-y-4">
+        <div className="border-b border-divider px-5 py-6">
           <WalletCardLg wallet={wallet} />
         </div>
         <Tabs items={tabItems} panelClassName="" unmount={false} tabsClassName="mx-5" />

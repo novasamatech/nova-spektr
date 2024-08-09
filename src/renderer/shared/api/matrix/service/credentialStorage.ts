@@ -13,7 +13,8 @@ class CredentialStorage implements ICredentialStorage {
 
   /**
    * Add new credential to the storage
-   * @param credential value of credentials
+   *
+   * @param credential Value of credentials
    */
   public saveCredentials(credential: Credential): void {
     const storage = this.getCredentialsStorage();
@@ -24,9 +25,11 @@ class CredentialStorage implements ICredentialStorage {
 
   /**
    * Get credentials from the storage
-   * @param key key to use in search
-   * @param value search value
-   * @return {Object | undefined}
+   *
+   * @param key Key to use in search
+   * @param value Search value
+   *
+   * @returns {Object | undefined}
    */
   public getCredentials(key: keyof Credential, value: any): Credential | undefined {
     const storage = this.getCredentialsStorage();
@@ -35,9 +38,10 @@ class CredentialStorage implements ICredentialStorage {
   }
 
   /**
-   *  Update storage item
-   *  @param userId key to use in search
-   *  @param credentials credentials data
+   * Update storage item
+   *
+   * @param userId Key to use in search
+   * @param credentials Credentials data
    */
   public updateCredentials(userId: string, credentials: Partial<Credential>): void {
     const storage = this.getCredentialsStorage();
@@ -61,8 +65,9 @@ class CredentialStorage implements ICredentialStorage {
   }
 
   /**
-   *  Get credentials storage
-   *  @return {Array}
+   * Get credentials storage
+   *
+   * @returns {Array}
    */
   private getCredentialsStorage(): Credential[] {
     const storage = localStorage.getItem(this.credsKey);

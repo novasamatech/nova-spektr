@@ -1,4 +1,4 @@
-export * from './';
+export * from '.';
 export * from './common/constants';
 export * from './types';
 

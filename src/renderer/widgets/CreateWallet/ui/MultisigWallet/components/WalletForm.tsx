@@ -146,10 +146,10 @@ export const WalletForm = ({
   const canContinue = isValid && signatoriesAreValid;
 
   return (
-    <section className="flex flex-col gap-y-4 px-3 py-4 flex-1 h-full">
-      <SmallTitleText className="py-2 px-2">{t('createMultisigAccount.walletFormTitle')}</SmallTitleText>
+    <section className="flex h-full flex-1 flex-col gap-y-4 px-3 py-4">
+      <SmallTitleText className="px-2 py-2">{t('createMultisigAccount.walletFormTitle')}</SmallTitleText>
 
-      <form id="multisigForm" className="flex flex-col px-2 gap-y-4 h-full" onSubmit={handleSubmit(submitMstAccount)}>
+      <form id="multisigForm" className="flex h-full flex-col gap-y-4 px-2" onSubmit={handleSubmit(submitMstAccount)}>
         <Controller
           name="name"
           control={control}
@@ -166,23 +166,21 @@ export const WalletForm = ({
           )}
         />
         {withChain && (
-          <div className="flex gap-x-4 items-end">
+          <div className="flex items-end gap-x-4">
             <Controller
               name="chain"
               control={control}
               rules={{ required: true }}
               render={({ field: { value, onChange } }) => (
-                <>
-                  <Select
-                    placeholder={t('createMultisigAccount.chainPlaceholder')}
-                    label={t('createMultisigAccount.chainName')}
-                    className="w-[204px]"
-                    selectedId={value}
-                    options={chainOptions}
-                    disabled={!isActive}
-                    onChange={({ id }) => onChange(id)}
-                  />
-                </>
+                <Select
+                  placeholder={t('createMultisigAccount.chainPlaceholder')}
+                  label={t('createMultisigAccount.chainName')}
+                  className="w-[204px]"
+                  selectedId={value}
+                  options={chainOptions}
+                  disabled={!isActive}
+                  onChange={({ id }) => onChange(id)}
+                />
               )}
             />
             <InputHint className="flex-1" active>
@@ -190,7 +188,7 @@ export const WalletForm = ({
             </InputHint>
           </div>
         )}
-        <div className="flex gap-x-4 items-end">
+        <div className="flex items-end gap-x-4">
           <Controller
             name="threshold"
             control={control}
@@ -228,7 +226,7 @@ export const WalletForm = ({
           <Alert.Item withDot={false}>{t('createMultisigAccount.accountsAlertText')}</Alert.Item>
         </Alert>
 
-        <div className="flex justify-between items-center mt-auto">
+        <div className="mt-auto flex items-center justify-between">
           <Button variant="text" onClick={onGoBack}>
             {t('createMultisigAccount.backButton')}
           </Button>

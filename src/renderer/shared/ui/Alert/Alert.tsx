@@ -25,14 +25,14 @@ const AlertRoot = ({ title, active, variant = 'info', className, children, onClo
   const isList = Children.toArray(children).length > 0;
 
   return (
-    <div className={cnTw('p-[15px] rounded-lg border w-full', ViewStyle[variant])}>
+    <div className={cnTw('w-full rounded-lg border p-[15px]', ViewStyle[variant])}>
       <div className="flex items-start gap-x-1.5">
-        <div className="flex flex-col gap-y-1 flex-1 max-w-full">
+        <div className="flex max-w-full flex-1 flex-col gap-y-1">
           <div className="flex items-center gap-x-1.5">
             <Icon name={IconName[variant]} size={14} className={IconStyle[variant]} />
             <HeadlineText>{title}</HeadlineText>
           </div>
-          {isList ? <ul className={cnTw('flex flex-col gap-y-1 list-none pl-5 ', className)}>{children}</ul> : children}
+          {isList ? <ul className={cnTw('flex list-none flex-col gap-y-1 pl-5', className)}>{children}</ul> : children}
         </div>
 
         {onClose && <IconButton size={14} name="close" onClick={onClose} />}

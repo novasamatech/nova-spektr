@@ -1,9 +1,9 @@
 import { resolve } from 'path';
 
-import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
-import HtmlWebpackPlugin from 'html-webpack-plugin';
-import MiniCssExtractPlugin from 'mini-css-extract-plugin';
-import webpack, { type Configuration as WpConfig } from 'webpack';
+import { default as CssMinimizerPlugin } from 'css-minimizer-webpack-plugin';
+import { default as HtmlWebpackPlugin } from 'html-webpack-plugin';
+import { default as MiniCssExtractPlugin } from 'mini-css-extract-plugin';
+import { type Configuration as WpConfig, default as webpack } from 'webpack';
 import { type Configuration as WdsConfig } from 'webpack-dev-server';
 import { merge } from 'webpack-merge';
 
