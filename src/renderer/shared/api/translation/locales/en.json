@@ -434,6 +434,7 @@
         "Approved": "Approved",
         "Awarded": "Awarded",
         "Cancelled": "Cancelled",
+        "ConfirmAborted": "Confirm aborted",
         "ConfirmStarted": "Confirm started",
         "Confirmed": "Confirmed",
         "Created": "Created",
