@@ -14,8 +14,8 @@ export function splice<T>(collection: T[], item: T, position: number): T[] {
 }
 
 /**
- * Create dictionary with given key and value Keys can only
- * be type of string, number or symbol
+ * Create dictionary with given key and value Keys can only be type of string,
+ * number or symbol
  *
  * @param collection Array of items
  * @param property Field to be used as key

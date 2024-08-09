@@ -1,7 +1,6 @@
 /**
- * Get user's Operating System Uses new API User-Agent
- * Client Hints and old User-Agent as a fallback User-Agent
- * is going to be deprecated soon
+ * Get user's Operating System Uses new API User-Agent Client Hints and old
+ * User-Agent as a fallback User-Agent is going to be deprecated soon
  *
  * @returns {String}
  */

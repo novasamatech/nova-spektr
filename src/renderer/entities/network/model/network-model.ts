@@ -132,8 +132,8 @@ const createProviderFx = createEffect(
 
     if (providerType === ProviderType.LIGHT_CLIENT) {
       /**
-       * HINT: Light Client provider must be connected
-       * manually GitHub Light Client section -
+       * HINT: Light Client provider must be connected manually GitHub Light
+       * Client section -
        * https://github.com/polkadot-js/api/tree/master/packages/rpc-provider#readme
        */
       await provider.connect();

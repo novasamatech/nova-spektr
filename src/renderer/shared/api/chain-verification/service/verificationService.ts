@@ -55,9 +55,8 @@ const getProof = async (api: ApiPromise, storageKey: string, hash: string): Prom
 };
 
 /**
- * Verify data from relay chain by proof and state root
- * Returns true if retrieved value is equal to value from
- * relay chain
+ * Verify data from relay chain by proof and state root Returns true if
+ * retrieved value is equal to value from relay chain
  *
  * @param proof - Proof from parachain
  * @param root - State root from relay chain

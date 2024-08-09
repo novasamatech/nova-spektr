@@ -18,8 +18,8 @@ const twMerge = extendTailwindMerge({
 });
 
 /**
- * Merge CSS classes use Tailwind Merge internally to
- * overcome Tailwind styling cascade
+ * Merge CSS classes use Tailwind Merge internally to overcome Tailwind styling
+ * cascade
  *
  * @param args List of arguments for <b>cn</b>
  *

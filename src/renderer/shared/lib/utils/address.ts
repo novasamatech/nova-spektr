@@ -13,9 +13,8 @@ import {
 import { truncate } from './strings';
 
 /**
- * Format address or accountId with prefix and chunk size
- * Example: chunk = 6, would produce address like
- * 1ChFWe...X7iTVZ
+ * Format address or accountId with prefix and chunk size Example: chunk = 6,
+ * would produce address like 1ChFWe...X7iTVZ
  *
  * @param value Account address or accountId
  * @param params Chunk and prefix (default is 42)
@@ -38,12 +37,10 @@ export const toAddress = (value: Address | AccountId, params?: { chunk?: number;
 
 /**
  * Get short address representation
- * `5DXYNRXmNmFLFxxUjMXSzKh3vqHRDfDGGbY3BnSdQcta1SkX -->
- * 5DXYNR...ta1SkX`
+ * `5DXYNRXmNmFLFxxUjMXSzKh3vqHRDfDGGbY3BnSdQcta1SkX --> 5DXYNR...ta1SkX`
  *
  * @param address Value to make short
- * @param chunk How many letters should be visible from
- *   start/end
+ * @param chunk How many letters should be visible from start/end
  *
  * @returns {String}
  */

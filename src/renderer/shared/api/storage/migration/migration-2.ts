@@ -3,9 +3,8 @@ import { type Transaction } from 'dexie';
 import { AccountType, KeyType, SigningType, WalletType } from '@shared/core';
 
 /**
- * Create missing wallets for SinglePS, WOW, Multisig Update
- * Chain accounts inside Multishard Add new properties to
- * wallets and accounts
+ * Create missing wallets for SinglePS, WOW, Multisig Update Chain accounts
+ * inside Multishard Add new properties to wallets and accounts
  *
  * @param trans Transactions from DB
  *

@@ -23,9 +23,8 @@ type RangeProps = {
 
 type Props = (SimpleProps | RangeProps) & {
   /**
-   * Render function for labels, placed on top of each step.
-   * `value` and `index` may differ, if `step` prop is not
-   * equal 1.
+   * Render function for labels, placed on top of each step. `value` and `index`
+   * may differ, if `step` prop is not equal 1.
    */
   renderLabel?: (value: number, index: number) => ReactNode;
   /**

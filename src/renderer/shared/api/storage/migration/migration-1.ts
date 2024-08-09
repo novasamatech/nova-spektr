@@ -3,8 +3,8 @@ import { type Transaction } from 'dexie';
 import { type MultisigEventDS } from '../lib/types';
 
 /**
- * Remove events from MultisigTransactions Add events to
- * separate table MultisigEvents
+ * Remove events from MultisigTransactions Add events to separate table
+ * MultisigEvents
  *
  * @param trans Transactions from DB
  *

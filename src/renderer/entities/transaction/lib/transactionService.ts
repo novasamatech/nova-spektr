@@ -168,9 +168,8 @@ type TxWrappersParams = {
   signatories?: Account[];
 };
 /**
- * Get array of transaction wrappers (proxy/multisig) Every
- * wrapper recursively calls getTxWrappers until it finds
- * regular account
+ * Get array of transaction wrappers (proxy/multisig) Every wrapper recursively
+ * calls getTxWrappers until it finds regular account
  *
  * @param wallet Wallet that requires wrapping
  * @param params Wallets, accounts and signatories

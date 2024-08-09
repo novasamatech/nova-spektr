@@ -205,8 +205,10 @@ function getStructForMultishard<T>(accounts: Account[], chainsMap: ChainsMap<T>)
     if (tuples.length === 0) return;
 
     tuples.forEach(([baseId, accounts]) => {
-      const chainTuples = roots.get(rootsMap[Number(baseId)]) as ChainTuple[];
-      chainTuples.push([chainId as ChainId, accounts as any]);
+      const chainTuples = roots.get(rootsMap[Number(baseId)]);
+      if (chainTuples) {
+        chainTuples.push([chainId as ChainId, accounts as any]);
+      }
     });
   });
 

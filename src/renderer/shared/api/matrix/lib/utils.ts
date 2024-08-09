@@ -14,8 +14,8 @@ export const validateFullUserName = (value: string): boolean => {
 };
 
 /**
- * Validate short username without server prefix Example:
- * my_name not @my_name:matrix.org
+ * Validate short username without server prefix Example: my_name not
+ * my_name:matrix.org
  *
  * @param value User name value
  *

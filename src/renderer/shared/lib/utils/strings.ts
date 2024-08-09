@@ -99,10 +99,9 @@ export const truncate = (text: string, start = 5, end = 5): string => {
 };
 
 /**
- * Formats the section and method of transaction to the
- * format: Section split camel case to separate words, 1st
- * capital: Method split camel case to separate words - 1st
- * capital
+ * Formats the section and method of transaction to the format: Section split
+ * camel case to separate words, 1st capital: Method split camel case to
+ * separate words - 1st capital
  *
  * @param section Extrinsic call section
  * @param method Extrinsic call method
@@ -119,12 +118,10 @@ export const formatSectionAndMethod = (section: string, method: string): string 
 };
 
 /**
- * Formats number without exponential notation and removes
- * trailing zeros
+ * Formats number without exponential notation and removes trailing zeros
  *
  * @param value Number to format
- * @param maxPrecision Maximum number of characters in
- *   decimal part
+ * @param maxPrecision Maximum number of characters in decimal part
  *
  * @returns {String}
  */
@@ -142,8 +139,7 @@ export const toFixedNotation = (value: number, maxPrecision = 20): string => {
 };
 
 /**
- * Splits string in camelCase by capital letters and adds
- * spaces
+ * Splits string in camelCase by capital letters and adds spaces
  *
  * @param value String in camel case
  *

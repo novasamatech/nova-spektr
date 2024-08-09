@@ -203,8 +203,7 @@ const loadProof = (proofHashToNode: Record<string, Node>, branch: Node | undefin
 /**
  * Get decoded trie root from proof encoded nodes
  *
- * @param proofEncodedNodes - Proof encoded nodes from
- *   parachain
+ * @param proofEncodedNodes - Proof encoded nodes from parachain
  * @param root - State root from relay chain
  *
  * @returns {Object}

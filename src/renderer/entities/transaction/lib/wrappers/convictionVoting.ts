@@ -65,14 +65,12 @@ const vote = (args: VoteArgs, info: BaseTxInfo, options: OptionsWithMeta): Unsig
 
 interface RemoveVoteArgs extends Args {
   /**
-   * Class: Optional parameter, if given it indicates the
-   * class of the poll. For polls which have finished or are
-   * cancelled, this must be Some. - trackId.
+   * Class: Optional parameter, if given it indicates the class of the poll. For
+   * polls which have finished or are cancelled, this must be Some. - trackId.
    */
   class: number;
   /**
-   * Index: The index of poll of the vote to be removed. -
-   * referendumId.
+   * Index: The index of poll of the vote to be removed. - referendumId.
    */
   index: string;
 }
@@ -102,8 +100,8 @@ type DelegateArgs = {
    */
   to: string;
   /**
-   * Conviction: The conviction with which the voting power
-   * is delegated - conviction.
+   * Conviction: The conviction with which the voting power is delegated -
+   * conviction.
    */
   conviction: number;
   /**

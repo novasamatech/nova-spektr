@@ -45,8 +45,8 @@ export const getExtrinsicExplorer = (explorer: Explorer, hash: HexString): strin
 };
 
 /**
- * Get relay chain id that are relevant chain specification
- * and are likely to be connected to
+ * Get relay chain id that are relevant chain specification and are likely to be
+ * connected to
  *
  * @param chainId Genesis hash of the chain
  *

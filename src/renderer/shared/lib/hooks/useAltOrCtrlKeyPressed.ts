@@ -3,12 +3,11 @@ import { useEffect, useState } from 'react';
 import { IS_MAC } from '@shared/lib/utils';
 
 /**
- * Returns a boolean indicating whether the alt key (for
- * macOS) or control key (for Windows and Linux) is
- * currently pressed.
+ * Returns a boolean indicating whether the alt key (for macOS) or control key
+ * (for Windows and Linux) is currently pressed.
  *
- * @returns {boolean} A boolean indicating whether the alt
- *   key is currently pressed.
+ * @returns {boolean} A boolean indicating whether the alt key is currently
+ *   pressed.
  */
 export const useAltOrCtrlKeyPressed = (): boolean => {
   const [keyPressed, setKeyPressed] = useState<boolean>(false);

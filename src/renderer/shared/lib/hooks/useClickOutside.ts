@@ -1,8 +1,8 @@
 import { type RefObject, useEffect } from 'react';
 
 /**
- * Observe provided element(s) and call callback function if
- * clicked is registered outside of it (them)
+ * Observe provided element(s) and call callback function if clicked is
+ * registered outside of it (them)
  *
  * @param refs DOM element to observe
  * @param callback Function to be called on click

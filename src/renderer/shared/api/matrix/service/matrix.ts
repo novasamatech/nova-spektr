@@ -495,8 +495,7 @@ export class Matrix implements ISecureMessenger {
   }
 
   /**
-   * Send MST_UPDATE state event to the room Initialize
-   * multi-sig transaction
+   * Send MST_UPDATE state event to the room Initialize multi-sig transaction
    *
    * @param roomId Room's identifier
    * @param params MST parameters
@@ -512,8 +511,7 @@ export class Matrix implements ISecureMessenger {
   }
 
   /**
-   * Send MST_APPROVE state event to the room Approve
-   * multi-sig transaction
+   * Send MST_APPROVE state event to the room Approve multi-sig transaction
    *
    * @param roomId Room's identifier
    * @param params MST parameters
@@ -547,8 +545,8 @@ export class Matrix implements ISecureMessenger {
   }
 
   /**
-   * Send MST_FINAL_APPROVE state event to the room Final
-   * approve for multi-sig transaction
+   * Send MST_FINAL_APPROVE state event to the room Final approve for multi-sig
+   * transaction
    *
    * @param roomId Room's identifier
    * @param params MST parameters
@@ -564,8 +562,7 @@ export class Matrix implements ISecureMessenger {
   }
 
   /**
-   * Send MST_CANCEL state event to the room Cancel
-   * multi-sig transaction
+   * Send MST_CANCEL state event to the room Cancel multi-sig transaction
    *
    * @param roomId Room's identifier
    * @param params MST parameters
@@ -973,8 +970,8 @@ export class Matrix implements ISecureMessenger {
   }
 
   /**
-   * All events are echoed at the client side Handle echo
-   * events (update, approve, final, cancel)
+   * All events are echoed at the client side Handle echo events (update,
+   * approve, final, cancel)
    *
    * Might be useful in future
    *
