@@ -8,6 +8,7 @@ import { votingListService } from '../lib/votingListService';
 import { networkSelectorModel } from '../model/networkSelector';
 import { votingAssetModel } from '../model/votingAsset';
 import { type AggregatedVoteHistory } from '../types/structs';
+import { votingPowerSorting } from '../utils/votingPowerSorting';
 
 import { proposerIdentityAggregate } from './proposerIdentity';
 import { tracksAggregate } from './tracks';
@@ -42,22 +43,24 @@ const $voteHistory = combine(
     for (const [referendumId, historyList] of Object.entries(history)) {
       const votes = votingService.getReferendumVoting(referendumId, voting);
 
-      acc[referendumId] = historyList.flatMap(({ voter }) => {
-        const proposer = proposers[voter] ?? null;
-        const vote = votes[voter];
-        if (!vote) {
-          return [];
-        }
+      acc[referendumId] = historyList
+        .flatMap(({ voter }) => {
+          const proposer = proposers[voter] ?? null;
+          const vote = votes[voter];
+          if (!vote) {
+            return [];
+          }
 
-        const splitVotes = votingListService.getDecoupledVotesFromVote(referendumId, vote);
+          const splitVotes = votingListService.getDecoupledVotesFromVote(referendumId, vote);
 
-        return splitVotes.map((vote) => {
-          return {
-            ...vote,
-            name: proposer ? proposer.parent.name : null,
-          };
-        });
-      });
+          return splitVotes.map((vote) => {
+            return {
+              ...vote,
+              name: proposer ? proposer.parent.name : null,
+            };
+          });
+        })
+        .sort(votingPowerSorting);
     }
 
     return acc;
