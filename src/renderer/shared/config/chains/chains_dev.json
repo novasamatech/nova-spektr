@@ -6317,45 +6317,6 @@
         "priceId": "polimec",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/PLMC.svg",
         "name": "Polimec token"
-      },
-      {
-        "assetId": 1,
-        "symbol": "DOT",
-        "precision": 10,
-        "type": "statemine",
-        "priceId": "polkadot",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
-        "typeExtras": {
-          "assetId": "10",
-          "palletName": "ForeignAssets"
-        },
-        "name": "Polkadot"
-      },
-      {
-        "assetId": 2,
-        "symbol": "USDT",
-        "precision": 6,
-        "type": "statemine",
-        "priceId": "tether",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
-        "typeExtras": {
-          "assetId": "1984",
-          "palletName": "ForeignAssets"
-        },
-        "name": "USD Tether"
-      },
-      {
-        "assetId": 3,
-        "symbol": "USDC",
-        "precision": 6,
-        "type": "statemine",
-        "priceId": "usd-coin",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDC.svg",
-        "typeExtras": {
-          "assetId": "1337",
-          "palletName": "ForeignAssets"
-        },
-        "name": "USD Coin"
       }
     ],
     "explorers": [
