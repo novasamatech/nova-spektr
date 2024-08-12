@@ -13,13 +13,13 @@ import { VotingHistoryDialog } from '../VotingHistory/VotingHistoryDialog';
 
 import { AdvancedDialog } from './AdvancedDialog';
 import { DetailsCard } from './DetailsCard';
+import { MyVotesDialog } from './MyVotesDialog';
 import { ProposalDescription } from './ProposalDescription';
 import { ReferendumAdditional } from './ReferendumAdditional';
 import { Timeline } from './Timeline';
 import { VotingBalance } from './VotingBalance';
 import { type VoteRequestParams, VotingStatus } from './VotingStatus';
 import { VotingSummary } from './VotingSummary';
-import { WalletVotesDialog } from './WalletVotesDialog';
 
 type Props = {
   chain: Chain;
@@ -124,7 +124,12 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onCl
       </div>
 
       {showWalletVotes && (
-        <WalletVotesDialog referendum={referendum} asset={votingAsset} onClose={() => setShowWalletVotes(false)} />
+        <MyVotesDialog
+          referendum={referendum}
+          chain={chain}
+          asset={votingAsset}
+          onClose={() => setShowWalletVotes(false)}
+        />
       )}
 
       {showVoteHistory && <VotingHistoryDialog referendum={referendum} onClose={() => setShowVoteHistory(false)} />}
