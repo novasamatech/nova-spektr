@@ -176,7 +176,7 @@ sample({
         chain: walletData.chain!,
         accountId: shard.accountId,
         balance: (walletData.chain && formatAmount(delegateData!.amount, walletData.chain?.assets[0].precision)) || '0',
-        conviction: delegateData!.conviction || 0.1,
+        conviction: delegateData!.conviction || 'None',
         target: target?.accountId || '',
         tracks,
       });

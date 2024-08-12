@@ -5,6 +5,7 @@ import {
   type Asset,
   type Chain,
   type ChainId,
+  type Conviction,
   type ReferendumId,
   type TrackId,
   type Transaction,
@@ -244,7 +245,7 @@ type DelegateParams = {
   accountId: AccountId;
   tracks: number[];
   target: Address;
-  conviction: number;
+  conviction: Conviction;
   balance: string;
 };
 

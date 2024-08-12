@@ -14,13 +14,11 @@ import {
   Icon,
   Input,
   InputHint,
-  Slider,
   SmallTitleText,
-  TitleText,
   Tooltip,
 } from '@shared/ui';
 import { OperationTitle } from '@/entities/chain';
-import { ValueIndicator, votingService } from '@/entities/governance';
+import { BalanceDiff, LockPeriodDiff } from '@/entities/governance';
 import { AssetBalance } from '@entities/asset';
 import { SignatorySelector } from '@entities/operations';
 import { priceProviderModel } from '@entities/price';
@@ -28,6 +26,7 @@ import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { FeeLoader } from '@entities/transaction';
 import { ProxyWalletAlert } from '@entities/wallet';
 import { locksModel } from '@/features/governance/model/locks';
+import { ConvictionSelect } from '@/widgets/VoteModal/ui/formFields/ConvictionSelect';
 import { formModel } from '../model/form-model';
 
 type Props = {
@@ -58,7 +57,7 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
       }
       onClose={onClose}
     >
-      <div className="w-modal px-5 pb-4">
+      <div className="flex h-full w-modal flex-col px-5 pb-4">
         <SmallTitleText>{t('governance.addDelegation.formTitle')}</SmallTitleText>
 
         <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
@@ -68,9 +67,11 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
           <Conviction />
           <Description />
         </form>
-        <div className="flex flex-col gap-y-6 pb-4 pt-6">
+
+        <div className="flex flex-1 flex-col justify-end gap-y-6 pb-4 pt-6">
           <FeeSection />
         </div>
+
         <ActionsSection onGoBack={onGoBack} />
       </div>
     </BaseModal>
@@ -133,26 +134,7 @@ const Signatories = () => {
   );
 };
 
-const convictionColors = [
-  'text-text-conviction-slider-text-01',
-  'text-text-conviction-slider-text-1',
-  'text-text-conviction-slider-text-2',
-  'text-text-conviction-slider-text-3',
-  'text-text-conviction-slider-text-4',
-  'text-text-conviction-slider-text-5',
-  'text-text-conviction-slider-text-6',
-];
-
-const renderLabel = (value: number) => (
-  <FootnoteText className={convictionColors[value]}>
-    {/* eslint-disable-next-line i18next/no-literal-string */}
-    {value}x
-  </FootnoteText>
-);
-
 const Conviction = () => {
-  const { t } = useI18n();
-
   const {
     fields: { conviction, amount },
   } = useForm(formModel.$delegateForm);
@@ -162,22 +144,13 @@ const Conviction = () => {
     return null;
   }
 
-  const numericValue = conviction.value;
-  const votingPower = votingService.calculateVotingPower(
-    new BN(formatAmount(amount.value, network.asset.precision)),
-    votingService.getConviction(conviction.value),
-  );
-
   return (
-    <div className="flex flex-col gap-3">
-      <FootnoteText className="text-text-tertiary">{t('governance.addDelegation.convictionLabel')}</FootnoteText>
-      <Slider value={numericValue} min={0} max={6} renderLabel={renderLabel} onChange={conviction.onChange} />
-      <div className="flex justify-center">
-        <TitleText className="text-text-tertiary">
-          {t('governance.referendum.votes', { votes: formatBalance(votingPower, network.asset.precision).formatted })}
-        </TitleText>
-      </div>
-    </div>
+    <ConvictionSelect
+      value={conviction.value}
+      asset={network.asset}
+      amount={new BN(formatAmount(amount.value, network.asset.precision))}
+      onChange={conviction.onChange}
+    />
   );
 };
 
@@ -248,7 +221,7 @@ const FeeSection = () => {
   const { t } = useI18n();
 
   const {
-    fields: { shards, amount },
+    fields: { shards, amount, conviction },
   } = useForm(formModel.$delegateForm);
 
   const network = useUnit(formModel.$networkStore);
@@ -256,6 +229,7 @@ const FeeSection = () => {
   const isFeeLoading = useUnit(formModel.$isFeeLoading);
   const isMultisig = useUnit(formModel.$isMultisig);
   const totalLock = useUnit(locksModel.$totalLock);
+  const accounts = useUnit(formModel.$accounts);
 
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
@@ -263,15 +237,33 @@ const FeeSection = () => {
     return null;
   }
 
+  const amountValue = new BN(formatAmount(amount.value, network.asset.precision));
+
   return (
     <div className="flex flex-col gap-y-2">
-      <DetailRow label={t('governance.locks.governanceLock')} wrapperClassName="items-start">
-        <ValueIndicator
-          from={totalLock.toString()}
-          to={new BN(totalLock).add(new BN(formatAmount(amount.value, network.asset.precision))).toString()}
-          asset={network.asset}
-        />
-      </DetailRow>
+      {shards.value.length === 1 && (
+        <>
+          <DetailRow label={t('governance.operations.transferable')} wrapperClassName="items-start">
+            <BalanceDiff
+              from={accounts[0].balance}
+              to={new BN(accounts[0].balance).sub(amountValue).toString()}
+              asset={network.asset}
+            />
+          </DetailRow>
+
+          <DetailRow label={t('governance.locks.governanceLock')} wrapperClassName="items-start">
+            <BalanceDiff
+              asset={network.asset}
+              from={totalLock.toString()}
+              to={new BN(totalLock).add(amountValue).toString()}
+            />
+          </DetailRow>
+
+          <DetailRow label={t('governance.locks.undelegatePeriod')} wrapperClassName="items-start">
+            <LockPeriodDiff from="None" to={conviction.value} />
+          </DetailRow>
+        </>
+      )}
 
       {isMultisig && (
         <DetailRow

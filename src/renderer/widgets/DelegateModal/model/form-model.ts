@@ -3,7 +3,7 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { spread } from 'patronum';
 
-import { type Account, type Asset, type Chain, type PartialBy } from '@shared/core';
+import { type Account, type Asset, type Chain, type Conviction, type PartialBy } from '@shared/core';
 import { ZERO_BALANCE, formatAmount, getRelaychainAsset, transferableAmount } from '@shared/lib/utils';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel } from '@entities/network';
@@ -15,7 +15,7 @@ type FormParams = {
   shards: Account[];
   signatory: Account;
   amount: string;
-  conviction: number;
+  conviction: Conviction;
   description: string;
 };
 
@@ -171,7 +171,7 @@ const $delegateForm = createForm<FormParams>({
       ],
     },
     conviction: {
-      init: 0.1,
+      init: 'Locked1x',
       rules: [],
     },
     description: {

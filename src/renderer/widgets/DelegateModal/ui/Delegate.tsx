@@ -123,7 +123,21 @@ export const Delegate = () => {
       title={<OperationTitle title={t('governance.addDelegation.title')} chainId={walletData.chain!.chainId} />}
       onClose={closeModal}
     >
-      {isStep(step, Step.CONFIRM) && transactions.length > 1 ? (
+      {isStep(step, Step.CONFIRM) && transactions.length === 1 && (
+        <Confirmation
+          secondaryActionButton={
+            initiatorWallet &&
+            basketUtils.isBasketAvailable(initiatorWallet) && (
+              <Button pallet="secondary" onClick={() => delegateModel.events.txSaved()}>
+                {t('operation.addToBasket')}
+              </Button>
+            )
+          }
+          onGoBack={() => delegateModel.events.stepChanged(Step.INIT)}
+        />
+      )}
+
+      {isStep(step, Step.CONFIRM) && transactions.length > 1 && (
         <>
           <div className="overflow-x-hidden bg-background-default py-4" ref={ref}>
             {transactions.length > 1 && (
@@ -175,18 +189,6 @@ export const Delegate = () => {
             <SignButton isDefault type={walletData.wallet?.type} onClick={delegateModel.events.txsConfirmed} />
           </div>
         </>
-      ) : (
-        <Confirmation
-          secondaryActionButton={
-            initiatorWallet &&
-            basketUtils.isBasketAvailable(initiatorWallet) && (
-              <Button pallet="secondary" onClick={() => delegateModel.events.txSaved()}>
-                {t('operation.addToBasket')}
-              </Button>
-            )
-          }
-          onGoBack={() => delegateModel.events.stepChanged(Step.INIT)}
-        />
       )}
 
       {isStep(step, Step.SIGN) && <OperationSign onGoBack={() => delegateModel.events.stepChanged(Step.CONFIRM)} />}

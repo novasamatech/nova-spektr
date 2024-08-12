@@ -7,6 +7,7 @@ import {
   type Asset,
   type Chain,
   type ChainId,
+  type Conviction,
   type ProxiedAccount,
   type Wallet,
 } from '@shared/core';
@@ -22,7 +23,7 @@ type Input = {
 
   tracks: number[];
   target: Address;
-  conviction: number;
+  conviction: Conviction;
   balance: string;
 
   proxiedAccount?: ProxiedAccount;

@@ -1,4 +1,4 @@
-import { type Account, type Address, type Chain, type Wallet } from '@shared/core';
+import { type Account, type Address, type Chain, type Conviction, type Wallet } from '@shared/core';
 
 export type WalletData = {
   wallet: Wallet;
@@ -10,7 +10,7 @@ export type DelegateData = {
   signatory?: Account;
   tracks: number[];
   target: Address;
-  conviction: number;
+  conviction: Conviction;
   balance: string;
   description: string;
 };

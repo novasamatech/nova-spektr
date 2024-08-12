@@ -6,7 +6,7 @@ import { Trans } from 'react-i18next';
 import { useI18n } from '@app/providers';
 import { cnTw, formatAmount } from '@shared/lib/utils';
 import { Button, CaptionText, DetailRow, FootnoteText, HeadlineText, Icon, LargeTitleText, Tooltip } from '@shared/ui';
-import { ValueIndicator } from '@/entities/governance';
+import { LockPeriodDiff, ValueIndicator, votingService } from '@/entities/governance';
 import { AssetBalance } from '@entities/asset';
 import { SignButton } from '@entities/operations';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
@@ -68,7 +68,8 @@ export const Confirmation = ({
     ? formatAmount(confirmStore.balance, confirmStore.asset.precision)
     : confirmStore.balance;
 
-  const votesValue = new BN(amountValue).mul(new BN(confirmStore.conviction)).toString();
+  const convictionValue = new BN(votingService.getConvictionMultiplier(confirmStore.conviction));
+  const votesValue = new BN(amountValue).mul(convictionValue).toString();
 
   return (
     <div className="flex w-modal flex-col items-center gap-y-4 px-5 pb-4 pt-4">
@@ -89,7 +90,6 @@ export const Confirmation = ({
                     showSymbol={false}
                   />
                 ),
-                li: <li />,
               }}
             />
           </LargeTitleText>
@@ -98,7 +98,7 @@ export const Confirmation = ({
               t={t}
               i18nKey="governance.addDelegation.balanceValue"
               values={{
-                conviction: confirmStore.conviction,
+                conviction: convictionValue,
               }}
               components={{
                 balance: (
@@ -229,6 +229,10 @@ export const Confirmation = ({
             to={new BN(totalLock).add(new BN(amountValue)).toString()}
             asset={confirmStore.asset}
           />
+        </DetailRow>
+
+        <DetailRow label={t('governance.locks.undelegatePeriod')} wrapperClassName="items-start">
+          <LockPeriodDiff from="None" to={confirmStore.conviction} />
         </DetailRow>
 
         <hr className="w-full border-filter-border pr-2" />
