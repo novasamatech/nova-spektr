@@ -163,35 +163,34 @@ const AccountsSelector = () => {
   const { t } = useI18n();
 
   const accounts = useUnit(selectTracksModel.$accounts);
-  const walletData = useUnit(delegateModel.$walletData);
+  const availableAccounts = useUnit(selectTracksModel.$availableAccounts);
+  const { wallet, chain } = useUnit(delegateModel.$walletData);
 
-  if (!walletData || !walletData.wallet || !walletData.chain || walletData.wallet.accounts.length <= 1) {
+  if (!wallet || !chain || wallet.accounts.length <= 1) {
     return null;
   }
 
   const options =
-    walletData.wallet?.accounts
-      .filter((a) => accountUtils.isChainIdMatch(a, walletData.chain!.chainId))
-      .map((account) => {
-        const isShard = accountUtils.isShardAccount(account);
-        const address = toAddress(account.accountId, { prefix: walletData.chain!.addressPrefix });
+    availableAccounts.map((account) => {
+      const isShard = accountUtils.isShardAccount(account);
+      const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
 
-        return {
-          id: account.id.toString(),
-          value: account,
-          element: (
-            <div className="flex w-full justify-between" key={account.id}>
-              <AccountAddress
-                size={20}
-                type="short"
-                address={address}
-                name={isShard ? toShortAddress(address, 16) : account.name}
-                canCopy={false}
-              />
-            </div>
-          ),
-        };
-      }) || [];
+      return {
+        id: account.id.toString(),
+        value: account,
+        element: (
+          <div className="flex w-full justify-between" key={account.id}>
+            <AccountAddress
+              size={20}
+              type="short"
+              address={address}
+              name={isShard ? toShortAddress(address, 16) : account.name}
+              canCopy={false}
+            />
+          </div>
+        ),
+      };
+    }) || [];
 
   return (
     <>

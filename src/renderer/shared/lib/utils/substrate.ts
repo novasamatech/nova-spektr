@@ -129,7 +129,15 @@ export const getCreatedDateFromApi = async (neededBlock: number, api: ApiPromise
   return getCreatedDate(neededBlock, currentBlock, blockTime.toNumber());
 };
 
-export const getTimeFromBlock = async (neededTime: number, api: ApiPromise): Promise<number> => {
+/**
+ * Get the block number that completed the specified time period ago
+ *
+ * @param neededTime - The time period in milliseconds.
+ * @param api - The Polkadot API instance.
+ *
+ * @returns A promise that resolves to the block number.
+ */
+export const getBlockTimeAgo = async (neededTime: number, api: ApiPromise): Promise<number> => {
   const currentBlock = await getCurrentBlockNumber(api);
   const blockTime = getExpectedBlockTime(api);
 
