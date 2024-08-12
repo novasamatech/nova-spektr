@@ -180,6 +180,15 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
             <ValueIndicator from={totalLock.toString()} to={totalLock.sub(new BN(amount)).toString()} asset={asset} />
           </DetailRow>
 
+          {/* TODO: add undelegate period */}
+          {/* <DetailRow label={t('governance.locks.undelegatePeriod')} wrapperClassName="items-start">
+            <ValueIndicator
+              from={totalLock.toString()}
+              to={totalLock.sub(new BN(confirmStore.amount)).toString()}
+              asset={asset}
+            />
+          </DetailRow> */}
+
           <hr className="w-full border-filter-border pr-2" />
 
           {accountUtils.isMultisigAccount(shards[0]) && (

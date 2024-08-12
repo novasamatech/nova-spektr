@@ -5,9 +5,9 @@ import { readonly } from 'patronum';
 import { type DelegateAccount, delegationService } from '@/shared/api/governance';
 import { type Chain } from '@/shared/core';
 import { getTimeFromBlock } from '@/shared/lib/utils';
-import { networkSelectorModel } from '@/features/governance';
+import { networkSelectorModel } from '../model/networkSelector';
 
-const requestDelegateRegistry = createEvent<Chain>();
+const requestDelegateRegistry = createEvent();
 
 const $delegateRegistry = createStore<DelegateAccount[]>([]);
 
@@ -28,9 +28,9 @@ const requestDelegateRegistryFx = createEffect(
 
 sample({
   clock: requestDelegateRegistry,
-  source: networkSelectorModel.$governanceChainApi,
-  filter: (api) => !!api,
-  fn: (api, chain) => ({ chain, api: api! }),
+  source: { api: networkSelectorModel.$governanceChainApi, chain: networkSelectorModel.$governanceChain },
+  filter: ({ api, chain }) => !!api && !!chain,
+  fn: ({ api, chain }) => ({ chain: chain!, api: api! }),
   target: requestDelegateRegistryFx,
 });
 
@@ -39,7 +39,7 @@ sample({
   target: $delegateRegistry,
 });
 
-export const delegateRegistryModel = {
+export const delegateRegistryAggregate = {
   $delegateRegistry: readonly($delegateRegistry),
   $isRegistryLoading: requestDelegateRegistryFx.pending,
 

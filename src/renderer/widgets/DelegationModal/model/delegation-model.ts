@@ -6,8 +6,8 @@ import { type DelegateAccount } from '@/shared/api/governance';
 import { type Address } from '@/shared/core';
 import { Step, includesMultiple } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
-import { delegateRegistryModel } from '@/entities/governance/model/delegateRegistry';
-import { networkSelectorModel, votingAggregate } from '@/features/governance';
+import { delegateRegistryAggregate, networkSelectorModel, votingAggregate } from '@/features/governance';
+import { delegateModel } from '@/widgets/DelegateModal/model/delegate-model';
 import { SortProp, SortType } from '../common/constants';
 
 const flowFinished = createEvent();
@@ -15,14 +15,20 @@ const flowStarted = createEvent();
 const stepChanged = createEvent<Step>();
 const queryChanged = createEvent<string>();
 const sortTypeChanged = createEvent<SortType>();
+const selectDelegate = createEvent<DelegateAccount>();
+const customDelegateChanged = createEvent<Address>();
+const openCustomModal = createEvent();
+const closeCustomModal = createEvent();
+const createCustomDelegate = createEvent();
 
 const $step = restore(stepChanged, Step.NONE);
 const $query = restore(queryChanged, '');
 const $sortType = restore(sortTypeChanged, null);
+const $customDelegate = restore(customDelegateChanged, '').reset(openCustomModal);
 
 const $delegateList = combine(
   {
-    list: delegateRegistryModel.$delegateRegistry,
+    list: delegateRegistryAggregate.$delegateRegistry,
     activeVotes: votingAggregate.$activeWalletVotes,
     query: $query,
     sortType: $sortType,
@@ -71,7 +77,7 @@ sample({
   clock: flowStarted,
   source: networkSelectorModel.$governanceChain,
   filter: (chain) => !!chain,
-  target: delegateRegistryModel.events.requestDelegateRegistry,
+  target: delegateRegistryAggregate.events.requestDelegateRegistry,
 });
 
 sample({
@@ -86,18 +92,55 @@ sample({
   target: stepChanged,
 });
 
-export const addDelegationModel = {
-  $isListLoading: delegateRegistryModel.$isRegistryLoading,
+sample({
+  clock: selectDelegate,
+  target: delegateModel.events.flowStarted,
+});
+
+sample({
+  clock: openCustomModal,
+  fn: () => Step.CUSTOM_DELEGATION,
+  target: $step,
+});
+
+sample({
+  clock: closeCustomModal,
+  fn: () => Step.LIST,
+  target: $step,
+});
+
+sample({
+  clock: createCustomDelegate,
+  source: $customDelegate,
+  fn: (delegate) =>
+    ({
+      accountId: delegate,
+      delegators: [],
+      delegatorVotes: [],
+      delegateVotes: 0,
+    }) as DelegateAccount,
+  target: delegateModel.events.flowStarted,
+});
+
+export const delegationModel = {
+  $isListLoading: delegateRegistryAggregate.$isRegistryLoading,
   $delegateList: readonly($delegateList),
   $step: readonly($step),
   $query: readonly($query),
   $sortType: readonly($sortType),
+  $customDelegate: readonly($customDelegate),
 
   events: {
     flowStarted,
     queryChanged,
     sortTypeChanged,
     sortTypeReset: $sortType.reinit,
+    selectDelegate,
+
+    customDelegateChanged,
+    openCustomModal,
+    closeCustomModal,
+    createCustomDelegate,
   },
 
   output: {

@@ -396,7 +396,7 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
         track: decoded.args[0].toString(),
         target: decoded.args[1].toString(),
         conviction: decoded.args[2].toString(),
-        balance: decoded.args[3].toString(),
+        balance: decoded.args[3].toHuman(),
       };
     },
   };

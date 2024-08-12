@@ -212,6 +212,7 @@ const Destination = () => {
       )}
     </div>
   );
+
   const suffixElement = (
     <Button size="sm" pallet="secondary" onClick={() => formModel.events.myselfClicked()}>
       {t('transfer.myselfButton')}
