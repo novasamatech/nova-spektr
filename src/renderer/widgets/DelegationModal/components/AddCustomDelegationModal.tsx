@@ -55,7 +55,7 @@ export const AddCustomDelegationModel = () => {
         />
       </div>
 
-      <div className="px-5 pt-3 pb-4 flex justify-end">
+      <div className="flex justify-end px-5 pb-4 pt-3">
         <Button disabled={!isValidAddress} onClick={() => delegationModel.events.createCustomDelegate()}>
           {t('signing.continueButton')}
         </Button>

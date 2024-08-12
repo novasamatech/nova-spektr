@@ -2,13 +2,13 @@ import { type Asset, type Balance, type Chain } from '@shared/core';
 
 export type BalanceMap = Record<'balance' | 'native', string>;
 
-export type Validation = {
-  value: any;
+export type Validation<Value = any, Form = any, Source = any> = {
+  value: Value;
   name: string;
   errorText: string;
-  source: any;
-  form: any;
-  validator: (...args: any) => boolean;
+  source: Source;
+  form: Form;
+  validator: (value: Value, form: Form, source: Source) => boolean;
 };
 
 export type ValidationResult =

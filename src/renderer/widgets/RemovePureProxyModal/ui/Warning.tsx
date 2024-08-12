@@ -28,8 +28,8 @@ export const Warning = ({ onGoBack }: Props) => {
   };
 
   return (
-    <div className="pb-4 px-5">
-      <form id="remove-pure-proxy-warning-form" className="flex flex-col gap-y-4 mt-4" onSubmit={revokeAuthority}>
+    <div className="px-5 pb-4">
+      <form id="remove-pure-proxy-warning-form" className="mt-4 flex flex-col gap-y-4" onSubmit={revokeAuthority}>
         <FootnoteText as="p"> {t('pureProxyRemove.warning.warningMessage')}</FootnoteText>
         <Input
           className="w-full"
@@ -83,7 +83,7 @@ const ActionSection = ({ onGoBack }: Props) => {
   const canSubmit = useUnit(warningModel.$canSubmit);
 
   return (
-    <div className="flex justify-between items-center mt-4">
+    <div className="mt-4 flex items-center justify-between">
       <Button variant="text" onClick={onGoBack}>
         {t('operation.goBackButton')}
       </Button>

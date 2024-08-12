@@ -42,7 +42,7 @@ export const ChainTitle = ({
   return (
     <Tag className={cnTw('flex items-center gap-x-2', className)}>
       <ChainIcon src={chainObj?.icon} name={chainObj?.name} size={iconSize} />
-      <TextBase as="span" className={cnTw('text-text-tertiary text-footnote', fontClass)}>
+      <TextBase as="span" className={cnTw('text-footnote text-text-tertiary', fontClass)}>
         {chainObj?.name}
       </TextBase>
     </Tag>

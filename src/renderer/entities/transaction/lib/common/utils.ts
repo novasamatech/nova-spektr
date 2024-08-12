@@ -4,6 +4,7 @@ import { type TFunction } from 'react-i18next';
 
 import { type DecodedTransaction, type MultisigTransaction, type Transaction, TransactionType } from '@shared/core';
 import { formatSectionAndMethod } from '@shared/lib/utils';
+import { type VoteTransaction } from '../../../governance';
 
 import {
   CONTROLLER_ARG_NAME,
@@ -165,6 +166,17 @@ export const getTransactionAmount = (tx: Transaction | DecodedTransaction): stri
     return getTransactionAmount(transaction);
   }
 
+  if (txType === TransactionType.VOTE) {
+    const transaction = tx as unknown as VoteTransaction;
+    const vote = transaction.args.vote;
+
+    if ('Standard' in vote) {
+      return vote.Standard.balance;
+    } else {
+      return vote.SplitAbstain.abstain;
+    }
+  }
+
   return null;
 };
 
@@ -203,7 +215,9 @@ const TransactionTitles: Record<TransactionType, string> = {
   [TransactionType.PROXY]: 'operations.titles.proxy',
   // Governance
   [TransactionType.UNLOCK]: 'operations.titles.unlock',
-  [TransactionType.REMOVE_VOTE]: 'operations.titles.removeVote',
+  [TransactionType.VOTE]: 'operations.titles.vote',
+  [TransactionType.REVOTE]: 'operations.titles.revote',
+  [TransactionType.RETRACT_VOTE]: 'operations.titles.retractVote',
   [TransactionType.DELEGATE]: 'operations.titles.delegate',
   [TransactionType.UNDELEGATE]: 'operations.titles.undelegate',
 };
@@ -247,7 +261,9 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.REMOVE_PURE_PROXY]: () => 'operations.modalTitles.removePureProxy',
   [TransactionType.PROXY]: () => 'operations.modalTitles.proxy',
   [TransactionType.UNLOCK]: () => 'operations.modalTitles.unlockOn',
-  [TransactionType.REMOVE_VOTE]: () => 'operations.modalTitles.removeVoteOn',
+  [TransactionType.VOTE]: () => 'operations.modalTitles.vote',
+  [TransactionType.REVOTE]: () => 'operations.modalTitles.revote',
+  [TransactionType.RETRACT_VOTE]: () => 'operations.modalTitles.retractVote',
   [TransactionType.DELEGATE]: () => 'operations.modalTitles.delegateOn',
   [TransactionType.UNDELEGATE]: () => 'operations.modalTitles.undelegateOn',
 };

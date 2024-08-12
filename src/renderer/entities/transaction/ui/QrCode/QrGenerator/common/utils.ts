@@ -125,10 +125,13 @@ export const createFrames = (input: Uint8Array, encoder?: Encoder): Uint8Array[]
 };
 
 /**
- * CryptoType enum indexes are different from MULTI_SIGNER taggedUnion fields order
- * MULTI_SIGNER can't be changed and changing CryptoType would require DB migration
- * @param cryptoType crypto type
- * @return {Number}
+ * CryptoType enum indexes are different from MULTI_SIGNER taggedUnion fields
+ * order MULTI_SIGNER can't be changed and changing CryptoType would require DB
+ * migration
+ *
+ * @param cryptoType Crypto type
+ *
+ * @returns {Number}
  */
 export const cryptoTypeToMultisignerIndex = (cryptoType: CryptoType): number => {
   return {

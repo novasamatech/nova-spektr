@@ -39,7 +39,7 @@ const $delegateList = combine(
     for (const voteList of Object.values(activeVotes)) {
       for (const vote of Object.values(voteList)) {
         if (votingService.isDelegating(vote)) {
-          activeDelegationsSet.add(vote.delegating.target);
+          activeDelegationsSet.add(vote.target);
         }
       }
     }

@@ -41,14 +41,14 @@ export const DelegationList = ({ onClick, onAddCustomClick }: Props) => {
   ];
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex h-full flex-col">
       {isListLoading ? (
-        <div className="h-full flex items-center justify-center">
+        <div className="flex h-full items-center justify-center">
           <Loader color="primary" size={25} />
         </div>
       ) : (
         <>
-          <div className="flex gap-4 mx-5 mb-4 items-center">
+          <div className="mx-5 mb-4 flex items-center gap-4">
             <SearchInput
               wrapperClass="flex-1"
               value={query}
@@ -61,7 +61,7 @@ export const DelegationList = ({ onClick, onAddCustomClick }: Props) => {
             </Button>
           </div>
 
-          <div className="flex justify-between items-center mx-5 mb-6">
+          <div className="mx-5 mb-6 flex items-center justify-between">
             <Select
               className="w-[152px]"
               placeholder={t('governance.addDelegation.sort.placeholder')}
@@ -77,8 +77,8 @@ export const DelegationList = ({ onClick, onAddCustomClick }: Props) => {
             )}
           </div>
 
-          <div className="flex flex-col items-center h-full overflow-y-auto scrollbar-stable">
-            <ul className="flex flex-col w-[400px] gap-y-2">
+          <div className="scrollbar-stable flex h-full flex-col items-center overflow-y-auto">
+            <ul className="flex w-[400px] flex-col gap-y-2">
               {delegationList.map((delegate) => (
                 <button key={delegate.accountId} onClick={() => onClick(delegate)}>
                   <DelegationCard key={delegate.accountId} delegate={delegate} />

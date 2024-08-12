@@ -37,7 +37,7 @@ export const ProxyPopover = ({ children }: PropsWithChildren) => {
       }
     >
       {children ? (
-        <LabelHelpBox className="mt-4 mb-6">{children}</LabelHelpBox>
+        <LabelHelpBox className="mb-6 mt-4">{children}</LabelHelpBox>
       ) : (
         <Icon name="questionOutline" className="hover:text-icon-hover active:text-icon-active" size={16} />
       )}

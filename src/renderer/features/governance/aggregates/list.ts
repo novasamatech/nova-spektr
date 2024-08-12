@@ -1,13 +1,7 @@
 import { combine, sample } from 'effector';
-import { inFlight, not, or, readonly } from 'patronum';
+import { readonly } from 'patronum';
 
-import {
-  approveThresholdModel,
-  referendumModel,
-  supportThresholdModel,
-  votingModel,
-  votingService,
-} from '@entities/governance';
+import { approveThresholdModel, referendumModel, supportThresholdModel, votingService } from '@entities/governance';
 import { networkSelectorModel } from '../model/networkSelector';
 import { titleModel } from '../model/title';
 import { type AggregatedReferendum } from '../types/structs';
@@ -47,23 +41,18 @@ const $referendums = combine(
 
 sample({
   clock: networkSelectorModel.$governanceChainApi,
-  source: networkSelectorModel.$governanceChain,
-  filter: (_, api) => !!api,
-  fn: (chain, api) => ({ api: api!, chain: chain! }),
+  source: {
+    chain: networkSelectorModel.$governanceChain,
+    referendums: referendumModel.$referendums,
+  },
+  filter: ({ chain, referendums }, api) => !!api && !!chain && !referendums[chain.chainId]?.length,
+  fn: ({ chain }, api) => ({ api: api!, chain: chain! }),
   target: referendumModel.events.requestReferendums,
 });
 
 export const listAggregate = {
   $referendums: readonly($referendums),
-  $isLoading: or(
-    not(networkSelectorModel.$isConnectionActive),
-    inFlight([
-      referendumModel.effects.requestReferendumsFx,
-      approveThresholdModel.effects.requestApproveThresholdsFx,
-      supportThresholdModel.effects.requestSupportThresholdsFx,
-      votingModel.effects.requestVotingFx,
-    ]),
-  ),
+  $isLoading: referendumModel.$isReferendumsLoading,
 
   effects: {
     requestReferendumsFx: referendumModel.effects.requestReferendumsFx,

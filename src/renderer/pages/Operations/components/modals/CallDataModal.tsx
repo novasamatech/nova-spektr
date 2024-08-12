@@ -54,7 +54,7 @@ const CallDataModal = ({ isOpen, tx, onClose, onSubmit }: Props) => {
       contentClass="px-5 pb-4 w-[400px]"
       onClose={closeHandler}
     >
-      <form id="multisigForm" className="flex flex-col mt-2 gap-y-4" onSubmit={handleSubmit(submitHandler)}>
+      <form id="multisigForm" className="mt-2 flex flex-col gap-y-4" onSubmit={handleSubmit(submitHandler)}>
         <Controller
           name="callData"
           control={control}

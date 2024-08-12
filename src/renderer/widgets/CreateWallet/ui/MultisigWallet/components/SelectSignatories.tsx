@@ -98,7 +98,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
   const selectWallet = (wallet: ExtendedWallet) => {
     setSelectedWallets((selectedWallets) => {
       if (selectedWallets[wallet.id]) {
-        const { [wallet.id]: removedWallet, ...newWallets } = selectedWallets;
+        const { [wallet.id]: _removedWallet, ...newWallets } = selectedWallets;
 
         return newWallets;
       }
@@ -110,7 +110,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
   const selectContact = (contact: ExtendedContact) => {
     setSelectedContacts((selectedContacts) => {
       if (selectedContacts[contact.index]) {
-        const { [contact.index]: removedContact, ...newContacts } = selectedContacts;
+        const { [contact.index]: _removedWallet, ...newContacts } = selectedContacts;
 
         return newContacts;
       }
@@ -157,7 +157,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
   const WalletsTab = hasWallets ? (
     <div className="flex flex-col gap-y-2">
       {Boolean(disabledWallets) && (
-        <FootnoteText className="text-text-tertiary px-2">{t('createMultisigAccount.availableLabel')}</FootnoteText>
+        <FootnoteText className="px-2 text-text-tertiary">{t('createMultisigAccount.availableLabel')}</FootnoteText>
       )}
 
       <ul className="flex flex-col gap-y-2">
@@ -167,7 +167,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
           return (
             <li
               key={wallet.id + '_wallets'}
-              className={cnTw('py-1.5 px-2 rounded-md', !disabled && 'hover:bg-action-background-hover')}
+              className={cnTw('rounded-md px-2 py-1.5', !disabled && 'hover:bg-action-background-hover')}
             >
               <Checkbox
                 checked={!!selectedWallets[wallet.id]}
@@ -182,12 +182,12 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
       </ul>
 
       {Boolean(disabledWallets.length) && (
-        <FootnoteText className="text-text-tertiary px-2">{t('createMultisigAccount.disabledLabel')}</FootnoteText>
+        <FootnoteText className="px-2 text-text-tertiary">{t('createMultisigAccount.disabledLabel')}</FootnoteText>
       )}
 
       <ul className="gap-y-2">
         {disabledWallets.map(({ id, name, type }) => (
-          <li key={id + '_wallets'} className="py-1.5 px-2 rounded-md">
+          <li key={id + '_wallets'} className="rounded-md px-2 py-1.5">
             <Tooltip offsetPx={-65} content={getDisabledMessage(type)}>
               <Checkbox disabled>
                 <WalletItem name={name} type={type} />
@@ -203,7 +203,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
 
   const ContactsTab = (
     <div>
-      <div className="flex items-center gap-x-4 mb-4 px-2">
+      <div className="mb-4 flex items-center gap-x-4 px-2">
         <SearchInput
           wrapperClass="flex-1"
           placeholder={t('createMultisigAccount.searchContactPlaceholder')}
@@ -225,7 +225,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
             return (
               <li
                 key={contact.index + '_contacts'}
-                className={cnTw('py-1.5 px-2 rounded-md', !disabled && 'hover:bg-action-background-hover')}
+                className={cnTw('rounded-md px-2 py-1.5', !disabled && 'hover:bg-action-background-hover')}
               >
                 <Checkbox
                   checked={Boolean(selectedContacts[contact.index]) || false}
@@ -241,7 +241,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
                       active={Boolean(contact.matrixId)}
                       title={t('general.explorers.matrixIdTitle')}
                     >
-                      <HelpText className="text-text-secondary break-all">{contact.matrixId}</HelpText>
+                      <HelpText className="break-all text-text-secondary">{contact.matrixId}</HelpText>
                     </ExplorersPopover.Group>
                   </ExplorersPopover>
                 </Checkbox>
@@ -263,7 +263,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
         <>
           {t('createMultisigAccount.walletsTab')}
           {selectedWalletsLength > 0 && (
-            <FootnoteText as="span" className="text-text-tertiary ml-1">
+            <FootnoteText as="span" className="ml-1 text-text-tertiary">
               {selectedWalletsLength}
             </FootnoteText>
           )}
@@ -277,7 +277,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
         <>
           {t('createMultisigAccount.contactsTab')}
           {selectedContactsLength > 0 && (
-            <FootnoteText as="span" className="text-text-tertiary ml-1">
+            <FootnoteText as="span" className="ml-1 text-text-tertiary">
               {selectedContactsLength}
             </FootnoteText>
           )}
@@ -288,8 +288,8 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
 
   return (
     <>
-      <div className={cnTw('max-h-full flex flex-col flex-1', !isActive && 'hidden')}>
-        <SmallTitleText className="py-2 px-2 mb-4">{t('createMultisigAccount.signatoryTitle')}</SmallTitleText>
+      <div className={cnTw('flex max-h-full flex-1 flex-col', !isActive && 'hidden')}>
+        <SmallTitleText className="mb-4 px-2 py-2">{t('createMultisigAccount.signatoryTitle')}</SmallTitleText>
 
         <Tabs
           items={TabItems}

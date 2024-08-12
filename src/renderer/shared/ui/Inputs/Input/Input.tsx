@@ -58,8 +58,8 @@ export const Input = forwardRef<HTMLInputElement, Props>(
         <input
           id={id}
           className={cnTw(
-            'focus:outline-none w-full placeholder:text-text-secondary',
-            disabled && 'text-text-tertiary bg-transparent placeholder:text-text-tertiary',
+            'w-full placeholder:text-text-secondary focus:outline-none',
+            disabled && 'bg-transparent text-text-tertiary placeholder:text-text-tertiary',
             className,
           )}
           ref={ref}
@@ -80,7 +80,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(
 
     return (
       <div className="flex flex-col gap-y-2">
-        <LabelText className="text-text-tertiary font-medium" htmlFor={id}>
+        <LabelText className="font-medium text-text-tertiary" htmlFor={id}>
           {label}
         </LabelText>
         {inputElement}

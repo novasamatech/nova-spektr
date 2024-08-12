@@ -34,7 +34,7 @@ export const ShardSelectorModal = ({ onConfirm }: Callbacks) => {
       <ShardSearch />
       <ShardsStructure />
 
-      <Button className="ml-auto mt-7 mr-5" onClick={() => shardsModel.events.shardsConfirmed()}>
+      <Button className="ml-auto mr-5 mt-7" onClick={() => shardsModel.events.shardsConfirmed()}>
         {t('balances.saveShardsButton')}
       </Button>
     </BaseModal>

@@ -11,10 +11,12 @@ type Params<T extends object> = {
 
 /**
  * Performs searching by query and sort using weight of each field
- * @param records - list of objects
- * @param query - requested string
- * @param queryMinLength - from this query length method starts to perform search
- * @param weights - object with keys to search.
+ *
+ * @param records - List of objects
+ * @param query - Requested string
+ * @param queryMinLength - From this query length method starts to perform
+ *   search
+ * @param weights - Object with keys to search.
  */
 export const performSearch = <T extends object>({ records, query, queryMinLength, weights }: Params<T>) => {
   if (query === '' || (queryMinLength && query.length < queryMinLength)) {
@@ -37,11 +39,15 @@ export const performSearch = <T extends object>({ records, query, queryMinLength
       switch (typeof field) {
         case 'string':
         case 'number': {
-          const result = field.toString().toLowerCase().includes(normalizedQuery);
-          if (result) {
-            found = true;
-            weight += weights[key] ?? 0;
+          const value = field.toString().toLowerCase();
+          const result = value.indexOf(normalizedQuery);
+
+          if (result === -1) {
+            continue;
           }
+
+          found = true;
+          weight += (weights[key] ?? 0) + (value.length - result) * 0.1;
           break;
         }
       }

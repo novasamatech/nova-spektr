@@ -2,8 +2,10 @@ import { useCallback, useState } from 'react';
 
 /**
  * Toggles initial value to opposite
- * @param initialValue value to toggle
- * @return {Array}
+ *
+ * @param initialValue Value to toggle
+ *
+ * @returns {Array}
  */
 export function useToggle(initialValue = false): [boolean, () => void] {
   const [value, setValue] = useState(initialValue);

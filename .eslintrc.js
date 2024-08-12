@@ -1,8 +1,5 @@
-const fs = require('fs');
 const path = require('path');
 
-const prettierConfig = fs.readFileSync('./.prettierrc', 'utf8');
-const prettierOptions = JSON.parse(prettierConfig);
 const localesPath = './src/renderer/shared/api/translation/locales';
 const defaultLocalePath = path.join(localesPath, 'en.json');
 
@@ -23,9 +20,9 @@ module.exports = {
     'plugin:import-x/recommended',
     'plugin:import-x/errors',
     'plugin:import-x/warnings',
-    'prettier',
+    'plugin:prettier/recommended',
   ],
-  plugins: ['prettier', 'import-x'],
+  plugins: ['prettier', 'import-x', 'unused-imports'],
   parserOptions: {
     sourceType: 'module',
     ecmaVersion: 2022,
@@ -35,6 +32,7 @@ module.exports = {
     'import-x/no-unresolved': 'off',
     'import-x/named': 'off',
     'import-x/namespace': 'off',
+    'import-x/no-named-as-default': 'error',
     'import-x/consistent-type-specifier-style': ['error', 'prefer-inline'],
     'import-x/order': [
       'error',
@@ -50,9 +48,21 @@ module.exports = {
         distinctGroup: false,
       },
     ],
+
+    'unused-imports/no-unused-imports': 'error',
+    'unused-imports/no-unused-vars': [
+      'error',
+      {
+        vars: 'all',
+        varsIgnorePattern: '^_',
+        args: 'after-used',
+        argsIgnorePattern: '^_',
+      },
+    ],
+
     'no-irregular-whitespace': 'off',
     'newline-before-return': 'error',
-    'prettier/prettier': ['error', prettierOptions],
+    'prettier/prettier': 'error',
   },
   overrides: [
     {
@@ -115,6 +125,7 @@ module.exports = {
         JSX: 'readonly',
       },
       rules: {
+        'react/jsx-no-useless-fragment': 'error',
         'react/jsx-no-constructed-context-values': 'error',
         'react/jsx-curly-brace-presence': ['error', { props: 'never', children: 'ignore' }],
         'react/no-array-index-key': 'warn',
@@ -134,7 +145,7 @@ module.exports = {
     },
     {
       files: ['*.ts', '*.tsx'],
-      plugins: ['@typescript-eslint', 'effector', 'unused-imports', 'boundaries'],
+      plugins: ['@typescript-eslint', 'effector', 'boundaries'],
       extends: [
         'plugin:import-x/typescript',
         'plugin:effector/recommended',
@@ -151,27 +162,36 @@ module.exports = {
         createDefaultProgram: true,
       },
       rules: {
-        'unused-imports/no-unused-imports': 'error',
+        // Imports
         '@typescript-eslint/consistent-type-imports': [
           'error',
           { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
         ],
-        // validated by typescript
-        '@typescript-eslint/no-unused-vars': 'off',
+        // Validated by typescript
+        'import-x/export': 'off',
+        // Restricted by our code style
+        'import-x/default': 'off',
+        'import-x/no-useless-path-segments': 'error',
+
+        // Validated by typescript
         '@typescript-eslint/no-empty-interface': 'off',
         '@typescript-eslint/no-non-null-assertion': 'off',
         '@typescript-eslint/no-empty-function': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
         '@typescript-eslint/no-explicit-any': 'warn',
         '@typescript-eslint/no-unnecessary-type-constraint': 'error',
-        // it took around 4 seconds to check this single rule
-        'effector/enforce-effect-naming-convention': 'off',
-        // it took around 4 seconds to check this single rule
-        'effector/enforce-store-naming-convention': 'off',
+
+        // Stricter rules
+        'effector/no-watch': 'error',
         'effector/keep-options-order': 'error',
-        // validated by typescript
-        'import-x/export': 'off',
-        // restricted by our code style
-        'import-x/default': 'off',
+
+        // Removed rules
+        // Took around 4 seconds to check this single rule
+        'effector/enforce-effect-naming-convention': 'off',
+        // Took around 4 seconds to check this single rule
+        'effector/enforce-store-naming-convention': 'off',
+
+        // Boundaries setup
         'boundaries/element-types': [
           'error',
           {
@@ -216,7 +236,7 @@ module.exports = {
             extensions: ['.ts', '.tsx', '.js'],
           },
         },
-        // for resolving in eslint-plugin-boundaries
+        // For resolving in eslint-plugin-boundaries
         'import/resolver': {
           typescript: true,
           node: {
@@ -224,6 +244,14 @@ module.exports = {
           },
         },
         'boundaries/elements': boundaries,
+      },
+    },
+    {
+      files: ['*.ts', '*.tsx'],
+      excludedFiles: ['*.test.ts', '*.test.tsx', '**/mocks/*.ts'],
+      rules: {
+        // TODO error
+        '@typescript-eslint/consistent-type-assertions': ['off', { assertionStyle: 'never' }],
       },
     },
   ],

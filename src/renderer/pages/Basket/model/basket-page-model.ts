@@ -8,7 +8,7 @@ import { basketModel } from '@entities/basket';
 import { networkModel, networkUtils } from '@entities/network';
 import { TransferTypes, XcmTypes, transactionService } from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
-import { unlockValidateModel } from '@/features/governance';
+import { unlockValidateModel, voteValidateModel } from '@/features/governance';
 import { basketFilterModel } from '@features/basket/BasketFilter';
 import {
   type ValidationResult,
@@ -125,6 +125,7 @@ const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
       [TransactionType.REDEEM]: withdrawValidateModel.events.validationStarted,
       [TransactionType.UNLOCK]: unlockValidateModel.events.validationStarted,
       [TransactionType.DELEGATE]: delegateValidateModel.events.validationStarted,
+      [TransactionType.VOTE]: voteValidateModel.events.validationStarted,
     };
 
     if (coreTx.type in TransactionValidators) {
@@ -161,6 +162,7 @@ const txValidated = [
   withdrawValidateModel.output.txValidated,
   unlockValidateModel.output.txValidated,
   delegateValidateModel.output.txValidated,
+  voteValidateModel.output.txValidated,
 ];
 
 sample({

@@ -16,8 +16,8 @@ export const AlertItem = ({ active = true, withDot = true, children, className }
 
   return (
     <li className={cnTw('flex gap-x-1', className)}>
-      {withDot && <span className="shrink-0 w-1 h-1 rounded-full bg-text-secondary mt-[7px]" />}
-      <FootnoteText className="text-text-secondary tracking-tight max-w-full">{children}</FootnoteText>
+      {withDot && <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-text-secondary" />}
+      <FootnoteText className="max-w-full tracking-tight text-text-secondary">{children}</FootnoteText>
     </li>
   );
 };

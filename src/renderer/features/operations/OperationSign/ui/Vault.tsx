@@ -114,7 +114,7 @@ export const Vault = ({
   }
 
   return (
-    <div className="flex flex-col items-center gap-y-2.5 w-[440px] rounded-b-lg bg-black">
+    <div className="flex w-[440px] flex-col items-center gap-y-2.5 rounded-b-lg bg-black">
       <QrReaderWrapper
         isMultiFrame={isMultiframe}
         countdown={countdown || 0}

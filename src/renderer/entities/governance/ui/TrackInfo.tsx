@@ -37,9 +37,9 @@ export const TrackInfo = ({ referendumId, trackId }: Props) => {
   const { title, icon } = getTrackInfo(trackId);
 
   return (
-    <div className="flex ml-auto text-text-secondary">
+    <div className="ml-auto flex text-text-secondary">
       {referendumId && <FootnoteText className="text-inherit">#{referendumId}</FootnoteText>}
-      <Icon name={icon} size={16} className="text-inherit ml-2 mr-1" />
+      <Icon name={icon} size={16} className="ml-2 mr-1 text-inherit" />
       <FootnoteText className="text-inherit">{t(title)}</FootnoteText>
     </div>
   );

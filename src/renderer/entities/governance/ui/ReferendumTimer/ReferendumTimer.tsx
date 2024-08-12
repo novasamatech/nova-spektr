@@ -46,7 +46,7 @@ export const ReferendumTimer = ({ status, time }: Props) => {
   }, [countdown]);
 
   return (
-    <div className={cnTw('flex gap-x-1 items-center', TimerColor[status])}>
+    <div className={cnTw('flex items-center gap-x-1', TimerColor[status])}>
       <Icon name={TimerIcon[status]} size={16} className="text-inherit" />
       <FootnoteText className="text-inherit">{t(TimerText[status])}</FootnoteText>
       <Duration as={FootnoteText} className="text-inherit" hideDaysHours seconds={countdown} />

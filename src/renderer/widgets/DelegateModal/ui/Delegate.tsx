@@ -123,74 +123,70 @@ export const Delegate = () => {
       title={<OperationTitle title={t('governance.addDelegation.title')} chainId={walletData.chain!.chainId} />}
       onClose={closeModal}
     >
-      {isStep(step, Step.CONFIRM) && (
+      {isStep(step, Step.CONFIRM) && transactions.length > 1 ? (
         <>
-          {transactions.length > 1 ? (
-            <>
-              <div className="bg-background-default overflow-x-hidden py-4" ref={ref}>
-                {transactions.length > 1 && (
-                  <div className="flex gap-2 first:ml-4 ">
-                    {transactions?.map((t, index) => (
-                      <div key={index} className="flex flex-col h-[622px]  last-of-type:pr-4">
-                        <div className="w-[440px] bg-white rounded-lg shadow-shadow-2 max-h-full overflow-y-auto">
-                          <Confirmation id={index} hideSignButton />
-                        </div>
-                      </div>
-                    ))}
+          <div className="overflow-x-hidden bg-background-default py-4" ref={ref}>
+            {transactions.length > 1 && (
+              <div className="flex gap-2 first:ml-4">
+                {transactions?.map((t, index) => (
+                  <div key={index} className="flex h-[622px] flex-col last-of-type:pr-4">
+                    <div className="max-h-full w-[440px] overflow-y-auto rounded-lg bg-white shadow-shadow-2">
+                      <Confirmation id={index} hideSignButton />
+                    </div>
                   </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-between rounded-lg bg-white px-5 pb-4 pt-3">
+            <div className="flex gap-2">
+              <IconButton
+                size={20}
+                className="flex h-[42px] w-[42px] items-center justify-center border"
+                name="left"
+                onClick={previousTx}
+              />
+
+              <div
+                className={cnTw(
+                  'h-[42px] w-[77px] rounded-full border border-divider font-semibold',
+                  'flex items-center justify-center text-text-secondary',
+                  'shadow-shadow-1',
                 )}
+              >
+                {currentPage}/{transactions?.length}
               </div>
 
-              <div className="flex justify-between bg-white pt-3 px-5 pb-4 rounded-lg">
-                <div className="flex gap-2">
-                  <IconButton
-                    size={20}
-                    className="border w-[42px] h-[42px] flex items-center justify-center"
-                    name="left"
-                    onClick={previousTx}
-                  />
+              <IconButton
+                size={20}
+                className="flex h-[42px] w-[42px] items-center justify-center border"
+                name="right"
+                onClick={nextTx}
+              />
+            </div>
 
-                  <div
-                    className={cnTw(
-                      'rounded-full font-semibold border border-divider w-[77px] h-[42px]',
-                      'text-text-secondary flex items-center justify-center',
-                      'shadow-shadow-1',
-                    )}
-                  >
-                    {currentPage}/{transactions?.length}
-                  </div>
+            {initiatorWallet && basketUtils.isBasketAvailable(initiatorWallet) && (
+              <Button pallet="secondary" onClick={() => delegateModel.events.txSaved()}>
+                {t('operation.addToBasket')}
+              </Button>
+            )}
 
-                  <IconButton
-                    size={20}
-                    className="border w-[42px] h-[42px] flex items-center justify-center"
-                    name="right"
-                    onClick={nextTx}
-                  />
-                </div>
-
-                {initiatorWallet && basketUtils.isBasketAvailable(initiatorWallet) && (
-                  <Button pallet="secondary" onClick={() => delegateModel.events.txSaved()}>
-                    {t('operation.addToBasket')}
-                  </Button>
-                )}
-
-                <SignButton isDefault type={walletData.wallet?.type} onClick={delegateModel.events.txsConfirmed} />
-              </div>
-            </>
-          ) : (
-            <Confirmation
-              secondaryActionButton={
-                initiatorWallet &&
-                basketUtils.isBasketAvailable(initiatorWallet) && (
-                  <Button pallet="secondary" onClick={() => delegateModel.events.txSaved()}>
-                    {t('operation.addToBasket')}
-                  </Button>
-                )
-              }
-              onGoBack={() => delegateModel.events.stepChanged(Step.INIT)}
-            />
-          )}
+            <SignButton isDefault type={walletData.wallet?.type} onClick={delegateModel.events.txsConfirmed} />
+          </div>
         </>
+      ) : (
+        <Confirmation
+          secondaryActionButton={
+            initiatorWallet &&
+            basketUtils.isBasketAvailable(initiatorWallet) && (
+              <Button pallet="secondary" onClick={() => delegateModel.events.txSaved()}>
+                {t('operation.addToBasket')}
+              </Button>
+            )
+          }
+          onGoBack={() => delegateModel.events.stepChanged(Step.INIT)}
+        />
       )}
 
       {isStep(step, Step.SIGN) && <OperationSign onGoBack={() => delegateModel.events.stepChanged(Step.CONFIRM)} />}

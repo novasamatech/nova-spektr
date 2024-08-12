@@ -23,12 +23,12 @@ export const RemovePureProxyForm = ({ onGoBack }: Props) => {
   };
 
   return (
-    <div className="pb-4 px-5">
-      <form id="add-proxy-form" className="flex flex-col gap-y-4 mt-4" onSubmit={submitProxy}>
+    <div className="px-5 pb-4">
+      <form id="add-proxy-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitProxy}>
         <Signatories />
         <DescriptionInput />
       </form>
-      <div className="flex flex-col gap-y-6 pt-6 pb-4">
+      <div className="flex flex-col gap-y-6 pb-4 pt-6">
         <FeeSection />
         <FeeError />
       </div>
@@ -154,7 +154,7 @@ const ActionSection = ({ onGoBack }: Props) => {
   const canSubmit = useUnit(formModel.$canSubmit);
 
   return (
-    <div className="flex justify-between items-center mt-4">
+    <div className="mt-4 flex items-center justify-between">
       <Button variant="text" onClick={onGoBack}>
         {t('operation.goBackButton')}
       </Button>

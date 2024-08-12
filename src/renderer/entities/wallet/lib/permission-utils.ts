@@ -14,6 +14,7 @@ export const permissionUtils = {
   canCreateNonAnyProxy,
   canRemoveProxy,
   canUnlock,
+  canVote,
 };
 
 function canTransfer(wallet: Wallet): boolean {
@@ -117,6 +118,19 @@ function canRemoveProxy(wallet: Wallet): boolean {
 }
 
 function canUnlock(wallet: Wallet): boolean {
+  if (walletUtils.isWatchOnly(wallet)) return false;
+  if (walletUtils.isProxied(wallet)) {
+    const isAnyProxy = accountUtils.isAnyProxyType(wallet.accounts[0]);
+    const isGovernanceProxy = accountUtils.isGovernanceProxyType(wallet.accounts[0]);
+    const isNonTransferProxy = accountUtils.isNonTransferProxyType(wallet.accounts[0]);
+
+    return isAnyProxy || isGovernanceProxy || isNonTransferProxy;
+  }
+
+  return true;
+}
+
+function canVote(wallet: Wallet): boolean {
   if (walletUtils.isWatchOnly(wallet)) return false;
   if (walletUtils.isProxied(wallet)) {
     const isAnyProxy = accountUtils.isAnyProxyType(wallet.accounts[0]);

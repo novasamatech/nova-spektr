@@ -17,9 +17,11 @@ type WithAddress = { address: Address };
 type WithAccountId = { value: Address | AccountId; addressPrefix?: number };
 /**
  * Get block explorer URL by AccountId or Address
- * @param explorer explorer with links
- * @param params address or accountId with addressPrefix
- * @return {String | undefined}
+ *
+ * @param explorer Explorer with links
+ * @param params Address or accountId with addressPrefix
+ *
+ * @returns {String | undefined}
  */
 export const getAccountExplorer = (explorer: Explorer, params: WithAddress | WithAccountId): string | undefined => {
   const replacer =
@@ -32,18 +34,23 @@ export const getAccountExplorer = (explorer: Explorer, params: WithAddress | Wit
 
 /**
  * Get extrinsic explorer URL by hash
- * @param explorer explorer with links
- * @param hash extrinsic hash
- * @return {String | undefined}
+ *
+ * @param explorer Explorer with links
+ * @param hash Extrinsic hash
+ *
+ * @returns {String | undefined}
  */
 export const getExtrinsicExplorer = (explorer: Explorer, hash: HexString): string | undefined => {
   return explorer.extrinsic?.replace('{hash}', hash);
 };
 
 /**
- * Get relay chain id that are relevant chain specification and are likely to be connected to
- * @param chainId genesis hash of the chain
- * @return {WellKnownChain | undefined}
+ * Get relay chain id that are relevant chain specification and are likely to be
+ * connected to
+ *
+ * @param chainId Genesis hash of the chain
+ *
+ * @returns {WellKnownChain | undefined}
  */
 export function getKnownChain(chainId: ChainId): WellKnownChain | undefined {
   return {

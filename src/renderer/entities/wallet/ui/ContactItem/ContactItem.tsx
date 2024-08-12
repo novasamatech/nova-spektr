@@ -29,22 +29,22 @@ export const ContactItem = ({
   };
 
   return (
-    <div className={cnTw('group flex items-center gap-x-2 w-full', className)}>
-      <div className="flex items-center gap-x-2 w-full py-[3px] overflow-hidden" onClick={handleClick}>
+    <div className={cnTw('group flex w-full items-center gap-x-2', className)}>
+      <div className="flex w-full items-center gap-x-2 overflow-hidden py-[3px]" onClick={handleClick}>
         <Identicon address={formattedAddress} size={size} background={false} />
 
         <div className="flex flex-col">
           {name && (
             <BodyText
               className={cnTw(
-                'text-text-secondary truncate transition-colors',
+                'truncate text-text-secondary transition-colors',
                 'group-hover:text-text-primary group-focus:text-text-primary',
               )}
             >
               {name}
             </BodyText>
           )}
-          {!hideAddress && <HelpText className="text-text-tertiary truncate">{formattedAddress}</HelpText>}
+          {!hideAddress && <HelpText className="truncate text-text-tertiary">{formattedAddress}</HelpText>}
         </div>
       </div>
 

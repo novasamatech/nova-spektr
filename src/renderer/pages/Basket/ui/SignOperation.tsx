@@ -22,6 +22,7 @@ import {
   RestakeConfirmation,
   TransferConfirm,
   UnstakeConfirmation,
+  VoteConfirmation,
   WithdrawConfirmation,
 } from '@features/operations/OperationsConfirm';
 import { UnlockConfirmation } from '@/widgets/UnlockModal/ui/UnlockConfirmation';
@@ -115,6 +116,9 @@ export const SignOperation = () => {
           config={config}
           onGoBack={() => signOperationsModel.output.flowFinished()}
         />
+      ),
+      [TransactionType.VOTE]: () => (
+        <VoteConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
       ),
       [TransactionType.UNLOCK]: () => (
         <UnlockConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />

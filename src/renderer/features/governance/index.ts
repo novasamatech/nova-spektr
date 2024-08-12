@@ -11,6 +11,8 @@ export { filterModel } from './model/filter';
 export { networkSelectorModel } from './model/networkSelector';
 export { offChainModel } from './model/offChain';
 export { unlockValidateModel } from './model/unlock/unlock-validate-model';
+export { voteValidateModel } from './model/vote/voteValidateModel';
+export { votingAssetModel } from './model/votingAsset';
 
 export { Locks } from './components/Locks';
 export { Delegations } from './components/Delegations';

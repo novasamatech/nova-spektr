@@ -1,6 +1,7 @@
 import headlessPlugin from '@headlessui/tailwindcss';
 import { type Config } from 'tailwindcss';
 import defaultTheme from 'tailwindcss/defaultTheme';
+import animatePlugin from 'tailwindcss-animate';
 
 import colors from './tw-config-consts/colors';
 import fontSizes from './tw-config-consts/font-sizes';
@@ -95,7 +96,7 @@ const tailwindConfig: Config = {
       },
     },
   },
-  plugins: [headlessPlugin],
+  plugins: [headlessPlugin, animatePlugin],
 };
 
 export default tailwindConfig;

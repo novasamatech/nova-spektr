@@ -1,3 +1,6 @@
+import { type BN } from '@polkadot/util';
+import { useMemo } from 'react';
+
 import { useI18n } from '@app/providers';
 import { type Account, type Asset } from '@shared/core';
 import { toAddress } from '@shared/lib/utils';
@@ -7,8 +10,8 @@ import { AssetBalance } from '../../asset';
 import { AccountAddress, accountUtils } from '../../wallet';
 
 type Props = {
-  signatory?: Account;
-  signatories: { signer: Account; balance: string }[];
+  signatory?: Account | null;
+  signatories: { signer: Account; balance: BN | string }[];
   asset?: Asset;
   addressPrefix: number;
   hasError: boolean;
@@ -27,29 +30,31 @@ export const SignatorySelector = ({
 }: Props) => {
   const { t } = useI18n();
 
-  const options = signatories.reduce<DropdownOption[]>((acc, { signer, balance }) => {
-    const isShard = accountUtils.isShardAccount(signer);
-    const address = toAddress(signer.accountId, { prefix: addressPrefix });
+  const options = useMemo(
+    () =>
+      signatories.map<DropdownOption>(({ signer, balance }) => {
+        const isShard = accountUtils.isShardAccount(signer);
+        const address = toAddress(signer.accountId, { prefix: addressPrefix });
 
-    acc.push({
-      id: signer.id.toString(),
-      value: signer,
-      element: (
-        <div className="flex justify-between items-center w-full">
-          <AccountAddress
-            size={20}
-            type="short"
-            address={address}
-            name={isShard ? address : signer.name}
-            canCopy={false}
-          />
-          <AssetBalance value={balance} asset={asset} />
-        </div>
-      ),
-    });
-
-    return acc;
-  }, []);
+        return {
+          id: signer.id.toString(),
+          value: signer,
+          element: (
+            <div className="flex w-full items-center justify-between">
+              <AccountAddress
+                size={20}
+                type="short"
+                address={address}
+                name={isShard ? address : signer.name}
+                canCopy={false}
+              />
+              <AssetBalance value={balance.toString()} asset={asset} />
+            </div>
+          ),
+        };
+      }, []),
+    [signatories],
+  );
 
   return (
     <div className="flex flex-col gap-y-2">

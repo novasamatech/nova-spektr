@@ -67,7 +67,7 @@ export const Select = forwardRef<HTMLButtonElement, Props>(
                 SelectButtonStyle[theme].disabled,
                 CommonInputStyles,
                 CommonInputStylesTheme[theme],
-                'w-full flex items-center gap-x-2 justify-between pr-2',
+                'flex w-full items-center justify-between gap-x-2 pr-2',
               )}
             >
               {selectedOption && !open ? (
@@ -131,7 +131,7 @@ export const Select = forwardRef<HTMLButtonElement, Props>(
 
     return (
       <div className="flex flex-col gap-y-2">
-        <LabelText className="cursor-pointer text-text-tertiary font-medium" htmlFor={id}>
+        <LabelText className="cursor-pointer font-medium text-text-tertiary" htmlFor={id}>
           {label}
         </LabelText>
         {selectElement}

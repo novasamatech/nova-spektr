@@ -25,6 +25,7 @@ const getReferendumList: GovernanceApi['getReferendumList'] = async (chain, call
       {
         network: chain.specName,
         proposalType: 'referendums_v2',
+        limit: 50,
         sortBy: 'newest',
       },
       (data, done) => {
@@ -60,8 +61,9 @@ const getReferendumVotes: GovernanceApi['getReferendumVotes'] = (chain, referend
 
 /**
  * Request referendum details
+ *
  * @param chain
- * @param referendumId referendum index
+ * @param referendumId Referendum index
  */
 const getReferendumDetails: GovernanceApi['getReferendumDetails'] = async (chain, referendumId) => {
   return polkassemblyApiService

@@ -44,7 +44,7 @@ export const ValidatorsModal = ({
           <Accordion.Content>
             <ValidatorsTable validators={selectedValidators} listClassName="max-h-none">
               {(validator, rowStyle) => (
-                <li key={validator.address} className={cnTw(rowStyle, 'hover:bg-hover group')}>
+                <li key={validator.address} className={cnTw(rowStyle, 'group hover:bg-hover')}>
                   <ValidatorsTable.Row validator={validator} asset={asset} explorers={explorers} />
                 </li>
               )}
@@ -62,7 +62,7 @@ export const ValidatorsModal = ({
           <Accordion.Content>
             <ValidatorsTable validators={notSelectedValidators} listClassName="max-h-none">
               {(validator, rowStyle) => (
-                <li key={validator.address} className={cnTw(rowStyle, 'hover:bg-hover group')}>
+                <li key={validator.address} className={cnTw(rowStyle, 'group hover:bg-hover')}>
                   <ValidatorsTable.Row validator={validator} asset={asset} explorers={explorers} />
                 </li>
               )}

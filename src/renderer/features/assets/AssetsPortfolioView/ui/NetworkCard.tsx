@@ -19,8 +19,8 @@ export const NetworkCard = ({ chain, asset }: Props) => {
 
   return (
     <li role="button" tabIndex={0} className="flex cursor-default flex-col rounded">
-      <div className="flex items-center py-1.5 px-2">
-        <div className="flex items-center gap-x-2 px-2 py-1 mr-auto">
+      <div className="flex items-center px-2 py-1.5">
+        <div className="mr-auto flex items-center gap-x-2 px-2 py-1">
           <ChainIcon src={chains[chain.chainId].icon} name={chain.name} size={24} />
           <div>
             <BodyText>{chain.assetSymbol}</BodyText>

@@ -36,11 +36,15 @@ import { decodeDispatchError } from './common/utils';
 import { getExtrinsic, getUnsignedTransaction, wrapAsMulti, wrapAsProxy } from './extrinsicService';
 
 export const transactionService = {
+  isMultisig,
+  isProxy,
+
   hasMultisig,
   hasProxy,
 
   getTransactionFee,
   getMultisigDeposit,
+  getExtrinsicFee,
 
   createPayload,
   createPayloadWithMetadata,
@@ -63,6 +67,16 @@ async function getTransactionFee(
   const paymentInfo = await extrinsic.paymentInfo(transaction.address, options);
 
   return paymentInfo.partialFee.toString();
+}
+
+async function getExtrinsicFee(
+  extrinsic: SubmittableExtrinsic<'promise'>,
+  address: Address,
+  options?: Partial<SignerOptions>,
+) {
+  const paymentInfo = await extrinsic.paymentInfo(address, options);
+
+  return paymentInfo.partialFee.toBn();
 }
 
 async function signAndSubmit(
@@ -131,12 +145,20 @@ function getMultisigDeposit(threshold: MultisigThreshold, api: ApiPromise): stri
   return deposit.toString();
 }
 
+function isMultisig(wrapper: TxWrapper): wrapper is MultisigTxWrapper {
+  return wrapper.kind === WrapperKind.MULTISIG;
+}
+
 function hasMultisig(txWrappers: TxWrapper[]): boolean {
-  return txWrappers.some((wrapper) => wrapper.kind === WrapperKind.MULTISIG);
+  return txWrappers.some(isMultisig);
+}
+
+function isProxy(wrapper: TxWrapper): wrapper is ProxyTxWrapper {
+  return wrapper.kind === WrapperKind.PROXY;
 }
 
 function hasProxy(txWrappers: TxWrapper[]): boolean {
-  return txWrappers.some((wrapper) => wrapper.kind === WrapperKind.PROXY);
+  return txWrappers.some(isProxy);
 }
 
 type TxWrappersParams = {
@@ -146,11 +168,13 @@ type TxWrappersParams = {
   signatories?: Account[];
 };
 /**
- * Get array of transaction wrappers (proxy/multisig)
- * Every wrapper recursively calls getTxWrappers until it finds regular account
- * @param wallet wallet that requires wrapping
- * @param params wallets, accounts and signatories
- * @return {Array}
+ * Get array of transaction wrappers (proxy/multisig) Every wrapper recursively
+ * calls getTxWrappers until it finds regular account
+ *
+ * @param wallet Wallet that requires wrapping
+ * @param params Wallets, accounts and signatories
+ *
+ * @returns {Array}
  */
 function getTxWrappers({ wallet, ...params }: TxWrappersParams): TxWrapper[] {
   if (walletUtils.isMultisig(wallet)) {
@@ -234,7 +258,7 @@ type WrapperParams = {
   transaction: Transaction;
   txWrappers: TxWrapper[];
 };
-type WrappedTransactions = {
+export type WrappedTransactions = {
   wrappedTx: Transaction;
   coreTx: Transaction;
   multisigTx?: Transaction;
@@ -242,22 +266,24 @@ type WrappedTransactions = {
 function getWrappedTransaction({ api, addressPrefix, transaction, txWrappers }: WrapperParams): WrappedTransactions {
   return txWrappers.reduce<WrappedTransactions>(
     (acc, txWrapper) => {
-      if (hasMultisig([txWrapper])) {
-        acc.coreTx = acc.wrappedTx;
-        acc.wrappedTx = wrapAsMulti({
+      if (isMultisig(txWrapper)) {
+        const multisigTx = wrapAsMulti({
           api,
           addressPrefix,
           transaction: acc.wrappedTx,
-          txWrapper: txWrapper as MultisigTxWrapper,
+          txWrapper: txWrapper,
         });
-        acc.multisigTx = acc.wrappedTx;
+
+        acc.coreTx = acc.wrappedTx;
+        acc.wrappedTx = multisigTx;
+        acc.multisigTx = multisigTx;
       }
 
-      if (hasProxy([txWrapper])) {
+      if (isProxy(txWrapper)) {
         acc.wrappedTx = wrapAsProxy({
           addressPrefix,
           transaction: acc.wrappedTx,
-          txWrapper: txWrapper as ProxyTxWrapper,
+          txWrapper: txWrapper,
         });
       }
 

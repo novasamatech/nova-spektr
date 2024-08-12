@@ -64,9 +64,11 @@ const retrieve = (node: Node, key: Uint8Array): Uint8Array | null => {
 
 /**
  * Get the value for a given key from the trie as Uint8Array
- * @param node root node of the trie
- * @param key key to retrieve
- * @return {Array}
+ *
+ * @param node Root node of the trie
+ * @param key Key to retrieve
+ *
+ * @returns {Array}
  */
 export const get = (node: Node, key: Uint8Array): Uint8Array | null => {
   const keyNibbles = keyLEToNibbles(key);

@@ -1,9 +1,9 @@
-import { createChunkedRequest } from '../lib/createChunkedRequest';
+import { createQueuedRequest } from '../createQueuedRequest';
 
 type ExampleData = { item: number };
 type ExampleResponse = { total: number; data: ExampleData[] };
 
-describe('createChunkedRequest', () => {
+describe('createQueuedRequest', () => {
   it('should make correct number of requests', async () => {
     const total = 10;
 
@@ -11,14 +11,13 @@ describe('createChunkedRequest', () => {
       .fn<Promise<ExampleResponse>, [index: number]>()
       .mockImplementation((index) => Promise.resolve({ total, data: [{ item: index }] }));
 
-    const result = await createChunkedRequest({
+    const result = await createQueuedRequest({
       makeRequest: request,
-      chunkSize: 5,
       getRecords: (r) => r.data,
-      getTotalRequests: (r) => r.total / 2,
+      getTotalRequests: (r) => r.total,
     });
 
-    expect(request).toBeCalledTimes(5);
-    expect(result).toEqual(Array.from({ length: 5 }).map((_, index) => ({ item: index })));
+    expect(request).toBeCalledTimes(10);
+    expect(result).toEqual(Array.from({ length: 10 }).map((_, index) => ({ item: index })));
   });
 });

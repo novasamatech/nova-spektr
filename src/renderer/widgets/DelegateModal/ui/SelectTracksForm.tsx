@@ -34,11 +34,11 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
     >
       <SmallTitleText className="px-5">{t('governance.addDelegation.selectTrackTitle')}</SmallTitleText>
 
-      <hr className="border-filter-border w-full" />
+      <hr className="w-full border-filter-border" />
 
       <AccountsSelector />
 
-      <div className="px-5 flex-1 flex flex-col gap-6">
+      <div className="flex flex-1 flex-col gap-6 px-5">
         <div className="flex gap-3">
           <Button
             pallet={allTracks.every((track) => tracks.includes(Number(track.id))) ? 'primary' : 'secondary'}
@@ -77,7 +77,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
           </Button>
         </div>
         <div className="flex gap-6">
-          <div className="flex-1 flex flex-col gap-4">
+          <div className="flex flex-1 flex-col gap-4">
             {adminTracks.map((track) => (
               <Checkbox
                 key={track.id}
@@ -85,7 +85,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
                 disabled={votedTracks.includes(track.id)}
                 onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
               >
-                <div className="w-full flex items-center justify-between">
+                <div className="flex w-full items-center justify-between">
                   {t(track.value)}
                   <Tooltip content={t(track.description)} pointer="up">
                     <Icon size={16} name="info" />
@@ -94,7 +94,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
               </Checkbox>
             ))}
           </div>
-          <div className="flex-1 flex flex-col gap-4">
+          <div className="flex flex-1 flex-col gap-4">
             {governanceTracks.map((track) => (
               <Checkbox
                 key={track.id}
@@ -102,7 +102,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
                 disabled={votedTracks.includes(track.id)}
                 onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
               >
-                <div className="w-full flex items-center justify-between">
+                <div className="flex w-full items-center justify-between">
                   {t(track.value)}
                   <Tooltip content={t(track.description)}>
                     <Icon size={16} name="info" />
@@ -111,7 +111,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
               </Checkbox>
             ))}
           </div>
-          <div className="flex-1 flex flex-col gap-4">
+          <div className="flex flex-1 flex-col gap-4">
             {treasuryTracks.map((track) => (
               <Checkbox
                 key={track.id}
@@ -119,7 +119,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
                 disabled={votedTracks.includes(track.id)}
                 onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
               >
-                <div className="w-full flex items-center justify-between">
+                <div className="flex w-full items-center justify-between">
                   {t(track.value)}
                   <Tooltip content={t(track.description)}>
                     <Icon size={16} name="info" />
@@ -128,7 +128,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
               </Checkbox>
             ))}
           </div>
-          <div className="flex-1 flex flex-col gap-4">
+          <div className="flex flex-1 flex-col gap-4">
             {fellowshipTracks.map((track) => (
               <Checkbox
                 key={track.id}
@@ -136,7 +136,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
                 disabled={votedTracks.includes(track.id)}
                 onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
               >
-                <div className="w-full flex items-center justify-between">
+                <div className="flex w-full items-center justify-between">
                   {t(track.value)}
                   <Tooltip content={t(track.description)}>
                     <Icon size={16} name="info" />
@@ -147,7 +147,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
           </div>
         </div>
       </div>
-      <div className="px-5 flex items-center justify-end">
+      <div className="flex items-center justify-end px-5">
         <Button
           disabled={tracks.length === 0 || accounts.length === 0}
           onClick={() => selectTracksModel.output.formSubmitted({ tracks, accounts })}
@@ -180,7 +180,7 @@ const AccountsSelector = () => {
           id: account.id.toString(),
           value: account,
           element: (
-            <div className="flex justify-between w-full" key={account.id}>
+            <div className="flex w-full justify-between" key={account.id}>
               <AccountAddress
                 size={20}
                 type="short"
@@ -195,7 +195,7 @@ const AccountsSelector = () => {
 
   return (
     <>
-      <div className="flex gap-6 px-5 items-end">
+      <div className="flex items-end gap-6 px-5">
         <div className="flex flex-1 flex-col gap-y-2">
           {/* TODO: Update multiselect for PV accounts */}
           <MultiSelect
@@ -213,7 +213,7 @@ const AccountsSelector = () => {
         </FootnoteText>
       </div>
 
-      <hr className="border-filter-border w-full" />
+      <hr className="w-full border-filter-border" />
     </>
   );
 };

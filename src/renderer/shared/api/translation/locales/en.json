@@ -272,7 +272,12 @@
     "reloadButton": "Refresh"
   },
   "general": {
+    "actions": {
+      "multiply": "{value} × {multiplier}"
+    },
     "button": {
+      "cancelButton": "Cancel",
+      "continueButton": "Continue",
       "networkSettingsLink": "Network settings",
       "pasteButton": "Paste",
       "uploadButton": "Upload"
@@ -379,6 +384,9 @@
     "delegations": "Delegations",
     "emptyStateDescription": "Update the search or cancel filtering",
     "emptyStateLabel": "Nothing was found",
+    "errors": {
+      "notEnoughBalanceError": "Not enough funds to vote"
+    },
     "filters": {
       "notVoted": "Not Voted",
       "tracks": "Tracks",
@@ -392,6 +400,7 @@
       "undelegatePeriod": "Undelegate period",
       "unlock": "Unlock",
       "unlockable": "Unlockable",
+      "unlockableIn": "Unlockable in",
       "yourDelegation": "Your Delegation"
     },
     "offChainDataSource": {
@@ -415,6 +424,8 @@
       "nay": "Nay",
       "nays": "Nays",
       "proposer": "Proposer:",
+      "retract": "Retract vote",
+      "revote": "Revote",
       "support": "Support",
       "threshold": "Threshold",
       "timeline": "Timeline",
@@ -476,6 +487,7 @@
         "Approved": "Approved",
         "Awarded": "Awarded",
         "Cancelled": "Cancelled",
+        "ConfirmAborted": "Confirm aborted",
         "ConfirmStarted": "Confirm started",
         "Confirmed": "Confirmed",
         "Created": "Created",
@@ -489,13 +501,30 @@
       }
     },
     "title": "Governance",
+    "vote": {
+      "abstainConvictionWarningDescription": "When you cast abstain votes you can only vote with 0.1x conviction. You will vote with 1 vote.",
+      "abstainConvictionWarningTitle": "Vote conviction will be set to 0.1x",
+      "delegationError": "You are delegating votes for selected referendum's track. Please either ask your delegatee to vote or remove delegation to be able to vote directly.",
+      "errors": {
+        "noAccountError": "Please select your account",
+        "noSignatoryError": "Please select operation signatory"
+      },
+      "field": {
+        "accounts": "Your account",
+        "accountsPlaceholder": "Select account",
+        "balance": "Vote value",
+        "conviction": "Multiply votes by increasing locking period",
+        "governanceLock": "Governance lock",
+        "lockingPeriod": "Locking period",
+        "networkFee": "Network fee"
+      }
+    },
     "voteHistory": {
       "listColumnAccount": "Account",
       "listColumnVotingPower": "Voting power",
       "listEmptyState": "No one voted here",
       "title": "Vote history",
-      "totalVotesCount": "{value} votes {symbol}",
-      "totalVotesCountConviction": "{value} × {conviction}",
+      "totalVotesCount": "{value} votes",
       "viewVoteHistory": "View vote history"
     },
     "voted": "Voted",
@@ -504,15 +533,16 @@
       "aboutLabel": "About voting",
       "aboutVoting": "<header>Voting</header><p>In the Polkadot OpenGov voting system, there are three types of votes:</p><ul><li>Aye vote - a vote \"for\" a proposal. Votes are counted with a conviction multiplier that increases the\nnumber of votes based on the voter's conviction.</li><li>Nay vote - a vote \"against.\" Similar to the aye vote, it considers the level of conviction, multiplying the number of votes.</li><li>Abstain vote - abstaining from voting. Abstain votes do not affect the conviction level and are not counted in the vote tally with conviction.</li></ul>",
       "aboutVotingPower": "<header>Voting power and lock period</header><p>Conviction is a mechanism that allows participants to amplify their vote by locking their tokens for various periods (lock period). The longer the tokens are locked, the stronger the vote. \nFor example, a six-times conviction increases the vote's weight and requires a token lock for 32 weeks after voting ends.</p>",
-      "title": "Vote on"
+      "retractTitle": "Remove vote from",
+      "revoteTitle": "Revote on",
+      "voteTitle": "Vote on"
     },
     "walletVotes": {
       "listColumnAccount": "Account",
       "listColumnVote": "Vote",
       "listColumnVotingPower": "Voting power",
       "title": "My votes",
-      "totalVotesCount": "{value} votes {symbol}",
-      "totalVotesCountConviction": "{value} × {conviction}"
+      "totalVotesCount": "{value} votes"
     }
   },
   "log": {
@@ -832,6 +862,8 @@
       "removePureProxyOn": "Revoke delegated authority (pure proxy) on",
       "removeVoteOn": "Remove Vote",
       "restakeOn": "Restake { asset } on",
+      "retractVote": "Remove vote { asset } on",
+      "revote": "Revote { asset } on",
       "stakeMoreOn": "Stake More { asset } on",
       "startStakingOn": "Start Staking { asset } on",
       "transferFrom": "Transfer { asset } from",
@@ -839,7 +871,8 @@
       "undelegateOn": "Revoke delegation on",
       "unknownOn": "Unknown Operation on",
       "unlockOn": "Unlock on",
-      "unstakeOn": "Unstake { asset } on"
+      "unstakeOn": "Unstake { asset } on",
+      "vote": "Vote { asset } on"
     },
     "noOperationsDescription": "Your operation history will appear here",
     "noOperationsFilters": "Nothing was found for the filters. Try changing filters or canceling filtering.",
@@ -860,13 +893,16 @@
       "removePureProxy": "Revoke delegated authority (pure proxy)",
       "removeVote": "Remove vote",
       "restake": "Restake",
+      "retractVote": "Remove vote",
+      "revote": "Revote",
       "stakeMore": "Stake More",
       "startStaking": "Start Staking",
       "transfer": "Transfer",
       "undelegate": "Revoke delegation",
       "unknown": "Unknown Operation",
       "unlock": "Unlock",
-      "unstake": "Unstake"
+      "unstake": "Unstake",
+      "vote": "Vote"
     }
   },
   "portfolilo": {

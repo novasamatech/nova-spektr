@@ -39,8 +39,9 @@ export const getOperationTitle = (transaction: BasketTransaction, chain: Chain):
     [TransactionType.UNSTAKE]: 'operations.modalTitles.unstakeOn',
     // Governance
     [TransactionType.UNLOCK]: 'operations.modalTitles.unlockOn',
-    [TransactionType.REMOVE_VOTE]: 'operations.modalTitles.unlockOn',
     [TransactionType.DELEGATE]: 'operations.modalTitles.delegateOn',
+    [TransactionType.VOTE]: 'operations.modalTitles.vote',
+    [TransactionType.RETRACT_VOTE]: 'operations.modalTitles.retractVote',
   };
 
   // @ts-expect-error TODO fix not all types used

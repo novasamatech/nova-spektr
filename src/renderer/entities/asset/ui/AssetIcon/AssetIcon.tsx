@@ -15,7 +15,7 @@ export const AssetIcon = ({ src, name, size = 32, className }: Props) => {
   return (
     <div
       className={cnTw(
-        'relative rounded-full bg-token-background border border-token-border p-[1px] min-w-fit',
+        'relative min-w-fit rounded-full border border-token-border bg-token-background p-[1px]',
         className,
       )}
     >

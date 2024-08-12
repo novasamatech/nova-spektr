@@ -22,9 +22,12 @@ const SUPPORTED_VERSIONS = ['V2'];
 const UNUSED_LABEL = 'unused';
 
 /**
- * Compose and return all the data needed for @substrate/txwrapper-polkadot signing
- * @param address account address
- * @param api polkadot connector
+ * Compose and return all the data needed for
+ *
+ * @param address Account address
+ * @param api Polkadot connector
+ *
+ * @substrate/txwrapper-polkadot signing
  */
 export const createTxMetadata = async (address: Address, api: ApiPromise): Promise<TxMetadata> => {
   const [{ block }, blockHash, metadataRpc, nonce, { specVersion, transactionVersion, specName }] = await Promise.all([
@@ -66,9 +69,11 @@ export const createTxMetadata = async (address: Address, api: ApiPromise): Promi
 
 /**
  * Check that callData correctly resembles callHash
- * @param callHash callHash value
- * @param callData callData value
- * @return {Boolean}
+ *
+ * @param callHash CallHash value
+ * @param callData CallData value
+ *
+ * @returns {Boolean}
  */
 export const validateCallData = <T extends string = CallData, K extends string = CallHash>(
   callData: T,

@@ -35,6 +35,7 @@ import {
   restakeConfirmModel,
   transferConfirmModel,
   unstakeConfirmModel,
+  voteConfirmModel,
   withdrawConfirmModel,
 } from '@features/operations/OperationsConfirm';
 import { unlockConfirmAggregate } from '@/widgets/UnlockModal/aggregates/unlockConfirm';
@@ -328,6 +329,19 @@ sample({
   target: withdrawConfirmModel.events.formInitiated,
 });
 
+// Vote
+
+sample({
+  clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.VOTE).length > 0;
+  },
+  fn: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.VOTE).map((tx) => tx.params) || [];
+  },
+  target: voteConfirmModel.events.fillConfirm,
+});
+
 // Unlock
 
 sample({
@@ -338,7 +352,7 @@ sample({
   fn: (dataParams) => {
     return (
       dataParams
-        ?.filter((tx) => tx.type === TransactionType.UNLOCK || tx.type === TransactionType.REMOVE_VOTE)
+        ?.filter((tx) => tx.type === TransactionType.UNLOCK || tx.type === TransactionType.RETRACT_VOTE)
         .map((tx) => tx.params) || []
     );
   },
@@ -380,6 +394,7 @@ sample({
     withdrawConfirmModel.output.formSubmitted,
     delegateConfirmModel.output.formSubmitted,
     unlockConfirmAggregate.output.formSubmitted,
+    voteConfirmModel.events.sign,
     txsConfirmed,
   ],
   source: {
