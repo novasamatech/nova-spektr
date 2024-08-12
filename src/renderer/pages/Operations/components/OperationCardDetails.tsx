@@ -13,7 +13,7 @@ import {
 import { TransactionType } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
 import { cnTw, copyToClipboard, getAssetById, truncate } from '@shared/lib/utils';
-import { Button, DetailRow, FootnoteText, Icon } from '@shared/ui';
+import { Button, CaptionText, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
 import { ChainTitle } from '@entities/chain';
 import { matrixModel } from '@entities/matrix';
@@ -30,9 +30,13 @@ import {
   isXcmTransaction,
 } from '@entities/transaction';
 import { AddressWithExplorers, ExplorersPopover, WalletCardSm, walletModel } from '@entities/wallet';
+import { allTracks } from '@/widgets/DelegateModal/lib/constants';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import {
   getDelegate,
+  getDelegationTarget,
+  getDelegationTracks,
+  getDelegationVotes,
   getDestination,
   getDestinationChain,
   getMultisigExtrinsicLink,
@@ -61,6 +65,10 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const proxyType = getProxyType(tx);
   const destinationChain = getDestinationChain(tx);
   const destination = getDestination(tx, chains, destinationChain);
+
+  const delegationTarget = getDelegationTarget(tx);
+  const delegationTracks = getDelegationTracks(tx);
+  const delegationVotes = getDelegationVotes(tx);
 
   const api = extendedChain?.api;
   const defaultAsset = extendedChain?.assets[0];
@@ -216,6 +224,41 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
       {isManageProxyTransaction(transaction) && proxyType && (
         <DetailRow label={t('operation.details.accessType')} className={valueClass}>
           <FootnoteText className={valueClass}>{t(proxyUtils.getProxyTypeName(proxyType))}</FootnoteText>
+        </DetailRow>
+      )}
+
+      {delegationTarget && (
+        <DetailRow label={t('operation.details.delegationTarget')} className={valueClass}>
+          <AddressWithExplorers
+            explorers={explorers}
+            addressFont={AddressStyle}
+            type="short"
+            address={delegationTarget}
+            addressPrefix={addressPrefix}
+            wrapperClassName="-mr-2 min-w-min"
+          />
+        </DetailRow>
+      )}
+
+      {delegationVotes && (
+        <DetailRow label={t('operation.details.delegationVotes')} className={valueClass}>
+          <FootnoteText className={valueClass}>{delegationVotes}</FootnoteText>
+        </DetailRow>
+      )}
+
+      {delegationTracks && (
+        <DetailRow label={t('operation.details.delegationTracks')} className={valueClass}>
+          <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
+            <CaptionText className="text-white">{delegationTracks.length}</CaptionText>
+          </div>
+          <Tooltip
+            content={delegationTracks
+              .map((trackId) => t(allTracks.find((track) => track.id === trackId)!.value))
+              .join(', ')}
+            pointer="up"
+          >
+            <Icon className="group-hover:text-icon-hover" name="info" size={16} />
+          </Tooltip>
         </DetailRow>
       )}
 

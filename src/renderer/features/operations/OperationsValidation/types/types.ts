@@ -121,3 +121,10 @@ export type ChainProxyStore = {
   maxProxies: number;
   proxies: any[];
 };
+
+export type DelegateFeeStore = {
+  fee: string;
+  balance: BalanceMap;
+  network: NetworkStore | null;
+  isMultisig: boolean;
+};

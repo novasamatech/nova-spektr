@@ -98,8 +98,25 @@ export const isEditDelegationTransaction = (transaction?: Transaction | DecodedT
   return false;
 };
 
+export const isDelegateTransaction = (transaction?: Transaction | DecodedTransaction): boolean => {
+  if (transaction?.type === TransactionType.BATCH_ALL) {
+    return !!transaction.args.transactions?.find((tx: Transaction) => tx.type === TransactionType.DELEGATE);
+  }
+
+  if (transaction?.type === TransactionType.DELEGATE) {
+    return true;
+  }
+
+  return false;
+};
+
 export const isWrappedInBatchAll = (type: TransactionType) => {
-  const batchAllOperations = new Set([TransactionType.UNSTAKE, TransactionType.BOND, TransactionType.UNLOCK]);
+  const batchAllOperations = new Set([
+    TransactionType.UNSTAKE,
+    TransactionType.BOND,
+    TransactionType.UNLOCK,
+    TransactionType.DELEGATE,
+  ]);
 
   return batchAllOperations.has(type);
 };
@@ -120,9 +137,15 @@ export const getTransactionAmount = (tx: Transaction | DecodedTransaction): stri
   ) {
     return tx.args.value;
   }
+
   if (txType === TransactionType.STAKE_MORE) {
     return tx.args.maxAdditional;
   }
+
+  if (tx.type === TransactionType.DELEGATE) {
+    return tx.args.balance;
+  }
+
   if (txType === TransactionType.BATCH_ALL) {
     // multi tx made with batch all:
     // unstake - chill, unbond
@@ -135,6 +158,7 @@ export const getTransactionAmount = (tx: Transaction | DecodedTransaction): stri
 
     return getTransactionAmount(txMatch);
   }
+
   if (txType === TransactionType.PROXY) {
     const transaction = tx.args?.transaction;
     if (!transaction) return null;
@@ -285,11 +309,11 @@ export const getModalTransactionTitle = (
   }
 
   if (transaction.type === TransactionType.BATCH_ALL) {
-    return getModalTransactionTitle(crossChain, transaction.args?.transactions?.[0]);
+    return getModalTransactionTitle(crossChain, t, transaction.args?.transactions?.[0]);
   }
 
   if (transaction.type === TransactionType.PROXY) {
-    return getModalTransactionTitle(crossChain, transaction.args?.transaction);
+    return getModalTransactionTitle(crossChain, t, transaction.args?.transaction);
   }
 
   return TransactionTitlesModal[transaction.type](crossChain);

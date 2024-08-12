@@ -3,6 +3,8 @@ export { detailsAggregate } from './aggregates/details';
 export { tracksAggregate } from './aggregates/tracks';
 export { votingAggregate } from './aggregates/voting';
 export { listAggregate } from './aggregates/list';
+export { delegationAggregate } from './aggregates/delegation';
+export { delegateRegistryAggregate } from './aggregates/delegateRegistry';
 
 export { titleModel } from './model/title';
 export { filterModel } from './model/filter';
