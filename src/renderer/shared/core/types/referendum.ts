@@ -29,24 +29,28 @@ export type RejectedReferendum = {
   type: ReferendumType.Rejected;
   referendumId: ReferendumId;
   since: BlockHeight;
+  submissionDeposit: Deposit | null;
 };
 
 export type ApprovedReferendum = {
   type: ReferendumType.Approved;
   referendumId: ReferendumId;
   since: BlockHeight;
+  submissionDeposit: Deposit | null;
 };
 
 export type CancelledReferendum = {
   type: ReferendumType.Cancelled;
   referendumId: ReferendumId;
   since: BlockHeight;
+  submissionDeposit: Deposit | null;
 };
 
 export type TimedOutReferendum = {
   type: ReferendumType.TimedOut;
   referendumId: ReferendumId;
   since: BlockHeight;
+  submissionDeposit: Deposit | null;
 };
 
 export type KilledReferendum = {
@@ -79,7 +83,7 @@ export type Tally = {
   support: BN;
 };
 
-type Deposit = {
+export type Deposit = {
   who: Address;
   amount: BN;
 };

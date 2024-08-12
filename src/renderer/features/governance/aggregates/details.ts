@@ -22,7 +22,7 @@ sample({
 
 sample({
   clock: flow.open,
-  fn: ({ referendum }) => ({ referendumId: referendum.referendumId }),
+  fn: ({ referendum }) => ({ referendum }),
   target: timelineModel.events.requestTimeline,
 });
 
@@ -33,10 +33,12 @@ export const detailsAggregate = {
   $timelines: timelineModel.$currentChainTimelines,
   $votes: votingAggregate.$activeWalletVotes,
   $proposers: proposerIdentityAggregate.$proposers,
+
   $isTitlesLoading: titleModel.$isTitlesLoading,
-  $isTimelinesLoading: timelineModel.$isTimelineLoading,
+  $isTimelinesLoading: timelineModel.$isLoading,
   $isProposersLoading: proposerIdentityAggregate.$isProposersLoading,
   $isDescriptionLoading: descriptionsModel.$isDescriptionLoading,
+
   $canVote,
 
   gates: { flow },
