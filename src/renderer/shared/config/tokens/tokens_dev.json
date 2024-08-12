@@ -161,6 +161,17 @@
         }
       },
       {
+        "chainId": "0x7eb9354488318e7549c722669dcbdcdc526f1fef1420e7944667212f3601fdbd",
+        "name": "Polimec",
+        "assetId": 1,
+        "assetSymbol": "DOT",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "10",
+          "palletName": "ForeignAssets"
+        }
+      },
+      {
         "chainId": "0x67fa177a097bfa18f77ea95ab56e9bcdfeb0e5b8a40e46298bb93e16b6fc5008",
         "name": "Polkadot People",
         "assetId": 0,
@@ -807,6 +818,17 @@
         "type": "statemine",
         "typeExtras": {
           "assetId": "311091173110107856861649819128533077277"
+        }
+      },
+      {
+        "chainId": "0x7eb9354488318e7549c722669dcbdcdc526f1fef1420e7944667212f3601fdbd",
+        "name": "Polimec",
+        "assetId": 2,
+        "assetSymbol": "USDT",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "1984",
+          "palletName": "ForeignAssets"
         }
       }
     ]
@@ -3511,6 +3533,17 @@
         "typeExtras": {
           "assetId": "166377000701797186346254371275954761085"
         }
+      },
+      {
+        "chainId": "0x7eb9354488318e7549c722669dcbdcdc526f1fef1420e7944667212f3601fdbd",
+        "name": "Polimec",
+        "assetId": 3,
+        "assetSymbol": "USDC",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "1337",
+          "palletName": "ForeignAssets"
+        }
       }
     ]
   },
@@ -3706,7 +3739,7 @@
   },
   {
     "name": "Litentry",
-    "precision": 12,
+    "precision": 18,
     "priceId": "litentry",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Litentry_(LIT).svg",
     "symbol": "LIT",

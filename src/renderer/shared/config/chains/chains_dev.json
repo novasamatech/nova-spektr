@@ -17,6 +17,14 @@
         "name": "Novasama node"
       },
       {
+        "url": "wss://rpc.ibp.network/polkadot",
+        "name": "IBP1 node"
+      },
+      {
+        "url": "wss://rpc.dotters.network/polkadot",
+        "name": "IBP2 node"
+      },
+      {
         "url": "wss://apps-rpc.polkadot.io",
         "name": "Public node"
       },
@@ -39,14 +47,6 @@
       {
         "url": "wss://rpc-polkadot.luckyfriday.io",
         "name": "LuckyFriday node"
-      },
-      {
-        "url": "wss://rpc.ibp.network/polkadot",
-        "name": "IBP network node"
-      },
-      {
-        "url": "wss://rpc.dotters.network/polkadot",
-        "name": "Dotters Net node"
       }
     ],
     "assets": [
@@ -120,6 +120,14 @@
         "name": "Novasama node"
       },
       {
+        "url": "wss://rpc.ibp.network/kusama",
+        "name": "IBP1 node"
+      },
+      {
+        "url": "wss://rpc.dotters.network/kusama",
+        "name": "IBP2 node"
+      },
+      {
         "url": "wss://apps-kusama-rpc.polkadot.io",
         "name": "Public node"
       },
@@ -134,14 +142,6 @@
       {
         "url": "wss://1rpc.io/ksm",
         "name": "Automata 1RPC node"
-      },
-      {
-        "url": "wss://rpc.ibp.network/kusama",
-        "name": "IBP network node"
-      },
-      {
-        "url": "wss://rpc.dotters.network/kusama",
-        "name": "Dotters Net node"
       },
       {
         "url": "wss://kusama.public.curie.radiumblock.co/ws",
@@ -225,11 +225,11 @@
       },
       {
         "url": "wss://rpc.ibp.network/westend",
-        "name": "IBP network node"
+        "name": "IBP1 node"
       },
       {
         "url": "wss://rpc.dotters.network/westend",
-        "name": "Dotters Net node"
+        "name": "IBP2 node"
       },
       {
         "url": "wss://westend.public.curie.radiumblock.co/ws",
@@ -375,11 +375,11 @@
     "nodes": [
       {
         "url": "wss://sys.ibp.network/statemine",
-        "name": "IBP network node"
+        "name": "IBP1 node"
       },
       {
         "url": "wss://sys.dotters.network/statemine",
-        "name": "Dotters Net node"
+        "name": "IBP2 node"
       },
       {
         "url": "wss://statemine-rpc.dwellir.com",
@@ -2148,6 +2148,14 @@
     ],
     "nodes": [
       {
+        "url": "wss://kilt.ibp.network",
+        "name": "IBP1 node"
+      },
+      {
+        "url": "wss://kilt.dotters.network",
+        "name": "IBP2 node"
+      },
+      {
         "url": "wss://kilt-rpc.dwellir.com",
         "name": "Dwellir node"
       },
@@ -2958,12 +2966,12 @@
     ],
     "nodes": [
       {
-        "url": "wss://sys.ibp.network/statemint",
-        "name": "IBP network node"
+        "url": "wss://sys.ibp.network/asset-hub-polkadot",
+        "name": "IBP1 node"
       },
       {
-        "url": "wss://sys.dotters.network/statemint",
-        "name": "Dotters Net node"
+        "url": "wss://sys.dotters.network/asset-hub-polkadot",
+        "name": "IBP2 node"
       },
       {
         "url": "wss://statemint-rpc.dwellir.com",
@@ -3234,7 +3242,7 @@
       {
         "assetId": 0,
         "symbol": "LIT",
-        "precision": 12,
+        "precision": 18,
         "priceId": "litentry",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Litentry_(LIT).svg",
         "name": "Litentry"
@@ -3425,20 +3433,20 @@
     ],
     "nodes": [
       {
+        "url": "wss://hydration.ibp.network",
+        "name": "IBP1 node"
+      },
+      {
+        "url": "wss://hydration.dotters.network",
+        "name": "IBP2 node"
+      },
+      {
         "url": "wss://hydradx-rpc.dwellir.com",
         "name": "Dwellir node"
       },
       {
         "url": "wss://rpc.hydradx.cloud",
         "name": "Galactic Council node"
-      },
-      {
-        "url": "wss://hydradx.paras.ibp.network",
-        "name": "IBP1 node"
-      },
-      {
-        "url": "wss://hydradx.paras.dotters.network",
-        "name": "IBP2 node"
       }
     ],
     "assets": [
@@ -4439,6 +4447,14 @@
     ],
     "nodes": [
       {
+        "url": "wss://bifrost-polkadot.ibp.network",
+        "name": "IBP1 node"
+      },
+      {
+        "url": "wss://bifrost-polkadot.dotters.network",
+        "name": "IBP2 node"
+      },
+      {
         "url": "wss://hk.p.bifrost-rpc.liebi.com/ws",
         "name": "Liebi node"
       }
@@ -4655,7 +4671,7 @@
       {
         "assetId": 0,
         "symbol": "LIT",
-        "precision": 12,
+        "precision": 18,
         "priceId": "litentry",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Litentry_(LIT).svg",
         "name": "Litentry"
@@ -5224,11 +5240,11 @@
     "nodes": [
       {
         "url": "wss://sys.ibp.network/bridgehub-polkadot",
-        "name": "IBP network node"
+        "name": "IBP1 node"
       },
       {
         "url": "wss://sys.dotters.network/bridgehub-polkadot",
-        "name": "Dotters Net node"
+        "name": "IBP2 node"
       },
       {
         "url": "wss://dot-rpc.stakeworld.io/bridgehub",
@@ -5275,11 +5291,11 @@
     "nodes": [
       {
         "url": "wss://sys.ibp.network/bridgehub-kusama",
-        "name": "IBP network node"
+        "name": "IBP1 node"
       },
       {
         "url": "wss://sys.dotters.network/bridgehub-kusama",
-        "name": "Dotters Net node"
+        "name": "IBP2 node"
       },
       {
         "url": "wss://ksm-rpc.stakeworld.io/bridgehub",
@@ -5326,11 +5342,11 @@
     "nodes": [
       {
         "url": "wss://sys.ibp.network/collectives-polkadot",
-        "name": "IBP network node"
+        "name": "IBP1 node"
       },
       {
         "url": "wss://sys.dotters.network/collectives-polkadot",
-        "name": "Dotters Net node"
+        "name": "IBP2 node"
       },
       {
         "url": "wss://collectives.public.curie.radiumblock.co/ws",
@@ -5846,6 +5862,14 @@
         "name": "Moonbeam Foundation node"
       },
       {
+        "url": "wss://moonbeam.ibp.network",
+        "name": "IBP1 node"
+      },
+      {
+        "url": "wss://moonbeam.dotters.network",
+        "name": "IBP2 node"
+      },
+      {
         "url": "wss://moonbeam.public.curie.radiumblock.co/ws",
         "name": "RadiumBlock node"
       },
@@ -6238,6 +6262,14 @@
         "name": "Parity node"
       },
       {
+        "url": "wss://sys.ibp.network/people-kusama",
+        "name": "IBP1 node"
+      },
+      {
+        "url": "wss://sys.dotters.network/people-kusama",
+        "name": "IBP2 node"
+      },
+      {
         "url": "wss://ksm-rpc.stakeworld.io/people",
         "name": "Stakeworld node"
       }
@@ -6267,6 +6299,14 @@
       {
         "url": "wss://rpc.polimec.org",
         "name": "Polimec node"
+      },
+      {
+        "url": "wss://polimec.ibp.network",
+        "name": "IBP1 node"
+      },
+      {
+        "url": "wss://polimec.dotters.network",
+        "name": "IBP2 node"
       }
     ],
     "assets": [
@@ -6277,6 +6317,45 @@
         "priceId": "polimec",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/PLMC.svg",
         "name": "Polimec token"
+      },
+      {
+        "assetId": 1,
+        "symbol": "DOT",
+        "precision": 10,
+        "type": "statemine",
+        "priceId": "polkadot",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
+        "typeExtras": {
+          "assetId": "10",
+          "palletName": "ForeignAssets"
+        },
+        "name": "Polkadot"
+      },
+      {
+        "assetId": 2,
+        "symbol": "USDT",
+        "precision": 6,
+        "type": "statemine",
+        "priceId": "tether",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
+        "typeExtras": {
+          "assetId": "1984",
+          "palletName": "ForeignAssets"
+        },
+        "name": "USD Tether"
+      },
+      {
+        "assetId": 3,
+        "symbol": "USDC",
+        "precision": 6,
+        "type": "statemine",
+        "priceId": "usd-coin",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDC.svg",
+        "typeExtras": {
+          "assetId": "1337",
+          "palletName": "ForeignAssets"
+        },
+        "name": "USD Coin"
       }
     ],
     "explorers": [
@@ -6355,11 +6434,11 @@
       },
       {
         "url": "wss://sys.ibp.network/people-polkadot",
-        "name": "IBP network node"
+        "name": "IBP1 node"
       },
       {
         "url": "wss://sys.dotters.network/people-polkadot",
-        "name": "Dotters Net node"
+        "name": "IBP2 node"
       },
       {
         "url": "wss://rpc-people-polkadot.luckyfriday.io",
