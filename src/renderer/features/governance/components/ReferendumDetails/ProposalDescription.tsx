@@ -5,19 +5,17 @@ import { pickNestedValue } from '@shared/lib/utils';
 import { Markdown, Shimmering } from '@shared/ui';
 import { TrackInfo, referendumService } from '@entities/governance';
 import { detailsAggregate } from '../../aggregates/details';
-import { networkSelectorModel } from '../../model/networkSelector';
 
 import { ProposerName } from './ProposerName';
 
 type Props = {
   chainId: ChainId;
+  addressPrefix: number;
   referendum: Referendum;
 };
 
-export const ProposalDescription = ({ chainId, referendum }: Props) => {
+export const ProposalDescription = ({ chainId, addressPrefix, referendum }: Props) => {
   const isDescriptionLoading = useUnit(detailsAggregate.$isDescriptionLoading);
-  const addressPrefix = useUnit(networkSelectorModel.$governanceChain)?.addressPrefix;
-
   const description = useStoreMap({
     store: detailsAggregate.$descriptions,
     keys: [chainId, referendum.referendumId],

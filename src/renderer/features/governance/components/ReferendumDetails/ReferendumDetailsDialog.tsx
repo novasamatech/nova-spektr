@@ -72,7 +72,7 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onCl
     >
       <div className="flex min-h-full flex-wrap-reverse items-end gap-4 p-6">
         <Plate className="min-h-0 min-w-80 grow basis-[530px] border-filter-border p-6 shadow-card-shadow">
-          <ProposalDescription chainId={chain.chainId} referendum={referendum} />
+          <ProposalDescription chainId={chain.chainId} addressPrefix={chain.addressPrefix} referendum={referendum} />
         </Plate>
 
         <div className="flex shrink-0 grow basis-[350px] flex-row flex-wrap gap-4">
