@@ -23,7 +23,7 @@ export class VaultAssetsPage extends BasePage<AssetsPageElements> {
   }
 
   public async openSettingsWidget(): Promise<AssetsSettingsModalWindow> {
-    await this.clickOnButtonBySelector(this.pageElements.settingsModalWindowButtonSelector, true);
+    await this.page.getByRole('main').getByRole('button').nth(1).click();
 
     return new AssetsSettingsModalWindow(this.page, new AssetsSettingsModalElements(), this);
   }
