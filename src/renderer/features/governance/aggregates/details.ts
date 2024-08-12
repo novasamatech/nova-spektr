@@ -33,6 +33,7 @@ export const detailsAggregate = {
   $timelines: timelineModel.$currentChainTimelines,
   $votes: votingAggregate.$activeWalletVotes,
   $proposers: proposerIdentityAggregate.$proposers,
+  $isTitlesLoading: titleModel.$isTitlesLoading,
   $isTimelinesLoading: timelineModel.$isTimelineLoading,
   $isProposersLoading: proposerIdentityAggregate.$isProposersLoading,
   $isDescriptionLoading: descriptionsModel.$isDescriptionLoading,

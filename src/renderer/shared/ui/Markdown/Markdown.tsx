@@ -17,11 +17,20 @@ const remarkPlugins: Options['remarkPlugins'] = [remarkGfm];
 
 const components: Components = {
   h1: ({ node: _, className, ...props }) => (
-    <h1 className={cnTw('mt-6 border-b pb-2 text-large-title', className)} {...props} />
+    <h1
+      className={cnTw('text-balance border-b pb-2 text-button-small [&:not(:first-child)]:mt-6', className)}
+      {...props}
+    />
   ),
-  h2: ({ node: _, className, ...props }) => <h2 className={cnTw('mt-4 text-title', className)} {...props} />,
-  h3: ({ node: _, className, ...props }) => <h3 className={cnTw('mt-2 text-medium-title', className)} {...props} />,
-  h4: ({ node: _, className, ...props }) => <h4 className={cnTw('mt-2 text-small-title', className)} {...props} />,
+  h2: ({ node: _, className, ...props }) => (
+    <h2 className={cnTw('text-balance text-header-title [&:not(:first-child)]:mt-4', className)} {...props} />
+  ),
+  h3: ({ node: _, className, ...props }) => (
+    <h3 className={cnTw('text-balance text-footnote [&:not(:first-child)]:mt-2', className)} {...props} />
+  ),
+  h4: ({ node: _, className, ...props }) => (
+    <h4 className={cnTw('text-balance text-small-title [&:not(:first-child)]:mt-2', className)} {...props} />
+  ),
   ul: ({ node: _, className, ...props }) => (
     <ul
       className={cnTw(
@@ -55,7 +64,7 @@ const components: Components = {
     </InfoLink>
   ),
   p: ({ node: _, className, ...props }) => (
-    <BodyText as="p" className={cnTw('overflow-hidden overflow-ellipsis', className)} {...props} />
+    <BodyText as="p" className={cnTw('overflow-hidden overflow-ellipsis text-balance', className)} {...props} />
   ),
   hr: () => <hr className="bg-current" />,
   input: ({ node: _, type, ...props }) => (type === 'checkbox' ? <Checkbox {...props} /> : <input {...props} />),
