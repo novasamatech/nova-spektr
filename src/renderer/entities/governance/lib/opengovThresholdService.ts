@@ -66,7 +66,11 @@ function getThreshold(curve: VotingCurve, input: BlockHeight, decisionPeriod: BN
     //   .checked_rounding_div(FixedI64::from(x) + *x_offset, Low)
     //   .map(|yp| (yp + *y_offset).into_clamped_perthing())
     //   .unwrap_or_else(Perbill::one)
-    return bnMin(BN_BILLION, reciprocal.factor.mul(BN_BILLION).div(div).add(reciprocal.yOffset));
+    const res = bnMin(BN_BILLION, reciprocal.factor.mul(BN_BILLION).div(div).add(reciprocal.yOffset));
+    console.log('curve', curve);
+    console.log('res', res.toString());
+
+    return res;
   }
 
   return BN_BILLION;

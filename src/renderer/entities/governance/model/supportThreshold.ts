@@ -52,6 +52,8 @@ const requestSupportThresholdsFx = createEffect(
         blockDifference: referendum.deciding?.since ? blockNumber - referendum.deciding.since : 0,
         decisionPeriod: new BN(track.decisionPeriod),
       });
+
+      console.log('result[referendum.referendumId].value', result[referendum.referendumId].value.toString());
     }
 
     return result;

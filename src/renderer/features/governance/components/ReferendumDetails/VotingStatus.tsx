@@ -39,6 +39,8 @@ export const VotingStatus = ({ referendum, asset, chain, canVote, onVoteRequest 
   const votedBalance = votedCount ? formatBalance(votedCount.voted, asset.precision, { K: true }) : null;
   const supportThresholdBalance = votedCount ? formatBalance(votedCount.threshold, asset.precision, { K: true }) : null;
 
+  console.log('referendum.supportThreshold', referendum.supportThreshold?.value.toString());
+
   return (
     <div className="flex flex-col items-start gap-6">
       <VotingStatusBadge passing={isPassing} referendum={referendum} />
