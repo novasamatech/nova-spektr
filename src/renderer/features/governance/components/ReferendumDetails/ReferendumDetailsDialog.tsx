@@ -40,12 +40,6 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onCl
   const votingAsset = useUnit(detailsAggregate.$votingAsset);
   const canVote = useUnit(detailsAggregate.$canVote);
 
-  const title = useStoreMap({
-    store: detailsAggregate.$titles,
-    keys: [referendum.referendumId],
-    fn: (titles, [referendumId]) => titles[referendumId] ?? '',
-  });
-
   const votes = useStoreMap({
     store: detailsAggregate.$votes,
     keys: [referendum.referendumId],
@@ -63,7 +57,7 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onCl
   return (
     <BaseModal
       isOpen={isModalOpen}
-      title={title || t('governance.referendums.referendumTitle', { index: referendum.referendumId })}
+      title={t('governance.referendums.referendumTitle', { index: referendum.referendumId })}
       contentClass="min-h-0 h-full w-full bg-main-app-background overflow-y-auto"
       panelClass="flex flex-col w-[944px] h-[678px]"
       headerClass="pl-5 pr-3 py-4 shrink-0"
