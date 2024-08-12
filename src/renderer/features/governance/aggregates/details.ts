@@ -17,13 +17,11 @@ const $canVote = walletModel.$activeWallet.map((wallet) => (wallet ? permissionU
 
 sample({
   clock: flow.open,
-  target: [proposerIdentityAggregate.events.requestReferendumProposer, descriptionsModel.events.requestDescription],
-});
-
-sample({
-  clock: flow.open,
-  fn: ({ referendum }) => ({ referendum }),
-  target: timelineModel.events.requestTimeline,
+  target: [
+    proposerIdentityAggregate.events.requestReferendumProposer,
+    descriptionsModel.events.requestDescription,
+    timelineModel.events.requestTimeline,
+  ],
 });
 
 export const detailsAggregate = {
