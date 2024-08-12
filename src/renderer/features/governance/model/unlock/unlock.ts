@@ -104,7 +104,7 @@ sample({
 });
 
 export const unlockModel = {
-  $isLoading: locksModel.$isLoading || getClaimScheduleFx.pending,
+  $isLoading: locksModel.$isLoading && getClaimScheduleFx.pending,
   $totalUnlock,
   $claimSchedule,
   $isUnlockable: combine($totalUnlock, (totalUnlock) => !totalUnlock.isZero()),
