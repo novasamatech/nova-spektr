@@ -48,7 +48,7 @@ export const Timeline = ({ referendumId }: Props) => {
 
       {!isLoading &&
         timeline.map((status) => (
-          <div key={status.date.toLocaleString()} className="flex items-center justify-between">
+          <div key={`${status.status}-${status.date.toLocaleString()}`} className="flex items-center justify-between">
             <FootnoteText>{formatDate(status.date, 'd MMM’yy, hh:mm')}</FootnoteText>
             <OperationStatus pallet={getStatusPalette(status.status)}>
               {/* eslint-disable-next-line i18next/no-literal-string */}

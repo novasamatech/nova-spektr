@@ -1,6 +1,7 @@
 import { useStoreMap } from 'effector-react';
 
 import { useI18n } from '@app/providers';
+import { toAddress } from '@/shared/lib/utils';
 import { type Referendum } from '@shared/core';
 import { FootnoteText, Shimmering } from '@shared/ui';
 import { referendumService } from '@entities/governance';
@@ -9,9 +10,10 @@ import { detailsAggregate } from '../../aggregates/details';
 
 type Props = {
   referendum: Referendum;
+  addressPrefix?: number;
 };
 
-export const ProposerName = ({ referendum }: Props) => {
+export const ProposerName = ({ referendum, addressPrefix }: Props) => {
   const { t } = useI18n();
 
   const proposer = useStoreMap({
@@ -30,20 +32,25 @@ export const ProposerName = ({ referendum }: Props) => {
     fn: (loading, [proposer]) => loading && !proposer,
   });
 
-  if (!isProposerLoading && !proposer) {
-    return null;
-  }
-
-  const proposerName = proposer ? (
+  const proposerName = proposer?.parent ? (
     <AccountAddress
       addressFont="text-text-secondary"
       size={16}
       address={proposer.parent.address}
       name={proposer.parent.name || proposer.email || proposer.twitter || proposer.parent.address}
     />
+  ) : referendumService.isOngoing(referendum) && referendum.submissionDeposit?.who ? (
+    <AccountAddress
+      addressFont="text-text-secondary"
+      size={16}
+      address={referendum.submissionDeposit.who}
+      name={toAddress(referendum.submissionDeposit!.who, { chunk: 6, prefix: addressPrefix })}
+    />
   ) : null;
 
   const proposerLoader = isProposerLoading ? <Shimmering height={18} width={70} /> : null;
+
+  if (!proposerName && !proposerLoader) return null;
 
   return (
     <div className="flex items-center gap-2">
