@@ -9,7 +9,7 @@
   "endOfLine": "lf",
   "plugins": ["prettier-plugin-jsdoc", "prettier-plugin-css-order", "prettier-plugin-tailwindcss"],
   "tailwindConfig": "./tailwind.config.ts",
-  "tailwindFunctions": ["cnTw"],
+  "tailwindFunctions": ["cnTw", "cn"],
   "jsdocCommentLineStrategy": "keep",
   "jsdocPreferCodeFences": true,
   "jsdocSeparateTagGroups": true,

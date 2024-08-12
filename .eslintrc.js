@@ -228,6 +228,14 @@ module.exports = {
             ],
           },
         ],
+
+        'no-restricted-syntax': [
+          'error',
+          {
+            selector: 'MemberExpression > CallExpression[callee.name="useUnit"]',
+            message: 'Replace with "useStoreMap". Getting object members directly from "useUnit" in restricted.',
+          },
+        ],
       },
       settings: {
         'import-x/resolver': {
