@@ -1,5 +1,4 @@
 import { BN, BN_ZERO } from '@polkadot/util';
-import clone from 'lodash/clone';
 import isEqual from 'lodash/isEqual';
 import orderBy from 'lodash/orderBy';
 import sortBy from 'lodash/sortBy';
@@ -347,37 +346,43 @@ function constructUnlockSchedule(maxUnlockedByTime: [ClaimTime, ClaimableLock][]
   let currentMaxLock = BN_ZERO;
   let currentMaxLockAt: ClaimTime | null = null;
 
-  const result = new Map(clone(maxUnlockedByTime));
+  const resultMap: Map<ClaimTime, ClaimableLock> = new Map();
   const sortedMaxUnlock = orderBy(maxUnlockedByTime, ([claimTime]) => getClaimTimeSortKey(claimTime), 'desc');
 
   sortedMaxUnlock.forEach(([claimAt, lock]) => {
     const newMaxLock = BN.max(currentMaxLock, lock.amount);
     const unlockedAmount = lock.amount.sub(currentMaxLock);
 
-    const shouldSetNewMax = currentMaxLockAt === null || currentMaxLock.lt(newMaxLock);
-    if (shouldSetNewMax) {
+    if (currentMaxLockAt === null || currentMaxLock.lt(newMaxLock)) {
       currentMaxLock = newMaxLock;
       currentMaxLockAt = claimAt;
     }
 
     if (unlockedAmount.isNeg()) {
-      // this lock is completely shadowed by later (in time) lock with greater value
-      result.delete(claimAt);
-
-      // but we want to keep its actions, so we move it to the current known maximum that goes later in time
-      if (currentMaxLockAt && result.has(currentMaxLockAt)) {
-        const maxLockItem = result.get(currentMaxLockAt)!;
-        maxLockItem.affected = uniqWith(maxLockItem.affected.concat(lock.affected), isEqual);
+      // This lock is completely shadowed by a later lock with a greater value
+      // But we want to keep its actions, so we move it to the current known maximum that goes later in time
+      if (resultMap.has(currentMaxLockAt)) {
+        const maxLockItem = resultMap.get(currentMaxLockAt)!;
+        maxLockItem.affected = maxLockItem.affected.concat(lock.affected);
       }
     } else {
-      // there is something to unlock at this point
-      result.get(claimAt)!.amount = unlockedAmount;
+      // There is something to unlock at this point
+      if (resultMap.has(claimAt)) {
+        const existingLock = resultMap.get(claimAt)!;
+        existingLock.amount = unlockedAmount;
+        existingLock.affected = existingLock.affected.concat(lock.affected);
+      } else {
+        resultMap.set(claimAt, {
+          ...lock,
+          amount: unlockedAmount,
+        });
+      }
     }
   });
 
-  return sortBy(Array.from(result.entries()), ([claimTime]) => getClaimTimeSortKey(claimTime)).map(
-    ([_, claim]) => claim,
-  );
+  const array = Array.from(resultMap.values()).map((i) => ({ ...i, affected: uniqWith(i.affected, isEqual) }));
+
+  return sortBy(array, (claim) => getClaimTimeSortKey(claim.claimAt));
 }
 
 function getClaimTimeSortKey(claimTime: ClaimTime): string {
