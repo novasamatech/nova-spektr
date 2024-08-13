@@ -42,12 +42,8 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit != 'true'
 
       - name: Run Playwright tests for push event
-        if: github.event_name == 'push'
+        if: github.event_name != 'schedule'
         run: npx playwright test --grep @regress
-
-      - name: Run Playwright tests for pull_request or workflow_dispatch event
-        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
-        run: npx playwright test
 
       - name: Run Playwright tests for schedule event
         if: github.event_name == 'schedule'
