@@ -322,19 +322,6 @@
         "name": "Siri"
       },
       {
-        "assetId": 2,
-        "symbol": "DOT",
-        "precision": 10,
-        "type": "statemine",
-        "priceId": "polkadot",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
-        "typeExtras": {
-          "assetId": "0x02010902",
-          "palletName": "ForeignAssets"
-        },
-        "name": "Polkadot"
-      },
-      {
         "assetId": 3,
         "symbol": "JOE",
         "precision": 3,
@@ -3081,6 +3068,50 @@
           "assetId": "31337"
         },
         "name": "WUD"
+      },
+      {
+        "assetId": 11,
+        "symbol": "WIFD",
+        "precision": 10,
+        "type": "statemine",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/WIFD.svg",
+        "typeExtras": {
+          "assetId": "17"
+        },
+        "name": "WIFD"
+      },
+      {
+        "assetId": 12,
+        "symbol": "BORK",
+        "precision": 10,
+        "type": "statemine",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/BORK.svg",
+        "typeExtras": {
+          "assetId": "690"
+        },
+        "name": "BORK"
+      },
+      {
+        "assetId": 13,
+        "symbol": "BUNS",
+        "precision": 10,
+        "type": "statemine",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/BUNS.svg",
+        "typeExtras": {
+          "assetId": "1234"
+        },
+        "name": "BUNS"
+      },
+      {
+        "assetId": 14,
+        "symbol": "KOL",
+        "precision": 12,
+        "type": "statemine",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/KOL.svg",
+        "typeExtras": {
+          "assetId": "86"
+        },
+        "name": "KOL"
       }
     ],
     "explorers": [
@@ -3280,6 +3311,10 @@
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Subsocial_Parachain.svg",
     "nodes": [
+      {
+        "url": "wss://subsocial-rpc.dwellir.com",
+        "name": "Dwellir node"
+      },
       {
         "url": "wss://para.f3joule.space",
         "name": "Subsocial node"
@@ -3931,6 +3966,76 @@
           "transfersEnabled": true
         },
         "name": "WUD"
+      },
+      {
+        "assetId": 36,
+        "symbol": "MYTH",
+        "precision": 18,
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/MYTH.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x1e000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "21367521367521400",
+          "transfersEnabled": true
+        },
+        "name": "MYTH"
+      },
+      {
+        "assetId": 39,
+        "symbol": "WIFD",
+        "precision": 10,
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/WIFD.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x92420f00",
+          "currencyIdType": "u32",
+          "existentialDeposit": "1",
+          "transfersEnabled": true
+        },
+        "name": "WIFD"
+      },
+      {
+        "assetId": 40,
+        "symbol": "BORK",
+        "precision": 10,
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/BORK.svg",
+        "typeExtras": {
+          "currencyIdScale": "0xd4420f00",
+          "currencyIdType": "u32",
+          "existentialDeposit": "1",
+          "transfersEnabled": true
+        },
+        "name": "BORK"
+      },
+      {
+        "assetId": 41,
+        "symbol": "BUNS",
+        "precision": 10,
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/BUNS.svg",
+        "typeExtras": {
+          "currencyIdScale": "0xf1420f00",
+          "currencyIdType": "u32",
+          "existentialDeposit": "1",
+          "transfersEnabled": true
+        },
+        "name": "BUNS"
+      },
+      {
+        "assetId": 42,
+        "symbol": "KOL",
+        "precision": 12,
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/KOL.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x07430f00",
+          "currencyIdType": "u32",
+          "existentialDeposit": "1",
+          "transfersEnabled": true
+        },
+        "name": "KOL"
       }
     ],
     "explorers": [
@@ -4923,10 +5028,7 @@
     "chainId": "0x6408de7737c59c238890533af25896a2c20608d8b380bb01029acb392781063e",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Rococo_Testnet.svg",
     "options": [
-      "testnet",
-      "governance",
-      "regular_proxy",
-      "pure_proxy"
+      "testnet"
     ],
     "nodes": [
       {
@@ -5415,18 +5517,6 @@
         "precision": 12,
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Rococo_(ROC).svg",
         "name": "Rococo Testnet"
-      },
-      {
-        "assetId": 1,
-        "symbol": "HOP",
-        "precision": 12,
-        "type": "statemine",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
-        "typeExtras": {
-          "assetId": "0x010100b11c",
-          "palletName": "ForeignAssets"
-        },
-        "name": "HOP token"
       }
     ],
     "explorers": [
@@ -6317,45 +6407,6 @@
         "priceId": "polimec",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/PLMC.svg",
         "name": "Polimec token"
-      },
-      {
-        "assetId": 1,
-        "symbol": "DOT",
-        "precision": 10,
-        "type": "statemine",
-        "priceId": "polkadot",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
-        "typeExtras": {
-          "assetId": "10",
-          "palletName": "ForeignAssets"
-        },
-        "name": "Polkadot"
-      },
-      {
-        "assetId": 2,
-        "symbol": "USDT",
-        "precision": 6,
-        "type": "statemine",
-        "priceId": "tether",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
-        "typeExtras": {
-          "assetId": "1984",
-          "palletName": "ForeignAssets"
-        },
-        "name": "USD Tether"
-      },
-      {
-        "assetId": 3,
-        "symbol": "USDC",
-        "precision": 6,
-        "type": "statemine",
-        "priceId": "usd-coin",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDC.svg",
-        "typeExtras": {
-          "assetId": "1337",
-          "palletName": "ForeignAssets"
-        },
-        "name": "USD Coin"
       }
     ],
     "explorers": [
@@ -6389,10 +6440,7 @@
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_Testnet.svg",
     "options": [
       "testnet",
-      "governance",
-      "regular_proxy",
-      "pure_proxy",
-      "multisig"
+      "governance"
     ],
     "nodes": [
       {
@@ -6426,7 +6474,9 @@
     "chainId": "0x67fa177a097bfa18f77ea95ab56e9bcdfeb0e5b8a40e46298bb93e16b6fc5008",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polkadot_People.svg",
-    "options": [],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://polkadot-people-rpc.polkadot.io",
@@ -6493,5 +6543,53 @@
         "name": "Westend"
       }
     ]
+  },
+  {
+    "name": "Bittensor",
+    "specName": "node-subtensor",
+    "addressPrefix": 42,
+    "chainId": "0x2f0555cc76fc2840a25a6ea3b9637146806f1f44b090c175ffde2a7e5ab36c03",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Bittensor.svg",
+    "options": [
+      "multisig",
+      "pure_proxy",
+      "pure_proxy"
+    ],
+    "nodes": [
+      {
+        "url": "wss://entrypoint-finney.opentensor.ai:443",
+        "name": "Opentensor Fdn node"
+      }
+    ],
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "TAO",
+        "precision": 9,
+        "priceId": "bittensor",
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Bittensor_(TAO).svg",
+        "name": "TAO"
+      }
+    ],
+    "explorers": [
+      {
+        "name": "SCAN",
+        "account": "https://bittensor.com/scan/address/{address}"
+      }
+    ],
+    "externalApi": {
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-bittensor"
+        }
+      ],
+      "proxy": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-proxy-bittensor-prod.novasamatech.org"
+        }
+      ]
+    }
   }
 ]
