@@ -1,20 +1,19 @@
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
 import { u8aConcat } from '@polkadot/util';
 import init, { Encoder } from 'raptorq';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-import { transactionService } from '@entities/transaction';
-import { TxMetadata, createTxMetadata, toAddress, upgradeNonce } from '@shared/lib/utils';
+import { type Address, type BaseAccount, type ChainId, type ShardAccount, type Wallet } from '@shared/core';
+import { type TxMetadata, createTxMetadata, toAddress, upgradeNonce } from '@shared/lib/utils';
 import { Button, FootnoteText } from '@shared/ui';
-import type { ShardAccount, BaseAccount, ChainId, Address } from '@shared/core';
-import { Wallet } from '@shared/core';
-import { createSubstrateSignPayload, createMultipleSignPayload } from '../QrCode/QrGenerator/common/utils';
-import { TRANSACTION_BULK } from '../QrCode/common/constants';
-import { QrMultiframeGenerator } from '../QrCode/QrGenerator/QrMultiframeTxGenerator';
-import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
+import { transactionService } from '@entities/transaction';
+import { type SigningPayload } from '@features/operations/OperationSign';
 import { WalletIcon, accountUtils, walletUtils } from '../../../wallet';
-import { SigningPayload } from '@features/operations/OperationSign';
+import { QrMultiframeGenerator } from '../QrCode/QrGenerator/QrMultiframeTxGenerator';
+import { createMultipleSignPayload, createSubstrateSignPayload } from '../QrCode/QrGenerator/common/utils';
+import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
+import { TRANSACTION_BULK } from '../QrCode/common/constants';
 
 type Props = {
   apis: Record<ChainId, ApiPromise>;
@@ -50,7 +49,7 @@ export const ScanMultiframeQr = ({
   const setupTransactions = async (): Promise<void> => {
     const metadataMap: Record<Address, Record<ChainId, TxMetadata>> = {};
 
-    for (let signingPayload of signingPayloads) {
+    for (const signingPayload of signingPayloads) {
       const address = toAddress(signingPayload.account.accountId, { prefix: signingPayload.chain.addressPrefix });
 
       if (!metadataMap[address]) {
@@ -125,15 +124,15 @@ export const ScanMultiframeQr = ({
   const bulkTxExist = bulkTransactions && bulkTransactions.length > 0;
 
   return (
-    <div className="flex flex-col items-center w-full">
+    <div className="flex w-full flex-col items-center">
       {signingPayloads.length > 0 && (
-        <div className="flex items-center justify-center mb-1 h-8 w-full">
-          <div className="flex h-full justify-center items-center gap-x-0.5 ">
+        <div className="mb-1 flex h-8 w-full items-center justify-center">
+          <div className="flex h-full items-center justify-center gap-x-0.5">
             <FootnoteText className="text-text-secondary">{t('signing.signer')}</FootnoteText>
 
-            <div className="w-full flex gap-x-2 items-center px-2">
+            <div className="flex w-full items-center gap-x-2 px-2">
               <WalletIcon className="shrink-0" type={signerWallet.type} size={16} />
-              <FootnoteText className="text-text-secondary w-max">{signerWallet.name}</FootnoteText>
+              <FootnoteText className="w-max text-text-secondary">{signerWallet.name}</FootnoteText>
             </div>
           </div>
         </div>
@@ -147,7 +146,7 @@ export const ScanMultiframeQr = ({
         {bulkTxExist && encoder && <QrMultiframeGenerator payload={bulkTransactions} size={200} encoder={encoder} />}
       </QrGeneratorContainer>
 
-      <div className="flex w-full justify-between mt-3">
+      <div className="mt-3 flex w-full justify-between">
         <Button variant="text" onClick={onGoBack}>
           {t('operation.goBackButton')}
         </Button>

@@ -2,7 +2,7 @@ import { combine, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { either, readonly } from 'patronum';
 
-import { listAggregate, networkSelectorModel, filterModel, listService, titleModel } from '@features/governance';
+import { filterModel, listAggregate, listService, networkSelectorModel, titleModel } from '@features/governance';
 import { governancePageUtils } from '../lib/governancePageUtils';
 
 const flow = createGate();
@@ -54,6 +54,7 @@ sample({
 });
 
 export const governancePageAggregate = {
+  $all: $displayedCurrentReferendums,
   $ongoing: readonly($ongoing),
   $completed: readonly($completed),
   $isLoading: listAggregate.$isLoading,

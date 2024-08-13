@@ -1,7 +1,8 @@
-.spektr-separator::before, .spektr-separator::after {
-  content: '';
+.spektr-separator::before,
+.spektr-separator::after {
   flex: 1;
-  height: 0;
   border-bottom: 1px solid;
   border-color: inherit;
+  height: 0;
+  content: '';
 }

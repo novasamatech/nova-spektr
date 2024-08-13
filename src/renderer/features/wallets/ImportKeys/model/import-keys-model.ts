@@ -1,20 +1,20 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
-import { parse } from 'yaml';
 import groupBy from 'lodash/groupBy';
 import { reset } from 'patronum';
+import { parse } from 'yaml';
 
-import {
-  DerivationValidationError,
-  DerivationWithPath,
-  ParsedImportFile,
-  TypedImportedDerivation,
-  ValidationError,
-} from '../lib/types';
-import { DerivationImportError, ErrorDetails } from '../lib/derivation-import-error';
-import { AccountId, ChainAccount, ChainId, DraftAccount, ShardAccount } from '@shared/core';
-import { importKeysUtils } from '../lib/import-keys-utils';
+import { type AccountId, type ChainAccount, type ChainId, type DraftAccount, type ShardAccount } from '@shared/core';
 import { toAccountId } from '@shared/lib/utils';
 import { PATH_ERRORS } from '../lib/constants';
+import { DerivationImportError, type ErrorDetails } from '../lib/derivation-import-error';
+import { importKeysUtils } from '../lib/import-keys-utils';
+import {
+  DerivationValidationError,
+  type DerivationWithPath,
+  type ParsedImportFile,
+  type TypedImportedDerivation,
+  ValidationError,
+} from '../lib/types';
 
 type SampleFnError = { error: DerivationImportError };
 type ExistingDerivations = {
@@ -202,7 +202,7 @@ sample({
 sample({
   clock: validateDerivationsFx.doneData,
   source: $existingDerivations,
-  filter: (existingDerivations, importedDerivations) => Boolean(existingDerivations),
+  filter: (existingDerivations) => Boolean(existingDerivations),
   fn: (existingDerivations, importedDerivations) => ({ imported: importedDerivations, existing: existingDerivations! }),
   target: mergePathsFx,
 });

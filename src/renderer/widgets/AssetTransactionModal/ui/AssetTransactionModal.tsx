@@ -2,17 +2,17 @@ import { useUnit } from 'effector-react';
 import { Link } from 'react-router-dom';
 
 import { useI18n } from '@app/providers';
-import { BaseModal, BodyText, FootnoteText, HeaderTitleText, SearchInput } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
 import { totalAmount } from '@shared/lib/utils';
-import { PathType, Paths, createLink } from '@shared/routes';
+import { type PathType, Paths, createLink } from '@shared/routes';
+import { BaseModal, BodyText, FootnoteText, HeaderTitleText, SearchInput } from '@shared/ui';
+import { EmptyAssetsState } from '@entities/asset';
 import { ChainIcon } from '@entities/chain';
 import { networkModel } from '@entities/network';
 import { AssetFiatBalance } from '@entities/price';
-import { EmptyAssetsState } from '@entities/asset';
-import { assetTransactionModel } from '../model/asset-transaction-model';
-import { assetTransactionUtils } from '../lib/utils';
 import { ModalType } from '../lib/types';
+import { assetTransactionUtils } from '../lib/utils';
+import { assetTransactionModel } from '../model/asset-transaction-model';
 
 type ModalDetailsProps = { title: string; path: PathType };
 
@@ -45,7 +45,9 @@ export const AssetTransactionModal = () => {
     assetTransactionModel.output.flowClosed,
   );
 
-  if (!assetWithChains || modalType === null) return null;
+  if (!assetWithChains || modalType === null) {
+    return null;
+  }
 
   const { title, path } = getModalDetails(modalType);
   const modalTitle = <HeaderTitleText>{t(title, { asset: assetWithChains.symbol })}</HeaderTitleText>;
@@ -65,7 +67,7 @@ export const AssetTransactionModal = () => {
         className="w-full"
         onChange={assetTransactionModel.events.queryChanged}
       />
-      <FootnoteText className="text-text-tertiary pt-4 pb-2">{t('portfolilo.selectNetworkLabel')}</FootnoteText>
+      <FootnoteText className="pb-2 pt-4 text-text-tertiary">{t('portfolilo.selectNetworkLabel')}</FootnoteText>
       <ul>
         {assetWithChains.chains.map((chain) => (
           <li
@@ -77,8 +79,8 @@ export const AssetTransactionModal = () => {
               to={createLink(path, {}, { chainId: [chain.chainId], assetId: [chain.assetId] })}
               onClick={() => assetTransactionModel.output.flowClosed()}
             >
-              <div className="flex items-center py-1.5 px-2">
-                <div className="flex items-center gap-x-2 px-2 py-1 mr-auto">
+              <div className="flex items-center px-2 py-1.5">
+                <div className="mr-auto flex items-center gap-x-2 px-2 py-1">
                   <ChainIcon src={chains[chain.chainId].icon} name={chain.name} size={24} />
                   <BodyText className="text-inherit">{chain.name}</BodyText>
                 </div>

@@ -1,5 +1,5 @@
-import { CaptionText } from '../Typography';
 import { cnTw } from '../../lib/utils';
+import { CaptionText } from '../Typography';
 import './Separator.css';
 
 type Props = {
@@ -9,8 +9,8 @@ type Props = {
 
 export const Separator = ({ text, className }: Props) => {
   return (
-    <div className={cnTw('flex items-center w-full spektr-separator border-divider', className)}>
-      <CaptionText className="text-text-tertiary uppercase mx-4" align="center">
+    <div className={cnTw('spektr-separator flex w-full items-center border-divider', className)}>
+      <CaptionText className="mx-4 uppercase text-text-tertiary" align="center">
         {text}
       </CaptionText>
     </div>

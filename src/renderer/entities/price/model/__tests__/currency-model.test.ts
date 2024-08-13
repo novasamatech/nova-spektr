@@ -1,8 +1,8 @@
-import { fork, allSettled } from 'effector';
+import { allSettled, fork } from 'effector';
 
+import { type CurrencyItem, fiatService } from '@shared/api/price-provider';
 import { kernelModel } from '@shared/core';
 import { currencyModel } from '../currency-model';
-import { fiatService, CurrencyItem } from '@shared/api/price-provider';
 
 describe('entities/price/model/currency-model', () => {
   const config: CurrencyItem[] = [

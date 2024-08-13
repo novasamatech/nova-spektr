@@ -1,13 +1,13 @@
+import { type ApiPromise } from '@polkadot/api';
+import { type UnsubscribePromise } from '@polkadot/api/types';
+import { type BalanceLock } from '@polkadot/types/interfaces';
+import { type Codec } from '@polkadot/types/types';
 import { BN, hexToU8a } from '@polkadot/util';
-import { ApiPromise } from '@polkadot/api';
-import { Codec } from '@polkadot/types/types';
-import { UnsubscribePromise } from '@polkadot/api/types';
-import { BalanceLock } from '@polkadot/types/interfaces';
 import noop from 'lodash/noop';
 import uniq from 'lodash/uniq';
 
+import { type AccountId, type Address, type Asset, type Balance, type Chain, type OrmlExtras } from '@shared/core';
 import { AssetType } from '@shared/core';
-import type { AccountId, Address, Asset, OrmlExtras, Balance, Chain } from '@shared/core';
 import { getAssetId, getRepeatedIndex, toAddress } from '@shared/lib/utils';
 
 export const balanceService = {

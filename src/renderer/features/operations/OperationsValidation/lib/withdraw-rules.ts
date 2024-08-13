@@ -1,10 +1,11 @@
-import { Store } from 'effector';
 import { BN } from '@polkadot/util';
+import { type Store } from 'effector';
+
+import { type Account } from '@shared/core';
+import { ZERO_BALANCE } from '@shared/lib/utils';
+import { type AmountFeeStore, type ShardsProxyFeeStore, type SignatoryFeeStore } from '../types/types';
 
 import { balanceValidation, descriptionValidation } from './validation';
-import { Account } from '@shared/core';
-import { AmountFeeStore, ShardsProxyFeeStore, SignatoryFeeStore } from '../types/types';
-import { ZERO_BALANCE } from '@shared/lib/utils';
 
 export const WithdrawRules = {
   shards: {

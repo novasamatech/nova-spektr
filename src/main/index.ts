@@ -1,16 +1,17 @@
 import 'source-map-support/register';
 
-import { app, BrowserWindow } from 'electron';
+import { type BrowserWindow, app } from 'electron';
 
+import { APP_CONFIG } from '../../app.config';
+
+import { runAppSingleInstance } from './factories/instance';
 import { setupLogger } from './factories/logs';
-import { createWindow } from './factories/window';
+import { processUrl, registerDeepLinkProtocol } from './factories/protocol';
 import { setupApplication } from './factories/setup';
 import { setupAutoUpdater } from './factories/updater';
-import { runAppSingleInstance } from './factories/instance';
-import { registerDeepLinkProtocol, processUrl } from './factories/protocol';
-import { PLATFORM } from './shared/constants/platform';
+import { createWindow } from './factories/window';
 import { ENVIRONMENT } from './shared/constants/environment';
-import { APP_CONFIG } from '../../app.config';
+import { PLATFORM } from './shared/constants/platform';
 
 runAppSingleInstance(async () => {
   if (ENVIRONMENT.IS_DEV || ENVIRONMENT.IS_STAGE) {
@@ -22,8 +23,11 @@ runAppSingleInstance(async () => {
   process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true';
   delete process.env.ELECTRON_ENABLE_SECURITY_WARNINGS;
 
-  PLATFORM.IS_LINUX && app.disableHardwareAcceleration();
+  if (PLATFORM.IS_LINUX) {
+    app.disableHardwareAcceleration();
+  }
 
+  // eslint-disable-next-line prefer-const
   let mainWindow: BrowserWindow | undefined;
 
   setupLogger();

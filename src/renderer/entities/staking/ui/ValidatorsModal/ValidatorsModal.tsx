@@ -1,8 +1,8 @@
-import { Accordion, BaseModal, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { Validator } from '@shared/core/types/validator';
+import { type Asset, type Explorer } from '@shared/core';
+import { type Validator } from '@shared/core/types/validator';
 import { cnTw } from '@shared/lib/utils';
-import type { Asset, Explorer } from '@shared/core';
+import { Accordion, BaseModal, SmallTitleText } from '@shared/ui';
 import { ValidatorsTable } from '../ValidatorsTable/ValidatorsTable';
 
 type Props = {
@@ -44,7 +44,7 @@ export const ValidatorsModal = ({
           <Accordion.Content>
             <ValidatorsTable validators={selectedValidators} listClassName="max-h-none">
               {(validator, rowStyle) => (
-                <li key={validator.address} className={cnTw(rowStyle, 'hover:bg-hover group')}>
+                <li key={validator.address} className={cnTw(rowStyle, 'group hover:bg-hover')}>
                   <ValidatorsTable.Row validator={validator} asset={asset} explorers={explorers} />
                 </li>
               )}
@@ -62,7 +62,7 @@ export const ValidatorsModal = ({
           <Accordion.Content>
             <ValidatorsTable validators={notSelectedValidators} listClassName="max-h-none">
               {(validator, rowStyle) => (
-                <li key={validator.address} className={cnTw(rowStyle, 'hover:bg-hover group')}>
+                <li key={validator.address} className={cnTw(rowStyle, 'group hover:bg-hover')}>
                   <ValidatorsTable.Row validator={validator} asset={asset} explorers={explorers} />
                 </li>
               )}

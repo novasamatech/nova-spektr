@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 
-import { cnTw, RootExplorers } from '@shared/lib/utils';
-import { ContactItem, ExplorersPopover } from '@entities/wallet';
 import { useI18n } from '@app/providers';
+import { type BaseAccount, type Chain, type ChainAccount, type ChainId } from '@shared/core';
+import { RootExplorers, cnTw } from '@shared/lib/utils';
 import { Accordion, FootnoteText, HelpText } from '@shared/ui';
-import type { Chain, ChainAccount, ChainId, BaseAccount } from '@shared/core';
 import { ChainTitle } from '@entities/chain';
+import { ContactItem, ExplorersPopover } from '@entities/wallet';
 
 type Props = {
   chains: Chain[];
@@ -52,7 +52,7 @@ export const MultishardAccountsList = ({ chains, accounts, className }: Props) =
                 </Accordion.Button>
                 <Accordion.Content>
                   {chainMap[chain.chainId].map((account) => (
-                    <div key={account.id} className="flex items-center py-1.5 mb-2 px-2">
+                    <div key={account.id} className="mb-2 flex items-center px-2 py-1.5">
                       <ExplorersPopover
                         address={account.accountId}
                         explorers={chain.explorers}
@@ -68,13 +68,13 @@ export const MultishardAccountsList = ({ chains, accounts, className }: Props) =
                           active={Boolean(account.derivationPath)}
                           title={t('general.explorers.derivationTitle')}
                         >
-                          <HelpText className="text-text-secondary break-all">{account.derivationPath}</HelpText>
+                          <HelpText className="break-all text-text-secondary">{account.derivationPath}</HelpText>
                         </ExplorersPopover.Group>
                       </ExplorersPopover>
                     </div>
                   ))}
 
-                  <hr className="border-divider my-1 w-full" />
+                  <hr className="my-1 w-full border-divider" />
                 </Accordion.Content>
               </Accordion>
             );

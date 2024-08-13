@@ -1,22 +1,15 @@
-import { useMemo } from 'react';
 import { useUnit } from 'effector-react';
+import { useMemo } from 'react';
 
-import { Signatory, Wallet, AccountId, MultisigWallet } from '@shared/core';
-import { BaseModal, FootnoteText, Tabs, DropdownIconButton, HelpText } from '@shared/ui';
-import { RootExplorers } from '@shared/lib/utils';
-import { useModalClose, useToggle } from '@shared/lib/hooks';
 import { useI18n } from '@app/providers';
-import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatBalance';
-import { IconNames } from '@shared/ui/Icon/data';
-import type { TabItem } from '@shared/ui/types';
-import { RenameWalletModal } from '@features/wallets/RenameWallet';
-import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
-import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
-import { ProxiesList } from '../components/ProxiesList';
-import { NoProxiesAction } from '../components/NoProxiesAction';
-import { walletProviderModel } from '../../model/wallet-provider-model';
-import { networkUtils, networkModel } from '@entities/network';
-import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
+import { type AccountId, type MultisigWallet, type Signatory, type Wallet } from '@shared/core';
+import { useModalClose, useToggle } from '@shared/lib/hooks';
+import { RootExplorers } from '@shared/lib/utils';
+import { BaseModal, DropdownIconButton, FootnoteText, HelpText, Tabs } from '@shared/ui';
+import { type IconNames } from '@shared/ui/Icon/data';
+import { type TabItem } from '@shared/ui/types';
+import { matrixModel, matrixUtils } from '@entities/matrix';
+import { networkModel, networkUtils } from '@entities/network';
 import {
   AccountsList,
   ContactItem,
@@ -26,7 +19,14 @@ import {
   accountUtils,
   permissionUtils,
 } from '@entities/wallet';
-import { matrixModel, matrixUtils } from '@entities/matrix';
+import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
+import { RenameWalletModal } from '@features/wallets/RenameWallet';
+import { WalletFiatBalance } from '@features/wallets/WalletSelect/ui/WalletFiatBalance';
+import { AddProxy, addProxyModel } from '@widgets/AddProxyModal';
+import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
+import { walletProviderModel } from '../../model/wallet-provider-model';
+import { NoProxiesAction } from '../components/NoProxiesAction';
+import { ProxiesList } from '../components/ProxiesList';
 
 type Props = {
   wallet: MultisigWallet;
@@ -70,7 +70,9 @@ export const MultisigWalletDetails = ({
     const anyProxy = permissionUtils.canCreateAnyProxy(wallet);
     const nonAnyProxy = permissionUtils.canCreateNonAnyProxy(wallet);
 
-    if (!singleChain) return anyProxy || nonAnyProxy;
+    if (!singleChain) {
+      return anyProxy || nonAnyProxy;
+    }
 
     return (anyProxy || nonAnyProxy) && networkUtils.isProxySupported(singleChain?.options);
   }, [singleChain]);
@@ -78,7 +80,9 @@ export const MultisigWalletDetails = ({
   const canCreatePureProxy = useMemo(() => {
     const anyProxy = permissionUtils.canCreateAnyProxy(wallet);
 
-    if (!singleChain) return anyProxy;
+    if (!singleChain) {
+      return anyProxy;
+    }
 
     return anyProxy && networkUtils.isPureProxySupported(singleChain?.options);
   }, [singleChain]);
@@ -135,17 +139,17 @@ export const MultisigWalletDetails = ({
     title: t('walletDetails.multisig.signatoriesTab'),
     panel: (
       <div className="flex flex-col">
-        <FootnoteText className="text-text-tertiary px-5">
+        <FootnoteText className="px-5 text-text-tertiary">
           {t('walletDetails.multisig.thresholdLabel', {
             min: multisigAccount.threshold,
             max: multisigAccount.signatories.length,
           })}
         </FootnoteText>
 
-        <div className="overflow-y-auto mt-4 h-[337px]">
+        <div className="mt-4 h-[337px] overflow-y-auto">
           {!singleChain && signatoryWallets.length > 0 && (
             <div className="flex flex-col gap-y-2">
-              <FootnoteText className="text-text-tertiary px-5">
+              <FootnoteText className="px-5 text-text-tertiary">
                 {t('walletDetails.multisig.walletsGroup')} {signatoryWallets.length}
               </FootnoteText>
 
@@ -177,7 +181,7 @@ export const MultisigWalletDetails = ({
 
           {singleChain && signatoryAccounts?.length && (
             <div className="flex flex-col gap-y-2 px-5">
-              <FootnoteText className="text-text-tertiary ">
+              <FootnoteText className="text-text-tertiary">
                 {t('walletDetails.multisig.accountsGroup')} {signatoryAccounts.length}
               </FootnoteText>
 
@@ -209,7 +213,7 @@ export const MultisigWalletDetails = ({
           )}
 
           {signatoryContacts.length > 0 && (
-            <div className="flex flex-col gap-y-2 mt-4 px-5">
+            <div className="mt-4 flex flex-col gap-y-2 px-5">
               <FootnoteText className="text-text-tertiary">
                 {t('walletDetails.multisig.contactsGroup')} {signatoryContacts.length}
               </FootnoteText>
@@ -226,7 +230,7 @@ export const MultisigWalletDetails = ({
                         active={Boolean(signatory.matrixId)}
                         title={t('general.explorers.matrixIdTitle')}
                       >
-                        <HelpText className="text-text-secondary break-all">{signatory.matrixId}</HelpText>
+                        <HelpText className="break-all text-text-secondary">{signatory.matrixId}</HelpText>
                       </ExplorersPopover.Group>
                     </ExplorersPopover>
                   </li>
@@ -269,8 +273,8 @@ export const MultisigWalletDetails = ({
       isOpen={isModalOpen}
       onClose={closeModal}
     >
-      <div className="flex flex-col gap-y-4 w-full">
-        <div className="py-6 px-5 border-b border-divider">
+      <div className="flex w-full flex-col gap-y-4">
+        <div className="border-b border-divider px-5 py-6">
           <WalletCardLg wallet={wallet} />
         </div>
 

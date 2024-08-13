@@ -1,9 +1,9 @@
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
-import { Button } from '@shared/ui';
+import { Button } from '../../Buttons';
+import { type Pallet } from '../../Buttons/common/types';
 import { BaseModal } from '../BaseModal/BaseModal';
-import { Pallet } from '../../Buttons/common/types';
 
 type Props = {
   isOpen: boolean;
@@ -35,7 +35,7 @@ export const ConfirmModal = ({
     onClose={onClose}
   >
     {children}
-    <div className="flex gap-x-3 mt-4">
+    <div className="mt-4 flex gap-x-3">
       {cancelText && (
         <Button className="flex-1" variant="fill" pallet="secondary" size="sm" onClick={onClose}>
           {cancelText}

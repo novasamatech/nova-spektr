@@ -1,11 +1,18 @@
-import { ApiPromise } from '@polkadot/api';
-import { BaseTxInfo, getRegistry, GetRegistryOpts, OptionsWithMeta, TypeRegistry } from '@substrate/txwrapper-polkadot';
-import { isHex, hexToU8a, bnMin, BN_TWO, BN } from '@polkadot/util';
+import { type ApiPromise } from '@polkadot/api';
+import { type u32 } from '@polkadot/types';
+import { type BN, BN_TWO, bnMin, hexToU8a, isHex } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
-import { u32 } from '@polkadot/types';
+import {
+  type BaseTxInfo,
+  type GetRegistryOpts,
+  type OptionsWithMeta,
+  type TypeRegistry,
+  getRegistry,
+} from '@substrate/txwrapper-polkadot';
 
-import { Address, CallData, CallHash, XcmPallets, ProxyType } from '@shared/core';
+import { type Address, type CallData, type CallHash, type ProxyType, XcmPallets } from '@shared/core';
 import { XcmTransferType } from '../../api/xcm';
+
 import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './constants';
 
 export type TxMetadata = { registry: TypeRegistry; options: OptionsWithMeta; info: BaseTxInfo };
@@ -15,9 +22,12 @@ const SUPPORTED_VERSIONS = ['V2'];
 const UNUSED_LABEL = 'unused';
 
 /**
- * Compose and return all the data needed for @substrate/txwrapper-polkadot signing
- * @param address account address
- * @param api polkadot connector
+ * Compose and return all the data needed for
+ *
+ * @param address Account address
+ * @param api Polkadot connector
+ *
+ * @substrate/txwrapper-polkadot signing
  */
 export const createTxMetadata = async (address: Address, api: ApiPromise): Promise<TxMetadata> => {
   const [{ block }, blockHash, metadataRpc, nonce, { specVersion, transactionVersion, specName }] = await Promise.all([
@@ -59,9 +69,11 @@ export const createTxMetadata = async (address: Address, api: ApiPromise): Promi
 
 /**
  * Check that callData correctly resembles callHash
- * @param callHash callHash value
- * @param callData callData value
- * @return {Boolean}
+ *
+ * @param callHash CallHash value
+ * @param callData CallData value
+ *
+ * @returns {Boolean}
  */
 export const validateCallData = <T extends string = CallData, K extends string = CallHash>(
   callData: T,
@@ -117,6 +129,15 @@ export const getCreatedDateFromApi = async (neededBlock: number, api: ApiPromise
   return getCreatedDate(neededBlock, currentBlock, blockTime.toNumber());
 };
 
+export const getTimeFromBlock = async (neededTime: number, api: ApiPromise): Promise<number> => {
+  const currentBlock = await getCurrentBlockNumber(api);
+  const blockTime = getExpectedBlockTime(api);
+
+  const completedBlocks = Math.ceil(neededTime / blockTime.toNumber());
+
+  return Math.max(0, currentBlock - completedBlocks);
+};
+
 export const getTypeVersion = (api: ApiPromise, typeName: string): string => {
   const enumValues = getTypeEnumValues(api, typeName);
   const supportedVersions = enumValues.filter((value) => SUPPORTED_VERSIONS.includes(value));
@@ -136,7 +157,7 @@ export const getProxyTypes = (api: ApiPromise): ProxyType[] => {
 };
 
 export const getTypeEnumValues = <T extends string>(api: ApiPromise, typeName: string): T[] => {
-  // @ts-ignore
+  // @ts-expect-error TODO fix
   return api.createType(typeName).defKeys;
 };
 

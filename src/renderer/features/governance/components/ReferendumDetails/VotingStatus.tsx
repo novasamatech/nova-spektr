@@ -1,24 +1,26 @@
-import { useState } from 'react';
-
-import { referendumService, votingService, VoteChart } from '@entities/governance';
+import { useI18n } from '@app/providers';
+import { type Asset, type Chain, type OngoingReferendum } from '@shared/core';
 import { formatBalance } from '@shared/lib/utils';
 import { Button, FootnoteText, Icon } from '@shared/ui';
-import { useI18n } from '@app/providers';
-import { Asset, Chain } from '@shared/core';
+import { VoteChart, referendumService, votingService } from '@entities/governance';
+import { type AggregatedReferendum } from '../../types/structs';
 import { VotingStatusBadge } from '../VotingStatusBadge';
-import { AggregatedReferendum } from '../../types/structs';
-import { VoteDialog } from './VoteDialog';
+
+export type VoteRequestParams = { referendum: OngoingReferendum; chain: Chain; asset: Asset };
 
 type Props = {
   referendum: AggregatedReferendum;
   chain: Chain;
   asset: Asset | null;
+  canVote: boolean;
+  onVoteRequest: (params: VoteRequestParams) => unknown;
 };
 
-export const VotingStatus = ({ referendum, chain, asset }: Props) => {
+export const VotingStatus = ({ referendum, asset, chain, canVote, onVoteRequest }: Props) => {
   const { t } = useI18n();
+
   const { approvalThreshold, supportThreshold } = referendum;
-  const [voteOpen, setVoteOpen] = useState(false);
+
   if (!asset) {
     return null;
   }
@@ -35,14 +37,14 @@ export const VotingStatus = ({ referendum, chain, asset }: Props) => {
       : null;
 
   const votedBalance = votedCount ? formatBalance(votedCount.voted, asset.precision, { K: true }) : null;
-  const supportThresholdBalance = votedCount ? formatBalance(votedCount.of, asset.precision, { K: true }) : null;
+  const supportThresholdBalance = votedCount ? formatBalance(votedCount.threshold, asset.precision, { K: true }) : null;
 
   return (
     <div className="flex flex-col items-start gap-6">
       <VotingStatusBadge passing={isPassing} referendum={referendum} />
       {votedFractions && <VoteChart bgColor="icon-button" descriptionPosition="bottom" {...votedFractions} />}
       {votedBalance && supportThresholdBalance && (
-        <div className="flex items-center gap-1.5 flex-wrap w-full">
+        <div className="flex w-full flex-wrap items-center gap-1.5">
           <Icon name="checkmarkOutline" size={18} className="text-icon-positive" />
           <FootnoteText className="text-text-secondary">{t('governance.referendum.threshold')}</FootnoteText>
           <FootnoteText className="grow text-end">
@@ -54,11 +56,22 @@ export const VotingStatus = ({ referendum, chain, asset }: Props) => {
           </FootnoteText>
         </div>
       )}
-      <Button className="w-full" onClick={() => setVoteOpen(true)}>
-        {t('governance.referendum.vote')}
-      </Button>
 
-      {voteOpen && <VoteDialog referendum={referendum} chain={chain} onClose={() => setVoteOpen(false)} />}
+      {canVote && referendumService.isOngoing(referendum) && !!asset && !referendum.isVoted && (
+        <Button className="w-full" onClick={() => onVoteRequest({ referendum, asset, chain })}>
+          {t('governance.referendum.vote')}
+        </Button>
+      )}
+
+      {canVote && referendumService.isOngoing(referendum) && !!asset && referendum.isVoted && (
+        <div className="flex w-full flex-col justify-stretch gap-4">
+          <Button className="w-full">{t('governance.referendum.revote')}</Button>
+
+          <Button className="w-full" pallet="secondary">
+            {t('governance.referendum.retract')}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

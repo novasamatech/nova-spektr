@@ -1,8 +1,8 @@
-import { PropsWithChildren, ReactNode, ComponentPropsWithoutRef } from 'react';
+import { type ComponentPropsWithoutRef, type PropsWithChildren, type ReactNode } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
-import { ViewClass, SizeClass, Padding } from '../common/constants';
-import { Pallet, Variant } from '../common/types';
+import { Padding, SizeClass, ViewClass } from '../common/constants';
+import { type Pallet, type Variant } from '../common/types';
 
 export type HTMLAnchorProps = 'href' | 'target' | 'className';
 
@@ -28,7 +28,7 @@ export const ButtonWebLink = ({
   suffixElement,
 }: PropsWithChildren<Props>) => {
   const classes = cnTw(
-    'flex items-center justify-center gap-x-2 font-medium select-none outline-offset-1',
+    'flex select-none items-center justify-center gap-x-2 font-medium outline-offset-1',
     SizeClass[size],
     variant !== 'text' && Padding[size],
     ViewClass[`${variant}_${pallet}`],

@@ -1,5 +1,5 @@
 import { Menu } from '@headlessui/react';
-import { PropsWithChildren, ReactNode, useRef, MouseEvent } from 'react';
+import { type MouseEvent, type PropsWithChildren, type ReactNode, useRef } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
 
@@ -41,8 +41,8 @@ export const MenuPopover = ({
             ref={menuRef}
             style={{ marginTop: offsetPx + 'px' }}
             className={cnTw(
-              'bg-token-container-background z-10 absolute rounded-md border border-token-container-border',
-              'shadow-card-shadow w-max py-4 px-3',
+              'absolute z-10 rounded-md border border-token-container-border bg-token-container-background',
+              'w-max px-3 py-4 shadow-card-shadow',
               position,
               className,
             )}

@@ -1,12 +1,14 @@
-import { Transaction } from 'dexie';
+import { type Transaction } from 'dexie';
 
-import { MultisigEventDS } from '../lib/types';
+import { type MultisigEventDS } from '../lib/types';
 
 /**
- * Remove events from MultisigTransactions
- * Add events to separate table MultisigEvents
- * @param trans transactions from DB
- * @return {Promise}
+ * Remove events from MultisigTransactions Add events to separate table
+ * MultisigEvents
+ *
+ * @param trans Transactions from DB
+ *
+ * @returns {Promise}
  */
 export async function migrateEvents(trans: Transaction): Promise<void> {
   const txs = await trans.table('multisigTransactions').toArray();

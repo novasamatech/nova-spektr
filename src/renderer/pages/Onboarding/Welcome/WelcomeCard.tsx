@@ -1,7 +1,7 @@
-import { cnTw } from '@shared/lib/utils';
-import { Icon, BodyText, CaptionText, FootnoteText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { IconNames } from '@shared/ui/Icon/data';
+import { cnTw } from '@shared/lib/utils';
+import { BodyText, CaptionText, FootnoteText, Icon } from '@shared/ui';
+import { type IconNames } from '@shared/ui/Icon/data';
 
 type Props = {
   title: string;
@@ -18,21 +18,21 @@ export const WelcomeCard = ({ title, description, iconName, disabled, onClick }:
     <button
       disabled={disabled}
       className={cnTw(
-        'flex items-center gap-4 px-4 py-2 rounded-lg border border-filter-border shadow-card-shadow',
-        !disabled && 'shadow-card-shadow bg-block-background-default hover:shadow-card-shadow-level2',
+        'flex items-center gap-4 rounded-lg border border-filter-border px-4 py-2 shadow-card-shadow',
+        !disabled && 'bg-block-background-default shadow-card-shadow hover:shadow-card-shadow-level2',
         disabled && 'bg-input-background-disabled',
       )}
       onClick={onClick}
     >
       <Icon size={56} name={iconName} />
 
-      <div className="flex-1 flex flex-col gap-y-1">
-        <div className="flex justify-between items-center w-full">
+      <div className="flex flex-1 flex-col gap-y-1">
+        <div className="flex w-full items-center justify-between">
           <BodyText className={cnTw('pb-1', disabled ? 'text-text-tertiary' : 'text-text-primary')}>{title}</BodyText>
 
           {disabled ? (
             <CaptionText
-              className="text-white uppercase bg-label-background-gray px-2 py-1 rounded-full"
+              className="rounded-full bg-label-background-gray px-2 py-1 uppercase text-white"
               data-testid="progress"
             >
               {t('onboarding.welcome.soonBadge')}

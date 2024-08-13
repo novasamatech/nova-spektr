@@ -1,8 +1,8 @@
+import { type PropsWithChildren } from 'react';
 import { Trans } from 'react-i18next';
-import { PropsWithChildren } from 'react';
 
-import { FootnoteText, Icon, Popover, SmallTitleText, LabelHelpBox } from '@shared/ui';
 import { useI18n } from '@app/providers';
+import { FootnoteText, Icon, LabelHelpBox, Popover, SmallTitleText } from '@shared/ui';
 
 // const WIKI_LINK = '';
 
@@ -37,7 +37,7 @@ export const PureProxyPopover = ({ children }: PropsWithChildren) => {
       }
     >
       {children ? (
-        <LabelHelpBox className="mt-4 mb-6">{children}</LabelHelpBox>
+        <LabelHelpBox className="mb-6 mt-4">{children}</LabelHelpBox>
       ) : (
         <Icon name="questionOutline" className="hover:text-icon-hover active:text-icon-active" size={16} />
       )}

@@ -1,6 +1,6 @@
-import { Icon, FootnoteText, Plate, BodyText, HelpText } from '@shared/ui';
 import { useI18n } from '@app/providers';
 import { cnTw } from '@shared/lib/utils';
+import { BodyText, FootnoteText, HelpText, Icon, Plate } from '@shared/ui';
 
 const Links = [
   {
@@ -47,7 +47,7 @@ export const SocialLinks = () => {
           <Plate as="li" key={link.title} className="p-0">
             <a
               className={cnTw(
-                'w-full grid grid-flow-col grid-cols-[auto,1fr,auto] items-center gap-x-2 p-3 rounded-md',
+                'grid w-full grid-flow-col grid-cols-[auto,1fr,auto] items-center gap-x-2 rounded-md p-3',
                 'transition hover:shadow-card-shadow focus:shadow-card-shadow',
               )}
               href={link.href}

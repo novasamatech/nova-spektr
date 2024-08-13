@@ -1,35 +1,36 @@
 import groupBy from 'lodash/groupBy';
 import unionBy from 'lodash/unionBy';
-import { TFunction } from 'react-i18next';
+import { type TFunction } from 'react-i18next';
 
+import { chainsService } from '@shared/api/network';
 import {
-  DerivationValidationError,
-  DerivationWithPath,
-  ImportedDerivation,
-  ImportFileChain,
-  ImportFileKey,
-  ParsedData,
-  ParsedImportFile,
-  TypedImportedDerivation,
-  ValidationError,
-} from './types';
-import {
-  AccountId,
+  type AccountId,
   AccountType,
-  Address,
-  ChainAccount,
-  ChainId,
+  type Address,
+  type ChainAccount,
+  type ChainId,
   ChainType,
   CryptoType,
-  DraftAccount,
-  HexString,
+  type DraftAccount,
+  type HexString,
   KeyType,
-  ShardAccount,
+  type ShardAccount,
 } from '@shared/core';
-import { chainsService } from '@shared/api/network';
 import { toAccountId } from '@shared/lib/utils';
-import { ErrorDetails } from './derivation-import-error';
 import { KEY_NAMES, SHARDED_KEY_NAMES } from '@entities/wallet';
+
+import { type ErrorDetails } from './derivation-import-error';
+import {
+  DerivationValidationError,
+  type DerivationWithPath,
+  type ImportFileChain,
+  type ImportFileKey,
+  type ImportedDerivation,
+  type ParsedData,
+  type ParsedImportFile,
+  type TypedImportedDerivation,
+  ValidationError,
+} from './types';
 
 const IMPORT_FILE_VERSION = '1';
 
@@ -298,7 +299,7 @@ function mergeChainDerivations(
 
 function renameDerivationPathKeyReviver(key: unknown, value: unknown) {
   if (key === 'derivation_path') {
-    // @ts-ignore
+    // @ts-expect-error TODO fix
     this['derivationPath'] = value;
     // when reviewer function returns undefined property deleted from the object
     // so old key 'derivation_path' is deleted and 'derivationPath' added

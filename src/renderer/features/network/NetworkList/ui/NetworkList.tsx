@@ -1,9 +1,9 @@
-import { ReactNode, useEffect, useRef } from 'react';
+import { type ReactNode, useEffect, useRef } from 'react';
 
-import { ExtendedChain } from '@entities/network';
-import { CaptionText, Counter, Accordion } from '@shared/ui';
-import { networksListUtils } from '../lib/networks-list-utils';
 import { useToggle } from '@shared/lib/hooks';
+import { Accordion, CaptionText, Counter } from '@shared/ui';
+import { type ExtendedChain } from '@entities/network';
+import { networksListUtils } from '../lib/networks-list-utils';
 
 type Props = {
   title: string;
@@ -24,15 +24,17 @@ export const NetworkList = ({ title, query, networkList, children }: Props) => {
     buttonRef.current.click();
   }, [query]);
 
-  if (networkList.length === 0) return null;
+  if (networkList.length === 0) {
+    return null;
+  }
 
   const { success, connecting, error } = networksListUtils.getStatusMetrics(networkList);
 
   return (
     <Accordion isDefaultOpen={isListOpen}>
       <Accordion.Button buttonClass="py-1.5 px-2" ref={buttonRef} onClick={toggleList}>
-        <div className="flex items-center gap-x-1.5 w-full">
-          <CaptionText as="h2" className="uppercase text-text-secondary tracking-[0.75px]">
+        <div className="flex w-full items-center gap-x-1.5">
+          <CaptionText as="h2" className="uppercase tracking-[0.75px] text-text-secondary">
             {title}
           </CaptionText>
           <Counter variant="waiting">{networkList.length}</Counter>

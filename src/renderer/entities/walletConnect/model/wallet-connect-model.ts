@@ -1,26 +1,26 @@
 import Client from '@walletconnect/sign-client';
-import { PairingTypes, SessionTypes } from '@walletconnect/types';
+import { type PairingTypes, type SessionTypes } from '@walletconnect/types';
 import { getSdkError } from '@walletconnect/utils';
 import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import keyBy from 'lodash/keyBy';
 
-import { nonNullable } from '@shared/lib/utils';
-import { ID, WcAccount, kernelModel, Wallet, Account } from '@shared/core';
 import { localStorageService } from '@shared/api/local-storage';
 import { storageService } from '@shared/api/storage';
+import { type Account, type ID, type Wallet, type WcAccount, kernelModel } from '@shared/core';
+import { nonNullable } from '@shared/lib/utils';
 import { walletModel, walletUtils } from '@entities/wallet';
-import { InitConnectParams } from '../lib/types';
-import { walletConnectUtils } from '../lib/utils';
 import {
-  WALLETCONNECT_CLIENT_ID,
-  DEFAULT_LOGGER,
-  DEFAULT_RELAY_URL,
-  DEFAULT_PROJECT_ID,
   DEFAULT_APP_METADATA,
-  DEFAULT_POLKADOT_METHODS,
+  DEFAULT_LOGGER,
   DEFAULT_POLKADOT_EVENTS,
+  DEFAULT_POLKADOT_METHODS,
+  DEFAULT_PROJECT_ID,
+  DEFAULT_RELAY_URL,
   EXTEND_PAIRING,
+  WALLETCONNECT_CLIENT_ID,
 } from '../lib/constants';
+import { type InitConnectParams } from '../lib/types';
+import { walletConnectUtils } from '../lib/utils';
 
 type SessionTopicParams = {
   accounts: Account[];
@@ -155,10 +155,8 @@ const updateWcAccountsFx = createEffect(
   async ({ wallet, accounts }: UpdateParams): Promise<WcAccount[] | undefined> => {
     const oldAccountIds = wallet.accounts.map((account) => account.id);
 
-    const [_, newAccounts] = await Promise.all([
-      storageService.accounts.deleteAll(oldAccountIds),
-      storageService.accounts.createAll(accounts),
-    ]);
+    await storageService.accounts.deleteAll(oldAccountIds);
+    const newAccounts = await storageService.accounts.createAll(accounts);
 
     return newAccounts as WcAccount[];
   },
@@ -193,7 +191,7 @@ const initConnectFx = createEffect(
 
 type ConnectParams = {
   client: Client;
-  approval: () => Promise<any>;
+  approval: () => Promise<unknown>;
   onConnect?: () => void;
 };
 type ConnectResult = {
@@ -240,11 +238,11 @@ sample({
   clock: updateWcAccountsFx.done,
   source: walletModel.$wallets,
   filter: (_, { result: accounts }) => Boolean(accounts?.length),
-  fn: (wallets, { result, params }) => {
-    return wallets.map((wallet) => {
+  fn: (wallets, { params }) => {
+    return wallets.map<Wallet>((wallet) => {
       if (wallet.id !== params.wallet.id) return wallet;
 
-      return { ...wallet, accounts: params.accounts } as Wallet;
+      return { ...wallet, accounts: params.accounts };
     });
   },
   target: walletModel.$wallets,
@@ -301,7 +299,7 @@ sample({
   filter: (client, initData) => Boolean(client) && Boolean(initData?.approval),
   fn: ($client, initData) => ({
     client: $client!,
-    approval: initData?.approval!,
+    approval: initData!.approval,
   }),
   target: connectFx,
 });

@@ -1,5 +1,5 @@
-import { MultisigEvent, MultisigTransactionKey } from '@shared/core';
-import { TMultisigEvent, IMultisigEventStorage, MultisigEventDS, ID } from '../lib/types';
+import { type MultisigEvent, type MultisigTransactionKey } from '@shared/core';
+import { type ID, type IMultisigEventStorage, type MultisigEventDS, type TMultisigEvent } from '../lib/types';
 
 export const useMultisigEventStorage = (db: TMultisigEvent): IMultisigEventStorage => ({
   getEvent: (id: ID): Promise<MultisigEventDS | undefined> => {
@@ -22,12 +22,12 @@ export const useMultisigEventStorage = (db: TMultisigEvent): IMultisigEventStora
   },
 
   updateEvent: (event: MultisigEventDS): Promise<ID> => {
-    //@ts-ignore
+    // @ts-expect-error TODO fix
     return db.update(event.id, event);
   },
 
   deleteEvent: (id: ID): Promise<void> => {
-    //@ts-ignore
+    // @ts-expect-error TODO fix
     return db.delete([id]);
   },
 });

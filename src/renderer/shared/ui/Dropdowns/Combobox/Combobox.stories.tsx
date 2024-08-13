@@ -1,7 +1,8 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { type ComponentMeta, type ComponentStory } from '@storybook/react';
 
 import { Icon } from '../../Icon/Icon';
 import { Identicon } from '../../Identicon/Identicon';
+
 import { Combobox } from './Combobox';
 
 export default {
@@ -63,6 +64,6 @@ Custom.args = {
   label: 'Payout account',
   value: customOptions[2],
   options: customOptions,
-  suffixElement: <Icon name="warnCutout" className="text-alert right-2 top-[9px] absolute" size={16} />,
+  suffixElement: <Icon name="warnCutout" className="absolute right-2 top-[9px] text-alert" size={16} />,
   onChange: () => {},
 };

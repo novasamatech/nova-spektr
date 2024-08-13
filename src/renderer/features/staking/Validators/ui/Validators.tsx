@@ -1,12 +1,12 @@
 import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
-import { Button, Loader, Icon, BodyText, Checkbox, SmallTitleText, Shimmering, SearchInput } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { ValidatorsTable } from '@entities/staking';
+import { type Validator } from '@shared/core';
 import { cnTw } from '@shared/lib/utils';
+import { BodyText, Button, Checkbox, Icon, Loader, SearchInput, Shimmering, SmallTitleText } from '@shared/ui';
+import { ValidatorsTable } from '@entities/staking';
 import { validatorsModel } from '../model/validators-model';
-import { Validator } from '@shared/core';
 
 type Props = {
   onGoBack: () => void;
@@ -14,7 +14,7 @@ type Props = {
 
 export const Validators = ({ onGoBack }: Props) => {
   return (
-    <div className="w-[784px] max-h-[660px] py-4">
+    <div className="max-h-[660px] w-[784px] py-4">
       <Header />
       <Spinner />
       <NoValidators />
@@ -55,10 +55,12 @@ const Header = () => {
 const Spinner = () => {
   const isValidatorsLoading = useUnit(validatorsModel.$isValidatorsLoading);
 
-  if (!isValidatorsLoading) return null;
+  if (!isValidatorsLoading) {
+    return null;
+  }
 
   return (
-    <div className="h-[288px] flex items-center justify-center">
+    <div className="flex h-[288px] items-center justify-center">
       <Loader color="primary" size={25} />
     </div>
   );
@@ -70,7 +72,9 @@ const NoValidators = () => {
   const validators = useUnit(validatorsModel.$validators);
   const isValidatorsLoading = useUnit(validatorsModel.$isValidatorsLoading);
 
-  if (isValidatorsLoading || validators.length > 0) return null;
+  if (isValidatorsLoading || validators.length > 0) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col items-center justify-center gap-y-4">
@@ -85,7 +89,9 @@ const ValidatorsList = () => {
   const isValidatorsLoading = useUnit(validatorsModel.$isValidatorsLoading);
   const selectedValidators = useUnit(validatorsModel.$selectedValidators);
 
-  if (isValidatorsLoading || validators.length === 0) return null;
+  if (isValidatorsLoading || validators.length === 0) {
+    return null;
+  }
 
   return (
     <ValidatorsTable validators={validators}>
@@ -111,13 +117,13 @@ const RowItem = memo(({ validator, rowStyle, isChecked }: RowProps) => {
   const asset = useUnit(validatorsModel.$asset);
 
   return (
-    <li className="pl-5 hover:bg-hover group">
+    <li className="group pl-5 hover:bg-hover">
       <Checkbox
         checked={isChecked}
         disabled={validator.blocked}
         onChange={() => validatorsModel.events.validatorToggled(validator)}
       >
-        <div className={cnTw(rowStyle, 'pl-0 hover:bg-transparent flex-1')}>
+        <div className={cnTw(rowStyle, 'flex-1 pl-0 hover:bg-transparent')}>
           <ValidatorsTable.Row validator={validator} asset={asset || undefined} explorers={chain?.explorers} />
         </div>
       </Checkbox>
@@ -132,7 +138,7 @@ const ActionsSection = ({ onGoBack }: Props) => {
   const canSubmit = useUnit(validatorsModel.$canSubmit);
 
   return (
-    <div className="flex justify-between mt-7 px-5">
+    <div className="mt-7 flex justify-between px-5">
       <Button variant="text" onClick={onGoBack}>
         {t('staking.bond.backButton')}
       </Button>

@@ -1,18 +1,22 @@
-import { ReactNode, useRef, useState } from 'react';
 import { useUnit } from 'effector-react';
+import { type ReactNode, useRef, useState } from 'react';
 
-import { BaseModal, HeaderTitleText, IconButton } from '@shared/ui';
-import { useModalClose } from '@shared/lib/hooks';
 import { useI18n } from '@app/providers';
-import { TransactionType, WalletType, type BasketTransaction } from '@shared/core';
+import { type BasketTransaction, TransactionType, WalletType } from '@shared/core';
+import { useModalClose } from '@shared/lib/hooks';
+import { cnTw } from '@shared/lib/utils';
+import { BaseModal, HeaderTitleText, IconButton } from '@shared/ui';
+import { OperationTitle } from '@entities/chain';
+import { networkModel } from '@entities/network';
+import { SignButton } from '@entities/operations';
+import { TransferTypes, XcmTypes } from '@entities/transaction';
 import { OperationSign, OperationSubmit } from '@features/operations';
-import { signOperationsUtils } from '../lib/sign-operations-utils';
-import { signOperationsModel } from '../model/sign-operations-model';
 import {
   AddProxyConfirm,
   AddPureProxiedConfirm,
   BondExtraConfirmation,
   BondNominateConfirmation,
+  DelegateConfirmation,
   NominateConfirmation,
   PayeeConfirmation,
   RemoveProxyConfirm,
@@ -22,14 +26,12 @@ import {
   UnstakeConfirmation,
   WithdrawConfirmation,
 } from '@features/operations/OperationsConfirm';
-import { TransferTypes, XcmTypes } from '@entities/transaction';
-import { networkModel } from '@entities/network';
-import { OperationTitle } from '@entities/chain';
+import { UnlockConfirmation } from '@/widgets/UnlockModal/ui/UnlockConfirmation';
 import { getOperationTitle } from '../lib/operation-title';
-import { cnTw } from '@shared/lib/utils';
-import { Step } from '../types';
-import { SignButton } from '@entities/operations';
+import { signOperationsUtils } from '../lib/sign-operations-utils';
 import { getCoreTx } from '../lib/utils';
+import { signOperationsModel } from '../model/sign-operations-model';
+import { Step } from '../types';
 
 export const SignOperations = () => {
   const { t } = useI18n();
@@ -49,22 +51,23 @@ export const SignOperations = () => {
 
   const scroll = (value: number) => {
     setTimeout(() =>
-      // TS doesn't recognize offsetLeft
-      // @ts-ignore
+      // @ts-expect-error TS doesn't recognize offsetLeft
       ref.current?.scrollTo({ left: ref.current?.childNodes[0].childNodes[value].offsetLeft - 16, behavior: 'smooth' }),
     );
   };
 
-  if (signOperationsUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  if (signOperationsUtils.isSubmitStep(step)) {
+    return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  }
 
-  const getModalTitle = (basketTransaction: BasketTransaction): String | ReactNode => {
+  const getModalTitle = (basketTransaction: BasketTransaction): string | ReactNode => {
     const chain = chains[basketTransaction.coreTx.chainId];
 
     const { title, params } = getOperationTitle(basketTransaction, chain);
 
     return (
       <OperationTitle
-        className="justify-center my-3"
+        className="my-3 justify-center"
         title={`${t(title, { ...params })}`}
         chainId={basketTransaction.coreTx.chainId}
       />
@@ -72,7 +75,7 @@ export const SignOperations = () => {
   };
 
   const getConfirmScreen = (transaction: BasketTransaction) => {
-    const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE, TransactionType.BOND]);
+    const coreTx = getCoreTx(transaction);
     const type = coreTx.type;
     const config = { withFormatAmount: false };
 
@@ -94,9 +97,11 @@ export const SignOperations = () => {
       [TransactionType.RESTAKE]: () => <RestakeConfirmation id={transaction.id} hideSignButton />,
       [TransactionType.DESTINATION]: () => <PayeeConfirmation id={transaction.id} hideSignButton />,
       [TransactionType.UNSTAKE]: () => <UnstakeConfirmation id={transaction.id} hideSignButton />,
+      [TransactionType.DELEGATE]: () => <DelegateConfirmation id={transaction.id} hideSignButton config={config} />,
+      [TransactionType.UNLOCK]: () => <UnlockConfirmation id={transaction.id} hideSignButton />,
     };
 
-    // @ts-ignore
+    // @ts-expect-error not all types are used
     return Components[type];
   };
 
@@ -145,12 +150,12 @@ export const SignOperations = () => {
     >
       {signOperationsUtils.isConfirmStep(step) && (
         <>
-          <div className="bg-background-default overflow-x-hidden py-4" ref={ref}>
+          <div className="overflow-x-hidden bg-background-default py-4" ref={ref}>
             {transactions.length > 0 && signOperationsUtils.isConfirmStep(step) && (
-              <div className="flex gap-2 first:ml-4 ">
+              <div className="flex gap-2 first:ml-4">
                 {transactions.map((t) => (
-                  <div key={t.id} className="flex flex-col h-[622px]  last-of-type:pr-4">
-                    <div className="w-[440px] bg-white rounded-lg shadow-shadow-2 max-h-full overflow-y-auto">
+                  <div key={t.id} className="flex h-[622px] flex-col last-of-type:pr-4">
+                    <div className="max-h-full w-[440px] overflow-y-auto rounded-lg bg-white shadow-shadow-2">
                       {getModalTitle(t)}
                       {getConfirmScreen(t)?.()}
                     </div>
@@ -160,18 +165,18 @@ export const SignOperations = () => {
             )}
           </div>
 
-          <div className="flex justify-between bg-white pt-3 px-5 pb-4 rounded-lg">
+          <div className="flex justify-between rounded-lg bg-white px-5 pb-4 pt-3">
             <div className="flex gap-2">
               <IconButton
                 size={20}
-                className="border w-[42px] h-[42px] flex items-center justify-center"
+                className="flex h-[42px] w-[42px] items-center justify-center border"
                 name="left"
                 onClick={previousTx}
               />
               <div
                 className={cnTw(
-                  'rounded-full font-semibold border border-divider w-[77px] h-[42px]',
-                  'text-text-secondary flex items-center justify-center',
+                  'h-[42px] w-[77px] rounded-full border border-divider font-semibold',
+                  'flex items-center justify-center text-text-secondary',
                   'shadow-shadow-1',
                 )}
               >
@@ -179,7 +184,7 @@ export const SignOperations = () => {
               </div>
               <IconButton
                 size={20}
-                className="border w-[42px] h-[42px] flex items-center justify-center"
+                className="flex h-[42px] w-[42px] items-center justify-center border"
                 name="right"
                 onClick={nextTx}
               />

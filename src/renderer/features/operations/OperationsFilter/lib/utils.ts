@@ -1,6 +1,7 @@
-import { TFunction } from 'react-i18next';
+import { type TFunction } from 'react-i18next';
 
-import { MultisigTxInitStatus, MultisigTxFinalStatus, TransactionType } from '@shared/core';
+import { MultisigTxFinalStatus, MultisigTxInitStatus, TransactionType } from '@shared/core';
+
 import { UNKNOWN_TYPE } from './constants';
 
 export const getStatusOptions = (t: TFunction) => {
@@ -99,6 +100,21 @@ export const getTransactionOptions = (t: TFunction) => {
       id: TransactionType.REMOVE_PURE_PROXY,
       value: TransactionType.REMOVE_PURE_PROXY,
       element: t('operations.titles.removePureProxy'),
+    },
+    {
+      id: TransactionType.UNLOCK,
+      value: TransactionType.UNLOCK,
+      element: t('operations.titles.unlock'),
+    },
+    {
+      id: TransactionType.VOTE,
+      value: TransactionType.VOTE,
+      element: t('operations.titles.vote'),
+    },
+    {
+      id: TransactionType.RETRACT_VOTE,
+      value: TransactionType.RETRACT_VOTE,
+      element: t('operations.titles.retractVote'),
     },
     {
       id: UNKNOWN_TYPE,

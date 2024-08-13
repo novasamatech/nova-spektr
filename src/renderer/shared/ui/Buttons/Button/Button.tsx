@@ -1,10 +1,10 @@
 import noop from 'lodash/noop';
-import { MouseEvent, PropsWithChildren, ReactNode, forwardRef } from 'react';
+import { type MouseEvent, type PropsWithChildren, type ReactNode, forwardRef } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
-import { ViewClass, SizeClass, Padding } from '../common/constants';
-import { Pallet, Variant } from '../common/types';
 import { Loader } from '../../Loader/Loader';
+import { Padding, SizeClass, ViewClass } from '../common/constants';
+import { type Pallet, type Variant } from '../common/types';
 
 type Props = {
   className?: string;
@@ -46,7 +46,7 @@ export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
       form={form}
       disabled={disabled}
       className={cnTw(
-        'flex items-center justify-center gap-x-2 select-none outline-offset-1 transition-colors',
+        'flex select-none items-center justify-center gap-x-2 outline-offset-1 transition-colors',
         (prefixElement || suffixElement || isLoading) && 'justify-between',
         SizeClass[size],
         variant !== 'text' && Padding[size],

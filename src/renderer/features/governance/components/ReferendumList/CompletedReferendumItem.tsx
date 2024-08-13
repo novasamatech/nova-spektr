@@ -1,11 +1,12 @@
 import { memo } from 'react';
 
 import { useI18n } from '@app/providers';
-import { Voted } from '@entities/governance';
-import { FootnoteText, HeadlineText, Shimmering } from '@shared/ui';
 import { type CompletedReferendum } from '@shared/core';
+import { FootnoteText, HeadlineText, Shimmering } from '@shared/ui';
+import { Voted } from '@entities/governance';
 import { type AggregatedReferendum } from '../../types/structs';
 import { VotingStatusBadge } from '../VotingStatusBadge';
+
 import { ListItem } from './ListItem';
 
 type Props = {
@@ -27,7 +28,7 @@ export const CompletedReferendumItem = memo<Props>(({ referendum, isTitlesLoadin
 
   return (
     <ListItem onClick={() => onSelect(referendum)}>
-      <div className="flex items-center gap-x-2 w-full">
+      <div className="flex w-full items-center gap-x-2">
         <Voted active={referendum.isVoted} />
         <VotingStatusBadge referendum={referendum} />
         <FootnoteText className="ml-auto text-text-secondary">#{referendum.referendumId}</FootnoteText>

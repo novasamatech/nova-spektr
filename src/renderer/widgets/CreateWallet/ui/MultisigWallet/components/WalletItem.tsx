@@ -1,8 +1,8 @@
 import { memo } from 'react';
 
-import { WalletIcon } from '@entities/wallet';
-import { WalletType } from '@shared/core';
+import { type WalletType } from '@shared/core';
 import { BodyText } from '@shared/ui';
+import { WalletIcon } from '@entities/wallet';
 
 type Props = {
   name: string;
@@ -12,11 +12,11 @@ type Props = {
 // TODO: Rebuild with new components
 export const WalletItem = memo(({ name, type }: Props) => {
   return (
-    <div className="flex items-center gap-x-2 w-full">
+    <div className="flex w-full items-center gap-x-2">
       <WalletIcon type={type} />
 
-      <div className="flex flex-col max-w-[348px]">
-        <BodyText as="span" className="text-text-secondary tracking-tight truncate">
+      <div className="flex max-w-[348px] flex-col">
+        <BodyText as="span" className="truncate tracking-tight text-text-secondary">
           {name}
         </BodyText>
       </div>

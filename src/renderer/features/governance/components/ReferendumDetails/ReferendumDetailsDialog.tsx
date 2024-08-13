@@ -1,75 +1,96 @@
-import { useGate, useStoreMap } from 'effector-react';
-import { useState } from 'react';
+import { useGate, useStoreMap, useUnit } from 'effector-react';
+import { useMemo, useState } from 'react';
 
 import { useI18n } from '@app/providers';
 import { type Chain } from '@shared/core';
-import { pickNestedValue } from '@shared/lib/utils';
-import { BaseModal, Button, Plate } from '@shared/ui';
 import { useModalClose } from '@shared/lib/hooks';
-import { referendumService } from '@entities/governance';
-import { type AggregatedReferendum } from '../../types/structs';
+import { formatBalance } from '@shared/lib/utils';
+import { BaseModal, Button, Plate } from '@shared/ui';
+import { referendumService, votingService } from '@entities/governance';
 import { detailsAggregate } from '../../aggregates/details';
+import { type AggregatedReferendum } from '../../types/structs';
 import { VotingHistoryDialog } from '../VotingHistory/VotingHistoryDialog';
-import { ProposalDescription } from './ProposalDescription';
-import { VotingSummary } from './VotingSummary';
-import { VotingStatus } from './VotingStatus';
-import { DetailsCard } from './DetailsCard';
-import { ReferendumAdditional } from './ReferendumAdditional';
+
 import { AdvancedDialog } from './AdvancedDialog';
+import { DetailsCard } from './DetailsCard';
+import { MyVotesDialog } from './MyVotesDialog';
+import { ProposalDescription } from './ProposalDescription';
+import { ReferendumAdditional } from './ReferendumAdditional';
+import { Timeline } from './Timeline';
+import { VotingBalance } from './VotingBalance';
+import { type VoteRequestParams, VotingStatus } from './VotingStatus';
+import { VotingSummary } from './VotingSummary';
 
 type Props = {
   chain: Chain;
   referendum: AggregatedReferendum;
+  onVoteRequest: (params: VoteRequestParams) => unknown;
   onClose: VoidFunction;
 };
 
-export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) => {
+export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onClose }: Props) => {
   useGate(detailsAggregate.gates.flow, { chain, referendum });
 
+  const [showWalletVotes, setShowWalletVotes] = useState(false);
   const [showVoteHistory, setShowVoteHistory] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const { t } = useI18n();
 
-  const title = useStoreMap({
-    store: detailsAggregate.$titles,
-    keys: [chain.chainId, referendum.referendumId],
-    fn: (x, [chainId, index]) => pickNestedValue(x, chainId, index),
+  const votingAsset = useUnit(detailsAggregate.$votingAsset);
+  const canVote = useUnit(detailsAggregate.$canVote);
+
+  const votes = useStoreMap({
+    store: detailsAggregate.$votes,
+    keys: [referendum.referendumId],
+    fn: (votes, [referendumId]) => votingService.getReferendumAccountVotes(referendumId, votes),
   });
 
-  const votingAsset = useStoreMap({
-    store: detailsAggregate.$votingAssets,
-    keys: [chain.chainId],
-    fn: (x, [chainId]) => x[chainId],
-  });
+  const formattedVotes = useMemo(() => {
+    const balance = votingService.calculateAccountVotesTotalBalance(Object.values(votes));
+
+    return formatBalance(balance, votingAsset?.precision).formatted;
+  }, [votes, votingAsset]);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
   return (
     <BaseModal
       isOpen={isModalOpen}
-      title={title || t('governance.referendums.referendumTitle', { index: referendum.referendumId })}
+      title={t('governance.referendums.referendumTitle', { index: referendum.referendumId })}
       contentClass="min-h-0 h-full w-full bg-main-app-background overflow-y-auto"
       panelClass="flex flex-col w-[944px] h-[678px]"
       headerClass="pl-5 pr-3 py-4 shrink-0"
       closeButton
       onClose={closeModal}
     >
-      <div className="flex flex-wrap-reverse items-end gap-4 p-6 min-h-full">
-        <Plate className="min-h-0 min-w-80 basis-[530px] grow p-6 shadow-card-shadow border-filter-border">
-          <ProposalDescription chainId={chain.chainId} referendum={referendum} />
+      <div className="flex min-h-full flex-wrap-reverse items-end gap-4 p-6">
+        <Plate className="min-h-0 min-w-80 grow basis-[530px] border-filter-border p-6 shadow-card-shadow">
+          <ProposalDescription chainId={chain.chainId} addressPrefix={chain.addressPrefix} referendum={referendum} />
         </Plate>
 
-        <div className="flex flex-row flex-wrap gap-4 basis-[350px] grow shrink-0">
+        <div className="flex shrink-0 grow basis-[350px] flex-row flex-wrap gap-4">
+          {referendum.isVoted && (
+            <DetailsCard>
+              <VotingBalance votes={formattedVotes} onInfoClick={() => setShowWalletVotes(true)} />
+            </DetailsCard>
+          )}
+
           <DetailsCard title={t('governance.referendum.votingStatus')}>
-            <VotingStatus referendum={referendum} chain={chain} asset={votingAsset} />
+            <VotingStatus
+              referendum={referendum}
+              chain={chain}
+              asset={votingAsset}
+              canVote={canVote}
+              onVoteRequest={onVoteRequest}
+            />
           </DetailsCard>
 
-          {referendumService.isOngoing(referendum) && votingAsset && (
+          {referendumService.isOngoing(referendum) && !!votingAsset && (
             <DetailsCard
               title={t('governance.referendum.votingSummary')}
               action={
-                <Button variant="text" size="sm" className="p-0 h-fit" onClick={() => setShowVoteHistory(true)}>
+                <Button variant="text" size="sm" className="h-fit p-0" onClick={() => setShowVoteHistory(true)}>
                   {t('governance.voteHistory.viewVoteHistory')}
                 </Button>
               }
@@ -82,16 +103,32 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onClose }: Props) =
             <ReferendumAdditional network={chain.specName} referendumId={referendum.referendumId} />
           </DetailsCard>
 
-          <DetailsCard>
-            <Button className="p-0 h-auto w-fit" size="sm" variant="text" onClick={() => setShowAdvanced(true)}>
-              {t('governance.referendum.advanced')}
-            </Button>
+          <DetailsCard title={t('governance.referendum.timeline')}>
+            <Timeline referendumId={referendum.referendumId} />
           </DetailsCard>
+
+          {referendumService.isOngoing(referendum) && !!votingAsset && (
+            <DetailsCard>
+              <Button className="h-auto w-fit p-0" size="sm" variant="text" onClick={() => setShowAdvanced(true)}>
+                {t('governance.referendum.advanced')}
+              </Button>
+            </DetailsCard>
+          )}
         </div>
       </div>
 
+      {showWalletVotes && (
+        <MyVotesDialog
+          referendum={referendum}
+          chain={chain}
+          asset={votingAsset}
+          onClose={() => setShowWalletVotes(false)}
+        />
+      )}
+
       {showVoteHistory && <VotingHistoryDialog referendum={referendum} onClose={() => setShowVoteHistory(false)} />}
-      {showAdvanced && referendumService.isOngoing(referendum) && votingAsset && (
+
+      {showAdvanced && referendumService.isOngoing(referendum) && !!votingAsset && (
         <AdvancedDialog asset={votingAsset} referendum={referendum} onClose={() => setShowAdvanced(false)} />
       )}
     </BaseModal>

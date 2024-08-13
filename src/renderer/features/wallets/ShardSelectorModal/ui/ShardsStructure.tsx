@@ -1,16 +1,17 @@
 import { useUnit } from 'effector-react';
 
-import { Accordion, Checkbox, FootnoteText } from '@shared/ui';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { ChainTitle } from '@entities/chain';
-import { RootExplorers } from '@shared/lib/utils';
-import { shardsModel } from '../model/shards-model';
-import { networkModel } from '@entities/network';
 import { useI18n } from '@app/providers';
-import { ShardedGroup } from './ShardedGroup';
-import { SelectableShard } from './SelectableShard';
+import { type AccountId, type ChainId, type ID } from '@shared/core';
+import { RootExplorers } from '@shared/lib/utils';
+import { Accordion, Checkbox, FootnoteText } from '@shared/ui';
+import { ChainTitle } from '@entities/chain';
+import { networkModel } from '@entities/network';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { selectorUtils } from '../lib/selector-utils';
-import type { ID, ChainId, AccountId } from '@shared/core';
+import { shardsModel } from '../model/shards-model';
+
+import { SelectableShard } from './SelectableShard';
+import { ShardedGroup } from './ShardedGroup';
 
 export const ShardsStructure = () => {
   const { t } = useI18n();
@@ -31,7 +32,7 @@ export const ShardsStructure = () => {
   };
 
   return (
-    <ul className="overflow-y-scroll max-h-[470px] pr-3">
+    <ul className="max-h-[470px] overflow-y-scroll pr-3">
       {walletUtils.isMultiShard(wallet) && (
         <li key="all" className="p-2">
           <Checkbox
@@ -60,11 +61,11 @@ export const ShardsStructure = () => {
             {chainTuple.map(([chainId, accounts]) => (
               <li key={chainId}>
                 <Accordion isDefaultOpen className="ml-6 w-auto rounded">
-                  <div className="hover:bg-action-background-hover flex">
+                  <div className="flex hover:bg-action-background-hover">
                     <Checkbox
                       checked={selectorUtils.isChecked(selectedStructure[root.id][chainId])}
                       semiChecked={selectorUtils.isSemiChecked(selectedStructure[root.id][chainId])}
-                      className="p-2 w-full"
+                      className="w-full p-2"
                       onChange={(value) => toggleChain(root.id, chainId, value.target.checked)}
                     >
                       <ChainTitle chain={chains[chainId]} fontClass="text-text-primary" />

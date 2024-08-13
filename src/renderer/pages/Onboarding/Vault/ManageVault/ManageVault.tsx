@@ -1,45 +1,46 @@
+import { u8aToHex } from '@polkadot/util';
 import cn from 'classnames';
-import { FormEvent, useEffect, useState, useRef } from 'react';
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
+import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { Trans } from 'react-i18next';
-import { u8aToHex } from '@polkadot/util';
 
 import { useI18n, useStatusContext } from '@app/providers';
-import { toAddress, dictionary, IS_MAC, copyToClipboard } from '@shared/lib/utils';
-import { VaultInfoPopover } from './VaultInfoPopover';
-import { useAltOrCtrlKeyPressed, useToggle } from '@shared/lib/hooks';
-import { manageVaultModel } from './model/manage-vault-model';
 import { chainsService } from '@shared/api/network';
-import { RootAccountLg, accountUtils, DerivedAccount } from '@entities/wallet';
-import { KeyConstructor, DerivationsAddressModal, ImportKeysModal } from '@features/wallets';
-import { Animation } from '@shared/ui/Animation/Animation';
-import { ChainTitle } from '@entities/chain';
-import { SeedInfo } from '@entities/transaction';
 import {
-  ChainAccount,
-  ChainId,
-  ShardAccount,
-  DraftAccount,
-  WalletType,
-  SigningType,
-  CryptoType,
-  ChainType,
   AccountType,
+  type ChainAccount,
+  type ChainId,
+  ChainType,
+  CryptoType,
+  type DraftAccount,
+  type ShardAccount,
+  SigningType,
+  WalletType,
 } from '@shared/core';
+import { useAltOrCtrlKeyPressed, useToggle } from '@shared/lib/hooks';
+import { IS_MAC, copyToClipboard, dictionary, toAddress } from '@shared/lib/utils';
 import {
+  Accordion,
   Button,
+  ContextMenu,
+  FootnoteText,
+  HeaderTitleText,
+  HelpText,
+  Icon,
+  IconButton,
   Input,
   InputHint,
-  HeaderTitleText,
   SmallTitleText,
-  HelpText,
-  FootnoteText,
-  Icon,
-  ContextMenu,
-  IconButton,
-  Accordion,
 } from '@shared/ui';
+import { Animation } from '@shared/ui/Animation/Animation';
+import { ChainTitle } from '@entities/chain';
+import { type SeedInfo } from '@entities/transaction';
+import { DerivedAccount, RootAccountLg, accountUtils } from '@entities/wallet';
+import { DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@features/wallets';
+
+import { VaultInfoPopover } from './VaultInfoPopover';
+import { manageVaultModel } from './model/manage-vault-model';
 
 const STATUS_DELAY = 1500;
 
@@ -173,11 +174,11 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
 
   return (
     <>
-      <div className="w-[472px] flex flex-col px-5 py-4 bg-white rounded-l-lg">
+      <div className="flex w-[472px] flex-col rounded-l-lg bg-white px-5 py-4">
         <HeaderTitleText className="mb-10">{t('onboarding.vault.title')}</HeaderTitleText>
         <SmallTitleText className="mb-6">{t('onboarding.vault.manageTitle')}</SmallTitleText>
 
-        <form className="flex flex-col h-full" onSubmit={submitForm}>
+        <form className="flex h-full flex-col" onSubmit={submitForm}>
           <div className="flex flex-col gap-y-2">
             <Input
               wrapperClass={cn('flex items-center')}
@@ -192,7 +193,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
             </InputHint>
           </div>
 
-          <div className="flex flex-1 justify-between items-end">
+          <div className="flex flex-1 items-end justify-between">
             <Button variant="text" onClick={onBack}>
               {t('onboarding.backButton')}
             </Button>
@@ -204,10 +205,10 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
         </form>
       </div>
 
-      <div className="relative w-[472px] flex flex-col pt-4 rounded-r-lg border-l border-divider">
+      <div className="relative flex w-[472px] flex-col rounded-r-lg border-l border-divider pt-4">
         <IconButton name="close" size={20} className="absolute right-3 top-3 m-1" onClick={() => onClose()} />
 
-        <div className="flex items-center justify-between px-5 mt-[52px] mb-6">
+        <div className="mb-6 mt-[52px] flex items-center justify-between px-5">
           <div className="flex items-center gap-x-1.5">
             <SmallTitleText>{t('onboarding.vault.vaultTitle')}</SmallTitleText>
             <VaultInfoPopover />
@@ -222,18 +223,18 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
           </div>
         </div>
 
-        <div className="pl-5 mb-6">
+        <div className="mb-6 pl-5">
           <HelpText className="flex items-center gap-1 text-text-tertiary">
             <Trans t={t} i18nKey="onboarding.vault.altHint" components={{ button }} />
           </HelpText>
         </div>
 
-        <div className="overflow-y-auto h-[470px] pl-3 pr-3.5">
-          <div className="flex items-center justify-between w-full gap-2 pb-4">
+        <div className="h-[470px] overflow-y-auto pl-3 pr-3.5">
+          <div className="flex w-full items-center justify-between gap-2 pb-4">
             <ContextMenu button={<RootAccountLg name={walletName} accountId={publicKey} />}>
               <ContextMenu.Group title="Public key">
                 <div className="flex items-center gap-x-2">
-                  <HelpText className="text-text-secondary break-all">{publicKeyAddress}</HelpText>
+                  <HelpText className="break-all text-text-secondary">{publicKeyAddress}</HelpText>
                   <IconButton
                     className="shrink-0"
                     name="copy"
@@ -245,9 +246,9 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
             </ContextMenu>
           </div>
 
-          <FootnoteText className="text-text-tertiary ml-9 pl-2">{t('onboarding.vault.accountTitle')}</FootnoteText>
+          <FootnoteText className="ml-9 pl-2 text-text-tertiary">{t('onboarding.vault.accountTitle')}</FootnoteText>
 
-          <div className="flex flex-col gap-2 divide-y ml-9">
+          <div className="ml-9 flex flex-col gap-2 divide-y">
             {chainElements.map(([chainId, chainAccounts]) => {
               if (chainAccounts.length === 0) return;
 
@@ -277,7 +278,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
                           }
                         >
                           <ContextMenu.Group title={t('general.explorers.derivationTitle')}>
-                            <HelpText className="text-text-secondary break-all">
+                            <HelpText className="break-all text-text-secondary">
                               {accountUtils.getDerivationPath(account)}
                             </HelpText>
                           </ContextMenu.Group>

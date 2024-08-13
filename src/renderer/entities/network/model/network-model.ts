@@ -1,28 +1,29 @@
+import { type ApiPromise } from '@polkadot/api';
+import { type VoidFn } from '@polkadot/api/types';
 import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
-import { ApiPromise } from '@polkadot/api';
-import { VoidFn } from '@polkadot/api/types';
 import { spread } from 'patronum';
 
-import { storageService } from '@shared/api/storage';
-import { dictionary } from '@shared/lib/utils';
-import { networkUtils } from '../lib/network-utils';
-import {
-  Chain,
-  ChainId,
-  Connection,
-  ConnectionStatus,
-  ConnectionType,
-  ChainMetadata,
-  NoID,
-  Metadata,
-} from '@shared/core';
 import {
   ProviderType,
+  type ProviderWithMetadata,
   chainsService,
-  networkService,
   metadataService,
-  ProviderWithMetadata,
+  networkService,
 } from '@shared/api/network';
+import { storageService } from '@shared/api/storage';
+import {
+  type Chain,
+  type ChainId,
+  type ChainMetadata,
+  type Connection,
+  ConnectionStatus,
+  ConnectionType,
+  type ID,
+  type Metadata,
+  type NoID,
+} from '@shared/core';
+import { dictionary } from '@shared/lib/utils';
+import { networkUtils } from '../lib/network-utils';
 
 const networkStarted = createEvent();
 const chainConnected = createEvent<ChainId>();
@@ -86,6 +87,10 @@ const saveMetadataFx = createEffect((metadata: NoID<ChainMetadata>): Promise<Cha
   return storageService.metadata.put(metadata);
 });
 
+const removeMetadataFx = createEffect((ids: ID[]): Promise<ID[] | undefined> => {
+  return storageService.metadata.deleteAll(ids);
+});
+
 type ProviderMetadataParams = {
   provider: ProviderWithMetadata;
   metadata: Metadata;
@@ -132,8 +137,9 @@ const createProviderFx = createEffect(
 
     if (providerType === ProviderType.LIGHT_CLIENT) {
       /**
-       * HINT: Light Client provider must be connected manually
-       * GitHub Light Client section - https://github.com/polkadot-js/api/tree/master/packages/rpc-provider#readme
+       * HINT: Light Client provider must be connected manually GitHub Light
+       * Client section -
+       * https://github.com/polkadot-js/api/tree/master/packages/rpc-provider#readme
        */
       await provider.connect();
     }
@@ -388,12 +394,24 @@ sample({
   fn: (_, metadata) => metadata,
   target: saveMetadataFx,
 });
+
 sample({
   clock: saveMetadataFx.doneData,
   source: $metadata,
   filter: (_, newMetadata) => Boolean(newMetadata),
-  fn: (metadata, newMetadata) => metadata.concat(newMetadata!),
-  target: $metadata,
+  fn: (metadata, newMetadata) => {
+    const oldMetadata = metadata.filter(({ chainId }) => chainId === newMetadata!.chainId).map(({ id }) => id);
+    const cleanMetadata = metadata.filter(({ chainId }) => chainId !== newMetadata!.chainId);
+
+    return {
+      metadata: [...cleanMetadata, newMetadata!],
+      oldMetadata,
+    };
+  },
+  target: spread({
+    metadata: $metadata,
+    oldMetadata: removeMetadataFx,
+  }),
 });
 
 sample({

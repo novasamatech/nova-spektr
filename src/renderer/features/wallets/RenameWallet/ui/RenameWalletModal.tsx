@@ -1,9 +1,9 @@
 import { useForm } from 'effector-forms';
-import { FormEvent, useEffect } from 'react';
+import { type FormEvent, useEffect } from 'react';
 
-import { Wallet } from '@shared/core';
-import { BaseModal, Button, Input, InputHint } from '@shared/ui';
 import { useI18n } from '@app/providers';
+import { type Wallet } from '@shared/core';
+import { BaseModal, Button, Input, InputHint } from '@shared/ui';
 import { renameWalletModel } from '../model/rename-wallet-model';
 
 type Props = {
@@ -36,7 +36,7 @@ export const RenameWalletModal = ({ wallet, isOpen, onClose }: Props) => {
 
   return (
     <BaseModal isOpen={isOpen} closeButton title={t('walletDetails.common.renameTitle')} onClose={onClose}>
-      <form className="flex flex-col pt-4 gap-4" onSubmit={submitForm}>
+      <form className="flex flex-col gap-4 pt-4" onSubmit={submitForm}>
         <div className="flex flex-col gap-y-2">
           <Input
             name="name"

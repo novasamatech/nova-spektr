@@ -1,10 +1,10 @@
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
-import { BaseModal, Button, InputHint, InputArea } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { MultisigTransactionDS } from '@shared/api/storage';
+import { type MultisigTransactionDS } from '@shared/api/storage';
+import { type CallData } from '@shared/core';
 import { validateCallData } from '@shared/lib/utils';
-import type { CallData } from '@shared/core';
+import { BaseModal, Button, InputArea, InputHint } from '@shared/ui';
 
 type CallDataForm = {
   callData: string;
@@ -54,7 +54,7 @@ const CallDataModal = ({ isOpen, tx, onClose, onSubmit }: Props) => {
       contentClass="px-5 pb-4 w-[400px]"
       onClose={closeHandler}
     >
-      <form id="multisigForm" className="flex flex-col mt-2 gap-y-4" onSubmit={handleSubmit(submitHandler)}>
+      <form id="multisigForm" className="mt-2 flex flex-col gap-y-4" onSubmit={handleSubmit(submitHandler)}>
         <Controller
           name="callData"
           control={control}

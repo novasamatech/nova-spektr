@@ -1,10 +1,10 @@
-import { Outlet } from 'react-router-dom';
 import { useUnit } from 'effector-react';
+import { Outlet } from 'react-router-dom';
 
-import { Header } from '@shared/ui';
 import { useI18n } from '@app/providers';
+import { Header } from '@shared/ui';
+import { ContactList, ContactRow, EmptyContactList, EmptyFilteredContacts, contactModel } from '@entities/contact';
 import { ContactFilter, CreateContactNavigation, EditContactNavigation, filterModel } from '@features/contacts';
-import { ContactList, contactModel, ContactRow, EmptyContactList, EmptyFilteredContacts } from '@entities/contact';
 
 export const Contacts = () => {
   const { t } = useI18n();
@@ -16,7 +16,7 @@ export const Contacts = () => {
 
   return (
     <>
-      <div className="h-full flex flex-col">
+      <div className="flex h-full flex-col">
         <Header title={t('addressBook.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
           <div className="flex items-center gap-4">
             <ContactFilter />
@@ -24,8 +24,8 @@ export const Contacts = () => {
           </div>
         </Header>
 
-        <section className="overflow-y-auto w-full h-full mt-4">
-          <div className="flex flex-col gap-y-4 w-[546px] mx-auto h-full">
+        <section className="mt-4 h-full w-full overflow-y-auto">
+          <div className="mx-auto flex h-full w-[546px] flex-col gap-y-4">
             {!hasContacts && <EmptyContactList />}
 
             {hasContacts && !hasContactsFiltered && <EmptyFilteredContacts />}

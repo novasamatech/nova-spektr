@@ -1,6 +1,20 @@
+import { type ClaimAction } from '@/shared/api/governance';
+import {
+  type AccountId,
+  type Address,
+  type Asset,
+  type Chain,
+  type ChainId,
+  type Conviction,
+  type ReferendumId,
+  type TrackId,
+  type Transaction,
+  TransactionType,
+} from '@shared/core';
+import { TEST_ACCOUNTS, formatAmount, getAssetId, toAddress } from '@shared/lib/utils';
+import { type TransactionVote, type VoteTransaction } from '@/entities/governance';
+
 import { TransferType } from './common/constants';
-import { toAddress, TEST_ACCOUNTS, formatAmount, getAssetId } from '@shared/lib/utils';
-import { Chain, ChainId, Asset, AccountId, Address, Transaction, TransactionType } from '@shared/core';
 
 export const transactionBuilder = {
   buildTransfer,
@@ -11,6 +25,12 @@ export const transactionBuilder = {
   buildWithdraw,
   buildUnstake,
   buildSetPayee,
+  buildDelegate,
+  buildUndelegate,
+  buildEditDelegation,
+  buildUnlock,
+  buildVote,
+  buildRetractVote,
 };
 
 type TransferParams = {
@@ -22,10 +42,10 @@ type TransferParams = {
   xcmData?: {
     args: {
       xcmFee: string;
-      xcmAsset?: Object;
+      xcmAsset?: NonNullable<unknown>;
       xcmWeight: string;
-      xcmDest?: Object;
-      xcmBeneficiary?: Object;
+      xcmDest?: NonNullable<unknown>;
+      xcmBeneficiary?: NonNullable<unknown>;
       destinationChain: ChainId;
     };
     transactionType: TransactionType;
@@ -217,5 +237,175 @@ function buildBatchAll({ chain, accountId, transactions }: BatchParams): Transac
     address: toAddress(accountId, { prefix: chain.addressPrefix }),
     type: TransactionType.BATCH_ALL,
     args: { transactions },
+  };
+}
+
+type DelegateParams = {
+  chain: Chain;
+  accountId: AccountId;
+  tracks: number[];
+  target: Address;
+  conviction: Conviction;
+  balance: string;
+};
+
+function buildDelegate({ chain, accountId, tracks, target, conviction, balance }: DelegateParams): Transaction {
+  const delegateTxs = tracks.map((track) => ({
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.DELEGATE,
+    args: {
+      track,
+      target,
+      conviction,
+      balance,
+    },
+  }));
+
+  if (delegateTxs.length === 1) return delegateTxs[0];
+
+  return buildBatchAll({ chain, accountId, transactions: delegateTxs });
+}
+
+type UndelegateParams = {
+  chain: Chain;
+  accountId: AccountId;
+  tracks: number[];
+};
+
+function buildUndelegate({ chain, accountId, tracks }: UndelegateParams): Transaction {
+  const undelegateTxs = tracks.map((track) => ({
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.UNDELEGATE,
+    args: {
+      track,
+    },
+  }));
+
+  if (undelegateTxs.length === 1) return undelegateTxs[0];
+
+  return buildBatchAll({ chain, accountId, transactions: undelegateTxs });
+}
+
+type EditDelegationParams = {
+  chain: Chain;
+  accountId: AccountId;
+  tracks: number[];
+  target: Address;
+  conviction: number;
+  balance: string;
+};
+
+function buildEditDelegation({
+  chain,
+  accountId,
+  tracks,
+  target,
+  conviction,
+  balance,
+}: EditDelegationParams): Transaction {
+  const undelegateTxs = tracks.map((track) => ({
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.UNDELEGATE,
+    args: {
+      track,
+    },
+  }));
+
+  const delegateTxs = tracks.map((track) => ({
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.DELEGATE,
+    args: {
+      track,
+      target,
+      conviction,
+      balance,
+    },
+  }));
+
+  return buildBatchAll({ chain, accountId, transactions: [...undelegateTxs, ...delegateTxs] });
+}
+
+type UnlockParams = {
+  chain: Chain;
+  accountId: AccountId;
+  actions: ClaimAction[];
+  amount: string;
+};
+
+function buildUnlock({ chain, accountId, actions, amount: value }: UnlockParams): Transaction {
+  const unlockTxs = actions.map((action) => {
+    const transaction = {
+      chainId: chain.chainId,
+      address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    };
+
+    if (action.type === 'remove_vote') {
+      return {
+        ...transaction,
+        type: TransactionType.RETRACT_VOTE,
+        args: {
+          trackId: action.trackId,
+          referendumId: action.referendumId,
+          value,
+        },
+      };
+    }
+
+    return {
+      ...transaction,
+      type: TransactionType.UNLOCK,
+      args: {
+        trackId: action.trackId,
+        target: toAddress(accountId, { prefix: chain.addressPrefix }),
+        value,
+      },
+    };
+  });
+
+  if (unlockTxs.length === 1) return unlockTxs[0];
+
+  return buildBatchAll({ chain, accountId, transactions: unlockTxs });
+}
+
+type VoteParams = {
+  chain: Chain;
+  accountId: AccountId;
+  trackId: TrackId;
+  referendumId: ReferendumId;
+  vote: TransactionVote;
+};
+
+function buildVote({ chain, accountId, referendumId, trackId, vote }: VoteParams): VoteTransaction {
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.VOTE,
+    args: {
+      track: trackId,
+      referendum: referendumId,
+      vote,
+    },
+  };
+}
+
+type RetractVoteParams = {
+  chain: Chain;
+  accountId: AccountId;
+  referendumId: ReferendumId;
+  trackId: TrackId;
+  conviction: number;
+  balance: string;
+};
+
+function buildRetractVote({ chain, accountId, trackId, referendumId }: RetractVoteParams): Transaction {
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.RETRACT_VOTE,
+    args: { class: trackId, index: referendumId },
   };
 }

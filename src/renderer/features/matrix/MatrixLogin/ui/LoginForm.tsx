@@ -1,15 +1,10 @@
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import { Trans } from 'react-i18next';
-import { useEffect, useState } from 'react';
 import { useUnit } from 'effector-react';
+import { useEffect, useState } from 'react';
+import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
+import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
-import { validateShortUserName, WELL_KNOWN_SERVERS, LoginFlows } from '@shared/api/matrix';
-import type { ComboboxOption } from '@shared/ui/types';
-import { IconNames } from '@shared/ui/Icon/data';
-import { matrixModel, LoginStatus, matrixUtils } from '@entities/matrix';
-import { matrixLoginModel } from '../model/matrix-login-model';
-import { APP_CONFIG } from '../../../../../../app.config';
+import { type LoginFlows, WELL_KNOWN_SERVERS, validateShortUserName } from '@shared/api/matrix';
 import {
   Alert,
   Button,
@@ -24,6 +19,11 @@ import {
   PasswordInput,
   Separator,
 } from '@shared/ui';
+import { type IconNames } from '@shared/ui/Icon/data';
+import { type ComboboxOption } from '@shared/ui/types';
+import { LoginStatus, matrixModel, matrixUtils } from '@entities/matrix';
+import { APP_CONFIG } from '../../../../../../app.config';
+import { matrixLoginModel } from '../model/matrix-login-model';
 
 const HOME_SERVERS = WELL_KNOWN_SERVERS.map((server) => ({
   id: server.domain,
@@ -72,7 +72,7 @@ export const LoginForm = ({ redirectStep }: Props) => {
     defaultValues: { homeserver: DEFAULT_HOMESERVER, username: '', password: '' },
   });
 
-  // @ts-ignore
+  // @ts-expect-error TODO fix
   const homeserver = watch('homeserver');
 
   useEffect(() => {
@@ -189,13 +189,13 @@ export const LoginForm = ({ redirectStep }: Props) => {
         />
 
         {!credentialsFlow && (
-          <p className="text-center text-shade-40 text-sm py-4">
+          <p className="py-4 text-center text-sm text-shade-40">
             <Trans t={t} i18nKey="settings.matrix.loginNotAvailable" values={{ homeserver }} />
           </p>
         )}
 
         {credentialsFlow && isHomeserverLoading && (
-          <div className="w-full h-[136px] flex items-center justify-center">
+          <div className="flex h-[136px] w-full items-center justify-center">
             <Loader color="primary" />
           </div>
         )}
@@ -252,7 +252,7 @@ export const LoginForm = ({ redirectStep }: Props) => {
         )}
       </form>
 
-      <div className="flex flex-col gap-y-6 mt-6">
+      <div className="mt-6 flex flex-col gap-y-6">
         {ssoFlows.length > 0 && (
           <div className="flex flex-col gap-y-6">
             <Separator text="or sign in" />
@@ -283,7 +283,7 @@ export const LoginForm = ({ redirectStep }: Props) => {
         </FootnoteText>
       </div>
 
-      <div className="flex justify-between items-center pt-3">
+      <div className="flex items-center justify-between pt-3">
         <Icon name="matrixFull" className="!w-[56px] text-[#00000066]" size={24} />
         <Button form="matrixLogin" type="submit" isLoading={inProgress} disabled={logInDisabled || inProgress}>
           {t('settings.matrix.logInButton')}

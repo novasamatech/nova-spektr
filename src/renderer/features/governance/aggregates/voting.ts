@@ -1,12 +1,16 @@
-import { combine, sample } from 'effector';
+import { combine, createEvent, sample } from 'effector';
 
-import { type VotingMap } from '@shared/core';
-import { accountUtils, walletModel } from '@entities/wallet';
+import { type Address, type TrackId, type VotingMap } from '@shared/core';
+import { nonNullable } from '@shared/lib/utils';
 import { votingModel } from '@entities/governance';
-import { tracksAggregate } from './tracks';
+import { accountUtils, walletModel } from '@entities/wallet';
 import { networkSelectorModel } from '../model/networkSelector';
 
-const $currentWalletVoting = combine(
+import { tracksAggregate } from './tracks';
+
+const requestVoting = createEvent<{ addresses: Address[]; tracks?: TrackId[] }>();
+
+const $activeWalletVotes = combine(
   {
     voting: votingModel.$voting,
     wallet: walletModel.$activeWallet,
@@ -18,39 +22,54 @@ const $currentWalletVoting = combine(
     }
 
     const addresses = accountUtils.getAddressesForWallet(wallet, chain);
+    const res: VotingMap = {};
 
-    return addresses.reduce<VotingMap>((acc, address) => {
-      acc[address] = voting[address];
+    for (const address of addresses) {
+      if (address in voting) {
+        res[address] = voting[address];
+      }
+    }
 
-      return acc;
-    }, {});
+    return res;
   },
 );
 
 sample({
-  clock: [tracksAggregate.$tracks, walletModel.$activeWallet],
+  clock: requestVoting,
   source: {
     tracks: tracksAggregate.$tracks,
+    api: networkSelectorModel.$governanceChainApi,
+  },
+  filter: ({ api }) => nonNullable(api),
+  fn: ({ api, tracks: allTracks }, { addresses, tracks }) => ({
+    api: api!,
+    tracks: tracks || Object.keys(allTracks),
+    addresses,
+  }),
+  target: votingModel.events.requestVoting,
+});
+
+sample({
+  clock: [tracksAggregate.$tracks, walletModel.$activeWallet],
+  source: {
     wallet: walletModel.$activeWallet,
     chain: networkSelectorModel.$governanceChain,
     api: networkSelectorModel.$governanceChainApi,
   },
-  filter: ({ wallet, api, chain }) => !!wallet && !!chain && !!api,
-  fn: ({ wallet, api, chain, tracks }) => {
-    return {
-      api: api!,
-      tracksIds: Object.keys(tracks),
-      addresses: accountUtils.getAddressesForWallet(wallet!, chain!),
-    };
-  },
-  target: votingModel.events.requestVoting,
+  filter: ({ wallet, chain }) => nonNullable(wallet) && nonNullable(chain),
+  fn: ({ wallet, chain }) => ({
+    addresses: accountUtils.getAddressesForWallet(wallet!, chain!),
+  }),
+  target: requestVoting,
 });
 
 export const votingAggregate = {
-  $currentWalletVoting,
+  $activeWalletVotes,
   $voting: votingModel.$voting,
+  $isLoading: votingModel.$isLoading,
 
   events: {
+    requestVoting: requestVoting,
     requestDone: votingModel.effects.requestVotingFx.done,
     requestPending: votingModel.effects.requestVotingFx.pending,
   },

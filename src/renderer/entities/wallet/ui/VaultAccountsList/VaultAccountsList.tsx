@@ -1,9 +1,9 @@
-import { cnTw } from '@shared/lib/utils';
-import { accountUtils, DerivedAccount, ExplorersPopover } from '@entities/wallet';
 import { useI18n } from '@app/providers';
+import { type Chain, type ChainAccount, type ChainId, type ShardAccount } from '@shared/core';
+import { cnTw } from '@shared/lib/utils';
 import { Accordion, FootnoteText, HelpText } from '@shared/ui';
 import { ChainTitle } from '@entities/chain';
-import type { Chain, ChainAccount, ChainId, ShardAccount } from '@shared/core';
+import { DerivedAccount, ExplorersPopover, accountUtils } from '@entities/wallet';
 
 type Props = {
   chains: Chain[];
@@ -50,7 +50,7 @@ export const VaultAccountsList = ({ chains, accountsMap, className, onShardClick
                       }
                     >
                       <ExplorersPopover.Group title={t('general.explorers.derivationTitle')}>
-                        <HelpText className="text-text-secondary break-all">
+                        <HelpText className="break-all text-text-secondary">
                           {accountUtils.getDerivationPath(account)}
                         </HelpText>
                       </ExplorersPopover.Group>
@@ -59,7 +59,7 @@ export const VaultAccountsList = ({ chains, accountsMap, className, onShardClick
                 );
               })}
 
-              <hr className="border-divider my-1 w-full" />
+              <hr className="my-1 w-full border-divider" />
             </Accordion.Content>
           </Accordion>
         );

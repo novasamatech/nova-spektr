@@ -1,20 +1,21 @@
+import { type ApiPromise } from '@polkadot/api';
+import { type Balance } from '@polkadot/types/interfaces';
 import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
 import get from 'lodash/get';
-import { ApiPromise } from '@polkadot/api';
-import { Balance } from '@polkadot/types/interfaces';
 
-import {
-  Instructions,
-  InstructionType,
-  XcmConfig,
-  AssetLocation,
-  XcmTransfer,
-  MultiLocation as LocalMultiLocation,
-  Action,
-} from './types';
-import type { Chain, AccountId } from '../../../core';
-import { isEthereumAccountId, getTypeVersion, TEST_ACCOUNTS } from '../../../lib/utils';
+import { type AccountId, type Chain } from '../../../core';
+import { TEST_ACCOUNTS, getTypeVersion, isEthereumAccountId } from '../../../lib/utils';
+
 import { INSTRUCTION_OBJECT } from './constants';
+import {
+  type Action,
+  type AssetLocation,
+  type InstructionType,
+  type Instructions,
+  type MultiLocation as LocalMultiLocation,
+  type XcmConfig,
+  type XcmTransfer,
+} from './types';
 
 export const xcmUtils = {
   getEstimatedWeight,
@@ -97,7 +98,7 @@ function sortJunctions(a: JunctionTypeKey, b: JunctionTypeKey): number {
   return JunctionHierarchyLevel[a] - JunctionHierarchyLevel[b];
 }
 
-function createJunctionFromObject(data: {}) {
+function createJunctionFromObject(data: Record<string, unknown>) {
   const entries = Object.entries(data);
 
   if (entries.length === 0) return 'Here';
@@ -119,7 +120,7 @@ function createJunctionFromObject(data: {}) {
   };
 }
 
-function getRelativeAssetLocation(assetLocation?: LocalMultiLocation): Object | undefined {
+function getRelativeAssetLocation(assetLocation?: LocalMultiLocation) {
   if (!assetLocation) return;
 
   const { parachainId: _, ...location } = assetLocation;
@@ -130,7 +131,7 @@ function getRelativeAssetLocation(assetLocation?: LocalMultiLocation): Object | 
   };
 }
 
-function getAbsoluteAssetLocation(assetLocation?: LocalMultiLocation): Object | undefined {
+function getAbsoluteAssetLocation(assetLocation?: LocalMultiLocation) {
   if (!assetLocation) return;
 
   return {
@@ -139,7 +140,7 @@ function getAbsoluteAssetLocation(assetLocation?: LocalMultiLocation): Object | 
   };
 }
 
-function getConcreteAssetLocation(assetLocation?: LocalMultiLocation): Object | undefined {
+function getConcreteAssetLocation(assetLocation?: LocalMultiLocation) {
   if (!assetLocation) return;
 
   const { parents, ...location } = assetLocation;
@@ -154,7 +155,7 @@ function getDestinationLocation(
   originChain: Pick<Chain, 'parentId'>,
   destinationParaId?: number,
   accountId?: AccountId,
-): Object | undefined {
+) {
   if (originChain.parentId && destinationParaId) {
     return getSiblingLocation(destinationParaId, accountId);
   }
@@ -170,7 +171,7 @@ function getDestinationLocation(
   return undefined;
 }
 
-function getAccountLocation(accountId?: AccountId): Object | undefined {
+function getAccountLocation(accountId?: AccountId) {
   const isEthereum = isEthereumAccountId(accountId);
 
   return {
@@ -186,7 +187,7 @@ function getAccountLocation(accountId?: AccountId): Object | undefined {
   };
 }
 
-function getChildLocation(parachainId: number, accountId?: AccountId): Object {
+function getChildLocation(parachainId: number, accountId?: AccountId) {
   const location: Record<string, any> = { parachainId };
   const isEthereum = isEthereumAccountId(accountId);
 
@@ -203,7 +204,7 @@ function getChildLocation(parachainId: number, accountId?: AccountId): Object {
   };
 }
 
-function getParentLocation(accountId?: AccountId): Object {
+function getParentLocation(accountId?: AccountId) {
   const location: Record<string, any> = {};
   const isEthereum = isEthereumAccountId(accountId);
 
@@ -220,7 +221,7 @@ function getParentLocation(accountId?: AccountId): Object {
   };
 }
 
-function getSiblingLocation(parachainId: number, accountId?: AccountId): Object {
+function getSiblingLocation(parachainId: number, accountId?: AccountId) {
   const location: Record<string, any> = { parachainId };
   const isEthereum = isEthereumAccountId(accountId);
 
@@ -237,8 +238,8 @@ function getSiblingLocation(parachainId: number, accountId?: AccountId): Object 
   };
 }
 
-function getJunctionCols<T extends Object>(interior: Object, path: string): T {
-  return Object.values(get(interior, path) as Object).reduce((acc, item) => {
+function getJunctionCols<T>(interior: Record<string, object>, path: string): T {
+  return Object.values(get(interior, path)).reduce((acc, item) => {
     return { ...acc, ...item };
   }, {});
 }
@@ -259,7 +260,7 @@ async function estimateFeeFromApi(
 
   try {
     paymentInfo = await api.tx[pallet].execute(message, 0).paymentInfo(TEST_ACCOUNTS[0]);
-  } catch (e) {
+  } catch {
     paymentInfo = await api.tx[pallet].execute(message, { refTime: '0', proofSize: '0' }).paymentInfo(TEST_ACCOUNTS[0]);
   }
 

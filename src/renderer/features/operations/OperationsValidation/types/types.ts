@@ -1,14 +1,14 @@
-import { Asset, Balance, Chain } from '@shared/core';
+import { type Asset, type Balance, type Chain } from '@shared/core';
 
 export type BalanceMap = Record<'balance' | 'native', string>;
 
-export type Validation = {
-  value: any;
+export type Validation<Value = any, Form = any, Source = any> = {
+  value: Value;
   name: string;
   errorText: string;
-  source: any;
-  form: any;
-  validator: (...args: any) => boolean;
+  source: Source;
+  form: Form;
+  validator: (value: Value, form: Form, source: Source) => boolean;
 };
 
 export type ValidationResult =
@@ -120,4 +120,11 @@ export type Config = {
 export type ChainProxyStore = {
   maxProxies: number;
   proxies: any[];
+};
+
+export type DelegateFeeStore = {
+  fee: string;
+  balance: BalanceMap;
+  network: NetworkStore | null;
+  isMultisig: boolean;
 };

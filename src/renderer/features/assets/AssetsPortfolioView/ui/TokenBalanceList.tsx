@@ -1,17 +1,17 @@
-import React from 'react';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { Icon, Tooltip, Accordion, BodyText, FootnoteText, Plate, HelpText, IconButton } from '@shared/ui';
-import type { AssetByChains } from '@shared/core';
-import { CheckPermission, OperationType, walletModel } from '@entities/wallet';
-import { TokenPrice } from '@entities/price';
+import { type AssetByChains } from '@shared/core';
+import { Accordion, BodyText, FootnoteText, HelpText, Icon, IconButton, Plate, Tooltip } from '@shared/ui';
 import { AssetIcon } from '@entities/asset';
-import { networkModel } from '@entities/network';
 import { ChainIcon } from '@entities/chain';
-import { NetworkCard } from './NetworkCard';
-import { AssembledAssetAmount } from './AssembledAssetAmount';
+import { networkModel } from '@entities/network';
+import { TokenPrice } from '@entities/price';
+import { CheckPermission, OperationType, walletModel } from '@entities/wallet';
 import { portfolioModel } from '../model/portfolio-model';
+
+import { AssembledAssetAmount } from './AssembledAssetAmount';
+import { NetworkCard } from './NetworkCard';
 
 const IconButtonStyle =
   'hover:bg-transparent hover:text-icon-default focus:bg-transparent focus:text-icon-default active:bg-transparent active:text-icon-default';
@@ -37,21 +37,21 @@ export const TokenBalanceList = ({ asset }: Props) => {
   };
 
   return (
-    <Plate className="p-0 shadow-shards border-b-4 border-double z-10">
+    <Plate className="z-10 border-b-4 border-double p-0 shadow-shards">
       <Accordion>
         <Accordion.Button
           iconOpened="shelfDown"
           iconClosed="shelfRight"
-          buttonClass="sticky top-0 px-2 py-1.5 z-10 justify-end flex-row-reverse bg-white hover:bg-token-container-background 
+          buttonClass="sticky top-0 px-2 py-1.5 z-10 justify-end flex-row-reverse bg-white hover:bg-token-container-background
           rounded h-[52px] transition-shadow hover:shadow-card-shadow focus:shadow-card-shadow"
         >
-          <div className="w-full items-center flex">
-            <div className="flex items-center gap-x-2 flex-1">
+          <div className="flex w-full items-center">
+            <div className="flex flex-1 items-center gap-x-2">
               <AssetIcon src={asset.icon} name={asset.name} />
               <div className="flex flex-col">
                 <BodyText>{asset.symbol}</BodyText>
                 <div className="flex items-center">
-                  <FootnoteText className="text-text-tertiary mr-1.5">
+                  <FootnoteText className="mr-1.5 text-text-tertiary">
                     {t('balances.availableNetworks', { count: asset.chains.length })}
                   </FootnoteText>
                   <ChainIcon
@@ -68,12 +68,12 @@ export const TokenBalanceList = ({ asset }: Props) => {
                     size={18}
                   />
                   {asset.chains.length > 2 && (
-                    <div className="b-r-2 w-6 rounded flex items-center justify-center bg-token-background p-0.5">
+                    <div className="b-r-2 flex w-6 items-center justify-center rounded bg-token-background p-0.5">
                       <HelpText className="text-white">+{asset.chains.length - 2}</HelpText>
                     </div>
                   )}
                   {asset.totalBalance?.verified && (
-                    <div className="flex items-center gap-x-2 text-text-warning ml-2.5">
+                    <div className="ml-2.5 flex items-center gap-x-2 text-text-warning">
                       <Tooltip content={t('balances.verificationTooltip')} pointer="up">
                         <Icon name="warn" className="cursor-pointer text-inherit" size={14} />
                       </Tooltip>
@@ -87,11 +87,11 @@ export const TokenBalanceList = ({ asset }: Props) => {
               wrapperClassName="flex-col gap-0.5 items-end px-2 w-[100px]"
               className="text-text-primar text-right"
             />
-            <div className="flex flex-col items-end w-[100px]">
+            <div className="flex w-[100px] flex-col items-end">
               <AssembledAssetAmount asset={asset} balance={asset.totalBalance} />
             </div>
 
-            <div className="flex gap-x-2 ml-3">
+            <div className="ml-3 flex gap-x-2">
               <CheckPermission operationType={OperationType.TRANSFER} wallet={activeWallet}>
                 <IconButton size={20} name="sendArrow" className={IconButtonStyle} onClick={handleSend} />
               </CheckPermission>

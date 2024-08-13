@@ -1,39 +1,28 @@
-import { combine } from 'effector';
 import { BN } from '@polkadot/util';
+import { combine } from 'effector';
+
+import { votingService } from '@entities/governance';
+import { votingAssetModel } from '../model/votingAsset';
 
 import { votingAggregate } from './voting';
-import { DelegatingVoting, VotingType } from '@shared/core';
-import { networkSelectorModel } from '../model/networkSelector';
 
 const $totalDelegations = combine(
   {
-    voting: votingAggregate.$currentWalletVoting,
+    voting: votingAggregate.$activeWalletVotes,
   },
   ({ voting }): string => {
     return Object.values(voting)
-      .reduce<BN>((acc, value) => {
-        const voting = Object.values(value).find((v) => v.type === VotingType.DELEGATING);
+      .reduce((acc, value) => {
+        const voting = Object.values(value).find(votingService.isDelegating);
 
-        return voting ? acc.add((voting as DelegatingVoting).delegating.balance) : acc;
+        return voting ? acc.iadd(voting.balance) : acc;
       }, new BN(0))
       .toString();
   },
 );
 
-const $asset = combine(
-  {
-    chain: networkSelectorModel.$governanceChain,
-  },
-  ({ chain }) => {
-    return chain?.assets[0];
-  },
-  {
-    skipVoid: false,
-  },
-);
-
-export const delegationModel = {
-  $isLoading: votingAggregate.events.requestPending,
-  $asset,
+export const delegationAggregate = {
+  $isLoading: votingAggregate.$isLoading,
+  $asset: votingAssetModel.$votingAsset,
   $totalDelegations,
 };

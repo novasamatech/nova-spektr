@@ -1,40 +1,31 @@
-import { useState, useEffect, useMemo } from 'react';
 import { useUnit } from 'effector-react';
 import uniqBy from 'lodash/uniqBy';
+import { useEffect, useMemo, useState } from 'react';
 
-import { Header } from '@shared/ui';
-import { getRelaychainAsset, toAddress } from '@shared/lib/utils';
 import { useGraphql, useI18n } from '@app/providers';
+import { type Account, type Address, type Chain, type ChainId, type Stake, type Validator } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
-import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
+import { getRelaychainAsset, toAddress } from '@shared/lib/utils';
+import { Header } from '@shared/ui';
+import { InactiveNetwork, networkUtils, useNetworkData } from '@entities/network';
 import { priceProviderModel } from '@entities/price';
-import { useNetworkData, networkUtils, InactiveNetwork } from '@entities/network';
+import {
+  type StakingMap,
+  type ValidatorMap,
+  ValidatorsModal,
+  useStakingData,
+  useStakingRewards,
+  validatorsService,
+} from '@entities/staking';
 import { eraService } from '@entities/staking/api';
-import { NetworkInfo } from './NetworkInfo';
+import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
+import * as Operations from '@widgets/Staking';
+import { type NominatorInfo, Operations as StakeOperations } from '../lib/types';
+
 import { AboutStaking } from './AboutStaking';
 import { Actions } from './Actions';
+import { NetworkInfo } from './NetworkInfo';
 import { NominatorsList } from './NominatorsList';
-import { NominatorInfo, Operations as StakeOperations } from '../lib/types';
-import * as Operations from '@widgets/Staking';
-import {
-  ChainId,
-  Chain,
-  Address,
-  Stake,
-  Validator,
-  ShardAccount,
-  ChainAccount,
-  BaseAccount,
-  Account,
-} from '@shared/core';
-import {
-  useStakingData,
-  StakingMap,
-  ValidatorMap,
-  validatorsService,
-  useStakingRewards,
-  ValidatorsModal,
-} from '@entities/staking';
 
 export const Staking = () => {
   const { t } = useI18n();
@@ -72,7 +63,9 @@ export const Staking = () => {
       const isPolkadotVault = walletUtils.isPolkadotVault(activeWallet);
       const hasManyAccounts = collection.length > 1;
 
-      if (isPolkadotVault && isBaseAccount && hasManyAccounts) return false;
+      if (isPolkadotVault && isBaseAccount && hasManyAccounts) {
+        return false;
+      }
 
       return accountUtils.isChainIdMatch(account, chainId);
     }) || [];
@@ -170,15 +163,19 @@ export const Staking = () => {
     toggleNominators();
   };
 
-  const groupedAccounts = useMemo((): Account[] | (ChainAccount | ShardAccount[])[] => {
-    if (!activeWallet) return [];
-    if (!walletUtils.isPolkadotVault(activeWallet)) return accounts;
+  const groupedAccounts = useMemo(() => {
+    if (!activeWallet) {
+      return [];
+    }
+    if (!walletUtils.isPolkadotVault(activeWallet)) {
+      return accounts;
+    }
 
     return accountUtils.getAccountsAndShardGroups(accounts);
   }, [activeWallet, accounts]);
 
   const nominatorsInfo = useMemo(() => {
-    const getInfo = <T extends BaseAccount | ShardAccount>(address: Address, account: T): NominatorInfo<T> => ({
+    const getInfo = <T extends Account>(address: Address, account: T): NominatorInfo<T> => ({
       address,
       account,
       stash: staking[address]?.stash,
@@ -188,8 +185,7 @@ export const Staking = () => {
       unlocking: staking[address]?.unlocking,
     });
 
-    // @ts-ignore
-    return groupedAccounts.reduce((acc, account) => {
+    return groupedAccounts.reduce<NominatorInfo<any>[]>((acc, account) => {
       if (accountUtils.isAccountWithShards(account)) {
         const shardsGroup = account.map((shard) => {
           const address = toAddress(shard.accountId, { prefix: addressPrefix });
@@ -197,6 +193,7 @@ export const Staking = () => {
           return getInfo(address, shard);
         });
 
+        // @ts-expect-error TODO fix
         acc.push(shardsGroup);
       } else {
         const address = toAddress(account.accountId, { prefix: addressPrefix });
@@ -209,7 +206,7 @@ export const Staking = () => {
 
   const selectedStakes = selectedNominators.reduce<Stake[]>((acc, address) => {
     const stake = staking[address];
-    stake ? acc.push(stake) : acc.push({ address } as Stake);
+    acc.push(stake ?? ({ address } as Stake));
 
     return acc;
   }, []);
@@ -277,11 +274,11 @@ export const Staking = () => {
 
   return (
     <>
-      <div className="h-full flex flex-col">
+      <div className="flex h-full flex-col">
         <Header title={t('staking.title')} />
 
-        <div className="overflow-y-auto w-full h-full mt-6">
-          <section className="flex flex-col gap-y-6 mx-auto h-full w-[546px]">
+        <div className="mt-6 h-full w-full overflow-y-auto">
+          <section className="mx-auto flex h-full w-[546px] flex-col gap-y-6">
             <NetworkInfo
               rewards={Object.values(rewards)}
               isRewardsLoading={isRewardsLoading}
@@ -320,7 +317,7 @@ export const Staking = () => {
               </>
             )}
 
-            <InactiveNetwork active={!networkIsActive} className="flex-grow mb-28" />
+            <InactiveNetwork active={!networkIsActive} className="mb-28 flex-grow" />
           </section>
         </div>
       </div>

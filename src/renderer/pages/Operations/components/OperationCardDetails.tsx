@@ -2,31 +2,26 @@ import cn from 'classnames';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { AddressWithExplorers, WalletCardSm, walletModel, ExplorersPopover } from '@entities/wallet';
-import { Icon, Button, FootnoteText, DetailRow } from '@shared/ui';
-import { copyToClipboard, truncate, cnTw, getAssetById } from '@shared/lib/utils';
+import { chainsService } from '@shared/api/network';
+import {
+  type Address,
+  type MultisigAccount,
+  type MultisigTransaction,
+  type Transaction,
+  type Validator,
+} from '@shared/core';
+import { TransactionType } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
-import { ExtendedChain, networkUtils, networkModel } from '@entities/network';
-import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
+import { cnTw, copyToClipboard, getAssetById, truncate } from '@shared/lib/utils';
+import { Button, CaptionText, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
 import { ChainTitle } from '@entities/chain';
-import type { Address, MultisigAccount, Validator, MultisigTransaction, Transaction } from '@shared/core';
-import { TransactionType } from '@shared/core';
-import { getTransactionFromMultisigTx } from '@entities/multisig';
-import { useValidatorsMap, ValidatorsModal } from '@entities/staking';
-import { singnatoryUtils } from '@entities/signatory';
-import { chainsService } from '@shared/api/network';
-import { proxyUtils } from '@entities/proxy';
 import { matrixModel } from '@entities/matrix';
-import {
-  getMultisigExtrinsicLink,
-  getDestination,
-  getPayee,
-  getDelegate,
-  getDestinationChain,
-  getProxyType,
-  getSender,
-} from '../common/utils';
+import { getTransactionFromMultisigTx } from '@entities/multisig';
+import { type ExtendedChain, networkModel, networkUtils } from '@entities/network';
+import { proxyUtils } from '@entities/proxy';
+import { signatoryUtils } from '@entities/signatory';
+import { ValidatorsModal, useValidatorsMap } from '@entities/staking';
 import {
   isAddProxyTransaction,
   isManageProxyTransaction,
@@ -34,6 +29,21 @@ import {
   isRemovePureProxyTransaction,
   isXcmTransaction,
 } from '@entities/transaction';
+import { AddressWithExplorers, ExplorersPopover, WalletCardSm, walletModel } from '@entities/wallet';
+import { allTracks } from '@/widgets/DelegateModal/lib/constants';
+import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
+import {
+  getDelegate,
+  getDelegationTarget,
+  getDelegationTracks,
+  getDelegationVotes,
+  getDestination,
+  getDestinationChain,
+  getMultisigExtrinsicLink,
+  getPayee,
+  getProxyType,
+  getSender,
+} from '../common/utils';
 
 type Props = {
   tx: MultisigTransaction;
@@ -55,6 +65,10 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const proxyType = getProxyType(tx);
   const destinationChain = getDestinationChain(tx);
   const destination = getDestination(tx, chains, destinationChain);
+
+  const delegationTarget = getDelegationTarget(tx);
+  const delegationTracks = getDelegationTracks(tx);
+  const delegationVotes = getDelegationVotes(tx);
 
   const api = extendedChain?.api;
   const defaultAsset = extendedChain?.assets[0];
@@ -90,10 +104,10 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
 
   const valueClass = 'text-text-secondary';
   const depositorWallet =
-    depositorSignatory && singnatoryUtils.getSignatoryWallet(wallets, depositorSignatory.accountId);
+    depositorSignatory && signatoryUtils.getSignatoryWallet(wallets, depositorSignatory.accountId);
 
   return (
-    <dl className="flex flex-col gap-y-1 w-full">
+    <dl className="flex w-full flex-col gap-y-1">
       {description && (
         <div className={DescriptionBlockStyle}>
           <FootnoteText as="dt" className="text-text-tertiary">
@@ -213,12 +227,47 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         </DetailRow>
       )}
 
+      {delegationTarget && (
+        <DetailRow label={t('operation.details.delegationTarget')} className={valueClass}>
+          <AddressWithExplorers
+            explorers={explorers}
+            addressFont={AddressStyle}
+            type="short"
+            address={delegationTarget}
+            addressPrefix={addressPrefix}
+            wrapperClassName="-mr-2 min-w-min"
+          />
+        </DetailRow>
+      )}
+
+      {delegationVotes && (
+        <DetailRow label={t('operation.details.delegationVotes')} className={valueClass}>
+          <FootnoteText className={valueClass}>{delegationVotes}</FootnoteText>
+        </DetailRow>
+      )}
+
+      {delegationTracks && (
+        <DetailRow label={t('operation.details.delegationTracks')} className={valueClass}>
+          <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
+            <CaptionText className="text-white">{delegationTracks.length}</CaptionText>
+          </div>
+          <Tooltip
+            content={delegationTracks
+              .map((trackId) => t(allTracks.find((track) => track.id === trackId)!.value))
+              .join(', ')}
+            pointer="up"
+          >
+            <Icon className="group-hover:text-icon-hover" name="info" size={16} />
+          </Tooltip>
+        </DetailRow>
+      )}
+
       {Boolean(selectedValidators?.length) && defaultAsset && (
         <>
           <DetailRow label={t('operation.details.validators')} className={valueClass}>
             <button
               type="button"
-              className={cn('flex gap-x-1 items-center text-text-secondary', InteractionStyle)}
+              className={cn('flex items-center gap-x-1 text-text-secondary', InteractionStyle)}
               onClick={toggleValidators}
             >
               <FootnoteText as="span" className="text-inherit">
@@ -260,7 +309,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         pallet="primary"
         size="sm"
         suffixElement={<Icon name={isAdvancedShown ? 'up' : 'down'} size={16} />}
-        className="text-action-text-default hover:text-action-text-default w-fit -ml-2"
+        className="-ml-2 w-fit text-action-text-default hover:text-action-text-default"
         onClick={toggleAdvanced}
       >
         {t('operation.advanced')}
@@ -272,7 +321,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
             <DetailRow label={t('operation.details.callHash')} className={valueClass}>
               <button
                 type="button"
-                className={cn('flex gap-x-1 items-center group', InteractionStyle)}
+                className={cn('group flex items-center gap-x-1', InteractionStyle)}
                 onClick={() => copyToClipboard(callHash)}
               >
                 <FootnoteText className="text-inherit">{truncate(callHash, 7, 8)}</FootnoteText>
@@ -285,7 +334,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
             <DetailRow label={t('operation.details.callData')} className={valueClass}>
               <button
                 type="button"
-                className={cn('flex gap-x-1 items-center group', InteractionStyle)}
+                className={cn('group flex items-center gap-x-1', InteractionStyle)}
                 onClick={() => copyToClipboard(callData)}
               >
                 <FootnoteText className="text-inherit">{truncate(callData, 7, 8)}</FootnoteText>
@@ -326,7 +375,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
                 value={deposit}
                 asset={defaultAsset}
                 showIcon={false}
-                className="text-footnote text-text-secondary py-[3px]"
+                className="py-[3px] text-footnote text-text-secondary"
               />
             </DetailRow>
           )}
@@ -337,7 +386,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
             <DetailRow label={t('operation.details.timePoint')} className={valueClass}>
               {extrinsicLink ? (
                 <a
-                  className={cn('flex gap-x-1 items-center group', InteractionStyle)}
+                  className={cn('group flex items-center gap-x-1', InteractionStyle)}
                   href={extrinsicLink}
                   target="_blank"
                   rel="noopener noreferrer"

@@ -1,22 +1,22 @@
 import { useUnit } from 'effector-react';
 
-import { BaseModal, DropdownIconButton, Tabs } from '@shared/ui';
-import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { MultishardAccountsList, WalletCardLg, permissionUtils } from '@entities/wallet';
 import { useI18n } from '@app/providers';
-import type { MultiShardWallet } from '@shared/core';
-import { RenameWalletModal } from '@features/wallets/RenameWallet';
-import { IconNames } from '@shared/ui/Icon/data';
-import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
-import { TabItem } from '@shared/ui/types';
+import { type MultiShardWallet } from '@shared/core';
+import { useModalClose, useToggle } from '@shared/lib/hooks';
+import { BaseModal, DropdownIconButton, Tabs } from '@shared/ui';
+import { type IconNames } from '@shared/ui/Icon/data';
+import { type TabItem } from '@shared/ui/types';
 import { networkModel } from '@entities/network';
+import { MultishardAccountsList, WalletCardLg, permissionUtils } from '@entities/wallet';
+import { ForgetWalletModal } from '@features/wallets/ForgetWallet';
+import { RenameWalletModal } from '@features/wallets/RenameWallet';
+import { AddProxy, addProxyModel } from '@widgets/AddProxyModal';
 import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
-import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
-import { ProxiesList } from '../components/ProxiesList';
-import { NoProxiesAction } from '../components/NoProxiesAction';
-import type { MultishardMap } from '../../lib/types';
+import { type MultishardMap } from '../../lib/types';
 import { walletDetailsUtils } from '../../lib/utils';
 import { walletProviderModel } from '../../model/wallet-provider-model';
+import { NoProxiesAction } from '../components/NoProxiesAction';
+import { ProxiesList } from '../components/ProxiesList';
 
 type Props = {
   wallet: MultiShardWallet;
@@ -90,10 +90,10 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList className="h-[371px] mt-4" canCreateProxy={canCreateProxy} />
+        <ProxiesList className="mt-4 h-[371px]" canCreateProxy={canCreateProxy} />
       ) : (
         <NoProxiesAction
-          className="h-[371px] mt-4"
+          className="mt-4 h-[371px]"
           canCreateProxy={canCreateProxy}
           onAddProxy={addProxyModel.events.flowStarted}
         />
@@ -111,8 +111,8 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
       isOpen={isModalOpen}
       onClose={closeModal}
     >
-      <div className="flex flex-col gap-y-4 w-full">
-        <div className="py-6 px-5 border-b border-divider">
+      <div className="flex w-full flex-col gap-y-4">
+        <div className="border-b border-divider px-5 py-6">
           <WalletCardLg wallet={wallet} />
         </div>
         <Tabs items={tabItems} panelClassName="" unmount={false} tabsClassName="mx-5" />

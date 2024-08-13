@@ -1,9 +1,11 @@
-import { Asset, AssetType, OrmlExtras, StatemineExtras, StakingType } from '@shared/core/types/asset';
+import { type Asset, AssetType, type OrmlExtras, StakingType, type StatemineExtras } from '@shared/core/types/asset';
 
 /**
  * Get ID of the asset by type
- * @param asset network asset
- * @return {String}
+ *
+ * @param asset Network asset
+ *
+ * @returns {String}
  */
 export const getAssetId = (asset: Asset): string => {
   if (asset.type === AssetType.STATEMINE) {
@@ -18,9 +20,11 @@ export const getAssetId = (asset: Asset): string => {
 
 /**
  * Get asset by ID
- * @param assets network assets
- * @param id identifier to be searched
- * @return {Asset | undefined}
+ *
+ * @param assets Network assets
+ * @param id Identifier to be searched
+ *
+ * @returns {Asset | undefined}
  */
 export const getAssetById = (id: string, assets?: Asset[]): Asset | undefined => {
   if (!assets || assets.length === 0) return undefined;
@@ -30,8 +34,10 @@ export const getAssetById = (id: string, assets?: Asset[]): Asset | undefined =>
 
 /**
  * Get Relaychain asset
- * @param assets network assets
- * @return {Asset | undefined}
+ *
+ * @param assets Network assets
+ *
+ * @returns {Asset | undefined}
  */
 export const getRelaychainAsset = (assets: Asset[] = []): Asset | undefined => {
   if (assets.length === 0) return undefined;

@@ -1,0 +1,13 @@
+.vscode
+.idea
+.github
+
+coverage
+release
+node_modules
+
+coverage.txt
+junit.xml
+jest-unit-results.json
+
+package.json

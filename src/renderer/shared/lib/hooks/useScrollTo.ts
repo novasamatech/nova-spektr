@@ -1,9 +1,11 @@
-import { useRef, RefObject, useCallback } from 'react';
+import { type RefObject, useCallback, useRef } from 'react';
 
 /**
  * Scrolls to Ref element
- * @param delay time of delay
- * @return {Ref, Function}
+ *
+ * @param delay Time of delay
+ *
+ * @returns {Ref, Function}
  */
 export function useScrollTo<T extends HTMLElement>(delay = 0): [RefObject<T>, () => void] {
   const ref = useRef<T>(null);

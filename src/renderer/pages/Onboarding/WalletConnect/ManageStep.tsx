@@ -1,24 +1,24 @@
 import cn from 'classnames';
 import { useEffect, useState } from 'react';
-import { Controller, useForm, SubmitHandler } from 'react-hook-form';
+import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
 import { useI18n, useStatusContext } from '@app/providers';
-import { Button, Input, InputHint, HeaderTitleText, SmallTitleText, Icon } from '@shared/ui';
-import { toAccountId } from '@shared/lib/utils';
 import { chainsService } from '@shared/api/network';
-import { IconNames } from '@shared/ui/Icon/data';
-import { MultiAccountsList, walletModel } from '@entities/wallet';
 import {
-  AccountId,
-  Chain,
+  type AccountId,
+  AccountType,
+  type Chain,
   ChainType,
   ErrorType,
+  type NoID,
   SigningType,
   WalletType,
-  AccountType,
-  WcAccount,
-  NoID,
+  type WcAccount,
 } from '@shared/core';
+import { toAccountId } from '@shared/lib/utils';
+import { Button, HeaderTitleText, Icon, Input, InputHint, SmallTitleText } from '@shared/ui';
+import { type IconNames } from '@shared/ui/Icon/data';
+import { MultiAccountsList, walletModel } from '@entities/wallet';
 
 const WalletLogo: Record<WalletTypeName, IconNames> = {
   [WalletType.WALLET_CONNECT]: 'walletConnectOnboarding',
@@ -117,11 +117,11 @@ export const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack,
       title: walletName.trim(),
       description: t('onboarding.walletConnect.pairedDescription'),
       content: (
-        <div className="flex justify-center items-center h-20 gap-1">
+        <div className="flex h-20 items-center justify-center gap-1">
           <Icon name="logo" size={56} />
-          <div className="w-3 h-0 border-[1.5px] rounded border-text-positive"></div>
+          <div className="h-0 w-3 rounded border-[1.5px] border-text-positive"></div>
           <Icon name="checkmarkOutline" className="text-text-positive" size={18} />
-          <div className="w-3 h-0 border-[1.5px] rounded border-text-positive"></div>
+          <div className="h-0 w-3 rounded border-[1.5px] border-text-positive"></div>
           <Icon name={WalletLogo[type]} size={56} />
         </div>
       ),
@@ -142,11 +142,11 @@ export const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack,
 
   return (
     <>
-      <div className="w-[472px] flex flex-col px-5 py-4 bg-white rounded-l-lg">
+      <div className="flex w-[472px] flex-col rounded-l-lg bg-white px-5 py-4">
         <HeaderTitleText className="mb-10">{Title[type]}</HeaderTitleText>
         <SmallTitleText className="mb-6">{t('onboarding.walletConnect.manageTitle')}</SmallTitleText>
 
-        <form className="flex flex-col gap-4 h-full" onSubmit={handleSubmit(submitHandler)}>
+        <form className="flex h-full flex-col gap-4" onSubmit={handleSubmit(submitHandler)}>
           <Controller
             name="walletName"
             control={control}
@@ -171,7 +171,7 @@ export const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack,
             )}
           />
 
-          <div className="flex flex-1 justify-between items-end">
+          <div className="flex flex-1 items-end justify-between">
             <Button variant="text" onClick={goBack}>
               {t('onboarding.backButton')}
             </Button>
@@ -183,8 +183,8 @@ export const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack,
         </form>
       </div>
 
-      <div className="w-[472px] flex flex-col gap-y-6 bg-input-background-disabled py-4 rounded-r-lg">
-        <SmallTitleText className="px-5 mt-[52px]">{t('onboarding.vault.accountsTitle')}</SmallTitleText>
+      <div className="flex w-[472px] flex-col gap-y-6 rounded-r-lg bg-input-background-disabled py-4">
+        <SmallTitleText className="mt-[52px] px-5">{t('onboarding.vault.accountsTitle')}</SmallTitleText>
         <MultiAccountsList accounts={accountsList} className="h-[416px]" />
       </div>
     </>

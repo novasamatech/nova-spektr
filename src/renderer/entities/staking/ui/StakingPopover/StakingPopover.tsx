@@ -1,6 +1,6 @@
-import { PropsWithChildren, ReactNode } from 'react';
+import { type PropsWithChildren, type ReactNode } from 'react';
 
-import { Popover, FootnoteText, LabelHelpBox } from '@shared/ui';
+import { FootnoteText, LabelHelpBox, Popover } from '@shared/ui';
 
 type Props = {
   labelText?: string;
@@ -13,7 +13,7 @@ const StakingRoot = ({ labelText, children }: PropsWithChildren<Props>) => (
     contentClass="p-4"
     panelClass="w-[230px]"
     wrapperClass="w-max"
-    content={<ul className="flex flex-col gap-y-1 list-disc pl-5">{children}</ul>}
+    content={<ul className="flex list-disc flex-col gap-y-1 pl-5">{children}</ul>}
   >
     <LabelHelpBox>{labelText}</LabelHelpBox>
   </Popover>

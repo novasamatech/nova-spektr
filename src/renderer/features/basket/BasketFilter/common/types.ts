@@ -1,4 +1,4 @@
-import { DropdownOption, DropdownResult } from '@shared/ui/types';
+import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
 
 export type FilterName = 'status' | 'network' | 'type';
 

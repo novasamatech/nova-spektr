@@ -1,31 +1,31 @@
-import { useEffect, useState } from 'react';
-import { groupBy, isEqual } from 'lodash';
 import { useUnit } from 'effector-react';
+import { groupBy, isEqual } from 'lodash';
+import { useEffect, useState } from 'react';
 
-import { cnTw, includes, isEthereumAccountId, isStringsMatchQuery, RootExplorers, toAddress } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
+import { type Account, type Chain, type Contact, type ShardAccount, type Wallet } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
+import { RootExplorers, cnTw, includes, isEthereumAccountId, isStringsMatchQuery, toAddress } from '@shared/lib/utils';
 import {
+  Accordion,
+  BodyText,
   Button,
+  CaptionText,
   Checkbox,
   FootnoteText,
+  HelpText,
   Icon,
   SearchInput,
   SmallTitleText,
   Tabs,
-  Accordion,
-  BodyText,
-  CaptionText,
-  HelpText,
 } from '@shared/ui';
-import { TabItem } from '@shared/ui/types';
-import { CreateContactModal } from '@widgets/ManageContactModal';
-import { ExtendedAccount, ExtendedContact } from '../common/types';
+import { type TabItem } from '@shared/ui/types';
 import { EmptyContactList } from '@entities/contact';
-import { type Contact, type Account, ShardAccount, Wallet, Chain } from '@shared/core';
-import { ContactItem, ExplorersPopover, WalletCardMd } from '@entities/wallet';
-import { networkUtils } from '@entities/network';
 import { matrixModel } from '@entities/matrix';
+import { networkUtils } from '@entities/network';
+import { ContactItem, ExplorersPopover, WalletCardMd } from '@entities/wallet';
+import { CreateContactModal } from '@widgets/ManageContactModal';
+import { type ExtendedAccount, type ExtendedContact } from '../common/types';
 
 const enum SignatoryTabs {
   ACCOUNTS = 'accounts',
@@ -87,13 +87,14 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
         (account as ShardAccount[]).forEach((a) => {
           const address = toAddress(a.accountId, { prefix: chain?.addressPrefix });
 
-          if (!accountsQuery || isStringsMatchQuery(accountsQuery, [a.accountId, a.name, address]))
+          if (!accountsQuery || isStringsMatchQuery(accountsQuery, [a.accountId, a.name, address])) {
             toAdd.push({
               ...a,
               index: a.accountId.toString(),
               matrixId: matrix.userId,
               address,
             });
+          }
         });
 
         if (toAdd.length > 0) {
@@ -130,7 +131,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
   const selectAccount = (account: ExtendedAccount) => {
     setSelectedAccounts((selectedAccounts) => {
       if (selectedAccounts[account.id]) {
-        const { [account.id]: removedWallet, ...newWallets } = selectedAccounts;
+        const { [account.id]: _removedWallet, ...newWallets } = selectedAccounts;
 
         return newWallets;
       }
@@ -142,7 +143,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
   const selectContact = (contact: ExtendedContact) => {
     setSelectedContacts((selectedContacts) => {
       if (selectedContacts[contact.index]) {
-        const { [contact.index]: removedContact, ...newContacts } = selectedContacts;
+        const { [contact.index]: _removedWallet, ...newContacts } = selectedContacts;
 
         return newContacts;
       }
@@ -192,7 +193,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
 
           return (
             <li key={walletId}>
-              <WalletCardMd className="py-[7px] px-2" wallet={wallet} />
+              <WalletCardMd className="px-2 py-[7px]" wallet={wallet} />
 
               <div className="pl-6">
                 {accounts.map((account) => {
@@ -204,7 +205,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
                           <div className="flex items-center gap-x-2">
                             <div
                               className={cnTw(
-                                'flex items-center justify-center rounded-[30px] px-1.5 h-4',
+                                'flex h-4 items-center justify-center rounded-[30px] px-1.5',
                                 'bg-input-background-disabled',
                               )}
                             >
@@ -221,7 +222,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
                               <li
                                 key={`${a.id}_shard_${walletId}`}
                                 className={cnTw(
-                                  'py-1.5 pl-8 rounded-md',
+                                  'rounded-md py-1.5 pl-8',
                                   !disabled && 'hover:bg-action-background-hover',
                                 )}
                               >
@@ -256,7 +257,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
                   return (
                     <li
                       key={`${account.id}_${walletId}`}
-                      className={cnTw('py-1.5 px-2 rounded-md', !disabled && 'hover:bg-action-background-hover')}
+                      className={cnTw('rounded-md px-2 py-1.5', !disabled && 'hover:bg-action-background-hover')}
                     >
                       <Checkbox
                         checked={!!selectedAccounts[account.id]}
@@ -290,7 +291,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
 
   const ContactsTab = (
     <div>
-      <div className="flex items-center gap-x-4 mb-4 px-2">
+      <div className="mb-4 flex items-center gap-x-4 px-2">
         <SearchInput
           wrapperClass="flex-1"
           placeholder={t('createMultisigAccount.searchContactPlaceholder')}
@@ -312,7 +313,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
             return (
               <li
                 key={contact.index + '_contacts'}
-                className={cnTw('py-1.5 px-2 rounded-md', !disabled && 'hover:bg-action-background-hover')}
+                className={cnTw('rounded-md px-2 py-1.5', !disabled && 'hover:bg-action-background-hover')}
               >
                 <Checkbox
                   checked={Boolean(selectedContacts[contact.index]) || false}
@@ -334,7 +335,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
                       active={Boolean(contact.matrixId)}
                       title={t('general.explorers.matrixIdTitle')}
                     >
-                      <HelpText className="text-text-secondary break-all">{contact.matrixId}</HelpText>
+                      <HelpText className="break-all text-text-secondary">{contact.matrixId}</HelpText>
                     </ExplorersPopover.Group>
                   </ExplorersPopover>
                 </Checkbox>
@@ -356,7 +357,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
         <>
           {t('createMultisigAccount.accountsTab')}
           {selectedAccountsLength > 0 && (
-            <FootnoteText as="span" className="text-text-tertiary ml-1">
+            <FootnoteText as="span" className="ml-1 text-text-tertiary">
               {selectedAccountsLength}
             </FootnoteText>
           )}
@@ -370,7 +371,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
         <>
           {t('createMultisigAccount.contactsTab')}
           {selectedContactsLength > 0 && (
-            <FootnoteText as="span" className="text-text-tertiary ml-1">
+            <FootnoteText as="span" className="ml-1 text-text-tertiary">
               {selectedContactsLength}
             </FootnoteText>
           )}
@@ -381,8 +382,8 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
 
   return (
     <>
-      <div className={cnTw('max-h-full flex flex-col flex-1', !isActive && 'hidden')}>
-        <SmallTitleText className="py-2 px-2 mb-4">{t('createMultisigAccount.signatoryTitle')}</SmallTitleText>
+      <div className={cnTw('flex max-h-full flex-1 flex-col', !isActive && 'hidden')}>
+        <SmallTitleText className="mb-4 px-2 py-2">{t('createMultisigAccount.signatoryTitle')}</SmallTitleText>
 
         <Tabs
           items={TabItems}

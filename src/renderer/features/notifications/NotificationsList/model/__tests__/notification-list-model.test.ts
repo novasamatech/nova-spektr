@@ -1,4 +1,4 @@
-import { fork, allSettled } from 'effector';
+import { allSettled, fork } from 'effector';
 
 import { notificationModel } from '@entities/notification';
 import { notificationListModel } from '../notification-list-model';

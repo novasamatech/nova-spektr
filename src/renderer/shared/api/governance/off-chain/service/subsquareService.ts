@@ -1,8 +1,19 @@
 import { BN } from '@polkadot/util';
 
+import {
+  type SubsquareReferendumVote,
+  type SubsquareSimpleReferendum,
+  type SubsquareTimelineRecord,
+  subsquareApiService,
+} from '@shared/api/subsquare';
 import { dictionary } from '@shared/lib/utils';
-import type { GovernanceApi, ReferendumVote } from '../lib/types';
-import { subsquareApiService, SubsquareSimpleReferendum, SubsquareReferendumVote } from '@shared/api/subsquare';
+import { type SubsquareTimelineRecordStatus } from '../../../subsquare/lib/types';
+import {
+  type GovernanceApi,
+  type ReferendumTimelineRecord,
+  type ReferendumTimelineRecordStatus,
+  type ReferendumVote,
+} from '../lib/types';
 
 const getReferendumList: GovernanceApi['getReferendumList'] = async (chain, callback) => {
   const network = chain.specName;
@@ -56,8 +67,33 @@ const getReferendumVotes: GovernanceApi['getReferendumVotes'] = (chain, referend
     .then((data) => data.map(mapVote));
 };
 
+const getReferendumTimeline: GovernanceApi['getReferendumTimeline'] = async (chain, referendumId) => {
+  const mapStatus = (status: SubsquareTimelineRecordStatus): ReferendumTimelineRecordStatus => {
+    switch (status) {
+      case 'Placed':
+        return 'DecisionDepositPlaced';
+      case 'DecisionStarted':
+        return 'Deciding';
+      default:
+        return status;
+    }
+  };
+
+  const mapTimeline = (timeline: SubsquareTimelineRecord): ReferendumTimelineRecord => {
+    return {
+      status: mapStatus(timeline.name),
+      date: new Date(timeline.indexer.blockTime),
+    };
+  };
+
+  return subsquareApiService
+    .fetchReferendum({ network: chain.specName, referendumId })
+    .then((r) => r.onchainData.timeline.map(mapTimeline));
+};
+
 export const subsquareService: GovernanceApi = {
   getReferendumList,
-  getReferendumDetails,
   getReferendumVotes,
+  getReferendumDetails,
+  getReferendumTimeline,
 };

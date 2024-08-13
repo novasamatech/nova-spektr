@@ -2,7 +2,7 @@ import { combine, createEvent, restore } from 'effector';
 
 import { basketModel } from '@entities/basket';
 import { walletModel } from '@entities/wallet';
-import { SelectedFilters } from '../common/types';
+import { type SelectedFilters } from '../common/types';
 import { filterTx } from '../lib/utils';
 
 const EmptySelectedFilters: SelectedFilters = {

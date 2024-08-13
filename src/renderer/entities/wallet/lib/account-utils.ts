@@ -2,26 +2,27 @@ import { u8aToHex } from '@polkadot/util';
 import { createKeyMulti } from '@polkadot/util-crypto';
 import keyBy from 'lodash/keyBy';
 
-import { toAddress } from '@shared/lib/utils';
 // TODO: resolve cross import
-import { networkUtils } from '@entities/network';
-import { walletUtils } from './wallet-utils';
-import { AccountType, ChainType, CryptoType, ProxyType, ProxyVariant } from '@shared/core';
-import type {
-  ID,
-  AccountId,
-  MultisigThreshold,
-  MultisigAccount,
-  ChainAccount,
-  ShardAccount,
-  WcAccount,
-  ProxiedAccount,
-  Wallet,
-  BaseAccount,
-  Chain,
-  ChainId,
-  Account,
+import {
+  type Account,
+  type AccountId,
+  type BaseAccount,
+  type Chain,
+  type ChainAccount,
+  type ChainId,
+  type ID,
+  type MultisigAccount,
+  type MultisigThreshold,
+  type ProxiedAccount,
+  type ShardAccount,
+  type Wallet,
+  type WcAccount,
 } from '@shared/core';
+import { AccountType, ChainType, CryptoType, ProxyType, ProxyVariant } from '@shared/core';
+import { toAddress } from '@shared/lib/utils';
+import { networkUtils } from '@entities/network';
+
+import { walletUtils } from './wallet-utils';
 
 export const accountUtils = {
   isBaseAccount,
@@ -50,6 +51,7 @@ export const accountUtils = {
   isAnyProxyType,
   isNonTransferProxyType,
   isStakingProxyType,
+  isGovernanceProxyType,
 };
 
 // Account types
@@ -84,7 +86,7 @@ function isPureProxiedAccount(account: Partial<Account>): account is ProxiedAcco
 
 // Matchers
 
-function isAccountWithShards(accounts: ChainAccount | ShardAccount[]): accounts is ShardAccount[] {
+function isAccountWithShards(accounts: Account | ShardAccount[]): accounts is ShardAccount[] {
   return Array.isArray(accounts) && isShardAccount(accounts[0]);
 }
 
@@ -140,7 +142,7 @@ function getAccountsAndShardGroups(accounts: Account[]): Array<ChainAccount | Sh
     if (isBaseAccount(account)) return acc;
 
     if (!isShardAccount(account)) {
-      // @ts-ignore
+      // @ts-expect-error TODO fix
       acc.push(account);
 
       return acc;
@@ -191,6 +193,10 @@ function isNonTransferProxyType(account: ProxiedAccount): boolean {
 
 function isStakingProxyType(account: ProxiedAccount): boolean {
   return account.proxyType === ProxyType.STAKING;
+}
+
+function isGovernanceProxyType(account: ProxiedAccount): boolean {
+  return account.proxyType === ProxyType.GOVERNANCE;
 }
 
 function isNonBaseVaultAccount(account: Account, wallet: Wallet): boolean {

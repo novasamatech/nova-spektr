@@ -1,10 +1,10 @@
-import { ElementType, useEffect, useState } from 'react';
+import { type ElementType, useEffect, useState } from 'react';
 
-import { cnTw } from '@shared/lib/utils';
 import { chainsService } from '@shared/api/network';
-import { ChainIcon } from '@entities/chain';
+import { type ChainId, type Chain as ChainType } from '@shared/core';
+import { cnTw } from '@shared/lib/utils';
 import { TextBase } from '@shared/ui/Typography/common/TextBase';
-import type { ChainId, Chain as ChainType } from '@shared/core';
+import { ChainIcon } from '@entities/chain';
 
 type WithChain = { chain: ChainType };
 type WithChainId = { chainId: ChainId };
@@ -42,7 +42,7 @@ export const ChainTitle = ({
   return (
     <Tag className={cnTw('flex items-center gap-x-2', className)}>
       <ChainIcon src={chainObj?.icon} name={chainObj?.name} size={iconSize} />
-      <TextBase as="span" className={cnTw('text-text-tertiary text-footnote', fontClass)}>
+      <TextBase as="span" className={cnTw('text-footnote text-text-tertiary', fontClass)}>
         {chainObj?.name}
       </TextBase>
     </Tag>

@@ -1,5 +1,6 @@
+import { type RpcNode } from '@shared/core';
+
 import { RpcValidation } from './types';
-import { RpcNode } from '@shared/core';
 
 export const customRpcUtils = {
   validateWsAddress,
@@ -11,8 +12,10 @@ export const customRpcUtils = {
 
 /**
  * Validate WebSocket address
- * @param address address to validate
- * @return {Boolean}
+ *
+ * @param address Address to validate
+ *
+ * @returns {Boolean}
  */
 function validateWsAddress(address: string): boolean {
   return /^ws(s)?:\/\/.+(\.[a-z]{2,}|:\d{4,5})(\/[a-z\d_-]+)*\W{0}\/?/i.test(address);

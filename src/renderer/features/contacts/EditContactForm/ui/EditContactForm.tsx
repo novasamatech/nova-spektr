@@ -1,11 +1,11 @@
-import { useUnit } from 'effector-react';
-import { FormEvent, useEffect } from 'react';
 import { useForm } from 'effector-forms';
+import { useUnit } from 'effector-react';
+import { type FormEvent, useEffect } from 'react';
 
-import { editFormModel, Callbacks } from '../model/contact-form';
-import { Button, Icon, Identicon, Input, InputHint } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { Contact } from '@shared/core';
+import { type Contact } from '@shared/core';
+import { Button, Icon, Identicon, Input, InputHint } from '@shared/ui';
+import { type Callbacks, editFormModel } from '../model/contact-form';
 
 type Props = Callbacks & {
   contactToEdit: Contact;
@@ -37,7 +37,7 @@ export const EditContactForm = ({ contactToEdit, onSubmit }: Props) => {
   const canShowIdenticon = address?.value && !address?.hasError();
 
   return (
-    <form className="flex flex-col pt-4 gap-4" onSubmit={submitForm}>
+    <form className="flex flex-col gap-4 pt-4" onSubmit={submitForm}>
       <div className="flex flex-col gap-y-2">
         <Input
           name="name"
@@ -58,7 +58,7 @@ export const EditContactForm = ({ contactToEdit, onSubmit }: Props) => {
         <Input
           name="address"
           wrapperClass="h-[42px]"
-          className="w-full ml-2"
+          className="ml-2 w-full"
           label={t('addressBook.editContact.accountIdLabel')}
           placeholder={t('addressBook.editContact.accountIdPlaceholder')}
           invalid={address?.hasError()}

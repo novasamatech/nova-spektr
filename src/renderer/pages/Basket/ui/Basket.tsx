@@ -1,15 +1,16 @@
-import { useEffect } from 'react';
 import { useUnit } from 'effector-react';
+import { useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
 import { Button, Checkbox, ConfirmModal, FootnoteText, Header, Icon, SmallTitleText } from '@shared/ui';
-import { Operation } from './Operation';
+import { BasketFilter, basketFilterModel } from '@features/basket/BasketFilter';
+import { basketPageUtils } from '../lib/basket-page-utils';
 import { basketPageModel } from '../model/basket-page-model';
+
 import { EmptyBasket } from './EmptyBasket';
+import { Operation } from './Operation';
 import { SignOperation } from './SignOperation';
 import { SignOperations } from './SignOperations';
-import { basketPageUtils } from '../lib/basket-page-utils';
-import { BasketFilter, basketFilterModel } from '@features/basket/BasketFilter';
 
 export const Basket = () => {
   const { t } = useI18n();
@@ -35,7 +36,7 @@ export const Basket = () => {
   }, []);
 
   return (
-    <section className="flex flex-col items-center relative h-full">
+    <section className="relative flex h-full flex-col items-center">
       <Header title={t('basket.title')} />
 
       <div className="mt-4">
@@ -44,8 +45,8 @@ export const Basket = () => {
 
       {filteredTxs.length > 0 && (
         <>
-          <div className="w-full mt-4 gap-4 flex flex-col items-center">
-            <div className="flex items-center justify-between w-[736px]">
+          <div className="mt-4 flex w-full flex-col items-center gap-4">
+            <div className="flex w-[736px] items-center justify-between">
               <Checkbox
                 className="ml-3"
                 checked={basketTxs.length === selectedTxs.length}
@@ -57,7 +58,7 @@ export const Basket = () => {
                 </FootnoteText>
               </Checkbox>
 
-              <div className="flex gap-4 items-center">
+              <div className="flex items-center gap-4">
                 <Button variant="text" size="sm" onClick={() => basketPageModel.events.refreshValidationStarted()}>
                   <div className="flex items-center gap-1">
                     <Icon className="text-icon-accent" name="refresh" />
@@ -76,11 +77,11 @@ export const Basket = () => {
             </div>
           </div>
 
-          <div className="w-full mt-4 gap-4 flex flex-col items-center overflow-y-auto scrollbar-stable">
-            <ul className="rounded-md flex divide-y flex-col gap-y-1.5 w-[736px]">
+          <div className="scrollbar-stable mt-4 flex w-full flex-col items-center gap-4 overflow-y-auto">
+            <ul className="flex w-[736px] flex-col gap-y-1.5 divide-y rounded-md">
               {filteredTxs.map((tx) => (
-                <li key={tx.id} className="flex gap-x-4 px-3 bg-block-background-default">
-                  <div className="flex justify-center items-center">
+                <li key={tx.id} className="flex gap-x-4 bg-block-background-default px-3">
+                  <div className="flex items-center justify-center">
                     <Checkbox
                       disabled={
                         Boolean(invalidTxs.get(tx.id)) ||

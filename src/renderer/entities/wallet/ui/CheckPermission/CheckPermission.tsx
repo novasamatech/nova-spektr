@@ -1,8 +1,8 @@
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 import { Navigate } from 'react-router-dom';
 
-import type { Wallet } from '@shared/core';
-import { OperationType } from '../../common/types';
+import { type Wallet } from '@shared/core';
+import { type OperationType } from '../../common/types';
 import { getOperationTypeFn } from '../../common/utils';
 
 type Props = {
@@ -12,9 +12,12 @@ type Props = {
 };
 
 export const CheckPermission = ({ operationType, wallet, redirectPath, children }: PropsWithChildren<Props>) => {
-  if (!wallet) return null;
+  if (!wallet) {
+    return null;
+  }
 
   if (getOperationTypeFn(operationType)(wallet)) {
+    // eslint-disable-next-line react/jsx-no-useless-fragment
     return <>{children}</>;
   }
 

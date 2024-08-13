@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
-import { toAccountId } from '@shared/lib/utils';
+import { type Address, type Stake } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
-import { ButtonDropdownOption } from '@shared/ui/types';
-import type { Address, Stake } from '@shared/core';
-import { Operations, ControllerTypes } from '../lib/types';
-import { SmallTitleText, DropdownButton, Button, BaseModal, Icon } from '@shared/ui';
-import { StashOperations, ControllerOperations, OperationOptions } from '../lib/constants';
+import { toAccountId } from '@shared/lib/utils';
+import { BaseModal, Button, DropdownButton, Icon, SmallTitleText } from '@shared/ui';
+import { type ButtonDropdownOption } from '@shared/ui/types';
+import { ControllerOperations, OperationOptions, StashOperations } from '../lib/constants';
+import { ControllerTypes, type Operations } from '../lib/types';
 
 type Props = {
   canInteract: boolean;
@@ -26,7 +26,7 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
 
   if (!canInteract) {
     return (
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <SmallTitleText className="leading-[42px]">{t('staking.overview.actionsTitle')}</SmallTitleText>
       </div>
     );
@@ -83,8 +83,12 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
 
   const getStakeAddresses = (accountType: ControllerTypes): Address[] => {
     let filterFn: (value?: any) => boolean = () => true;
-    if (accountType === ControllerTypes.STASH) filterFn = isStash;
-    if (accountType === ControllerTypes.CONTROLLER) filterFn = isController;
+    if (accountType === ControllerTypes.STASH) {
+      filterFn = isStash;
+    }
+    if (accountType === ControllerTypes.CONTROLLER) {
+      filterFn = isController;
+    }
 
     return stakes.filter(filterFn).map((s) => s.address);
   };
@@ -119,7 +123,9 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
   };
 
   const getAvailableButtonOptions = (): ButtonDropdownOption[] => {
-    if (noStakes || wrongOverlaps) return [];
+    if (noStakes || wrongOverlaps) {
+      return [];
+    }
 
     return Object.entries(operationsSummary).reduce<ButtonDropdownOption[]>((acc, [key, value]) => {
       if (stakes.length === value) {
@@ -140,18 +146,22 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
   };
 
   const getActionButtonText = (): string => {
-    if (noStakes) return t('staking.actions.selectAccPlaceholder');
-    if (wrongOverlaps) return t('staking.actions.noOverlapPlaceholder');
+    if (noStakes) {
+      return t('staking.actions.selectAccPlaceholder');
+    }
+    if (wrongOverlaps) {
+      return t('staking.actions.noOverlapPlaceholder');
+    }
 
     return t('staking.actions.manageStakePlaceholder');
   };
 
   return (
     <>
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <SmallTitleText>{t('staking.overview.actionsTitle')}</SmallTitleText>
         <DropdownButton
-          className="min-w-[228px] h-8.5"
+          className="h-8.5 min-w-[228px]"
           title={getActionButtonText()}
           disabled={isStakingLoading || noStakes || wrongOverlaps}
           options={getAvailableButtonOptions()}
@@ -176,7 +186,7 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
           <Trans t={t} i18nKey={warningMessage} />
         </p>
 
-        <div className="flex items-center gap-2.5 mt-5">
+        <div className="mt-5 flex items-center gap-2.5">
           <Button className="flex-1" variant="text" onClick={toggleIsDialogOpen}>
             {t('staking.warning.noButton')}
           </Button>

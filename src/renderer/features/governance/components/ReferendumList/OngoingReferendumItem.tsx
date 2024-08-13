@@ -1,11 +1,12 @@
 import { memo } from 'react';
 
 import { useI18n } from '@app/providers';
-import { Voted, VoteChart, TrackInfo, votingService } from '@entities/governance';
-import { HeadlineText, Shimmering } from '@shared/ui';
 import { type OngoingReferendum } from '@shared/core';
+import { HeadlineText, Shimmering } from '@shared/ui';
+import { TrackInfo, VoteChart, Voted, votingService } from '@entities/governance';
 import { type AggregatedReferendum } from '../../types/structs';
 import { VotingStatusBadge } from '../VotingStatusBadge';
+
 import { ListItem } from './ListItem';
 
 type Props = {
@@ -32,16 +33,16 @@ export const OngoingReferendumItem = memo<Props>(({ referendum, isTitlesLoading,
 
   return (
     <ListItem onClick={() => onSelect(referendum)}>
-      <div className="flex items-center gap-x-2 w-full">
+      <div className="flex w-full items-center gap-x-2">
         <Voted active={isVoted} />
         <VotingStatusBadge passing={isPassing} referendum={referendum} />
 
         {/*<ReferendumTimer status="reject" time={600000} />*/}
         <TrackInfo referendumId={referendum.referendumId} trackId={referendum.track} />
       </div>
-      <div className="flex items-start gap-x-6 w-full">
-        <HeadlineText className="flex-1 pointer-events-auto">{titleNode}</HeadlineText>
-        <div className="basis-[200px] shrink-0">
+      <div className="flex w-full items-start gap-x-6">
+        <HeadlineText className="pointer-events-auto flex-1">{titleNode}</HeadlineText>
+        <div className="shrink-0 basis-[200px]">
           {voteFractions ? (
             <VoteChart
               bgColor="icon-button"

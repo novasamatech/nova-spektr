@@ -1,16 +1,17 @@
-import { BrowserCodeReader, BrowserQRCodeReader, IScannerControls } from '@zxing/browser';
+import { u8aToHex } from '@polkadot/util';
+import { BrowserCodeReader, BrowserQRCodeReader, type IScannerControls } from '@zxing/browser';
 import init, { Decoder, EncodingPacket } from 'raptorq';
 import { useEffect, useRef } from 'react';
-import { u8aToHex } from '@polkadot/util';
+
+import { useI18n } from '@app/providers';
+import { type HexString } from '@shared/core';
+import { cnTw } from '@shared/lib/utils';
+import { CRYPTO_SR25519 } from '../QrGenerator/common/constants';
+import { ErrorFields, FRAME_KEY, SIGNED_TRANSACTION_BULK } from '../common/constants';
+import { QR_READER_ERRORS } from '../common/errors';
+import { type DecodeCallback, type ErrorObject, type Progress, QrError, type VideoInput } from '../common/types';
 
 import RaptorFrame from './RaptorFrame';
-import { cnTw } from '@shared/lib/utils';
-import { useI18n } from '@app/providers';
-import { QR_READER_ERRORS } from '../common/errors';
-import { ErrorFields, FRAME_KEY, SIGNED_TRANSACTION_BULK } from '../common/constants';
-import { DecodeCallback, ErrorObject, Progress, QrError, VideoInput } from '../common/types';
-import { CRYPTO_SR25519 } from '../QrGenerator/common/constants';
-import type { HexString } from '@shared/core';
 
 const enum Status {
   'FIRST_FRAME',
@@ -61,7 +62,9 @@ export const QrMultiframeSignatureReader = ({
   const isComplete = useRef(false);
 
   const isQrErrorObject = (error: unknown): boolean => {
-    if (!error) return false;
+    if (!error) {
+      return false;
+    }
 
     return typeof error === 'object' && ErrorFields.CODE in error && ErrorFields.MESSAGE in error;
   };
@@ -77,7 +80,7 @@ export const QrMultiframeSignatureReader = ({
 
       const mediaDevices = await BrowserCodeReader.listVideoInputDevices();
       mediaDevices.forEach(({ deviceId, label }) => cameras.push({ id: deviceId, label }));
-    } catch (error) {
+    } catch {
       throw QR_READER_ERRORS[QrError.USER_DENY];
     }
 
@@ -157,7 +160,7 @@ export const QrMultiframeSignatureReader = ({
 
       try {
         fountainResult = raptorDecoder.decode(packet);
-      } catch (error) {
+      } catch {
         packets.current.delete(key);
         collected.delete(blockNumber);
         onProgress?.({ decoded: collected.size, total });
@@ -233,7 +236,7 @@ export const QrMultiframeSignatureReader = ({
       }
 
       onStart?.();
-    } catch (error) {
+    } catch {
       throw QR_READER_ERRORS[QrError.DECODE_ERROR];
     }
   };
@@ -274,7 +277,7 @@ export const QrMultiframeSignatureReader = ({
         controlsRef.current?.stop();
         bgControlsRef.current?.stop();
         await startScanning();
-      } catch (error) {
+      } catch {
         onError?.(QR_READER_ERRORS[QrError.BAD_NEW_CAMERA]);
       }
     })();
@@ -288,7 +291,7 @@ export const QrMultiframeSignatureReader = ({
         controls={false}
         ref={videoRef}
         data-testid="qr-reader"
-        className={cnTw('object-cover  absolute -scale-x-100', className)}
+        className={cnTw('absolute -scale-x-100 object-cover', className)}
         style={videoStyle}
       >
         {t('qrReader.videoError')}
@@ -298,14 +301,14 @@ export const QrMultiframeSignatureReader = ({
 
   return (
     <>
-      <div className="relative w-[240px] h-[240px] rounded-[22px] overflow-hidden">
+      <div className="relative h-[240px] w-[240px] overflow-hidden rounded-[22px]">
         <video
           muted
           autoPlay
           controls={false}
           ref={videoRef}
           data-testid="qr-reader"
-          className={cnTw('object-cover absolute -scale-x-100', className)}
+          className={cnTw('absolute -scale-x-100 object-cover', className)}
         >
           {t('qrReader.videoError')}
         </video>
@@ -316,7 +319,7 @@ export const QrMultiframeSignatureReader = ({
         controls={false}
         ref={bgVideoRef}
         data-testid="qr-reader"
-        className={cnTw('absolute -scale-x-100 object-cover top-0 left-0 blur-[14px] max-w-none', bgVideoClassName)}
+        className={cnTw('absolute left-0 top-0 max-w-none -scale-x-100 object-cover blur-[14px]', bgVideoClassName)}
       />
       <div className="video-cover rounded-b-lg" />
     </>

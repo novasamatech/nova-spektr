@@ -1,20 +1,21 @@
+import { useUnit } from 'effector-react';
 import QRCodeStyling from 'qr-code-styling';
 import { useEffect, useRef, useState } from 'react';
-import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { BaseModal, Button, HeaderTitleText, Loader, SmallTitleText } from '@shared/ui';
-import { Animation } from '@shared/ui/Animation/Animation';
-import { ManageStep } from './ManageStep';
+import { useStatusContext } from '@app/providers/context/StatusContext';
+import { chainsService } from '@shared/api/network';
 import novawallet_onboarding_tutorial from '@shared/assets/video/novawallet_onboarding_tutorial.mp4';
 import novawallet_onboarding_tutorial_webm from '@shared/assets/video/novawallet_onboarding_tutorial.webm';
-import { usePrevious } from '@shared/lib/hooks';
-import { walletConnectUtils, walletConnectModel } from '@entities/walletConnect';
-import { chainsService } from '@shared/api/network';
-import { wcOnboardingModel } from '@pages/Onboarding/WalletConnect/model/wc-onboarding-model';
-import { NWQRConfig, Step, EXPIRE_TIMEOUT } from './lib/constants';
-import { useStatusContext } from '@app/providers/context/StatusContext';
 import { WalletType } from '@shared/core';
+import { usePrevious } from '@shared/lib/hooks';
+import { BaseModal, Button, HeaderTitleText, Loader, SmallTitleText } from '@shared/ui';
+import { Animation } from '@shared/ui/Animation/Animation';
+import { walletConnectModel, walletConnectUtils } from '@entities/walletConnect';
+import { wcOnboardingModel } from '@pages/Onboarding/WalletConnect/model/wc-onboarding-model';
+
+import { ManageStep } from './ManageStep';
+import { EXPIRE_TIMEOUT, NWQRConfig, Step } from './lib/constants';
 import { isNeedDisconnect } from './lib/utils';
 
 type Props = {
@@ -63,7 +64,9 @@ export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
     const timeout = isOpen && setTimeout(handleClose, EXPIRE_TIMEOUT);
 
     return () => {
-      timeout && clearTimeout(timeout);
+      if (timeout) {
+        clearTimeout(timeout);
+      }
     };
   }, [isOpen]);
 
@@ -104,27 +107,27 @@ export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
     <BaseModal isOpen={isOpen} contentClass="flex h-full" panelClass="w-[944px] h-[576px]" onClose={handleClose}>
       {step === Step.SCAN && qrCode && (
         <>
-          <div className="w-[472px] flex flex-col px-5 py-4 bg-white rounded-l-lg">
+          <div className="flex w-[472px] flex-col rounded-l-lg bg-white px-5 py-4">
             <HeaderTitleText className="mb-10">{t('onboarding.novaWallet.title')}</HeaderTitleText>
             <SmallTitleText className="mb-6">{t('onboarding.novaWallet.scanTitle')}</SmallTitleText>
 
-            <div className="flex flex-1 relative items-center justify-center">
-              <div className="z-0 absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2">
+            <div className="relative flex flex-1 items-center justify-center">
+              <div className="absolute left-[50%] top-[50%] z-0 -translate-x-1/2 -translate-y-1/2">
                 <Loader color="primary" />
               </div>
 
               <div key="nova-wallet" className="z-10" ref={ref}></div>
             </div>
 
-            <div className="flex justify-between items-end">
+            <div className="flex items-end justify-between">
               <Button variant="text" onClick={handleClose}>
                 {t('onboarding.backButton')}
               </Button>
             </div>
           </div>
 
-          <div className="w-[472px] flex flex-col bg-black">
-            <video className="object-contain h-full" autoPlay loop>
+          <div className="flex w-[472px] flex-col bg-black">
+            <video className="h-full object-contain" autoPlay loop>
               <source src={novawallet_onboarding_tutorial_webm} type="video/webm" />
               <source src={novawallet_onboarding_tutorial} type="video/mp4" />
             </video>

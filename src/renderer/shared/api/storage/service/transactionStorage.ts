@@ -1,5 +1,5 @@
-import { MultisigTransaction, AccountId, CallHash, ChainId } from '@shared/core';
-import { MultisigTransactionDS, IMultisigTransactionStorage, TMultisigTransaction } from '../lib/types';
+import { type AccountId, type CallHash, type ChainId, type MultisigTransaction } from '@shared/core';
+import { type IMultisigTransactionStorage, type MultisigTransactionDS, type TMultisigTransaction } from '../lib/types';
 
 export const useTransactionStorage = (db: TMultisigTransaction): IMultisigTransactionStorage => ({
   getMultisigTx: (
@@ -23,12 +23,12 @@ export const useTransactionStorage = (db: TMultisigTransaction): IMultisigTransa
   addMultisigTx: async (tx: MultisigTransaction): Promise<void> => {
     try {
       await db.add(tx);
-    } catch (error) {
+    } catch {
       console.warn(
         `The same TX ${tx.accountId} ${tx.chainId} ${tx.callHash} ${tx.blockCreated} ${tx.indexCreated} already exists. Updating it ...`,
       );
-      let rowsUpdate = await db.update(
-        //@ts-ignore
+      const rowsUpdate = await db.update(
+        //@ts-expect-error tx.blockCreated and tx.indexCreated are not defined in types
         [tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated],
         tx,
       );
@@ -37,7 +37,7 @@ export const useTransactionStorage = (db: TMultisigTransaction): IMultisigTransa
   },
 
   updateMultisigTx: (tx: MultisigTransactionDS): Promise<number> => {
-    //@ts-ignore
+    //@ts-expect-error tx.blockCreated and tx.indexCreated are not defined in types
     return db.update([tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated], tx);
   },
 
@@ -48,7 +48,7 @@ export const useTransactionStorage = (db: TMultisigTransaction): IMultisigTransa
     blockCreated: number,
     indexCreated: number,
   ): Promise<void> => {
-    //@ts-ignore
+    //@ts-expect-error blockCreated and indexCreated are not defined in types
     return db.delete([accountId, chainId, callHash, blockCreated, indexCreated]);
   },
 

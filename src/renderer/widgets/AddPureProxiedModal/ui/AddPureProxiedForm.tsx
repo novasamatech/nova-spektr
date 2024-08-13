@@ -1,19 +1,19 @@
 import { useForm } from 'effector-forms';
-import { FormEvent } from 'react';
 import { useUnit } from 'effector-react';
+import { type FormEvent } from 'react';
 
-import { Button, Select, Input, InputHint, Alert } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { ChainTitle } from '@entities/chain';
-import { PureProxyPopover } from '@entities/proxy';
-import { AccountAddress, accountUtils } from '@entities/wallet';
+import { type MultisigAccount } from '@shared/core';
 import { toAddress, toShortAddress } from '@shared/lib/utils';
+import { Alert, Button, Input, InputHint, Select } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
-import { MultisigAccount } from '@shared/core';
+import { ChainTitle } from '@entities/chain';
 import { SignatorySelector } from '@entities/operations';
-import { formModel } from '../model/form-model';
-import { ProxyDepositWithLabel, MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
+import { PureProxyPopover } from '@entities/proxy';
+import { FeeWithLabel, MultisigDepositWithLabel, ProxyDepositWithLabel } from '@entities/transaction';
+import { AccountAddress, accountUtils } from '@entities/wallet';
 import { DESCRIPTION_LENGTH } from '@features/operations/OperationsValidation';
+import { formModel } from '../model/form-model';
 
 type Props = {
   onGoBack: () => void;
@@ -29,15 +29,15 @@ export const AddPureProxiedForm = ({ onGoBack }: Props) => {
   };
 
   return (
-    <div className="pb-4 px-5">
+    <div className="px-5 pb-4">
       <PureProxyPopover>{t('proxy.pureProxyTooltip.button')}</PureProxyPopover>
-      <form id="add-proxy-form" className="flex flex-col gap-y-4 mt-4" onSubmit={submitProxy}>
+      <form id="add-proxy-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitProxy}>
         <NetworkSelector />
         <AccountSelector />
         <Signatories />
         <DescriptionInput />
       </form>
-      <div className="flex flex-col gap-y-6 pt-6 pb-4">
+      <div className="flex flex-col gap-y-6 pb-4 pt-6">
         <FeeSection />
         <FeeError />
       </div>
@@ -94,7 +94,9 @@ const AccountSelector = () => {
 
   const proxiedAccounts = useUnit(formModel.$proxiedAccounts);
 
-  if (proxiedAccounts.length <= 1) return null;
+  if (proxiedAccounts.length <= 1) {
+    return null;
+  }
 
   const options = proxiedAccounts.map(({ account, balance }) => {
     const isShard = accountUtils.isShardAccount(account);
@@ -104,7 +106,7 @@ const AccountSelector = () => {
       id: account.id.toString(),
       value: account,
       element: (
-        <div className="flex justify-between w-full" key={account.id}>
+        <div className="flex w-full justify-between" key={account.id}>
           <AccountAddress
             size={20}
             type="short"
@@ -142,7 +144,9 @@ const Signatories = () => {
   const signatories = useUnit(formModel.$signatories);
   const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!isMultisig) return null;
+  if (!isMultisig) {
+    return null;
+  }
 
   return (
     <SignatorySelector
@@ -165,7 +169,9 @@ const DescriptionInput = () => {
   } = useForm(formModel.$proxyForm);
   const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!isMultisig) return null;
+  if (!isMultisig) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -201,7 +207,7 @@ const FeeSection = () => {
       <ProxyDepositWithLabel
         api={api}
         proxyNumber={1}
-        deposit={'0'}
+        deposit="0"
         asset={chain.value.assets[0]}
         onDepositChange={formModel.events.proxyDepositChanged}
         onDepositLoading={formModel.events.isProxyDepositLoadingChanged}
@@ -251,7 +257,7 @@ const ButtonsSection = ({ onGoBack }: Props) => {
   const canSubmit = useUnit(formModel.$canSubmit);
 
   return (
-    <div className="flex justify-between items-center mt-4">
+    <div className="mt-4 flex items-center justify-between">
       <Button variant="text" onClick={onGoBack}>
         {t('operation.goBackButton')}
       </Button>

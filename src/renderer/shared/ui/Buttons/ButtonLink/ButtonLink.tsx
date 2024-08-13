@@ -1,9 +1,9 @@
-import { PropsWithChildren, ReactNode } from 'react';
+import { type PropsWithChildren, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
 import { cnTw } from '@shared/lib/utils';
-import { ViewClass, SizeClass, Padding } from '../common/constants';
-import { Pallet, Variant } from '../common/types';
+import { Padding, SizeClass, ViewClass } from '../common/constants';
+import { type Pallet, type Variant } from '../common/types';
 
 type Props = {
   to: string;
@@ -30,7 +30,7 @@ export const ButtonLink = ({
   callback,
 }: PropsWithChildren<Props>) => {
   const classes = cnTw(
-    'flex items-center justify-center gap-x-2 font-medium select-none outline-offset-1',
+    'flex select-none items-center justify-center gap-x-2 font-medium outline-offset-1',
     SizeClass[size],
     variant !== 'text' && Padding[size],
     ViewClass[`${variant}_${pallet}`],

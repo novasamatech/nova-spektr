@@ -1,13 +1,13 @@
-import { FormEvent } from 'react';
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
+import { type FormEvent } from 'react';
 
-import { BaseModal, Button, Input, InputHint, Alert } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { OperationTitle } from '@entities/chain';
-import { addCustomRpcModel } from '../model/add-custom-rpc-model';
-import { customRpcUtils } from '../lib/custom-rpc-utils';
 import { useModalClose } from '@shared/lib/hooks';
+import { Alert, BaseModal, Button, Input, InputHint } from '@shared/ui';
+import { OperationTitle } from '@entities/chain';
+import { customRpcUtils } from '../lib/custom-rpc-utils';
+import { addCustomRpcModel } from '../model/add-custom-rpc-model';
 
 export const AddCustomRpcModal = () => {
   const { t } = useI18n();
@@ -24,7 +24,9 @@ export const AddCustomRpcModal = () => {
     submit();
   };
 
-  if (!chainId) return null;
+  if (!chainId) {
+    return null;
+  }
 
   return (
     <BaseModal
@@ -35,7 +37,7 @@ export const AddCustomRpcModal = () => {
       onClose={closeModal}
     >
       <form id="add-rpc-form" onSubmit={onSubmit}>
-        <div className="flex flex-col gap-y-4 mt-4">
+        <div className="mt-4 flex flex-col gap-y-4">
           <NameInput />
           <UrlInput />
           <Alerts />
@@ -108,7 +110,9 @@ const Alerts = () => {
   const chainName = useUnit(addCustomRpcModel.$chainName);
   const rpcValidation = useUnit(addCustomRpcModel.$rpcValidation);
 
-  if (!chainName || !rpcValidation) return null;
+  if (!chainName || !rpcValidation) {
+    return null;
+  }
 
   return (
     <>
@@ -133,7 +137,7 @@ const ActionSection = () => {
   const canSubmit = useUnit(addCustomRpcModel.$canSubmit);
 
   return (
-    <div className="flex justify-end mt-7 w-full">
+    <div className="mt-7 flex w-full justify-end">
       <Button type="submit" form="add-rpc-form" isLoading={isLoading} disabled={!canSubmit}>
         {t('settings.networks.addNodeButton')}
       </Button>

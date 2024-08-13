@@ -1,9 +1,9 @@
+import { useI18n } from '@app/providers';
+import { type AccountId, type Chain } from '@shared/core';
 import { cnTw } from '@shared/lib/utils';
+import { FootnoteText } from '@shared/ui';
 import { ChainTitle } from '@entities/chain';
 import { AddressWithExplorers } from '@entities/wallet';
-import { useI18n } from '@app/providers';
-import { FootnoteText } from '@shared/ui';
-import type { AccountId, Chain } from '@shared/core';
 
 type Props = {
   accountId: AccountId;
@@ -23,7 +23,7 @@ export const AccountsList = ({ accountId, chains, className }: Props) => {
         <FootnoteText className="flex-1 px-2 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
       </div>
 
-      <ul className={cnTw('flex flex-col px-5 divide-y divide-divider overflow-y-auto overflow-x-hidden', className)}>
+      <ul className={cnTw('flex flex-col divide-y divide-divider overflow-y-auto overflow-x-hidden px-5', className)}>
         {chains.map((chain) => {
           const { chainId, addressPrefix, explorers } = chain;
 
@@ -34,7 +34,6 @@ export const AccountsList = ({ accountId, chains, className }: Props) => {
               <div className="flex-1 pl-2">
                 <AddressWithExplorers
                   type="adaptive"
-                  position="right-0"
                   className="w-[166px]"
                   accountId={accountId}
                   addressPrefix={addressPrefix}

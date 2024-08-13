@@ -1,15 +1,16 @@
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
-import type { Asset, Explorer, Address } from '@shared/core';
-import { FootnoteText, Checkbox, Accordion, Shimmering, Plate, Tooltip } from '@shared/ui';
-import { ShardAccount } from '@shared/core/types/account';
+import { type Address, type Asset, type Explorer } from '@shared/core';
+import { type ShardAccount } from '@shared/core/types/account';
+import { Accordion, Checkbox, FootnoteText, Plate, Shimmering, Tooltip } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { useStakingData } from '@entities/staking';
+import { type NominatorInfo } from '../lib/types';
+
 import { NominatorsItem } from './NominatorItem';
-import { NominatorInfo } from '../lib/types';
 
 type Props = {
   shardsStake: NominatorInfo<ShardAccount>[];
@@ -43,9 +44,15 @@ export const ShardedList = ({
 
   const shardsStats = shardsStake.reduce(
     (acc, shard) => {
-      if (getNextUnstakingEra(shard.unlocking, era)) acc.unstaking++;
-      if (hasRedeem(shard.unlocking, era)) acc.withdraw++;
-      if (shard.isSelected) acc.selected++;
+      if (getNextUnstakingEra(shard.unlocking, era)) {
+        acc.unstaking++;
+      }
+      if (hasRedeem(shard.unlocking, era)) {
+        acc.withdraw++;
+      }
+      if (shard.isSelected) {
+        acc.selected++;
+      }
 
       acc.totalReward += Number(shard.totalReward) || 0;
       acc.totalStake += Number(shard.totalStake) || 0;
@@ -56,22 +63,22 @@ export const ShardedList = ({
   );
 
   return (
-    <Plate className="p-0 shadow-shards border-b-4 border-double">
+    <Plate className="border-b-4 border-double p-0 shadow-shards">
       <Accordion className="w-auto">
-        <div className="flex px-3 py-2 border-b border-divider rounded-md transition-colors hover:bg-action-background-hover">
+        <div className="flex rounded-md border-b border-divider px-3 py-2 transition-colors hover:bg-action-background-hover">
           <Accordion.Button buttonClass="ml-auto w-auto" iconOpened="shelfDown" iconClosed="shelfRight" />
           <Checkbox
-            className="p-2 w-full"
+            className="w-full p-2"
             checked={shardsStats.selected === shardsStake.length}
             semiChecked={shardsStats.selected > 0 && shardsStats.selected < shardsStake.length}
             onChange={(event) => selectAllShards(event.target?.checked)}
           >
             <div className="grid grid-cols-[174px,104px,104px] items-center gap-x-6">
               <div className="flex items-center gap-x-2">
-                <FootnoteText className="text-text-secondary h-5 rounded-full py-px px-2 bg-input-background-disabled">
+                <FootnoteText className="h-5 rounded-full bg-input-background-disabled px-2 py-px text-text-secondary">
                   {shardsStake.length}
                 </FootnoteText>
-                <FootnoteText className="text-text-secondary first-letter:uppercase truncate">
+                <FootnoteText className="truncate text-text-secondary first-letter:uppercase">
                   {shardsStake[0].account.name}
                 </FootnoteText>
                 <Tooltip
@@ -85,12 +92,12 @@ export const ShardedList = ({
                   }
                 >
                   <div className="flex items-center gap-x-1">
-                    {Boolean(shardsStats.unstaking) && <span className="w-1.5 h-1.5 rounded-full bg-icon-accent" />}
-                    {Boolean(shardsStats.withdraw) && <span className="w-1.5 h-1.5 rounded-full bg-icon-positive" />}
+                    {Boolean(shardsStats.unstaking) && <span className="h-1.5 w-1.5 rounded-full bg-icon-accent" />}
+                    {Boolean(shardsStats.withdraw) && <span className="h-1.5 w-1.5 rounded-full bg-icon-positive" />}
                   </div>
                 </Tooltip>
               </div>
-              <div className="justify-self-end flex flex-col items-end gap-y-0.5">
+              <div className="flex flex-col items-end gap-y-0.5 justify-self-end">
                 {!shardsStake[0]?.totalStake || !asset ? (
                   <>
                     <Shimmering width={82} height={15} />
@@ -103,7 +110,7 @@ export const ShardedList = ({
                   </>
                 )}
               </div>
-              <div className="justify-self-end flex flex-col items-end gap-y-0.5">
+              <div className="flex flex-col items-end gap-y-0.5 justify-self-end">
                 {!shardsStake[0]?.totalReward || !asset ? (
                   <>
                     <Shimmering width={82} height={15} />

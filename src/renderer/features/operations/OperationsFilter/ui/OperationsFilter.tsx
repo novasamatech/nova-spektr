@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-import { MultisigTransactionDS } from '@shared/api/storage';
-import { DropdownOption, DropdownResult } from '@shared/ui/types';
-import { Button, MultiSelect } from '@shared/ui';
-import { MultisigTransaction, Transaction, TransactionType } from '@shared/core';
-import { TransferTypes, XcmTypes } from '@entities/transaction/lib/common/constants';
-import { getStatusOptions, getTransactionOptions } from '../lib/utils';
-import { UNKNOWN_TYPE } from '../lib/constants';
 import { chainsService } from '@shared/api/network';
-import type { ChainId } from '@shared/core';
+import { type MultisigTransactionDS } from '@shared/api/storage';
+import { type ChainId, type MultisigTransaction, type Transaction, TransactionType } from '@shared/core';
+import { Button, MultiSelect } from '@shared/ui';
+import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
+import { isWrappedInBatchAll } from '@/entities/transaction';
+import { TransferTypes, XcmTypes } from '@entities/transaction/lib/common/constants';
+import { UNKNOWN_TYPE } from '../lib/constants';
+import { getStatusOptions, getTransactionOptions } from '../lib/utils';
 
 type FilterName = 'status' | 'network' | 'type';
 
@@ -62,14 +62,20 @@ export const OperationsFilter = ({ txs, onChange }: Props) => {
   }, [txs, availableChains]);
 
   const getFilterableTxType = (tx: MultisigTransaction): TransactionType | typeof UNKNOWN_TYPE => {
-    if (!tx.transaction?.type) return UNKNOWN_TYPE;
+    if (!tx.transaction?.type) {
+      return UNKNOWN_TYPE;
+    }
 
-    if (TransferTypes.includes(tx.transaction.type)) return TransactionType.TRANSFER;
-    if (XcmTypes.includes(tx.transaction.type)) return TransactionType.XCM_LIMITED_TRANSFER;
+    if (TransferTypes.includes(tx.transaction.type)) {
+      return TransactionType.TRANSFER;
+    }
+    if (XcmTypes.includes(tx.transaction.type)) {
+      return TransactionType.XCM_LIMITED_TRANSFER;
+    }
 
     if (tx.transaction.type === TransactionType.BATCH_ALL) {
       const txMatch = tx.transaction.args?.transactions?.find((tx: Transaction) => {
-        return tx.type === TransactionType.BOND || tx.type === TransactionType.UNSTAKE;
+        return isWrappedInBatchAll(tx.type);
       });
 
       return txMatch?.type || UNKNOWN_TYPE;
@@ -89,10 +95,18 @@ export const OperationsFilter = ({ txs, onChange }: Props) => {
         const destNetworkOption = NetworkOptions.find((s) => s.value === xcmDestination);
         const typeOption = TransactionOptions.find((s) => s.value === txType);
 
-        if (statusOption) acc.status.add(statusOption);
-        if (originNetworkOption) acc.network.add(originNetworkOption);
-        if (destNetworkOption) acc.network.add(destNetworkOption);
-        if (typeOption) acc.type.add(typeOption);
+        if (statusOption) {
+          acc.status.add(statusOption);
+        }
+        if (originNetworkOption) {
+          acc.network.add(originNetworkOption);
+        }
+        if (destNetworkOption) {
+          acc.network.add(destNetworkOption);
+        }
+        if (typeOption) {
+          acc.type.add(typeOption);
+        }
 
         return acc;
       },
@@ -132,7 +146,7 @@ export const OperationsFilter = ({ txs, onChange }: Props) => {
     selectedOptions.network.length || selectedOptions.status.length || selectedOptions.type.length;
 
   return (
-    <div className="flex items-center gap-2 my-4 w-[736px] h-9 ml-6">
+    <div className="my-4 ml-6 flex h-9 w-[736px] items-center gap-2">
       <MultiSelect
         className="w-[200px]"
         placeholder={t('operations.filters.statusPlaceholder')}
@@ -156,7 +170,7 @@ export const OperationsFilter = ({ txs, onChange }: Props) => {
       />
 
       {Boolean(filtersSelected) && (
-        <Button variant="text" className="ml-auto py-0 h-8.5" onClick={clearFilters}>
+        <Button variant="text" className="ml-auto h-8.5 py-0" onClick={clearFilters}>
           {t('operations.filters.clearAll')}
         </Button>
       )}

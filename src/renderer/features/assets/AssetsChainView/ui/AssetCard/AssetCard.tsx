@@ -1,13 +1,13 @@
-import { KeyboardEvent } from 'react';
 import { useUnit } from 'effector-react';
+import { type KeyboardEvent } from 'react';
 
+import { useI18n } from '@app/providers';
+import { type Asset, type Balance, type ChainId } from '@shared/core';
+import { useToggle } from '@shared/lib/hooks';
+import { KeyboardKey, cnTw, totalAmount, transferableAmount } from '@shared/lib/utils';
 import { BodyText, Shimmering } from '@shared/ui';
 import { AssetBalance, AssetDetails, AssetIcon, AssetLinks } from '@entities/asset';
-import { useToggle } from '@shared/lib/hooks';
-import { cnTw, KeyboardKey, totalAmount, transferableAmount } from '@shared/lib/utils';
-import { useI18n } from '@app/providers';
-import { ChainId, Asset, Balance } from '@shared/core';
-import { priceProviderModel, AssetFiatBalance, TokenPrice } from '@entities/price';
+import { AssetFiatBalance, TokenPrice, priceProviderModel } from '@entities/price';
 
 type Props = {
   chainId: ChainId;
@@ -39,14 +39,14 @@ export const AssetCard = ({ chainId, asset, balance }: Props) => {
       tabIndex={0}
       aria-expanded={isExpanded}
       className={cnTw(
-        'flex flex-col group cursor-pointer bg-block-background-default rounded',
+        'group flex cursor-pointer flex-col rounded bg-block-background-default',
         'transition-shadow hover:shadow-card-shadow focus:shadow-card-shadow',
       )}
       onClick={toggleExpanded}
       onKeyDown={onWrapperKeyDown}
     >
-      <div className="flex items-center py-1.5 px-2">
-        <div className="flex items-center gap-x-2 px-2 py-1  mr-auto">
+      <div className="flex items-center px-2 py-1.5">
+        <div className="mr-auto flex items-center gap-x-2 px-2 py-1">
           <AssetIcon src={asset.icon} name={asset.name} />
           <div>
             <BodyText>{asset.name}</BodyText>
@@ -60,7 +60,7 @@ export const AssetCard = ({ chainId, asset, balance }: Props) => {
               <AssetFiatBalance amount={totalAmount(balance)} asset={asset} />
             </>
           ) : (
-            <div className="flex flex-col gap-y-1 items-end">
+            <div className="flex flex-col items-end gap-y-1">
               <Shimmering width={82} height={20} />
               {fiatFlag && <Shimmering width={56} height={18} />}
             </div>
@@ -70,7 +70,7 @@ export const AssetCard = ({ chainId, asset, balance }: Props) => {
       </div>
 
       {isExpanded && (
-        <dl className="flex divide-x border-t border-divider gap-x-4 py-4 pr-4">
+        <dl className="flex gap-x-4 divide-x border-t border-divider py-4 pr-4">
           <AssetDetails asset={asset} value={transferableBalance} label={t('assetBalance.transferable')} />
           <AssetDetails asset={asset} value={balance?.frozen} label={t('assetBalance.locked')} />
           <AssetDetails asset={asset} value={balance?.reserved} label={t('assetBalance.reserved')} />

@@ -1,10 +1,12 @@
+import { type BN } from '@polkadot/util';
+
+import { useI18n } from '@app/providers';
+import { type Asset, type AssetByChains } from '@shared/core';
 import { cnTw, formatBalance } from '@shared/lib/utils';
 import { AssetIcon } from '@entities/asset';
-import { useI18n } from '@app/providers';
-import type { Asset, AssetByChains } from '@shared/core';
 
 type Props = {
-  value: string;
+  value: BN | string;
   asset?: Asset | AssetByChains; // maybe change type to Asset | number to allow pass just asset id and then get asset by id
   className?: string;
   showIcon?: boolean;
@@ -24,7 +26,9 @@ export const AssetBalance = ({
 }: Props) => {
   const { t } = useI18n();
 
-  if (!asset) return null;
+  if (!asset) {
+    return null;
+  }
 
   const { precision, symbol, icon, name } = asset;
   const { value: formattedValue, decimalPlaces, suffix } = formatBalance(value, precision);
@@ -40,7 +44,9 @@ export const AssetBalance = ({
     </span>
   );
 
-  if (!showIcon) return balance;
+  if (!showIcon) {
+    return balance;
+  }
 
   return (
     <span className={cnTw('flex items-center gap-x-2', wrapperClassName)}>

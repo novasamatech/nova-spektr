@@ -1,13 +1,14 @@
-import { Transaction } from 'dexie';
+import { type Transaction } from 'dexie';
 
-import { SigningType, WalletType, AccountType, KeyType } from '@shared/core';
+import { AccountType, KeyType, SigningType, WalletType } from '@shared/core';
 
 /**
- * Create missing wallets for SinglePS, WOW, Multisig
- * Update Chain accounts inside Multishard
- * Add new properties to wallets and accounts
- * @param trans transactions from DB
- * @return {Promise}
+ * Create missing wallets for SinglePS, WOW, Multisig Update Chain accounts
+ * inside Multishard Add new properties to wallets and accounts
+ *
+ * @param trans Transactions from DB
+ *
+ * @returns {Promise}
  */
 export async function migrateWallets(trans: Transaction): Promise<void> {
   const dbAccounts = await trans.table('accounts').toArray();

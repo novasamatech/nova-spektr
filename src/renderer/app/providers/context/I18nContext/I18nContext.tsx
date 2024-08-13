@@ -1,13 +1,13 @@
-import { createContext, FC, PropsWithChildren, useContext } from 'react';
-import type { TFunction } from 'react-i18next';
-import { useTranslation } from 'react-i18next';
-import { Locale } from 'date-fns';
+import { type Locale, format as fnsFormatDate } from 'date-fns';
 import { enGB } from 'date-fns/locale';
+import { type FC, type PropsWithChildren, createContext, useContext } from 'react';
+import { type TFunction } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
-import { LanguageSwitcher } from '@shared/ui';
-import { LanguageItem, SupportedLocale } from '@shared/api/translation/lib/types';
 import { LanguageOptions } from '@shared/api/translation/lib/constants';
+import { type LanguageItem, type SupportedLocale } from '@shared/api/translation/lib/types';
 import { useTranslationService } from '@shared/api/translation/translationService';
+import { LanguageSwitcher } from '@shared/ui';
 
 type Props = {
   className?: string;
@@ -19,6 +19,7 @@ type I18nContextProps = {
   t: TFunction<'translation'>;
   locale: SupportedLocale;
   dateLocale: Locale;
+  formatDate: typeof fnsFormatDate;
   locales: LanguageItem[];
   changeLocale: (locale: SupportedLocale) => Promise<void>;
   LocaleComponent: FC<Props>;
@@ -26,7 +27,7 @@ type I18nContextProps = {
 
 const I18nContext = createContext<I18nContextProps>({} as I18nContextProps);
 
-export const I18Provider = ({ children }: PropsWithChildren<{}>) => {
+export const I18Provider = ({ children }: PropsWithChildren) => {
   const { t, i18n } = useTranslation();
   const { setLocale, getLocale, getLocales } = useTranslationService();
 
@@ -34,7 +35,7 @@ export const I18Provider = ({ children }: PropsWithChildren<{}>) => {
     try {
       setLocale(locale);
       await i18n.changeLanguage(locale);
-    } catch (error) {
+    } catch {
       throw new Error(`Locale ${locale} not found or configured wrong`);
     }
   };
@@ -54,11 +55,19 @@ export const I18Provider = ({ children }: PropsWithChildren<{}>) => {
   const locales = getLocales();
   const dateLocale = locales.find((l) => l.value === locale)?.dateLocale || enGB;
 
+  const formatDate: typeof fnsFormatDate = (date, format, options = {}) => {
+    const mergedOptions = { locale: dateLocale, ...options };
+
+    return fnsFormatDate(date, format, mergedOptions);
+  };
+
+  // eslint-disable-next-line react/jsx-no-constructed-context-values
   const value: I18nContextProps = {
     t,
     locale,
     locales,
     dateLocale,
+    formatDate,
     changeLocale: onLocaleChange,
     LocaleComponent,
   };

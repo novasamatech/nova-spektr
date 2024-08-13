@@ -1,17 +1,25 @@
-import { createEvent, combine, restore, createEffect, Store, sample } from 'effector';
+import { type Store, combine, createEffect, createEvent, restore, sample } from 'effector';
 
-import { Chain, Account, Address, Asset, type ProxiedAccount, Balance, Wallet } from '@shared/core';
-import { walletModel, walletUtils } from '@entities/wallet';
-import { balanceModel, balanceUtils } from '@entities/balance';
-import { transferableAmount } from '@shared/lib/utils';
 import {
-  validationUtils,
-  TransferAccountStore,
-  TransferSignatoryFeeStore,
-  TransferAmountFeeStore,
+  type Account,
+  type Address,
+  type Asset,
+  type Balance,
+  type Chain,
+  type ProxiedAccount,
+  type Wallet,
+} from '@shared/core';
+import { transferableAmount } from '@shared/lib/utils';
+import { balanceModel, balanceUtils } from '@entities/balance';
+import { walletModel, walletUtils } from '@entities/wallet';
+import {
+  type BalanceMap,
+  type NetworkStore,
+  type TransferAccountStore,
+  type TransferAmountFeeStore,
   TransferRules,
-  NetworkStore,
-  BalanceMap,
+  type TransferSignatoryFeeStore,
+  validationUtils,
 } from '@features/operations/OperationsValidation';
 
 type Input = {
@@ -258,7 +266,7 @@ sample({
   },
   filter: ({ store }) => Boolean(store),
   fn: ({ store, balances }) => ({
-    store: store?.[0]!,
+    store: store![0],
     balances,
   }),
   target: validateFx,

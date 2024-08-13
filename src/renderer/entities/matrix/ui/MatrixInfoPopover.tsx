@@ -1,7 +1,7 @@
 import { Trans } from 'react-i18next';
 
-import { FootnoteText, InfoLink, LabelHelpBox, Popover, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
+import { FootnoteText, InfoLink, LabelHelpBox, Popover, SmallTitleText } from '@shared/ui';
 
 const MATRIX = 'https://matrix.org/';
 const SMP = 'https://docs.novaspektr.io/multisig-accounts/spektr-matrix-protocol';
@@ -28,7 +28,7 @@ export const MatrixInfoPopover = () => {
             <SmallTitleText>{t('settings.matrix.infoWhatIsMatrixTitle')}</SmallTitleText>
             <FootnoteText className="text-text-secondary">
               <Trans t={t} i18nKey="settings.matrix.infoMatrixDescription" components={{ matrix, smp }} />
-              <ol className="list-decimal ml-4">
+              <ol className="ml-4 list-decimal">
                 <li>{t('settings.matrix.infoMatrixDescriptionOne')}</li>
                 <li>{t('settings.matrix.infoMatrixDescriptionTwo')}</li>
               </ol>
@@ -39,7 +39,7 @@ export const MatrixInfoPopover = () => {
       }
     >
       {/* TODO remove mt-4 when base modal padding is changed */}
-      <LabelHelpBox className="mt-4 mb-6">{t('settings.matrix.tooltipLabel')}</LabelHelpBox>
+      <LabelHelpBox className="mb-6 mt-4">{t('settings.matrix.tooltipLabel')}</LabelHelpBox>
     </Popover>
   );
 };

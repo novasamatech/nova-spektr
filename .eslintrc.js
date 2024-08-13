@@ -1,123 +1,266 @@
-const fs = require('fs');
 const path = require('path');
 
-const prettierConfig = fs.readFileSync('./.prettierrc', 'utf8');
-const prettierOptions = JSON.parse(prettierConfig);
-const checkI18n = process.env.I18N === 'true';
-const localePath = path.resolve('./src/renderer/shared/api/translation/locales/en.json');
+const localesPath = './src/renderer/shared/api/translation/locales';
+const defaultLocalePath = path.join(localesPath, 'en.json');
+
+const boundaryTypes = ['app', 'shared', 'entities', 'processes', 'features', 'widgets', 'pages'];
+
+const boundaries = boundaryTypes.map((type) => ({
+  type,
+  pattern: `src/renderer/${type}/*`,
+}));
 
 module.exports = {
   root: true,
   env: {
     browser: true,
-    node: true,
-    jest: true,
   },
-  globals: {
-    JSX: 'readonly',
-  },
-  parser: '@typescript-eslint/parser',
   extends: [
     'eslint:recommended',
-    'plugin:react/recommended',
-    'plugin:import/recommended',
-    'plugin:import/errors',
-    'plugin:import/warnings',
-    'plugin:jest-dom/recommended',
-    'plugin:i18n-json/recommended',
-    'plugin:i18next/recommended',
-    'plugin:effector/recommended',
-    'plugin:effector/scope',
-    'prettier',
+    'plugin:import-x/recommended',
+    'plugin:import-x/errors',
+    'plugin:import-x/warnings',
+    'plugin:prettier/recommended',
   ],
-  plugins: ['effector', '@typescript-eslint', 'prettier', 'import', 'unused-imports', 'jest-dom', 'json'],
+  plugins: ['prettier', 'import-x', 'unused-imports'],
   parserOptions: {
-    ecmaVersion: 2021,
     sourceType: 'module',
-    project: './tsconfig.json',
-    tsconfigRootDir: __dirname,
-    createDefaultProgram: true,
-  },
-  settings: {
-    react: { version: 'detect' },
-
-    'import/resolver': {
-      alias: {
-        map: [
-          ['@', './'],
-          ['@renderer', './src/renderer/'],
-          ['@app', './src/renderer/app/'],
-          ['@pages', './src/renderer/pages/'],
-          ['@processes', './src/renderer/processes/'],
-          ['@widgets', './src/renderer/widgets/'],
-          ['@features', './src/renderer/features/'],
-          ['@entities', './src/renderer/entities/'],
-          ['@shared', './src/renderer/shared/'],
-        ],
-        extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
-      },
-      node: {
-        extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
-      },
-    },
+    ecmaVersion: 2022,
   },
   rules: {
-    'import/order': [
+    'sort-imports': ['error', { ignoreDeclarationSort: true }],
+    'import-x/no-unresolved': 'off',
+    'import-x/named': 'off',
+    'import-x/namespace': 'off',
+    'import-x/no-named-as-default': 'error',
+    'import-x/consistent-type-specifier-style': ['error', 'prefer-inline'],
+    'import-x/order': [
       'error',
       {
-        groups: [
-          ['builtin', 'external'],
-          ['internal', 'sibling', 'parent', 'object', 'index'],
-        ],
+        alphabetize: { order: 'asc', orderImportKind: 'asc' },
+        groups: ['builtin', 'external', 'parent', ['sibling', 'index']],
+        pathGroups: boundaryTypes.map((type) => ({
+          group: 'parent',
+          pattern: `@{/${type},${type}}/**`,
+          position: 'before',
+        })),
         'newlines-between': 'always',
+        distinctGroup: false,
       },
     ],
-    'no-unused-vars': 'off',
+
+    'unused-imports/no-unused-imports': 'error',
+    'unused-imports/no-unused-vars': [
+      'error',
+      {
+        vars: 'all',
+        varsIgnorePattern: '^_',
+        args: 'after-used',
+        argsIgnorePattern: '^_',
+      },
+    ],
+
     'no-irregular-whitespace': 'off',
     'newline-before-return': 'error',
-    '@typescript-eslint/no-empty-interface': 0,
-    'prettier/prettier': ['error', prettierOptions],
-    'unused-imports/no-unused-imports': 'error',
-    'react/no-array-index-key': 'warn',
-    'react/display-name': 'off',
-    'react/prop-types': 'off',
-    'react/react-in-jsx-scope': 'off',
-    'react/jsx-sort-props': ['error', { callbacksLast: true, noSortAlphabetically: true }],
-    'react/function-component-definition': [
-      'error',
-      {
-        namedComponents: 'arrow-function',
-        unnamedComponents: 'arrow-function',
-      },
-    ],
-    'i18n-json/identical-keys': ['error', { filePath: localePath }],
-    'i18n-json/identical-placeholders': ['error', { filePath: localePath }],
-    'i18next/no-literal-string': [
-      checkI18n ? 'error' : 'off',
-      {
-        mode: 'jsx-text-only',
-        'should-validate-template': true,
-        'jsx-attributes': {
-          include: ['alt', 'aria-label', 'title', 'placeholder', 'label', 'description'],
-          exclude: ['data-testid', 'className'],
-        },
-        callees: {
-          exclude: ['Error', 'log', 'warn'],
-        },
-        words: {
-          exclude: ['[0-9!-/:-@[-`{-~]+', '[A-Z_-]+'],
-        },
-      },
-    ],
+    'prettier/prettier': 'error',
   },
-  ignorePatterns: [
-    '.vscode',
-    'coverage',
-    'release',
-    'node_modules',
-    'coverage.txt',
-    'junit.xml',
-    'jest-unit-results.json',
-    'package.json',
+  overrides: [
+    {
+      files: ['*.json'],
+      plugins: ['json'],
+      extends: ['plugin:json/recommended'],
+    },
+    {
+      files: ['*.js'],
+      env: {
+        node: true,
+      },
+    },
+    {
+      files: [path.join(localesPath, '/*.json')],
+      extends: ['plugin:i18n-json/recommended'],
+      rules: {
+        'i18n-json/identical-keys': ['error', { filePath: path.resolve(defaultLocalePath) }],
+        'i18n-json/identical-placeholders': ['error', { filePath: path.resolve(defaultLocalePath) }],
+      },
+    },
+    {
+      files: ['*.test.ts', '*.test.tsx', 'jest*.js'],
+      plugins: ['jest-dom'],
+      extends: ['plugin:jest-dom/recommended'],
+      env: {
+        jest: true,
+      },
+    },
+    {
+      files: ['*.tsx'],
+      excludedFiles: ['*.stories.tsx', '*.test.tsx'],
+      plugins: ['i18next'],
+      extends: ['plugin:i18next/recommended'],
+      rules: {
+        'i18next/no-literal-string': [
+          'error',
+          {
+            mode: 'jsx-text-only',
+            'should-validate-template': true,
+            'jsx-attributes': {
+              include: ['alt', 'aria-label', 'title', 'placeholder', 'label', 'description'],
+              exclude: ['data-testid', 'className'],
+            },
+            callees: {
+              exclude: ['Error', 'log', 'warn'],
+            },
+            words: {
+              exclude: ['[0-9!-/:-@[-`{-~]+', '[A-Z_-]+'],
+            },
+          },
+        ],
+      },
+    },
+    {
+      files: ['*.tsx'],
+      plugins: ['react'],
+      extends: ['plugin:react/recommended'],
+      globals: {
+        JSX: 'readonly',
+      },
+      rules: {
+        'react/jsx-no-useless-fragment': 'error',
+        'react/jsx-no-constructed-context-values': 'error',
+        'react/jsx-curly-brace-presence': ['error', { props: 'never', children: 'ignore' }],
+        'react/no-array-index-key': 'warn',
+        'react/display-name': 'off',
+        'react/prop-types': 'off',
+        'react/react-in-jsx-scope': 'off',
+        'react/jsx-sort-props': ['error', { callbacksLast: true, noSortAlphabetically: true }],
+        'react/function-component-definition': [
+          'error',
+          {
+            namedComponents: 'arrow-function',
+            unnamedComponents: 'arrow-function',
+          },
+        ],
+      },
+      settings: { react: { version: 'detect' } },
+    },
+    {
+      files: ['*.ts', '*.tsx'],
+      plugins: ['@typescript-eslint', 'effector', 'boundaries'],
+      extends: [
+        'plugin:import-x/typescript',
+        'plugin:effector/recommended',
+        'plugin:effector/scope',
+        'plugin:@typescript-eslint/eslint-recommended',
+        'plugin:@typescript-eslint/recommended',
+        'plugin:boundaries/recommended',
+      ],
+      parser: '@typescript-eslint/parser',
+      parserOptions: {
+        sourceType: 'module',
+        project: './tsconfig.json',
+        tsconfigRootDir: __dirname,
+        createDefaultProgram: true,
+      },
+      rules: {
+        // Imports
+        '@typescript-eslint/consistent-type-imports': [
+          'error',
+          { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
+        ],
+        // Validated by typescript
+        'import-x/export': 'off',
+        // Restricted by our code style
+        'import-x/default': 'off',
+        'import-x/no-useless-path-segments': 'error',
+
+        // Validated by typescript
+        '@typescript-eslint/no-empty-interface': 'off',
+        '@typescript-eslint/no-non-null-assertion': 'off',
+        '@typescript-eslint/no-empty-function': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
+        '@typescript-eslint/no-explicit-any': 'warn',
+        '@typescript-eslint/no-unnecessary-type-constraint': 'error',
+
+        // Stricter rules
+        'effector/no-watch': 'error',
+        'effector/keep-options-order': 'error',
+
+        // Removed rules
+        // Took around 4 seconds to check this single rule
+        'effector/enforce-effect-naming-convention': 'off',
+        // Took around 4 seconds to check this single rule
+        'effector/enforce-store-naming-convention': 'off',
+
+        // Boundaries setup
+        'boundaries/element-types': [
+          'error',
+          {
+            default: 'disallow',
+            rules: [
+              {
+                from: 'app',
+                allow: [/* TODO fix */ 'shared', /* TODO fix */ 'entities', /* TODO fix */ 'features'],
+              },
+              {
+                from: 'shared',
+                allow: ['app', 'shared', /* TODO fix */ 'entities'],
+              },
+              {
+                from: 'entities',
+                allow: ['app', 'shared', 'entities', /* TODO fix */ 'features'],
+              },
+              {
+                from: 'processes',
+                allow: ['app', 'shared', 'entities'],
+              },
+              {
+                from: 'features',
+                allow: ['app', 'shared', 'entities', /* TODO fix */ 'widgets', /* TODO fix */ 'features'],
+              },
+              {
+                from: 'pages',
+                allow: ['app', 'shared', 'entities', 'features', 'widgets'],
+              },
+              {
+                from: 'widgets',
+                allow: ['app', 'shared', 'entities', 'features', /* TODO fix */ 'pages', 'widgets'],
+              },
+            ],
+          },
+        ],
+
+        'no-restricted-syntax': [
+          'error',
+          {
+            selector: 'MemberExpression > CallExpression[callee.name="useUnit"]',
+            message: 'Replace with "useStoreMap". Getting object members directly from "useUnit" in restricted.',
+          },
+        ],
+      },
+      settings: {
+        'import-x/resolver': {
+          typescript: true,
+          node: {
+            extensions: ['.ts', '.tsx', '.js'],
+          },
+        },
+        // For resolving in eslint-plugin-boundaries
+        'import/resolver': {
+          typescript: true,
+          node: {
+            extensions: ['.ts', '.tsx', '.js'],
+          },
+        },
+        'boundaries/elements': boundaries,
+      },
+    },
+    {
+      files: ['*.ts', '*.tsx'],
+      excludedFiles: ['*.test.ts', '*.test.tsx', '**/mocks/*.ts'],
+      rules: {
+        // TODO error
+        '@typescript-eslint/consistent-type-assertions': ['off', { assertionStyle: 'never' }],
+      },
+    },
   ],
 };

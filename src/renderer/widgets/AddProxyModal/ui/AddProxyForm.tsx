@@ -1,19 +1,19 @@
 import { useForm } from 'effector-forms';
-import { FormEvent } from 'react';
 import { useUnit } from 'effector-react';
+import { type FormEvent } from 'react';
 
-import { Button, Select, Input, InputHint, Combobox, Identicon, Alert, Icon } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { ChainTitle } from '@entities/chain';
-import { ProxyPopover, proxyUtils } from '@entities/proxy';
-import { AccountAddress, accountUtils } from '@entities/wallet';
+import { type MultisigAccount } from '@shared/core';
 import { toAddress, toShortAddress, validateAddress } from '@shared/lib/utils';
-import { formModel } from '../model/form-model';
+import { Alert, Button, Combobox, Icon, Identicon, Input, InputHint, Select } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
-import { MultisigAccount } from '@shared/core';
+import { ChainTitle } from '@entities/chain';
 import { SignatorySelector } from '@entities/operations';
-import { ProxyDepositWithLabel, MultisigDepositWithLabel, FeeWithLabel } from '@entities/transaction';
+import { ProxyPopover, proxyUtils } from '@entities/proxy';
+import { FeeWithLabel, MultisigDepositWithLabel, ProxyDepositWithLabel } from '@entities/transaction';
+import { AccountAddress, accountUtils } from '@entities/wallet';
 import { DESCRIPTION_LENGTH } from '@features/operations/OperationsValidation';
+import { formModel } from '../model/form-model';
 
 type Props = {
   onGoBack: () => void;
@@ -29,9 +29,9 @@ export const AddProxyForm = ({ onGoBack }: Props) => {
   };
 
   return (
-    <div className="pb-4 px-5">
+    <div className="px-5 pb-4">
       <ProxyPopover>{t('proxy.proxyTooltip')}</ProxyPopover>
-      <form id="add-proxy-form" className="flex flex-col gap-y-4 mt-4" onSubmit={submitProxy}>
+      <form id="add-proxy-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitProxy}>
         <NetworkSelector />
         <AccountSelector />
         <Signatories />
@@ -39,7 +39,7 @@ export const AddProxyForm = ({ onGoBack }: Props) => {
         <ProxyTypeSelector />
         <DescriptionInput />
       </form>
-      <div className="flex flex-col gap-y-6 pt-6 pb-4">
+      <div className="flex flex-col gap-y-6 pb-4 pt-6">
         <FeeSection />
         <FeeError />
       </div>
@@ -96,7 +96,9 @@ const AccountSelector = () => {
 
   const proxiedAccounts = useUnit(formModel.$proxiedAccounts);
 
-  if (proxiedAccounts.length <= 1) return null;
+  if (proxiedAccounts.length <= 1) {
+    return null;
+  }
 
   const options = proxiedAccounts.map(({ account, balance }) => {
     const isShard = accountUtils.isShardAccount(account);
@@ -106,7 +108,7 @@ const AccountSelector = () => {
       id: account.id.toString(),
       value: account,
       element: (
-        <div className="flex justify-between w-full" key={account.id}>
+        <div className="flex w-full justify-between" key={account.id}>
           <AccountAddress
             size={20}
             type="short"
@@ -144,7 +146,9 @@ const Signatories = () => {
   const signatories = useUnit(formModel.$signatories);
   const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!isMultisig) return null;
+  if (!isMultisig) {
+    return null;
+  }
 
   return (
     <SignatorySelector
@@ -177,7 +181,7 @@ const ProxyInput = () => {
       id: proxyAccount.id.toString(),
       value: address,
       element: (
-        <div className="flex justify-between w-full" key={proxyAccount.id}>
+        <div className="flex w-full justify-between" key={proxyAccount.id}>
           <AccountAddress
             size={20}
             type="short"
@@ -262,7 +266,9 @@ const DescriptionInput = () => {
   } = useForm(formModel.$proxyForm);
   const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!isMultisig) return null;
+  if (!isMultisig) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -350,7 +356,7 @@ const ActionSection = ({ onGoBack }: Props) => {
   const canSubmit = useUnit(formModel.$canSubmit);
 
   return (
-    <div className="flex justify-between items-center mt-4">
+    <div className="mt-4 flex items-center justify-between">
       <Button variant="text" onClick={onGoBack}>
         {t('operation.goBackButton')}
       </Button>

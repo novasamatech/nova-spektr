@@ -1,22 +1,22 @@
+import { type ApiPromise } from '@polkadot/api';
 import { createEffect, createEvent, createStore, sample } from 'effector';
-import { ApiPromise } from '@polkadot/api';
 import { readonly } from 'patronum';
 
-import { Address, TrackId, type VotingMap } from '@shared/core';
-import { governanceService } from '@shared/api/governance';
+import { type Address, type TrackId, type VotingMap } from '@/shared/core';
+import { governanceService } from '../lib/governanceService';
 
 const $voting = createStore<VotingMap>({});
 
 type VotingParams = {
   api: ApiPromise;
-  tracksIds: TrackId[];
+  tracks: TrackId[];
   addresses: Address[];
 };
 
 const requestVoting = createEvent<VotingParams>();
 
-const requestVotingFx = createEffect(({ api, tracksIds, addresses }: VotingParams): Promise<VotingMap> => {
-  return governanceService.getVotingFor(api, tracksIds, addresses);
+const requestVotingFx = createEffect(({ api, tracks, addresses }: VotingParams): Promise<VotingMap> => {
+  return governanceService.getVotingFor(api, tracks, addresses);
 });
 
 sample({
@@ -33,6 +33,7 @@ sample({
 
 export const votingModel = {
   $voting: readonly($voting),
+  $isLoading: requestVotingFx.pending,
 
   effects: {
     requestVotingFx,

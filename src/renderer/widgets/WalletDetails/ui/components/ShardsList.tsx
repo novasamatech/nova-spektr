@@ -1,11 +1,11 @@
 import { useUnit } from 'effector-react';
 
-import { BaseModal, IconButton, HelpText } from '@shared/ui';
-import { useModalClose } from '@shared/lib/hooks';
-import { ExplorersPopover, AccountAddress, accountUtils } from '@entities/wallet';
-import { vaultDetailsModel } from '../../model/vault-details-model';
-import { cnTw } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
+import { useModalClose } from '@shared/lib/hooks';
+import { cnTw } from '@shared/lib/utils';
+import { BaseModal, HelpText, IconButton } from '@shared/ui';
+import { AccountAddress, ExplorersPopover, accountUtils } from '@entities/wallet';
+import { vaultDetailsModel } from '../../model/vault-details-model';
 
 export const ShardsList = () => {
   const { t } = useI18n();
@@ -24,7 +24,7 @@ export const ShardsList = () => {
       isOpen={isModalOpen}
       onClose={closeModal}
     >
-      <ul className="flex flex-col gap-y-2 overflow-y-auto max-h-[530px]">
+      <ul className="flex max-h-[530px] flex-col gap-y-2 overflow-y-auto">
         {shards.map((shard) => (
           <li key={shard.accountId} className="px-3">
             <ExplorersPopover
@@ -32,8 +32,8 @@ export const ShardsList = () => {
                 // TODO: use special Address component when it comes out similar to WalletCardMd
                 <div
                   className={cnTw(
-                    'group flex items-center justify-between gap-x-1 w-full px-2 py-1.5 rounded transition-colors cursor-pointer',
-                    'hover:bg-action-background-hover focus-within:bg-action-background-hover',
+                    'group flex w-full cursor-pointer items-center justify-between gap-x-1 rounded px-2 py-1.5 transition-colors',
+                    'focus-within:bg-action-background-hover hover:bg-action-background-hover',
                   )}
                 >
                   <AccountAddress
@@ -44,10 +44,10 @@ export const ShardsList = () => {
                     addressPrefix={chain.addressPrefix}
                   />
                   <IconButton
-                    name="info"
+                    name="details"
                     className={cnTw(
                       'shrink-0 opacity-0 transition-opacity',
-                      'group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100',
+                      'focus:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100',
                     )}
                   />
                 </div>
@@ -57,7 +57,7 @@ export const ShardsList = () => {
               explorers={chain.explorers || []}
             >
               <ExplorersPopover.Group title={t('general.explorers.derivationTitle')}>
-                <HelpText className="text-text-secondary break-all">{accountUtils.getDerivationPath(shard)}</HelpText>
+                <HelpText className="break-all text-text-secondary">{accountUtils.getDerivationPath(shard)}</HelpText>
               </ExplorersPopover.Group>
             </ExplorersPopover>
           </li>

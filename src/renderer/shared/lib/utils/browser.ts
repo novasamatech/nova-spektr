@@ -1,11 +1,11 @@
 /**
- * Get user's Operating System
- * Uses new API User-Agent Client Hints and old User-Agent as a fallback
- * User-Agent is going to be deprecated soon
- * @return {String}
+ * Get user's Operating System Uses new API User-Agent Client Hints and old
+ * User-Agent as a fallback User-Agent is going to be deprecated soon
+ *
+ * @returns {String}
  */
 export const getOperatingSystem = (): string => {
-  // @ts-ignore
+  // @ts-expect-error userAgentData is not defined
   const platform = window.navigator.userAgentData?.platform;
 
   if (platform) return platform;

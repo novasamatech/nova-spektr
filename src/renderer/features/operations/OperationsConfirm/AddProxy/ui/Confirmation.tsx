@@ -1,15 +1,15 @@
-import { ReactNode, useState } from 'react';
 import { useStoreMap } from 'effector-react';
+import { type ReactNode, useState } from 'react';
 
-import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
-import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { SignButton } from '@entities/operations';
-import { AddressWithExplorers, WalletIcon, accountUtils, ExplorersPopover, WalletCardSm } from '@entities/wallet';
-import { proxyUtils } from '@entities/proxy';
-import { confirmModel } from '../model/confirm-model';
+import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
+import { SignButton } from '@entities/operations';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { proxyUtils } from '@entities/proxy';
+import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
+import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, accountUtils } from '@entities/wallet';
+import { confirmModel } from '../model/confirm-model';
 
 type Props = {
   id?: number;
@@ -53,19 +53,21 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
 
   const [isFeeLoading, setIsFeeLoading] = useState(true);
 
-  if (!confirmStore || !initiatorWallet) return null;
+  if (!confirmStore || !initiatorWallet) {
+    return null;
+  }
 
   return (
-    <div className="flex flex-col items-center pt-4 gap-y-4 pb-4 px-5 w-modal">
-      <div className="flex flex-col items-center gap-y-3 mb-2">
+    <div className="flex w-modal flex-col items-center gap-y-4 px-5 pb-4 pt-4">
+      <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon name="proxyConfirm" size={60} />
 
-        <FootnoteText className="py-2 px-3 rounded bg-block-background ml-3 text-text-secondary">
+        <FootnoteText className="ml-3 rounded bg-block-background px-3 py-2 text-text-secondary">
           {confirmStore.description}
         </FootnoteText>
       </div>
 
-      <dl className="flex flex-col gap-y-4 w-full">
+      <dl className="flex w-full flex-col gap-y-4">
         {proxiedWallet && confirmStore.proxiedAccount && (
           <>
             <DetailRow label={t('transfer.senderProxiedWallet')} className="flex gap-x-2">
@@ -84,7 +86,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
               />
             </DetailRow>
 
-            <hr className="border-filter-border w-full pr-2" />
+            <hr className="w-full border-filter-border pr-2" />
 
             <DetailRow label={t('transfer.signingWallet')} className="flex gap-x-2">
               <WalletIcon type={initiatorWallet.type} size={16} />
@@ -135,7 +137,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
           </DetailRow>
         )}
 
-        <hr className="border-filter-border w-full pr-2" />
+        <hr className="w-full border-filter-border pr-2" />
 
         <DetailRow label={t('proxy.details.grantAccessType')} className="pr-2">
           <FootnoteText>{t(proxyUtils.getProxyTypeName(confirmStore.proxyType))}</FootnoteText>
@@ -151,7 +153,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
           />
         </DetailRow>
 
-        <hr className="border-filter-border w-full pr-2" />
+        <hr className="w-full border-filter-border pr-2" />
 
         <DetailRow
           className="text-text-primary"
@@ -160,12 +162,12 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
               <Icon className="text-text-tertiary" name="lock" size={12} />
               <FootnoteText className="text-text-tertiary">{t('proxy.proxyDepositLabel')}</FootnoteText>
               <Tooltip content={t('proxy.proxyDepositHint')} offsetPx={-60}>
-                <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
+                <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
               </Tooltip>
             </>
           }
         >
-          <div className="flex flex-col gap-y-0.5 items-end">
+          <div className="flex flex-col items-end gap-y-0.5">
             <AssetBalance value={confirmStore.proxyDeposit} asset={confirmStore.chain.assets[0]} />
             <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.proxyDeposit} />
           </div>
@@ -187,7 +189,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
         />
       </dl>
 
-      <div className="flex w-full justify-between mt-3">
+      <div className="mt-3 flex w-full justify-between">
         {onGoBack && (
           <Button variant="text" onClick={onGoBack}>
             {t('operation.goBackButton')}

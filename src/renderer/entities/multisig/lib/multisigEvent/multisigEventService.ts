@@ -1,10 +1,17 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 
-import { storage, MultisigEventDS } from '@shared/api/storage';
-import { IMultisigEventService } from './common/types';
-import { MultisigEvent, MultisigTransactionKey, SigningStatus } from '@shared/core';
-import { Task } from '@shared/lib/hooks/useTaskQueue';
-import type { AccountId, CallHash, ChainId } from '@shared/core';
+import { type MultisigEventDS, storage } from '@shared/api/storage';
+import {
+  type AccountId,
+  type CallHash,
+  type ChainId,
+  type MultisigEvent,
+  type MultisigTransactionKey,
+  type SigningStatus,
+} from '@shared/core';
+import { type Task } from '@shared/lib/hooks/useTaskQueue';
+
+import { type IMultisigEventService } from './common/types';
 
 type Props = {
   addTask?: (task: Task) => void;
@@ -20,13 +27,11 @@ export const useMultisigEvent = ({ addTask }: Props): IMultisigEventService => {
 
   const getLiveEvents = <T extends MultisigEvent>(where?: Partial<T>): MultisigEventDS[] => {
     const query = () => {
-      try {
-        return getEvents(where);
-      } catch (error) {
+      return getEvents(where).catch(() => {
         console.warn('Error trying to get multisig events');
 
-        return Promise.resolve([]);
-      }
+        return [];
+      });
     };
 
     return useLiveQuery(query, [], []);
@@ -50,7 +55,7 @@ export const useMultisigEvent = ({ addTask }: Props): IMultisigEventService => {
           txBlock,
           txIndex,
         });
-      } catch (error) {
+      } catch {
         console.warn('Error trying to get multisig events');
 
         return Promise.resolve([]);
@@ -62,13 +67,11 @@ export const useMultisigEvent = ({ addTask }: Props): IMultisigEventService => {
 
   const getLiveEventsByKeys = (keys: MultisigTransactionKey[]): MultisigEventDS[] => {
     const query = () => {
-      try {
-        return getEventsByKeys(keys);
-      } catch (error) {
+      return getEventsByKeys(keys).catch(() => {
         console.warn('Error trying to get multisig events');
 
-        return Promise.resolve([]);
-      }
+        return [];
+      });
     };
 
     return useLiveQuery(

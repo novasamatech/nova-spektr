@@ -1,16 +1,14 @@
-import { Page } from 'playwright';
+import { type Page } from 'playwright';
 
-import { WalletModalElements } from '../_elements/WalletModalElements';
 import { BaseModal } from '../BaseModalWindow';
-import { BasePage } from '../BasePage';
+import { type BasePage } from '../BasePage';
+import { type WalletModalElements } from '../_elements/WalletModalElements';
 
-export class WalletModalWindow extends BaseModal {
-  public pageElements: WalletModalElements;
+export class WalletModalWindow extends BaseModal<WalletModalElements> {
   public previousPage: BasePage;
 
   constructor(page: Page, pageElements: WalletModalElements, previousPage: BasePage) {
-    super(page);
-    this.pageElements = pageElements;
+    super(page, pageElements);
     this.previousPage = previousPage;
   }
 

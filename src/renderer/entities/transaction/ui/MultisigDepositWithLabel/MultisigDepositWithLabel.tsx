@@ -1,9 +1,9 @@
-import { ComponentProps } from 'react';
+import { type ComponentProps } from 'react';
 
 import { useI18n } from '@app/providers';
-import { Icon, FootnoteText, Tooltip, DetailRow } from '@shared/ui';
-import { MultisigDeposit } from '../MultisigDeposit/MultisigDeposit';
 import { cnTw } from '@shared/lib/utils';
+import { DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
+import { MultisigDeposit } from '../MultisigDeposit/MultisigDeposit';
 
 type Props = ComponentProps<typeof MultisigDeposit> & {
   wrapperClassName?: string;
@@ -19,7 +19,7 @@ export const MultisigDepositWithLabel = ({ wrapperClassName, ...depositProps }: 
           <Icon className="text-text-tertiary" name="lock" size={12} />
           <FootnoteText className="text-text-tertiary">{t('staking.multisigDepositLabel')}</FootnoteText>
           <Tooltip content={t('staking.tooltips.depositDescription')} offsetPx={-90}>
-            <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
+            <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
           </Tooltip>
         </>
       }

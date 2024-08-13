@@ -1,12 +1,12 @@
-import { FormEvent, useEffect } from 'react';
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
+import { type FormEvent, useEffect } from 'react';
 
-import { Switch, FootnoteText, HelpText, Button, Select } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { DropdownOption } from '@shared/ui/types';
-import { CurrencyItem } from '@shared/api/price-provider';
-import { Callbacks, currencyFormModel } from '../model/currency-form';
+import { type CurrencyItem } from '@shared/api/price-provider';
+import { Button, FootnoteText, HelpText, Select, Switch } from '@shared/ui';
+import { type DropdownOption } from '@shared/ui/types';
+import { type Callbacks, currencyFormModel } from '../model/currency-form';
 
 const getCurrencyOption = (currency: CurrencyItem): DropdownOption<CurrencyItem> => ({
   id: currency.id.toString(),
@@ -82,7 +82,7 @@ export const CurrencyForm = ({ onSubmit }: Props) => {
         onChange={({ value }) => currency?.onChange(value.id)}
       />
 
-      <Button className="w-fit ml-auto" type="submit" disabled={!isFormValid}>
+      <Button className="ml-auto w-fit" type="submit" disabled={!isFormValid}>
         {t('settings.currency.save')}
       </Button>
     </form>

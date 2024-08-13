@@ -1,32 +1,32 @@
 import { useForm } from 'effector-forms';
-import { FormEvent, useState } from 'react';
 import { useUnit } from 'effector-react';
+import { type FormEvent, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-import { Address, RewardsDestination } from '@shared/core';
-import { accountUtils, AccountAddress, ProxyWalletAlert } from '@entities/wallet';
-import { toAddress, toShortAddress, formatBalance, validateAddress } from '@shared/lib/utils';
-import { AssetBalance } from '@entities/asset';
-import { RadioOption } from '@shared/ui/types';
-import { formModel } from '../model/form-model';
-import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
-import { FeeLoader } from '@entities/transaction';
-import { priceProviderModel } from '@entities/price';
-import { SignatorySelector } from '@entities/operations';
+import { type Address, RewardsDestination } from '@shared/core';
+import { formatBalance, toAddress, toShortAddress, validateAddress } from '@shared/lib/utils';
 import {
-  Input,
-  Button,
-  InputHint,
   AmountInput,
-  MultiSelect,
-  RadioGroup,
+  Button,
   Combobox,
-  Identicon,
-  Icon,
   DetailRow,
   FootnoteText,
+  Icon,
+  Identicon,
+  Input,
+  InputHint,
+  MultiSelect,
+  RadioGroup,
   Tooltip,
 } from '@shared/ui';
+import { type RadioOption } from '@shared/ui/types';
+import { AssetBalance } from '@entities/asset';
+import { SignatorySelector } from '@entities/operations';
+import { priceProviderModel } from '@entities/price';
+import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { FeeLoader } from '@entities/transaction';
+import { AccountAddress, ProxyWalletAlert, accountUtils } from '@entities/wallet';
+import { formModel } from '../model/form-model';
 
 type Props = {
   onGoBack: () => void;
@@ -41,8 +41,8 @@ export const BondForm = ({ onGoBack }: Props) => {
   };
 
   return (
-    <div className="pb-4 px-5 w-modal">
-      <form id="transfer-form" className="flex flex-col gap-y-4 mt-4" onSubmit={submitForm}>
+    <div className="w-modal px-5 pb-4">
+      <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
         <ProxyFeeAlert />
         <AccountsSelector />
         <Signatories />
@@ -50,7 +50,7 @@ export const BondForm = ({ onGoBack }: Props) => {
         <Destination />
         <Description />
       </form>
-      <div className="flex flex-col gap-y-6 pt-6 pb-4">
+      <div className="flex flex-col gap-y-6 pb-4 pt-6">
         <FeeSection />
       </div>
       <ActionsSection onGoBack={onGoBack} />
@@ -68,7 +68,9 @@ const ProxyFeeAlert = () => {
   const network = useUnit(formModel.$networkStore);
   const proxyWallet = useUnit(formModel.$proxyWallet);
 
-  if (!network || !proxyWallet || !shards.hasError()) return null;
+  if (!network || !proxyWallet || !shards.hasError()) {
+    return null;
+  }
 
   const formattedFee = formatBalance(feeData.fee, network.asset.precision).value;
   const formattedBalance = formatBalance(balance, network.asset.precision).value;
@@ -94,7 +96,9 @@ const AccountsSelector = () => {
   const accounts = useUnit(formModel.$accounts);
   const network = useUnit(formModel.$networkStore);
 
-  if (!network || accounts.length <= 1) return null;
+  if (!network || accounts.length <= 1) {
+    return null;
+  }
 
   const options = accounts.map(({ account, balance }) => {
     const isShard = accountUtils.isShardAccount(account);
@@ -104,7 +108,7 @@ const AccountsSelector = () => {
       id: account.id.toString(),
       value: account,
       element: (
-        <div className="flex justify-between w-full" key={account.id}>
+        <div className="flex w-full justify-between" key={account.id}>
           <AccountAddress
             size={20}
             type="short"
@@ -147,7 +151,9 @@ const Signatories = () => {
   const network = useUnit(formModel.$networkStore);
   const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!isMultisig || !network) return null;
+  if (!isMultisig || !network) {
+    return null;
+  }
 
   return (
     <SignatorySelector
@@ -172,7 +178,9 @@ const Amount = () => {
   const network = useUnit(formModel.$networkStore);
   const bondBalanceRange = useUnit(formModel.$bondBalanceRange);
 
-  if (!network) return null;
+  if (!network) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -206,7 +214,9 @@ const Destination = () => {
   const [payout, setPayout] = useState<Address>('');
   const [activeOptionId, setActiveOptionId] = useState<string>('0');
 
-  if (!network) return null;
+  if (!network) {
+    return null;
+  }
 
   const options: RadioOption<{ type: RewardsDestination; value: Address }>[] = [
     { title: t('staking.bond.restakeRewards'), value: '', rewardType: RewardsDestination.RESTAKE },
@@ -225,7 +235,7 @@ const Destination = () => {
       id: account.id.toString(),
       value: address,
       element: (
-        <div className="flex justify-between w-full" key={account.id}>
+        <div className="flex w-full justify-between" key={account.id}>
           <AccountAddress
             size={20}
             type="short"
@@ -295,7 +305,9 @@ const Description = () => {
 
   const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!isMultisig) return null;
+  if (!isMultisig) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -329,7 +341,9 @@ const FeeSection = () => {
 
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
-  if (!network || shards.value.length === 0) return null;
+  if (!network || shards.value.length === 0) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -341,12 +355,12 @@ const FeeSection = () => {
               <Icon className="text-text-tertiary" name="lock" size={12} />
               <FootnoteText className="text-text-tertiary">{t('staking.multisigDepositLabel')}</FootnoteText>
               <Tooltip content={t('staking.tooltips.depositDescription')} offsetPx={-90}>
-                <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
+                <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
               </Tooltip>
             </>
           }
         >
-          <div className="flex flex-col gap-y-0.5 items-end">
+          <div className="flex flex-col items-end gap-y-0.5">
             <AssetBalance value={feeData.multisigDeposit} asset={network.chain.assets[0]} />
             <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.multisigDeposit} />
           </div>
@@ -364,7 +378,7 @@ const FeeSection = () => {
         {isFeeLoading ? (
           <FeeLoader fiatFlag={Boolean(fiatFlag)} />
         ) : (
-          <div className="flex flex-col gap-y-0.5 items-end">
+          <div className="flex flex-col items-end gap-y-0.5">
             <AssetBalance value={feeData.fee} asset={network.chain.assets[0]} />
             <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.fee} />
           </div>
@@ -379,7 +393,7 @@ const FeeSection = () => {
           {isFeeLoading ? (
             <FeeLoader fiatFlag={Boolean(fiatFlag)} />
           ) : (
-            <div className="flex flex-col gap-y-0.5 items-end">
+            <div className="flex flex-col items-end gap-y-0.5">
               <AssetBalance value={feeData.totalFee} asset={network.chain.assets[0]} />
               <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.totalFee} />
             </div>
@@ -396,7 +410,7 @@ const ActionsSection = ({ onGoBack }: Props) => {
   const canSubmit = useUnit(formModel.$canSubmit);
 
   return (
-    <div className="flex justify-between items-center mt-4">
+    <div className="mt-4 flex items-center justify-between">
       <Button variant="text" onClick={onGoBack}>
         {t('operation.goBackButton')}
       </Button>

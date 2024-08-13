@@ -1,14 +1,14 @@
-import { Link } from 'react-router-dom';
 import { useUnit } from 'effector-react/effector-react.umd';
+import { capitalize } from 'lodash';
 import { useEffect, useState } from 'react';
-// import { capitalize } from 'lodash';  // TODO: temp remove governance
+import { Link } from 'react-router-dom';
 
-import { Icon, BodyText, Plate, FootnoteText, HelpText, Switch } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { Paths } from '@shared/routes';
 import { cnTw } from '@shared/lib/utils';
-import { currencyModel, priceProviderModel } from '@entities/price';
+import { Paths } from '@shared/routes';
+import { BodyText, FootnoteText, HelpText, Icon, Plate, Switch } from '@shared/ui';
 import { governanceModel } from '@entities/governance';
+import { currencyModel, priceProviderModel } from '@entities/price';
 
 // TODO: Language switcher temporary removed
 export const GeneralActions = () => {
@@ -73,7 +73,7 @@ export const GeneralActions = () => {
         <Link
           to={Paths.NETWORK}
           className={cnTw(
-            'w-full grid grid-flow-col grid-cols-[auto,1fr,auto] items-center gap-x-2 p-3 rounded-md',
+            'grid w-full grid-flow-col grid-cols-[auto,1fr,auto] items-center gap-x-2 rounded-md p-3',
             'transition hover:shadow-card-shadow focus:shadow-card-shadow',
           )}
         >
@@ -83,37 +83,36 @@ export const GeneralActions = () => {
         </Link>
       </Plate>
 
-      {/* TODO: temp remove governance */}
-      {/* <Plate className="p-0">
+      <Plate className="p-0">
         <Link
           to={Paths.REFERENDUM_DATA}
           className={cnTw(
-            'w-full flex items-center gap-x-2 p-3 rounded',
+            'flex w-full items-center gap-x-2 rounded p-3',
             'transition hover:shadow-card-shadow focus:shadow-card-shadow',
           )}
         >
           <Icon className="row-span-2" name="referendum" size={36} />
           <BodyText>{t('settings.overview.referendumLabel')}</BodyText>
-          <FootnoteText className="text-text-tertiary ml-auto">{capitalize(governanceApi?.type)}</FootnoteText>
+          <FootnoteText className="ml-auto text-text-tertiary">{capitalize(governanceApi?.type)}</FootnoteText>
         </Link>
-      </Plate> */}
+      </Plate>
 
       <Plate className="p-0">
         <Link
           to={Paths.CURRENCY}
           className={cnTw(
-            'w-full flex items-center gap-x-2 p-3 rounded',
+            'flex w-full items-center gap-x-2 rounded p-3',
             'transition hover:shadow-card-shadow focus:shadow-card-shadow',
           )}
         >
           <Icon className="row-span-2" name="currency" size={36} />
           <BodyText>{t('settings.currency.plateTitle')}</BodyText>
-          {fiatFlag && <FootnoteText className="text-text-tertiary ml-auto">{currency?.code}</FootnoteText>}
+          {fiatFlag && <FootnoteText className="ml-auto text-text-tertiary">{currency?.code}</FootnoteText>}
         </Link>
       </Plate>
       {isAutoUpdateSupported && (
         <Plate className="p-0">
-          <div className="w-full flex items-center gap-x-2 p-3 rounded transition hover:shadow-card-shadow focus:shadow-card-shadow">
+          <div className="flex w-full items-center gap-x-2 rounded p-3 transition hover:shadow-card-shadow focus:shadow-card-shadow">
             <Icon className="row-span-2" name="update" size={36} />
             <BodyText className="mr-auto">{t('settings.autoUpdate')}</BodyText>
             <Switch

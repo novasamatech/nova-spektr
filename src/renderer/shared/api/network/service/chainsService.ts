@@ -1,16 +1,16 @@
+import { BN } from '@polkadot/util';
+import { default as BigNumber } from 'bignumber.js';
+import concat from 'lodash/concat';
 import keyBy from 'lodash/keyBy';
 import orderBy from 'lodash/orderBy';
-import concat from 'lodash/concat';
 import sortBy from 'lodash/sortBy';
-import BigNumber from 'bignumber.js';
-import { BN } from '@polkadot/util';
 
+import { type PriceObject } from '@shared/api/price-provider';
 import chainsProd from '@shared/config/chains/chains.json';
 import chainsDev from '@shared/config/chains/chains_dev.json';
-import { getRelaychainAsset, nonNullable, totalAmount, ZERO_BALANCE } from '@shared/lib/utils';
-import type { Chain, ChainId, Balance } from '@shared/core';
-import { isPolkadot, isKusama, isTestnet, isNameStartsWithNumber } from '../lib/utils';
-import { PriceObject } from '@shared/api/price-provider';
+import { type Balance, type Chain, type ChainId } from '@shared/core';
+import { ZERO_BALANCE, getRelaychainAsset, nonNullable, totalAmount } from '@shared/lib/utils';
+import { isKusama, isNameStartsWithNumber, isPolkadot, isTestnet } from '../lib/utils';
 
 type ChainWithFiatBalance = Chain & {
   fiatBalance: string;

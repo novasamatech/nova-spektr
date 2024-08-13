@@ -1,12 +1,14 @@
 import { resolve } from 'path';
-import { merge } from 'webpack-merge';
-import webpack, { Configuration as WpConfig } from 'webpack';
-import { Configuration as WdsConfig } from 'webpack-dev-server';
-import HTMLWebpackPlugin from 'html-webpack-plugin';
+
 import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
+import HTMLWebpackPlugin from 'html-webpack-plugin';
+import { type Configuration as WpConfig, default as webpack } from 'webpack';
+import { type Configuration as WdsConfig } from 'webpack-dev-server';
+import { merge } from 'webpack-merge';
+
+import { APP_CONFIG } from '../app.config';
 
 import sharedConfig from './webpack.shared';
-import { APP_CONFIG } from '../app.config';
 
 const { FOLDERS, RENDERER } = APP_CONFIG;
 

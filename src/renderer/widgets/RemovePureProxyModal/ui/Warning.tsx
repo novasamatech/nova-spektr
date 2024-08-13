@@ -1,10 +1,10 @@
 import { useForm } from 'effector-forms';
-import { FormEvent, ClipboardEvent } from 'react';
 import { useUnit } from 'effector-react';
+import { type ClipboardEvent, type FormEvent } from 'react';
 import { Trans } from 'react-i18next';
 
-import { Button, Checkbox, FootnoteText, Input } from '@shared/ui';
 import { useI18n } from '@app/providers';
+import { Button, Checkbox, FootnoteText, Input } from '@shared/ui';
 import { warningModel } from '../model/warning-model';
 
 type Props = {
@@ -28,8 +28,8 @@ export const Warning = ({ onGoBack }: Props) => {
   };
 
   return (
-    <div className="pb-4 px-5">
-      <form id="remove-pure-proxy-warning-form" className="flex flex-col gap-y-4 mt-4" onSubmit={revokeAuthority}>
+    <div className="px-5 pb-4">
+      <form id="remove-pure-proxy-warning-form" className="mt-4 flex flex-col gap-y-4" onSubmit={revokeAuthority}>
         <FootnoteText as="p"> {t('pureProxyRemove.warning.warningMessage')}</FootnoteText>
         <Input
           className="w-full"
@@ -83,7 +83,7 @@ const ActionSection = ({ onGoBack }: Props) => {
   const canSubmit = useUnit(warningModel.$canSubmit);
 
   return (
-    <div className="flex justify-between items-center mt-4">
+    <div className="mt-4 flex items-center justify-between">
       <Button variant="text" onClick={onGoBack}>
         {t('operation.goBackButton')}
       </Button>

@@ -1,6 +1,7 @@
+import { readdirSync, renameSync, rmSync } from 'fs';
 import { join, parse } from 'path';
-import { readdirSync, rmSync, renameSync } from 'fs';
-import log, { LogFile } from 'electron-log';
+
+import log, { type LogFile } from 'electron-log';
 
 const MAX_LOG_FILES_TO_KEEP = 10;
 
@@ -37,7 +38,7 @@ function rotateLogs(oldLogFile: LogFile) {
   }
   try {
     const date = new Date().toISOString();
-    let newFileName = join(info.dir, info.name + '.' + date + info.ext);
+    const newFileName = join(info.dir, info.name + '.' + date + info.ext);
     renameSync(file, newFileName);
   } catch (error) {
     console.warn('Could not rotate log', error);

@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
 import { useUnit } from 'effector-react';
+import { useEffect } from 'react';
 
-import { SmallTitleText, Button, Icon } from '@shared/ui';
 import { useI18n } from '@app/providers';
+import { Button, Icon, SmallTitleText } from '@shared/ui';
 import { shardsModel } from '../model/shards-model';
 
 export const ShardSelectorButton = () => {
@@ -19,10 +19,12 @@ export const ShardSelectorButton = () => {
     };
   }, []);
 
-  if (isAccessDenied) return null;
+  if (isAccessDenied) {
+    return null;
+  }
 
   return (
-    <div className="w-[546px] mx-auto flex items-center mt-4">
+    <div className="mx-auto mt-4 flex w-[546px] items-center">
       <SmallTitleText as="h3">{t('balances.assetsOnLabel')} </SmallTitleText>
       <Button
         variant="text"

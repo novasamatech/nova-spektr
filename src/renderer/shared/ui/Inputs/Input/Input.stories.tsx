@@ -1,7 +1,8 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+
+import { Icon } from '@shared/ui';
 
 import { Input } from './Input';
-import { Icon } from '@shared/ui';
 
 export default {
   title: 'Input',
@@ -45,5 +46,5 @@ export const Suffix = Template.bind({});
 Suffix.args = {
   label: 'With suffix element',
   value: 'This is value',
-  suffixElement: <Icon name="warnCutout" className="text-alert right-2 top-[9px] absolute" size={16} />,
+  suffixElement: <Icon name="warnCutout" className="absolute right-2 top-[9px] text-alert" size={16} />,
 };

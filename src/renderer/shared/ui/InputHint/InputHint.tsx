@@ -1,7 +1,8 @@
 import { cnTw } from '@shared/lib/utils';
-import { TypographyProps } from '../Typography/common/types';
 import { FootnoteText } from '../Typography';
-import { HintVariant, HintStyles } from './contants';
+import { type TypographyProps } from '../Typography/common/types';
+
+import { HintStyles, type HintVariant } from './contants';
 
 type Props = TypographyProps & {
   active: boolean;
@@ -9,7 +10,9 @@ type Props = TypographyProps & {
 };
 
 export const InputHint = ({ variant = 'hint', active, className, children, ...props }: Props) => {
-  if (!active) return null;
+  if (!active) {
+    return null;
+  }
 
   return (
     <FootnoteText className={cnTw(HintStyles[variant], className)} {...props}>

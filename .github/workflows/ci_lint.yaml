@@ -14,5 +14,8 @@ jobs:
       - name: ⚙️ Install dependencies
         uses: ./.github/workflows/install-pnpm
 
+      - name: 🔪 Check by typescript
+        run: pnpm types
+
       - name: 📝 Check by linter
         run: pnpm lint

@@ -1,10 +1,11 @@
-import { TFunction } from 'react-i18next';
+import { type TFunction } from 'react-i18next';
 
-import { BasketTransaction, Chain, Transaction, TransactionType } from '@shared/core';
+import { type BasketTransaction, type Chain, type Transaction, TransactionType } from '@shared/core';
+import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
+import { XcmTypes, isWrappedInBatchAll } from '@entities/transaction';
+import { type SelectedFilters } from '../common/types';
+
 import { TransferTypes, TxStatus, UNKNOWN_TYPE } from './constants';
-import { DropdownOption, DropdownResult } from '@shared/ui/types';
-import { SelectedFilters } from '../common/types';
-import { XcmTypes } from '@entities/transaction';
 
 export const getStatusOptions = (t: TFunction) => {
   return [
@@ -94,6 +95,21 @@ export const getTransactionOptions = (t: TFunction) => {
       element: t('operations.titles.removePureProxy'),
     },
     {
+      id: TransactionType.UNLOCK,
+      value: TransactionType.UNLOCK,
+      element: t('operations.titles.unlock'),
+    },
+    {
+      id: TransactionType.VOTE,
+      value: TransactionType.VOTE,
+      element: t('operations.titles.vote'),
+    },
+    {
+      id: TransactionType.RETRACT_VOTE,
+      value: TransactionType.RETRACT_VOTE,
+      element: t('operations.titles.retractVote'),
+    },
+    {
       id: UNKNOWN_TYPE,
       value: UNKNOWN_TYPE,
       element: t('operations.titles.unknown'),
@@ -130,7 +146,7 @@ export const getFilterableTxType = (tx: BasketTransaction): TransactionType | ty
 
   if (tx.coreTx.type === TransactionType.BATCH_ALL) {
     const txMatch = tx.coreTx.args?.transactions?.find((tx: Transaction) => {
-      return tx.type === TransactionType.BOND || tx.type === TransactionType.UNSTAKE;
+      return isWrappedInBatchAll(tx.type);
     });
 
     return txMatch?.type || UNKNOWN_TYPE;

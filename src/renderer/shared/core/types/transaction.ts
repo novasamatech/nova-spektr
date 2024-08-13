@@ -1,15 +1,15 @@
-import type {
-  Address,
-  ChainId,
-  HexString,
-  AccountId,
-  CallData,
-  CallHash,
-  PartialBy,
-  Signatory,
-  MultisigAccount,
-  Account,
-  ProxiedAccount,
+import {
+  type Account,
+  type AccountId,
+  type Address,
+  type CallData,
+  type CallHash,
+  type ChainId,
+  type HexString,
+  type MultisigAccount,
+  type PartialBy,
+  type ProxiedAccount,
+  type Signatory,
 } from '@shared/core';
 
 export const enum TransactionType {
@@ -42,6 +42,13 @@ export const enum TransactionType {
   PROXY = 'proxy',
   CREATE_PURE_PROXY = 'create_pure_proxy',
   REMOVE_PURE_PROXY = 'kill_pure_proxy',
+
+  UNLOCK = 'unlock',
+  VOTE = 'vote',
+  REVOTE = 'revote',
+  RETRACT_VOTE = 'remove_vote',
+  DELEGATE = 'delegate',
+  UNDELEGATE = 'undelegate',
 }
 
 export type SigningStatus =
@@ -67,11 +74,11 @@ export type MultisigTxStatus = MultisigTxInitStatus | MultisigTxFinalStatus;
 
 // TODO: extend args for all Transaction types
 // TODO: use it for send transaction
-export type Transaction = {
+export type Transaction<Args extends NonNullable<unknown> = Record<string, any>> = {
   chainId: ChainId;
   address: Address;
   type: TransactionType;
-  args: Record<string, any>;
+  args: Args;
 };
 
 // TODO: use it for decoding only

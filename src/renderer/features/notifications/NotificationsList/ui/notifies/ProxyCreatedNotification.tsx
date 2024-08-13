@@ -1,13 +1,13 @@
-import { Trans } from 'react-i18next';
 import { useUnit } from 'effector-react';
+import { Trans } from 'react-i18next';
 
-import { WalletIcon } from '@entities/wallet';
-import { BodyText, Identicon } from '@shared/ui';
 import { useI18n } from '@app/providers';
+import { type ProxyAction, ProxyVariant, WalletType } from '@shared/core';
 import { toAddress } from '@shared/lib/utils';
+import { BodyText, Identicon } from '@shared/ui';
 import { ChainTitle } from '@entities/chain';
-import { WalletType, ProxyAction, ProxyVariant } from '@shared/core';
 import { networkModel } from '@entities/network';
+import { WalletIcon } from '@entities/wallet';
 import { ProxyTypeOperation } from '../../lib/constants';
 
 type Props = {
@@ -28,12 +28,12 @@ export const ProxyCreatedNotification = ({ notification }: Props) => {
     <div className="flex gap-x-2">
       <div className="relative">
         <WalletIcon type={WalletType.PROXIED} />
-        <div className="absolute top-[13px] -right-[1px] h-2 w-2 rounded-full bg-icon-positive border border-white" />
+        <div className="absolute -right-[1px] top-[13px] h-2 w-2 rounded-full border border-white bg-icon-positive" />
       </div>
 
       <div className="flex flex-col gap-y-2">
         <BodyText>{t('notifications.details.proxyCreatedTitle')}</BodyText>
-        <BodyText className="inline-flex flex-wrap gap-y-2 items-center">
+        <BodyText className="inline-flex flex-wrap items-center gap-y-2">
           <Trans
             t={t}
             i18nKey="notifications.details.proxyWalletAction"
@@ -46,7 +46,7 @@ export const ProxyCreatedNotification = ({ notification }: Props) => {
             }}
           />
         </BodyText>
-        <BodyText className="inline-flex flex-wrap gap-y-2 items-center">
+        <BodyText className="inline-flex flex-wrap items-center gap-y-2">
           <Trans
             t={t}
             i18nKey="notifications.details.proxyCreatedDetails"

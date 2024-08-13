@@ -1,6 +1,6 @@
 import { useI18n } from '@app/providers';
-import { cnTw, addLeadingZero } from '@shared/lib/utils';
-import { CaptionText, FootnoteText } from '@shared/ui';
+import { addLeadingZero, cnTw } from '@shared/lib/utils';
+import { CaptionText, FootnoteText } from '../Typography';
 
 function secondsToMinutes(seconds: number): string {
   const minutes = Math.floor(seconds / 60);
@@ -18,12 +18,12 @@ export const Countdown = ({ countdown, className }: Props) => {
   const { t } = useI18n();
 
   return (
-    <div className={cnTw('flex items-center gap-x-2 mt-2 mb-6 z-[1]', className)}>
+    <div className={cnTw('z-[1] mb-6 mt-2 flex items-center gap-x-2', className)}>
       <FootnoteText className="text-text-tertiary">{t('signing.qrCountdownTitle')}</FootnoteText>
       <CaptionText
         align="center"
         className={cnTw(
-          'py-1 px-2 w-[50px] h-5 rounded-[26px] text-white',
+          'h-5 w-[50px] rounded-[26px] px-2 py-1 text-white',
           (countdown === 0 && 'bg-label-background-gray') ||
             (countdown >= 60 ? 'bg-label-background-green' : 'bg-label-background-red'),
         )}

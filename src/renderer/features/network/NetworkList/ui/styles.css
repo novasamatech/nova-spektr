@@ -3,12 +3,12 @@
 }
 
 .spektr-waiting::after {
-  content: '';
   position: absolute;
   top: -4px;
   left: calc(100% + 2px);
-  color: var(--text-tertiary);
   animation: dotty steps(1, end) 1.75s infinite;
+  content: '';
+  color: var(--text-tertiary);
 }
 
 @keyframes dotty {

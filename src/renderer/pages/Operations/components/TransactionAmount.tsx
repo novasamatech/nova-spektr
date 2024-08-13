@@ -1,8 +1,8 @@
 import { chainsService } from '@shared/api/network';
-import { AssetBalance } from '@entities/asset';
+import { type DecodedTransaction, type Transaction } from '@shared/core';
 import { cnTw, getAssetById } from '@shared/lib/utils';
+import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
-import { DecodedTransaction, Transaction } from '@shared/core';
 import { getTransactionAmount } from '@entities/transaction';
 
 type Props = {
@@ -14,14 +14,16 @@ export const TransactionAmount = ({ tx, className }: Props) => {
   const asset = tx && getAssetById(tx.args.asset, chainsService.getChainById(tx.chainId)?.assets);
   const value = getTransactionAmount(tx);
 
-  if (!asset || !value) return null;
+  if (!asset || !value) {
+    return null;
+  }
 
   return (
-    <div className={cnTw('flex flex-col gap-y-1 items-center')}>
+    <div className={cnTw('flex flex-col items-center gap-y-1')}>
       <AssetBalance
         value={value}
         asset={asset}
-        className={cnTw('font-manrope text-text-primary text-[32px] leading-[36px] font-bold', className)}
+        className={cnTw('font-manrope text-[32px] font-bold leading-[36px] text-text-primary', className)}
       />
       <AssetFiatBalance asset={asset} amount={value} className="text-headline" />
     </div>

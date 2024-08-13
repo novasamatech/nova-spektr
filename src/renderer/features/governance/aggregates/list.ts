@@ -1,16 +1,11 @@
 import { combine, sample } from 'effector';
-import { inFlight, not, or, readonly } from 'patronum';
+import { readonly } from 'patronum';
 
-import {
-  approveThresholdModel,
-  supportThresholdModel,
-  referendumModel,
-  votingModel,
-  votingService,
-} from '@entities/governance';
+import { approveThresholdModel, referendumModel, supportThresholdModel, votingService } from '@entities/governance';
 import { networkSelectorModel } from '../model/networkSelector';
 import { titleModel } from '../model/title';
-import { AggregatedReferendum } from '../types/structs';
+import { type AggregatedReferendum } from '../types/structs';
+
 import { votingAggregate } from './voting';
 
 const $referendums = combine(
@@ -20,7 +15,7 @@ const $referendums = combine(
     approvalThresholds: approveThresholdModel.$approvalThresholds,
     supportThresholds: supportThresholdModel.$supportThresholds,
     chain: networkSelectorModel.$governanceChain,
-    voting: votingAggregate.$voting,
+    voting: votingAggregate.$activeWalletVotes,
   },
   ({ referendums, chain, titles, approvalThresholds, supportThresholds, voting }): AggregatedReferendum[] => {
     if (!chain) {
@@ -46,23 +41,18 @@ const $referendums = combine(
 
 sample({
   clock: networkSelectorModel.$governanceChainApi,
-  source: networkSelectorModel.$governanceChain,
-  filter: (_, api) => !!api,
-  fn: (chain, api) => ({ api: api!, chain: chain! }),
+  source: {
+    chain: networkSelectorModel.$governanceChain,
+    referendums: referendumModel.$referendums,
+  },
+  filter: ({ chain, referendums }, api) => !!api && !!chain && !referendums[chain.chainId]?.length,
+  fn: ({ chain }, api) => ({ api: api!, chain: chain! }),
   target: referendumModel.events.requestReferendums,
 });
 
 export const listAggregate = {
   $referendums: readonly($referendums),
-  $isLoading: or(
-    not(networkSelectorModel.$isConnectionActive),
-    inFlight([
-      referendumModel.effects.requestReferendumsFx,
-      approveThresholdModel.effects.requestApproveThresholdsFx,
-      supportThresholdModel.effects.requestSupportThresholdsFx,
-      votingModel.effects.requestVotingFx,
-    ]),
-  ),
+  $isLoading: referendumModel.$isReferendumsLoading,
 
   effects: {
     requestReferendumsFx: referendumModel.effects.requestReferendumsFx,

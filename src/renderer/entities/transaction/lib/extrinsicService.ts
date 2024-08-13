@@ -1,14 +1,22 @@
-import { BaseTxInfo, defineMethod, methods, OptionsWithMeta, UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
+import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { methods as ormlMethods } from '@substrate/txwrapper-orml';
-import { SubmittableExtrinsic } from '@polkadot/api/types';
+import {
+  type BaseTxInfo,
+  type OptionsWithMeta,
+  type UnsignedTransaction,
+  defineMethod,
+  methods,
+} from '@substrate/txwrapper-polkadot';
 import sortBy from 'lodash/sortBy';
 
-import { Transaction, TransactionType, MultisigTxWrapper, ProxyTxWrapper } from '@shared/core';
-import { getMaxWeight, hasDestWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
-import * as xcmMethods from '@entities/transaction/lib/common/xcmMethods';
-import { DEFAULT_FEE_ASSET_ITEM } from '@entities/transaction';
+import { type MultisigTxWrapper, type ProxyTxWrapper, type Transaction, TransactionType } from '@shared/core';
 import { toAddress } from '@shared/lib/utils';
+import { DEFAULT_FEE_ASSET_ITEM } from '@entities/transaction';
+import * as xcmMethods from '@entities/transaction/lib/common/xcmMethods';
+
+import { getMaxWeight, hasDestWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
+import { convictionVotingMethods } from './wrappers/convictionVoting';
 
 type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
 type BondWithoutContollerArgs = Omit<Parameters<typeof methods.staking.bond>[0], 'controller'>;
@@ -53,7 +61,7 @@ export const getUnsignedTransaction: Record<
   (transaction: Transaction, info: BaseTxInfo, options: OptionsWithMeta, api: ApiPromise) => UnsignedTransaction
 > = {
   [TransactionType.TRANSFER]: (transaction, info, options, api) => {
-    // @ts-ignore
+    // @ts-expect-error TODO fix
     return api.tx.balances.transferKeepAlive
       ? transferKeepAlive(
           {
@@ -348,7 +356,6 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
-
   [TransactionType.PROXY]: (transaction, info, options, api) => {
     const tx = transaction.args.transaction as Transaction;
     const call = getUnsignedTransaction[tx.type](tx, info, options, api).method;
@@ -358,6 +365,71 @@ export const getUnsignedTransaction: Record<
         real: transaction.args.real,
         forceProxyType: transaction.args.forceProxyType,
         call,
+      },
+      info,
+      options,
+    );
+  },
+  [TransactionType.UNLOCK]: (transaction, info, options) => {
+    return convictionVotingMethods.unlock(
+      {
+        class: transaction.args.trackId,
+        target: transaction.args.target,
+      },
+      info,
+      options,
+    );
+  },
+
+  [TransactionType.DELEGATE]: (transaction, info, options) => {
+    return convictionVotingMethods.delegate(
+      {
+        class: transaction.args.track,
+        to: transaction.args.target,
+        conviction: transaction.args.conviction,
+        balance: transaction.args.balance,
+      },
+      info,
+      options,
+    );
+  },
+  [TransactionType.VOTE]: (transaction, info, options) => {
+    return convictionVotingMethods.vote(
+      {
+        pollIndex: transaction.args.referendum,
+        name: transaction.args.track,
+        vote: transaction.args.vote,
+      },
+      info,
+      options,
+    );
+  },
+  [TransactionType.REVOTE]: (transaction, info, options) => {
+    return convictionVotingMethods.vote(
+      {
+        pollIndex: parseInt(transaction.args.track),
+        name: transaction.args.referendum,
+        vote: transaction.args.vote,
+      },
+      info,
+      options,
+    );
+  },
+  [TransactionType.RETRACT_VOTE]: (transaction, info, options) => {
+    return convictionVotingMethods.removeVote(
+      {
+        class: transaction.args.trackId,
+        index: transaction.args.referendumId,
+      },
+      info,
+      options,
+    );
+  },
+
+  [TransactionType.UNDELEGATE]: (transaction, info, options) => {
+    return convictionVotingMethods.undelegate(
+      {
+        class: transaction.args.track,
       },
       info,
       options,
@@ -378,7 +450,7 @@ export const getExtrinsic: Record<
     api.tx.currencies ? api.tx.currencies.transfer(dest, asset, value) : api.tx.tokens.transfer(dest, asset, value),
   [TransactionType.MULTISIG_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, callData, maxWeight }, api) => {
     return isOldMultisigPallet(api)
-      ? // @ts-ignore
+      ? // @ts-expect-error TODO fix
         api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, callData, false, maxWeight)
       : api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, callData, maxWeight);
   },
@@ -415,10 +487,9 @@ export const getExtrinsic: Record<
   },
   // controller arg removed from bond but changes not released yet
   // https://github.com/paritytech/substrate/pull/14039
-  // @ts-ignore
   [TransactionType.BOND]: ({ controller, value, payee }, api) =>
     isControllerMissing(api)
-      ? api.tx.staking.bond(value, payee) // @ts-ignore
+      ? api.tx.staking.bond(value, payee) // @ts-expect-error TODO fix
       : api.tx.staking.bond(controller, value, payee),
   [TransactionType.UNSTAKE]: ({ value }, api) => api.tx.staking.unbond(value),
   [TransactionType.STAKE_MORE]: ({ maxAdditional }, api) => api.tx.staking.bondExtra(maxAdditional),
@@ -451,15 +522,43 @@ export const getExtrinsic: Record<
   [TransactionType.CREATE_PURE_PROXY]: ({ proxyType, delay, index }, api) => {
     return api.tx.proxy.createPure(proxyType, delay, index);
   },
+  [TransactionType.UNLOCK]: ({ target, trackId }, api) => {
+    return api.tx.convictionVoting.unlock(trackId, target);
+  },
+  [TransactionType.VOTE]: ({ referendum, vote }, api) => {
+    return api.tx.convictionVoting.vote(referendum, vote);
+  },
+  [TransactionType.REVOTE]: ({ trackId, referendumId, vote }, api) => {
+    const calls = [
+      api.tx.convictionVoting.removeVote(trackId, referendumId),
+      api.tx.convictionVoting.vote(referendumId, vote),
+    ];
+
+    return api.tx.utility.batchAll(calls);
+  },
+  [TransactionType.RETRACT_VOTE]: ({ trackId, referendumId }, api) => {
+    return api.tx.convictionVoting.removeVote(trackId, referendumId);
+  },
+  [TransactionType.DELEGATE]: ({ track, target, conviction, balance }, api) => {
+    return api.tx.convictionVoting.delegate(track, target, conviction, balance);
+  },
+  [TransactionType.UNDELEGATE]: ({ track }, api) => {
+    return api.tx.convictionVoting.undelegate(track);
+  },
 };
 
-type WrapAsMultiParams = {
+type WrapAsMultiParams<T extends Transaction = Transaction> = {
   api: ApiPromise;
   addressPrefix: number;
-  transaction: Transaction;
+  transaction: T;
   txWrapper: MultisigTxWrapper;
 };
-export const wrapAsMulti = ({ api, addressPrefix, transaction, txWrapper }: WrapAsMultiParams): Transaction => {
+export const wrapAsMulti = <T extends Transaction = Transaction>({
+  api,
+  addressPrefix,
+  transaction,
+  txWrapper,
+}: WrapAsMultiParams<T>): Transaction => {
   let callData = '';
   let callHash = '';
   try {

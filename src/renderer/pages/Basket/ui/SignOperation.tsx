@@ -1,19 +1,20 @@
 import { useUnit } from 'effector-react';
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
-import { BaseModal } from '@shared/ui';
-import { useModalClose } from '@shared/lib/hooks';
-import { OperationTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
-import { TransactionType, type BasketTransaction } from '@shared/core';
+import { type BasketTransaction, TransactionType } from '@shared/core';
+import { useModalClose } from '@shared/lib/hooks';
+import { BaseModal } from '@shared/ui';
+import { OperationTitle } from '@entities/chain';
+import { networkModel } from '@entities/network';
+import { TransferTypes, XcmTypes } from '@entities/transaction';
 import { OperationSign, OperationSubmit } from '@features/operations';
-import { signOperationsUtils } from '../lib/sign-operations-utils';
-import { signOperationsModel } from '../model/sign-operations-model';
 import {
   AddProxyConfirm,
   AddPureProxiedConfirm,
   BondExtraConfirmation,
   BondNominateConfirmation,
+  DelegateConfirmation,
   NominateConfirmation,
   PayeeConfirmation,
   RemoveProxyConfirm,
@@ -21,13 +22,15 @@ import {
   RestakeConfirmation,
   TransferConfirm,
   UnstakeConfirmation,
+  VoteConfirmation,
   WithdrawConfirmation,
 } from '@features/operations/OperationsConfirm';
+import { UnlockConfirmation } from '@/widgets/UnlockModal/ui/UnlockConfirmation';
 import { getOperationTitle } from '../lib/operation-title';
-import { TransferTypes, XcmTypes } from '@entities/transaction';
-import { networkModel } from '@entities/network';
-import { Step } from '../types';
+import { signOperationsUtils } from '../lib/sign-operations-utils';
 import { getCoreTx } from '../lib/utils';
+import { signOperationsModel } from '../model/sign-operations-model';
+import { Step } from '../types';
 
 export const SignOperation = () => {
   const { t } = useI18n();
@@ -41,9 +44,11 @@ export const SignOperation = () => {
     signOperationsModel.output.flowFinished,
   );
 
-  if (signOperationsUtils.isSubmitStep(step)) return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  if (signOperationsUtils.isSubmitStep(step)) {
+    return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  }
 
-  const getModalTitle = (basketTransaction: BasketTransaction): String | ReactNode => {
+  const getModalTitle = (basketTransaction: BasketTransaction): string | ReactNode => {
     const chain = chains[basketTransaction.coreTx.chainId];
 
     const { title, params } = getOperationTitle(basketTransaction, chain);
@@ -52,7 +57,7 @@ export const SignOperation = () => {
   };
 
   const getConfirmScreen = (transaction: BasketTransaction) => {
-    const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE, TransactionType.BOND]);
+    const coreTx = getCoreTx(transaction);
 
     const type = coreTx.type;
     const config = { withFormatAmount: false };
@@ -105,9 +110,22 @@ export const SignOperation = () => {
       [TransactionType.UNSTAKE]: () => (
         <UnstakeConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
       ),
+      [TransactionType.DELEGATE]: () => (
+        <DelegateConfirmation
+          id={transaction.id}
+          config={config}
+          onGoBack={() => signOperationsModel.output.flowFinished()}
+        />
+      ),
+      [TransactionType.VOTE]: () => (
+        <VoteConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
+      ),
+      [TransactionType.UNLOCK]: () => (
+        <UnlockConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
+      ),
     };
 
-    // @ts-ignore
+    // @ts-expect-error not all types are used
     return Components[type];
   };
 

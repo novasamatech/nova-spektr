@@ -1,16 +1,16 @@
-import cn from 'classnames';
-import { useEffect, useState } from 'react';
-import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 import { u8aToHex } from '@polkadot/util';
+import cn from 'classnames';
 import { useUnit } from 'effector-react';
+import { useEffect, useState } from 'react';
+import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
 import { useI18n } from '@app/providers';
-import { Button, Input, InputHint, HeaderTitleText, SmallTitleText, IconButton } from '@shared/ui';
-import { AccountsList, walletModel } from '@entities/wallet';
-import type { Chain } from '@shared/core';
-import { SigningType, ErrorType, WalletType, CryptoType, ChainType, AccountType, CryptoTypeString } from '@shared/core';
-import { SeedInfo } from '@entities/transaction';
+import { type Chain } from '@shared/core';
+import { AccountType, ChainType, CryptoType, CryptoTypeString, ErrorType, SigningType, WalletType } from '@shared/core';
+import { Button, HeaderTitleText, IconButton, Input, InputHint, SmallTitleText } from '@shared/ui';
 import { networkModel, networkUtils } from '@entities/network';
+import { type SeedInfo } from '@entities/transaction';
+import { AccountsList, walletModel } from '@entities/wallet';
 
 type WalletForm = {
   walletName: string;
@@ -82,11 +82,11 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
 
   return (
     <>
-      <div className="w-[472px] flex flex-col px-5 py-4 bg-white rounded-l-lg">
+      <div className="flex w-[472px] flex-col rounded-l-lg bg-white px-5 py-4">
         <HeaderTitleText className="mb-10">{t('onboarding.vault.title')}</HeaderTitleText>
         <SmallTitleText className="mb-6">{t('onboarding.vault.manageTitle')}</SmallTitleText>
 
-        <form className="flex flex-col gap-4 h-full" onSubmit={handleSubmit(createWallet)}>
+        <form className="flex h-full flex-col gap-4" onSubmit={handleSubmit(createWallet)}>
           <Controller
             name="walletName"
             control={control}
@@ -111,7 +111,7 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
             )}
           />
 
-          <div className="flex flex-1 justify-between items-end">
+          <div className="flex flex-1 items-end justify-between">
             <Button variant="text" onClick={goBack}>
               {t('onboarding.backButton')}
             </Button>
@@ -123,10 +123,10 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
         </form>
       </div>
 
-      <div className="relative w-[472px] flex flex-col gap-y-6 bg-input-background-disabled py-4 rounded-r-lg">
+      <div className="relative flex w-[472px] flex-col gap-y-6 rounded-r-lg bg-input-background-disabled py-4">
         <IconButton name="close" size={20} className="absolute right-3 top-3 m-1" onClick={() => onClose()} />
 
-        <SmallTitleText className="px-5 mt-[52px]">{t('onboarding.vault.accountsTitle')}</SmallTitleText>
+        <SmallTitleText className="mt-[52px] px-5">{t('onboarding.vault.accountsTitle')}</SmallTitleText>
         <AccountsList chains={chains} accountId={accountId} className="h-[424px] py-2" />
       </div>
     </>

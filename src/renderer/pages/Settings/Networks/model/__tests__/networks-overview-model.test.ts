@@ -1,9 +1,9 @@
 import { allSettled, fork } from 'effector';
 
+import { ConnectionStatus, ConnectionType } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { activeNetworksModel, inactiveNetworksModel, networkSelectorUtils } from '@features/network';
 import { networksOverviewModel } from '../networks-overview-model';
-import { ConnectionStatus, ConnectionType } from '@shared/core';
 
 const chains = [
   { name: 'Test chain 1', chainId: '0x01' },

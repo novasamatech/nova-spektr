@@ -1,8 +1,9 @@
 import { Tab } from '@headlessui/react';
 
 import { cnTw } from '@shared/lib/utils';
-import { FootnoteText } from '@shared/ui';
-import { TabItem } from './common/types';
+import { FootnoteText } from '../Typography';
+
+import { type TabItem } from './common/types';
 
 type Props = {
   items: TabItem[];
@@ -22,12 +23,12 @@ export const Tabs = ({
   onChange,
 }: Props) => (
   <Tab.Group onChange={onChange}>
-    <Tab.List className={cnTw('p-0.5 flex bg-tab-background rounded-md gap-x-1', tabsClassName)}>
+    <Tab.List className={cnTw('flex gap-x-1 rounded-md bg-tab-background p-0.5', tabsClassName)}>
       {items.map(({ id, title }) => (
         <Tab
           key={id}
           className={cnTw(
-            'w-full py-1.5 px-2 rounded bg-transparent ui-selected:shadow-card-shadow ui-selected:bg-white flex items-center justify-center',
+            'flex w-full items-center justify-center rounded bg-transparent px-2 py-1.5 ui-selected:bg-white ui-selected:shadow-card-shadow',
             tabClassName,
           )}
         >

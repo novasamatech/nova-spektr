@@ -1,19 +1,20 @@
 import { useUnit } from 'effector-react';
 
-import { cnTw } from '@shared/lib/utils';
-import { ChainTitle } from '@entities/chain';
 import { useI18n } from '@app/providers';
-import { Accordion, ConfirmModal, FootnoteText, HelpText, SmallTitleText } from '@shared/ui';
-import { networkModel } from '@entities/network';
-import { AssetBalance } from '@entities/asset';
-import { walletProviderModel } from '../../model/wallet-provider-model';
-import { ProxyAccountWithActions } from './ProxyAccountWithActions';
+import { type ProxiedAccount, type ProxyAccount, ProxyType, ProxyVariant } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
-import { RemovePureProxy, removePureProxyModel } from '@widgets/RemovePureProxyModal';
-import { RemoveProxy, removeProxyModel } from '@widgets/RemoveProxyModal';
+import { cnTw } from '@shared/lib/utils';
+import { Accordion, ConfirmModal, FootnoteText, HelpText, SmallTitleText } from '@shared/ui';
+import { AssetBalance } from '@entities/asset';
+import { ChainTitle } from '@entities/chain';
+import { networkModel } from '@entities/network';
 import { accountUtils } from '@entities/wallet';
-import { ProxiedAccount, ProxyAccount, ProxyType, ProxyVariant } from '@shared/core';
 import { walletSelectModel } from '@features/wallets';
+import { RemoveProxy, removeProxyModel } from '@widgets/RemoveProxyModal';
+import { RemovePureProxy, removePureProxyModel } from '@widgets/RemovePureProxyModal';
+import { walletProviderModel } from '../../model/wallet-provider-model';
+
+import { ProxyAccountWithActions } from './ProxyAccountWithActions';
 
 type Props = {
   canCreateProxy?: boolean;
@@ -71,15 +72,17 @@ export const ProxiesList = ({ className, canCreateProxy = true }: Props) => {
         <FootnoteText className="flex-1 px-2 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
       </div>
 
-      <ul className="flex flex-col h-full px-5 divide-y divide-divider overflow-y-auto overflow-x-hidden">
+      <ul className="flex h-full flex-col divide-y divide-divider overflow-y-auto overflow-x-hidden px-5">
         {walletProxyGroups.map(({ chainId, totalDeposit }) => {
-          if (!chainsProxies[chainId]?.length) return;
+          if (!chainsProxies[chainId]?.length) {
+            return null;
+          }
 
           return (
             <li key={chainId} className="flex items-center py-2">
               <Accordion isDefaultOpen>
                 <Accordion.Button buttonClass="p-2 rounded hover:bg-action-background-hover focus:bg-action-background-hover">
-                  <div className="flex gap-x-2 items-center justify-between pr-2">
+                  <div className="flex items-center justify-between gap-x-2 pr-2">
                     <ChainTitle className="flex-1" fontClass="text-text-primary" chain={chains[chainId]} />
                     <HelpText className="text-text-tertiary">
                       {t('walletDetails.common.proxyDeposit')}

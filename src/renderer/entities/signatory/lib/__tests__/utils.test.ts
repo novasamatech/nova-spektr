@@ -1,5 +1,5 @@
-import { WalletType, Wallet } from '@shared/core';
-import { singnatoryUtils } from '../utils';
+import { type Wallet, WalletType } from '@shared/core';
+import { signatoryUtils } from '../utils';
 
 describe('entities/signatory/lib/onChainUtils', () => {
   test('should get signatory wallet', () => {
@@ -17,7 +17,7 @@ describe('entities/signatory/lib/onChainUtils', () => {
       },
     ] as unknown as Wallet[];
 
-    const signatory = singnatoryUtils.getSignatoryWallet(wallets, '0x01');
+    const signatory = signatoryUtils.getSignatoryWallet(wallets, '0x01');
 
     expect(signatory).toEqual(wallets[1]);
   });

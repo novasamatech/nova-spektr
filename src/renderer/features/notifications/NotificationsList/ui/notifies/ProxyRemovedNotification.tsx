@@ -1,13 +1,13 @@
-import { Trans } from 'react-i18next';
 import { useUnit } from 'effector-react';
+import { Trans } from 'react-i18next';
 
-import { WalletIcon } from '@entities/wallet';
-import { BodyText, Identicon } from '@shared/ui';
 import { useI18n } from '@app/providers';
+import { type ProxyAction, WalletType } from '@shared/core';
 import { toAddress } from '@shared/lib/utils';
+import { BodyText, Identicon } from '@shared/ui';
 import { ChainTitle } from '@entities/chain';
-import { WalletType, ProxyAction } from '@shared/core';
 import { networkModel } from '@entities/network';
+import { WalletIcon } from '@entities/wallet';
 import { ProxyTypeOperation } from '../../lib/constants';
 
 type Props = {
@@ -25,7 +25,7 @@ export const ProxyRemovedNotification = ({ notification }: Props) => {
     <div className="flex gap-x-2">
       <div className="relative">
         <WalletIcon type={WalletType.PROXIED} />
-        <div className="absolute top-[13px] -right-[1px] h-2 w-2 rounded-full bg-icon-negative border border-white" />
+        <div className="absolute -right-[1px] top-[13px] h-2 w-2 rounded-full border border-white bg-icon-negative" />
       </div>
 
       <div className="flex flex-col gap-y-2">

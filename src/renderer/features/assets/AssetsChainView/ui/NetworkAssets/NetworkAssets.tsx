@@ -1,20 +1,20 @@
-import { useEffect, useMemo, useState } from 'react';
-import groupBy from 'lodash/groupBy';
 import { useUnit } from 'effector-react';
+import groupBy from 'lodash/groupBy';
+import { useEffect, useMemo, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-import { Icon, CaptionText, Tooltip, Accordion } from '@shared/ui';
-import { ZERO_BALANCE, totalAmount, includes, cnTw } from '@shared/lib/utils';
-import type { AccountId, Chain, Asset, Balance, Account } from '@shared/core';
 import { sumBalances } from '@shared/api/network/service/chainsService';
-import { ExtendedChain } from '@entities/network';
-import { ChainTitle } from '@entities/chain';
-import { accountUtils } from '@entities/wallet';
-import { currencyModel, priceProviderModel } from '@entities/price';
+import { type Account, type AccountId, type Asset, type Balance, type Chain } from '@shared/core';
+import { ZERO_BALANCE, cnTw, includes, totalAmount } from '@shared/lib/utils';
+import { Accordion, CaptionText, Icon, Tooltip } from '@shared/ui';
 import { balanceModel } from '@entities/balance';
+import { ChainTitle } from '@entities/chain';
+import { type ExtendedChain } from '@entities/network';
+import { currencyModel, priceProviderModel } from '@entities/price';
+import { accountUtils } from '@entities/wallet';
 import { balanceSorter } from '../../lib/utils';
-import { NetworkFiatBalance } from '../NetworkFiatBalance';
 import { AssetCard } from '../AssetCard/AssetCard';
+import { NetworkFiatBalance } from '../NetworkFiatBalance';
 
 type Props = {
   searchSymbolOnly?: boolean;
@@ -85,7 +85,9 @@ export const NetworkAssets = ({ chain, accounts, query, hideZeroBalances, search
     setFilteredAssets(filteredAssets);
   }, [balancesObject, query, hideZeroBalances]);
 
-  if (filteredAssets.length === 0) return null;
+  if (filteredAssets.length === 0) {
+    return null;
+  }
 
   const hasFailedVerification = balances?.some((b) => b.verified !== undefined && !b.verified);
 
@@ -95,10 +97,10 @@ export const NetworkAssets = ({ chain, accounts, query, hideZeroBalances, search
         <Accordion.Button
           buttonClass={cnTw(
             'sticky top-0 z-10 bg-background-default px-2 py-1.5',
-            'transition-colors rounded hover:bg-block-background-hover focus-visible:bg-block-background-hover',
+            'rounded transition-colors hover:bg-block-background-hover focus-visible:bg-block-background-hover',
           )}
         >
-          <div className="flex items-center justify-between gap-x-2 w-full">
+          <div className="flex w-full items-center justify-between gap-x-2">
             <div className="flex items-center gap-x-2">
               <ChainTitle chain={chain} fontClass="text-caption uppercase" as="h2" iconSize={20} />
 

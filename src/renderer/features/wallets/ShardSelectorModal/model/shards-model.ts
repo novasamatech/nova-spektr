@@ -1,19 +1,19 @@
-import { createStore, createEvent, sample, combine, createApi, attach } from 'effector';
+import { attach, combine, createApi, createEvent, createStore, sample } from 'effector';
 import cloneDeep from 'lodash/cloneDeep';
 
-import type { Account, Wallet } from '@shared/core';
-import { walletModel, walletUtils } from '@entities/wallet';
+import { type Account, type Wallet } from '@shared/core';
 import { networkModel } from '@entities/network';
-import { shardsUtils } from '../lib/shards-utils';
+import { walletModel, walletUtils } from '@entities/wallet';
 import { selectorUtils } from '../lib/selector-utils';
+import { shardsUtils } from '../lib/shards-utils';
 import {
-  RootTuple,
-  SelectedStruct,
-  RootToggleParams,
-  ChainToggleParams,
-  AccountToggleParams,
-  ShardedToggleParams,
-  ShardToggleParams,
+  type AccountToggleParams,
+  type ChainToggleParams,
+  type RootToggleParams,
+  type RootTuple,
+  type SelectedStruct,
+  type ShardToggleParams,
+  type ShardedToggleParams,
 } from '../lib/types';
 
 export type Callbacks = {

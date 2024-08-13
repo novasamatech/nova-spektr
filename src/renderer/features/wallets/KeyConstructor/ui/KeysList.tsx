@@ -1,11 +1,11 @@
 import { useUnit } from 'effector-react';
 
-import { HelpText, IconButton, FootnoteText, SmallTitleText, Icon } from '@shared/ui';
-import { constructorModel } from '../model/constructor-model';
-import { networkModel } from '@entities/network';
-import { ChainIcon } from '@entities/chain';
-import { accountUtils } from '@entities/wallet';
 import { useI18n } from '@app/providers';
+import { FootnoteText, HelpText, Icon, IconButton, SmallTitleText } from '@shared/ui';
+import { ChainIcon } from '@entities/chain';
+import { networkModel } from '@entities/network';
+import { accountUtils } from '@entities/wallet';
+import { constructorModel } from '../model/constructor-model';
 
 export const KeysList = () => {
   const { t } = useI18n();
@@ -16,10 +16,10 @@ export const KeysList = () => {
 
   if (!hasKeys) {
     return (
-      <div className="flex flex-col items-center justify-center h-full">
-        <Icon name="document" size={64} className="text-icon-default mb-6" />
+      <div className="flex h-full flex-col items-center justify-center">
+        <Icon name="document" size={64} className="mb-6 text-icon-default" />
         <SmallTitleText>{t('dynamicDerivations.constructor.emptyListTitle')}</SmallTitleText>
-        <FootnoteText className="text-text-tertiary mt-2">
+        <FootnoteText className="mt-2 text-text-tertiary">
           {t('dynamicDerivations.constructor.emptyListDescription')}
         </FootnoteText>
       </div>
@@ -28,7 +28,7 @@ export const KeysList = () => {
 
   return (
     <div className="h-full">
-      <div className="flex gap-x-6 px-5 pb-2 sticky top-0 z-10 bg-white">
+      <div className="sticky top-0 z-10 flex gap-x-6 bg-white px-5 pb-2">
         <HelpText className="text-text-tertiary">{t('dynamicDerivations.constructor.listNetworkLabel')}</HelpText>
         <HelpText className="text-text-tertiary">{t('dynamicDerivations.constructor.listKeysLabel')}</HelpText>
       </div>
@@ -41,19 +41,19 @@ export const KeysList = () => {
           return (
             <li key={keyData.id || keyData.derivationPath} className="flex items-center gap-x-3 py-1.5 pl-2">
               <ChainIcon
-                className="my-4.5 mx-6"
+                className="mx-6 my-4.5"
                 src={chains[keyData.chainId].icon}
                 name={chains[keyData.chainId].name}
               />
-              <div className="flex-1 flex flex-col gap-y-1 py-1.5 overflow-hidden">
-                <FootnoteText className="text-text-primary truncate">{keyData.name}</FootnoteText>
-                <FootnoteText className="text-text-secondary truncate">
+              <div className="flex flex-1 flex-col gap-y-1 overflow-hidden py-1.5">
+                <FootnoteText className="truncate text-text-primary">{keyData.name}</FootnoteText>
+                <FootnoteText className="truncate text-text-secondary">
                   {accountUtils.getDerivationPath(key)}
                 </FootnoteText>
               </div>
               <IconButton
                 name="delete"
-                className="shrink-0 w-max ml-2 mr-9 hover:text-text-negative focus:text-text-negative"
+                className="ml-2 mr-9 w-max shrink-0 hover:text-text-negative focus:text-text-negative"
                 onClick={() => constructorModel.events.keyRemoved(index)}
               />
             </li>

@@ -1,20 +1,29 @@
 import { decodeAddress } from '@polkadot/util-crypto';
-import { BrowserCodeReader, BrowserQRCodeReader, IScannerControls } from '@zxing/browser';
+import { BrowserCodeReader, BrowserQRCodeReader, type IScannerControls } from '@zxing/browser';
 import init, { Decoder, EncodingPacket } from 'raptorq';
 import { useEffect, useRef } from 'react';
 
-import { cnTw, validateSignerFormat } from '@shared/lib/utils';
-import { CryptoTypeString } from '@shared/core';
 import { useI18n } from '@app/providers';
+import { CryptoTypeString } from '@shared/core';
+import { cnTw, validateSignerFormat } from '@shared/lib/utils';
 import {
   DYNAMIC_DERIVATIONS_ADDRESS_RESPONSE,
-  ErrorFields,
   EXPORT_ADDRESS,
+  ErrorFields,
   FRAME_KEY,
-  VaultFeature,
+  type VaultFeature,
 } from '../common/constants';
 import { QR_READER_ERRORS } from '../common/errors';
-import { DdSeedInfo, DecodeCallback, ErrorObject, Progress, QrError, SeedInfo, VideoInput } from '../common/types';
+import {
+  type DdSeedInfo,
+  type DecodeCallback,
+  type ErrorObject,
+  type Progress,
+  QrError,
+  type SeedInfo,
+  type VideoInput,
+} from '../common/types';
+
 import RaptorFrame from './RaptorFrame';
 
 const enum Status {
@@ -72,7 +81,9 @@ export const QrReader = ({
   const sizeStyle = Array.isArray(size) ? { width: size[0], height: size[1] } : { width: size, height: size };
 
   const isQrErrorObject = (error: unknown): boolean => {
-    if (!error) return false;
+    if (!error) {
+      return false;
+    }
 
     return typeof error === 'object' && ErrorFields.CODE in error && ErrorFields.MESSAGE in error;
   };
@@ -83,7 +94,9 @@ export const QrReader = ({
   };
 
   const makeResultPayload = <T extends ScanResult>(data: T): Array<SeedInfo | DdSeedInfo> => {
-    if (Array.isArray(data)) return data;
+    if (Array.isArray(data)) {
+      return data;
+    }
 
     if (typeof data !== 'string') {
       const payload = { ...data.addr };
@@ -115,7 +128,7 @@ export const QrReader = ({
 
       const mediaDevices = await BrowserCodeReader.listVideoInputDevices();
       mediaDevices.forEach(({ deviceId, label }) => cameras.push({ id: deviceId, label }));
-    } catch (error) {
+    } catch {
       throw QR_READER_ERRORS[QrError.USER_DENY];
     }
 
@@ -129,8 +142,10 @@ export const QrReader = ({
     return cameras.length;
   };
 
-  const handleSimpleQr = (signerAddress: string): Boolean => {
-    if (!validateSignerFormat(signerAddress)) return false;
+  const handleSimpleQr = (signerAddress: string): boolean => {
+    if (!validateSignerFormat(signerAddress)) {
+      return false;
+    }
 
     isComplete.current = true;
     onProgress?.({ decoded: 1, total: 1 });
@@ -205,7 +220,7 @@ export const QrReader = ({
 
       try {
         fountainResult = raptorDecoder.decode(packet);
-      } catch (error) {
+      } catch {
         packets.current.delete(key);
         collected.delete(blockNumber);
         onProgress?.({ decoded: collected.size, total });
@@ -286,7 +301,7 @@ export const QrReader = ({
         );
       }
       onStart?.();
-    } catch (error) {
+    } catch {
       throw QR_READER_ERRORS[QrError.DECODE_ERROR];
     }
   };
@@ -327,7 +342,7 @@ export const QrReader = ({
         controlsRef.current?.stop();
         bgControlsRef.current?.stop();
         await startScanning();
-      } catch (error) {
+      } catch {
         onError?.(QR_READER_ERRORS[QrError.BAD_NEW_CAMERA]);
       }
     })();
@@ -341,7 +356,7 @@ export const QrReader = ({
         controls={false}
         ref={videoRef}
         data-testid="qr-reader"
-        className={cnTw('object-cover absolute -scale-x-100', className)}
+        className={cnTw('absolute -scale-x-100 object-cover', className)}
         {...sizeStyle}
       >
         {t('qrReader.videoError')}
@@ -353,11 +368,11 @@ export const QrReader = ({
     <>
       <div
         className={cnTw(
-          'absolute inset-0 z-10 w-full h-full flex items-center justify-center rounded-[1.75rem] overflow-hidden',
+          'absolute inset-0 z-10 flex h-full w-full items-center justify-center overflow-hidden rounded-[1.75rem]',
           wrapperClassName,
         )}
       >
-        <div className=" w-[240px] h-[240px] rounded-[20px] overflow-hidden">
+        <div className="h-[240px] w-[240px] overflow-hidden rounded-[20px]">
           <video
             muted
             autoPlay
@@ -365,7 +380,7 @@ export const QrReader = ({
             ref={videoRef}
             data-testid="qr-reader"
             style={sizeStyle}
-            className={cnTw('object-cover object-center -scale-x-100', className)}
+            className={cnTw('-scale-x-100 object-cover object-center', className)}
           >
             {t('qrReader.videoError')}
           </video>
@@ -379,7 +394,7 @@ export const QrReader = ({
         data-testid="qr-reader"
         style={sizeStyle}
         className={cnTw(
-          'object-cover w-full h-full object-center scale-100 blur-[14px] max-w-none -scale-x-100',
+          'h-full w-full max-w-none scale-100 -scale-x-100 object-cover object-center blur-[14px]',
           bgVideoClassName,
         )}
       />

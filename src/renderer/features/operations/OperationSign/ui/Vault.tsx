@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 
+import { type Address, type HexString } from '@shared/core';
 import { useCountdown } from '@shared/lib/hooks';
 import { ValidationErrors, toAddress } from '@shared/lib/utils';
-import { useTransaction, ScanMultiframeQr, ScanSingleframeQr, QrReaderWrapper } from '@entities/transaction';
+import { QrReaderWrapper, ScanMultiframeQr, ScanSingleframeQr, useTransaction } from '@entities/transaction';
 import { accountUtils, walletUtils } from '@entities/wallet';
-import type { HexString, Address } from '@shared/core';
-import type { InnerSigningProps } from '../lib/types';
 import { operationSignUtils } from '../lib/operation-sign-utils';
+import { type InnerSigningProps } from '../lib/types';
 
 export const Vault = ({
   apis,
@@ -42,7 +42,9 @@ export const Vault = ({
     const isVerified = signatures.every((signature, index) => {
       // TODO: Research complex verification
       // TODO: research multishard signature verification
-      if (isMultishard) return true;
+      if (isMultishard) {
+        return true;
+      }
 
       const payload = txPayloads[index];
       const verifiablePayload = payload?.slice(1);
@@ -67,7 +69,9 @@ export const Vault = ({
   };
 
   const getSignerAddress = (): Address => {
-    if (!walletUtils.isPolkadotVault(signerWallet)) return signingPayloads[0].transaction.address;
+    if (!walletUtils.isPolkadotVault(signerWallet)) {
+      return signingPayloads[0].transaction.address;
+    }
 
     const root = accountUtils.getBaseAccount(signerWallet.accounts, signerWallet.id);
 
@@ -110,7 +114,7 @@ export const Vault = ({
   }
 
   return (
-    <div className="flex flex-col items-center gap-y-2.5 w-[440px] rounded-b-lg bg-black">
+    <div className="flex w-[440px] flex-col items-center gap-y-2.5 rounded-b-lg bg-black">
       <QrReaderWrapper
         isMultiFrame={isMultiframe}
         countdown={countdown || 0}

@@ -1,15 +1,15 @@
-import { Store, createEffect, createEvent, sample } from 'effector';
-import { ApiPromise } from '@polkadot/api';
-import { SignerOptions } from '@polkadot/api/submittable/types';
+import { type ApiPromise } from '@polkadot/api';
+import { type SignerOptions } from '@polkadot/api/submittable/types';
+import { type Store, createEffect, createEvent, sample } from 'effector';
 
-import { Asset, Balance, Chain, ID, Transaction } from '@shared/core';
+import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@shared/core';
 import { toAccountId } from '@shared/lib/utils';
 import { balanceModel } from '@entities/balance';
 import { networkModel } from '@entities/network';
 import { transactionService } from '@entities/transaction';
 import { AddProxyRules } from '../lib/add-proxy-rules';
-import { AccountStore, Validation, ValidationResult } from '../types/types';
 import { validationUtils } from '../lib/validation-utils';
+import { type AccountStore, type Validation, type ValidationResult } from '../types/types';
 
 const validationStarted = createEvent<{ id: ID; transaction: Transaction; signerOptions?: Partial<SignerOptions> }>();
 const txValidated = createEvent<{ id: ID; result: ValidationResult }>();
@@ -29,7 +29,6 @@ const validateFx = createEffect(
     id,
     api,
     chain,
-    asset,
     transaction,
     balances,
     signerOptions,

@@ -1,13 +1,13 @@
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
-import { Alert, BaseModal, Button, InfoLink, InputFile, InputHint } from '@shared/ui';
-import type { AccountId, ChainAccount, ShardAccount, DraftAccount } from '@shared/core';
 import { useI18n } from '@app/providers';
+import { type AccountId, type ChainAccount, type DraftAccount, type ShardAccount } from '@shared/core';
 import { cnTw } from '@shared/lib/utils';
-import { importKeysModel } from '../model/import-keys-model';
-import { importKeysUtils } from '../lib/import-keys-utils';
+import { Alert, BaseModal, Button, InfoLink, InputFile, InputHint } from '@shared/ui';
 import { TEMPLATE_GITHUB_LINK } from '@features/wallets/ImportKeys/lib/constants';
+import { importKeysUtils } from '../lib/import-keys-utils';
+import { importKeysModel } from '../model/import-keys-model';
 
 type Props = {
   isOpen: boolean;
@@ -58,11 +58,11 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
 
   return (
     <BaseModal isOpen={isOpen} title={t('dynamicDerivations.importKeys.modalTitle')} onClose={onClose}>
-      <div className="flex flex-col gap-y-4 items-start">
+      <div className="flex flex-col items-start gap-y-4">
         <InputFile
           placeholder={t('dynamicDerivations.importKeys.fileInputPlaceholder')}
           accept=".yaml,.txt"
-          className={cnTw('w-full h-[126px]', validationError && 'mb-2', successReport && 'mb-4')}
+          className={cnTw('h-[126px] w-full', validationError && 'mb-2', successReport && 'mb-4')}
           invalid={Boolean(validationError?.error)}
           onChange={handleFileUpload}
         />
@@ -84,7 +84,7 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
           ))}
         </Alert>
 
-        <InfoLink url={TEMPLATE_GITHUB_LINK} className="gap-x-1 mt-2 px-3" iconName="import" iconPosition="right">
+        <InfoLink url={TEMPLATE_GITHUB_LINK} className="mt-2 gap-x-1 px-3" iconName="import" iconPosition="right">
           {t('dynamicDerivations.importKeys.downloadTemplateButton')}
         </InfoLink>
       </div>

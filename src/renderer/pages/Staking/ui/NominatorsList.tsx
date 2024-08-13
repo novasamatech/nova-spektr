@@ -1,17 +1,25 @@
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
+import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
-import { ReactNode } from 'react';
 
 import { useI18n } from '@app/providers';
+import {
+  type Account,
+  type Address,
+  type Asset,
+  type BaseAccount,
+  type Explorer,
+  type ShardAccount,
+} from '@shared/core';
 import { cnTw } from '@shared/lib/utils';
-import { FootnoteText, Tooltip, Icon, HelpText } from '@shared/ui';
-import type { Asset, Explorer, Address, BaseAccount, ShardAccount, Account } from '@shared/core';
+import { FootnoteText, HelpText, Icon, Tooltip } from '@shared/ui';
 import { useStakingData } from '@entities/staking';
 import { AccountAddress, AddressWithName, accountUtils } from '@entities/wallet';
+import { type NominatorInfo } from '../lib/types';
+
 import { NominatorsItem } from './NominatorItem';
 import { ShardedList } from './ShardedList';
 import { TimeToEra } from './TimeToEra';
-import { NominatorInfo } from '../lib/types';
 
 type Props = {
   nominators: Array<NominatorInfo<BaseAccount> | NominatorInfo<ShardAccount>[]>;
@@ -45,7 +53,7 @@ export const NominatorsList = ({
 
     return (
       <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey="staking.tooltips.unstakeDescription" />}>
-        <div className="flex gap-x-1 items-center rounded-md bg-badge-background px-2 py-0.5">
+        <div className="flex items-center gap-x-1 rounded-md bg-badge-background px-2 py-0.5">
           <Icon name="unstake" className="text-icon-accent" size={14} />
           <HelpText className="text-icon-accent">
             <TimeToEra className="my-1" api={api} era={nextUnstakingEra} />
@@ -60,7 +68,7 @@ export const NominatorsList = ({
 
     return (
       <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey="staking.tooltips.redeemDescription" />}>
-        <div className="flex gap-x-1 items-center rounded-md bg-positive-background text-text-positive px-2 py-0.5">
+        <div className="flex items-center gap-x-1 rounded-md bg-positive-background px-2 py-0.5 text-text-positive">
           <Icon name="redeem" className="text-text-positive" size={14} />
           <HelpText className="text-text-positive">{t('staking.tooltips.redeemTitle')}</HelpText>
         </div>

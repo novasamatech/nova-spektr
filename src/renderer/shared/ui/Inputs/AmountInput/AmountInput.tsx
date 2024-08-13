@@ -1,14 +1,9 @@
-import { useCallback, useEffect, useState, ReactNode } from 'react';
 import { useUnit } from 'effector-react';
+import { type ReactNode, useCallback, useEffect, useState } from 'react';
 
-import { AssetBalance, AssetIcon } from '@entities/asset';
 import { useI18n } from '@app/providers';
-import { FootnoteText, HelpText, TitleText } from '../../Typography';
-import { Input } from '../Input/Input';
-import { IconButton } from '@shared/ui';
+import { type Asset } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
-import { currencyModel, useCurrencyRate } from '@entities/price';
-import type { Asset } from '@shared/core';
 import {
   cleanAmount,
   cnTw,
@@ -20,6 +15,11 @@ import {
   validatePrecision,
   validateSymbols,
 } from '@shared/lib/utils';
+import { AssetBalance, AssetIcon } from '@entities/asset';
+import { currencyModel, useCurrencyRate } from '@entities/price';
+import { IconButton } from '../../Buttons';
+import { FootnoteText, HelpText, TitleText } from '../../Typography';
+import { Input } from '../Input/Input';
 
 type Props = {
   name?: string;
@@ -105,16 +105,16 @@ export const AmountInput = ({
     if (Array.isArray(balance)) {
       return (
         <span className="flex gap-x-1">
-          <AssetBalance className="text-text-primary text-footnote" value={balance[0]} asset={asset} />
+          <AssetBalance className="text-footnote text-text-primary" value={balance[0]} asset={asset} />
           <span>-</span>
-          <AssetBalance className="text-text-primary text-footnote" value={balance[1]} asset={asset} />
+          <AssetBalance className="text-footnote text-text-primary" value={balance[1]} asset={asset} />
         </span>
       );
     }
     if (typeof balance === 'string') {
       return (
         <AssetBalance
-          className="inline text-text-primary text-footnote"
+          className="inline text-footnote text-text-primary"
           value={balance}
           asset={asset}
           showIcon={false}
@@ -126,7 +126,7 @@ export const AmountInput = ({
   }, [balance]);
 
   const label = (
-    <div className="flex justify-between items-center gax-x-2">
+    <div className="gax-x-2 flex items-center justify-between">
       <FootnoteText className="text-text-tertiary">{placeholder}</FootnoteText>
       <span className="flex items-center gap-x-1.5">
         <FootnoteText as="span" className="text-text-tertiary">
@@ -138,8 +138,8 @@ export const AmountInput = ({
   );
 
   const currencyIcon = showCurrency && activeCurrency && (
-    <div className="flex items-center gap-x-1 min-w-fit">
-      <div className="relative rounded-full bg-token-background border border-token-border p-[1px] w-8 h-8 flex items-center justify-center">
+    <div className="flex min-w-fit items-center gap-x-1">
+      <div className="relative flex h-8 w-8 items-center justify-center rounded-full border border-token-border bg-token-background p-[1px]">
         {activeCurrency.symbol ? (
           <TitleText align="center" className="text-white">
             {activeCurrency.symbol}
@@ -155,7 +155,7 @@ export const AmountInput = ({
   );
 
   const prefixElement = (
-    <div className="flex items-center gap-x-1 min-w-fit">
+    <div className="flex min-w-fit items-center gap-x-1">
       <AssetIcon src={asset.icon} name={asset.name} size={28} className="flex" />
       <TitleText>{asset.symbol}</TitleText>
     </div>
@@ -166,7 +166,7 @@ export const AmountInput = ({
     : formatFiatBalance(currencyValue);
 
   const suffixElement = showCurrency && rate && (
-    <div className="flex items-center gap-x-2 absolute right-3 bottom-3">
+    <div className="absolute bottom-3 right-3 flex items-center gap-x-2">
       <IconButton
         name="swapArrow"
         alt={t(currencyMode ? 'transfer.swapToCryptoModeAlt' : 'transfer.swapToCurrencyModeAlt')}
@@ -183,7 +183,7 @@ export const AmountInput = ({
   return (
     <Input
       name={name}
-      className={cnTw('text-right text-title font-manrope', activeCurrency && rate && 'mb-7')}
+      className={cnTw('text-right font-manrope text-title', activeCurrency && rate && 'mb-7')}
       wrapperClass="py-3 items-start"
       label={label}
       value={formatGroups(inputValue)}

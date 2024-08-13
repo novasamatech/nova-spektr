@@ -1,11 +1,13 @@
-import type { PathType } from './paths';
+import { type PathType } from './paths';
 
 /**
  * Create route link with url parameters and query string
- * @param path key of existing Paths
- * @param params url params
- * @param query url query params
- * @return {String}
+ *
+ * @param path Key of existing Paths
+ * @param params Url params
+ * @param query Url query params
+ *
+ * @returns {String}
  */
 type Param = Record<string, string | number>;
 type Query = Record<string, (string | number)[]>;

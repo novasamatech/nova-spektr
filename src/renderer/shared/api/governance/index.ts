@@ -1,8 +1,13 @@
-export type { GovernanceApi, ReferendumVote } from './off-chain/lib/types';
+export type {
+  GovernanceApi,
+  ReferendumVote,
+  ReferendumTimelineRecord,
+  ReferendumTimelineRecordStatus,
+  DelegateAccount,
+  DelegationApi,
+} from './off-chain/lib/types';
 export { polkassemblyService } from './off-chain/service/polkassemblyService';
 export { subsquareService } from './off-chain/service/subsquareService';
-export { governanceService } from './on-chain/service/governanceService';
-export { claimScheduleService } from './on-chain/service/claimScheduleService';
-export { opengovThresholdService } from './on-chain/service/opengovThresholdService';
-export { fellowshipThresholdService } from './on-chain/service/fellowshipThresholdService';
+export { delegationService } from './off-chain/service/delegationService';
 export * from './on-chain/lib/claim-types';
+export * from './on-chain/lib/threshold-types';

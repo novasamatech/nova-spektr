@@ -1,9 +1,9 @@
-import { TFunction } from 'react-i18next';
+import { type TFunction } from 'react-i18next';
 
-import { DropdownButton } from '@shared/ui';
-import { ButtonDropdownOption } from '@shared/ui/types';
 import { useI18n } from '@app/providers';
 import { WalletType } from '@shared/core';
+import { DropdownButton } from '@shared/ui';
+import { type ButtonDropdownOption } from '@shared/ui/types';
 import { WalletIcon } from '@entities/wallet';
 import { walletPairingModel } from '../model/wallet-pairing-model';
 
@@ -48,7 +48,7 @@ export const SelectWalletPairing = () => {
   return (
     <DropdownButton
       options={getDropdownOptions(t)}
-      className="w-[140px] py-2 h-8.5"
+      className="h-8.5 w-[140px] py-2"
       title={t('wallets.addButtonTitle')}
     />
   );

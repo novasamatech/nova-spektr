@@ -1,18 +1,20 @@
-import { ComponentProps, useState, useEffect } from 'react';
 import { useUnit } from 'effector-react';
 import noop from 'lodash/noop';
+import { type ComponentProps, useEffect, useState } from 'react';
 
-import { BaseModal, HeaderTitleText, Button, IconButton, StatusLabel } from '@shared/ui';
 import { useI18n } from '@app/providers';
+import { type HexString } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
-import { OperationResult } from '@entities/transaction';
-import { ExtendedContact, ExtendedWallet } from './common/types';
-import { SelectSignatories, ConfirmSignatories, WalletForm } from './components';
-import { contactModel } from '@entities/contact';
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { BaseModal, Button, HeaderTitleText, IconButton, StatusLabel } from '@shared/ui';
+import { contactModel } from '@entities/contact';
+import { matrixModel, matrixUtils } from '@entities/matrix';
+import { OperationResult } from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
 import { createMultisigWalletModel } from '../../model/create-multisig-wallet-model';
-import { matrixUtils, matrixModel } from '@entities/matrix';
+
+import { type ExtendedContact, type ExtendedWallet } from './common/types';
+import { ConfirmSignatories, SelectSignatories, WalletForm } from './components';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -84,7 +86,7 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
     setTimeout(params?.complete ? onComplete : params?.closeAll ? onClose : noop, DEFAULT_TRANSITION);
   };
 
-  const submitHandler = (args: any) => {
+  const submitHandler = (args: { name: string; threshold: number; creatorId: HexString }) => {
     toggleResultModal();
     setName(args.name);
 
@@ -92,14 +94,18 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
   };
 
   const getResultProps = (): OperationResultProps => {
-    if (isLoading) return { variant: 'loading' };
-    if (error) return { variant: 'error', description: error };
+    if (isLoading) {
+      return { variant: 'loading' };
+    }
+    if (error) {
+      return { variant: 'error', description: error };
+    }
 
     return { variant: 'success', description: t('createMultisigAccount.successMessage') };
   };
 
   const modalTitle = (
-    <div className="flex justify-between items-center px-5 py-3 w-[464px] bg-white rounded-tl-lg">
+    <div className="flex w-[464px] items-center justify-between rounded-tl-lg bg-white px-5 py-3">
       <HeaderTitleText className="py-[3px]">{t('createMultisigAccount.title')}</HeaderTitleText>
       {matrixUtils.isLoggedIn(loginStatus) && <StatusLabel title={matrix.userId || ''} variant="success" />}
     </div>
@@ -124,11 +130,11 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
           onSubmit={submitHandler}
         />
 
-        <section className="relative flex flex-col px-5 py-4 flex-1 bg-input-background-disabled h-full">
+        <section className="relative flex h-full flex-1 flex-col bg-input-background-disabled px-5 py-4">
           <IconButton
             name="close"
             size={20}
-            className="absolute right-3 -top-10 m-1"
+            className="absolute -top-10 right-3 m-1"
             onClick={() => closeMultisigModal()}
           />
 

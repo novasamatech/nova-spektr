@@ -1,7 +1,7 @@
-import { ChangeEvent, PropsWithChildren } from 'react';
+import { type ChangeEvent, type PropsWithChildren } from 'react';
 
-import { LabelText } from '../Typography';
 import { cnTw } from '@shared/lib/utils';
+import { LabelText } from '../Typography';
 import './Checkbox.css';
 
 type Props = {
@@ -35,12 +35,12 @@ export const Checkbox = ({
       readOnly={readOnly}
       checked={checked}
       className={cnTw(
-        'checkbox relative shrink-0 appearance-none w-4 h-4 text-white outline-offset-1',
+        'checkbox relative h-4 w-4 shrink-0 appearance-none text-white outline-offset-1',
         'rounded border border-filter-border bg-button-text',
-        'checked:bg-icon-accent checked:border-0 checked:active:border checked:border-icon-accent-default',
-        !checked && semiChecked && 'semi-checked bg-icon-accent border-0 focus:border border-icon-accent-default',
+        'checked:border-0 checked:border-icon-accent-default checked:bg-icon-accent checked:active:border',
+        !checked && semiChecked && 'semi-checked border-0 border-icon-accent-default bg-icon-accent focus:border',
         'hover:shadow-card-shadow hover:checked:bg-icon-accent-default',
-        'disabled:text-filter-border disabled:bg-main-app-background disabled:checked:bg-main-app-background',
+        'disabled:bg-main-app-background disabled:text-filter-border disabled:checked:bg-main-app-background',
         !disabled && 'hover:cursor-pointer',
       )}
       tabIndex={tabIndex}

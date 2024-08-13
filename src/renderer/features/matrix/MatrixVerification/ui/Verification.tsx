@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { TFunction } from 'react-i18next';
-import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import { useUnit } from 'effector-react';
+import { useState } from 'react';
+import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
+import { type TFunction } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
-import { Button, Input, InputHint, FootnoteText, InputFile, Tabs, Icon } from '@shared/ui';
-import { TabItem } from '@shared/ui/types';
+import { Button, FootnoteText, Icon, Input, InputFile, InputHint, Tabs } from '@shared/ui';
+import { type TabItem } from '@shared/ui/types';
 import { matrixModel } from '@entities/matrix';
 
 type VerifyForm = {
@@ -169,7 +169,7 @@ export const Verification = () => {
         </div>
       </div>
 
-      {sessionIsVerified && <Icon name="matrixFull" className="!w-[56px] text-[#00000066] mt-3" size={24} />}
+      {sessionIsVerified && <Icon name="matrixFull" className="mt-3 !w-[56px] text-[#00000066]" size={24} />}
 
       {!sessionIsVerified && (
         <form className="flex flex-col gap-y-2" onSubmit={handleSubmit(submitVerification)}>
@@ -187,7 +187,7 @@ export const Verification = () => {
             {t('settings.matrix.verificationHint')}
           </InputHint>
 
-          <div className="flex justify-between items-center pt-3 mt-2">
+          <div className="mt-2 flex items-center justify-between pt-3">
             <Icon name="matrixFull" className="!w-[56px] text-[#00000066]" size={24} />
             <Button type="submit" disabled={!isValid}>
               {t('settings.matrix.verifyButton')}

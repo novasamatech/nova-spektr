@@ -1,30 +1,30 @@
-import { createEffect, attach, createEvent, createStore, combine, sample, restore, scopeBind } from 'effector';
-import { spread } from 'patronum';
-import { createForm } from 'effector-forms';
+import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
-import { ApiPromise } from '@polkadot/api';
+import { attach, combine, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
+import { createForm } from 'effector-forms';
 import noop from 'lodash/noop';
+import { spread } from 'patronum';
 
-import { walletModel, walletUtils, accountUtils } from '@entities/wallet';
+import {
+  type Account,
+  type Address,
+  type Asset,
+  type Chain,
+  type ChainId,
+  type MultisigTxWrapper,
+  type PartialBy,
+  type ProxiedAccount,
+  type ProxyTxWrapper,
+  type Transaction,
+} from '@shared/core';
+import { ZERO_BALANCE, getRelaychainAsset, redeemableAmount, toAddress, transferableAmount } from '@shared/lib/utils';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';
-import type {
-  Account,
-  PartialBy,
-  ProxiedAccount,
-  Chain,
-  Asset,
-  Address,
-  ChainId,
-  Transaction,
-  MultisigTxWrapper,
-  ProxyTxWrapper,
-} from '@shared/core';
-import { useStakingData, StakingMap, eraService } from '@entities/staking';
-import { NetworkStore } from '../lib/types';
-import { transferableAmount, getRelaychainAsset, toAddress, ZERO_BALANCE, redeemableAmount } from '@shared/lib/utils';
+import { type StakingMap, eraService, useStakingData } from '@entities/staking';
 import { transactionBuilder, transactionService } from '@entities/transaction';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { WithdrawRules } from '@features/operations/OperationsValidation';
+import { type NetworkStore } from '../lib/types';
 
 type BalanceMap = { balance: string; withdraw: string };
 

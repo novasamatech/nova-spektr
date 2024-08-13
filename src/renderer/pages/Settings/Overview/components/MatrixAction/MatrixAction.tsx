@@ -1,10 +1,10 @@
-import { Link } from 'react-router-dom';
 import { useUnit } from 'effector-react';
+import { Link } from 'react-router-dom';
 
-import { Icon, FootnoteText, Plate, BodyText, StatusLabel, HelpText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { Paths } from '@shared/routes';
 import { cnTw } from '@shared/lib/utils';
+import { Paths } from '@shared/routes';
+import { BodyText, FootnoteText, HelpText, Icon, Plate, StatusLabel } from '@shared/ui';
 import { matrixModel, matrixUtils } from '@entities/matrix';
 
 export const MatrixAction = () => {
@@ -21,7 +21,7 @@ export const MatrixAction = () => {
         <Link
           to={Paths.MATRIX}
           className={cnTw(
-            'w-full grid grid-flow-col grid-cols-[auto,1fr,auto] items-center gap-x-2 p-3 rounded-md',
+            'grid w-full grid-flow-col grid-cols-[auto,1fr,auto] items-center gap-x-2 rounded-md p-3',
             'transition hover:shadow-card-shadow focus:shadow-card-shadow',
           )}
         >

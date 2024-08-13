@@ -1,14 +1,15 @@
 import { useUnit } from 'effector-react';
 
-import { useMultisigTx } from '@entities/multisig';
-import { NavItem, Props as NavItemProps } from './NavItem';
-import { networkModel } from '@entities/network';
-import { Paths } from '@shared/routes';
-import { walletModel, walletUtils } from '@entities/wallet';
-import { BodyText } from '@shared/ui';
 import { MultisigTxInitStatus } from '@shared/core';
+import { Paths } from '@shared/routes';
+import { BodyText } from '@shared/ui';
 import { basketModel } from '@entities/basket';
+import { useMultisigTx } from '@entities/multisig';
+import { networkModel } from '@entities/network';
+import { walletModel, walletUtils } from '@entities/wallet';
 import { basketUtils } from '../../operations/OperationsConfirm';
+
+import { NavItem, type Props as NavItemProps } from './NavItem';
 
 export const Navigation = () => {
   const chains = useUnit(networkModel.$chains);
@@ -24,7 +25,7 @@ export const Navigation = () => {
   const NavItems: NavItemProps[] = [
     { icon: 'asset', title: 'navigation.balancesLabel', link: Paths.ASSETS },
     { icon: 'staking', title: 'navigation.stakingLabel', link: Paths.STAKING },
-    // { icon: 'governance', title: 'navigation.governance', link: Paths.GOVERNANCE }, // TODO: temp remove governance
+    { icon: 'governance', title: 'navigation.governance', link: Paths.GOVERNANCE },
     {
       icon: 'operations',
       title: 'navigation.mstOperationLabel',
@@ -35,8 +36,8 @@ export const Navigation = () => {
   ];
 
   return (
-    <nav className="overflow-y-auto h-full">
-      <ul className="flex flex-col gap-2 h-full">
+    <nav className="h-full overflow-y-auto">
+      <ul className="flex h-full flex-col gap-2">
         {NavItems.map(({ icon, title, link, badge }) => (
           <li key={title}>
             <NavItem icon={icon} title={title} link={link} badge={badge} />

@@ -1,10 +1,11 @@
-import { useEffect, RefObject } from 'react';
+import { type RefObject, useEffect } from 'react';
 
 /**
- * Observe provided element(s) and call callback function
- * if clicked is registered outside of it (them)
+ * Observe provided element(s) and call callback function if clicked is
+ * registered outside of it (them)
+ *
  * @param refs DOM element to observe
- * @param callback function to be called on click
+ * @param callback Function to be called on click
  */
 export function useClickOutside(refs: RefObject<HTMLElement>[], callback: () => void): void {
   useEffect(() => {

@@ -1,10 +1,10 @@
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 
-import { Icon, BodyText } from '@shared/ui';
-import { IconNames } from '@shared/ui/Icon/data';
 import { useI18n } from '@app/providers';
 import { cnTw } from '@shared/lib/utils';
+import { BodyText, Icon } from '@shared/ui';
+import { type IconNames } from '@shared/ui/Icon/data';
 
 export type Props = {
   title: string;
@@ -21,7 +21,7 @@ export const NavItem = ({ title, link, icon, badge }: Props) => {
       to={link}
       className={({ isActive }) =>
         cnTw(
-          'flex items-center px-3.5 py-2.5 outline-offset-reduced cursor-pointer select-none rounded-md hover:bg-tab-background',
+          'flex cursor-pointer select-none items-center rounded-md px-3.5 py-2.5 outline-offset-reduced hover:bg-tab-background',
           isActive && 'bg-tab-background',
         )
       }

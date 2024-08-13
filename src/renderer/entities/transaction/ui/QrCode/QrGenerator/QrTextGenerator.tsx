@@ -1,7 +1,7 @@
 import { stringToU8a } from '@polkadot/util';
 
-import useGenerator from './common/useGenerator';
 import { DEFAULT_FRAME_DELAY } from './common/constants';
+import useGenerator from './common/useGenerator';
 
 type Props = {
   size?: number;
@@ -22,7 +22,9 @@ export const QrTextGenerator = ({
 }: Props) => {
   const image = useGenerator(stringToU8a(payload), skipEncoding, delay, bgColor);
 
-  if (!payload || !image) return null;
+  if (!payload || !image) {
+    return null;
+  }
 
   return (
     <div style={{ width: size, height: size }} className={className} dangerouslySetInnerHTML={{ __html: image }} />

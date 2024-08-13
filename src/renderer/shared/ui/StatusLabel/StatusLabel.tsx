@@ -1,10 +1,10 @@
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
-import { FootnoteText } from '@shared/ui';
-import { HelpText } from '@shared/ui/Typography';
+import { FootnoteText, HelpText } from '../Typography';
+
 import { DotStyles, TitleStyles } from './common/constants';
-import { Variant } from './common/types';
+import { type Variant } from './common/types';
 
 type Props = {
   title: string | ReactNode;
@@ -15,7 +15,7 @@ type Props = {
 
 export const StatusLabel = ({ title, subtitle, variant, className }: Props) => (
   <div className={cnTw('grid grid-flow-col gap-x-1.5', className)}>
-    <span className={cnTw('w-[9px] h-[9px] mt-[5px] rounded-full row-span-2', DotStyles[variant])} />
+    <span className={cnTw('row-span-2 mt-[5px] h-[9px] w-[9px] rounded-full', DotStyles[variant])} />
     {typeof title === 'string' ? <FootnoteText className={TitleStyles[variant]}>{title}</FootnoteText> : title}
     {subtitle && <HelpText className="text-text-tertiary">{subtitle}</HelpText>}
   </div>

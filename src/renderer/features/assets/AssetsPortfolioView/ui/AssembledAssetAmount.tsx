@@ -1,10 +1,10 @@
-import { PropsWithChildren } from 'react';
-import { Trans } from 'react-i18next';
 import { useUnit } from 'effector-react';
+import { type PropsWithChildren } from 'react';
+import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
+import { type AssetByChains, type AssetBalance as Balance } from '@shared/core';
 import { totalAmount, transferableAmount } from '@shared/lib/utils';
-import type { AssetBalance as Balance, AssetByChains } from '@shared/core';
 import { Shimmering, Tooltip } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance, priceProviderModel } from '@entities/price';
@@ -20,7 +20,7 @@ export const AssembledAssetAmount = ({ balance, asset }: Props) => {
 
   if (!balance?.free) {
     return (
-      <div className="flex flex-col gap-y-1 items-end">
+      <div className="flex flex-col items-end gap-y-1">
         <Shimmering width={82} height={20} />
         {fiatFlag && <Shimmering width={56} height={18} />}
       </div>
@@ -36,17 +36,17 @@ export const AssembledAssetAmount = ({ balance, asset }: Props) => {
             i18nKey="balances.balanceTooltip"
             components={{
               amountFree: (
-                <AssetBalance value={transferableAmount(balance)} asset={asset} className="text-white text-help-text" />
+                <AssetBalance value={transferableAmount(balance)} asset={asset} className="text-help-text text-white" />
               ),
               amountLocked: balance.frozen ? (
-                <AssetBalance value={balance.frozen} asset={asset} className="text-white text-help-text" />
+                <AssetBalance value={balance.frozen} asset={asset} className="text-help-text text-white" />
               ) : (
-                <Shimmering width={50} height={7} className="bg-white inline-block" />
+                <Shimmering width={50} height={7} className="inline-block bg-white" />
               ),
               amountReserved: balance.reserved ? (
-                <AssetBalance value={balance.reserved} asset={asset} className="text-white text-help-text" />
+                <AssetBalance value={balance.reserved} asset={asset} className="text-help-text text-white" />
               ) : (
-                <Shimmering width={50} height={7} className="bg-white inline-block" />
+                <Shimmering width={50} height={7} className="inline-block bg-white" />
               ),
             }}
           />

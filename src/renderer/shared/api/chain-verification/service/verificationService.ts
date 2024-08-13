@@ -1,8 +1,8 @@
-import { ApiPromise } from '@polkadot/api';
-import { u8aToHex, hexToU8a, BN } from '@polkadot/util';
-import { Header } from '@polkadot/types/interfaces';
-import { Codec } from '@polkadot/types/types';
-import { Bytes, u32, Vec } from '@polkadot/types';
+import { type ApiPromise } from '@polkadot/api';
+import { type Bytes, type Vec, type u32 } from '@polkadot/types';
+import { type Header } from '@polkadot/types/interfaces';
+import { type Codec } from '@polkadot/types/types';
+import { BN, hexToU8a, u8aToHex } from '@polkadot/util';
 
 import { buildTrie } from './decode';
 import { get } from './retreive';
@@ -55,13 +55,15 @@ const getProof = async (api: ApiPromise, storageKey: string, hash: string): Prom
 };
 
 /**
- * Verify data from relay chain by proof and state root
- * Returns true if retrieved value is equal to value from relay chain
- * @param proof - proof from parachain
- * @param root - state root from relay chain
- * @param key - key to retrieve
- * @param value - value from relay chain
- * @return {Boolean}
+ * Verify data from relay chain by proof and state root Returns true if
+ * retrieved value is equal to value from relay chain
+ *
+ * @param proof - Proof from parachain
+ * @param root - State root from relay chain
+ * @param key - Key to retrieve
+ * @param value - Value from relay chain
+ *
+ * @returns {Boolean}
  */
 export const verify = (proof: Uint8Array[] | undefined, root: Uint8Array, key: string, value: Uint8Array): boolean => {
   if (!proof) return false;

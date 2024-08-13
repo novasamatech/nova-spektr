@@ -1,4 +1,4 @@
-import { Page } from 'playwright';
+import { type Page } from 'playwright';
 
 export interface IndexedDBData {
   database: string;
@@ -10,8 +10,11 @@ export interface IndexedDBData {
  * Injects data into an IndexedDB database within a given page context.
  *
  * @param {Page} page - The Playwright page context in which to operate.
- * @param {IndexedDBData} data - The data to be injected, including database name, table name, and the data itself.
- * @returns {Promise<void>} A promise that resolves when the data has been successfully injected.
+ * @param {IndexedDBData} data - The data to be injected, including database
+ *   name, table name, and the data itself.
+ *
+ * @returns {Promise<void>} A promise that resolves when the data has been
+ *   successfully injected.
  */
 export async function injectDataInDatabase(page: Page, data: IndexedDBData): Promise<void> {
   await page.evaluate(async (data) => {

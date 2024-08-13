@@ -1,4 +1,4 @@
-import { Validation, ValidationResult } from '../types/types';
+import { type Validation, type ValidationResult } from '../types/types';
 
 export const validationUtils = {
   applyValidationRules,

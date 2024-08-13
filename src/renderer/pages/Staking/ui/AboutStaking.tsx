@@ -1,13 +1,13 @@
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { Duration, Shimmering, FootnoteText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { useStakingData } from '@entities/staking';
+import { type Asset, type EraIndex, type Validator } from '@shared/core';
+import { Duration, FootnoteText, Shimmering } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
-import type { Asset, EraIndex, Validator } from '@shared/core';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { useStakingData } from '@entities/staking';
 
 type Props = {
   api?: ApiPromise;
@@ -101,17 +101,17 @@ export const AboutStaking = ({ api, era, asset, validators }: Props) => {
       {/*  </div>*/}
       {/*</div>*/}
 
-      <div className="grid grid-cols-2 gap-y-3 gap-x-6">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-3">
         <div className="flex justify-between gap-x-1">
           <FootnoteText className="text-text-secondary">{t('staking.about.totalStakedLabel')}</FootnoteText>
-          <div className="flex flex-col justify-self-end items-end">
+          <div className="flex flex-col items-end justify-self-end">
             {totalStaked && asset ? (
-              <div className="flex flex-col gap-y-0.5 items-end">
+              <div className="flex flex-col items-end gap-y-0.5">
                 <AssetBalance value={totalStaked} asset={asset} className="text-footnote" />
                 <AssetFiatBalance amount={totalStaked} asset={asset} />
               </div>
             ) : (
-              <div className="flex flex-col gap-y-0.5 items-end">
+              <div className="flex flex-col items-end gap-y-0.5">
                 <Shimmering width={100} height={16} />
                 <Shimmering width={56} height={16} />
               </div>
@@ -121,14 +121,14 @@ export const AboutStaking = ({ api, era, asset, validators }: Props) => {
 
         <div className="flex justify-between gap-x-1">
           <FootnoteText className="text-text-secondary">{t('staking.about.minimumStakeLabel')}</FootnoteText>
-          <div className="flex flex-col justify-self-end items-end">
+          <div className="flex flex-col items-end justify-self-end">
             {minimumStake && asset ? (
-              <div className="flex flex-col gap-y-0.5 items-end">
+              <div className="flex flex-col items-end gap-y-0.5">
                 <AssetBalance value={minimumStake} asset={asset} className="text-footnote" />
                 <AssetFiatBalance amount={minimumStake} asset={asset} />
               </div>
             ) : (
-              <div className="flex flex-col gap-y-0.5 items-end">
+              <div className="flex flex-col items-end gap-y-0.5">
                 <Shimmering width={100} height={16} />
                 <Shimmering width={56} height={16} />
               </div>

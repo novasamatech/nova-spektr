@@ -1,11 +1,12 @@
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
+import { useI18n } from '@app/providers';
 import { BaseModal, Button } from '@shared/ui';
+import { type Callbacks, shardsModel } from '../model/shards-model';
+
 import { ShardSearch } from './ShardSearch';
 import { ShardsStructure } from './ShardsStructure';
-import { shardsModel, Callbacks } from '../model/shards-model';
-import { useI18n } from '@app/providers';
 
 export const ShardSelectorModal = ({ onConfirm }: Callbacks) => {
   const { t } = useI18n();
@@ -17,7 +18,9 @@ export const ShardSelectorModal = ({ onConfirm }: Callbacks) => {
     shardsModel.events.callbacksChanged({ onConfirm });
   }, [onConfirm]);
 
-  if (isAccessDenied) return null;
+  if (isAccessDenied) {
+    return null;
+  }
 
   return (
     <BaseModal
@@ -31,7 +34,7 @@ export const ShardSelectorModal = ({ onConfirm }: Callbacks) => {
       <ShardSearch />
       <ShardsStructure />
 
-      <Button className="ml-auto mt-7 mr-5" onClick={() => shardsModel.events.shardsConfirmed()}>
+      <Button className="ml-auto mr-5 mt-7" onClick={() => shardsModel.events.shardsConfirmed()}>
         {t('balances.saveShardsButton')}
       </Button>
     </BaseModal>

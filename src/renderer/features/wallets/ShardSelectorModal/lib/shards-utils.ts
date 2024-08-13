@@ -1,9 +1,19 @@
 import set from 'lodash/set';
 
-import type { Chain, ChainId, ChainAccount, ShardAccount, ID, AccountId, Account, BaseAccount } from '@shared/core';
+import {
+  type Account,
+  type AccountId,
+  type BaseAccount,
+  type Chain,
+  type ChainAccount,
+  type ChainId,
+  type ID,
+  type ShardAccount,
+} from '@shared/core';
+import { isStringsMatchQuery, toAddress } from '@shared/lib/utils';
 import { accountUtils } from '@entities/wallet';
-import { toAddress, isStringsMatchQuery } from '@shared/lib/utils';
-import { RootTuple, ChainsMap, ChainTuple, SelectedStruct } from './types';
+
+import { type ChainTuple, type ChainsMap, type RootTuple, type SelectedStruct } from './types';
 
 export const shardsUtils = {
   getFilteredAccounts,
@@ -195,8 +205,10 @@ function getStructForMultishard<T>(accounts: Account[], chainsMap: ChainsMap<T>)
     if (tuples.length === 0) return;
 
     tuples.forEach(([baseId, accounts]) => {
-      const chainTuples = roots.get(rootsMap[Number(baseId)]) as ChainTuple[];
-      chainTuples.push([chainId as ChainId, accounts as any]);
+      const chainTuples = roots.get(rootsMap[Number(baseId)]);
+      if (chainTuples) {
+        chainTuples.push([chainId as ChainId, accounts as any]);
+      }
     });
   });
 
@@ -205,13 +217,13 @@ function getStructForMultishard<T>(accounts: Account[], chainsMap: ChainsMap<T>)
 
 function getSelectedShards(struct: SelectedStruct, accounts: Account[]): BaseAccount[] {
   const selectedMap = Object.values(struct).reduce<Record<AccountId, boolean>>((acc, chainMap) => {
-    const { total, checked, ...chains } = chainMap;
+    const { total: _total, checked: _checked, ...chains } = chainMap;
     Object.values(chains).forEach((chain) => {
       const { accounts, sharded = {} } = chain;
       Object.assign(acc, accounts);
 
       Object.values(sharded).forEach((shard) => {
-        const { total, checked, ...shards } = shard;
+        const { total: _total, checked: _checked, ...shards } = shard;
         Object.assign(acc, shards);
       });
     });

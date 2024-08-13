@@ -1,24 +1,24 @@
 import { Listbox, Transition } from '@headlessui/react';
-import { Fragment, useId, forwardRef } from 'react';
+import { Fragment, forwardRef, useId } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
 import { Icon } from '../../Icon/Icon';
-import { FootnoteText, LabelText } from '../../Typography';
-import { DropdownOption, DropdownResult, Position, Theme } from '../common/types';
 import { CommonInputStyles, CommonInputStylesTheme } from '../../Inputs/common/styles';
+import { FootnoteText, LabelText } from '../../Typography';
 import {
-  ButtonTextFilledStyle,
   ButtonTextEmptyStyle,
-  OptionsContainerStyle,
-  OptionsContainerStyleTheme,
+  ButtonTextFilledStyle,
   OptionStyle,
   OptionStyleTheme,
   OptionTextStyle,
+  OptionsContainerStyle,
+  OptionsContainerStyleTheme,
   SelectButtonStyle,
   ViewClass,
 } from '../common/constants';
+import { type DropdownOption, type DropdownResult, type Position, type Theme } from '../common/types';
 
-type Props<T extends any = any> = {
+type Props<T = any> = {
   className?: string;
   placeholder: string;
   label?: string;
@@ -67,7 +67,7 @@ export const Select = forwardRef<HTMLButtonElement, Props>(
                 SelectButtonStyle[theme].disabled,
                 CommonInputStyles,
                 CommonInputStylesTheme[theme],
-                'w-full flex items-center gap-x-2 justify-between pr-2',
+                'flex w-full items-center justify-between gap-x-2 pr-2',
               )}
             >
               {selectedOption && !open ? (
@@ -125,11 +125,13 @@ export const Select = forwardRef<HTMLButtonElement, Props>(
       </Listbox>
     );
 
-    if (!label) return selectElement;
+    if (!label) {
+      return selectElement;
+    }
 
     return (
       <div className="flex flex-col gap-y-2">
-        <LabelText className="cursor-pointer text-text-tertiary font-medium" htmlFor={id}>
+        <LabelText className="cursor-pointer font-medium text-text-tertiary" htmlFor={id}>
           {label}
         </LabelText>
         {selectElement}

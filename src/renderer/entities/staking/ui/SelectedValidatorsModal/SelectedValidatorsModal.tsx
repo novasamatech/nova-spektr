@@ -1,6 +1,6 @@
-import { BaseModal } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { Validator } from '@shared/core/types/validator';
+import { type Validator } from '@shared/core/types/validator';
+import { BaseModal } from '@shared/ui';
 import { ValidatorsTable } from '@entities/staking/ui';
 
 type Props = {
@@ -26,7 +26,7 @@ export const SelectedValidatorsModal = ({ isOpen, validators, onClose }: Props) 
           {validators.map((validator) => (
             <li
               key={validator.address}
-              className="grid items-center pl-5 pr-2 shrink-0 h-10 grid-cols-[1fr,40px] hover:bg-hover group"
+              className="group grid h-10 shrink-0 grid-cols-[1fr,40px] items-center pl-5 pr-2 hover:bg-hover"
             >
               <ValidatorsTable.ShortRow validator={validator} />
             </li>

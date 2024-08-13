@@ -1,9 +1,9 @@
-import { PropsWithChildren, forwardRef, ElementType } from 'react';
 import { Disclosure, Transition } from '@headlessui/react';
+import { type ElementType, type PropsWithChildren, forwardRef } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
-import { IconNames } from '../Icon/data';
 import { Icon } from '../Icon/Icon';
+import { type IconNames } from '../Icon/data';
 
 type Props = {
   className?: string;
@@ -32,7 +32,7 @@ const Button = forwardRef<HTMLButtonElement, PropsWithChildren<ButtonProps>>(
       <Disclosure.Button
         ref={ref}
         className={cnTw(
-          'group flex items-center justify-between w-full gap-x-2 hover:bg-action-background-hover rounded',
+          'group flex w-full items-center justify-between gap-x-2 rounded hover:bg-action-background-hover',
           buttonClass,
         )}
         onClick={onClick}

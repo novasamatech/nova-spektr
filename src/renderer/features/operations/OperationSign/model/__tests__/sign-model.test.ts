@@ -1,11 +1,11 @@
+import { type ApiPromise } from '@polkadot/api';
 import { allSettled, fork } from 'effector';
-import { ApiPromise } from '@polkadot/api';
 
+import { type Account, type Chain, SigningType, type Transaction, type Wallet, WalletType } from '@shared/core';
 import { networkModel } from '@entities/network';
 import { walletModel } from '@entities/wallet';
-import { Account, Chain, SigningType, Transaction, Wallet, WalletType } from '@shared/core';
+import { type SigningPayload } from '../../lib/types';
 import { signModel } from '../sign-model';
-import { SigningPayload } from '../../lib/types';
 
 const testApi = {
   key: 'test-api',

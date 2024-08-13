@@ -1,14 +1,14 @@
 import { hexToU8a, u8aToHex } from '@polkadot/util';
-import { BrowserCodeReader, BrowserQRCodeReader, IScannerControls } from '@zxing/browser';
-import { useEffect, useRef } from 'react';
+import { BrowserCodeReader, BrowserQRCodeReader, type IScannerControls } from '@zxing/browser';
 import init from 'raptorq';
+import { useEffect, useRef } from 'react';
 
-import { cnTw } from '@shared/lib/utils';
 import { useI18n } from '@app/providers';
+import { type HexString } from '@shared/core';
+import { cnTw } from '@shared/lib/utils';
 import { ErrorFields } from '../common/constants';
 import { QR_READER_ERRORS } from '../common/errors';
-import { DecodeCallback, ErrorObject, QrError, VideoInput } from '../common/types';
-import type { HexString } from '@shared/core';
+import { type DecodeCallback, type ErrorObject, QrError, type VideoInput } from '../common/types';
 
 type Props = {
   size?: number;
@@ -48,7 +48,9 @@ export const QrSignatureReader = ({
   const videoStyle = { width: size + 'px', height: size + 'px' };
 
   const isQrErrorObject = (error: unknown): boolean => {
-    if (!error) return false;
+    if (!error) {
+      return false;
+    }
 
     return typeof error === 'object' && ErrorFields.CODE in error && ErrorFields.MESSAGE in error;
   };
@@ -60,7 +62,7 @@ export const QrSignatureReader = ({
 
       const mediaDevices = await BrowserCodeReader.listVideoInputDevices();
       mediaDevices.forEach(({ deviceId, label }) => cameras.push({ id: deviceId, label }));
-    } catch (error) {
+    } catch {
       throw QR_READER_ERRORS[QrError.USER_DENY];
     }
 
@@ -108,7 +110,7 @@ export const QrSignatureReader = ({
         );
       }
       onStart?.();
-    } catch (error) {
+    } catch {
       throw QR_READER_ERRORS[QrError.DECODE_ERROR];
     }
   };
@@ -149,7 +151,7 @@ export const QrSignatureReader = ({
         controlsRef.current?.stop();
         bgControlsRef.current?.stop();
         await startScanning();
-      } catch (error) {
+      } catch {
         onError?.(QR_READER_ERRORS[QrError.BAD_NEW_CAMERA]);
       }
     })();
@@ -163,7 +165,7 @@ export const QrSignatureReader = ({
         controls={false}
         ref={videoRef}
         data-testid="qr-reader"
-        className={cnTw('object-cover absolute -scale-x-100', className)}
+        className={cnTw('absolute -scale-x-100 object-cover', className)}
         style={videoStyle}
       >
         {t('qrReader.videoError')}
@@ -173,14 +175,14 @@ export const QrSignatureReader = ({
 
   return (
     <>
-      <div className="relative w-[240px] h-[240px] rounded-[22px] overflow-hidden">
+      <div className="relative h-[240px] w-[240px] overflow-hidden rounded-[22px]">
         <video
           muted
           autoPlay
           controls={false}
           ref={videoRef}
           data-testid="qr-reader"
-          className={cnTw('object-cover absolute -scale-x-100', className)}
+          className={cnTw('absolute -scale-x-100 object-cover', className)}
         >
           {t('qrReader.videoError')}
         </video>
@@ -191,7 +193,7 @@ export const QrSignatureReader = ({
         controls={false}
         ref={bgVideoRef}
         data-testid="qr-reader"
-        className={cnTw('absolute -scale-x-100 object-cover top-0 left-0 blur-[14px] max-w-none', bgVideoClassName)}
+        className={cnTw('absolute left-0 top-0 max-w-none -scale-x-100 object-cover blur-[14px]', bgVideoClassName)}
       />
       <div className="video-cover rounded-b-lg" />
     </>

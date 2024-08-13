@@ -1,21 +1,25 @@
-import { accountUtils, walletUtils } from '@entities/wallet';
-import { toAddress } from '@shared/lib/utils';
-import { isProxyTransaction } from '@entities/transaction';
+import { BN } from '@polkadot/util';
+
 import {
-  AccountId,
-  ChainId,
-  Contact,
-  Explorer,
-  HexString,
-  Signatory,
-  Wallet,
-  Address,
-  ProxyType,
-  Chain,
-  Account,
-  MultisigEvent,
-  MultisigTransaction,
+  type Account,
+  type AccountId,
+  type Address,
+  type Chain,
+  type ChainId,
+  type Contact,
+  type Explorer,
+  type HexString,
+  type MultisigEvent,
+  type MultisigTransaction,
+  type ProxyType,
+  type Signatory,
+  type Transaction,
+  TransactionType,
+  type Wallet,
 } from '@shared/core';
+import { toAddress } from '@shared/lib/utils';
+import { isDelegateTransaction, isProxyTransaction } from '@entities/transaction';
+import { accountUtils, walletUtils } from '@entities/wallet';
 
 export const getMultisigExtrinsicLink = (
   callHash?: HexString,
@@ -84,7 +88,9 @@ export const getSignatoryAccounts = (
       const legacySignatoryAccount = filteredAccounts.find(
         (a) => accountUtils.isChainAccount(a) && a.chainId === chainId,
       );
-      legacySignatoryAccount && acc.push(legacySignatoryAccount);
+      if (legacySignatoryAccount) {
+        acc.push(legacySignatoryAccount);
+      }
     }
 
     return acc;
@@ -165,4 +171,64 @@ export const getProxyType = (tx: MultisigTransaction): ProxyType | undefined => 
   }
 
   return tx.transaction.args.proxyType;
+};
+
+export const getDelegationVotes = (tx: MultisigTransaction): string | undefined => {
+  if (!tx.transaction) return undefined;
+
+  let coreTx;
+
+  if (isProxyTransaction(tx.transaction)) {
+    coreTx = tx.transaction.args.transaction;
+  }
+
+  if (isDelegateTransaction(tx.transaction)) {
+    coreTx = tx.transaction;
+  }
+
+  if (tx.transaction.type === TransactionType.BATCH_ALL) {
+    coreTx = tx.transaction.args.transactions?.find((tx: Transaction) => tx.type === TransactionType.DELEGATE);
+  }
+
+  return new BN(coreTx.args.balance || 0).mul(new BN(coreTx.args.conviction || 0)).toString();
+};
+
+export const getDelegationTarget = (tx: MultisigTransaction): string | undefined => {
+  if (!tx.transaction) return undefined;
+
+  let coreTx;
+
+  if (isProxyTransaction(tx.transaction)) {
+    coreTx = tx.transaction.args.transaction;
+  }
+
+  if (isDelegateTransaction(tx.transaction)) {
+    coreTx = tx.transaction;
+  }
+
+  if (tx.transaction.type === TransactionType.BATCH_ALL) {
+    coreTx = tx.transaction.args.transactions?.find((tx: Transaction) => tx.type === TransactionType.DELEGATE);
+  }
+
+  return coreTx.args.target;
+};
+
+export const getDelegationTracks = (tx: MultisigTransaction): string[] | undefined => {
+  if (!tx.transaction) return undefined;
+
+  let coreTxs;
+
+  if (isProxyTransaction(tx.transaction)) {
+    coreTxs = [tx.transaction.args.transaction];
+  }
+
+  if (isDelegateTransaction(tx.transaction)) {
+    coreTxs = [tx.transaction];
+  }
+
+  if (tx.transaction.type === TransactionType.BATCH_ALL) {
+    coreTxs = tx.transaction.args.transactions?.filter((tx: Transaction) => tx.type === TransactionType.DELEGATE);
+  }
+
+  return coreTxs.map((tx: Transaction) => tx.args.track);
 };

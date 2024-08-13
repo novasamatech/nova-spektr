@@ -1,12 +1,13 @@
 import { useForm } from 'effector-forms';
-import { FormEvent, useEffect } from 'react';
 import { useUnit } from 'effector-react';
+import { type FormEvent, useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
-import { Select, Button, FootnoteText, HelpText, BaseModal, Icon, InputHint } from '@shared/ui';
-import { offChainModel } from '../../model/offChain';
-import { Sources } from './constants';
 import { useModalClose } from '@shared/lib/hooks';
+import { BaseModal, Button, FootnoteText, HelpText, Icon, InputHint, Select } from '@shared/ui';
+import { offChainModel } from '../../model/offChain';
+
+import { Sources } from './constants';
 
 export const OffChainDataSource = () => {
   const { t } = useI18n();
@@ -27,7 +28,7 @@ export const OffChainDataSource = () => {
 
   return (
     <BaseModal isOpen={isModalOpen} closeButton title={t('governance.offChainDataSource.title')} onClose={closeModal}>
-      <form id="offchain-datasource" className="flex flex-col gap-y-4 pt-4" onSubmit={submitForm}>
+      <form id="offchain-datasource" className="flex flex-col gap-y-4 pb-2 pt-4" onSubmit={submitForm}>
         <div>
           <FootnoteText>{t('governance.offChainDataSource.formTitle')}</FootnoteText>
           <HelpText className="text-text-tertiary">{t('governance.offChainDataSource.formDescription')}</HelpText>
@@ -80,7 +81,7 @@ const ActionSection = () => {
   const canSubmit = useUnit(offChainModel.$canSubmit);
 
   return (
-    <Button form="offchain-datasource" className="w-fit mt-7 ml-auto" type="submit" disabled={!canSubmit}>
+    <Button form="offchain-datasource" className="ml-auto mt-7 w-fit" type="submit" disabled={!canSubmit}>
       {t('governance.offChainDataSource.save')}
     </Button>
   );

@@ -1,7 +1,7 @@
-import { Icon, SmallTitleText, FootnoteText, Button } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import { ProxyPopover } from '@entities/proxy';
 import { cnTw } from '@shared/lib/utils';
+import { Button, FootnoteText, Icon, SmallTitleText } from '@shared/ui';
+import { ProxyPopover } from '@entities/proxy';
 
 type Props = {
   canCreateProxy?: boolean;
@@ -13,15 +13,15 @@ export const NoProxiesAction = ({ className, canCreateProxy = true, onAddProxy }
   const { t } = useI18n();
 
   return (
-    <div className={cnTw('flex flex-col items-center justify-center h-[376px]', className)}>
+    <div className={cnTw('flex h-[376px] flex-col items-center justify-center', className)}>
       <Icon name="document" size={64} />
-      <div className="flex items-center gap-x-1.5 mt-6 mb-2">
+      <div className="mb-2 mt-6 flex items-center gap-x-1.5">
         <SmallTitleText>{t('walletDetails.common.emptyProxyTitle')}</SmallTitleText>
         <ProxyPopover />
       </div>
       {canCreateProxy && (
         <>
-          <FootnoteText className="text-text-tertiary mb-4">
+          <FootnoteText className="mb-4 text-text-tertiary">
             {t('walletDetails.common.emptyProxyDescription')}
           </FootnoteText>
           <Button size="sm" onClick={onAddProxy}>

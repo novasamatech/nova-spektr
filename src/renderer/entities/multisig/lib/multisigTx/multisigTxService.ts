@@ -1,24 +1,31 @@
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
 import { useLiveQuery } from 'dexie-react-hooks';
 
-import { MultisigTransaction, MultisigTxFinalStatus, MultisigTxInitStatus } from '@shared/core';
-import { storage, MultisigTransactionDS } from '@shared/api/storage';
-import { DEFAULT_BLOCK_HASH, MULTISIG_EXTRINSIC_CALL_INDEX, QUERY_INTERVAL } from './common/consts';
-import { IMultisigTxService } from './common/types';
+import { chainsService } from '@shared/api/network';
+import { type MultisigTransactionDS, storage } from '@shared/api/storage';
 import {
+  type AccountId,
+  type CallData,
+  type MultisigAccount,
+  type MultisigTransaction,
+  MultisigTxFinalStatus,
+  MultisigTxInitStatus,
+} from '@shared/core';
+import { type Task } from '@shared/lib/hooks/useTaskQueue';
+import { getCurrentBlockNumber, getExpectedBlockTime, toAddress } from '@shared/lib/utils';
+import { useTransaction } from '@entities/transaction/lib/transactionService';
+import { useMultisigEvent } from '../multisigEvent/multisigEventService';
+
+import { DEFAULT_BLOCK_HASH, MULTISIG_EXTRINSIC_CALL_INDEX, QUERY_INTERVAL } from './common/consts';
+import { type IMultisigTxService } from './common/types';
+import {
+  createEventsPayload,
+  createNewEventsPayload,
   createTransactionPayload,
   getPendingMultisigTxs,
-  createEventsPayload,
-  updateTransactionPayload,
-  createNewEventsPayload,
   updateOldEventsPayload,
+  updateTransactionPayload,
 } from './common/utils';
-import { useTransaction } from '@entities/transaction/lib/transactionService';
-import { toAddress, getCurrentBlockNumber, getExpectedBlockTime } from '@shared/lib/utils';
-import { useMultisigEvent } from '../multisigEvent/multisigEventService';
-import { Task } from '@shared/lib/hooks/useTaskQueue';
-import type { CallData, AccountId, MultisigAccount } from '@shared/core';
-import { chainsService } from '@shared/api/network';
 
 type Props = {
   addTask?: (task: Task) => void;
@@ -153,10 +160,10 @@ export const useMultisigTx = ({ addTask }: Props): IMultisigTxService => {
         const status = hasPendingFinalApproval
           ? MultisigTxFinalStatus.EXECUTED
           : hasPendingCancelled
-          ? MultisigTxFinalStatus.CANCELLED
-          : tx.status === 'SIGNING'
-          ? MultisigTxFinalStatus.ESTABLISHED
-          : tx.status;
+            ? MultisigTxFinalStatus.CANCELLED
+            : tx.status === 'SIGNING'
+              ? MultisigTxFinalStatus.ESTABLISHED
+              : tx.status;
 
         updateMultisigTx({ ...tx, status }).then(() => {
           console.log(
@@ -177,7 +184,7 @@ export const useMultisigTx = ({ addTask }: Props): IMultisigTxService => {
     const query = () => {
       try {
         return getMultisigTxs(where);
-      } catch (error) {
+      } catch {
         console.warn('Error trying to get multisig transactions');
 
         return Promise.resolve([]);
@@ -191,7 +198,7 @@ export const useMultisigTx = ({ addTask }: Props): IMultisigTxService => {
     const query = () => {
       try {
         return getAccountMultisigTxs(accountIds);
-      } catch (error) {
+      } catch {
         console.warn('Error trying to get multisig transactions');
 
         return Promise.resolve([]);

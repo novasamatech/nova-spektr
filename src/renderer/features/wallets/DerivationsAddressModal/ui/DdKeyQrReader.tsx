@@ -2,20 +2,20 @@ import { hexToU8a, isHex } from '@polkadot/util';
 import { decodeAddress, encodeAddress, ethereumEncode } from '@polkadot/util-crypto';
 import { useState } from 'react';
 
-import { Icon, Loader, Button, CaptionText, FootnoteText, Select, SmallTitleText } from '@shared/ui';
-import { DropdownOption, DropdownResult } from '@shared/ui/types';
 import { useI18n } from '@app/providers';
+import { CryptoType } from '@shared/core';
 import { cnTw } from '@shared/lib/utils';
+import { Button, CaptionText, FootnoteText, Icon, Loader, Select, SmallTitleText } from '@shared/ui';
+import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
 import {
-  DdAddressInfoDecoded,
-  VideoInput,
-  DdSeedInfo,
-  ErrorObject,
+  type DdAddressInfoDecoded,
+  type DdSeedInfo,
+  type ErrorObject,
   QrError,
   QrReader,
+  type VideoInput,
   WhiteTextButtonStyle,
 } from '@entities/transaction';
-import { CryptoType } from '@shared/core';
 
 const enum CameraState {
   ACTIVE,
@@ -117,7 +117,7 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
 
       setIsScanComplete(true);
       setTimeout(() => onResult(derivations), RESULT_DELAY);
-    } catch (error) {
+    } catch {
       setCameraState(CameraState.INVALID_ERROR);
       resetCamera();
     }
@@ -137,15 +137,15 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
 
   if (isCameraError) {
     return (
-      <div className="flex flex-col justify-center items-center w-full h-full">
-        <div className="flex flex-col items-center justify-center text-center w-full h-full">
+      <div className="flex h-full w-full flex-col items-center justify-center">
+        <div className="flex h-full w-full flex-col items-center justify-center text-center">
           {cameraState === CameraState.INVALID_ERROR && (
             <>
               <Icon className="text-alert" name="warnCutout" size={70} />
-              <p className="text-neutral text-xl leading-6 font-semibold mt-5">
+              <p className="mt-5 text-xl font-semibold leading-6 text-neutral">
                 {t('onboarding.paritySigner.wrongQRCodeLabel')}
               </p>
-              <p className="text-neutral-variant text-sm max-w-[395px]">
+              <p className="max-w-[395px] text-sm text-neutral-variant">
                 {t('onboarding.paritySigner.wrongQRCodeDescription')}
               </p>
             </>
@@ -153,39 +153,39 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
           {cameraState === CameraState.UNKNOWN_ERROR && (
             <>
               <Icon className="text-alert" name="warnCutout" size={70} />
-              <p className="text-neutral text-xl leading-6 font-semibold mt-5">
+              <p className="mt-5 text-xl font-semibold leading-6 text-neutral">
                 {t('onboarding.paritySigner.notWorkingLabel')}
               </p>
-              <p className="text-neutral-variant text-sm">{t('onboarding.paritySigner.notWorkingDescription')}</p>
+              <p className="text-sm text-neutral-variant">{t('onboarding.paritySigner.notWorkingDescription')}</p>
             </>
           )}
           {cameraState === CameraState.DECODE_ERROR && (
             <>
               <Icon className="text-alert" name="warnCutout" size={70} />
-              <p className="text-neutral text-xl leading-6 font-semibold mt-5">
+              <p className="mt-5 text-xl font-semibold leading-6 text-neutral">
                 {t('onboarding.paritySigner.decodeErrorLabel')}
               </p>
-              <p className="text-neutral-variant text-sm">{t('onboarding.paritySigner.decodeErrorDescription')}</p>
+              <p className="text-sm text-neutral-variant">{t('onboarding.paritySigner.decodeErrorDescription')}</p>
             </>
           )}
           {cameraState === CameraState.DENY_ERROR && (
             <>
               <Icon className="text-alert" name="warnCutout" size={70} />
-              <p className="text-neutral text-xl leading-6 font-semibold mt-5">
+              <p className="mt-5 text-xl font-semibold leading-6 text-neutral">
                 {t('onboarding.paritySigner.accessDeniedLabel')}
               </p>
-              <p className="text-neutral-variant text-sm">{t('onboarding.paritySigner.accessDeniedDescription')}</p>
+              <p className="text-sm text-neutral-variant">{t('onboarding.paritySigner.accessDeniedDescription')}</p>
             </>
           )}
         </div>
 
         {[CameraState.UNKNOWN_ERROR, CameraState.DENY_ERROR, CameraState.DECODE_ERROR].includes(cameraState) && (
-          <Button className="w-max mb-5" onClick={onRetryCamera}>
+          <Button className="mb-5 w-max" onClick={onRetryCamera}>
             {t('onboarding.paritySigner.tryAgainButton')}
           </Button>
         )}
         {cameraState === CameraState.INVALID_ERROR && (
-          <Button className="w-max mb-5" onClick={onRetryCamera}>
+          <Button className="mb-5 w-max" onClick={onRetryCamera}>
             {t('onboarding.paritySigner.scanAgainButton')}
           </Button>
         )}
@@ -198,9 +198,9 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
   return (
     <>
       {cameraState === CameraState.LOADING && (
-        <div className="flex flex-col items-center w-full h-[288px]">
-          <div className="relative flex items-center justify-center w-full h-full">
-            <p className="absolute flex items-center gap-x-2.5 text-shade-40 font-semibold pb-3.5">
+        <div className="flex h-[288px] w-full flex-col items-center">
+          <div className="relative flex h-full w-full items-center justify-center">
+            <p className="absolute flex items-center gap-x-2.5 pb-3.5 font-semibold text-shade-40">
               <Loader color="primary" />
               {t('onboarding.paritySigner.startCameraLabel')}
             </p>
@@ -217,7 +217,7 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
           <SmallTitleText
             as="h3"
             align="center"
-            className={cnTw('absolute w-full mt-4 z-10', isCameraOn && 'text-white')}
+            className={cnTw('absolute z-10 mt-4 w-full', isCameraOn && 'text-white')}
           >
             {t('onboarding.vault.scanTitle')}
           </SmallTitleText>
@@ -226,7 +226,7 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
             cameraId={activeCamera?.value}
             isDynamicDerivations
             bgVideo
-            className="relative top-[-24px] scale-y-[1.125] -scale-x-[1.125]"
+            className="relative top-[-24px] -scale-x-[1.125] scale-y-[1.125]"
             wrapperClassName="translate-y-[-84px]"
             onStart={() => setCameraState(CameraState.ACTIVE)}
             onCameraList={onCameraList}
@@ -235,7 +235,7 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
             onError={onError}
           />
 
-          <div className="h-8.5 w-full flex justify-center z-10 absolute bottom-[138px]">
+          <div className="absolute bottom-[138px] z-10 flex h-8.5 w-full justify-center">
             {availableCameras && availableCameras.length > 1 && (
               <Select
                 theme="dark"
@@ -248,18 +248,18 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
             )}
           </div>
 
-          <div className="absolute inset-0 flex justify-center w-full h-full mt-[58px]">
+          <div className="absolute inset-0 mt-[58px] flex h-full w-full justify-center">
             {isScanComplete ? (
               <>
-                <div className="backdrop-blur-sm rounded-2lg after:absolute after:inset-0 after:bg-white/50" />
+                <div className="rounded-2lg backdrop-blur-sm after:absolute after:inset-0 after:bg-white/50" />
                 <Icon size={100} name="checkmarkCutout" className="text-success" />
               </>
             ) : (
-              <Icon name="qrFrame" size={240} className="text-white z-20" />
+              <Icon name="qrFrame" size={240} className="z-20 text-white" />
             )}
           </div>
 
-          <footer className="flex w-full justify-between items-center h-[66px] px-5 z-10 absolute bottom-0">
+          <footer className="absolute bottom-0 z-10 flex h-[66px] w-full items-center justify-between px-5">
             <Button
               variant="text"
               className={cnTw('h-6.5 px-4', isCameraOn ? WhiteTextButtonStyle : '')}
@@ -269,11 +269,11 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
             </Button>
 
             {total > 1 && (
-              <div className="flex items-center gap-x-2 z-10 p-1.5 pl-3 rounded-2xl bg-black-background">
+              <div className="z-10 flex items-center gap-x-2 rounded-2xl bg-black-background p-1.5 pl-3">
                 <FootnoteText className="text-text-tertiary">{t('signing.parsingLabel')}</FootnoteText>
                 <CaptionText
                   as="span"
-                  className="bg-label-background-gray text-white uppercase px-2 py-1 rounded-[26px]"
+                  className="rounded-[26px] bg-label-background-gray px-2 py-1 uppercase text-white"
                 >
                   {t('signing.parsingCount', { current: decoded, total: total })}
                 </CaptionText>

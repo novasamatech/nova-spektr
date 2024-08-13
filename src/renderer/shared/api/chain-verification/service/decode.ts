@@ -1,19 +1,19 @@
 /* eslint-disable no-bitwise */
-import { blake2AsU8a } from '@polkadot/util-crypto';
 import { u8aToHex } from '@polkadot/util';
+import { blake2AsU8a } from '@polkadot/util-crypto';
 
-import { Node } from '../lib/types';
-import { keyLEToNibbles, getNodeType } from '../lib/utils';
 import {
-  NodeType,
-  VARIANTS,
-  LEAF_VARIANT,
   BRANCH_VARIANT,
   BRANCH_WITH_VALUE_VARIANT,
+  HASH_LENGTH,
   HEADER_MASK,
   KEY_LENGTH_MASK,
-  HASH_LENGTH,
+  LEAF_VARIANT,
+  NodeType,
+  VARIANTS,
 } from '../lib/constants';
+import { type Node } from '../lib/types';
+import { getNodeType, keyLEToNibbles } from '../lib/utils';
 
 const decodeHeaderByte = (header: number) => {
   // variants is a slice of all variants sorted in ascending
@@ -185,14 +185,10 @@ const decode = (reader: Uint8Array): Node => {
 };
 
 const loadProof = (proofHashToNode: Record<string, Node>, branch: Node | undefined) => {
-  if (!branch || getNodeType(branch) !== NodeType.BRANCH) {
-    return;
-  }
+  if (!branch || getNodeType(branch) !== NodeType.BRANCH) return;
 
   branch.children.forEach((child, i) => {
-    if (child === null) {
-      return;
-    }
+    if (child === null) return;
 
     const proofHash = u8aToHex(child.hashDigest);
     const node = proofHashToNode[proofHash];
@@ -206,9 +202,11 @@ const loadProof = (proofHashToNode: Record<string, Node>, branch: Node | undefin
 
 /**
  * Get decoded trie root from proof encoded nodes
- * @param proofEncodedNodes - proof encoded nodes from parachain
- * @param root - state root from relay chain
- * @return {Object}
+ *
+ * @param proofEncodedNodes - Proof encoded nodes from parachain
+ * @param root - State root from relay chain
+ *
+ * @returns {Object}
  */
 export const buildTrie = (proofEncodedNodes: Uint8Array[], root: Uint8Array): Node => {
   if (proofEncodedNodes.length === 0) {

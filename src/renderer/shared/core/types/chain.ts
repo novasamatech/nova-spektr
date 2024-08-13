@@ -1,5 +1,5 @@
-import type { Asset } from './asset';
-import type { ChainId, HexString } from './general';
+import { type Asset } from './asset';
+import { type ChainId, type HexString } from './general';
 
 export type Chain = {
   chainId: ChainId;
@@ -13,7 +13,12 @@ export type Chain = {
   addressPrefix: number;
   externalApi?: Record<ExternalType, ExternalValue[]>;
   options?: ChainOptions[];
+  additional?: Record<AdditionalType, `0x${string}`>;
 };
+
+export const enum AdditionalType {
+  IDENTITY_CHAIN = 'identityChain',
+}
 
 export const enum ChainOptions {
   TESTNET = 'testnet',
@@ -48,5 +53,6 @@ export const enum ExternalType {
   CROWDLOANS = 'crowdloans',
   PROXY = 'proxy',
   MULTISIG = 'multisig',
+  DELEGATIONS = 'governance-delegations',
 }
 type HistoryType = 'subquery' | 'github';

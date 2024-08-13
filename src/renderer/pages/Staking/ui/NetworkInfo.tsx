@@ -1,17 +1,17 @@
-import { PropsWithChildren, useEffect, useState } from 'react';
 import { BN, BN_ZERO } from '@polkadot/util';
+import { type PropsWithChildren, useEffect, useState } from 'react';
 
-import { Select, FootnoteText, Plate, IconButton, Shimmering } from '@shared/ui';
-import { DropdownOption, DropdownResult } from '@shared/ui/types';
-import { getRelaychainAsset } from '@shared/lib/utils';
-import { chainsService } from '@shared/api/network';
-import { settingsStorage } from '@entities/settings';
-import { ChainTitle } from '@entities/chain';
-import { useToggle } from '@shared/lib/hooks';
 import { useI18n } from '@app/providers';
+import { chainsService } from '@shared/api/network';
+import { type Chain } from '@shared/core';
+import { useToggle } from '@shared/lib/hooks';
+import { getRelaychainAsset } from '@shared/lib/utils';
+import { FootnoteText, IconButton, Plate, Select, Shimmering } from '@shared/ui';
+import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
 import { AssetBalance } from '@entities/asset';
-import type { Chain } from '@shared/core';
+import { ChainTitle } from '@entities/chain';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
+import { settingsStorage } from '@entities/settings';
 
 const getTotal = (values: string[]): BN => {
   return values.reduce((acc, value) => acc.add(new BN(value || 0)), BN_ZERO);
@@ -86,7 +86,7 @@ export const NetworkInfo = ({
   ];
 
   return (
-    <Plate className="flex flex-col gap-y-3 w-full">
+    <Plate className="flex w-full flex-col gap-y-3">
       <div className="grid grid-cols-[178px,repeat(2,122px),28px] items-center gap-x-6">
         <div className="flex flex-col gap-y-2">
           <FootnoteText className="text-text-secondary">{t('staking.overview.networkLabel')}</FootnoteText>
@@ -111,7 +111,7 @@ export const NetworkInfo = ({
           ) : (
             <div key={title} className="text-left">
               <FootnoteText className="text-text-secondary">{title}</FootnoteText>
-              <AssetBalance value={amount.toString()} asset={asset} className="text-small-title font-manrope" />
+              <AssetBalance value={amount.toString()} asset={asset} className="font-manrope text-small-title" />
               <AssetFiatBalance amount={amount.toString()} asset={asset} />
             </div>
           ),
@@ -121,7 +121,7 @@ export const NetworkInfo = ({
 
       {isChildrenShown && (
         <>
-          <hr className="border-divider -mx-3" />
+          <hr className="-mx-3 border-divider" />
           {children}
         </>
       )}

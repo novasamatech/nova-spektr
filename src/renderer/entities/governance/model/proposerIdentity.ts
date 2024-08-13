@@ -2,9 +2,11 @@ import { type ApiPromise } from '@polkadot/api';
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
-import { type Address, Chain, type ChainId, type Identity, type Referendum } from '@shared/core';
-import { referendumService } from '@entities/governance';
+import { AdditionalType } from '@/shared/core/types/chain';
+import { type Address, type Chain, type ChainId, type Identity, type Referendum } from '@shared/core';
+import { networkModel } from '@/entities/network';
 import { proposersService } from '../lib/proposersService';
+import { referendumService } from '../lib/referendumService';
 
 const $proposers = createStore<Record<ChainId, Record<Address, Identity>>>({});
 
@@ -23,10 +25,13 @@ const requestProposersFx = createEffect(({ api, addresses }: GetProposersParams)
 
 sample({
   clock: requestReferendumProposer,
-  filter: ({ referendum }) => referendumService.isOngoing(referendum),
-  fn: ({ api, chain, referendum }) => {
+  source: { apis: networkModel.$apis },
+  filter: (_, { referendum }) => referendumService.isOngoing(referendum),
+  fn: ({ apis }, { api, chain, referendum }) => {
+    const identityChainId = chain?.additional?.[AdditionalType.IDENTITY_CHAIN];
+
     return {
-      api: api,
+      api: identityChainId ? apis[identityChainId] : api!,
       chain,
       addresses:
         referendumService.isOngoing(referendum) && referendum.submissionDeposit
@@ -34,11 +39,22 @@ sample({
           : [],
     };
   },
-  target: requestProposersFx,
+  target: requestProposers,
 });
 
 sample({
   clock: requestProposers,
+  source: $proposers,
+  fn: (proposers, { api, chain, addresses }) => {
+    const chainProposers = proposers[chain.chainId] ?? {};
+    const filteredAddresses = addresses.filter((a) => !(a in chainProposers));
+
+    return {
+      api,
+      chain,
+      addresses: filteredAddresses,
+    };
+  },
   target: requestProposersFx,
 });
 

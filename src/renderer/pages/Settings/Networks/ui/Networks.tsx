@@ -1,33 +1,33 @@
-import { useNavigate } from 'react-router-dom';
-import { Trans } from 'react-i18next';
 import { useUnit } from 'effector-react';
+import { Trans } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
-import { useI18n, useConfirmContext } from '@app/providers';
+import { useConfirmContext, useI18n } from '@app/providers';
+import { type ChainId, type RpcNode } from '@shared/core';
+import { ConnectionType } from '@shared/core';
+import { useModalClose } from '@shared/lib/hooks';
 import { Paths } from '@shared/routes';
 import { BaseModal, InfoLink } from '@shared/ui';
-import { useModalClose } from '@shared/lib/hooks';
-import type { RpcNode, ChainId } from '@shared/core';
-import { ConnectionType } from '@shared/core';
-import { networkModel, ExtendedChain, networkUtils } from '@entities/network';
-import { SelectorPayload } from '@features/network/NetworkSelector';
-import { networksOverviewModel } from '../model/networks-overview-model';
+import { type ExtendedChain, networkModel, networkUtils } from '@entities/network';
 import {
-  EmptyNetworks,
-  NetworkList,
-  InactiveNetwork,
   ActiveNetwork,
-  NetworksFilter,
-  NetworkSelector,
   AddCustomRpcModal,
   EditCustomRpcModal,
+  EmptyNetworks,
+  InactiveNetwork,
+  NetworkList,
+  NetworkSelector,
+  NetworksFilter,
   activeNetworksModel,
-  removeCustomRpcModel,
-  inactiveNetworksModel,
-  networksFilterModel,
-  networkSelectorModel,
   addCustomRpcModel,
   editCustomRpcModel,
+  inactiveNetworksModel,
+  networkSelectorModel,
+  networksFilterModel,
+  removeCustomRpcModel,
 } from '@features/network';
+import { type SelectorPayload } from '@features/network/NetworkSelector';
+import { networksOverviewModel } from '../model/networks-overview-model';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -113,7 +113,9 @@ export const Networks = () => {
     return async (type: ConnectionType, node?: RpcNode): Promise<void> => {
       if (networkUtils.isLightClientConnection(connection)) {
         const proceed = await confirmDisableLightClient(name);
-        if (!proceed) return;
+        if (!proceed) {
+          return;
+        }
       }
 
       if (type === ConnectionType.LIGHT_CLIENT) {
@@ -121,7 +123,9 @@ export const Networks = () => {
 
         if (lightClientsAmount >= MAX_LIGHT_CLIENTS) {
           const proceed = await confirmEnableLightClient();
-          if (!proceed) return;
+          if (!proceed) {
+            return;
+          }
         }
       }
 
@@ -183,7 +187,7 @@ export const Networks = () => {
     >
       <NetworksFilter className="mx-5" />
 
-      <div className="flex flex-col gap-y-4 px-3 pb-4 pt-1 mt-5 h-[454px] overflow-y-auto">
+      <div className="mt-5 flex h-[454px] flex-col gap-y-4 overflow-y-auto px-3 pb-4 pt-1">
         <NetworkList
           query={filterQuery}
           title={t('settings.networks.disabledNetworksLabel')}

@@ -1,12 +1,12 @@
 import noop from 'lodash/noop';
 
-import { Chain, ProxyAccount } from '@shared/core';
-import { ProxyAccount as ProxyAccountComponent } from '@entities/proxy';
+import { useI18n } from '@app/providers';
+import { type Chain, type ProxyAccount } from '@shared/core';
 import { copyToClipboard, toAddress } from '@shared/lib/utils';
 import { DropdownIconButton, HelpText, IconButton } from '@shared/ui';
+import { type DropdownIconButtonOption } from '@shared/ui/types';
+import { ProxyAccount as ProxyAccountComponent } from '@entities/proxy';
 import { ExplorersPopover } from '@entities/wallet';
-import { useI18n } from '@app/providers';
-import { DropdownIconButtonOption } from '@shared/ui/types';
 
 type Props = {
   account: ProxyAccount;
@@ -44,12 +44,12 @@ export const ProxyAccountWithActions = ({ account, chain, canCreateProxy, onRemo
                 address={account.accountId}
                 explorers={chain.explorers}
                 addressPrefix={chain.addressPrefix}
-                className="-mt-10 -mr-1"
+                className="-mr-1 -mt-10"
                 button={<DropdownIconButton.Option option={openInfoAction} />}
               >
                 <ExplorersPopover.Group title={t('walletDetails.common.proxiedAddressTitle')}>
                   <div className="flex items-center gap-x-2">
-                    <HelpText className="text-text-secondary break-all">{proxiedAddress}</HelpText>
+                    <HelpText className="break-all text-text-secondary">{proxiedAddress}</HelpText>
                     <IconButton
                       className="shrink-0"
                       name="copy"

@@ -1,9 +1,9 @@
-import { useState, ChangeEvent, ComponentPropsWithoutRef, forwardRef } from 'react';
+import { type ChangeEvent, type ComponentPropsWithoutRef, forwardRef, useState } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
-import { HTMLInputFileProps } from '../common/types';
 import { Icon } from '../../Icon/Icon';
 import { FootnoteText, TextBase } from '../../Typography';
+import { type HTMLInputFileProps } from '../common/types';
 
 interface Props extends Pick<ComponentPropsWithoutRef<'input'>, HTMLInputFileProps> {
   invalid?: boolean;
@@ -32,7 +32,7 @@ export const InputFile = forwardRef<HTMLInputElement, Props>(
     return (
       <label
         className={cnTw(
-          'h-full p-3 cursor-pointer flex items-center justify-center rounded border border-dashed border-filter-border active:border-active-container-border',
+          'flex h-full cursor-pointer items-center justify-center rounded border border-dashed border-filter-border p-3 active:border-active-container-border',
           invalid && 'border-filter-border-negative',
           className,
         )}

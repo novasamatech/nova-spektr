@@ -1,6 +1,6 @@
-import { Icon, BodyText } from '@shared/ui';
 import { useI18n } from '@app/providers';
-import type { MultisigAccount } from '@shared/core';
+import { type MultisigAccount } from '@shared/core';
+import { BodyText, Icon } from '@shared/ui';
 
 type Props = {
   multisigAccount?: MultisigAccount;
@@ -17,9 +17,9 @@ const EmptyOperations = ({ multisigAccount, isEmptyFromFilters }: Props) => {
     : 'operations.noOperationsWalletNotMulti';
 
   return (
-    <div className="flex flex-col items-center justify-center gap-y-8 flex-1 w-full">
+    <div className="flex w-full flex-1 flex-col items-center justify-center gap-y-8">
       <Icon as="img" name="emptyList" alt={t('operations.noOperationsDescription')} size={178} />
-      <BodyText align="center" className="text-text-tertiary max-w-[340px]">
+      <BodyText align="center" className="max-w-[340px] text-text-tertiary">
         {t(emptyText)}
       </BodyText>
     </div>

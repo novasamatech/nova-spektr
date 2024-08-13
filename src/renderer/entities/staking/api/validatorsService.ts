@@ -1,14 +1,14 @@
-import merge from 'lodash/merge';
-import { ApiPromise } from '@polkadot/api';
+import { type ApiPromise } from '@polkadot/api';
+import { type Data, type Option } from '@polkadot/types';
+import { type AccountId32 } from '@polkadot/types/interfaces';
+import { type PalletIdentityRegistration } from '@polkadot/types/lookup';
 import { u8aToString } from '@polkadot/util';
-import { Data, Option } from '@polkadot/types';
-import { PalletIdentityRegistration } from '@polkadot/types/lookup';
-import { AccountId32 } from '@polkadot/types/interfaces';
+import merge from 'lodash/merge';
 
-import type { Address, EraIndex, Identity, SubIdentity, Validator } from '@shared/core';
-import { stakingUtils } from '../lib/staking-utils';
+import { type Address, type EraIndex, type Identity, type SubIdentity, type Validator } from '@shared/core';
 import { DEFAULT_MAX_NOMINATORS, KUSAMA_MAX_NOMINATORS } from '../lib/constants';
-import { ValidatorMap } from '../lib/types';
+import { stakingUtils } from '../lib/staking-utils';
+import { type ValidatorMap } from '../lib/types';
 
 export const validatorsService = {
   getValidatorsWithInfo,
@@ -43,14 +43,16 @@ async function getValidatorsWithInfo(api: ApiPromise, era: EraIndex, isLightClie
   return merge(mergedValidators, identity, slashes);
 }
 
-function getValidatorFunction(api: ApiPromise): Function {
+function getValidatorFunction(api: ApiPromise): (era: EraIndex) => Promise<any> {
   return isOldRuntimeForValidators(api)
     ? (era: EraIndex) => getValidatorsStake_OLD(api, era)
     : (era: EraIndex) => getValidatorsStake(api, era);
 }
 
 /**
- * Gets Validators information including nominators that will receive rewards (runtime pre1_4_0)
+ * Gets Validators information including nominators that will receive rewards
+ * (runtime pre1_4_0)
+ *
  * @deprecated Will become deprecated after runtime upgrade for DOT/KSM
  */
 async function getValidatorsStake_OLD(api: ApiPromise, era: EraIndex): Promise<ValidatorMap> {
@@ -134,7 +136,7 @@ function getDefaultValidatorsAmount(api: ApiPromise): number {
 
 function getMaxValidators(api: ApiPromise): number {
   if (api.consts.staking.maxNominations) {
-    // @ts-ignore
+    // @ts-expect-error TODO fix
     return api.consts.staking.maxNominations.toNumber();
   }
 
@@ -226,6 +228,7 @@ async function getParentIdentities(
     const identities = wrappedIdentities.reduce<Record<Address, Option<PalletIdentityRegistration>>>(
       (acc, [storageKey, identity]) => {
         const address = storageKey.args[0].toString();
+        // @ts-expect-error TODO fix
         acc[address] = identity;
 
         return acc;
@@ -303,7 +306,7 @@ function isOldRuntimeForValidators(api: ApiPromise): boolean {
 }
 
 function getMaxNominatorRewarded(api: ApiPromise): number {
-  // @ts-ignore
+  // @ts-expect-error TODO fix
   return api.consts.staking.maxNominatorRewardedPerValidator.toNumber();
 }
 

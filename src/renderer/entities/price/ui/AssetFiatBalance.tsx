@@ -1,17 +1,18 @@
+import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
-import BN from 'bignumber.js';
 
-import { Shimmering } from '@shared/ui';
-import { priceProviderModel } from '../model/price-provider-model';
-import { currencyModel } from '../model/currency-model';
-import { formatFiatBalance, ZERO_BALANCE } from '@shared/lib/utils';
-import { FiatBalance } from './FiatBalance';
 import { useI18n } from '@app/providers';
-import type { Asset, AssetByChains } from '@shared/core';
+import { type Asset, type AssetByChains } from '@shared/core';
+import { ZERO_BALANCE, formatFiatBalance } from '@shared/lib/utils';
+import { Shimmering } from '@shared/ui';
+import { currencyModel } from '../model/currency-model';
+import { priceProviderModel } from '../model/price-provider-model';
+
+import { FiatBalance } from './FiatBalance';
 
 type Props = {
   asset: Asset | AssetByChains;
-  amount?: string;
+  amount?: BN | string;
   className?: string;
 };
 
@@ -22,18 +23,24 @@ export const AssetFiatBalance = ({ asset, amount, className }: Props) => {
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const prices = useUnit(priceProviderModel.$assetsPrices);
 
-  if (!fiatFlag) return null;
+  if (!fiatFlag) {
+    return null;
+  }
 
   if (!asset.priceId || !amount) {
     return <FiatBalance amount={ZERO_BALANCE} className={className} />;
   }
 
+  const amountBn = BN.isBN(amount) ? amount : new BN(amount);
+
   const price =
     currency && prices && asset.priceId && prices[asset.priceId] && prices[asset.priceId][currency.coingeckoId];
 
-  if (!price) return <Shimmering width={56} height={18} />;
+  if (!price) {
+    return <Shimmering width={56} height={18} />;
+  }
 
-  const priceToShow = new BN(price.price).multipliedBy(new BN(amount));
+  const priceToShow = new BN(price.price).imul(amountBn);
 
   const { value: formattedValue, suffix, decimalPlaces } = formatFiatBalance(priceToShow.toString(), asset.precision);
 

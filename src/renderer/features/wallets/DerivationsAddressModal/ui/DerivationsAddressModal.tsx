@@ -1,13 +1,14 @@
 import keyBy from 'lodash/keyBy';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
-import { BaseModal, Button, InfoLink, SmallTitleText } from '@shared/ui';
 import { useI18n } from '@app/providers';
+import { type AccountId, type ChainAccount, type DraftAccount, type ShardAccount } from '@shared/core';
 import { toAddress } from '@shared/lib/utils';
+import { BaseModal, Button, InfoLink, SmallTitleText } from '@shared/ui';
+import { type DdAddressInfoDecoded, QrDerivationsGenerator, TROUBLESHOOTING_URL } from '@entities/transaction';
 import { derivationAddressUtils } from '../lib/utils';
+
 import { DdKeyQrReader } from './DdKeyQrReader';
-import type { AccountId, DraftAccount, ShardAccount, ChainAccount } from '@shared/core';
-import { DdAddressInfoDecoded, QrDerivationsGenerator, TROUBLESHOOTING_URL } from '@entities/transaction';
 
 const enum Step {
   GENERATE_QR,
@@ -55,10 +56,10 @@ export const DerivationsAddressModal = ({ isOpen, rootAccountId, keys, onClose, 
             address={toAddress(rootAccountId, { prefix: 1 })}
             derivations={derivationAddressUtils.createDerivationsRequest(keys)}
           />
-          <InfoLink url={TROUBLESHOOTING_URL} className="mt-10.5 mb-8.5">
+          <InfoLink url={TROUBLESHOOTING_URL} className="mb-8.5 mt-10.5">
             {t('signing.troubleshootingLink')}
           </InfoLink>
-          <div className="flex w-full justify-between mt-3 pl-2">
+          <div className="mt-3 flex w-full justify-between pl-2">
             <Button variant="text" onClick={onClose}>
               {t('operation.goBackButton')}
             </Button>

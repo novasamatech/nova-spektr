@@ -1,5 +1,6 @@
-import { DurationFormat } from './types';
 import { addLeadingZero } from '@shared/lib/utils';
+
+import { DurationFormat } from './types';
 
 export const timeUtils = {
   secondsToDuration,

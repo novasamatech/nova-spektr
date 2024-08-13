@@ -1,26 +1,10 @@
-import { useEffect } from 'react';
 import { useUnit } from 'effector-react';
+import { useEffect } from 'react';
 
-import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { WalletCardLg, permissionUtils } from '@entities/wallet';
 import { useI18n } from '@app/providers';
 import { chainsService } from '@shared/api/network';
-import { walletConnectUtils } from '@entities/walletConnect';
-import type { WalletConnectGroup } from '@shared/core';
-import { wcDetailsModel } from '../../model/wc-details-model';
-import { wcDetailsUtils, walletDetailsUtils } from '../../lib/utils';
-import { ForgetStep } from '../../lib/constants';
-import { Animation } from '@shared/ui/Animation/Animation';
-import { IconNames } from '@shared/ui/Icon/data';
-import { RenameWalletModal } from '@features/wallets/RenameWallet';
-import { forgetWalletModel } from '@features/wallets/ForgetWallet';
-import { TabItem } from '@shared/ui/types';
-import { addProxyModel, AddProxy } from '@widgets/AddProxyModal';
-import { walletProviderModel } from '../../model/wallet-provider-model';
-import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
-import { ProxiesList } from '../components/ProxiesList';
-import { NoProxiesAction } from '../components/NoProxiesAction';
-import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
+import { type WalletConnectGroup } from '@shared/core';
+import { useModalClose, useToggle } from '@shared/lib/hooks';
 import {
   BaseModal,
   Button,
@@ -31,6 +15,22 @@ import {
   StatusModal,
   Tabs,
 } from '@shared/ui';
+import { Animation } from '@shared/ui/Animation/Animation';
+import { type IconNames } from '@shared/ui/Icon/data';
+import { type TabItem } from '@shared/ui/types';
+import { WalletCardLg, permissionUtils } from '@entities/wallet';
+import { walletConnectUtils } from '@entities/walletConnect';
+import { forgetWalletModel } from '@features/wallets/ForgetWallet';
+import { RenameWalletModal } from '@features/wallets/RenameWallet';
+import { AddProxy, addProxyModel } from '@widgets/AddProxyModal';
+import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
+import { ForgetStep } from '../../lib/constants';
+import { walletDetailsUtils, wcDetailsUtils } from '../../lib/utils';
+import { walletProviderModel } from '../../model/wallet-provider-model';
+import { wcDetailsModel } from '../../model/wc-details-model';
+import { NoProxiesAction } from '../components/NoProxiesAction';
+import { ProxiesList } from '../components/ProxiesList';
+import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
 
 type Props = {
   wallet: WalletConnectGroup;
@@ -122,10 +122,10 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList className="h-[379px] mt-6" canCreateProxy={canCreateProxy} />
+        <ProxiesList className="mt-6 h-[379px]" canCreateProxy={canCreateProxy} />
       ) : (
         <NoProxiesAction
-          className="h-[379px] mt-6"
+          className="mt-6 h-[379px]"
           canCreateProxy={canCreateProxy}
           onAddProxy={addProxyModel.events.flowStarted}
         />
@@ -143,11 +143,11 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
       isOpen={isModalOpen}
       onClose={closeModal}
     >
-      <div className="flex flex-col gap-y-4 h-full w-full">
-        <div className="py-6 px-5 border-b border-divider">
+      <div className="flex h-full w-full flex-col gap-y-4">
+        <div className="border-b border-divider px-5 py-6">
           <WalletCardLg full wallet={wallet} />
         </div>
-        <div className="px-3 flex-1">
+        <div className="flex-1 px-3">
           <Tabs
             items={tabItems}
             panelClassName=""

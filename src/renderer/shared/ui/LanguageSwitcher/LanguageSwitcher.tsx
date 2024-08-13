@@ -1,7 +1,7 @@
 import { Listbox } from '@headlessui/react';
 
+import { type LanguageItem, type SupportedLocale } from '@shared/api/translation/lib/types';
 import { cnTw } from '@shared/lib/utils';
-import { LanguageItem, SupportedLocale } from '@shared/api/translation/lib/types';
 import { Icon } from '../Icon/Icon';
 
 type Props = {
@@ -23,10 +23,10 @@ export const LanguageSwitcher = ({ className, languages, selected, short, onChan
       <Listbox value={selectedLanguage.value} onChange={onChange}>
         <Listbox.Button
           className={cnTw(
-            'h-7.5 pr-1 pl-2.5 select-none',
+            'h-7.5 select-none pl-2.5 pr-1',
             'hover:bg-primary hover:text-white',
             'bg-shade-8 text-neutral-variant',
-            'rounded-l-full rounded-r-full flex justify-between items-center gap-x-2.5',
+            'flex items-center justify-between gap-x-2.5 rounded-l-full rounded-r-full',
           )}
           data-testid="language-switcher-button"
         >
@@ -34,15 +34,15 @@ export const LanguageSwitcher = ({ className, languages, selected, short, onChan
           <Icon className="rounded-full border border-white" name={selectedLanguage.value} />
         </Listbox.Button>
         <Listbox.Options
-          className={cnTw('absolute flex flex-col gap-1', top ? 'bottom-0 top-auto' : 'top-0 bottom-auto')}
+          className={cnTw('absolute flex flex-col gap-1', top ? 'bottom-0 top-auto' : 'bottom-auto top-0')}
         >
           {languagesList.map((language) => (
             <Listbox.Option key={language.value} value={language.value}>
               {({ active }) => (
                 <div
                   className={cnTw(
-                    'w-full h-7.5 pr-1 pl-2.5 cursor-pointer select-none',
-                    'rounded-l-full rounded-r-full  flex justify-between items-center gap-x-2.5',
+                    'h-7.5 w-full cursor-pointer select-none pl-2.5 pr-1',
+                    'flex items-center justify-between gap-x-2.5 rounded-l-full rounded-r-full',
                     active ? 'bg-primary text-white' : 'bg-shade-8 text-neutral-variant',
                   )}
                 >

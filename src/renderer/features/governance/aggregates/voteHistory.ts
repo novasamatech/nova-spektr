@@ -1,52 +1,80 @@
 import { combine, createEvent, sample } from 'effector';
 import { createGate } from 'effector-react';
+import { or } from 'patronum';
 
-import { type ReferendumId } from '@shared/core';
-import { voteHistoryModel } from '@entities/governance';
+import { type Referendum, type ReferendumId } from '@shared/core';
+import { referendumService, voteHistoryModel, votingService } from '@entities/governance';
+import { votingListService } from '../lib/votingListService';
 import { networkSelectorModel } from '../model/networkSelector';
-import { proposerIdentityAggregate } from './proposerIdentity';
-import { AggregatedVoteHistory } from '../types/structs';
-import { detailsAggregate } from './details';
+import { votingAssetModel } from '../model/votingAsset';
+import { type AggregatedVoteHistory } from '../types/structs';
+import { votingPowerSorting } from '../utils/votingPowerSorting';
 
-const flow = createGate<{ referendumId: ReferendumId }>();
+import { proposerIdentityAggregate } from './proposerIdentity';
+import { tracksAggregate } from './tracks';
+import { votingAggregate } from './voting';
+
+const flow = createGate<{ referendum: Referendum }>();
+
+const $chainVoteHistory = combine(
+  voteHistoryModel.$voteHistory,
+  networkSelectorModel.$governanceChain,
+  (history, chain) => {
+    if (!chain) return {};
+
+    return history[chain.chainId] ?? {};
+  },
+);
 
 const $voteHistory = combine(
   {
-    history: voteHistoryModel.$voteHistory,
+    voting: votingAggregate.$voting,
+    history: $chainVoteHistory,
     chain: networkSelectorModel.$governanceChain,
     proposers: proposerIdentityAggregate.$proposers,
   },
-  ({ history, proposers, chain }) => {
+  ({ voting, history, proposers, chain }) => {
     if (!chain) {
       return {};
     }
 
-    const referendumsHistory = history[chain.chainId] ?? [];
     const acc: Record<ReferendumId, AggregatedVoteHistory[]> = {};
 
-    for (const [referendumId, historyList] of Object.entries(referendumsHistory)) {
-      acc[referendumId] = historyList.map((history) => {
-        const proposer = proposers[history.voter] ?? null;
+    for (const [referendumId, historyList] of Object.entries(history)) {
+      const votes = votingService.getReferendumVoting(referendumId, voting);
 
-        return {
-          ...history,
-          name: proposer ? proposer.parent.name : null,
-        };
-      });
+      acc[referendumId] = historyList
+        .flatMap(({ voter }) => {
+          const proposer = proposers[voter] ?? null;
+          const vote = votes[voter];
+          if (!vote) {
+            return [];
+          }
+
+          const splitVotes = votingListService.getDecoupledVotesFromVote(referendumId, vote);
+
+          return splitVotes.map((vote) => {
+            return {
+              ...vote,
+              name: proposer ? proposer.parent.name : null,
+            };
+          });
+        })
+        .sort(votingPowerSorting);
     }
 
     return acc;
   },
 );
 
-const requestVoteHistory = createEvent<{ referendumId: ReferendumId }>();
+const requestVoteHistory = createEvent<{ referendum: Referendum }>();
 
 sample({
   clock: requestVoteHistory,
   source: networkSelectorModel.$governanceChain,
   filter: (chain) => !!chain,
-  fn: (chain, { referendumId }) => ({
-    referendumId,
+  fn: (chain, { referendum }) => ({
+    referendum,
     chain: chain!,
   }),
   target: voteHistoryModel.events.requestVoteHistory,
@@ -61,15 +89,25 @@ sample({
 });
 
 sample({
+  clock: voteHistoryModel.events.voteHistoryRequestDone,
+  source: tracksAggregate.$tracks,
+  fn: (tracks, { params, result: history }) => ({
+    addresses: history.map((x) => x.voter),
+    tracks: referendumService.isOngoing(params.referendum) ? [params.referendum.track] : Object.keys(tracks),
+  }),
+  target: votingAggregate.events.requestVoting,
+});
+
+sample({
   clock: flow.open,
   target: requestVoteHistory,
 });
 
 export const voteHistoryAggregate = {
   $voteHistory,
-  $voteHistoryLoading: voteHistoryModel.$voteHistoryLoading,
+  $isLoading: or(voteHistoryModel.$isLoading, votingAggregate.$isLoading),
   $chain: networkSelectorModel.$governanceChain,
-  $votingAssets: detailsAggregate.$votingAssets,
+  $votingAsset: votingAssetModel.$votingAsset,
 
   events: {
     requestVoteHistory,

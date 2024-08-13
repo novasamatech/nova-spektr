@@ -1,16 +1,17 @@
+import type Client from '@walletconnect/sign-client';
+import { type EngineTypes } from '@walletconnect/types';
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { combineEvents } from 'patronum';
-import Client from '@walletconnect/sign-client';
-import { EngineTypes } from '@walletconnect/types';
 
-import { walletConnectModel, type InitReconnectParams } from '@entities/walletConnect';
-import { toAccountId } from '@shared/lib/utils';
 import { chainsService } from '@shared/api/network';
-import { WcAccount, type HexString } from '@shared/core';
+import { type HexString, type WcAccount } from '@shared/core';
+import { toAccountId } from '@shared/lib/utils';
 import { walletModel, walletUtils } from '@entities/wallet';
-import { operationSignModel } from './operation-sign-model';
-import { ReconnectStep } from '../lib/types';
+import { type InitReconnectParams, walletConnectModel } from '@entities/walletConnect';
 import { operationSignUtils } from '../lib/operation-sign-utils';
+import { ReconnectStep } from '../lib/types';
+
+import { operationSignModel } from './operation-sign-model';
 
 type SignParams = {
   client: Client;
@@ -101,7 +102,7 @@ sample({
   },
   fn: ({ wallets, signer, session }) => ({
     accounts: walletUtils.getAccountsBy(wallets, (a) => a.walletId === signer?.walletId),
-    topic: session?.topic!,
+    topic: session!.topic,
   }),
   target: walletConnectModel.events.sessionTopicUpdated,
 });
@@ -117,7 +118,10 @@ sample({
   },
   filter: ({ signer }) => Boolean(signer?.walletId),
   fn: ({ signer, wallets, newAccounts }) => {
-    const { id, ...oldAccountParams } = walletUtils.getAccountsBy(wallets, (a) => a.walletId === signer?.walletId)[0];
+    const { id: _, ...oldAccountParams } = walletUtils.getAccountsBy(
+      wallets,
+      (a) => a.walletId === signer?.walletId,
+    )[0];
 
     const updatedAccounts = newAccounts.map((account) => {
       const [_, chainId, address] = account.split(':');
@@ -131,7 +135,7 @@ sample({
       } as WcAccount;
     });
 
-    return { walletId: signer?.walletId!, accounts: updatedAccounts };
+    return { walletId: signer!.walletId, accounts: updatedAccounts };
   },
   target: walletConnectModel.events.accountsUpdated,
 });

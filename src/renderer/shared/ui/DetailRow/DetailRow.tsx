@@ -1,15 +1,16 @@
-import { PropsWithChildren, ReactNode } from 'react';
+import { type PropsWithChildren, type ReactNode } from 'react';
 
-import { FootnoteText } from '@shared/ui';
 import { cnTw } from '@shared/lib/utils';
+import { FootnoteText } from '../Typography';
 
 type Props = {
   label: ReactNode;
   className?: string;
+  wrapperClassName?: string;
 };
 
-export const DetailRow = ({ label, className, children }: PropsWithChildren<Props>) => (
-  <div className="flex justify-between items-center w-full">
+export const DetailRow = ({ label, className, wrapperClassName, children }: PropsWithChildren<Props>) => (
+  <div className={cnTw('flex w-full items-center justify-between', wrapperClassName)}>
     {typeof label === 'string' ? (
       <FootnoteText as="dt" className="text-text-tertiary">
         {label}
@@ -19,7 +20,7 @@ export const DetailRow = ({ label, className, children }: PropsWithChildren<Prop
     )}
 
     {typeof children === 'string' ? (
-      <FootnoteText as="dd" align="right" className={cnTw('justify-end py-[3px] px-2', className)}>
+      <FootnoteText as="dd" align="right" className={cnTw('justify-end px-2 py-[3px]', className)}>
         {children}
       </FootnoteText>
     ) : (
