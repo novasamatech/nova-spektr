@@ -59,7 +59,7 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onCl
       isOpen={isModalOpen}
       title={t('governance.referendums.referendumTitle', { index: referendum.referendumId })}
       contentClass="min-h-0 h-full w-full bg-main-app-background overflow-y-auto"
-      panelClass="flex flex-col w-[944px] h-[678px]"
+      panelClass="flex flex-col w-[954px] h-[678px]"
       headerClass="pl-5 pr-3 py-4 shrink-0"
       closeButton
       onClose={closeModal}
