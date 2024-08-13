@@ -1,4 +1,3 @@
-import { BN_ZERO } from '@polkadot/util';
 import { useGate, useStoreMap, useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
@@ -34,10 +33,9 @@ export const RevoteDialog = ({ referendum, asset, chain, onClose }: Props) => {
     },
   });
 
-  const amount = vote && votingService.isStandardVote(vote) ? vote.balance : BN_ZERO;
   const conviction = vote && votingService.isStandardVote(vote) ? vote.vote.conviction : 'None';
 
-  useGate(voteModalAggregate.gates.flow, { referendum, amount, conviction });
+  useGate(voteModalAggregate.gates.flow, { referendum, conviction });
 
   const { t } = useI18n();
   const step = useUnit(voteModalAggregate.$step);

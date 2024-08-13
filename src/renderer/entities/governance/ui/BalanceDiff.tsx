@@ -8,13 +8,13 @@ import { DiffValue } from './DiffValue';
 
 type Props = {
   asset: Asset;
-  from: string;
-  to: string;
+  from: string | BN;
+  to: string | BN;
 };
 
 export const BalanceDiff = memo(({ from, to, asset }: Props) => {
-  const fromBN = new BN(from);
-  const toBN = new BN(to);
+  const fromBN = BN.isBN(from) ? from : new BN(from);
+  const toBN = BN.isBN(to) ? to : new BN(to);
   const diff = toBN.sub(fromBN);
 
   return (
