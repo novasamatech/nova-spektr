@@ -41,7 +41,7 @@ jobs:
       - run: npx playwright install --with-deps
         if: steps.playwright-cache.outputs.cache-hit != 'true'
 
-      - name: Run Playwright tests for push event
+      - name: Run Playwright tests
         if: github.event_name != 'schedule'
         run: npx playwright test --grep @regress
 
