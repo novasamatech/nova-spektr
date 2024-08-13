@@ -4,6 +4,7 @@ import { createGate } from 'effector-react';
 import { type Chain, type Referendum } from '@shared/core';
 import { permissionUtils, walletModel } from '@entities/wallet';
 import { descriptionsModel } from '../model/description';
+import { networkSelectorModel } from '../model/networkSelector';
 import { timelineModel } from '../model/timeline';
 import { titleModel } from '../model/title';
 import { votingAssetModel } from '../model/votingAsset';
@@ -36,6 +37,7 @@ export const detailsAggregate = {
   $isTimelinesLoading: timelineModel.$isLoading,
   $isProposersLoading: proposerIdentityAggregate.$isProposersLoading,
   $isDescriptionLoading: descriptionsModel.$isDescriptionLoading,
+  $hasAccount: networkSelectorModel.$hasAccount,
 
   $canVote,
 
