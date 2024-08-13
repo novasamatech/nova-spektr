@@ -36,11 +36,11 @@ export const AddressWithTwoLines = ({
   ...props
 }: Props) => {
   return (
-    <div className={cnTw('flex min-w-0 items-center gap-x-2', className)}>
+    <div className={cnTw('flex w-full min-w-0 items-center gap-x-2', className)}>
       {showIcon && (
         <Identicon theme={iconTheme} address={getAddress(props)} size={size} background={false} canCopy={canCopy} />
       )}
-      <div className="truncate">
+      <div className="w-full truncate">
         {firstLine}
         {secondLine}
       </div>

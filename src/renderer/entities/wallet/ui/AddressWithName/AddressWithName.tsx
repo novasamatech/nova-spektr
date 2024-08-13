@@ -24,7 +24,7 @@ export const AddressWithName = ({
   const typeIsAdaptive = type === 'adaptive';
   const addressToShow = type === 'short' ? toShortAddress(currentAddress, symbols) : currentAddress;
 
-  const nameContent = name && <p className={cnTw('truncate', addressFont, nameFont)}>{name}</p>;
+  const nameContent = name && <p className={cnTw('w-full truncate', addressFont, nameFont)}>{name}</p>;
 
   const addressContent = typeIsAdaptive ? (
     <Truncate className={cnTw(addressFont)} ellipsis="..." start={4} end={4} text={addressToShow} />
@@ -33,12 +33,12 @@ export const AddressWithName = ({
   );
 
   const firstLine = (
-    <div className={cnTw('text-body text-text-primary', addressFont)}>{nameContent || addressContent}</div>
+    <div className={cnTw('w-full text-body text-text-primary', addressFont)}>{nameContent || addressContent}</div>
   );
   const secondLine = nameContent && addressContent && (
-    <div className="text-help-text text-text-tertiary">
+    <div className="w-full text-help-text text-text-tertiary">
       {canCopySubName ? (
-        <div className="flex items-center gap-1">
+        <div className="flex w-full items-center gap-1">
           {addressContent}
           <IconButton name="copy" className="p-0 text-text-tertiary" onClick={() => copyToClipboard(currentAddress)} />
         </div>

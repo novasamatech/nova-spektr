@@ -47,7 +47,7 @@ export const BaseModal = ({
           <Dialog.Content
             style={panelStyle}
             className={cnTw(
-              'w-[440px] transform rounded-lg bg-white text-left align-middle shadow-modal transition-all',
+              'w-modal transform rounded-lg bg-white text-left align-middle shadow-modal transition-all',
               'duration-300 animate-in fade-in zoom-in-95',
               panelClass,
             )}
