@@ -13,37 +13,27 @@ const $isModalOpen = createStore(false);
 const $isDelegationsOpen = createStore(false);
 const $delegate = createStore<DelegateAccount | null>(null);
 
-const $activeTracks = combine(
-  {
-    activeVotes: votingAggregate.$activeWalletVotes,
-  },
-  ({ activeVotes }) => {
-    const activeTracks = new Map<Address, Set<string>>();
+const $activeTracks = votingAggregate.$activeWalletVotes.map((activeVotes) => {
+  const activeTracks: Record<Address, Set<string>> = {};
 
-    Object.entries(activeVotes).forEach(([address, delegations]) => {
-      Object.keys(delegations).forEach((key) => {
-        if (!activeTracks.has(address)) {
-          activeTracks.set(address, new Set());
-        }
+  for (const [address, delegations] of Object.entries(activeVotes)) {
+    for (const key in delegations) {
+      if (!activeTracks[address]) {
+        activeTracks[address] = new Set();
+      }
 
-        activeTracks.get(address)!.add(key);
-      });
-    });
+      activeTracks[address].add(key);
+    }
+  }
 
-    return Object.fromEntries(activeTracks);
-  },
-);
+  return activeTracks;
+});
 
-const $activeAccounts = combine(
-  {
-    activeVotes: votingAggregate.$activeWalletVotes,
-  },
-  ({ activeVotes }) => {
-    return Object.entries(activeVotes)
-      .filter(([_, delegations]) => Object.keys(delegations).length > 0)
-      .map(([address]) => address);
-  },
-);
+const $activeAccounts = votingAggregate.$activeWalletVotes.map((activeVotes) => {
+  return Object.entries(activeVotes)
+    .filter(([_, delegations]) => Object.keys(delegations).length > 0)
+    .map(([address]) => address);
+});
 
 const $isAddAvailable = combine(
   {

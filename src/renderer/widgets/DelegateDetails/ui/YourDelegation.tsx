@@ -60,7 +60,7 @@ export const YourDelegation = () => {
                 components={{
                   votes: (
                     <AssetBalance
-                      value={new BN(activeDelegations[activeAccounts[0]]?.balance)
+                      value={activeDelegations[activeAccounts[0]]?.balance
                         .mul(
                           new BN(
                             votingService.getConvictionMultiplier(activeDelegations[activeAccounts[0]]?.conviction),

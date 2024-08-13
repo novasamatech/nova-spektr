@@ -1,7 +1,7 @@
 import { BN } from '@polkadot/util';
 import { combine } from 'effector';
 
-import { type Address, type Conviction, type DelegatingVoting } from '@/shared/core';
+import { type Address, type Conviction } from '@/shared/core';
 import { votingService } from '@entities/governance';
 import { networkSelectorModel } from '../model/networkSelector';
 import { votingAssetModel } from '../model/votingAsset';
@@ -23,27 +23,22 @@ const $totalDelegations = combine(
   },
 );
 
-const $activeDelegations = combine(
-  {
-    activeVotes: votingAggregate.$activeWalletVotes,
-  },
-  ({ activeVotes }) => {
-    const activeBalances = new Map<Address, { conviction: Conviction; balance: string }>();
+const $activeDelegations = votingAggregate.$activeWalletVotes.map((activeVotes) => {
+  const activeBalances: Record<Address, { conviction: Conviction; balance: BN }> = {};
 
-    Object.entries(activeVotes).forEach(([address, delegations]) => {
-      const delegation = Object.values(delegations).find((vote) => votingService.isDelegating(vote));
+  for (const [address, delegations] of Object.entries(activeVotes)) {
+    const delegation = Object.values(delegations).find(votingService.isDelegating);
 
-      if (delegation) {
-        activeBalances.set(address, {
-          conviction: (delegation as DelegatingVoting).conviction.toString() as Conviction,
-          balance: (delegation as DelegatingVoting).balance.toString(),
-        });
-      }
-    });
+    if (delegation) {
+      activeBalances[address] = {
+        conviction: delegation.conviction,
+        balance: delegation.balance,
+      };
+    }
+  }
 
-    return Object.fromEntries(activeBalances);
-  },
-);
+  return activeBalances;
+});
 
 export const delegationAggregate = {
   $isLoading: votingAggregate.$isLoading,
