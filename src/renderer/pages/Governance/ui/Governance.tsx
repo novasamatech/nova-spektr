@@ -8,13 +8,13 @@ import { referendumService } from '@entities/governance';
 import { InactiveNetwork } from '@entities/network';
 import {
   CompletedReferendums,
-  Delegations,
   Locks,
   NetworkSelector,
   OngoingReferendums,
   ReferendumDetailsDialog,
   ReferendumFilters,
   ReferendumSearch,
+  TotalDelegation,
   networkSelectorModel,
   votingAssetModel,
 } from '@features/governance';
@@ -66,7 +66,7 @@ export const Governance = () => {
               <NetworkSelector />
             </Plate>
             <Locks onClick={unlockAggregate.events.flowStarted} />
-            <Delegations onClick={delegationModel.events.flowStarted} />
+            <TotalDelegation onClick={delegationModel.events.flowStarted} />
           </div>
 
           <div className="mb-4 mt-5">

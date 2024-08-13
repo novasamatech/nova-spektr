@@ -317,8 +317,11 @@
     "addDelegation": {
       "accountLabel": "Your accounts",
       "accountPlaceholder": "Select",
+      "accountsLabel_one": "Account",
+      "accountsLabel_other": "Accounts",
       "actionButton": "Add delegation",
       "addCustom": "Add custom",
+      "addDelegationButton": "Add new delegation",
       "balanceValue": "<balance /> × {conviction}x",
       "card": {
         "delegations": "Delegations",
@@ -336,6 +339,8 @@
       "customDelegationLabel": "Delegate to",
       "customDelegationPlaceholder": "Enter address",
       "customDelegationTitle": "Add custom delegation on",
+      "delegateTitle": "Delegate",
+      "editDelegationButton": "Edit delegation",
       "emptyDescription": "Update the search or cancel filtering",
       "emptyTitle": "Nothing was found",
       "formTitle": "Step 2. Select the number of votes and the multiplier.",
@@ -348,6 +353,7 @@
       },
       "manyAccountsPlaceholder": "Select accounts",
       "multishardDescription": "You can select multiple accounts and delegate them in several tracks. If you are already delegating an account and want to add more tracks, select it separately.",
+      "revokeDelegationButton": "Revoke delegation",
       "selectTrackTitle": "Step 1. Select tracks of delegation.",
       "sort": {
         "delegations": "Delegations",
@@ -356,7 +362,12 @@
         "votes": "Delegated votes"
       },
       "title": "Add delegation on",
-      "votesValue": "<votes /> votes"
+      "tracksLabel": "Tracks",
+      "viewDelegationButton": "View delegations",
+      "votesLabel": "Voting power",
+      "votesValue": "<votes /> votes",
+      "yourDelegation": "Your Delegation",
+      "yourDelegationsTitle": "Your delegations"
     },
     "additional": {
       "polkassemblyLink": "https://{network}.polkassembly.io/referenda/{referendumId}",

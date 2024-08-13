@@ -9,7 +9,7 @@ type Props = {
   onClick: () => void;
 };
 
-export const Delegations = ({ onClick }: Props) => {
+export const TotalDelegation = ({ onClick }: Props) => {
   const { t } = useI18n();
 
   const totalDelegation = useUnit(delegationAggregate.$totalDelegations);
