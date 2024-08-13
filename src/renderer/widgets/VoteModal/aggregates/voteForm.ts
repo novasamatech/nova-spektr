@@ -133,7 +133,7 @@ sample({
 
 reset({
   clock: resetForm,
-  target: [$referendum],
+  target: [$referendum, $initialConviction],
 });
 
 sample({
