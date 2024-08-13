@@ -40,7 +40,6 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onCl
 
   const votingAsset = useUnit(detailsAggregate.$votingAsset);
   const canVote = useUnit(detailsAggregate.$canVote);
-  const hasAccount = useUnit(detailsAggregate.$hasAccount);
   const wallet = useUnit(walletModel.$activeWallet);
 
   const votes = useStoreMap({
@@ -86,7 +85,6 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onCl
               asset={votingAsset}
               canVote={canVote}
               wallet={wallet}
-              hasAccount={hasAccount}
               onVoteRequest={onVoteRequest}
             />
           </DetailsCard>

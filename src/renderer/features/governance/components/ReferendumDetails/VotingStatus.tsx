@@ -70,7 +70,7 @@ export const VotingStatus = ({ referendum, asset, chain, canVote, wallet, hasAcc
             {t('governance.referendum.vote')}
           </Button>
 
-          {(!hasAccount || !canVote) && (
+          {!hasAccount && (
             <FootnoteText align="center">
               <EmptyAccountMessage walletType={wallet.type} />
             </FootnoteText>

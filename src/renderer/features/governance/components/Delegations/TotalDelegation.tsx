@@ -22,7 +22,7 @@ export const TotalDelegation = ({ onClick }: Props) => {
   const hasAccount = useUnit(delegationAggregate.$hasAccount);
   const activeWallet = useUnit(walletModel.$activeWallet);
 
-  const onClickHandler = () => {
+  const handleClick = () => {
     if (hasAccount) {
       onClick();
     } else if (activeWallet) {
@@ -40,7 +40,7 @@ export const TotalDelegation = ({ onClick }: Props) => {
   };
 
   return (
-    <button onClick={onClickHandler}>
+    <button onClick={handleClick}>
       <Plate className="flex h-[90px] w-[240px] items-center justify-between px-4 pb-4.5 pt-3">
         <div className="flex flex-col items-start gap-y-2">
           <div className="flex items-center gap-x-1">

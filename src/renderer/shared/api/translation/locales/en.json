@@ -268,8 +268,8 @@
   },
   "emptyState": {
     "accountDescription": "You don't have an account in that network.",
-    "addNewAccountButton": "Add new account",
     "addAccountButton": "Add account",
+    "addNewAccountButton": "Add new account",
     "createAccount": "Create a new account",
     "createMultisig": "Create a new multisig wallet",
     "createOrImportAccount": "Create a new account or import an existing one"
@@ -324,7 +324,6 @@
   },
   "governance": {
     "addDelegation": {
-      "emptyAccountTitle": "You can't add a delegation",
       "accountLabel": "Your accounts",
       "accountPlaceholder": "Select",
       "accountsLabel_one": "Account",
@@ -351,6 +350,7 @@
       "customDelegationTitle": "Add custom delegation on",
       "delegateTitle": "Delegate",
       "editDelegationButton": "Edit delegation",
+      "emptyAccountTitle": "You can't add a delegation",
       "emptyDescription": "Update the search or cancel filtering",
       "emptyTitle": "Nothing was found",
       "formTitle": "Step 2. Select the number of votes and the multiplier.",
