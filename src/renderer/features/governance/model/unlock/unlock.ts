@@ -1,12 +1,13 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createStore, sample } from 'effector';
-import { combineEvents } from 'patronum';
+import { combineEvents, or } from 'patronum';
 
 import { type ClaimTimeAt, type UnlockChunk, UnlockChunkType } from '@shared/api/governance';
 import { type Address, type Referendum, type TrackId, type TrackInfo, type VotingMap } from '@shared/core';
 import { getCreatedDateFromApi, getCurrentBlockNumber } from '@shared/lib/utils';
 import { claimScheduleService, referendumModel, tracksModel, votingModel } from '@entities/governance';
+import { walletModel } from '@entities/wallet';
 import { unlockService } from '../../lib/unlockService';
 import { locksModel } from '../locks';
 import { networkSelectorModel } from '../networkSelector';
@@ -82,13 +83,13 @@ sample({
 });
 
 sample({
-  clock: getClaimScheduleFx.doneData,
-  target: $claimSchedule,
+  clock: [locksModel.$totalLock.updates, walletModel.$activeWallet],
+  target: [$claimSchedule.reinit, $totalUnlock.reinit],
 });
 
 sample({
-  clock: locksModel.$totalLock.updates,
-  target: [$claimSchedule.reinit, $totalUnlock.reinit],
+  clock: getClaimScheduleFx.doneData,
+  target: $claimSchedule,
 });
 
 sample({
@@ -104,7 +105,7 @@ sample({
 });
 
 export const unlockModel = {
-  $isLoading: locksModel.$isLoading && getClaimScheduleFx.pending,
+  $isLoading: or(locksModel.$isLoading, getClaimScheduleFx.pending),
   $totalUnlock,
   $claimSchedule,
   $isUnlockable: combine($totalUnlock, (totalUnlock) => !totalUnlock.isZero()),
