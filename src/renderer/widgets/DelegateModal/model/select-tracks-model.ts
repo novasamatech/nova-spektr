@@ -25,9 +25,9 @@ const $votedTracks = combine(
     const activeTracks = new Set<string>();
 
     for (const voteList of Object.values(votes)) {
-      for (const vote in Object.values(voteList)) {
-        if (votingService.isCasting(voteList[vote])) {
-          activeTracks.add(vote);
+      for (const [track, vote] of Object.entries(voteList)) {
+        if (votingService.isCasting(vote)) {
+          activeTracks.add(track);
         }
       }
     }

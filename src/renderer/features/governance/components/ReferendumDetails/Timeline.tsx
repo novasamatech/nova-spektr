@@ -20,6 +20,7 @@ const getStatusPalette = (status: ReferendumTimelineRecordStatus) => {
     case 'Confirmed':
     case 'Executed':
     case 'Awarded':
+    case 'Approved':
       return 'success' as const;
 
     default:

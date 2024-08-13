@@ -2,6 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import {
   type FrameSupportPreimagesBounded,
   type PalletReferendaCurve,
+  type PalletReferendaDeposit,
   type PalletReferendaReferendumInfoConvictionVotingTally,
 } from '@polkadot/types/lookup';
 import { type BN, BN_ZERO } from '@polkadot/util';
@@ -9,6 +10,7 @@ import { type BN, BN_ZERO } from '@polkadot/util';
 import {
   type AccountVote,
   type Address,
+  type Deposit,
   type LinearDecreasingCurve,
   type ReciprocalCurve,
   type Referendum,
@@ -43,6 +45,15 @@ function getProposalHex(proposal: FrameSupportPreimagesBounded) {
   return '';
 }
 
+const mapDeposit = (deposit: PalletReferendaDeposit | null): Deposit | null => {
+  if (!deposit) return null;
+
+  return {
+    who: deposit.who.toString(),
+    amount: deposit.amount.toBn(),
+  };
+};
+
 const mapReferendum = (
   referendumId: ReferendumId,
   palette: PalletReferendaReferendumInfoConvictionVotingTally,
@@ -51,6 +62,7 @@ const mapReferendum = (
     const ongoing = palette.asOngoing;
     const deciding = ongoing.deciding.unwrapOr(null);
     const decisionDeposit = ongoing.decisionDeposit.unwrapOr(null);
+    const submissionDeposit = ongoing.submissionDeposit;
     const proposal = getProposalHex(ongoing.proposal);
 
     return {
@@ -75,56 +87,56 @@ const mapReferendum = (
         nays: ongoing.tally.nays.toBn(),
         support: ongoing.tally.support.toBn(),
       },
-      decisionDeposit: decisionDeposit
-        ? {
-            who: decisionDeposit.who.toString(),
-            amount: decisionDeposit.amount.toBn(),
-          }
-        : null,
-      submissionDeposit: {
-        who: ongoing.submissionDeposit.who.toString(),
-        amount: ongoing.submissionDeposit.amount.toBn(),
-      },
+      decisionDeposit: mapDeposit(decisionDeposit),
+      submissionDeposit: mapDeposit(submissionDeposit),
     };
   }
 
   if (palette.isRejected) {
-    const rejected = palette.asRejected;
+    const referendum = palette.asRejected;
+    const [since, submissionDeposit] = referendum;
 
     return {
       referendumId,
       type: ReferendumType.Rejected,
-      since: rejected[0].toNumber(),
+      since: since.toNumber(),
+      submissionDeposit: mapDeposit(submissionDeposit.unwrapOr(null)),
     };
   }
 
   if (palette.isApproved) {
-    const approved = palette.asApproved;
+    const referendum = palette.asApproved;
+    const [since, submissionDeposit] = referendum;
 
     return {
       referendumId,
       type: ReferendumType.Approved,
-      since: approved[0].toNumber(),
+      since: since.toNumber(),
+      submissionDeposit: mapDeposit(submissionDeposit.unwrapOr(null)),
     };
   }
 
   if (palette.isCancelled) {
-    const cancelled = palette.asCancelled;
+    const referendum = palette.asCancelled;
+    const [since, submissionDeposit] = referendum;
 
     return {
       referendumId,
       type: ReferendumType.Cancelled,
-      since: cancelled[0].toNumber(),
+      since: since.toNumber(),
+      submissionDeposit: mapDeposit(submissionDeposit.unwrapOr(null)),
     };
   }
 
   if (palette.isTimedOut) {
-    const timedOut = palette.asTimedOut;
+    const referendum = palette.asTimedOut;
+    const [since, submissionDeposit] = referendum;
 
     return {
       referendumId,
       type: ReferendumType.TimedOut,
-      since: timedOut[0].toNumber(),
+      since: since.toNumber(),
+      submissionDeposit: mapDeposit(submissionDeposit.unwrapOr(null)),
     };
   }
 

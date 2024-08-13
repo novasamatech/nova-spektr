@@ -229,11 +229,27 @@ module.exports = {
           },
         ],
 
+        'no-restricted-properties': [
+          'warn',
+          // ban forEach
+          { property: 'forEach', message: 'Use for..of instead.' },
+        ],
+
         'no-restricted-syntax': [
           'error',
           {
-            selector: 'MemberExpression > CallExpression[callee.name="useUnit"]',
             message: 'Replace with "useStoreMap". Getting object members directly from "useUnit" in restricted.',
+            selector: 'MemberExpression > CallExpression[callee.name="useUnit"]',
+          },
+          // effector store naming convention
+          {
+            message: 'Use effector naming convention for stores.',
+            selector: 'VariableDeclarator[init.callee.name=/^createStore|combine$/][id.name!=/^\\$.*/]',
+          },
+          // effector effect naming convention
+          {
+            message: 'Use effector naming convention for effects.',
+            selector: 'VariableDeclarator[init.callee.name="createEffect"][id.name!=/.*?Fx$/]',
           },
         ],
       },
