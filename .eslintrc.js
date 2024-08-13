@@ -229,6 +229,12 @@ module.exports = {
           },
         ],
 
+        'no-restricted-properties': [
+          'warn',
+          // ban forEach
+          { property: 'forEach', message: 'Use for..of instead.' },
+        ],
+
         'no-restricted-syntax': [
           'error',
           {

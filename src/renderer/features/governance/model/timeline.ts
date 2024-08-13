@@ -20,19 +20,12 @@ import { governanceModel, referendumService } from '@entities/governance';
 
 import { networkSelectorModel } from './networkSelector';
 
-const mapReferendumToTimelineStatus = (referendum: CompletedReferendum): ReferendumTimelineRecordStatus => {
-  switch (referendum.type) {
-    case ReferendumType.Killed:
-      return 'Killed';
-    case ReferendumType.Cancelled:
-      return 'Cancelled';
-    case ReferendumType.Rejected:
-      return 'Rejected';
-    case ReferendumType.Approved:
-      return 'Approved';
-    case ReferendumType.TimedOut:
-      return 'TimedOut';
-  }
+const referendumTimelineStatus: Record<CompletedReferendum['type'], ReferendumTimelineRecordStatus> = {
+  [ReferendumType.Killed]: 'Killed',
+  [ReferendumType.Cancelled]: 'Cancelled',
+  [ReferendumType.Rejected]: 'Rejected',
+  [ReferendumType.Approved]: 'Approved',
+  [ReferendumType.TimedOut]: 'TimedOut',
 };
 
 const $timelines = createStore<Record<ChainId, Record<ReferendumId, ReferendumTimelineRecord[]>>>({});
@@ -86,7 +79,7 @@ type RequestOnTimelineParams = {
 const requestOnChainTimelineFx = createEffect<RequestOnTimelineParams, ReferendumTimelineRecord[]>(
   ({ api, referendum }) =>
     getCreatedDateFromApi(referendum.since, api).then((time) => [
-      { date: new Date(time), status: mapReferendumToTimelineStatus(referendum) },
+      { date: new Date(time), status: referendumTimelineStatus[referendum.type] },
     ]),
 );
 
