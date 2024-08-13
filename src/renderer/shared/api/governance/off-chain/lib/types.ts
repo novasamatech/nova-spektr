@@ -11,6 +11,7 @@ export type ReferendumVote = {
 
 export type ReferendumTimelineRecordStatus =
   | 'All'
+  | 'Approved'
   | 'Confirmed'
   | 'Created'
   | 'ConfirmStarted'
