@@ -60,7 +60,7 @@ export const VotingStatus = ({ referendum, asset, chain, canVote, wallet, hasAcc
         </div>
       )}
 
-      {referendumService.isOngoing(referendum) && !!asset && !referendum.isVoted && wallet && (
+      {referendumService.isOngoing(referendum) && !!asset && !referendum.isVoted && (
         <div className="flex w-full flex-col gap-4">
           <Button
             className="w-full"
@@ -70,7 +70,7 @@ export const VotingStatus = ({ referendum, asset, chain, canVote, wallet, hasAcc
             {t('governance.referendum.vote')}
           </Button>
 
-          {!hasAccount && (
+          {!hasAccount && wallet && (
             <FootnoteText align="center">
               <EmptyAccountMessage walletType={wallet.type} />
             </FootnoteText>
