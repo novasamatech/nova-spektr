@@ -17,7 +17,7 @@ const $activeTracks = votingAggregate.$activeWalletVotes.map((activeVotes) => {
   const activeTracks: Record<Address, Set<string>> = {};
 
   for (const [address, delegations] of Object.entries(activeVotes)) {
-    for (const key in delegations) {
+    for (const key of Object.keys(delegations)) {
       if (!activeTracks[address]) {
         activeTracks[address] = new Set();
       }
