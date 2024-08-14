@@ -1,5 +1,6 @@
 import cn from 'classnames';
 import { useUnit } from 'effector-react';
+import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
 import { chainsService } from '@shared/api/network';
@@ -14,6 +15,7 @@ import { TransactionType } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
 import { cnTw, copyToClipboard, getAssetById, truncate } from '@shared/lib/utils';
 import { Button, CaptionText, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
+import { voteTransactionService } from '@/entities/governance';
 import { AssetBalance } from '@entities/asset';
 import { ChainTitle } from '@entities/chain';
 import { matrixModel } from '@entities/matrix';
@@ -42,7 +44,9 @@ import {
   getMultisigExtrinsicLink,
   getPayee,
   getProxyType,
+  getReferendumId,
   getSender,
+  getVote,
 } from '../common/utils';
 
 type Props = {
@@ -69,6 +73,9 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const delegationTarget = getDelegationTarget(tx);
   const delegationTracks = getDelegationTracks(tx);
   const delegationVotes = getDelegationVotes(tx);
+
+  const referendumId = getReferendumId(tx);
+  const vote = getVote(tx);
 
   const api = extendedChain?.api;
   const defaultAsset = extendedChain?.assets[0];
@@ -224,6 +231,39 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
       {isManageProxyTransaction(transaction) && proxyType && (
         <DetailRow label={t('operation.details.accessType')} className={valueClass}>
           <FootnoteText className={valueClass}>{t(proxyUtils.getProxyTypeName(proxyType))}</FootnoteText>
+        </DetailRow>
+      )}
+
+      {referendumId && (
+        <DetailRow label={t('operation.details.referendum')} className={valueClass}>
+          <FootnoteText className={valueClass}>#{referendumId}</FootnoteText>
+        </DetailRow>
+      )}
+
+      {vote && (
+        <DetailRow label={t('operation.details.votes')} className={valueClass}>
+          <FootnoteText className={valueClass}>
+            <>
+              <span className="uppercase">
+                {t(`governance.referendum.${voteTransactionService.getDecision(vote)}`)}
+              </span>
+              :{' '}
+              <Trans
+                t={t}
+                i18nKey="governance.addDelegation.votesValue"
+                components={{
+                  votes: (
+                    <AssetBalance
+                      value={voteTransactionService.getVotes(vote)}
+                      asset={defaultAsset}
+                      showSymbol={false}
+                      className={valueClass}
+                    />
+                  ),
+                }}
+              />
+            </>
+          </FootnoteText>
         </DetailRow>
       )}
 

@@ -39,11 +39,6 @@ interface VoteArgs extends Args {
   pollIndex: number;
 
   /**
-   * Name: unknown
-   */
-  name: string;
-
-  /**
    * Vote: describes vote to submit.
    */
   vote: TransactionVote;
