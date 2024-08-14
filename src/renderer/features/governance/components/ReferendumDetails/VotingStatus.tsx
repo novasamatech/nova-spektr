@@ -43,7 +43,7 @@ export const VotingStatus = ({ referendum, asset, chain, canVote, onVoteRequest 
     <div className="flex flex-col items-start gap-6">
       <VotingStatusBadge passing={isPassing} referendum={referendum} />
       {votedFractions && <VoteChart bgColor="icon-button" descriptionPosition="bottom" {...votedFractions} />}
-      {votedBalance && supportThresholdBalance && !supportThreshold?.value.isNeg() && (
+      {votedBalance && supportThresholdBalance && (
         <div className="flex w-full flex-wrap items-center gap-1.5">
           <Icon name="checkmarkOutline" size={18} className="text-icon-positive" />
           <FootnoteText className="text-text-secondary">{t('governance.referendum.threshold')}</FootnoteText>
