@@ -1,4 +1,3 @@
-import { type BN } from '@polkadot/util';
 import { createEvent, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { spread } from 'patronum';
@@ -16,7 +15,7 @@ import { voteConfirmModel } from '@features/operations/OperationsConfirm';
 
 import { voteFormAggregate } from './voteForm';
 
-const flow = createGate<{ amount: BN; conviction: Conviction; referendum: OngoingReferendum }>();
+const flow = createGate<{ conviction: Conviction; referendum: OngoingReferendum }>();
 
 const { form, reinitForm, resetForm, transaction } = voteFormAggregate.transactionForm;
 
@@ -99,7 +98,6 @@ sample({
 sample({
   clock: flow.open,
   target: spread({
-    amount: voteFormAggregate.$initialAmount,
     conviction: voteFormAggregate.$initialConviction,
     referendum: voteFormAggregate.$referendum,
   }),
@@ -209,8 +207,8 @@ sample({
 export const voteModalAggregate = {
   ...voteFormAggregate.transactionForm,
 
+  $lock: locksModel.$totalLock,
   $fee: voteFormAggregate.$fee,
-  $initialAmount: voteFormAggregate.$initialAmount,
   $initialConviction: voteFormAggregate.$initialConviction,
   $availableBalance: voteFormAggregate.$availableBalance,
   $isFeeLoading: voteFormAggregate.$isFeeLoading,

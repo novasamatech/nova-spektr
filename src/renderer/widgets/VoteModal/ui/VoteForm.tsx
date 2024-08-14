@@ -34,7 +34,8 @@ type Props = {
 export const VoteForm = ({ chain, asset, hasDelegated = false }: Props) => {
   const { t } = useI18n();
 
-  const initialAmount = useUnit(voteModalAggregate.$initialAmount);
+  const totalLock = useUnit(voteModalAggregate.$lock);
+
   const initialConviction = useUnit(voteModalAggregate.$initialConviction);
   const fee = useUnit(voteModalAggregate.$fee);
 
@@ -99,7 +100,7 @@ export const VoteForm = ({ chain, asset, hasDelegated = false }: Props) => {
         </div>
         <div className="flex flex-col gap-4">
           <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.governanceLock')}>
-            <BalanceDiff from={initialAmount.toString()} to={amount.value.toString()} asset={asset} />
+            <BalanceDiff from={totalLock} to={totalLock.add(amount.value)} asset={asset} />
           </DetailRow>
           <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.lockingPeriod')}>
             <LockPeriodDiff from={initialConviction} to={conviction.value} />

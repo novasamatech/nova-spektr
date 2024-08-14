@@ -48,8 +48,7 @@ sample({
   clock: getTrackLocksFx.doneData,
   fn: (trackLocks) => {
     let maxLockTotal = BN_ZERO;
-    for (const address in trackLocks) {
-      const lock = trackLocks[address];
+    for (const lock of Object.values(trackLocks)) {
       const totalLock = Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
 
       maxLockTotal = maxLockTotal.add(totalLock);
