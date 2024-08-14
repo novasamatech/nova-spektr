@@ -6,8 +6,7 @@ import { Step, isStep } from '@/shared/lib/utils';
 import { BaseModal } from '@/shared/ui';
 import { OperationTitle } from '@/entities/chain';
 import { networkSelectorModel } from '@/features/governance';
-import { delegateModel } from '@/widgets/DelegateModal/model/delegate-model';
-import { Delegate } from '@/widgets/DelegateModal/ui/Delegate';
+import { DelegateDetails, delegateDetailsModel } from '@/widgets/DelegateDetails';
 import { delegationModel } from '../model/delegation-model';
 
 import { AddCustomDelegationModel } from './AddCustomDelegationModal';
@@ -33,12 +32,13 @@ export const DelegationModal = () => {
     >
       {/* TODO: open delegate info  */}
       <DelegationList
-        onClick={delegateModel.events.flowStarted}
+        onClick={delegateDetailsModel.events.flowStarted}
         onAddCustomClick={delegationModel.events.openCustomModal}
       />
 
-      <Delegate />
       <AddCustomDelegationModel />
+
+      <DelegateDetails />
     </BaseModal>
   );
 };

@@ -4,7 +4,7 @@ import { readonly } from 'patronum';
 
 import { type DelegateAccount, delegationService } from '@/shared/api/governance';
 import { type Chain } from '@/shared/core';
-import { getTimeFromBlock } from '@/shared/lib/utils';
+import { getBlockTimeAgo } from '@/shared/lib/utils';
 import { networkSelectorModel } from '../model/networkSelector';
 
 const requestDelegateRegistry = createEvent();
@@ -18,7 +18,7 @@ type DelegateRegistryParams = {
 
 const requestDelegateRegistryFx = createEffect(
   async ({ chain, api }: DelegateRegistryParams): Promise<DelegateAccount[]> => {
-    const blockNumber = await getTimeFromBlock(1000 * 60 * 60 * 24 * 30, api);
+    const blockNumber = await getBlockTimeAgo(1000 * 60 * 60 * 24 * 30, api);
     const delegates = await delegationService.getDelegatesFromRegistry(chain);
     const stats = await delegationService.getDelegatesFromExternalSource(chain, blockNumber);
 

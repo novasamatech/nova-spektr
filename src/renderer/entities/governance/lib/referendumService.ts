@@ -1,6 +1,7 @@
 import {
   type ApprovedReferendum,
   type CompletedReferendum,
+  type KilledReferendum,
   type OngoingReferendum,
   type Referendum,
   ReferendumType,
@@ -14,6 +15,7 @@ export const referendumService = {
   isApproved,
   isCompleted,
   isTimedOut,
+  isKilled,
 
   getOperationStatus,
 };
@@ -36,6 +38,10 @@ function isCompleted(referendum: Referendum): referendum is CompletedReferendum 
 
 function isTimedOut(referendum: Referendum): referendum is TimedOutReferendum {
   return referendum.type === ReferendumType.TimedOut;
+}
+
+function isKilled(referendum: Referendum): referendum is KilledReferendum {
+  return referendum.type === ReferendumType.Killed;
 }
 
 // waiting for deposit, deciding, passing

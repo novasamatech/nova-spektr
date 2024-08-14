@@ -17,13 +17,11 @@ const $canVote = walletModel.$activeWallet.map((wallet) => (wallet ? permissionU
 
 sample({
   clock: flow.open,
-  target: [proposerIdentityAggregate.events.requestReferendumProposer, descriptionsModel.events.requestDescription],
-});
-
-sample({
-  clock: flow.open,
-  fn: ({ referendum }) => ({ referendumId: referendum.referendumId }),
-  target: timelineModel.events.requestTimeline,
+  target: [
+    proposerIdentityAggregate.events.requestReferendumProposer,
+    descriptionsModel.events.requestDescription,
+    timelineModel.events.requestTimeline,
+  ],
 });
 
 export const detailsAggregate = {
@@ -33,10 +31,12 @@ export const detailsAggregate = {
   $timelines: timelineModel.$currentChainTimelines,
   $votes: votingAggregate.$activeWalletVotes,
   $proposers: proposerIdentityAggregate.$proposers,
+
   $isTitlesLoading: titleModel.$isTitlesLoading,
-  $isTimelinesLoading: timelineModel.$isTimelineLoading,
+  $isTimelinesLoading: timelineModel.$isLoading,
   $isProposersLoading: proposerIdentityAggregate.$isProposersLoading,
   $isDescriptionLoading: descriptionsModel.$isDescriptionLoading,
+
   $canVote,
 
   gates: { flow },

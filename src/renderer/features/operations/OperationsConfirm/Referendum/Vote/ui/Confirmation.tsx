@@ -1,14 +1,15 @@
 import { BN } from '@polkadot/util';
-import { useStoreMap } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
-import { useI18n } from '@app/providers';
-import { cnTw, formatAsset } from '@shared/lib/utils';
-import { Button, DetailRow, HeadlineText, Icon } from '@shared/ui';
-import { AssetBalance } from '@entities/asset';
-import { BalanceDiff, LockPeriodDiff, voteTransactionService, votingService } from '@entities/governance';
-import { SignButton } from '@entities/operations';
-import { Fee } from '@entities/transaction';
+import { useI18n } from '@/app/providers';
+import { cnTw, formatAsset } from '@/shared/lib/utils';
+import { Button, DetailRow, HeadlineText, Icon } from '@/shared/ui';
+import { AssetBalance } from '@/entities/asset';
+import { BalanceDiff, LockPeriodDiff, voteTransactionService, votingService } from '@/entities/governance';
+import { SignButton } from '@/entities/operations';
+import { Fee } from '@/entities/transaction';
+import { locksModel } from '@/features/governance/model/locks';
 import { ConfirmDetails } from '../../../common/ConfirmDetails';
 import { confirmModel } from '../model/confirm-model';
 
@@ -22,6 +23,8 @@ type Props = {
 export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, onGoBack }: Props) => {
   const { t } = useI18n();
 
+  const totalLock = useUnit(locksModel.$totalLock);
+
   const confirm = useStoreMap({
     store: confirmModel.$confirmMap,
     keys: [id],
@@ -32,7 +35,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     return null;
   }
 
-  const { asset, initialAmount, initialConviction, wrappedTransactions } = confirm.meta;
+  const { asset, initialConviction, wrappedTransactions } = confirm.meta;
 
   if (!voteTransactionService.isVoteTransaction(wrappedTransactions.coreTx)) {
     return null;
@@ -68,7 +71,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         <hr className="w-full border-filter-border pr-2" />
         <DetailRow label="Vote">{t(`governance.referendum.${decision}`)}</DetailRow>
         <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.governanceLock')}>
-          <BalanceDiff from={initialAmount.toString()} to={amount.toString()} asset={asset} />
+          <BalanceDiff from={totalLock} to={totalLock.add(amount)} asset={asset} />
         </DetailRow>
         <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.lockingPeriod')}>
           <LockPeriodDiff from={initialConviction} to={conviction} />
