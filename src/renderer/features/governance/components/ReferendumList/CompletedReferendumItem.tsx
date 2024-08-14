@@ -8,6 +8,7 @@ import { type AggregatedReferendum } from '../../types/structs';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 
 import { ListItem } from './ListItem';
+import { VotedBy } from './VotedBy';
 
 type Props = {
   isTitlesLoading: boolean;
@@ -30,6 +31,7 @@ export const CompletedReferendumItem = memo<Props>(({ referendum, isTitlesLoadin
     <ListItem onClick={() => onSelect(referendum)}>
       <div className="flex w-full items-center gap-x-2">
         <Voted active={referendum.isVoted} />
+        <VotedBy address={referendum.votedByDelegate} />
         <VotingStatusBadge referendum={referendum} />
         <FootnoteText className="ml-auto text-text-secondary">#{referendum.referendumId}</FootnoteText>
       </div>

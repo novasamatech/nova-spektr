@@ -1,10 +1,10 @@
 import { GraphQLClient } from 'graphql-request';
 
 import { dictionary } from '@/shared/lib/utils';
-import { type Chain, ExternalType } from '@shared/core';
+import { type Address, type Chain, ExternalType, type ReferendumId } from '@shared/core';
 import { type DelegateAccount, type DelegateDetails, type DelegateStat, type DelegationApi } from '../lib/types';
 
-import { GET_DELEGATE_LIST } from './delegation/queries';
+import { GET_DELEGATE_LIST, GET_DELEGATOR } from './delegation/queries';
 
 const DELEGATE_REGISTRY_URL =
   'https://raw.githubusercontent.com/novasamatech/opengov-delegate-registry/master/registry';
@@ -44,6 +44,36 @@ async function getDelegatesFromExternalSource(chain: Chain, blockNumber: number)
   return [];
 }
 
+async function getDelegatedVotesFromExternalSource(
+  chain: Chain,
+  voters: Address[],
+): Promise<Record<ReferendumId, Address>> {
+  const externalApi = chain.externalApi?.[ExternalType.DELEGATIONS]?.at(0);
+  const sourceType = externalApi?.type;
+  const sourceUrl = externalApi?.url;
+
+  if (sourceType === 'subquery' && sourceUrl) {
+    try {
+      const client = new GraphQLClient(sourceUrl);
+      const data = await Promise.all(voters.map((voter) => client.request(GET_DELEGATOR, { voter })));
+      const list = data.flatMap((x: any) => x.delegatorVotings.nodes.map((node: { parent: any }) => node.parent)) as {
+        referendumId: ReferendumId;
+        voter: Address;
+      }[];
+
+      return list.reduce<Record<ReferendumId, Address>>((acc, record) => {
+        acc[record.referendumId] = record.voter;
+
+        return acc;
+      }, {});
+    } catch {
+      return {};
+    }
+  }
+
+  return {};
+}
+
 function aggregateDelegateAccounts(accounts: DelegateDetails[], stats: DelegateStat[]): DelegateAccount[] {
   const accountsMap = dictionary(stats, 'accountId');
 
@@ -57,5 +87,6 @@ function aggregateDelegateAccounts(accounts: DelegateDetails[], stats: DelegateS
 export const delegationService: DelegationApi = {
   getDelegatesFromRegistry,
   getDelegatesFromExternalSource,
+  getDelegatedVotesFromExternalSource,
   aggregateDelegateAccounts,
 };
