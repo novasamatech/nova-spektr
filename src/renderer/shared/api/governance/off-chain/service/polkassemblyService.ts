@@ -1,5 +1,3 @@
-import { BN } from '@polkadot/util';
-
 import {
   type PolkassemblyListingPost,
   type PolkassemblyPostVote,
@@ -7,13 +5,7 @@ import {
   polkassemblyApiService,
 } from '@shared/api/polkassembly';
 import { dictionary } from '@shared/lib/utils';
-import { type GovernanceApi, type ReferendumTimelineRecord, type ReferendumVote } from '../lib/types';
-
-const referendumDecisionMap: Record<PolkassemblyPostVote['decision'], ReferendumVote['decision']> = {
-  abstain: 'abstain',
-  yes: 'aye',
-  no: 'nay',
-};
+import { type GovernanceApi, type ReferendumTimelineRecord } from '../lib/types';
 
 const getReferendumList: GovernanceApi['getReferendumList'] = async (chain, callback) => {
   function mapListingPost(data: PolkassemblyListingPost[]) {
@@ -36,14 +28,7 @@ const getReferendumList: GovernanceApi['getReferendumList'] = async (chain, call
 };
 
 const getReferendumVotes: GovernanceApi['getReferendumVotes'] = (chain, referendumId, callback) => {
-  const mapVote = (votes: PolkassemblyPostVote[]): ReferendumVote[] => {
-    return votes.map(({ decision, voter, balance, lockPeriod }) => ({
-      decision: referendumDecisionMap[decision],
-      voter,
-      balance: new BN('value' in balance ? balance.value : (balance.abstain ?? 0)),
-      conviction: typeof lockPeriod === 'number' ? (lockPeriod === 0 ? 0.1 : lockPeriod) : 0,
-    }));
-  };
+  const mapVote = (votes: PolkassemblyPostVote[]) => votes.map((vote) => vote.voter);
 
   return polkassemblyApiService
     .fetchPostVotes(

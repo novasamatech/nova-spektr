@@ -81,7 +81,7 @@ export const VotingHistoryDialog = ({ referendum, onClose }: Props) => {
       closeButton
       panelClass="flex flex-col w-modal h-[450px] overflow-hidden"
       headerClass="shrink-0 pl-5 pr-3 pt-3"
-      contentClass="flex flex-col py-4 px-5 overflow-hidden"
+      contentClass="flex flex-col pt-4 px-5 overflow-hidden"
       title={t('governance.voteHistory.title')}
       onClose={closeModal}
     >

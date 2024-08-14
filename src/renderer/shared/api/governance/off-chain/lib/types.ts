@@ -1,13 +1,4 @@
-import { type BN } from '@polkadot/util';
-
 import { type Address, type Chain, type ReferendumId } from '@shared/core';
-
-export type ReferendumVote = {
-  decision: 'aye' | 'nay' | 'abstain';
-  voter: Address;
-  balance: BN;
-  conviction: number;
-};
 
 export type ReferendumTimelineRecordStatus =
   | 'All'
@@ -37,8 +28,8 @@ export interface GovernanceApi {
   getReferendumVotes: (
     chain: Chain,
     referendumId: ReferendumId,
-    callback: (data: ReferendumVote[], done: boolean) => void,
-  ) => Promise<ReferendumVote[]>;
+    callback: (data: Address[], done: boolean) => void,
+  ) => Promise<Address[]>;
   getReferendumTimeline: (chain: Chain, referendumId: ReferendumId) => Promise<ReferendumTimelineRecord[]>;
 }
 

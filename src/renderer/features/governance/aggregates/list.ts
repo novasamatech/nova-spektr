@@ -8,9 +8,21 @@ import { type AggregatedReferendum } from '../types/structs';
 
 import { votingAggregate } from './voting';
 
+const $chainReferendums = combine(
+  referendumModel.$referendums,
+  networkSelectorModel.$governanceChain,
+  (referendums, chain) => {
+    if (!chain) {
+      return [];
+    }
+
+    return referendums[chain.chainId] ?? [];
+  },
+);
+
 const $referendums = combine(
   {
-    referendums: referendumModel.$referendums,
+    referendums: $chainReferendums,
     titles: titleModel.$titles,
     approvalThresholds: approveThresholdModel.$approvalThresholds,
     supportThresholds: supportThresholdModel.$supportThresholds,
@@ -22,12 +34,11 @@ const $referendums = combine(
       return [];
     }
 
-    const referendumsInChain = referendums[chain.chainId] ?? [];
     const titlesInChain = titles[chain.chainId] ?? {};
     const approvalInChain = approvalThresholds[chain.chainId] ?? {};
     const supportInChain = supportThresholds[chain.chainId] ?? {};
 
-    return referendumsInChain.map((referendum) => {
+    return referendums.map((referendum) => {
       return {
         ...referendum,
         title: titlesInChain[referendum.referendumId] ?? null,

@@ -44,7 +44,7 @@ const $voteHistory = combine(
       const votes = votingService.getReferendumVoting(referendumId, voting);
 
       acc[referendumId] = historyList
-        .flatMap(({ voter }) => {
+        .flatMap((voter) => {
           const proposer = proposers[voter] ?? null;
           const vote = votes[voter];
           if (!vote) {
@@ -82,17 +82,15 @@ sample({
 
 sample({
   clock: voteHistoryModel.events.voteHistoryRequestDone,
-  fn: ({ result: voteHistory }) => ({
-    addresses: voteHistory.map((x) => x.voter),
-  }),
+  fn: ({ result: addresses }) => ({ addresses }),
   target: proposerIdentityAggregate.events.requestProposers,
 });
 
 sample({
   clock: voteHistoryModel.events.voteHistoryRequestDone,
   source: tracksAggregate.$tracks,
-  fn: (tracks, { params, result: history }) => ({
-    addresses: history.map((x) => x.voter),
+  fn: (tracks, { params, result: addresses }) => ({
+    addresses,
     tracks: referendumService.isOngoing(params.referendum) ? [params.referendum.track] : Object.keys(tracks),
   }),
   target: votingAggregate.events.requestVoting,
