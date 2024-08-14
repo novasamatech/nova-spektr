@@ -39,13 +39,11 @@ export const VotingStatus = ({ referendum, asset, chain, canVote, onVoteRequest 
   const votedBalance = votedCount ? formatBalance(votedCount.voted, asset.precision, { K: true }) : null;
   const supportThresholdBalance = votedCount ? formatBalance(votedCount.threshold, asset.precision, { K: true }) : null;
 
-  console.log('referendum.supportThreshold', referendum.supportThreshold?.value.toString());
-
   return (
     <div className="flex flex-col items-start gap-6">
       <VotingStatusBadge passing={isPassing} referendum={referendum} />
       {votedFractions && <VoteChart bgColor="icon-button" descriptionPosition="bottom" {...votedFractions} />}
-      {votedBalance && supportThresholdBalance && (
+      {votedBalance && supportThresholdBalance && !supportThreshold?.value.isNeg() && (
         <div className="flex w-full flex-wrap items-center gap-1.5">
           <Icon name="checkmarkOutline" size={18} className="text-icon-positive" />
           <FootnoteText className="text-text-secondary">{t('governance.referendum.threshold')}</FootnoteText>
