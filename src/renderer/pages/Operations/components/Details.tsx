@@ -1,5 +1,6 @@
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
+import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
 import {
@@ -14,6 +15,8 @@ import {
 import { useToggle } from '@shared/lib/hooks';
 import { cnTw, toAccountId } from '@shared/lib/utils';
 import { CaptionText, DetailRow, FootnoteText, Icon } from '@shared/ui';
+import { AssetBalance } from '@/entities/asset';
+import { voteTransactionService } from '@/entities/governance';
 import { ChainTitle } from '@entities/chain';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
 import { type ExtendedChain, networkModel, networkUtils } from '@entities/network';
@@ -30,7 +33,16 @@ import {
 } from '@entities/transaction';
 import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, walletModel } from '@entities/wallet';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
-import { getDelegate, getDestination, getDestinationChain, getPayee, getProxyType, getSpawner } from '../common/utils';
+import {
+  getDelegate,
+  getDestination,
+  getDestinationChain,
+  getPayee,
+  getProxyType,
+  getReferendumId,
+  getSpawner,
+  getVote,
+} from '../common/utils';
 
 type Props = {
   tx: MultisigTransaction;
@@ -52,6 +64,9 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
   const proxyType = getProxyType(tx);
   const destinationChain = getDestinationChain(tx);
   const destination = getDestination(tx, chains, destinationChain);
+
+  const referendumId = getReferendumId(tx);
+  const vote = getVote(tx);
 
   const signatoryWallet = wallets.find((w) => w.id === signatory?.walletId);
 
@@ -297,6 +312,39 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
               wrapperClassName="-mr-2 min-w-min"
             />
           )}
+        </DetailRow>
+      )}
+
+      {referendumId && (
+        <DetailRow label={t('operation.details.referendum')}>
+          <FootnoteText className="text-text-secondary">#{referendumId}</FootnoteText>
+        </DetailRow>
+      )}
+
+      {vote && (
+        <DetailRow label={t('operation.details.votes')}>
+          <FootnoteText className="text-text-secondary">
+            <>
+              <span className="uppercase">
+                {t(`governance.referendum.${voteTransactionService.getDecision(vote)}`)}
+              </span>
+              :{' '}
+              <Trans
+                t={t}
+                i18nKey="governance.addDelegation.votesValue"
+                components={{
+                  votes: (
+                    <AssetBalance
+                      value={voteTransactionService.getVotes(vote)}
+                      asset={defaultAsset}
+                      showSymbol={false}
+                      className="text-text-secondary"
+                    />
+                  ),
+                }}
+              />
+            </>
+          </FootnoteText>
         </DetailRow>
       )}
 

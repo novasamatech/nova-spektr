@@ -109,7 +109,7 @@ const {
 });
 
 sample({
-  clock: [form.fields.account.onChange, form.fields.signatory.onChange],
+  clock: form.fields.account.onChange,
   source: {
     referendum: $referendum,
     locks: locksModel.$trackLocks,

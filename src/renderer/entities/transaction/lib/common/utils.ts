@@ -4,7 +4,7 @@ import { type TFunction } from 'react-i18next';
 
 import { type DecodedTransaction, type MultisigTransaction, type Transaction, TransactionType } from '@shared/core';
 import { formatSectionAndMethod } from '@shared/lib/utils';
-import { type VoteTransaction } from '../../../governance';
+import { type VoteTransaction, voteTransactionService } from '../../../governance';
 
 import {
   CONTROLLER_ARG_NAME,
@@ -170,10 +170,10 @@ export const getTransactionAmount = (tx: Transaction | DecodedTransaction): stri
     const transaction = tx as unknown as VoteTransaction;
     const vote = transaction.args.vote;
 
-    if ('Standard' in vote) {
-      return vote.Standard.balance;
+    if (voteTransactionService.isStandardVote(vote)) {
+      return vote.Standard.balance.replaceAll(',', '');
     } else {
-      return vote.SplitAbstain.abstain;
+      return vote.SplitAbstain.abstain.replaceAll(',', '');
     }
   }
 

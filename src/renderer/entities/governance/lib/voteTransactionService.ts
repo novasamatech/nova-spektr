@@ -9,6 +9,8 @@ import {
   type VoteTransaction,
 } from '../types/voteTransaction';
 
+import { votingService } from './votingService';
+
 const isStandardVote = (vote: TransactionVote): vote is TransactionStandardVote => {
   return 'Standard' in vote;
 };
@@ -52,8 +54,28 @@ const createTransactionVote = (
 const getVoteAmount = (vote: TransactionVote) =>
   new BN(isStandardVote(vote) ? vote.Standard.balance : vote.SplitAbstain.abstain);
 
+const getDecision = (vote: TransactionVote): 'aye' | 'nay' | 'abstain' => {
+  if (isStandardVote(vote)) {
+    return vote.Standard.vote.aye ? 'aye' : 'nay';
+  } else {
+    return 'abstain';
+  }
+};
+
+const getVotes = (vote: TransactionVote): BN => {
+  if (voteTransactionService.isStandardVote(vote)) {
+    return new BN(vote.Standard.balance.replaceAll(',', '')).mul(
+      new BN(votingService.getConvictionMultiplier(vote.Standard.vote.conviction)),
+    );
+  }
+
+  return new BN(vote.SplitAbstain.abstain);
+};
+
 export const voteTransactionService = {
   getVoteAmount,
+  getDecision,
+  getVotes,
 
   isVoteTransaction,
   isStandardVote,
