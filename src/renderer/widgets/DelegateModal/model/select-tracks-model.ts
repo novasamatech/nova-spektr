@@ -1,10 +1,10 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 
 import { type Account, type Chain } from '@/shared/core';
-import { addUniqueItems, removeItemsFromCollection } from '@/shared/lib/utils';
+import { addUniqueItems, removeItemsFromCollection, toAddress } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
-import { walletModel } from '@/entities/wallet';
-import { votingAggregate } from '@/features/governance';
+import { accountUtils, walletModel } from '@/entities/wallet';
+import { delegationAggregate, votingAggregate } from '@/features/governance';
 
 const formInitiated = createEvent<Chain>();
 const formSubmitted = createEvent<{ tracks: number[]; accounts: Account[] }>();
@@ -25,14 +25,29 @@ const $votedTracks = combine(
     const activeTracks = new Set<string>();
 
     for (const voteList of Object.values(votes)) {
-      for (const vote in Object.values(voteList)) {
-        if (votingService.isCasting(voteList[vote])) {
-          activeTracks.add(vote);
+      for (const [track, vote] of Object.entries(voteList)) {
+        if (votingService.isCasting(vote)) {
+          activeTracks.add(track);
         }
       }
     }
 
     return [...activeTracks];
+  },
+);
+
+const $availableAccounts = combine(
+  {
+    wallet: walletModel.$activeWallet,
+    delegations: delegationAggregate.$activeDelegations,
+    chain: delegationAggregate.$chain,
+  },
+  ({ wallet, delegations, chain }) => {
+    if (!wallet || !chain) return [];
+
+    return wallet.accounts
+      .filter((a) => accountUtils.isChainIdMatch(a, chain.chainId))
+      .filter((account) => !delegations[toAddress(account.accountId, { prefix: chain.addressPrefix })]);
   },
 );
 
@@ -80,6 +95,8 @@ sample({
 export const selectTracksModel = {
   $tracks,
   $accounts,
+  $availableAccounts,
+
   $chain,
   $votedTracks,
 

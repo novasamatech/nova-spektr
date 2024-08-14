@@ -1,19 +1,27 @@
 import cn from 'classnames';
 import { extendTailwindMerge } from 'tailwind-merge';
 
+import additionalColors from '../../../../../tw-config-consts/colors';
 import fontSizes from '../../../../../tw-config-consts/font-sizes';
 
 type CnArgs = Parameters<typeof cn>;
 
-const fonts = Object.keys(fontSizes as { [key: string]: object });
+const fonts = Object.keys(fontSizes as Record<string, unknown>);
+const colors = Object.keys(additionalColors as Record<string, unknown>);
 
 const twMerge = extendTailwindMerge({
-  classGroups: {
-    'font-size': [
-      {
-        text: fonts,
-      },
-    ],
+  extend: {
+    classGroups: {
+      w: [{ w: ['90', 'modal'] }],
+      h: [{ h: ['modal'] }],
+      'font-size': [{ text: fonts }],
+      'font-weight': [{ text: fonts }],
+      leading: [{ text: fonts }],
+      tracking: [{ text: fonts }],
+      'bg-color': [{ bg: colors }],
+      'text-color': [{ text: colors }],
+      'border-color': [{ border: colors }],
+    },
   },
 });
 

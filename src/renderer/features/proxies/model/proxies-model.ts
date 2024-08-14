@@ -129,14 +129,14 @@ const getProxiesFx = createEffect(
 
       const pureProxiesMap = dictionary(pureProxies, 'accountId');
 
-      for (const i in proxiedAccountsToAdd) {
-        const pureProxy = pureProxiesMap[proxiedAccountsToAdd[i].accountId];
+      for (const proxiedAccount of proxiedAccountsToAdd) {
+        const pureProxy = pureProxiesMap[proxiedAccount.accountId];
         if (pureProxy) {
-          proxiedAccountsToAdd[i].proxyVariant = ProxyVariant.PURE;
-          proxiedAccountsToAdd[i].blockNumber = pureProxy.blockNumber;
-          proxiedAccountsToAdd[i].extrinsicIndex = pureProxy.extrinsicIndex;
+          proxiedAccount.proxyVariant = ProxyVariant.PURE;
+          proxiedAccount.blockNumber = pureProxy.blockNumber;
+          proxiedAccount.extrinsicIndex = pureProxy.extrinsicIndex;
         } else {
-          proxiedAccountsToAdd[i].proxyVariant = ProxyVariant.REGULAR;
+          proxiedAccount.proxyVariant = ProxyVariant.REGULAR;
         }
       }
     }

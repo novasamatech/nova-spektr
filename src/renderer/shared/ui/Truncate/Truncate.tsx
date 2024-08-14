@@ -1,5 +1,7 @@
-import debounce from 'lodash/debounce';
-import { type CSSProperties, useEffect, useRef, useState } from 'react';
+import { type CSSProperties, memo, useEffect, useRef, useState } from 'react';
+
+import { useDebouncedCallback } from '@/shared/lib/hooks';
+import { cnTw } from '@/shared/lib/utils';
 
 import { getContainerMeasurement, getTextMeasurement } from './utils';
 
@@ -9,11 +11,16 @@ type Props = {
   end?: number;
   start?: number;
   className?: string;
-  style?: CSSProperties;
 };
 
-export const Truncate = ({ text, ellipsis = '...', end = 5, start = 5, className = '', style = {} }: Props) => {
-  const containerRef = useRef<HTMLDivElement>(null);
+const containerStyle = {
+  display: 'block',
+  overflow: 'hidden',
+  whiteSpace: 'nowrap',
+} satisfies CSSProperties;
+
+export const Truncate = memo<Props>(({ text, ellipsis = '...', end = 5, start = 5, className = '' }) => {
+  const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const textRef = useRef<HTMLParagraphElement>(null);
   const ellipsisRef = useRef<HTMLParagraphElement>(null);
 
@@ -21,7 +28,7 @@ export const Truncate = ({ text, ellipsis = '...', end = 5, start = 5, className
 
   const calculateMeasurements = () => {
     return {
-      container: getContainerMeasurement(containerRef.current),
+      container: getContainerMeasurement(container),
       ellipsis: getTextMeasurement(ellipsisRef.current),
       text: getTextMeasurement(textRef.current),
     };
@@ -35,7 +42,7 @@ export const Truncate = ({ text, ellipsis = '...', end = 5, start = 5, className
     const delta = Math.ceil(
       measurements.text.width.value - measurements.container.width.value + measurements.ellipsis.width.value,
     );
-    const charWidth = measurements.text.width.value / text.length;
+    const charWidth = measurements.text.width.value / text.length + 0.01;
 
     const lettersToRemove = Math.ceil(delta / charWidth);
     const center = Math.round(text.length / 2);
@@ -48,7 +55,7 @@ export const Truncate = ({ text, ellipsis = '...', end = 5, start = 5, className
     return `${leftSide}${ellipsis}${rightSide}`;
   };
 
-  const parseTextForTruncation = debounce((text: string) => {
+  const parseTextForTruncation = useDebouncedCallback(0, (text: string) => {
     const measurements = calculateMeasurements();
 
     const truncatedText =
@@ -57,36 +64,28 @@ export const Truncate = ({ text, ellipsis = '...', end = 5, start = 5, className
         : text;
 
     setTruncatedText(truncatedText);
-  }, 0);
+  });
 
-  const onResize = debounce(() => {
+  const handleResize = useDebouncedCallback(150, () => {
     parseTextForTruncation(text);
-  }, 100);
+  });
 
   useEffect(() => {
-    parseTextForTruncation(text);
-    window.addEventListener('resize', onResize);
+    if (container) {
+      const resizeObserver = new ResizeObserver(handleResize);
+      resizeObserver.observe(container);
 
-    return () => {
-      window.removeEventListener('resize', onResize);
-      onResize.cancel();
-      parseTextForTruncation.cancel();
-    };
-  }, []);
+      return () => resizeObserver.disconnect();
+    }
+  }, [container]);
 
   useEffect(() => {
+    handleResize.cancel();
     parseTextForTruncation(text);
   }, [text, start, end]);
 
-  const containerStyle = {
-    ...style,
-    display: 'block',
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-  } as CSSProperties;
-
   return (
-    <div ref={containerRef} style={containerStyle} className={className}>
+    <div ref={setContainer} style={containerStyle} className={cnTw('w-full', className)}>
       <p ref={textRef} className="hidden">
         {text}
       </p>
@@ -96,4 +95,4 @@ export const Truncate = ({ text, ellipsis = '...', end = 5, start = 5, className
       {truncatedText}
     </div>
   );
-};
+});

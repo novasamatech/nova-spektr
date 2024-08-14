@@ -1,4 +1,3 @@
-import { BN_ZERO } from '@polkadot/util';
 import { useGate, useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
@@ -22,7 +21,7 @@ type Props = {
 };
 
 export const VoteModal = ({ referendum, asset, chain, onClose }: Props) => {
-  useGate(voteModalAggregate.gates.flow, { referendum, amount: BN_ZERO, conviction: 'None' as const });
+  useGate(voteModalAggregate.gates.flow, { referendum, conviction: 'None' as const });
 
   const { t } = useI18n();
   const step = useUnit(voteModalAggregate.$step);
