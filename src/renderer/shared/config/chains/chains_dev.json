@@ -6565,7 +6565,7 @@
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Bittensor.svg",
     "options": [
       "multisig",
-      "pure_proxy",
+      "regular_proxy",
       "pure_proxy"
     ],
     "nodes": [
