@@ -552,7 +552,7 @@
       "viewVoteHistory": "View vote history"
     },
     "voted": "Voted",
-    "votedBy": "Voted by <name />",
+    "votedBy": "Voted via <name />",
     "votedWithAmount": "Voted:",
     "voting": {
       "aboutLabel": "About voting",
