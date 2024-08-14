@@ -56,7 +56,7 @@ const getVoteAmount = (vote: TransactionVote) =>
 
 const getDecision = (vote: TransactionVote): 'aye' | 'nay' | 'abstain' => {
   if (isStandardVote(vote)) {
-    return vote.Standard.vote.aye ? 'aye' : 'nay';
+    return vote.Standard.vote.vote === 'Aye' || vote.Standard.vote.aye ? 'aye' : 'nay';
   } else {
     return 'abstain';
   }
