@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createStore, sample } from 'effector';
-import { combineEvents, or } from 'patronum';
+import { or } from 'patronum';
 
 import { type ClaimTimeAt, type UnlockChunk, UnlockChunkType } from '@shared/api/governance';
 import { type Address, type Referendum, type TrackId, type TrackInfo, type VotingMap } from '@shared/core';
@@ -57,21 +57,20 @@ const getClaimScheduleFx = createEffect(
 );
 
 sample({
-  clock: [
-    referendumModel.events.requestDone,
-    combineEvents([locksModel.events.requestDone, votingModel.effects.requestVotingFx.done]),
-  ],
+  clock: [referendumModel.events.requestDone, locksModel.$trackLocks.updates, votingModel.$voting.updates],
   source: {
     api: networkSelectorModel.$governanceChainApi,
     tracks: tracksModel.$tracks,
     trackLocks: locksModel.$trackLocks,
     totalLock: locksModel.$totalLock,
+    lockIsLoading: locksModel.$isLoading,
     voting: votingModel.$voting,
+    votingIsLoading: votingModel.$isLoading,
     referendums: referendumModel.$referendums,
     chain: networkSelectorModel.$governanceChain,
   },
-  filter: ({ api, chain, referendums, totalLock }) =>
-    !!api && !!chain && !!referendums[chain!.chainId] && !totalLock.isZero(),
+  filter: ({ api, chain, referendums, totalLock, votingIsLoading, lockIsLoading }) =>
+    !!api && !!chain && !!referendums[chain!.chainId] && !votingIsLoading && !lockIsLoading && !totalLock.isZero(),
   fn: ({ api, tracks, trackLocks, voting, referendums, chain }) => ({
     api: api!,
     tracks,

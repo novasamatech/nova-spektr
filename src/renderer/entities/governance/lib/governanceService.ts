@@ -28,6 +28,7 @@ export const governanceService = {
   getReferendum,
   getVotingFor,
   getTrackLocks,
+  subscribeTrackLocks,
   getTracks,
 };
 
@@ -171,6 +172,33 @@ async function getReferendums(api: ApiPromise): Promise<Referendum[]> {
   return result;
 }
 
+// function subscribeReferendumsFx(api: ApiPromise, callback: (referendums?: Referendum[]) => void): Promise<() => void> {
+//   console.log(1, 'referendums');
+
+//   return api.query.referenda.referendumInfoFor(1, (referendums: any) => {
+//     console.log('2, referendums', referendums);
+//     try {
+//       const result: Referendum[] = [];
+
+//       for (const [refIndex, option] of referendums) {
+//         if (option.isNone) continue;
+
+//         const pallet = option.unwrap();
+//         const referendumId = refIndex.args[0].toString();
+//         const referendum = mapReferendum(referendumId, pallet);
+
+//         if (referendum) {
+//           result.push(referendum);
+//         }
+//       }
+//       callback(result);
+//     } catch (error) {
+//       console.warn(error);
+//       callback(undefined);
+//     }
+//   });
+// }
+
 async function getReferendum(id: ReferendumId, api: ApiPromise): Promise<Referendum | null> {
   const palette = await api.query.referenda.referendumInfoFor(parseInt(id));
 
@@ -185,93 +213,95 @@ async function getVotingFor(
   api: ApiPromise,
   tracksIds: TrackId[],
   addresses: Address[],
-): Promise<Record<Address, Record<TrackId, Voting>>> {
+  callback: (res?: Record<Address, Record<TrackId, Voting>>) => void,
+): Promise<() => void> {
   const tuples = addresses.flatMap((address) => tracksIds.map((trackId) => [address, trackId]));
 
-  const votings = await api.query.convictionVoting.votingFor.multi(tuples);
-  const result = addresses.reduce<Record<Address, Record<TrackId, Voting>>>((acc, address) => {
-    acc[address] = {};
+  return api.query.convictionVoting.votingFor.multi(tuples, (votings) => {
+    const result = addresses.reduce<Record<Address, Record<TrackId, Voting>>>((acc, address) => {
+      acc[address] = {};
 
-    return acc;
-  }, {});
+      return acc;
+    }, {});
 
-  for (const [index, convictionVoting] of votings.entries()) {
-    if (convictionVoting.isStorageFallback) continue;
+    for (const [index, convictionVoting] of votings.entries()) {
+      if (convictionVoting.isStorageFallback) continue;
 
-    const address = tuples[index]?.[0];
-    const trackId = tuples[index]?.[1];
-    if (!address || !trackId) {
-      continue;
-    }
-
-    if (convictionVoting.isDelegating) {
-      const delegation = convictionVoting.asDelegating;
-
-      result[address][trackId] = {
-        type: 'Delegating',
-        address,
-        track: trackId,
-        balance: delegation.balance.toBn(),
-        conviction: delegation.conviction.type,
-        target: delegation.target.toString(),
-        prior: {
-          unlockAt: delegation.prior[0].toNumber(),
-          amount: delegation.prior[1].toBn(),
-        },
-      };
-    }
-
-    if (convictionVoting.isCasting) {
-      const votes: Record<ReferendumId, AccountVote> = {};
-      for (const [referendumIndex, vote] of convictionVoting.asCasting.votes) {
-        const referendumId = referendumIndex.toString();
-
-        if (vote.isStandard) {
-          const standardVote = vote.asStandard;
-          votes[referendumId] = {
-            type: 'Standard',
-            vote: {
-              aye: standardVote.vote.isAye,
-              conviction: standardVote.vote.conviction.type,
-            },
-            balance: standardVote.balance.toBn(),
-          };
-        }
-
-        if (vote.isSplit) {
-          const splitVote = vote.asSplit;
-          votes[referendumId] = {
-            type: 'Split',
-            aye: splitVote.aye.toBn(),
-            nay: splitVote.nay.toBn(),
-          };
-        }
-
-        if (vote.isSplitAbstain) {
-          const splitAbstainVote = vote.asSplitAbstain;
-          votes[referendumId] = {
-            type: 'SplitAbstain',
-            aye: splitAbstainVote.aye.toBn(),
-            nay: splitAbstainVote.nay.toBn(),
-            abstain: splitAbstainVote.abstain.toBn(),
-          };
-        }
+      const address = tuples[index]?.[0];
+      const trackId = tuples[index]?.[1];
+      if (!address || !trackId) {
+        continue;
       }
 
-      result[address][trackId] = {
-        type: 'Casting',
-        track: trackId,
-        address,
-        votes,
-        prior: {
-          unlockAt: convictionVoting.asCasting.prior[0].toNumber(),
-          amount: convictionVoting.asCasting.prior[1].toBn(),
-        },
-      };
-    }
-  }
+      if (convictionVoting.isDelegating) {
+        const delegation = convictionVoting.asDelegating;
 
-  return result;
+        result[address][trackId] = {
+          type: 'Delegating',
+          address,
+          track: trackId,
+          balance: delegation.balance.toBn(),
+          conviction: delegation.conviction.type,
+          target: delegation.target.toString(),
+          prior: {
+            unlockAt: delegation.prior[0].toNumber(),
+            amount: delegation.prior[1].toBn(),
+          },
+        };
+      }
+
+      if (convictionVoting.isCasting) {
+        const votes: Record<ReferendumId, AccountVote> = {};
+        for (const [referendumIndex, vote] of convictionVoting.asCasting.votes) {
+          const referendumId = referendumIndex.toString();
+
+          if (vote.isStandard) {
+            const standardVote = vote.asStandard;
+            votes[referendumId] = {
+              type: 'Standard',
+              vote: {
+                aye: standardVote.vote.isAye,
+                conviction: standardVote.vote.conviction.type,
+              },
+              balance: standardVote.balance.toBn(),
+            };
+          }
+
+          if (vote.isSplit) {
+            const splitVote = vote.asSplit;
+            votes[referendumId] = {
+              type: 'Split',
+              aye: splitVote.aye.toBn(),
+              nay: splitVote.nay.toBn(),
+            };
+          }
+
+          if (vote.isSplitAbstain) {
+            const splitAbstainVote = vote.asSplitAbstain;
+            votes[referendumId] = {
+              type: 'SplitAbstain',
+              aye: splitAbstainVote.aye.toBn(),
+              nay: splitAbstainVote.nay.toBn(),
+              abstain: splitAbstainVote.abstain.toBn(),
+            };
+          }
+        }
+
+        result[address][trackId] = {
+          type: 'Casting',
+          track: trackId,
+          address,
+          votes,
+          prior: {
+            unlockAt: convictionVoting.asCasting.prior[0].toNumber(),
+            amount: convictionVoting.asCasting.prior[1].toBn(),
+          },
+        };
+      }
+    }
+
+    callback(result);
+  });
 }
 
 async function getTrackLocks(api: ApiPromise, addresses: Address[]): Promise<Record<Address, Record<TrackId, BN>>> {
@@ -289,6 +319,27 @@ async function getTrackLocks(api: ApiPromise, addresses: Address[]): Promise<Rec
   }
 
   return result;
+}
+
+function subscribeTrackLocks(
+  api: ApiPromise,
+  addresses: Address[],
+  callback: (res?: Record<Address, Record<TrackId, BN>>) => void,
+): Promise<() => void> {
+  return api.query.convictionVoting.classLocksFor.multi(addresses, (tuples) => {
+    const result: Record<Address, Record<TrackId, BN>> = {};
+
+    for (const [index, locks] of tuples.entries()) {
+      const lockData = locks.reduce<Record<TrackId, BN>>((acc, lock) => {
+        acc[lock[0].toString()] = lock[1].toBn();
+
+        return acc;
+      }, {});
+
+      result[addresses[index]] = lockData;
+    }
+    callback(result);
+  });
 }
 
 function getTracks(api: ApiPromise): Record<TrackId, TrackInfo> {

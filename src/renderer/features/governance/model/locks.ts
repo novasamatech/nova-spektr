@@ -1,6 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_ZERO } from '@polkadot/util';
-import { createEffect, createEvent, createStore, sample } from 'effector';
+import { createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
+import noop from 'lodash/noop';
 import { spread } from 'patronum';
 
 import { type Address, type TrackId } from '@shared/core';
@@ -10,18 +11,27 @@ import { accountUtils, walletModel } from '@entities/wallet';
 import { networkSelectorModel } from './networkSelector';
 
 const getTracksLocks = createEvent();
+const locksSet = createEvent<Record<Address, Record<TrackId, BN>>>();
 
 const $totalLock = createStore<BN>(BN_ZERO);
-const $trackLocks = createStore<Record<Address, Record<TrackId, BN>>>({});
 const $isLoading = createStore(true);
+const $locksUnsub = createStore<() => void>(noop);
+
+const $trackLocks = restore(locksSet, {});
 
 type Props = {
   api: ApiPromise;
   addresses: Address[];
 };
 
-const getTrackLocksFx = createEffect(({ api, addresses }: Props): Promise<Record<Address, Record<TrackId, BN>>> => {
-  return governanceService.getTrackLocks(api, addresses);
+const subscribeTrackLocksFx = createEffect(({ api, addresses }: Props): Promise<() => void> => {
+  const boundLocksSet = scopeBind(locksSet, { safe: true });
+
+  return governanceService.subscribeTrackLocks(api, addresses, (locks) => {
+    if (!locks) return;
+
+    boundLocksSet(locks);
+  });
 });
 
 sample({
@@ -41,11 +51,11 @@ sample({
     api: api!,
     addresses: accountUtils.getAddressesForWallet(wallet!, chain!),
   }),
-  target: getTrackLocksFx,
+  target: subscribeTrackLocksFx,
 });
 
 sample({
-  clock: getTrackLocksFx.doneData,
+  clock: $trackLocks,
   fn: (trackLocks) => {
     let maxLockTotal = BN_ZERO;
     for (const lock of Object.values(trackLocks)) {
@@ -60,7 +70,12 @@ sample({
 });
 
 sample({
-  clock: getTrackLocksFx.finally,
+  clock: subscribeTrackLocksFx.doneData,
+  target: $locksUnsub,
+});
+
+sample({
+  clock: subscribeTrackLocksFx.finally,
   fn: () => false,
   target: $isLoading,
 });
@@ -69,9 +84,10 @@ export const locksModel = {
   $isLoading,
   $totalLock,
   $trackLocks,
+  $locksUnsub,
 
   events: {
-    requestDone: getTrackLocksFx.done,
+    requestDone: subscribeTrackLocksFx.done,
     getTracksLocks,
   },
 };

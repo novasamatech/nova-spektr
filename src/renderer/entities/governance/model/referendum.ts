@@ -67,10 +67,6 @@ export const referendumModel = {
   $referendums: readonly($referendums),
   $isReferendumsLoading: requestReferendumsFx.pending,
 
-  effects: {
-    requestReferendumsFx,
-  },
-
   events: {
     requestReferendums,
     requestReferendum,

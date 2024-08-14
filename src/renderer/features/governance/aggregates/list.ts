@@ -43,9 +43,8 @@ sample({
   clock: networkSelectorModel.$governanceChainApi,
   source: {
     chain: networkSelectorModel.$governanceChain,
-    referendums: referendumModel.$referendums,
   },
-  filter: ({ chain, referendums }, api) => !!api && !!chain && !referendums[chain.chainId]?.length,
+  filter: ({ chain }, api) => !!api && !!chain,
   fn: ({ chain }, api) => ({ api: api!, chain: chain! }),
   target: referendumModel.events.requestReferendums,
 });
@@ -53,10 +52,6 @@ sample({
 export const listAggregate = {
   $referendums: readonly($referendums),
   $isLoading: referendumModel.$isReferendumsLoading,
-
-  effects: {
-    requestReferendumsFx: referendumModel.effects.requestReferendumsFx,
-  },
 
   events: {
     requestDone: referendumModel.events.requestDone,
