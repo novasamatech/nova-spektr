@@ -3,7 +3,7 @@ import { createEffect, createEvent, createStore, sample } from 'effector';
 import { interval, readonly } from 'patronum';
 
 import { type Chain, type ChainId, type Referendum, type ReferendumId } from '@/shared/core';
-import { addUnique, merge } from '@shared/lib/utils';
+import { addUnique } from '@shared/lib/utils';
 import { governanceService } from '../lib/governanceService';
 
 type RequestListParams = {
@@ -81,9 +81,7 @@ sample({
   source: $referendums,
   filter: (_, { params }) => !!params.chain,
   fn: (referendums, { params, result }) => {
-    const updateArray = result
-      ? merge(referendums[params.chain.chainId] || [], result, (x) => x.referendumId)
-      : referendums[params.chain.chainId];
+    const updateArray = result ? result : referendums[params.chain.chainId];
 
     return { ...referendums, [params.chain.chainId]: updateArray };
   },
