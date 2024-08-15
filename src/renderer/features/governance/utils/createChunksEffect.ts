@@ -1,15 +1,16 @@
-import { createEffect, createEvent, sample, scopeBind } from 'effector';
+import { createDomain, sample } from 'effector';
 import { readonly } from 'patronum';
 
 export const createChunksEffect = <T, V>(fn: (params: T, callback: (value: V) => unknown) => unknown) => {
-  const request = createEvent<T>();
-  const receive = createEvent<{ params: T; result: V }>();
+  const domain = createDomain();
 
-  const requestFx = createEffect((params: T) => {
-    const boundedReceive = scopeBind(receive, { safe: true });
-    const cb = (result: V) => boundedReceive({ params, result });
+  const request = domain.createEvent<T>();
+  const received = domain.createEvent<{ params: T; result: V }>();
 
-    return fn(params, cb);
+  const requestFx = domain.createEffect((params: T) => {
+    return fn(params, (result: V) => {
+      received({ params, result });
+    });
   });
 
   sample({
@@ -20,7 +21,7 @@ export const createChunksEffect = <T, V>(fn: (params: T, callback: (value: V) =>
   return {
     request,
     done: requestFx.done,
-    receive: readonly(receive),
+    received: readonly(received),
     $pending: requestFx.pending,
   };
 };

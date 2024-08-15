@@ -25,13 +25,13 @@ type OffChainParams = {
   service: GovernanceApi;
 };
 
-type OffChainReceiveParams = Record<ReferendumId, string>;
+type OffChainResponse = Record<ReferendumId, string>;
 
 const {
   request: requestReferendumTitles,
-  receive: receiveReferendumTitles,
+  received: receiveReferendumTitles,
   $pending: $isTitlesLoading,
-} = createChunksEffect<OffChainParams, OffChainReceiveParams>(({ chain, service }, cb) => {
+} = createChunksEffect<OffChainParams, OffChainResponse>(({ chain, service }, cb) => {
   return service.getReferendumList(chain, (data) => {
     cb(data);
   });
