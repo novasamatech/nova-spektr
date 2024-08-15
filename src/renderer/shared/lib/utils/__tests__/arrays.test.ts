@@ -1,4 +1,4 @@
-import { addUnique, splice } from '../arrays';
+import { addUnique, merge, splice } from '../arrays';
 
 describe('shared/lib/onChainUtils/arrays', () => {
   test('should insert element in the beginning', () => {
@@ -43,6 +43,90 @@ describe('shared/lib/onChainUtils/arrays', () => {
     test('should add element according to compare function', () => {
       const array = addUnique([{ id: 1 }, { id: 2 }], { id: 3 }, (x) => x.id);
       expect(array).toEqual([{ id: 1 }, { id: 2 }, { id: 3 }]);
+    });
+  });
+
+  describe('merge', () => {
+    it('should array of strings', () => {
+      const list1 = ['1', '2', '3', '4'];
+      const list2 = ['2', '5'];
+
+      const res = merge(list1, list2, (s) => s);
+      expect(res).toEqual(['1', '2', '3', '4', '5']);
+    });
+
+    it('should return firrt array if second is empty', () => {
+      const list1 = ['1', '2', '3', '4'];
+
+      const res = merge(list1, [], (s) => s);
+      expect(res).toBe(list1);
+    });
+
+    it('should return second array if first is empty', () => {
+      const list2 = ['1', '2', '3', '4'];
+
+      const res = merge([], list2, (s) => s);
+      expect(res).toBe(list2);
+    });
+
+    it('should sort', () => {
+      const list1 = [2, 4, 3];
+      const list2 = [1, 5];
+
+      const res = merge(
+        list1,
+        list2,
+        (s) => s,
+        (a, b) => a - b,
+      );
+      expect(res).toEqual([1, 2, 3, 4, 5]);
+    });
+
+    it('should merge objects', () => {
+      const list1 = [{ id: 1 }, { id: 4 }, { id: 5 }];
+      const list2 = [{ id: 3 }, { id: 2 }];
+
+      const res = merge(list1, list2, (s) => s.id);
+      expect(res).toEqual([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }]);
+    });
+
+    it('should merge and sort objects', () => {
+      const list1 = [{ id: 1 }, { id: 5 }, { id: 4 }];
+      const list2 = [{ id: 3 }, { id: 2 }];
+
+      const res = merge(
+        list1,
+        list2,
+        (s) => s.id,
+        (a, b) => b.id - a.id,
+      );
+      expect(res).toEqual([{ id: 5 }, { id: 4 }, { id: 3 }, { id: 2 }, { id: 1 }]);
+    });
+
+    it('should sort objects by complex value', () => {
+      const list1 = [
+        { id: 1, date: new Date(1) },
+        { id: 5, date: new Date(5) },
+        { id: 4, date: new Date(4) },
+      ];
+      const list2 = [
+        { id: 3, date: new Date(3) },
+        { id: 2, date: new Date(2) },
+      ];
+
+      const res = merge(
+        list1,
+        list2,
+        (s) => s.id,
+        (a, b) => a.date.getTime() - b.date.getTime(),
+      );
+      expect(res).toEqual([
+        { id: 1, date: new Date(1) },
+        { id: 2, date: new Date(2) },
+        { id: 3, date: new Date(3) },
+        { id: 4, date: new Date(4) },
+        { id: 5, date: new Date(5) },
+      ]);
     });
   });
 });
