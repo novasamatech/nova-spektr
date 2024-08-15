@@ -5,9 +5,8 @@ import { readonly } from 'patronum';
 
 import { type Address, type TrackId } from '@shared/core';
 import { nonNullable } from '@shared/lib/utils';
-import { governanceSubscribeService } from '@/entities/governance';
+import { createSubscriber, governanceSubscribeService } from '@/entities/governance';
 import { accountUtils, walletModel } from '@entities/wallet';
-import { createSubscriber } from '../utils/createSubscriber';
 
 import { networkSelectorModel } from './networkSelector';
 

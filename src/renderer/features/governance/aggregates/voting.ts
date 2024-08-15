@@ -45,7 +45,7 @@ sample({
     tracks: tracks || [],
     addresses,
   }),
-  target: votingModel.events.requestVoting,
+  target: votingModel.events.subscribeVoting,
 });
 
 sample({
@@ -66,11 +66,8 @@ export const votingAggregate = {
   $activeWalletVotes,
   $voting: votingModel.$voting,
   $isLoading: votingModel.$isLoading,
-  $votingUnsub: votingModel.$votingUnsub,
 
   events: {
-    requestVoting: requestVoting,
-    requestDone: votingModel.effects.requestVotingFx.done,
-    requestPending: votingModel.effects.requestVotingFx.pending,
+    requestVoting,
   },
 };

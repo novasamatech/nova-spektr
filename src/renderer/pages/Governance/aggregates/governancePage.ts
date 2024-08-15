@@ -1,4 +1,4 @@
-import { attach, combine, sample } from 'effector';
+import { combine, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { either, readonly } from 'patronum';
 
@@ -90,10 +90,7 @@ sample({
 
 sample({
   clock: flow.close,
-  target: attach({
-    source: votingModel.$votingUnsub,
-    effect: (unsub) => unsub(),
-  }),
+  target: votingModel.events.unsubscribeVoting,
 });
 
 sample({
