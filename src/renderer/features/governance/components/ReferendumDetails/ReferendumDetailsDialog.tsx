@@ -6,6 +6,7 @@ import { type Chain } from '@shared/core';
 import { useModalClose } from '@shared/lib/hooks';
 import { formatBalance } from '@shared/lib/utils';
 import { BaseModal, Button, Plate } from '@shared/ui';
+import { walletModel } from '@/entities/wallet';
 import { referendumService, votingService } from '@entities/governance';
 import { detailsAggregate } from '../../aggregates/details';
 import { type AggregatedReferendum } from '../../types/structs';
@@ -39,6 +40,8 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onCl
 
   const votingAsset = useUnit(detailsAggregate.$votingAsset);
   const canVote = useUnit(detailsAggregate.$canVote);
+  const hasAccount = useUnit(detailsAggregate.$hasAccount);
+  const wallet = useUnit(walletModel.$activeWallet);
 
   const votes = useStoreMap({
     store: detailsAggregate.$votes,
@@ -82,6 +85,8 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onCl
               chain={chain}
               asset={votingAsset}
               canVote={canVote}
+              hasAccount={hasAccount}
+              wallet={wallet}
               onVoteRequest={onVoteRequest}
             />
           </DetailsCard>

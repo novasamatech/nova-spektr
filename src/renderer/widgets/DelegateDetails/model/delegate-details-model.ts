@@ -3,7 +3,7 @@ import { combine, createEvent, createStore, sample } from 'effector';
 import { type DelegateAccount } from '@/shared/api/governance';
 import { type Address } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
-import { accountUtils, walletModel } from '@/entities/wallet';
+import { accountUtils, permissionUtils, walletModel } from '@/entities/wallet';
 import { delegationAggregate, networkSelectorModel, votingAggregate } from '@/features/governance';
 
 const flowStarted = createEvent<DelegateAccount>();
@@ -35,13 +35,16 @@ const $activeAccounts = votingAggregate.$activeWalletVotes.map((activeVotes) => 
     .map(([address]) => address);
 });
 
+const $canDelegate = walletModel.$activeWallet.map((wallet) => !!wallet && permissionUtils.canDelegate(wallet));
+
 const $isAddAvailable = combine(
   {
     activeAccounts: $activeAccounts,
     activeWallet: walletModel.$activeWallet,
     chain: networkSelectorModel.$governanceChain,
+    canDelegate: $canDelegate,
   },
-  ({ activeAccounts, activeWallet, chain }) => {
+  ({ canDelegate, activeAccounts, activeWallet, chain }) => {
     if (!chain || !activeWallet) return false;
 
     const accounts = activeWallet?.accounts.filter((account) => accountUtils.isChainAndCryptoMatch(account, chain));
@@ -50,7 +53,7 @@ const $isAddAvailable = combine(
       (account) => !activeAccounts.includes(toAddress(account.accountId, { prefix: chain.addressPrefix })),
     );
 
-    return freeAccounts.length > 0;
+    return canDelegate && freeAccounts.length > 0;
   },
 );
 
