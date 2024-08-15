@@ -258,7 +258,7 @@ sample({
       nodes,
       metadata,
       providerType,
-      // set to true in case of soe network issues
+      // set true in case of some network issues
       DEBUG_NETWORKS: false,
     };
   },
