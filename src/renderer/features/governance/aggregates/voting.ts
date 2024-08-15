@@ -67,6 +67,7 @@ export const votingAggregate = {
   $activeWalletVotes,
   $voting: votingModel.$voting,
   $isLoading: votingModel.$isLoading,
+  $votingUnsub: votingModel.$votingUnsub,
 
   events: {
     requestVoting: requestVoting,
