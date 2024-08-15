@@ -166,7 +166,7 @@ sample({
 
 sample({
   clock: voteConfirmModel.events.submitFinished,
-  target: locksModel.events.getTracksLocks,
+  target: locksModel.events.subscribeLocks,
 });
 
 sample({

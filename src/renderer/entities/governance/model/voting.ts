@@ -1,11 +1,16 @@
 import { type ApiPromise } from '@polkadot/api';
-import { createEffect, createEvent, createStore, sample } from 'effector';
+import { createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
+import noop from 'lodash/noop';
 import { readonly } from 'patronum';
 
 import { type Address, type TrackId, type VotingMap } from '@/shared/core';
-import { governanceService } from '../lib/governanceService';
+import { governanceSubscribeService } from '../lib/governanceSubscribeService';
 
-const $voting = createStore<VotingMap>({});
+const votingSet = createEvent<VotingMap>();
+const requestVoting = createEvent<VotingParams>();
+
+const $voting = restore<VotingMap>(votingSet, {});
+const $votingUnsub = createStore<() => void>(noop);
 
 type VotingParams = {
   api: ApiPromise;
@@ -13,30 +18,33 @@ type VotingParams = {
   addresses: Address[];
 };
 
-const requestVoting = createEvent<VotingParams>();
+const subscribeVotingFx = createEffect(({ api, tracks, addresses }: VotingParams) => {
+  const boundVotingSet = scopeBind(votingSet, { safe: true });
 
-const requestVotingFx = createEffect(({ api, tracks, addresses }: VotingParams): Promise<VotingMap> => {
-  return governanceService.getVotingFor(api, tracks, addresses);
+  return governanceSubscribeService.subscribeVotingFor(api, tracks, addresses, (voting) => {
+    if (!voting) return;
+
+    boundVotingSet(voting);
+  });
 });
 
 sample({
   clock: requestVoting,
-  target: requestVotingFx,
+  target: subscribeVotingFx,
 });
 
 sample({
-  clock: requestVotingFx.doneData,
-  source: $voting,
-  fn: (voting, newVoting) => ({ ...voting, ...newVoting }),
-  target: $voting,
+  clock: subscribeVotingFx.doneData,
+  target: $votingUnsub,
 });
 
 export const votingModel = {
   $voting: readonly($voting),
-  $isLoading: requestVotingFx.pending,
+  $isLoading: subscribeVotingFx.pending,
+  $votingUnsub,
 
   effects: {
-    requestVotingFx,
+    requestVotingFx: subscribeVotingFx,
   },
 
   events: {

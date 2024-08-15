@@ -20,6 +20,7 @@ export { referendumService } from './lib/referendumService';
 export { votingService } from './lib/votingService';
 export { locksService } from './lib/lockService';
 export { governanceService } from './lib/governanceService';
+export { governanceSubscribeService } from './lib/governanceSubscribeService';
 export { claimScheduleService } from './lib/claimScheduleService';
 export { fellowshipThresholdService } from './lib/fellowshipThresholdService';
 export { opengovThresholdService } from './lib/opengovThresholdService';

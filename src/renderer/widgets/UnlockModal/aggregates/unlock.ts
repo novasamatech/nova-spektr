@@ -192,7 +192,7 @@ sample({
       );
     });
   },
-  target: [unlockModel.$claimSchedule, locksModel.events.getTracksLocks],
+  target: [unlockModel.$claimSchedule, locksModel.events.subscribeLocks],
 });
 
 sample({

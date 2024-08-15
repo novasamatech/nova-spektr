@@ -10,6 +10,17 @@ export function nonNullable<T>(value: T): value is NonNullable<T> {
 }
 
 /**
+ * Type guard that checks is value nullable
+ *
+ * @param value Value to be checked
+ *
+ * @returns {Boolean}
+ */
+export function nullable(value: unknown): value is null | undefined {
+  return value === null || value === undefined;
+}
+
+/**
  * Type guard that checks is Promise settled fulfilled
  *
  * @param promise Value of promise to be checked
