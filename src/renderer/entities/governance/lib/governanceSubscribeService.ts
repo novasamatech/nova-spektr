@@ -1,7 +1,14 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type BN } from '@polkadot/util';
 
-import { type AccountVote, type Address, type ReferendumId, type TrackId, type Voting } from '@/shared/core';
+import {
+  type AccountVote,
+  type Address,
+  type ReferendumId,
+  type TrackId,
+  type Voting,
+  type VotingMap,
+} from '@/shared/core';
 
 export const governanceSubscribeService = {
   subscribeTrackLocks,
@@ -33,15 +40,15 @@ function subscribeTrackLocks(
   };
 }
 
-async function subscribeVotingFor(
+function subscribeVotingFor(
   api: ApiPromise,
   tracksIds: TrackId[],
   addresses: Address[],
-  callback: (res?: Record<Address, Record<TrackId, Voting>>) => void,
-): Promise<() => void> {
+  callback: (res?: VotingMap) => void,
+): () => void {
   const tuples = addresses.flatMap((address) => tracksIds.map((trackId) => [address, trackId]));
 
-  return api.query.convictionVoting.votingFor.multi(tuples, (votings) => {
+  const unsubscribe = api.query.convictionVoting.votingFor.multi(tuples, (votings) => {
     const result = addresses.reduce<Record<Address, Record<TrackId, Voting>>>((acc, address) => {
       acc[address] = {};
 
@@ -126,4 +133,8 @@ async function subscribeVotingFor(
 
     callback(result);
   });
+
+  return () => {
+    unsubscribe.then((x) => x());
+  };
 }
