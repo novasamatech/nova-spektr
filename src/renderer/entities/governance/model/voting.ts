@@ -7,6 +7,7 @@ import { type Address, type TrackId, type VotingMap } from '@/shared/core';
 import { governanceSubscribeService } from '../lib/governanceSubscribeService';
 
 const votingSet = createEvent<VotingMap>();
+const requestVoting = createEvent<VotingParams>();
 
 const $voting = restore<VotingMap>(votingSet, {});
 const $votingUnsub = createStore<() => void>(noop);
@@ -16,8 +17,6 @@ type VotingParams = {
   tracks: TrackId[];
   addresses: Address[];
 };
-
-const requestVoting = createEvent<VotingParams>();
 
 const subscribeVotingFx = createEffect(({ api, tracks, addresses }: VotingParams) => {
   const boundVotingSet = scopeBind(votingSet, { safe: true });

@@ -11,6 +11,8 @@ import { createSubscriber } from '../utils/createSubscriber';
 
 import { networkSelectorModel } from './networkSelector';
 
+const subscribeLocks = createEvent();
+
 const $trackLocks = createStore<Record<Address, Record<TrackId, BN>>>({});
 
 const $totalLock = $trackLocks.map((trackLocks) => {
@@ -24,15 +26,13 @@ const $totalLock = $trackLocks.map((trackLocks) => {
   return maxLockTotal;
 });
 
+const $isLoading = createStore(true);
+
 const $walletAddresses = combine(walletModel.$activeWallet, networkSelectorModel.$governanceChain, (wallet, chain) => {
   if (!wallet || !chain) return [];
 
   return accountUtils.getAddressesForWallet(wallet, chain);
 });
-
-const $isLoading = createStore(true);
-
-const subscribeLocks = createEvent();
 
 type SubscribeParams = {
   api: ApiPromise;
