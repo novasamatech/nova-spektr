@@ -3,12 +3,13 @@ import { readonly } from 'patronum';
 
 export const createChunksEffect = <T, V>(fn: (params: T, callback: (value: V) => unknown) => unknown) => {
   const request = createEvent<T>();
-  const receive = createEvent<V>();
+  const receive = createEvent<{ params: T; result: V }>();
 
   const requestFx = createEffect((params: T) => {
     const boundedReceive = scopeBind(receive, { safe: true });
+    const cb = (result: V) => boundedReceive({ params, result });
 
-    return fn(params, boundedReceive);
+    return fn(params, cb);
   });
 
   sample({
@@ -18,8 +19,8 @@ export const createChunksEffect = <T, V>(fn: (params: T, callback: (value: V) =>
 
   return {
     request,
-    pending: requestFx.pending,
     done: requestFx.done,
     receive: readonly(receive),
+    $pending: requestFx.pending,
   };
 };

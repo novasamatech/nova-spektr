@@ -25,25 +25,22 @@ type OffChainParams = {
   service: GovernanceApi;
 };
 
-type OffChainReceiveParams = {
-  chainId: ChainId;
-  data: Record<string, string>;
-};
+type OffChainReceiveParams = Record<ReferendumId, string>;
 
 const {
   request: requestReferendumTitles,
   receive: receiveReferendumTitles,
-  pending: $isTitlesLoading,
-  done: referendumTitlesReceived,
+  $pending: $isTitlesLoading,
 } = createChunksEffect<OffChainParams, OffChainReceiveParams>(({ chain, service }, cb) => {
   return service.getReferendumList(chain, (data) => {
-    cb({ chainId: chain.chainId, data });
+    cb(data);
   });
 });
 
 sample({
-  clock: referendumTitlesReceived,
+  clock: receiveReferendumTitles,
   source: $loadedTitles,
+  filter: (titles, { params }) => !(params.chain.chainId in titles),
   fn: (titles, { params }) => {
     return { ...titles, [params.chain.chainId]: true };
   },
@@ -70,10 +67,10 @@ sample({
 sample({
   clock: receiveReferendumTitles,
   source: $titles,
-  fn: (referendumsDetails, { chainId, data }) => {
-    const { [chainId]: chainToUpdate, ...rest } = referendumsDetails;
+  fn: (referendumsDetails, { params, result }) => {
+    const { [params.chain.chainId]: chainToUpdate, ...rest } = referendumsDetails;
 
-    return { ...rest, [chainId]: { ...chainToUpdate, ...data } };
+    return { ...rest, [params.chain.chainId]: { ...chainToUpdate, ...result } };
   },
   target: $titles,
 });
