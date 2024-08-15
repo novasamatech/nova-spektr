@@ -77,18 +77,15 @@ sample({
     chain: chain!,
   }),
   target: [
-    locksModel.events.getTracksLocks,
     votingAggregate.events.requestVoting,
     referendumModel.events.updateReferendums,
+    locksModel.events.subscribeLocks,
   ],
 });
 
 sample({
   clock: flow.close,
-  target: attach({
-    source: locksModel.$locksUnsub,
-    effect: (unsub) => unsub(),
-  }),
+  target: locksModel.events.unsubscribeLocks,
 });
 
 sample({

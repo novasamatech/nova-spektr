@@ -12,8 +12,8 @@ function subscribeTrackLocks(
   api: ApiPromise,
   addresses: Address[],
   callback: (res?: Record<Address, Record<TrackId, BN>>) => void,
-): Promise<() => void> {
-  return api.query.convictionVoting.classLocksFor.multi(addresses, (tuples) => {
+): () => void {
+  const unsubscribe = api.query.convictionVoting.classLocksFor.multi(addresses, (tuples) => {
     const result: Record<Address, Record<TrackId, BN>> = {};
 
     for (const [index, locks] of tuples.entries()) {
@@ -27,6 +27,10 @@ function subscribeTrackLocks(
     }
     callback(result);
   });
+
+  return () => {
+    unsubscribe.then((x) => x());
+  };
 }
 
 async function subscribeVotingFor(

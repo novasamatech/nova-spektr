@@ -43,13 +43,13 @@ export const createSubscriber = <P = void, V = void>(fn: SubscribeFn<P, V>, scop
   const domain = createDomain({ name: 'subscriber' });
 
   const subscribe = domain.createEvent<P>();
-  const unsubscribe = domain.createEvent<P>();
+  const unsubscribe = domain.createEvent();
   const received = domain.createEvent<{ params: P; result: V }>();
 
   const $unsubscribeFn = domain.createStore<UnsubscribeFn | null>(null);
 
   const subscribeFx = domain.createEffect<P, UnsubscribeFn>((params) => {
-    const binded = scopeBind(received, { scope });
+    const binded = scope ? scopeBind(received, { scope }) : received;
 
     return fn(params, (result) => {
       binded({ params, result });
@@ -64,7 +64,7 @@ export const createSubscriber = <P = void, V = void>(fn: SubscribeFn<P, V>, scop
   sample({
     clock: subscribe,
     source: $unsubscribeFn,
-    filter: nullable,
+    filter: (x) => nullable(x),
     fn: (_, params) => params,
     target: subscribeFx,
   });
