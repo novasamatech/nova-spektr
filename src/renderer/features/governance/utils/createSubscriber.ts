@@ -34,6 +34,10 @@ type SubscribeFn<P, V> = (params: P, callback: (value: V) => void) => Unsubscrib
  *    target: $someStore,
  *   })
  *   ```;
+ *
+ * @param fn - Creates subscription. Should return unsubsribe function.
+ *   function.
+ * @param scope - Optional scope for testing
  */
 export const createSubscriber = <P = void, V = void>(fn: SubscribeFn<P, V>, scope?: Scope) => {
   const domain = createDomain({ name: 'subscriber' });
