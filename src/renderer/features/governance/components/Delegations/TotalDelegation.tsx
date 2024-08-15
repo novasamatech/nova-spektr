@@ -20,23 +20,41 @@ export const TotalDelegation = ({ onClick }: Props) => {
   const asset = useUnit(delegationAggregate.$asset);
   const isLoading = useUnit(delegationAggregate.$isLoading);
   const hasAccount = useUnit(delegationAggregate.$hasAccount);
+  const canDelegate = useUnit(delegationAggregate.$canDelegate);
+
   const activeWallet = useUnit(walletModel.$activeWallet);
 
   const handleClick = () => {
-    if (hasAccount) {
+    if (hasAccount && canDelegate) {
       onClick();
-    } else if (activeWallet) {
-      confirm({
-        title: t('governance.addDelegation.emptyAccountTitle'),
-        message: <EmptyAccountMessage walletType={activeWallet?.type} />,
-        cancelText: t('general.button.closeButton'),
-        confirmText: walletUtils.isPolkadotVault(activeWallet) ? t('emptyState.addAccountButton') : undefined,
-      }).then((result) => {
-        if (result) {
-          walletSelectModel.events.walletIdSet(activeWallet.id);
-        }
-      });
+
+      return;
     }
+
+    let message = <EmptyAccountMessage walletType={activeWallet?.type} />;
+
+    if (hasAccount && !canDelegate) {
+      if (walletUtils.isWatchOnly(activeWallet)) {
+        message = t('governance.addDelegation.walletTypeRestrictionError');
+      } else {
+        message = (
+          <>
+            {t('emptyState.accountDescription')} {t('governance.addDelegation.proxyRestrictionMessage')}
+          </>
+        );
+      }
+    }
+
+    confirm({
+      title: t('governance.addDelegation.cantAddDelegationTitle'),
+      message,
+      cancelText: t('general.button.closeButton'),
+      confirmText: walletUtils.isPolkadotVault(activeWallet) ? t('emptyState.addAccountButton') : undefined,
+    }).then((result) => {
+      if (result && activeWallet) {
+        walletSelectModel.events.walletIdSet(activeWallet.id);
+      }
+    });
   };
 
   return (

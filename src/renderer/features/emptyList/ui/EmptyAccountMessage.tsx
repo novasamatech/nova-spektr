@@ -13,7 +13,7 @@ const Messages: Record<WalletType, string> = {
 };
 
 type Props = {
-  walletType: WalletType;
+  walletType?: WalletType;
 };
 
 export const EmptyAccountMessage = ({ walletType }: Props) => {
@@ -21,7 +21,7 @@ export const EmptyAccountMessage = ({ walletType }: Props) => {
 
   return (
     <>
-      {t('emptyState.accountDescription')} {t(Messages[walletType])}
+      {t('emptyState.accountDescription')} {walletType && t(Messages[walletType])}
     </>
   );
 };

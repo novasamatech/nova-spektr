@@ -363,6 +363,7 @@
       },
       "manyAccountsPlaceholder": "Select accounts",
       "multishardDescription": "You can select multiple accounts and delegate them in several tracks. If you are already delegating an account and want to add more tracks, select it separately.",
+      "proxyRestrictionMessage": "Please add a new proxy connections to delegate",
       "revokeDelegationButton": "Revoke delegation",
       "selectTrackTitle": "Step 1. Select tracks of delegation.",
       "sort": {
@@ -376,6 +377,7 @@
       "viewDelegationButton": "View delegations",
       "votesLabel": "Voting power",
       "votesValue": "<votes /> votes",
+      "walletTypeRestrictionError": "You can't add a delegation in that wallet type",
       "yourDelegation": "Your Delegation",
       "yourDelegationsTitle": "Your delegations"
     },
@@ -445,6 +447,7 @@
       "nay": "Nay",
       "nays": "Nays",
       "proposer": "Proposer:",
+      "proxyRestrictionMessage": "Please add a new proxy connections to voting",
       "retract": "Retract vote",
       "revote": "Revote",
       "support": "Support",

@@ -2,6 +2,7 @@ import { useI18n } from '@app/providers';
 import { type Asset, type Chain, type OngoingReferendum, type Wallet } from '@shared/core';
 import { formatBalance } from '@shared/lib/utils';
 import { Button, FootnoteText, Icon } from '@shared/ui';
+import { walletUtils } from '@/entities/wallet';
 import { VoteChart, referendumService, votingService } from '@entities/governance';
 import { EmptyAccountMessage } from '@/features/emptyList';
 import { type AggregatedReferendum } from '../../types/structs';
@@ -60,23 +61,32 @@ export const VotingStatus = ({ referendum, asset, chain, canVote, wallet, hasAcc
         </div>
       )}
 
-      {referendumService.isOngoing(referendum) && !!asset && !referendum.isVoted && (
-        <div className="flex w-full flex-col gap-4">
-          <Button
-            className="w-full"
-            disabled={!hasAccount || !canVote}
-            onClick={() => onVoteRequest({ referendum, asset, chain })}
-          >
-            {t('governance.referendum.vote')}
-          </Button>
+      {!walletUtils.isWatchOnly(wallet) &&
+        referendumService.isOngoing(referendum) &&
+        !!asset &&
+        !referendum.isVoted && (
+          <div className="flex w-full flex-col gap-4">
+            <Button
+              className="w-full"
+              disabled={!hasAccount || !canVote}
+              onClick={() => onVoteRequest({ referendum, asset, chain })}
+            >
+              {t('governance.referendum.vote')}
+            </Button>
 
-          {!hasAccount && wallet && (
-            <FootnoteText align="center">
-              <EmptyAccountMessage walletType={wallet.type} />
-            </FootnoteText>
-          )}
-        </div>
-      )}
+            {!hasAccount && wallet && (
+              <FootnoteText align="center">
+                <EmptyAccountMessage walletType={wallet.type} />
+              </FootnoteText>
+            )}
+
+            {hasAccount && !canVote && (
+              <FootnoteText align="center">
+                {t('emptyState.accountDescription')} {t('governance.referendum.proxyRestrictionMessage')}
+              </FootnoteText>
+            )}
+          </div>
+        )}
 
       {canVote && referendumService.isOngoing(referendum) && !!asset && referendum.isVoted && (
         <div className="flex w-full flex-col justify-stretch gap-4">
