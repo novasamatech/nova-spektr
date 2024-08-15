@@ -38,11 +38,12 @@ sample({
   clock: requestVoting,
   source: {
     api: networkSelectorModel.$governanceChainApi,
+    tracks: tracksAggregate.$tracks,
   },
   filter: ({ api }) => nonNullable(api),
-  fn: ({ api }, { addresses, tracks }) => ({
+  fn: ({ api, tracks: allTracks }, { addresses, tracks }) => ({
     api: api!,
-    tracks: tracks || [],
+    tracks: tracks || Object.keys(allTracks),
     addresses,
   }),
   target: votingModel.events.subscribeVoting,
