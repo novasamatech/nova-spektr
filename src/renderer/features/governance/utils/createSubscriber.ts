@@ -7,7 +7,7 @@ type UnsubscribeFn = () => void;
 type SubscribeFn<P, V> = (params: P, callback: (value: V) => void) => UnsubscribeFn;
 
 /**
- * Create set of subscribe utils for reactive update of external state.
+ * Set of subscribe utils for reactive update of external store.
  *
  * @example
  *   ```ts
