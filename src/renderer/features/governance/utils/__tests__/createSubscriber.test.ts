@@ -21,19 +21,17 @@ describe('createSubscriber', () => {
     expect(scope.getState($subscribed)).toBe(false);
   });
 
-  it('should receiveValues', async () => {
-    type Value = string;
+  it('should re-subscribe', async () => {
+    const scope = fork();
     const emitter = new EventEmitter();
 
-    const pushValue = (v: Value) => {
+    const pushValue = (v: string) => {
       emitter.emit('event', v);
     };
 
-    const scope = fork();
-
-    const { subscribe, unsubscribe, received } = createSubscriber<void, string>((_, cb) => {
+    const { subscribe, received } = createSubscriber<string, string>((param, cb) => {
       emitter.addListener('event', (data) => {
-        cb(data as Value);
+        cb(`${param}_${data}`);
       });
 
       return () => {
@@ -41,12 +39,46 @@ describe('createSubscriber', () => {
       };
     }, scope);
 
-    const $results = createStore<Value[]>([]);
+    const $results = createStore<string[]>([]);
 
     sample({
       clock: received,
       source: $results,
-      fn: (list, value) => [...list, value],
+      fn: (list, { result }) => [...list, result],
+      target: $results,
+    });
+
+    await allSettled(subscribe, { scope, params: '1' });
+    pushValue('1');
+    expect(scope.getState($results)).toEqual(['1_1']);
+
+    await allSettled(subscribe, { scope, params: '2' });
+    pushValue('2');
+    expect(scope.getState($results)).toEqual(['1_1', '2_2']);
+  });
+
+  it('should receiveValues', async () => {
+    const scope = fork();
+    const emitter = new EventEmitter();
+
+    const pushValue = (v: string) => {
+      emitter.emit('event', v);
+    };
+
+    const { subscribe, unsubscribe, received } = createSubscriber<void, string>((_, cb) => {
+      emitter.addListener('event', cb);
+
+      return () => {
+        emitter.removeAllListeners('event');
+      };
+    }, scope);
+
+    const $results = createStore<string[]>([]);
+
+    sample({
+      clock: received,
+      source: $results,
+      fn: (list, { result }) => [...list, result],
       target: $results,
     });
 

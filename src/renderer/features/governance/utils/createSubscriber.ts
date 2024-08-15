@@ -1,5 +1,5 @@
-import { type Scope, type UnitValue, createDomain, sample, scopeBind } from 'effector';
-import { readonly, spread } from 'patronum';
+import { type Scope, createDomain, sample, scopeBind } from 'effector';
+import { readonly } from 'patronum';
 
 import { nonNullable, nullable } from '@shared/lib/utils';
 
@@ -44,51 +44,78 @@ export const createSubscriber = <P = void, V = void>(fn: SubscribeFn<P, V>, scop
 
   const subscribe = domain.createEvent<P>();
   const unsubscribe = domain.createEvent<P>();
-  const received = domain.createEvent<V>();
+  const received = domain.createEvent<{ params: P; result: V }>();
 
-  const $subscribeFn = domain.createStore<UnsubscribeFn | null>(null);
+  const $unsubscribeFn = domain.createStore<UnsubscribeFn | null>(null);
 
-  const subscribeFx = domain.createEffect<{ params: P; subscribe: SubscribeFn<P, V> }, UnsubscribeFn>(
-    ({ params, subscribe }) => {
-      const binded = scopeBind(received, { scope });
+  const subscribeFx = domain.createEffect<P, UnsubscribeFn>((params) => {
+    const binded = scopeBind(received, { scope });
 
-      return subscribe(params, binded);
-    },
-  );
-
-  const unsubscribeFx = domain.createEffect((fn: UnitValue<typeof $subscribeFn>) => {
-    if (fn) {
-      return fn();
-    }
+    return fn(params, (result) => {
+      binded({ params, result });
+    });
   });
 
+  const unsubscribeFx = domain.createEffect(({ fn }: { fn: UnsubscribeFn | null; resubscribe: P | null }) => {
+    if (fn) fn();
+  });
+
+  // subscribe, if stale
   sample({
     clock: subscribe,
-    source: $subscribeFn,
+    source: $unsubscribeFn,
     filter: nullable,
-    fn: (subscribeFn, params) => ({ subscribeFn, fx: { params, subscribe: fn } }),
-    target: spread({ subscribeFn: $subscribeFn, fx: subscribeFx }),
+    fn: (_, params) => params,
+    target: subscribeFx,
   });
 
+  // unsubscribe and pass param down for resubscription later
   sample({
-    clock: subscribeFx.doneData,
-    target: $subscribeFn,
-  });
-
-  sample({
-    clock: unsubscribe,
-    source: $subscribeFn,
+    clock: subscribe,
+    source: $unsubscribeFn,
+    filter: nonNullable,
+    fn: (fn, resubscribe) => ({
+      fn,
+      resubscribe,
+    }),
     target: unsubscribeFx,
   });
 
+  // save unsubscribe fn
+  sample({
+    clock: subscribeFx.doneData,
+    target: $unsubscribeFn,
+  });
+
+  // simple unsubscribe
+  sample({
+    clock: unsubscribe,
+    source: $unsubscribeFn,
+    fn: (subscribeFn) => ({
+      fn: subscribeFn,
+      resubscribe: null,
+    }),
+    target: unsubscribeFx,
+  });
+
+  // resubscribe, if has parameters for subscription
   sample({
     clock: unsubscribeFx.done,
+    filter: ({ params }) => nonNullable(params.resubscribe),
+    fn: ({ params }) => params.resubscribe!,
+    target: subscribeFx,
+  });
+
+  // reset, if it's simple unsubscribe
+  sample({
+    clock: unsubscribeFx.done,
+    filter: ({ params }) => nullable(params.resubscribe),
     fn: () => null,
-    target: $subscribeFn,
+    target: $unsubscribeFn,
   });
 
   return {
-    $subscribed: $subscribeFn.map(nonNullable),
+    $subscribed: $unsubscribeFn.map(nonNullable),
     subscribe,
     unsubscribe,
     received: readonly(received),
