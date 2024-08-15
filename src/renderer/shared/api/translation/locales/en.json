@@ -324,6 +324,11 @@
   },
   "governance": {
     "addDelegation": {
+      "addToRegistry": {
+        "title": "Are you a delegate?",
+        "message": "Tell us more about yourself so Spektr users get to know you better.",
+        "link": "Describe yourself"
+      },
       "accountLabel": "Your accounts",
       "accountPlaceholder": "Select",
       "accountsLabel_one": "Account",
@@ -350,7 +355,7 @@
       "customDelegationTitle": "Add custom delegation on",
       "delegateTitle": "Delegate",
       "editDelegationButton": "Edit delegation",
-      "emptyAccountTitle": "You can't add a delegation",
+      "cantAddDelegationTitle": "You can't add a delegation",
       "emptyDescription": "Update the search or cancel filtering",
       "emptyTitle": "Nothing was found",
       "formTitle": "Step 2. Select the number of votes and the multiplier.",

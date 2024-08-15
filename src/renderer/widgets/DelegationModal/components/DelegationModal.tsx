@@ -30,7 +30,6 @@ export const DelegationModal = () => {
       title={chain && <OperationTitle title={t('governance.addDelegation.title')} chainId={chain.chainId} />}
       onClose={closeModal}
     >
-      {/* TODO: open delegate info  */}
       <DelegationList
         onClick={delegateDetailsModel.events.flowStarted}
         onAddCustomClick={delegationModel.events.openCustomModal}

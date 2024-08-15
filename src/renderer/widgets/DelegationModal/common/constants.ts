@@ -11,3 +11,5 @@ export const SortProp: Record<SortType, keyof DelegateStat> = {
   [SortType.VOTED]: 'delegateVotes',
   [SortType.VOTES]: 'delegatorVotes',
 };
+
+export const NOVASAMA_DELEGATE_REGISTRY = 'https://docs.novawallet.io/nova-wallet-wiki/opengov/delegate-registry';
