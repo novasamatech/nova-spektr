@@ -79,7 +79,7 @@ sample({
   target: [
     locksModel.events.getTracksLocks,
     votingAggregate.events.requestVoting,
-    referendumModel.events.requestReferendums,
+    referendumModel.events.updateReferendums,
   ],
 });
 
@@ -97,6 +97,11 @@ sample({
     source: votingModel.$votingUnsub,
     effect: (unsub) => unsub(),
   }),
+});
+
+sample({
+  clock: flow.close,
+  target: referendumModel.events.stopUpdateReferendums,
 });
 
 export const governancePageAggregate = {

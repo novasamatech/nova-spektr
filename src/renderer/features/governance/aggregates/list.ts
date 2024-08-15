@@ -45,8 +45,17 @@ sample({
     chain: networkSelectorModel.$governanceChain,
   },
   filter: ({ chain }, api) => !!api && !!chain,
+  target: referendumModel.events.stopUpdateReferendums,
+});
+
+sample({
+  clock: networkSelectorModel.$governanceChainApi,
+  source: {
+    chain: networkSelectorModel.$governanceChain,
+  },
+  filter: ({ chain }, api) => !!api && !!chain,
   fn: ({ chain }, api) => ({ api: api!, chain: chain! }),
-  target: referendumModel.events.requestReferendums,
+  target: referendumModel.events.updateReferendums,
 });
 
 export const listAggregate = {
