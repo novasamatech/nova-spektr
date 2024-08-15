@@ -5,7 +5,7 @@ import noop from 'lodash/noop';
 import { spread } from 'patronum';
 
 import { type Address, type TrackId } from '@shared/core';
-import { governanceService } from '@entities/governance';
+import { governanceSubscribeService } from '@/entities/governance';
 import { accountUtils, walletModel } from '@entities/wallet';
 
 import { networkSelectorModel } from './networkSelector';
@@ -27,7 +27,7 @@ type Props = {
 const subscribeTrackLocksFx = createEffect(({ api, addresses }: Props): Promise<() => void> => {
   const boundLocksSet = scopeBind(locksSet, { safe: true });
 
-  return governanceService.subscribeTrackLocks(api, addresses, (locks) => {
+  return governanceSubscribeService.subscribeTrackLocks(api, addresses, (locks) => {
     if (!locks) return;
 
     boundLocksSet(locks);

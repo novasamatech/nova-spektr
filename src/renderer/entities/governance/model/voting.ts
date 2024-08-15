@@ -4,7 +4,7 @@ import noop from 'lodash/noop';
 import { readonly } from 'patronum';
 
 import { type Address, type TrackId, type VotingMap } from '@/shared/core';
-import { governanceService } from '../lib/governanceService';
+import { governanceSubscribeService } from '../lib/governanceSubscribeService';
 
 const votingSet = createEvent<VotingMap>();
 
@@ -22,7 +22,7 @@ const requestVoting = createEvent<VotingParams>();
 const subscribeVotingFx = createEffect(({ api, tracks, addresses }: VotingParams) => {
   const boundVotingSet = scopeBind(votingSet, { safe: true });
 
-  return governanceService.getVotingFor(api, tracks, addresses, (voting) => {
+  return governanceSubscribeService.subscribeVotingFor(api, tracks, addresses, (voting) => {
     if (!voting) return;
 
     boundVotingSet(voting);
