@@ -39,18 +39,22 @@ sample({
           : [],
     };
   },
-  target: requestProposers,
+  target: requestProposersFx,
 });
 
 sample({
   clock: requestProposers,
-  source: $proposers,
-  fn: (proposers, { api, chain, addresses }) => {
+  source: {
+    apis: networkModel.$apis,
+    proposers: $proposers,
+  },
+  fn: ({ apis, proposers }, { api, chain, addresses }) => {
+    const identityChainId = chain?.additional?.[AdditionalType.IDENTITY_CHAIN];
     const chainProposers = proposers[chain.chainId] ?? {};
     const filteredAddresses = addresses.filter((a) => !(a in chainProposers));
 
     return {
-      api,
+      api: identityChainId ? (apis[identityChainId] ?? api!) : api!,
       chain,
       addresses: filteredAddresses,
     };

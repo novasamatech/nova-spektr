@@ -1,6 +1,5 @@
 export type {
   GovernanceApi,
-  ReferendumVote,
   ReferendumTimelineRecord,
   ReferendumTimelineRecordStatus,
   DelegateAccount,

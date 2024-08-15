@@ -58,6 +58,10 @@ export const Truncate = memo<Props>(({ text, ellipsis = '...', end = 5, start = 
   const parseTextForTruncation = useDebouncedCallback(0, (text: string) => {
     const measurements = calculateMeasurements();
 
+    if (!measurements.text.width || measurements.container.width) {
+      return;
+    }
+
     const truncatedText =
       Math.round(measurements.text.width.value) > Math.round(measurements.container.width.value)
         ? truncateText(measurements)

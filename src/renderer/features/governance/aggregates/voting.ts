@@ -37,13 +37,12 @@ const $activeWalletVotes = combine(
 sample({
   clock: requestVoting,
   source: {
-    tracks: tracksAggregate.$tracks,
     api: networkSelectorModel.$governanceChainApi,
   },
   filter: ({ api }) => nonNullable(api),
-  fn: ({ api, tracks: allTracks }, { addresses, tracks }) => ({
+  fn: ({ api }, { addresses, tracks }) => ({
     api: api!,
-    tracks: tracks || Object.keys(allTracks),
+    tracks: tracks || [],
     addresses,
   }),
   target: votingModel.events.requestVoting,

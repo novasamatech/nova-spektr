@@ -29,11 +29,13 @@
 
 import units from 'units-css';
 
+type UnitsParseResult = { value: number; unit: string };
+
 const DEFAULT_CANVAS = document.createElement('canvas');
 const DEFAULT_FONT_WEIGHT = 400;
 const DEFAULT_FONT_STYLE = 'normal';
 
-const measureHeight = (size: any, lineHeight: any) => {
+const measureHeight = (size: any, lineHeight: any): UnitsParseResult => {
   // If the line-height is unitless,
   // multiply it by the font size.
   if (!lineHeight.unit) {
@@ -87,7 +89,7 @@ const measureText = ({
 
   ctx.font = `${fontWeight} ${fontStyle} ${fontSize} ${fontFamily}`;
 
-  const measure = (line: string) => {
+  const measure = (line: string): { text: string; width: UnitsParseResult; height: UnitsParseResult } => {
     return {
       text: line,
       width: units.parse(`${ctx.measureText(line).width}px`),

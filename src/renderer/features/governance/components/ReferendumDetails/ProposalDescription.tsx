@@ -39,7 +39,7 @@ export const ProposalDescription = ({ chainId, addressPrefix, referendum }: Prop
 
       <div className="flex flex-col gap-4">
         <HeaderTitleText className="text-balance">
-          {isTitlesLoading ? <Shimmering height="1em" /> : title}
+          {!title && isTitlesLoading ? <Shimmering height="1em" /> : title}
         </HeaderTitleText>
 
         {isDescriptionLoading && (
