@@ -168,33 +168,6 @@ async function getReferendums(api: ApiPromise): Promise<Referendum[]> {
   return result;
 }
 
-// async function subscribeReferendumsFx(api: ApiPromise, callback: (referendums?: Referendum[]) => void): Promise<() => void> {
-//   console.log(1, 'referendums');
-
-//   return api.query.referenda.referendumInfoFor.entries((referendums: any) => {
-//     console.log('2, referendums', referendums);
-//     try {
-//       const result: Referendum[] = [];
-
-//       for (const [refIndex, option] of referendums) {
-//         if (option.isNone) continue;
-
-//         const pallet = option.unwrap();
-//         const referendumId = refIndex.args[0].toString();
-//         const referendum = mapReferendum(referendumId, pallet);
-
-//         if (referendum) {
-//           result.push(referendum);
-//         }
-//       }
-//       callback(result);
-//     } catch (error) {
-//       console.warn(error);
-//       callback(undefined);
-//     }
-//   });
-// }
-
 async function getReferendum(id: ReferendumId, api: ApiPromise): Promise<Referendum | null> {
   const palette = await api.query.referenda.referendumInfoFor(parseInt(id));
 
