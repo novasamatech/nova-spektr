@@ -108,9 +108,16 @@ type CreateProviderParams = {
   nodes: string[];
   metadata?: ChainMetadata;
   providerType: ProviderType;
+  DEBUG_NETWORKS?: boolean;
 };
 const createProviderFx = createEffect(
-  async ({ chainId, nodes, metadata, providerType }: CreateProviderParams): Promise<ProviderWithMetadata> => {
+  async ({
+    chainId,
+    nodes,
+    metadata,
+    providerType,
+    DEBUG_NETWORKS,
+  }: CreateProviderParams): Promise<ProviderWithMetadata> => {
     const boundConnected = scopeBind(connected, { safe: true });
     const boundDisconnected = scopeBind(disconnected, { safe: true });
     const boundFailed = scopeBind(failed, { safe: true });
@@ -121,15 +128,21 @@ const createProviderFx = createEffect(
       { nodes, metadata: metadata?.metadata },
       {
         onConnected: () => {
-          console.info('🟢 Provider connected ==> ', chainId);
+          if (DEBUG_NETWORKS) {
+            console.info('🟢 Provider connected ==> ', chainId);
+          }
           boundConnected(chainId);
         },
         onDisconnected: () => {
-          console.info('🟠 Provider disconnected ==> ', chainId);
+          if (DEBUG_NETWORKS) {
+            console.info('🟠 Provider disconnected ==> ', chainId);
+          }
           boundDisconnected(chainId);
         },
         onError: () => {
-          console.info('🔴 Provider error ==> ', chainId);
+          if (DEBUG_NETWORKS) {
+            console.info('🔴 Provider error ==> ', chainId);
+          }
           boundFailed(chainId);
         },
       },
@@ -240,7 +253,14 @@ sample({
 
     const metadata = networkUtils.getNewestMetadata(store.metadata)[chainId];
 
-    return { chainId, nodes, metadata, providerType };
+    return {
+      chainId,
+      nodes,
+      metadata,
+      providerType,
+      // set true in case of some network issues
+      DEBUG_NETWORKS: false,
+    };
   },
   target: createProviderFx,
 });

@@ -1,13 +1,13 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
-import { type GovernanceApi, type ReferendumVote } from '@/shared/api/governance';
-import { type Chain, type ChainId, type Referendum, type ReferendumId } from '@/shared/core';
+import { type GovernanceApi } from '@/shared/api/governance';
+import { type Address, type Chain, type ChainId, type Referendum, type ReferendumId } from '@/shared/core';
 import { setNestedValue } from '@/shared/lib/utils';
 
 import { governanceModel } from './governanceApi';
 
-const $voteHistory = createStore<Record<ChainId, Record<ReferendumId, ReferendumVote[]>>>({});
+const $voteHistory = createStore<Record<ChainId, Record<ReferendumId, Address[]>>>({});
 
 const requestVoteHistory = createEvent<{ chain: Chain; referendum: Referendum }>();
 
