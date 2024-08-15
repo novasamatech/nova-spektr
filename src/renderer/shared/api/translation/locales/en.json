@@ -776,6 +776,7 @@
       "multisigWallet": "Wallet",
       "payee": "Rewards destination",
       "recipient": "Recipient",
+      "referendum": "Referendum",
       "rejectReason": "Reject reason",
       "revokeAccessType": "Revoke access type",
       "revokeFor": "Revoke for",
@@ -785,6 +786,7 @@
       "timePoint": "Time Point",
       "toNetwork": "To network",
       "validators": "Validators",
+      "votes": "Number of votes",
       "wallet": "Wallet"
     },
     "detailsTitle": "Details",

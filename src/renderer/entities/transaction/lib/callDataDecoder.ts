@@ -370,13 +370,13 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
     },
     [TransactionType.VOTE]: (decoded): Record<string, any> => {
       return {
-        pollIndex: decoded.args[0].toString(),
+        referendum: decoded.args[0].toString(),
         vote: decoded.args[1].toHuman(),
       };
     },
     [TransactionType.REVOTE]: (decoded): Record<string, any> => {
       return {
-        pollIndex: decoded.args[0].toString(),
+        referendum: decoded.args[0].toString(),
         vote: decoded.args[1].toHuman(),
       };
     },
@@ -396,7 +396,7 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
         track: decoded.args[0].toString(),
         target: decoded.args[1].toString(),
         conviction: decoded.args[2].toString(),
-        balance: decoded.args[3].toHuman(),
+        balance: decoded.args[3].toString(),
       };
     },
   };
@@ -498,7 +498,9 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
 
     return {
       removeVote: TransactionType.RETRACT_VOTE,
+      vote: TransactionType.VOTE,
       unlock: TransactionType.UNLOCK,
+      revote: TransactionType.REVOTE,
       delegate: TransactionType.DELEGATE,
       undelegate: TransactionType.UNDELEGATE,
     }[method];

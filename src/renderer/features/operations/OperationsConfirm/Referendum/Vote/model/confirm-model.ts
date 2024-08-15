@@ -1,5 +1,4 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type BN } from '@polkadot/util';
 import { createEvent } from 'effector';
 
 import { type Asset, type Conviction } from '@/shared/core';
@@ -10,7 +9,6 @@ import { type ConfirmInfo, createTransactionConfirmStore } from '@/features/oper
 export type VoteConfirm = ConfirmInfo & {
   api: ApiPromise;
   asset: Asset;
-  initialAmount: BN;
   initialConviction: Conviction;
 };
 

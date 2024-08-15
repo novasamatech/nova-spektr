@@ -58,7 +58,6 @@ export const BondNominate = () => {
     <BaseModal
       closeButton
       contentClass=""
-      panelClass="w-max"
       isOpen={isModalOpen}
       title={
         <OperationTitle
