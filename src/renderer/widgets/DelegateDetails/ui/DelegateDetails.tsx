@@ -2,7 +2,6 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/app/providers';
 import { BaseModal, Plate } from '@/shared/ui';
-import { Delegate } from '@/widgets/DelegateModal';
 import { delegateDetailsModel } from '../model/delegate-details-model';
 
 import { DelegateInfo } from './DelegateInfo';
@@ -38,7 +37,6 @@ export const DelegateDetails = () => {
       </div>
 
       <YourDelegations />
-      <Delegate />
     </BaseModal>
   );
 };

@@ -78,7 +78,7 @@ export const DelegationList = ({ onClick, onAddCustomClick }: Props) => {
             )}
           </div>
 
-          <AddToRegistry className="mx-5 mb-6" />
+          <AddToRegistry className="mx-5 mb-6 w-auto" />
 
           <div className="scrollbar-stable flex h-full flex-col items-center overflow-y-auto">
             <ul className="flex w-[400px] flex-col gap-y-2">
