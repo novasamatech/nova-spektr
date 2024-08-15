@@ -145,7 +145,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts }: Props)
                             {event.dateCreated && format(new Date(event.dateCreated), 'p', { locale: dateLocale })}
                           </BodyText>
 
-                          {event.extrinsicHash && connection?.explorers && (
+                          {event.extrinsicHash && connection?.explorers?.find((e) => e?.extrinsic) && (
                             <div>
                               <ContextMenu button={<IconButton name="info" size={16} />}>
                                 <ContextMenu.Group>
