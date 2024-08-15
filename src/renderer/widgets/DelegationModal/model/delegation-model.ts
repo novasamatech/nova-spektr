@@ -1,3 +1,4 @@
+import { BN } from '@polkadot/util';
 import { combine, createEvent, restore, sample } from 'effector';
 import { groupBy, sortBy } from 'lodash';
 import { readonly } from 'patronum';
@@ -56,20 +57,22 @@ const $delegateList = combine(
       ? delegationsList.filter((delegate) => activeDelegationsList.includes(delegate.accountId))
       : delegationsList;
 
-    const searched =
-      activeDelegationsList.length === 0 || query
-        ? delegationsList.filter((delegate) =>
-            includesMultiple([delegate.accountId, delegate.address, delegate.name, delegate.shortDescription], query),
-          )
-        : delegatedList;
+    const grouped = groupBy(delegatedList, (delegate) => !!delegate.name);
 
-    const grouped = groupBy(searched, (delegate) => !!delegate.name);
+    if (!sortType && !query) {
+      return [
+        ...sortBy(grouped['true'], (delegate) => delegate[SortProp[SortType.DELEGATIONS]] || 0).reverse(),
+        ...sortBy(grouped['false'], (delegate) => delegate[SortProp[SortType.DELEGATIONS]] || 0).reverse(),
+      ];
+    }
+
+    const searched = delegationsList.filter((delegate) =>
+      includesMultiple([delegate.accountId, delegate.address, delegate.name, delegate.shortDescription], query),
+    );
+
     const sortProp = SortProp[sortType || SortType.DELEGATIONS];
 
-    return [
-      ...sortBy(grouped['true'], (delegate) => delegate[sortProp] || 0).reverse(),
-      ...sortBy(grouped['false'], (delegate) => delegate[sortProp] || 0).reverse(),
-    ];
+    return searched.sort((a, b) => (new BN(a[sortProp] || 0).lt(new BN(b[sortProp] || 0)) ? 1 : -1));
   },
 );
 
