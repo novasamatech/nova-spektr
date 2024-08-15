@@ -25,6 +25,8 @@ export { fellowshipThresholdService } from './lib/fellowshipThresholdService';
 export { opengovThresholdService } from './lib/opengovThresholdService';
 export { voteTransactionService } from './lib/voteTransactionService';
 
+export { createSubscriber } from './utils/createSubscriber';
+
 export type { GovernanceApiSource } from './types/governanceApiSource';
 export type {
   TransactionVote,

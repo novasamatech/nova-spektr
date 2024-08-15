@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createStore, sample } from 'effector';
-import { once, or } from 'patronum';
+import { combineEvents, or } from 'patronum';
 
 import { type ClaimTimeAt, type UnlockChunk, UnlockChunkType } from '@shared/api/governance';
 import { type Address, type Referendum, type TrackId, type TrackInfo, type VotingMap } from '@shared/core';
@@ -57,7 +57,11 @@ const getClaimScheduleFx = createEffect(
 );
 
 sample({
-  clock: [once(referendumModel.events.requestDone), locksModel.$trackLocks.updates, votingModel.$voting.updates],
+  clock: [
+    combineEvents([referendumModel.events.updateReferendums, referendumModel.events.requestDone]),
+    locksModel.$trackLocks.updates,
+    votingModel.$voting.updates,
+  ],
   source: {
     api: networkSelectorModel.$governanceChainApi,
     tracks: tracksModel.$tracks,

@@ -84,8 +84,4 @@ sample({
 export const listAggregate = {
   $referendums: readonly($referendums),
   $isLoading: referendumModel.$isReferendumsLoading,
-
-  events: {
-    requestDone: referendumModel.events.requestDone,
-  },
 };
