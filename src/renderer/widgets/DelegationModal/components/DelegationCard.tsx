@@ -4,7 +4,7 @@ import { useI18n } from '@/app/providers';
 import { type DelegateAccount } from '@/shared/api/governance';
 import { BodyText, Card, FootnoteText } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
-import { DelegateBadge, DelegateIcon, DelegateTitle, networkSelectorModel } from '@/features/governance';
+import { DelegateName, networkSelectorModel } from '@/features/governance';
 
 type Props = {
   delegate: DelegateAccount;
@@ -18,14 +18,7 @@ export const DelegationCard = ({ delegate }: Props) => {
   return (
     <Card as="li">
       <div className="flex flex-col gap-4">
-        <div className="flex gap-3">
-          <DelegateIcon delegate={delegate} />
-
-          <div className="flex items-center justify-between gap-2.5">
-            <DelegateTitle delegate={delegate} className="max-w-[200px]" />
-            <DelegateBadge delegate={delegate} />
-          </div>
-        </div>
+        <DelegateName delegate={delegate} titleClassName="max-w-[200px]" />
         <div className="flex flex-col gap-2.5">
           {delegate.shortDescription && <FootnoteText>{delegate.shortDescription}</FootnoteText>}
 
