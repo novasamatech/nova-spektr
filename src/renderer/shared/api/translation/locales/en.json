@@ -266,6 +266,14 @@
       }
     }
   },
+  "emptyState": {
+    "accountDescription": "You don't have an account in that network.",
+    "addAccountButton": "Add account",
+    "addNewAccountButton": "Add new account",
+    "createAccount": "Create a new account",
+    "createMultisig": "Create a new multisig wallet",
+    "createOrImportAccount": "Create a new account or import an existing one"
+  },
   "fallbackScreen": {
     "message": "Sorry, something went wrong",
     "omniLogoAlt": "Nova Spektr logo",
@@ -277,6 +285,7 @@
     },
     "button": {
       "cancelButton": "Cancel",
+      "closeButton": "Close",
       "continueButton": "Continue",
       "networkSettingsLink": "Network settings",
       "pasteButton": "Paste",
@@ -341,6 +350,7 @@
       "customDelegationTitle": "Add custom delegation on",
       "delegateTitle": "Delegate",
       "editDelegationButton": "Edit delegation",
+      "emptyAccountTitle": "You can't add a delegation",
       "emptyDescription": "Update the search or cancel filtering",
       "emptyTitle": "Nothing was found",
       "formTitle": "Step 2. Select the number of votes and the multiplier.",
@@ -353,6 +363,7 @@
       },
       "manyAccountsPlaceholder": "Select accounts",
       "multishardDescription": "You can select multiple accounts and delegate them in several tracks. If you are already delegating an account and want to add more tracks, select it separately.",
+      "proxyRestrictionMessage": "Please add a new proxy connections to delegate",
       "revokeDelegationButton": "Revoke delegation",
       "selectTrackTitle": "Step 1. Select tracks of delegation.",
       "sort": {
@@ -366,6 +377,7 @@
       "viewDelegationButton": "View delegations",
       "votesLabel": "Voting power",
       "votesValue": "<votes /> votes",
+      "walletTypeRestrictionError": "You can't add a delegation in that wallet type",
       "yourDelegation": "Your Delegation",
       "yourDelegationsTitle": "Your delegations"
     },
@@ -435,6 +447,7 @@
       "nay": "Nay",
       "nays": "Nays",
       "proposer": "Proposer:",
+      "proxyRestrictionMessage": "Please add a new proxy connections to voting",
       "retract": "Retract vote",
       "revote": "Revote",
       "support": "Support",

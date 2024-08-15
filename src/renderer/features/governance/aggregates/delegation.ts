@@ -2,6 +2,7 @@ import { BN } from '@polkadot/util';
 import { combine } from 'effector';
 
 import { type Address, type Conviction } from '@/shared/core';
+import { permissionUtils, walletModel } from '@/entities/wallet';
 import { votingService } from '@entities/governance';
 import { networkSelectorModel } from '../model/networkSelector';
 import { votingAssetModel } from '../model/votingAsset';
@@ -40,11 +41,15 @@ const $activeDelegations = votingAggregate.$activeWalletVotes.map((activeVotes) 
   return activeBalances;
 });
 
+const $canDelegate = walletModel.$activeWallet.map((wallet) => !!wallet && permissionUtils.canDelegate(wallet));
+
 export const delegationAggregate = {
   $isLoading: votingAggregate.$isLoading,
   $asset: votingAssetModel.$votingAsset,
   $chain: networkSelectorModel.$governanceChain,
 
+  $canDelegate,
+  $hasAccount: networkSelectorModel.$hasAccount,
   $activeDelegations,
   $totalDelegations,
 };
