@@ -36,7 +36,7 @@ function subscribeTrackLocks(
   });
 
   return () => {
-    unsubscribe.then((x) => x());
+    unsubscribe.then((fn) => fn());
   };
 }
 
@@ -135,6 +135,6 @@ function subscribeVotingFor(
   });
 
   return () => {
-    unsubscribe.then((x) => x());
+    unsubscribe.then((fn) => fn());
   };
 }
