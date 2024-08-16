@@ -54,7 +54,6 @@ sample({
   source: {
     wallet: walletModel.$activeWallet,
     chain: networkSelectorModel.$governanceChain,
-    api: networkSelectorModel.$governanceChainApi,
   },
   filter: ({ wallet, chain }) => nonNullable(wallet) && nonNullable(chain),
   fn: ({ wallet, chain }) => ({

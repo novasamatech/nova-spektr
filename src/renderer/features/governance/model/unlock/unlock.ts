@@ -1,19 +1,19 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createStore, sample } from 'effector';
-import { combineEvents, or } from 'patronum';
 
 import { type ClaimTimeAt, type UnlockChunk, UnlockChunkType } from '@shared/api/governance';
 import { type Address, type Referendum, type TrackId, type TrackInfo, type VotingMap } from '@shared/core';
-import { getCreatedDateFromApi, getCurrentBlockNumber } from '@shared/lib/utils';
+import { getCreatedDateFromApi, getCurrentBlockNumber, nonNullable } from '@shared/lib/utils';
 import { claimScheduleService, referendumModel, tracksModel, votingModel } from '@entities/governance';
 import { walletModel } from '@entities/wallet';
 import { unlockService } from '../../lib/unlockService';
 import { locksModel } from '../locks';
 import { networkSelectorModel } from '../networkSelector';
 
-const $claimSchedule = createStore<UnlockChunk[]>([]);
+const $claimSchedule = createStore<UnlockChunk[] | null>(null);
 const $totalUnlock = createStore<BN>(BN_ZERO);
+const $isLoading = createStore(true);
 
 type Props = {
   api: ApiPromise;
@@ -57,24 +57,39 @@ const getClaimScheduleFx = createEffect(
 );
 
 sample({
-  clock: [
-    combineEvents([referendumModel.events.subscribeReferendums, referendumModel.$referendums.updates]),
-    locksModel.$trackLocks.updates,
-    votingModel.$voting.updates,
-  ],
+  clock: [locksModel.$totalLock.updates, walletModel.$activeWallet],
+  target: [$claimSchedule.reinit, $totalUnlock.reinit],
+});
+
+sample({
+  clock: [locksModel.$isLoading, votingModel.$isLoading, referendumModel.$isLoading],
+  source: {
+    claimSchedule: $claimSchedule,
+    isLoadingLock: locksModel.$isLoading,
+    isLoadingVoting: votingModel.$isLoading,
+    isLoadingReferendum: referendumModel.$isLoading,
+  },
+  filter: ({ claimSchedule }) => !nonNullable(claimSchedule),
+  fn: ({ isLoadingLock, isLoadingVoting, isLoadingReferendum }) => {
+    return isLoadingLock || isLoadingVoting || isLoadingReferendum;
+  },
+  target: $isLoading,
+});
+
+sample({
+  clock: [referendumModel.$referendums.updates, locksModel.$trackLocks.updates, votingModel.$voting.updates],
   source: {
     api: networkSelectorModel.$governanceChainApi,
     tracks: tracksModel.$tracks,
     trackLocks: locksModel.$trackLocks,
     totalLock: locksModel.$totalLock,
-    lockIsLoading: locksModel.$isLoading,
     voting: votingModel.$voting,
-    votingIsLoading: votingModel.$isLoading,
+    isLoading: $isLoading,
     referendums: referendumModel.$referendums,
     chain: networkSelectorModel.$governanceChain,
   },
-  filter: ({ api, chain, referendums, totalLock, votingIsLoading, lockIsLoading }) =>
-    !!api && !!chain && !!referendums[chain!.chainId] && !votingIsLoading && !lockIsLoading && !totalLock.isZero(),
+  filter: ({ api, chain, referendums, totalLock, isLoading }) =>
+    !!api && !!chain && !!referendums[chain!.chainId] && !isLoading && !totalLock.isZero(),
   fn: ({ api, tracks, trackLocks, voting, referendums, chain }) => ({
     api: api!,
     tracks,
@@ -86,19 +101,15 @@ sample({
 });
 
 sample({
-  clock: [locksModel.$totalLock.updates, walletModel.$activeWallet],
-  target: [$claimSchedule.reinit, $totalUnlock.reinit],
-});
-
-sample({
   clock: getClaimScheduleFx.doneData,
   target: $claimSchedule,
 });
 
 sample({
   clock: $claimSchedule.updates,
+  filter: (claimSchedule) => nonNullable(claimSchedule),
   fn: (claimSchedule) => {
-    return claimSchedule.reduce((acc, claim) => {
+    return claimSchedule!.reduce((acc, claim) => {
       if (claim.type !== UnlockChunkType.CLAIMABLE) return acc;
 
       return acc.add(claim.amount);
@@ -108,7 +119,7 @@ sample({
 });
 
 export const unlockModel = {
-  $isLoading: or(locksModel.$isLoading, getClaimScheduleFx.pending),
+  $isLoading,
   $totalUnlock,
   $claimSchedule,
   $isUnlockable: combine($totalUnlock, (totalUnlock) => !totalUnlock.isZero()),
