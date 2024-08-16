@@ -306,8 +306,6 @@ sample({
 sample({
   source: $accountsBalances,
   fn: (accountsBalances) => {
-    console.log('xcm', accountsBalances);
-
     if (accountsBalances.length === 0) return ZERO_BALANCE;
 
     const minBondBalance = accountsBalances.reduce<string>((acc, balance) => {
@@ -315,8 +313,6 @@ sample({
 
       return new BN(balance).lt(new BN(acc)) ? balance : acc;
     }, accountsBalances[0]);
-
-    console.log('xcm', minBondBalance);
 
     return minBondBalance === ZERO_BALANCE ? ZERO_BALANCE : [ZERO_BALANCE, minBondBalance];
   },
