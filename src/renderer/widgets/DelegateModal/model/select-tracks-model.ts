@@ -46,7 +46,7 @@ const $availableAccounts = combine(
     if (!wallet || !chain) return [];
 
     return wallet.accounts
-      .filter((a) => accountUtils.isChainIdMatch(a, chain.chainId))
+      .filter((a) => accountUtils.isNonBaseVaultAccount(a, wallet) && accountUtils.isChainIdMatch(a, chain.chainId))
       .filter((account) => !delegations[toAddress(account.accountId, { prefix: chain.addressPrefix })]);
   },
 );
