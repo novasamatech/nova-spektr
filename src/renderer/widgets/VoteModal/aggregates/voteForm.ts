@@ -29,7 +29,6 @@ type FormInput = {
   wrappedTransactions: WrappedTransactions;
 };
 
-const $initialAmount = createStore(BN_ZERO);
 const $initialConviction = createStore<Conviction>('None');
 const $referendum = createStore<OngoingReferendum | null>(null);
 const $availableBalance = createStore(BN_ZERO);
@@ -110,7 +109,7 @@ const {
 });
 
 sample({
-  clock: [form.fields.account.onChange, form.fields.signatory.onChange],
+  clock: form.fields.account.onChange,
   source: {
     referendum: $referendum,
     locks: locksModel.$trackLocks,
@@ -134,7 +133,7 @@ sample({
 
 reset({
   clock: resetForm,
-  target: [$referendum, $initialAmount, $initialConviction],
+  target: [$referendum, $initialConviction],
 });
 
 sample({
@@ -175,7 +174,6 @@ sample({
   source: {
     form: form.$values,
     initialConviction: $initialConviction,
-    initialAmount: $initialAmount,
     asset: votingAssetModel.$votingAsset,
     chain: networkSelectorModel.$governanceChain,
     api: networkSelectorModel.$governanceChainApi,
@@ -183,11 +181,10 @@ sample({
   },
   filter: ({ form, chain, asset, api, wrappedTransactions }) =>
     !!form.account && !!form.decision && !!chain && !!asset && !!api && !!wrappedTransactions,
-  fn: ({ form, initialConviction, initialAmount, asset, chain, api, wrappedTransactions }): VoteConfirm => {
+  fn: ({ form, initialConviction, asset, chain, api, wrappedTransactions }): VoteConfirm => {
     return {
       api: api!,
       account: form.account!,
-      initialAmount,
       asset: asset!,
       chain: chain!,
       description: form.description,
@@ -214,7 +211,6 @@ export const voteFormAggregate = {
 
   $fee,
   $referendum,
-  $initialAmount,
   $initialConviction,
   $isFeeLoading: $feePending,
 

@@ -192,7 +192,7 @@ sample({
       );
     });
   },
-  target: [unlockModel.$claimSchedule, locksModel.events.getTracksLocks],
+  target: [unlockModel.$claimSchedule, locksModel.events.subscribeLocks],
 });
 
 sample({
@@ -237,7 +237,7 @@ sample({
 
 export const unlockAggregate = {
   $step,
-  $isLoading: or(unlockModel.$isLoading, referendumModel.$isReferendumsLoading),
+  $isLoading: or(unlockModel.$isLoading, referendumModel.$isLoading),
   $isUnlockable: unlockModel.$isUnlockable,
   $pendingSchedule,
 

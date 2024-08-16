@@ -6,6 +6,7 @@ import { type Chain } from '@shared/core';
 import { useModalClose } from '@shared/lib/hooks';
 import { formatBalance } from '@shared/lib/utils';
 import { BaseModal, Button, Plate } from '@shared/ui';
+import { walletModel } from '@/entities/wallet';
 import { referendumService, votingService } from '@entities/governance';
 import { detailsAggregate } from '../../aggregates/details';
 import { type AggregatedReferendum } from '../../types/structs';
@@ -13,13 +14,13 @@ import { VotingHistoryDialog } from '../VotingHistory/VotingHistoryDialog';
 
 import { AdvancedDialog } from './AdvancedDialog';
 import { DetailsCard } from './DetailsCard';
+import { MyVotesDialog } from './MyVotesDialog';
 import { ProposalDescription } from './ProposalDescription';
 import { ReferendumAdditional } from './ReferendumAdditional';
 import { Timeline } from './Timeline';
 import { VotingBalance } from './VotingBalance';
 import { type VoteRequestParams, VotingStatus } from './VotingStatus';
 import { VotingSummary } from './VotingSummary';
-import { WalletVotesDialog } from './WalletVotesDialog';
 
 type Props = {
   chain: Chain;
@@ -39,12 +40,8 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onCl
 
   const votingAsset = useUnit(detailsAggregate.$votingAsset);
   const canVote = useUnit(detailsAggregate.$canVote);
-
-  const title = useStoreMap({
-    store: detailsAggregate.$titles,
-    keys: [referendum.referendumId],
-    fn: (titles, [referendumId]) => titles[referendumId] ?? '',
-  });
+  const hasAccount = useUnit(detailsAggregate.$hasAccount);
+  const wallet = useUnit(walletModel.$activeWallet);
 
   const votes = useStoreMap({
     store: detailsAggregate.$votes,
@@ -63,16 +60,16 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onCl
   return (
     <BaseModal
       isOpen={isModalOpen}
-      title={title || t('governance.referendums.referendumTitle', { index: referendum.referendumId })}
+      title={t('governance.referendums.referendumTitle', { index: referendum.referendumId })}
       contentClass="min-h-0 h-full w-full bg-main-app-background overflow-y-auto"
-      panelClass="flex flex-col w-[944px] h-[678px]"
+      panelClass="flex flex-col w-[954px] h-[678px]"
       headerClass="pl-5 pr-3 py-4 shrink-0"
       closeButton
       onClose={closeModal}
     >
       <div className="flex min-h-full flex-wrap-reverse items-end gap-4 p-6">
         <Plate className="min-h-0 min-w-80 grow basis-[530px] border-filter-border p-6 shadow-card-shadow">
-          <ProposalDescription chainId={chain.chainId} referendum={referendum} />
+          <ProposalDescription chainId={chain.chainId} addressPrefix={chain.addressPrefix} referendum={referendum} />
         </Plate>
 
         <div className="flex shrink-0 grow basis-[350px] flex-row flex-wrap gap-4">
@@ -88,6 +85,8 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onCl
               chain={chain}
               asset={votingAsset}
               canVote={canVote}
+              hasAccount={hasAccount}
+              wallet={wallet}
               onVoteRequest={onVoteRequest}
             />
           </DetailsCard>
@@ -124,7 +123,12 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onCl
       </div>
 
       {showWalletVotes && (
-        <WalletVotesDialog referendum={referendum} asset={votingAsset} onClose={() => setShowWalletVotes(false)} />
+        <MyVotesDialog
+          referendum={referendum}
+          chain={chain}
+          asset={votingAsset}
+          onClose={() => setShowWalletVotes(false)}
+        />
       )}
 
       {showVoteHistory && <VotingHistoryDialog referendum={referendum} onClose={() => setShowVoteHistory(false)} />}

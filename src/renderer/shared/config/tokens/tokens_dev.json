@@ -14,17 +14,6 @@
         "assetSymbol": "DOT"
       },
       {
-        "chainId": "0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9",
-        "name": "Westmint",
-        "assetId": 2,
-        "assetSymbol": "DOT",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "0x02010902",
-          "palletName": "ForeignAssets"
-        }
-      },
-      {
         "chainId": "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
         "name": "Acala",
         "assetId": 3,
@@ -3676,6 +3665,134 @@
     ]
   },
   {
+    "name": "WIFD",
+    "precision": 10,
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/WIFD.svg",
+    "symbol": "WIFD",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
+        "name": "Polkadot Asset Hub",
+        "assetId": 11,
+        "assetSymbol": "WIFD",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "17"
+        }
+      },
+      {
+        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
+        "name": "Hydration",
+        "assetId": 39,
+        "assetSymbol": "WIFD",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x92420f00",
+          "currencyIdType": "u32",
+          "existentialDeposit": "1",
+          "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
+    "name": "BORK",
+    "precision": 10,
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/BORK.svg",
+    "symbol": "BORK",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
+        "name": "Polkadot Asset Hub",
+        "assetId": 12,
+        "assetSymbol": "BORK",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "690"
+        }
+      },
+      {
+        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
+        "name": "Hydration",
+        "assetId": 40,
+        "assetSymbol": "BORK",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0xd4420f00",
+          "currencyIdType": "u32",
+          "existentialDeposit": "1",
+          "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
+    "name": "BUNS",
+    "precision": 10,
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/BUNS.svg",
+    "symbol": "BUNS",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
+        "name": "Polkadot Asset Hub",
+        "assetId": 13,
+        "assetSymbol": "BUNS",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "1234"
+        }
+      },
+      {
+        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
+        "name": "Hydration",
+        "assetId": 41,
+        "assetSymbol": "BUNS",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0xf1420f00",
+          "currencyIdType": "u32",
+          "existentialDeposit": "1",
+          "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
+    "name": "KOL",
+    "precision": 12,
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/KOL.svg",
+    "symbol": "KOL",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
+        "name": "Polkadot Asset Hub",
+        "assetId": 14,
+        "assetSymbol": "KOL",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "86"
+        }
+      },
+      {
+        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
+        "name": "Hydration",
+        "assetId": 42,
+        "assetSymbol": "KOL",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x07430f00",
+          "currencyIdType": "u32",
+          "existentialDeposit": "1",
+          "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
     "name": "Zeitgeist",
     "precision": 10,
     "priceId": "zeitgeist",
@@ -3706,7 +3823,7 @@
   },
   {
     "name": "Litentry",
-    "precision": 12,
+    "precision": 18,
     "priceId": "litentry",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Litentry_(LIT).svg",
     "symbol": "LIT",
@@ -3988,6 +4105,28 @@
           "currencyIdScale": "0x1b000000",
           "currencyIdType": "u32",
           "existentialDeposit": "7874015748",
+          "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
+    "name": "MYTH",
+    "precision": 18,
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/MYTH.svg",
+    "symbol": "MYTH",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
+        "name": "Hydration",
+        "assetId": 36,
+        "assetSymbol": "MYTH",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x1e000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "21367521367521400",
           "transfersEnabled": true
         }
       }
@@ -4360,26 +4499,6 @@
     ]
   },
   {
-    "name": "HOP token",
-    "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
-    "symbol": "HOP",
-    "isTestToken": true,
-    "chains": [
-      {
-        "chainId": "0x7c34d42fc815d392057c78b49f2755c753440ccd38bcb0405b3bcfb601d08734",
-        "name": "Rococo Asset Hub",
-        "assetId": 1,
-        "assetSymbol": "HOP",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "0x010100b11c",
-          "palletName": "ForeignAssets"
-        }
-      }
-    ]
-  },
-  {
     "name": "Test token",
     "precision": 18,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
@@ -4467,6 +4586,22 @@
         "name": "Polimec",
         "assetId": 0,
         "assetSymbol": "PLMC"
+      }
+    ]
+  },
+  {
+    "name": "TAO",
+    "precision": 9,
+    "priceId": "bittensor",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Bittensor_(TAO).svg",
+    "symbol": "TAO",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0x2f0555cc76fc2840a25a6ea3b9637146806f1f44b090c175ffde2a7e5ab36c03",
+        "name": "Bittensor",
+        "assetId": 0,
+        "assetSymbol": "TAO"
       }
     ]
   }

@@ -12,6 +12,7 @@ describe('pages/Governance/lib/governancePageUtils', () => {
       approvalThreshold: null,
       supportThreshold: null,
       isVoted: false,
+      submissionDeposit: null,
     },
     {
       type: ReferendumType.Approved,
@@ -21,6 +22,7 @@ describe('pages/Governance/lib/governancePageUtils', () => {
       approvalThreshold: null,
       supportThreshold: null,
       isVoted: false,
+      submissionDeposit: null,
     },
   ];
 

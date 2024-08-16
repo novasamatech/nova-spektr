@@ -28,7 +28,7 @@ export class WatchOnlyLoginPage extends BasePage<LoginPageElements> {
   }
 
   public async clickInfoButton(): Promise<WatchOnlyLoginPage> {
-    await this.click(this.pageElements.firstInfoButton);
+    await this.page.locator(this.pageElements.firstInfoButton).getByRole('button').nth(1).click();
 
     return this;
   }

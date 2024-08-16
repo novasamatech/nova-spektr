@@ -1,5 +1,3 @@
-import { BN } from '@polkadot/util';
-
 import {
   type SubsquareReferendumVote,
   type SubsquareSimpleReferendum,
@@ -8,12 +6,7 @@ import {
 } from '@shared/api/subsquare';
 import { dictionary } from '@shared/lib/utils';
 import { type SubsquareTimelineRecordStatus } from '../../../subsquare/lib/types';
-import {
-  type GovernanceApi,
-  type ReferendumTimelineRecord,
-  type ReferendumTimelineRecordStatus,
-  type ReferendumVote,
-} from '../lib/types';
+import { type GovernanceApi, type ReferendumTimelineRecord, type ReferendumTimelineRecordStatus } from '../lib/types';
 
 const getReferendumList: GovernanceApi['getReferendumList'] = async (chain, callback) => {
   const network = chain.specName;
@@ -40,27 +33,7 @@ const getReferendumDetails: GovernanceApi['getReferendumDetails'] = async (chain
 const getReferendumVotes: GovernanceApi['getReferendumVotes'] = (chain, referendumId, callback) => {
   const network = chain.specName;
 
-  const mapVote = (vote: SubsquareReferendumVote): ReferendumVote => {
-    let balance: BN | null = null;
-    let decision: ReferendumVote['decision'] = 'abstain';
-
-    if ('votes' in vote) {
-      balance = new BN(vote.votes);
-      decision = vote.aye ? 'aye' : 'nay';
-    } else {
-      const ayeBalance = new BN(vote.ayeBalance);
-      const nayBalance = new BN(vote.nayBalance);
-      balance = ayeBalance.add(nayBalance);
-      decision = 'abstain';
-    }
-
-    return {
-      voter: vote.account,
-      balance,
-      decision,
-      conviction: vote.conviction,
-    };
-  };
+  const mapVote = (vote: SubsquareReferendumVote) => vote.account;
 
   return subsquareApiService
     .fetchReferendumVotes({ network, referendumId }, (data, done) => callback(data.map(mapVote), done))

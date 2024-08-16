@@ -397,7 +397,6 @@ export const getUnsignedTransaction: Record<
     return convictionVotingMethods.vote(
       {
         pollIndex: transaction.args.referendum,
-        name: transaction.args.track,
         vote: transaction.args.vote,
       },
       info,
@@ -407,8 +406,7 @@ export const getUnsignedTransaction: Record<
   [TransactionType.REVOTE]: (transaction, info, options) => {
     return convictionVotingMethods.vote(
       {
-        pollIndex: parseInt(transaction.args.track),
-        name: transaction.args.referendum,
+        pollIndex: transaction.args.referendum,
         vote: transaction.args.vote,
       },
       info,

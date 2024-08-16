@@ -4,6 +4,7 @@ import { createGate } from 'effector-react';
 import { type Chain, type Referendum } from '@shared/core';
 import { permissionUtils, walletModel } from '@entities/wallet';
 import { descriptionsModel } from '../model/description';
+import { networkSelectorModel } from '../model/networkSelector';
 import { timelineModel } from '../model/timeline';
 import { titleModel } from '../model/title';
 import { votingAssetModel } from '../model/votingAsset';
@@ -17,13 +18,11 @@ const $canVote = walletModel.$activeWallet.map((wallet) => (wallet ? permissionU
 
 sample({
   clock: flow.open,
-  target: [proposerIdentityAggregate.events.requestReferendumProposer, descriptionsModel.events.requestDescription],
-});
-
-sample({
-  clock: flow.open,
-  fn: ({ referendum }) => ({ referendumId: referendum.referendumId }),
-  target: timelineModel.events.requestTimeline,
+  target: [
+    proposerIdentityAggregate.events.requestReferendumProposer,
+    descriptionsModel.events.requestDescription,
+    timelineModel.events.requestTimeline,
+  ],
 });
 
 export const detailsAggregate = {
@@ -33,9 +32,13 @@ export const detailsAggregate = {
   $timelines: timelineModel.$currentChainTimelines,
   $votes: votingAggregate.$activeWalletVotes,
   $proposers: proposerIdentityAggregate.$proposers,
-  $isTimelinesLoading: timelineModel.$isTimelineLoading,
+
+  $isTitlesLoading: titleModel.$isTitlesLoading,
+  $isTimelinesLoading: timelineModel.$isLoading,
   $isProposersLoading: proposerIdentityAggregate.$isProposersLoading,
   $isDescriptionLoading: descriptionsModel.$isDescriptionLoading,
+  $hasAccount: networkSelectorModel.$hasAccount,
+
   $canVote,
 
   gates: { flow },

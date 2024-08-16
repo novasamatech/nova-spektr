@@ -18,3 +18,16 @@ export const GET_DELEGATE_LIST = gql`
     }
   }
 `;
+
+export const GET_DELEGATOR = gql`
+  query DelegatorVotings($voter: String) {
+    delegatorVotings(filter: { delegator: { equalTo: $voter } }) {
+      nodes {
+        parent {
+          referendumId
+          voter
+        }
+      }
+    }
+  }
+`;

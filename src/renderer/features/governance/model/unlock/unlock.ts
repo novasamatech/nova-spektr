@@ -1,12 +1,13 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createStore, sample } from 'effector';
-import { combineEvents } from 'patronum';
+import { combineEvents, or } from 'patronum';
 
 import { type ClaimTimeAt, type UnlockChunk, UnlockChunkType } from '@shared/api/governance';
 import { type Address, type Referendum, type TrackId, type TrackInfo, type VotingMap } from '@shared/core';
 import { getCreatedDateFromApi, getCurrentBlockNumber } from '@shared/lib/utils';
 import { claimScheduleService, referendumModel, tracksModel, votingModel } from '@entities/governance';
+import { walletModel } from '@entities/wallet';
 import { unlockService } from '../../lib/unlockService';
 import { locksModel } from '../locks';
 import { networkSelectorModel } from '../networkSelector';
@@ -57,20 +58,23 @@ const getClaimScheduleFx = createEffect(
 
 sample({
   clock: [
-    referendumModel.events.requestDone,
-    combineEvents([locksModel.events.requestDone, votingModel.effects.requestVotingFx.done]),
+    combineEvents([referendumModel.events.subscribeReferendums, referendumModel.$referendums.updates]),
+    locksModel.$trackLocks.updates,
+    votingModel.$voting.updates,
   ],
   source: {
     api: networkSelectorModel.$governanceChainApi,
     tracks: tracksModel.$tracks,
     trackLocks: locksModel.$trackLocks,
     totalLock: locksModel.$totalLock,
+    lockIsLoading: locksModel.$isLoading,
     voting: votingModel.$voting,
+    votingIsLoading: votingModel.$isLoading,
     referendums: referendumModel.$referendums,
     chain: networkSelectorModel.$governanceChain,
   },
-  filter: ({ api, chain, referendums, totalLock }) =>
-    !!api && !!chain && !!referendums[chain!.chainId] && !totalLock.isZero(),
+  filter: ({ api, chain, referendums, totalLock, votingIsLoading, lockIsLoading }) =>
+    !!api && !!chain && !!referendums[chain!.chainId] && !votingIsLoading && !lockIsLoading && !totalLock.isZero(),
   fn: ({ api, tracks, trackLocks, voting, referendums, chain }) => ({
     api: api!,
     tracks,
@@ -82,13 +86,13 @@ sample({
 });
 
 sample({
-  clock: getClaimScheduleFx.doneData,
-  target: $claimSchedule,
+  clock: [locksModel.$totalLock.updates, walletModel.$activeWallet],
+  target: [$claimSchedule.reinit, $totalUnlock.reinit],
 });
 
 sample({
-  clock: locksModel.$totalLock.updates,
-  target: [$claimSchedule.reinit, $totalUnlock.reinit],
+  clock: getClaimScheduleFx.doneData,
+  target: $claimSchedule,
 });
 
 sample({
@@ -104,7 +108,7 @@ sample({
 });
 
 export const unlockModel = {
-  $isLoading: locksModel.$isLoading || getClaimScheduleFx.pending,
+  $isLoading: or(locksModel.$isLoading, getClaimScheduleFx.pending),
   $totalUnlock,
   $claimSchedule,
   $isUnlockable: combine($totalUnlock, (totalUnlock) => !totalUnlock.isZero()),

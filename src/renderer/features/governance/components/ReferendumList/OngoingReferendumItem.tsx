@@ -8,6 +8,7 @@ import { type AggregatedReferendum } from '../../types/structs';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 
 import { ListItem } from './ListItem';
+import { VotedBy } from './VotedBy';
 
 type Props = {
   isTitlesLoading: boolean;
@@ -17,7 +18,7 @@ type Props = {
 
 export const OngoingReferendumItem = memo<Props>(({ referendum, isTitlesLoading, onSelect }) => {
   const { t } = useI18n();
-  const { supportThreshold, approvalThreshold, isVoted, title } = referendum;
+  const { supportThreshold, approvalThreshold, isVoted, title, votedByDelegate } = referendum;
   const isPassing = supportThreshold ? supportThreshold.passing : false;
   const voteFractions = approvalThreshold
     ? votingService.getVoteFractions(referendum.tally, approvalThreshold.value)
@@ -35,6 +36,7 @@ export const OngoingReferendumItem = memo<Props>(({ referendum, isTitlesLoading,
     <ListItem onClick={() => onSelect(referendum)}>
       <div className="flex w-full items-center gap-x-2">
         <Voted active={isVoted} />
+        <VotedBy address={votedByDelegate} />
         <VotingStatusBadge passing={isPassing} referendum={referendum} />
 
         {/*<ReferendumTimer status="reject" time={600000} />*/}
