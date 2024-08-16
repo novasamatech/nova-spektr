@@ -33,7 +33,7 @@ export const YourDelegation = () => {
             {activeAccounts.length === 1 ? (
               <AddressWithExplorers type="short" address={activeAccounts[0]} explorers={chain?.explorers} />
             ) : (
-              activeAccounts.length
+              <FootnoteText className="text-text-secondary">{activeAccounts.length}</FootnoteText>
             )}
           </DetailRow>
 
