@@ -324,6 +324,62 @@
   },
   "governance": {
     "addDelegation": {
+      "accountLabel": "Your accounts",
+      "accountPlaceholder": "Select",
+      "accountsLabel_one": "Account",
+      "accountsLabel_other": "Accounts",
+      "actionButton": "Add delegation",
+      "addCustom": "Add custom",
+      "addDelegationButton": "Add new delegation",
+      "addToRegistry": {
+        "link": "Describe yourself",
+        "message": "Tell us more about yourself so Spektr users get to know you better.",
+        "title": "Are you a delegate?"
+      },
+      "alreadyDelegatedError": "Already delegated",
+      "balanceValue": "<balance /> × {conviction}x",
+      "cantAddDelegationTitle": "You can't add a delegation",
+      "card": {
+        "delegations": "Delegations",
+        "individual": "Individual",
+        "organization": "Organization",
+        "voted": "Voted last 30 days",
+        "votes": "Delegated votes"
+      },
+      "confirmation": {
+        "target": "Delegate",
+        "tracks": "Tracks"
+      },
+      "continueButton": "Continue",
+      "convictionLabel": "Conviction",
+      "customDelegationLabel": "Delegate to",
+      "customDelegationPlaceholder": "Enter address",
+      "customDelegationTitle": "Add custom delegation on",
+      "delegateTitle": "Delegate",
+      "editDelegationButton": "Edit delegation",
+      "emptyDescription": "Update the search or cancel filtering",
+      "emptyTitle": "Nothing was found",
+      "formTitle": "Step 2. Select the number of votes and the multiplier.",
+      "group": {
+        "admin": "Admin",
+        "fellowship": "Fellowship",
+        "governance": "Governance",
+        "selectAll": "Select all",
+        "treasury": "Treasury"
+      },
+      "invalidAddressError": "Invalid address",
+      "manyAccountsPlaceholder": "Select accounts",
+      "multishardDescription": "You can select multiple accounts and delegate them in several tracks. If you are already delegating an account and want to add more tracks, select it separately.",
+      "proxyRestrictionMessage": "Please add a new proxy connections to delegate",
+      "revokeDelegationButton": "Revoke delegation",
+      "selectTrackTitle": "Step 1. Select tracks of delegation.",
+      "sort": {
+        "delegations": "Delegations",
+        "placeholder": "Sort by",
+        "voted": "Voted last 30 days",
+        "votes": "Delegated votes"
+      },
+      "title": "Add delegation on",
       "tracks": {
         "crowdloans": "Auction admin",
         "crowdloansDescription": "Origin for starting auctions.",
@@ -358,65 +414,12 @@
         "wishForChange": "Wish for change",
         "wishForChangeDescription": "Origin for signaling that the network wishes for some change."
       },
-      "accountLabel": "Your accounts",
-      "accountPlaceholder": "Select",
-      "accountsLabel_one": "Account",
-      "accountsLabel_other": "Accounts",
-      "actionButton": "Add delegation",
-      "addCustom": "Add custom",
-      "addDelegationButton": "Add new delegation",
-      "addToRegistry": {
-        "link": "Describe yourself",
-        "message": "Tell us more about yourself so Spektr users get to know you better.",
-        "title": "Are you a delegate?"
-      },
-      "balanceValue": "<balance /> × {conviction}x",
-      "cantAddDelegationTitle": "You can't add a delegation",
-      "card": {
-        "delegations": "Delegations",
-        "individual": "Individual",
-        "organization": "Organization",
-        "voted": "Voted last 30 days",
-        "votes": "Delegated votes"
-      },
-      "confirmation": {
-        "target": "Delegate",
-        "tracks": "Tracks"
-      },
-      "continueButton": "Continue",
-      "convictionLabel": "Conviction",
-      "customDelegationLabel": "Delegate to",
-      "customDelegationPlaceholder": "Enter address",
-      "customDelegationTitle": "Add custom delegation on",
-      "delegateTitle": "Delegate",
-      "editDelegationButton": "Edit delegation",
-      "emptyDescription": "Update the search or cancel filtering",
-      "emptyTitle": "Nothing was found",
-      "formTitle": "Step 2. Select the number of votes and the multiplier.",
-      "group": {
-        "admin": "Admin",
-        "fellowship": "Fellowship",
-        "governance": "Governance",
-        "selectAll": "Select all",
-        "treasury": "Treasury"
-      },
-      "manyAccountsPlaceholder": "Select accounts",
-      "multishardDescription": "You can select multiple accounts and delegate them in several tracks. If you are already delegating an account and want to add more tracks, select it separately.",
-      "proxyRestrictionMessage": "Please add a new proxy connections to delegate",
-      "revokeDelegationButton": "Revoke delegation",
-      "selectTrackTitle": "Step 1. Select tracks of delegation.",
-      "sort": {
-        "delegations": "Delegations",
-        "placeholder": "Sort by",
-        "voted": "Voted last 30 days",
-        "votes": "Delegated votes"
-      },
-      "title": "Add delegation on",
       "tracksLabel": "Tracks",
       "viewDelegationButton": "View delegations",
       "votesLabel": "Voting power",
       "votesValue": "<votes /> votes",
       "walletTypeRestrictionError": "You can't add a delegation in that wallet type",
+      "yourAccountError": "You cannot delegate to the same account",
       "yourDelegation": "Your Delegation",
       "yourDelegationsTitle": "Your delegations"
     },

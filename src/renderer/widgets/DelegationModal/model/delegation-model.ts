@@ -5,11 +5,17 @@ import { readonly } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { type Address } from '@/shared/core';
-import { Step, includesMultiple } from '@/shared/lib/utils';
+import { Step, includesMultiple, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
-import { delegateRegistryAggregate, networkSelectorModel, votingAggregate } from '@/features/governance';
+import { walletModel } from '@/entities/wallet';
+import {
+  delegateRegistryAggregate,
+  delegationAggregate,
+  networkSelectorModel,
+  votingAggregate,
+} from '@/features/governance';
 import { delegateModel } from '@/widgets/DelegateModal/model/delegate-model';
-import { SortProp, SortType } from '../common/constants';
+import { DelegationErrors, SortProp, SortType } from '../common/constants';
 
 const flowFinished = createEvent();
 const flowStarted = createEvent();
@@ -76,6 +82,32 @@ const $delegateList = combine(
   },
 );
 
+const $customError = combine(
+  {
+    delegate: $customDelegate,
+    votes: votingAggregate.$activeWalletVotes,
+    wallet: walletModel.$activeWallet,
+    chain: delegationAggregate.$chain,
+  },
+  ({ delegate, votes, wallet, chain }): DelegationErrors | undefined => {
+    if (!wallet || !chain || !delegate || !validateAddress(delegate)) return DelegationErrors.INVALID_ADDRESS;
+
+    const isSameAccount = wallet.accounts.some((a) => a.accountId === toAccountId(delegate));
+
+    if (isSameAccount) return DelegationErrors.YOUR_ACCOUNT;
+
+    const isAlreadyDelegated = wallet.accounts.some((a) => {
+      const address = toAddress(a.accountId, { prefix: chain.addressPrefix });
+
+      return Object.keys(votes[address]).length > 0;
+    });
+
+    if (isAlreadyDelegated) return DelegationErrors.ALREADY_DELEGATED;
+
+    return;
+  },
+);
+
 sample({
   clock: flowStarted,
   source: networkSelectorModel.$governanceChain,
@@ -132,6 +164,7 @@ export const delegationModel = {
   $query: readonly($query),
   $sortType: readonly($sortType),
   $customDelegate: readonly($customDelegate),
+  $customError: readonly($customError),
 
   events: {
     flowStarted,
