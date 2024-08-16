@@ -15,7 +15,7 @@ export { voteValidateModel } from './model/vote/voteValidateModel';
 export { votingAssetModel } from './model/votingAsset';
 
 export { Locks } from './components/Locks';
-export { TotalDelegation, DelegateBadge, DelegateIcon, DelegateTitle } from './components/Delegations';
+export { TotalDelegation, DelegateBadge, DelegateIcon, DelegateTitle, DelegateName } from './components/Delegations';
 export { NetworkSelector } from './components/NetworkSelector';
 export { ReferendumDetailsDialog } from './components/ReferendumDetails/ReferendumDetailsDialog';
 export { ReferendumSearch, ReferendumFilters, VoteStatus } from './components/ReferendumFilter';
