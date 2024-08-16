@@ -2,6 +2,7 @@ import { memo } from 'react';
 
 import { useI18n } from '@app/providers';
 import { type OngoingReferendum } from '@shared/core';
+import { useDeferredList } from '@shared/lib/hooks';
 import { Accordion, CaptionText, Shimmering } from '@shared/ui';
 import { type AggregatedReferendum } from '../../types/structs';
 
@@ -16,13 +17,17 @@ type Props = {
 };
 
 const placeholder = Array.from({ length: 4 }, (_, index) => (
-  <li key={index}>
+  <li key={`placeholder${index}`}>
     <ListItemPlaceholder />
   </li>
 ));
 
 export const OngoingReferendums = memo<Props>(({ referendums, isLoading, isTitlesLoading, onSelect }) => {
   const { t } = useI18n();
+  const { isLoading: shouldRenderLoadingState, list: deferredReferendums } = useDeferredList({
+    isLoading,
+    list: referendums,
+  });
 
   return (
     <Accordion isDefaultOpen>
@@ -31,18 +36,16 @@ export const OngoingReferendums = memo<Props>(({ referendums, isLoading, isTitle
           <CaptionText className="font-semibold uppercase tracking-[0.75px] text-text-secondary">
             {t('governance.referendums.ongoing')}
           </CaptionText>
-          {isLoading ? (
-            <Shimmering width={25} height={12} />
-          ) : (
-            <CaptionText className="font-semibold text-text-tertiary">{referendums.length.toString()}</CaptionText>
-          )}
+          <CaptionText className="font-semibold text-text-tertiary">
+            {isLoading ? <Shimmering width="3ch" height="1em" /> : referendums.length.toString()}
+          </CaptionText>
         </div>
       </Accordion.Button>
       <Accordion.Content as="ul" className="flex flex-col gap-y-2">
-        {!!isLoading && placeholder}
+        {shouldRenderLoadingState && placeholder}
 
-        {!isLoading &&
-          referendums.map((referendum) => (
+        {!shouldRenderLoadingState &&
+          deferredReferendums.map((referendum) => (
             <li key={referendum.referendumId}>
               <OngoingReferendumItem referendum={referendum} isTitlesLoading={isTitlesLoading} onSelect={onSelect} />
             </li>

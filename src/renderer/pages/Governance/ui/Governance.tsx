@@ -53,6 +53,10 @@ export const Governance = () => {
     return all.find((x) => x.referendumId === selectedReferendumId) ?? null;
   }, [all, selectedReferendumId]);
 
+  const shouldNetworkDisabledError = !isApiConnected && !isLoading && all.length === 0;
+  const shouldRenderEmptyState = !isLoading && isApiConnected && all.length === 0;
+  const shouldRenderList = isLoading || (!shouldRenderEmptyState && !shouldNetworkDisabledError);
+
   return (
     <div className="flex h-full flex-col">
       <Header title={t('governance.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
@@ -73,23 +77,24 @@ export const Governance = () => {
             <ReferendumFilters />
           </div>
 
-          <EmptyGovernance isLoading={isLoading} isConnected={isApiConnected} />
-          <InactiveNetwork active={!isApiConnected} isLoading={isLoading || all.length === 0} className="flex-grow" />
-
-          <div className="flex flex-col gap-y-3 pb-10">
-            <OngoingReferendums
-              referendums={ongoing}
-              isTitlesLoading={isTitlesLoading}
-              isLoading={isLoading}
-              onSelect={selectReferendum}
-            />
-            <CompletedReferendums
-              referendums={completed}
-              isTitlesLoading={isTitlesLoading}
-              isLoading={isLoading}
-              onSelect={selectReferendum}
-            />
-          </div>
+          {shouldRenderEmptyState && <EmptyGovernance />}
+          {shouldNetworkDisabledError && <InactiveNetwork active className="grow" />}
+          {shouldRenderList && (
+            <div className="flex flex-col gap-y-3 pb-10">
+              <OngoingReferendums
+                referendums={ongoing}
+                isTitlesLoading={isTitlesLoading}
+                isLoading={isLoading}
+                onSelect={selectReferendum}
+              />
+              <CompletedReferendums
+                referendums={completed}
+                isTitlesLoading={isTitlesLoading}
+                isLoading={isLoading}
+                onSelect={selectReferendum}
+              />
+            </div>
+          )}
         </section>
       </div>
 
