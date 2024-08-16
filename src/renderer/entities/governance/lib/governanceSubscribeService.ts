@@ -1,16 +1,22 @@
 import { type ApiPromise } from '@polkadot/api';
+import { type Header } from '@polkadot/types/interfaces';
 import { type BN } from '@polkadot/util';
+import throttle from 'lodash/throttle';
 
 import {
   type AccountVote,
   type Address,
+  type Referendum,
   type ReferendumId,
   type TrackId,
   type Voting,
   type VotingMap,
 } from '@/shared/core';
 
+import { governanceService } from './governanceService';
+
 export const governanceSubscribeService = {
+  subscribeReferendums,
   subscribeTrackLocks,
   subscribeVotingFor,
 };
@@ -137,4 +143,25 @@ function subscribeVotingFor(
   return () => {
     unsubscribe.then((fn) => fn());
   };
+}
+
+/**
+ * TODO move to chain helpers
+ */
+function subscribeBlockWithInterval(api: ApiPromise, ttl: number, callback: (header: Header) => unknown) {
+  const throttled = throttle(callback, ttl);
+  const unsubscribe = api.rpc.chain.subscribeNewHeads((header) => {
+    throttled(header);
+  });
+
+  return () => {
+    throttled.cancel();
+    unsubscribe.then((x) => x());
+  };
+}
+
+function subscribeReferendums(api: ApiPromise, callback: (referendums: Referendum[]) => unknown) {
+  return subscribeBlockWithInterval(api, 30 * 1000, () => {
+    governanceService.getReferendums(api).then(callback);
+  });
 }
