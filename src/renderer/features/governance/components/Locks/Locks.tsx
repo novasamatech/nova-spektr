@@ -32,7 +32,7 @@ export const Locks = ({ onClick }: Props) => {
               <FootnoteText className="ml-1 text-text-positive">{t('governance.locks.unlockable')}</FootnoteText>
             )}
           </div>
-          {isLoading && <Shimmering width={120} height={20} />}
+          {isLoading && <Shimmering width={120} height={18} />}
           {!isLoading && asset && (
             <AssetBalance className="text-small-title" value={totalLock.toString()} asset={asset} />
           )}

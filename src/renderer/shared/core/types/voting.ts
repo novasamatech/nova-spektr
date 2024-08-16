@@ -36,6 +36,7 @@ export type StandardVote = {
   vote: {
     aye: boolean;
     conviction: Conviction;
+    vote?: 'Aye' | 'Nay';
   };
   balance: BN;
 };

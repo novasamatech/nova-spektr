@@ -1,16 +1,8 @@
-import { type BN } from '@polkadot/util';
-
 import { type Address, type Chain, type ReferendumId } from '@shared/core';
-
-export type ReferendumVote = {
-  decision: 'aye' | 'nay' | 'abstain';
-  voter: Address;
-  balance: BN;
-  conviction: number;
-};
 
 export type ReferendumTimelineRecordStatus =
   | 'All'
+  | 'Approved'
   | 'Confirmed'
   | 'Created'
   | 'ConfirmStarted'
@@ -36,8 +28,8 @@ export interface GovernanceApi {
   getReferendumVotes: (
     chain: Chain,
     referendumId: ReferendumId,
-    callback: (data: ReferendumVote[], done: boolean) => void,
-  ) => Promise<ReferendumVote[]>;
+    callback: (data: Address[], done: boolean) => void,
+  ) => Promise<Address[]>;
   getReferendumTimeline: (chain: Chain, referendumId: ReferendumId) => Promise<ReferendumTimelineRecord[]>;
 }
 
@@ -61,6 +53,7 @@ export type DelegateAccount = DelegateStat & Partial<DelegateDetails>;
 
 export interface DelegationApi {
   getDelegatesFromRegistry: (chain: Chain) => Promise<DelegateDetails[]>;
+  getDelegatedVotesFromExternalSource: (chain: Chain, voter: Address[]) => Promise<Record<ReferendumId, Address>>;
   getDelegatesFromExternalSource: (chain: Chain, blockNumber: number) => Promise<DelegateStat[]>;
   aggregateDelegateAccounts: (accounts: DelegateDetails[], stats: DelegateStat[]) => DelegateAccount[];
 }

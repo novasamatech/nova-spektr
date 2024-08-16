@@ -14,6 +14,7 @@ import {
   AddPureProxiedConfirm,
   BondExtraConfirmation,
   BondNominateConfirmation,
+  DelegateConfirmation,
   NominateConfirmation,
   PayeeConfirmation,
   RemoveProxyConfirm,
@@ -108,6 +109,13 @@ export const SignOperation = () => {
       ),
       [TransactionType.UNSTAKE]: () => (
         <UnstakeConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
+      ),
+      [TransactionType.DELEGATE]: () => (
+        <DelegateConfirmation
+          id={transaction.id}
+          config={config}
+          onGoBack={() => signOperationsModel.output.flowFinished()}
+        />
       ),
       [TransactionType.VOTE]: () => (
         <VoteConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />

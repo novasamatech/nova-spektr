@@ -89,6 +89,7 @@
   --block-background-hover: rgba(237, 237, 244);
   --block-background: rgba(69, 69, 137, 0.04);
   --badge-background: rgba(70, 73, 246, 0.16);
+  --badge-background-hover: rgba(70, 73, 246, 0.24);
   --badge-red-background-default: rgba(245, 33, 99, 0.16);
   --badge-orange-background-default: rgba(246, 143, 7, 0.16);
   --extended-block-background: rgba(69, 69, 137, 0.03);

@@ -8,18 +8,18 @@ import { referendumService } from '@entities/governance';
 import { InactiveNetwork } from '@entities/network';
 import {
   CompletedReferendums,
-  Delegations,
   Locks,
   NetworkSelector,
   OngoingReferendums,
   ReferendumDetailsDialog,
   ReferendumFilters,
   ReferendumSearch,
+  TotalDelegation,
   networkSelectorModel,
   votingAssetModel,
 } from '@features/governance';
-import { AddDelegationModal } from '@/widgets/AddDelegationModal/components/AddDelegationModal';
-import { addDelegationModel } from '@/widgets/AddDelegationModal/model/addDelegation';
+import { DelegationModal } from '@/widgets/DelegationModal/components/DelegationModal';
+import { delegationModel } from '@/widgets/DelegationModal/model/delegation-model';
 import { UnlockModal, unlockAggregate } from '@/widgets/UnlockModal';
 import { VoteModal } from '@widgets/VoteModal';
 import { governancePageAggregate } from '../aggregates/governancePage';
@@ -66,14 +66,17 @@ export const Governance = () => {
               <NetworkSelector />
             </Plate>
             <Locks onClick={unlockAggregate.events.flowStarted} />
-            <Delegations onClick={addDelegationModel.events.flowStarted} />
+            <TotalDelegation onClick={delegationModel.events.flowStarted} />
           </div>
 
           <div className="mb-4 mt-5">
             <ReferendumFilters />
           </div>
 
-          <div className="flex flex-col gap-y-3">
+          <EmptyGovernance isLoading={isLoading} isConnected={isApiConnected} />
+          <InactiveNetwork active={!isApiConnected} isLoading={isLoading || all.length === 0} className="flex-grow" />
+
+          <div className="flex flex-col gap-y-3 pb-10">
             <OngoingReferendums
               referendums={ongoing}
               isTitlesLoading={isTitlesLoading}
@@ -87,9 +90,6 @@ export const Governance = () => {
               onSelect={selectReferendum}
             />
           </div>
-
-          <EmptyGovernance />
-          <InactiveNetwork active={!isApiConnected} isLoading={isLoading} className="flex-grow" />
         </section>
       </div>
 
@@ -114,7 +114,7 @@ export const Governance = () => {
         />
       )}
 
-      <AddDelegationModal />
+      <DelegationModal />
       <UnlockModal />
     </div>
   );

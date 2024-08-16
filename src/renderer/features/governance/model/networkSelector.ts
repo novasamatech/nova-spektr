@@ -1,6 +1,7 @@
 import { combine, createEvent, restore, sample } from 'effector';
 
 import { type Chain, type ConnectionStatus } from '@shared/core';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
 
 const chainChanged = createEvent<Chain>();
@@ -54,12 +55,30 @@ const $isConnectionActive = combine(
   },
 );
 
+const $hasAccount = combine(
+  {
+    chain: $governanceChain,
+    activeWallet: walletModel.$activeWallet,
+  },
+  ({ chain, activeWallet }) => {
+    if (!activeWallet || !chain) return false;
+
+    return activeWallet.accounts.some((account) => {
+      return (
+        accountUtils.isNonBaseVaultAccount(account, activeWallet) && accountUtils.isChainAndCryptoMatch(account, chain)
+      );
+    });
+  },
+);
+
 export const networkSelectorModel = {
   $isConnectionActive,
   $governanceChain,
   $governanceChains,
   $governanceChainApi,
+  $hasAccount,
   $isApiConnected,
+
   input: {
     defaultChainSet,
   },

@@ -8,7 +8,7 @@ export class LoginPageElements implements BasePageElements {
   polkadotVaultButton = 'Polkadot Vault';
   continueButton = 'Continue';
   accessDeniedText = 'text=Access denied!';
-  firstInfoButton = '[id="headlessui-popover-button-\\:r4\\:"]';
+  firstInfoButton = '[id="headlessui-popover-button-\\:r8\\:"]';
   subscanLabel = 'View on Subscan';
   onboardingLabel = 'Add your wallet';
 }

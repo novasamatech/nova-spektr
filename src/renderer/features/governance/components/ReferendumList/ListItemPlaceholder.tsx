@@ -8,9 +8,9 @@ export const ListItemPlaceholder = () => {
         <Shimmering width={125} height={20} />
       </div>
       <div className="flex w-full justify-between gap-x-6">
-        <Shimmering className="rounded-lg" width={332} height={62} />
-        <div className="h-[62px] w-[1px] bg-divider" />
-        <Shimmering className="rounded-lg" width={332} height={62} />
+        <Shimmering className="rounded-lg" width={332} height={22} />
+        <div className="h-full w-[1px] bg-divider" />
+        <Shimmering className="rounded-lg" width={332} height={22} />
       </div>
     </div>
   );

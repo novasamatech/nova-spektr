@@ -194,6 +194,7 @@ export const walletSelectModel = {
   $filteredWalletGroups,
   $walletBalance,
   $walletForDetails,
+
   events: {
     walletSelected,
     walletIdSet,

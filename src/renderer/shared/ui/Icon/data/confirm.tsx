@@ -1,3 +1,4 @@
+import AddDelegationImg, { ReactComponent as AddDelegationSvg } from '@shared/assets/images/confirm/add-delegation.svg';
 import DestinationImg, {
   ReactComponent as DestinationSvg,
 } from '@shared/assets/images/confirm/change-rewards-dest.svg';
@@ -30,6 +31,7 @@ const ConfirmImages = {
   changeValidatorsConfirm: { svg: ChangeValidatorsSvg, img: ChangeValidatorsImg },
   returnToStakeConfirm: { svg: ReturnToStakeSvg, img: ReturnToStakeImg },
   proxyConfirm: { svg: DelegatedAuthoritiesSvg, img: DelegatedAuthoritiesImg },
+  addDelegationConfirm: { svg: AddDelegationSvg, img: AddDelegationImg },
 } as const;
 
 export type Confirm = keyof typeof ConfirmImages;

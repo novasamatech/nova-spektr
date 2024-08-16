@@ -101,6 +101,7 @@ export type {
 
 export { ReferendumType } from './types/referendum';
 export type {
+  Deposit,
   Tally,
   ReferendumId,
   ApprovedReferendum,

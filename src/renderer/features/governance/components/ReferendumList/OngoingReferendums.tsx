@@ -24,10 +24,6 @@ const placeholder = Array.from({ length: 4 }, (_, index) => (
 export const OngoingReferendums = memo<Props>(({ referendums, isLoading, isTitlesLoading, onSelect }) => {
   const { t } = useI18n();
 
-  if (referendums.length === 0) {
-    return null;
-  }
-
   return (
     <Accordion isDefaultOpen>
       <Accordion.Button buttonClass="py-1.5 px-2 mb-2">
@@ -38,7 +34,7 @@ export const OngoingReferendums = memo<Props>(({ referendums, isLoading, isTitle
           {isLoading ? (
             <Shimmering width={25} height={12} />
           ) : (
-            <CaptionText className="font-semibold text-text-tertiary">{referendums.length}</CaptionText>
+            <CaptionText className="font-semibold text-text-tertiary">{referendums.length.toString()}</CaptionText>
           )}
         </div>
       </Accordion.Button>

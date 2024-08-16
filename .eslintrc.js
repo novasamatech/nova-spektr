@@ -252,6 +252,43 @@ module.exports = {
       rules: {
         // TODO error
         '@typescript-eslint/consistent-type-assertions': ['off', { assertionStyle: 'never' }],
+
+        'no-restricted-syntax': [
+          'error',
+          // case with useUnit(a).b
+          {
+            message: 'Replace with "useStoreMap". Getting object members directly from "useUnit" in restricted.',
+            selector: 'MemberExpression > CallExpression[callee.name="useUnit"]',
+          },
+          // effector store naming convention
+          {
+            message: 'Use effector naming convention for stores.',
+            selector: 'VariableDeclarator[init.callee.name=/^createStore|combine$/][id.name!=/^\\$.*/]',
+          },
+          // effector effect naming convention
+          {
+            message: 'Use effector naming convention for effects.',
+            selector: 'VariableDeclarator[init.callee.name="createEffect"][id.name!=/.*?Fx$/]',
+          },
+          // for..in
+          {
+            message: 'Use `for..of` instead.',
+            selector: 'ForInStatement',
+          },
+          // forEach ban TODO enable this and disable no-restricted-properties
+          // {
+          //   message: 'Use `for..of` instead.',
+          //   selector:
+          //     'CallExpression:has(MemberExpression:has([property.name="forEach"])):has([arguments.0.type="ArrowFunctionExpression"])',
+          // },
+        ],
+
+        // TODO remove after no-restricted-syntax for for..of will be enabled
+        'no-restricted-properties': [
+          'warn',
+          // ban forEach
+          { property: 'forEach', message: 'Use for..of instead.' },
+        ],
       },
     },
   ],

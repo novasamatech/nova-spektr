@@ -12,6 +12,7 @@ export { bondExtraValidateModel } from './model/bond-extra-validate-model';
 export { restakeValidateModel } from './model/restake-validate-model';
 export { unstakeValidateModel } from './model/unstake-validate-model';
 export { withdrawValidateModel } from './model/withdraw-validate-model';
+export { delegateValidateModel } from './model/delegate-validate-model';
 
 export { TransferRules } from './lib/transfer-rules';
 

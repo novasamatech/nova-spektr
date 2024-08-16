@@ -16,6 +16,7 @@ import {
   AddPureProxiedConfirm,
   BondExtraConfirmation,
   BondNominateConfirmation,
+  DelegateConfirmation,
   NominateConfirmation,
   PayeeConfirmation,
   RemoveProxyConfirm,
@@ -96,6 +97,7 @@ export const SignOperations = () => {
       [TransactionType.RESTAKE]: () => <RestakeConfirmation id={transaction.id} hideSignButton />,
       [TransactionType.DESTINATION]: () => <PayeeConfirmation id={transaction.id} hideSignButton />,
       [TransactionType.UNSTAKE]: () => <UnstakeConfirmation id={transaction.id} hideSignButton />,
+      [TransactionType.DELEGATE]: () => <DelegateConfirmation id={transaction.id} hideSignButton config={config} />,
       [TransactionType.UNLOCK]: () => <UnlockConfirmation id={transaction.id} hideSignButton />,
     };
 

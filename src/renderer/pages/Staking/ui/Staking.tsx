@@ -6,7 +6,7 @@ import { useGraphql, useI18n } from '@app/providers';
 import { type Account, type Address, type Chain, type ChainId, type Stake, type Validator } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
 import { getRelaychainAsset, toAddress } from '@shared/lib/utils';
-import { Header } from '@shared/ui';
+import { Button, EmptyList, Header } from '@shared/ui';
 import { InactiveNetwork, networkUtils, useNetworkData } from '@entities/network';
 import { priceProviderModel } from '@entities/price';
 import {
@@ -19,6 +19,8 @@ import {
 } from '@entities/staking';
 import { eraService } from '@entities/staking/api';
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
+import { EmptyAccountMessage } from '@/features/emptyList';
+import { walletSelectModel } from '@/features/wallets';
 import * as Operations from '@widgets/Staking';
 import { type NominatorInfo, Operations as StakeOperations } from '../lib/types';
 
@@ -315,6 +317,16 @@ export const Staking = () => {
                   onToggleNominator={toggleSelectedNominators}
                 />
               </>
+            )}
+
+            {networkIsActive && activeWallet && accounts.length === 0 && (
+              <EmptyList message={<EmptyAccountMessage walletType={activeWallet.type} />}>
+                {walletUtils.isPolkadotVault(activeWallet) && (
+                  <Button variant="text" onClick={() => walletSelectModel.events.walletIdSet(activeWallet.id)}>
+                    {t('emptyState.addNewAccountButton')}
+                  </Button>
+                )}
+              </EmptyList>
             )}
 
             <InactiveNetwork active={!networkIsActive} className="mb-28 flex-grow" />
