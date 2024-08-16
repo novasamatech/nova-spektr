@@ -156,7 +156,7 @@ function subscribeBlockWithInterval(api: ApiPromise, ttl: number, callback: (hea
 
   return () => {
     throttled.cancel();
-    unsubscribe.then((x) => x());
+    unsubscribe.then((fn) => fn());
   };
 }
 
