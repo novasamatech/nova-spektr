@@ -63,6 +63,12 @@ const $referendums = combine(
   },
 );
 
+const $isTitlesLoading = combine(titleModel.$loadingTitles, networkSelectorModel.$governanceChain, (titles, chain) => {
+  if (!chain) return false;
+
+  return titles[chain.chainId] ?? false;
+});
+
 sample({
   clock: networkSelectorModel.$governanceChainApi,
   source: networkSelectorModel.$governanceChain,
@@ -74,4 +80,5 @@ sample({
 export const listAggregate = {
   $referendums: readonly($referendums),
   $isLoading: referendumModel.$isLoading,
+  $isTitlesLoading,
 };

@@ -3,6 +3,7 @@ import isEmpty from 'lodash/isEmpty';
 
 import { type GovernanceApi } from '@shared/api/governance';
 import { type Chain, type ChainId, type ReferendumId } from '@shared/core';
+import { nonNullable } from '@shared/lib/utils';
 import { governanceModel } from '@entities/governance';
 import { createChunksEffect } from '../utils/createChunksEffect';
 
@@ -18,33 +19,23 @@ const $referendumTitles = combine(
   ({ titles, chain }) => (chain ? (titles[chain.chainId] ?? {}) : {}),
 );
 
-const $loadedTitles = createStore<Record<ChainId, true>>({});
+const $loading = createStore<Record<ChainId, true>>({});
+const $loaded = createStore<Record<ChainId, true>>({});
 
-type OffChainParams = {
+type TitlesRequestParams = {
   chain: Chain;
   service: GovernanceApi;
 };
 
-type OffChainResponse = Record<ReferendumId, string>;
+type TitlesResponse = Record<ReferendumId, string>;
 
 const {
   request: requestReferendumTitles,
   received: receiveReferendumTitles,
   $pending: $isTitlesLoading,
-} = createChunksEffect<OffChainParams, OffChainResponse>(({ chain, service }, cb) => {
-  return service.getReferendumList(chain, (data) => {
-    cb(data);
-  });
-});
-
-sample({
-  clock: receiveReferendumTitles,
-  source: $loadedTitles,
-  filter: (titles, { params }) => !(params.chain.chainId in titles),
-  fn: (titles, { params }) => {
-    return { ...titles, [params.chain.chainId]: true };
-  },
-  target: $loadedTitles,
+  done: requestReferendumTitlesDone,
+} = createChunksEffect<TitlesRequestParams, TitlesResponse>(({ chain, service }, fn) => {
+  return service.getReferendumList(chain, fn);
 });
 
 sample({
@@ -52,16 +43,32 @@ sample({
   source: {
     chain: networkSelectorModel.$governanceChain,
     governanceApi: governanceModel.$governanceApi,
-    loadedTitles: $loadedTitles,
+    loading: $loading,
+    loaded: $loaded,
   },
-  filter: ({ chain, governanceApi, loadedTitles }, referendums) => {
-    return !!chain && !!governanceApi && !isEmpty(referendums) && !loadedTitles[chain.chainId];
+  filter: ({ chain, governanceApi, loading, loaded }, referendums) => {
+    return (
+      nonNullable(chain) &&
+      nonNullable(governanceApi) &&
+      !isEmpty(referendums) &&
+      (!(chain.chainId in loading) || !(chain.chainId in loaded))
+    );
   },
   fn: ({ chain, governanceApi }) => ({
     chain: chain!,
     service: governanceApi!.service,
   }),
   target: requestReferendumTitles,
+});
+
+sample({
+  clock: requestReferendumTitles,
+  source: $loading,
+  filter: (loading, { chain }) => !(chain.chainId in loading),
+  fn: (loading, { chain }) => {
+    return { ...loading, [chain.chainId]: true };
+  },
+  target: $loading,
 });
 
 sample({
@@ -75,8 +82,29 @@ sample({
   target: $titles,
 });
 
+sample({
+  clock: requestReferendumTitlesDone,
+  source: $loaded,
+  filter: (loaded, { params }) => !(params.chain.chainId in loaded),
+  fn: (titles, { params }) => {
+    return { ...titles, [params.chain.chainId]: true };
+  },
+  target: $loaded,
+});
+
+sample({
+  clock: requestReferendumTitlesDone,
+  source: $loading,
+  fn: (loading, { params }) => {
+    return { ...loading, [params.chain.chainId]: false };
+  },
+  target: $loading,
+});
+
 export const titleModel = {
   $titles,
   $referendumTitles,
   $isTitlesLoading,
+  $loadingTitles: $loading,
+  $loadedTitles: $loaded,
 };

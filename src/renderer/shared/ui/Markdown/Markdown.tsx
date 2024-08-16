@@ -105,7 +105,7 @@ const components: Components = {
   td: ({ node: _, className, ...props }) => <td className={cnTw('border px-4 py-2', className)} {...props} />,
   th: ({ node: _, className, ...props }) => <th className={cnTw('border px-4 py-2 font-bold', className)} {...props} />,
   blockquote: ({ node: _, className, ...props }) => (
-    <blockquote className={cnTw('whitespace-normal border-l-4 px-2 py-1', className)} {...props} />
+    <blockquote className={cnTw('whitespace-normal border-l-4 py-1 ps-6 text-text-secondary', className)} {...props} />
   ),
 };
 

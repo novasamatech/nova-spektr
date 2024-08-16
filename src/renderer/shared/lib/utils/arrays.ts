@@ -103,13 +103,10 @@ export const merge = <T>(list1: T[], list2: T[], mergeBy: (value: T) => Property
     return list1;
   }
 
-  const longest = list1.length > list2.length ? list1 : list2;
-  const shortest = list1.length > list2.length ? list2 : list1;
-
   const map: Record<PropertyKey, T> = {};
 
-  for (let i = 0; i < longest.length; i++) {
-    const item = longest[i];
+  for (let i = 0; i < list1.length; i++) {
+    const item = list1[i];
     if (!item) {
       continue;
     }
@@ -117,8 +114,8 @@ export const merge = <T>(list1: T[], list2: T[], mergeBy: (value: T) => Property
     map[mergeBy(item)] = item;
   }
 
-  for (let i = 0; i < shortest.length; i++) {
-    const item = shortest[i];
+  for (let i = 0; i < list2.length; i++) {
+    const item = list2[i];
     if (!item) {
       continue;
     }

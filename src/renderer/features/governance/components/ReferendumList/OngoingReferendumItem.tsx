@@ -27,7 +27,7 @@ export const OngoingReferendumItem = memo<Props>(({ referendum, isTitlesLoading,
   const titleNode =
     title ||
     (isTitlesLoading ? (
-      <Shimmering height={20} width={200} />
+      <Shimmering height="1em" width={200} />
     ) : (
       t('governance.referendums.referendumTitle', { index: referendum.referendumId })
     ));
