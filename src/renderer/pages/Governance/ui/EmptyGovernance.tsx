@@ -2,16 +2,19 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { BodyText, Icon } from '@shared/ui';
-import { listAggregate } from '@features/governance';
 import { governancePageAggregate } from '../aggregates/governancePage';
 
-export const EmptyGovernance = () => {
+type Props = {
+  isLoading: boolean;
+  isConnected: boolean;
+};
+
+export const EmptyGovernance = ({ isConnected, isLoading }: Props) => {
   const { t } = useI18n();
   const ongoing = useUnit(governancePageAggregate.$ongoing);
   const completed = useUnit(governancePageAggregate.$completed);
-  const isLoading = useUnit(listAggregate.$isLoading);
 
-  if (ongoing.length > 0 || completed.length > 0 || isLoading) {
+  if (ongoing.length > 0 || completed.length > 0 || isLoading || !isConnected) {
     return null;
   }
 

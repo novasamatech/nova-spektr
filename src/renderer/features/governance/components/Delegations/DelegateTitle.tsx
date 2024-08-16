@@ -5,13 +5,10 @@ import { HeadlineText, Truncate } from '@/shared/ui';
 type Props = {
   delegate: DelegateAccount;
   className?: string;
-  wrapperClassName?: string;
 };
 
-export const DelegateTitle = ({ delegate, className, wrapperClassName }: Props) => {
-  const delegateTitle = delegate.name || (
-    <Truncate className={cnTw(className)} ellipsis="..." start={4} end={4} text={delegate.accountId} />
-  );
+export const DelegateTitle = ({ delegate, className }: Props) => {
+  const delegateTitle = delegate.name || <Truncate ellipsis="..." start={4} end={4} text={delegate.accountId} />;
 
-  return <HeadlineText className={cnTw(wrapperClassName)}>{delegateTitle}</HeadlineText>;
+  return <HeadlineText className={cnTw('w-full', className)}>{delegateTitle}</HeadlineText>;
 };

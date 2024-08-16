@@ -58,7 +58,7 @@ const getClaimScheduleFx = createEffect(
 
 sample({
   clock: [
-    combineEvents([referendumModel.events.updateReferendums, referendumModel.events.requestDone]),
+    combineEvents([referendumModel.events.subscribeReferendums, referendumModel.$referendums.updates]),
     locksModel.$trackLocks.updates,
     votingModel.$voting.updates,
   ],
