@@ -6,6 +6,7 @@ import { Button, Loader, SearchInput, Select } from '@/shared/ui';
 import { SortType } from '../common/constants';
 import { delegationModel } from '../model/delegation-model';
 
+import { AddToRegistry } from './AddToRegistry';
 import { DelegationCard } from './DelegationCard';
 import { EmptyState } from './EmptyState';
 
@@ -76,6 +77,8 @@ export const DelegationList = ({ onClick, onAddCustomClick }: Props) => {
               </Button>
             )}
           </div>
+
+          <AddToRegistry className="mx-5 mb-6 w-auto" />
 
           <div className="scrollbar-stable flex h-full flex-col items-center overflow-y-auto">
             <ul className="flex w-[400px] flex-col gap-y-2">

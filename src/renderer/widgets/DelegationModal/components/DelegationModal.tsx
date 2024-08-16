@@ -7,6 +7,7 @@ import { BaseModal } from '@/shared/ui';
 import { OperationTitle } from '@/entities/chain';
 import { networkSelectorModel } from '@/features/governance';
 import { DelegateDetails, delegateDetailsModel } from '@/widgets/DelegateDetails';
+import { Delegate } from '@/widgets/DelegateModal';
 import { delegationModel } from '../model/delegation-model';
 
 import { AddCustomDelegationModel } from './AddCustomDelegationModal';
@@ -30,7 +31,6 @@ export const DelegationModal = () => {
       title={chain && <OperationTitle title={t('governance.addDelegation.title')} chainId={chain.chainId} />}
       onClose={closeModal}
     >
-      {/* TODO: open delegate info  */}
       <DelegationList
         onClick={delegateDetailsModel.events.flowStarted}
         onAddCustomClick={delegationModel.events.openCustomModal}
@@ -39,6 +39,7 @@ export const DelegationModal = () => {
       <AddCustomDelegationModel />
 
       <DelegateDetails />
+      <Delegate />
     </BaseModal>
   );
 };
