@@ -28,7 +28,6 @@ const getClaimScheduleFx = createEffect(
     const currentBlockNumber = await getCurrentBlockNumber(api);
     const undecidingTimeout = api.consts.referenda.undecidingTimeout.toNumber();
     const voteLockingPeriod = api.consts.convictionVoting.voteLockingPeriod.toNumber();
-    console.log('getClaimScheduleFx', { referendums, tracks, trackLocks, voting });
 
     const claims = Object.entries(trackLocks).flatMap(([address, trackLock]) => {
       const claimSchedule = claimScheduleService.estimateClaimSchedule({
