@@ -1,4 +1,4 @@
-import { createEvent, createStore, restore, sample } from 'effector';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { debounce } from 'patronum';
 
 import { type DropdownResult } from '@shared/ui/types';
@@ -10,9 +10,12 @@ const filtersReset = createEvent();
 
 const $selectedTrackIds = createStore<string[]>([]);
 const $selectedVoteId = createStore<string>('');
-const $isFiltersSelected = createStore(false);
 const $query = restore<string>(queryChanged, '');
 const $debouncedQuery = restore<string>(debounce(queryChanged, 100), '');
+
+const $isFiltersSelected = combine($selectedTrackIds, $selectedVoteId, (tracks, voteId) => {
+  return tracks.length > 0 || voteId !== '';
+});
 
 sample({
   clock: selectedTracksChanged,
@@ -34,15 +37,8 @@ sample({
 });
 
 sample({
-  clock: [selectedTracksChanged, selectedVoteChanged],
-  source: { selectedTrackIds: $selectedTrackIds, selectedVoteId: $selectedVoteId },
-  fn: ({ selectedTrackIds, selectedVoteId }) => selectedTrackIds.length !== 0 || selectedVoteId !== '',
-  target: $isFiltersSelected,
-});
-
-sample({
   clock: filtersReset,
-  target: [$selectedVoteId.reinit, $selectedTrackIds.reinit, $isFiltersSelected.reinit],
+  target: [$selectedVoteId.reinit, $selectedTrackIds.reinit],
 });
 
 export const filterModel = {
