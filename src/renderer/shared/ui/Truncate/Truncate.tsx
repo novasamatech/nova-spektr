@@ -20,9 +20,9 @@ const containerStyle = {
 } satisfies CSSProperties;
 
 export const Truncate = memo<Props>(({ text, ellipsis = '...', end = 5, start = 5, className = '' }) => {
-  const [container, setContainer] = useState<HTMLDivElement | null>(null);
-  const textRef = useRef<HTMLParagraphElement>(null);
-  const ellipsisRef = useRef<HTMLParagraphElement>(null);
+  const [container, setContainer] = useState<HTMLElement | null>(null);
+  const textRef = useRef<HTMLElement>(null);
+  const ellipsisRef = useRef<HTMLElement>(null);
 
   const [truncatedText, setTruncatedText] = useState(text);
 
@@ -39,10 +39,14 @@ export const Truncate = memo<Props>(({ text, ellipsis = '...', end = 5, start = 
       return ellipsis;
     }
 
+    const charWidth = measurements.text.width.value / text.length;
     const delta = Math.ceil(
-      measurements.text.width.value - measurements.container.width.value + measurements.ellipsis.width.value,
+      measurements.text.width.value -
+        measurements.container.width.value +
+        measurements.ellipsis.width.value +
+        // special fix for wide characters like W,M,etc.
+        charWidth / 4,
     );
-    const charWidth = measurements.text.width.value / text.length + 0.01;
 
     const lettersToRemove = Math.ceil(delta / charWidth);
     const center = Math.round(text.length / 2);
@@ -58,14 +62,12 @@ export const Truncate = memo<Props>(({ text, ellipsis = '...', end = 5, start = 
   const parseTextForTruncation = useDebouncedCallback(0, (text: string) => {
     const measurements = calculateMeasurements();
 
-    if (!measurements.text.width || measurements.container.width) {
+    if (!measurements.text.width || !measurements.container.width) {
       return;
     }
 
     const truncatedText =
-      Math.round(measurements.text.width.value) > Math.round(measurements.container.width.value)
-        ? truncateText(measurements)
-        : text;
+      measurements.text.width.value > measurements.container.width.value ? truncateText(measurements) : text;
 
     setTruncatedText(truncatedText);
   });
@@ -89,14 +91,14 @@ export const Truncate = memo<Props>(({ text, ellipsis = '...', end = 5, start = 
   }, [text, start, end]);
 
   return (
-    <div ref={setContainer} style={containerStyle} className={cnTw('w-full', className)}>
-      <p ref={textRef} className="hidden">
+    <span ref={setContainer} style={containerStyle} className={cnTw('block w-full max-w-full', className)}>
+      <span ref={textRef} className="hidden">
         {text}
-      </p>
-      <p ref={ellipsisRef} className="hidden">
+      </span>
+      <span ref={ellipsisRef} className="hidden">
         {ellipsis}
-      </p>
+      </span>
       {truncatedText}
-    </div>
+    </span>
   );
 });
