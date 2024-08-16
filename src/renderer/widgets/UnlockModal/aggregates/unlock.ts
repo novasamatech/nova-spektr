@@ -1,11 +1,10 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
-import { delay, or, spread } from 'patronum';
+import { delay, spread } from 'patronum';
 
 import { type BasketTransaction, type Transaction } from '@/shared/core';
 import { type ClaimChunkWithAddress, UnlockChunkType } from '@shared/api/governance';
 import { Step, isStep, nonNullable } from '@shared/lib/utils';
 import { basketModel } from '@/entities/basket';
-import { referendumModel } from '@/entities/governance';
 import { locksModel } from '@features/governance/model/locks';
 import { networkSelectorModel } from '@features/governance/model/networkSelector';
 import { unlockModel } from '@features/governance/model/unlock/unlock';
@@ -32,7 +31,7 @@ const $coreTxs = createStore<Transaction[] | null>(null);
 const $step = restore<Step>(stepChanged, Step.NONE);
 
 const $pendingSchedule = combine(unlockModel.$claimSchedule, (chunks) =>
-  chunks.filter((claim) => claim.type !== UnlockChunkType.CLAIMABLE),
+  (chunks || []).filter((claim) => claim.type !== UnlockChunkType.CLAIMABLE),
 );
 
 sample({
@@ -55,7 +54,8 @@ sample({
 sample({
   clock: unlockFormStarted,
   source: unlockModel.$claimSchedule,
-  fn: (claims) => claims.filter((claim) => claim.type === UnlockChunkType.CLAIMABLE) as ClaimChunkWithAddress[],
+  filter: (claims) => nonNullable(claims),
+  fn: (claims) => claims!.filter((claim) => claim.type === UnlockChunkType.CLAIMABLE) as ClaimChunkWithAddress[],
   target: unlockFormAggregate.events.formInitiated,
 });
 
@@ -184,7 +184,7 @@ sample({
     submitUtils.isSuccessStep(submitStep) &&
     chain?.chainId === unlockData.chain.chainId,
   fn: ({ chunks, unlockData }) => {
-    return chunks.filter((chunk) => {
+    return (chunks || []).filter((chunk) => {
       if (chunk.type !== UnlockChunkType.CLAIMABLE) return true;
 
       return !unlockData!.shards.some(
@@ -237,7 +237,7 @@ sample({
 
 export const unlockAggregate = {
   $step,
-  $isLoading: or(unlockModel.$isLoading, referendumModel.$isLoading),
+  $isLoading: unlockModel.$isLoading,
   $isUnlockable: unlockModel.$isUnlockable,
   $pendingSchedule,
 
