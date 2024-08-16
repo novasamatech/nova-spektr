@@ -25,10 +25,6 @@ export const CompletedReferendums = memo<Props>(({ referendums, isLoading, isTit
   const { t } = useI18n();
   const deferredReferendums = useDeferredValue(referendums);
 
-  if (deferredReferendums.length === 0) {
-    return null;
-  }
-
   return (
     <Accordion>
       <Accordion.Button buttonClass="py-1.5 px-2 mb-2">
@@ -39,7 +35,7 @@ export const CompletedReferendums = memo<Props>(({ referendums, isLoading, isTit
           {isLoading ? (
             <Shimmering width={25} height={12} />
           ) : (
-            <CaptionText className="font-semibold text-text-tertiary">{referendums.length}</CaptionText>
+            <CaptionText className="font-semibold text-text-tertiary">{referendums.length.toString()}</CaptionText>
           )}
         </div>
       </Accordion.Button>
