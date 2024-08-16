@@ -6,9 +6,11 @@ import { type DropdownResult } from '@shared/ui/types';
 const queryChanged = createEvent<string>();
 const selectedTracksChanged = createEvent<DropdownResult[]>();
 const selectedVoteChanged = createEvent<DropdownResult>();
+const filtersReset = createEvent();
 
 const $selectedTrackIds = createStore<string[]>([]);
 const $selectedVoteId = createStore<string>('');
+const $isFiltersSelected = createStore(false);
 const $query = restore<string>(queryChanged, '');
 const $debouncedQuery = restore<string>(debounce(queryChanged, 100), '');
 
@@ -31,14 +33,29 @@ sample({
   target: $selectedVoteId,
 });
 
+sample({
+  clock: [selectedTracksChanged, selectedVoteChanged],
+  source: { selectedTrackIds: $selectedTrackIds, selectedVoteId: $selectedVoteId },
+  fn: ({ selectedTrackIds, selectedVoteId }) => selectedTrackIds.length !== 0 || selectedVoteId !== '',
+  target: $isFiltersSelected,
+});
+
+sample({
+  clock: filtersReset,
+  target: [$selectedVoteId.reinit, $selectedTrackIds.reinit, $isFiltersSelected.reinit],
+});
+
 export const filterModel = {
   $query,
   $debouncedQuery,
   $selectedTrackIds,
   $selectedVoteId,
+  $isFiltersSelected,
+
   events: {
     queryChanged,
     selectedTracksChanged,
     selectedVoteChanged,
+    filtersReset,
   },
 };
