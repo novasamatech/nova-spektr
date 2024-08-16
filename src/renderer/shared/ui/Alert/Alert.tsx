@@ -14,10 +14,19 @@ type Props = {
   active: boolean;
   variant?: Variant;
   className?: string;
+  wrapperClassName?: string;
   onClose?: () => void;
 };
 
-const AlertRoot = ({ title, active, variant = 'info', className, children, onClose }: PropsWithChildren<Props>) => {
+const AlertRoot = ({
+  title,
+  active,
+  variant = 'info',
+  wrapperClassName,
+  className,
+  children,
+  onClose,
+}: PropsWithChildren<Props>) => {
   if (!active) {
     return null;
   }
@@ -25,7 +34,7 @@ const AlertRoot = ({ title, active, variant = 'info', className, children, onClo
   const isList = Children.toArray(children).length > 0;
 
   return (
-    <div className={cnTw('w-full rounded-lg border p-[15px]', ViewStyle[variant])}>
+    <div className={cnTw('w-full rounded-lg border p-[15px]', ViewStyle[variant], wrapperClassName)}>
       <div className="flex items-start gap-x-1.5">
         <div className="flex max-w-full flex-1 flex-col gap-y-1">
           <div className="flex items-center gap-x-1.5">
