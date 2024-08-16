@@ -1,10 +1,14 @@
 import { type ApiPromise } from '@polkadot/api';
-import { createEffect, createEvent, createStore, sample } from 'effector';
+import { createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
 import { type Address, type TrackId, type VotingMap } from '@/shared/core';
-import { governanceService } from '../lib/governanceService';
+import { governanceSubscribeService } from '../lib/governanceSubscribeService';
+import { createSubscriber } from '../utils/createSubscriber';
 
+const subscribeVoting = createEvent<VotingParams>();
+
+const $isLoading = createStore(true);
 const $voting = createStore<VotingMap>({});
 
 type VotingParams = {
@@ -13,33 +17,45 @@ type VotingParams = {
   addresses: Address[];
 };
 
-const requestVoting = createEvent<VotingParams>();
-
-const requestVotingFx = createEffect(({ api, tracks, addresses }: VotingParams): Promise<VotingMap> => {
-  return governanceService.getVotingFor(api, tracks, addresses);
+const {
+  subscribe,
+  received: receiveVoting,
+  unsubscribe: unsubscribeVoting,
+} = createSubscriber<VotingParams, VotingMap>(({ api, tracks, addresses }, cb) => {
+  return governanceSubscribeService.subscribeVotingFor(api, tracks, addresses, (voting) => {
+    if (voting) cb(voting);
+  });
 });
 
 sample({
-  clock: requestVoting,
-  target: requestVotingFx,
+  clock: subscribeVoting,
+  target: subscribe,
 });
 
 sample({
-  clock: requestVotingFx.doneData,
-  source: $voting,
-  fn: (voting, newVoting) => ({ ...voting, ...newVoting }),
+  clock: subscribeVoting,
+  fn: () => true,
+  target: $isLoading,
+});
+
+sample({
+  clock: receiveVoting,
+  fn: () => false,
+  target: $isLoading,
+});
+
+sample({
+  clock: receiveVoting,
+  fn: ({ result }) => result,
   target: $voting,
 });
 
 export const votingModel = {
   $voting: readonly($voting),
-  $isLoading: requestVotingFx.pending,
-
-  effects: {
-    requestVotingFx,
-  },
+  $isLoading,
 
   events: {
-    requestVoting,
+    subscribeVoting,
+    unsubscribeVoting,
   },
 };

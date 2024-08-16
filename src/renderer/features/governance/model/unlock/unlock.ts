@@ -58,20 +58,23 @@ const getClaimScheduleFx = createEffect(
 
 sample({
   clock: [
-    referendumModel.events.requestDone,
-    combineEvents([locksModel.events.requestDone, votingModel.effects.requestVotingFx.done]),
+    combineEvents([referendumModel.events.updateReferendums, referendumModel.events.requestDone]),
+    locksModel.$trackLocks.updates,
+    votingModel.$voting.updates,
   ],
   source: {
     api: networkSelectorModel.$governanceChainApi,
     tracks: tracksModel.$tracks,
     trackLocks: locksModel.$trackLocks,
     totalLock: locksModel.$totalLock,
+    lockIsLoading: locksModel.$isLoading,
     voting: votingModel.$voting,
+    votingIsLoading: votingModel.$isLoading,
     referendums: referendumModel.$referendums,
     chain: networkSelectorModel.$governanceChain,
   },
-  filter: ({ api, chain, referendums, totalLock }) =>
-    !!api && !!chain && !!referendums[chain!.chainId] && !totalLock.isZero(),
+  filter: ({ api, chain, referendums, totalLock, votingIsLoading, lockIsLoading }) =>
+    !!api && !!chain && !!referendums[chain!.chainId] && !votingIsLoading && !lockIsLoading && !totalLock.isZero(),
   fn: ({ api, tracks, trackLocks, voting, referendums, chain }) => ({
     api: api!,
     tracks,

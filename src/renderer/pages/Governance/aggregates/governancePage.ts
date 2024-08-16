@@ -2,7 +2,17 @@ import { combine, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { either, readonly } from 'patronum';
 
-import { filterModel, listAggregate, listService, networkSelectorModel, titleModel } from '@features/governance';
+import { referendumModel, votingModel } from '@/entities/governance';
+import { accountUtils, walletModel } from '@/entities/wallet';
+import { locksModel } from '@/features/governance/model/locks';
+import {
+  filterModel,
+  listAggregate,
+  listService,
+  networkSelectorModel,
+  titleModel,
+  votingAggregate,
+} from '@features/governance';
 import { governancePageUtils } from '../lib/governancePageUtils';
 
 const flow = createGate();
@@ -51,6 +61,41 @@ sample({
   source: { chain: networkSelectorModel.$governanceChain },
   filter: ({ chain }) => chain === null,
   target: networkSelectorModel.input.defaultChainSet,
+});
+
+sample({
+  clock: flow.open,
+  source: {
+    chain: networkSelectorModel.$governanceChain,
+    api: networkSelectorModel.$governanceChainApi,
+    wallet: walletModel.$activeWallet,
+  },
+  filter: ({ chain, api, wallet }) => !!chain && !!api && !!wallet,
+  fn: ({ api, chain, wallet }) => ({
+    api: api!,
+    addresses: accountUtils.getAddressesForWallet(wallet!, chain!),
+    chain: chain!,
+  }),
+  target: [
+    votingAggregate.events.requestVoting,
+    referendumModel.events.updateReferendums,
+    locksModel.events.subscribeLocks,
+  ],
+});
+
+sample({
+  clock: flow.close,
+  target: locksModel.events.unsubscribeLocks,
+});
+
+sample({
+  clock: flow.close,
+  target: votingModel.events.unsubscribeVoting,
+});
+
+sample({
+  clock: flow.close,
+  target: referendumModel.events.stopUpdateReferendums,
 });
 
 export const governancePageAggregate = {

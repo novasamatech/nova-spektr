@@ -1,3 +1,5 @@
+import { isFunction } from 'lodash';
+
 import { type KeysOfType } from '../../core/types/utility';
 
 /**
@@ -90,4 +92,41 @@ export const toKeysRecord = <T extends string[]>(array: T): Record<T[number], tr
   }
 
   return res as Record<T[number], true>;
+};
+
+export const merge = <T>(list1: T[], list2: T[], mergeBy: (value: T) => PropertyKey, sort?: (a: T, b: T) => number) => {
+  if (list1.length === 0) {
+    return list2;
+  }
+
+  if (list2.length === 0) {
+    return list1;
+  }
+
+  const longest = list1.length > list2.length ? list1 : list2;
+  const shortest = list1.length > list2.length ? list2 : list1;
+
+  const map: Record<PropertyKey, T> = {};
+
+  for (let i = 0; i < longest.length; i++) {
+    const item = longest[i];
+    if (!item) {
+      continue;
+    }
+
+    map[mergeBy(item)] = item;
+  }
+
+  for (let i = 0; i < shortest.length; i++) {
+    const item = shortest[i];
+    if (!item) {
+      continue;
+    }
+
+    map[mergeBy(item)] = item;
+  }
+
+  const res = Object.values(map);
+
+  return isFunction(sort) ? res.sort(sort) : res;
 };

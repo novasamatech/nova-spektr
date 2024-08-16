@@ -12,7 +12,7 @@ export const VoteCount = ({ count, loading }: Props) => {
 
   return (
     <FootnoteText as="span" className="text-text-tertiary">
-      {count}
+      {count.toString()}
     </FootnoteText>
   );
 };
