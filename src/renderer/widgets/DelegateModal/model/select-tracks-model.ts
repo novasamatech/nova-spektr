@@ -53,11 +53,7 @@ const $availableAccounts = combine(
 
 sample({
   clock: formInitiated,
-  source: walletModel.$activeWallet,
-  filter: (wallet) => !!wallet,
-  fn: (wallet) => {
-    return wallet!.accounts;
-  },
+  source: $availableAccounts,
   target: $accounts,
 });
 
