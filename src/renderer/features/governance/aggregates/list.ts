@@ -1,6 +1,7 @@
 import { combine, sample } from 'effector';
 import { readonly } from 'patronum';
 
+import { nonNullable } from '@shared/lib/utils';
 import { approveThresholdModel, referendumModel, supportThresholdModel, votingService } from '@entities/governance';
 import { networkSelectorModel } from '../model/networkSelector';
 import { titleModel } from '../model/title';
@@ -64,24 +65,13 @@ const $referendums = combine(
 
 sample({
   clock: networkSelectorModel.$governanceChainApi,
-  source: {
-    chain: networkSelectorModel.$governanceChain,
-  },
-  filter: ({ chain }, api) => !!api && !!chain,
-  target: referendumModel.events.stopUpdateReferendums,
-});
-
-sample({
-  clock: networkSelectorModel.$governanceChainApi,
-  source: {
-    chain: networkSelectorModel.$governanceChain,
-  },
-  filter: ({ chain }, api) => !!api && !!chain,
-  fn: ({ chain }, api) => ({ api: api!, chain: chain! }),
-  target: referendumModel.events.updateReferendums,
+  source: networkSelectorModel.$governanceChain,
+  filter: (chain, api) => nonNullable(api) && nonNullable(chain),
+  fn: (chain, api) => ({ chain: chain!, api: api! }),
+  target: referendumModel.events.subscribeReferendums,
 });
 
 export const listAggregate = {
   $referendums: readonly($referendums),
-  $isLoading: referendumModel.$isReferendumsLoading,
+  $isLoading: referendumModel.$isLoading,
 };

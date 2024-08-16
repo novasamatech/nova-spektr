@@ -237,7 +237,7 @@ sample({
 
 export const unlockAggregate = {
   $step,
-  $isLoading: or(unlockModel.$isLoading, referendumModel.$isReferendumsLoading),
+  $isLoading: or(unlockModel.$isLoading, referendumModel.$isLoading),
   $isUnlockable: unlockModel.$isUnlockable,
   $pendingSchedule,
 

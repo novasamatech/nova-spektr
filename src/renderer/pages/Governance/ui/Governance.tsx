@@ -73,7 +73,10 @@ export const Governance = () => {
             <ReferendumFilters />
           </div>
 
-          <div className="flex flex-col gap-y-3">
+          <EmptyGovernance isLoading={isLoading} isConnected={isApiConnected} />
+          <InactiveNetwork active={!isApiConnected} isLoading={isLoading || all.length === 0} className="flex-grow" />
+
+          <div className="flex flex-col gap-y-3 pb-10">
             <OngoingReferendums
               referendums={ongoing}
               isTitlesLoading={isTitlesLoading}
@@ -87,9 +90,6 @@ export const Governance = () => {
               onSelect={selectReferendum}
             />
           </div>
-
-          <EmptyGovernance />
-          <InactiveNetwork active={!isApiConnected} isLoading={isLoading} className="flex-grow" />
         </section>
       </div>
 
