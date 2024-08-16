@@ -53,13 +53,13 @@ const $delegateList = combine(
       ...activeDelegationsList.filter((d) => !addresses.has(d)).map((d) => ({ accountId: d }) as DelegateAccount),
     ];
 
-    const delegatedList = activeDelegationsList
+    const delegatedList = activeDelegationsList.length
       ? delegationsList.filter((delegate) => activeDelegationsList.includes(delegate.accountId))
       : delegationsList;
 
-    const grouped = groupBy(delegatedList, (delegate) => !!delegate.name);
-
     if (!sortType && !query) {
+      const grouped = groupBy(delegatedList, (delegate) => !!delegate.name);
+
       return [
         ...sortBy(grouped['true'], (delegate) => delegate[SortProp[SortType.DELEGATIONS]] || 0).reverse(),
         ...sortBy(grouped['false'], (delegate) => delegate[SortProp[SortType.DELEGATIONS]] || 0).reverse(),
