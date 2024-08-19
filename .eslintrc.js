@@ -283,7 +283,7 @@ module.exports = {
           // },
           {
             message: 'Unnecessary cnTw usage, use simple string instead.',
-            selector: 'CallExpression[callee.name="cnTw"][arguments.length=1][arguments.0.type=\'Literal\']',
+            selector: 'CallExpression[callee.name="cnTw"][arguments.length=1][arguments.0.type="Literal"]',
           },
         ],
 
