@@ -2,7 +2,6 @@ import { useStoreMap } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@app/providers';
-import { cnTw } from '@shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
 import { ChainTitle } from '@entities/chain';
@@ -60,7 +59,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name={isXcm ? 'crossChainConfirm' : 'transferConfirm'} size={60} />
 
-        <div className={cnTw('flex flex-col items-center gap-y-1')}>
+        <div className="flex flex-col items-center gap-y-1">
           <AssetBalance
             value={confirmStore.amount}
             asset={confirmStore.asset}
