@@ -188,10 +188,11 @@ sample({
 sample({
   clock: voteConfirmModel.events.submitFinished,
   source: {
+    status: flow.status,
     form: voteFormAggregate.transactionForm.form.$values,
     chain: networkSelectorModel.$governanceChain,
   },
-  filter: ({ chain }) => nonNullable(chain),
+  filter: ({ chain, status }) => status && nonNullable(chain),
   fn: ({ form, chain }) => {
     const addresses = [form.signatory, form.account]
       .filter(nonNullable)

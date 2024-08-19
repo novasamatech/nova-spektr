@@ -37,7 +37,6 @@ const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
 const $shards = createStore<Account[]>([]);
 
-const $accountsBalances = createStore<string[]>([]);
 const $delegateBalanceRange = createStore<string | string[]>(ZERO_BALANCE);
 const $signatoryBalance = createStore<string>(ZERO_BALANCE);
 const $proxyBalance = createStore<string>(ZERO_BALANCE);
@@ -53,6 +52,28 @@ const $feeData = restore(feeDataChanged, {
   totalFee: ZERO_BALANCE,
   multisigDeposit: ZERO_BALANCE,
 });
+
+const $accounts = combine(
+  {
+    network: $networkStore,
+    wallet: walletModel.$activeWallet,
+    shards: $shards,
+    balances: balanceModel.$balances,
+  },
+  ({ network, wallet, shards, balances }) => {
+    if (!wallet || !network) return [];
+
+    const { chain, asset } = network;
+
+    return shards.map((shard) => {
+      const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId.toString());
+
+      return { account: shard, balance: transferableAmount(balance) };
+    });
+  },
+);
+
+const $accountsBalances = $accounts.map((accounts) => accounts.map(({ balance }) => balance));
 
 const $delegateForm = createForm<FormParams>({
   fields: {
@@ -198,26 +219,6 @@ const $proxyWallet = combine(
   { skipVoid: false },
 );
 
-const $accounts = combine(
-  {
-    network: $networkStore,
-    wallet: walletModel.$activeWallet,
-    shards: $shards,
-    balances: balanceModel.$balances,
-  },
-  ({ network, wallet, shards, balances }) => {
-    if (!wallet || !network) return [];
-
-    const { chain, asset } = network;
-
-    return shards.map((shard) => {
-      const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId.toString());
-
-      return { account: shard, balance: transferableAmount(balance) };
-    });
-  },
-);
-
 const $signatories = combine(
   {
     network: $networkStore,
@@ -300,16 +301,6 @@ sample({
     signatories: $availableSignatories,
     proxyAccount: $proxyAccount,
   }),
-});
-
-sample({
-  source: {
-    accounts: $accounts,
-  },
-  fn: ({ accounts }) => {
-    return accounts.map(({ balance }) => balance);
-  },
-  target: $accountsBalances,
 });
 
 sample({

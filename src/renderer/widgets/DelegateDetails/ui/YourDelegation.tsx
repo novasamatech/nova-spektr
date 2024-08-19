@@ -33,7 +33,7 @@ export const YourDelegation = () => {
             {activeAccounts.length === 1 ? (
               <AddressWithExplorers type="short" address={activeAccounts[0]} explorers={chain?.explorers} />
             ) : (
-              activeAccounts.length
+              <FootnoteText className="text-text-secondary">{activeAccounts.length}</FootnoteText>
             )}
           </DetailRow>
 
@@ -52,29 +52,31 @@ export const YourDelegation = () => {
             </Tooltip>
           </DetailRow>
 
-          <DetailRow label={t('governance.addDelegation.votesLabel')}>
-            <FootnoteText>
-              <Trans
-                t={t}
-                i18nKey="governance.addDelegation.votesValue"
-                components={{
-                  votes: (
-                    <AssetBalance
-                      value={activeDelegations[activeAccounts[0]]?.balance
-                        .mul(
-                          new BN(
-                            votingService.getConvictionMultiplier(activeDelegations[activeAccounts[0]]?.conviction),
-                          ),
-                        )
-                        .toString()}
-                      asset={chain?.assets[0]}
-                      showSymbol={false}
-                    />
-                  ),
-                }}
-              />
-            </FootnoteText>
-          </DetailRow>
+          {activeAccounts.length === 1 && (
+            <DetailRow label={t('governance.addDelegation.votesLabel')}>
+              <FootnoteText>
+                <Trans
+                  t={t}
+                  i18nKey="governance.addDelegation.votesValue"
+                  components={{
+                    votes: (
+                      <AssetBalance
+                        value={activeDelegations[activeAccounts[0]]?.balance
+                          .mul(
+                            new BN(
+                              votingService.getConvictionMultiplier(activeDelegations[activeAccounts[0]]?.conviction),
+                            ),
+                          )
+                          .toString()}
+                        asset={chain?.assets[0]}
+                        showSymbol={false}
+                      />
+                    ),
+                  }}
+                />
+              </FootnoteText>
+            </DetailRow>
+          )}
         </div>
       )}
 

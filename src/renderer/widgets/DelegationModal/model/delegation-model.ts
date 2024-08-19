@@ -1,14 +1,21 @@
+import { BN } from '@polkadot/util';
 import { combine, createEvent, restore, sample } from 'effector';
 import { groupBy, sortBy } from 'lodash';
 import { readonly } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { type Address } from '@/shared/core';
-import { Step, includesMultiple } from '@/shared/lib/utils';
+import { Step, includesMultiple, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
-import { delegateRegistryAggregate, networkSelectorModel, votingAggregate } from '@/features/governance';
+import { walletModel } from '@/entities/wallet';
+import {
+  delegateRegistryAggregate,
+  delegationAggregate,
+  networkSelectorModel,
+  votingAggregate,
+} from '@/features/governance';
 import { delegateModel } from '@/widgets/DelegateModal/model/delegate-model';
-import { SortProp, SortType } from '../common/constants';
+import { DelegationErrors, SortProp, SortType } from '../common/constants';
 
 const flowFinished = createEvent();
 const flowStarted = createEvent();
@@ -52,24 +59,52 @@ const $delegateList = combine(
       ...activeDelegationsList.filter((d) => !addresses.has(d)).map((d) => ({ accountId: d }) as DelegateAccount),
     ];
 
-    const delegatedList = activeDelegationsList
+    const delegatedList = activeDelegationsList.length
       ? delegationsList.filter((delegate) => activeDelegationsList.includes(delegate.accountId))
       : delegationsList;
 
-    const searched =
-      activeDelegationsList.length === 0 || query
-        ? delegationsList.filter((delegate) =>
-            includesMultiple([delegate.accountId, delegate.address, delegate.name, delegate.shortDescription], query),
-          )
-        : delegatedList;
+    if (!sortType && !query) {
+      const grouped = groupBy(delegatedList, (delegate) => !!delegate.name);
 
-    const grouped = groupBy(searched, (delegate) => !!delegate.name);
+      return [
+        ...sortBy(grouped['true'], (delegate) => delegate[SortProp[SortType.DELEGATIONS]] || 0).reverse(),
+        ...sortBy(grouped['false'], (delegate) => delegate[SortProp[SortType.DELEGATIONS]] || 0).reverse(),
+      ];
+    }
+
+    const searched = delegationsList.filter((delegate) =>
+      includesMultiple([delegate.accountId, delegate.address, delegate.name, delegate.shortDescription], query),
+    );
+
     const sortProp = SortProp[sortType || SortType.DELEGATIONS];
 
-    return [
-      ...sortBy(grouped['true'], (delegate) => delegate[sortProp] || 0).reverse(),
-      ...sortBy(grouped['false'], (delegate) => delegate[sortProp] || 0).reverse(),
-    ];
+    return searched.sort((a, b) => (new BN(a[sortProp] || 0).lt(new BN(b[sortProp] || 0)) ? 1 : -1));
+  },
+);
+
+const $customError = combine(
+  {
+    delegate: $customDelegate,
+    votes: votingAggregate.$activeWalletVotes,
+    wallet: walletModel.$activeWallet,
+    chain: delegationAggregate.$chain,
+  },
+  ({ delegate, votes, wallet, chain }): DelegationErrors | undefined => {
+    if (!wallet || !chain || !delegate || !validateAddress(delegate)) return DelegationErrors.INVALID_ADDRESS;
+
+    const isSameAccount = wallet.accounts.some((a) => a.accountId === toAccountId(delegate));
+
+    if (isSameAccount) return DelegationErrors.YOUR_ACCOUNT;
+
+    const isAlreadyDelegated = wallet.accounts.some((a) => {
+      const address = toAddress(a.accountId, { prefix: chain.addressPrefix });
+
+      return Object.keys(votes[address]).length > 0;
+    });
+
+    if (isAlreadyDelegated) return DelegationErrors.ALREADY_DELEGATED;
+
+    return;
   },
 );
 
@@ -129,6 +164,7 @@ export const delegationModel = {
   $query: readonly($query),
   $sortType: readonly($sortType),
   $customDelegate: readonly($customDelegate),
+  $customError: readonly($customError),
 
   events: {
     flowStarted,

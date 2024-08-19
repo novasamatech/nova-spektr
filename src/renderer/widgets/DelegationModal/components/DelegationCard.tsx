@@ -23,34 +23,28 @@ export const DelegationCard = ({ delegate }: Props) => {
           {delegate.shortDescription && <FootnoteText>{delegate.shortDescription}</FootnoteText>}
 
           <div className="flex gap-6 divide-x divide-divider">
-            {delegate.delegators && (
-              <div className="flex flex-col gap-1">
-                <FootnoteText className="text-text-secondary">
-                  {t('governance.addDelegation.card.delegations')}
-                </FootnoteText>
-                <BodyText>{delegate.delegators}</BodyText>
-              </div>
-            )}
+            <div className="flex flex-col gap-1">
+              <FootnoteText className="text-text-secondary">
+                {t('governance.addDelegation.card.delegations')}
+              </FootnoteText>
+              <BodyText>{delegate.delegators || '0'}</BodyText>
+            </div>
 
-            {delegate.delegatorVotes && (
-              <div className="flex flex-col gap-1 pl-6">
-                <FootnoteText className="text-text-secondary">{t('governance.addDelegation.card.votes')}</FootnoteText>
-                <BodyText>
-                  <AssetBalance
-                    showSymbol={false}
-                    value={delegate.delegatorVotes.toString()}
-                    asset={chain?.assets[0]}
-                  />
-                </BodyText>
-              </div>
-            )}
+            <div className="flex flex-col gap-1 pl-6">
+              <FootnoteText className="text-text-secondary">{t('governance.addDelegation.card.votes')}</FootnoteText>
+              <BodyText>
+                <AssetBalance
+                  showSymbol={false}
+                  value={delegate.delegatorVotes?.toString() || '0'}
+                  asset={chain?.assets[0]}
+                />
+              </BodyText>
+            </div>
 
-            {delegate.delegateVotes && (
-              <div className="flex flex-col gap-1 pl-6">
-                <FootnoteText className="text-text-secondary">{t('governance.addDelegation.card.voted')}</FootnoteText>
-                <BodyText>{delegate.delegateVotes}</BodyText>
-              </div>
-            )}
+            <div className="flex flex-col gap-1 pl-6">
+              <FootnoteText className="text-text-secondary">{t('governance.addDelegation.card.voted')}</FootnoteText>
+              <BodyText>{delegate.delegateVotes || '0'}</BodyText>
+            </div>
           </div>
         </div>
       </div>
