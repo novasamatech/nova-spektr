@@ -1,5 +1,5 @@
 import { BN } from '@polkadot/util';
-import { useStoreMap, useUnit } from 'effector-react';
+import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@/app/providers';
@@ -9,7 +9,7 @@ import { AssetBalance } from '@/entities/asset';
 import { BalanceDiff, LockPeriodDiff, voteTransactionService, votingService } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
 import { Fee } from '@/entities/transaction';
-import { locksModel } from '@/features/governance/model/locks';
+import { lockPeriodsModel, locksModel, locksPeriodsAggregate } from '@/features/governance';
 import { ConfirmDetails } from '../../../common/ConfirmDetails';
 import { confirmModel } from '../model/confirm-model';
 
@@ -30,6 +30,14 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     keys: [id],
     fn: (value, [id]) => value?.[id] ?? null,
   });
+
+  const lockPeriods = useStoreMap({
+    store: lockPeriodsModel.$lockPeriods,
+    keys: [confirm?.meta.chain],
+    fn: (locks, [chain]) => (chain ? (locks[chain.chainId] ?? null) : null),
+  });
+
+  useGate(locksPeriodsAggregate.gates.fetch, { chain: confirm?.meta.chain });
 
   if (!confirm) {
     return null;
@@ -74,7 +82,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           <BalanceDiff from={totalLock} to={totalLock.add(amount)} asset={asset} />
         </DetailRow>
         <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.lockingPeriod')}>
-          <LockPeriodDiff from={initialConviction} to={conviction} />
+          <LockPeriodDiff from={initialConviction} to={conviction} lockPeriods={lockPeriods} />
         </DetailRow>
         <hr className="w-full border-filter-border pr-2" />
         <DetailRow label={t('governance.vote.field.networkFee')}>

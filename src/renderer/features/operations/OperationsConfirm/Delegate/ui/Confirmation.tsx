@@ -1,5 +1,5 @@
 import { BN } from '@polkadot/util';
-import { useStoreMap, useUnit } from 'effector-react';
+import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
@@ -11,7 +11,7 @@ import { AssetBalance } from '@entities/asset';
 import { SignButton } from '@entities/operations';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, accountUtils } from '@entities/wallet';
-import { locksModel } from '@/features/governance/model/locks';
+import { lockPeriodsModel, locksModel, locksPeriodsAggregate } from '@/features/governance';
 import { allTracks } from '@/widgets/DelegateModal/lib/constants';
 import { type Config } from '../../../OperationsValidation';
 import { confirmModel } from '../model/confirm-model';
@@ -59,6 +59,14 @@ export const Confirmation = ({
     keys: [id],
     fn: (value, [id]) => value?.[id],
   });
+
+  const lockPeriods = useStoreMap({
+    store: lockPeriodsModel.$lockPeriods,
+    keys: [confirmStore?.chain],
+    fn: (locks, [chain]) => (chain ? (locks[chain.chainId] ?? null) : null),
+  });
+
+  useGate(locksPeriodsAggregate.gates.fetch, { chain: confirmStore?.chain });
 
   if (!confirmStore || !initiatorWallet) {
     return null;
@@ -232,7 +240,7 @@ export const Confirmation = ({
         </DetailRow>
 
         <DetailRow label={t('governance.locks.undelegatePeriod')} wrapperClassName="items-start">
-          <LockPeriodDiff from="None" to={confirmStore.conviction} />
+          <LockPeriodDiff from="None" to={confirmStore.conviction} lockPeriods={lockPeriods} />
         </DetailRow>
 
         <hr className="w-full border-filter-border pr-2" />
