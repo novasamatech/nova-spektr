@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { MultiSelect, Select } from '@shared/ui';
+import { Button, MultiSelect, Select } from '@shared/ui';
 import { filterModel } from '../../model/filter';
 
 import { trackOptions, voteOptions } from './constants';
@@ -11,6 +11,7 @@ export const ReferendumFilters = () => {
   const selectedTrackIds = useUnit(filterModel.$selectedTrackIds);
   const selectedVoteId = useUnit(filterModel.$selectedVoteId);
   const query = useUnit(filterModel.$query);
+  const isFiltersSelected = useUnit(filterModel.$isFiltersSelected);
 
   if (query) {
     return null;
@@ -41,6 +42,11 @@ export const ReferendumFilters = () => {
         }))}
         onChange={filterModel.events.selectedVoteChanged}
       />
+      {Boolean(isFiltersSelected) && (
+        <Button variant="text" className="ml-auto h-8.5 py-0" onClick={() => filterModel.events.filtersReset()}>
+          {t('operations.filters.clearAll')}
+        </Button>
+      )}
     </div>
   );
 };
