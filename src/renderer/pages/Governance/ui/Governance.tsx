@@ -39,6 +39,7 @@ export const Governance = () => {
 
   const isLoading = useUnit(governancePageAggregate.$isLoading);
   const isTitlesLoading = useUnit(governancePageAggregate.$isTitlesLoading);
+  const isSerching = useUnit(governancePageAggregate.$isSerching);
   const all = useUnit(governancePageAggregate.$all);
   const ongoing = useUnit(governancePageAggregate.$ongoing);
   const completed = useUnit(governancePageAggregate.$completed);
@@ -52,6 +53,11 @@ export const Governance = () => {
 
     return all.find((x) => x.referendumId === selectedReferendumId) ?? null;
   }, [all, selectedReferendumId]);
+
+  const shouldShowLoadingState = isLoading || (isSerching && isTitlesLoading);
+  const shouldNetworkDisabledError = !isApiConnected && !shouldShowLoadingState && all.length === 0;
+  const shouldRenderEmptyState = !shouldShowLoadingState && isApiConnected && all.length === 0;
+  const shouldRenderList = shouldShowLoadingState || (!shouldRenderEmptyState && !shouldNetworkDisabledError);
 
   return (
     <div className="flex h-full flex-col">
@@ -73,23 +79,26 @@ export const Governance = () => {
             <ReferendumFilters />
           </div>
 
-          <EmptyGovernance isLoading={isLoading} isConnected={isApiConnected} />
-          <InactiveNetwork active={!isApiConnected} isLoading={isLoading || all.length === 0} className="flex-grow" />
-
-          <div className="flex flex-col gap-y-3 pb-10">
-            <OngoingReferendums
-              referendums={ongoing}
-              isTitlesLoading={isTitlesLoading}
-              isLoading={isLoading}
-              onSelect={selectReferendum}
-            />
-            <CompletedReferendums
-              referendums={completed}
-              isTitlesLoading={isTitlesLoading}
-              isLoading={isLoading}
-              onSelect={selectReferendum}
-            />
-          </div>
+          {shouldRenderEmptyState && <EmptyGovernance />}
+          {shouldNetworkDisabledError && <InactiveNetwork active className="grow" />}
+          {shouldRenderList && (
+            <div className="flex flex-col gap-y-3 pb-10">
+              <OngoingReferendums
+                referendums={ongoing}
+                isTitlesLoading={isTitlesLoading}
+                isLoading={isLoading}
+                mixLoadingWithData={shouldShowLoadingState}
+                onSelect={selectReferendum}
+              />
+              <CompletedReferendums
+                referendums={completed}
+                isTitlesLoading={isTitlesLoading}
+                isLoading={isLoading}
+                mixLoadingWithData={shouldShowLoadingState}
+                onSelect={selectReferendum}
+              />
+            </div>
+          )}
         </section>
       </div>
 

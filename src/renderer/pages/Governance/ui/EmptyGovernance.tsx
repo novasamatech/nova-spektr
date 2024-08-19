@@ -1,22 +1,8 @@
-import { useUnit } from 'effector-react';
-
 import { useI18n } from '@app/providers';
 import { BodyText, Icon } from '@shared/ui';
-import { governancePageAggregate } from '../aggregates/governancePage';
 
-type Props = {
-  isLoading: boolean;
-  isConnected: boolean;
-};
-
-export const EmptyGovernance = ({ isConnected, isLoading }: Props) => {
+export const EmptyGovernance = () => {
   const { t } = useI18n();
-  const ongoing = useUnit(governancePageAggregate.$ongoing);
-  const completed = useUnit(governancePageAggregate.$completed);
-
-  if (ongoing.length > 0 || completed.length > 0 || isLoading || !isConnected) {
-    return null;
-  }
 
   return (
     <div className="flex h-full w-full flex-col items-center justify-center gap-y-8">

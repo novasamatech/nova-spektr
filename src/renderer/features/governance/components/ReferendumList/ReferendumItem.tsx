@@ -1,9 +1,8 @@
 import { memo } from 'react';
 
 import { useI18n } from '@app/providers';
-import { type OngoingReferendum } from '@shared/core';
-import { HeadlineText, Shimmering } from '@shared/ui';
-import { TrackInfo, VoteChart, Voted, votingService } from '@entities/governance';
+import { FootnoteText, HeadlineText, Shimmering } from '@shared/ui';
+import { TrackInfo, VoteChart, Voted, referendumService, votingService } from '@entities/governance';
 import { type AggregatedReferendum } from '../../types/structs';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 
@@ -12,35 +11,39 @@ import { VotedBy } from './VotedBy';
 
 type Props = {
   isTitlesLoading: boolean;
-  referendum: AggregatedReferendum<OngoingReferendum>;
-  onSelect: (value: AggregatedReferendum<OngoingReferendum>) => void;
+  referendum: AggregatedReferendum;
+  onSelect: (value: AggregatedReferendum) => void;
 };
 
-export const OngoingReferendumItem = memo<Props>(({ referendum, isTitlesLoading, onSelect }) => {
+export const ReferendumItem = memo<Props>(({ referendum, isTitlesLoading, onSelect }) => {
   const { t } = useI18n();
-  const { supportThreshold, approvalThreshold, isVoted, title, votedByDelegate } = referendum;
+  const { referendumId, supportThreshold, approvalThreshold } = referendum;
   const isPassing = supportThreshold ? supportThreshold.passing : false;
-  const voteFractions = approvalThreshold
-    ? votingService.getVoteFractions(referendum.tally, approvalThreshold.value)
-    : null;
+  const voteFractions =
+    referendumService.isOngoing(referendum) && approvalThreshold
+      ? votingService.getVoteFractions(referendum.tally, approvalThreshold.value)
+      : null;
 
   const titleNode =
-    title ||
+    referendum.title ||
     (isTitlesLoading ? (
-      <Shimmering height={20} width={200} />
+      <Shimmering height="1em" width="28ch" />
     ) : (
-      t('governance.referendums.referendumTitle', { index: referendum.referendumId })
+      t('governance.referendums.referendumTitle', { index: referendumId })
     ));
 
   return (
     <ListItem onClick={() => onSelect(referendum)}>
       <div className="flex w-full items-center gap-x-2">
-        <Voted active={isVoted} />
-        <VotedBy address={votedByDelegate} />
+        <Voted active={referendum.isVoted} />
+        <VotedBy address={referendum.votedByDelegate} />
         <VotingStatusBadge passing={isPassing} referendum={referendum} />
 
         {/*<ReferendumTimer status="reject" time={600000} />*/}
-        <TrackInfo referendumId={referendum.referendumId} trackId={referendum.track} />
+        <div className="ml-auto flex text-text-secondary">
+          {referendumId && <FootnoteText className="text-inherit">#{referendumId}</FootnoteText>}
+          {referendumService.isOngoing(referendum) && <TrackInfo trackId={referendum.track} />}
+        </div>
       </div>
       <div className="flex w-full items-start gap-x-6">
         <HeadlineText className="pointer-events-auto flex-1">{titleNode}</HeadlineText>
