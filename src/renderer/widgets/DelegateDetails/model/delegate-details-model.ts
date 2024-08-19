@@ -29,9 +29,7 @@ const $activeTracks = votingAggregate.$activeWalletVotes.map((activeVotes) => {
   return activeTracks;
 });
 
-const $activeAccounts = delegationAggregate.$activeDelegations.map((activeVotes) => {
-  return Object.entries(activeVotes).map(([address]) => address);
-});
+const $activeAccounts = delegationAggregate.$activeDelegations.map(Object.keys);
 
 const $canDelegate = walletModel.$activeWallet.map((wallet) => !!wallet && permissionUtils.canDelegate(wallet));
 

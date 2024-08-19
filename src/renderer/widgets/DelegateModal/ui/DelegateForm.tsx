@@ -4,7 +4,7 @@ import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
 import { useI18n } from '@app/providers';
-import { cnTw, formatAmount, formatBalance } from '@shared/lib/utils';
+import { formatAmount, formatBalance } from '@shared/lib/utils';
 import {
   AmountInput,
   BaseModal,
@@ -48,9 +48,9 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
   return (
     <BaseModal
       closeButton
-      headerClass={cnTw('px-5 py-3')}
-      panelClass={cnTw('flex h-[738px] w-modal flex-col gap-4 bg-white')}
-      contentClass={cnTw('min-h-0 w-full flex-1 bg-card-background py-4')}
+      headerClass="px-5 py-3"
+      panelClass="flex h-[738px] w-modal flex-col gap-4 bg-white"
+      contentClass="min-h-0 w-full flex-1 bg-card-background py-4"
       isOpen={isOpen}
       title={
         network?.chain && <OperationTitle title={t('governance.addDelegation.title')} chainId={network.chain.chainId} />

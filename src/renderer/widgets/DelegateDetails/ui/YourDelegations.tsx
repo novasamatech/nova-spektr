@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/app/providers';
-import { cnTw, toAddress } from '@/shared/lib/utils';
+import { toAddress } from '@/shared/lib/utils';
 import { BaseModal, BodyText, FootnoteText, Icon, Tooltip } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { votingService } from '@/entities/governance';
@@ -26,9 +26,9 @@ export const YourDelegations = () => {
   return (
     <BaseModal
       closeButton
-      headerClass={cnTw('px-5 py-3')}
-      panelClass={cnTw('flex h-[672px] w-[784px] flex-col bg-white')}
-      contentClass={cnTw('scrollbar-stable flex min-h-0 w-full flex-1 flex-col gap-6 overflow-y-auto bg-white py-4')}
+      headerClass="px-5 py-3"
+      panelClass="flex h-[672px] w-[784px] flex-col bg-white"
+      contentClass="scrollbar-stable flex min-h-0 w-full flex-1 flex-col gap-6 overflow-y-auto bg-white py-4"
       isOpen={isOpen}
       title={t('governance.addDelegation.yourDelegationsTitle')}
       onClose={delegateDetailsModel.events.closeDelegationsModal}
