@@ -1,20 +1,10 @@
 import { type MouseEvent } from 'react';
 
 import { type ChainAccount, type ShardAccount } from '@shared/core';
-import { KeyType } from '@shared/core';
 import { SS58_PUBLIC_KEY_PREFIX, cnTw, toAddress } from '@shared/lib/utils';
 import { BodyText, CaptionText, FootnoteText, HelpText, Icon, IconButton, Identicon } from '@shared/ui';
-import { type IconNames } from '@shared/ui/Icon/data';
 import { accountUtils } from '../../lib/account-utils';
-
-const KeyIcon: Record<KeyType, IconNames> = {
-  [KeyType.CUSTOM]: 'keyCustom',
-  [KeyType.GOVERNANCE]: 'keyGovernance',
-  [KeyType.HOT]: 'keyHot',
-  [KeyType.MAIN]: 'keyMain',
-  [KeyType.PUBLIC]: 'keyPublic',
-  [KeyType.STAKING]: 'keyStaking',
-};
+import { KeyIcon } from '../../lib/constants';
 
 type Props = {
   account: ChainAccount | ShardAccount[];

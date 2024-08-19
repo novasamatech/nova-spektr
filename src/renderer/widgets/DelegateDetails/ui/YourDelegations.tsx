@@ -7,7 +7,7 @@ import { toAddress } from '@/shared/lib/utils';
 import { BaseModal, BodyText, FootnoteText, Icon, Tooltip } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { votingService } from '@/entities/governance';
-import { ContactItem, DerivedAccount, ExplorersPopover, accountUtils, walletModel } from '@/entities/wallet';
+import { ContactItem, ExplorersPopover, accountUtils, walletModel } from '@/entities/wallet';
 import { allTracks } from '@/widgets/DelegateModal/lib/constants';
 import { delegateDetailsModel } from '../model/delegate-details-model';
 
@@ -27,8 +27,8 @@ export const YourDelegations = () => {
     <BaseModal
       closeButton
       headerClass="px-5 py-3"
-      panelClass="w-[784px] h-[672px] bg-white"
-      contentClass="min-h-0 h-full w-full bg-white py-4 flex flex-col gap-6 overflow-y-auto scrollbar-stable"
+      panelClass="flex h-[672px] w-[784px] flex-col bg-white"
+      contentClass="scrollbar-stable flex min-h-0 w-full flex-1 flex-col gap-6 overflow-y-auto bg-white py-4"
       isOpen={isOpen}
       title={t('governance.addDelegation.yourDelegationsTitle')}
       onClose={delegateDetailsModel.events.closeDelegationsModal}
@@ -47,21 +47,30 @@ export const YourDelegations = () => {
         </div>
         {activeAccounts.map((address) => {
           const account = wallet?.accounts.find((a) => toAddress(a.accountId) === address);
+          const activeDelegation = activeDelegations[address];
 
-          if (!account) return null;
+          if (!account || !activeDelegation) return null;
+
+          const convictionMultiplier = votingService.getConvictionMultiplier(activeDelegation.conviction);
 
           return (
             <div key={address} className="flex h-[52px] items-center">
               <div className="flex-1 px-3">
-                {accountUtils.isChainAccount(account) ? (
-                  <DerivedAccount account={account} addressPrefix={chain.addressPrefix} />
-                ) : (
-                  <ExplorersPopover
-                    address={account.accountId}
-                    explorers={chain.explorers}
-                    button={<ContactItem name={account.name} address={account.accountId} />}
-                  />
-                )}
+                <ExplorersPopover
+                  address={account.accountId}
+                  explorers={chain.explorers}
+                  button={
+                    <ContactItem
+                      name={account.name}
+                      address={account.accountId}
+                      keyType={
+                        accountUtils.isShardAccount(account) || accountUtils.isChainAccount(account)
+                          ? account.keyType
+                          : undefined
+                      }
+                    />
+                  }
+                />
               </div>
               <div className="flex w-[168px] flex-col items-end justify-center px-3">
                 <BodyText>
@@ -71,9 +80,7 @@ export const YourDelegations = () => {
                     components={{
                       votes: (
                         <AssetBalance
-                          value={new BN(activeDelegations[address].balance).mul(
-                            new BN(votingService.getConvictionMultiplier(activeDelegations[address].conviction)),
-                          )}
+                          value={activeDelegation.balance.mul(new BN(convictionMultiplier))}
                           asset={chain.assets[0]}
                           showSymbol={false}
                         />
@@ -85,11 +92,9 @@ export const YourDelegations = () => {
                   <Trans
                     t={t}
                     i18nKey="governance.addDelegation.balanceValue"
-                    values={{
-                      conviction: votingService.getConvictionMultiplier(activeDelegations[address].conviction),
-                    }}
+                    values={{ conviction: convictionMultiplier }}
                     components={{
-                      balance: <AssetBalance value={activeDelegations[address].balance} asset={chain.assets[0]} />,
+                      balance: <AssetBalance value={activeDelegation.balance} asset={chain.assets[0]} />,
                     }}
                   />
                 </FootnoteText>
@@ -102,7 +107,7 @@ export const YourDelegations = () => {
                   pointer="up"
                 >
                   <div className="flex gap-1">
-                    <FootnoteText>{activeTracks[address].size}</FootnoteText>
+                    <FootnoteText>{activeTracks[address]?.size || 0}</FootnoteText>
 
                     <Icon className="group-hover:text-icon-hover" name="info" size={16} />
                   </div>
