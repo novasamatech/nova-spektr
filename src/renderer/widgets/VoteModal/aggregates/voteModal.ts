@@ -6,9 +6,7 @@ import { type BasketTransaction, type Conviction, type OngoingReferendum } from 
 import { Step, nonNullable, toAddress } from '@shared/lib/utils';
 import { basketModel } from '@entities/basket';
 import { referendumModel } from '@entities/governance';
-import { votingAggregate } from '@features/governance/aggregates/voting';
-import { locksModel } from '@features/governance/model/locks';
-import { networkSelectorModel } from '@features/governance/model/networkSelector';
+import { lockPeriodsModel, locksModel, networkSelectorModel, votingAggregate } from '@/features/governance';
 import { type SigningPayload, signModel } from '@features/operations/OperationSign';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { voteConfirmModel } from '@features/operations/OperationsConfirm';
@@ -208,6 +206,7 @@ sample({
 export const voteModalAggregate = {
   ...voteFormAggregate.transactionForm,
 
+  $lockPeriods: lockPeriodsModel.$lockPeriods,
   $lock: locksModel.$totalLock,
   $fee: voteFormAggregate.$fee,
   $initialConviction: voteFormAggregate.$initialConviction,

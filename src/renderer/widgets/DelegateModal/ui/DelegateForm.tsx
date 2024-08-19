@@ -1,6 +1,6 @@
 import { BN } from '@polkadot/util';
 import { useForm } from 'effector-forms';
-import { useUnit } from 'effector-react';
+import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
 import { useI18n } from '@app/providers';
@@ -25,7 +25,7 @@ import { priceProviderModel } from '@entities/price';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { FeeLoader } from '@entities/transaction';
 import { ProxyWalletAlert } from '@entities/wallet';
-import { locksModel } from '@/features/governance/model/locks';
+import { lockPeriodsModel, locksModel, locksPeriodsAggregate } from '@/features/governance';
 import { ConvictionSelect } from '@/widgets/VoteModal/ui/formFields/ConvictionSelect';
 import { formModel } from '../model/form-model';
 
@@ -231,7 +231,15 @@ const FeeSection = () => {
   const totalLock = useUnit(locksModel.$totalLock);
   const accounts = useUnit(formModel.$accounts);
 
+  const lockPeriods = useStoreMap({
+    store: lockPeriodsModel.$lockPeriods,
+    keys: [network?.chain],
+    fn: (locks, [chain]) => (chain ? (locks[chain.chainId] ?? null) : null),
+  });
+
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+
+  useGate(locksPeriodsAggregate.gates.flow, { chain: network?.chain });
 
   if (!network || shards.value.length === 0) {
     return null;
@@ -260,7 +268,7 @@ const FeeSection = () => {
           </DetailRow>
 
           <DetailRow label={t('governance.locks.undelegatePeriod')} wrapperClassName="items-start">
-            <LockPeriodDiff from="None" to={conviction.value} />
+            <LockPeriodDiff from="None" to={conviction.value} lockPeriods={lockPeriods} />
           </DetailRow>
         </>
       )}

@@ -10,7 +10,7 @@ import {
   getRegistry,
 } from '@substrate/txwrapper-polkadot';
 
-import { type Address, type CallData, type CallHash, type ProxyType, XcmPallets } from '@shared/core';
+import { type Address, type BlockHeight, type CallData, type CallHash, type ProxyType, XcmPallets } from '@shared/core';
 import { XcmTransferType } from '../../api/xcm';
 
 import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './constants';
@@ -118,15 +118,21 @@ export const getExpectedBlockTime = (api: ApiPromise): BN => {
   return bnMin(ONE_DAY, DEFAULT_TIME);
 };
 
-export const getCreatedDate = (neededBlock: number, currentBlock: number, blockTime: number): number => {
+export const getCreatedDate = (neededBlock: BlockHeight, currentBlock: number, blockTime: number): number => {
   return Date.now() - (currentBlock - neededBlock) * blockTime;
 };
 
-export const getCreatedDateFromApi = async (neededBlock: number, api: ApiPromise): Promise<number> => {
+export const getCreatedDateFromApi = async (neededBlock: BlockHeight, api: ApiPromise): Promise<number> => {
   const currentBlock = await getCurrentBlockNumber(api);
   const blockTime = getExpectedBlockTime(api);
 
   return getCreatedDate(neededBlock, currentBlock, blockTime.toNumber());
+};
+
+export const getRelativeTimeFromApi = async (neededBlock: BlockHeight, api: ApiPromise): Promise<number> => {
+  const blockTime = getExpectedBlockTime(api);
+
+  return neededBlock * blockTime.toNumber();
 };
 
 /**
