@@ -46,7 +46,7 @@ export const ReferendumFilters = () => {
         <Button variant="text" className="ml-auto h-8.5 py-0" onClick={() => filterModel.events.filtersReset()}>
           {t('operations.filters.clearAll')}
         </Button>
-      )}{' '}
+      )}
     </div>
   );
 };
