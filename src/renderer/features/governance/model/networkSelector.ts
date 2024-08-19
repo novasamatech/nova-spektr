@@ -23,6 +23,24 @@ const $governanceChainApi = combine(
   },
 );
 
+const $governanceNetwork = combine(
+  {
+    chain: $governanceChain,
+    apis: networkModel.$apis,
+  },
+  ({ chain, apis }) => {
+    if (!chain) return null;
+
+    const api = apis[chain.chainId];
+    if (!api) return null;
+
+    return {
+      chain,
+      api: apis[chain.chainId],
+    };
+  },
+);
+
 const $isApiConnected = $governanceChainApi.map((x) => x?.isConnected ?? false);
 
 sample({
@@ -76,6 +94,7 @@ export const networkSelectorModel = {
   $governanceChain,
   $governanceChains,
   $governanceChainApi,
+  $governanceNetwork,
   $hasAccount,
   $isApiConnected,
 

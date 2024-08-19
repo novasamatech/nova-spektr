@@ -261,7 +261,7 @@ function completedReferendumLockDuration(
 ): BlockHeight {
   // vote has the same direction as outcome
   if (votingService.isStandardVote(vote) && vote.vote.aye === (referendumOutcome === 'aye')) {
-    return locksService.getLockPeriods(vote.vote.conviction) * lockPeriod;
+    return lockPeriod * locksService.getLockPeriodsMultiplier(vote.vote.conviction);
   }
 
   return 0;
@@ -303,7 +303,7 @@ function maxOngoingConvictionEnd(
 
 function voteMaxLockDuration(vote: AccountVote, lockPeriod: BlockHeight): BlockHeight {
   if (votingService.isStandardVote(vote)) {
-    return locksService.getLockPeriods(vote.vote.conviction) * lockPeriod;
+    return lockPeriod * locksService.getLockPeriodsMultiplier(vote.vote.conviction);
   }
 
   return 0;

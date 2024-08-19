@@ -1,5 +1,5 @@
 import { useForm } from 'effector-forms';
-import { useUnit } from 'effector-react';
+import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { useState } from 'react';
 
 import { useI18n } from '@app/providers';
@@ -17,6 +17,7 @@ import {
   SmallTitleText,
 } from '@shared/ui';
 import { BalanceDiff, LockPeriodDiff } from '@entities/governance';
+import { locksPeriodsAggregate } from '@features/governance';
 import { voteModalAggregate } from '../aggregates/voteModal';
 
 import { AboutVoting } from './AboutVoting';
@@ -44,6 +45,14 @@ export const VoteForm = ({ chain, asset, hasDelegated = false }: Props) => {
   const signatories = useUnit(voteModalAggregate.signatory.$available);
   const accounts = useUnit(voteModalAggregate.accounts.$available);
   const isFeeLoading = useUnit(voteModalAggregate.$isFeeLoading);
+
+  const lockPeriods = useStoreMap({
+    store: voteModalAggregate.$lockPeriods,
+    keys: [chain.chainId],
+    fn: (periods, [chainId]) => periods[chainId] ?? null,
+  });
+
+  useGate(locksPeriodsAggregate.gates.flow, { chain });
 
   const {
     submit,
@@ -103,7 +112,7 @@ export const VoteForm = ({ chain, asset, hasDelegated = false }: Props) => {
             <BalanceDiff from={totalLock} to={totalLock.add(amount.value)} asset={asset} />
           </DetailRow>
           <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.lockingPeriod')}>
-            <LockPeriodDiff from={initialConviction} to={conviction.value} />
+            <LockPeriodDiff from={initialConviction} to={conviction.value} lockPeriods={lockPeriods} />
           </DetailRow>
           <DetailRow label={t('governance.vote.field.networkFee')}>
             {isFeeLoading && fee.isZero() ? (

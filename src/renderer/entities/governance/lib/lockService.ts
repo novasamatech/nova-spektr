@@ -1,7 +1,9 @@
+import { type ApiPromise } from '@polkadot/api';
 import { type BN, BN_ZERO, bnMax } from '@polkadot/util';
 
-import { type ClaimTime, type ClaimTimeAt, type ClaimTimeUntil } from '@shared/api/governance';
-import { type Conviction, type Voting } from '@shared/core';
+import { type ClaimTime, type ClaimTimeAt, type ClaimTimeUntil } from '@/shared/api/governance';
+import { type Conviction, type Voting } from '@/shared/core';
+import { getRelativeTimeFromApi } from '@/shared/lib/utils';
 
 import { votingService } from './votingService';
 
@@ -15,7 +17,7 @@ enum LockPeriod {
   Locked6x = 32,
 }
 
-const getLockPeriods = (conviction: Conviction): number => LockPeriod[conviction];
+const getLockPeriodsMultiplier = (conviction: Conviction): number => LockPeriod[conviction];
 
 // Claim time types
 
@@ -49,7 +51,30 @@ const getTotalLock = (voting: Voting): BN => {
   return BN_ZERO;
 };
 
+const getLockPeriods = async (api: ApiPromise) => {
+  const voteLockingPeriod = await api.consts.convictionVoting.voteLockingPeriod.toNumber();
+  const convictionList = votingService.getConvictionList();
+  const requests = convictionList.map(
+    async (conviction) =>
+      [
+        conviction,
+        await getRelativeTimeFromApi(voteLockingPeriod * locksService.getLockPeriodsMultiplier(conviction), api),
+      ] as const,
+  );
+  const responses = await Promise.all(requests);
+
+  return responses.reduce(
+    (acc, [conviction, lockPeriod]) => {
+      acc[conviction] = lockPeriod;
+
+      return acc;
+    },
+    {} as Record<Conviction, number>,
+  );
+};
+
 export const locksService = {
+  getLockPeriodsMultiplier,
   getLockPeriods,
   getTotalLock,
   isClaimAt,
