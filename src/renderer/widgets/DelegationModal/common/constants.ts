@@ -13,3 +13,15 @@ export const SortProp: Record<SortType, keyof DelegateStat> = {
 };
 
 export const NOVASAMA_DELEGATE_REGISTRY = 'https://docs.novawallet.io/nova-wallet-wiki/opengov/delegate-registry';
+
+export const enum DelegationErrors {
+  INVALID_ADDRESS = 'invalidAddress',
+  ALREADY_DELEGATED = 'alreadyDelegated',
+  YOUR_ACCOUNT = 'yourAccount',
+}
+
+export const DelegationErrorMessages: Record<DelegationErrors, string> = {
+  [DelegationErrors.INVALID_ADDRESS]: 'governance.addDelegation.invalidAddressError',
+  [DelegationErrors.ALREADY_DELEGATED]: 'governance.addDelegation.alreadyDelegatedError',
+  [DelegationErrors.YOUR_ACCOUNT]: 'governance.addDelegation.yourAccountError',
+};

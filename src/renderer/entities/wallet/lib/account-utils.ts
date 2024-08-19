@@ -205,7 +205,7 @@ function isNonBaseVaultAccount(account: Account, wallet: Wallet): boolean {
 
 function getAddressesForWallet(wallet: Wallet, chain: Chain) {
   const matchedAccounts = walletUtils.getAccountsBy([wallet], (account) => {
-    return isChainIdMatch(account, chain.chainId);
+    return accountUtils.isNonBaseVaultAccount(account, wallet) && isChainIdMatch(account, chain.chainId);
   });
 
   return matchedAccounts.map((a) => toAddress(a.accountId, { prefix: chain.addressPrefix }));

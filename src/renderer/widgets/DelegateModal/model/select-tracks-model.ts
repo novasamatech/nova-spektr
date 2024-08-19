@@ -46,18 +46,14 @@ const $availableAccounts = combine(
     if (!wallet || !chain) return [];
 
     return wallet.accounts
-      .filter((a) => accountUtils.isChainIdMatch(a, chain.chainId))
+      .filter((a) => accountUtils.isNonBaseVaultAccount(a, wallet) && accountUtils.isChainIdMatch(a, chain.chainId))
       .filter((account) => !delegations[toAddress(account.accountId, { prefix: chain.addressPrefix })]);
   },
 );
 
 sample({
   clock: formInitiated,
-  source: walletModel.$activeWallet,
-  filter: (wallet) => !!wallet,
-  fn: (wallet) => {
-    return wallet!.accounts;
-  },
+  source: $availableAccounts,
   target: $accounts,
 });
 
