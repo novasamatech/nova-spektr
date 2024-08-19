@@ -122,7 +122,7 @@ function exportVaultWallet(wallet: Wallet, root: BaseAccount, accounts: VaultMap
   ]);
 }
 
-function getMainAccounts(accounts: (ChainAccount | ShardAccount[])[]): ChainAccount[] {
+function getMainAccounts(accounts: Array<ChainAccount | ShardAccount[]>): ChainAccount[] {
   return accounts.filter((account) => {
     return !accountUtils.isAccountWithShards(account) && account.keyType === KeyType.MAIN;
   }) as ChainAccount[];
