@@ -1,20 +1,19 @@
 import { memo } from 'react';
 
 import { useI18n } from '@app/providers';
-import { type CompletedReferendum } from '@shared/core';
 import { useDeferredList } from '@shared/lib/hooks';
 import { Accordion, CaptionText, Shimmering } from '@shared/ui';
 import { type AggregatedReferendum } from '../../types/structs';
 
-import { CompletedReferendumItem } from './CompletedReferendumItem';
 import { ListItemPlaceholder } from './ListItemPlaceholder';
+import { ReferendumItem } from './ReferendumItem';
 
 type Props = {
-  referendums: AggregatedReferendum<CompletedReferendum>[];
+  referendums: AggregatedReferendum[];
   isLoading: boolean;
   isTitlesLoading: boolean;
   mixLoadingWithData: boolean;
-  onSelect: (value: AggregatedReferendum<CompletedReferendum>) => void;
+  onSelect: (value: AggregatedReferendum) => void;
 };
 
 const createPlaceholders = (size: number) => {
@@ -28,12 +27,15 @@ const createPlaceholders = (size: number) => {
 export const CompletedReferendums = memo<Props>(
   ({ referendums, isLoading, isTitlesLoading, mixLoadingWithData, onSelect }) => {
     const { t } = useI18n();
+
     const { isLoading: shouldRenderLoadingState, list: deferredReferendums } = useDeferredList({
       isLoading,
       list: referendums,
     });
 
-    const placeholdersCount = isLoading ? Math.max(referendums.length || 4, 50) : Math.max(1, 4 - referendums.length);
+    const placeholdersCount = shouldRenderLoadingState
+      ? Math.max(referendums.length || 4, 50)
+      : Math.max(1, 3 - referendums.length);
 
     return (
       <Accordion isDefaultOpen>
@@ -51,11 +53,7 @@ export const CompletedReferendums = memo<Props>(
           {(!shouldRenderLoadingState || mixLoadingWithData) &&
             deferredReferendums.map((referendum) => (
               <li key={referendum.referendumId}>
-                <CompletedReferendumItem
-                  referendum={referendum}
-                  isTitlesLoading={isTitlesLoading}
-                  onSelect={onSelect}
-                />
+                <ReferendumItem referendum={referendum} isTitlesLoading={isTitlesLoading} onSelect={onSelect} />
               </li>
             ))}
           {(shouldRenderLoadingState || mixLoadingWithData) && createPlaceholders(placeholdersCount)}
