@@ -3,11 +3,11 @@ import { useUnit } from 'effector-react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/app/providers';
-import { toAddress } from '@/shared/lib/utils';
+import { cnTw, toAddress } from '@/shared/lib/utils';
 import { BaseModal, BodyText, FootnoteText, Icon, Tooltip } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { votingService } from '@/entities/governance';
-import { ContactItem, DerivedAccount, ExplorersPopover, accountUtils, walletModel } from '@/entities/wallet';
+import { ContactItem, ExplorersPopover, accountUtils, walletModel } from '@/entities/wallet';
 import { allTracks } from '@/widgets/DelegateModal/lib/constants';
 import { delegateDetailsModel } from '../model/delegate-details-model';
 
@@ -26,9 +26,9 @@ export const YourDelegations = () => {
   return (
     <BaseModal
       closeButton
-      headerClass="px-5 py-3"
-      panelClass="w-[784px] h-[672px] bg-white"
-      contentClass="min-h-0 h-full w-full bg-white py-4 flex flex-col gap-6 overflow-y-auto scrollbar-stable"
+      headerClass={cnTw('px-5 py-3')}
+      panelClass={cnTw('flex h-[672px] w-[784px] flex-col bg-white')}
+      contentClass={cnTw('scrollbar-stable flex min-h-0 w-full flex-1 flex-col gap-6 overflow-y-auto bg-white py-4')}
       isOpen={isOpen}
       title={t('governance.addDelegation.yourDelegationsTitle')}
       onClose={delegateDetailsModel.events.closeDelegationsModal}
@@ -53,15 +53,21 @@ export const YourDelegations = () => {
           return (
             <div key={address} className="flex h-[52px] items-center">
               <div className="flex-1 px-3">
-                {accountUtils.isChainAccount(account) ? (
-                  <DerivedAccount account={account} addressPrefix={chain.addressPrefix} />
-                ) : (
-                  <ExplorersPopover
-                    address={account.accountId}
-                    explorers={chain.explorers}
-                    button={<ContactItem name={account.name} address={account.accountId} />}
-                  />
-                )}
+                <ExplorersPopover
+                  address={account.accountId}
+                  explorers={chain.explorers}
+                  button={
+                    <ContactItem
+                      name={account.name}
+                      address={account.accountId}
+                      keyType={
+                        accountUtils.isShardAccount(account) || accountUtils.isChainAccount(account)
+                          ? account.keyType
+                          : undefined
+                      }
+                    />
+                  }
+                />
               </div>
               <div className="flex w-[168px] flex-col items-end justify-center px-3">
                 <BodyText>
@@ -71,7 +77,7 @@ export const YourDelegations = () => {
                     components={{
                       votes: (
                         <AssetBalance
-                          value={new BN(activeDelegations[address].balance).mul(
+                          value={activeDelegations[address].balance.mul(
                             new BN(votingService.getConvictionMultiplier(activeDelegations[address].conviction)),
                           )}
                           asset={chain.assets[0]}
