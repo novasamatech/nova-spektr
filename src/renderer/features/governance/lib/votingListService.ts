@@ -42,7 +42,7 @@ const getDecoupledVotesFromVote = (referendumId: ReferendumId, voting: Voting) =
           voter: voting.address,
           balance: vote.aye,
           conviction: convictionMultiplier,
-          votingPower: votingService.calculateAccountVotePower(vote),
+          votingPower: votingService.calculateVotingPower(vote.aye, conviction),
         });
       }
       if (!vote.nay.isZero()) {
@@ -51,7 +51,7 @@ const getDecoupledVotesFromVote = (referendumId: ReferendumId, voting: Voting) =
           voter: voting.address,
           balance: vote.nay,
           conviction: convictionMultiplier,
-          votingPower: votingService.calculateAccountVotePower(vote),
+          votingPower: votingService.calculateVotingPower(vote.nay, conviction),
         });
       }
     }
@@ -63,7 +63,7 @@ const getDecoupledVotesFromVote = (referendumId: ReferendumId, voting: Voting) =
           voter: voting.address,
           balance: vote.aye,
           conviction: votingService.getConvictionMultiplier(conviction),
-          votingPower: votingService.calculateAccountVotePower(vote),
+          votingPower: votingService.calculateVotingPower(vote.aye, conviction),
         });
       }
       if (!vote.nay.isZero()) {
