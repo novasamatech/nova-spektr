@@ -34,7 +34,7 @@ export const CompletedReferendums = memo<Props>(
     });
 
     const placeholdersCount = shouldRenderLoadingState
-      ? Math.max(referendums.length || 4, 50)
+      ? Math.min(referendums.length || 4, 50)
       : Math.max(1, 3 - referendums.length);
 
     return (

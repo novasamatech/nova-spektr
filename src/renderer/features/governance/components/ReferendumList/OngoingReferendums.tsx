@@ -27,7 +27,7 @@ export const OngoingReferendums = memo<Props>(
   ({ referendums, isLoading, isTitlesLoading, mixLoadingWithData, onSelect }) => {
     const { t } = useI18n();
 
-    const placeholdersCount = isLoading ? Math.max(referendums.length || 4, 20) : Math.max(1, 4 - referendums.length);
+    const placeholdersCount = isLoading ? Math.min(referendums.length || 4, 20) : Math.max(1, 4 - referendums.length);
 
     return (
       <Accordion isDefaultOpen>
