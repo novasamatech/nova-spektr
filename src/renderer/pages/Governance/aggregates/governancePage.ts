@@ -5,14 +5,7 @@ import { either, readonly } from 'patronum';
 import { referendumModel, votingModel } from '@/entities/governance';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { locksModel } from '@/features/governance/model/locks';
-import {
-  filterModel,
-  listAggregate,
-  listService,
-  networkSelectorModel,
-  titleModel,
-  votingAggregate,
-} from '@features/governance';
+import { filterModel, listAggregate, listService, networkSelectorModel, votingAggregate } from '@features/governance';
 import { governancePageUtils } from '../lib/governancePageUtils';
 
 const flow = createGate();
@@ -102,8 +95,9 @@ export const governancePageAggregate = {
   $all: $displayedCurrentReferendums,
   $ongoing: readonly($ongoing),
   $completed: readonly($completed),
+  $isSerching: filterModel.$query.map((x) => x.length > 0),
   $isLoading: listAggregate.$isLoading,
-  $isTitlesLoading: titleModel.$isTitlesLoading,
+  $isTitlesLoading: listAggregate.$isTitlesLoading,
 
   gates: {
     flow,

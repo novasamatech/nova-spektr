@@ -1,5 +1,5 @@
 import { useI18n } from '@/app/providers';
-import { type ReferendumId, type TrackId } from '@/shared/core';
+import { type TrackId } from '@/shared/core';
 import { FootnoteText, Icon } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
 
@@ -27,18 +27,16 @@ function getTrackInfo(trackId: TrackId): { title: string; icon: IconNames } {
 }
 
 type Props = {
-  referendumId?: ReferendumId;
   trackId: TrackId;
 };
 
-export const TrackInfo = ({ referendumId, trackId }: Props) => {
+export const TrackInfo = ({ trackId }: Props) => {
   const { t } = useI18n();
 
   const { title, icon } = getTrackInfo(trackId);
 
   return (
     <div className="ml-auto flex text-text-secondary">
-      {referendumId && <FootnoteText className="text-inherit">#{referendumId}</FootnoteText>}
       <Icon name={icon} size={16} className="ml-2 mr-1 text-inherit" />
       <FootnoteText className="text-inherit">{t(title)}</FootnoteText>
     </div>

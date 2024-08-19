@@ -23,7 +23,7 @@ export type ReferendumTimelineRecord = {
 };
 
 export interface GovernanceApi {
-  getReferendumList: (chain: Chain, callback: (data: Record<string, string>, done: boolean) => void) => void;
+  getReferendumList: (chain: Chain, callback: (data: Record<ReferendumId, string>, done: boolean) => void) => void;
   getReferendumDetails: (chain: Chain, referendumId: ReferendumId) => Promise<string | undefined>;
   getReferendumVotes: (
     chain: Chain,

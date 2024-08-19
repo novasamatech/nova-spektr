@@ -180,6 +180,8 @@ module.exports = {
         '@typescript-eslint/no-unused-vars': 'off',
         '@typescript-eslint/no-explicit-any': 'warn',
         '@typescript-eslint/no-unnecessary-type-constraint': 'error',
+        // TODO make error
+        '@typescript-eslint/array-type': ['warn', { default: 'array', readonly: 'array' }],
 
         // Stricter rules
         'effector/no-watch': 'error',

@@ -84,10 +84,10 @@ describe('shared/lib/onChainUtils/arrays', () => {
 
     it('should merge objects', () => {
       const list1 = [{ id: 1 }, { id: 4 }, { id: 5 }];
-      const list2 = [{ id: 3 }, { id: 2 }];
+      const list2 = [{ id: 3 }, { id: 2 }, { id: 3, test: true }, { id: 6 }, { id: 7 }];
 
       const res = merge(list1, list2, (s) => s.id);
-      expect(res).toEqual([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }]);
+      expect(res).toEqual([{ id: 1 }, { id: 2 }, { id: 3, test: true }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }]);
     });
 
     it('should merge and sort objects', () => {
