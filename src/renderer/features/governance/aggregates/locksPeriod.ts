@@ -7,7 +7,7 @@ import { networkModel } from '@entities/network';
 import { lockPeriodsModel } from '../model/lockPeriods';
 import { networkSelectorModel } from '../model/networkSelector';
 
-const lockPeriodsFetch = createGate<{ chain?: Chain }>();
+const flow = createGate<{ chain?: Chain }>();
 
 const $lockPeriodsInChain = combine(
   networkSelectorModel.$governanceNetwork,
@@ -35,7 +35,7 @@ sample({
 });
 
 sample({
-  clock: lockPeriodsFetch.open,
+  clock: flow.open,
   source: networkModel.$apis,
   filter: (apis, { chain }) => {
     return nonNullable(chain) && chain.chainId in apis;
@@ -56,6 +56,6 @@ export const locksPeriodsAggregate = {
   },
 
   gates: {
-    fetch: lockPeriodsFetch,
+    flow,
   },
 };

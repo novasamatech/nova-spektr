@@ -239,7 +239,7 @@ const FeeSection = () => {
 
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
-  useGate(locksPeriodsAggregate.gates.fetch, { chain: network?.chain });
+  useGate(locksPeriodsAggregate.gates.flow, { chain: network?.chain });
 
   if (!network || shards.value.length === 0) {
     return null;

@@ -52,7 +52,7 @@ export const VoteForm = ({ chain, asset, hasDelegated = false }: Props) => {
     fn: (periods, [chainId]) => periods[chainId] ?? null,
   });
 
-  useGate(locksPeriodsAggregate.gates.fetch, { chain });
+  useGate(locksPeriodsAggregate.gates.flow, { chain });
 
   const {
     submit,

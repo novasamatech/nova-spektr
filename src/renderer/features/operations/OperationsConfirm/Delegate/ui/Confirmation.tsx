@@ -66,7 +66,7 @@ export const Confirmation = ({
     fn: (locks, [chain]) => (chain ? (locks[chain.chainId] ?? null) : null),
   });
 
-  useGate(locksPeriodsAggregate.gates.fetch, { chain: confirmStore?.chain });
+  useGate(locksPeriodsAggregate.gates.flow, { chain: confirmStore?.chain });
 
   if (!confirmStore || !initiatorWallet) {
     return null;
