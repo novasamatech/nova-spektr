@@ -1,3 +1,4 @@
+import { type IconNames } from '@/shared/ui/types';
 import { KeyType } from '@shared/core';
 
 export const KEY_NAMES = {
@@ -16,4 +17,13 @@ export const SHARDED_KEY_NAMES = {
   [KeyType.STAKING]: 'Staking sharded',
   [KeyType.GOVERNANCE]: 'Governance sharded',
   [KeyType.CUSTOM]: '',
+};
+
+export const KeyIcon: Record<KeyType, IconNames> = {
+  [KeyType.CUSTOM]: 'keyCustom',
+  [KeyType.GOVERNANCE]: 'keyGovernance',
+  [KeyType.HOT]: 'keyHot',
+  [KeyType.MAIN]: 'keyMain',
+  [KeyType.PUBLIC]: 'keyPublic',
+  [KeyType.STAKING]: 'keyStaking',
 };

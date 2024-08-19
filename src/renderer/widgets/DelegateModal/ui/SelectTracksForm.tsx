@@ -26,8 +26,8 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
     <BaseModal
       closeButton
       headerClass="px-5 py-3"
-      panelClass="w-[896px] h-[738px] bg-white"
-      contentClass="min-h-0 h-full w-full bg-card-background py-4 flex flex-col gap-6"
+      panelClass="flex h-[738px] w-[896px] flex-col bg-white"
+      contentClass="flex min-h-0 w-full flex-1 flex-col gap-6 bg-card-background py-4"
       isOpen={isOpen}
       title={chain && <OperationTitle title={t('governance.addDelegation.title')} chainId={chain.chainId} />}
       onClose={onClose}

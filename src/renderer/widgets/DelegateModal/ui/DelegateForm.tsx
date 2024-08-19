@@ -49,8 +49,8 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
     <BaseModal
       closeButton
       headerClass="px-5 py-3"
-      panelClass="flex flex-col w-modal h-[738px] gap-4 bg-white"
-      contentClass="min-h-0 h-full w-full bg-card-background py-4"
+      panelClass="flex h-[738px] w-modal flex-col gap-4 bg-white"
+      contentClass="min-h-0 w-full flex-1 bg-card-background py-4"
       isOpen={isOpen}
       title={
         network?.chain && <OperationTitle title={t('governance.addDelegation.title')} chainId={network.chain.chainId} />
