@@ -19,7 +19,7 @@ export const TransactionAmount = ({ tx, className }: Props) => {
   }
 
   return (
-    <div className={cnTw('flex flex-col items-center gap-y-1')}>
+    <div className="flex flex-col items-center gap-y-1">
       <AssetBalance
         value={value}
         asset={asset}
