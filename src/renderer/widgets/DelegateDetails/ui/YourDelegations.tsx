@@ -47,8 +47,11 @@ export const YourDelegations = () => {
         </div>
         {activeAccounts.map((address) => {
           const account = wallet?.accounts.find((a) => toAddress(a.accountId) === address);
+          const activeDelegation = activeDelegations[address];
 
-          if (!account) return null;
+          if (!account || !activeDelegation) return null;
+
+          const convictionMultiplier = votingService.getConvictionMultiplier(activeDelegation.conviction);
 
           return (
             <div key={address} className="flex h-[52px] items-center">
@@ -77,9 +80,7 @@ export const YourDelegations = () => {
                     components={{
                       votes: (
                         <AssetBalance
-                          value={activeDelegations[address].balance.mul(
-                            new BN(votingService.getConvictionMultiplier(activeDelegations[address].conviction)),
-                          )}
+                          value={activeDelegation.balance.mul(new BN(convictionMultiplier))}
                           asset={chain.assets[0]}
                           showSymbol={false}
                         />
@@ -91,11 +92,9 @@ export const YourDelegations = () => {
                   <Trans
                     t={t}
                     i18nKey="governance.addDelegation.balanceValue"
-                    values={{
-                      conviction: votingService.getConvictionMultiplier(activeDelegations[address].conviction),
-                    }}
+                    values={{ conviction: convictionMultiplier }}
                     components={{
-                      balance: <AssetBalance value={activeDelegations[address].balance} asset={chain.assets[0]} />,
+                      balance: <AssetBalance value={activeDelegation.balance} asset={chain.assets[0]} />,
                     }}
                   />
                 </FootnoteText>
@@ -108,7 +107,7 @@ export const YourDelegations = () => {
                   pointer="up"
                 >
                   <div className="flex gap-1">
-                    <FootnoteText>{activeTracks[address].size}</FootnoteText>
+                    <FootnoteText>{activeTracks[address]?.size || 0}</FootnoteText>
 
                     <Icon className="group-hover:text-icon-hover" name="info" size={16} />
                   </div>
