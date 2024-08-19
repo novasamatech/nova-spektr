@@ -4,7 +4,7 @@ import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
-import { cnTw, formatAmount } from '@shared/lib/utils';
+import { formatAmount } from '@shared/lib/utils';
 import { Button, CaptionText, DetailRow, FootnoteText, HeadlineText, Icon, LargeTitleText, Tooltip } from '@shared/ui';
 import { LockPeriodDiff, ValueIndicator, votingService } from '@/entities/governance';
 import { AssetBalance } from '@entities/asset';
@@ -76,7 +76,7 @@ export const Confirmation = ({
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name="addDelegationConfirm" size={60} />
 
-        <div className={cnTw('flex flex-col items-center gap-y-1')}>
+        <div className="flex flex-col items-center gap-y-1">
           <LargeTitleText>
             <Trans
               t={t}

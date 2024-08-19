@@ -281,6 +281,10 @@ module.exports = {
           //   selector:
           //     'CallExpression:has(MemberExpression:has([property.name="forEach"])):has([arguments.0.type="ArrowFunctionExpression"])',
           // },
+          {
+            message: 'Unnecessary cnTw usage, use simple string instead.',
+            selector: 'CallExpression[callee.name="cnTw"][arguments.length=1][arguments.0.type="Literal"]',
+          },
         ],
 
         // TODO remove after no-restricted-syntax for for..of will be enabled

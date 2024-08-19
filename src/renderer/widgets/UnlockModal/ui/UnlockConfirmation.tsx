@@ -67,7 +67,7 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
         <div className="mb-2 flex flex-col items-center gap-y-3">
           <Icon className="text-icon-default" name="unlockMst" size={60} />
 
-          <div className={cnTw('flex flex-col items-center gap-y-1')}>
+          <div className="flex flex-col items-center gap-y-1">
             <AssetBalance
               value={amount}
               asset={asset}

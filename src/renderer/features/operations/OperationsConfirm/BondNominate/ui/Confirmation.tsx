@@ -3,7 +3,7 @@ import { type ReactNode } from 'react';
 
 import { useI18n } from '@app/providers';
 import { useToggle } from '@shared/lib/hooks';
-import { cnTw, formatAmount } from '@shared/lib/utils';
+import { formatAmount } from '@shared/lib/utils';
 import { Button, CaptionText, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
 import { SignButton } from '@entities/operations';
@@ -83,7 +83,7 @@ export const Confirmation = ({
         <div className="mb-2 flex flex-col items-center gap-y-3">
           <Icon className="text-icon-default" name="startStakingConfirm" size={60} />
 
-          <div className={cnTw('flex flex-col items-center gap-y-1')}>
+          <div className="flex flex-col items-center gap-y-1">
             <AssetBalance
               value={amountValue}
               asset={confirmStore.asset}

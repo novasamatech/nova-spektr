@@ -3,7 +3,7 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@/app/providers';
-import { cnTw, formatAsset } from '@/shared/lib/utils';
+import { formatAsset } from '@/shared/lib/utils';
 import { Button, DetailRow, HeadlineText, Icon } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { BalanceDiff, LockPeriodDiff, voteTransactionService, votingService } from '@/entities/governance';
@@ -52,7 +52,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name="voteMst" size={60} />
 
-        <div className={cnTw('flex flex-col items-center gap-y-1')}>
+        <div className="flex flex-col items-center gap-y-1">
           <AssetBalance
             value={votingService.calculateVotingPower(amount, conviction)}
             asset={confirm.meta.asset}

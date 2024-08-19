@@ -1,6 +1,6 @@
 import { useI18n } from '@app/providers';
 import { type Chain, WalletType } from '@shared/core';
-import { RootExplorers, cnTw } from '@shared/lib/utils';
+import { RootExplorers } from '@shared/lib/utils';
 import { FootnoteText, HelpText, SmallTitleText } from '@shared/ui';
 import { ContactItem, ExplorersPopover } from '@entities/wallet';
 import { type ExtendedAccount, type ExtendedContact, type ExtendedWallet } from '../common/types';
@@ -20,7 +20,7 @@ export const ConfirmSignatories = ({ chain, wallets = [], accounts = [], contact
   const explorers = chain ? chain.explorers : RootExplorers;
 
   return (
-    <div className={cnTw('flex max-h-full flex-1 flex-col')}>
+    <div className="flex max-h-full flex-1 flex-col">
       <SmallTitleText className="mb-4 py-2">{t('createMultisigAccount.selectedSignatoriesTitle')}</SmallTitleText>
 
       <div className="flex flex-1 flex-col gap-y-2 overflow-y-auto">

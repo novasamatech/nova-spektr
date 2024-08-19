@@ -58,7 +58,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
         <div className="mb-2 flex flex-col items-center gap-y-3">
           <Icon className="text-icon-default" name="returnToStakeConfirm" size={60} />
 
-          <div className={cnTw('flex flex-col items-center gap-y-1')}>
+          <div className="flex flex-col items-center gap-y-1">
             <AssetBalance
               value={confirmStore.amount}
               asset={confirmStore.asset}

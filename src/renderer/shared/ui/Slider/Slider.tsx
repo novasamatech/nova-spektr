@@ -100,7 +100,7 @@ export const Slider = memo(
               minStepsBetweenThumbs={1}
               onValueChange={handleChange}
             >
-              <RadixSlider.Track className={cnTw('relative block h-2 w-full bg-icon-blue-line')}>
+              <RadixSlider.Track className="relative block h-2 w-full bg-icon-blue-line">
                 <RadixSlider.Range className="absolute block h-full bg-primary-button-background-default ps-2" />
               </RadixSlider.Track>
 
