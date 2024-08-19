@@ -5028,10 +5028,7 @@
     "chainId": "0x6408de7737c59c238890533af25896a2c20608d8b380bb01029acb392781063e",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Rococo_Testnet.svg",
     "options": [
-      "testnet",
-      "governance",
-      "regular_proxy",
-      "pure_proxy"
+      "testnet"
     ],
     "nodes": [
       {
@@ -6443,11 +6440,7 @@
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_Testnet.svg",
     "options": [
       "testnet",
-      "testnet",
-      "governance",
-      "regular_proxy",
-      "pure_proxy",
-      "multisig"
+      "governance"
     ],
     "nodes": [
       {
