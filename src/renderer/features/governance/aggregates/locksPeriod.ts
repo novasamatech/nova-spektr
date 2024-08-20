@@ -15,7 +15,7 @@ const $lockPeriodsInChain = combine(
   (network, locks) => {
     if (!network) return null;
 
-    return locks[network.chain.chainId];
+    return locks[network.chain.chainId] ?? null;
   },
 );
 
