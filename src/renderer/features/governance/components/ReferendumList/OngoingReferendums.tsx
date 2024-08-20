@@ -29,6 +29,8 @@ export const OngoingReferendums = memo<Props>(
 
     const placeholdersCount = isLoading ? Math.min(referendums.length || 4, 20) : Math.max(1, 4 - referendums.length);
 
+    if (!isLoading && referendums.length === 0) return null;
+
     return (
       <Accordion isDefaultOpen>
         <Accordion.Button buttonClass="py-1.5 px-2 mb-2">
