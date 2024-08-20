@@ -4,7 +4,8 @@ import { type Account, type Chain } from '@/shared/core';
 import { addUniqueItems, removeItemsFromCollection, toAddress } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
 import { accountUtils, walletModel } from '@/entities/wallet';
-import { delegationAggregate, votingAggregate } from '@/features/governance';
+import { delegationAggregate, tracksAggregate, votingAggregate } from '@/features/governance';
+import { adminTracks, fellowshipTracks, governanceTracks, treasuryTracks } from '../lib/constants';
 
 const formInitiated = createEvent<Chain>();
 const formSubmitted = createEvent<{ tracks: number[]; accounts: Account[] }>();
@@ -16,6 +17,10 @@ const $chain = restore(formInitiated, null);
 
 const $tracks = createStore<number[]>([]).reset(formInitiated);
 const $accounts = createStore<Account[]>([]);
+
+const $availableTracks = combine(tracksAggregate.$tracks, (tracks) => {
+  return Object.keys(tracks);
+});
 
 const $votedTracks = combine(
   {
@@ -77,24 +82,39 @@ sample({
 
 sample({
   clock: tracksSelected,
-  source: $tracks,
-  fn: (tracks, newTracks) => {
-    if (newTracks.every((t) => tracks.includes(t))) {
-      return removeItemsFromCollection(tracks, newTracks);
+  source: { tracks: $tracks, votedTracks: $votedTracks },
+  fn: ({ tracks, votedTracks }, newTracks) => {
+    const resultArray = newTracks.filter((num) => !votedTracks.includes(num.toString()));
+
+    if (resultArray.every((t) => tracks.includes(t))) {
+      return removeItemsFromCollection(tracks, resultArray);
     }
 
-    return addUniqueItems(tracks, newTracks);
+    return addUniqueItems(tracks, resultArray);
   },
   target: $tracks,
 });
 
+const $tracksGroup = combine($availableTracks, (availableTracks) => {
+  const availableTrackIds = new Set(availableTracks);
+
+  return {
+    adminTracks: adminTracks.filter((track) => availableTrackIds.has(track.id)),
+    governanceTracks: governanceTracks.filter((track) => availableTrackIds.has(track.id)),
+    treasuryTracks: treasuryTracks.filter((track) => availableTrackIds.has(track.id)),
+    fellowshipTracks: fellowshipTracks.filter((track) => availableTrackIds.has(track.id)),
+  };
+});
+
 export const selectTracksModel = {
   $tracks,
+  $availableTracks,
+  $votedTracks,
+  $tracksGroup,
+
   $accounts,
   $availableAccounts,
-
   $chain,
-  $votedTracks,
 
   events: {
     formInitiated,
