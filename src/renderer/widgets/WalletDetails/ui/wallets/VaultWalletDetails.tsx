@@ -66,8 +66,8 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   }, []);
 
   const handleConstructorKeys = (
-    keysToAdd: Array<ChainAccount | ShardAccount[]>,
-    keysToRemove: Array<ChainAccount | ShardAccount[]>,
+    keysToAdd: (ChainAccount | ShardAccount[])[],
+    keysToRemove: (ChainAccount | ShardAccount[])[],
   ) => {
     toggleConstructorModal();
 

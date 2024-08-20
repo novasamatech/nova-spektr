@@ -8,14 +8,14 @@ import { derivationHasPassword, validateDerivation } from '@shared/lib/utils';
 import { networkModel, networkUtils } from '@entities/network';
 import { KEY_NAMES, SHARDED_KEY_NAMES, accountUtils } from '@entities/wallet';
 
-const formInitiated = createEvent<Array<ChainAccount | ShardAccount>>();
+const formInitiated = createEvent<(ChainAccount | ShardAccount)[]>();
 const formStarted = createEvent();
 const focusableSet = createEvent<HTMLButtonElement>();
 const keyRemoved = createEvent<number>();
 
-const $existingKeys = createStore<Array<ChainAccount | ShardAccount[]>>([]);
-const $keysToAdd = createStore<Array<ChainAccount | ShardAccount[]>>([]).reset(formStarted);
-const $keysToRemove = createStore<Array<ChainAccount | ShardAccount[]>>([]).reset(formStarted);
+const $existingKeys = createStore<(ChainAccount | ShardAccount[])[]>([]);
+const $keysToAdd = createStore<(ChainAccount | ShardAccount[])[]>([]).reset(formStarted);
+const $keysToRemove = createStore<(ChainAccount | ShardAccount[])[]>([]).reset(formStarted);
 
 const $keys = combine(
   {
@@ -99,7 +99,7 @@ const $constructorForm = createForm<FormValues>({
           name: 'duplicated',
           source: $keys,
           errorText: 'dynamicDerivations.constructor.duplicateDerivationError',
-          validator: (value, { network }, keys: Array<ChainAccount | ShardAccount[]>): boolean => {
+          validator: (value, { network }, keys: (ChainAccount | ShardAccount[])[]): boolean => {
             return keys.every((key) => {
               const keyToCheck = Array.isArray(key) ? key[0] : key;
 
@@ -162,7 +162,7 @@ const addNewKeyFx = createEffect((formValues: FormValues): ChainAccount | ShardA
 sample({
   clock: formInitiated,
   fn: (keys) => {
-    return accountUtils.getAccountsAndShardGroups(keys as Array<ChainAccount | ShardAccount>);
+    return accountUtils.getAccountsAndShardGroups(keys as (ChainAccount | ShardAccount)[]);
   },
   target: $existingKeys,
 });

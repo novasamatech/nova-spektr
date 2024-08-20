@@ -157,7 +157,7 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
   };
 
   const createWallet: SubmitHandler<WalletForm> = async ({ walletName }) => {
-    const accountsToSave = accounts.reduce<Array<BaseAccount | ChainAccount>>((acc, account, index) => {
+    const accountsToSave = accounts.reduce<(BaseAccount | ChainAccount)[]>((acc, account, index) => {
       acc.push({
         name: accountNames[getAccountId(index)],
         accountId: toAccountId(account.address),

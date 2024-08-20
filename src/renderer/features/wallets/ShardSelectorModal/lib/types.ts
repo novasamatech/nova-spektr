@@ -8,7 +8,7 @@ import {
 } from '@shared/core';
 
 export type RootTuple = [BaseAccount, ChainTuple[]];
-export type ChainTuple = [ChainId, Array<ChainAccount | ShardAccount[]>];
+export type ChainTuple = [ChainId, (ChainAccount | ShardAccount[])[]];
 
 export type RootToggleParams = { root: ID; value: boolean };
 export type ChainToggleParams = RootToggleParams & { chainId: ChainId };
@@ -38,6 +38,6 @@ export type SelectedStruct = {
 
 export type ChainsMap<T> = {
   [chainId: ChainId]: {
-    [key: string]: Array<T>;
+    [key: string]: T[];
   };
 };

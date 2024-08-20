@@ -50,9 +50,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
   const [query, setQuery] = useState('');
   const [accountsQuery, setAccountsQuery] = useState('');
   const [contactList, setContactList] = useState<ExtendedContact[]>([]);
-  const [accountsList, setAccountsList] = useState<Record<Wallet['id'], Array<ExtendedAccount | ExtendedAccount[]>>>(
-    {},
-  );
+  const [accountsList, setAccountsList] = useState<Record<Wallet['id'], (ExtendedAccount | ExtendedAccount[])[]>>({});
   const [isContactModalOpen, toggleContactModalOpen] = useToggle();
 
   const [selectedAccounts, setSelectedAccounts] = useState<Record<string, ExtendedAccount>>({});
@@ -80,7 +78,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
   }, [chain]);
 
   useEffect(() => {
-    const extendedAccounts = accounts.reduce<Array<ExtendedAccount | ExtendedAccount[]>>((acc, account) => {
+    const extendedAccounts = accounts.reduce<(ExtendedAccount | ExtendedAccount[])[]>((acc, account) => {
       if (Array.isArray(account)) {
         const toAdd = [] as ExtendedAccount[];
 

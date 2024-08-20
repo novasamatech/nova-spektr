@@ -83,7 +83,7 @@ class StorageService<T extends { id: K }, K extends IndexableType> {
     }
   }
 
-  async updateAll(items: Array<Partial<T> & { id: K }>): Promise<number[] | undefined> {
+  async updateAll(items: (Partial<T> & { id: K })[]): Promise<number[] | undefined> {
     try {
       const updates = items.map((item) => {
         return this.dexieTable.update(item.id, item);

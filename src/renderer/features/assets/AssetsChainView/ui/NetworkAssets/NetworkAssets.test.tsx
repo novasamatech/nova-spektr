@@ -52,7 +52,7 @@ const accounts = [
     cryptoType: CryptoType.SR25519,
     chainType: ChainType.SUBSTRATE,
   },
-] as Array<BaseAccount | ChainAccount | ShardAccount>;
+] as (BaseAccount | ChainAccount | ShardAccount)[];
 
 describe('features/AssetsChainView/ui/NetworkAssets', () => {
   const scope = fork({

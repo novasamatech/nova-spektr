@@ -119,7 +119,7 @@ const $signatories = combine(
   ({ chain, availableSignatories, balances }) => {
     if (!chain) return [];
 
-    return availableSignatories.reduce<Array<{ signer: Account; balance: string }[]>>((acc, signatories) => {
+    return availableSignatories.reduce<{ signer: Account; balance: string }[][]>((acc, signatories) => {
       const balancedSignatories = signatories.map((signatory) => {
         const balance = balanceUtils.getBalance(
           balances,

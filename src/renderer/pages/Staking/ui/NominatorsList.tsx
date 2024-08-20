@@ -22,7 +22,7 @@ import { ShardedList } from './ShardedList';
 import { TimeToEra } from './TimeToEra';
 
 type Props = {
-  nominators: Array<NominatorInfo<BaseAccount> | NominatorInfo<ShardAccount>[]>;
+  nominators: (NominatorInfo<BaseAccount> | NominatorInfo<ShardAccount>[])[];
   isStakingLoading: boolean;
   api?: ApiPromise;
   era?: number;

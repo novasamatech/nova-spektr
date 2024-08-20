@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 export type Task = () => Promise<void> | void;
 type TaskQueue = {
-  tasks: ReadonlyArray<Task>;
+  tasks: readonly Task[];
   addTask: (task: Task) => void;
 };
 

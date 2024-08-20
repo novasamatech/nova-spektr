@@ -55,7 +55,7 @@ const vaultAccounts = [
     type: AccountType.BASE,
     accountId: '0xc6332dd72fc6d33bf202a531e66cfaf46e6161640f91864f23f82b31b38c5f11',
   },
-] as unknown as Array<BaseAccount | ChainAccount | ShardAccount>;
+] as unknown as (BaseAccount | ChainAccount | ShardAccount)[];
 
 const multishardAccounts = [
   {
@@ -112,7 +112,7 @@ const multishardAccounts = [
     type: AccountType.BASE,
     accountId: '0x5a920a698b26cc691faf5ee41b454581348f8a68cce99c84c7fb82ce87605340',
   },
-] as unknown as Array<BaseAccount | ChainAccount>;
+] as unknown as (BaseAccount | ChainAccount)[];
 
 const vaultWallet: PolkadotVaultWallet = {
   id: 1,

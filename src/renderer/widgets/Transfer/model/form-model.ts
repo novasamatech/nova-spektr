@@ -265,7 +265,7 @@ const $signatories = combine(
 
     const { chain } = network;
 
-    return txWrappers.reduce<Array<{ signer: Account; balance: string }[]>>((acc, wrapper) => {
+    return txWrappers.reduce<{ signer: Account; balance: string }[][]>((acc, wrapper) => {
       if (!transactionService.hasMultisig([wrapper])) return acc;
 
       const balancedSignatories = (wrapper as MultisigTxWrapper).signatories.map((signatory) => {

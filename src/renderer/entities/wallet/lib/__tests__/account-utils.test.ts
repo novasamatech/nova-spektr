@@ -11,7 +11,7 @@ import {
 import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@shared/lib/utils';
 import { accountUtils } from '@entities/wallet';
 
-const accounts: Array<ChainAccount | ShardAccount> = [
+const accounts: (ChainAccount | ShardAccount)[] = [
   {
     id: 1,
     walletId: 1,

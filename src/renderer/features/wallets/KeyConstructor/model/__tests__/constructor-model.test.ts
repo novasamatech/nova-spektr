@@ -41,7 +41,7 @@ describe('features/wallet/model/constructor-model', () => {
 
     await allSettled(constructorModel.events.formInitiated, {
       scope,
-      params: defaultKeys as Array<ChainAccount | ShardAccount>,
+      params: defaultKeys as (ChainAccount | ShardAccount)[],
     });
 
     expect(scope.getState(constructorModel.$keys)).toEqual([defaultKeys[0], [defaultKeys[1], defaultKeys[2]]]);
@@ -74,7 +74,7 @@ describe('features/wallet/model/constructor-model', () => {
 
     await allSettled(constructorModel.events.formInitiated, {
       scope,
-      params: defaultKeys as Array<ChainAccount | ShardAccount>,
+      params: defaultKeys as (ChainAccount | ShardAccount)[],
     });
     await allSettled(constructorModel.events.keyRemoved, { scope, params: 1 });
 

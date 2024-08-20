@@ -7,7 +7,7 @@ import { DerivedAccount, ExplorersPopover, accountUtils } from '@entities/wallet
 
 type Props = {
   chains: Chain[];
-  accountsMap: Record<ChainId, Array<ChainAccount | ShardAccount[]>>;
+  accountsMap: Record<ChainId, (ChainAccount | ShardAccount[])[]>;
   className?: string;
   onShardClick?: (shards: ShardAccount[]) => void;
 };
