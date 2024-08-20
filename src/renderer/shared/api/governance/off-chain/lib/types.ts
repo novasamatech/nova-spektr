@@ -1,4 +1,4 @@
-import { type Address, type Chain, type ReferendumId } from '@shared/core';
+import { type Address, type Chain, type Conviction, type ReferendumId } from '@shared/core';
 
 export type ReferendumTimelineRecordStatus =
   | 'All'
@@ -32,6 +32,36 @@ export interface GovernanceApi {
   ) => Promise<Address[]>;
   getReferendumTimeline: (chain: Chain, referendumId: ReferendumId) => Promise<ReferendumTimelineRecord[]>;
 }
+
+export type SubQueryVoting = {
+  delegatorVotes: {
+    nodes: {
+      delegator: Address;
+      vote: {
+        amount: string;
+        conviction: Conviction;
+      };
+    }[];
+  };
+  referendumId: ReferendumId;
+  splitAbstainVote: {
+    abstainAmount: string;
+    ayeAmount: string;
+    nayAmount: string;
+  } | null;
+  splitVote: {
+    ayeAmount: string;
+    nayAmount: string;
+  } | null;
+  standardVote: {
+    aye: boolean;
+    vote: {
+      amount: string;
+      conviction: Conviction;
+    };
+  } | null;
+  voter: Address;
+};
 
 export type DelegateDetails = {
   address: Address;

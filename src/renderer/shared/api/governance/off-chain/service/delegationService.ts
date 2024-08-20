@@ -9,6 +9,22 @@ import { GET_DELEGATE_LIST, GET_DELEGATOR } from './delegation/queries';
 const DELEGATE_REGISTRY_URL =
   'https://raw.githubusercontent.com/novasamatech/opengov-delegate-registry/master/registry';
 
+const getGraphQLClient = (chain: Chain) => {
+  const externalApi = chain.externalApi?.[ExternalType.DELEGATIONS]?.at(0);
+  const sourceType = externalApi?.type;
+  const sourceUrl = externalApi?.url;
+
+  if (sourceType === 'subquery' && sourceUrl) {
+    try {
+      return new GraphQLClient(sourceUrl);
+    } catch {
+      return null;
+    }
+  }
+
+  return null;
+};
+
 async function getDelegatesFromRegistry(chain: Chain): Promise<DelegateDetails[]> {
   const normalizedName = chain.name.toLowerCase();
 
@@ -18,16 +34,14 @@ async function getDelegatesFromRegistry(chain: Chain): Promise<DelegateDetails[]
 }
 
 async function getDelegatesFromExternalSource(chain: Chain, blockNumber: number): Promise<DelegateStat[]> {
-  const externalApi = chain.externalApi?.[ExternalType.DELEGATIONS]?.at(0);
-  const sourceType = externalApi?.type;
-  const sourceUrl = externalApi?.url;
+  const client = getGraphQLClient(chain);
+  if (!client) {
+    return [];
+  }
 
-  if (sourceType === 'subquery' && sourceUrl) {
-    try {
-      const client = new GraphQLClient(sourceUrl);
-
-      const data = await client.request(GET_DELEGATE_LIST, { activityStartBlock: blockNumber });
-
+  return client
+    .request(GET_DELEGATE_LIST, { activityStartBlock: blockNumber })
+    .then((data) => {
       return (
         (data as any)?.delegates?.nodes?.map(({ accountId, delegators, delegatorVotes, delegateVotes }: any) => ({
           accountId,
@@ -36,26 +50,21 @@ async function getDelegatesFromExternalSource(chain: Chain, blockNumber: number)
           delegateVotes: delegateVotes.totalCount,
         })) || []
       );
-    } catch {
-      return [];
-    }
-  }
-
-  return [];
+    })
+    .catch(() => []);
 }
 
 async function getDelegatedVotesFromExternalSource(
   chain: Chain,
   voters: Address[],
 ): Promise<Record<ReferendumId, Address>> {
-  const externalApi = chain.externalApi?.[ExternalType.DELEGATIONS]?.at(0);
-  const sourceType = externalApi?.type;
-  const sourceUrl = externalApi?.url;
+  const client = getGraphQLClient(chain);
+  if (!client) {
+    return {};
+  }
 
-  if (sourceType === 'subquery' && sourceUrl) {
-    try {
-      const client = new GraphQLClient(sourceUrl);
-      const data = await Promise.all(voters.map((voter) => client.request(GET_DELEGATOR, { voter })));
+  return Promise.all(voters.map((voter) => client.request(GET_DELEGATOR, { voter })))
+    .then((data) => {
       const list = data.flatMap((x: any) => x.delegatorVotings.nodes.map((node: { parent: any }) => node.parent)) as {
         referendumId: ReferendumId;
         voter: Address;
@@ -66,12 +75,8 @@ async function getDelegatedVotesFromExternalSource(
 
         return acc;
       }, {});
-    } catch {
-      return {};
-    }
-  }
-
-  return {};
+    })
+    .catch(() => ({}));
 }
 
 function aggregateDelegateAccounts(accounts: DelegateDetails[], stats: DelegateStat[]): DelegateAccount[] {
