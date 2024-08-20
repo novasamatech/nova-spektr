@@ -1,8 +1,38 @@
+type TrackDescription = {
+  [key: string]: { [key: string]: string };
+};
+
+export const treasurySpendsDescription: TrackDescription = {
+  'governance.addDelegation.tracks.treasurySmallTipsDescription': {
+    DOT: '250',
+    KSM: '8.25',
+    default: 'small',
+  },
+  'governance.addDelegation.tracks.treasuryBigTipsDescription': {
+    DOT: '1,000',
+    KSM: '33.33',
+    default: 'big',
+  },
+  'governance.addDelegation.tracks.treasurySmallSpendDescription': {
+    DOT: '10,000',
+    KSM: '333.33',
+    default: 'small',
+  },
+  'governance.addDelegation.tracks.treasuryMediumSpendDescription': {
+    DOT: '100,000',
+    KSM: '3,333.33',
+  },
+  'governance.addDelegation.tracks.treasuryBigSpendDescription': {
+    DOT: '1,000,000',
+    KSM: '33,333.33',
+  },
+};
+
 export const adminTracks = [
   {
     id: '0',
-    value: 'governance.addDelegation.tracks.mainAgenda',
-    description: 'governance.referendums.mainAgendaDescription',
+    value: 'governance.addDelegation.tracks.root',
+    description: 'governance.addDelegation.tracks.rootDescription',
   },
   {
     id: '2',
@@ -16,9 +46,9 @@ export const adminTracks = [
   },
 
   {
-    id: '15',
-    value: 'governance.addDelegation.tracks.crowdloans',
-    description: 'governance.addDelegation.tracks.crowdloansDescription',
+    id: '21',
+    value: 'governance.addDelegation.tracks.governanceKiller',
+    description: 'governance.addDelegation.tracks.governanceKillerDescription',
   },
 ];
 
@@ -29,14 +59,14 @@ export const governanceTracks = [
     description: 'governance.addDelegation.tracks.governanceLeaseDescription',
   },
   {
-    id: '21',
-    value: 'governance.addDelegation.tracks.governanceKiller',
-    description: 'governance.addDelegation.tracks.governanceKillerDescription',
+    id: '15',
+    value: 'governance.addDelegation.tracks.crowdloans',
+    description: 'governance.addDelegation.tracks.crowdloansDescription',
   },
   {
     id: '11',
     value: 'governance.addDelegation.tracks.treasuryAny',
-    description: 'governance.addDelegation.tracks.treasuryAnySpendDescription',
+    description: 'governance.addDelegation.tracks.treasuryAnyDescription',
   },
   {
     id: '14',
@@ -46,7 +76,7 @@ export const governanceTracks = [
   {
     id: '10',
     value: 'governance.addDelegation.tracks.staking',
-    description: 'governance.referendums.stakingDescription',
+    description: 'governance.addDelegation.tracks.stakingDescription',
   },
 ];
 

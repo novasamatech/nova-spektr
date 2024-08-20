@@ -109,14 +109,15 @@ export const Delegate = () => {
     <BaseModal
       closeButton
       contentClass=""
-      panelClass="w-max"
+      panelClass="w-max w-modal"
       panelStyle={
         // Change panel class doesn't work
         {
-          ...(isStep(step, Step.CONFIRM) && {
-            //eslint-disable-next-line i18next/no-literal-string
-            width: `478px`,
-          }),
+          ...(isStep(step, Step.CONFIRM) &&
+            transactions.length > 1 && {
+              //eslint-disable-next-line i18next/no-literal-string
+              width: `478px`,
+            }),
         }
       }
       isOpen={isModalOpen}
