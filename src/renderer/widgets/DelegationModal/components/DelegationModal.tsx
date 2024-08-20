@@ -25,7 +25,7 @@ export const DelegationModal = () => {
     <BaseModal
       closeButton
       headerClass="px-5 py-3"
-      panelClass="flex flex-col w-modal h-[738px] bg-white"
+      panelClass="flex flex-col w-modal h-[678px] overflow-y-auto bg-white"
       contentClass="min-h-0 h-full w-full bg-main-app-background py-4"
       isOpen={isModalOpen}
       title={chain && <OperationTitle title={t('governance.addDelegation.title')} chainId={chain.chainId} />}
