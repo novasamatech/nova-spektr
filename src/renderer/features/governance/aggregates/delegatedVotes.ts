@@ -20,7 +20,11 @@ const $delegatedVotesInChain = combine(
 );
 
 sample({
-  clock: [referendumModel.events.requestDone, networkSelectorModel.$governanceChainApi, walletModel.$activeWallet],
+  clock: [
+    referendumModel.events.referendumsReceived,
+    networkSelectorModel.$governanceChainApi,
+    walletModel.$activeWallet,
+  ],
   source: {
     wallet: walletModel.$activeWallet,
     chain: networkSelectorModel.$governanceChain,

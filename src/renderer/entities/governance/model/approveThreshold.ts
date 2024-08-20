@@ -56,7 +56,7 @@ sample({
 });
 
 sample({
-  clock: referendumModel.events.requestDone,
+  clock: referendumModel.events.referendumsReceived,
   source: tracksModel.$tracks,
   fn: (tracks, { params, result: referendums }) => ({
     api: params.api,
