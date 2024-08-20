@@ -1,4 +1,3 @@
-import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { Trans } from 'react-i18next';
 
@@ -51,8 +50,6 @@ export const YourDelegations = () => {
 
           if (!account || !activeDelegation) return null;
 
-          const convictionMultiplier = votingService.getConvictionMultiplier(activeDelegation.conviction);
-
           return (
             <div key={address} className="flex h-[52px] items-center">
               <div className="flex-1 px-3">
@@ -80,7 +77,10 @@ export const YourDelegations = () => {
                     components={{
                       votes: (
                         <AssetBalance
-                          value={activeDelegation.balance.mul(new BN(convictionMultiplier))}
+                          value={votingService.calculateVotingPower(
+                            activeDelegation.balance,
+                            activeDelegation.conviction,
+                          )}
                           asset={chain.assets[0]}
                           showSymbol={false}
                         />
@@ -92,7 +92,7 @@ export const YourDelegations = () => {
                   <Trans
                     t={t}
                     i18nKey="governance.addDelegation.balanceValue"
-                    values={{ conviction: convictionMultiplier }}
+                    values={{ conviction: votingService.getConvictionMultiplier(activeDelegation.conviction) }}
                     components={{
                       balance: <AssetBalance value={activeDelegation.balance} asset={chain.assets[0]} />,
                     }}
