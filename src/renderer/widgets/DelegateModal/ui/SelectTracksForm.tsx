@@ -5,7 +5,9 @@ import { toAddress, toShortAddress } from '@/shared/lib/utils';
 import { BaseModal, Button, Checkbox, FootnoteText, Icon, MultiSelect, SmallTitleText, Tooltip } from '@/shared/ui';
 import { OperationTitle } from '@/entities/chain';
 import { AccountAddress, accountUtils } from '@/entities/wallet';
+import { votingAssetModel } from '@/features/governance';
 import { adminTracks, allTracks, fellowshipTracks, governanceTracks, treasuryTracks } from '../lib/constants';
+import { getTreasuryTrackDescription } from '../lib/helpers';
 import { delegateModel } from '../model/delegate-model';
 import { selectTracksModel } from '../model/select-tracks-model';
 
@@ -21,12 +23,13 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
   const tracks = useUnit(selectTracksModel.$tracks);
   const accounts = useUnit(selectTracksModel.$accounts);
   const votedTracks = useUnit(selectTracksModel.$votedTracks);
+  const asset = useUnit(votingAssetModel.$votingAsset);
 
   return (
     <BaseModal
       closeButton
       headerClass="px-5 py-3"
-      panelClass="flex h-[738px] w-[896px] flex-col bg-white"
+      panelClass="flex h-[678px] w-[896px] flex-col bg-white"
       contentClass="flex min-h-0 w-full flex-1 flex-col gap-6 bg-card-background py-4"
       isOpen={isOpen}
       title={chain && <OperationTitle title={t('governance.addDelegation.title')} chainId={chain.chainId} />}
@@ -104,7 +107,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
               >
                 <div className="flex w-full items-center justify-between">
                   {t(track.value)}
-                  <Tooltip content={t(track.description)}>
+                  <Tooltip content={t(track.description)} offsetPx={-50}>
                     <Icon size={16} name="info" />
                   </Tooltip>
                 </div>
@@ -121,7 +124,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
               >
                 <div className="flex w-full items-center justify-between">
                   {t(track.value)}
-                  <Tooltip content={t(track.description)}>
+                  <Tooltip content={getTreasuryTrackDescription(asset, track.description, t)} offsetPx={-80}>
                     <Icon size={16} name="info" />
                   </Tooltip>
                 </div>
@@ -138,7 +141,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
               >
                 <div className="flex w-full items-center justify-between">
                   {t(track.value)}
-                  <Tooltip content={t(track.description)}>
+                  <Tooltip content={t(track.description)} offsetPx={-60}>
                     <Icon size={16} name="info" />
                   </Tooltip>
                 </div>

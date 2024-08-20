@@ -49,7 +49,7 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
     <BaseModal
       closeButton
       headerClass="px-5 py-3"
-      panelClass="flex h-[738px] w-modal flex-col gap-4 bg-white"
+      panelClass="flex h-[678px] w-modal flex-col gap-4 bg-white"
       contentClass="min-h-0 w-full flex-1 bg-card-background py-4"
       isOpen={isOpen}
       title={
