@@ -65,7 +65,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
   const [isAddressModalOpen, toggleIsAddressModalOpen] = useToggle();
   const [isImportModalOpen, toggleIsImportModalOpen] = useToggle();
   const [isConstructorModalOpen, toggleConstructorModal] = useToggle();
-  const [chainElements, setChainElements] = useState<[string, Array<ChainAccount | ShardAccount[]>][]>([]);
+  const [chainElements, setChainElements] = useState<[string, (ChainAccount | ShardAccount[])[]][]>([]);
 
   const {
     submit,
@@ -148,8 +148,8 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
   };
 
   const handleConstructorKeys = (
-    keysToAdd: Array<ChainAccount | ShardAccount[]>,
-    keysToRemove: Array<ChainAccount | ShardAccount[]>,
+    keysToAdd: (ChainAccount | ShardAccount[])[],
+    keysToRemove: (ChainAccount | ShardAccount[])[],
   ) => {
     manageVaultModel.events.keysRemoved(keysToRemove.flat());
     manageVaultModel.events.keysAdded(keysToAdd.flat());
@@ -312,7 +312,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
       <DerivationsAddressModal
         isOpen={isAddressModalOpen}
         rootAccountId={publicKey}
-        keys={keys as Array<ShardAccount | ChainAccount>}
+        keys={keys as (ShardAccount | ChainAccount)[]}
         onClose={toggleIsAddressModalOpen}
         onComplete={handleCreateVault}
       />

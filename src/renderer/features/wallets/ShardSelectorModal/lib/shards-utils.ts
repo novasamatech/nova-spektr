@@ -52,7 +52,7 @@ function getVaultChainsCounter(chains: Record<ChainId, Chain>, accounts: Account
   const { baseId, root, shards } = accounts.reduce<{
     baseId: ID;
     root: SelectedStruct;
-    shards: Array<ChainAccount | ShardAccount>;
+    shards: (ChainAccount | ShardAccount)[];
   }>(
     (acc, account) => {
       if (accountUtils.isBaseAccount(account)) {
@@ -93,7 +93,7 @@ function getVaultChainsCounter(chains: Record<ChainId, Chain>, accounts: Account
 function getMultishardtChainsCounter(chains: Record<ChainId, Chain>, accounts: Account[]): SelectedStruct {
   const { roots, shards } = accounts.reduce<{
     roots: SelectedStruct;
-    shards: Array<ChainAccount>;
+    shards: ChainAccount[];
   }>(
     (acc, account) => {
       if (accountUtils.isBaseAccount(account)) {
@@ -165,7 +165,7 @@ function getStructForVault<T>(accounts: Account[], chainsMap: ChainsMap<T>): Roo
 
   const chainsTuples = Object.entries(chainsMap).reduce<ChainTuple[]>((acc, entries) => {
     const [chainId, { accounts = [], ...sharded }] = entries;
-    const accountsGroup = [...accounts, ...Object.values(sharded)] as Array<ChainAccount | ShardAccount[]>;
+    const accountsGroup = [...accounts, ...Object.values(sharded)] as (ChainAccount | ShardAccount[])[];
 
     if (accountsGroup.length > 0) {
       acc.push([chainId as ChainId, accountsGroup]);

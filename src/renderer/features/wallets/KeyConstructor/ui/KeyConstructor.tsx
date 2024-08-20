@@ -15,10 +15,7 @@ type Props = {
   isOpen: boolean;
   existingKeys: DraftAccount<ChainAccount | ShardAccount>[];
   onClose: () => void;
-  onConfirm: (
-    keysToAdd: Array<ChainAccount | ShardAccount[]>,
-    keysToRemove: Array<ChainAccount | ShardAccount[]>,
-  ) => void;
+  onConfirm: (keysToAdd: (ChainAccount | ShardAccount[])[], keysToRemove: (ChainAccount | ShardAccount[])[]) => void;
 };
 
 export const KeyConstructor = ({ title, isOpen, existingKeys, onClose, onConfirm }: Props) => {
@@ -32,7 +29,7 @@ export const KeyConstructor = ({ title, isOpen, existingKeys, onClose, onConfirm
   useEffect(() => {
     if (!isOpen) return;
 
-    constructorModel.events.formInitiated(existingKeys as Array<ChainAccount | ShardAccount>);
+    constructorModel.events.formInitiated(existingKeys as (ChainAccount | ShardAccount)[]);
   }, [isOpen]);
 
   const closeConstructor = () => {
