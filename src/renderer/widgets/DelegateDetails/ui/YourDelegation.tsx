@@ -1,4 +1,3 @@
-import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { Trans } from 'react-i18next';
 
@@ -61,13 +60,10 @@ export const YourDelegation = () => {
                   components={{
                     votes: (
                       <AssetBalance
-                        value={activeDelegations[activeAccounts[0]]?.balance
-                          .mul(
-                            new BN(
-                              votingService.getConvictionMultiplier(activeDelegations[activeAccounts[0]]?.conviction),
-                            ),
-                          )
-                          .toString()}
+                        value={votingService.calculateVotingPower(
+                          activeDelegations[activeAccounts[0]]?.balance,
+                          activeDelegations[activeAccounts[0]]?.conviction,
+                        )}
                         asset={chain?.assets[0]}
                         showSymbol={false}
                       />

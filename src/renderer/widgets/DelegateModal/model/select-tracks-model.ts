@@ -111,6 +111,9 @@ export const selectTracksModel = {
   $availableTracks,
   $votedTracks,
   $tracksGroup,
+  $allTracks: $tracksGroup.map(({ adminTracks, governanceTracks, treasuryTracks, fellowshipTracks }) => {
+    return [...adminTracks, ...governanceTracks, ...treasuryTracks, ...fellowshipTracks];
+  }),
 
   $accounts,
   $availableAccounts,

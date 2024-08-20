@@ -63,7 +63,7 @@ export const AddCustomDelegationModel = () => {
       </div>
 
       <div className="flex justify-end px-5 pt-3">
-        <Button disabled={!error} onClick={() => delegationModel.events.createCustomDelegate()}>
+        <Button disabled={!!error} onClick={() => delegationModel.events.createCustomDelegate()}>
           {t('signing.continueButton')}
         </Button>
       </div>

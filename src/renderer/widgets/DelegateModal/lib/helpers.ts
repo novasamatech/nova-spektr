@@ -4,6 +4,7 @@ import { type Asset } from '@/shared/core';
 import { nonNullable } from '@shared/lib/utils';
 
 import { treasurySpendsDescription } from './constants';
+import { type Track } from './types';
 
 export const getTreasuryTrackDescription = (asset: Asset | null, description: string, t: TFunction) => {
   if (nonNullable(asset) && treasurySpendsDescription[description]?.[asset.symbol]) {
@@ -11,4 +12,8 @@ export const getTreasuryTrackDescription = (asset: Asset | null, description: st
   }
 
   return t(`${description}General`);
+};
+
+export const getTrackIds = (tracks: Track[], votedTracks: string[]): number[] => {
+  return tracks.filter((t) => !votedTracks.includes(t.id)).map((track) => Number(track.id));
 };
