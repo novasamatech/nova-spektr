@@ -7,7 +7,7 @@ import { treasurySpendsDescription } from './constants';
 import { type Track } from './types';
 
 export const getTreasuryTrackDescription = (asset: Asset | null, description: string, t: TFunction) => {
-  if (nonNullable(asset) && treasurySpendsDescription[description][asset.symbol]) {
+  if (nonNullable(asset) && treasurySpendsDescription[description]?.[asset.symbol]) {
     return t(description, { value: treasurySpendsDescription[description][asset.symbol], asset: asset.symbol });
   }
 

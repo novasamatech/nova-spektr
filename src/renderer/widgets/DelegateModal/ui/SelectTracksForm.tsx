@@ -6,7 +6,6 @@ import { BaseModal, Button, Checkbox, FootnoteText, Icon, MultiSelect, SmallTitl
 import { OperationTitle } from '@/entities/chain';
 import { AccountAddress, accountUtils } from '@/entities/wallet';
 import { votingAssetModel } from '@/features/governance';
-import { adminTracks, allTracks, fellowshipTracks, governanceTracks, treasuryTracks } from '../lib/constants';
 import { getTrackIds, getTreasuryTrackDescription } from '../lib/helpers';
 import { delegateModel } from '../model/delegate-model';
 import { selectTracksModel } from '../model/select-tracks-model';
@@ -22,8 +21,12 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
   const chain = useUnit(selectTracksModel.$chain);
   const tracks = useUnit(selectTracksModel.$tracks);
   const accounts = useUnit(selectTracksModel.$accounts);
+  const availableTracks = useUnit(selectTracksModel.$availableTracks);
   const votedTracks = useUnit(selectTracksModel.$votedTracks);
+  const tracksGroup = useUnit(selectTracksModel.$tracksGroup);
   const asset = useUnit(votingAssetModel.$votingAsset);
+
+  const { adminTracks, governanceTracks, treasuryTracks, fellowshipTracks } = tracksGroup;
 
   return (
     <BaseModal
@@ -44,9 +47,9 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
       <div className="flex flex-1 flex-col gap-6 px-5">
         <div className="flex gap-3">
           <Button
-            pallet={getTrackIds(allTracks, votedTracks).every((t) => tracks.includes(t)) ? 'primary' : 'secondary'}
+            pallet={availableTracks.every((trackId) => tracks.includes(Number(trackId))) ? 'primary' : 'secondary'}
             variant="chip"
-            onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(allTracks, votedTracks))}
+            onClick={() => selectTracksModel.events.tracksSelected(availableTracks.map((trackId) => Number(trackId)))}
           >
             {t('governance.addDelegation.group.selectAll')}
           </Button>
