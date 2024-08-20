@@ -172,6 +172,14 @@ module.exports = {
         // Restricted by our code style
         'import-x/default': 'off',
         'import-x/no-useless-path-segments': 'error',
+        // TODO make error
+        'no-restricted-imports': [
+          'warn',
+          {
+            name: 'classnames',
+            message: 'Please use cnTw instead.',
+          },
+        ],
 
         // Validated by typescript
         '@typescript-eslint/no-empty-interface': 'off',
@@ -181,7 +189,7 @@ module.exports = {
         '@typescript-eslint/no-explicit-any': 'warn',
         '@typescript-eslint/no-unnecessary-type-constraint': 'error',
         // TODO make error
-        '@typescript-eslint/array-type': ['warn', { default: 'array', readonly: 'array' }],
+        '@typescript-eslint/array-type': ['error', { default: 'array', readonly: 'array' }],
 
         // Stricter rules
         'effector/no-watch': 'error',
@@ -265,7 +273,7 @@ module.exports = {
           // effector store naming convention
           {
             message: 'Use effector naming convention for stores.',
-            selector: 'VariableDeclarator[init.callee.name=/^createStore|combine$/][id.name!=/^\\$.*/]',
+            selector: 'VariableDeclarator[init.callee.name=/^(createStore|combine)$/][id.name!=/^\\$.*/]',
           },
           // effector effect naming convention
           {
