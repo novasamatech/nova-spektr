@@ -37,6 +37,8 @@ export const CompletedReferendums = memo<Props>(
       ? Math.min(referendums.length || 4, 50)
       : Math.max(1, 3 - referendums.length);
 
+    if (!isLoading && referendums.length === 0) return null;
+
     return (
       <Accordion isDefaultOpen>
         <Accordion.Button buttonClass="py-1.5 px-2 mb-2">
