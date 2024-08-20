@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { createEffect, createEvent, createStore, sample } from 'effector';
+import { createEffect, createEvent, createStore, merge as mergeEvents, sample } from 'effector';
 import { readonly } from 'patronum';
 
 import { type Chain, type ChainId, type Referendum, type ReferendumId } from '@/shared/core';
@@ -119,6 +119,6 @@ export const referendumModel = {
     unsubscribeReferendums,
     requestReferendums,
     requestReferendum,
-    requestDone: requestReferendumsFx.done,
+    referendumsReceived: mergeEvents([requestReferendumsFx.done, received]),
   },
 };
