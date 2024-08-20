@@ -5,7 +5,7 @@ import { readonly } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { type Address } from '@/shared/core';
-import { Step, includesMultiple, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
+import { Step, includesMultiple, toAccountId, validateAddress } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
 import { walletModel } from '@/entities/wallet';
 import {
@@ -89,22 +89,18 @@ const $customError = combine(
     wallet: walletModel.$activeWallet,
     chain: delegationAggregate.$chain,
   },
-  ({ delegate, votes, wallet, chain }): DelegationErrors | undefined => {
+  ({ delegate, votes, wallet, chain }): DelegationErrors | null => {
     if (!wallet || !chain || !delegate || !validateAddress(delegate)) return DelegationErrors.INVALID_ADDRESS;
 
     const isSameAccount = wallet.accounts.some((a) => a.accountId === toAccountId(delegate));
 
     if (isSameAccount) return DelegationErrors.YOUR_ACCOUNT;
 
-    const isAlreadyDelegated = wallet.accounts.some((a) => {
-      const address = toAddress(a.accountId, { prefix: chain.addressPrefix });
-
-      return Object.keys(votes[address]).length > 0;
-    });
+    const isAlreadyDelegated = delegate && votes[delegate] && Object.keys(votes[delegate]).length > 0;
 
     if (isAlreadyDelegated) return DelegationErrors.ALREADY_DELEGATED;
 
-    return;
+    return null;
   },
 );
 
