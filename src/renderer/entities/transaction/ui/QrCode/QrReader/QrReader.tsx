@@ -43,7 +43,7 @@ type Props = {
   wrapperClassName?: string;
   isDynamicDerivations?: boolean;
   onStart?: () => void;
-  onResult: (scanResult: Array<SeedInfo | DdSeedInfo>) => void;
+  onResult: (scanResult: (SeedInfo | DdSeedInfo)[]) => void;
   onError?: (error: ErrorObject) => void;
   onProgress?: (progress: Progress) => void;
   onCameraList?: (cameras: VideoInput[]) => void;
@@ -93,7 +93,7 @@ export const QrReader = ({
     ethereum: CryptoTypeString.ECDSA,
   };
 
-  const makeResultPayload = <T extends ScanResult>(data: T): Array<SeedInfo | DdSeedInfo> => {
+  const makeResultPayload = <T extends ScanResult>(data: T): (SeedInfo | DdSeedInfo)[] => {
     if (Array.isArray(data)) {
       return data;
     }
