@@ -1,37 +1,25 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
-import { type GovernanceApi } from '@/shared/api/governance';
-import { type Address, type Chain, type ChainId, type Referendum, type ReferendumId } from '@/shared/core';
+import { type SubQueryVoting, votingsService } from '@/shared/api/governance';
+import { type Chain, type ChainId, type Referendum, type ReferendumId } from '@/shared/core';
 import { setNestedValue } from '@/shared/lib/utils';
 
-import { governanceModel } from './governanceApi';
-
-const $voteHistory = createStore<Record<ChainId, Record<ReferendumId, Address[]>>>({});
+const $voteHistory = createStore<Record<ChainId, Record<ReferendumId, SubQueryVoting[]>>>({});
 
 const requestVoteHistory = createEvent<{ chain: Chain; referendum: Referendum }>();
 
 type RequestVoteHistoryParams = {
-  service: GovernanceApi;
   chain: Chain;
   referendum: Referendum;
 };
 
-const requestVoteHistoryFx = createEffect(({ chain, referendum, service }: RequestVoteHistoryParams) => {
-  return service.getReferendumVotes(chain, referendum.referendumId, () => {});
+const requestVoteHistoryFx = createEffect(({ chain, referendum }: RequestVoteHistoryParams) => {
+  return votingsService.getVotingsForReferendum(chain, referendum.referendumId);
 });
 
 sample({
   clock: requestVoteHistory,
-  source: {
-    service: governanceModel.$governanceApi,
-  },
-  filter: ({ service }) => !!service,
-  fn: ({ service }, { chain, referendum }) => ({
-    chain,
-    referendum,
-    service: service!.service,
-  }),
   target: requestVoteHistoryFx,
 });
 

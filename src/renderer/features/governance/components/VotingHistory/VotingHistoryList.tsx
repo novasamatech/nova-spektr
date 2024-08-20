@@ -53,7 +53,7 @@ export const VotingHistoryList = memo<Props>(({ items, asset, chain, loading }) 
             {shouldRenderList &&
               deferredItems.map(({ voter, balance, votingPower, conviction, name }) => {
                 return (
-                  <div key={voter} className="flex gap-2">
+                  <div key={`${voter}-${balance.toString()}-${conviction}`} className="flex gap-2">
                     <div className="min-w-0 shrink grow">
                       <SignatoryCard
                         className="min-h-11.5"

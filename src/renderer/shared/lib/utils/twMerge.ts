@@ -1,3 +1,5 @@
+// This is the only one place of import.
+// eslint-disable-next-line no-restricted-imports
 import cn from 'classnames';
 import { extendTailwindMerge } from 'tailwind-merge';
 
