@@ -25,13 +25,17 @@ const $totalDelegations = combine(
 );
 
 const $activeDelegations = votingAggregate.$activeWalletVotes.map((activeVotes) => {
-  const activeBalances: Record<Address, { conviction: Conviction; balance: BN }> = {};
+  const activeBalances: Record<Address, Record<Address, { conviction: Conviction; balance: BN }>> = {};
 
   for (const [address, delegations] of Object.entries(activeVotes)) {
-    const delegation = Object.values(delegations).find(votingService.isDelegating);
+    for (const delegation of Object.values(delegations)) {
+      if (!votingService.isDelegating(delegation)) continue;
 
-    if (delegation) {
-      activeBalances[address] = {
+      if (!activeBalances[delegation.target]) {
+        activeBalances[delegation.target] = {};
+      }
+
+      activeBalances[delegation.target][address] = {
         conviction: delegation.conviction,
         balance: delegation.balance,
       };

@@ -1,19 +1,20 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 
-import { type Account, type Chain } from '@/shared/core';
+import { type DelegateAccount } from '@/shared/api/governance';
+import { type Account } from '@/shared/core';
 import { addUniqueItems, removeItemsFromCollection, toAddress } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { delegationAggregate, tracksAggregate, votingAggregate } from '@/features/governance';
 import { adminTracks, fellowshipTracks, governanceTracks, treasuryTracks } from '../lib/constants';
 
-const formInitiated = createEvent<Chain>();
+const formInitiated = createEvent<DelegateAccount>();
 const formSubmitted = createEvent<{ tracks: number[]; accounts: Account[] }>();
 const trackToggled = createEvent<number>();
 const tracksSelected = createEvent<number[]>();
 const accountsChanged = createEvent<Account[]>();
 
-const $chain = restore(formInitiated, null);
+const $delegate = restore(formInitiated, null);
 
 const $tracks = createStore<number[]>([]).reset(formInitiated);
 const $accounts = createStore<Account[]>([]);
@@ -22,16 +23,28 @@ const $availableTracks = combine(tracksAggregate.$tracks, (tracks) => {
   return Object.keys(tracks);
 });
 
+const $addresses = combine({ accounts: $accounts, chain: delegationAggregate.$chain }, ({ accounts, chain }) => {
+  if (!chain) return [];
+
+  return accounts.map((a) => toAddress(a.accountId, { prefix: chain.addressPrefix }));
+});
+
 const $votedTracks = combine(
   {
     votes: votingAggregate.$activeWalletVotes,
+    addresses: $addresses,
   },
-  ({ votes }) => {
+  ({ votes, addresses }) => {
     const activeTracks = new Set<string>();
 
-    for (const voteList of Object.values(votes)) {
+    for (const [address, voteList] of Object.entries(votes)) {
+      if (!addresses.includes(address)) continue;
+
       for (const [track, vote] of Object.entries(voteList)) {
-        if (votingService.isCasting(vote) && !votingService.isUnlockingDelegation(vote)) {
+        if (
+          (votingService.isCasting(vote) && !votingService.isUnlockingDelegation(vote)) ||
+          votingService.isDelegating(vote)
+        ) {
           activeTracks.add(track);
         }
       }
@@ -46,13 +59,23 @@ const $availableAccounts = combine(
     wallet: walletModel.$activeWallet,
     delegations: delegationAggregate.$activeDelegations,
     chain: delegationAggregate.$chain,
+    delegate: $delegate,
   },
-  ({ wallet, delegations, chain }) => {
-    if (!wallet || !chain) return [];
+  ({ wallet, delegations, chain, delegate }) => {
+    if (!wallet || !chain || !delegate) return [];
 
     return wallet.accounts
       .filter((a) => accountUtils.isNonBaseVaultAccount(a, wallet) && accountUtils.isChainIdMatch(a, chain.chainId))
-      .filter((account) => !delegations[toAddress(account.accountId, { prefix: chain.addressPrefix })]);
+      .filter((account) => {
+        console.log(
+          'xcm',
+          delegations,
+          delegate.accountId,
+          toAddress(account.accountId, { prefix: chain.addressPrefix }),
+        );
+
+        return !delegations[delegate.accountId]?.[toAddress(account.accountId, { prefix: chain.addressPrefix })];
+      });
   },
 );
 
@@ -117,7 +140,7 @@ export const selectTracksModel = {
 
   $accounts,
   $availableAccounts,
-  $chain,
+  $chain: delegationAggregate.$chain,
 
   events: {
     formInitiated,
