@@ -214,6 +214,12 @@ const isSplitVote = (vote: AccountVote): vote is SplitVote => vote.type === 'Spl
 
 const isSplitAbstainVote = (vote: AccountVote): vote is SplitAbstainVote => vote.type === 'SplitAbstain';
 
+// Vote status
+
+const isUnlockingDelegation = (vote: CastingVoting): boolean => {
+  return Object.keys(vote.votes).length === 0;
+};
+
 export const votingService = {
   isCasting,
   isDelegating,
@@ -221,6 +227,8 @@ export const votingService = {
   isSplitVote,
   isSplitAbstainVote,
   isReferendumVoted,
+
+  isUnlockingDelegation,
 
   getConvictionList,
   getAccountVoteConviction,
