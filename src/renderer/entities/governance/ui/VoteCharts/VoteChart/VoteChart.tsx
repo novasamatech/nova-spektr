@@ -55,15 +55,15 @@ export const VoteChart = ({
         {chartNode}
         <div className="flex justify-between">
           <div className="flex flex-col items-start">
-            <FootnoteText>${aye.toFixed(2)}%</FootnoteText>
+            <FootnoteText>{aye.toFixed(2)}%</FootnoteText>
             <FootnoteText className="text-text-secondary">{t('voteChart.aye')}</FootnoteText>
           </div>
           <div className="flex flex-col items-center">
-            <FootnoteText>${pass.toFixed(2)}%</FootnoteText>
+            <FootnoteText>{pass.toFixed(2)}%</FootnoteText>
             <FootnoteText className="text-text-secondary">{t('voteChart.toPass')}</FootnoteText>
           </div>
           <div className="flex flex-col items-end">
-            <FootnoteText>${nay.toFixed(2)}%</FootnoteText>
+            <FootnoteText>{nay.toFixed(2)}%</FootnoteText>
             <FootnoteText className="text-text-secondary">{t('voteChart.nay')}</FootnoteText>
           </div>
         </div>
