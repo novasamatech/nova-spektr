@@ -6,7 +6,7 @@ import { BaseModal, Button, Checkbox, FootnoteText, Icon, MultiSelect, SmallTitl
 import { OperationTitle } from '@/entities/chain';
 import { AccountAddress, accountUtils } from '@/entities/wallet';
 import { votingAssetModel } from '@/features/governance';
-import { getTrackIds, getTreasuryTrackDescription } from '../lib/helpers';
+import { getTrackIds, getTrackPallet, getTreasuryTrackDescription } from '../lib/helpers';
 import { delegateModel } from '../model/delegate-model';
 import { selectTracksModel } from '../model/select-tracks-model';
 
@@ -47,39 +47,35 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
       <div className="flex flex-1 flex-col gap-6 px-5">
         <div className="flex gap-3">
           <Button
-            pallet={getTrackIds(allTracks, votedTracks).every((t) => tracks.includes(t)) ? 'primary' : 'secondary'}
+            pallet={getTrackPallet(allTracks, votedTracks, tracks)}
             variant="chip"
             onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(allTracks, votedTracks))}
           >
             {t('governance.addDelegation.group.selectAll')}
           </Button>
           <Button
-            pallet={getTrackIds(adminTracks, votedTracks).every((t) => tracks.includes(t)) ? 'primary' : 'secondary'}
+            pallet={getTrackPallet(adminTracks, votedTracks, tracks)}
             variant="chip"
             onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(adminTracks, votedTracks))}
           >
             {t('governance.addDelegation.group.admin')}
           </Button>
           <Button
-            pallet={
-              getTrackIds(governanceTracks, votedTracks).every((t) => tracks.includes(t)) ? 'primary' : 'secondary'
-            }
+            pallet={getTrackPallet(governanceTracks, votedTracks, tracks)}
             variant="chip"
             onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(governanceTracks, votedTracks))}
           >
             {t('governance.addDelegation.group.governance')}
           </Button>
           <Button
-            pallet={getTrackIds(treasuryTracks, votedTracks).every((t) => tracks.includes(t)) ? 'primary' : 'secondary'}
+            pallet={getTrackPallet(treasuryTracks, votedTracks, tracks)}
             variant="chip"
             onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(treasuryTracks, votedTracks))}
           >
             {t('governance.addDelegation.group.treasury')}
           </Button>
           <Button
-            pallet={
-              getTrackIds(fellowshipTracks, votedTracks).every((t) => tracks.includes(t)) ? 'primary' : 'secondary'
-            }
+            pallet={getTrackPallet(fellowshipTracks, votedTracks, tracks)}
             variant="chip"
             onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(fellowshipTracks, votedTracks))}
           >

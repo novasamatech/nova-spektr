@@ -17,3 +17,13 @@ export const getTreasuryTrackDescription = (asset: Asset | null, description: st
 export const getTrackIds = (tracks: Track[], votedTracks: string[]): number[] => {
   return tracks.filter((t) => !votedTracks.includes(t.id)).map((track) => Number(track.id));
 };
+
+export const getTrackPallet = (
+  trackGroup: Track[],
+  votedTracks: string[],
+  tracksIds: number[],
+): 'primary' | 'secondary' => {
+  const tracksGroupId = getTrackIds(trackGroup, votedTracks);
+
+  return tracksGroupId.length && tracksGroupId.every((t) => tracksIds.includes(t)) ? 'primary' : 'secondary';
+};

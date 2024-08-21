@@ -6,7 +6,7 @@ import { Trans } from 'react-i18next';
 import { useI18n } from '@app/providers';
 import { formatAmount } from '@shared/lib/utils';
 import { Button, CaptionText, DetailRow, FootnoteText, HeadlineText, Icon, LargeTitleText, Tooltip } from '@shared/ui';
-import { LockPeriodDiff, ValueIndicator, votingService } from '@/entities/governance';
+import { BalanceDiff, LockPeriodDiff, LockValueDiff, votingService } from '@/entities/governance';
 import { AssetBalance } from '@entities/asset';
 import { SignButton } from '@entities/operations';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
@@ -224,19 +224,15 @@ export const Confirmation = ({
         <hr className="w-full border-filter-border pr-2" />
 
         <DetailRow label={t('governance.operations.transferable')} wrapperClassName="items-start">
-          <ValueIndicator
+          <BalanceDiff
             from={confirmStore.transferable}
-            to={new BN(confirmStore.transferable).sub(new BN(amountValue)).toString()}
+            to={new BN(confirmStore.transferable).sub(new BN(amountValue))}
             asset={confirmStore.asset}
           />
         </DetailRow>
 
         <DetailRow label={t('governance.locks.governanceLock')} wrapperClassName="items-start">
-          <ValueIndicator
-            from={totalLock.toString()}
-            to={new BN(totalLock).add(new BN(amountValue)).toString()}
-            asset={confirmStore.asset}
-          />
+          <LockValueDiff from={totalLock} to={amountValue} asset={confirmStore.asset} />
         </DetailRow>
 
         <DetailRow label={t('governance.locks.undelegatePeriod')} wrapperClassName="items-start">

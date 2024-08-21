@@ -11,7 +11,7 @@ export { Voted } from './ui/Voted/Voted';
 export { TrackInfo } from './ui/TrackInfo';
 export { VoteChart } from './ui/VoteCharts';
 export { ReferendumTimer } from './ui/ReferendumTimer/ReferendumTimer';
-export { ValueIndicator } from './ui/ValueIndicator';
+export { LockValueDiff } from './ui/LockValueDiff';
 export { LockPeriodDiff } from './ui/LockPeriodDiff';
 export { BalanceDiff } from './ui/BalanceDiff';
 
