@@ -1,12 +1,13 @@
 import { useI18n } from '@app/providers';
 import { type Asset, type Chain, type OngoingReferendum, type Wallet } from '@shared/core';
-import { formatBalance } from '@shared/lib/utils';
-import { Button, FootnoteText, Icon } from '@shared/ui';
+import { Button, FootnoteText } from '@shared/ui';
 import { walletUtils } from '@/entities/wallet';
 import { VoteChart, referendumService, votingService } from '@entities/governance';
 import { EmptyAccountMessage } from '@/features/emptyList';
 import { type AggregatedReferendum } from '../../types/structs';
 import { VotingStatusBadge } from '../VotingStatusBadge';
+
+import { Threshold } from './Threshold';
 
 export type VoteRequestParams = { referendum: OngoingReferendum; chain: Chain; asset: Asset };
 
@@ -40,26 +41,11 @@ export const VotingStatus = ({ referendum, asset, chain, canVote, wallet, hasAcc
       ? votingService.getVotedCount(referendum.tally, supportThreshold.value)
       : null;
 
-  const votedBalance = votedCount ? formatBalance(votedCount.voted, asset.precision, { K: true }) : null;
-  const supportThresholdBalance = votedCount ? formatBalance(votedCount.threshold, asset.precision, { K: true }) : null;
-
   return (
     <div className="flex flex-col items-start gap-6">
       <VotingStatusBadge passing={isPassing} referendum={referendum} />
       {votedFractions && <VoteChart bgColor="icon-button" descriptionPosition="bottom" {...votedFractions} />}
-      {votedBalance && supportThresholdBalance && !supportThreshold?.value.isNeg() && (
-        <div className="flex w-full flex-wrap items-center gap-1.5">
-          <Icon name="checkmarkOutline" size={18} className="text-icon-positive" />
-          <FootnoteText className="text-text-secondary">{t('governance.referendum.threshold')}</FootnoteText>
-          <FootnoteText className="grow text-end">
-            {t('governance.referendum.votedTokens', {
-              voted: votedBalance.value + votedBalance.suffix,
-              total: supportThresholdBalance.value + supportThresholdBalance.suffix,
-              asset: asset.symbol,
-            })}
-          </FootnoteText>
-        </div>
-      )}
+      {votedCount && <Threshold voited={votedCount.voted} threshold={votedCount.threshold} asset={asset} />}
 
       {!walletUtils.isWatchOnly(wallet) &&
         referendumService.isOngoing(referendum) &&
