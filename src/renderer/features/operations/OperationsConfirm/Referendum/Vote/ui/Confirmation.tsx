@@ -6,7 +6,7 @@ import { useI18n } from '@/app/providers';
 import { formatAsset } from '@/shared/lib/utils';
 import { Button, DetailRow, HeadlineText, Icon } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
-import { BalanceDiff, LockPeriodDiff, voteTransactionService, votingService } from '@/entities/governance';
+import { LockPeriodDiff, LockValueDiff, voteTransactionService, votingService } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
 import { Fee } from '@/entities/transaction';
 import { lockPeriodsModel, locksModel, locksPeriodsAggregate } from '@/features/governance';
@@ -79,7 +79,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         <hr className="w-full border-filter-border pr-2" />
         <DetailRow label="Vote">{t(`governance.referendum.${decision}`)}</DetailRow>
         <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.governanceLock')}>
-          <BalanceDiff from={totalLock} to={totalLock.add(amount)} asset={asset} />
+          <LockValueDiff from={totalLock} to={amount} asset={asset} />
         </DetailRow>
         <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.lockingPeriod')}>
           <LockPeriodDiff from={initialConviction} to={conviction} lockPeriods={lockPeriods} />

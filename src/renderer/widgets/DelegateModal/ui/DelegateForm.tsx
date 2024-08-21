@@ -18,7 +18,7 @@ import {
   Tooltip,
 } from '@shared/ui';
 import { OperationTitle } from '@/entities/chain';
-import { BalanceDiff, LockPeriodDiff } from '@/entities/governance';
+import { BalanceDiff, LockPeriodDiff, LockValueDiff } from '@/entities/governance';
 import { AssetBalance } from '@entities/asset';
 import { SignatorySelector } from '@entities/operations';
 import { priceProviderModel } from '@entities/price';
@@ -260,11 +260,7 @@ const FeeSection = () => {
           </DetailRow>
 
           <DetailRow label={t('governance.locks.governanceLock')} wrapperClassName="items-start">
-            <BalanceDiff
-              asset={network.asset}
-              from={totalLock.toString()}
-              to={new BN(totalLock).add(amountValue).toString()}
-            />
+            <LockValueDiff asset={network.asset} from={totalLock} to={amountValue} />
           </DetailRow>
 
           <DetailRow label={t('governance.locks.undelegatePeriod')} wrapperClassName="items-start">
