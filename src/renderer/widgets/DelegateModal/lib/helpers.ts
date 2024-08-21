@@ -18,7 +18,7 @@ export const getTrackIds = (tracks: Track[], votedTracks: string[]): number[] =>
   return tracks.filter((t) => !votedTracks.includes(t.id)).map((track) => Number(track.id));
 };
 
-export const getTrackPallet = (
+export const getGroupPallet = (
   trackGroup: Track[],
   votedTracks: string[],
   tracksIds: number[],
