@@ -2,7 +2,7 @@ import { type BN } from '@polkadot/util';
 
 import { useI18n } from '@app/providers';
 import { type Asset, type Conviction } from '@shared/core';
-import { formatBalance, toNumberPrecision } from '@shared/lib/utils';
+import { formatBalance, toNumberWithPrecision } from '@shared/lib/utils';
 import { FootnoteText, Slider, TitleText } from '@shared/ui';
 import { votingService } from '@entities/governance';
 
@@ -56,7 +56,7 @@ export const ConvictionSelect = ({ value, asset, amount, onChange }: Props) => {
         <TitleText className="text-text-tertiary">
           {t('governance.referendum.votes', {
             votes: formatBalance(votingPower, asset.precision).formatted,
-            count: toNumberPrecision(votingPower, asset.precision),
+            count: toNumberWithPrecision(votingPower, asset.precision),
           })}
         </TitleText>
       </div>

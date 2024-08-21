@@ -2,7 +2,7 @@ import { type BN } from '@polkadot/util';
 
 import { useI18n } from '@app/providers';
 import { type Asset } from '@shared/core';
-import { formatBalance, toNumberPrecision } from '@shared/lib/utils';
+import { formatBalance, toNumberWithPrecision } from '@shared/lib/utils';
 import { FootnoteText, Icon, IconButton } from '@shared/ui';
 
 type Props = {
@@ -22,7 +22,7 @@ export const VotingBalance = ({ votes, asset, onInfoClick }: Props) => {
         <FootnoteText className="text-text-primary">
           {t('governance.referendum.votes', {
             votes: formatBalance(votes, asset.precision).formatted,
-            count: toNumberPrecision(votes, asset.precision),
+            count: toNumberWithPrecision(votes, asset.precision),
           })}
         </FootnoteText>
       </div>

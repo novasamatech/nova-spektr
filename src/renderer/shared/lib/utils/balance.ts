@@ -130,7 +130,7 @@ export const toPrecision = (balance: string | BN, precision: number): BN => {
   return balance ? new BN(formatAmount(balance.toString(), precision)) : BN_ZERO;
 };
 
-export const toNumberPrecision = (value: number | BN, precision: number): number => {
+export const toNumberWithPrecision = (value: number | BN, precision: number): number => {
   if (BN.isBN(value)) {
     const fixedValue = value.div(BN_TEN.pow(new BN(precision)));
 

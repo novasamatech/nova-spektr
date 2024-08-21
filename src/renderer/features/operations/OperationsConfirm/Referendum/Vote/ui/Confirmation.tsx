@@ -3,7 +3,7 @@ import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@/app/providers';
-import { formatAsset, formatBalance, toNumberPrecision } from '@/shared/lib/utils';
+import { formatAsset, formatBalance, toNumberWithPrecision } from '@/shared/lib/utils';
 import { Button, DetailRow, HeadlineText, Icon } from '@/shared/ui';
 import { LockPeriodDiff, LockValueDiff, voteTransactionService, votingService } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
@@ -67,7 +67,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           <span className="font-manrope text-[32px] font-bold leading-[36px] text-text-primary">
             {t('governance.referendum.votes', {
               votes: formatBalance(votingPower, asset.precision).formatted,
-              count: toNumberPrecision(votingPower, asset.precision),
+              count: toNumberWithPrecision(votingPower, asset.precision),
             })}
           </span>
           <HeadlineText className="text-text-tertiary">

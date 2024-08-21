@@ -1,6 +1,6 @@
 import { useI18n } from '@app/providers';
 import { type Asset } from '@shared/core';
-import { formatBalance, toNumberPrecision } from '@shared/lib/utils';
+import { formatBalance, toNumberWithPrecision } from '@shared/lib/utils';
 import { FootnoteText } from '@shared/ui';
 import { referendumService } from '@entities/governance';
 import { type AggregatedReferendum } from '../../types/structs';
@@ -27,7 +27,7 @@ export const VotingSummary = ({ referendum, asset }: Props) => {
         <FootnoteText className="grow text-end">
           {t('governance.referendum.votes', {
             votes: formatBalance(ayes, asset.precision).formatted,
-            count: toNumberPrecision(ayes, asset.precision),
+            count: toNumberWithPrecision(ayes, asset.precision),
           })}
         </FootnoteText>
       </div>
@@ -37,7 +37,7 @@ export const VotingSummary = ({ referendum, asset }: Props) => {
         <FootnoteText className="grow text-end">
           {t('governance.referendum.votes', {
             votes: formatBalance(nays, asset.precision).formatted,
-            count: toNumberPrecision(nays, asset.precision),
+            count: toNumberWithPrecision(nays, asset.precision),
           })}
         </FootnoteText>
       </div>
@@ -47,7 +47,7 @@ export const VotingSummary = ({ referendum, asset }: Props) => {
         <FootnoteText className="grow text-end">
           {t('governance.referendum.votes', {
             votes: formatBalance(support, asset.precision).formatted,
-            count: toNumberPrecision(support, asset.precision),
+            count: toNumberWithPrecision(support, asset.precision),
           })}
         </FootnoteText>
       </div>
