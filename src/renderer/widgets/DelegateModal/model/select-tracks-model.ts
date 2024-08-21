@@ -31,7 +31,7 @@ const $votedTracks = combine(
 
     for (const voteList of Object.values(votes)) {
       for (const [track, vote] of Object.entries(voteList)) {
-        if (votingService.isCasting(vote)) {
+        if (votingService.isCasting(vote) && !votingService.isUnlockingDelegation(vote)) {
           activeTracks.add(track);
         }
       }
