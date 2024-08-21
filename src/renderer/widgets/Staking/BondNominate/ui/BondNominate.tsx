@@ -58,14 +58,7 @@ export const BondNominate = () => {
     <BaseModal
       closeButton
       contentClass=""
-      panelStyle={
-        // Change panel class doesn't work
-        {
-          ...(bondUtils.isValidatorsStep(step) && {
-            width: '784px',
-          }),
-        }
-      }
+      panelClass="w-fit"
       isOpen={isModalOpen}
       title={
         <OperationTitle

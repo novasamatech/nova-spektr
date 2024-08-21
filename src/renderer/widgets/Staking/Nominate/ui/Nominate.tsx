@@ -57,15 +57,7 @@ export const Nominate = () => {
     <BaseModal
       closeButton
       contentClass=""
-      panelClass="w-max"
-      panelStyle={
-        // Change panel class doesn't work
-        {
-          ...(nominateUtils.isValidatorsStep(step) && {
-            width: '784px',
-          }),
-        }
-      }
+      panelClass="w-fit"
       isOpen={isModalOpen}
       title={<OperationTitle title={t('staking.validators.title')} chainId={walletData.chain.chainId} />}
       onClose={closeModal}
