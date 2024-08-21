@@ -45,6 +45,7 @@ export const createTransactionConfirmStore = <Input extends ConfirmInfo>({ $wall
       const { addressPrefix } = chain;
 
       const initiatorWallet = walletUtils.getWalletFilteredAccounts(wallets, {
+        walletFn: (wallet) => !walletUtils.isProxied(wallet),
         accountFn: (account) => coreTx.address === toAddress(account.accountId, { prefix: addressPrefix }),
       });
 
@@ -53,6 +54,7 @@ export const createTransactionConfirmStore = <Input extends ConfirmInfo>({ $wall
       }
 
       const signerWallet = walletUtils.getWalletFilteredAccounts(wallets, {
+        walletFn: (wallet) => !walletUtils.isProxied(wallet),
         accountFn: (account) => wrappedTx?.address === toAddress(account.accountId, { prefix: addressPrefix }),
       });
 
