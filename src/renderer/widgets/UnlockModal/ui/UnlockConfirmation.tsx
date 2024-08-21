@@ -6,7 +6,7 @@ import { useI18n } from '@app/providers';
 import { useToggle } from '@/shared/lib/hooks';
 import { cnTw } from '@shared/lib/utils';
 import { Button, CaptionText, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
-import { ValueIndicator } from '@/entities/governance';
+import { BalanceDiff } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
 import { AccountsModal } from '@/entities/staking';
 import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, accountUtils } from '@/entities/wallet';
@@ -170,14 +170,10 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
           <hr className="w-full border-filter-border pr-2" />
 
           <DetailRow label={t('governance.operations.transferable')} wrapperClassName="items-start">
-            <ValueIndicator
-              from={transferableAmount.toString()}
-              to={transferableAmount.add(new BN(amount)).toString()}
-              asset={asset}
-            />
+            <BalanceDiff from={transferableAmount} to={transferableAmount.add(new BN(amount))} asset={asset} />
           </DetailRow>
           <DetailRow label={t('governance.locks.governanceLock')} wrapperClassName="items-start">
-            <ValueIndicator from={totalLock.toString()} to={totalLock.sub(new BN(amount)).toString()} asset={asset} />
+            <BalanceDiff from={totalLock} to={totalLock.sub(new BN(amount))} asset={asset} />
           </DetailRow>
 
           {/* TODO: add undelegate period */}
