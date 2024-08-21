@@ -54,8 +54,9 @@ const transactionForm = createTransactionForm<Form>({
         conviction: form.fields.conviction.$value,
         account: form.fields.account.$value,
         amount: form.fields.amount.$value,
+        decision: form.fields.decision.$value,
       },
-      ({ chain, referendum, account, amount, conviction }) => {
+      ({ chain, referendum, account, amount, conviction, decision }) => {
         if (!referendum || !chain || !account) {
           return null;
         }
@@ -65,7 +66,7 @@ const transactionForm = createTransactionForm<Form>({
           accountId: account.accountId,
           trackId: referendum.track,
           referendumId: referendum.referendumId,
-          vote: voteTransactionService.createTransactionVote('aye', amount, conviction),
+          vote: voteTransactionService.createTransactionVote(decision ?? 'aye', amount, conviction),
         });
       },
     ),
