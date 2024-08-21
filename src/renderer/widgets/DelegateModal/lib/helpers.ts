@@ -25,5 +25,5 @@ export const getTrackPallet = (
 ): 'primary' | 'secondary' => {
   const tracksGroupId = getTrackIds(trackGroup, votedTracks);
 
-  return tracksGroupId.length && tracksGroupId.every((t) => tracksIds.includes(t)) ? 'primary' : 'secondary';
+  return tracksGroupId.length !== 0 && tracksGroupId.every((t) => tracksIds.includes(t)) ? 'primary' : 'secondary';
 };
