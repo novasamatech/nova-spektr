@@ -1,4 +1,5 @@
 import { BN, BN_ZERO } from '@polkadot/util';
+import isEmpty from 'lodash/isEmpty';
 
 import {
   type AccountVote,
@@ -216,9 +217,7 @@ const isSplitAbstainVote = (vote: AccountVote): vote is SplitAbstainVote => vote
 
 // Vote status
 
-const isUnlockingDelegation = (vote: CastingVoting): boolean => {
-  return Object.keys(vote.votes).length === 0;
-};
+const isUnlockingDelegation = (vote: CastingVoting): boolean => isEmpty(vote.votes);
 
 export const votingService = {
   isCasting,
