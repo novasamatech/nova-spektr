@@ -57,7 +57,7 @@ export const Nominate = () => {
     <BaseModal
       closeButton
       contentClass=""
-      panelClass="w-max" // TODO: fix this
+      panelClass="w-max"
       panelStyle={
         // Change panel class doesn't work
         {
