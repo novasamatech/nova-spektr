@@ -502,7 +502,8 @@
       "timeline": "Timeline",
       "vote": "Vote",
       "votedTokens": "{voted} of {total} {asset}",
-      "votes": "{votes} votes",
+      "votes_one": "{votes} vote",
+      "votes_other": "{votes} votes",
       "votingStatus": "Voting status",
       "votingSummary": "Summary"
     },

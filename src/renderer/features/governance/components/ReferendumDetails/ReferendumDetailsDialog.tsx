@@ -4,7 +4,6 @@ import { useMemo, useState } from 'react';
 import { useI18n } from '@app/providers';
 import { type Chain } from '@shared/core';
 import { useModalClose } from '@shared/lib/hooks';
-import { formatBalance } from '@shared/lib/utils';
 import { BaseModal, Button, Plate } from '@shared/ui';
 import { walletModel } from '@/entities/wallet';
 import { referendumService, votingService } from '@entities/governance';
@@ -49,11 +48,10 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onCl
     fn: (votes, [referendumId]) => votingService.getReferendumAccountVotes(referendumId, votes),
   });
 
-  const formattedVotes = useMemo(() => {
-    const balance = votingService.calculateAccountVotesTotalBalance(Object.values(votes));
-
-    return formatBalance(balance, votingAsset?.precision).formatted;
-  }, [votes, votingAsset]);
+  const totalVotes = useMemo(
+    () => votingService.calculateAccountVotesTotalBalance(Object.values(votes)),
+    [votes, votingAsset],
+  );
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
@@ -73,9 +71,9 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onCl
         </Plate>
 
         <div className="flex shrink-0 grow basis-[350px] flex-row flex-wrap gap-4">
-          {referendum.isVoted && (
+          {referendum.isVoted && votingAsset && (
             <DetailsCard>
-              <VotingBalance votes={formattedVotes} onInfoClick={() => setShowWalletVotes(true)} />
+              <VotingBalance votes={totalVotes} asset={votingAsset} onInfoClick={() => setShowWalletVotes(true)} />
             </DetailsCard>
           )}
 
