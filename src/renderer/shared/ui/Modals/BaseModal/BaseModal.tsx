@@ -47,14 +47,14 @@ export const BaseModal = ({
           <Dialog.Content
             style={panelStyle}
             className={cnTw(
-              'w-modal transform rounded-lg bg-white text-left align-middle shadow-modal transition-all',
+              'w-modal max-w-full transform rounded-lg bg-white text-left align-middle shadow-modal transition-all',
               'duration-300 animate-in fade-in zoom-in-95',
               panelClass,
             )}
           >
             {headerExist && (
               <Dialog.Title asChild>
-                <header className={cnTw('flex items-center justify-between', headerClass)}>
+                <header className={cnTw('flex w-full items-center justify-between contain-inline-size', headerClass)}>
                   {title && typeof title === 'string' && (
                     <HeaderTitleText className="truncate py-1 font-bold text-text-primary">{title}</HeaderTitleText>
                   )}
