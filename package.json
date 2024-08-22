@@ -106,6 +106,7 @@
     "graphql": "^16.8.1",
     "graphql-request": "^6.1.0",
     "i18next": "^21.8.13",
+    "immer": "10.1.1",
     "lodash": "^4.17.21",
     "lottie-react": "^2.4.0",
     "matrix-js-sdk": "30.3.0",
