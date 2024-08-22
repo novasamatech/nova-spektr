@@ -3,6 +3,7 @@ import { combine, createEvent, createStore, sample } from 'effector';
 import { type DelegateAccount } from '@/shared/api/governance';
 import { type Address } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
+import { votingService } from '@/entities/governance';
 import { accountUtils, permissionUtils, walletModel } from '@/entities/wallet';
 import { delegationAggregate, networkSelectorModel, votingAggregate } from '@/features/governance';
 
@@ -13,23 +14,37 @@ const $isModalOpen = createStore(false);
 const $isDelegationsOpen = createStore(false);
 const $delegate = createStore<DelegateAccount | null>(null);
 
-const $activeTracks = votingAggregate.$activeWalletVotes.map((activeVotes) => {
-  const activeTracks: Record<Address, Set<string>> = {};
+const $activeTracks = combine(
+  { votes: votingAggregate.$activeWalletVotes, delegate: $delegate },
+  ({ votes, delegate }) => {
+    const activeTracks: Record<Address, Set<string>> = {};
 
-  for (const [address, delegations] of Object.entries(activeVotes)) {
-    for (const key of Object.keys(delegations)) {
-      if (!activeTracks[address]) {
-        activeTracks[address] = new Set();
+    for (const [address, delegations] of Object.entries(votes)) {
+      for (const [key, vote] of Object.entries(delegations)) {
+        if (votingService.isDelegating(vote) && vote.target === delegate?.accountId) {
+          if (!activeTracks[address]) {
+            activeTracks[address] = new Set();
+          }
+
+          activeTracks[address].add(key);
+        }
       }
-
-      activeTracks[address].add(key);
     }
-  }
 
-  return activeTracks;
-});
+    return activeTracks;
+  },
+);
 
-const $activeAccounts = delegationAggregate.$activeDelegations.map(Object.keys);
+const $activeDelegations = combine(
+  { delegations: delegationAggregate.$activeDelegations, delegate: $delegate },
+  ({ delegations, delegate }) => {
+    if (!delegate) return {};
+
+    return delegations[delegate.accountId];
+  },
+);
+
+const $activeAccounts = $activeDelegations.map(Object.keys);
 
 const $canDelegate = walletModel.$activeWallet.map((wallet) => !!wallet && permissionUtils.canDelegate(wallet));
 
@@ -53,14 +68,9 @@ const $isAddAvailable = combine(
   },
 );
 
-const $isViewAvailable = combine(
-  {
-    activeDelegations: delegationAggregate.$activeDelegations,
-  },
-  ({ activeDelegations }) => {
-    return Object.values(activeDelegations).length > 1;
-  },
-);
+const $isViewAvailable = $activeDelegations.map((delegations) => {
+  return Object.values(delegations).length > 1;
+});
 
 sample({
   clock: flowStarted,
@@ -91,7 +101,7 @@ export const delegateDetailsModel = {
         .flat(),
     ),
   ]),
-  $activeDelegations: delegationAggregate.$activeDelegations,
+  $activeDelegations,
 
   $isAddAvailable,
   $isViewAvailable,
