@@ -76,8 +76,8 @@ export const Confirmation = ({
     ? formatAmount(confirmStore.balance, confirmStore.asset.precision)
     : confirmStore.balance;
 
-  const convictionValue = new BN(votingService.getConvictionMultiplier(confirmStore.conviction));
-  const votesValue = new BN(amountValue).mul(convictionValue).toString();
+  const convictionValue = votingService.getConvictionMultiplier(confirmStore.conviction);
+  const votesValue = votingService.calculateVotingPower(new BN(amountValue), confirmStore.conviction);
 
   return (
     <div className="flex w-modal flex-col items-center gap-y-4 px-5 pb-4 pt-4">
