@@ -5,7 +5,7 @@ import { readonly } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { type Address } from '@/shared/core';
-import { Step, includesMultiple, toAccountId, validateAddress } from '@/shared/lib/utils';
+import { Step, includesMultiple, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
 import { walletModel } from '@/entities/wallet';
 import {
@@ -85,7 +85,7 @@ const $delegateList = combine(
 const $customError = combine(
   {
     delegate: $customDelegate,
-    votes: votingAggregate.$activeWalletVotes,
+    votes: delegationAggregate.$activeDelegations,
     wallet: walletModel.$activeWallet,
     chain: delegationAggregate.$chain,
   },
@@ -96,7 +96,11 @@ const $customError = combine(
 
     if (isSameAccount) return DelegationErrors.YOUR_ACCOUNT;
 
-    const isAlreadyDelegated = delegate && votes[delegate] && Object.keys(votes[delegate]).length > 0;
+    const delegations = delegate && votes[delegate] ? Object.keys(votes[delegate]) : [];
+
+    const isAlreadyDelegated = wallet.accounts.every((a) =>
+      delegations.some((d) => d === toAddress(a.accountId, { prefix: chain.addressPrefix })),
+    );
 
     if (isAlreadyDelegated) return DelegationErrors.ALREADY_DELEGATED;
 
