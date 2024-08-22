@@ -34,6 +34,8 @@ export const createTransactionConfirmStore = <Input extends ConfirmInfo>({ $wall
   const fillConfirm = createEvent<Input[]>();
   const addConfirms = createEvent<Input>();
   const replaceConfirm = createEvent<Input>();
+  const resetConfirm = createEvent();
+
   const $store = createStore<Input[]>([]);
 
   const $confirmMap = combine($store, $wallets, (store, wallets) => {
@@ -98,10 +100,16 @@ export const createTransactionConfirmStore = <Input extends ConfirmInfo>({ $wall
     target: $store,
   });
 
+  sample({
+    clock: resetConfirm,
+    target: $store.reinit,
+  });
+
   return {
     $confirmMap,
     fillConfirm,
     addConfirms,
     replaceConfirm,
+    resetConfirm,
   };
 };
