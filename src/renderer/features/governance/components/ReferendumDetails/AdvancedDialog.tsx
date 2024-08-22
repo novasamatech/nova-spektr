@@ -1,7 +1,7 @@
 import { useI18n } from '@app/providers';
 import { type Asset, type OngoingReferendum } from '@shared/core';
 import { useModalClose } from '@shared/lib/hooks';
-import { copyToClipboard, formatBalance } from '@shared/lib/utils';
+import { copyToClipboard, formatAsset } from '@shared/lib/utils';
 import { BaseModal, DetailRow, IconButton, Separator, Truncate } from '@shared/ui';
 import { AddressWithName } from '@entities/wallet';
 import { type AggregatedReferendum } from '../../types/structs';
@@ -16,21 +16,13 @@ export const AdvancedDialog = ({ asset, referendum, onClose }: Props) => {
   const { t } = useI18n();
   const [isOpen, closeModal] = useModalClose(true, onClose);
 
-  const { submissionDeposit, approvalThreshold, supportThreshold, tally, proposal } = referendum;
+  const { decisionDeposit, submissionDeposit, approvalThreshold, supportThreshold, tally, proposal } = referendum;
   const approvalCurve = approvalThreshold?.curve?.type;
   const supportCurve = supportThreshold?.curve?.type;
 
-  const electrorateBalance = formatBalance(tally.ayes.add(tally.nays).add(tally.support), asset.precision);
-  const electrorate = `${electrorateBalance.formatted} ${asset.symbol}`;
-
-  const turnoutBalance = supportThreshold
-    ? formatBalance(supportThreshold.value.sub(tally.support), asset.precision)
-    : null;
-  const turnout = `${turnoutBalance?.formatted ?? 0} ${asset.symbol}`;
-
-  const deposit = submissionDeposit
-    ? `${formatBalance(submissionDeposit.amount, asset.precision).formatted} ${asset.symbol}`
-    : null;
+  const electrorate = formatAsset(tally.ayes.add(tally.nays).add(tally.support), asset);
+  const turnout = supportThreshold ? formatAsset(supportThreshold.value.sub(tally.support), asset) : null;
+  const deposit = decisionDeposit ? formatAsset(decisionDeposit.amount, asset) : null;
 
   return (
     <BaseModal
