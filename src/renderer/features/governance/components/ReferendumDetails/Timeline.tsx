@@ -1,61 +1,44 @@
 import { useStoreMap, useUnit } from 'effector-react';
 
-import { useI18n } from '@app/providers';
-import { type ReferendumTimelineRecordStatus } from '@shared/api/governance';
 import { type ReferendumId } from '@shared/core';
-import { FootnoteText, OperationStatus, Shimmering } from '@shared/ui';
+import { Shimmering } from '@shared/ui';
 import { detailsAggregate } from '../../aggregates/details';
+
+import { TimelineItem } from './TimelineItem';
 
 type Props = {
   referendumId: ReferendumId;
 };
 
-const getStatusPalette = (status: ReferendumTimelineRecordStatus) => {
-  switch (status) {
-    case 'Cancelled':
-    case 'Rejected':
-    case 'Killed':
-      return 'error' as const;
-
-    case 'Confirmed':
-    case 'Executed':
-    case 'Awarded':
-    case 'Approved':
-      return 'success' as const;
-
-    default:
-      return 'default' as const;
-  }
-};
-
 export const Timeline = ({ referendumId }: Props) => {
-  const { t, formatDate } = useI18n();
-
   const isLoading = useUnit(detailsAggregate.$isTimelinesLoading);
   const timeline = useStoreMap({
     store: detailsAggregate.$timelines,
     keys: [referendumId],
-    fn: (timelines, [referendumId]) => timelines[referendumId] ?? [],
+    fn: (timelines, [referendumId]) => timelines[referendumId] ?? null,
   });
+
+  const shouldRenderLoadingState = isLoading && (!timeline || timeline.onChain.length === 0);
+  const shouldOnChainData = timeline && timeline.onChain.length > 0 && timeline.offChain.length === 0;
+  const shouldOffChainData = !isLoading && timeline && timeline.offChain.length > 0;
 
   return (
     <div className="flex flex-col gap-3.5">
-      {isLoading && (
+      {shouldRenderLoadingState && (
         <div className="flex items-center justify-between">
           <Shimmering height={18} width={120} />
           <Shimmering height={18} width={80} />
         </div>
       )}
 
-      {!isLoading &&
-        timeline.map((status) => (
-          <div key={`${status.status}-${status.date.toLocaleString()}`} className="flex items-center justify-between">
-            <FootnoteText>{formatDate(status.date, 'd MMM’yy, hh:mm')}</FootnoteText>
-            <OperationStatus pallet={getStatusPalette(status.status)}>
-              {/* eslint-disable-next-line i18next/no-literal-string */}
-              {t(`governance.timeline.status.${status.status}`)}
-            </OperationStatus>
-          </div>
+      {shouldOnChainData &&
+        timeline.onChain.map((status) => (
+          <TimelineItem key={`${status.status}-${status.date.toLocaleString()}`} item={status} />
+        ))}
+
+      {shouldOffChainData &&
+        timeline.offChain.map((status) => (
+          <TimelineItem key={`${status.status}-${status.date.toLocaleString()}`} item={status} />
         ))}
     </div>
   );

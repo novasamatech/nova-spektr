@@ -1,5 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { produce } from 'immer';
 import { readonly } from 'patronum';
 
 import {
@@ -15,7 +16,7 @@ import {
   type ReferendumId,
   ReferendumType,
 } from '@shared/core';
-import { getCreatedDateFromApi, nonNullable, setNestedValue } from '@shared/lib/utils';
+import { getCreatedDateFromApi, nonNullable } from '@shared/lib/utils';
 import { governanceModel, referendumService } from '@entities/governance';
 
 import { networkSelectorModel } from './networkSelector';
@@ -28,7 +29,9 @@ const referendumTimelineStatus: Record<CompletedReferendum['type'], ReferendumTi
   [ReferendumType.TimedOut]: 'TimedOut',
 };
 
-const $timelines = createStore<Record<ChainId, Record<ReferendumId, ReferendumTimelineRecord[]>>>({});
+const $timelines = createStore<
+  Record<ChainId, Record<ReferendumId, { onChain: ReferendumTimelineRecord[]; offChain: ReferendumTimelineRecord[] }>>
+>({});
 
 const $currentChainTimelines = combine($timelines, networkSelectorModel.$governanceChain, (timelines, chain) => {
   if (!chain) {
@@ -58,8 +61,7 @@ sample({
     chain: networkSelectorModel.$governanceChain,
     api: governanceModel.$governanceApi,
   },
-  filter: ({ chain, api }, { referendum }) =>
-    nonNullable(chain) && nonNullable(api) && referendumService.isOngoing(referendum),
+  filter: ({ chain, api }) => nonNullable(chain) && nonNullable(api),
   fn: ({ chain, api }, { referendum }) => ({
     service: api!.service,
     chain: chain!,
@@ -68,19 +70,64 @@ sample({
   target: requestOffChainTimelineFx,
 });
 
+sample({
+  clock: requestOffChainTimelineFx.done,
+  source: $timelines,
+  fn: (timelines, { params: { chain, referendum }, result }) => {
+    return produce(timelines, (draft) => {
+      let chainReferendums = draft[chain.chainId];
+      if (!chainReferendums) {
+        chainReferendums = {};
+        draft[chain.chainId] = chainReferendums;
+      }
+
+      let referendumTimelines = chainReferendums[referendum.referendumId];
+      if (!referendumTimelines) {
+        referendumTimelines = { onChain: [], offChain: [] };
+        chainReferendums[referendum.referendumId] = referendumTimelines;
+      }
+
+      referendumTimelines.offChain = result;
+    });
+  },
+  target: $timelines,
+});
+
 // on chain
 
 type RequestOnTimelineParams = {
   api: ApiPromise;
   chain: Chain;
-  referendum: CompletedReferendum;
+  referendum: Referendum;
 };
 
 const requestOnChainTimelineFx = createEffect<RequestOnTimelineParams, ReferendumTimelineRecord[]>(
-  ({ api, referendum }) =>
-    getCreatedDateFromApi(referendum.since, api).then((time) => [
+  ({ api, referendum }) => {
+    if (referendumService.isOngoing(referendum)) {
+      const requests = Promise.all([
+        getCreatedDateFromApi(referendum.submitted, api).then(
+          (time): ReferendumTimelineRecord => ({
+            date: new Date(time),
+            status: 'Submitted',
+          }),
+        ),
+        referendum.deciding
+          ? getCreatedDateFromApi(referendum.deciding.since, api).then(
+              (time): ReferendumTimelineRecord => ({
+                date: new Date(time),
+                status: 'Deciding',
+              }),
+            )
+          : null,
+      ]);
+
+      return requests.then((list) => list.filter(nonNullable));
+    }
+
+    return getCreatedDateFromApi(referendum.since, api).then((time) => [
       { date: new Date(time), status: referendumTimelineStatus[referendum.type] },
-    ]),
+    ]);
+  },
 );
 
 sample({
@@ -90,25 +137,35 @@ sample({
     api: networkSelectorModel.$governanceChainApi,
   },
   filter: ({ api, chain }, { referendum }) =>
-    nonNullable(api) &&
-    nonNullable(chain) &&
-    referendumService.isCompleted(referendum) &&
-    !referendumService.isKilled(referendum),
+    nonNullable(api) && nonNullable(chain) && !referendumService.isKilled(referendum),
   fn: ({ api, chain }, { referendum }) => ({
     api: api!,
     chain: chain!,
-    referendum: referendum as CompletedReferendum,
+    referendum,
   }),
   target: requestOnChainTimelineFx,
 });
 
-// sample result
-
 sample({
-  clock: [requestOnChainTimelineFx.done, requestOffChainTimelineFx.done],
+  clock: requestOnChainTimelineFx.done,
   source: $timelines,
-  fn: (timelines, { params, result }) =>
-    setNestedValue(timelines, params.chain.chainId, params.referendum.referendumId, result),
+  fn: (timelines, { params: { chain, referendum }, result }) => {
+    return produce(timelines, (draft) => {
+      let chainReferendums = draft[chain.chainId];
+      if (!chainReferendums) {
+        chainReferendums = {};
+        draft[chain.chainId] = chainReferendums;
+      }
+
+      let referendumTimelines = chainReferendums[referendum.referendumId];
+      if (!referendumTimelines) {
+        referendumTimelines = { onChain: [], offChain: [] };
+        chainReferendums[referendum.referendumId] = referendumTimelines;
+      }
+
+      referendumTimelines.onChain = result;
+    });
+  },
   target: $timelines,
 });
 
