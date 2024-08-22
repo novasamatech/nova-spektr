@@ -150,8 +150,8 @@ sample({
   fn: (delegate) =>
     ({
       accountId: delegate,
-      delegators: [],
-      delegatorVotes: [],
+      delegators: 0,
+      delegatorVotes: '0',
       delegateVotes: 0,
     }) as DelegateAccount,
   target: delegateModel.events.flowStarted,
