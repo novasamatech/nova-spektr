@@ -47,6 +47,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
       <div className="flex flex-1 flex-col gap-6 px-5">
         <div className="flex gap-3">
           <Button
+            disabled={accounts.length === 0}
             pallet={getGroupPallet(allTracks, votedTracks, tracks)}
             variant="chip"
             onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(allTracks, votedTracks))}
@@ -54,6 +55,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
             {t('governance.addDelegation.group.selectAll')}
           </Button>
           <Button
+            disabled={accounts.length === 0}
             pallet={getGroupPallet(adminTracks, votedTracks, tracks)}
             variant="chip"
             onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(adminTracks, votedTracks))}
@@ -61,6 +63,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
             {t('governance.addDelegation.group.admin')}
           </Button>
           <Button
+            disabled={accounts.length === 0}
             pallet={getGroupPallet(governanceTracks, votedTracks, tracks)}
             variant="chip"
             onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(governanceTracks, votedTracks))}
@@ -68,6 +71,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
             {t('governance.addDelegation.group.governance')}
           </Button>
           <Button
+            disabled={accounts.length === 0}
             pallet={getGroupPallet(treasuryTracks, votedTracks, tracks)}
             variant="chip"
             onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(treasuryTracks, votedTracks))}
@@ -75,6 +79,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
             {t('governance.addDelegation.group.treasury')}
           </Button>
           <Button
+            disabled={accounts.length === 0}
             pallet={getGroupPallet(fellowshipTracks, votedTracks, tracks)}
             variant="chip"
             onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(fellowshipTracks, votedTracks))}
@@ -88,7 +93,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
               <Checkbox
                 key={track.id}
                 checked={tracks.includes(Number(track.id))}
-                disabled={votedTracks.includes(track.id)}
+                disabled={votedTracks.includes(track.id) || accounts.length === 0}
                 onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
               >
                 <div className="flex w-full items-center justify-between">
@@ -105,7 +110,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
               <Checkbox
                 key={track.id}
                 checked={tracks.includes(Number(track.id))}
-                disabled={votedTracks.includes(track.id)}
+                disabled={votedTracks.includes(track.id) || accounts.length === 0}
                 onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
               >
                 <div className="flex w-full items-center justify-between">
@@ -122,7 +127,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
               <Checkbox
                 key={track.id}
                 checked={tracks.includes(Number(track.id))}
-                disabled={votedTracks.includes(track.id)}
+                disabled={votedTracks.includes(track.id) || accounts.length === 0}
                 onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
               >
                 <div className="flex w-full items-center justify-between">
@@ -139,7 +144,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
               <Checkbox
                 key={track.id}
                 checked={tracks.includes(Number(track.id))}
-                disabled={votedTracks.includes(track.id)}
+                disabled={votedTracks.includes(track.id) || accounts.length === 0}
                 onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
               >
                 <div className="flex w-full items-center justify-between">

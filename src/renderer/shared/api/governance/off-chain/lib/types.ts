@@ -73,6 +73,7 @@ export type DelegateDetails = {
 };
 
 export type DelegateStat = {
+  // Address actually
   accountId: Address;
   delegators: any[];
   delegatorVotes: any[];

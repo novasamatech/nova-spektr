@@ -248,15 +248,14 @@ sample({ clock: stepChanged, target: $step });
 
 sample({
   clock: flowStarted,
-  source: $walletData,
-  filter: (walletData) => Boolean(walletData.chain),
-  fn: (walletData) => walletData.chain!,
-  target: selectTracksModel.events.formInitiated,
+  target: $target,
 });
 
 sample({
   clock: flowStarted,
-  target: $target,
+  source: $target,
+  filter: (target) => !!target,
+  target: selectTracksModel.events.formInitiated,
 });
 
 sample({
