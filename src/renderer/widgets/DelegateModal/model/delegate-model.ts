@@ -3,7 +3,7 @@ import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { delay, spread } from 'patronum';
 
-import { type DelegateAccount } from '@/shared/api/governance';
+import { type DelegateAccount, delegationService } from '@/shared/api/governance';
 import {
   type Account,
   type BasketTransaction,
@@ -15,11 +15,12 @@ import {
 } from '@shared/core';
 import { Step, formatAmount, getRelaychainAsset, isStep, nonNullable, transferableAmount } from '@shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
+import { votingService } from '@/entities/governance';
 import { basketModel } from '@entities/basket/model/basket-model';
 import { networkModel } from '@entities/network';
 import { transactionBuilder, transactionService } from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
-import { networkSelectorModel } from '@/features/governance';
+import { delegateRegistryAggregate, networkSelectorModel } from '@/features/governance';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { delegateConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
@@ -388,6 +389,25 @@ sample({
     event: submitModel.events.formInitiated,
     step: stepChanged,
   }),
+});
+
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: { delegate: $target, data: $delegateData, walletData: $walletData, tracks: $tracks },
+  filter: ({ delegate, data, walletData }) => {
+    return !!delegate && !!data && !!walletData.chain;
+  },
+  fn: ({ delegate, tracks, data, walletData }) => {
+    return {
+      delegate: delegate!,
+      votes: delegationService.calculateTotalVotes(
+        votingService.calculateVotingPower(new BN(data!.balance), data!.conviction),
+        tracks,
+        walletData.chain!,
+      ),
+    };
+  },
+  target: delegateRegistryAggregate.events.addDelegation,
 });
 
 sample({
