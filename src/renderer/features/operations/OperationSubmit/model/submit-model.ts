@@ -168,7 +168,7 @@ sample({
 });
 
 sample({
-  clock: formInitiated,
+  clock: submitStarted,
   source: {
     params: $submitStore,
     apis: networkModel.$apis,
