@@ -48,7 +48,7 @@ export const YourDelegations = () => {
           const account = wallet?.accounts.find((a) => toAddress(a.accountId) === address);
           const activeDelegation = activeDelegations[address];
 
-          if (!account || !activeDelegation) return null;
+          if (!account || !activeDelegation || !activeTracks[address]) return null;
 
           return (
             <div key={address} className="flex h-[52px] items-center">
@@ -107,7 +107,7 @@ export const YourDelegations = () => {
                   pointer="up"
                 >
                   <div className="flex gap-1">
-                    <FootnoteText>{activeTracks[address]?.size || 0}</FootnoteText>
+                    <FootnoteText>{activeTracks[address].size || 0}</FootnoteText>
 
                     <Icon className="group-hover:text-icon-hover" name="info" size={16} />
                   </div>

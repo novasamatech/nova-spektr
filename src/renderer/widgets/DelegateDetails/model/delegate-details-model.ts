@@ -89,6 +89,12 @@ sample({
   target: $isDelegationsOpen,
 });
 
+sample({
+  clock: $activeAccounts,
+  filter: ($activeAccounts) => $activeAccounts.length === 0,
+  target: $isDelegationsOpen.reinit,
+});
+
 export const delegateDetailsModel = {
   $isModalOpen,
   $delegate,
