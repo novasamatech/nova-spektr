@@ -3,7 +3,7 @@ import { createGate } from 'effector-react';
 import { spread } from 'patronum';
 
 import { type BasketTransaction, type Conviction, type OngoingReferendum } from '@shared/core';
-import { Step, nonNullable, toAddress } from '@shared/lib/utils';
+import { Step, isStep, nonNullable, toAddress } from '@shared/lib/utils';
 import { basketModel } from '@entities/basket';
 import { referendumModel } from '@entities/governance';
 import { lockPeriodsModel, locksModel, networkSelectorModel, votingAggregate } from '@/features/governance';
@@ -75,6 +75,8 @@ sample({
 
 sample({
   clock: voteConfirmModel.events.submitStarted,
+  source: $step,
+  filter: (step) => isStep(step, Step.SIGN),
   fn: () => Step.SUBMIT,
   target: $step,
 });
@@ -108,7 +110,7 @@ sample({
 
 sample({
   clock: flow.close,
-  target: resetForm,
+  target: [resetForm, voteConfirmModel.events.resetConfirm],
 });
 
 // Data bindings

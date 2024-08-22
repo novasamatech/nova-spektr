@@ -24,9 +24,9 @@ const unlockFormStarted = createEvent();
 const txSaved = createEvent();
 
 const $unlockData = createStore<UnlockFormData | null>(null).reset(flowFinished);
-const $wrappedTxs = createStore<Transaction[] | null>(null);
-const $multisigTxs = createStore<Transaction[] | null>(null);
-const $coreTxs = createStore<Transaction[] | null>(null);
+const $wrappedTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
+const $multisigTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
+const $coreTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
 
 const $step = restore<Step>(stepChanged, Step.NONE);
 

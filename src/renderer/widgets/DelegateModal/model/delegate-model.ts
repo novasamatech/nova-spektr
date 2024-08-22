@@ -45,14 +45,14 @@ const $walletData = combine(
   ({ wallet, chain }) => ({ wallet, chain }),
 );
 
-const $target = createStore<DelegateAccount | null>(null);
-const $tracks = createStore<number[]>([]);
-const $delegateData = createStore<Omit<DelegateData, 'tracks' | 'target' | 'shards'> | null>(null);
-const $accounts = createStore<Account[]>([]);
+const $target = createStore<DelegateAccount | null>(null).reset(flowFinished);
+const $tracks = createStore<number[]>([]).reset(flowFinished);
+const $delegateData = createStore<Omit<DelegateData, 'tracks' | 'target' | 'shards'> | null>(null).reset(flowFinished);
+const $accounts = createStore<Account[]>([]).reset(flowFinished);
 const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
 
-const $txWrappers = createStore<TxWrapper[]>([]);
-const $coreTxs = createStore<Transaction[]>([]);
+const $txWrappers = createStore<TxWrapper[]>([]).reset(flowFinished);
+const $coreTxs = createStore<Transaction[]>([]).reset(flowFinished);
 
 type FeeParams = {
   api: ApiPromise;
@@ -253,7 +253,6 @@ sample({
 
 sample({
   clock: flowStarted,
-  source: $target,
   filter: (target) => !!target,
   target: selectTracksModel.events.formInitiated,
 });

@@ -33,12 +33,12 @@ const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
-const $walletData = restore<WalletData | null>(flowStarted, null);
-const $bondExtraData = createStore<BondExtraData | null>(null);
+const $walletData = restore<WalletData | null>(flowStarted, null).reset(flowFinished);
+const $bondExtraData = createStore<BondExtraData | null>(null).reset(flowFinished);
 const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
 
-const $txWrappers = createStore<TxWrapper[]>([]);
-const $pureTxs = createStore<Transaction[]>([]);
+const $txWrappers = createStore<TxWrapper[]>([]).reset(flowFinished);
+const $pureTxs = createStore<Transaction[]>([]).reset(flowFinished);
 
 type FeeParams = {
   api: ApiPromise;
