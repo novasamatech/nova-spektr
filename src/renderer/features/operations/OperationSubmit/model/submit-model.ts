@@ -168,7 +168,7 @@ sample({
 });
 
 sample({
-  clock: submitStarted,
+  clock: formInitiated,
   source: {
     params: $submitStore,
     apis: networkModel.$apis,
@@ -297,6 +297,7 @@ sample({
 sample({
   clock: $submitStep,
   source: $results,
+  filter: (_, { step }) => step !== SubmitStep.LOADING,
   target: formSubmitted,
 });
 
