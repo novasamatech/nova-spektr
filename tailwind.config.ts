@@ -15,9 +15,11 @@ const tailwindConfig: Config = {
       width: {
         90: '22.5rem',
         modal: '27.5rem',
+        'modal-sm': '23rem',
+        'modal-xl': '59.625rem',
       },
       height: {
-        modal: '576px',
+        modal: '36rem',
       },
       fontFamily: {
         sans: ['Inter', ...defaultTheme.fontFamily.sans],
