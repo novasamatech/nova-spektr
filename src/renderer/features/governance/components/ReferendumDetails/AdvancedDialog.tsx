@@ -20,7 +20,7 @@ export const AdvancedDialog = ({ asset, referendum, onClose }: Props) => {
   const approvalCurve = approvalThreshold?.curve?.type;
   const supportCurve = supportThreshold?.curve?.type;
 
-  const electrorate = formatAsset(tally.ayes.add(tally.nays).add(tally.support), asset);
+  const electorate = formatAsset(tally.ayes.add(tally.nays).add(tally.support), asset);
   const turnout = supportThreshold ? formatAsset(supportThreshold.value.sub(tally.support), asset) : null;
   const deposit = decisionDeposit ? formatAsset(decisionDeposit.amount, asset) : null;
 
@@ -62,7 +62,7 @@ export const AdvancedDialog = ({ asset, referendum, onClose }: Props) => {
 
         <DetailRow label={t('governance.advanced.fields.turnout')}>{turnout}</DetailRow>
 
-        <DetailRow label={t('governance.advanced.fields.electrorate')}>{electrorate}</DetailRow>
+        <DetailRow label={t('governance.advanced.fields.electorate')}>{electorate}</DetailRow>
 
         <DetailRow label={t('governance.advanced.fields.callHash')}>
           <div className="flex w-32 items-center gap-1 text-text-secondary">
