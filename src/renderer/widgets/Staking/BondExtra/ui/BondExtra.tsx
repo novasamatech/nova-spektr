@@ -57,7 +57,6 @@ export const BondExtra = () => {
     <BaseModal
       closeButton
       contentClass=""
-      panelClass="w-max"
       isOpen={isModalOpen}
       title={
         <OperationTitle

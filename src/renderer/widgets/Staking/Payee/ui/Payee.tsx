@@ -56,7 +56,6 @@ export const Payee = () => {
     <BaseModal
       closeButton
       contentClass=""
-      panelClass="w-max"
       isOpen={isModalOpen}
       title={
         <OperationTitle

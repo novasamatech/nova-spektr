@@ -57,7 +57,7 @@ export const Nominate = () => {
     <BaseModal
       closeButton
       contentClass=""
-      panelClass="w-max"
+      panelClass="w-fit"
       isOpen={isModalOpen}
       title={<OperationTitle title={t('staking.validators.title')} chainId={walletData.chain.chainId} />}
       onClose={closeModal}
