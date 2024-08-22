@@ -66,16 +66,9 @@ const $availableAccounts = combine(
 
     return wallet.accounts
       .filter((a) => accountUtils.isNonBaseVaultAccount(a, wallet) && accountUtils.isChainIdMatch(a, chain.chainId))
-      .filter((account) => {
-        console.log(
-          'xcm',
-          delegations,
-          delegate.accountId,
-          toAddress(account.accountId, { prefix: chain.addressPrefix }),
-        );
-
-        return !delegations[delegate.accountId]?.[toAddress(account.accountId, { prefix: chain.addressPrefix })];
-      });
+      .filter(
+        (account) => !delegations[delegate.accountId]?.[toAddress(account.accountId, { prefix: chain.addressPrefix })],
+      );
   },
 );
 
