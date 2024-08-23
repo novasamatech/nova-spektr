@@ -30,7 +30,7 @@ export const transactionBuilder = {
   buildEditDelegation,
   buildUnlock,
   buildVote,
-  buildRetractVote,
+  buildRemoveVote,
 };
 
 type TransferParams = {
@@ -346,7 +346,7 @@ function buildUnlock({ chain, accountId, actions, amount: value }: UnlockParams)
     if (action.type === 'remove_vote') {
       return {
         ...transaction,
-        type: TransactionType.RETRACT_VOTE,
+        type: TransactionType.REMOVE_VOTE,
         args: {
           trackId: action.trackId,
           referendumId: action.referendumId,
@@ -392,20 +392,18 @@ function buildVote({ chain, accountId, referendumId, trackId, vote }: VoteParams
   };
 }
 
-type RetractVoteParams = {
+type RemoveVoteParams = {
   chain: Chain;
   accountId: AccountId;
   referendumId: ReferendumId;
   trackId: TrackId;
-  conviction: number;
-  balance: string;
 };
 
-function buildRetractVote({ chain, accountId, trackId, referendumId }: RetractVoteParams): Transaction {
+function buildRemoveVote({ chain, accountId, trackId, referendumId }: RemoveVoteParams): Transaction {
   return {
     chainId: chain.chainId,
     address: toAddress(accountId, { prefix: chain.addressPrefix }),
-    type: TransactionType.RETRACT_VOTE,
+    type: TransactionType.REMOVE_VOTE,
     args: { class: trackId, index: referendumId },
   };
 }

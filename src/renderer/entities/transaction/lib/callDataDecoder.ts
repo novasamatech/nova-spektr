@@ -380,7 +380,7 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
         vote: decoded.args[1].toHuman(),
       };
     },
-    [TransactionType.RETRACT_VOTE]: (decoded): Record<string, any> => {
+    [TransactionType.REMOVE_VOTE]: (decoded): Record<string, any> => {
       return {
         class: decoded.args[0].toString(),
         index: decoded.args[1].toString(),
@@ -497,7 +497,7 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
     if (GOVERNANCE_SECTION !== section) return;
 
     return {
-      removeVote: TransactionType.RETRACT_VOTE,
+      removeVote: TransactionType.REMOVE_VOTE,
       vote: TransactionType.VOTE,
       unlock: TransactionType.UNLOCK,
       revote: TransactionType.REVOTE,

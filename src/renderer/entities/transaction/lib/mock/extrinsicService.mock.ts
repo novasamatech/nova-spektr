@@ -186,7 +186,7 @@ export const extrinsicTests = [
         },
       } satisfies Serializable<StandardVote>,
     },
-    transactionType: TransactionType.RETRACT_VOTE,
+    transactionType: TransactionType.REMOVE_VOTE,
     callData: '0x14040000000000',
   },
   {
@@ -195,7 +195,7 @@ export const extrinsicTests = [
       class: 1,
       index: '123',
     },
-    transactionType: TransactionType.RETRACT_VOTE,
+    transactionType: TransactionType.REMOVE_VOTE,
     callData: '0x14040000000000',
   },
 ];
