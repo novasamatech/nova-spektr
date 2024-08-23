@@ -13,7 +13,7 @@ export const DelegateTitle = ({ delegate, className }: Props) => {
 
   return (
     <HeadlineText className={cnTw('w-full', className)}>
-      <div className="inline-flex items-center">
+      <span className="inline-flex items-center">
         {delegateTitle}{' '}
         {delegate.address && (
           <span>
@@ -24,7 +24,7 @@ export const DelegateTitle = ({ delegate, className }: Props) => {
             />
           </span>
         )}
-      </div>
+      </span>
     </HeadlineText>
   );
 };
