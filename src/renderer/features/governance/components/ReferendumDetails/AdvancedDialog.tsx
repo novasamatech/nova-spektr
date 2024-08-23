@@ -1,3 +1,5 @@
+import { BN, BN_ZERO } from '@polkadot/util';
+
 import { useI18n } from '@app/providers';
 import { type Asset, type OngoingReferendum } from '@shared/core';
 import { useModalClose } from '@shared/lib/hooks';
@@ -21,8 +23,10 @@ export const AdvancedDialog = ({ asset, referendum, onClose }: Props) => {
   const supportCurve = supportThreshold?.curve?.type;
 
   const electorate = formatAsset(tally.ayes.add(tally.nays).add(tally.support), asset);
-  const turnout = supportThreshold ? formatAsset(supportThreshold.value.sub(tally.support), asset) : null;
   const deposit = decisionDeposit ? formatAsset(decisionDeposit.amount, asset) : null;
+
+  const turnoutValue = supportThreshold ? BN.max(BN_ZERO, supportThreshold.value.sub(tally.support)) : BN_ZERO;
+  const turnout = supportThreshold ? formatAsset(turnoutValue, asset) : null;
 
   return (
     <BaseModal

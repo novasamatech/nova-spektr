@@ -24,7 +24,7 @@ export const Threshold = ({ voited, threshold, asset }: Props) => {
       <FootnoteText className="flex grow justify-end">
         {voited.gt(threshold) ? (
           <span className="flex gap-1">
-            <span>{formatAsset(threshold, asset)}</span>
+            <span>{formatAsset(voited, asset)}</span>
             <Icon name="checkmarkOutline" size={18} className="text-icon-positive" />
           </span>
         ) : (
