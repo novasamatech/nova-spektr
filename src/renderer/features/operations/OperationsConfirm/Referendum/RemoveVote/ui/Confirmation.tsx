@@ -1,4 +1,3 @@
-import { BN } from '@polkadot/util';
 import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
@@ -42,31 +41,32 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     return null;
   }
 
-  const { asset, initialConviction, wrappedTransactions, api } = confirm.meta;
+  const { asset, wrappedTransactions, api, vote } = confirm.meta;
 
-  if (!voteTransactionService.isVoteTransaction(wrappedTransactions.coreTx)) {
+  if (!voteTransactionService.isRemoveVoteTransaction(wrappedTransactions.coreTx)) {
     return null;
   }
 
-  const { vote } = wrappedTransactions.coreTx.args;
+  const amount = votingService.calculateAccountVoteAmount(vote);
+  const conviction = votingService.getAccountVoteConviction(vote);
+  const votingPower = votingService.calculateAccountVotePower(vote);
 
-  const decision = voteTransactionService.isStandardVote(vote) ? (vote.Standard.vote.aye ? 'aye' : 'nay') : 'abstain';
-  const conviction = voteTransactionService.isStandardVote(vote) ? vote.Standard.vote.conviction : 'None';
-  const amount = new BN(
-    voteTransactionService.isStandardVote(vote) ? vote.Standard.balance : vote.SplitAbstain.abstain,
-  );
-
-  const votingPower = votingService.calculateVotingPower(amount, conviction);
+  console.log({
+    vote,
+    amount: amount.toString(),
+    totalLock: totalLock.toString(),
+    lock: totalLock.sub(amount).toString(),
+  });
 
   return (
     <div className="flex flex-col items-center gap-4 px-5 py-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
-        <Icon className="text-icon-default" name="voteMst" size={60} />
+        <Icon className="text-icon-default" name="retractMst" size={60} />
 
         <div className="flex flex-col items-center gap-y-1">
           <span className="font-manrope text-[32px] font-bold leading-[36px] text-text-primary">
             {t('governance.referendum.votes', {
-              votes: formatBalance(votingPower, asset.precision).formatted,
+              votes: formatBalance(votingPower.neg(), asset.precision).formatted,
               count: toNumberWithPrecision(votingPower, asset.precision),
             })}
           </span>
@@ -81,12 +81,11 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
       <ConfirmDetails confirm={confirm}>
         <hr className="w-full border-filter-border pr-2" />
-        <DetailRow label={t('governance.vote.field.decision')}>{t(`governance.referendum.${decision}`)}</DetailRow>
         <DetailRow label={t('governance.vote.field.governanceLock')} wrapperClassName="items-start">
-          <LockValueDiff from={totalLock} to={totalLock.add(amount)} asset={asset} />
+          <LockValueDiff from={totalLock} to={totalLock.sub(amount)} asset={asset} />
         </DetailRow>
-        <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.lockingPeriod')}>
-          <LockPeriodDiff from={initialConviction} to={conviction} lockPeriods={lockPeriods} />
+        <DetailRow label={t('governance.vote.field.lockingPeriod')} wrapperClassName="items-start">
+          <LockPeriodDiff from={conviction} to="None" lockPeriods={lockPeriods} />
         </DetailRow>
         <hr className="w-full border-filter-border pr-2" />
         <DetailRow label={t('governance.vote.field.networkFee')}>

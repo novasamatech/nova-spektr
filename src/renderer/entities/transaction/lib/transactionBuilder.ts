@@ -404,6 +404,6 @@ function buildRemoveVote({ chain, accountId, trackId, referendumId }: RemoveVote
     chainId: chain.chainId,
     address: toAddress(accountId, { prefix: chain.addressPrefix }),
     type: TransactionType.REMOVE_VOTE,
-    args: { class: trackId, index: referendumId },
+    args: { trackId, referendumId },
   };
 }

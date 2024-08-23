@@ -1,20 +1,22 @@
 import { type ApiPromise } from '@polkadot/api';
 import { createEvent } from 'effector';
 
-import { type Asset, type Conviction } from '@/shared/core';
+import { type AccountVote, type Asset, type ReferendumId, type TrackId } from '@/shared/core';
 import { walletModel } from '@/entities/wallet';
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { type ConfirmInfo, createTransactionConfirmStore } from '@/features/operations/OperationsConfirm';
 
-export type VoteConfirm = ConfirmInfo & {
+export type RemoveVoteConfirm = ConfirmInfo & {
   api: ApiPromise;
   asset: Asset;
-  initialConviction: Conviction;
+  referendumId: ReferendumId;
+  trackId: TrackId;
+  vote: AccountVote;
 };
 
 const sign = createEvent();
 
-const confirmStore = createTransactionConfirmStore<VoteConfirm>({
+const confirmStore = createTransactionConfirmStore<RemoveVoteConfirm>({
   $wallets: walletModel.$wallets,
 });
 
@@ -23,9 +25,8 @@ export const confirmModel = {
   events: {
     sign,
     addConfirms: confirmStore.addConfirms,
-    replaceConfirm: confirmStore.replaceWithConfirm,
+    replaceWithConfirm: confirmStore.replaceWithConfirm,
     fillConfirm: confirmStore.fillConfirm,
-    resetConfirm: confirmStore.resetConfirm,
 
     submitStarted: submitModel.events.formInitiated,
     submitFinished: submitModel.output.formSubmitted,

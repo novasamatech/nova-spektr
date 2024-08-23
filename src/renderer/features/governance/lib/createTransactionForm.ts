@@ -10,6 +10,8 @@ import { balanceUtils } from '@entities/balance';
 import { transactionService } from '@entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 
+import { createTxStore } from './createTxStore';
+
 export type BasicFormParams = {
   account: Account | null;
   signatory: Account | null;
@@ -80,7 +82,7 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
 
   // Transactions
 
-  const $coreTransaction = createTransactionStore({
+  const $coreTx = createTransactionStore({
     $activeWallet,
     $wallets,
     $chain,
@@ -90,53 +92,15 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
     form,
   });
 
-  const $txWrappers = combine(
-    {
-      wallet: $activeWallet,
-      wallets: $wallets,
-      chain: $chain,
-      account: form.fields.account.$value,
-      signatory: form.fields.signatory.$value,
-    },
-    ({ wallet, account, wallets, signatory, chain }) => {
-      if (!wallet || !chain || !account) return [];
-
-      const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
-        walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
-        accountFn: (a, w) => {
-          const isBase = accountUtils.isBaseAccount(a);
-          const isPolkadotVault = walletUtils.isPolkadotVault(w);
-
-          return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, chain);
-        },
-      });
-
-      // TODO logic error with signatory - cyclic dep
-      return transactionService.getTxWrappers({
-        wallet,
-        wallets: filteredWallets || [],
-        account,
-        signatories: signatory ? [signatory] : [account],
-      });
-    },
-  );
-
-  const $isMultisig = $txWrappers.map(transactionService.hasMultisig);
-  const $isProxy = $txWrappers.map(transactionService.hasProxy);
-
-  const $wrappedTransactions = combine(
-    { api: $api, chain: $chain, coreTx: $coreTransaction, txWrappers: $txWrappers },
-    ({ api, chain, coreTx, txWrappers }) => {
-      if (!api || !chain || !coreTx) return null;
-
-      return transactionService.getWrappedTransaction({
-        api,
-        addressPrefix: chain.addressPrefix,
-        transaction: coreTx,
-        txWrappers,
-      });
-    },
-  );
+  const { $txWrappers, $wrappedTx, $isProxy, $isMultisig, $fee, $pendingFee } = createTxStore({
+    $api,
+    $activeWallet,
+    $wallets,
+    $chain,
+    $coreTx,
+    $account: form.fields.account.$value,
+    $signatory: form.fields.signatory.$value,
+  });
 
   // Derived
 
@@ -295,9 +259,11 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
     resetForm,
     reinitForm,
     transaction: {
-      $core: $coreTransaction,
-      $wrappers: $txWrappers,
-      $wrappedTransactions,
+      $coreTx,
+      $txWrappers,
+      $wrappedTx,
+      $fee,
+      $pendingFee,
     },
     signatory: {
       $available: $signatories,

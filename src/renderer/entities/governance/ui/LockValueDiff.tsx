@@ -1,4 +1,4 @@
-import { BN, BN_ZERO } from '@polkadot/util';
+import { BN } from '@polkadot/util';
 
 import { type Asset } from '@/shared/core';
 import { AssetBalance } from '@/entities/asset';
@@ -15,7 +15,8 @@ export const LockValueDiff = ({ from, to, asset }: Props) => {
   const fromBN = BN.isBN(from) ? from : new BN(from);
   const toBN = BN.isBN(to) ? to : new BN(to);
 
-  const diff = fromBN.sub(toBN).isNeg() ? fromBN.sub(toBN).abs() : BN_ZERO;
+  const realDiff = fromBN.sub(toBN);
+  const diff = realDiff.isNeg() ? realDiff.abs() : realDiff;
   const reusableTo = diff.isZero() ? fromBN : toBN;
 
   return (

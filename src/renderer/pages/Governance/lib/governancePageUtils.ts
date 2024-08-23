@@ -40,7 +40,7 @@ function isReferendumVoted({ selectedVoteId, referendum }: FilterByVoteParams) {
     return true;
   }
 
-  return selectedVoteId === VoteStatus.VOTED ? referendum.isVoted : !referendum.isVoted;
+  return selectedVoteId === VoteStatus.VOTED ? !!referendum.vote : !referendum.vote;
 }
 
 function isReferendumInTrack(selectedTrackIds: string[], referendum: AggregatedReferendum) {

@@ -9,7 +9,6 @@ import { balanceModel } from '@entities/balance';
 import { voteTransactionService } from '@entities/governance';
 import { type WrappedTransactions, transactionBuilder } from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
-import { createFeeCalculator } from '@features/governance/lib/createFeeCalculator';
 import { type BasicFormParams, createTransactionForm } from '@features/governance/lib/createTransactionForm';
 import { locksModel } from '@features/governance/model/locks';
 import { networkSelectorModel } from '@features/governance/model/networkSelector';
@@ -100,15 +99,6 @@ const transactionForm = createTransactionForm<Form>({
 
 const { form, resetForm, transaction, accounts } = transactionForm;
 
-const {
-  $: $fee,
-  $pending: $feePending,
-  drop: dropFee,
-} = createFeeCalculator({
-  $transaction: transaction.$wrappedTransactions.map((x) => (x ? x.wrappedTx : null)),
-  $api: networkSelectorModel.$governanceChainApi,
-});
-
 sample({
   clock: form.fields.account.onChange,
   source: {
@@ -137,17 +127,12 @@ reset({
   target: [$referendum, $initialConviction],
 });
 
-sample({
-  clock: resetForm,
-  target: dropFee,
-});
-
 // Submit
 
 sample({
   clock: and(
-    not($feePending),
-    not(empty(transaction.$wrappedTransactions)),
+    not(transaction.$pendingFee),
+    not(empty(transaction.$wrappedTx)),
     not(empty(votingAssetModel.$votingAsset)),
     not(empty(networkSelectorModel.$governanceChain)),
   ),
@@ -158,7 +143,7 @@ sample({
   clock: form.formValidated,
   source: {
     form: form.$values,
-    wrappedTransactions: transaction.$wrappedTransactions,
+    wrappedTransactions: transaction.$wrappedTx,
   },
   filter: ({ wrappedTransactions }) => nonNullable(wrappedTransactions),
   fn: ({ form, wrappedTransactions }) => {
@@ -178,7 +163,7 @@ sample({
     asset: votingAssetModel.$votingAsset,
     chain: networkSelectorModel.$governanceChain,
     api: networkSelectorModel.$governanceChainApi,
-    wrappedTransactions: transaction.$wrappedTransactions,
+    wrappedTransactions: transaction.$wrappedTx,
   },
   filter: ({ form, chain, asset, api, wrappedTransactions }) =>
     !!form.account && !!form.decision && !!chain && !!asset && !!api && !!wrappedTransactions,
@@ -198,7 +183,7 @@ sample({
 
 sample({
   clock: form.$values,
-  source: transaction.$wrappedTransactions,
+  source: transaction.$wrappedTx,
   filter: (transactions) => transactions !== null,
   fn: (transactions) => ({
     id: 0,
@@ -210,10 +195,8 @@ sample({
 export const voteFormAggregate = {
   transactionForm,
 
-  $fee,
   $referendum,
   $initialConviction,
-  $isFeeLoading: $feePending,
 
   $availableBalance,
 
