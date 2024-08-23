@@ -1,7 +1,7 @@
 import { useI18n } from '@app/providers';
 import { type AccountVote, type Asset, type Chain, type OngoingReferendum, type Wallet } from '@shared/core';
+import { nonNullable, nullable } from '@shared/lib/utils';
 import { Button, FootnoteText } from '@shared/ui';
-import { walletUtils } from '@/entities/wallet';
 import { VoteChart, referendumService, votingService } from '@entities/governance';
 import { EmptyAccountMessage } from '@/features/emptyList';
 import { type AggregatedReferendum } from '../../types/structs';
@@ -58,7 +58,7 @@ export const VotingStatus = ({
       {votedFractions && <VoteChart bgColor="icon-button" descriptionPosition="bottom" {...votedFractions} />}
       {votedCount && <Threshold voited={votedCount.voted} threshold={votedCount.threshold} asset={asset} />}
 
-      {!walletUtils.isWatchOnly(wallet) && referendumService.isOngoing(referendum) && !!asset && !referendum.vote && (
+      {canVote && nonNullable(asset) && nullable(referendum.vote) && referendumService.isOngoing(referendum) && (
         <div className="flex w-full flex-col gap-4">
           <Button
             className="w-full"
@@ -82,7 +82,7 @@ export const VotingStatus = ({
         </div>
       )}
 
-      {canVote && referendumService.isOngoing(referendum) && !!asset && referendum.vote && (
+      {canVote && nonNullable(asset) && nonNullable(referendum.vote) && referendumService.isOngoing(referendum) && (
         <div className="flex w-full flex-col justify-stretch gap-4">
           {/*<Button className="w-full">{t('governance.referendum.revote')}</Button>*/}
 
