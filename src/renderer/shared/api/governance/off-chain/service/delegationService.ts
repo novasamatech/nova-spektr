@@ -1,6 +1,7 @@
+import { BN } from '@polkadot/util';
 import { GraphQLClient } from 'graphql-request';
 
-import { dictionary } from '@/shared/lib/utils';
+import { dictionary, toPrecision } from '@/shared/lib/utils';
 import { type Address, type Chain, ExternalType, type ReferendumId } from '@shared/core';
 import { type DelegateAccount, type DelegateDetails, type DelegateStat, type DelegationApi } from '../lib/types';
 
@@ -89,9 +90,15 @@ function aggregateDelegateAccounts(accounts: DelegateDetails[], stats: DelegateS
   return Object.values(accountsMap);
 }
 
+function calculateTotalVotes(votingPower: BN, tracks: number[], chain: Chain): BN {
+  return toPrecision(votingPower, chain.assets[0].precision).mul(new BN(tracks.length));
+}
+
 export const delegationService: DelegationApi = {
   getDelegatesFromRegistry,
   getDelegatesFromExternalSource,
   getDelegatedVotesFromExternalSource,
   aggregateDelegateAccounts,
+
+  calculateTotalVotes,
 };

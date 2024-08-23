@@ -1,3 +1,5 @@
+import { type BN } from '@polkadot/util';
+
 import { type Address, type Chain, type Conviction, type ReferendumId } from '@shared/core';
 
 export type ReferendumTimelineRecordStatus =
@@ -87,4 +89,6 @@ export interface DelegationApi {
   getDelegatedVotesFromExternalSource: (chain: Chain, voter: Address[]) => Promise<Record<ReferendumId, Address>>;
   getDelegatesFromExternalSource: (chain: Chain, blockNumber: number) => Promise<DelegateStat[]>;
   aggregateDelegateAccounts: (accounts: DelegateDetails[], stats: DelegateStat[]) => DelegateAccount[];
+
+  calculateTotalVotes: (votingPower: BN, tracks: number[], chain: Chain) => BN;
 }
