@@ -25,8 +25,8 @@ sample({
   clock: txSaved,
   source: {
     account: form.fields.account.$value,
-    transaction: transaction.$wrappedTransactions,
-    txWrappers: transaction.$wrappers,
+    transaction: transaction.$wrappedTx,
+    txWrappers: transaction.$txWrappers,
   },
   filter: ({ account, transaction }) => !!account && !!transaction,
   fn: ({ account, transaction, txWrappers }) => {
@@ -210,10 +210,8 @@ export const voteModalAggregate = {
 
   $lockPeriods: lockPeriodsModel.$lockPeriods,
   $lock: voteFormAggregate.$lockForAccount,
-  $fee: voteFormAggregate.$fee,
   $initialConviction: voteFormAggregate.$initialConviction,
   $availableBalance: voteFormAggregate.$availableBalance,
-  $isFeeLoading: voteFormAggregate.$isFeeLoading,
   $canSubmit: voteFormAggregate.$canSubmit,
 
   $step,

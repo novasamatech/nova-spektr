@@ -1,10 +1,10 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SignerOptions } from '@polkadot/api/types/submittable';
 import { BN, BN_ZERO } from '@polkadot/util';
-import { type Store, combine, createEffect, createEvent, createStore, sample, split } from 'effector';
-import { spread } from 'patronum';
+import { type Store, combine, createEffect, createStore, sample } from 'effector';
 
 import { type Transaction } from '@shared/core';
+import { nonNullable, nullable } from '@shared/lib/utils';
 import { transactionService } from '@entities/transaction';
 
 type Params = {
@@ -20,63 +20,38 @@ export const createFeeCalculator = ({ $transaction, $api }: Params) => {
     signerOptions?: Partial<SignerOptions>;
   };
 
-  const $fee = createStore<BN>(BN_ZERO);
-  const $dropped = createStore(false);
+  const $source = combine({ transaction: $transaction, api: $api }, ({ transaction, api }) => {
+    if (nullable(transaction) || nullable(api)) return null;
 
-  const fetchFee = createEvent<{ api: ApiPromise | null; transaction: Transaction | null }>();
-  const dropFee = createEvent();
+    return { transaction, api };
+  });
+
+  const $fee = createStore(BN_ZERO);
 
   const fetchFeeFx = createEffect(({ api, transaction, signerOptions }: RequestParams) => {
     return transactionService.getTransactionFee(transaction, api, signerOptions).then((x) => new BN(x));
   });
 
-  const $source = combine({ transaction: $transaction, api: $api });
-
-  split({
-    source: $source,
-    match: {
-      request: ({ transaction, api }) => !!transaction && !!api,
-      drop: ({ transaction, api }) => !transaction || !api,
-    },
-    cases: {
-      request: fetchFee,
-      drop: dropFee,
-    },
+  sample({
+    clock: $source,
+    filter: nullable,
+    fn: () => BN_ZERO,
+    target: $fee,
   });
 
   sample({
-    clock: fetchFee,
-    fn: () => false,
-    target: $dropped,
-  });
-
-  sample({
-    clock: fetchFee,
-    source: {
-      pending: fetchFeeFx.pending,
-      // dropped: $dropped,
-    },
-    filter: ({ pending }, { transaction, api }) => !pending && !!transaction && !!api,
-    fn: (_, { transaction, api }) => ({
-      transaction: transaction!,
-      api: api!,
-    }),
+    clock: $source,
+    filter: nonNullable,
     target: fetchFeeFx,
   });
 
   sample({
-    clock: dropFee,
-    fn: () => ({ fee: BN_ZERO, dropped: true }),
-    target: spread({
-      fee: $fee,
-      dropped: $dropped,
-    }),
-  });
-
-  sample({
     clock: fetchFeeFx.doneData,
+    source: $transaction,
+    filter: nonNullable,
+    fn: (_, fee) => fee,
     target: $fee,
   });
 
-  return { $: $fee, $pending: fetchFeeFx.pending, drop: dropFee };
+  return { $: $fee, $pending: fetchFeeFx.pending };
 };

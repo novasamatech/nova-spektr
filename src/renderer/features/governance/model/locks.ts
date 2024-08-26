@@ -1,15 +1,16 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_ZERO } from '@polkadot/util';
-import { combine, createEvent, createStore, sample } from 'effector';
-import { readonly } from 'patronum';
+import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { or, readonly } from 'patronum';
 
 import { type Address, type TrackId } from '@shared/core';
 import { nonNullable } from '@shared/lib/utils';
-import { createSubscriber, governanceSubscribeService } from '@/entities/governance';
+import { createSubscriber, governanceService, governanceSubscribeService } from '@/entities/governance';
 import { accountUtils, walletModel } from '@entities/wallet';
 
 import { networkSelectorModel } from './networkSelector';
 
+const requestLocks = createEvent();
 const subscribeLocks = createEvent();
 
 const $trackLocks = createStore<Record<Address, Record<TrackId, BN>>>({});
@@ -33,16 +34,20 @@ const $walletAddresses = combine(walletModel.$activeWallet, networkSelectorModel
   return accountUtils.getAddressesForWallet(wallet, chain);
 });
 
-type SubscribeParams = {
+type RequestParams = {
   api: ApiPromise;
   addresses: Address[];
 };
+
+const requestLocksFx = createEffect(({ api, addresses }: RequestParams) => {
+  return governanceService.getTrackLocks(api, addresses);
+});
 
 const {
   subscribe,
   received: receiveLocks,
   unsubscribe: unsubscribeLocks,
-} = createSubscriber<SubscribeParams, Record<Address, Record<TrackId, BN>>>(({ api, addresses }, cb) => {
+} = createSubscriber<RequestParams, Record<Address, Record<TrackId, BN>>>(({ api, addresses }, cb) => {
   return governanceSubscribeService.subscribeTrackLocks(api, addresses, (locks) => {
     if (locks) cb(locks);
   });
@@ -65,6 +70,17 @@ sample({
 });
 
 sample({
+  clock: requestLocks,
+  source: {
+    api: networkSelectorModel.$governanceChainApi,
+    addresses: $walletAddresses,
+  },
+  filter: ({ api }) => nonNullable(api),
+  fn: ({ api, addresses }) => ({ api: api!, addresses }),
+  target: requestLocksFx,
+});
+
+sample({
   clock: subscribeLocks,
   fn: () => true,
   target: $isLoading,
@@ -82,11 +98,18 @@ sample({
   target: $trackLocks,
 });
 
+sample({
+  clock: requestLocksFx.done,
+  fn: ({ result }) => result,
+  target: $trackLocks,
+});
+
 export const locksModel = {
-  $isLoading: readonly($isLoading),
+  $isLoading: or($isLoading, requestLocksFx.pending),
   $totalLock: readonly($totalLock),
   $trackLocks: readonly($trackLocks),
   events: {
+    requestLocks,
     subscribeLocks,
     unsubscribeLocks,
   },

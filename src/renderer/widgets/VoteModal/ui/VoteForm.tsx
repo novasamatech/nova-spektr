@@ -38,13 +38,13 @@ export const VoteForm = ({ chain, asset, hasDelegated = false }: Props) => {
   const lock = useUnit(voteModalAggregate.$lock);
 
   const initialConviction = useUnit(voteModalAggregate.$initialConviction);
-  const fee = useUnit(voteModalAggregate.$fee);
+  const fee = useUnit(voteModalAggregate.transaction.$fee);
 
   const availableBalance = useUnit(voteModalAggregate.$availableBalance);
   const isMultisig = useUnit(voteModalAggregate.signatory.$isMultisig);
   const signatories = useUnit(voteModalAggregate.signatory.$available);
   const accounts = useUnit(voteModalAggregate.accounts.$available);
-  const isFeeLoading = useUnit(voteModalAggregate.$isFeeLoading);
+  const isFeeLoading = useUnit(voteModalAggregate.transaction.$pendingFee);
 
   const lockPeriods = useStoreMap({
     store: voteModalAggregate.$lockPeriods,
