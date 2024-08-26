@@ -33,7 +33,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
       closeButton
       headerClass="px-5 py-3"
       panelClass="flex h-[678px] w-[896px] flex-col bg-white"
-      contentClass="flex min-h-0 w-full flex-1 flex-col gap-6 bg-card-background py-4"
+      contentClass="flex min-h-0 w-full flex-1 flex-col gap-6 bg-card-background py-4 rounded-lg"
       isOpen={isOpen}
       title={chain && <OperationTitle title={t('governance.addDelegation.title')} chainId={chain.chainId} />}
       onClose={onClose}
