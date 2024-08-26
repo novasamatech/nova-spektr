@@ -16,3 +16,8 @@ export type VoteTransaction = Transaction<{
   referendum: ReferendumId;
   vote: TransactionVote;
 }>;
+
+export type RemoveVoteTransaction = Transaction<{
+  trackId: TrackId;
+  referendumId: ReferendumId;
+}>;

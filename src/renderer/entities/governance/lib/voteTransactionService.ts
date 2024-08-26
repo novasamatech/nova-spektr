@@ -1,8 +1,9 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 
-import { type Conviction, type Transaction } from '@shared/core';
+import { type Conviction, type Transaction, TransactionType } from '@shared/core';
 import { toSerializable } from '@shared/lib/utils';
 import {
+  type RemoveVoteTransaction,
   type TransactionSplitAbstainVote,
   type TransactionStandardVote,
   type TransactionVote,
@@ -20,7 +21,11 @@ const isSplitAbstainVote = (vote: TransactionVote): vote is TransactionSplitAbst
 };
 
 const isVoteTransaction = (t: Transaction): t is VoteTransaction => {
-  return t.type === 'vote';
+  return t.type === TransactionType.VOTE;
+};
+
+const isRemoveVoteTransaction = (t: Transaction): t is RemoveVoteTransaction => {
+  return t.type === TransactionType.REMOVE_VOTE;
 };
 
 const createTransactionVote = (
@@ -78,6 +83,7 @@ export const voteTransactionService = {
   getVotes,
 
   isVoteTransaction,
+  isRemoveVoteTransaction,
   isStandardVote,
   isSplitAbstainVote,
   createTransactionVote,

@@ -33,7 +33,7 @@ export const createTransactionConfirmStore = <Input extends ConfirmInfo>({ $wall
 
   const fillConfirm = createEvent<Input[]>();
   const addConfirms = createEvent<Input>();
-  const replaceConfirm = createEvent<Input>();
+  const replaceWithConfirm = createEvent<Input>();
   const resetConfirm = createEvent();
 
   const $store = createStore<Input[]>([]);
@@ -61,6 +61,7 @@ export const createTransactionConfirmStore = <Input extends ConfirmInfo>({ $wall
       });
 
       const proxiedWallet = walletUtils.getWalletFilteredAccounts(wallets, {
+        walletFn: walletUtils.isProxied,
         accountFn: (account) => {
           return (
             wrappedTx.type === TransactionType.PROXY &&
@@ -95,7 +96,7 @@ export const createTransactionConfirmStore = <Input extends ConfirmInfo>({ $wall
   });
 
   sample({
-    clock: replaceConfirm,
+    clock: replaceWithConfirm,
     fn: (input) => [input],
     target: $store,
   });
@@ -109,7 +110,7 @@ export const createTransactionConfirmStore = <Input extends ConfirmInfo>({ $wall
     $confirmMap,
     fillConfirm,
     addConfirms,
-    replaceConfirm,
+    replaceWithConfirm,
     resetConfirm,
   };
 };

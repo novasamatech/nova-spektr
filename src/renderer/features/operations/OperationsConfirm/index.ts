@@ -17,5 +17,6 @@ export * from './Withdraw';
 
 export * from './Delegate';
 export * from './Referendum/Vote';
+export * from './Referendum/RemoveVote';
 
 export { type ConfirmInfo } from './lib/createTransactionConfirmStore';

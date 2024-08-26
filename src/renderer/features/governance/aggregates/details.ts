@@ -2,6 +2,8 @@ import { sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type Chain, type Referendum } from '@shared/core';
+import { nonNullable } from '@shared/lib/utils';
+import { referendumModel } from '@entities/governance';
 import { permissionUtils, walletModel } from '@entities/wallet';
 import { descriptionsModel } from '../model/description';
 import { networkSelectorModel } from '../model/networkSelector';
@@ -23,6 +25,18 @@ sample({
     descriptionsModel.events.requestDescription,
     timelineModel.events.requestTimeline,
   ],
+});
+
+sample({
+  clock: flow.open,
+  source: networkSelectorModel.$governanceNetwork,
+  filter: nonNullable,
+  fn: (network, { referendum }) => ({
+    api: network!.api,
+    chain: network!.chain,
+    referendumId: referendum.referendumId,
+  }),
+  target: referendumModel.events.requestReferendum,
 });
 
 export const detailsAggregate = {

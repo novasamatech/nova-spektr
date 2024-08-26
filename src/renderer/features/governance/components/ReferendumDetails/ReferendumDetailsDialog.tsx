@@ -18,17 +18,18 @@ import { ProposalDescription } from './ProposalDescription';
 import { ReferendumAdditional } from './ReferendumAdditional';
 import { Timeline } from './Timeline';
 import { VotingBalance } from './VotingBalance';
-import { type VoteRequestParams, VotingStatus } from './VotingStatus';
+import { type RemoveVoteRequestParams, type VoteRequestParams, VotingStatus } from './VotingStatus';
 import { VotingSummary } from './VotingSummary';
 
 type Props = {
   chain: Chain;
   referendum: AggregatedReferendum;
   onVoteRequest: (params: VoteRequestParams) => unknown;
+  onRemoveVoteRequest: (params: RemoveVoteRequestParams) => unknown;
   onClose: VoidFunction;
 };
 
-export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onClose }: Props) => {
+export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onRemoveVoteRequest, onClose }: Props) => {
   useGate(detailsAggregate.gates.flow, { chain, referendum });
 
   const [showWalletVotes, setShowWalletVotes] = useState(false);
@@ -71,7 +72,7 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onCl
         </Plate>
 
         <div className="flex shrink-0 grow basis-[350px] flex-row flex-wrap gap-4">
-          {referendum.isVoted && votingAsset && (
+          {referendum.vote && votingAsset && (
             <DetailsCard>
               <VotingBalance votes={totalVotes} asset={votingAsset} onInfoClick={() => setShowWalletVotes(true)} />
             </DetailsCard>
@@ -86,6 +87,7 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onCl
               hasAccount={hasAccount}
               wallet={wallet}
               onVoteRequest={onVoteRequest}
+              onRemoveVoteRequest={onRemoveVoteRequest}
             />
           </DetailsCard>
 

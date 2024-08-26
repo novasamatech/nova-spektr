@@ -1,5 +1,5 @@
 import { useGate, useUnit } from 'effector-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { useI18n } from '@app/providers';
 import { type Referendum, type ReferendumId } from '@shared/core';
@@ -20,6 +20,7 @@ import {
 } from '@features/governance';
 import { DelegationModal } from '@/widgets/DelegationModal/components/DelegationModal';
 import { delegationModel } from '@/widgets/DelegationModal/model/delegation-model';
+import { RemoveVoteModal } from '@/widgets/RemoveVoteModal';
 import { UnlockModal, unlockAggregate } from '@/widgets/UnlockModal';
 import { VoteModal } from '@widgets/VoteModal';
 import { governancePageAggregate } from '../aggregates/governancePage';
@@ -33,8 +34,9 @@ export const Governance = () => {
 
   const [selectedReferendumId, setSelectedReferendumId] = useState<ReferendumId | null>(null);
   const [showVoteModal, setShowVoteModal] = useState(false);
+  const [showRemoveVoteModal, setShowRemoveVoteModal] = useState(false);
   const isApiConnected = useUnit(networkSelectorModel.$isApiConnected);
-  const chain = useUnit(networkSelectorModel.$governanceChain);
+  const network = useUnit(networkSelectorModel.$governanceNetwork);
   const asset = useUnit(votingAssetModel.$votingAsset);
 
   const isLoading = useUnit(governancePageAggregate.$isLoading);
@@ -58,6 +60,13 @@ export const Governance = () => {
   const shouldNetworkDisabledError = !isApiConnected && !shouldShowLoadingState && all.length === 0;
   const shouldRenderEmptyState = !shouldShowLoadingState && isApiConnected && all.length === 0;
   const shouldRenderList = shouldShowLoadingState || (!shouldRenderEmptyState && !shouldNetworkDisabledError);
+
+  useEffect(() => {
+    if (!selectedReferendum || referendumService.isCompleted(selectedReferendum)) {
+      setShowVoteModal(false);
+      setShowRemoveVoteModal(false);
+    }
+  }, [selectedReferendum]);
 
   return (
     <div className="flex h-full flex-col">
@@ -102,11 +111,12 @@ export const Governance = () => {
         </section>
       </div>
 
-      {selectedReferendum && chain && (
+      {selectedReferendum && network && (
         <ReferendumDetailsDialog
           referendum={selectedReferendum}
-          chain={chain}
+          chain={network.chain}
           onVoteRequest={() => setShowVoteModal(true)}
+          onRemoveVoteRequest={() => setShowRemoveVoteModal(true)}
           onClose={() => {
             setShowVoteModal(false);
             setSelectedReferendumId(null);
@@ -114,14 +124,30 @@ export const Governance = () => {
         />
       )}
 
-      {selectedReferendum && referendumService.isOngoing(selectedReferendum) && chain && asset && showVoteModal && (
+      {showVoteModal && selectedReferendum && referendumService.isOngoing(selectedReferendum) && network && asset && (
         <VoteModal
           referendum={selectedReferendum}
-          chain={chain}
+          chain={network.chain}
           asset={asset}
           onClose={() => setShowVoteModal(false)}
         />
       )}
+
+      {showRemoveVoteModal &&
+        selectedReferendum &&
+        referendumService.isOngoing(selectedReferendum) &&
+        selectedReferendum.vote &&
+        network &&
+        asset && (
+          <RemoveVoteModal
+            vote={selectedReferendum.vote}
+            referendum={selectedReferendum}
+            chain={network.chain}
+            api={network.api}
+            asset={asset}
+            onClose={() => setShowRemoveVoteModal(false)}
+          />
+        )}
 
       <DelegationModal />
       <UnlockModal />

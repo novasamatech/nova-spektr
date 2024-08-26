@@ -3,6 +3,7 @@ import { type BN } from '@polkadot/util';
 import { type ClaimAction } from '@/shared/api/governance';
 import {
   type Account,
+  type AccountVote,
   type Address,
   type Asset,
   type Chain,
@@ -15,8 +16,8 @@ export type AggregatedReferendum<T extends Referendum = Referendum> = T & {
   title: string | null;
   approvalThreshold: VotingThreshold | null;
   supportThreshold: VotingThreshold | null;
-  isVoted: boolean;
   votedByDelegate?: Address | null;
+  vote: AccountVote | null;
 };
 
 export type DecoupledVote = {

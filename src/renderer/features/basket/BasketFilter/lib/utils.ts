@@ -105,9 +105,9 @@ export const getTransactionOptions = (t: TFunction) => {
       element: t('operations.titles.vote'),
     },
     {
-      id: TransactionType.RETRACT_VOTE,
-      value: TransactionType.RETRACT_VOTE,
-      element: t('operations.titles.retractVote'),
+      id: TransactionType.REMOVE_VOTE,
+      value: TransactionType.REMOVE_VOTE,
+      element: t('operations.titles.removeVote'),
     },
     {
       id: UNKNOWN_TYPE,

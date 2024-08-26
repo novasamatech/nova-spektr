@@ -32,6 +32,7 @@ import {
   payeeConfirmModel,
   removeProxyConfirmModel,
   removePureProxiedConfirmModel,
+  removeVoteConfirmModel,
   restakeConfirmModel,
   transferConfirmModel,
   unstakeConfirmModel,
@@ -342,6 +343,19 @@ sample({
   target: voteConfirmModel.events.fillConfirm,
 });
 
+// Remove vote
+
+sample({
+  clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.REMOVE_VOTE).length > 0;
+  },
+  fn: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.REMOVE_VOTE).map((tx) => tx.params) || [];
+  },
+  target: removeVoteConfirmModel.events.fillConfirm,
+});
+
 // Unlock
 
 sample({
@@ -352,7 +366,7 @@ sample({
   fn: (dataParams) => {
     return (
       dataParams
-        ?.filter((tx) => tx.type === TransactionType.UNLOCK || tx.type === TransactionType.RETRACT_VOTE)
+        ?.filter((tx) => tx.type === TransactionType.UNLOCK || tx.type === TransactionType.REMOVE_VOTE)
         .map((tx) => tx.params) || []
     );
   },
@@ -395,6 +409,7 @@ sample({
     delegateConfirmModel.output.formSubmitted,
     unlockConfirmAggregate.output.formSubmitted,
     voteConfirmModel.events.sign,
+    removeVoteConfirmModel.events.sign,
     txsConfirmed,
   ],
   source: {

@@ -1,6 +1,7 @@
 import { memo } from 'react';
 
 import { useI18n } from '@app/providers';
+import { nonNullable } from '@shared/lib/utils';
 import { FootnoteText, HeadlineText, Shimmering } from '@shared/ui';
 import { TrackInfo, VoteChart, Voted, referendumService, votingService } from '@entities/governance';
 import { type AggregatedReferendum } from '../../types/structs';
@@ -35,7 +36,7 @@ export const ReferendumItem = memo<Props>(({ referendum, isTitlesLoading, onSele
   return (
     <ListItem onClick={() => onSelect(referendum)}>
       <div className="flex w-full items-center gap-x-2">
-        <Voted active={referendum.isVoted} />
+        <Voted active={nonNullable(referendum.vote)} />
         <VotedBy address={referendum.votedByDelegate} />
         <VotingStatusBadge passing={isPassing} referendum={referendum} />
 

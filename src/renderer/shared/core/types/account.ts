@@ -10,55 +10,55 @@ import {
 import { type ProxyType, type ProxyVariant } from './proxy';
 import { type Signatory } from './signatory';
 
-export interface Account {
+type GenericAccount = {
   id: ID;
   walletId: ID;
   name: string;
-  type: AccountType;
   accountId: AccountId;
   chainType: ChainType;
   signingExtras?: Record<string, any>;
-}
+};
 
-export interface BaseAccount extends Account {
+export type BaseAccount = GenericAccount & {
   type: AccountType.BASE;
   cryptoType: CryptoType;
-}
+};
 
-export interface ChainAccount extends Account {
+export type ChainAccount = GenericAccount & {
+  type: AccountType.CHAIN;
   baseId?: ID;
   keyType: KeyType;
   derivationPath: string;
   chainId: ChainId;
   cryptoType: CryptoType;
-  type: AccountType.CHAIN;
-}
+};
 
-export interface ShardAccount extends Account {
+export type ShardAccount = GenericAccount & {
+  type: AccountType.SHARD;
   groupId: string;
   keyType: KeyType;
   derivationPath: string;
   chainId: ChainId;
   cryptoType: CryptoType;
-  type: AccountType.SHARD;
-}
+};
 
-export interface MultisigAccount extends Account {
+export type MultisigAccount = GenericAccount & {
+  type: AccountType.MULTISIG;
   signatories: Signatory[];
   threshold: MultisigThreshold;
   chainId?: ChainId;
   cryptoType: CryptoType;
-  type: AccountType.MULTISIG;
   creatorAccountId: AccountId;
   matrixRoomId: string;
-}
+};
 
-export interface WcAccount extends Account {
-  chainId: ChainId;
+export type WcAccount = GenericAccount & {
   type: AccountType.WALLET_CONNECT;
-}
+  chainId: ChainId;
+};
 
-export interface ProxiedAccount extends Account {
+export type ProxiedAccount = GenericAccount & {
+  type: AccountType.PROXIED;
   proxyAccountId: AccountId;
   delay: number;
   proxyType: ProxyType;
@@ -67,8 +67,9 @@ export interface ProxiedAccount extends Account {
   extrinsicIndex?: number;
   chainId: ChainId;
   cryptoType: CryptoType;
-  type: AccountType.PROXIED;
-}
+};
+
+export type Account = BaseAccount | ChainAccount | ShardAccount | MultisigAccount | WcAccount | ProxiedAccount;
 
 export type DraftAccount<T extends Account> = Omit<NoID<T>, 'accountId' | 'walletId' | 'baseId'>;
 

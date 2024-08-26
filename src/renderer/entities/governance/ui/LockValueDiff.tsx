@@ -11,6 +11,12 @@ type Props = {
   asset: Asset;
 };
 
+/**
+ * Calculates diff between current lock and lock after adding/removing some
+ * value. If the current lock is less than the locks you have already - there
+ * will be no difference because locks will be reused from the current lock
+ * amount.
+ */
 export const LockValueDiff = ({ from, to, asset }: Props) => {
   const fromBN = BN.isBN(from) ? from : new BN(from);
   const toBN = BN.isBN(to) ? to : new BN(to);

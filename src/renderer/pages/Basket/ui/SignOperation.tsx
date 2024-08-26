@@ -19,6 +19,7 @@ import {
   PayeeConfirmation,
   RemoveProxyConfirm,
   RemovePureProxiedConfirm,
+  RemoveVoteConfirmation,
   RestakeConfirmation,
   TransferConfirm,
   UnstakeConfirmation,
@@ -119,6 +120,9 @@ export const SignOperation = () => {
       ),
       [TransactionType.VOTE]: () => (
         <VoteConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
+      ),
+      [TransactionType.REMOVE_VOTE]: () => (
+        <RemoveVoteConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
       ),
       [TransactionType.UNLOCK]: () => (
         <UnlockConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />

@@ -10,7 +10,10 @@ import { submitUtils } from '../lib/submit-utils';
 import { type SubmitStep } from '../lib/types';
 import { submitModel } from '../model/submit-model';
 
-type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
+type ResultProps = Pick<
+  ComponentProps<typeof OperationResult>,
+  'title' | 'description' | 'variant' | 'autoCloseTimeout'
+>;
 
 type Props = {
   isOpen: boolean;
@@ -46,7 +49,7 @@ export const OperationSubmit = ({ isOpen, onClose }: Props) => {
     }
 
     if (submitUtils.isSuccessStep(step)) {
-      return { title: t('transfer.successMessage'), variant: 'success' };
+      return { title: t('transfer.successMessage'), variant: 'success', autoCloseTimeout: 2000 };
     }
 
     if (submitUtils.isWarningStep(step)) {
