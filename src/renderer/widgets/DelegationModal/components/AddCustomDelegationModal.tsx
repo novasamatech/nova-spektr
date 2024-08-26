@@ -39,7 +39,7 @@ export const AddCustomDelegationModel = () => {
       closeButton
       headerClass="px-5 py-3"
       panelClass="flex flex-col w-modal bg-white"
-      contentClass="min-h-0 h-full w-full bg-white py-4"
+      contentClass="min-h-0 h-full w-full py-4"
       isOpen={isModalOpen}
       title={
         chain && <OperationTitle title={t('governance.addDelegation.customDelegationTitle')} chainId={chain.chainId} />
