@@ -109,17 +109,7 @@ export const Delegate = () => {
     <BaseModal
       closeButton
       contentClass=""
-      panelClass="w-max w-modal"
-      panelStyle={
-        // Change panel class doesn't work
-        {
-          ...(isStep(step, Step.CONFIRM) &&
-            transactions.length > 1 && {
-              //eslint-disable-next-line i18next/no-literal-string
-              width: `478px`,
-            }),
-        }
-      }
+      panelClass="w-fit"
       isOpen={isModalOpen}
       title={<OperationTitle title={t('governance.addDelegation.title')} chainId={walletData.chain!.chainId} />}
       onClose={closeModal}
@@ -142,9 +132,9 @@ export const Delegate = () => {
         <>
           <div className="overflow-x-hidden bg-background-default py-4" ref={ref}>
             {transactions.length > 1 && (
-              <div className="flex gap-2 first:ml-4">
+              <div className="flex w-[478px] gap-2 first:ml-4">
                 {transactions?.map((t, index) => (
-                  <div key={index} className="flex h-[622px] flex-col last-of-type:pr-4">
+                  <div key={index} className="flex h-[600px] flex-col last-of-type:pr-4">
                     <div className="max-h-full w-[440px] overflow-y-auto rounded-lg bg-white shadow-shadow-2">
                       <Confirmation id={index} hideSignButton />
                     </div>

@@ -19,7 +19,7 @@ export const DelegateDetails = () => {
       closeButton
       headerClass="px-5 py-3"
       panelClass="w-[944px] h-[678px] flex flex-col bg-white"
-      contentClass="w-full flex-1 bg-main-app-background py-6 flex flex-col gap-6 overflow-y-auto scrollbar-stable"
+      contentClass="w-full flex-1 bg-main-app-background py-6 flex flex-col gap-6 overflow-y-auto scrollbar-stable rounded-lg"
       isOpen={isOpen}
       title={t('governance.addDelegation.delegateTitle')}
       onClose={delegateDetailsModel.events.closeModal}
