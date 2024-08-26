@@ -4,12 +4,12 @@ import { isNil } from 'lodash';
 import { and, empty, not, reset } from 'patronum';
 
 import { type Conviction, type OngoingReferendum } from '@shared/core';
-import { nonNullable } from '@shared/lib/utils';
+import { nonNullable, toAddress } from '@shared/lib/utils';
 import { balanceModel } from '@entities/balance';
 import { voteTransactionService } from '@entities/governance';
 import { type WrappedTransactions, transactionBuilder } from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
-import { getLocksForAccount } from '@/features/governance/utils/getLocksForAccount';
+import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
 import { type BasicFormParams, createTransactionForm } from '@features/governance/lib/createTransactionForm';
 import { locksModel } from '@features/governance/model/locks';
 import { networkSelectorModel } from '@features/governance/model/networkSelector';
@@ -107,9 +107,11 @@ sample({
     trackLocks: locksModel.$trackLocks,
     chain: networkSelectorModel.$governanceChain,
   },
-  filter: ({ chain }, account) => !isNil(account) && !isNil(chain),
+  filter: ({ chain }, account) => nonNullable(account) && nonNullable(chain),
   fn: ({ trackLocks, chain }, account) => {
-    return getLocksForAccount(account!.accountId, trackLocks, chain!.addressPrefix);
+    const address = toAddress(account!.accountId, { prefix: chain!.addressPrefix });
+
+    return getLocksForAddress(address, trackLocks);
   },
   target: $lockForAccount,
 });

@@ -4,12 +4,12 @@ import { createForm } from 'effector-forms';
 import { spread } from 'patronum';
 
 import { type Account, type Asset, type Chain, type Conviction, type PartialBy } from '@shared/core';
-import { ZERO_BALANCE, formatAmount, getRelaychainAsset, transferableAmount } from '@shared/lib/utils';
+import { ZERO_BALANCE, formatAmount, getRelaychainAsset, toAddress, transferableAmount } from '@shared/lib/utils';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel } from '@entities/network';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { locksModel } from '@/features/governance/model/locks';
-import { getLocksForAccount } from '@/features/governance/utils/getLocksForAccount';
+import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
 import { BondNominateRules } from '@features/operations/OperationsValidation';
 import { type WalletData } from '../lib/types';
 
@@ -71,7 +71,8 @@ const $accounts = combine(
 
     return shards.map((shard) => {
       const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId.toString());
-      const lock = getLocksForAccount(shard.accountId, trackLocks, network!.chain.addressPrefix);
+      const address = toAddress(shard.accountId, { prefix: network!.chain.addressPrefix });
+      const lock = getLocksForAddress(address, trackLocks);
 
       return { account: shard, balance: transferableAmount(balance), lock };
     });
@@ -85,7 +86,7 @@ const $accountsBalances = $accounts.map((accounts) => {
 const $delegateForm = createForm<FormParams>({
   fields: {
     shards: {
-      init: [] as Account[],
+      init: [],
       rules: [
         {
           name: 'noProxyFee',
@@ -207,7 +208,7 @@ const $delegateForm = createForm<FormParams>({
       rules: [BondNominateRules.description.maxLength],
     },
     locks: {
-      init: {} satisfies Record<string, BN>,
+      init: {},
       rules: [],
     },
   },

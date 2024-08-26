@@ -240,7 +240,7 @@ const FeeSection = () => {
 
   useGate(locksPeriodsAggregate.gates.flow, { chain: network?.chain });
 
-  if (!network || shards.value.length === 0) {
+  if (!network || shards.value.length === 0 || accounts.length === 0) {
     return null;
   }
 
