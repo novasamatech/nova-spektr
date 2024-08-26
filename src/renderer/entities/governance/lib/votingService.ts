@@ -175,6 +175,22 @@ const calculateVotingPower = (balance: BN, conviction: Conviction) => {
   return balance.muln(votingCoefficient);
 };
 
+const calculateAccountVoteAmount = (vote: AccountVote) => {
+  if (isStandardVote(vote)) {
+    return vote.balance;
+  }
+
+  if (isSplitVote(vote)) {
+    return vote.aye.add(vote.nay);
+  }
+
+  if (isSplitAbstainVote(vote)) {
+    return vote.aye.add(vote.nay).add(vote.abstain);
+  }
+
+  return BN_ZERO;
+};
+
 const calculateAccountVotePower = (vote: AccountVote) => {
   const conviction = getAccountVoteConviction(vote);
 
@@ -244,5 +260,6 @@ export const votingService = {
 
   calculateVotingPower,
   calculateAccountVotePower,
+  calculateAccountVoteAmount,
   calculateAccountVotesTotalBalance,
 };

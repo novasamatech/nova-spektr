@@ -51,12 +51,15 @@ const $referendums = combine(
     const supportInChain = supportThresholds[chain.chainId] ?? {};
 
     return referendums.map((referendum) => {
+      const votes = votingService.getReferendumAccountVotes(referendum.referendumId, voting);
+      const vote = Object.values(votes).at(0) ?? null;
+
       return {
         ...referendum,
         title: titlesInChain[referendum.referendumId] ?? null,
         approvalThreshold: approvalInChain[referendum.referendumId] ?? null,
         supportThreshold: supportInChain[referendum.referendumId] ?? null,
-        isVoted: votingService.isReferendumVoted(referendum.referendumId, voting),
+        vote,
         votedByDelegate: delegatedVotesInChain[referendum.referendumId] ?? null,
       };
     });
