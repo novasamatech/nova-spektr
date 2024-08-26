@@ -51,13 +51,6 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const conviction = votingService.getAccountVoteConviction(vote);
   const votingPower = votingService.calculateAccountVotePower(vote);
 
-  console.log({
-    vote,
-    amount: amount.toString(),
-    totalLock: totalLock.toString(),
-    lock: totalLock.sub(amount).toString(),
-  });
-
   return (
     <div className="flex flex-col items-center gap-4 px-5 py-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
@@ -82,7 +75,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
       <ConfirmDetails confirm={confirm}>
         <hr className="w-full border-filter-border pr-2" />
         <DetailRow label={t('governance.vote.field.governanceLock')} wrapperClassName="items-start">
-          <LockValueDiff from={totalLock} to={totalLock.sub(amount)} asset={asset} />
+          <LockValueDiff from={totalLock} to={amount} asset={asset} />
         </DetailRow>
         <DetailRow label={t('governance.vote.field.lockingPeriod')} wrapperClassName="items-start">
           <LockPeriodDiff from={conviction} to="None" lockPeriods={lockPeriods} />

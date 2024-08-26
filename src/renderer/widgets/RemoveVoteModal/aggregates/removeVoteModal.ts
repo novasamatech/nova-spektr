@@ -33,7 +33,7 @@ const flow = createGate<{
 
 const $account = combine(
   walletModel.$activeWallet,
-  flow.state.map((x) => x?.chain),
+  flow.state.map(({ chain }) => chain),
   (wallet, chain) => {
     if (nullable(wallet) || nullable(chain)) return null;
 
@@ -258,6 +258,11 @@ sample({
     return { addresses };
   },
   target: votingAggregate.events.requestVoting,
+});
+
+sample({
+  clock: flow.close,
+  target: removeVoteConfirmModel.events.resetConfirm,
 });
 
 // Aggregate

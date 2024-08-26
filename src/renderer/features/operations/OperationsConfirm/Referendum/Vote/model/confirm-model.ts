@@ -23,7 +23,7 @@ export const confirmModel = {
   events: {
     sign,
     addConfirms: confirmStore.addConfirms,
-    replaceConfirm: confirmStore.replaceWithConfirm,
+    replaceWithConfirm: confirmStore.replaceWithConfirm,
     fillConfirm: confirmStore.fillConfirm,
     resetConfirm: confirmStore.resetConfirm,
 

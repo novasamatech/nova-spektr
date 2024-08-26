@@ -382,8 +382,8 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
     },
     [TransactionType.REMOVE_VOTE]: (decoded): Record<string, any> => {
       return {
-        class: decoded.args[0].toString(),
-        index: decoded.args[1].toString(),
+        referendum: decoded.args[0].toString(),
+        track: decoded.args[1].toString(),
       };
     },
     [TransactionType.UNDELEGATE]: (decoded): Record<string, any> => {

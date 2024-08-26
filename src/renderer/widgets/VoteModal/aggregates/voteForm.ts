@@ -178,7 +178,7 @@ sample({
       wrappedTransactions: wrappedTransactions!,
     };
   },
-  target: voteConfirmModel.events.replaceConfirm,
+  target: voteConfirmModel.events.replaceWithConfirm,
 });
 
 sample({

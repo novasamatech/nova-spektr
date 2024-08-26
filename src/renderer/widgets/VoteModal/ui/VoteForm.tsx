@@ -109,7 +109,7 @@ export const VoteForm = ({ chain, asset, hasDelegated = false }: Props) => {
         </div>
         <div className="flex flex-col gap-4">
           <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.governanceLock')}>
-            <LockValueDiff from={totalLock} to={totalLock.add(amount.value)} asset={asset} />
+            <LockValueDiff from={totalLock} to={amount.value} asset={asset} />
           </DetailRow>
           <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.lockingPeriod')}>
             <LockPeriodDiff from={initialConviction} to={conviction.value} lockPeriods={lockPeriods} />
