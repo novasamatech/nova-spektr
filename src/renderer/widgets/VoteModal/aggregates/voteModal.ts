@@ -3,10 +3,10 @@ import { createGate } from 'effector-react';
 import { spread } from 'patronum';
 
 import { type PathType, Paths } from '@/shared/routes';
-import { type BasketTransaction, type Conviction, type OngoingReferendum } from '@shared/core';
+import { type AccountVote, type BasketTransaction, type OngoingReferendum } from '@shared/core';
 import { Step, isStep, nonNullable, nullable, toAddress } from '@shared/lib/utils';
 import { basketModel } from '@entities/basket';
-import { referendumModel } from '@entities/governance';
+import { referendumModel, votingService } from '@entities/governance';
 import {
   delegationAggregate,
   lockPeriodsModel,
@@ -21,7 +21,15 @@ import { voteConfirmModel } from '@features/operations/OperationsConfirm';
 
 import { voteFormAggregate } from './voteForm';
 
-const flow = createGate<{ conviction: Conviction; referendum: OngoingReferendum }>();
+const flow = createGate<{
+  referendum: OngoingReferendum | null;
+  vote: AccountVote | null;
+}>({
+  defaultState: {
+    vote: null,
+    referendum: null,
+  },
+});
 
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flow.open);
 
@@ -129,7 +137,7 @@ sample({
 sample({
   clock: flow.open,
   target: spread({
-    conviction: voteFormAggregate.$initialConviction,
+    vote: voteFormAggregate.$existingVote,
     referendum: voteFormAggregate.$referendum,
   }),
 });
@@ -137,6 +145,20 @@ sample({
 sample({
   clock: flow.open,
   target: reinitForm,
+});
+
+sample({
+  clock: flow.open,
+  filter: ({ vote }) => nonNullable(vote),
+  fn: ({ vote }) => {
+    if (nullable(vote)) return {};
+
+    return {
+      amount: votingService.calculateAccountVoteAmount(vote),
+      conviction: votingService.getAccountVoteConviction(vote),
+    };
+  },
+  target: form.setForm,
 });
 
 sample({
@@ -255,7 +277,7 @@ export const voteModalAggregate = {
 
   $lockPeriods: lockPeriodsModel.$lockPeriods,
   $lock: voteFormAggregate.$lockForAccount,
-  $initialConviction: voteFormAggregate.$initialConviction,
+  $existingVote: voteFormAggregate.$existingVote,
   $availableBalance: voteFormAggregate.$availableBalance,
   $canSubmit: voteFormAggregate.$canSubmit,
   $hasDelegatedTrack,
