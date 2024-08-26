@@ -8,6 +8,8 @@ import { ZERO_BALANCE, formatAmount, getRelaychainAsset, transferableAmount } fr
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel } from '@entities/network';
 import { walletModel, walletUtils } from '@entities/wallet';
+import { locksModel } from '@/features/governance/model/locks';
+import { getLocksForAccount } from '@/features/governance/utils/getLocksForAccount';
 import { BondNominateRules } from '@features/operations/OperationsValidation';
 import { type WalletData } from '../lib/types';
 
@@ -17,6 +19,7 @@ type FormParams = {
   amount: string;
   conviction: Conviction;
   description: string;
+  locks: Record<string, BN>;
 };
 
 const formInitiated = createEvent<WalletData & { shards: Account[] }>();
@@ -59,21 +62,25 @@ const $accounts = combine(
     wallet: walletModel.$activeWallet,
     shards: $shards,
     balances: balanceModel.$balances,
+    trackLocks: locksModel.$trackLocks,
   },
-  ({ network, wallet, shards, balances }) => {
+  ({ network, wallet, shards, balances, trackLocks }) => {
     if (!wallet || !network) return [];
 
     const { chain, asset } = network;
 
     return shards.map((shard) => {
       const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId.toString());
+      const lock = getLocksForAccount(shard.accountId, trackLocks, network!.chain.addressPrefix);
 
-      return { account: shard, balance: transferableAmount(balance) };
+      return { account: shard, balance: transferableAmount(balance), lock };
     });
   },
 );
 
-const $accountsBalances = $accounts.map((accounts) => accounts.map(({ balance }) => balance));
+const $accountsBalances = $accounts.map((accounts) => {
+  return accounts.map(({ balance, lock }) => lock.add(new BN(balance)).toString());
+});
 
 const $delegateForm = createForm<FormParams>({
   fields: {
@@ -198,6 +205,10 @@ const $delegateForm = createForm<FormParams>({
     description: {
       init: '',
       rules: [BondNominateRules.description.maxLength],
+    },
+    locks: {
+      init: {} satisfies Record<string, BN>,
+      rules: [],
     },
   },
   validateOn: ['submit'],
@@ -368,15 +379,16 @@ sample({
 
 sample({
   clock: $delegateForm.$values.updates,
-  source: $networkStore,
+  source: { networkStore: $networkStore, accounts: $accounts },
   filter: (networkStore) => Boolean(networkStore),
-  fn: (networkStore, formData) => {
+  fn: ({ networkStore, accounts }, formData) => {
     const signatory = formData.signatory.accountId ? formData.signatory : undefined;
+    const locks = accounts.reduce((acc, val) => ({ ...acc, [val.account.accountId]: val.lock }), {});
     // TODO: update after i18n effector integration
-    const defaultText = `Bond ${formData.amount} ${networkStore!.asset.symbol}`;
+    const defaultText = `Delegate ${formData.amount} ${networkStore!.asset.symbol}`;
     const description = signatory ? formData.description || defaultText : '';
 
-    return { ...formData, signatory, description };
+    return { ...formData, signatory, description, locks };
   },
   target: formChanged,
 });

@@ -9,6 +9,7 @@ import { balanceModel } from '@entities/balance';
 import { voteTransactionService } from '@entities/governance';
 import { type WrappedTransactions, transactionBuilder } from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
+import { getLocksForAccount } from '@/features/governance/utils/getLocksForAccount';
 import { createFeeCalculator } from '@features/governance/lib/createFeeCalculator';
 import { type BasicFormParams, createTransactionForm } from '@features/governance/lib/createTransactionForm';
 import { locksModel } from '@features/governance/model/locks';
@@ -32,6 +33,7 @@ type FormInput = {
 const $initialConviction = createStore<Conviction>('None');
 const $referendum = createStore<OngoingReferendum | null>(null);
 const $availableBalance = createStore(BN_ZERO);
+const $lockForAccount = createStore(BN_ZERO);
 
 const $canSubmit = createStore(false);
 
@@ -112,20 +114,31 @@ const {
 sample({
   clock: form.fields.account.onChange,
   source: {
+    trackLocks: locksModel.$trackLocks,
+    chain: networkSelectorModel.$governanceChain,
+  },
+  filter: ({ chain }, account) => !isNil(account) && !isNil(chain),
+  fn: ({ trackLocks, chain }, account) => {
+    return getLocksForAccount(account!.accountId, trackLocks, chain!.addressPrefix);
+  },
+  target: $lockForAccount,
+});
+
+sample({
+  clock: form.fields.account.onChange,
+  source: {
     referendum: $referendum,
-    locks: locksModel.$trackLocks,
     accounts: accounts.$available,
+    lockForAccount: $lockForAccount,
   },
   filter: ({ referendum }, account) => !isNil(account) && !isNil(referendum),
-  fn: ({ referendum, locks, accounts }, account) => {
+  fn: ({ referendum, accounts, lockForAccount }, account) => {
     if (!account || !referendum) return BN_ZERO;
 
     const accountBalance = accounts.find((x) => x.account.accountId === account.accountId)?.balance ?? BN_ZERO;
     if (!accountBalance) return BN_ZERO;
 
-    const lockForAccount = locks[account.accountId]?.[referendum.track];
-
-    return BN.max(BN_ZERO, accountBalance.sub(lockForAccount ?? BN_ZERO));
+    return BN.max(BN_ZERO, accountBalance.add(lockForAccount ?? BN_ZERO));
   },
   target: $availableBalance,
 });
@@ -214,7 +227,7 @@ export const voteFormAggregate = {
   $referendum,
   $initialConviction,
   $isFeeLoading: $feePending,
-
+  $lockForAccount,
   $availableBalance,
 
   $canSubmit,
