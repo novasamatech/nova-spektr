@@ -27,7 +27,7 @@ export const YourDelegations = () => {
       closeButton
       headerClass="px-5 py-3"
       panelClass="flex h-[672px] w-[784px] flex-col bg-white"
-      contentClass="scrollbar-stable flex min-h-0 w-full flex-1 flex-col gap-6 overflow-y-auto bg-white py-4"
+      contentClass="scrollbar-stable flex min-h-0 w-full flex-1 flex-col gap-6 overflow-y-auto bg-white py-4 rounded-lg"
       isOpen={isOpen}
       title={t('governance.addDelegation.yourDelegationsTitle')}
       onClose={delegateDetailsModel.events.closeDelegationsModal}
