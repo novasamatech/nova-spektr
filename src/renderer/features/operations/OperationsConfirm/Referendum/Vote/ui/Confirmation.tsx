@@ -83,7 +83,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         <hr className="w-full border-filter-border pr-2" />
         <DetailRow label={t('governance.vote.field.decision')}>{t(`governance.referendum.${decision}`)}</DetailRow>
         <DetailRow label={t('governance.vote.field.governanceLock')} wrapperClassName="items-start">
-          <LockValueDiff from={totalLock} to={totalLock.add(amount)} asset={asset} />
+          <LockValueDiff from={totalLock} to={amount} asset={asset} />
         </DetailRow>
         <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.lockingPeriod')}>
           <LockPeriodDiff from={initialConviction} to={conviction} lockPeriods={lockPeriods} />
