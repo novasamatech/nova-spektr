@@ -585,7 +585,7 @@
       "viewVoteHistory": "View vote history"
     },
     "voted": "Voted",
-    "votedBy": "Voted via <name />",
+    "votedBy": "Voted via",
     "votedWithAmount": "Voted:",
     "voting": {
       "aboutLabel": "About voting",

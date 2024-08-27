@@ -64,9 +64,10 @@ async function getDelegatedVotesFromExternalSource(
     return {};
   }
 
-  return Promise.all(voters.map((voter) => client.request(GET_DELEGATOR, { voter })))
-    .then((data) => {
-      const list = data.flatMap((x: any) => x.delegatorVotings.nodes.map((node: { parent: any }) => node.parent)) as {
+  return client
+    .request(GET_DELEGATOR, { voters })
+    .then((data: any) => {
+      const list = data.delegatorVotings.nodes.map((node: { parent: any }) => node.parent) as {
         referendumId: ReferendumId;
         voter: Address;
       }[];
