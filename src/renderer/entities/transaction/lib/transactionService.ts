@@ -380,7 +380,7 @@ async function splitTxs(api: ApiPromise, txs: Transaction[], options?: Partial<S
     totalRefTime = totalRefTime.add(weight.refTime.toBn());
     totalProofSize = totalRefTime.add(weight.proofSize.toBn());
 
-    if (totalRefTime.gt(new BN(refTime)) || totalProofSize.gt(new BN(proofSize))) {
+    if ((totalRefTime.gt(new BN(refTime)) || totalProofSize.gt(new BN(proofSize))) && result.length > 0) {
       result[result.length - 1].push(tx);
 
       totalRefTime = weight.refTime.toBn();

@@ -23,7 +23,6 @@ const dataReceived = createEvent<SignatureData>();
 const formSubmitted = createEvent<SignatureData>();
 
 const $signStore = createStore<Input | null>(null).reset(formSubmitted);
-const $splitDone = createStore<boolean>(false).reset(formSubmitted);
 
 type SplitParams = {
   input: Input;
@@ -100,11 +99,6 @@ const $signerWallet = combine(
 
 sample({
   clock: formInitiated,
-  target: $signStore,
-});
-
-sample({
-  clock: formInitiated,
   source: networkModel.$apis,
   fn: (apis, input) => ({ input, apis }),
   target: splitTxsFx,
@@ -124,7 +118,6 @@ export const signModel = {
   $signStore,
   $apis,
   $signerWallet,
-  $splitDone,
 
   events: {
     formInitiated,
