@@ -4,7 +4,14 @@ import { createForm } from 'effector-forms';
 import { spread } from 'patronum';
 
 import { type Account, type Asset, type Chain, type Conviction, type PartialBy } from '@shared/core';
-import { ZERO_BALANCE, formatAmount, getRelaychainAsset, toAddress, transferableAmount } from '@shared/lib/utils';
+import {
+  ZERO_BALANCE,
+  formatAmount,
+  getRelaychainAsset,
+  toAddress,
+  transferableAmount,
+  transferableAmountBN,
+} from '@shared/lib/utils';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel } from '@entities/network';
 import { walletModel, walletUtils } from '@entities/wallet';
@@ -74,13 +81,13 @@ const $accounts = combine(
       const address = toAddress(shard.accountId, { prefix: network!.chain.addressPrefix });
       const lock = getLocksForAddress(address, trackLocks);
 
-      return { account: shard, balance: transferableAmount(balance), lock };
+      return { account: shard, balance: transferableAmountBN(balance), lock };
     });
   },
 );
 
 const $accountsBalances = $accounts.map((accounts) => {
-  return accounts.map(({ balance, lock }) => lock.add(new BN(balance)).toString());
+  return accounts.map(({ balance, lock }) => lock.add(balance).toString());
 });
 
 const $delegateForm = createForm<FormParams>({
