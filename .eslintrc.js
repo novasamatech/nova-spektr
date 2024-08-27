@@ -284,12 +284,12 @@ module.exports = {
             message: 'Use effector naming convention for effects.',
             selector: 'VariableDeclarator[init.callee.name="createEffect"][id.name!=/.*?Fx$/]',
           },
-          // for..in
+          // for..in ban
           {
             message: 'Use `for..of` instead.',
             selector: 'ForInStatement',
           },
-          // forEach ban TODO enable this and disable no-restricted-properties
+          // forEach ban
           {
             message: 'Use `for..of` instead.',
             selector: 'CallExpression[callee.property.name="forEach"][arguments.0.type="ArrowFunctionExpression"]',
