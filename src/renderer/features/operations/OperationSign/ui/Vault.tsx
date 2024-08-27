@@ -81,8 +81,6 @@ export const Vault = ({
     setTxPayloads([]);
   };
 
-  console.log('xcm', isScanStep, isMultiframe, signingPayloads);
-
   if (isScanStep) {
     return (
       <div className="w-[440px] px-5 py-4">

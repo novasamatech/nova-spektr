@@ -18,6 +18,7 @@ import {
   type ProxiedAccount,
   type ProxyTxWrapper,
   type Transaction,
+  type TransactionType,
   type TxWrapper,
   type Wallet,
   WrapperKind,
@@ -367,8 +368,14 @@ async function splitTxs(api: ApiPromise, txs: Transaction[], options?: Partial<S
   let totalRefTime = new BN(0);
   let totalProofSize = new BN(0);
 
+  const txsWeights: Partial<Record<TransactionType, Weight>> = {};
+
   for (const tx of txs) {
-    const weight = await getTxWeight(tx, api, options);
+    const weight = txsWeights[tx.type] || (await getTxWeight(tx, api, options));
+
+    if (!txsWeights[tx.type]) {
+      txsWeights[tx.type] = weight;
+    }
 
     totalRefTime = totalRefTime.add(weight.refTime.toBn());
     totalProofSize = totalRefTime.add(weight.proofSize.toBn());
