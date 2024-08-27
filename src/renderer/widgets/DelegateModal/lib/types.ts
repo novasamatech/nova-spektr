@@ -1,3 +1,5 @@
+import { type BN } from '@polkadot/util';
+
 import { type Account, type Address, type Chain, type Conviction, type Wallet } from '@shared/core';
 
 export type WalletData = {
@@ -13,6 +15,7 @@ export type DelegateData = {
   conviction: Conviction;
   balance: string;
   description: string;
+  locks: Record<string, BN>;
 };
 
 export type FeeData = {
