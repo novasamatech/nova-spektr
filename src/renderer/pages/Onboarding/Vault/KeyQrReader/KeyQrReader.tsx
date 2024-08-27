@@ -1,6 +1,5 @@
 import { hexToU8a, isHex } from '@polkadot/util';
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
-import cn from 'classnames';
 import { useState } from 'react';
 
 import { useI18n } from '@app/providers';
@@ -76,20 +75,22 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
 
   const onScanResult = (qrPayload: SeedInfo[]) => {
     try {
-      qrPayload.forEach((qr) => {
+      for (const qr of qrPayload) {
         if (qr.multiSigner) {
           if (qr.multiSigner.MultiSigner !== CryptoTypeString.ECDSA) {
             encodeAddress(qr.multiSigner.public);
           }
         }
-        if (qr.derivedKeys.length === 0) return;
+        if (qr.derivedKeys.length === 0) continue;
 
+        // TODO what is this?
+        // eslint-disable-next-line no-restricted-syntax
         qr.derivedKeys.forEach(({ address }) => {
           const accountId = isHex(address) ? hexToU8a(address) : decodeAddress(address);
 
           return accountId.length === 20 ? address : encodeAddress(accountId);
         });
-      });
+      }
 
       setIsScanComplete(true);
       setTimeout(() => onResult(qrPayload), RESULT_DELAY);
@@ -186,7 +187,7 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
       )}
 
       <div className="flex flex-col gap-4">
-        <div className={cn('relative overflow-hidden', isCameraPending && 'hidden', className)} style={sizeStyle}>
+        <div className={cnTw('relative overflow-hidden', isCameraPending && 'hidden', className)} style={sizeStyle}>
           <QrReader
             size={size}
             cameraId={activeCamera?.value}

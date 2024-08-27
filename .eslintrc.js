@@ -175,12 +175,11 @@ module.exports = {
         // Restricted by our code style
         'import-x/default': 'off',
         'import-x/no-useless-path-segments': 'error',
-        // TODO make error
         'no-restricted-imports': [
-          'warn',
+          'error',
           {
             name: 'classnames',
-            message: 'Please use cnTw instead.',
+            message: 'Use cnTw instead.',
           },
         ],
 
@@ -189,7 +188,7 @@ module.exports = {
         '@typescript-eslint/no-non-null-assertion': 'off',
         '@typescript-eslint/no-empty-function': 'off',
         '@typescript-eslint/no-unused-vars': 'off',
-        '@typescript-eslint/no-explicit-any': 'warn',
+        '@typescript-eslint/no-explicit-any': 'off',
         '@typescript-eslint/no-unnecessary-type-constraint': 'error',
         // TODO make error
         '@typescript-eslint/array-type': ['error', { default: 'array', readonly: 'array' }],
@@ -266,6 +265,8 @@ module.exports = {
         // TODO error
         '@typescript-eslint/consistent-type-assertions': ['off', { assertionStyle: 'never' }],
 
+        '@typescript-eslint/no-explicit-any': 'warn',
+
         'no-restricted-syntax': [
           'error',
           // case with useUnit(a).b
@@ -289,22 +290,14 @@ module.exports = {
             selector: 'ForInStatement',
           },
           // forEach ban TODO enable this and disable no-restricted-properties
-          // {
-          //   message: 'Use `for..of` instead.',
-          //   selector:
-          //     'CallExpression:has(MemberExpression:has([property.name="forEach"])):has([arguments.0.type="ArrowFunctionExpression"])',
-          // },
+          {
+            message: 'Use `for..of` instead.',
+            selector: 'CallExpression[callee.property.name="forEach"][arguments.0.type="ArrowFunctionExpression"]',
+          },
           {
             message: 'Unnecessary cnTw usage, use simple string instead.',
             selector: 'CallExpression[callee.name="cnTw"][arguments.length=1][arguments.0.type="Literal"]',
           },
-        ],
-
-        // TODO remove after no-restricted-syntax for for..of will be enabled
-        'no-restricted-properties': [
-          'warn',
-          // ban forEach
-          { property: 'forEach', message: 'Use for..of instead.' },
         ],
       },
     },

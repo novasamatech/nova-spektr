@@ -1,4 +1,3 @@
-import cn from 'classnames';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
@@ -151,7 +150,7 @@ export const QrReaderWrapper = ({ className, onResult, countdown, validationErro
         {isLoading && <Shimmering width={240} height={240} className="absolute rounded-[22px]" />}
 
         {isCameraOn && (
-          <div className={cn(isLoading && 'hidden', className)}>
+          <div className={cnTw(isLoading && 'hidden', className)}>
             {isMultiFrame ? (
               <QrMultiframeSignatureReader {...qrReaderProps} onResult={onScanResult} onProgress={setProgress} />
             ) : (
@@ -186,7 +185,7 @@ export const QrReaderWrapper = ({ className, onResult, countdown, validationErro
         {onGoBack && (
           <Button
             variant="text"
-            className={cn('h-6.5 px-4', isCameraOn ? WhiteTextButtonStyle : '')}
+            className={cnTw('h-6.5 px-4', isCameraOn ? WhiteTextButtonStyle : '')}
             onClick={onGoBack}
           >
             {t('operation.goBackButton')}

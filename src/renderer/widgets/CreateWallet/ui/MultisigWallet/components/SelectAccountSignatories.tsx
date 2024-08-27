@@ -82,7 +82,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
       if (Array.isArray(account)) {
         const toAdd = [] as ExtendedAccount[];
 
-        (account as ShardAccount[]).forEach((a) => {
+        for (const a of account as ShardAccount[]) {
           const address = toAddress(a.accountId, { prefix: chain?.addressPrefix });
 
           if (!accountsQuery || isStringsMatchQuery(accountsQuery, [a.accountId, a.name, address])) {
@@ -93,7 +93,7 @@ export const SelectAccountSignatories = ({ isActive, accounts, wallets, contacts
               address,
             });
           }
-        });
+        }
 
         if (toAdd.length > 0) {
           acc.push(toAdd);

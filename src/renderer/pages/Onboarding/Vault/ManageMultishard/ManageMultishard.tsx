@@ -1,5 +1,4 @@
 import { u8aToHex } from '@polkadot/util';
-import cn from 'classnames';
 import keyBy from 'lodash/keyBy';
 import { useEffect, useState } from 'react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
@@ -115,20 +114,22 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
   const activeWalletsHaveName = walletIds.every((walletId) => inactiveAccounts[walletId] || accountNames[walletId]);
 
   const fillAccountNames = () => {
-    accounts.forEach((account, accountIndex) => {
-      Object.entries(account.derivedKeys).forEach(([chainId, derivedKeys]) => {
+    for (const account of accounts) {
+      const accountIndex = accounts.indexOf(account);
+
+      for (const [chainId, derivedKeys] of Object.entries(account.derivedKeys)) {
         const { name: chainName } = chainsObject[chainId as ChainId];
 
-        derivedKeys.forEach((_, derivedKeyIndex) => {
+        for (const derivedKeyIndex of derivedKeys.keys()) {
           const accountId = getAccountId(accountIndex, chainId, derivedKeyIndex);
           const rootAccountId = getAccountId(accountIndex);
-          if (accountNames[accountId]) return;
+          if (accountNames[accountId]) continue;
 
           const accountName = `${accountNames[rootAccountId]}//${chainName.toLowerCase()}//${derivedKeyIndex + 1}`;
           updateAccountName(accountName, accountIndex, chainId, derivedKeyIndex);
-        });
-      });
-    });
+        }
+      }
+    }
   };
 
   const createDerivedAccounts = (
@@ -207,7 +208,7 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
             rules={{ required: true, maxLength: 256 }}
             render={({ field: { onChange, value } }) => (
               <Input
-                wrapperClass={cn('flex items-center')}
+                wrapperClass="flex items-center"
                 label={t('onboarding.walletNameLabel')}
                 placeholder={t('onboarding.walletNamePlaceholder')}
                 invalid={Boolean(errors.walletName)}

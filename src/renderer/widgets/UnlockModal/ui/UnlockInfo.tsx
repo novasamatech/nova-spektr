@@ -38,9 +38,9 @@ export const UnlockInfo = () => {
           <FootnoteText className="text-text-positive">{t('governance.locks.unlockable')}</FootnoteText>
         </div>
       )}
-      {pendingSchedule.map((lock, idx) => (
+      {pendingSchedule.map((lock) => (
         <div
-          key={`${lock.amount.toString()}-${lock.type}-${lock.address}-${idx}`}
+          key={`${lock.amount.toString()}-${lock.type}-${lock.address}`}
           className="mb-3 flex items-center justify-between self-stretch"
         >
           <AssetBalance value={lock.amount.toString()} asset={asset} />

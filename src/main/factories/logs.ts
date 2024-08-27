@@ -34,7 +34,9 @@ function rotateLogs(oldLogFile: LogFile) {
 
   if (files.length > MAX_LOG_FILES_TO_KEEP) {
     const filesToDelete = files.sort().slice(0, files.length - MAX_LOG_FILES_TO_KEEP);
-    filesToDelete.forEach((fileToDelete) => rmSync(join(info.dir, fileToDelete)));
+    for (const fileToDelete of filesToDelete) {
+      rmSync(join(info.dir, fileToDelete));
+    }
   }
   try {
     const date = new Date().toISOString();

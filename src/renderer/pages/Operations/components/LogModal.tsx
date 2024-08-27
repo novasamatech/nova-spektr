@@ -54,9 +54,9 @@ const getFilteredWalletsMap = (wallets: Wallet[]): WalletsMap => {
 
 const getFilteredAccountsMap = (walletsMap: WalletsMap) => {
   return Object.values(walletsMap).reduce<Record<AccountId, Account>>((acc, wallet) => {
-    wallet.accounts.forEach((account) => {
+    for (const account of wallet.accounts) {
       acc[account.accountId] = account;
-    });
+    }
 
     return acc;
   }, {});

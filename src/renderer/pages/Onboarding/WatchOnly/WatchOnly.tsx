@@ -1,4 +1,3 @@
-import cn from 'classnames';
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
@@ -120,7 +119,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
             render={({ field: { onChange, value } }) => (
               <div>
                 <Input
-                  wrapperClass={cn('flex items-center')}
+                  wrapperClass="flex items-center"
                   label={t('onboarding.walletNameLabel')}
                   placeholder={t('onboarding.walletNamePlaceholder')}
                   invalid={Boolean(errors.walletName)}
@@ -144,7 +143,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
             render={({ field: { onChange, value } }) => (
               <div>
                 <Input
-                  wrapperClass={cn('flex items-center')}
+                  wrapperClass="flex items-center"
                   invalid={Boolean(errors.address)}
                   label={t('onboarding.accountAddressLabel')}
                   placeholder={t('onboarding.watchOnly.accountAddressPlaceholder')}

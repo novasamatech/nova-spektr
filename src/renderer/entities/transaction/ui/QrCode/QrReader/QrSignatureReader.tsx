@@ -61,7 +61,9 @@ export const QrSignatureReader = ({
       streamRef.current = await navigator.mediaDevices.getUserMedia({ video: true });
 
       const mediaDevices = await BrowserCodeReader.listVideoInputDevices();
-      mediaDevices.forEach(({ deviceId, label }) => cameras.push({ id: deviceId, label }));
+      for (const { deviceId, label } of mediaDevices) {
+        cameras.push({ id: deviceId, label });
+      }
     } catch {
       throw QR_READER_ERRORS[QrError.USER_DENY];
     }
@@ -116,7 +118,12 @@ export const QrSignatureReader = ({
   };
 
   const stopScanning = () => {
-    streamRef.current?.getVideoTracks().forEach((track) => track.stop());
+    if (streamRef.current) {
+      for (const track of streamRef.current.getVideoTracks()) {
+        track.stop();
+      }
+    }
+
     controlsRef.current?.stop();
     bgControlsRef.current?.stop();
   };

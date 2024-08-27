@@ -114,7 +114,7 @@ type ApproveParams = {
 };
 const sendMatrixApproveFx = createEffect(
   ({ matrix, matrixRoomId, multisigTxs, description, params }: ApproveParams) => {
-    multisigTxs.forEach((tx) => {
+    for (const tx of multisigTxs) {
       matrix.sendApprove(matrixRoomId, {
         description,
         senderAccountId: tx.depositor!,
@@ -129,7 +129,7 @@ const sendMatrixApproveFx = createEffect(
           index: tx.indexCreated || params.timepoint.index,
         },
       });
-    });
+    }
   },
 );
 
