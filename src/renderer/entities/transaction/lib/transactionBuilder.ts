@@ -287,30 +287,6 @@ function buildDelegate({ chain, accountId, tracks, target, conviction, balance }
   return buildBatchAll({ chain, accountId, transactions: delegateTxs });
 }
 
-// async function buildDelegate({ chain, accountId, tracks, target, conviction, balance, api }: DelegateParams): Promise<Transaction[]> {
-//   const delegateTxs: Transaction[] = tracks.map((track) => ({
-//     chainId: chain.chainId,
-//     address: toAddress(accountId, { prefix: chain.addressPrefix }),
-//     type: TransactionType.DELEGATE,
-//     args: {
-//       track,
-//       target,
-//       conviction,
-//       balance,
-//     },
-//   }));
-
-//   if (delegateTxs.length === 1) return [delegateTxs[0]];
-
-//   let splittedTxs = [delegateTxs];
-
-//   if (api) {
-//     splittedTxs = await transactionService.splitTxs(api, delegateTxs);
-//   }
-
-//   return splittedTxs.map(transactions => buildBatchAll({ chain, accountId, transactions }));
-// }
-
 type UndelegateParams = {
   chain: Chain;
   accountId: AccountId;
