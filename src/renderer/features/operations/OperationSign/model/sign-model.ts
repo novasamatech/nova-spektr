@@ -100,11 +100,6 @@ const $signerWallet = combine(
 
 sample({
   clock: formInitiated,
-  target: $signStore,
-});
-
-sample({
-  clock: formInitiated,
   source: networkModel.$apis,
   fn: (apis, input) => ({ input, apis }),
   target: splitTxsFx,
