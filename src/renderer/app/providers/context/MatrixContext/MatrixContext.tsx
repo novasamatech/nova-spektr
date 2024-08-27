@@ -40,7 +40,7 @@ import { LoginStatus, matrixModel } from '@entities/matrix';
 import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
 import { networkModel } from '@entities/network';
 import { notificationModel } from '@entities/notification';
-import { useTransaction } from '@entities/transaction';
+import { useCallDataDecoder } from '@entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { matrixAutologinModel } from '@features/matrix';
 
@@ -54,7 +54,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
   const { addTask } = useMultisigChainContext();
   const { getMultisigTx, addMultisigTx, updateMultisigTx, updateCallData } = useMultisigTx({ addTask });
-  const { decodeCallData } = useTransaction();
+  const { decodeCallData } = useCallDataDecoder();
   const { addEventWithQueue, updateEvent, getEvents } = useMultisigEvent({ addTask });
 
   const apisRef = useRef(apis);

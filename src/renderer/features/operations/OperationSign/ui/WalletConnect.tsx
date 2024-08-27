@@ -11,7 +11,7 @@ import { useCountdown } from '@shared/lib/hooks';
 import { ValidationErrors } from '@shared/lib/utils';
 import { Button, ConfirmModal, Countdown, FootnoteText, SmallTitleText, StatusModal } from '@shared/ui';
 import { Animation } from '@shared/ui/Animation/Animation';
-import { transactionService, useTransaction } from '@entities/transaction';
+import { transactionService } from '@entities/transaction';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { DEFAULT_POLKADOT_METHODS, walletConnectModel, walletConnectUtils } from '@entities/walletConnect';
 import { operationSignUtils } from '../lib/operation-sign-utils';
@@ -21,7 +21,6 @@ import { signWcModel } from '../model/sign-wc-model';
 
 export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack, onResult }: InnerSigningProps) => {
   const { t } = useI18n();
-  const { verifySignature } = useTransaction();
   const [countdown, resetCountdown] = useCountdown(Object.values(apis));
   const payload = signingPayloads[0];
   const api = apis[payload.chain.chainId];
@@ -122,7 +121,8 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
   };
 
   const handleSignature = async (signature: HexString) => {
-    const isVerified = txPayload && verifySignature(txPayload, signature as HexString, payload.account.accountId);
+    const isVerified =
+      txPayload && transactionService.verifySignature(txPayload, signature as HexString, payload.account.accountId);
 
     const balanceValidationError = validateBalance && (await validateBalance());
 

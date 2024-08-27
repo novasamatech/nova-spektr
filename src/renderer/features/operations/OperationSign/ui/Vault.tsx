@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { type Address, type HexString } from '@shared/core';
 import { useCountdown } from '@shared/lib/hooks';
 import { ValidationErrors, toAddress } from '@shared/lib/utils';
-import { QrReaderWrapper, ScanMultiframeQr, ScanSingleframeQr, useTransaction } from '@entities/transaction';
+import { QrReaderWrapper, ScanMultiframeQr, ScanSingleframeQr, transactionService } from '@entities/transaction';
 import { accountUtils, walletUtils } from '@entities/wallet';
 import { operationSignUtils } from '../lib/operation-sign-utils';
 import { type InnerSigningProps } from '../lib/types';
@@ -16,8 +16,6 @@ export const Vault = ({
   onGoBack,
   onResult,
 }: InnerSigningProps) => {
-  const { verifySignature } = useTransaction();
-
   const [countdown, resetCountdown] = useCountdown(Object.values(apis));
   const [txPayloads, setTxPayloads] = useState<Uint8Array[]>([]);
   const [validationError, setValidationError] = useState<ValidationErrors>();
@@ -51,10 +49,11 @@ export const Vault = ({
       const verifiableComplexPayload = payload?.slice(2);
 
       const isVerified =
-        verifiablePayload && verifySignature(verifiablePayload, signature as HexString, accountIds[index]);
+        verifiablePayload &&
+        transactionService.verifySignature(verifiablePayload, signature as HexString, accountIds[index]);
       const isComplexVerified =
         verifiableComplexPayload &&
-        verifySignature(verifiableComplexPayload, signature as HexString, accountIds[index]);
+        transactionService.verifySignature(verifiableComplexPayload, signature as HexString, accountIds[index]);
 
       return isVerified || isComplexVerified;
     });
@@ -81,6 +80,8 @@ export const Vault = ({
   const scanAgain = () => {
     setTxPayloads([]);
   };
+
+  console.log('xcm', isScanStep, isMultiframe, signingPayloads);
 
   if (isScanStep) {
     return (

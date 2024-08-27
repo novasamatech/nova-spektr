@@ -45,3 +45,5 @@ export const XcmTypes = [
 export const DEFAULT_FEE_ASSET_ITEM = 0;
 
 export const DESCRIPTION_LENGTH = 120;
+
+export const LEAVE_SOME_SPACE_MULTIPLIER = 0.6;

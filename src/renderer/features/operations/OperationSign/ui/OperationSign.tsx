@@ -14,6 +14,8 @@ export const OperationSign = ({ onGoBack }: Props) => {
   const signStore = useUnit(signModel.$signStore);
   const signerWallet = useUnit(signModel.$signerWallet);
 
+  console.log('xcm', apis, signStore, signerWallet);
+
   if (!apis || !signStore || !signerWallet) {
     return null;
   }

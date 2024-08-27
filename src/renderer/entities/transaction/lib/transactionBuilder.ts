@@ -1,3 +1,5 @@
+import { type ApiPromise } from '@polkadot/api';
+
 import { type ClaimAction } from '@/shared/api/governance';
 import {
   type AccountId,
@@ -11,10 +13,11 @@ import {
   type Transaction,
   TransactionType,
 } from '@shared/core';
-import { TEST_ACCOUNTS, formatAmount, getAssetId, toAddress } from '@shared/lib/utils';
+import { TEST_ACCOUNTS, formatAmount, getAssetId, toAccountId, toAddress } from '@shared/lib/utils';
 import { type TransactionVote, type VoteTransaction } from '@/entities/governance';
 
 import { TransferType } from './common/constants';
+import { transactionService } from './transactionService';
 
 export const transactionBuilder = {
   buildTransfer,
@@ -31,6 +34,9 @@ export const transactionBuilder = {
   buildUnlock,
   buildVote,
   buildRemoveVote,
+
+  buildBatchAll,
+  splitBatchAll,
 };
 
 type TransferParams = {
@@ -240,6 +246,20 @@ function buildBatchAll({ chain, accountId, transactions }: BatchParams): Transac
   };
 }
 
+type SplitBatchAllParams = { transaction: Transaction; chain: Chain; api: ApiPromise };
+
+async function splitBatchAll({ transaction, chain, api }: SplitBatchAllParams): Promise<Transaction[] | Transaction> {
+  if (transaction.type !== TransactionType.BATCH_ALL) {
+    return transaction;
+  }
+
+  const splittedTxs = await transactionService.splitTxs(api, transaction.args.transactions);
+
+  return splittedTxs.map((transactions) =>
+    buildBatchAll({ chain, accountId: toAccountId(transaction.address), transactions }),
+  );
+}
+
 type DelegateParams = {
   chain: Chain;
   accountId: AccountId;
@@ -266,6 +286,30 @@ function buildDelegate({ chain, accountId, tracks, target, conviction, balance }
 
   return buildBatchAll({ chain, accountId, transactions: delegateTxs });
 }
+
+// async function buildDelegate({ chain, accountId, tracks, target, conviction, balance, api }: DelegateParams): Promise<Transaction[]> {
+//   const delegateTxs: Transaction[] = tracks.map((track) => ({
+//     chainId: chain.chainId,
+//     address: toAddress(accountId, { prefix: chain.addressPrefix }),
+//     type: TransactionType.DELEGATE,
+//     args: {
+//       track,
+//       target,
+//       conviction,
+//       balance,
+//     },
+//   }));
+
+//   if (delegateTxs.length === 1) return [delegateTxs[0]];
+
+//   let splittedTxs = [delegateTxs];
+
+//   if (api) {
+//     splittedTxs = await transactionService.splitTxs(api, delegateTxs);
+//   }
+
+//   return splittedTxs.map(transactions => buildBatchAll({ chain, accountId, transactions }));
+// }
 
 type UndelegateParams = {
   chain: Chain;
