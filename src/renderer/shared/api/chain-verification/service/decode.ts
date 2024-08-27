@@ -187,9 +187,9 @@ const decode = (reader: Uint8Array): Node => {
 const loadProof = (proofHashToNode: Record<string, Node>, branch: Node | undefined) => {
   if (!branch || getNodeType(branch) !== NodeType.BRANCH) return;
 
-  for (const child of branch.children) {
-    const i = branch.children.indexOf(child);
-    if (child === null) continue;
+  // eslint-disable-next-line no-restricted-syntax
+  branch.children.forEach((child, i) => {
+    if (child === null) return;
 
     const proofHash = u8aToHex(child.hashDigest);
     const node = proofHashToNode[proofHash];
@@ -198,7 +198,7 @@ const loadProof = (proofHashToNode: Record<string, Node>, branch: Node | undefin
       branch.children[i] = node;
       loadProof(proofHashToNode, node);
     }
-  }
+  });
 };
 
 /**
