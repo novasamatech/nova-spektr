@@ -12,7 +12,7 @@ const openDelegations = createEvent();
 
 const $isModalOpen = createStore(false);
 const $isDelegationsOpen = createStore(false);
-const $delegate = createStore<DelegateAccount | null>(null);
+const $delegate = createStore<DelegateAccount | null>(null).reset(flowStarted);
 
 const $activeTracks = combine(
   { votes: votingAggregate.$activeWalletVotes, delegate: $delegate },
