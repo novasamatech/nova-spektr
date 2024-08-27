@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 
+import { useI18n } from '@/app/providers';
+import { FootnoteText } from '@/shared/ui';
 import { type Address, type HexString } from '@shared/core';
 import { useCountdown } from '@shared/lib/hooks';
 import { ValidationErrors, toAddress } from '@shared/lib/utils';
 import { QrReaderWrapper, ScanMultiframeQr, ScanSingleframeQr, transactionService } from '@entities/transaction';
-import { accountUtils, walletUtils } from '@entities/wallet';
+import { WalletIcon, accountUtils, walletUtils } from '@entities/wallet';
 import { operationSignUtils } from '../lib/operation-sign-utils';
 import { type InnerSigningProps } from '../lib/types';
 
@@ -16,6 +18,8 @@ export const Vault = ({
   onGoBack,
   onResult,
 }: InnerSigningProps) => {
+  const { t } = useI18n();
+
   const [countdown, resetCountdown] = useCountdown(Object.values(apis));
   const [txPayloads, setTxPayloads] = useState<Uint8Array[]>([]);
   const [validationError, setValidationError] = useState<ValidationErrors>();
@@ -84,30 +88,45 @@ export const Vault = ({
   if (isScanStep) {
     return (
       <div className="w-[440px] px-5 py-4">
-        {isMultiframe ? (
-          <ScanMultiframeQr
-            apis={apis}
-            countdown={countdown}
-            signerWallet={signerWallet!}
-            signingPayloads={signingPayloads}
-            onGoBack={onGoBack}
-            onResetCountdown={resetCountdown}
-            onResult={setTxPayloads}
-          />
-        ) : (
-          <ScanSingleframeQr
-            chainId={signingPayloads[0].chain.chainId}
-            api={apis[signingPayloads[0].chain.chainId]}
-            address={getSignerAddress()}
-            countdown={countdown}
-            account={signingPayloads[0].signatory || signingPayloads[0].account}
-            signerWallet={signerWallet!}
-            transaction={signingPayloads[0].transaction}
-            onGoBack={onGoBack}
-            onResetCountdown={resetCountdown}
-            onResult={(payload) => setTxPayloads([payload])}
-          />
-        )}
+        <div className="flex w-full flex-col items-center">
+          {signerWallet && (
+            <div className="mb-1 flex h-8 w-full items-center justify-center">
+              <div className="flex h-full items-center justify-center gap-x-0.5">
+                <FootnoteText className="text-text-secondary">{t('signing.signer')}</FootnoteText>
+
+                <div className="flex w-full items-center gap-x-2 px-2">
+                  <WalletIcon className="shrink-0" type={signerWallet.type} size={16} />
+                  <FootnoteText className="w-max text-text-secondary">{signerWallet.name}</FootnoteText>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {isMultiframe ? (
+            <ScanMultiframeQr
+              apis={apis}
+              countdown={countdown}
+              signerWallet={signerWallet!}
+              signingPayloads={signingPayloads}
+              onGoBack={onGoBack}
+              onResetCountdown={resetCountdown}
+              onResult={setTxPayloads}
+            />
+          ) : (
+            <ScanSingleframeQr
+              chainId={signingPayloads[0].chain.chainId}
+              api={apis[signingPayloads[0].chain.chainId]}
+              address={getSignerAddress()}
+              countdown={countdown}
+              account={signingPayloads[0].signatory || signingPayloads[0].account}
+              signerWallet={signerWallet!}
+              transaction={signingPayloads[0].transaction}
+              onGoBack={onGoBack}
+              onResetCountdown={resetCountdown}
+              onResult={(payload) => setTxPayloads([payload])}
+            />
+          )}
+        </div>
       </div>
     );
   }

@@ -13,8 +13,7 @@ import {
   type Wallet,
 } from '@shared/core';
 import { CryptoType } from '@shared/core';
-import { Button, FootnoteText } from '@shared/ui';
-import { WalletIcon } from '@entities/wallet'; // TODO: cross import
+import { Button } from '@shared/ui';
 import { transactionService } from '../../lib';
 import { QrTxGenerator } from '../QrCode/QrGenerator/QrTxGenerator';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
@@ -69,20 +68,7 @@ export const ScanSingleframeQr = ({
   };
 
   return (
-    <div className="flex w-full flex-col items-center">
-      {account && (
-        <div className="mb-1 flex h-8 w-full items-center justify-center">
-          <div className="flex h-full items-center justify-center gap-x-0.5">
-            <FootnoteText className="text-text-secondary">{t('signing.signer')}</FootnoteText>
-
-            <div className="flex w-full items-center gap-x-2 px-2">
-              <WalletIcon className="shrink-0" type={signerWallet.type} size={16} />
-              <FootnoteText className="w-max text-text-secondary">{signerWallet.name}</FootnoteText>
-            </div>
-          </div>
-        </div>
-      )}
-
+    <>
       <QrGeneratorContainer countdown={countdown} chainId={chainId} onQrReset={setupTransaction}>
         {txPayload && (
           <QrTxGenerator
@@ -105,6 +91,6 @@ export const ScanSingleframeQr = ({
           {t('signing.continueButton')}
         </Button>
       </div>
-    </div>
+    </>
   );
 };
