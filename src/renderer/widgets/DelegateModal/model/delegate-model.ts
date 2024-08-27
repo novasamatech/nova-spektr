@@ -134,6 +134,7 @@ sample({
       balance: formParams.amount,
       conviction: formParams.conviction,
       description: formParams.description,
+      locks: formParams.locks,
     };
   },
   target: $delegateData,
@@ -315,6 +316,7 @@ sample({
           ...feeData,
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
           ...(wrapper ? { shards: [wrapper.proxyAccount] } : { shards: [shard] }),
+          locks: delegateData!.locks[shard.accountId],
         };
       }),
       step: Step.CONFIRM,

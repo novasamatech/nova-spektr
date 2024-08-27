@@ -4,7 +4,7 @@ import { combine, createEffect, createStore, sample } from 'effector';
 
 import { type ClaimTimeAt, type UnlockChunk, UnlockChunkType } from '@shared/api/governance';
 import { type Address, type Referendum, type TrackId, type TrackInfo, type VotingMap } from '@shared/core';
-import { getCreatedDateFromApi, getCurrentBlockNumber, nonNullable } from '@shared/lib/utils';
+import { getCreatedDateFromApi, getCurrentBlockNumber, nonNullable, nullable } from '@shared/lib/utils';
 import { claimScheduleService, referendumModel, tracksModel, votingModel } from '@entities/governance';
 import { walletModel } from '@entities/wallet';
 import { unlockService } from '../../lib/unlockService';
@@ -57,7 +57,7 @@ const getClaimScheduleFx = createEffect(
 );
 
 sample({
-  clock: [locksModel.$totalLock.updates, walletModel.$activeWallet],
+  clock: [networkSelectorModel.$governanceChainApi, walletModel.$activeWallet],
   target: [$claimSchedule.reinit, $totalUnlock.reinit],
 });
 
@@ -69,7 +69,7 @@ sample({
     isLoadingVoting: votingModel.$isLoading,
     isLoadingReferendum: referendumModel.$isLoading,
   },
-  filter: ({ claimSchedule }) => !nonNullable(claimSchedule),
+  filter: ({ claimSchedule }) => nullable(claimSchedule),
   fn: ({ isLoadingLock, isLoadingVoting, isLoadingReferendum }) => {
     return isLoadingLock || isLoadingVoting || isLoadingReferendum;
   },

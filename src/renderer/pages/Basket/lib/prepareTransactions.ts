@@ -564,6 +564,7 @@ type DelegateInput = {
   asset: Asset;
   shards: Account[];
   transferable: string;
+  locks: BN;
 
   tracks: number[];
   target: Address;
@@ -590,6 +591,12 @@ async function prepareDelegateTransaction({ transaction, wallets, chains, apis, 
   const transferable = transferableAmount(
     balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId.toString()),
   );
+  const locks = await governanceService.getTrackLocks(apis[chainId], [transaction.coreTx.address]).then((data) => {
+    const lock = data[transaction.coreTx.address];
+    const totalLock = Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
+
+    return totalLock;
+  });
 
   return {
     id: transaction.id,
@@ -603,6 +610,7 @@ async function prepareDelegateTransaction({ transaction, wallets, chains, apis, 
     target: transaction.coreTx.args.transactions[0].args.target,
     tracks: transaction.coreTx.args.transactions.map((t: Transaction) => t.args.track),
     description: '',
+    locks,
 
     fee,
     totalFee: '0',

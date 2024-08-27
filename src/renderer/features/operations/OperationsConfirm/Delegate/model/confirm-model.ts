@@ -1,4 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
+import { type BN } from '@polkadot/util';
 import { combine, createEvent, restore } from 'effector';
 
 import {
@@ -20,6 +21,7 @@ type Input = {
   asset: Asset;
   shards: Account[];
   transferable: string;
+  locks: BN;
 
   tracks: number[];
   target: Address;
