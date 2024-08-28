@@ -362,18 +362,13 @@ function verifySignature(payload: Uint8Array, signature: HexString, accountId: A
 async function splitTxsByWeight(api: ApiPromise, txs: Transaction[], options?: Partial<SignerOptions>) {
   const maxWeight = api.consts.system.blockWeights.perClass.normal.maxExtrinsic.value;
 
-  const refTime = maxWeight.refTime
-    .toBn()
-    .mul(new BN(LEAVE_SOME_SPACE_MULTIPLIER * 100))
-    .div(new BN(100));
-  const proofSize = maxWeight.proofSize
+  const maxRefTime = maxWeight.refTime
     .toBn()
     .mul(new BN(LEAVE_SOME_SPACE_MULTIPLIER * 100))
     .div(new BN(100));
 
   const result: Transaction[][] = [[]];
   let totalRefTime = BN_ZERO;
-  let totalProofSize = BN_ZERO;
 
   const txsWeights: Partial<Record<TransactionType, Weight>> = {};
 
@@ -385,15 +380,13 @@ async function splitTxsByWeight(api: ApiPromise, txs: Transaction[], options?: P
     }
 
     totalRefTime = totalRefTime.add(weight.refTime.toBn());
-    totalProofSize = totalRefTime.add(weight.proofSize.toBn());
 
-    if (totalRefTime.lt(refTime) && totalProofSize.lt(proofSize) && result.length > 0) {
+    if (totalRefTime.lt(maxRefTime) && result.length > 0) {
       result[result.length - 1].push(tx);
     } else {
       result.push([tx]);
 
       totalRefTime = weight.refTime.toBn();
-      totalProofSize = weight.proofSize.toBn();
     }
   }
 
