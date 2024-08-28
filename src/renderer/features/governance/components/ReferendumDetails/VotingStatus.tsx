@@ -55,7 +55,7 @@ export const VotingStatus = ({
   return (
     <div className="flex flex-col items-start gap-6">
       <VotingStatusBadge passing={isPassing} referendum={referendum} />
-      {votedFractions && <VoteChart bgColor="icon-button" descriptionPosition="bottom" {...votedFractions} />}
+      {votedFractions && <VoteChart descriptionPosition="bottom" {...votedFractions} />}
       {votedCount && <Threshold voited={votedCount.voted} threshold={votedCount.threshold} asset={asset} />}
 
       {canVote && nonNullable(asset) && nullable(referendum.vote) && referendumService.isOngoing(referendum) && (

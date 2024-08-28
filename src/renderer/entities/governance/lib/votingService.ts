@@ -71,11 +71,19 @@ const getConviction = (conviction: number): Conviction => {
 };
 
 const getVoteFractions = (tally: Tally, approve: BN) => {
+  const pass = parseInt(approve.toString().slice(0, 8)) / 1_000_000;
   const total = tally.ayes.add(tally.nays);
+
+  if (total.isZero()) {
+    return {
+      aye: 0,
+      nay: 0,
+      pass,
+    };
+  }
 
   const aye = tally.ayes.muln(100_000).div(total).toNumber() / 1000;
   const nay = tally.nays.muln(100_000).div(total).toNumber() / 1000;
-  const pass = parseInt(approve.toString().slice(0, 8)) / 1_000_000;
 
   return { aye, nay, pass };
 };

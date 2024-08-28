@@ -11,19 +11,22 @@ type Props = {
   descriptionPosition?: 'tooltip' | 'bottom';
 };
 
-export const VoteChart = ({
-  aye,
-  nay,
-  pass,
-  descriptionPosition = 'tooltip',
-  bgColor = 'background-default',
-}: Props) => {
+const calcWidth = (value: number) => `clamp(4px, calc(${value}% - 2px), calc(100% - 8px))`;
+
+export const VoteChart = ({ aye, nay, pass, descriptionPosition = 'tooltip', bgColor = 'icon-button' }: Props) => {
   const { t } = useI18n();
 
+  const inactive = aye === 0 && nay === 0;
+
   const chartNode = (
-    <div className="vote-chart-container">
-      <div className="vote-chart-aye" style={{ width: `clamp(4px, calc(${aye}% - 2px), calc(100% - 8px))` }} />
-      <div className="vote-chart-nay" style={{ width: `clamp(4px, calc(${nay}% - 2px), calc(100% - 8px))` }} />
+    <div className="relative flex h-5.5 w-full items-center justify-between gap-x-1">
+      {inactive && <div className="h-2.5 w-full rounded-md bg-tab-icon-inactive" />}
+      {!inactive && (
+        <>
+          <div className="h-2.5 rounded-md bg-icon-positive" style={{ width: calcWidth(aye) }} />
+          <div className="h-2.5 rounded-md bg-icon-negative" style={{ width: calcWidth(nay) }} />
+        </>
+      )}
       <div
         className="vote-chart-point"
         style={{ backgroundColor: `var(--${bgColor})`, left: `clamp(3px, ${pass}%, calc(100% - 3px))` }}
