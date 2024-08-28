@@ -8,13 +8,10 @@ import {
   type AccountId,
   type Address,
   type CallData,
-  type ChainId,
   type DecodedTransaction,
   type HexString,
   type Timepoint,
   type Transaction,
-  type TransactionType,
-  type TxWrappers_OLD,
 } from '@shared/core';
 
 // =====================================================
@@ -24,19 +21,8 @@ import {
 export type ITransactionService = {
   getExtrinsicWeight: (extrinsic: SubmittableExtrinsic<'promise'>) => Promise<Weight>;
   getTxWeight: (transaction: Transaction, api: ApiPromise) => Promise<Weight>;
-  getTransactionHash: (transaction: Transaction, api: ApiPromise) => HashData;
   decodeCallData: (api: ApiPromise, accountId: Address, callData: CallData) => DecodedTransaction;
   verifySignature: (payload: Uint8Array, signature: HexString, accountId: AccountId) => boolean;
-  setTxs: (txs: Transaction[]) => void;
-  txs: Transaction[];
-  setWrappers: (wrappers: TxWrappers_OLD[]) => void;
-  wrapTx: (tx: Transaction, api: ApiPromise, addressPrefix: number) => Transaction;
-  buildTransaction: (
-    type: TransactionType,
-    address: Address,
-    chainId: ChainId,
-    args: Record<string, any>,
-  ) => Transaction;
 };
 
 // =====================================================

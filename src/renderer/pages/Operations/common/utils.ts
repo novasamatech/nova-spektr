@@ -182,10 +182,10 @@ export const getDelegationVotes = (tx: MultisigTransaction): string | undefined 
 
   if (isProxyTransaction(tx.transaction)) {
     coreTx = tx.transaction.args.transaction;
-  } else if (isDelegateTransaction(tx.transaction)) {
-    coreTx = tx.transaction;
   } else if (tx.transaction.type === TransactionType.BATCH_ALL) {
     coreTx = tx.transaction.args.transactions?.find((tx: Transaction) => tx.type === TransactionType.DELEGATE);
+  } else if (isDelegateTransaction(tx.transaction)) {
+    coreTx = tx.transaction;
   }
 
   if (!coreTx) return;
@@ -203,10 +203,10 @@ export const getDelegationTarget = (tx: MultisigTransaction): string | undefined
 
   if (isProxyTransaction(tx.transaction)) {
     coreTx = tx.transaction.args.transaction;
-  } else if (isDelegateTransaction(tx.transaction)) {
-    coreTx = tx.transaction;
   } else if (tx.transaction.type === TransactionType.BATCH_ALL) {
     coreTx = tx.transaction.args.transactions?.find((tx: Transaction) => tx.type === TransactionType.DELEGATE);
+  } else if (isDelegateTransaction(tx.transaction)) {
+    coreTx = tx.transaction;
   }
 
   return coreTx?.args.target;
@@ -219,13 +219,13 @@ export const getDelegationTracks = (tx: MultisigTransaction): string[] | undefin
 
   if (isProxyTransaction(tx.transaction)) {
     coreTxs = [tx.transaction.args.transaction];
-  } else if (isDelegateTransaction(tx.transaction)) {
-    coreTxs = [tx.transaction];
   } else if (tx.transaction.type === TransactionType.BATCH_ALL) {
     coreTxs = tx.transaction.args.transactions?.filter((tx: Transaction) => tx.type === TransactionType.DELEGATE);
+  } else if (isDelegateTransaction(tx.transaction)) {
+    coreTxs = [tx.transaction];
   }
 
-  return coreTxs?.map((tx: Transaction) => tx.args.track);
+  return coreTxs?.map((tx: Transaction) => tx.args.track.toString());
 };
 
 export const getReferendumId = (tx: MultisigTransaction): string | undefined => {

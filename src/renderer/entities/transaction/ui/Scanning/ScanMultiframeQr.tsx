@@ -6,10 +6,10 @@ import { useEffect, useState } from 'react';
 import { useI18n } from '@app/providers';
 import { type Address, type BaseAccount, type ChainId, type ShardAccount, type Wallet } from '@shared/core';
 import { type TxMetadata, createTxMetadata, toAddress, upgradeNonce } from '@shared/lib/utils';
-import { Button, FootnoteText } from '@shared/ui';
+import { Button } from '@shared/ui';
 import { transactionService } from '@entities/transaction';
 import { type SigningPayload } from '@features/operations/OperationSign';
-import { WalletIcon, accountUtils, walletUtils } from '../../../wallet';
+import { accountUtils, walletUtils } from '../../../wallet';
 import { QrMultiframeGenerator } from '../QrCode/QrGenerator/QrMultiframeTxGenerator';
 import { createMultipleSignPayload, createSubstrateSignPayload } from '../QrCode/QrGenerator/common/utils';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
@@ -124,20 +124,7 @@ export const ScanMultiframeQr = ({
   const bulkTxExist = bulkTransactions && bulkTransactions.length > 0;
 
   return (
-    <div className="flex w-full flex-col items-center">
-      {signingPayloads.length > 0 && (
-        <div className="mb-1 flex h-8 w-full items-center justify-center">
-          <div className="flex h-full items-center justify-center gap-x-0.5">
-            <FootnoteText className="text-text-secondary">{t('signing.signer')}</FootnoteText>
-
-            <div className="flex w-full items-center gap-x-2 px-2">
-              <WalletIcon className="shrink-0" type={signerWallet.type} size={16} />
-              <FootnoteText className="w-max text-text-secondary">{signerWallet.name}</FootnoteText>
-            </div>
-          </div>
-        </div>
-      )}
-
+    <>
       <QrGeneratorContainer
         countdown={countdown}
         chainId={signingPayloads[0].chain.chainId}
@@ -154,6 +141,6 @@ export const ScanMultiframeQr = ({
           {t('signing.continueButton')}
         </Button>
       </div>
-    </div>
+    </>
   );
 };

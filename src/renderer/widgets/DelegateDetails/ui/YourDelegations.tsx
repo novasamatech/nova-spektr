@@ -102,7 +102,7 @@ export const YourDelegations = () => {
               <div className="w-[62px] px-3">
                 <Tooltip
                   content={[...activeTracks[address]]
-                    .map((trackId) => t(allTracks.find((track) => track.id === trackId)!.value))
+                    .map((trackId) => t(allTracks.find((track) => track.id === trackId)?.value || ''))
                     .join(', ')}
                   pointer="up"
                 >

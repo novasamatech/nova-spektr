@@ -12,12 +12,13 @@ import {
   type MultisigEvent,
   type MultisigTransaction,
   type Transaction,
+  TransactionType,
 } from '@shared/core';
 import { removeFromCollection } from '@shared/lib/utils';
 import { matrixModel, matrixUtils } from '@entities/matrix';
 import { buildMultisigTx } from '@entities/multisig';
 import { networkModel } from '@entities/network';
-import { type ExtrinsicResultParams, transactionService } from '@entities/transaction';
+import { type ExtrinsicResultParams, transactionBuilder, transactionService } from '@entities/transaction';
 import { ExtrinsicResult, SubmitStep } from '../lib/types';
 
 type Input = {
@@ -63,13 +64,30 @@ type SignAndSubmitExtrinsicParams = {
   wrappedTxs: Transaction[];
   txPayloads: Uint8Array[];
   signatures: HexString[];
+  chain: Chain;
 };
 const signAndSubmitExtrinsicsFx = createEffect(
-  ({ apis, wrappedTxs, txPayloads, signatures }: SignAndSubmitExtrinsicParams): void => {
+  async ({ apis, wrappedTxs, txPayloads, signatures, chain }: SignAndSubmitExtrinsicParams): Promise<void> => {
     const boundExtrinsicSucceeded = scopeBind(extrinsicSucceeded, { safe: true });
     const boundExtrinsicFailed = scopeBind(extrinsicFailed, { safe: true });
 
-    wrappedTxs.forEach((transaction, index) => {
+    let splittedBatch: Transaction[] = [];
+
+    for (const tx of wrappedTxs) {
+      if (tx.type === TransactionType.BATCH_ALL) {
+        const batchAllTxs = await transactionBuilder.splitBatchAll({
+          transaction: tx,
+          chain,
+          api: apis[chain.chainId],
+        });
+
+        splittedBatch = splittedBatch.concat(batchAllTxs);
+      } else {
+        splittedBatch.push(tx);
+      }
+    }
+
+    for (const [index, transaction] of splittedBatch.entries()) {
       transactionService.signAndSubmit(
         transaction,
         signatures[index],
@@ -83,7 +101,7 @@ const signAndSubmitExtrinsicsFx = createEffect(
           }
         },
       );
-    });
+    }
   },
 );
 
@@ -180,6 +198,7 @@ sample({
     wrappedTxs: params!.wrappedTxs,
     coreTxs: params!.coreTxs,
     txPayloads: params!.txPayloads,
+    chain: params!.chain,
   }),
   target: signAndSubmitExtrinsicsFx,
 });
