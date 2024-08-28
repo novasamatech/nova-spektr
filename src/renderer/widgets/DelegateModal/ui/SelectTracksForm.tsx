@@ -2,7 +2,17 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/app/providers';
 import { toAddress, toShortAddress } from '@/shared/lib/utils';
-import { BaseModal, Button, Checkbox, FootnoteText, Icon, MultiSelect, SmallTitleText, Tooltip } from '@/shared/ui';
+import {
+  Alert,
+  BaseModal,
+  Button,
+  Checkbox,
+  FootnoteText,
+  Icon,
+  MultiSelect,
+  SmallTitleText,
+  Tooltip,
+} from '@/shared/ui';
 import { OperationTitle } from '@/entities/chain';
 import { AccountAddress, accountUtils } from '@/entities/wallet';
 import { votingAssetModel } from '@/features/governance';
@@ -24,6 +34,8 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
   const votedTracks = useUnit(selectTracksModel.$votedTracks);
   const tracksGroup = useUnit(selectTracksModel.$tracksGroup);
   const allTracks = useUnit(selectTracksModel.$allTracks);
+  const isMaxWeightReached = useUnit(selectTracksModel.$isMaxWeightReached);
+  const isMaxWeightLoading = useUnit(selectTracksModel.$isMaxWeightLoading);
   const asset = useUnit(votingAssetModel.$votingAsset);
 
   const { adminTracks, governanceTracks, treasuryTracks, fellowshipTracks } = tracksGroup;
@@ -158,9 +170,14 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
           </div>
         </div>
       </div>
+      <div className="px-5">
+        <Alert variant="error" active={isMaxWeightReached} title={t('governance.addDelegation.maxWeightError')}>
+          <FootnoteText>{t('governance.addDelegation.maxWeightErrorDescription')}</FootnoteText>
+        </Alert>
+      </div>
       <div className="flex items-center justify-end px-5">
         <Button
-          disabled={tracks.length === 0 || accounts.length === 0}
+          disabled={tracks.length === 0 || accounts.length === 0 || isMaxWeightReached || isMaxWeightLoading}
           onClick={() => selectTracksModel.output.formSubmitted({ tracks, accounts })}
         >
           {t('governance.addDelegation.continueButton')}

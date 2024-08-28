@@ -1,10 +1,13 @@
-import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { type ApiPromise } from '@polkadot/api';
+import { isArray } from '@polkadot/util';
+import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 
 import { type DelegateAccount } from '@/shared/api/governance';
-import { type Account } from '@/shared/core';
-import { addUniqueItems, removeItemsFromCollection, toAddress } from '@/shared/lib/utils';
+import { type Account, type Chain, TransactionType, type Wallet } from '@/shared/core';
+import { addUniqueItems, formatAmount, removeItemsFromCollection, toAddress } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
-import { accountUtils, walletModel } from '@/entities/wallet';
+import { transactionBuilder } from '@/entities/transaction';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { delegationAggregate, tracksAggregate, votingAggregate } from '@/features/governance';
 import { adminTracks, fellowshipTracks, governanceTracks, treasuryTracks } from '../lib/constants';
 
@@ -18,6 +21,7 @@ const $delegate = restore(formInitiated, null);
 
 const $tracks = createStore<number[]>([]).reset(formInitiated);
 const $accounts = createStore<Account[]>([]);
+const $isMaxWeightReached = createStore(false);
 
 const $availableTracks = combine(tracksAggregate.$tracks, (tracks) => {
   return Object.keys(tracks);
@@ -72,6 +76,40 @@ const $availableAccounts = combine(
   },
 );
 
+type CheckWeightParams = {
+  tracks: number[];
+  chain: Chain;
+  api: ApiPromise;
+  wallet: Wallet;
+};
+
+const checkMaxWeightReachedFx = createEffect(
+  async ({ tracks, chain, api, wallet }: CheckWeightParams): Promise<boolean> => {
+    if (!wallet || !chain || !api) return true;
+
+    if (walletUtils.isWalletConnectGroup(wallet) || walletUtils.isMultisig(wallet)) {
+      const mockTx = transactionBuilder.buildDelegate({
+        tracks,
+        chain,
+        balance: formatAmount('1', chain.assets[0].precision),
+        conviction: 'Locked1x',
+        accountId: '0x0000000000000000000000000000000000000000',
+        target: '0x0000000000000000000000000000000000000000',
+      });
+
+      if (mockTx.type === TransactionType.BATCH_ALL) {
+        const txs = await transactionBuilder.splitBatchAll({ transaction: mockTx, chain, api });
+
+        return isArray(txs) && txs.length > 1;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  },
+);
+
 sample({
   clock: formInitiated,
   source: $availableAccounts,
@@ -122,6 +160,28 @@ const $tracksGroup = combine($availableTracks, (availableTracks) => {
   };
 });
 
+sample({
+  clock: $tracks,
+  source: {
+    tracks: $tracks,
+    network: delegationAggregate.$network,
+    wallet: walletModel.$activeWallet,
+  },
+  filter: ({ network, wallet }) => !!network && !!wallet,
+  fn: ({ tracks, network, wallet }, _): CheckWeightParams => ({
+    tracks,
+    chain: network!.chain,
+    api: network!.api,
+    wallet: wallet!,
+  }),
+  target: checkMaxWeightReachedFx,
+});
+
+sample({
+  clock: checkMaxWeightReachedFx.doneData,
+  target: $isMaxWeightReached,
+});
+
 export const selectTracksModel = {
   $tracks,
   $availableTracks,
@@ -134,6 +194,8 @@ export const selectTracksModel = {
   $accounts,
   $availableAccounts,
   $chain: delegationAggregate.$chain,
+  $isMaxWeightReached,
+  $isMaxWeightLoading: checkMaxWeightReachedFx.pending,
 
   events: {
     formInitiated,

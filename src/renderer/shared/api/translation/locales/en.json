@@ -369,6 +369,8 @@
       },
       "invalidAddressError": "Invalid address",
       "manyAccountsPlaceholder": "Select accounts",
+      "maxWeightError": "Max transaction weight reached",
+      "maxWeightErrorDescription": "Max transaction weight for this wallet type reached. Select fewer tracks or select wallet with another type.",
       "multishardDescription": "You can select multiple accounts and delegate them in several tracks. If you are already delegating an account and want to add more tracks, select it separately.",
       "proxyRestrictionMessage": "Please add a new proxy connections to delegate",
       "revokeDelegationButton": "Revoke delegation",
