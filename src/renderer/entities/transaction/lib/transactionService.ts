@@ -3,7 +3,7 @@ import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { type SignerOptions } from '@polkadot/api/types/submittable';
 import { u32 } from '@polkadot/types';
 import { type Weight } from '@polkadot/types/interfaces';
-import { BN, BN_ZERO, hexToU8a } from '@polkadot/util';
+import { BN_ZERO, hexToU8a } from '@polkadot/util';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 import { type UnsignedTransaction, construct } from '@substrate/txwrapper-polkadot';
 
@@ -364,8 +364,8 @@ async function splitTxsByWeight(api: ApiPromise, txs: Transaction[], options?: P
 
   const maxRefTime = maxWeight.refTime
     .toBn()
-    .mul(new BN(LEAVE_SOME_SPACE_MULTIPLIER * 100))
-    .div(new BN(100));
+    .imuln(LEAVE_SOME_SPACE_MULTIPLIER * 100)
+    .idivn(100);
 
   const result: Transaction[][] = [[]];
   let totalRefTime = BN_ZERO;
