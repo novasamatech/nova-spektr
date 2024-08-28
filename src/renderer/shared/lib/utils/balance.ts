@@ -257,6 +257,11 @@ export const validatePrecision = (amount: string, precision: number) => {
 export const formatGroups = (amount: string): string => {
   if (!amount) return '';
 
+  const isNegative = amount.startsWith('-');
+  if (isNegative) {
+    amount = amount.slice(1);
+  }
+
   const [integer, decimal] = amount.split('.');
   const groups = [];
   let index = integer.length;
@@ -266,7 +271,9 @@ export const formatGroups = (amount: string): string => {
     index -= 3;
   }
 
-  return groups.reverse().join(',') + (decimal || amount.includes('.') ? `.${decimal}` : '');
+  const result = groups.reverse().join(',') + (decimal || amount.includes('.') ? `.${decimal}` : '');
+
+  return isNegative ? `-${result}` : result;
 };
 
 export const cleanAmount = (amount: string) => {
