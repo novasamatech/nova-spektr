@@ -3,16 +3,14 @@ import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { type SignerOptions } from '@polkadot/api/types/submittable';
 import { u32 } from '@polkadot/types';
 import { type Weight } from '@polkadot/types/interfaces';
-import { hexToU8a } from '@polkadot/util';
+import { BN_ZERO, hexToU8a } from '@polkadot/util';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 import { type UnsignedTransaction, construct } from '@substrate/txwrapper-polkadot';
-import { useState } from 'react';
 
 import {
   type Account,
   type AccountId,
   type Address,
-  type ChainId,
   type HexString,
   type MultisigAccount,
   type MultisigThreshold,
@@ -22,16 +20,13 @@ import {
   type Transaction,
   type TransactionType,
   type TxWrapper,
-  type TxWrappers_OLD,
   type Wallet,
-  type WrapAsMulti,
   WrapperKind,
 } from '@shared/core';
 import { type TxMetadata, createTxMetadata, dictionary, toAccountId } from '@shared/lib/utils';
 import { walletUtils } from '../../wallet';
 
-import { useCallDataDecoder } from './callDataDecoder';
-import { type HashData, type ITransactionService } from './common/types';
+import { LEAVE_SOME_SPACE_MULTIPLIER } from './common/constants';
 import { decodeDispatchError } from './common/utils';
 import { getExtrinsic, getUnsignedTransaction, wrapAsMulti, wrapAsProxy } from './extrinsicService';
 
@@ -53,10 +48,12 @@ export const transactionService = {
 
   getTxWrappers,
   getWrappedTransaction,
-};
 
-const shouldWrapAsMulti = (wrapper: TxWrappers_OLD): wrapper is WrapAsMulti =>
-  'signatoryId' in wrapper && 'account' in wrapper;
+  getExtrinsicWeight,
+  getTxWeight,
+  verifySignature,
+  splitTxsByWeight,
+};
 
 async function getTransactionFee(
   transaction: Transaction,
@@ -336,91 +333,62 @@ async function createSignerOptions(api: ApiPromise): Promise<Partial<SignerOptio
   };
 }
 
-export const useTransaction = (): ITransactionService => {
-  const { decodeCallData } = useCallDataDecoder();
+async function getExtrinsicWeight(
+  extrinsic: SubmittableExtrinsic<'promise'>,
+  options?: Partial<SignerOptions>,
+): Promise<Weight> {
+  const { weight } = await extrinsic.paymentInfo(extrinsic.signer, options);
 
-  const [txs, setTxs] = useState<Transaction[]>([]);
-  const [wrappers, setWrappers] = useState<TxWrappers_OLD[]>([]);
+  return weight;
+}
 
-  const getTransactionHash = (transaction: Transaction, api: ApiPromise): HashData => {
-    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+async function getTxWeight(
+  transaction: Transaction,
+  api: ApiPromise,
+  options?: Partial<SignerOptions>,
+): Promise<Weight> {
+  const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
 
-    return {
-      callData: extrinsic.method.toHex(),
-      callHash: extrinsic.method.hash.toHex(),
-    };
-  };
+  return getExtrinsicWeight(extrinsic, options);
+}
 
-  const getExtrinsicWeight = async (
-    extrinsic: SubmittableExtrinsic<'promise'>,
-    options?: Partial<SignerOptions>,
-  ): Promise<Weight> => {
-    const paymentInfo = await extrinsic.paymentInfo(extrinsic.signer, options);
+function verifySignature(payload: Uint8Array, signature: HexString, accountId: AccountId): boolean {
+  // For big transaction we get hash from payload
+  const payloadToVerify = payload.length > 256 ? blake2AsU8a(payload) : payload;
 
-    return paymentInfo.weight;
-  };
+  return signatureVerify(payloadToVerify, signature, accountId).isValid;
+}
 
-  const getTxWeight = async (
-    transaction: Transaction,
-    api: ApiPromise,
-    options?: Partial<SignerOptions>,
-  ): Promise<Weight> => {
-    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-    const { weight } = await extrinsic.paymentInfo(transaction.address, options);
+async function splitTxsByWeight(api: ApiPromise, txs: Transaction[], options?: Partial<SignerOptions>) {
+  const maxWeight = api.consts.system.blockWeights.perClass.normal.maxExtrinsic.value;
 
-    return weight;
-  };
+  const maxRefTime = maxWeight.refTime
+    .toBn()
+    .imuln(LEAVE_SOME_SPACE_MULTIPLIER * 100)
+    .idivn(100);
 
-  const verifySignature = (payload: Uint8Array, signature: HexString, accountId: AccountId): boolean => {
-    const payloadToVerify = payload.length > 256 ? blake2AsU8a(payload) : payload;
+  const result: Transaction[][] = [[]];
+  let totalRefTime = BN_ZERO;
 
-    return signatureVerify(payloadToVerify, signature, accountId).isValid;
-  };
+  const txsWeights: Partial<Record<TransactionType, Weight>> = {};
 
-  const wrapTx = (transaction: Transaction, api: ApiPromise, addressPrefix: number) => {
-    wrappers.forEach((wrapper) => {
-      if (shouldWrapAsMulti(wrapper)) {
-        transaction = wrapAsMulti({
-          api,
-          addressPrefix,
-          transaction,
-          txWrapper: {
-            kind: WrapperKind.MULTISIG,
-            multisigAccount: wrapper.account,
-            signatories: wrapper.account.signatories.map((s) => ({ accountId: s.accountId })) as Account[],
-            signer: { accountId: wrapper.signatoryId } as Account,
-          },
-        });
-      }
-    });
+  for (const tx of txs) {
+    const weight = txsWeights[tx.type] || (await getTxWeight(tx, api, options));
 
-    return transaction;
-  };
+    if (!txsWeights[tx.type]) {
+      txsWeights[tx.type] = weight;
+    }
 
-  const buildTransaction = (
-    type: TransactionType,
-    address: Address,
-    chainId: ChainId,
-    args: Record<string, any>,
-  ): Transaction => {
-    return {
-      type: type,
-      address: address,
-      chainId: chainId,
-      args: args,
-    };
-  };
+    totalRefTime = totalRefTime.add(weight.refTime.toBn());
 
-  return {
-    getExtrinsicWeight,
-    getTxWeight,
-    getTransactionHash,
-    decodeCallData,
-    verifySignature,
-    txs,
-    setTxs,
-    setWrappers,
-    wrapTx,
-    buildTransaction,
-  };
-};
+    if (totalRefTime.lt(maxRefTime) && result.length > 0) {
+      result[result.length - 1].push(tx);
+    } else {
+      result.push([tx]);
+
+      totalRefTime = weight.refTime.toBn();
+    }
+  }
+
+  return result;
+}

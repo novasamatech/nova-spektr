@@ -282,7 +282,14 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
 
       {delegationVotes && (
         <DetailRow label={t('operation.details.delegationVotes')} className={valueClass}>
-          <FootnoteText className={valueClass}>{delegationVotes}</FootnoteText>
+          <FootnoteText className={valueClass}>
+            <AssetBalance
+              className={valueClass}
+              value={delegationVotes}
+              asset={defaultAsset}
+              showSymbol={false}
+            ></AssetBalance>
+          </FootnoteText>
         </DetailRow>
       )}
 
@@ -293,7 +300,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
           </div>
           <Tooltip
             content={delegationTracks
-              .map((trackId) => t(allTracks.find((track) => track.id === trackId)!.value))
+              .map((trackId) => t(allTracks.find((track) => track.id === trackId)?.value || ''))
               .join(', ')}
             pointer="up"
           >
