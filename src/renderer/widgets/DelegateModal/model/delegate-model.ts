@@ -20,7 +20,7 @@ import { basketModel } from '@entities/basket/model/basket-model';
 import { networkModel } from '@entities/network';
 import { transactionBuilder, transactionService } from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
-import { delegateRegistryAggregate, networkSelectorModel } from '@/features/governance';
+import { delegateRegistryAggregate, networkSelectorModel, tracksAggregate } from '@/features/governance';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { delegateConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
@@ -373,16 +373,16 @@ sample({
   filter: ({ delegateData, walletData, transactions }) => {
     return Boolean(delegateData) && Boolean(walletData) && Boolean(transactions);
   },
-  fn: (bondFlowData, signParams) => ({
+  fn: (delegateFlowData, signParams) => ({
     event: {
       ...signParams,
-      chain: bondFlowData.walletData.chain!,
-      account: bondFlowData.accounts[0],
-      signatory: bondFlowData.delegateData!.signatory,
-      description: bondFlowData.delegateData!.description,
-      coreTxs: bondFlowData.transactions!.map((tx) => tx.coreTx),
-      wrappedTxs: bondFlowData.transactions!.map((tx) => tx.wrappedTx),
-      multisigTxs: bondFlowData.transactions!.map((tx) => tx.multisigTx).filter(nonNullable),
+      chain: delegateFlowData.walletData.chain!,
+      account: delegateFlowData.accounts[0],
+      signatory: delegateFlowData.delegateData!.signatory,
+      description: delegateFlowData.delegateData!.description,
+      coreTxs: delegateFlowData.transactions!.map((tx) => tx.coreTx),
+      wrappedTxs: delegateFlowData.transactions!.map((tx) => tx.wrappedTx),
+      multisigTxs: delegateFlowData.transactions!.map((tx) => tx.multisigTx).filter(nonNullable),
     },
     step: Step.SUBMIT,
   }),
@@ -416,6 +416,14 @@ sample({
   source: $step,
   filter: (step) => isStep(step, Step.SUBMIT),
   target: flowFinished,
+});
+
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: { network: networkSelectorModel.$governanceNetwork, delegateData: $delegateData },
+  filter: ({ network, delegateData }) => nonNullable(network) && nonNullable(delegateData),
+  fn: ({ network }) => ({ api: network!.api, chain: network!.chain }),
+  target: tracksAggregate.events.requestTracks,
 });
 
 sample({
