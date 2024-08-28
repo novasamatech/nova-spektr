@@ -6,14 +6,8 @@ import { readonly } from 'patronum';
 import { type DelegateAccount } from '@/shared/api/governance';
 import { type Address } from '@/shared/core';
 import { Step, includesMultiple, toAccountId, validateAddress } from '@/shared/lib/utils';
-import { votingService } from '@/entities/governance';
 import { walletModel } from '@/entities/wallet';
-import {
-  delegateRegistryAggregate,
-  delegationAggregate,
-  networkSelectorModel,
-  votingAggregate,
-} from '@/features/governance';
+import { delegateRegistryAggregate, delegationAggregate, networkSelectorModel } from '@/features/governance';
 import { delegateModel } from '@/widgets/DelegateModal/model/delegate-model';
 import { DelegationErrors, SortProp, SortType } from '../common/constants';
 
@@ -35,36 +29,13 @@ const $customDelegate = restore(customDelegateChanged, '').reset(openCustomModal
 
 const $delegateList = combine(
   {
-    list: delegateRegistryAggregate.$delegateRegistry,
-    activeVotes: votingAggregate.$activeWalletVotes,
+    delegationsList: delegateRegistryAggregate.$delegateRegistry,
     query: $query,
     sortType: $sortType,
   },
-  ({ list, activeVotes, query, sortType }) => {
-    const activeDelegationsSet = new Set<Address>();
-
-    for (const voteList of Object.values(activeVotes)) {
-      for (const vote of Object.values(voteList)) {
-        if (votingService.isDelegating(vote)) {
-          activeDelegationsSet.add(vote.target);
-        }
-      }
-    }
-
-    const activeDelegationsList = [...activeDelegationsSet];
-    const addresses = new Set(list.map((d) => d.accountId));
-
-    const delegationsList = [
-      ...list,
-      ...activeDelegationsList.filter((d) => !addresses.has(d)).map((d) => ({ accountId: d }) as DelegateAccount),
-    ];
-
-    const delegatedList = activeDelegationsList.length
-      ? delegationsList.filter((delegate) => activeDelegationsList.includes(delegate.accountId))
-      : delegationsList;
-
+  ({ delegationsList, query, sortType }) => {
     if (!sortType && !query) {
-      const grouped = groupBy(delegatedList, (delegate) => !!delegate.name);
+      const grouped = groupBy(delegationsList, (delegate) => !!delegate.name);
 
       return [
         ...sortBy(grouped['true'], (delegate) => delegate[SortProp[SortType.DELEGATIONS]] || 0).reverse(),

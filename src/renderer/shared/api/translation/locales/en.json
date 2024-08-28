@@ -451,7 +451,12 @@
       "Reciprocal": "Reciprocal",
       "SteppedDecreasing": "Stepped decreasing"
     },
-    "delegations": "Delegations",
+    "delegations": {
+      "label": "Delegations",
+      "title": "Delegations on",
+      "tracksLabel_one": "across { count } track",
+      "tracksLabel_other": "across { count } tracks"
+    },
     "emptyStateDescription": "Update the search or cancel filtering",
     "emptyStateLabel": "Nothing was found",
     "errors": {
