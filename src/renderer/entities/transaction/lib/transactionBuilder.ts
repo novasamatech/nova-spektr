@@ -253,7 +253,7 @@ async function splitBatchAll({ transaction, chain, api }: SplitBatchAllParams): 
     return transaction;
   }
 
-  const splittedTxs = await transactionService.splitTxs(api, transaction.args.transactions);
+  const splittedTxs = await transactionService.splitTxsByWeight(api, transaction.args.transactions);
 
   return splittedTxs.map((transactions) =>
     buildBatchAll({ chain, accountId: toAccountId(transaction.address), transactions }),

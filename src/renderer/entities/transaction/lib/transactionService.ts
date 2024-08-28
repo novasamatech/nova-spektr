@@ -52,7 +52,7 @@ export const transactionService = {
   getExtrinsicWeight,
   getTxWeight,
   verifySignature,
-  splitTxs,
+  splitTxsByWeight,
 };
 
 async function getTransactionFee(
@@ -358,7 +358,7 @@ function verifySignature(payload: Uint8Array, signature: HexString, accountId: A
   return signatureVerify(payloadToVerify, signature, accountId).isValid;
 }
 
-async function splitTxs(api: ApiPromise, txs: Transaction[], options?: Partial<SignerOptions>) {
+async function splitTxsByWeight(api: ApiPromise, txs: Transaction[], options?: Partial<SignerOptions>) {
   const maxWeight = api.consts.system.blockWeights.perClass.normal.maxExtrinsic.value;
 
   const refTime = maxWeight.refTime.toBn().mul(new BN(LEAVE_SOME_SPACE_MULTIPLIER));

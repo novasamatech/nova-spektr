@@ -14,7 +14,7 @@ import {
   type Transaction,
   TransactionType,
 } from '@shared/core';
-import { removeFromCollection, toAccountId } from '@shared/lib/utils';
+import { removeFromCollection } from '@shared/lib/utils';
 import { matrixModel, matrixUtils } from '@entities/matrix';
 import { buildMultisigTx } from '@entities/multisig';
 import { networkModel } from '@entities/network';
@@ -75,19 +75,19 @@ const signAndSubmitExtrinsicsFx = createEffect(
 
     for (const tx of wrappedTxs) {
       if (tx.type === TransactionType.BATCH_ALL) {
-        const txs = await transactionService.splitTxs(apis[chain.chainId], tx.args.transactions);
+        const batchAllTxs = await transactionBuilder.splitBatchAll({
+          transaction: tx,
+          chain,
+          api: apis[chain.chainId],
+        });
 
-        splittedBatch = splittedBatch.concat(
-          txs.map((transactions) =>
-            transactionBuilder.buildBatchAll({ chain, accountId: toAccountId(tx.address), transactions }),
-          ),
-        );
+        splittedBatch = splittedBatch.concat(batchAllTxs);
       } else {
         splittedBatch.push(tx);
       }
     }
 
-    splittedBatch.forEach((transaction, index) => {
+    for (const [index, transaction] of splittedBatch.entries()) {
       transactionService.signAndSubmit(
         transaction,
         signatures[index],
@@ -101,7 +101,7 @@ const signAndSubmitExtrinsicsFx = createEffect(
           }
         },
       );
-    });
+    }
   },
 );
 

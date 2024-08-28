@@ -37,7 +37,7 @@ const splitTxsFx = createEffect(async ({ input, apis }: SplitParams): Promise<In
     if (!apis[tx.chain.chainId]) continue;
 
     if (tx.transaction.type === TransactionType.BATCH_ALL) {
-      const txs = await transactionService.splitTxs(apis[tx.chain.chainId], tx.transaction.args.transactions);
+      const txs = await transactionService.splitTxsByWeight(apis[tx.chain.chainId], tx.transaction.args.transactions);
 
       const splittedBatch = txs.map((transactions) => ({
         ...tx,

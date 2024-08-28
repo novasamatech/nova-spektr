@@ -39,7 +39,7 @@ export const YourDelegation = () => {
           <DetailRow label={t('governance.addDelegation.tracksLabel')}>
             <Tooltip
               content={uniqueTracks
-                .map((trackId) => t(allTracks.find((track) => track.id === trackId)!.value))
+                .map((trackId) => t(allTracks.find((track) => track.id === trackId)?.value || ''))
                 .join(', ')}
               pointer="up"
             >
