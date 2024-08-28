@@ -59,7 +59,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         <div className="flex flex-col items-center gap-y-1">
           <span className="font-manrope text-[32px] font-bold leading-[36px] text-text-primary">
             {t('governance.referendum.votes', {
-              votes: formatBalance(votingPower.neg(), asset.precision).formatted,
+              votes: '-' + formatBalance(votingPower, asset.precision).formatted,
               count: toNumberWithPrecision(votingPower, asset.precision),
             })}
           </span>
