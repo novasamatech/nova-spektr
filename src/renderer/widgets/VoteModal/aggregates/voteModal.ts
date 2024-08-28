@@ -209,7 +209,7 @@ export const voteModalAggregate = {
   ...voteFormAggregate.transactionForm,
 
   $lockPeriods: lockPeriodsModel.$lockPeriods,
-  $lock: locksModel.$totalLock,
+  $lock: voteFormAggregate.$lockForAccount,
   $initialConviction: voteFormAggregate.$initialConviction,
   $availableBalance: voteFormAggregate.$availableBalance,
   $canSubmit: voteFormAggregate.$canSubmit,

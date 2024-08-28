@@ -157,6 +157,11 @@ sample({
   target: delegateModel.events.flowStarted,
 });
 
+sample({
+  clock: delegateModel.events.flowStarted,
+  target: closeCustomModal,
+});
+
 export const delegationModel = {
   $isListLoading: delegateRegistryAggregate.$isRegistryLoading,
   $delegateList: readonly($delegateList),

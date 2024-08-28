@@ -4,11 +4,12 @@ import { isNil } from 'lodash';
 import { and, empty, not, reset } from 'patronum';
 
 import { type Conviction, type OngoingReferendum } from '@shared/core';
-import { nonNullable } from '@shared/lib/utils';
+import { nonNullable, toAddress } from '@shared/lib/utils';
 import { balanceModel } from '@entities/balance';
 import { voteTransactionService } from '@entities/governance';
 import { type WrappedTransactions, transactionBuilder } from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
+import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
 import { type BasicFormParams, createTransactionForm } from '@features/governance/lib/createTransactionForm';
 import { locksModel } from '@features/governance/model/locks';
 import { networkSelectorModel } from '@features/governance/model/networkSelector';
@@ -31,6 +32,7 @@ type FormInput = {
 const $initialConviction = createStore<Conviction>('None');
 const $referendum = createStore<OngoingReferendum | null>(null);
 const $availableBalance = createStore(BN_ZERO);
+const $lockForAccount = createStore(BN_ZERO);
 
 const $canSubmit = createStore(false);
 
@@ -102,20 +104,33 @@ const { form, resetForm, transaction, accounts } = transactionForm;
 sample({
   clock: form.fields.account.onChange,
   source: {
+    trackLocks: locksModel.$trackLocks,
+    chain: networkSelectorModel.$governanceChain,
+  },
+  filter: ({ chain }, account) => nonNullable(account) && nonNullable(chain),
+  fn: ({ trackLocks, chain }, account) => {
+    const address = toAddress(account!.accountId, { prefix: chain!.addressPrefix });
+
+    return getLocksForAddress(address, trackLocks);
+  },
+  target: $lockForAccount,
+});
+
+sample({
+  clock: form.fields.account.onChange,
+  source: {
     referendum: $referendum,
-    locks: locksModel.$trackLocks,
     accounts: accounts.$available,
+    lockForAccount: $lockForAccount,
   },
   filter: ({ referendum }, account) => !isNil(account) && !isNil(referendum),
-  fn: ({ referendum, locks, accounts }, account) => {
+  fn: ({ referendum, accounts, lockForAccount }, account) => {
     if (!account || !referendum) return BN_ZERO;
 
     const accountBalance = accounts.find((x) => x.account.accountId === account.accountId)?.balance ?? BN_ZERO;
     if (!accountBalance) return BN_ZERO;
 
-    const lockForAccount = locks[account.accountId]?.[referendum.track];
-
-    return BN.max(BN_ZERO, accountBalance.sub(lockForAccount ?? BN_ZERO));
+    return BN.max(BN_ZERO, accountBalance.add(lockForAccount ?? BN_ZERO));
   },
   target: $availableBalance,
 });
@@ -197,7 +212,7 @@ export const voteFormAggregate = {
 
   $referendum,
   $initialConviction,
-
+  $lockForAccount,
   $availableBalance,
 
   $canSubmit,
