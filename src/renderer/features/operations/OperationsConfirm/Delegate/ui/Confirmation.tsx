@@ -226,6 +226,7 @@ export const Confirmation = ({
             from={confirmStore.transferable}
             to={new BN(confirmStore.transferable).sub(new BN(amountValue))}
             asset={confirmStore.asset}
+            lock={confirmStore.locks}
           />
         </DetailRow>
 

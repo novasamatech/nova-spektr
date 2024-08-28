@@ -253,8 +253,9 @@ const FeeSection = () => {
           <DetailRow label={t('governance.operations.transferable')} wrapperClassName="items-start">
             <BalanceDiff
               from={accounts[0].balance}
-              to={new BN(accounts[0].balance).sub(amountValue).toString()}
+              to={new BN(accounts[0].balance).sub(amountValue)}
               asset={network.asset}
+              lock={accounts[0].lock}
             />
           </DetailRow>
 
