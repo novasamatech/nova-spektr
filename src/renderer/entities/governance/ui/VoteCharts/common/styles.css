@@ -1,25 +1,3 @@
-.vote-chart-container {
-  display: flex;
-  position: relative;
-  row-gap: 4px;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  height: 22px;
-}
-
-.vote-chart-aye {
-  border-radius: 5px;
-  background-color: var(--icon-positive);
-  height: 10px;
-}
-
-.vote-chart-nay {
-  border-radius: 5px;
-  background-color: var(--icon-negative);
-  height: 10px;
-}
-
 .vote-chart-point {
   display: flex;
   position: absolute;
