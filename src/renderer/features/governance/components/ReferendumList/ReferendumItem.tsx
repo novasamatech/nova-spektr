@@ -50,12 +50,7 @@ export const ReferendumItem = memo<Props>(({ referendum, isTitlesLoading, onSele
         <HeadlineText className="pointer-events-auto flex-1">{titleNode}</HeadlineText>
         <div className="shrink-0 basis-[200px]">
           {voteFractions ? (
-            <VoteChart
-              bgColor="icon-button"
-              aye={voteFractions.aye}
-              nay={voteFractions.nay}
-              pass={voteFractions.pass}
-            />
+            <VoteChart aye={voteFractions.aye} nay={voteFractions.nay} pass={voteFractions.pass} />
           ) : null}
         </div>
       </div>
