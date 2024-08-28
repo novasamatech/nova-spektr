@@ -3,7 +3,7 @@ import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { type SignerOptions } from '@polkadot/api/types/submittable';
 import { u32 } from '@polkadot/types';
 import { type Weight } from '@polkadot/types/interfaces';
-import { BN, hexToU8a } from '@polkadot/util';
+import { BN, BN_ZERO, hexToU8a } from '@polkadot/util';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 import { type UnsignedTransaction, construct } from '@substrate/txwrapper-polkadot';
 
@@ -353,6 +353,7 @@ async function getTxWeight(
 }
 
 function verifySignature(payload: Uint8Array, signature: HexString, accountId: AccountId): boolean {
+  // For big transaction we get hash from payload
   const payloadToVerify = payload.length > 256 ? blake2AsU8a(payload) : payload;
 
   return signatureVerify(payloadToVerify, signature, accountId).isValid;
@@ -371,8 +372,8 @@ async function splitTxsByWeight(api: ApiPromise, txs: Transaction[], options?: P
     .div(new BN(100));
 
   const result: Transaction[][] = [[]];
-  let totalRefTime = new BN(0);
-  let totalProofSize = new BN(0);
+  let totalRefTime = BN_ZERO;
+  let totalProofSize = BN_ZERO;
 
   const txsWeights: Partial<Record<TransactionType, Weight>> = {};
 
