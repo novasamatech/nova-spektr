@@ -172,7 +172,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
       </div>
       <div className="px-5">
         <Alert variant="error" active={isMaxWeightReached} title={t('governance.addDelegation.maxWeightError')}>
-          <FootnoteText>{t('governance.addDelegation.maxWeightErrorDescription')}</FootnoteText>
+          <Alert.Item withDot={false}>{t('governance.addDelegation.maxWeightErrorDescription')} </Alert.Item>
         </Alert>
       </div>
       <div className="flex items-center justify-end px-5">

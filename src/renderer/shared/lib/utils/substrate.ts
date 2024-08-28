@@ -10,7 +10,15 @@ import {
   getRegistry,
 } from '@substrate/txwrapper-polkadot';
 
-import { type Address, type BlockHeight, type CallData, type CallHash, type ProxyType, XcmPallets } from '@shared/core';
+import {
+  type Address,
+  type BlockHeight,
+  type CallData,
+  type CallHash,
+  type HexString,
+  type ProxyType,
+  XcmPallets,
+} from '@shared/core';
 import { XcmTransferType } from '../../api/xcm';
 
 import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './constants';
@@ -86,6 +94,12 @@ export const getCurrentBlockNumber = async (api: ApiPromise): Promise<number> =>
   const { block } = await api.rpc.chain.getBlock();
 
   return block.header.number.toNumber();
+};
+
+export const getCurrentBlockHash = async (api: ApiPromise): Promise<HexString> => {
+  const { block } = await api.rpc.chain.getBlock();
+
+  return block.header.hash.toHex();
 };
 
 export async function getParachainId(api: ApiPromise): Promise<number> {

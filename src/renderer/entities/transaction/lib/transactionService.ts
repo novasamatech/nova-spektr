@@ -363,12 +363,12 @@ async function splitTxsByWeight(api: ApiPromise, txs: Transaction[], options?: P
 
   const refTime = maxWeight.refTime
     .toBn()
-    .mul(new BN(LEAVE_SOME_SPACE_MULTIPLIER * 10))
-    .div(new BN(10));
+    .mul(new BN(LEAVE_SOME_SPACE_MULTIPLIER * 100))
+    .div(new BN(100));
   const proofSize = maxWeight.proofSize
     .toBn()
-    .mul(new BN(LEAVE_SOME_SPACE_MULTIPLIER * 10))
-    .div(new BN(10));
+    .mul(new BN(LEAVE_SOME_SPACE_MULTIPLIER * 100))
+    .div(new BN(100));
 
   const result: Transaction[][] = [[]];
   let totalRefTime = new BN(0);
