@@ -297,6 +297,7 @@ sample({
 sample({
   clock: $submitStep,
   source: $results,
+  filter: (_, { step }) => step !== SubmitStep.LOADING,
   target: formSubmitted,
 });
 

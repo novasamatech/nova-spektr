@@ -21,12 +21,12 @@ const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
-const $unstakeStore = createStore<UnstakeStore | null>(null);
+const $unstakeStore = createStore<UnstakeStore | null>(null).reset(flowFinished);
 const $networkStore = restore<NetworkStore | null>(flowStarted, null);
 
-const $wrappedTxs = createStore<Transaction[] | null>(null);
-const $multisigTxs = createStore<Transaction[] | null>(null);
-const $coreTxs = createStore<Transaction[] | null>(null);
+const $wrappedTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
+const $multisigTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
+const $coreTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
 
 const $initiatorWallet = combine(
   {

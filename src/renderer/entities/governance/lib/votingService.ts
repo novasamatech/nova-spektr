@@ -71,11 +71,19 @@ const getConviction = (conviction: number): Conviction => {
 };
 
 const getVoteFractions = (tally: Tally, approve: BN) => {
+  const pass = parseInt(approve.toString().slice(0, 8)) / 1_000_000;
   const total = tally.ayes.add(tally.nays);
 
-  const aye = tally.ayes.muln(10_000_000).div(total).toNumber() / 100_000;
-  const nay = tally.nays.muln(10_000_000).div(total).toNumber() / 100_000;
-  const pass = parseInt(approve.toString().slice(0, 8)) / 1000000;
+  if (total.isZero()) {
+    return {
+      aye: 0,
+      nay: 0,
+      pass,
+    };
+  }
+
+  const aye = tally.ayes.muln(100_000).div(total).toNumber() / 1000;
+  const nay = tally.nays.muln(100_000).div(total).toNumber() / 1000;
 
   return { aye, nay, pass };
 };
@@ -175,6 +183,22 @@ const calculateVotingPower = (balance: BN, conviction: Conviction) => {
   return balance.muln(votingCoefficient);
 };
 
+const calculateAccountVoteAmount = (vote: AccountVote) => {
+  if (isStandardVote(vote)) {
+    return vote.balance;
+  }
+
+  if (isSplitVote(vote)) {
+    return vote.aye.add(vote.nay);
+  }
+
+  if (isSplitAbstainVote(vote)) {
+    return vote.aye.add(vote.nay).add(vote.abstain);
+  }
+
+  return BN_ZERO;
+};
+
 const calculateAccountVotePower = (vote: AccountVote) => {
   const conviction = getAccountVoteConviction(vote);
 
@@ -244,5 +268,6 @@ export const votingService = {
 
   calculateVotingPower,
   calculateAccountVotePower,
+  calculateAccountVoteAmount,
   calculateAccountVotesTotalBalance,
 };

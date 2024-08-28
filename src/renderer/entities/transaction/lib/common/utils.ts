@@ -217,7 +217,7 @@ const TransactionTitles: Record<TransactionType, string> = {
   [TransactionType.UNLOCK]: 'operations.titles.unlock',
   [TransactionType.VOTE]: 'operations.titles.vote',
   [TransactionType.REVOTE]: 'operations.titles.revote',
-  [TransactionType.RETRACT_VOTE]: 'operations.titles.retractVote',
+  [TransactionType.REMOVE_VOTE]: 'operations.titles.removeVote',
   [TransactionType.DELEGATE]: 'operations.titles.delegate',
   [TransactionType.UNDELEGATE]: 'operations.titles.undelegate',
 };
@@ -263,7 +263,7 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.UNLOCK]: () => 'operations.modalTitles.unlockOn',
   [TransactionType.VOTE]: () => 'operations.modalTitles.vote',
   [TransactionType.REVOTE]: () => 'operations.modalTitles.revote',
-  [TransactionType.RETRACT_VOTE]: () => 'operations.modalTitles.retractVote',
+  [TransactionType.REMOVE_VOTE]: () => 'operations.modalTitles.removeVote',
   [TransactionType.DELEGATE]: () => 'operations.modalTitles.delegateOn',
   [TransactionType.UNDELEGATE]: () => 'operations.modalTitles.undelegateOn',
 };

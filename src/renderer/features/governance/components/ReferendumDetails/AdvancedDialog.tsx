@@ -1,7 +1,9 @@
+import { BN, BN_ZERO } from '@polkadot/util';
+
 import { useI18n } from '@app/providers';
 import { type Asset, type OngoingReferendum } from '@shared/core';
 import { useModalClose } from '@shared/lib/hooks';
-import { copyToClipboard, formatBalance } from '@shared/lib/utils';
+import { copyToClipboard, formatAsset } from '@shared/lib/utils';
 import { BaseModal, DetailRow, IconButton, Separator, Truncate } from '@shared/ui';
 import { AddressWithName } from '@entities/wallet';
 import { type AggregatedReferendum } from '../../types/structs';
@@ -16,21 +18,15 @@ export const AdvancedDialog = ({ asset, referendum, onClose }: Props) => {
   const { t } = useI18n();
   const [isOpen, closeModal] = useModalClose(true, onClose);
 
-  const { submissionDeposit, approvalThreshold, supportThreshold, tally, proposal } = referendum;
+  const { decisionDeposit, submissionDeposit, approvalThreshold, supportThreshold, tally, proposal } = referendum;
   const approvalCurve = approvalThreshold?.curve?.type;
   const supportCurve = supportThreshold?.curve?.type;
 
-  const electrorateBalance = formatBalance(tally.ayes.add(tally.nays).add(tally.support), asset.precision);
-  const electrorate = `${electrorateBalance.formatted} ${asset.symbol}`;
+  const electorate = formatAsset(tally.ayes.add(tally.nays).add(tally.support), asset);
+  const deposit = decisionDeposit ? formatAsset(decisionDeposit.amount, asset) : null;
 
-  const turnoutBalance = supportThreshold
-    ? formatBalance(supportThreshold.value.sub(tally.support), asset.precision)
-    : null;
-  const turnout = `${turnoutBalance?.formatted ?? 0} ${asset.symbol}`;
-
-  const deposit = submissionDeposit
-    ? `${formatBalance(submissionDeposit.amount, asset.precision).formatted} ${asset.symbol}`
-    : null;
+  const turnoutValue = supportThreshold ? BN.max(BN_ZERO, supportThreshold.value.sub(tally.support)) : BN_ZERO;
+  const turnout = supportThreshold ? formatAsset(turnoutValue, asset) : null;
 
   return (
     <BaseModal
@@ -70,7 +66,7 @@ export const AdvancedDialog = ({ asset, referendum, onClose }: Props) => {
 
         <DetailRow label={t('governance.advanced.fields.turnout')}>{turnout}</DetailRow>
 
-        <DetailRow label={t('governance.advanced.fields.electrorate')}>{electrorate}</DetailRow>
+        <DetailRow label={t('governance.advanced.fields.electorate')}>{electorate}</DetailRow>
 
         <DetailRow label={t('governance.advanced.fields.callHash')}>
           <div className="flex w-32 items-center gap-1 text-text-secondary">

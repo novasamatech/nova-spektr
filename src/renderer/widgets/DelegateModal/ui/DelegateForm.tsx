@@ -25,7 +25,7 @@ import { priceProviderModel } from '@entities/price';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { FeeLoader } from '@entities/transaction';
 import { ProxyWalletAlert } from '@entities/wallet';
-import { lockPeriodsModel, locksModel, locksPeriodsAggregate } from '@/features/governance';
+import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { ConvictionSelect } from '@/widgets/VoteModal/ui/formFields/ConvictionSelect';
 import { formModel } from '../model/form-model';
 
@@ -50,7 +50,7 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
       closeButton
       headerClass="px-5 py-3"
       panelClass="flex h-[678px] w-modal flex-col gap-4 bg-white"
-      contentClass="min-h-0 w-full flex-1 bg-card-background py-4"
+      contentClass="min-h-0 w-full flex-1 bg-card-background py-4 rounded-lg"
       isOpen={isOpen}
       title={
         network?.chain && <OperationTitle title={t('governance.addDelegation.title')} chainId={network.chain.chainId} />
@@ -228,7 +228,6 @@ const FeeSection = () => {
   const feeData = useUnit(formModel.$feeData);
   const isFeeLoading = useUnit(formModel.$isFeeLoading);
   const isMultisig = useUnit(formModel.$isMultisig);
-  const totalLock = useUnit(locksModel.$totalLock);
   const accounts = useUnit(formModel.$accounts);
 
   const lockPeriods = useStoreMap({
@@ -241,7 +240,7 @@ const FeeSection = () => {
 
   useGate(locksPeriodsAggregate.gates.flow, { chain: network?.chain });
 
-  if (!network || shards.value.length === 0) {
+  if (!network || shards.value.length === 0 || accounts.length === 0) {
     return null;
   }
 
@@ -260,7 +259,7 @@ const FeeSection = () => {
           </DetailRow>
 
           <DetailRow label={t('governance.locks.governanceLock')} wrapperClassName="items-start">
-            <LockValueDiff asset={network.asset} from={totalLock} to={amountValue} />
+            <LockValueDiff asset={network.asset} from={accounts[0].lock} to={amountValue} />
           </DetailRow>
 
           <DetailRow label={t('governance.locks.undelegatePeriod')} wrapperClassName="items-start">

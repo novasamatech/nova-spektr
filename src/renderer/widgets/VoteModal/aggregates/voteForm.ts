@@ -4,12 +4,12 @@ import { isNil } from 'lodash';
 import { and, empty, not, reset } from 'patronum';
 
 import { type Conviction, type OngoingReferendum } from '@shared/core';
-import { nonNullable } from '@shared/lib/utils';
+import { nonNullable, toAddress } from '@shared/lib/utils';
 import { balanceModel } from '@entities/balance';
 import { voteTransactionService } from '@entities/governance';
 import { type WrappedTransactions, transactionBuilder } from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
-import { createFeeCalculator } from '@features/governance/lib/createFeeCalculator';
+import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
 import { type BasicFormParams, createTransactionForm } from '@features/governance/lib/createTransactionForm';
 import { locksModel } from '@features/governance/model/locks';
 import { networkSelectorModel } from '@features/governance/model/networkSelector';
@@ -32,6 +32,7 @@ type FormInput = {
 const $initialConviction = createStore<Conviction>('None');
 const $referendum = createStore<OngoingReferendum | null>(null);
 const $availableBalance = createStore(BN_ZERO);
+const $lockForAccount = createStore(BN_ZERO);
 
 const $canSubmit = createStore(false);
 
@@ -100,32 +101,36 @@ const transactionForm = createTransactionForm<Form>({
 
 const { form, resetForm, transaction, accounts } = transactionForm;
 
-const {
-  $: $fee,
-  $pending: $feePending,
-  drop: dropFee,
-} = createFeeCalculator({
-  $transaction: transaction.$wrappedTransactions.map((x) => (x ? x.wrappedTx : null)),
-  $api: networkSelectorModel.$governanceChainApi,
+sample({
+  clock: form.fields.account.onChange,
+  source: {
+    trackLocks: locksModel.$trackLocks,
+    chain: networkSelectorModel.$governanceChain,
+  },
+  filter: ({ chain }, account) => nonNullable(account) && nonNullable(chain),
+  fn: ({ trackLocks, chain }, account) => {
+    const address = toAddress(account!.accountId, { prefix: chain!.addressPrefix });
+
+    return getLocksForAddress(address, trackLocks);
+  },
+  target: $lockForAccount,
 });
 
 sample({
   clock: form.fields.account.onChange,
   source: {
     referendum: $referendum,
-    locks: locksModel.$trackLocks,
     accounts: accounts.$available,
+    lockForAccount: $lockForAccount,
   },
   filter: ({ referendum }, account) => !isNil(account) && !isNil(referendum),
-  fn: ({ referendum, locks, accounts }, account) => {
+  fn: ({ referendum, accounts, lockForAccount }, account) => {
     if (!account || !referendum) return BN_ZERO;
 
     const accountBalance = accounts.find((x) => x.account.accountId === account.accountId)?.balance ?? BN_ZERO;
     if (!accountBalance) return BN_ZERO;
 
-    const lockForAccount = locks[account.accountId]?.[referendum.track];
-
-    return BN.max(BN_ZERO, accountBalance.sub(lockForAccount ?? BN_ZERO));
+    return BN.max(BN_ZERO, accountBalance.add(lockForAccount ?? BN_ZERO));
   },
   target: $availableBalance,
 });
@@ -137,17 +142,12 @@ reset({
   target: [$referendum, $initialConviction],
 });
 
-sample({
-  clock: resetForm,
-  target: dropFee,
-});
-
 // Submit
 
 sample({
   clock: and(
-    not($feePending),
-    not(empty(transaction.$wrappedTransactions)),
+    not(transaction.$pendingFee),
+    not(empty(transaction.$wrappedTx)),
     not(empty(votingAssetModel.$votingAsset)),
     not(empty(networkSelectorModel.$governanceChain)),
   ),
@@ -158,7 +158,7 @@ sample({
   clock: form.formValidated,
   source: {
     form: form.$values,
-    wrappedTransactions: transaction.$wrappedTransactions,
+    wrappedTransactions: transaction.$wrappedTx,
   },
   filter: ({ wrappedTransactions }) => nonNullable(wrappedTransactions),
   fn: ({ form, wrappedTransactions }) => {
@@ -178,7 +178,7 @@ sample({
     asset: votingAssetModel.$votingAsset,
     chain: networkSelectorModel.$governanceChain,
     api: networkSelectorModel.$governanceChainApi,
-    wrappedTransactions: transaction.$wrappedTransactions,
+    wrappedTransactions: transaction.$wrappedTx,
   },
   filter: ({ form, chain, asset, api, wrappedTransactions }) =>
     !!form.account && !!form.decision && !!chain && !!asset && !!api && !!wrappedTransactions,
@@ -193,12 +193,12 @@ sample({
       wrappedTransactions: wrappedTransactions!,
     };
   },
-  target: voteConfirmModel.events.replaceConfirm,
+  target: voteConfirmModel.events.replaceWithConfirm,
 });
 
 sample({
   clock: form.$values,
-  source: transaction.$wrappedTransactions,
+  source: transaction.$wrappedTx,
   filter: (transactions) => transactions !== null,
   fn: (transactions) => ({
     id: 0,
@@ -210,11 +210,9 @@ sample({
 export const voteFormAggregate = {
   transactionForm,
 
-  $fee,
   $referendum,
   $initialConviction,
-  $isFeeLoading: $feePending,
-
+  $lockForAccount,
   $availableBalance,
 
   $canSubmit,

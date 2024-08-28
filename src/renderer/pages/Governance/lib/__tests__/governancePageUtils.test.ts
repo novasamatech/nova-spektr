@@ -1,6 +1,17 @@
+import { BN_ZERO } from '@polkadot/util';
+
 import { type OngoingReferendum, ReferendumType } from '@shared/core';
 import { type AggregatedReferendum, VoteStatus } from '@features/governance';
 import { governancePageUtils } from '../governancePageUtils';
+
+const someVote = {
+  type: 'Standard',
+  vote: {
+    aye: true,
+    conviction: 'None',
+  },
+  balance: BN_ZERO,
+} as const;
 
 describe('pages/Governance/lib/governancePageUtils', () => {
   const referendums: AggregatedReferendum[] = [
@@ -11,7 +22,7 @@ describe('pages/Governance/lib/governancePageUtils', () => {
       title: 'Referendum Title 1',
       approvalThreshold: null,
       supportThreshold: null,
-      isVoted: false,
+      vote: null,
       submissionDeposit: null,
     },
     {
@@ -21,21 +32,21 @@ describe('pages/Governance/lib/governancePageUtils', () => {
       title: 'Referendum Title 2',
       approvalThreshold: null,
       supportThreshold: null,
-      isVoted: false,
+      vote: null,
       submissionDeposit: null,
     },
   ];
 
   const createVotingReferendum = (isVoted: boolean) => {
     return {
-      isVoted,
+      vote: isVoted ? someVote : null,
       type: ReferendumType.Ongoing,
       track: '1',
     } as AggregatedReferendum<OngoingReferendum>;
   };
 
   const referendum = {
-    isVoted: true,
+    vote: someVote,
     type: ReferendumType.Ongoing,
     track: '1',
   } as AggregatedReferendum<OngoingReferendum>;

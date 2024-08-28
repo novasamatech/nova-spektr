@@ -72,17 +72,17 @@ export const AccountAddress = ({
       text={addressToShow}
     />
   ) : (
-    <p className={cnTw('inline-block truncate break-all text-footnote text-inherit transition-colors', addressFont)}>
+    <span className={cnTw('inline-block truncate break-all text-footnote text-inherit transition-colors', addressFont)}>
       {addressToShow}
-    </p>
+    </span>
   );
 
   return (
-    <div className={cnTw('flex items-center gap-x-2', className)}>
+    <span className={cnTw('flex items-center gap-x-2', className)}>
       {showIcon && (
         <Identicon className="inline-block" address={currentAddress} size={size} background={false} canCopy={canCopy} />
       )}
       {nameContent || addressContent}
-    </div>
+    </span>
   );
 };

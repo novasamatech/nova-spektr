@@ -36,6 +36,7 @@ export type StandardVote = {
   vote: {
     aye: boolean;
     conviction: Conviction;
+    // TODO: Add new type for decoded mst tx
     vote?: 'Aye' | 'Nay';
   };
   balance: BN;

@@ -3,7 +3,7 @@ import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { delay, spread } from 'patronum';
 
-import { type DelegateAccount } from '@/shared/api/governance';
+import { type DelegateAccount, delegationService } from '@/shared/api/governance';
 import {
   type Account,
   type BasketTransaction,
@@ -15,11 +15,12 @@ import {
 } from '@shared/core';
 import { Step, formatAmount, getRelaychainAsset, isStep, nonNullable, transferableAmount } from '@shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
+import { votingService } from '@/entities/governance';
 import { basketModel } from '@entities/basket/model/basket-model';
 import { networkModel } from '@entities/network';
 import { transactionBuilder, transactionService } from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
-import { networkSelectorModel } from '@/features/governance';
+import { delegateRegistryAggregate, networkSelectorModel, tracksAggregate } from '@/features/governance';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { delegateConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
@@ -45,14 +46,14 @@ const $walletData = combine(
   ({ wallet, chain }) => ({ wallet, chain }),
 );
 
-const $target = createStore<DelegateAccount | null>(null);
-const $tracks = createStore<number[]>([]);
-const $delegateData = createStore<Omit<DelegateData, 'tracks' | 'target' | 'shards'> | null>(null);
-const $accounts = createStore<Account[]>([]);
+const $target = createStore<DelegateAccount | null>(null).reset(flowFinished);
+const $tracks = createStore<number[]>([]).reset(flowFinished);
+const $delegateData = createStore<Omit<DelegateData, 'tracks' | 'target' | 'shards'> | null>(null).reset(flowFinished);
+const $accounts = createStore<Account[]>([]).reset(flowFinished);
 const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
 
-const $txWrappers = createStore<TxWrapper[]>([]);
-const $coreTxs = createStore<Transaction[]>([]);
+const $txWrappers = createStore<TxWrapper[]>([]).reset(flowFinished);
+const $coreTxs = createStore<Transaction[]>([]).reset(flowFinished);
 
 type FeeParams = {
   api: ApiPromise;
@@ -133,6 +134,7 @@ sample({
       balance: formParams.amount,
       conviction: formParams.conviction,
       description: formParams.description,
+      locks: formParams.locks,
     };
   },
   target: $delegateData,
@@ -253,7 +255,6 @@ sample({
 
 sample({
   clock: flowStarted,
-  source: $target,
   filter: (target) => !!target,
   target: selectTracksModel.events.formInitiated,
 });
@@ -315,6 +316,7 @@ sample({
           ...feeData,
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
           ...(wrapper ? { shards: [wrapper.proxyAccount] } : { shards: [shard] }),
+          locks: delegateData!.locks[shard.accountId],
         };
       }),
       step: Step.CONFIRM,
@@ -371,16 +373,16 @@ sample({
   filter: ({ delegateData, walletData, transactions }) => {
     return Boolean(delegateData) && Boolean(walletData) && Boolean(transactions);
   },
-  fn: (bondFlowData, signParams) => ({
+  fn: (delegateFlowData, signParams) => ({
     event: {
       ...signParams,
-      chain: bondFlowData.walletData.chain!,
-      account: bondFlowData.accounts[0],
-      signatory: bondFlowData.delegateData!.signatory,
-      description: bondFlowData.delegateData!.description,
-      coreTxs: bondFlowData.transactions!.map((tx) => tx.coreTx),
-      wrappedTxs: bondFlowData.transactions!.map((tx) => tx.wrappedTx),
-      multisigTxs: bondFlowData.transactions!.map((tx) => tx.multisigTx).filter(nonNullable),
+      chain: delegateFlowData.walletData.chain!,
+      account: delegateFlowData.accounts[0],
+      signatory: delegateFlowData.delegateData!.signatory,
+      description: delegateFlowData.delegateData!.description,
+      coreTxs: delegateFlowData.transactions!.map((tx) => tx.coreTx),
+      wrappedTxs: delegateFlowData.transactions!.map((tx) => tx.wrappedTx),
+      multisigTxs: delegateFlowData.transactions!.map((tx) => tx.multisigTx).filter(nonNullable),
     },
     step: Step.SUBMIT,
   }),
@@ -391,10 +393,37 @@ sample({
 });
 
 sample({
+  clock: submitModel.output.formSubmitted,
+  source: { delegate: $target, data: $delegateData, walletData: $walletData, tracks: $tracks },
+  filter: ({ delegate, data, walletData }) => {
+    return !!delegate && !!data && !!walletData.chain;
+  },
+  fn: ({ delegate, tracks, data, walletData }) => {
+    return {
+      delegate: delegate!,
+      votes: delegationService.calculateTotalVotes(
+        votingService.calculateVotingPower(new BN(data!.balance), data!.conviction),
+        tracks,
+        walletData.chain!,
+      ),
+    };
+  },
+  target: delegateRegistryAggregate.events.addDelegation,
+});
+
+sample({
   clock: delay(submitModel.output.formSubmitted, 2000),
   source: $step,
   filter: (step) => isStep(step, Step.SUBMIT),
   target: flowFinished,
+});
+
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: { network: networkSelectorModel.$governanceNetwork, delegateData: $delegateData },
+  filter: ({ network, delegateData }) => nonNullable(network) && nonNullable(delegateData),
+  fn: ({ network }) => ({ api: network!.api, chain: network!.chain }),
+  target: tracksAggregate.events.requestTracks,
 });
 
 sample({

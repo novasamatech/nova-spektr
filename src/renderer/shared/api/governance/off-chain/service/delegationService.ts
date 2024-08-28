@@ -1,6 +1,7 @@
+import { BN } from '@polkadot/util';
 import { GraphQLClient } from 'graphql-request';
 
-import { dictionary } from '@/shared/lib/utils';
+import { dictionary, toPrecision } from '@/shared/lib/utils';
 import { type Address, type Chain, ExternalType, type ReferendumId } from '@shared/core';
 import { type DelegateAccount, type DelegateDetails, type DelegateStat, type DelegationApi } from '../lib/types';
 
@@ -63,9 +64,10 @@ async function getDelegatedVotesFromExternalSource(
     return {};
   }
 
-  return Promise.all(voters.map((voter) => client.request(GET_DELEGATOR, { voter })))
-    .then((data) => {
-      const list = data.flatMap((x: any) => x.delegatorVotings.nodes.map((node: { parent: any }) => node.parent)) as {
+  return client
+    .request(GET_DELEGATOR, { voters })
+    .then((data: any) => {
+      const list = data.delegatorVotings.nodes.map((node: { parent: any }) => node.parent) as {
         referendumId: ReferendumId;
         voter: Address;
       }[];
@@ -89,9 +91,15 @@ function aggregateDelegateAccounts(accounts: DelegateDetails[], stats: DelegateS
   return Object.values(accountsMap);
 }
 
+function calculateTotalVotes(votingPower: BN, tracks: number[], chain: Chain): BN {
+  return toPrecision(votingPower, chain.assets[0].precision).mul(new BN(tracks.length));
+}
+
 export const delegationService: DelegationApi = {
   getDelegatesFromRegistry,
   getDelegatesFromExternalSource,
   getDelegatedVotesFromExternalSource,
   aggregateDelegateAccounts,
+
+  calculateTotalVotes,
 };

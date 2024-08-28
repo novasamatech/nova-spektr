@@ -81,8 +81,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
       <ConfirmDetails confirm={confirm}>
         <hr className="w-full border-filter-border pr-2" />
-        <DetailRow label="Vote">{t(`governance.referendum.${decision}`)}</DetailRow>
-        <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.governanceLock')}>
+        <DetailRow label={t('governance.vote.field.decision')}>{t(`governance.referendum.${decision}`)}</DetailRow>
+        <DetailRow label={t('governance.vote.field.governanceLock')} wrapperClassName="items-start">
           <LockValueDiff from={totalLock} to={amount} asset={asset} />
         </DetailRow>
         <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.lockingPeriod')}>
