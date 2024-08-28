@@ -14,11 +14,12 @@ type Props = {
 };
 
 /**
- * Calculates the balance difference between the current amount and the amount
- * after adding or removing a value. If the current amount is less than the
- * locked balance, there will be no difference, as the locked balance is
- * consumed first. Only after that is the difference calculated from the
- * transferable balance.
+ * Calculates the balance difference between the current balance (`from`) and
+ * the target balance (`to`), factoring in a locked amount. If the target
+ * balance (`to`) is less than the current balance (`from`), the locked balance
+ * is added to `to`, but the resulting `realTo` balance will not exceed the
+ * original `from` balance. If `to` is greater than or equal to `from`, the
+ * difference is simply `to - from`
  */
 export const BalanceDiff = memo(({ from, to, asset, lock = BN_ZERO }: Props) => {
   const fromBN = BN.isBN(from) ? from : new BN(from);
