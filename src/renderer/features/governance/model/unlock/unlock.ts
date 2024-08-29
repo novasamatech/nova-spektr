@@ -57,7 +57,7 @@ const getClaimScheduleFx = createEffect(
 );
 
 sample({
-  clock: [networkSelectorModel.$governanceChainApi, walletModel.$activeWallet],
+  clock: [networkSelectorModel.$network, walletModel.$activeWallet],
   target: [$claimSchedule.reinit, $totalUnlock.reinit],
 });
 
@@ -79,23 +79,22 @@ sample({
 sample({
   clock: [referendumModel.$referendums.updates, locksModel.$trackLocks.updates, votingModel.$voting.updates],
   source: {
-    api: networkSelectorModel.$governanceChainApi,
+    network: networkSelectorModel.$network,
     tracks: tracksModel.$tracks,
     trackLocks: locksModel.$trackLocks,
     totalLock: locksModel.$totalLock,
     voting: votingModel.$voting,
     isLoading: $isLoading,
     referendums: referendumModel.$referendums,
-    chain: networkSelectorModel.$governanceChain,
   },
-  filter: ({ api, chain, referendums, totalLock, isLoading }) =>
-    !!api && !!chain && !!referendums[chain!.chainId] && !isLoading && !totalLock.isZero(),
-  fn: ({ api, tracks, trackLocks, voting, referendums, chain }) => ({
-    api: api!,
+  filter: ({ network, referendums, totalLock, isLoading }) =>
+    nonNullable(network) && nonNullable(referendums[network.chain.chainId]) && !isLoading && !totalLock.isZero(),
+  fn: ({ network, tracks, trackLocks, voting, referendums }) => ({
+    api: network!.api,
     tracks,
     trackLocks,
     voting,
-    referendums: referendums[chain!.chainId],
+    referendums: referendums[network!.chain.chainId],
   }),
   target: getClaimScheduleFx,
 });

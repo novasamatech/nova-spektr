@@ -420,7 +420,7 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: { network: networkSelectorModel.$governanceNetwork, delegateData: $delegateData },
+  source: { network: networkSelectorModel.$network, delegateData: $delegateData },
   filter: ({ network, delegateData }) => nonNullable(network) && nonNullable(delegateData),
   fn: ({ network }) => ({ api: network!.api, chain: network!.chain }),
   target: tracksAggregate.events.requestTracks,
