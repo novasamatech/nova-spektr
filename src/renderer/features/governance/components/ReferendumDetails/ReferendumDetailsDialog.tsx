@@ -18,14 +18,14 @@ import { ProposalDescription } from './ProposalDescription';
 import { ReferendumAdditional } from './ReferendumAdditional';
 import { Timeline } from './Timeline';
 import { VotingBalance } from './VotingBalance';
-import { type RemoveVoteRequestParams, type VoteRequestParams, VotingStatus } from './VotingStatus';
+import { VotingStatus } from './VotingStatus';
 import { VotingSummary } from './VotingSummary';
 
 type Props = {
   chain: Chain;
   referendum: AggregatedReferendum;
-  onVoteRequest: (params: VoteRequestParams) => unknown;
-  onRemoveVoteRequest: (params: RemoveVoteRequestParams) => unknown;
+  onVoteRequest: () => unknown;
+  onRemoveVoteRequest: () => unknown;
   onClose: VoidFunction;
 };
 
@@ -81,7 +81,6 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onRe
           <DetailsCard title={t('governance.referendum.votingStatus')}>
             <VotingStatus
               referendum={referendum}
-              chain={chain}
               asset={votingAsset}
               canVote={canVote}
               hasAccount={hasAccount}

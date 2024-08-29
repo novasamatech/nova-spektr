@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useI18n } from '@app/providers';
 import { type Referendum, type ReferendumId } from '@shared/core';
+import { nonNullable } from '@shared/lib/utils';
 import { Header, Plate } from '@shared/ui';
 import { referendumService } from '@entities/governance';
 import { InactiveNetwork } from '@entities/network';
@@ -17,7 +18,6 @@ import {
   TotalDelegation,
   delegationAggregate,
   networkSelectorModel,
-  votingAssetModel,
 } from '@features/governance';
 import { CurrentDelegationModal, currentDelegationModel } from '@/widgets/CurrentDelegationsModal';
 import { DelegateDetails } from '@/widgets/DelegateDetails';
@@ -39,7 +39,6 @@ export const Governance = () => {
   const [showRemoveVoteModal, setShowRemoveVoteModal] = useState(false);
   const isApiConnected = useUnit(networkSelectorModel.$isApiConnected);
   const network = useUnit(networkSelectorModel.$governanceNetwork);
-  const asset = useUnit(votingAssetModel.$votingAsset);
   const hasDelegations = useUnit(delegationAggregate.$hasDelegations);
 
   const isLoading = useUnit(governancePageAggregate.$isLoading);
@@ -118,40 +117,49 @@ export const Governance = () => {
         </section>
       </div>
 
-      {selectedReferendum && network && (
+      {selectedReferendum && nonNullable(network) && (
         <ReferendumDetailsDialog
           referendum={selectedReferendum}
           chain={network.chain}
-          onVoteRequest={() => setShowVoteModal(true)}
-          onRemoveVoteRequest={() => setShowRemoveVoteModal(true)}
+          onVoteRequest={() => {
+            setShowVoteModal(true);
+            setShowRemoveVoteModal(false);
+          }}
+          onRemoveVoteRequest={() => {
+            setShowRemoveVoteModal(true);
+            setShowVoteModal(false);
+          }}
           onClose={() => {
             setShowVoteModal(false);
+            setShowRemoveVoteModal(false);
             setSelectedReferendumId(null);
           }}
         />
       )}
 
-      {showVoteModal && selectedReferendum && referendumService.isOngoing(selectedReferendum) && network && asset && (
-        <VoteModal
-          referendum={selectedReferendum}
-          chain={network.chain}
-          asset={asset}
-          onClose={() => setShowVoteModal(false)}
-        />
-      )}
+      {showVoteModal &&
+        nonNullable(selectedReferendum) &&
+        nonNullable(network) &&
+        referendumService.isOngoing(selectedReferendum) && (
+          <VoteModal
+            referendum={selectedReferendum}
+            chain={network.chain}
+            asset={network.asset}
+            onClose={() => setShowVoteModal(false)}
+          />
+        )}
 
       {showRemoveVoteModal &&
-        selectedReferendum &&
-        referendumService.isOngoing(selectedReferendum) &&
-        selectedReferendum.vote &&
-        network &&
-        asset && (
+        nonNullable(selectedReferendum) &&
+        nonNullable(selectedReferendum.vote) &&
+        nonNullable(network) &&
+        referendumService.isOngoing(selectedReferendum) && (
           <RemoveVoteModal
             vote={selectedReferendum.vote}
             referendum={selectedReferendum}
+            asset={network.asset}
             chain={network.chain}
             api={network.api}
-            asset={asset}
             onClose={() => setShowRemoveVoteModal(false)}
           />
         )}

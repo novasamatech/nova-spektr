@@ -34,9 +34,13 @@ const $governanceNetwork = combine(
     const api = apis[chain.chainId];
     if (!api) return null;
 
+    const asset = chain.assets.at(0);
+    if (!asset) return null;
+
     return {
       chain,
-      api: apis[chain.chainId],
+      asset,
+      api,
     };
   },
 );
