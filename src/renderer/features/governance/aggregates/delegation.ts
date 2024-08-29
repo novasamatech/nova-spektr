@@ -75,7 +75,7 @@ export const delegationAggregate = {
   $isLoading: votingAggregate.$isLoading,
   $asset: votingAssetModel.$votingAsset,
   $chain: networkSelectorModel.$governanceChain,
-  $network: networkSelectorModel.$governanceNetwork,
+  $network: networkSelectorModel.$network,
 
   $canDelegate,
   $hasAccount: networkSelectorModel.$hasAccount,

@@ -132,15 +132,11 @@ const requestOnChainTimelineFx = createEffect<RequestOnTimelineParams, Referendu
 
 sample({
   clock: requestTimeline,
-  source: {
-    chain: networkSelectorModel.$governanceChain,
-    api: networkSelectorModel.$governanceChainApi,
-  },
-  filter: ({ api, chain }, { referendum }) =>
-    nonNullable(api) && nonNullable(chain) && !referendumService.isKilled(referendum),
-  fn: ({ api, chain }, { referendum }) => ({
-    api: api!,
-    chain: chain!,
+  source: networkSelectorModel.$network,
+  filter: (network, { referendum }) => nonNullable(network) && !referendumService.isKilled(referendum),
+  fn: (network, { referendum }) => ({
+    api: network!.api,
+    chain: network!.chain,
     referendum,
   }),
   target: requestOnChainTimelineFx,

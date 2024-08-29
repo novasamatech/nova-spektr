@@ -20,20 +20,16 @@ const $delegatedVotesInChain = combine(
 );
 
 sample({
-  clock: [
-    referendumModel.events.referendumsReceived,
-    networkSelectorModel.$governanceChainApi,
-    walletModel.$activeWallet,
-  ],
+  clock: [referendumModel.events.referendumsReceived, networkSelectorModel.$network, walletModel.$activeWallet],
   source: {
     wallet: walletModel.$activeWallet,
-    chain: networkSelectorModel.$governanceChain,
+    network: networkSelectorModel.$network,
   },
-  filter: ({ wallet, chain }) => nonNullable(wallet) && nonNullable(chain),
-  fn: ({ wallet, chain }) => {
+  filter: ({ wallet, network }) => nonNullable(wallet) && nonNullable(network),
+  fn: ({ wallet, network }) => {
     return {
-      addresses: wallet!.accounts.map((acc) => toAddress(acc.accountId, { prefix: chain?.addressPrefix })),
-      chain: chain!,
+      addresses: wallet!.accounts.map((acc) => toAddress(acc.accountId, { prefix: network?.chain.addressPrefix })),
+      chain: network!.chain,
     };
   },
   target: delegatedVotesModel.events.requestDelegatedVotes,

@@ -173,13 +173,12 @@ sample({
   clock: voteConfirmModel.events.submitFinished,
   source: {
     referendum: voteFormAggregate.$referendum,
-    chain: networkSelectorModel.$governanceChain,
-    api: networkSelectorModel.$governanceChainApi,
+    network: networkSelectorModel.$network,
   },
-  filter: ({ referendum, chain, api }) => nonNullable(referendum) && nonNullable(chain) && nonNullable(api),
-  fn: ({ referendum, chain, api }) => ({
-    chain: chain!,
-    api: api!,
+  filter: ({ referendum, network }) => nonNullable(referendum) && nonNullable(network),
+  fn: ({ referendum, network }) => ({
+    chain: network!.chain,
+    api: network!.api,
     referendumId: referendum!.referendumId,
   }),
   target: referendumModel.events.requestReferendum,
