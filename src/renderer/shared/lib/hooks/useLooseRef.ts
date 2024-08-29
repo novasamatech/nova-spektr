@@ -1,5 +1,12 @@
 import { useMemo, useRef } from 'react';
 
+/**
+ * Saves value outside react rendering cycle and returns getter function.
+ * Similar to useRef + `ref.current = value` with simplier api.
+ *
+ * @param value - Value to save, will rewrite older value on each rerender.
+ * @param fn - Optional mapping function.
+ */
 export const useLooseRef = <V, R = V>(value: V, fn?: (v: V) => R): (() => R) => {
   const ref = useRef<V>(value);
   const fnRef = useRef<typeof fn>(fn);

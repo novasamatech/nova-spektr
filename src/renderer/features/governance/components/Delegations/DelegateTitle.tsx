@@ -18,7 +18,7 @@ export const DelegateTitle = ({ delegate, className }: Props) => {
 
   return (
     <HeadlineText className={cnTw('w-full', className)}>
-      <span className="inline-flex items-center">
+      <span className="inline-flex w-full items-center">
         {delegateTitle}{' '}
         {delegate.address && (
           <span>
