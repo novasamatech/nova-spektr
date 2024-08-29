@@ -9,27 +9,23 @@ import { networkSelectorModel } from '../model/networkSelector';
 
 const flow = createGate<{ chain?: Chain }>();
 
-const $lockPeriodsInChain = combine(
-  networkSelectorModel.$governanceNetwork,
-  lockPeriodsModel.$lockPeriods,
-  (network, locks) => {
-    if (!network) return null;
+const $lockPeriodsInChain = combine(networkSelectorModel.$network, lockPeriodsModel.$lockPeriods, (network, locks) => {
+  if (!network) return null;
 
-    return locks[network.chain.chainId] ?? null;
-  },
-);
+  return locks[network.chain.chainId] ?? null;
+});
 
 const requestLockPeriods = createEvent();
 
 sample({
   clock: requestLockPeriods,
-  source: networkSelectorModel.$governanceNetwork,
+  source: networkSelectorModel.$network,
   filter: nonNullable,
   target: lockPeriodsModel.events.requestLockPeriods,
 });
 
 sample({
-  clock: networkSelectorModel.$governanceNetwork,
+  clock: networkSelectorModel.$network,
   filter: nonNullable,
   target: requestLockPeriods,
 });

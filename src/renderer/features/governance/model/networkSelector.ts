@@ -1,13 +1,14 @@
 import { combine, createEvent, restore, sample } from 'effector';
 
 import { type Chain, type ConnectionStatus } from '@shared/core';
+import { nonNullable } from '@shared/lib/utils';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { networkModel, networkUtils } from '@entities/network';
 
-const chainChanged = createEvent<Chain>();
-const defaultChainSet = createEvent();
+const selectNetwork = createEvent<Chain>();
+const resetNetwork = createEvent();
 
-const $governanceChain = restore(chainChanged, null);
+const $governanceChain = restore(selectNetwork, null);
 
 const $governanceChains = combine(networkModel.$chains, (chains) => {
   return Object.values(chains).filter((chain) => networkUtils.isGovernanceSupported(chain.options));
@@ -23,32 +24,24 @@ const $governanceChainApi = combine(
   },
 );
 
-const $governanceNetwork = combine(
-  {
-    chain: $governanceChain,
-    apis: networkModel.$apis,
-  },
-  ({ chain, apis }) => {
-    if (!chain) return null;
+const $network = combine($governanceChain, $governanceChainApi, (chain, api) => {
+  if (!chain) return null;
+  if (!api) return null;
 
-    const api = apis[chain.chainId];
-    if (!api) return null;
+  const asset = chain.assets.at(0);
+  if (!asset) return null;
 
-    const asset = chain.assets.at(0);
-    if (!asset) return null;
+  return {
+    chain,
+    asset,
+    api,
+  };
+});
 
-    return {
-      chain,
-      asset,
-      api,
-    };
-  },
-);
-
-const $isApiConnected = $governanceChainApi.map((x) => x?.isConnected ?? false);
+const $isApiConnected = $network.map((network) => network?.api.isConnected ?? false);
 
 sample({
-  clock: defaultChainSet,
+  clock: resetNetwork,
   source: {
     chain: $governanceChain,
     chains: $governanceChains,
@@ -93,19 +86,20 @@ const $hasAccount = combine(
   },
 );
 
+const networkSelected = $network.updates.filter({ fn: nonNullable });
+
 export const networkSelectorModel = {
   $isConnectionActive,
   $governanceChain,
   $governanceChains,
   $governanceChainApi,
-  $governanceNetwork,
+  $network,
   $hasAccount,
   $isApiConnected,
 
-  input: {
-    defaultChainSet,
-  },
   events: {
-    chainChanged,
+    resetNetwork,
+    selectNetwork,
+    networkSelected,
   },
 };

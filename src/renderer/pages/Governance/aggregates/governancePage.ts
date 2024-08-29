@@ -2,6 +2,7 @@ import { combine, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { either, readonly } from 'patronum';
 
+import { nonNullable, nullable } from '@shared/lib/utils';
 import { referendumModel, votingModel } from '@/entities/governance';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { locksModel } from '@/features/governance/model/locks';
@@ -51,23 +52,22 @@ const $completed = $displayedCurrentReferendums.map((x) =>
 
 sample({
   clock: flow.open,
-  source: { chain: networkSelectorModel.$governanceChain },
-  filter: ({ chain }) => chain === null,
-  target: networkSelectorModel.input.defaultChainSet,
+  source: networkSelectorModel.$network,
+  filter: nullable,
+  target: networkSelectorModel.events.resetNetwork,
 });
 
 sample({
   clock: flow.open,
   source: {
-    chain: networkSelectorModel.$governanceChain,
-    api: networkSelectorModel.$governanceChainApi,
+    network: networkSelectorModel.$network,
     wallet: walletModel.$activeWallet,
   },
-  filter: ({ chain, api, wallet }) => !!chain && !!api && !!wallet,
-  fn: ({ api, chain, wallet }) => ({
-    api: api!,
-    addresses: accountUtils.getAddressesForWallet(wallet!, chain!),
-    chain: chain!,
+  filter: ({ network, wallet }) => nonNullable(network) && nonNullable(wallet),
+  fn: ({ network, wallet }) => ({
+    api: network!.api,
+    addresses: accountUtils.getAddressesForWallet(wallet!, network!.chain),
+    chain: network!.chain,
   }),
   target: [
     votingAggregate.events.requestVoting,

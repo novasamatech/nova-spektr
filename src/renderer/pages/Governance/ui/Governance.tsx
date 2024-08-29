@@ -38,7 +38,7 @@ export const Governance = () => {
   const [showVoteModal, setShowVoteModal] = useState(false);
   const [showRemoveVoteModal, setShowRemoveVoteModal] = useState(false);
   const isApiConnected = useUnit(networkSelectorModel.$isApiConnected);
-  const network = useUnit(networkSelectorModel.$governanceNetwork);
+  const network = useUnit(networkSelectorModel.$network);
   const hasDelegations = useUnit(delegationAggregate.$hasDelegations);
 
   const isLoading = useUnit(governancePageAggregate.$isLoading);

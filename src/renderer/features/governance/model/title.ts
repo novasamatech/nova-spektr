@@ -1,5 +1,4 @@
-import { combine, createStore, sample } from 'effector';
-import isEmpty from 'lodash/isEmpty';
+import { createStore, sample } from 'effector';
 
 import { type GovernanceApi } from '@shared/api/governance';
 import { type Chain, type ChainId, type ReferendumId } from '@shared/core';
@@ -10,14 +9,6 @@ import { createChunksEffect } from '../utils/createChunksEffect';
 import { networkSelectorModel } from './networkSelector';
 
 const $titles = createStore<Record<ChainId, Record<ReferendumId, string>>>({});
-
-const $referendumTitles = combine(
-  {
-    titles: $titles,
-    chain: networkSelectorModel.$governanceChain,
-  },
-  ({ titles, chain }) => (chain ? (titles[chain.chainId] ?? {}) : {}),
-);
 
 const $loading = createStore<Record<ChainId, true>>({});
 const $loaded = createStore<Record<ChainId, true>>({});
@@ -39,23 +30,17 @@ const {
 });
 
 sample({
-  clock: networkSelectorModel.$governanceChainApi,
+  clock: networkSelectorModel.events.networkSelected,
   source: {
-    chain: networkSelectorModel.$governanceChain,
     governanceApi: governanceModel.$governanceApi,
     loading: $loading,
     loaded: $loaded,
   },
-  filter: ({ chain, governanceApi, loading, loaded }, referendums) => {
-    return (
-      nonNullable(chain) &&
-      nonNullable(governanceApi) &&
-      !isEmpty(referendums) &&
-      (!(chain.chainId in loading) || !(chain.chainId in loaded))
-    );
+  filter: ({ governanceApi, loading, loaded }, network) => {
+    return nonNullable(governanceApi) && (!(network.chain.chainId in loading) || !(network.chain.chainId in loaded));
   },
-  fn: ({ chain, governanceApi }) => ({
-    chain: chain!,
+  fn: ({ governanceApi }, network) => ({
+    chain: network.chain,
     service: governanceApi!.service,
   }),
   target: requestReferendumTitles,
@@ -103,7 +88,6 @@ sample({
 
 export const titleModel = {
   $titles,
-  $referendumTitles,
   $isTitlesLoading,
   $loadingTitles: $loading,
   $loadedTitles: $loaded,

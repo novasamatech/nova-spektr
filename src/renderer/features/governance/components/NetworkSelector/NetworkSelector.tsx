@@ -23,7 +23,7 @@ export const NetworkSelector = () => {
       placeholder={t('proxy.addProxy.networkPlaceholder')}
       selectedId={governanceChain?.chainId}
       options={options}
-      onChange={({ value }) => networkSelectorModel.events.chainChanged(value)}
+      onChange={({ value }) => networkSelectorModel.events.selectNetwork(value)}
     />
   );
 };

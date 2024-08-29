@@ -54,29 +54,29 @@ const {
 });
 
 sample({
-  clock: [networkSelectorModel.$governanceChain, networkSelectorModel.$governanceChainApi, $walletAddresses],
+  clock: [networkSelectorModel.$network, $walletAddresses],
   target: subscribeLocks,
 });
 
 sample({
   clock: subscribeLocks,
   source: {
-    api: networkSelectorModel.$governanceChainApi,
+    network: networkSelectorModel.$network,
     addresses: $walletAddresses,
   },
-  filter: ({ api }) => nonNullable(api),
-  fn: ({ api, addresses }) => ({ api: api!, addresses }),
+  filter: ({ network }) => nonNullable(network),
+  fn: ({ network, addresses }) => ({ api: network!.api, addresses }),
   target: subscribe,
 });
 
 sample({
   clock: requestLocks,
   source: {
-    api: networkSelectorModel.$governanceChainApi,
+    network: networkSelectorModel.$network,
     addresses: $walletAddresses,
   },
-  filter: ({ api }) => nonNullable(api),
-  fn: ({ api, addresses }) => ({ api: api!, addresses }),
+  filter: ({ network }) => nonNullable(network),
+  fn: ({ network, addresses }) => ({ api: network!.api, addresses }),
   target: requestLocksFx,
 });
 

@@ -5,7 +5,7 @@ import { readonly } from 'patronum';
 
 import { type DelegateAccount, delegationService } from '@/shared/api/governance';
 import { type Chain } from '@/shared/core';
-import { getBlockTimeAgo } from '@/shared/lib/utils';
+import { getBlockTimeAgo, nonNullable } from '@/shared/lib/utils';
 import { networkSelectorModel } from '../model/networkSelector';
 
 const requestDelegateRegistry = createEvent();
@@ -30,9 +30,8 @@ const requestDelegateRegistryFx = createEffect(
 
 sample({
   clock: requestDelegateRegistry,
-  source: { api: networkSelectorModel.$governanceChainApi, chain: networkSelectorModel.$governanceChain },
-  filter: ({ api, chain }) => !!api && !!chain,
-  fn: ({ api, chain }) => ({ chain: chain!, api: api! }),
+  source: networkSelectorModel.$network,
+  filter: nonNullable,
   target: requestDelegateRegistryFx,
 });
 

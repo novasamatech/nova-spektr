@@ -1,7 +1,6 @@
 import { combine, sample } from 'effector';
 import { readonly } from 'patronum';
 
-import { nonNullable } from '@shared/lib/utils';
 import { approveThresholdModel, referendumModel, supportThresholdModel, votingService } from '@entities/governance';
 import { networkSelectorModel } from '../model/networkSelector';
 import { titleModel } from '../model/title';
@@ -73,10 +72,7 @@ const $isTitlesLoading = combine(titleModel.$loadingTitles, networkSelectorModel
 });
 
 sample({
-  clock: networkSelectorModel.$governanceChainApi,
-  source: networkSelectorModel.$governanceChain,
-  filter: (chain, api) => nonNullable(api) && nonNullable(chain),
-  fn: (chain, api) => ({ chain: chain!, api: api! }),
+  clock: networkSelectorModel.events.networkSelected,
   target: referendumModel.events.subscribeReferendums,
 });
 
