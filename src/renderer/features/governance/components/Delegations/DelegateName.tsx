@@ -25,8 +25,8 @@ export const DelegateName = ({ delegate, votes, tracks, asset, titleClassName }:
     <div className="flex gap-3">
       <DelegateIcon delegate={delegate} />
 
-      <div className="flex flex-1 flex-col">
-        <div className="flex grow items-center justify-between gap-2.5">
+      <div className="flex w-full flex-1 flex-col">
+        <div className="flex w-full grow items-center justify-between gap-2.5">
           <DelegateTitle delegate={delegate} className={titleClassName} />
           <DelegateBadge delegate={delegate} />
         </div>

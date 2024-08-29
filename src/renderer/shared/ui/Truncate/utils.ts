@@ -133,7 +133,9 @@ export const getTextMeasurement = (ref: HTMLElement | null) => {
   return { width, height };
 };
 
-export const getContainerMeasurement = (ref: HTMLElement | null) => {
+export const getContainerMeasurement = (
+  ref: HTMLElement | null,
+): { width?: UnitsParseResult; height?: UnitsParseResult } => {
   if (!ref) {
     return {};
   }
