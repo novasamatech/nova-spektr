@@ -1,5 +1,5 @@
 import { useI18n } from '@app/providers';
-import { type AccountVote, type Asset, type Chain, type OngoingReferendum, type Wallet } from '@shared/core';
+import { type Asset, type Wallet } from '@shared/core';
 import { nonNullable, nullable } from '@shared/lib/utils';
 import { Button, FootnoteText } from '@shared/ui';
 import { VoteChart, referendumService, votingService } from '@entities/governance';
@@ -9,24 +9,19 @@ import { VotingStatusBadge } from '../VotingStatusBadge';
 
 import { Threshold } from './Threshold';
 
-export type VoteRequestParams = { referendum: OngoingReferendum; chain: Chain; asset: Asset };
-export type RemoveVoteRequestParams = { referendum: OngoingReferendum; vote: AccountVote; chain: Chain; asset: Asset };
-
 type Props = {
   referendum: AggregatedReferendum;
-  chain: Chain;
   asset: Asset | null;
   canVote: boolean;
   wallet?: Wallet;
   hasAccount: boolean;
-  onVoteRequest: (params: VoteRequestParams) => unknown;
-  onRemoveVoteRequest: (params: RemoveVoteRequestParams) => unknown;
+  onVoteRequest: () => unknown;
+  onRemoveVoteRequest: () => unknown;
 };
 
 export const VotingStatus = ({
   referendum,
   asset,
-  chain,
   canVote,
   wallet,
   hasAccount,
@@ -60,11 +55,7 @@ export const VotingStatus = ({
 
       {canVote && nonNullable(asset) && nullable(referendum.vote) && referendumService.isOngoing(referendum) && (
         <div className="flex w-full flex-col gap-4">
-          <Button
-            className="w-full"
-            disabled={!hasAccount || !canVote}
-            onClick={() => onVoteRequest({ referendum, asset, chain })}
-          >
+          <Button className="w-full" disabled={!hasAccount || !canVote} onClick={onVoteRequest}>
             {t('governance.referendum.vote')}
           </Button>
 
@@ -86,20 +77,7 @@ export const VotingStatus = ({
         <div className="flex w-full flex-col justify-stretch gap-4">
           {/*<Button className="w-full">{t('governance.referendum.revote')}</Button>*/}
 
-          <Button
-            className="w-full"
-            pallet="secondary"
-            onClick={() => {
-              if (referendum.vote) {
-                onRemoveVoteRequest({
-                  asset,
-                  chain,
-                  referendum,
-                  vote: referendum.vote,
-                });
-              }
-            }}
-          >
+          <Button className="w-full" pallet="secondary" onClick={onRemoveVoteRequest}>
             {t('governance.referendum.remove')}
           </Button>
         </div>
