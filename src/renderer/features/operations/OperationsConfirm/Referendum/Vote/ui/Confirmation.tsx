@@ -3,12 +3,14 @@ import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@/app/providers';
-import { formatAsset, formatBalance, toNumberWithPrecision } from '@/shared/lib/utils';
+import { formatAsset, formatBalance, toAddress, toNumberWithPrecision } from '@/shared/lib/utils';
 import { Button, DetailRow, HeadlineText, Icon } from '@/shared/ui';
 import { LockPeriodDiff, LockValueDiff, voteTransactionService, votingService } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
 import { Fee } from '@/entities/transaction';
-import { lockPeriodsModel, locksModel, locksPeriodsAggregate } from '@/features/governance';
+import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
+import { locksAggregate } from '@/features/governance/aggregates/locks';
+import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
 import { ConfirmDetails } from '../../../common/ConfirmDetails';
 import { confirmModel } from '../model/confirm-model';
 
@@ -22,7 +24,7 @@ type Props = {
 export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, onGoBack }: Props) => {
   const { t } = useI18n();
 
-  const totalLock = useUnit(locksModel.$totalLock);
+  const trackLocks = useUnit(locksAggregate.$trackLocks);
 
   const confirm = useStoreMap({
     store: confirmModel.$confirmMap,
@@ -37,6 +39,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   });
 
   useGate(locksPeriodsAggregate.gates.flow, { chain: confirm?.meta.chain });
+  useGate(locksAggregate.gates.flow, { chain: confirm?.meta.chain });
 
   if (!confirm) {
     return null;
@@ -57,6 +60,9 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   );
 
   const votingPower = votingService.calculateVotingPower(amount, conviction);
+
+  const address = toAddress(confirm.meta.account.accountId, { prefix: confirm.meta.chain.addressPrefix });
+  const locksForAddress = getLocksForAddress(address, trackLocks);
 
   return (
     <div className="flex flex-col items-center gap-4 px-5 py-4">
@@ -83,7 +89,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         <hr className="w-full border-filter-border pr-2" />
         <DetailRow label={t('governance.vote.field.decision')}>{t(`governance.referendum.${decision}`)}</DetailRow>
         <DetailRow label={t('governance.vote.field.governanceLock')} wrapperClassName="items-start">
-          <LockValueDiff from={totalLock} to={amount} asset={asset} />
+          <LockValueDiff from={locksForAddress} to={amount} asset={asset} />
         </DetailRow>
         <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.lockingPeriod')}>
           <LockPeriodDiff from={initialConviction} to={conviction} lockPeriods={lockPeriods} />

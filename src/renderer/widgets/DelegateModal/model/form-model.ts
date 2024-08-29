@@ -15,7 +15,7 @@ import {
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel } from '@entities/network';
 import { walletModel, walletUtils } from '@entities/wallet';
-import { locksModel } from '@/features/governance/model/locks';
+import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
 import { BondNominateRules } from '@features/operations/OperationsValidation';
 import { type WalletData } from '../lib/types';
@@ -69,7 +69,7 @@ const $accounts = combine(
     wallet: walletModel.$activeWallet,
     shards: $shards,
     balances: balanceModel.$balances,
-    trackLocks: locksModel.$trackLocks,
+    trackLocks: locksAggregate.$trackLocks,
   },
   ({ network, wallet, shards, balances, trackLocks }) => {
     if (!wallet || !network) return [];
