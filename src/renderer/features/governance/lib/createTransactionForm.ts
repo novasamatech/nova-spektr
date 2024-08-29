@@ -92,7 +92,7 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
     form,
   });
 
-  const { $txWrappers, $wrappedTx, $isProxy, $isMultisig, $fee, $pendingFee } = createTxStore({
+  const tx = createTxStore({
     $api,
     $activeWallet,
     $wallets,
@@ -130,12 +130,12 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
   });
 
   sample({
-    clock: [$chain, $asset, $wallets, $activeWallet, $txWrappers, $balances],
+    clock: [$chain, $asset, $wallets, $activeWallet, tx.$txWrappers, $balances],
     source: {
       chain: $chain,
       asset: $asset,
       wallets: $wallets,
-      txWrappers: $txWrappers,
+      txWrappers: tx.$txWrappers,
       balances: $balances,
     },
     fn: ({ chain, asset, txWrappers, wallets, balances }) => {
@@ -162,7 +162,7 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
     target: $signatories,
   });
 
-  const $realAccount = combine($txWrappers, form.fields.account.$value, (txWrappers, account) => {
+  const $realAccount = combine(tx.$txWrappers, form.fields.account.$value, (txWrappers, account) => {
     const firstWrapper = txWrappers.at(0);
     if (!firstWrapper) return account;
 
@@ -188,7 +188,7 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
 
   const $proxyWallet = combine(
     {
-      isProxy: $isProxy,
+      isProxy: tx.$isProxy,
       realAccount: $realAccount,
       wallets: $wallets,
     },
@@ -201,7 +201,7 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
 
   const $proxyBalance = combine(
     {
-      txWrappers: $txWrappers,
+      txWrappers: tx.$txWrappers,
       balances: $balances,
       chain: $chain,
       asset: $asset,
@@ -258,16 +258,9 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
     form,
     resetForm,
     reinitForm,
-    transaction: {
-      $coreTx,
-      $txWrappers,
-      $wrappedTx,
-      $fee,
-      $pendingFee,
-    },
+    transaction: tx,
     signatory: {
       $available: $signatories,
-      $isMultisig,
     },
     accounts: {
       $initiatorWallet,
@@ -277,7 +270,6 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
     proxy: {
       $wallet: $proxyWallet,
       $balance: $proxyBalance,
-      $isProxy,
     },
   };
 };

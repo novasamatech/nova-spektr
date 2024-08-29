@@ -41,9 +41,9 @@ export const VoteForm = ({ chain, asset, hasDelegated = false }: Props) => {
   const fee = useUnit(voteModalAggregate.transaction.$fee);
 
   const availableBalance = useUnit(voteModalAggregate.$availableBalance);
-  const isMultisig = useUnit(voteModalAggregate.signatory.$isMultisig);
   const signatories = useUnit(voteModalAggregate.signatory.$available);
   const accounts = useUnit(voteModalAggregate.accounts.$available);
+  const isMultisig = useUnit(voteModalAggregate.transaction.$isMultisig);
   const isFeeLoading = useUnit(voteModalAggregate.transaction.$pendingFee);
 
   const lockPeriods = useStoreMap({
