@@ -6,7 +6,7 @@ import { Step, isStep } from '@/shared/lib/utils';
 import { BaseModal } from '@/shared/ui';
 import { OperationTitle } from '@/entities/chain';
 import { networkSelectorModel } from '@/features/governance';
-import { DelegateDetails, delegateDetailsModel } from '@/widgets/DelegateDetails';
+import { delegateDetailsModel } from '@/widgets/DelegateDetails';
 import { Delegate } from '@/widgets/DelegateModal';
 import { delegationModel } from '../model/delegation-model';
 
@@ -38,7 +38,6 @@ export const DelegationModal = () => {
 
       <AddCustomDelegationModel />
 
-      <DelegateDetails />
       <Delegate />
     </BaseModal>
   );
