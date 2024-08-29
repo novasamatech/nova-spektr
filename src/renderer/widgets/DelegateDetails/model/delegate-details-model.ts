@@ -40,7 +40,7 @@ const $activeDelegations = combine(
   ({ delegations, delegate }) => {
     if (!delegate) return {};
 
-    return delegations[delegate.accountId];
+    return delegations[delegate.accountId] || {};
   },
 );
 

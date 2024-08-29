@@ -3,7 +3,7 @@ import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { type SignerOptions } from '@polkadot/api/types/submittable';
 import { u32 } from '@polkadot/types';
 import { type Weight } from '@polkadot/types/interfaces';
-import { BN_ZERO, hexToU8a } from '@polkadot/util';
+import { BN, BN_ZERO, hexToU8a } from '@polkadot/util';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 import { type UnsignedTransaction, construct } from '@substrate/txwrapper-polkadot';
 
@@ -365,7 +365,8 @@ async function getBlockLimit(api: ApiPromise) {
   const apiAt = await api.at(signedBlock.block.header.hash);
   const allRecords = await apiAt.query.system.events();
 
-  let totalWeight = BN_ZERO;
+  // BN_ZERO lead to cache total weight
+  let totalWeight = new BN(0);
 
   // map between the extrinsics and events
   const events = allRecords.filter(
@@ -375,10 +376,10 @@ async function getBlockLimit(api: ApiPromise) {
 
   for (const { event } of events) {
     // @ts-expect-error polkadot can't decode data correctly
-    totalWeight = totalWeight.add(event.data.dispatchInfo.weight.refTime.toBn());
+    totalWeight = totalWeight.iadd(event.data.dispatchInfo.weight.refTime.toBn());
   }
 
-  return maxWeight.refTime.toBn().sub(totalWeight.muln(11).divn(10));
+  return maxWeight.refTime.toBn().sub(totalWeight.imuln(11).idivn(10));
 }
 
 async function splitTxsByWeight(api: ApiPromise, txs: Transaction[], options?: Partial<SignerOptions>) {
