@@ -1,7 +1,7 @@
 import { type CSSProperties, memo, useEffect, useRef, useState } from 'react';
 
 import { useDebouncedCallback } from '@/shared/lib/hooks';
-import { cnTw } from '@/shared/lib/utils';
+import { cnTw, nullable } from '@/shared/lib/utils';
 
 import { getContainerMeasurement, getTextMeasurement } from './utils';
 
@@ -34,18 +34,26 @@ export const Truncate = memo<Props>(({ text, ellipsis = '...', end = 5, start = 
     };
   };
 
-  const truncateText = (measurements: any) => {
-    if (measurements.container.width.value <= measurements.ellipsis.width.value) {
+  const truncateText = (measurements: ReturnType<typeof calculateMeasurements>) => {
+    const containerWidth = measurements.container.width?.value;
+    const ellipsisWidth = measurements.ellipsis.width?.value;
+    const textWidth = measurements.text.width?.value;
+
+    if (nullable(containerWidth) || nullable(ellipsisWidth) || nullable(textWidth)) {
+      return '';
+    }
+
+    if (containerWidth <= ellipsisWidth) {
       return ellipsis;
     }
 
-    const charWidth = measurements.text.width.value / text.length;
+    const charWidth = textWidth / text.length;
     const delta = Math.ceil(
-      measurements.text.width.value -
-        measurements.container.width.value +
-        measurements.ellipsis.width.value +
+      textWidth -
+        containerWidth +
+        ellipsisWidth +
         // special fix for wide characters like W,M,etc.
-        charWidth / 4,
+        charWidth / 8,
     );
 
     const lettersToRemove = Math.ceil(delta / charWidth);
