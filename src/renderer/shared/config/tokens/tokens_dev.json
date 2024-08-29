@@ -4514,27 +4514,6 @@
     ]
   },
   {
-    "name": "POOP",
-    "precision": 18,
-    "priceId": "raresama",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/POOP.svg",
-    "symbol": "POOP",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-        "name": "Moonbeam",
-        "assetId": 7,
-        "assetSymbol": "POOP",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "270195117769614861929703564202131636628",
-          "palletName": "LocalAssets"
-        }
-      }
-    ]
-  },
-  {
     "name": "Darwinia",
     "precision": 18,
     "priceId": "darwinia-network-native-token",
