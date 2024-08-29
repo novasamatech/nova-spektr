@@ -178,6 +178,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
       <div className="flex items-center justify-end px-5">
         <Button
           disabled={tracks.length === 0 || accounts.length === 0 || isMaxWeightReached || isMaxWeightLoading}
+          isLoading={isMaxWeightLoading}
           onClick={() => selectTracksModel.output.formSubmitted({ tracks, accounts })}
         >
           {t('governance.addDelegation.continueButton')}

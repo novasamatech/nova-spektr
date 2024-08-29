@@ -49,15 +49,15 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
     <BaseModal
       closeButton
       headerClass="px-5 py-3"
-      panelClass="flex h-[678px] w-modal flex-col gap-4 bg-white"
-      contentClass="min-h-0 w-full flex-1 bg-card-background py-4 rounded-lg"
+      panelClass="flex h-[736px] w-modal flex-col gap-4 bg-white "
+      contentClass="min-h-0 w-full flex flex-col flex-1 bg-card-background py-4 rounded-lg overflow-y-auto"
       isOpen={isOpen}
       title={
         network?.chain && <OperationTitle title={t('governance.addDelegation.title')} chainId={network.chain.chainId} />
       }
       onClose={onClose}
     >
-      <div className="flex h-full w-modal flex-col px-5 pb-4">
+      <div className="flex w-full flex-1 flex-col px-5">
         <SmallTitleText>{t('governance.addDelegation.formTitle')}</SmallTitleText>
 
         <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>

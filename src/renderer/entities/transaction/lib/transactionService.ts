@@ -3,7 +3,7 @@ import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { type SignerOptions } from '@polkadot/api/types/submittable';
 import { u32 } from '@polkadot/types';
 import { type Weight } from '@polkadot/types/interfaces';
-import { BN_ZERO, hexToU8a } from '@polkadot/util';
+import { BN, BN_ZERO, hexToU8a } from '@polkadot/util';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 import { type UnsignedTransaction, construct } from '@substrate/txwrapper-polkadot';
 
@@ -26,7 +26,6 @@ import {
 import { type TxMetadata, createTxMetadata, dictionary, toAccountId } from '@shared/lib/utils';
 import { walletUtils } from '../../wallet';
 
-import { LEAVE_SOME_SPACE_MULTIPLIER } from './common/constants';
 import { decodeDispatchError } from './common/utils';
 import { getExtrinsic, getUnsignedTransaction, wrapAsMulti, wrapAsProxy } from './extrinsicService';
 
@@ -359,15 +358,34 @@ function verifySignature(payload: Uint8Array, signature: HexString, accountId: A
   return signatureVerify(payloadToVerify, signature, accountId).isValid;
 }
 
-async function splitTxsByWeight(api: ApiPromise, txs: Transaction[], options?: Partial<SignerOptions>) {
+async function getBlockLimit(api: ApiPromise) {
   const maxWeight = api.consts.system.blockWeights.perClass.normal.maxExtrinsic.value;
 
-  const maxRefTime = maxWeight.refTime
-    .toBn()
-    .imuln(LEAVE_SOME_SPACE_MULTIPLIER * 100)
-    .idivn(100);
+  const signedBlock = await api.rpc.chain.getBlock();
+  const apiAt = await api.at(signedBlock.block.header.hash);
+  const allRecords = await apiAt.query.system.events();
 
+  // BN_ZERO lead to cache total weight
+  let totalWeight = new BN(0);
+
+  // map between the extrinsics and events
+  const events = allRecords.filter(
+    ({ phase, event: { section, method } }) =>
+      phase.isApplyExtrinsic && section === 'system' && ['ExtrinsicFailed', 'ExtrinsicSuccess'].includes(method),
+  );
+
+  for (const { event } of events) {
+    // @ts-expect-error polkadot can't decode data correctly
+    totalWeight = totalWeight.iadd(event.data.dispatchInfo.weight.refTime.toBn());
+  }
+
+  return maxWeight.refTime.toBn().sub(totalWeight.imuln(11).idivn(10));
+}
+
+async function splitTxsByWeight(api: ApiPromise, txs: Transaction[], options?: Partial<SignerOptions>) {
+  const blockLimit = await getBlockLimit(api);
   const result: Transaction[][] = [[]];
+
   let totalRefTime = BN_ZERO;
 
   const txsWeights: Partial<Record<TransactionType, Weight>> = {};
@@ -381,7 +399,7 @@ async function splitTxsByWeight(api: ApiPromise, txs: Transaction[], options?: P
 
     totalRefTime = totalRefTime.add(weight.refTime.toBn());
 
-    if (totalRefTime.lt(maxRefTime) && result.length > 0) {
+    if (totalRefTime.lt(blockLimit) && result.length > 0) {
       result[result.length - 1].push(tx);
     } else {
       result.push([tx]);
