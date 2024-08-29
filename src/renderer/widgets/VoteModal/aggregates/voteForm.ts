@@ -175,19 +175,24 @@ sample({
   source: {
     form: form.$values,
     initialConviction: $initialConviction,
-    asset: votingAssetModel.$votingAsset,
-    chain: networkSelectorModel.$governanceChain,
-    api: networkSelectorModel.$governanceChainApi,
+    network: networkSelectorModel.$governanceNetwork,
     wrappedTransactions: transaction.$wrappedTx,
   },
-  filter: ({ form, chain, asset, api, wrappedTransactions }) =>
-    !!form.account && !!form.decision && !!chain && !!asset && !!api && !!wrappedTransactions,
-  fn: ({ form, initialConviction, asset, chain, api, wrappedTransactions }): VoteConfirm => {
+  filter: ({ form, network, wrappedTransactions }) => {
+    return (
+      nonNullable(network) &&
+      nonNullable(form.account) &&
+      nonNullable(form.decision) &&
+      nonNullable(wrappedTransactions)
+    );
+  },
+  fn: ({ form, initialConviction, network, wrappedTransactions }): VoteConfirm => {
     return {
-      api: api!,
+      api: network!.api,
+      chain: network!.chain,
+      asset: network!.asset,
       account: form.account!,
-      asset: asset!,
-      chain: chain!,
+      signatory: form.signatory ?? undefined,
       description: form.description,
       initialConviction,
       wrappedTransactions: wrappedTransactions!,
