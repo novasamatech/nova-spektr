@@ -15,11 +15,13 @@ import {
   ReferendumFilters,
   ReferendumSearch,
   TotalDelegation,
+  delegationAggregate,
   networkSelectorModel,
   votingAssetModel,
 } from '@features/governance';
-import { DelegationModal } from '@/widgets/DelegationModal/components/DelegationModal';
-import { delegationModel } from '@/widgets/DelegationModal/model/delegation-model';
+import { CurrentDelegationModal, currentDelegationModel } from '@/widgets/CurrentDelegationsModal';
+import { DelegateDetails } from '@/widgets/DelegateDetails';
+import { DelegationModal, delegationModel } from '@/widgets/DelegationModal';
 import { RemoveVoteModal } from '@/widgets/RemoveVoteModal';
 import { UnlockModal, unlockAggregate } from '@/widgets/UnlockModal';
 import { VoteModal } from '@widgets/VoteModal';
@@ -38,6 +40,7 @@ export const Governance = () => {
   const isApiConnected = useUnit(networkSelectorModel.$isApiConnected);
   const network = useUnit(networkSelectorModel.$governanceNetwork);
   const asset = useUnit(votingAssetModel.$votingAsset);
+  const hasDelegations = useUnit(delegationAggregate.$hasDelegations);
 
   const isLoading = useUnit(governancePageAggregate.$isLoading);
   const isTitlesLoading = useUnit(governancePageAggregate.$isTitlesLoading);
@@ -81,7 +84,11 @@ export const Governance = () => {
               <NetworkSelector />
             </Plate>
             <Locks onClick={unlockAggregate.events.flowStarted} />
-            <TotalDelegation onClick={delegationModel.events.flowStarted} />
+            <TotalDelegation
+              onClick={() =>
+                hasDelegations ? currentDelegationModel.events.flowStarted() : delegationModel.events.flowStarted()
+              }
+            />
           </div>
 
           <div className="mb-4 mt-5">
@@ -149,7 +156,10 @@ export const Governance = () => {
           />
         )}
 
+      <CurrentDelegationModal />
       <DelegationModal />
+      <DelegateDetails />
+
       <UnlockModal />
     </div>
   );

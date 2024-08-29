@@ -63,7 +63,7 @@ export const TotalDelegation = ({ onClick }: Props) => {
         <div className="flex flex-col items-start gap-y-2">
           <div className="flex items-center gap-x-1">
             <Icon size={16} name="opengovDelegations" />
-            <FootnoteText>{t('governance.delegations')}</FootnoteText>
+            <FootnoteText>{t('governance.delegations.label')}</FootnoteText>
           </div>
 
           {isLoading && <Shimmering width={120} height={20} />}
