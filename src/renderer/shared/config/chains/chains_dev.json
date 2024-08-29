@@ -94,7 +94,7 @@
       "proxy": [
         {
           "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/novasama-polkadot-proxy"
+          "url": "https://subquery-proxy-polkadot-prod.novasamatech.org"
         }
       ]
     },
@@ -197,7 +197,7 @@
       "proxy": [
         {
           "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/novasama-kusama-proxy"
+          "url": "https://subquery-proxy-kusama-prod.novasamatech.org"
         }
       ]
     },
@@ -274,7 +274,7 @@
       "proxy": [
         {
           "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/novasama-westend-proxy"
+          "url": "https://subquery-proxy-westend-prod.novasamatech.org"
         }
       ]
     },
@@ -3211,12 +3211,12 @@
     ],
     "nodes": [
       {
-        "url": "wss://main.rpc.zeitgeist.pm/ws",
-        "name": "Zeitgeist node"
-      },
-      {
         "url": "wss://zeitgeist.api.onfinality.io/public-ws",
         "name": "OnFinality node"
+      },
+      {
+        "url": "wss://main.rpc.zeitgeist.pm/ws",
+        "name": "Zeitgeist node"
       }
     ],
     "assets": [
@@ -4056,7 +4056,7 @@
       "proxy": [
         {
           "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/proxy-hydradx"
+          "url": "https://subquery-proxy-hydradx-prod.novasamatech.org"
         }
       ]
     }
@@ -5879,6 +5879,12 @@
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-moonriver-gov"
         }
+      ],
+      "proxy": [
+        {
+          "type": "subquery",
+          "url": "subquery-proxy-moonriver-prod.novasamatech.org"
+        }
       ]
     }
   },
@@ -6051,19 +6057,6 @@
           "assetId": "120637696315203257380661607956669368914"
         },
         "name": "Interlay Bitcoin"
-      },
-      {
-        "assetId": 7,
-        "symbol": "POOP",
-        "precision": 18,
-        "type": "statemine",
-        "priceId": "raresama",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/POOP.svg",
-        "typeExtras": {
-          "assetId": "270195117769614861929703564202131636628",
-          "palletName": "LocalAssets"
-        },
-        "name": "POOP"
       },
       {
         "assetId": 8,
@@ -6293,6 +6286,12 @@
         {
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-moonbeam-gov"
+        }
+      ],
+      "proxy": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-proxy-moonbeam-prod.novasamatech.org"
         }
       ]
     }
@@ -6559,7 +6558,7 @@
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Bittensor.svg",
     "options": [
       "multisig",
-      "pure_proxy",
+      "regular_proxy",
       "pure_proxy"
     ],
     "nodes": [
