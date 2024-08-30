@@ -9,9 +9,9 @@ import { balanceModel } from '@entities/balance';
 import { voteTransactionService } from '@entities/governance';
 import { type WrappedTransactions, transactionBuilder } from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
+import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
 import { type BasicFormParams, createTransactionForm } from '@features/governance/lib/createTransactionForm';
-import { locksModel } from '@features/governance/model/locks';
 import { networkSelectorModel } from '@features/governance/model/networkSelector';
 import { voteValidateModel } from '@features/governance/model/vote/voteValidateModel';
 import { votingAssetModel } from '@features/governance/model/votingAsset';
@@ -104,7 +104,7 @@ const { form, resetForm, transaction, accounts } = transactionForm;
 sample({
   clock: form.fields.account.onChange,
   source: {
-    trackLocks: locksModel.$trackLocks,
+    trackLocks: locksAggregate.$trackLocks,
     chain: networkSelectorModel.$governanceChain,
   },
   filter: ({ chain }, account) => nonNullable(account) && nonNullable(chain),
@@ -175,7 +175,7 @@ sample({
   source: {
     form: form.$values,
     initialConviction: $initialConviction,
-    network: networkSelectorModel.$governanceNetwork,
+    network: networkSelectorModel.$network,
     wrappedTransactions: transaction.$wrappedTx,
   },
   filter: ({ form, network, wrappedTransactions }) => {
