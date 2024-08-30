@@ -1,5 +1,4 @@
 import { useUnit } from 'effector-react';
-import { useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
 import { useModalClose } from '@shared/lib/hooks';
@@ -27,14 +26,6 @@ export const UnlockModal = () => {
     unlockAggregate.output.flowFinished,
   );
 
-  useEffect(() => {
-    if (isStep(step, Step.BASKET)) {
-      const timer = setTimeout(() => closeBasketModal(), 1450);
-
-      return () => clearTimeout(timer);
-    }
-  }, [step]);
-
   if (!governanceChain) {
     return null;
   }
@@ -49,6 +40,7 @@ export const UnlockModal = () => {
         isOpen={isBasketModalOpen}
         variant="success"
         title={t('operation.addedToBasket')}
+        autoCloseTimeout={2000}
         onClose={closeBasketModal}
       />
     );

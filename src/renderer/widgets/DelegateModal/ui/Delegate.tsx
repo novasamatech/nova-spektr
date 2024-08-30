@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { useI18n } from '@app/providers';
 import { Step, cnTw, isStep } from '@/shared/lib/utils';
@@ -40,14 +40,6 @@ export const Delegate = () => {
     delegateModel.output.flowFinished,
   );
 
-  useEffect(() => {
-    if (isStep(step, Step.BASKET)) {
-      const timer = setTimeout(() => closeBasketModal(), 1450);
-
-      return () => clearTimeout(timer);
-    }
-  }, [step]);
-
   const nextTx = () => {
     if (transactions && currentTx < transactions.length - 1) {
       const newValue = currentTx + 1;
@@ -82,6 +74,7 @@ export const Delegate = () => {
         isOpen={isBasketModalOpen}
         variant="success"
         title={t('operation.addedToBasket')}
+        autoCloseTimeout={2000}
         onClose={closeBasketModal}
       />
     );

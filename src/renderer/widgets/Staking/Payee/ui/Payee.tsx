@@ -1,5 +1,4 @@
 import { useUnit } from 'effector-react';
-import { useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
 import { useModalClose } from '@shared/lib/hooks';
@@ -27,13 +26,6 @@ export const Payee = () => {
     payeeModel.output.flowFinished,
   );
 
-  useEffect(() => {
-    if (payeeUtils.isBasketStep(step)) {
-      const timer = setTimeout(() => closeBasketModal(), 1450);
-
-      return () => clearTimeout(timer);
-    }
-  }, [step]);
   if (!walletData) {
     return null;
   }
@@ -47,6 +39,7 @@ export const Payee = () => {
         isOpen={isBasketModalOpen}
         variant="success"
         title={t('operation.addedToBasket')}
+        autoCloseTimeout={2000}
         onClose={closeBasketModal}
       />
     );
