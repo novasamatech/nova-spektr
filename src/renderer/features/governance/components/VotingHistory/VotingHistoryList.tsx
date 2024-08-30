@@ -39,7 +39,7 @@ export const VotingHistoryList = memo<Props>(({ items, asset, chain, loading }) 
   return (
     <div className="flex flex-col gap-6 pb-4 pt-6">
       <SearchInput placeholder={t('governance.searchPlaceholder')} value={query} onChange={setQuery} />
-      <div className="min-h-0 overflow-y-auto">
+      <div className="min-h-0">
         <div className="flex flex-col gap-2">
           <div className="flex justify-between px-2">
             <FootnoteText className="text-text-tertiary">{t('governance.voteHistory.listColumnAccount')}</FootnoteText>
