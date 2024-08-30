@@ -41,6 +41,7 @@ export const getOperationTitle = (transaction: BasketTransaction, chain: Chain):
     [TransactionType.UNLOCK]: 'operations.modalTitles.unlockOn',
     [TransactionType.DELEGATE]: 'operations.modalTitles.delegateOn',
     [TransactionType.VOTE]: 'operations.modalTitles.vote',
+    [TransactionType.REVOTE]: 'operations.modalTitles.revote',
     [TransactionType.REMOVE_VOTE]: 'operations.modalTitles.removeVote',
   };
 

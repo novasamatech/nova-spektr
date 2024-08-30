@@ -50,7 +50,10 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
   const { asset, existingVote, wrappedTransactions, api } = confirm.meta;
 
-  if (!voteTransactionService.isVoteTransaction(wrappedTransactions.coreTx)) {
+  if (
+    !voteTransactionService.isVoteTransaction(wrappedTransactions.coreTx) ||
+    !voteTransactionService.isRevoteTransaction(wrappedTransactions.coreTx)
+  ) {
     return null;
   }
 

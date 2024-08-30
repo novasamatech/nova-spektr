@@ -4,7 +4,7 @@ import { isNil } from 'lodash';
 import { and, empty, not, reset } from 'patronum';
 
 import { type AccountVote, type Conviction, type OngoingReferendum } from '@shared/core';
-import { nonNullable, toAddress } from '@shared/lib/utils';
+import { nonNullable, nullable, toAddress } from '@shared/lib/utils';
 import { balanceModel } from '@entities/balance';
 import { voteTransactionService } from '@entities/governance';
 import { type WrappedTransactions, transactionBuilder } from '@entities/transaction';
@@ -52,14 +52,25 @@ const transactionForm = createTransactionForm<Form>({
       {
         chain: $chain,
         referendum: $referendum,
+        existingVote: $existingVote,
         conviction: form.fields.conviction.$value,
         account: form.fields.account.$value,
         amount: form.fields.amount.$value,
         decision: form.fields.decision.$value,
       },
-      ({ chain, referendum, account, amount, conviction, decision }) => {
-        if (!referendum || !chain || !account) {
+      ({ chain, referendum, account, amount, conviction, decision, existingVote }) => {
+        if (nullable(referendum) || nullable(chain) || nullable(account)) {
           return null;
+        }
+
+        if (existingVote) {
+          return transactionBuilder.buildRevote({
+            chain: chain,
+            accountId: account.accountId,
+            trackId: referendum.track,
+            referendumId: referendum.referendumId,
+            vote: voteTransactionService.createTransactionVote(decision ?? 'aye', amount, conviction),
+          });
         }
 
         return transactionBuilder.buildVote({
