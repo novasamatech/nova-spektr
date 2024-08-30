@@ -92,7 +92,7 @@ sample({
   fn: ({ network, tracks, trackLocks, voting, referendums }) => ({
     api: network!.api,
     tracks,
-    trackLocks,
+    trackLocks: trackLocks[network!.chain.chainId],
     voting,
     referendums: referendums[network!.chain.chainId],
   }),

@@ -270,7 +270,6 @@ sample({
 export const removeVoteModalAggregate = {
   $initiatorWallet,
   $lockPeriods: lockPeriodsModel.$lockPeriods,
-  $lock: locksModel.$totalLock,
 
   $step,
 

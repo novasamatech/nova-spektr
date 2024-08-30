@@ -1,24 +1,29 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
-import { or, readonly } from 'patronum';
+import { readonly } from 'patronum';
 
-import { type Address, type TrackId } from '@shared/core';
-import { nonNullable } from '@shared/lib/utils';
+import { type Address, type Chain, type ChainId, type TrackId } from '@shared/core';
+import { nonNullable, nullable } from '@shared/lib/utils';
 import { createSubscriber, governanceService, governanceSubscribeService } from '@/entities/governance';
 import { accountUtils, walletModel } from '@entities/wallet';
 
 import { networkSelectorModel } from './networkSelector';
 
-const requestLocks = createEvent();
+const requestLocks = createEvent<{ api: ApiPromise; chain: Chain; addresses: Address[] }>();
 const subscribeLocks = createEvent();
 
-const $trackLocks = createStore<Record<Address, Record<TrackId, BN>>>({});
+const $trackLocks = createStore<Record<ChainId, Record<Address, Record<TrackId, BN>>>>({}).reset(
+  walletModel.$activeWallet,
+);
 
-const $totalLock = $trackLocks.map((trackLocks) => {
+const $totalLock = combine(networkSelectorModel.$governanceChain, $trackLocks, (chain, trackLocks) => {
+  if (!chain) return BN_ZERO;
+
   let maxLockTotal = new BN(0);
+  const tracksLocksForChain = trackLocks[chain.chainId];
 
-  for (const lock of Object.values(trackLocks)) {
+  for (const lock of Object.values(tracksLocksForChain)) {
     const totalLock = Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
     maxLockTotal = maxLockTotal.iadd(totalLock);
   }
@@ -36,6 +41,7 @@ const $walletAddresses = combine(walletModel.$activeWallet, networkSelectorModel
 
 type RequestParams = {
   api: ApiPromise;
+  chain: Chain;
   addresses: Address[];
 };
 
@@ -65,23 +71,20 @@ sample({
     addresses: $walletAddresses,
   },
   filter: ({ network }) => nonNullable(network),
-  fn: ({ network, addresses }) => ({ api: network!.api, addresses }),
+  fn: ({ network, addresses }) => ({ api: network!.api, chain: network!.chain, addresses }),
   target: subscribe,
 });
 
 sample({
   clock: requestLocks,
-  source: {
-    network: networkSelectorModel.$network,
-    addresses: $walletAddresses,
-  },
-  filter: ({ network }) => nonNullable(network),
-  fn: ({ network, addresses }) => ({ api: network!.api, addresses }),
+  fn: ({ chain, api, addresses }) => ({ api, chain, addresses }),
   target: requestLocksFx,
 });
 
 sample({
   clock: subscribeLocks,
+  source: { trackLocks: $trackLocks, network: networkSelectorModel.$network },
+  filter: ({ trackLocks, network }) => nonNullable(network) && nullable(trackLocks[network.chain.chainId]),
   fn: () => true,
   target: $isLoading,
 });
@@ -93,19 +96,24 @@ sample({
 });
 
 sample({
-  clock: receiveLocks,
-  fn: ({ result }) => result,
-  target: $trackLocks,
+  clock: requestLocksFx.pending,
+  source: { trackLocks: $trackLocks, network: networkSelectorModel.$network },
+  filter: ({ trackLocks, network }) => nonNullable(network) && nullable(trackLocks[network.chain.chainId]),
+  fn: (_, loading) => loading,
+  target: $isLoading,
 });
 
 sample({
-  clock: requestLocksFx.done,
-  fn: ({ result }) => result,
+  clock: [receiveLocks, requestLocksFx.done],
+  source: $trackLocks,
+  fn: (trackLocks, { params, result }) => {
+    return { ...trackLocks, [params.chain.chainId]: result };
+  },
   target: $trackLocks,
 });
 
 export const locksModel = {
-  $isLoading: or($isLoading, requestLocksFx.pending),
+  $isLoading,
   $totalLock: readonly($totalLock),
   $trackLocks: readonly($trackLocks),
   events: {
