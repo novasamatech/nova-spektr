@@ -1,5 +1,4 @@
-import { useGate, useStoreMap, useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import { useGate, useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { type Asset, type Chain } from '@shared/core';
@@ -53,14 +52,6 @@ export const ReferendumDetailsDialog = ({
   const hasAccount = useUnit(detailsAggregate.$hasAccount);
   const wallet = useUnit(walletModel.$activeWallet);
 
-  const votes = useStoreMap({
-    store: detailsAggregate.$votes,
-    keys: [referendum.referendumId],
-    fn: (votes, [referendumId]) => votingService.getReferendumAccountVotes(referendumId, votes),
-  });
-
-  const totalVotes = useMemo(() => votingService.calculateAccountVotesTotalBalance(Object.values(votes)), [votes]);
-
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
   return (
@@ -81,7 +72,11 @@ export const ReferendumDetailsDialog = ({
         <div className="flex shrink-0 grow basis-[320px] flex-row flex-wrap gap-4">
           {nonNullable(referendum.vote) && (
             <DetailsCard>
-              <VotingBalance votes={totalVotes} asset={asset} onInfoClick={toggleShowWalletVotes} />
+              <VotingBalance
+                votes={votingService.calculateAccountVotePower(referendum.vote)}
+                asset={asset}
+                onInfoClick={toggleShowWalletVotes}
+              />
             </DetailsCard>
           )}
 
