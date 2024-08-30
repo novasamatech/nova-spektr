@@ -1,7 +1,7 @@
 import { useI18n } from '@/app/providers';
 import { Tooltip } from '@/shared/ui/Popovers';
 import { FootnoteText, HelpText } from '@/shared/ui/Typography';
-import '../common/styles.css';
+import { cnTw } from '@shared/lib/utils';
 
 type Props = {
   aye: number;
@@ -28,7 +28,10 @@ export const VoteChart = ({ aye, nay, pass, descriptionPosition = 'tooltip', bgC
         </>
       )}
       <div
-        className="vote-chart-point"
+        className={cnTw(
+          'absolute flex h-4 w-1.5 translate-x-[-50%] justify-center bg-border-dark',
+          'after:contest-[""] after:block after:h-full after:w-0.5 after:rounded-sm after:bg-border-dark',
+        )}
         style={{ backgroundColor: `var(--${bgColor})`, left: `clamp(3px, ${pass}%, calc(100% - 3px))` }}
       />
     </div>
