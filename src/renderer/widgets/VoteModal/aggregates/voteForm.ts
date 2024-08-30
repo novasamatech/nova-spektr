@@ -175,7 +175,7 @@ sample({
   source: {
     form: form.$values,
     initialConviction: $initialConviction,
-    network: networkSelectorModel.$governanceNetwork,
+    network: networkSelectorModel.$network,
     wrappedTransactions: transaction.$wrappedTx,
   },
   filter: ({ form, network, wrappedTransactions }) => {
