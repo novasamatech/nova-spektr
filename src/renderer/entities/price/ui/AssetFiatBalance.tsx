@@ -1,4 +1,4 @@
-import { BN } from '@polkadot/util';
+import BN from 'bignumber.js';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
@@ -31,7 +31,7 @@ export const AssetFiatBalance = ({ asset, amount, className }: Props) => {
     return <FiatBalance amount={ZERO_BALANCE} className={className} />;
   }
 
-  const amountBn = BN.isBN(amount) ? amount : new BN(amount);
+  const amountBn = BN.isBigNumber(amount) ? amount : new BN(amount);
 
   const price =
     currency && prices && asset.priceId && prices[asset.priceId] && prices[asset.priceId][currency.coingeckoId];
@@ -40,7 +40,7 @@ export const AssetFiatBalance = ({ asset, amount, className }: Props) => {
     return <Shimmering width={56} height={18} />;
   }
 
-  const priceToShow = new BN(price.price).imul(amountBn);
+  const priceToShow = new BN(price.price).multipliedBy(amountBn);
 
   const { value: formattedValue, suffix, decimalPlaces } = formatFiatBalance(priceToShow.toString(), asset.precision);
 
