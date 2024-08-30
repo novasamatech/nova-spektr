@@ -78,7 +78,7 @@ export const Confirmation = ({
   const votesValue = votingService.calculateVotingPower(new BN(amountValue), confirmStore.conviction);
 
   return (
-    <div className="flex w-modal flex-col items-center gap-y-4 px-5 pb-4 pt-4">
+    <div className="flex w-modal flex-col items-center gap-y-4 px-5 py-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name="addDelegationConfirm" size={60} />
 

@@ -101,8 +101,8 @@ export const Delegate = () => {
   return (
     <BaseModal
       closeButton
-      contentClass=""
-      panelClass="w-fit"
+      contentClass="overflow-y-auto flex-1"
+      panelClass="h-[736px] w-fit flex flex-col"
       isOpen={isModalOpen}
       title={<OperationTitle title={t('governance.addDelegation.title')} chainId={walletData.chain!.chainId} />}
       onClose={closeModal}
