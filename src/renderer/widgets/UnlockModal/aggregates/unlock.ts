@@ -1,16 +1,19 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
-import { delay, spread } from 'patronum';
+import { spread } from 'patronum';
 
 import { type BasketTransaction, type Transaction } from '@/shared/core';
+import { type PathType, Paths } from '@/shared/routes';
 import { type ClaimChunkWithAddress, UnlockChunkType } from '@shared/api/governance';
 import { Step, isStep, nonNullable } from '@shared/lib/utils';
 import { basketModel } from '@/entities/basket';
+import { walletModel, walletUtils } from '@/entities/wallet';
+import { navigationModel } from '@/features/navigation';
 import { locksModel } from '@features/governance/model/locks';
 import { networkSelectorModel } from '@features/governance/model/networkSelector';
 import { unlockModel } from '@features/governance/model/unlock/unlock';
 import { type UnlockFormData } from '@features/governance/types/structs';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@features/operations/OperationSubmit';
+import { ExtrinsicResult, submitModel } from '@features/operations/OperationSubmit';
 import { submitUtils } from '@features/operations/OperationSubmit/lib/submit-utils';
 
 import { unlockConfirmAggregate } from './unlockConfirm';
@@ -27,6 +30,7 @@ const $unlockData = createStore<UnlockFormData | null>(null).reset(flowFinished)
 const $wrappedTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
 const $multisigTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
 const $coreTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
+const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
 const $step = restore<Step>(stepChanged, Step.NONE);
 
@@ -164,13 +168,6 @@ sample({
 });
 
 sample({
-  clock: delay(submitModel.output.formSubmitted, 2000),
-  source: $step,
-  filter: (step) => isStep(step, Step.SUBMIT),
-  target: flowFinished,
-});
-
-sample({
   clock: submitModel.$submitStep,
   source: {
     chunks: unlockModel.$claimSchedule,
@@ -199,6 +196,23 @@ sample({
   clock: flowFinished,
   fn: () => Step.NONE,
   target: [stepChanged, unlockFormAggregate.events.formCleared],
+});
+
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: {
+    wallet: walletModel.$activeWallet,
+  },
+  filter: ({ wallet }, results) => walletUtils.isMultisig(wallet) && results[0].result === ExtrinsicResult.SUCCESS,
+  fn: () => Paths.OPERATIONS,
+  target: $redirectAfterSubmitPath,
+});
+
+sample({
+  clock: flowFinished,
+  source: $redirectAfterSubmitPath,
+  filter: nonNullable,
+  target: navigationModel.events.navigateTo,
 });
 
 // Basket

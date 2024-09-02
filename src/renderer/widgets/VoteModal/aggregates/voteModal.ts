@@ -2,18 +2,23 @@ import { createEvent, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { spread } from 'patronum';
 
+import { type PathType, Paths } from '@/shared/routes';
 import { type BasketTransaction, type Conviction, type OngoingReferendum } from '@shared/core';
 import { Step, isStep, nonNullable, toAddress } from '@shared/lib/utils';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { basketModel } from '@entities/basket';
 import { referendumModel } from '@entities/governance';
 import { lockPeriodsModel, locksModel, networkSelectorModel, votingAggregate } from '@/features/governance';
+import { navigationModel } from '@/features/navigation';
 import { type SigningPayload, signModel } from '@features/operations/OperationSign';
-import { submitModel } from '@features/operations/OperationSubmit';
+import { ExtrinsicResult, submitModel } from '@features/operations/OperationSubmit';
 import { voteConfirmModel } from '@features/operations/OperationsConfirm';
 
 import { voteFormAggregate } from './voteForm';
 
 const flow = createGate<{ conviction: Conviction; referendum: OngoingReferendum }>();
+
+const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flow.open);
 
 const { form, reinitForm, resetForm, transaction } = voteFormAggregate.transactionForm;
 
@@ -200,6 +205,23 @@ sample({
     return { addresses };
   },
   target: votingAggregate.events.requestVoting,
+});
+
+sample({
+  clock: voteConfirmModel.events.submitFinished,
+  source: {
+    wallet: walletModel.$activeWallet,
+  },
+  filter: ({ wallet }, results) => walletUtils.isMultisig(wallet) && results[0].result === ExtrinsicResult.SUCCESS,
+  fn: () => Paths.OPERATIONS,
+  target: $redirectAfterSubmitPath,
+});
+
+sample({
+  clock: flow.close,
+  source: $redirectAfterSubmitPath,
+  filter: nonNullable,
+  target: navigationModel.events.navigateTo,
 });
 
 // Aggregate

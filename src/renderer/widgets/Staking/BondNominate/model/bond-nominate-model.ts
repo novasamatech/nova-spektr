@@ -1,8 +1,9 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
-import { delay, spread } from 'patronum';
+import { spread } from 'patronum';
 
+import { type PathType, Paths } from '@/shared/routes';
 import {
   type Account,
   type BasketTransaction,
@@ -17,9 +18,10 @@ import { basketModel } from '@entities/basket/model/basket-model';
 import { networkModel } from '@entities/network';
 import { validatorsService } from '@entities/staking';
 import { transactionBuilder, transactionService } from '@entities/transaction';
-import { walletModel } from '@entities/wallet';
+import { walletModel, walletUtils } from '@entities/wallet';
+import { navigationModel } from '@/features/navigation';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@features/operations/OperationSubmit';
+import { ExtrinsicResult, submitModel } from '@features/operations/OperationSubmit';
 import { bondNominateConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { validatorsModel } from '@features/staking';
 import { bondUtils } from '../lib/bond-utils';
@@ -41,6 +43,8 @@ const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit
 
 const $txWrappers = createStore<TxWrapper[]>([]).reset(flowFinished);
 const $pureTxs = createStore<Transaction[]>([]).reset(flowFinished);
+
+const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
 const $maxValidators = createStore<number>(0);
 
@@ -379,16 +383,26 @@ sample({
 });
 
 sample({
-  clock: delay(submitModel.output.formSubmitted, 2000),
-  source: $step,
-  filter: (step) => bondUtils.isSubmitStep(step),
-  target: flowFinished,
+  clock: flowFinished,
+  fn: () => Step.NONE,
+  target: [stepChanged, formModel.events.formCleared, validatorsModel.events.formCleared],
+});
+
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: {
+    wallet: walletModel.$activeWallet,
+  },
+  filter: ({ wallet }, results) => walletUtils.isMultisig(wallet) && results[0].result === ExtrinsicResult.SUCCESS,
+  fn: () => Paths.OPERATIONS,
+  target: $redirectAfterSubmitPath,
 });
 
 sample({
   clock: flowFinished,
-  fn: () => Step.NONE,
-  target: [stepChanged, formModel.events.formCleared, validatorsModel.events.formCleared],
+  source: $redirectAfterSubmitPath,
+  filter: nonNullable,
+  target: navigationModel.events.navigateTo,
 });
 
 sample({

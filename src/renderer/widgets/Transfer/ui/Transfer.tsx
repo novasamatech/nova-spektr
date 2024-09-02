@@ -1,6 +1,5 @@
 import { useUnit } from 'effector-react';
 import { type ReactNode, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 import { useI18n } from '@app/providers';
 import { type Asset, type Chain } from '@shared/core';
@@ -24,8 +23,6 @@ type Props = {
 export const Transfer = ({ chain, asset }: Props) => {
   const { t } = useI18n();
 
-  const navigate = useNavigate();
-
   const step = useUnit(transferModel.$step);
   const xcmChain = useUnit(transferModel.$xcmChain);
   const initiatorWallet = useUnit(transferModel.$initiatorWallet);
@@ -40,13 +37,10 @@ export const Transfer = ({ chain, asset }: Props) => {
     transferModel.events.flowStarted({ chain, asset });
   }, []);
 
-  useEffect(() => {
-    transferModel.events.navigateApiChanged({ navigate });
-  }, []);
-
   if (transferUtils.isSubmitStep(step)) {
     return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
   }
+
   if (transferUtils.isBasketStep(step)) {
     return (
       <OperationResult

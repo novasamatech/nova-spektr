@@ -1,14 +1,15 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
-import { delay, spread } from 'patronum';
+import { spread } from 'patronum';
 
+import { type PathType, Paths } from '@/shared/routes';
 import { type BasketTransaction, type Transaction } from '@shared/core';
 import { getRelaychainAsset, nonNullable } from '@shared/lib/utils';
 import { basketModel } from '@entities/basket';
 import { walletModel, walletUtils } from '@entities/wallet';
+import { navigationModel } from '@/features/navigation';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@features/operations/OperationSubmit';
+import { ExtrinsicResult, submitModel } from '@features/operations/OperationSubmit';
 import { restakeConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
-import { restakeUtils } from '../lib/restake-utils';
 import { type NetworkStore, type RestakeStore, Step } from '../lib/types';
 
 import { formModel } from './form-model';
@@ -27,6 +28,7 @@ const $networkStore = restore<NetworkStore | null>(flowStarted, null);
 const $wrappedTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
 const $multisigTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
 const $coreTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
+const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
 const $initiatorWallet = combine(
   {
@@ -154,16 +156,26 @@ sample({
 });
 
 sample({
-  clock: delay(submitModel.output.formSubmitted, 2000),
-  source: $step,
-  filter: (step) => restakeUtils.isSubmitStep(step),
-  target: flowFinished,
+  clock: flowFinished,
+  fn: () => Step.NONE,
+  target: [stepChanged, formModel.events.formCleared],
+});
+
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: {
+    wallet: walletModel.$activeWallet,
+  },
+  filter: ({ wallet }, results) => walletUtils.isMultisig(wallet) && results[0].result === ExtrinsicResult.SUCCESS,
+  fn: () => Paths.OPERATIONS,
+  target: $redirectAfterSubmitPath,
 });
 
 sample({
   clock: flowFinished,
-  fn: () => Step.NONE,
-  target: [stepChanged, formModel.events.formCleared],
+  source: $redirectAfterSubmitPath,
+  filter: nonNullable,
+  target: navigationModel.events.navigateTo,
 });
 
 sample({

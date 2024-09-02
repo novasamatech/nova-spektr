@@ -17,10 +17,11 @@ type ResultProps = Pick<
 
 type Props = {
   isOpen: boolean;
+  autoCloseTimeout?: number;
   onClose: () => void;
 };
 
-export const OperationSubmit = ({ isOpen, onClose }: Props) => {
+export const OperationSubmit = ({ autoCloseTimeout = 2000, isOpen, onClose }: Props) => {
   const { t } = useI18n();
 
   const submitStore = useUnit(submitModel.$submitStore);
@@ -64,7 +65,12 @@ export const OperationSubmit = ({ isOpen, onClose }: Props) => {
   };
 
   return (
-    <OperationResult isOpen={isOpen} {...getResultProps(step, message)} onClose={onClose}>
+    <OperationResult
+      isOpen={isOpen}
+      {...getResultProps(step, message)}
+      autoCloseTimeout={!submitUtils.isLoadingStep(step) ? autoCloseTimeout : 0}
+      onClose={onClose}
+    >
       {submitUtils.isErrorStep(step) && <Button onClick={onClose}>{t('operation.submitErrorButton')}</Button>}
     </OperationResult>
   );

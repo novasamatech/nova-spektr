@@ -1,23 +1,19 @@
-import { attach, combine, createApi, createEvent, createStore, restore, sample } from 'effector';
-import { delay, once, spread } from 'patronum';
-import { type NavigateFunction } from 'react-router-dom';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { once, spread } from 'patronum';
 
+import { nonNullable } from '@/shared/lib/utils';
 import { type BasketTransaction, type Transaction } from '@shared/core';
-import { Paths } from '@shared/routes';
+import { type PathType, Paths } from '@shared/routes';
 import { basketModel } from '@entities/basket';
 import { walletModel, walletUtils } from '@entities/wallet';
+import { navigationModel } from '@/features/navigation';
+import { ExtrinsicResult } from '@/features/operations/OperationSubmit/lib/types';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { transferConfirmModel } from '@features/operations/OperationsConfirm';
-import { transferUtils } from '../lib/transfer-utils';
 import { type NetworkStore, Step, type TransferStore } from '../lib/types';
 
 import { formModel } from './form-model';
-
-const $navigation = createStore<{ navigate: NavigateFunction } | null>(null);
-const navigationApi = createApi($navigation, {
-  navigateApiChanged: (state, { navigate }) => ({ ...state, navigate }),
-});
 
 const stepChanged = createEvent<Step>();
 
@@ -26,6 +22,7 @@ const flowFinished = createEvent();
 const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
+const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
 const $transferStore = createStore<TransferStore | null>(null);
 const $networkStore = restore<NetworkStore | null>(flowStarted, null);
@@ -169,10 +166,20 @@ sample({
 });
 
 sample({
-  clock: delay(submitModel.output.formSubmitted, 2000),
-  source: $step,
-  filter: (step) => transferUtils.isSubmitStep(step),
-  target: flowFinished,
+  clock: submitModel.output.formSubmitted,
+  source: {
+    wallet: walletModel.$activeWallet,
+  },
+  filter: ({ wallet }, results) => walletUtils.isMultisig(wallet) && results[0].result === ExtrinsicResult.SUCCESS,
+  fn: () => Paths.OPERATIONS,
+  target: $redirectAfterSubmitPath,
+});
+
+sample({
+  clock: flowFinished,
+  source: $redirectAfterSubmitPath,
+  filter: nonNullable,
+  target: navigationModel.events.navigateTo,
 });
 
 sample({
@@ -183,11 +190,9 @@ sample({
 
 sample({
   clock: once({ source: flowFinished, reset: flowStarted }),
-  source: $step,
-  target: attach({
-    source: $navigation,
-    effect: (state) => state?.navigate(Paths.ASSETS, { replace: true }),
-  }),
+  source: $redirectAfterSubmitPath,
+  fn: (path) => path || Paths.ASSETS,
+  target: navigationModel.events.navigateTo,
 });
 
 sample({
@@ -225,8 +230,8 @@ export const transferModel = {
     flowStarted,
     txSaved,
     stepChanged,
-    navigateApiChanged: navigationApi.navigateApiChanged,
   },
+
   output: {
     flowFinished,
   },
