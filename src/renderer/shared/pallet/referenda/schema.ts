@@ -9,24 +9,33 @@ export const referendumId = pjsSchema.u32;
 export type TrackId = z.infer<typeof trackId>;
 export const trackId = pjsSchema.u16;
 
+export type ReferendaLinearDecreasingCurve = z.infer<typeof referendaLinearDecreasingCurve>;
+const referendaLinearDecreasingCurve = pjsSchema.object({
+  length: pjsSchema.perbill,
+  floor: pjsSchema.perbill,
+  ceil: pjsSchema.perbill,
+});
+
+export type ReferendaSteppedDecreasingCurve = z.infer<typeof referendaSteppedDecreasingCurve>;
+const referendaSteppedDecreasingCurve = pjsSchema.object({
+  begin: pjsSchema.perbill,
+  end: pjsSchema.perbill,
+  step: pjsSchema.perbill,
+  period: pjsSchema.perbill,
+});
+
+export type ReferendaReciprocalCurve = z.infer<typeof referendaReciprocalCurve>;
+const referendaReciprocalCurve = pjsSchema.object({
+  factor: pjsSchema.i64,
+  xOffset: pjsSchema.i64,
+  yOffset: pjsSchema.i64,
+});
+
 export type ReferendaCurve = z.infer<typeof referendaCurve>;
 export const referendaCurve = pjsSchema.enumValue({
-  LinearDecreasing: pjsSchema.object({
-    length: pjsSchema.perbill,
-    floor: pjsSchema.perbill,
-    ceil: pjsSchema.perbill,
-  }),
-  SteppedDecreasing: pjsSchema.object({
-    begin: pjsSchema.perbill,
-    end: pjsSchema.perbill,
-    step: pjsSchema.perbill,
-    period: pjsSchema.perbill,
-  }),
-  Reciprocal: pjsSchema.object({
-    factor: pjsSchema.i64,
-    xOffset: pjsSchema.i64,
-    yOffset: pjsSchema.i64,
-  }),
+  LinearDecreasing: referendaLinearDecreasingCurve,
+  SteppedDecreasing: referendaSteppedDecreasingCurve,
+  Reciprocal: referendaReciprocalCurve,
 });
 
 export type ReferendaTrackInfo = z.infer<typeof referendaTrackInfo>;

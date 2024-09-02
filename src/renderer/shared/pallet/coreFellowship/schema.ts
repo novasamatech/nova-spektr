@@ -4,10 +4,10 @@ import { pjsSchema } from '@/shared/polkadotjsSchemas';
 
 export type CoreFellowshipParams = z.infer<typeof coreFellowshipParams>;
 export const coreFellowshipParams = pjsSchema.object({
-  activeSalary: z.array(pjsSchema.u128),
-  passiveSalary: z.array(pjsSchema.u128),
-  demotionPeriod: z.array(pjsSchema.u32),
-  minPromotionPeriod: z.array(pjsSchema.u32),
+  activeSalary: pjsSchema.vec(pjsSchema.u128),
+  passiveSalary: pjsSchema.vec(pjsSchema.u128),
+  demotionPeriod: pjsSchema.vec(pjsSchema.u32),
+  minPromotionPeriod: pjsSchema.vec(pjsSchema.u32),
   offboardTimeout: pjsSchema.u32,
 });
 

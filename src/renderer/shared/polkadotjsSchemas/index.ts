@@ -15,10 +15,10 @@ import {
   objectSchema,
   optionalSchema,
   tuppleMapSchema,
+  vecSchema,
 } from './structs';
 
 export const pjsSchema = {
-  object: objectSchema,
   perbill: perbillSchema,
   u16: u16Schema,
   u32: u32Schema,
@@ -27,9 +27,12 @@ export const pjsSchema = {
   u128: u128Schema,
   text: textSchema,
   accountId: accountIdSchema,
+
+  object: objectSchema,
   optional: optionalSchema,
   enumType: enumTypeSchema,
   enumValue: enumValueSchema,
   tuppleMap: tuppleMapSchema,
   complex: complexSchema,
+  vec: vecSchema,
 };

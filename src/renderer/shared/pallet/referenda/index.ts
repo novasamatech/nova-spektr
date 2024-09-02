@@ -8,14 +8,18 @@ export const referendaPallet = {
   schema,
 };
 
-export type {
-  ReferendumId,
-  TrackId,
-  ReferendaReferendumStatusRankedCollectiveTally,
-  ReferendaReferendumInfoConvictionVotingTally,
-  ReferendaReferendumInfoCompletedTally,
-  ReferendaDeposit,
-  ReferendaDecidingStatus,
-  ReferendaCurve,
-  ReferendaTrackInfo,
+export {
+  type FrameSupportScheduleDispatchTime,
+  type ReferendaCurve,
+  type ReferendaDecidingStatus,
+  type ReferendaDeposit,
+  type ReferendaLinearDecreasingCurve,
+  type ReferendaReciprocalCurve,
+  type ReferendaReferendumInfoCompletedTally,
+  type ReferendaReferendumInfoConvictionVotingTally,
+  type ReferendaReferendumStatusRankedCollectiveTally,
+  type ReferendaSteppedDecreasingCurve,
+  type ReferendaTrackInfo,
+  type ReferendumId,
+  type TrackId,
 } from './schema';

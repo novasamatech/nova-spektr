@@ -1,6 +1,8 @@
 import { Enum, Option } from '@polkadot/types';
 import { z } from 'zod';
 
+export const vecSchema = <T extends z.ZodTypeAny>(schema: T) => z.array(schema);
+
 export const objectSchema = <const T extends z.ZodRawShape>(v: T) => {
   return z.map(z.string(), z.unknown()).transform((map) => {
     type PolkadotJSObject = {
@@ -48,7 +50,7 @@ export const enumValueSchema = <const Map extends Record<string, z.ZodTypeAny>>(
   type EnumVariant = {
     [K in keyof Map]: {
       type: K;
-      data: z.infer<Map[K]>;
+      _: z.infer<Map[K]>;
     };
   }[keyof Map];
 
@@ -63,7 +65,7 @@ export const enumValueSchema = <const Map extends Record<string, z.ZodTypeAny>>(
         return {
           type,
           // @ts-expect-error dynamic field
-          data: specificSchema.parse(enumValue[`as${type}`]),
+          _: specificSchema.parse(enumValue[`as${type}`]),
         } as EnumVariant;
       }
 
