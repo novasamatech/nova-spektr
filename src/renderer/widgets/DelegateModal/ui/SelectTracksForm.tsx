@@ -16,7 +16,12 @@ import {
 import { OperationTitle } from '@/entities/chain';
 import { AccountAddress, accountUtils } from '@/entities/wallet';
 import { votingAssetModel } from '@/features/governance';
-import { getGroupPallet, getTrackIds, getTreasuryTrackDescription } from '../lib/helpers';
+import {
+  getGovernanceTrackDescription,
+  getGroupPallet,
+  getTrackIds,
+  getTreasuryTrackDescription,
+} from '../lib/helpers';
 import { delegateModel } from '../model/delegate-model';
 import { selectTracksModel } from '../model/select-tracks-model';
 
@@ -127,7 +132,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
               >
                 <div className="flex w-full items-center justify-between">
                   {t(track.value)}
-                  <Tooltip content={t(track.description)} offsetPx={-50}>
+                  <Tooltip content={getGovernanceTrackDescription(asset, track.description, t)} pointer="up">
                     <Icon size={16} name="info" />
                   </Tooltip>
                 </div>
