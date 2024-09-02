@@ -372,7 +372,7 @@ async function getBlockLimit(api: ApiPromise): Promise<BN> {
   const freeSpaceInLastBlock = maxBlockWeight.sub(totalWeight);
 
   return BN.min(
-    maxExtrinsicWeight.divn(LEAVE_SOME_SPACE_MULTIPLIER),
+    maxExtrinsicWeight.muln(LEAVE_SOME_SPACE_MULTIPLIER),
     freeSpaceInLastBlock.muln(LEAVE_SOME_SPACE_MULTIPLIER),
   );
 }
