@@ -99,6 +99,7 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
     await jest.runAllTimersAsync();
     await action;
 
-    expect(scope.getState(addProxyModel.$step)).toEqual(Step.NONE);
+    // flowFinished triggers by modal window now, not model
+    expect(scope.getState(addProxyModel.$step)).toEqual(Step.SUBMIT);
   });
 });
