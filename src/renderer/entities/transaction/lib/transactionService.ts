@@ -362,30 +362,18 @@ function verifySignature(payload: Uint8Array, signature: HexString, accountId: A
 async function getBlockLimit(api: ApiPromise): Promise<BN> {
   const maxExtrinsicWeight = api.consts.system.blockWeights.perClass.normal.maxExtrinsic.value.refTime.toBn();
   const maxBlockWeight = api.consts.system.blockWeights.maxBlock.refTime.toBn();
+  const blockWeight = await api.query.system.blockWeight();
 
-  const signedBlock = await api.rpc.chain.getBlock();
-  const apiAt = await api.at(signedBlock.block.header.hash);
-  const allRecords = await apiAt.query.system.events();
-
-  // BN_ZERO lead to cache total weight
-  let totalWeight = new BN(0);
-
-  // map between the extrinsics and events
-  const events = allRecords.filter(
-    ({ phase, event: { section, method } }) =>
-      phase.isApplyExtrinsic && section === 'system' && ['ExtrinsicFailed', 'ExtrinsicSuccess'].includes(method),
-  );
-
-  for (const { event } of events) {
-    // @ts-expect-error polkadot can't decode data correctly
-    totalWeight = totalWeight.add(event.data.dispatchInfo.weight.refTime.toBn());
-  }
+  const totalWeight = blockWeight.normal.refTime
+    .toBn()
+    .add(blockWeight.operational.refTime.toBn())
+    .add(blockWeight.mandatory.refTime.toBn());
 
   const freeSpaceInLastBlock = maxBlockWeight.sub(totalWeight);
 
   return BN.min(
-    maxExtrinsicWeight.idivn(LEAVE_SOME_SPACE_MULTIPLIER),
-    freeSpaceInLastBlock.imuln(LEAVE_SOME_SPACE_MULTIPLIER),
+    maxExtrinsicWeight.divn(LEAVE_SOME_SPACE_MULTIPLIER),
+    freeSpaceInLastBlock.muln(LEAVE_SOME_SPACE_MULTIPLIER),
   );
 }
 
