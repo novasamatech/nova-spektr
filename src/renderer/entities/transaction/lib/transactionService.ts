@@ -26,6 +26,7 @@ import {
 import { type TxMetadata, createTxMetadata, dictionary, toAccountId } from '@shared/lib/utils';
 import { walletUtils } from '../../wallet';
 
+import { LEAVE_SOME_SPACE_MULTIPLIER } from './common/constants';
 import { decodeDispatchError } from './common/utils';
 import { getExtrinsic, getUnsignedTransaction, wrapAsMulti, wrapAsProxy } from './extrinsicService';
 
@@ -358,8 +359,9 @@ function verifySignature(payload: Uint8Array, signature: HexString, accountId: A
   return signatureVerify(payloadToVerify, signature, accountId).isValid;
 }
 
-async function getBlockLimit(api: ApiPromise) {
-  const maxWeight = api.consts.system.blockWeights.maxBlock;
+async function getBlockLimit(api: ApiPromise): Promise<BN> {
+  const maxExtrinsicWeight = api.consts.system.blockWeights.perClass.normal.maxExtrinsic.value.refTime.toBn();
+  const maxBlockWeight = api.consts.system.blockWeights.maxBlock.refTime.toBn();
 
   const signedBlock = await api.rpc.chain.getBlock();
   const apiAt = await api.at(signedBlock.block.header.hash);
@@ -376,10 +378,15 @@ async function getBlockLimit(api: ApiPromise) {
 
   for (const { event } of events) {
     // @ts-expect-error polkadot can't decode data correctly
-    totalWeight = totalWeight.iadd(event.data.dispatchInfo.weight.refTime.toBn());
+    totalWeight = totalWeight.add(event.data.dispatchInfo.weight.refTime.toBn());
   }
 
-  return maxWeight.refTime.toBn().sub(totalWeight.imuln(11).idivn(10));
+  const freeSpaceInLastBlock = maxBlockWeight.sub(totalWeight);
+
+  return BN.min(
+    maxExtrinsicWeight.idivn(LEAVE_SOME_SPACE_MULTIPLIER),
+    freeSpaceInLastBlock.imuln(LEAVE_SOME_SPACE_MULTIPLIER),
+  );
 }
 
 async function splitTxsByWeight(api: ApiPromise, txs: Transaction[], options?: Partial<SignerOptions>) {
