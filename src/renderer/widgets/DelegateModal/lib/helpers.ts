@@ -14,6 +14,14 @@ export const getTreasuryTrackDescription = (asset: Asset | null, description: st
   return t(`${description}General`);
 };
 
+export const getGovernanceTrackDescription = (asset: Asset | null, description: string, t: TFunction) => {
+  if (nonNullable(asset) && treasurySpendsDescription[description]?.[asset.symbol]) {
+    return t(description, { value: treasurySpendsDescription[description][asset.symbol], asset: asset.symbol });
+  }
+
+  return t(description);
+};
+
 export const getTrackIds = (tracks: Track[], votedTracks: string[]): number[] => {
   return tracks.filter((t) => !votedTracks.includes(t.id)).map((track) => Number(track.id));
 };

@@ -26,6 +26,10 @@ export const treasurySpendsDescription: TrackDescription = {
     DOT: '1,000,000',
     KSM: '33,333.33',
   },
+  'governance.addDelegation.tracks.treasuryAnyDescription': {
+    DOT: '10,000,000',
+    KSM: '333,333.33',
+  },
 };
 
 export const adminTracks = [

@@ -402,7 +402,7 @@
         "staking": "Staking admin",
         "stakingDescription": "Origin for canceling slashes.",
         "treasuryAny": "Treasury: Any",
-        "treasuryAnyDescription": "Origin for spending (any amount of) funds until the upper limit.",
+        "treasuryAnyDescription": "Origin for spending (any amount of) funds until the upper limit of { value } { asset } or equivalent value in stablecoins.",
         "treasuryBigSpend": "Treasury: Big spend",
         "treasuryBigSpendDescription": "Origin able to spend up to { value } { asset } from the treasury at once or equivalent value in stablecoins.",
         "treasuryBigSpendDescriptionGeneral": "Origin able to spend big amount from the treasury.",
