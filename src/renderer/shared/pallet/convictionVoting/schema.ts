@@ -22,7 +22,7 @@ export const convictionVotingVotePriorLock = pjsSchema.tuppleMap(
 );
 
 export type ConvictionVotingVote = z.infer<typeof convictionVotingVote>;
-export const convictionVotingVote = pjsSchema.complex(GenericVote, (vote) => ({
+export const convictionVotingVote = pjsSchema.complex(GenericVote, vote => ({
   isAye: vote.isAye,
   isNay: vote.isNay,
   conviction: vote.conviction,

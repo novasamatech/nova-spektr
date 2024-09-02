@@ -3,7 +3,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type ReferendumId } from '@/shared/core';
 import { pjsSchema } from '@/shared/polkadotjsSchemas';
 
-import { referendaReferendumInfoConvictionVotingTally, referendumId, trackId } from './schema';
+import { referendaReferendumInfoConvictionVotingTally, trackId } from './schema';
 
 const getQuery = (api: ApiPromise, name: string) => {
   const referenda = api.query['referenda'];
@@ -36,11 +36,15 @@ export const state = {
   referendumInfoFor(api: ApiPromise, ids?: ReferendumId[]) {
     const schema = pjsSchema.vec(
       pjsSchema.tuppleMap(
-        ['referendum', referendumId],
+        ['referendum', pjsSchema.storageKey(pjsSchema.u32).transform(keys => keys[0])],
         ['info', pjsSchema.optional(referendaReferendumInfoConvictionVotingTally)],
       ),
     );
 
-    return getQuery(api, 'referendumInfoFor').entries(ids).then(schema.parse);
+    if (ids) {
+      return getQuery(api, 'referendumInfoFor').entries(ids).then(schema.parse);
+    } else {
+      return getQuery(api, 'referendumInfoFor').entries().then(schema.parse);
+    }
   },
 };

@@ -54,7 +54,7 @@ export const state = {
     const schema = pjsSchema.vec(convictionVotingVoteVoting);
     const votingFor = getQuery(api, 'votingFor');
 
-    return votingFor.multi(keys, (votings) => {
+    return votingFor.multi(keys, votings => {
       callback(schema.parse(votings));
     });
   },

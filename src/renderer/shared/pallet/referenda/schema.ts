@@ -69,23 +69,50 @@ export const frameSupportScheduleDispatchTime = pjsSchema.enumValue({
   After: pjsSchema.u32,
 });
 
+const frameSupportDispatchRawOrigin = pjsSchema.enumValue({
+  Root: z.undefined(),
+  None: z.undefined(),
+  Signed: pjsSchema.accountId,
+});
+
+const frameSupportPreimagesBounded = pjsSchema.enumValue({
+  Legacy: z.unknown(),
+  Inline: pjsSchema.bytes,
+  Lookup: pjsSchema.object({
+    len: pjsSchema.u32,
+  }),
+});
+
+const collectiveRawOrigin = pjsSchema.enumValue({
+  // TODO what does it mean?
+  Members: z.tuple([pjsSchema.u32, pjsSchema.u32]),
+  Member: pjsSchema.accountId,
+  Phantom: z.undefined(),
+});
+
+export type KitchensinkRuntimeOriginCaller = z.infer<typeof kitchensinkRuntimeOriginCaller>;
+export const kitchensinkRuntimeOriginCaller = pjsSchema.enumValueLoose({
+  Void: z.undefined(),
+  System: frameSupportDispatchRawOrigin,
+  Council: collectiveRawOrigin,
+  TechnicalCommittee: collectiveRawOrigin,
+  AllianceMotion: collectiveRawOrigin,
+});
+
 export type ReferendaReferendumStatusRankedCollectiveTally = z.infer<
   typeof referendaReferendumStatusRankedCollectiveTally
 >;
 export const referendaReferendumStatusRankedCollectiveTally = pjsSchema.object({
   track: trackId,
-  // TODO
-  origin: pjsSchema.u32,
-  // TODO
-  proposal: pjsSchema.u32,
-  // TODO
+  origin: kitchensinkRuntimeOriginCaller,
+  proposal: frameSupportPreimagesBounded,
   enactment: frameSupportScheduleDispatchTime,
   submitted: pjsSchema.u32,
   submissionDeposit: referendaDeposit,
   decisionDeposit: pjsSchema.optional(referendaDeposit),
   deciding: pjsSchema.optional(referendaDecidingStatus),
   tally: convictionVotingPallet.schema.convictionVotingTally,
-  inQueue: z.boolean(),
+  inQueue: pjsSchema.bool,
   alarm: pjsSchema.optional(
     pjsSchema.tuppleMap(
       ['referendum', referendumId],
@@ -97,8 +124,8 @@ export const referendaReferendumStatusRankedCollectiveTally = pjsSchema.object({
 export type ReferendaReferendumInfoCompletedTally = z.infer<typeof referendaReferendumInfoCompletedTally>;
 export const referendaReferendumInfoCompletedTally = pjsSchema.tuppleMap(
   ['since', pjsSchema.u32],
-  ['submitionDeposit', referendaDeposit],
-  ['decisionDeposit', referendaDeposit],
+  ['submitionDeposit', pjsSchema.optional(referendaDeposit)],
+  ['decisionDeposit', pjsSchema.optional(referendaDeposit)],
 );
 
 export type ReferendaReferendumInfoConvictionVotingTally = z.infer<typeof referendaReferendumInfoConvictionVotingTally>;
