@@ -8,4 +8,8 @@ export const coreFellowshipPallet = {
   state,
 };
 
-export type { CoreFellowshipParams, CoreFellowshipMemberStatus, CoreFellowshipMemberEvidence } from './schema';
+export {
+  type CoreFellowshipMemberEvidence,
+  type CoreFellowshipMemberStatus,
+  type CoreFellowshipParams,
+} from './schema';

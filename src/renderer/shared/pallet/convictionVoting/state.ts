@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
-import { z } from 'zod';
 
 import { type Address, type TrackId } from '@/shared/core';
+import { pjsSchema } from '../../polkadotjsSchemas';
 
 import { type ConvictionVotingVoteVoting, convictionVotingClassLock, convictionVotingVoteVoting } from './schema';
 
@@ -27,10 +27,9 @@ export const state = {
    * pallet should always be the maximum of this list.
    */
   classLocksFor(api: ApiPromise, addresses: Address[]) {
-    const schema = z.array(z.array(convictionVotingClassLock));
-    const classLocksFor = getQuery(api, 'classLocksFor');
+    const schema = pjsSchema.vec(convictionVotingClassLock);
 
-    return classLocksFor(addresses).then(schema.parse);
+    return getQuery(api, 'classLocksFor').entries(addresses).then(schema.parse);
   },
 
   /**
@@ -38,10 +37,9 @@ export const state = {
    * the balance for the number of votes that we have recorded.
    */
   votingFor(api: ApiPromise, keys: [address: Address, trackId: TrackId][]) {
-    const schema = z.array(convictionVotingVoteVoting);
-    const votingFor = getQuery(api, 'votingFor');
+    const schema = pjsSchema.vec(convictionVotingVoteVoting);
 
-    return votingFor.multi(keys).then(schema.parse);
+    return getQuery(api, 'votingFor').multi(keys).then(schema.parse);
   },
 
   /**
@@ -53,7 +51,7 @@ export const state = {
     keys: (readonly [address: Address, trackId: TrackId])[],
     callback: (value: ConvictionVotingVoteVoting[]) => unknown,
   ) {
-    const schema = z.array(convictionVotingVoteVoting);
+    const schema = pjsSchema.vec(convictionVotingVoteVoting);
     const votingFor = getQuery(api, 'votingFor');
 
     return votingFor.multi(keys, (votings) => {

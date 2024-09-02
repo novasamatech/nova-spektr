@@ -1,5 +1,4 @@
 import { type ApiPromise } from '@polkadot/api';
-import { z } from 'zod';
 
 import { type Address } from '@/shared/core';
 import { pjsSchema } from '@/shared/polkadotjsSchemas';
@@ -33,7 +32,9 @@ export const state = {
    * The status of a claimant.
    */
   members(api: ApiPromise, addresses: Address[]) {
-    const schema = z.array(z.tuple([pjsSchema.accountId, coreFellowshipMemberStatus]));
+    const schema = pjsSchema.vec(
+      pjsSchema.tuppleMap(['account', pjsSchema.accountId], ['status', coreFellowshipMemberStatus]),
+    );
 
     return getQuery(api, 'member').entries(addresses).then(schema.parse);
   },
@@ -42,7 +43,9 @@ export const state = {
    * Some evidence together with the desired outcome for which it was presented.
    */
   memberEvidences(api: ApiPromise, addresses: Address[]) {
-    const schema = z.array(z.tuple([pjsSchema.accountId, coreFellowshipMemberEvidence]));
+    const schema = pjsSchema.vec(
+      pjsSchema.tuppleMap(['account', pjsSchema.accountId], ['status', coreFellowshipMemberEvidence]),
+    );
 
     return getQuery(api, 'member').entries(addresses).then(schema.parse);
   },
