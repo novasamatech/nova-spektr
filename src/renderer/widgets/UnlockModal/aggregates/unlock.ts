@@ -6,14 +6,13 @@ import { type PathType, Paths } from '@/shared/routes';
 import { type ClaimChunkWithAddress, UnlockChunkType } from '@shared/api/governance';
 import { Step, isStep, nonNullable } from '@shared/lib/utils';
 import { basketModel } from '@/entities/basket';
-import { walletModel, walletUtils } from '@/entities/wallet';
 import { navigationModel } from '@/features/navigation';
 import { locksModel } from '@features/governance/model/locks';
 import { networkSelectorModel } from '@features/governance/model/networkSelector';
 import { unlockModel } from '@features/governance/model/unlock/unlock';
 import { type UnlockFormData } from '@features/governance/types/structs';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { ExtrinsicResult, submitModel } from '@features/operations/OperationSubmit';
+import { submitModel } from '@features/operations/OperationSubmit';
 import { submitUtils } from '@features/operations/OperationSubmit/lib/submit-utils';
 
 import { unlockConfirmAggregate } from './unlockConfirm';
@@ -37,6 +36,8 @@ const $step = restore<Step>(stepChanged, Step.NONE);
 const $pendingSchedule = combine(unlockModel.$claimSchedule, (chunks) =>
   (chunks || []).filter((claim) => claim.type !== UnlockChunkType.CLAIMABLE),
 );
+
+const $isMultisig = $multisigTxs.map((txs) => !!txs?.length);
 
 sample({
   clock: flowStarted,
@@ -200,10 +201,8 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: {
-    wallet: walletModel.$activeWallet,
-  },
-  filter: ({ wallet }, results) => walletUtils.isMultisig(wallet) && results[0].result === ExtrinsicResult.SUCCESS,
+  source: $isMultisig,
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
 });
@@ -224,7 +223,7 @@ sample({
     coreTxs: $coreTxs,
     txWrappers: unlockFormAggregate.$txWrappers,
   },
-  filter: ({ unlockData, coreTxs, txWrappers }: any) => {
+  filter: ({ unlockData, coreTxs, txWrappers }) => {
     return !!unlockData && !!coreTxs && !!txWrappers;
   },
   fn: ({ unlockData, coreTxs, txWrappers }) => {

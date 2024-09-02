@@ -7,7 +7,7 @@ import { type BasketTransaction, type Transaction } from '@shared/core';
 import { basketModel } from '@entities/basket';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { navigationModel } from '@/features/navigation';
-import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
+import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { balanceSubModel } from '@features/balances';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { addProxyConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
@@ -179,10 +179,8 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: {
-    wallet: walletModel.$activeWallet,
-  },
-  filter: ({ wallet }, results) => walletUtils.isMultisig(wallet) && results[0].result === ExtrinsicResult.SUCCESS,
+  source: formModel.$isMultisig,
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
 });

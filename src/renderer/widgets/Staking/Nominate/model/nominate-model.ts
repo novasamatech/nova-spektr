@@ -18,10 +18,10 @@ import { basketModel } from '@entities/basket/model/basket-model';
 import { networkModel } from '@entities/network';
 import { validatorsService } from '@entities/staking';
 import { transactionBuilder, transactionService } from '@entities/transaction';
-import { walletModel, walletUtils } from '@entities/wallet';
+import { walletModel } from '@entities/wallet';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { ExtrinsicResult, submitModel } from '@features/operations/OperationSubmit';
+import { submitModel, submitUtils } from '@features/operations/OperationSubmit';
 import { nominateConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { validatorsModel } from '@features/staking';
 import { nominateUtils } from '../lib/nominate-utils';
@@ -385,10 +385,8 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: {
-    wallet: walletModel.$activeWallet,
-  },
-  filter: ({ wallet }, results) => walletUtils.isMultisig(wallet) && results[0].result === ExtrinsicResult.SUCCESS,
+  source: formModel.$isMultisig,
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
 });

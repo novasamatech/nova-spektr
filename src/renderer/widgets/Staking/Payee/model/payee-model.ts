@@ -17,10 +17,10 @@ import { getRelaychainAsset, nonNullable } from '@shared/lib/utils';
 import { basketModel } from '@entities/basket/model/basket-model';
 import { networkModel } from '@entities/network';
 import { transactionBuilder, transactionService } from '@entities/transaction';
-import { walletModel, walletUtils } from '@entities/wallet';
+import { walletModel } from '@entities/wallet';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { ExtrinsicResult, submitModel } from '@features/operations/OperationSubmit';
+import { submitModel, submitUtils } from '@features/operations/OperationSubmit';
 import { payeeConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { payeeUtils } from '../lib/payee-utils';
 import { type FeeData, type PayeeData, Step, type WalletData } from '../lib/types';
@@ -330,10 +330,8 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: {
-    wallet: walletModel.$activeWallet,
-  },
-  filter: ({ wallet }, results) => walletUtils.isMultisig(wallet) && results[0].result === ExtrinsicResult.SUCCESS,
+  source: formModel.$isMultisig,
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
 });

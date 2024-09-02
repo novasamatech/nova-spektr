@@ -27,7 +27,7 @@ import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { navigationModel } from '@/features/navigation';
 import { balanceSubModel } from '@features/balances';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { ExtrinsicResult, submitModel } from '@features/operations/OperationSubmit';
+import { submitModel, submitUtils } from '@features/operations/OperationSubmit';
 import { removePureProxiedConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { walletSelectModel } from '@features/wallets';
 import { walletProviderModel } from '../../WalletDetails/model/wallet-provider-model';
@@ -527,10 +527,8 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: {
-    wallet: walletModel.$activeWallet,
-  },
-  filter: ({ wallet }, results) => walletUtils.isMultisig(wallet) && results[0].result === ExtrinsicResult.SUCCESS,
+  source: formModel.$isMultisig,
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
 });

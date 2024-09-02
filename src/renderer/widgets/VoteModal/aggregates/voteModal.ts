@@ -5,7 +5,6 @@ import { spread } from 'patronum';
 import { type PathType, Paths } from '@/shared/routes';
 import { type BasketTransaction, type Conviction, type OngoingReferendum } from '@shared/core';
 import { Step, isStep, nonNullable, toAddress } from '@shared/lib/utils';
-import { walletModel, walletUtils } from '@/entities/wallet';
 import { basketModel } from '@entities/basket';
 import { referendumModel } from '@entities/governance';
 import { lockPeriodsModel, locksModel, networkSelectorModel, votingAggregate } from '@/features/governance';
@@ -209,10 +208,8 @@ sample({
 
 sample({
   clock: voteConfirmModel.events.submitFinished,
-  source: {
-    wallet: walletModel.$activeWallet,
-  },
-  filter: ({ wallet }, results) => walletUtils.isMultisig(wallet) && results[0].result === ExtrinsicResult.SUCCESS,
+  source: transaction.$isMultisig,
+  filter: (isMultisig, results) => isMultisig && results[0].result === ExtrinsicResult.SUCCESS,
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
 });

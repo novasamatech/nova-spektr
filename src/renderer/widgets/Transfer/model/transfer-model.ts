@@ -7,9 +7,8 @@ import { type PathType, Paths } from '@shared/routes';
 import { basketModel } from '@entities/basket';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { navigationModel } from '@/features/navigation';
-import { ExtrinsicResult } from '@/features/operations/OperationSubmit/lib/types';
+import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@features/operations/OperationSubmit';
 import { transferConfirmModel } from '@features/operations/OperationsConfirm';
 import { type NetworkStore, Step, type TransferStore } from '../lib/types';
 
@@ -167,10 +166,8 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: {
-    wallet: walletModel.$activeWallet,
-  },
-  filter: ({ wallet }, results) => walletUtils.isMultisig(wallet) && results[0].result === ExtrinsicResult.SUCCESS,
+  source: formModel.$isMultisig,
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
 });
