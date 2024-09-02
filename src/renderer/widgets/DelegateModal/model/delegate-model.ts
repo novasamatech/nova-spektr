@@ -1,9 +1,10 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
-import { delay, spread } from 'patronum';
+import { spread } from 'patronum';
 
 import { type DelegateAccount, delegationService } from '@/shared/api/governance';
+import { type PathType, Paths } from '@/shared/routes';
 import {
   type Account,
   type BasketTransaction,
@@ -13,7 +14,7 @@ import {
   type TxWrapper,
   WrapperKind,
 } from '@shared/core';
-import { Step, formatAmount, getRelaychainAsset, isStep, nonNullable, transferableAmount } from '@shared/lib/utils';
+import { Step, formatAmount, getRelaychainAsset, nonNullable, transferableAmount } from '@shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingService } from '@/entities/governance';
 import { basketModel } from '@entities/basket/model/basket-model';
@@ -21,8 +22,9 @@ import { networkModel } from '@entities/network';
 import { transactionBuilder, transactionService } from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
 import { delegateRegistryAggregate, networkSelectorModel, tracksAggregate } from '@/features/governance';
+import { navigationModel } from '@/features/navigation';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@features/operations/OperationSubmit';
+import { submitModel, submitUtils } from '@features/operations/OperationSubmit';
 import { delegateConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { type DelegateData, type FeeData } from '../lib/types';
 
@@ -54,6 +56,7 @@ const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit
 
 const $txWrappers = createStore<TxWrapper[]>([]).reset(flowFinished);
 const $coreTxs = createStore<Transaction[]>([]).reset(flowFinished);
+const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
 type FeeParams = {
   api: ApiPromise;
@@ -412,13 +415,6 @@ sample({
 });
 
 sample({
-  clock: delay(submitModel.output.formSubmitted, 2000),
-  source: $step,
-  filter: (step) => isStep(step, Step.SUBMIT),
-  target: flowFinished,
-});
-
-sample({
   clock: submitModel.output.formSubmitted,
   source: { network: networkSelectorModel.$network, delegateData: $delegateData },
   filter: ({ network, delegateData }) => nonNullable(network) && nonNullable(delegateData),
@@ -430,6 +426,21 @@ sample({
   clock: flowFinished,
   fn: () => Step.NONE,
   target: [stepChanged, formModel.events.formCleared],
+});
+
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: formModel.$isMultisig,
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
+  fn: () => Paths.OPERATIONS,
+  target: $redirectAfterSubmitPath,
+});
+
+sample({
+  clock: flowFinished,
+  source: $redirectAfterSubmitPath,
+  filter: nonNullable,
+  target: navigationModel.events.navigateTo,
 });
 
 sample({

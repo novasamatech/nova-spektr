@@ -677,6 +677,7 @@ export const formModel = {
     isXcmFeeLoadingChanged: xcmTransferModel.events.isXcmFeeLoadingChanged,
     xcmFeeChanged: xcmTransferModel.events.xcmFeeChanged,
   },
+
   output: {
     formSubmitted,
   },

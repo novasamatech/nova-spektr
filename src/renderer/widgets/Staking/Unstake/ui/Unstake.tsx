@@ -1,5 +1,4 @@
 import { useUnit } from 'effector-react';
-import { useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
 import { useModalClose } from '@shared/lib/hooks';
@@ -27,14 +26,6 @@ export const Unstake = () => {
     unstakeModel.output.flowFinished,
   );
 
-  useEffect(() => {
-    if (unstakeUtils.isBasketStep(step)) {
-      const timer = setTimeout(() => closeBasketModal(), 1450);
-
-      return () => clearTimeout(timer);
-    }
-  }, [step]);
-
   if (!networkStore) {
     return null;
   }
@@ -48,6 +39,7 @@ export const Unstake = () => {
         isOpen={isBasketModalOpen}
         variant="success"
         title={t('operation.addedToBasket')}
+        autoCloseTimeout={2000}
         onClose={closeBasketModal}
       />
     );

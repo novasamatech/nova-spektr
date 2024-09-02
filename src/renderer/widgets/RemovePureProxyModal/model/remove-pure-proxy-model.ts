@@ -1,6 +1,7 @@
 import { combine, createEvent, createStore, sample, split } from 'effector';
-import { delay, spread } from 'patronum';
+import { spread } from 'patronum';
 
+import { type PathType, Paths } from '@/shared/routes';
 import {
   type Account,
   type BasketTransaction,
@@ -16,16 +17,17 @@ import {
   type TxWrapper,
   WrapperKind,
 } from '@shared/core';
-import { toAddress, transferableAmount } from '@shared/lib/utils';
+import { nonNullable, toAddress, transferableAmount } from '@shared/lib/utils';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { basketModel } from '@entities/basket/model/basket-model';
 import { networkModel } from '@entities/network';
 import { proxyModel } from '@entities/proxy';
 import { transactionService } from '@entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { navigationModel } from '@/features/navigation';
 import { balanceSubModel } from '@features/balances';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@features/operations/OperationSubmit';
+import { submitModel, submitUtils } from '@features/operations/OperationSubmit';
 import { removePureProxiedConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { walletSelectModel } from '@features/wallets';
 import { walletProviderModel } from '../../WalletDetails/model/wallet-provider-model';
@@ -54,6 +56,7 @@ const $removeProxyStore = createStore<RemoveProxyStore | null>(null).reset(flowF
 const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
+const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
 const $availableSignatories = createStore<Account[][]>([]);
 const $isProxy = createStore<boolean>(false);
@@ -502,13 +505,6 @@ sample({
 });
 
 sample({
-  clock: delay(submitModel.output.formSubmitted, 2000),
-  source: $step,
-  filter: (step) => removePureProxyUtils.isSubmitStep(step),
-  target: flowFinished,
-});
-
-sample({
   clock: flowFinished,
   source: {
     activeWallet: walletModel.$activeWallet,
@@ -527,6 +523,21 @@ sample({
   clock: flowFinished,
   fn: () => Step.NONE,
   target: stepChanged,
+});
+
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: formModel.$isMultisig,
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
+  fn: () => Paths.OPERATIONS,
+  target: $redirectAfterSubmitPath,
+});
+
+sample({
+  clock: flowFinished,
+  source: $redirectAfterSubmitPath,
+  filter: nonNullable,
+  target: navigationModel.events.navigateTo,
 });
 
 export const removePureProxyModel = {

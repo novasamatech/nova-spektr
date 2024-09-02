@@ -1,5 +1,4 @@
 import { useUnit } from 'effector-react';
-import { useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
 import { type Chain } from '@shared/core';
@@ -34,14 +33,6 @@ export const RemovePureProxy = () => {
     removePureProxyModel.output.flowFinished,
   );
 
-  useEffect(() => {
-    if (removePureProxyUtils.isBasketStep(step)) {
-      const timer = setTimeout(() => closeBasketModal(), 1450);
-
-      return () => clearTimeout(timer);
-    }
-  }, [step]);
-
   const getModalTitle = (step: Step, chain?: Chain) => {
     if (removePureProxyUtils.isInitStep(step) || !chain) {
       return t(shouldRemovePureProxy ? 'operations.modalTitles.removePureProxy' : 'operations.modalTitles.removeProxy');
@@ -67,6 +58,7 @@ export const RemovePureProxy = () => {
         isOpen={isBasketModalOpen}
         variant="success"
         title={t('operation.addedToBasket')}
+        autoCloseTimeout={2000}
         onClose={closeBasketModal}
       />
     );
