@@ -13,5 +13,13 @@
   "jsdocCommentLineStrategy": "keep",
   "jsdocPreferCodeFences": true,
   "jsdocSeparateTagGroups": true,
-  "jsdocPrintWidth": 80
+  "jsdocPrintWidth": 80,
+  "overrides": [
+    {
+      "files": ["./src/renderer/domains/**/*.ts", "./src/renderer/shared/palletes/**/*.ts"],
+      "options": {
+        "arrowParens": "avoid"
+      }
+    }
+  ]
 }
