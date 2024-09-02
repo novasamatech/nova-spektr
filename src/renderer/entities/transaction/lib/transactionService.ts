@@ -359,7 +359,7 @@ function verifySignature(payload: Uint8Array, signature: HexString, accountId: A
 }
 
 async function getBlockLimit(api: ApiPromise) {
-  const maxWeight = api.consts.system.blockWeights.perClass.normal.maxExtrinsic.value;
+  const maxWeight = api.consts.system.blockWeights.maxBlock;
 
   const signedBlock = await api.rpc.chain.getBlock();
   const apiAt = await api.at(signedBlock.block.header.hash);
