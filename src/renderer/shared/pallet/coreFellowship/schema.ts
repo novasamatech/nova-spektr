@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { type z } from 'zod';
 
 import { pjsSchema } from '@/shared/polkadotjsSchemas';
 
@@ -13,7 +13,7 @@ export const coreFellowshipParams = pjsSchema.object({
 
 export type CoreFellowshipMemberStatus = z.infer<typeof coreFellowshipMemberStatus>;
 export const coreFellowshipMemberStatus = pjsSchema.object({
-  isActive: z.boolean(),
+  isActive: pjsSchema.bool,
   lastPromotion: pjsSchema.u32,
   lastProof: pjsSchema.u32,
 });

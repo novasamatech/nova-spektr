@@ -4,15 +4,43 @@ import { z } from 'zod';
 export const vecSchema = <T extends z.ZodTypeAny>(schema: T) => z.array(schema);
 
 export const objectSchema = <const T extends z.ZodRawShape>(v: T) => {
-  return z.map(z.string(), z.unknown()).transform((map) => {
+  return z.unknown().transform((map, ctx) => {
     type PolkadotJSObject = {
       [P in keyof T]: z.infer<T[P]>;
     };
 
+    if (typeof map !== 'object' || map === null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Value ${ctx.path.join('.')} not an object`,
+        fatal: true,
+      });
+
+      return z.NEVER;
+    }
+
     const result: Record<string, unknown> = {};
 
     for (const [key, schema] of Object.entries(v)) {
-      result[key] = schema.parse(map.get(key));
+      if (map instanceof Map) {
+        const a = map.get(key);
+        result[key] = schema.parse(a);
+        continue;
+      } else {
+        if (key in map) {
+          // @ts-expect-error dynamic data
+          result[key] = schema.parse(map[key]);
+          continue;
+        }
+      }
+
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Object does not have key ${key}`,
+        fatal: true,
+      });
+
+      return z.NEVER;
     }
 
     return result as PolkadotJSObject;
@@ -25,7 +53,7 @@ export const optionalSchema = <const Value>(schema: z.ZodType<Value, z.ZodTypeDe
       return null;
     }
 
-    return schema.parse(value) as Value extends z.ZodType ? z.infer<Value> : Value;
+    return schema.parse(value.unwrap()) as Value extends z.ZodType ? z.infer<Value> : Value;
   });
 };
 
@@ -80,6 +108,42 @@ export const enumValueSchema = <const Map extends Record<string, z.ZodTypeAny>>(
         message: `Schema "${type}" for enum ${ctx.path.join('.')} is not specified`,
         fatal: true,
       });
+    }
+
+    return z.NEVER;
+  });
+};
+
+export const enumValueLooseSchema = <const Map extends Record<string, z.ZodTypeAny>>(map: Map) => {
+  type EnumVariant = {
+    [K in keyof Map]: {
+      type: K;
+      _: z.infer<Map[K]>;
+    };
+  }[keyof Map];
+
+  return z.instanceof(Enum).transform((enumValue, ctx) => {
+    const type = enumValue.type;
+
+    if (type in map) {
+      const specificSchema = map[type];
+
+      // @ts-expect-error dynamic field
+      if (enumValue[`is${type}`]) {
+        return {
+          type,
+          // @ts-expect-error dynamic field
+          _: specificSchema.parse(enumValue[`as${type}`]),
+        } as EnumVariant;
+      }
+
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Enum ${ctx.path.join('.')} has incorrect shape - field as${type} should be fulfilled`,
+        fatal: true,
+      });
+    } else {
+      return undefined;
     }
 
     return z.NEVER;

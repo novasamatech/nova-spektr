@@ -16,7 +16,7 @@
   "jsdocPrintWidth": 80,
   "overrides": [
     {
-      "files": ["./src/renderer/domains/**/*.ts", "./src/renderer/shared/palletes/**/*.ts"],
+      "files": ["./src/renderer/domains/**/*.ts", "./src/renderer/shared/pallet/**/*.ts"],
       "options": {
         "arrowParens": "avoid"
       }
