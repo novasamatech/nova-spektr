@@ -1,4 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
+import { z } from 'zod';
 
 import { type TrackId } from '@/shared/pallet/referenda';
 import { pjsSchema } from '@/shared/polkadotjsSchemas';
@@ -62,7 +63,7 @@ export const state = {
    * The count of spends that have been made.
    */
   spendCount(type: PalletType, api: ApiPromise) {
-    const schema = pjsSchema.tuppleMap(['key', pjsSchema.storageKey()], ['spendCount', pjsSchema.u32]);
+    const schema = pjsSchema.tuppleMap(['key', pjsSchema.storageKey(z.undefined())], ['spendCount', pjsSchema.u32]);
 
     return getQuery(type, api, 'spendCount').entries().then(schema.parse);
   },

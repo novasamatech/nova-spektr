@@ -5,10 +5,10 @@ import { BN } from '@polkadot/util';
 import { z } from 'zod';
 
 import { type AccountId } from '@/shared/core';
+import { isCorrectAccountId } from '@/shared/lib/utils';
 
-export const storageKeySchema = <const T extends z.ZodTypeAny[]>(...schema: T) => {
-  // @ts-expect-error dynamic data
-  const argsSchema = z.tuple(schema.length === 0 ? [z.undefined()] : schema);
+export const storageKeySchema = <const T extends [z.ZodTypeAny, ...z.ZodTypeAny[]]>(...schema: T) => {
+  const argsSchema = z.tuple(schema);
 
   return z.instanceof(StorageKey).transform((value) => {
     return argsSchema.parse(value.args);
@@ -34,7 +34,16 @@ export const structHexSchema = z.instanceof(Struct).transform((value) => value.t
 export const accountIdSchema = z.instanceof(GenericAccountId).transform((value, ctx) => {
   const account = value.toHex();
   if (account.startsWith('0x')) {
-    return account as AccountId;
+    if (isCorrectAccountId(account as AccountId)) {
+      return account;
+    }
+
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `Account id ${account} is invalid`,
+    });
+
+    return z.NEVER;
   }
 
   ctx.addIssue({
