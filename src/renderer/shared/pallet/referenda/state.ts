@@ -36,7 +36,7 @@ export const state = {
   referendumInfoFor(api: ApiPromise, ids?: ReferendumId[]) {
     const schema = pjsSchema.vec(
       pjsSchema.tuppleMap(
-        ['referendum', pjsSchema.storageKey(pjsSchema.u32).transform(keys => keys[0])],
+        ['id', pjsSchema.storageKey(pjsSchema.u32).transform(keys => keys[0])],
         ['info', pjsSchema.optional(referendaReferendumInfoConvictionVotingTally)],
       ),
     );

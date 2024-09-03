@@ -1,4 +1,4 @@
-import { Bytes, StorageKey, Text, i64, u128, u16, u32, u64 } from '@polkadot/types';
+import { Bytes, StorageKey, Struct, Text, bool, i64, u128, u16, u32, u64 } from '@polkadot/types';
 import { GenericAccountId } from '@polkadot/types/generic/AccountId';
 import { type Perbill } from '@polkadot/types/interfaces';
 import { BN } from '@polkadot/util';
@@ -21,19 +21,11 @@ export const u128Schema = z.instanceof(u128).transform((value) => new BN(value.t
 export const i64Schema = z.instanceof(i64).transform((value) => new BN(value.toString()));
 export const textSchema = z.instanceof(Text).transform((value) => value.toString());
 export const bytesSchema = z.instanceof(Bytes).transform((value) => value.toU8a());
+export const bytesHexSchema = z.instanceof(Bytes).transform((value) => value.toHex());
 
-export const boolSchema = z.unknown().transform((value) => {
-  if (
-    typeof value === 'object' &&
-    value !== null &&
-    'toPrimitive' in value &&
-    typeof value.toPrimitive === 'function'
-  ) {
-    return value.toPrimitive() as boolean;
-  }
+export const boolSchema = z.instanceof(bool).transform((value) => value.toPrimitive());
 
-  return z.NEVER;
-});
+export const structHexSchema = z.instanceof(Struct).transform((value) => value.toHex());
 
 export const accountIdSchema = z.instanceof(GenericAccountId).transform((value, ctx) => {
   const account = value.toHex();
@@ -49,6 +41,11 @@ export const accountIdSchema = z.instanceof(GenericAccountId).transform((value, 
   return z.NEVER;
 });
 
+/**
+ * Parts per Billion.
+ *
+ * A fixed point representation of a number in the range [0, 1].
+ */
 export const perbillSchema = z.unknown().transform((value, ctx) => {
   if (typeof value === 'object' && value !== null && 'toBn' in value) {
     return (value as Perbill).toBn();

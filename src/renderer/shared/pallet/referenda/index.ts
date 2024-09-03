@@ -22,4 +22,8 @@ export {
   type ReferendaTrackInfo,
   type ReferendumId,
   type TrackId,
+  type FrameSupportPreimagesBounded,
+  type FrameSupportDispatchRawOrigin,
+  type KitchensinkRuntimeOriginCaller,
+  type CollectiveRawOrigin,
 } from './schema';

@@ -41,12 +41,12 @@ export const referendaCurve = pjsSchema.enumValue({
 export type ReferendaTrackInfo = z.infer<typeof referendaTrackInfo>;
 export const referendaTrackInfo = pjsSchema.object({
   name: pjsSchema.text,
-  maxDeciding: pjsSchema.u32,
+  maxDeciding: pjsSchema.blockHeight,
   decisionDeposit: pjsSchema.u128,
-  preparePeriod: pjsSchema.u32,
-  decisionPeriod: pjsSchema.u32,
-  confirmPeriod: pjsSchema.u32,
-  minEnactmentPeriod: pjsSchema.u32,
+  preparePeriod: pjsSchema.blockHeight,
+  decisionPeriod: pjsSchema.blockHeight,
+  confirmPeriod: pjsSchema.blockHeight,
+  minEnactmentPeriod: pjsSchema.blockHeight,
   minApproval: referendaCurve,
   minSupport: referendaCurve,
 });
@@ -59,30 +59,31 @@ export const referendaDeposit = pjsSchema.object({
 
 export type ReferendaDecidingStatus = z.infer<typeof referendaDecidingStatus>;
 export const referendaDecidingStatus = pjsSchema.object({
-  since: pjsSchema.u32,
-  confirming: pjsSchema.optional(pjsSchema.u32),
+  since: pjsSchema.blockHeight,
+  confirming: pjsSchema.optional(pjsSchema.blockHeight),
 });
 
 export type FrameSupportScheduleDispatchTime = z.infer<typeof frameSupportScheduleDispatchTime>;
 export const frameSupportScheduleDispatchTime = pjsSchema.enumValue({
-  At: pjsSchema.u32,
-  After: pjsSchema.u32,
+  At: pjsSchema.blockHeight,
+  After: pjsSchema.blockHeight,
 });
 
+export type FrameSupportDispatchRawOrigin = z.infer<typeof frameSupportScheduleDispatchTime>;
 const frameSupportDispatchRawOrigin = pjsSchema.enumValue({
   Root: z.undefined(),
   None: z.undefined(),
   Signed: pjsSchema.accountId,
 });
 
+export type FrameSupportPreimagesBounded = z.infer<typeof frameSupportPreimagesBounded>;
 const frameSupportPreimagesBounded = pjsSchema.enumValue({
-  Legacy: z.unknown(),
-  Inline: pjsSchema.bytes,
-  Lookup: pjsSchema.object({
-    len: pjsSchema.u32,
-  }),
+  Inline: pjsSchema.bytesHex,
+  Lookup: pjsSchema.structHex,
+  Legacy: pjsSchema.structHex,
 });
 
+export type CollectiveRawOrigin = z.infer<typeof collectiveRawOrigin>;
 const collectiveRawOrigin = pjsSchema.enumValue({
   // TODO what does it mean?
   Members: z.tuple([pjsSchema.u32, pjsSchema.u32]),
@@ -107,7 +108,7 @@ export const referendaReferendumStatusRankedCollectiveTally = pjsSchema.object({
   origin: kitchensinkRuntimeOriginCaller,
   proposal: frameSupportPreimagesBounded,
   enactment: frameSupportScheduleDispatchTime,
-  submitted: pjsSchema.u32,
+  submitted: pjsSchema.blockHeight,
   submissionDeposit: referendaDeposit,
   decisionDeposit: pjsSchema.optional(referendaDeposit),
   deciding: pjsSchema.optional(referendaDecidingStatus),
@@ -116,14 +117,14 @@ export const referendaReferendumStatusRankedCollectiveTally = pjsSchema.object({
   alarm: pjsSchema.optional(
     pjsSchema.tuppleMap(
       ['referendum', referendumId],
-      ['info', pjsSchema.tuppleMap(['track', pjsSchema.u32], ['since', pjsSchema.u32])],
+      ['info', pjsSchema.tuppleMap(['referendum', referendumId], ['since', pjsSchema.blockHeight])],
     ),
   ),
 });
 
 export type ReferendaReferendumInfoCompletedTally = z.infer<typeof referendaReferendumInfoCompletedTally>;
 export const referendaReferendumInfoCompletedTally = pjsSchema.tuppleMap(
-  ['since', pjsSchema.u32],
+  ['since', pjsSchema.blockHeight],
   ['submitionDeposit', pjsSchema.optional(referendaDeposit)],
   ['decisionDeposit', pjsSchema.optional(referendaDeposit)],
 );
@@ -135,5 +136,5 @@ export const referendaReferendumInfoConvictionVotingTally = pjsSchema.enumValue(
   Rejected: referendaReferendumInfoCompletedTally,
   Cancelled: referendaReferendumInfoCompletedTally,
   TimedOut: referendaReferendumInfoCompletedTally,
-  Killed: pjsSchema.u32,
+  Killed: pjsSchema.blockHeight,
 });
