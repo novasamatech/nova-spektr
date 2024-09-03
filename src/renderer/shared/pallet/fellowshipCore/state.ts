@@ -6,12 +6,12 @@ import { pjsSchema } from '@/shared/polkadotjsSchemas';
 import { coreFellowshipMemberEvidence, coreFellowshipMemberStatus, coreFellowshipParams } from './schema';
 
 const getQuery = (api: ApiPromise, name: string) => {
-  const coreFellowship = api.query['coreFellowship'];
-  if (!coreFellowship) {
-    throw new TypeError(`coreFellowship pallet not found in ${api.runtimeChain.toString()} chain`);
+  const fellowshipCore = api.query['fellowshipCore'];
+  if (!fellowshipCore) {
+    throw new TypeError(`fellowshipCore pallet not found in ${api.runtimeChain.toString()} chain`);
   }
 
-  const query = coreFellowship[name];
+  const query = fellowshipCore[name];
 
   if (!query) {
     throw new TypeError(`${name} query not found`);
