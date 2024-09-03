@@ -2,16 +2,19 @@ import { type ApiPromise } from '@polkadot/api';
 
 import { pjsSchema } from '@/shared/polkadotjsSchemas';
 
+import { getPalletName } from './helpers';
 import { referendaTrackInfo, trackId } from './schema';
+import { type PalletType } from './types';
 
-const getPallet = (api: ApiPromise) => {
-  const referenda = api.consts['referenda'];
+const getPallet = (type: PalletType, api: ApiPromise) => {
+  const name = getPalletName(type);
+  const pallet = api.consts[name];
 
-  if (!referenda) {
-    throw new TypeError(`referenda pallet not found`);
+  if (!pallet) {
+    throw new TypeError(`${name} pallet not found`);
   }
 
-  return referenda;
+  return pallet;
 };
 
 export const consts = {
@@ -19,23 +22,23 @@ export const consts = {
    * The number of blocks after submission that a referendum must begin being
    * decided by. Once this passes, then anyone may cancel the referendum.
    */
-  undecidingTimeout(api: ApiPromise) {
-    return pjsSchema.u32.parse(getPallet(api)['undecidingTimeout']);
+  undecidingTimeout(type: PalletType, api: ApiPromise) {
+    return pjsSchema.u32.parse(getPallet(type, api)['undecidingTimeout']);
   },
 
   /**
    * The minimum amount to be used as a deposit for a public referendum
    * proposal.
    */
-  submissionDeposit(api: ApiPromise) {
-    return pjsSchema.u128.parse(getPallet(api)['submissionDeposit']);
+  submissionDeposit(type: PalletType, api: ApiPromise) {
+    return pjsSchema.u128.parse(getPallet(type, api)['submissionDeposit']);
   },
 
   /**
    * Maximum size of the referendum queue for a single track.
    */
-  maxQueued(api: ApiPromise) {
-    return pjsSchema.u32.parse(getPallet(api)['maxQueued']);
+  maxQueued(type: PalletType, api: ApiPromise) {
+    return pjsSchema.u32.parse(getPallet(type, api)['maxQueued']);
   },
 
   /**
@@ -44,16 +47,16 @@ export const consts = {
    * also result in delays to the automatic referendum status changes. Explicit
    * servicing instructions are unaffected.
    */
-  alarmInterval(api: ApiPromise) {
-    return pjsSchema.u32.parse(getPallet(api)['alarmInterval']);
+  alarmInterval(type: PalletType, api: ApiPromise) {
+    return pjsSchema.u32.parse(getPallet(type, api)['alarmInterval']);
   },
 
   /**
    * Information concerning the different referendum tracks.
    */
-  tracks(api: ApiPromise) {
+  tracks(type: PalletType, api: ApiPromise) {
     const schema = pjsSchema.vec(pjsSchema.tuppleMap(['track', trackId], ['info', referendaTrackInfo]));
 
-    return schema.parse(getPallet(api)['tracks']);
+    return schema.parse(getPallet(type, api)['tracks']);
   },
 };
