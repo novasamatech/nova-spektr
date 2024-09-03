@@ -143,7 +143,10 @@ export const enumValueLooseSchema = <const Map extends Record<string, z.ZodTypeA
         fatal: true,
       });
     } else {
-      return undefined;
+      return {
+        type: '__' as const,
+        _: null,
+      };
     }
 
     return z.NEVER;
