@@ -1,5 +1,6 @@
 import { BN } from '@polkadot/util';
 import { combine } from 'effector';
+import uniq from 'lodash/uniq';
 
 import { type Address, type Conviction } from '@/shared/core';
 import { permissionUtils, walletModel } from '@/entities/wallet';
@@ -67,6 +68,10 @@ const $activeTracks = votingAggregate.$activeWalletVotes.map((activeVotes) => {
   return activeTracks;
 });
 
+const $activeWalletDelegatedTracks = $activeTracks.map((tracks) => {
+  return uniq(Object.values(tracks).flatMap((map) => Object.values(map).flat()));
+});
+
 const $hasDelegations = $activeDelegations.map((delegations) => Object.values(delegations).length > 0);
 
 const $canDelegate = walletModel.$activeWallet.map((wallet) => !!wallet && permissionUtils.canDelegate(wallet));
@@ -80,6 +85,7 @@ export const delegationAggregate = {
   $canDelegate,
   $hasAccount: networkSelectorModel.$hasAccount,
   $activeDelegations,
+  $activeWalletDelegatedTracks,
   $activeTracks,
   $hasDelegations,
   $totalDelegations,
