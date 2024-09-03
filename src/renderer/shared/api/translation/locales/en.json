@@ -289,6 +289,7 @@
       "continueButton": "Continue",
       "networkSettingsLink": "Network settings",
       "pasteButton": "Paste",
+      "refreshButton": "Refresh",
       "uploadButton": "Upload"
     },
     "explorers": {
@@ -587,6 +588,8 @@
       "listColumnAccount": "Account",
       "listColumnVotingPower": "Voting power",
       "listEmptyState": "No one voted here",
+      "notAvailable": "Vote history is unavailable",
+      "notAvailableDescription": "Please refresh to update the information.",
       "title": "Vote history",
       "totalVotesCount": "{value} votes",
       "viewVoteHistory": "View vote history"

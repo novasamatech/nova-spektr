@@ -6,6 +6,7 @@ import { type Chain, type ChainId, type Referendum, type ReferendumId } from '@/
 import { setNestedValue } from '@/shared/lib/utils';
 
 const $voteHistory = createStore<Record<ChainId, Record<ReferendumId, SubQueryVoting[]>>>({});
+const $hasError = createStore(false);
 
 const requestVoteHistory = createEvent<{ chain: Chain; referendum: Referendum }>();
 
@@ -24,6 +25,12 @@ sample({
 });
 
 sample({
+  clock: requestVoteHistory,
+  fn: () => false,
+  target: $hasError,
+});
+
+sample({
   clock: requestVoteHistoryFx.done,
   source: $voteHistory,
   fn: (history, { params, result }) => {
@@ -32,9 +39,16 @@ sample({
   target: $voteHistory,
 });
 
+sample({
+  clock: requestVoteHistoryFx.fail,
+  fn: () => true,
+  target: $hasError,
+});
+
 export const voteHistoryModel = {
   $voteHistory: readonly($voteHistory),
   $isLoading: requestVoteHistoryFx.pending,
+  $hasError,
 
   events: {
     requestVoteHistory,

@@ -5,7 +5,7 @@ import { useI18n } from '@app/providers';
 import { type Referendum } from '@shared/core';
 import { useModalClose } from '@shared/lib/hooks';
 import { cnTw } from '@shared/lib/utils';
-import { BaseModal, Icon, Tabs } from '@shared/ui';
+import { BaseModal, Button, FootnoteText, Icon, SmallTitleText, Tabs } from '@shared/ui';
 import { type TabItem } from '@shared/ui/Tabs/common/types';
 import { voteHistoryAggregate } from '../../aggregates/voteHistory';
 
@@ -34,6 +34,7 @@ export const VotingHistoryDialog = ({ referendum, onClose }: Props) => {
 
   const votingAsset = useUnit(voteHistoryAggregate.$votingAsset);
   const isLoading = useUnit(voteHistoryAggregate.$isLoading);
+  const hasError = useUnit(voteHistoryAggregate.$hasError);
 
   const ayes = useMemo(() => voteHistory.filter((history) => history.decision === 'aye'), [voteHistory]);
   const nays = useMemo(() => voteHistory.filter((history) => history.decision === 'nay'), [voteHistory]);
@@ -85,7 +86,24 @@ export const VotingHistoryDialog = ({ referendum, onClose }: Props) => {
       title={t('governance.voteHistory.title')}
       onClose={closeModal}
     >
-      <Tabs panelClassName="overflow-y-auto grow" items={tabs} onChange={setSelectedTab} />
+      {hasError ? (
+        <div className="flex h-full flex-col items-center justify-center gap-2">
+          <Icon name="document" size={64} className="text-icon-default" />
+          <SmallTitleText className="mt-4">{t('governance.voteHistory.notAvailable')}</SmallTitleText>
+          <FootnoteText className="text-text-tertiary">
+            {t('governance.voteHistory.notAvailableDescription')}
+          </FootnoteText>
+          <Button
+            className="mt-2"
+            size="sm"
+            onClick={() => voteHistoryAggregate.events.requestVoteHistory({ referendum })}
+          >
+            {t('general.button.refreshButton')}
+          </Button>
+        </div>
+      ) : (
+        <Tabs panelClassName="overflow-y-auto grow" items={tabs} onChange={setSelectedTab} />
+      )}
     </BaseModal>
   );
 };
