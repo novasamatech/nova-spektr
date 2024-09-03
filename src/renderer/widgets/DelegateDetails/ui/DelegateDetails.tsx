@@ -24,7 +24,7 @@ export const DelegateDetails = () => {
       title={t('governance.addDelegation.delegateTitle')}
       onClose={delegateDetailsModel.events.closeModal}
     >
-      <div className="flex items-start gap-4">
+      <div className="flex items-start gap-4 px-6">
         <Plate className="flex-1 border-filter-border p-6 shadow-card-shadow">
           {delegate && <DelegateInfo delegate={delegate} />}
         </Plate>
