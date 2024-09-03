@@ -23,11 +23,15 @@ const reconnectModalShown = createEvent();
 const reconnectStarted = createEvent<InitReconnectParams>();
 const reconnectAborted = createEvent();
 const reconnectDone = createEvent();
-const signingStarted = createEvent<SignParams>();
+const signingStarted = createEvent<SignParams[]>();
 
 const $reconnectStep = createStore(ReconnectStep.NOT_STARTED).reset(reset);
 const $isSigningRejected = createStore(false).reset(reset);
-const $signature = createStore('').reset(reset);
+const $signatures = createStore<HexString[]>([]).reset(reset);
+
+type SignResponse = {
+  signature: HexString;
+};
 
 const $isStatusShown = combine(
   {
@@ -44,12 +48,17 @@ const $isStatusShown = combine(
   },
 );
 
-type SignResponse = {
-  payload: string;
-  signature: HexString;
-};
-const signFx = createEffect(({ client, payload }: SignParams): Promise<SignResponse> => {
-  return client.request(payload);
+const signFx = createEffect(async (signParams: SignParams[]): Promise<SignResponse[]> => {
+  const results: SignResponse[] = [];
+
+  for (const { client, payload } of signParams) {
+    // should be signed step by step
+    const response = await client.request<SignResponse>(payload);
+
+    results.push(response);
+  }
+
+  return results;
 });
 
 sample({
@@ -59,8 +68,8 @@ sample({
 
 sample({
   clock: signFx.doneData,
-  fn: ({ signature }) => signature,
-  target: $signature,
+  fn: (responses) => responses.map(({ signature }) => signature),
+  target: $signatures,
 });
 
 sample({
@@ -162,8 +171,9 @@ sample({
 export const signWcModel = {
   $reconnectStep,
   $isSigningRejected,
-  $signature,
+  $signatures,
   $isStatusShown,
+
   events: {
     signingStarted,
     reset,
