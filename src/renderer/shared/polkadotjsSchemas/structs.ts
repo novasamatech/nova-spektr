@@ -1,6 +1,20 @@
 import { Enum, Option } from '@polkadot/types';
 import { z } from 'zod';
 
+const safeParse = <T extends z.ZodTypeAny>(schema: T, value: unknown, ctx: z.RefinementCtx): z.infer<T> | never => {
+  const result = schema.safeParse(value);
+
+  if (result.success) {
+    return result.data;
+  } else {
+    for (const issue of result.error.issues) {
+      ctx.addIssue(issue);
+    }
+
+    return z.NEVER;
+  }
+};
+
 export const vecSchema = <T extends z.ZodTypeAny>(schema: T) => z.array(schema);
 
 export const objectSchema = <const T extends z.ZodRawShape>(v: T) => {
@@ -12,7 +26,7 @@ export const objectSchema = <const T extends z.ZodRawShape>(v: T) => {
     if (typeof map !== 'object' || map === null) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: `Value ${ctx.path.join('.')} not an object`,
+        message: `Value not an object`,
         fatal: true,
       });
 
@@ -22,25 +36,37 @@ export const objectSchema = <const T extends z.ZodRawShape>(v: T) => {
     const result: Record<string, unknown> = {};
 
     for (const [key, schema] of Object.entries(v)) {
+      let fieldValue;
+      let hasValue = false;
       if (map instanceof Map) {
-        const a = map.get(key);
-        result[key] = schema.parse(a);
-        continue;
+        if (map.has(key)) {
+          fieldValue = map.get(key);
+          hasValue = true;
+        }
       } else {
         if (key in map) {
           // @ts-expect-error dynamic data
-          result[key] = schema.parse(map[key]);
-          continue;
+          fieldValue = map[key];
+          hasValue = true;
         }
       }
 
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: `Object does not have key ${key}`,
-        fatal: true,
-      });
+      if (!hasValue) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Object does not have key ${key}`,
+          fatal: true,
+        });
 
-      return z.NEVER;
+        return z.NEVER;
+      }
+
+      const field = safeParse(schema, fieldValue, ctx);
+      if (field === z.NEVER) {
+        return z.NEVER;
+      }
+
+      result[key] = field;
     }
 
     return result as PolkadotJSObject;
@@ -48,12 +74,12 @@ export const objectSchema = <const T extends z.ZodRawShape>(v: T) => {
 };
 
 export const optionalSchema = <const Value>(schema: z.ZodType<Value, z.ZodTypeDef, unknown>) => {
-  return z.instanceof(Option).transform((value) => {
+  return z.instanceof(Option).transform((value, ctx) => {
     if (value.isNone) {
       return null;
     }
 
-    return schema.parse(value.unwrap()) as Value extends z.ZodType ? z.infer<Value> : Value;
+    return safeParse(schema, value.unwrap(), ctx) as Value extends z.ZodType ? z.infer<Value> : Value;
   });
 };
 
@@ -66,7 +92,7 @@ export const enumTypeSchema = <const Value extends string[]>(...args: Value) => 
 
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: `Enum ${ctx.path.join('.')} should be (${args.join(' | ')}), got ${value.type}`,
+      message: `Enum should be (${args.join(' | ')}), got ${value.type}`,
       fatal: true,
     });
 
@@ -90,22 +116,28 @@ export const enumValueSchema = <const Map extends Record<string, z.ZodTypeAny>>(
 
       // @ts-expect-error dynamic field
       if (enumValue[`is${type}`]) {
+        // @ts-expect-error dynamic field
+        const result = safeParse(specificSchema, enumValue[`as${type}`], ctx);
+
+        if (result === z.NEVER) {
+          return z.NEVER;
+        }
+
         return {
           type,
-          // @ts-expect-error dynamic field
-          _: specificSchema.parse(enumValue[`as${type}`]),
+          _: result,
         } as EnumVariant;
       }
 
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: `Enum ${ctx.path.join('.')} has incorrect shape - field as${type} should be fulfilled`,
+        message: `Enum has incorrect shape - field as${type} should be fulfilled`,
         fatal: true,
       });
     } else {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: `Schema "${type}" for enum ${ctx.path.join('.')} is not specified`,
+        message: `Schema "${type}" field is not specified`,
         fatal: true,
       });
     }
@@ -130,16 +162,22 @@ export const enumValueLooseSchema = <const Map extends Record<string, z.ZodTypeA
 
       // @ts-expect-error dynamic field
       if (enumValue[`is${type}`]) {
+        // @ts-expect-error dynamic field
+        const result = safeParse(specificSchema, enumValue[`as${type}`], ctx);
+
+        if (result === z.NEVER) {
+          return z.NEVER;
+        }
+
         return {
           type,
-          // @ts-expect-error dynamic field
-          _: specificSchema.parse(enumValue[`as${type}`]),
+          _: result,
         } as EnumVariant;
       }
 
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: `Enum ${ctx.path.join('.')} has incorrect shape - field as${type} should be fulfilled`,
+        message: `Enum has incorrect shape - field as${type} should be fulfilled`,
         fatal: true,
       });
     } else {
@@ -165,6 +203,12 @@ export const tuppleMapSchema = <const Entries extends [name: string, schema: z.Z
   type Result = FromEntries<Entries>;
 
   const inputSchema = args.map((x) => x[1]);
+  const missingSchemaIndex = inputSchema.findIndex((x) => x === undefined);
+  if (missingSchemaIndex !== -1) {
+    throw new TypeError(
+      `Tupple map schema for field ${args.map((x) => x[1]).join(', ')} is missing schema at ${missingSchemaIndex}`,
+    );
+  }
 
   // @ts-expect-error dynamic data
   return z.tuple(inputSchema).transform((values) => {

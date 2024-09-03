@@ -1,5 +1,6 @@
 import {
   accountIdSchema,
+  addressSchema,
   boolSchema,
   bytesHexSchema,
   bytesSchema,
@@ -41,6 +42,7 @@ export const pjsSchema = {
   bytes: bytesSchema,
   bytesHex: bytesHexSchema,
   accountId: accountIdSchema,
+  address: addressSchema,
   storageKey: storageKeySchema,
   bool: boolSchema,
   blockHeight: u32Schema,

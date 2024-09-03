@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
+import { convictionVotingTally } from '@/shared/pallet/convictionVoting/schema';
 import { pjsSchema } from '@/shared/polkadotjsSchemas';
-import { convictionVotingPallet } from '@shared/pallet/convictionVoting';
 
 export type ReferendumId = z.infer<typeof referendumId>;
 export const referendumId = pjsSchema.u32;
@@ -112,7 +112,7 @@ export const referendaReferendumStatusRankedCollectiveTally = pjsSchema.object({
   submissionDeposit: referendaDeposit,
   decisionDeposit: pjsSchema.optional(referendaDeposit),
   deciding: pjsSchema.optional(referendaDecidingStatus),
-  tally: convictionVotingPallet.schema.convictionVotingTally,
+  tally: convictionVotingTally,
   inQueue: pjsSchema.bool,
   alarm: pjsSchema.optional(
     pjsSchema.tuppleMap(

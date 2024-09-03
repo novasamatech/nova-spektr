@@ -5,7 +5,7 @@ import { BN } from '@polkadot/util';
 import { z } from 'zod';
 
 import { type AccountId } from '@/shared/core';
-import { isCorrectAccountId } from '@/shared/lib/utils';
+import { isCorrectAccountId, toAddress } from '@/shared/lib/utils';
 
 export const storageKeySchema = <const T extends [z.ZodTypeAny, ...z.ZodTypeAny[]]>(...schema: T) => {
   const argsSchema = z.tuple(schema);
@@ -53,6 +53,8 @@ export const accountIdSchema = z.instanceof(GenericAccountId).transform((value, 
 
   return z.NEVER;
 });
+
+export const addressSchema = accountIdSchema.transform((x) => toAddress(x));
 
 /**
  * Parts per Billion.
