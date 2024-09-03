@@ -3,12 +3,12 @@ import { type ApiPromise } from '@polkadot/api';
 import { type AccountId } from '@/shared/core';
 import { pjsSchema } from '../../polkadotjsSchemas';
 
+import { getPalletName } from './helpers';
 import { salaryClaimantStatus, salaryStatusType } from './schema';
 import { type PalletType } from './types';
 
 const getQuery = (type: PalletType, api: ApiPromise, name: string) => {
-  const palletName = type + 'Salary';
-
+  const palletName = getPalletName(type);
   const root = api.query[palletName];
   if (!root) {
     throw new TypeError(`${palletName} pallet not found in ${api.runtimeChain.toString()} chain`);

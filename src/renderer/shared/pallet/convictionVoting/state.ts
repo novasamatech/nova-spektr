@@ -27,7 +27,7 @@ export const state = {
    * pallet should always be the maximum of this list.
    */
   classLocksFor(api: ApiPromise, addresses: Address[]) {
-    const schema = pjsSchema.vec(convictionVotingClassLock);
+    const schema = pjsSchema.vec(pjsSchema.vec(convictionVotingClassLock));
 
     return getQuery(api, 'classLocksFor').entries(addresses).then(schema.parse);
   },
