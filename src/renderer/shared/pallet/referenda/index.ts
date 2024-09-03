@@ -1,10 +1,10 @@
 import { consts } from './consts';
 import * as schema from './schema';
-import { state } from './state';
+import { storage } from './storage';
 
 export const referendaPallet = {
   consts,
-  state,
+  storage,
   schema,
 };
 

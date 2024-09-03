@@ -20,7 +20,7 @@ const getQuery = (api: ApiPromise, name: string) => {
   return query;
 };
 
-export const state = {
+export const storage = {
   /**
    * The overall status of the system.
    */

@@ -20,7 +20,7 @@ const getQuery = (api: ApiPromise, name: string) => {
   return query;
 };
 
-export const state = {
+export const storage = {
   /**
    * The voting classes which have a non-zero lock requirement and the lock
    * amounts which they require. The actual amount locked on behalf of this

@@ -23,7 +23,7 @@ const getQuery = (type: PalletType, api: ApiPromise, name: string) => {
   return query;
 };
 
-export const state = {
+export const storage = {
   /**
    * Proposal indices that have been approved but not yet awarded.
    */

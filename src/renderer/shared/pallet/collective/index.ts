@@ -1,8 +1,8 @@
 import * as schemas from './schemas';
-import { state } from './state';
+import { storage } from './storage';
 
 export const collectivePallet = {
-  state,
+  storage,
   schemas,
 };
 

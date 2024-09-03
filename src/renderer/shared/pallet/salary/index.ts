@@ -1,11 +1,11 @@
 import { consts } from './consts';
 import * as schema from './schema';
-import { state } from './state';
+import { storage } from './storage';
 
 export const fellowshipSalary = {
   consts,
   schema,
-  state,
+  storage,
 };
 
 export type { SalaryClaimantStatus, SalaryClaimState, SalaryStatusType } from './schema';
