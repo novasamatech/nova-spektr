@@ -137,7 +137,7 @@ export const AccountsMultiSelector = ({
               <li
                 key="all"
                 className={cnTw(
-                  'mb-0.5 rounded p-2 hover:bg-action-background-hover',
+                  'mb-1 rounded p-2 hover:bg-action-background-hover',
                   OptionStyleTheme[theme](
                     false,
                     optionsFlat.every((option) => selectedIds.includes(option.id)),
@@ -237,7 +237,7 @@ const Group = ({ group, selectedIds, selectedOptions, theme, onChange }: PropsGr
     <>
       <div
         className={cnTw(
-          'my-0.5 flex rounded hover:bg-action-background-hover',
+          'my-1 flex rounded hover:bg-action-background-hover',
           OptionStyleTheme[theme](false, isChecked),
         )}
       >
@@ -258,7 +258,7 @@ const Group = ({ group, selectedIds, selectedOptions, theme, onChange }: PropsGr
           <Listbox.Option
             key={id}
             value={{ id, value }}
-            className={({ active, selected }) => cnTw(OptionStyle, OptionStyleTheme[theme](active, selected), 'my-0.5')}
+            className={({ active, selected }) => cnTw(OptionStyle, OptionStyleTheme[theme](active, selected), 'my-1')}
           >
             {({ selected }) => (
               <div className="flex w-full items-center justify-between gap-x-4">
