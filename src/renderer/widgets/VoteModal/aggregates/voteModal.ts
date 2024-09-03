@@ -4,7 +4,7 @@ import { spread } from 'patronum';
 
 import { type PathType, Paths } from '@/shared/routes';
 import { type BasketTransaction, type Conviction, type OngoingReferendum } from '@shared/core';
-import { Step, isStep, nonNullable, toAddress } from '@shared/lib/utils';
+import { Step, isStep, nonNullable, nullable, toAddress } from '@shared/lib/utils';
 import { basketModel } from '@entities/basket';
 import { referendumModel } from '@entities/governance';
 import {
@@ -27,9 +27,22 @@ const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flow.o
 
 const $hasDelegatedTrack = combine(
   voteFormAggregate.$referendum,
-  delegationAggregate.$activeWalletDelegatedTracks,
-  (referendum, tracks) => {
-    return referendum ? tracks.includes(referendum.track) : false;
+  voteFormAggregate.transactionForm.form.fields.account.$value,
+  delegationAggregate.$activeTracks,
+  (referendum, account, tracks) => {
+    if (nullable(account) || nullable(referendum)) {
+      return false;
+    }
+
+    for (const dalagators of Object.values(tracks)) {
+      for (const [address, tracks] of Object.entries(dalagators)) {
+        if (address === toAddress(account.accountId) && tracks.includes(referendum.track)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   },
 );
 
