@@ -18,6 +18,7 @@ export { lockPeriodsModel } from './model/lockPeriods';
 export { locksModel } from './model/locks';
 
 export { Locks } from './components/Locks';
+export { AccountsMultiSelector } from './components/AccountsMultiSelector/AccountsMultiSelector';
 export { TotalDelegation, DelegateBadge, DelegateIcon, DelegateTitle, DelegateName } from './components/Delegations';
 export { NetworkSelector } from './components/NetworkSelector';
 export { ReferendumDetailsDialog } from './components/ReferendumDetails/ReferendumDetailsDialog';
