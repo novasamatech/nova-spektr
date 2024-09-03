@@ -3,14 +3,14 @@ import { useGate, useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-import { chainsService } from '@shared/api/network';
 import wallet_connect_confirm from '@shared/assets/video/wallet_connect_confirm.mp4';
 import wallet_connect_confirm_webm from '@shared/assets/video/wallet_connect_confirm.webm';
 import { type HexString } from '@shared/core';
 import { useCountdown } from '@shared/lib/hooks';
-import { ValidationErrors } from '@shared/lib/utils';
+import { ValidationErrors, createTxMetadata, toAddress, upgradeNonce } from '@shared/lib/utils';
 import { Button, ConfirmModal, Countdown, FootnoteText, SmallTitleText, StatusModal } from '@shared/ui';
 import { Animation } from '@shared/ui/Animation/Animation';
+import { networkModel } from '@/entities/network';
 import { transactionService } from '@entities/transaction';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { DEFAULT_POLKADOT_METHODS, walletConnectModel, walletConnectUtils } from '@entities/walletConnect';
@@ -30,13 +30,13 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
   const client = useUnit(walletConnectModel.$client);
   const reconnectStep = useUnit(signWcModel.$reconnectStep);
   const isSigningRejected = useUnit(signWcModel.$isSigningRejected);
-  const signature = useUnit(signWcModel.$signature);
+  const signatures = useUnit(signWcModel.$signatures);
   const isStatusShown = useUnit(signWcModel.$isStatusShown);
 
-  const chains = chainsService.getChainsData();
+  const chains = useUnit(networkModel.$chains);
 
-  const [txPayload, setTxPayload] = useState<Uint8Array>();
-  const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
+  const [txPayloads, setTxPayloads] = useState<Uint8Array[]>();
+  const [unsignedTxs, setUnsignedTxs] = useState<UnsignedTransaction[]>();
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
   const transaction = payload.transaction;
@@ -45,7 +45,7 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
   useGate(operationSignModel.SignerGate, account);
 
   useEffect(() => {
-    if (txPayload || !client) return;
+    if (txPayloads || !client) return;
 
     const sessions = client.session.getAll();
     const storedAccount = walletUtils.getAccountsBy(wallets, (a) => a.walletId === account.walletId)[0];
@@ -61,10 +61,10 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
   }, [transaction, api]);
 
   useEffect(() => {
-    if (unsignedTx) {
+    if (unsignedTxs) {
       signTransaction();
     }
-  }, [unsignedTx]);
+  }, [unsignedTxs]);
 
   useEffect(() => {
     if (countdown <= 0) {
@@ -73,17 +73,30 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
   }, [countdown]);
 
   useEffect(() => {
-    if (signature) {
-      handleSignature(signature as HexString);
+    if (signatures) {
+      handleSignature(signatures);
     }
-  }, [signature]);
+  }, [signatures]);
 
   const setupTransaction = async (): Promise<void> => {
-    try {
-      const { payload, unsigned } = await transactionService.createPayload(transaction, api);
+    const resultPayloads = [];
+    const resultUnsignedTxs = [];
 
-      setTxPayload(payload);
-      setUnsignedTx(unsigned);
+    try {
+      const address = toAddress(account.accountId, { prefix: payload.chain.addressPrefix });
+      let metadata = await createTxMetadata(address, apis[payload.chain.chainId]);
+
+      for (const { transaction } of signingPayloads) {
+        const { payload, unsigned } = transactionService.createPayloadWithMetadata(transaction, api, metadata);
+
+        resultPayloads.push(payload);
+        resultUnsignedTxs.push(unsigned);
+
+        metadata = upgradeNonce(metadata, 1);
+      }
+
+      setTxPayloads(resultPayloads);
+      setUnsignedTxs(resultUnsignedTxs);
 
       if (payload) {
         resetCountdown();
@@ -95,41 +108,49 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
 
   const reconnect = () => {
     signWcModel.events.reconnectStarted({
-      chains: walletConnectUtils.getWalletConnectChains(chains),
+      chains: walletConnectUtils.getWalletConnectChains(Object.values(chains)),
       pairing: { topic: account.signingExtras?.pairingTopic },
     });
   };
 
   const signTransaction = async () => {
-    if (!api || !client || !session) return;
+    if (!api || !client || !session || !unsignedTxs) return;
 
-    signWcModel.events.signingStarted({
-      client,
-      payload: {
-        // eslint-disable-next-line i18next/no-literal-string
-        chainId: walletConnectUtils.getWalletConnectChainId(transaction.chainId),
-        topic: session.topic,
-        request: {
-          method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
-          params: {
-            address: transaction.address,
-            transactionPayload: unsignedTx,
+    signWcModel.events.signingStarted(
+      unsignedTxs.map((unsigned) => ({
+        client,
+        payload: {
+          // eslint-disable-next-line i18next/no-literal-string
+          chainId: walletConnectUtils.getWalletConnectChainId(transaction.chainId),
+          topic: session.topic,
+          request: {
+            method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
+            params: {
+              address: transaction.address,
+              transactionPayload: unsigned,
+            },
           },
         },
-      },
-    });
+      })),
+    );
   };
 
-  const handleSignature = async (signature: HexString) => {
-    const isVerified =
-      txPayload && transactionService.verifySignature(txPayload, signature as HexString, payload.account.accountId);
+  const handleSignature = async (signatures: HexString[]) => {
+    let isVerified;
+    let balanceValidationError;
 
-    const balanceValidationError = validateBalance && (await validateBalance());
+    for (const [index, signature] of Object.entries(signatures)) {
+      const txPayload = txPayloads && txPayloads[Number(index)];
+
+      isVerified =
+        txPayload && transactionService.verifySignature(txPayload, signature as HexString, payload.account.accountId);
+      balanceValidationError = validateBalance && (await validateBalance());
+    }
 
     if (isVerified && balanceValidationError) {
       setValidationError(balanceValidationError || ValidationErrors.INVALID_SIGNATURE);
-    } else if (txPayload) {
-      onResult([signature], [txPayload]);
+    } else if (txPayloads) {
+      onResult(signatures, txPayloads);
     }
   };
 
@@ -191,11 +212,12 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
     <div className="flex w-[440px] flex-col items-center gap-y-2.5 rounded-b-lg p-4">
       <SmallTitleText>
         {t('operation.walletConnect.signTitle', {
+          count: txPayloads?.length || 1,
           walletName,
         })}
       </SmallTitleText>
 
-      <Countdown countdown={txPayload ? countdown : 0} />
+      <Countdown countdown={txPayloads ? countdown : 0} />
 
       <div className="relative">
         <video className="h-[240px] object-contain" autoPlay loop>

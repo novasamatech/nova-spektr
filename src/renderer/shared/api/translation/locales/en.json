@@ -888,7 +888,8 @@
         "title": "{ walletName } is not connected"
       },
       "rejected": "Rejected",
-      "signTitle": "Confirm the operation on your { walletName } app",
+      "signTitle_one": "Confirm the operation on your { walletName } app",
+      "signTitle_other": "Confirm { count } operations on your { walletName } app",
       "tryAgainButton": "Try again"
     },
     "walletSignatoriesTitle": "Your wallets",
