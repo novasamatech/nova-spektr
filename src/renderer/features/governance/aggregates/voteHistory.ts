@@ -1,6 +1,5 @@
 import { combine, createEvent, sample } from 'effector';
 import { createGate } from 'effector-react';
-import { or } from 'patronum';
 
 import { type Referendum, type ReferendumId } from '@shared/core';
 import { voteHistoryModel } from '@entities/governance';
@@ -11,7 +10,6 @@ import { type AggregatedVoteHistory } from '../types/structs';
 import { votingPowerSorting } from '../utils/votingPowerSorting';
 
 import { proposerIdentityAggregate } from './proposerIdentity';
-import { votingAggregate } from './voting';
 
 const flow = createGate<{ referendum: Referendum }>();
 
@@ -85,7 +83,8 @@ sample({
 
 export const voteHistoryAggregate = {
   $voteHistory,
-  $isLoading: or(voteHistoryModel.$isLoading, votingAggregate.$isLoading),
+  $isLoading: voteHistoryModel.$isLoading,
+  $hasError: voteHistoryModel.$hasError,
   $chain: networkSelectorModel.$governanceChain,
   $votingAsset: votingAssetModel.$votingAsset,
 
