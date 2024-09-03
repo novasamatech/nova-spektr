@@ -67,11 +67,11 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onRe
       onClose={closeModal}
     >
       <div className="flex min-h-full flex-wrap-reverse items-end gap-4 p-6">
-        <Plate className="min-h-0 min-w-80 grow basis-[530px] border-filter-border p-6 shadow-card-shadow">
+        <Plate className="min-h-0 min-w-80 grow basis-[500px] border-filter-border p-6 shadow-card-shadow">
           <ProposalDescription chainId={chain.chainId} addressPrefix={chain.addressPrefix} referendum={referendum} />
         </Plate>
 
-        <div className="flex shrink-0 grow basis-[350px] flex-row flex-wrap gap-4">
+        <div className="flex shrink-0 grow basis-[320px] flex-row flex-wrap gap-4">
           {referendum.vote && votingAsset && (
             <DetailsCard>
               <VotingBalance votes={totalVotes} asset={votingAsset} onInfoClick={() => setShowWalletVotes(true)} />
