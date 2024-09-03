@@ -8,6 +8,7 @@ import { type Address } from '@/shared/core';
 import { Step, includesMultiple, toAccountId, validateAddress } from '@/shared/lib/utils';
 import { walletModel } from '@/entities/wallet';
 import { delegateRegistryAggregate, delegationAggregate, networkSelectorModel } from '@/features/governance';
+import { navigationModel } from '@/features/navigation';
 import { delegateModel } from '@/widgets/DelegateModal/model/delegate-model';
 import { DelegationErrors, SortProp, SortType } from '../common/constants';
 
@@ -127,6 +128,11 @@ sample({
 sample({
   clock: delegateModel.events.flowStarted,
   target: closeCustomModal,
+});
+
+sample({
+  clock: navigationModel.events.navigateTo,
+  target: flowFinished,
 });
 
 export const delegationModel = {
