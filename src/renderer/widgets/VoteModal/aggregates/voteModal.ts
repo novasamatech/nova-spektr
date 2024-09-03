@@ -1,4 +1,4 @@
-import { createEvent, createStore, sample } from 'effector';
+import { combine, createEvent, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { spread } from 'patronum';
 
@@ -7,7 +7,13 @@ import { type BasketTransaction, type Conviction, type OngoingReferendum } from 
 import { Step, isStep, nonNullable, toAddress } from '@shared/lib/utils';
 import { basketModel } from '@entities/basket';
 import { referendumModel } from '@entities/governance';
-import { lockPeriodsModel, locksModel, networkSelectorModel, votingAggregate } from '@/features/governance';
+import {
+  delegationAggregate,
+  lockPeriodsModel,
+  locksModel,
+  networkSelectorModel,
+  votingAggregate,
+} from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
 import { type SigningPayload, signModel } from '@features/operations/OperationSign';
 import { ExtrinsicResult, submitModel } from '@features/operations/OperationSubmit';
@@ -18,6 +24,14 @@ import { voteFormAggregate } from './voteForm';
 const flow = createGate<{ conviction: Conviction; referendum: OngoingReferendum }>();
 
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flow.open);
+
+const $hasDelegatedTrack = combine(
+  voteFormAggregate.$referendum,
+  delegationAggregate.$activeWalletDelegatedTracks,
+  (referendum, tracks) => {
+    return referendum ? tracks.includes(referendum.track) : false;
+  },
+);
 
 const { form, reinitForm, resetForm, transaction } = voteFormAggregate.transactionForm;
 
@@ -231,6 +245,7 @@ export const voteModalAggregate = {
   $initialConviction: voteFormAggregate.$initialConviction,
   $availableBalance: voteFormAggregate.$availableBalance,
   $canSubmit: voteFormAggregate.$canSubmit,
+  $hasDelegatedTrack,
 
   $step,
 

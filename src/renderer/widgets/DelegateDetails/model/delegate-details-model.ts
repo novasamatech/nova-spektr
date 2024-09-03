@@ -100,13 +100,7 @@ export const delegateDetailsModel = {
   $delegate,
   $activeAccounts,
   $activeTracks,
-  $uniqueTracks: $activeTracks.map((tracks) => [
-    ...new Set(
-      Object.values(tracks)
-        .map((t) => [...t])
-        .flat(),
-    ),
-  ]),
+  $uniqueTracks: delegationAggregate.$activeWalletDelegatedTracks,
   $activeDelegations,
 
   $isAddAvailable,

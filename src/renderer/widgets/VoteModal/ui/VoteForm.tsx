@@ -29,10 +29,9 @@ import { Signatories } from './formFields/Signatories';
 type Props = {
   chain: Chain;
   asset: Asset;
-  hasDelegated?: boolean;
 };
 
-export const VoteForm = ({ chain, asset, hasDelegated = false }: Props) => {
+export const VoteForm = ({ chain, asset }: Props) => {
   const { t } = useI18n();
 
   const lock = useUnit(voteModalAggregate.$lock);
@@ -45,6 +44,7 @@ export const VoteForm = ({ chain, asset, hasDelegated = false }: Props) => {
   const accounts = useUnit(voteModalAggregate.accounts.$available);
   const isMultisig = useUnit(voteModalAggregate.transaction.$isMultisig);
   const isFeeLoading = useUnit(voteModalAggregate.transaction.$pendingFee);
+  const hasDelegatedTrack = useUnit(voteModalAggregate.$hasDelegatedTrack);
 
   const lockPeriods = useStoreMap({
     store: voteModalAggregate.$lockPeriods,
@@ -122,14 +122,15 @@ export const VoteForm = ({ chain, asset, hasDelegated = false }: Props) => {
             )}
           </DetailRow>
         </div>
-        <Alert active={hasDelegated} title="Already delegating votes" variant="error">
-          {t('governance.vote.delegationError')}
+        <Alert active={hasDelegatedTrack} title="Already delegating votes" variant="error">
+          <FootnoteText className="text-text-secondary">{t('governance.vote.delegationError')}</FootnoteText>
         </Alert>
         <div className="flex shrink-0 gap-4">
           <ButtonCard
             className="grow basis-0"
             icon="thumbDown"
             pallet="negative"
+            disabled={hasDelegatedTrack}
             onClick={() => {
               decision.onChange('nay');
               submit();
@@ -141,6 +142,7 @@ export const VoteForm = ({ chain, asset, hasDelegated = false }: Props) => {
             className="grow basis-0"
             icon="minusCircle"
             pallet="secondary"
+            disabled={hasDelegatedTrack}
             onClick={() => setShowAbstainConfirm(true)}
           >
             {t('governance.referendum.abstain')}
@@ -149,6 +151,7 @@ export const VoteForm = ({ chain, asset, hasDelegated = false }: Props) => {
             className="grow basis-0"
             icon="thumbUp"
             pallet="positive"
+            disabled={hasDelegatedTrack}
             onClick={() => {
               decision.onChange('aye');
               submit();
