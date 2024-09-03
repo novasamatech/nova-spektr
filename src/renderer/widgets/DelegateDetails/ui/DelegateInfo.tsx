@@ -9,7 +9,7 @@ type Props = {
 export const DelegateInfo = ({ delegate }: Props) => {
   return (
     <div className="flex flex-col gap-4">
-      <DelegateName delegate={delegate} />
+      <DelegateName delegate={delegate} titleClassName="max-w-[430px]" />
 
       {delegate.longDescription && <Markdown>{delegate.longDescription}</Markdown>}
     </div>
