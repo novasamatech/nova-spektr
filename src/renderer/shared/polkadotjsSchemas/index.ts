@@ -4,7 +4,9 @@ import {
   bytesHexSchema,
   bytesSchema,
   i64Schema,
+  nullSchema,
   perbillSchema,
+  permillSchema,
   storageKeySchema,
   structHexSchema,
   textSchema,
@@ -12,6 +14,7 @@ import {
   u16Schema,
   u32Schema,
   u64Schema,
+  u8Schema,
 } from './primitives';
 import {
   complexSchema,
@@ -26,12 +29,15 @@ import {
 
 export const pjsSchema = {
   perbill: perbillSchema,
+  permill: permillSchema,
+  u8: u8Schema,
   u16: u16Schema,
   u32: u32Schema,
   i64: i64Schema,
   u64: u64Schema,
   u128: u128Schema,
   text: textSchema,
+  null: nullSchema,
   bytes: bytesSchema,
   bytesHex: bytesHexSchema,
   accountId: accountIdSchema,

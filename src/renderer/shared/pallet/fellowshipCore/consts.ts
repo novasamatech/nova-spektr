@@ -3,12 +3,12 @@ import { type ApiPromise } from '@polkadot/api';
 import { pjsSchema } from '@/shared/polkadotjsSchemas';
 
 const getPallet = (api: ApiPromise) => {
-  const coreFellowship = api.consts['coreFellowship'];
-  if (!coreFellowship) {
+  const pallet = api.consts['coreFellowship'];
+  if (!pallet) {
     throw new TypeError('coreFellowship pallet not found');
   }
 
-  return coreFellowship;
+  return pallet;
 };
 
 export const consts = {

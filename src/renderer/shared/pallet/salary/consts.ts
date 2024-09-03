@@ -2,17 +2,17 @@ import { type ApiPromise } from '@polkadot/api';
 
 import { pjsSchema } from '@/shared/polkadotjsSchemas';
 
+import { getPalletName } from './helpers';
 import { type PalletType } from './types';
 
 const getPallet = (api: ApiPromise, type: PalletType) => {
-  const name = type + 'Salary';
-
-  const salary = api.consts[name];
-  if (!salary) {
-    throw new TypeError(`${name} pallet not found`);
+  const palletName = getPalletName(type);
+  const pallet = api.consts[palletName];
+  if (!pallet) {
+    throw new TypeError(`${palletName} pallet not found`);
   }
 
-  return salary;
+  return pallet;
 };
 
 export const consts = {
