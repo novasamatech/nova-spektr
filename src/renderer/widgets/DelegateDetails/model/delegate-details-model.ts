@@ -6,6 +6,7 @@ import { toAddress } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
 import { accountUtils, permissionUtils, walletModel } from '@/entities/wallet';
 import { delegationAggregate, networkSelectorModel, votingAggregate } from '@/features/governance';
+import { navigationModel } from '@/features/navigation';
 
 const flowStarted = createEvent<DelegateAccount>();
 const openDelegations = createEvent();
@@ -13,6 +14,9 @@ const openDelegations = createEvent();
 const $isModalOpen = createStore(false);
 const $isDelegationsOpen = createStore(false);
 const $delegate = createStore<DelegateAccount | null>(null).reset(flowStarted);
+
+const closeModal = $isModalOpen.reinit;
+const closeDelegationsModal = $isDelegationsOpen.reinit;
 
 const $activeTracks = combine(
   { votes: votingAggregate.$activeWalletVotes, delegate: $delegate },
@@ -92,7 +96,12 @@ sample({
 sample({
   clock: $activeAccounts,
   filter: ($activeAccounts) => $activeAccounts.length === 0,
-  target: $isDelegationsOpen.reinit,
+  target: closeDelegationsModal,
+});
+
+sample({
+  clock: navigationModel.events.navigateTo,
+  target: [closeModal, closeDelegationsModal],
 });
 
 export const delegateDetailsModel = {
@@ -111,9 +120,9 @@ export const delegateDetailsModel = {
 
   events: {
     flowStarted,
-    closeModal: $isModalOpen.reinit,
+    closeModal,
 
     openDelegations,
-    closeDelegationsModal: $isDelegationsOpen.reinit,
+    closeDelegationsModal,
   },
 };
