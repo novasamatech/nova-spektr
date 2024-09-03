@@ -22,7 +22,7 @@ const getQuery = (type: PalletType, api: ApiPromise, name: string) => {
   return query;
 };
 
-export const state = {
+export const storage = {
   /**
    * The number of referenda being decided currently.
    */

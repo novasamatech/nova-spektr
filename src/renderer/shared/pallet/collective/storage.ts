@@ -24,7 +24,7 @@ const getQuery = (type: PalletType, api: ApiPromise, name: string) => {
   return query;
 };
 
-export const state = {
+export const storage = {
   /**
    * The index of each ranks's member into the group of members who have at
    * least that rank.
