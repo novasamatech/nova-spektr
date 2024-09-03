@@ -4,11 +4,18 @@ import { combine, createEffect, createEvent, createStore, restore, sample } from
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { type Account, type Chain, TransactionType, type Wallet } from '@/shared/core';
-import { addUniqueItems, formatAmount, removeItemsFromCollection, toAddress } from '@/shared/lib/utils';
+import {
+  addUniqueItems,
+  formatAmount,
+  removeItemsFromCollection,
+  toAddress,
+  transferableAmount,
+} from '@/shared/lib/utils';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingService } from '@/entities/governance';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { delegationAggregate, tracksAggregate, votingAggregate } from '@/features/governance';
+import { delegationAggregate, networkSelectorModel, tracksAggregate, votingAggregate } from '@/features/governance';
 import { adminTracks, fellowshipTracks, governanceTracks, treasuryTracks } from '../lib/constants';
 
 const formInitiated = createEvent<DelegateAccount>();
@@ -73,6 +80,30 @@ const $availableAccounts = combine(
       .filter(
         (account) => !delegations[delegate.accountId]?.[toAddress(account.accountId, { prefix: chain.addressPrefix })],
       );
+  },
+);
+
+const $accountsBalances = combine(
+  {
+    availableAccounts: $availableAccounts,
+    balances: balanceModel.$balances,
+    network: networkSelectorModel.$network,
+  },
+  ({ balances, network, availableAccounts }) => {
+    if (availableAccounts.length <= 1 || !network) return {};
+
+    return availableAccounts.reduce<Record<string, string>>((acc, account) => {
+      const balance = balanceUtils.getBalance(
+        balances,
+        account.accountId,
+        network!.chain.chainId,
+        network!.asset.assetId.toString(),
+      );
+
+      acc[account.accountId] = transferableAmount(balance);
+
+      return acc;
+    }, {});
   },
 );
 
@@ -193,6 +224,7 @@ export const selectTracksModel = {
 
   $accounts,
   $availableAccounts,
+  $accountsBalances,
   $chain: delegationAggregate.$chain,
   $isMaxWeightReached,
   $isMaxWeightLoading: checkMaxWeightReachedFx.pending,

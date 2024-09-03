@@ -1,7 +1,8 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/app/providers';
-import { toAddress, toShortAddress } from '@/shared/lib/utils';
+import { type Account, type Chain } from '@/shared/core';
+import { toAddress } from '@/shared/lib/utils';
 import {
   Alert,
   BaseModal,
@@ -9,13 +10,14 @@ import {
   Checkbox,
   FootnoteText,
   Icon,
-  MultiSelect,
+  IconButton,
   SmallTitleText,
   Tooltip,
 } from '@/shared/ui';
+import { AssetBalance } from '@/entities/asset';
 import { OperationTitle } from '@/entities/chain';
-import { AccountAddress, accountUtils } from '@/entities/wallet';
-import { votingAssetModel } from '@/features/governance';
+import { AccountAddress, AddressWithName, ExplorersPopover, accountUtils } from '@/entities/wallet';
+import { AccountsMultiSelector, networkSelectorModel } from '@/features/governance';
 import {
   getGovernanceTrackDescription,
   getGroupPallet,
@@ -41,9 +43,11 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
   const allTracks = useUnit(selectTracksModel.$allTracks);
   const isMaxWeightReached = useUnit(selectTracksModel.$isMaxWeightReached);
   const isMaxWeightLoading = useUnit(selectTracksModel.$isMaxWeightLoading);
-  const asset = useUnit(votingAssetModel.$votingAsset);
+  const network = useUnit(networkSelectorModel.$network);
 
   const { adminTracks, governanceTracks, treasuryTracks, fellowshipTracks } = tracksGroup;
+
+  if (!network) return null;
 
   return (
     <BaseModal
@@ -132,7 +136,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
               >
                 <div className="flex w-full items-center justify-between">
                   {t(track.value)}
-                  <Tooltip content={getGovernanceTrackDescription(asset, track.description, t)} pointer="up">
+                  <Tooltip content={getGovernanceTrackDescription(network.asset, track.description, t)} pointer="up">
                     <Icon size={16} name="info" />
                   </Tooltip>
                 </div>
@@ -149,7 +153,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
               >
                 <div className="flex w-full items-center justify-between">
                   {t(track.value)}
-                  <Tooltip content={getTreasuryTrackDescription(asset, track.description, t)} offsetPx={-80}>
+                  <Tooltip content={getTreasuryTrackDescription(network.asset, track.description, t)} offsetPx={-80}>
                     <Icon size={16} name="info" />
                   </Tooltip>
                 </div>
@@ -198,31 +202,59 @@ const AccountsSelector = () => {
 
   const accounts = useUnit(selectTracksModel.$accounts);
   const availableAccounts = useUnit(selectTracksModel.$availableAccounts);
+  const accountsBalances = useUnit(selectTracksModel.$accountsBalances);
   const { wallet, chain } = useUnit(delegateModel.$walletData);
 
-  if (!wallet || !chain || wallet.accounts.length <= 1) {
+  if (!wallet || !chain || availableAccounts.length <= 1) {
     return null;
   }
 
+  const groups = accountUtils.getAccountsAndShardGroups(availableAccounts);
+
   const options =
-    availableAccounts.map((account) => {
-      const isShard = accountUtils.isShardAccount(account);
-      const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
+    groups.map((shards) => {
+      const isAccountWithShards = accountUtils.isAccountWithShards(shards);
+      if (isAccountWithShards) {
+        return {
+          id: '',
+          value: '',
+          group: {
+            groupName: shards[0].name,
+            list: shards.map((account) => ({
+              id: account.id.toString(),
+              value: account,
+              element: (
+                <AccountAddress
+                  size={20}
+                  type="short"
+                  address={toAddress(account.accountId, { prefix: chain.addressPrefix })}
+                  canCopy={false}
+                />
+              ),
+              additionalElement: (
+                <AccountInfo account={account} chain={chain} balance={accountsBalances[account.accountId]} />
+              ),
+            })),
+          },
+        };
+      }
+      const address = toAddress(shards.accountId, { prefix: chain.addressPrefix });
 
       return {
-        id: account.id.toString(),
-        value: account,
+        id: shards.id.toString(),
+        value: shards,
         element: (
-          <div className="flex w-full justify-between" key={account.id}>
-            <AccountAddress
-              size={20}
-              type="short"
-              address={address}
-              name={isShard ? toShortAddress(address, 16) : account.name}
-              canCopy={false}
-            />
-          </div>
+          <AddressWithName
+            size={20}
+            symbols={16}
+            address={address}
+            name={shards.name}
+            nameFont="text-text-secondary"
+            type="short"
+            canCopy={false}
+          />
         ),
+        additionalElement: <AccountInfo account={shards} chain={chain} balance={accountsBalances[shards.accountId]} />,
       };
     }) || [];
 
@@ -230,8 +262,7 @@ const AccountsSelector = () => {
     <>
       <div className="flex items-end gap-6 px-5">
         <div className="flex flex-1 flex-col gap-y-2">
-          {/* TODO: Update multiselect for PV accounts */}
-          <MultiSelect
+          <AccountsMultiSelector
             label={t('governance.addDelegation.accountLabel')}
             placeholder={t('governance.addDelegation.accountPlaceholder')}
             multiPlaceholder={t('governance.addDelegation.manyAccountsPlaceholder')}
@@ -240,7 +271,6 @@ const AccountsSelector = () => {
             onChange={(values) => selectTracksModel.events.accountsChanged(values.map(({ value }) => value))}
           />
         </div>
-
         <FootnoteText className="flex-1 text-text-tertiary">
           {t('governance.addDelegation.multishardDescription')}
         </FootnoteText>
@@ -250,3 +280,27 @@ const AccountsSelector = () => {
     </>
   );
 };
+
+type AccountProps = {
+  account: Account;
+  chain: Chain;
+  balance: string;
+};
+
+const AccountInfo = ({ account, chain, balance }: AccountProps) => (
+  <div className="flex w-full items-center text-center">
+    <div className="w-8">
+      <ExplorersPopover
+        button={<IconButton name="details" />}
+        address={account.accountId}
+        explorers={chain.explorers}
+        addressPrefix={chain.addressPrefix}
+      />
+    </div>
+    <AssetBalance
+      value={balance}
+      asset={chain.assets[0]}
+      className="w-full text-right text-footnote text-text-secondary"
+    />
+  </div>
+);

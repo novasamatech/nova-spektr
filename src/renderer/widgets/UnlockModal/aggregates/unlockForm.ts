@@ -463,19 +463,18 @@ sample({
   source: {
     isProxy: $isProxy,
     balances: balanceModel.$balances,
-    chain: networkSelectorModel.$governanceChain,
-    asset: votingAssetModel.$votingAsset,
+    network: networkSelectorModel.$network,
     proxyAccounts: $realAccounts,
   },
-  filter: ({ isProxy, chain, asset, proxyAccounts }) => {
-    return isProxy && !!chain && !!asset && proxyAccounts.length > 0;
+  filter: ({ isProxy, network, proxyAccounts }) => {
+    return isProxy && !!network && proxyAccounts.length > 0;
   },
-  fn: ({ balances, chain, asset, proxyAccounts }) => {
+  fn: ({ balances, network, proxyAccounts }) => {
     const balance = balanceUtils.getBalance(
       balances,
       proxyAccounts[0].accountId,
-      chain!.chainId,
-      asset!.assetId.toString(),
+      network!.chain.chainId,
+      network!.asset.assetId.toString(),
     );
 
     return transferableAmount(balance);
