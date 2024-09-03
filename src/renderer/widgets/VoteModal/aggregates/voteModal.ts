@@ -34,8 +34,8 @@ const $hasDelegatedTrack = combine(
       return false;
     }
 
-    for (const dalagators of Object.values(tracks)) {
-      for (const [address, tracks] of Object.entries(dalagators)) {
+    for (const dalegators of Object.values(tracks)) {
+      for (const [address, tracks] of Object.entries(dalegators)) {
         if (address === toAddress(account.accountId) && tracks.includes(referendum.track)) {
           return true;
         }
