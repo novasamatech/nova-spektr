@@ -7,6 +7,7 @@ import { type Address } from '@/shared/core';
 import { includesMultiple } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
 import { delegateRegistryAggregate, networkSelectorModel, votingAggregate } from '@/features/governance';
+import { navigationModel } from '@/features/navigation';
 import { delegateModel } from '@/widgets/DelegateModal/model/delegate-model';
 import { SortProp, SortType } from '@/widgets/DelegationModal/common/constants';
 
@@ -79,6 +80,11 @@ sample({
 sample({
   clock: selectDelegate,
   target: delegateModel.events.flowStarted,
+});
+
+sample({
+  clock: navigationModel.events.navigateTo,
+  target: flowFinished,
 });
 
 export const currentDelegationModel = {
