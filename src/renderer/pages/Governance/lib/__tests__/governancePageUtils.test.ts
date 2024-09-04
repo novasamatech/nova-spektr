@@ -46,7 +46,10 @@ describe('pages/Governance/lib/governancePageUtils', () => {
   };
 
   const referendum = {
-    vote: someVote,
+    vote: {
+      voter: '',
+      vote: someVote,
+    },
     type: ReferendumType.Ongoing,
     track: '1',
   } as AggregatedReferendum<OngoingReferendum>;

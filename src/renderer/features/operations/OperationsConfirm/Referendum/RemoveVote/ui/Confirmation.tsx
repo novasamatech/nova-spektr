@@ -3,7 +3,7 @@ import { type ReactNode } from 'react';
 
 import { useI18n } from '@/app/providers';
 import { formatAsset, formatBalance, toAddress, toNumberWithPrecision } from '@/shared/lib/utils';
-import { Button, DetailRow, HeadlineText, Icon } from '@/shared/ui';
+import { DetailRow, HeadlineText, Icon } from '@/shared/ui';
 import { LockPeriodDiff, LockValueDiff, voteTransactionService, votingService } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
 import { Fee } from '@/entities/transaction';
@@ -20,7 +20,7 @@ type Props = {
   onGoBack?: () => void;
 };
 
-export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, onGoBack }: Props) => {
+export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: Props) => {
   const { t } = useI18n();
 
   const trackLocks = useUnit(locksAggregate.$trackLocks);
@@ -92,13 +92,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         </DetailRow>
       </ConfirmDetails>
 
-      <div className="mt-3 flex w-full justify-between">
-        {onGoBack && (
-          <Button variant="text" onClick={onGoBack}>
-            {t('operation.goBackButton')}
-          </Button>
-        )}
-
+      <div className="mt-3 flex w-full justify-end">
         <div className="flex gap-4">
           {secondaryActionButton}
 
