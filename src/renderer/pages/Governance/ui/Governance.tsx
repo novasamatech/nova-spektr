@@ -155,7 +155,8 @@ export const Governance = () => {
         nonNullable(network) &&
         referendumService.isOngoing(selectedReferendum) && (
           <RemoveVoteModal
-            vote={selectedReferendum.vote}
+            voter={selectedReferendum.vote.voter}
+            vote={selectedReferendum.vote.vote}
             referendum={selectedReferendum}
             asset={network.asset}
             chain={network.chain}
