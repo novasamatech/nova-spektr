@@ -63,9 +63,9 @@ const fetchAllWalletsFx = createEffect(async (): Promise<DbWallet[]> => {
 
     const walletsMap = dictionary(wallets, 'id');
 
-    inactiveWallets.forEach((wallet) => {
+    for (const wallet of inactiveWallets) {
       walletsMap[wallet.id] = wallet;
-    });
+    }
 
     return Object.values(walletsMap);
   }

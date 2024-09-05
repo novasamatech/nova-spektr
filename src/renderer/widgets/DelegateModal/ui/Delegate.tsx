@@ -127,6 +127,7 @@ export const Delegate = () => {
             {transactions.length > 1 && (
               <div className="flex w-[478px] gap-2 first:ml-4">
                 {transactions?.map((t, index) => (
+                  // eslint-disable-next-line react/no-array-index-key
                   <div key={index} className="flex h-[600px] flex-col last-of-type:pr-4">
                     <div className="max-h-full w-[440px] overflow-y-auto rounded-lg bg-white shadow-shadow-2">
                       <Confirmation id={index} hideSignButton />

@@ -28,44 +28,44 @@ function getSelectedAll(struct: SelectedStruct, value: boolean): SelectedStruct 
 }
 
 function getSelectedRoot(struct: SelectedStruct, { root, value }: RootToggleParams): SelectedStruct {
-  const { checked: _checked, total, ...chains } = struct[root];
+  const { checked: _checked, total, ...chainsMap } = struct[root];
   struct[root].checked = value ? total : 0;
 
-  Object.values(chains).forEach((chains) => {
+  for (const chains of Object.values(chainsMap)) {
     const { accounts, sharded } = chains;
     chains.checked = value ? chains.total : 0;
 
-    Object.keys(accounts).forEach((accountId) => {
+    for (const accountId of Object.keys(accounts)) {
       accounts[accountId as AccountId] = value;
-    });
+    }
 
-    Object.values(sharded).forEach((group) => {
+    for (const group of Object.values(sharded)) {
       const { total, checked: _checked, ...rest } = group;
       group.checked = value ? total : 0;
 
-      Object.keys(rest).forEach((accountId) => {
+      for (const accountId of Object.keys(rest)) {
         group[accountId as AccountId] = value;
-      });
-    });
-  });
+      }
+    }
+  }
 
   return { ...struct };
 }
 
 function getSelectedChain(struct: SelectedStruct, { root, chainId, value }: ChainToggleParams): SelectedStruct {
   const chain = struct[root][chainId];
-  Object.keys(chain.accounts).forEach((accountId) => {
+  for (const accountId of Object.keys(chain.accounts)) {
     chain.accounts[accountId as AccountId] = value;
-  });
+  }
 
-  Object.values(chain.sharded).forEach((group) => {
+  for (const group of Object.values(chain.sharded)) {
     const { total, checked: _checked, ...rest } = group;
     group.checked = value ? total : 0;
 
-    Object.keys(rest).forEach((accountId) => {
+    for (const accountId of Object.keys(rest)) {
       group[accountId as AccountId] = value;
-    });
-  });
+    }
+  }
 
   struct[root].checked += value ? chain.total - chain.checked : -1 * chain.checked;
   chain.checked = value ? chain.total : 0;
@@ -80,9 +80,9 @@ function getSelectedSharded(
   const shardedGroup = struct[root][chainId].sharded[groupId];
 
   const { total, checked, ...shards } = shardedGroup;
-  Object.keys(shards).forEach((accountId) => {
+  for (const accountId of Object.keys(shards)) {
     shardedGroup[accountId as AccountId] = value;
-  });
+  }
 
   const addition = value ? total - checked : -1 * checked;
   struct[root].checked += addition;

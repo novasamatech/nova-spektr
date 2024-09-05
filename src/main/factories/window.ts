@@ -63,7 +63,9 @@ export function createWindow(): BrowserWindow {
   });
 
   window.on('close', () => {
-    BrowserWindow.getAllWindows().forEach((window) => window.destroy());
+    for (const w of BrowserWindow.getAllWindows()) {
+      w.destroy();
+    }
   });
 
   window.on('closed', window.destroy);

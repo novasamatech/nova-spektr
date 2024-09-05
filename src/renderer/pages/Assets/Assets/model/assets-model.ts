@@ -1,4 +1,4 @@
-import { createEvent, createStore, sample } from 'effector';
+import { createEvent, createStore, sample } from 'effector/effector.cjs';
 import { once } from 'patronum';
 
 import { type Account, type Wallet } from '@shared/core';

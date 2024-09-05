@@ -20,10 +20,10 @@ export const keyLEToNibbles = (key: Uint8Array): Uint8Array => {
   const nibblesLength = key.length * 2;
   const nibbles = new Uint8Array(nibblesLength);
 
-  key.forEach((value, i) => {
+  for (const [i, value] of key.entries()) {
     nibbles[2 * i] = value / 16;
     nibbles[2 * i + 1] = value % 16;
-  });
+  }
 
   return nibbles;
 };

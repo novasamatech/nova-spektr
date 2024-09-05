@@ -1,4 +1,3 @@
-import cn from 'classnames';
 import { useUnit } from 'effector-react';
 import { Trans } from 'react-i18next';
 
@@ -314,7 +313,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
           <DetailRow label={t('operation.details.validators')} className={valueClass}>
             <button
               type="button"
-              className={cn('flex items-center gap-x-1 text-text-secondary', InteractionStyle)}
+              className={cnTw('flex items-center gap-x-1 text-text-secondary', InteractionStyle)}
               onClick={toggleValidators}
             >
               <FootnoteText as="span" className="text-inherit">
@@ -368,7 +367,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
             <DetailRow label={t('operation.details.callHash')} className={valueClass}>
               <button
                 type="button"
-                className={cn('group flex items-center gap-x-1', InteractionStyle)}
+                className={cnTw('group flex items-center gap-x-1', InteractionStyle)}
                 onClick={() => copyToClipboard(callHash)}
               >
                 <FootnoteText className="text-inherit">{truncate(callHash, 7, 8)}</FootnoteText>
@@ -381,7 +380,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
             <DetailRow label={t('operation.details.callData')} className={valueClass}>
               <button
                 type="button"
-                className={cn('group flex items-center gap-x-1', InteractionStyle)}
+                className={cnTw('group flex items-center gap-x-1', InteractionStyle)}
                 onClick={() => copyToClipboard(callData)}
               >
                 <FootnoteText className="text-inherit">{truncate(callData, 7, 8)}</FootnoteText>
@@ -433,7 +432,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
             <DetailRow label={t('operation.details.timePoint')} className={valueClass}>
               {extrinsicLink ? (
                 <a
-                  className={cn('group flex items-center gap-x-1', InteractionStyle)}
+                  className={cnTw('group flex items-center gap-x-1', InteractionStyle)}
                   href={extrinsicLink}
                   target="_blank"
                   rel="noopener noreferrer"

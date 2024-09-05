@@ -103,7 +103,7 @@ function sortTokensByBalance(
   const numberchains = { withBalance: [], noBalance: [] };
   const testnets = { withBalance: [], noBalance: [] };
 
-  tokens.forEach((token) => {
+  for (const token of tokens) {
     const tokenTotal = totalAmount(token.totalBalance);
     const tokenBalance = getBalanceBn(tokenTotal, token.precision);
     const tokenAssetPrice = token.priceId && currency && assetsPrices?.[token.priceId]?.[currency]?.price;
@@ -118,13 +118,13 @@ function sortTokensByBalance(
       collection = hasBalance ? relaychains.withBalance : relaychains.noBalance;
       collection.push(token);
 
-      return;
+      continue;
     }
 
     if (fiatBalance.gt(0) && !token.isTestToken) {
       tokensWithFiatBalance.push({ ...token, fiatBalance: fiatBalance.toString() });
 
-      return;
+      continue;
     }
 
     if (token.isTestToken) {
@@ -136,7 +136,7 @@ function sortTokensByBalance(
     }
 
     collection.push({ ...token, tokenBalance });
-  });
+  }
 
   return concat<AssetByChainsWithBalance>(
     orderBy(relaychains.withBalance, 'name', ['desc']),

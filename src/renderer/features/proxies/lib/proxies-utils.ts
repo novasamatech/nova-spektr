@@ -42,9 +42,9 @@ function getNotification({ wallets, proxiedAccounts, chains, type }: GetNotifica
   if (!filteredWallets) return [];
 
   const accountsMap = filteredWallets.reduce<Record<AccountId, { name: string; type: WalletType }>>((acc, wallet) => {
-    wallet.accounts.forEach((account) => {
+    for (const account of wallet.accounts) {
       acc[account.accountId] = { name: wallet.name, type: wallet.type };
-    });
+    }
 
     return acc;
   }, {});

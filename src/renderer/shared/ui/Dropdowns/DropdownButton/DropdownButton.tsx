@@ -1,5 +1,4 @@
 import { Menu } from '@headlessui/react';
-import cn from 'classnames';
 import { type ComponentProps } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -23,7 +22,7 @@ export const DropdownButton = ({ options, title, disabled, className, ...buttonP
   return (
     <Menu>
       {({ open }) => (
-        <div className={cn('relative', open && 'z-10')}>
+        <div className={cnTw('relative', open && 'z-10')}>
           <Menu.Button
             ref={ref}
             as={Button}
@@ -36,7 +35,7 @@ export const DropdownButton = ({ options, title, disabled, className, ...buttonP
           </Menu.Button>
           <Menu.Items
             as="ul"
-            className={cn(
+            className={cnTw(
               'absolute z-10 mt-1 w-full rounded border border-token-container-border p-1',
               'bg-token-container-background shadow-card-shadow',
             )}

@@ -9,10 +9,10 @@ export const eraService = {
 };
 
 function subscribeActiveEra(api: ApiPromise, callback: (era?: EraIndex) => void): Promise<() => void> {
-  return api.query.staking.activeEra((data: any) => {
+  return api.query.staking.activeEra((data) => {
     try {
       const unwrappedData = data.unwrap();
-      callback(unwrappedData.get('index').toNumber());
+      callback(unwrappedData.index.toNumber());
     } catch (error) {
       console.warn(error);
       callback(undefined);

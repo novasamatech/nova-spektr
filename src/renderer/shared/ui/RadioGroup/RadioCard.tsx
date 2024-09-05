@@ -8,7 +8,7 @@ import { type RadioOption } from './common/types';
 import './RadioGroup.css';
 
 type Props = {
-  option: RadioOption;
+  option: RadioOption<unknown>;
 };
 
 export const RadioCard = ({ option, children }: PropsWithChildren<Props>) => {

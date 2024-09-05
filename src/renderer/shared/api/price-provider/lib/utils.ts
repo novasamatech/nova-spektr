@@ -7,16 +7,16 @@ export function getCurrencyChangeKey(currency: string): string {
 export function convertPriceToDBView(price: PriceObject): PriceDB[] {
   const priceDB: PriceDB[] = [];
 
-  Object.entries(price).forEach(([assetId, assetPrice]) => {
-    Object.entries(assetPrice).forEach(([currency, { price, change }]) => {
+  for (const [assetId, assetPrice] of Object.entries(price)) {
+    for (const [currency, { price, change }] of Object.entries(assetPrice)) {
       priceDB.push({
         assetId,
         currency,
         price,
         change,
       });
-    });
-  });
+    }
+  }
 
   return priceDB;
 }

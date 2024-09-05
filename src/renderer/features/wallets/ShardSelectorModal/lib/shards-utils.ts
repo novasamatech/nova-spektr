@@ -69,7 +69,7 @@ function getVaultChainsCounter(chains: Record<ChainId, Chain>, accounts: Account
     { baseId: 0, root: {}, shards: [] },
   );
 
-  shards.forEach((shard) => {
+  for (const shard of shards) {
     root[baseId][shard.chainId].checked += 1;
     root[baseId][shard.chainId].total += 1;
     root[baseId][shard.chainId].accounts[shard.accountId] = true;
@@ -85,7 +85,7 @@ function getVaultChainsCounter(chains: Record<ChainId, Chain>, accounts: Account
         root[baseId][shard.chainId].sharded[shard.groupId][shard.accountId] = true;
       }
     }
-  });
+  }
 
   return root;
 }
@@ -109,14 +109,14 @@ function getMultishardtChainsCounter(chains: Record<ChainId, Chain>, accounts: A
     { roots: {}, shards: [] },
   );
 
-  shards.forEach((shard) => {
+  for (const shard of shards) {
     const root = roots[shard.baseId!];
     root.checked += 1;
     root.total += 1;
     root[shard.chainId].checked += 1;
     root[shard.chainId].total += 1;
     root[shard.chainId].accounts[shard.accountId] = true;
-  });
+  }
 
   return roots;
 }
@@ -137,7 +137,7 @@ function getChainCounter(chains: Record<ChainId, Chain>) {
 function getStructForVault<T>(accounts: Account[], chainsMap: ChainsMap<T>): RootTuple[] {
   let root: BaseAccount | undefined;
 
-  accounts.forEach((account) => {
+  for (const account of accounts) {
     if (accountUtils.isBaseAccount(account)) {
       root = account;
     }
@@ -159,7 +159,7 @@ function getStructForVault<T>(accounts: Account[], chainsMap: ChainsMap<T>): Roo
         set(chainsMap[account.chainId], account.groupId, [account]);
       }
     }
-  });
+  }
 
   if (!root) return [];
 
@@ -181,7 +181,7 @@ function getStructForMultishard<T>(accounts: Account[], chainsMap: ChainsMap<T>)
   const rootsMap: Record<ID, BaseAccount> = {};
   const roots: Map<BaseAccount, ChainTuple[]> = new Map();
 
-  accounts.forEach((account) => {
+  for (const account of accounts) {
     if (accountUtils.isBaseAccount(account)) {
       rootsMap[account.id] = account;
       roots.set(account, []);
@@ -195,22 +195,22 @@ function getStructForMultishard<T>(accounts: Account[], chainsMap: ChainsMap<T>)
         chainsMap[account.chainId][account.baseId!] = [account as T];
       }
     }
-  });
+  }
 
   if (!roots.size) return [];
 
-  Object.entries(chainsMap).forEach(([chainId, rootTuples]) => {
+  for (const [chainId, rootTuples] of Object.entries(chainsMap)) {
     const tuples = Object.entries(rootTuples);
 
-    if (tuples.length === 0) return;
+    if (tuples.length === 0) continue;
 
-    tuples.forEach(([baseId, accounts]) => {
+    for (const [baseId, accounts] of tuples) {
       const chainTuples = roots.get(rootsMap[Number(baseId)]);
       if (chainTuples) {
-        chainTuples.push([chainId as ChainId, accounts as any]);
+        chainTuples.push([chainId as ChainId, accounts as never]);
       }
-    });
-  });
+    }
+  }
 
   return [...roots.entries()];
 }
@@ -218,15 +218,16 @@ function getStructForMultishard<T>(accounts: Account[], chainsMap: ChainsMap<T>)
 function getSelectedShards(struct: SelectedStruct, accounts: Account[]): BaseAccount[] {
   const selectedMap = Object.values(struct).reduce<Record<AccountId, boolean>>((acc, chainMap) => {
     const { total: _total, checked: _checked, ...chains } = chainMap;
-    Object.values(chains).forEach((chain) => {
+
+    for (const chain of Object.values(chains)) {
       const { accounts, sharded = {} } = chain;
       Object.assign(acc, accounts);
 
-      Object.values(sharded).forEach((shard) => {
+      for (const shard of Object.values(sharded)) {
         const { total: _total, checked: _checked, ...shards } = shard;
         Object.assign(acc, shards);
-      });
-    });
+      }
+    }
 
     return acc;
   }, {});

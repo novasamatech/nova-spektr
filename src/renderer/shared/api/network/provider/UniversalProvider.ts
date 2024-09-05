@@ -46,7 +46,9 @@ export class UniversalProvider implements ProviderInterface {
     console.log('onHandlers', this.onHandlers.keys());
 
     // TODO: Remove handlers from old provider
-    this.onHandlers.forEach(({ callback }, type) => newProvider.on(type, callback));
+    for (const [type, { callback }] of this.onHandlers) {
+      newProvider.on(type, callback);
+    }
 
     // TODO: Disconnect disable auto-connect in WsProvider, find way to restart it on reconnect.
     await oldProvider.disconnect();

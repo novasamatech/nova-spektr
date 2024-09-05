@@ -54,6 +54,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
   });
 
   useEffect(() => {
+    // eslint-disable-next-line no-restricted-syntax
     txs.forEach(async (tx) => {
       const api = apis[tx.chainId];
 
@@ -137,6 +138,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     const unsubscribeMultisigs: (() => void)[] = [];
     const unsubscribeEvents: VoidFn[] = [];
 
+    // eslint-disable-next-line no-restricted-syntax
     Object.entries(apis).forEach(async ([chainId, api]) => {
       const chain = chains[chainId as ChainId];
       const addressPrefix = chain?.addressPrefix;
@@ -195,8 +197,12 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     });
 
     return () => {
-      unsubscribeMultisigs.forEach((unsubscribe) => unsubscribe());
-      unsubscribeEvents.forEach((unsubscribe) => unsubscribe());
+      for (const unsubscribe of unsubscribeMultisigs) {
+        unsubscribe();
+      }
+      for (const unsubscribe of unsubscribeEvents) {
+        unsubscribe();
+      }
     };
   }, [availableConnectionsAmount, account]);
 

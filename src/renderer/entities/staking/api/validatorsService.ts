@@ -43,7 +43,7 @@ async function getValidatorsWithInfo(api: ApiPromise, era: EraIndex, isLightClie
   return merge(mergedValidators, identity, slashes);
 }
 
-function getValidatorFunction(api: ApiPromise): (era: EraIndex) => Promise<any> {
+function getValidatorFunction(api: ApiPromise) {
   return isOldRuntimeForValidators(api)
     ? (era: EraIndex) => getValidatorsStake_OLD(api, era)
     : (era: EraIndex) => getValidatorsStake(api, era);

@@ -15,13 +15,13 @@ const API = {
   getIsAutoUpdateEnabled: () => {
     return ipcRenderer.invoke('getStoreValue', AUTO_UPDATE_ENABLED);
   },
-  setIsAutoUpdateEnabled: (value: any) => {
+  setIsAutoUpdateEnabled: (value: unknown) => {
     return ipcRenderer.invoke('setStoreValue', AUTO_UPDATE_ENABLED, value);
   },
   getStoreValue: (key: string) => {
     return ipcRenderer.invoke('getStoreValue', key);
   },
-  setStoreValue: (key: string, value: any) => {
+  setStoreValue: (key: string, value: unknown) => {
     return ipcRenderer.invoke('setStoreValue', key, value);
   },
   onProtocolOpen: (callback: (value: string) => void) => {

@@ -1,11 +1,11 @@
-export type RadioOption<T = any> = {
+export type RadioOption<T> = {
   id: string;
   value: T;
   title: string;
   description?: string;
 };
 
-export type RadioResult<T = any> = {
+export type RadioResult<T> = {
   id: string;
   value: T;
 };

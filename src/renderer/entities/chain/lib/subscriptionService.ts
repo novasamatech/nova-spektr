@@ -7,7 +7,7 @@ import { type FrameSystemEventRecord } from '@polkadot/types/lookup';
 type Params = {
   method?: string;
   section?: string;
-  data: any[];
+  data: unknown[];
 };
 
 export const subscriptionService = {
@@ -16,7 +16,7 @@ export const subscriptionService = {
 
 function subscribeEvents(api: ApiPromise, params: Params, callback: (event: Event) => void): UnsubscribePromise {
   return api.query.system.events((events: Vec<FrameSystemEventRecord>) => {
-    events.forEach(({ event }) => {
+    for (const { event } of events) {
       const isDataMatched = params.data.every(
         (param, index) => !param || param.toString() === (event.data[index] || '').toString(),
       );
@@ -28,6 +28,6 @@ function subscribeEvents(api: ApiPromise, params: Params, callback: (event: Even
       ) {
         callback(event);
       }
-    });
+    }
   });
 }

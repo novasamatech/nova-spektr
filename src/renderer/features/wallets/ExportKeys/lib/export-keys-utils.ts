@@ -13,14 +13,14 @@ function getExportStructure(rootAccountId: AccountId, accounts: (ChainAccount | 
   let output = `version: ${IMPORT_FILE_VERSION}\n`;
   output += `public address: ${rootAccountId}\n`;
 
-  accounts.forEach((account) => {
+  for (const account of accounts) {
     const chainId = Array.isArray(account) ? account[0].chainId : account.chainId;
     if (!set.has(chainId)) {
       set.add(chainId);
       output += `genesis: ${chainId}\n`;
     }
     output += accountToDerivationExport(account);
-  });
+  }
 
   return output;
 }

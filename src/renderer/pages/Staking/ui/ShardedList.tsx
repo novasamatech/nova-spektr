@@ -39,7 +39,9 @@ export const ShardedList = ({
   const { getNextUnstakingEra, hasRedeem } = useStakingData();
 
   const selectAllShards = (isChecked: boolean) => {
-    shardsStake.forEach((shard) => onToggleNominator(shard.address, isChecked));
+    for (const shard of shardsStake) {
+      onToggleNominator(shard.address, isChecked);
+    }
   };
 
   const shardsStats = shardsStake.reduce(
