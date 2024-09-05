@@ -55,7 +55,7 @@ async function getReferendums(api: ApiPromise, ids?: ReferendumId[]): Promise<Re
           type: info.type,
           referendumId,
           since: info._.since,
-          submissionDeposit: info._.submitionDeposit,
+          submissionDeposit: info._.submissionDeposit,
           decisionDeposit: info._.decisionDeposit,
         };
         break;
