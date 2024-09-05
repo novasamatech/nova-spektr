@@ -33,7 +33,7 @@ export const AccountsModal = ({ isOpen, accounts, asset, chainId, addressPrefix,
     <BaseModal
       closeButton
       contentClass="pb-3 px-3"
-      panelClass="w-[368px]"
+      panelClass="w-modal-sm"
       title={t('staking.confirmation.accountsTitle')}
       isOpen={isOpen}
       onClose={onClose}

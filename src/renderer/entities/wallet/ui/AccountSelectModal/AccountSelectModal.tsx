@@ -22,7 +22,7 @@ export const AccountSelectModal = ({ isOpen, accounts, chain, onClose, onSelect 
       isOpen={isOpen}
       contentClass="pb-4 px-3"
       title={t('operation.selectAccount')}
-      panelClass="w-[368px]"
+      panelClass="w-modal-sm"
       onClose={onClose}
     >
       <ul className={cnTw('mt-1', accounts.length > 7 && 'max-h-[332px] overflow-y-auto')}>

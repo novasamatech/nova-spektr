@@ -104,7 +104,7 @@ export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
   };
 
   return (
-    <BaseModal isOpen={isOpen} contentClass="flex h-full" panelClass="w-[944px] h-[576px]" onClose={handleClose}>
+    <BaseModal isOpen={isOpen} contentClass="flex h-full" panelClass="w-modal-xl h-modal" onClose={handleClose}>
       {step === Step.SCAN && qrCode && (
         <>
           <div className="flex w-[472px] flex-col rounded-l-lg bg-white px-5 py-4">

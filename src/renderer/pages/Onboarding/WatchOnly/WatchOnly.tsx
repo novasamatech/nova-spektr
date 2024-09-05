@@ -107,7 +107,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
   };
 
   return (
-    <BaseModal contentClass="flex h-full" panelClass="w-[944px] h-[576px]" isOpen={isModalOpen} onClose={closeWowModal}>
+    <BaseModal contentClass="flex h-full" panelClass="w-modal-xl h-modal" isOpen={isModalOpen} onClose={closeWowModal}>
       <div className="flex w-[472px] flex-col rounded-l-lg bg-white px-5 py-4">
         <HeaderTitleText className="mb-10">{t('onboarding.watchOnly.title')}</HeaderTitleText>
         <SmallTitleText className="mb-6">{t('onboarding.watchOnly.manageTitle')}</SmallTitleText>
