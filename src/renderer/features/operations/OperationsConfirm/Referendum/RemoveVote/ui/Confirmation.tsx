@@ -40,8 +40,6 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
   useGate(locksPeriodsAggregate.gates.flow, { chain: confirm?.meta.chain });
   useGate(locksAggregate.gates.flow, { chain: confirm?.meta.chain });
 
-  console.log({ confirm });
-
   if (!confirm) {
     return null;
   }

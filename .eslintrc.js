@@ -162,6 +162,9 @@ module.exports = {
         createDefaultProgram: true,
       },
       rules: {
+        // TODO enable
+        // 'no-console': ['error', { allow: ['warn', 'error', 'info'] }],
+
         // Imports
         '@typescript-eslint/consistent-type-imports': [
           'error',
