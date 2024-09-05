@@ -11,15 +11,15 @@ type Props = PropsWithChildren<{
 
 export const ConfirmDetails = ({ confirm, children }: Props) => {
   const { t } = useI18n();
-  const { meta, wallets } = confirm;
+  const { meta, wallets, accounts } = confirm;
 
   return (
     <dl className="flex w-full flex-col gap-y-4">
-      {wallets.proxied && meta.proxiedAccount && (
+      {wallets.proxy && accounts.proxy && (
         <>
           <DetailRow label={t('transfer.senderProxiedWallet')} className="flex gap-x-2">
-            <WalletIcon type={wallets.proxied.type} size={16} />
-            <FootnoteText className="pr-2">{wallets.proxied.name}</FootnoteText>
+            <WalletIcon type={wallets.initiator.type} size={16} />
+            <FootnoteText className="pr-2">{wallets.initiator.name}</FootnoteText>
           </DetailRow>
 
           <DetailRow label={t('transfer.senderProxiedAccount')}>
@@ -27,7 +27,7 @@ export const ConfirmDetails = ({ confirm, children }: Props) => {
               type="short"
               explorers={meta.chain.explorers}
               addressFont="text-footnote text-inherit"
-              accountId={meta.proxiedAccount.accountId}
+              accountId={accounts.initiator.accountId}
               addressPrefix={meta.chain.addressPrefix}
               wrapperClassName="text-text-secondary"
             />
@@ -35,19 +35,17 @@ export const ConfirmDetails = ({ confirm, children }: Props) => {
 
           <hr className="w-full border-filter-border pr-2" />
 
-          {wallets.initiator && (
-            <DetailRow label={t('transfer.signingWallet')} className="flex gap-x-2">
-              <WalletIcon type={wallets.initiator.type} size={16} />
-              <FootnoteText className="pr-2">{wallets.initiator.name}</FootnoteText>
-            </DetailRow>
-          )}
+          <DetailRow label={t('transfer.signingWallet')} className="flex gap-x-2">
+            <WalletIcon type={wallets.proxy.type} size={16} />
+            <FootnoteText className="pr-2">{wallets.proxy.name}</FootnoteText>
+          </DetailRow>
 
           <DetailRow label={t('transfer.signingAccount')}>
             <AddressWithExplorers
               type="short"
               explorers={meta.chain.explorers}
               addressFont="text-footnote text-inherit"
-              accountId={meta.proxiedAccount.proxiedAccountId}
+              accountId={accounts.proxy.accountId}
               addressPrefix={meta.chain.addressPrefix}
               wrapperClassName="text-text-secondary"
             />
@@ -55,14 +53,12 @@ export const ConfirmDetails = ({ confirm, children }: Props) => {
         </>
       )}
 
-      {!wallets.proxied && (
+      {!wallets.proxy && (
         <>
-          {wallets.initiator && (
-            <DetailRow label={t('proxy.details.wallet')} className="flex gap-x-2">
-              <WalletIcon type={wallets.initiator.type} size={16} />
-              <FootnoteText className="pr-2">{wallets.initiator.name}</FootnoteText>
-            </DetailRow>
-          )}
+          <DetailRow label={t('proxy.details.wallet')} className="flex gap-x-2">
+            <WalletIcon type={wallets.initiator.type} size={16} />
+            <FootnoteText className="pr-2">{wallets.initiator.name}</FootnoteText>
+          </DetailRow>
 
           <DetailRow label={t('proxy.details.sender')}>
             <AddressWithExplorers

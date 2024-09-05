@@ -155,15 +155,15 @@ sample({
       return { signingPayloads: [] };
     }
 
-    const { meta } = confirm;
+    const { meta, accounts } = confirm;
 
     return {
       signingPayloads: [
         {
-          account: meta.account,
+          account: accounts.proxy || accounts.initiator,
           chain: meta.chain,
           transaction: meta.wrappedTransactions.wrappedTx,
-          signatory: meta.signatory,
+          signatory: accounts.signer || undefined,
         },
       ],
     };
