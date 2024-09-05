@@ -9,6 +9,7 @@ import {
   type Chain,
   type ProxiedAccount,
   type Referendum,
+  type Transaction,
   type VotingThreshold,
 } from '@shared/core';
 
@@ -57,4 +58,5 @@ export type UnlockFormData = {
   fee: string;
   totalFee: string;
   multisigDeposit: string;
+  coreTx?: Transaction | null;
 };

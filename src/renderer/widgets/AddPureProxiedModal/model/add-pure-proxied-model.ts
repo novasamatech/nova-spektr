@@ -178,10 +178,10 @@ sample({
 
 sample({
   clock: formModel.output.formSubmitted,
-  source: $addProxyStore,
-  filter: (network: AddPureProxiedStore | null): network is AddPureProxiedStore => Boolean(network),
-  fn: ({ chain }, { formData }) => ({
-    event: [{ ...formData, chain }],
+  source: { addProxyStore: $addProxyStore, coreTx: $coreTx },
+  filter: ({ addProxyStore }) => Boolean(addProxyStore),
+  fn: ({ addProxyStore, coreTx }, { formData }) => ({
+    event: [{ ...formData, chain: addProxyStore!.chain, coreTx }],
     step: Step.CONFIRM,
   }),
   target: spread({

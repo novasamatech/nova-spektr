@@ -1,9 +1,11 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, restore, sample } from 'effector';
 
-import { transferableAmount } from '@/shared/lib/utils';
+import { nonNullable, transferableAmount } from '@/shared/lib/utils';
 import { type Wallet } from '@shared/core';
 import { balanceModel, balanceUtils } from '@/entities/balance';
+import { networkModel } from '@/entities/network';
+import { operationsModel, operationsUtils } from '@/entities/operations';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { type UnlockFormData } from '@features/governance/types/structs';
 
@@ -130,12 +132,26 @@ const $transferableAmount = combine(
   },
 );
 
+const $isMultisigExists = combine(
+  {
+    apis: networkModel.$apis,
+    coreTxs: $storeMap.map((storeMap) =>
+      Object.values(storeMap)
+        .map((store) => store.coreTx)
+        .filter(nonNullable),
+    ),
+    transactions: operationsModel.$multisigTransactions,
+  },
+  ({ apis, coreTxs, transactions }) => operationsUtils.isMultisigAlreadyExists({ apis, coreTxs, transactions }),
+);
+
 export const unlockConfirmAggregate = {
   $confirmStore: $storeMap,
   $initiatorWallets,
   $signerWallets,
   $proxiedWallets,
   $transferableAmount,
+  $isMultisigExists,
 
   events: {
     formInitiated,

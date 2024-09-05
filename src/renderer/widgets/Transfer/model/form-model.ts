@@ -358,16 +358,16 @@ const $pureTx = combine(
 
 const $transaction = combine(
   {
-    apis: networkModel.$apis,
+    api: $api,
     networkStore: $networkStore,
     pureTx: $pureTx,
     txWrappers: $txWrappers,
   },
-  ({ apis, networkStore, pureTx, txWrappers }) => {
-    if (!networkStore || !pureTx) return undefined;
+  ({ api, networkStore, pureTx, txWrappers }) => {
+    if (!networkStore || !pureTx || !api) return undefined;
 
     return transactionService.getWrappedTransaction({
-      api: apis[networkStore.chain.chainId],
+      api,
       addressPrefix: networkStore.chain.addressPrefix,
       transaction: pureTx,
       txWrappers,

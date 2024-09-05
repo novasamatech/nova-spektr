@@ -1,7 +1,6 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { once, spread } from 'patronum';
 
-import { nonNullable } from '@/shared/lib/utils';
 import { type BasketTransaction, type Transaction } from '@shared/core';
 import { type PathType, Paths } from '@shared/routes';
 import { basketModel } from '@entities/basket';
@@ -87,10 +86,17 @@ sample({
 
 sample({
   clock: formModel.output.formSubmitted,
-  source: $networkStore,
-  filter: (network: NetworkStore | null): network is NetworkStore => Boolean(network),
-  fn: ({ chain, asset }, { formData }) => ({
-    event: [{ ...formData, chain, asset }],
+  source: { networkStore: $networkStore, coreTx: $coreTx },
+  filter: ({ networkStore }) => Boolean(networkStore),
+  fn: ({ networkStore, coreTx }, { formData }) => ({
+    event: [
+      {
+        ...formData,
+        chain: networkStore!.chain,
+        asset: networkStore!.asset!,
+        coreTx,
+      },
+    ],
     step: Step.CONFIRM,
   }),
   target: spread({
@@ -170,13 +176,6 @@ sample({
   filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
-});
-
-sample({
-  clock: flowFinished,
-  source: $redirectAfterSubmitPath,
-  filter: nonNullable,
-  target: navigationModel.events.navigateTo,
 });
 
 sample({

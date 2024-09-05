@@ -1,12 +1,13 @@
 import { type VoidFn } from '@polkadot/api/types';
 import { type Event } from '@polkadot/types/interfaces';
-import { useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 import { type PropsWithChildren, createContext, useContext, useEffect } from 'react';
 
 import { type ChainId, type MultisigAccount, MultisigTxFinalStatus, type SigningStatus } from '@shared/core';
 import { useDebounce, useTaskQueue } from '@shared/lib/hooks';
 import { type Task } from '@shared/lib/hooks/useTaskQueue';
 import { getCreatedDateFromApi, toAddress } from '@shared/lib/utils';
+import { operationsModel } from '@/entities/operations';
 import { subscriptionService } from '@entities/chain';
 import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
 import { networkModel, networkUtils } from '@entities/network';
@@ -36,7 +37,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
   const chains = useUnit(networkModel.$chains);
   const connectionStatuses = useUnit(networkModel.$connectionStatuses);
 
-  const { updateEvent, getEvents, addEventWithQueue } = useMultisigEvent(taskQueue);
+  const { updateEvent, getEvents, addEventWithQueue, getLiveEventsByKeys } = useMultisigEvent(taskQueue);
 
   const debouncedApis = useDebounce(apis, 1000);
   const debouncedConnectionStatuses = useDebounce(connectionStatuses, 1000);
@@ -45,6 +46,12 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
   const account = activeAccount && accountUtils.isMultisigAccount(activeAccount) ? activeAccount : undefined;
 
   const txs = getLiveAccountMultisigTxs(account?.accountId ? [account.accountId] : []);
+  const events = getLiveEventsByKeys(txs.filter((tx) => !tx.dateCreated));
+
+  useGate(operationsModel.gate.flow, {
+    transactions: txs,
+    events,
+  });
 
   useEffect(() => {
     txs.forEach(async (tx) => {

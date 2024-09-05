@@ -91,8 +91,8 @@ sample({
 
 sample({
   clock: unlockFormAggregate.output.formSubmitted,
-  fn: ({ formData }) => ({
-    event: [formData],
+  fn: ({ transactions, formData }) => ({
+    event: [{ ...formData, coreTx: transactions[0].coreTx }],
     step: Step.CONFIRM,
   }),
   target: spread({

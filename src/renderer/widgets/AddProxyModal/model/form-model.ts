@@ -29,6 +29,7 @@ import {
   transferableAmount,
   validateAddress,
 } from '@shared/lib/utils';
+import { operationsModel, operationsUtils } from '@/entities/operations';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';
 import { transactionService } from '@entities/transaction';
@@ -493,6 +494,15 @@ const $canSubmit = combine(
   },
 );
 
+const $multisigAlreadyExists = combine(
+  {
+    apis: networkModel.$apis,
+    coreTxs: $pureTx.map((tx) => (tx ? [tx] : [])),
+    transactions: operationsModel.$multisigTransactions,
+  },
+  ({ apis, coreTxs, transactions }) => operationsUtils.isMultisigAlreadyExists({ apis, coreTxs, transactions }),
+);
+
 type ProxyParams = {
   api: ApiPromise;
   address: Address;
@@ -703,6 +713,7 @@ export const formModel = {
   $isMultisig,
   $isChainConnected,
   $canSubmit,
+  $multisigAlreadyExists,
 
   events: {
     formInitiated,

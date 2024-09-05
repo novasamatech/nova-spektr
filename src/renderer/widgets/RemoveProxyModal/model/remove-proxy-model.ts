@@ -316,6 +316,7 @@ sample({
   clock: formModel.output.formSubmitted,
   source: {
     wrappedTx: $wrappedTx,
+    coreTx: $coreTx,
     chain: $chain,
     account: $account,
     realAccount: $realAccount,
@@ -324,7 +325,7 @@ sample({
   filter: ({ wrappedTx, chain, realAccount, account, store }) => {
     return Boolean(wrappedTx) && Boolean(chain) && Boolean(realAccount) && Boolean(account) && Boolean(store);
   },
-  fn: ({ wrappedTx, chain, account, realAccount, store }, formData) => ({
+  fn: ({ wrappedTx, coreTx, chain, account, realAccount, store }, formData) => ({
     event: [
       {
         ...formData,
@@ -334,6 +335,7 @@ sample({
         transaction: wrappedTx as Transaction,
         delegate: store!.delegate,
         proxyType: store!.proxyType,
+        coreTx,
       },
     ],
     step: Step.CONFIRM,
