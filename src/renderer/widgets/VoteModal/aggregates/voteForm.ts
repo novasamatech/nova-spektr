@@ -173,27 +173,21 @@ sample({
 sample({
   clock: form.formValidated,
   source: {
-    form: form.$values,
     initialConviction: $initialConviction,
     network: networkSelectorModel.$network,
     wrappedTransactions: transaction.$wrappedTx,
   },
-  filter: ({ form, network, wrappedTransactions }) => {
-    return (
-      nonNullable(network) &&
-      nonNullable(form.account) &&
-      nonNullable(form.decision) &&
-      nonNullable(wrappedTransactions)
-    );
+  filter: ({ network, wrappedTransactions }, { account, decision }) => {
+    return nonNullable(network) && nonNullable(account) && nonNullable(decision) && nonNullable(wrappedTransactions);
   },
-  fn: ({ form, initialConviction, network, wrappedTransactions }): VoteConfirm => {
+  fn: ({ initialConviction, network, wrappedTransactions }, { account, signatory, description }): VoteConfirm => {
     return {
       api: network!.api,
       chain: network!.chain,
       asset: network!.asset,
-      account: form.account!,
-      signatory: form.signatory ?? undefined,
-      description: form.description,
+      account: account!,
+      signatory: signatory ?? undefined,
+      description: description,
       initialConviction,
       wrappedTransactions: wrappedTransactions!,
     };

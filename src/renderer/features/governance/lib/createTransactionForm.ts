@@ -242,6 +242,16 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
     target: form.fields.account.onChange,
   });
 
+  // auto select the only one signatory
+  // @ts-expect-error Types mismatch somehow
+  sample({
+    clock: reinitForm,
+    source: $signatories,
+    filter: $signatories.map((x) => x.length < 2),
+    fn: (s) => s.at(0) ?? null,
+    target: form.fields.signatory.onChange,
+  });
+
   // @ts-expect-error Types mismatch somehow
   sample({
     clock: form.fields.signatory.changed,
