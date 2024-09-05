@@ -74,7 +74,8 @@ describe('asyncTaskPool', () => {
   });
 
   it('should throw on retry limit exceeding', async () => {
-    const pool = new AsyncTaskPool({ poolSize: 1, retryCount: 1, retryDelay: () => 0 });
+    const spy = jest.fn(() => 0);
+    const pool = new AsyncTaskPool({ poolSize: 1, retryCount: 1, retryDelay: spy });
     let tries = 0;
 
     const result = pool.call(() => {
@@ -85,21 +86,7 @@ describe('asyncTaskPool', () => {
       throw new Error();
     });
 
-    expect(result).rejects.toThrowError();
-  });
-
-  it('should throw on retry limit exceeding', async () => {
-    const pool = new AsyncTaskPool({ poolSize: 1, retryCount: 1, retryDelay: () => 0 });
-    let tries = 0;
-
-    const result = pool.call(() => {
-      if (tries === 2) {
-        return 'test';
-      }
-      tries++;
-      throw new Error();
-    });
-
+    expect(spy).toBeCalledTimes(1);
     expect(result).rejects.toThrowError();
   });
 
