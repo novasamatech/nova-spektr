@@ -349,7 +349,7 @@ function constructUnlockSchedule(maxUnlockedByTime: [ClaimTime, ClaimableLock][]
   const resultMap: Map<ClaimTime, ClaimableLock> = new Map();
   const sortedMaxUnlock = orderBy(maxUnlockedByTime, ([claimTime]) => getClaimTimeSortKey(claimTime), 'desc');
 
-  sortedMaxUnlock.forEach(([claimAt, lock]) => {
+  for (const [claimAt, lock] of sortedMaxUnlock) {
     const newMaxLock = BN.max(currentMaxLock, lock.amount);
     const unlockedAmount = lock.amount.sub(currentMaxLock);
 
@@ -378,7 +378,7 @@ function constructUnlockSchedule(maxUnlockedByTime: [ClaimTime, ClaimableLock][]
         });
       }
     }
-  });
+  }
 
   const array = Array.from(resultMap.values()).map((i) => ({ ...i, affected: uniqWith(i.affected, isEqual) }));
 
@@ -436,13 +436,13 @@ function toClaimActions(claimAffects: ClaimAffect[]): ClaimAction[] {
     }
 
     if (trackAffects.votes.length > 0) {
-      trackAffects.votes.forEach((voteAffect) => {
+      for (const voteAffect of trackAffects.votes) {
         acc.push({
           type: 'remove_vote',
           trackId: voteAffect.trackId,
           referendumId: voteAffect.referendumId,
         });
-      });
+      }
 
       acc.push({ type: 'unlock', trackId: trackAffects.votes[0].trackId });
     }

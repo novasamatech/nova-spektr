@@ -1,4 +1,3 @@
-import cn from 'classnames';
 import { useEffect, useState } from 'react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
@@ -154,7 +153,7 @@ export const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack,
             render={({ field: { onChange, value } }) => (
               <div>
                 <Input
-                  wrapperClass={cn('flex items-center')}
+                  wrapperClass="flex items-center"
                   label={t('onboarding.walletNameLabel')}
                   placeholder={t('onboarding.walletNamePlaceholder')}
                   invalid={Boolean(errors.walletName)}

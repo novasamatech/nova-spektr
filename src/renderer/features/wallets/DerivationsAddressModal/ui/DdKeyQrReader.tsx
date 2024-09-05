@@ -88,13 +88,13 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
   const onScanResult = (qrPayload: DdSeedInfo[]) => {
     try {
       const derivations: DdAddressInfoDecoded[] = [];
-      qrPayload.forEach((qr) => {
+      for (const qr of qrPayload) {
         if (qr.multiSigner) {
           // Run encodeAddress to check we got valid address for public key
           encodeAddress(qr.multiSigner.public);
         }
 
-        if (qr.dynamicDerivations.length === 0) return;
+        if (qr.dynamicDerivations.length === 0) continue;
 
         const derivationsAddressInfo = qr.dynamicDerivations.map((addressInfo) => {
           const publicKey = isHex(addressInfo.publicKey.public)
@@ -113,7 +113,7 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
         });
 
         derivations.push(...derivationsAddressInfo);
-      });
+      }
 
       setIsScanComplete(true);
       setTimeout(() => onResult(derivations), RESULT_DELAY);

@@ -14,7 +14,7 @@ import {
   type ID,
   type Wallet,
 } from '@shared/core';
-import { isRejected } from '@shared/lib/utils';
+import { isFulfilled } from '@shared/lib/utils';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel, networkUtils } from '@entities/network';
 import { walletModel } from '@entities/wallet';
@@ -53,11 +53,9 @@ const unsubscribeWalletFx = createEffect(({ walletId, subscriptions }: UnsubWall
 
       Promise.allSettled(walletToUnsub)
         .then((fns) => {
-          fns.forEach((unsub) => {
-            if (isRejected(unsub)) return;
-
-            unsub.value();
-          });
+          for (const unsub of fns) {
+            if (isFulfilled(unsub)) unsub.value();
+          }
         })
         .catch((error) => {
           console.log(`Error while unsubscribing from balances for walletId - ${walletId}`, error);
@@ -76,19 +74,17 @@ const unsubscribeChainFx = createEffect(({ chainId, subscriptions }: UnsubChainP
   const chainSubscription = subscriptions[chainId];
   if (!chainSubscription) return subscriptions;
 
-  Object.values(chainSubscription).forEach((unsubFn) => {
+  for (const unsubFn of Object.values(chainSubscription)) {
     Promise.allSettled(unsubFn)
       .then((fns) => {
-        fns.forEach((unsub) => {
-          if (isRejected(unsub)) return;
-
-          unsub.value();
-        });
+        for (const unsub of fns) {
+          if (isFulfilled(unsub)) unsub.value();
+        }
       })
       .catch((error) => {
         console.log(`Error while unsubscribing from balances for chainId - ${chainId}`, error);
       });
-  });
+  }
 
   return { ...subscriptions, [chainId]: undefined };
 });
@@ -108,8 +104,8 @@ const pureSubscribeChainsFx = createEffect(
 
     return chains.reduce<Subscriptions>(
       (acc, chain) => {
-        Object.entries(subAccounts[chain.chainId]).forEach(([id, accountIds]) => {
-          if (walletId && Number(id) !== walletId) return;
+        for (const [id, accountIds] of Object.entries(subAccounts[chain.chainId])) {
+          if (walletId && Number(id) !== walletId) continue;
 
           const unsubPromises = [
             ...balanceService.subscribeBalances(apis[chain.chainId], chain, accountIds, boundUpdate),
@@ -121,7 +117,7 @@ const pureSubscribeChainsFx = createEffect(
           } else {
             acc[chain.chainId] = { [Number(id)]: unsubPromises };
           }
-        });
+        }
 
         return acc;
       },
@@ -160,9 +156,9 @@ sample({
   clock: $subAccounts,
   fn: (subAccounts) => {
     return Object.values(subAccounts).reduce<Set<AccountId>>((acc, walletMap) => {
-      Object.values(walletMap)
-        .flat()
-        .forEach((accountId) => acc.add(accountId));
+      for (const accountId of Object.values(walletMap).flat()) {
+        acc.add(accountId);
+      }
 
       return acc;
     }, new Set());

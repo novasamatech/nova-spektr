@@ -127,12 +127,18 @@ async function getProxies({
 
   try {
     const entries = await api.query.proxy.proxies.entries();
-    entries.forEach(([key, value]) => {
+
+    for (const [key, value] of entries) {
       try {
         const proxyData = value.toHuman() as any;
         const proxiedAccountId = key.args[0].toHex();
 
-        proxyData[0].forEach((account: any) => {
+        const accounts = proxyData[0];
+        if (!accounts) {
+          continue;
+        }
+
+        for (const account of accounts) {
           const newProxy: NoID<ProxyAccount> = {
             chainId,
             proxiedAccountId,
@@ -166,9 +172,9 @@ async function getProxies({
           if (needToAddProxiedAccount) {
             deposits.deposits[proxiedAccountId] = proxyData[1];
           }
-        });
+        }
 
-        proxyData[0].forEach((account: any) => {
+        for (const account of accounts) {
           const newProxy: NoID<ProxyAccount> = {
             chainId,
             proxiedAccountId,
@@ -192,11 +198,11 @@ async function getProxies({
           if (needToAddProxyAccount) {
             deposits.deposits[proxiedAccountId] = proxyData[1];
           }
-        });
+        }
       } catch (e) {
         console.error(`proxy-worker ${api.genesisHash}: proxy error`, e);
       }
-    });
+    }
   } catch (e) {
     console.error(`proxy-worker ${api.genesisHash}: error in getProxies`, e);
   }

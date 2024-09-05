@@ -100,7 +100,9 @@ const updateProviderMetadataFx = createEffect(({ provider, metadata }: ProviderM
 });
 
 const initConnectionsFx = createEffect((chains: Record<ChainId, Chain>) => {
-  Object.keys(chains).forEach((chainId) => chainConnected(chainId as ChainId));
+  for (const chainId of Object.keys(chains)) {
+    chainConnected(chainId as ChainId);
+  }
 });
 
 type CreateProviderParams = {

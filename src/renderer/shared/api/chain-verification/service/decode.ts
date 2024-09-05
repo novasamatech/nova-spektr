@@ -187,6 +187,7 @@ const decode = (reader: Uint8Array): Node => {
 const loadProof = (proofHashToNode: Record<string, Node>, branch: Node | undefined) => {
   if (!branch || getNodeType(branch) !== NodeType.BRANCH) return;
 
+  // eslint-disable-next-line no-restricted-syntax
   branch.children.forEach((child, i) => {
     if (child === null) return;
 
@@ -216,7 +217,7 @@ export const buildTrie = (proofEncodedNodes: Uint8Array[], root: Uint8Array): No
   const proofHashToNode: Record<string, Node> = {};
   let rootNode: Node = {} as Node;
 
-  proofEncodedNodes.forEach((rawNode) => {
+  for (const rawNode of proofEncodedNodes) {
     const decodedNode = decode(rawNode);
 
     decodedNode.hashDigest = blake2AsU8a(rawNode);
@@ -228,7 +229,7 @@ export const buildTrie = (proofEncodedNodes: Uint8Array[], root: Uint8Array): No
     if (u8aToHex(hash) === u8aToHex(root)) {
       rootNode = decodedNode;
     }
-  });
+  }
 
   loadProof(proofHashToNode, rootNode);
 

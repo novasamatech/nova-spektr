@@ -98,8 +98,8 @@ async function signAndSubmit(
       let extrinsicSuccess = false;
 
       if (status.isInBlock) {
-        events.forEach(({ event, phase }: any) => {
-          if (!phase.isApplyExtrinsic || !phase.asApplyExtrinsic.eq(txIndex)) return;
+        for (const { event, phase } of events) {
+          if (!phase.isApplyExtrinsic || !phase.asApplyExtrinsic.eq(txIndex)) continue;
 
           if (api.events.multisig.MultisigExecuted.is(event)) {
             isFinalApprove = true;
@@ -117,7 +117,7 @@ async function signAndSubmit(
 
             callback(false, errorInfo);
           }
-        });
+        }
       }
 
       if (extrinsicSuccess) {

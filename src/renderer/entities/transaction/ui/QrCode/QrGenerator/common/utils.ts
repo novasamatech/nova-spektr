@@ -23,7 +23,8 @@ const MULTIPART = new Uint8Array([0]);
 
 // HACK The default function take string -> number[], the Uint8array is compatible
 // with that signature and the use thereof
-(qrcode as any).stringToBytes = (data: Uint8Array): Uint8Array => data;
+// @ts-expect-error hack
+qrcode.stringToBytes = (data: Uint8Array): Uint8Array => data;
 
 export const getSvgString = (value: Uint8Array, bgColor = 'none'): string => {
   const qr = qrcode(0, 'M');

@@ -1,5 +1,4 @@
 import { u8aToHex } from '@polkadot/util';
-import cn from 'classnames';
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
@@ -94,7 +93,7 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
             render={({ field: { onChange, value } }) => (
               <div>
                 <Input
-                  wrapperClass={cn('flex items-center')}
+                  wrapperClass="flex items-center"
                   label={t('onboarding.walletNameLabel')}
                   placeholder={t('onboarding.walletNamePlaceholder')}
                   invalid={Boolean(errors.walletName)}

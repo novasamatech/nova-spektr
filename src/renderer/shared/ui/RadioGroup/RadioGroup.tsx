@@ -9,7 +9,7 @@ import { type RadioOption, type RadioResult } from './common/types';
 
 import './RadioGroup.css';
 
-type Props<T = any> = {
+type Props<T> = {
   name?: string;
   label?: string;
   activeId?: string;
@@ -18,7 +18,7 @@ type Props<T = any> = {
   onChange: (data: RadioResult<T>) => void;
 };
 
-const RadioGroupRoot = ({
+const RadioGroupRoot = <T = never,>({
   name,
   label,
   activeId,
@@ -26,7 +26,7 @@ const RadioGroupRoot = ({
   className,
   children,
   onChange,
-}: PropsWithChildren<Props>) => {
+}: PropsWithChildren<Props<T>>) => {
   const activeOption = options.find((option) => option.id === activeId);
 
   const radioElement = (

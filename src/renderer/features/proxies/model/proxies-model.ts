@@ -66,13 +66,13 @@ type StartChainsParams = {
 const startChainsFx = createEffect(({ chains, connections, endpoint }: StartChainsParams) => {
   const boundConnected = scopeBind(connected, { safe: true });
 
-  chains.forEach((chain) => {
-    if (networkUtils.isDisabledConnection(connections[chain.chainId])) return;
+  for (const chain of chains) {
+    if (networkUtils.isDisabledConnection(connections[chain.chainId])) continue;
 
     endpoint.call.initConnection(chain, connections[chain.chainId]).then(() => {
       boundConnected(chain.chainId);
     });
-  });
+  }
 });
 
 type GetProxiesParams = {

@@ -53,18 +53,18 @@ const $pairings = createStore<PairingTypes.Struct[]>([]).reset(reset);
 const extendSessionsFx = createEffect((client: Client) => {
   const sessions = client.session.getAll();
 
-  sessions.forEach((s) => {
+  for (const s of sessions) {
     client.extend({ topic: s.topic }).catch((e) => console.warn(e));
-  });
+  }
 
   const pairings = client.pairing.getAll({ active: true });
 
-  pairings.forEach((p) => {
+  for (const p of pairings) {
     client.core.pairing.updateExpiry({
       topic: p.topic,
       expiry: Math.round(Date.now() / 1000) + EXTEND_PAIRING,
     });
-  });
+  }
 });
 
 const subscribeToEventsFx = createEffect((client: Client) => {

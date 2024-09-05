@@ -1,5 +1,4 @@
 import { u8aToHex } from '@polkadot/util';
-import cn from 'classnames';
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
@@ -89,24 +88,23 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
     const chains = chainsService.getChainsData({ sort: true });
     const chainsMap = dictionary(chains, 'chainId', () => []);
 
-    keysGroups.forEach((account) => {
+    for (const account of keysGroups) {
       const chainId = Array.isArray(account) ? account[0].chainId : account.chainId;
-
       chainsMap[chainId].push(account);
-    });
+    }
 
     setChainElements(Object.entries(chainsMap));
   }, [keysGroups]);
 
   useEffect(() => {
-    Object.values(accordions.current).forEach((item) => {
+    for (const item of Object.values(accordions.current)) {
       const toOpen = isAltPressed && !item.isOpen;
       const toClose = !isAltPressed && item.isOpen;
 
       if (toOpen || toClose) {
         item.el?.click();
       }
-    });
+    }
   }, [isAltPressed]);
 
   const submitForm = (event: FormEvent) => {
@@ -181,7 +179,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
         <form className="flex h-full flex-col" onSubmit={submitForm}>
           <div className="flex flex-col gap-y-2">
             <Input
-              wrapperClass={cn('flex items-center')}
+              wrapperClass="flex items-center"
               label={t('onboarding.walletNameLabel')}
               placeholder={t('onboarding.walletNamePlaceholder')}
               invalid={name?.hasError()}

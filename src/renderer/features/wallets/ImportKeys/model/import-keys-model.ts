@@ -87,14 +87,14 @@ const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImpor
         const errors = importKeysUtils.getDerivationError(derivation);
         if (!errors) return acc;
 
-        errors.forEach((err) => {
+        for (const err of errors) {
           if (PATH_ERRORS.includes(err)) {
             acc[err].push(derivation.derivationPath!);
           }
           if (err === DerivationValidationError.WRONG_SHARDS_NUMBER) {
             acc[err].push(derivation.sharded || '');
           }
-        });
+        }
 
         return acc;
       },
