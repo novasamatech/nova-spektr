@@ -120,9 +120,12 @@ export const NetworkAssets = ({ chain, accounts, query, hideZeroBalances, search
         <Accordion.Content className="mt-1">
           <ul className="flex flex-col gap-y-1.5">
             {filteredAssets.map((asset) => (
-              <li key={asset.assetId}>
-                <AssetCard chainId={chain.chainId} asset={asset} balance={balancesObject[asset.assetId.toString()]} />
-              </li>
+              <AssetCard
+                key={asset.assetId}
+                chainId={chain.chainId}
+                asset={asset}
+                balance={balancesObject[asset.assetId.toString()]}
+              />
             ))}
           </ul>
         </Accordion.Content>
