@@ -1,6 +1,7 @@
 import { useI18n } from '@app/providers';
-import { type CompletedReferendum, type OngoingReferendum, ReferendumType } from '@shared/core';
+import { type CompletedReferendum, type OngoingReferendum, type ReferendumType } from '@shared/core';
 import { OperationStatus } from '@shared/ui';
+import { referendumService } from '@entities/governance';
 
 type Props = {
   passing?: boolean;
@@ -8,19 +9,19 @@ type Props = {
 };
 
 const statusesMap: Record<
-  Exclude<ReferendumType, ReferendumType.Ongoing | ReferendumType.Approved>,
+  Exclude<ReferendumType, 'Ongoing' | 'Approved'>,
   { text: string; pallet: 'default' | 'success' | 'error' }
 > = {
-  [ReferendumType.Rejected]: { text: 'governance.referendums.rejected', pallet: 'error' },
-  [ReferendumType.Cancelled]: { text: 'governance.referendums.cancelled', pallet: 'default' },
-  [ReferendumType.Killed]: { text: 'governance.referendums.killed', pallet: 'error' },
-  [ReferendumType.TimedOut]: { text: 'governance.referendums.timedOut', pallet: 'default' },
+  Rejected: { text: 'governance.referendums.rejected', pallet: 'error' },
+  Cancelled: { text: 'governance.referendums.cancelled', pallet: 'default' },
+  Killed: { text: 'governance.referendums.killed', pallet: 'error' },
+  TimedOut: { text: 'governance.referendums.timedOut', pallet: 'default' },
 };
 
 export const VotingStatusBadge = ({ passing, referendum }: Props) => {
   const { t } = useI18n();
 
-  if (referendum.type === ReferendumType.Ongoing) {
+  if (referendumService.isOngoing(referendum)) {
     const isPassing = passing ?? false;
 
     return (
@@ -30,7 +31,7 @@ export const VotingStatusBadge = ({ passing, referendum }: Props) => {
     );
   }
 
-  if (referendum.type === ReferendumType.Approved) {
+  if (referendumService.isApproved(referendum)) {
     // TODO implement
     const isExecuted = false;
 

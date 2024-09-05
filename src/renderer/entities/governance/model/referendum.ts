@@ -29,19 +29,38 @@ const $referendums = createStore<Record<ChainId, Referendum[]>>({});
 
 // referendum list
 
+type RequestRecordParams = {
+  chain: Chain;
+  api: ApiPromise;
+  referendumId: ReferendumId;
+};
+
+const requestReferendum = createEvent<RequestRecordParams>();
+
 type RequestListParams = {
   chain: Chain;
   api: ApiPromise;
+  ids?: ReferendumId[];
 };
 
 const requestReferendums = createEvent<RequestListParams>();
 
-const requestReferendumsFx = createEffect(({ api }: RequestListParams) => {
-  return governanceService.getReferendums(api);
+const requestReferendumsFx = createEffect(({ api, ids }: RequestListParams) => {
+  return governanceService.getReferendums(api, ids);
 });
 
 sample({
   clock: requestReferendums,
+  target: requestReferendumsFx,
+});
+
+sample({
+  clock: requestReferendum,
+  fn: ({ api, chain, referendumId }) => ({
+    api,
+    chain,
+    ids: [referendumId],
+  }),
   target: requestReferendumsFx,
 });
 
@@ -60,40 +79,6 @@ sample({
   target: $referendums,
 });
 
-// single referendum
-
-type RequestRecordParams = {
-  chain: Chain;
-  api: ApiPromise;
-  referendumId: ReferendumId;
-};
-
-const requestReferendum = createEvent<RequestRecordParams>();
-
-const requestReferendumFx = createEffect(({ api, referendumId }: RequestRecordParams) => {
-  return governanceService.getReferendum(referendumId, api);
-});
-
-sample({
-  clock: requestReferendum,
-  target: requestReferendumFx,
-});
-
-sample({
-  clock: requestReferendumFx.done,
-  source: $referendums,
-  fn: (referendums, { params, result }) => {
-    if (!result) return referendums;
-    const existing = referendums[params.chain.chainId] ?? [];
-
-    return {
-      ...referendums,
-      [params.chain.chainId]: mergeReferendums(existing, [result]),
-    };
-  },
-  target: $referendums,
-});
-
 // loading
 
 const $isLoading = createStore(true);
@@ -105,7 +90,7 @@ sample({
 });
 
 sample({
-  clock: [requestReferendumFx.finally, requestReferendumsFx.finally, received],
+  clock: [requestReferendumsFx.finally, received],
   fn: () => false,
   target: $isLoading,
 });

@@ -1,7 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type Header } from '@polkadot/types/interfaces';
 import { type BN } from '@polkadot/util';
-import throttle from 'lodash/throttle';
 
 import {
   type AccountVote,
@@ -12,6 +10,9 @@ import {
   type Voting,
   type VotingMap,
 } from '@/shared/core';
+import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
+import { toAddress } from '@shared/lib/utils';
+import { convictionVotingPallet } from '@shared/pallet/convictionVoting';
 
 import { governanceService } from './governanceService';
 
@@ -51,10 +52,10 @@ function subscribeVotingFor(
   tracksIds: TrackId[],
   addresses: Address[],
   callback: (res?: VotingMap) => void,
-): () => void {
-  const tuples = addresses.flatMap((address) => tracksIds.map((trackId) => [address, trackId]));
+) {
+  const tuples = addresses.flatMap((address) => tracksIds.map((trackId) => [address, trackId] as const));
 
-  const unsubscribe = api.query.convictionVoting.votingFor.multi(tuples, (votings) => {
+  return convictionVotingPallet.storage.subscribeVotingFor(api, tuples, (votings) => {
     const result = addresses.reduce<Record<Address, Record<TrackId, Voting>>>((acc, address) => {
       acc[address] = {};
 
@@ -62,106 +63,78 @@ function subscribeVotingFor(
     }, {});
 
     for (const [index, convictionVoting] of votings.entries()) {
-      if (convictionVoting.isStorageFallback) continue;
-
       const address = tuples[index]?.[0];
       const trackId = tuples[index]?.[1];
       if (!address || !trackId) {
         continue;
       }
 
-      if (convictionVoting.isDelegating) {
-        const delegation = convictionVoting.asDelegating;
-
-        result[address][trackId] = {
-          type: 'Delegating',
-          address,
-          track: trackId,
-          balance: delegation.balance.toBn(),
-          conviction: delegation.conviction.type,
-          target: delegation.target.toString(),
-          prior: {
-            unlockAt: delegation.prior[0].toNumber(),
-            amount: delegation.prior[1].toBn(),
-          },
-        };
-      }
-
-      if (convictionVoting.isCasting) {
-        const votes: Record<ReferendumId, AccountVote> = {};
-        for (const [referendumIndex, vote] of convictionVoting.asCasting.votes) {
-          const referendumId = referendumIndex.toString();
-
-          if (vote.isStandard) {
-            const standardVote = vote.asStandard;
-            votes[referendumId] = {
-              type: 'Standard',
-              vote: {
-                aye: standardVote.vote.isAye,
-                conviction: standardVote.vote.conviction.type,
-              },
-              balance: standardVote.balance.toBn(),
-            };
-          }
-
-          if (vote.isSplit) {
-            const splitVote = vote.asSplit;
-            votes[referendumId] = {
-              type: 'Split',
-              aye: splitVote.aye.toBn(),
-              nay: splitVote.nay.toBn(),
-            };
-          }
-
-          if (vote.isSplitAbstain) {
-            const splitAbstainVote = vote.asSplitAbstain;
-            votes[referendumId] = {
-              type: 'SplitAbstain',
-              aye: splitAbstainVote.aye.toBn(),
-              nay: splitAbstainVote.nay.toBn(),
-              abstain: splitAbstainVote.abstain.toBn(),
-            };
-          }
+      switch (convictionVoting.type) {
+        case 'Delegating': {
+          result[address][trackId] = {
+            type: 'Delegating',
+            address,
+            track: trackId,
+            balance: convictionVoting._.balance,
+            conviction: convictionVoting._.conviction,
+            target: toAddress(convictionVoting._.target),
+            prior: convictionVoting._.prior,
+          };
+          break;
         }
+        case 'Casting': {
+          const votes: Record<ReferendumId, AccountVote> = {};
+          for (const { referendum, vote } of convictionVoting._.votes) {
+            const referendumId = referendum.toString();
 
-        result[address][trackId] = {
-          type: 'Casting',
-          track: trackId,
-          address,
-          votes,
-          prior: {
-            unlockAt: convictionVoting.asCasting.prior[0].toNumber(),
-            amount: convictionVoting.asCasting.prior[1].toBn(),
-          },
-        };
+            switch (vote.type) {
+              case 'Standard':
+                votes[referendumId] = {
+                  type: 'Standard',
+                  vote: {
+                    aye: vote._.vote.isAye,
+                    conviction: vote._.vote.conviction.type,
+                  },
+                  balance: vote._.balance,
+                };
+                break;
+              case 'Split':
+                votes[referendumId] = {
+                  type: 'Split',
+                  aye: vote._.aye,
+                  nay: vote._.nay,
+                };
+                break;
+              case 'SplitAbstain':
+                votes[referendumId] = {
+                  type: 'SplitAbstain',
+                  aye: vote._.aye,
+                  nay: vote._.nay,
+                  abstain: vote._.abstain,
+                };
+                break;
+            }
+          }
+
+          result[address][trackId] = {
+            type: 'Casting',
+            track: trackId,
+            address,
+            votes,
+            prior: convictionVoting._.prior,
+          };
+        }
       }
     }
 
     callback(result);
   });
-
-  return () => {
-    unsubscribe.then((fn) => fn());
-  };
-}
-
-/**
- * TODO move to chain helpers
- */
-function subscribeBlockWithInterval(api: ApiPromise, ttl: number, callback: (header: Header) => unknown) {
-  const throttled = throttle(callback, ttl);
-  const unsubscribe = api.rpc.chain.subscribeNewHeads((header) => {
-    throttled(header);
-  });
-
-  return () => {
-    throttled.cancel();
-    unsubscribe.then((fn) => fn());
-  };
 }
 
 function subscribeReferendums(api: ApiPromise, callback: (referendums: Referendum[]) => unknown) {
-  return subscribeBlockWithInterval(api, 30 * 1000, () => {
+  governanceService.getReferendums(api).then(callback);
+
+  return polkadotjsHelpers.subscribeSystemEvents({ api, section: 'referenda' }, () => {
     governanceService.getReferendums(api).then(callback);
   });
 }
