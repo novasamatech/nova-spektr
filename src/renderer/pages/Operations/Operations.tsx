@@ -7,7 +7,7 @@ import { type MultisigTransactionDS } from '@shared/api/storage';
 import { type MultisigEvent, type MultisigTransactionKey } from '@shared/core';
 import { sortByDateDesc } from '@shared/lib/utils';
 import { FootnoteText, Header } from '@shared/ui';
-import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
+import { operationsModel } from '@/entities/operations';
 import { networkModel } from '@entities/network';
 import { priceProviderModel } from '@entities/price';
 import { accountUtils, walletModel } from '@entities/wallet';
@@ -21,19 +21,14 @@ export const Operations = () => {
 
   const activeWallet = useUnit(walletModel.$activeWallet);
   const chains = useUnit(networkModel.$chains);
-
-  const { getLiveAccountMultisigTxs } = useMultisigTx({});
-  const { getLiveEventsByKeys } = useMultisigEvent({});
+  const allTxs = useUnit(operationsModel.$multisigTransactions);
+  const events = useUnit(operationsModel.$multisigEvents);
 
   const activeAccount = activeWallet?.accounts.at(0);
   const account = activeAccount && accountUtils.isMultisigAccount(activeAccount) ? activeAccount : undefined;
 
-  const allTxs = getLiveAccountMultisigTxs(account?.accountId ? [account.accountId] : []);
-
   const [txs, setTxs] = useState<MultisigTransactionDS[]>([]);
   const [filteredTxs, setFilteredTxs] = useState<MultisigTransactionDS[]>([]);
-
-  const events = getLiveEventsByKeys(txs.filter((tx) => !tx.dateCreated));
 
   const getEventsByTransaction = (tx: MultisigTransactionKey): MultisigEvent[] => {
     return events.filter((e) => {
@@ -59,7 +54,7 @@ export const Operations = () => {
 
   useEffect(() => {
     setTxs(allTxs.filter((tx) => chains[tx.chainId]));
-  }, [allTxs.length]);
+  }, [allTxs]);
 
   useEffect(() => {
     setFilteredTxs([]);

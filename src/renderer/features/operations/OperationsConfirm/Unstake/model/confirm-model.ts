@@ -1,7 +1,17 @@
 import { type ApiPromise } from '@polkadot/api';
 import { combine, createEvent, restore } from 'effector';
 
-import { type Account, type Asset, type Chain, type ChainId, type ProxiedAccount, type Wallet } from '@shared/core';
+import { nonNullable } from '@/shared/lib/utils';
+import {
+  type Account,
+  type Asset,
+  type Chain,
+  type ChainId,
+  type ProxiedAccount,
+  type Transaction,
+  type Wallet,
+} from '@shared/core';
+import { operationsModel, operationsUtils } from '@/entities/operations';
 import { networkModel } from '@entities/network';
 import { walletModel, walletUtils } from '@entities/wallet';
 
@@ -18,6 +28,7 @@ type Input = {
   fee: string;
   totalFee: string;
   multisigDeposit: string;
+  coreTx?: Transaction | null;
 };
 
 const formInitiated = createEvent<Input[]>();
@@ -137,12 +148,27 @@ const $signerWallets = combine(
   },
 );
 
+const $isMultisigExists = combine(
+  {
+    apis: networkModel.$apis,
+    coreTxs: $storeMap.map((storeMap) =>
+      Object.values(storeMap)
+        .map((store) => store.coreTx)
+        .filter(nonNullable),
+    ),
+    transactions: operationsModel.$multisigTransactions,
+  },
+  ({ apis, coreTxs, transactions }) => operationsUtils.isMultisigAlreadyExists({ apis, coreTxs, transactions }),
+);
+
 export const confirmModel = {
   $confirmStore: $storeMap,
   $initiatorWallets,
   $signerWallets,
   $proxiedWallets,
   $apis,
+  $isMultisigExists,
+
   events: {
     formInitiated,
   },

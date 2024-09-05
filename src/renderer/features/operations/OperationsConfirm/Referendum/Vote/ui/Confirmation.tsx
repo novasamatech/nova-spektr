@@ -12,6 +12,7 @@ import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
 import { ConfirmDetails } from '../../../common/ConfirmDetails';
+import { MultisigExistsAlert } from '../../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -37,6 +38,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     keys: [confirm?.meta.chain],
     fn: (locks, [chain]) => (chain ? (locks[chain.chainId] ?? null) : null),
   });
+
+  const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
   useGate(locksPeriodsAggregate.gates.flow, { chain: confirm?.meta.chain });
   useGate(locksAggregate.gates.flow, { chain: confirm?.meta.chain });
@@ -85,6 +88,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         </div>
       </div>
 
+      <MultisigExistsAlert active={isMultisigExists} />
+
       <ConfirmDetails confirm={confirm}>
         <hr className="w-full border-filter-border pr-2" />
         <DetailRow label={t('governance.vote.field.decision')}>{t(`governance.referendum.${decision}`)}</DetailRow>
@@ -110,7 +115,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         <div className="flex gap-4">
           {secondaryActionButton}
 
-          {!hideSignButton && (
+          {!hideSignButton && !isMultisigExists && (
             <SignButton
               isDefault={Boolean(secondaryActionButton)}
               type={(confirm.wallets.signer || confirm.wallets.initiator)?.type}

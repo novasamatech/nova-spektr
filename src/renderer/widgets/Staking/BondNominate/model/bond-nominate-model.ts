@@ -14,6 +14,7 @@ import {
   WrapperKind,
 } from '@shared/core';
 import { TEST_ADDRESS, getRelaychainAsset, nonNullable } from '@shared/lib/utils';
+import { operationsModel, operationsUtils } from '@/entities/operations';
 import { basketModel } from '@entities/basket/model/basket-model';
 import { networkModel } from '@entities/network';
 import { validatorsService } from '@entities/staking';
@@ -99,6 +100,15 @@ const $transactions = combine(
     );
   },
   { skipVoid: false },
+);
+
+const $multisigAlreadyExists = combine(
+  {
+    apis: networkModel.$apis,
+    coreTxs: $pureTxs,
+    transactions: operationsModel.$multisigTransactions,
+  },
+  ({ apis, coreTxs, transactions }) => operationsUtils.isMultisigAlreadyExists({ apis, coreTxs, transactions }),
 );
 
 // Max validators
@@ -295,9 +305,10 @@ sample({
     feeData: $feeData,
     walletData: $walletData,
     txWrappers: $txWrappers,
+    coreTxs: $pureTxs,
   },
   filter: ({ bondData, walletData }) => Boolean(bondData) && Boolean(walletData),
-  fn: ({ bondData, feeData, walletData, txWrappers }) => {
+  fn: ({ bondData, feeData, walletData, txWrappers, coreTxs }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
 
     return {
@@ -309,6 +320,7 @@ sample({
           ...feeData,
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
           ...(wrapper && { shards: [wrapper.proxyAccount] }),
+          coreTx: coreTxs[0],
         },
       ],
       step: Step.CONFIRM,
@@ -439,6 +451,7 @@ export const bondNominateModel = {
   $step,
   $walletData,
   $initiatorWallet: $walletData.map((data) => data?.wallet || null),
+  $multisigAlreadyExists,
 
   events: {
     flowStarted,
