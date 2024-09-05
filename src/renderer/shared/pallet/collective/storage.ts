@@ -29,15 +29,20 @@ export const storage = {
    * The index of each ranks's member into the group of members who have at
    * least that rank.
    */
-  idToIndex(type: PalletType, api: ApiPromise) {
+  idToIndex(type: PalletType, api: ApiPromise, keys: [id: number, account: AccountId][]) {
     const schema = pjsSchema.vec(
       pjsSchema.tuppleMap(
-        ['key', pjsSchema.storageKey(pjsSchema.u16, pjsSchema.accountId)],
+        [
+          'key',
+          pjsSchema
+            .storageKey(pjsSchema.u16, pjsSchema.accountId)
+            .transform(keys => ({ id: keys[0], account: keys[1] })),
+        ],
         ['index', pjsSchema.optional(pjsSchema.u32)],
       ),
     );
 
-    return getQuery(type, api, 'idToIndex').entries().then(schema.parse);
+    return getQuery(type, api, 'idToIndex').multi(keys).then(schema.parse);
   },
 
   /**
@@ -45,15 +50,18 @@ export const storage = {
    * `0..MemberCount` will return `Some`, however a member's index is not
    * guaranteed to remain unchanged over time.
    */
-  indexToId(type: PalletType, api: ApiPromise) {
+  indexToId(type: PalletType, api: ApiPromise, keys: [rank: CollectiveRank, index: number][]) {
     const schema = pjsSchema.vec(
       pjsSchema.tuppleMap(
-        ['key', pjsSchema.storageKey(collectiveRank, pjsSchema.u32)],
+        [
+          'key',
+          pjsSchema.storageKey(collectiveRank, pjsSchema.u32).transform(keys => ({ rank: keys[0], index: keys[1] })),
+        ],
         ['index', pjsSchema.optional(pjsSchema.accountId)],
       ),
     );
 
-    return getQuery(type, api, 'indexToId').entries().then(schema.parse);
+    return getQuery(type, api, 'indexToId').multi(keys).then(schema.parse);
   },
 
   /**
@@ -74,7 +82,7 @@ export const storage = {
   /**
    * The current members of the collective.
    */
-  members(type: PalletType, api: ApiPromise) {
+  members(type: PalletType, api: ApiPromise, accounts: AccountId[]) {
     const schema = pjsSchema.vec(
       pjsSchema.tuppleMap(
         ['account', pjsSchema.storageKey(pjsSchema.accountId).transform(x => x[0])],
@@ -82,7 +90,7 @@ export const storage = {
       ),
     );
 
-    return getQuery(type, api, 'members').entries().then(schema.parse);
+    return getQuery(type, api, 'members').entries(accounts).then(schema.parse);
   },
 
   /**
