@@ -1,7 +1,7 @@
 export const DEFAULT_PROJECT_ID = 'af50115ecc7e992a0ef4a577daf5c1c8';
 export const DEFAULT_RELAY_URL = 'wss://relay.walletconnect.com';
 
-export const DEFAULT_LOGGER = 'debug';
+export const DEFAULT_LOGGER = 'error';
 
 export const DEFAULT_APP_METADATA = {
   name: 'Nova Spektr', //dApp name

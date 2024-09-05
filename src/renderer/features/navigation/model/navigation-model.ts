@@ -6,7 +6,7 @@ import { type PathType } from '@/shared/routes';
 
 const navigateTo = createEvent<PathType>();
 
-const flow = createGate<{ navigate: NavigateFunction | null }>();
+const flow = createGate<{ navigate: NavigateFunction | null }>({ defaultState: { navigate: null } });
 
 type NavigateParams = {
   path: PathType;

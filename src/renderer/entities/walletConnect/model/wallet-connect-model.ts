@@ -95,16 +95,9 @@ const subscribeToEventsFx = createEffect((client: Client) => {
 });
 
 const checkPersistedStateFx = createEffect((client: Client) => {
-  const pairings = client.pairing.getAll({ active: true });
-
-  // Set pairings
-  console.log('RESTORED PAIRINGS: ', pairings);
-
   if (client.session.length) {
     const lastKeyIndex = client.session.keys.length - 1;
     const session = client.session.get(client.session.keys[lastKeyIndex]);
-    console.log('RESTORED SESSION:', session);
-
     sessionUpdated(session);
   }
 });
