@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { pjsSchema } from '../../polkadotjs-schemas';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
 import { getPalletName } from './helpers';
 import { type PalletType } from './types';
