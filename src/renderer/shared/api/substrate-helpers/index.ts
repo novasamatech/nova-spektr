@@ -2,7 +2,7 @@ import { AsyncTaskPool } from './asyncTaskPool';
 
 export const substrateRpcPool = new AsyncTaskPool({
   /**
-   * @see https://github.com/paritytech/substrate/blob/master/client/executor/wasmtime/src/runtime.rs#L380
+   * @see https://github.com/paritytech/polkadot-sdk/blob/49a68132882e58872411c5c0278b13a008b3682b/substrate/client/network/src/service.rs#L585
    */
   poolSize: 32,
   retryCount: 5,
