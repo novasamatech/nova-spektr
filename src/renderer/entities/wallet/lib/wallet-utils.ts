@@ -31,6 +31,7 @@ export const walletUtils = {
   isValidSignSignatory,
   getWalletById,
 
+  getAccountBy,
   getAccountsBy,
   getWalletFilteredAccounts,
   getWalletsFilteredAccounts,
@@ -107,6 +108,15 @@ function getAccountsBy(wallets: Wallet[], accountFn: (account: Account, wallet: 
 
     return acc;
   }, []);
+}
+
+function getAccountBy(wallets: Wallet[], accountFn: (account: Account, wallet: Wallet) => boolean): Account | null {
+  for (const wallet of wallets) {
+    const account = wallet.accounts.find((account) => accountFn(account, wallet));
+    if (account) return account;
+  }
+
+  return null;
 }
 
 /**
