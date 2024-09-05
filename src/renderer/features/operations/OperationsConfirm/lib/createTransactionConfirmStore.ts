@@ -70,23 +70,23 @@ export const createTransactionConfirmStore = <Input extends ConfirmInfo>({ $wall
       const signerAccount = walletUtils.getAccountBy(
         wallets,
         (account, wallet) =>
-          !walletUtils.isProxied(wallet) &&
+          walletUtils.isValidSignSignatory(wallet) &&
           wrappedTx.address === toAddress(account.accountId, { prefix: addressPrefix }),
       );
       const signerWallet = walletUtils.getWalletFilteredAccounts(wallets, {
-        walletFn: (wallet) => !walletUtils.isProxied(wallet),
+        walletFn: walletUtils.isValidSignSignatory,
         accountFn: (account) => signerAccount?.accountId === account.accountId,
       });
 
-      const pAccount = walletUtils.getAccountBy(
+      const proxyAccount = walletUtils.getAccountBy(
         wallets,
         (account, wallet) =>
           !walletUtils.isProxied(wallet) &&
           isProxyTransaction(wrappedTx) &&
           wrappedTx.address === toAddress(account.accountId, { prefix: addressPrefix }),
       ) as ProxiedAccount | null;
-      const pWallet = walletUtils.getWalletFilteredAccounts(wallets, {
-        accountFn: (account) => pAccount?.accountId === account.accountId,
+      const proxyWallet = walletUtils.getWalletFilteredAccounts(wallets, {
+        accountFn: (account) => proxyAccount?.accountId === account.accountId,
       });
 
       acc[meta.id ?? index] = {
@@ -94,12 +94,12 @@ export const createTransactionConfirmStore = <Input extends ConfirmInfo>({ $wall
         wallets: {
           signer: signerWallet || null,
           initiator: initiatorWallet,
-          proxy: pWallet || null,
+          proxy: proxyWallet || null,
         },
         accounts: {
           signer: signerAccount,
           initiator: initiatorAccount,
-          proxy: pAccount,
+          proxy: proxyAccount,
         },
       };
 
