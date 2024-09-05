@@ -117,8 +117,8 @@ export const MultiChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }
         title={modalTitle}
         isOpen={isModalOpen && !isResultModalOpen}
         headerClass="bg-input-background-disabled"
-        panelClass="w-[944px] h-[576px]"
-        contentClass="flex h-[524px]"
+        panelClass="w-modal-xl h-modal"
+        contentClass="flex"
         onClose={closeMultisigModal}
       >
         <WalletForm

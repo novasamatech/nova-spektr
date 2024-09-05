@@ -16,7 +16,7 @@ export const SelectedValidatorsModal = ({ isOpen, validators, onClose }: Props) 
     <BaseModal
       closeButton
       contentClass="pb-3 pt-2"
-      panelClass="w-[368px] max-h-[660px] overflow-x-hidden"
+      panelClass="w-modal-sm max-h-[660px] overflow-x-hidden"
       title={t('staking.confirmation.validatorsTitle')}
       isOpen={isOpen}
       onClose={onClose}
