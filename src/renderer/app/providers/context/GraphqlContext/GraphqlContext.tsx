@@ -68,8 +68,6 @@ export const GraphqlProvider = ({ children }: PropsWithChildren) => {
         return { ...acc, [chain.chainId]: subqueryMatch.url };
       }
 
-      console.warn(`${chain.name} doesn't contain Subquery URL`);
-
       return acc;
     }, {});
 

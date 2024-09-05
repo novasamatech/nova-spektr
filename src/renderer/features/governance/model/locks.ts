@@ -23,6 +23,10 @@ const $totalLock = combine(networkSelectorModel.$governanceChain, $trackLocks, (
   let maxLockTotal = new BN(0);
   const tracksLocksForChain = trackLocks[chain.chainId];
 
+  if (!tracksLocksForChain) {
+    return maxLockTotal;
+  }
+
   for (const lock of Object.values(tracksLocksForChain)) {
     const totalLock = Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
     maxLockTotal = maxLockTotal.iadd(totalLock);
