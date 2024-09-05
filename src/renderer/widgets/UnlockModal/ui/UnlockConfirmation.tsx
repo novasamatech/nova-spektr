@@ -1,5 +1,5 @@
 import { BN } from '@polkadot/util';
-import { useStoreMap } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@app/providers';
@@ -13,6 +13,7 @@ import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, accou
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { basketUtils } from '@/features/operations/OperationsConfirm';
+import { MultisigExistsAlert } from '@/features/operations/OperationsConfirm/common/MultisigExistsAlert';
 import { unlockConfirmAggregate } from '../aggregates/unlockConfirm';
 
 type Props = {
@@ -55,6 +56,8 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
     fn: (value, [id]) => value?.[id],
   });
 
+  const isMultisigExists = useUnit(unlockConfirmAggregate.$isMultisigExists);
+
   const [isAccountsOpen, toggleAccounts] = useToggle();
 
   if (!confirmStore || !initiatorWallet || !confirmStore.chain) return null;
@@ -80,6 +83,8 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
             {confirmStore.description}
           </FootnoteText>
         </div>
+
+        <MultisigExistsAlert active={isMultisigExists} />
 
         <dl className="flex w-full flex-col gap-y-4">
           {proxiedWallet && confirmStore.proxiedAccount && (
@@ -243,7 +248,7 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
 
           <div className="flex gap-4">
             {basketUtils.isBasketAvailable(initiatorWallet) && secondaryActionButton}
-            {!hideSignButton && (
+            {!hideSignButton && !isMultisigExists && (
               <SignButton
                 isDefault={basketUtils.isBasketAvailable(initiatorWallet) && Boolean(secondaryActionButton)}
                 type={(signerWallet || initiatorWallet).type}

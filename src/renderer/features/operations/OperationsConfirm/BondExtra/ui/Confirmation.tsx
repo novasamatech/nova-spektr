@@ -1,4 +1,4 @@
-import { useStoreMap } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@app/providers';
@@ -11,6 +11,7 @@ import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { AccountsModal, StakingPopover } from '@entities/staking';
 import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, accountUtils } from '@entities/wallet';
 import { type Config } from '../../../OperationsValidation';
+import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -54,6 +55,8 @@ export const Confirmation = ({
     fn: (value, [id]) => value?.[id],
   });
 
+  const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
+
   const [isAccountsOpen, toggleAccounts] = useToggle();
 
   if (!confirmStore || !initiatorWallet) {
@@ -83,6 +86,8 @@ export const Confirmation = ({
             {confirmStore.description}
           </FootnoteText>
         </div>
+
+        <MultisigExistsAlert active={isMultisigExists} />
 
         <dl className="flex w-full flex-col gap-y-4">
           {proxiedWallet && confirmStore.proxiedAccount && (
@@ -228,7 +233,7 @@ export const Confirmation = ({
           <div className="flex gap-4">
             {secondaryActionButton}
 
-            {!hideSignButton && (
+            {!hideSignButton && !isMultisigExists && (
               <SignButton
                 isDefault={Boolean(secondaryActionButton)}
                 type={(signerWallet || initiatorWallet).type}

@@ -92,7 +92,7 @@ sample({
 sample({
   clock: formModel.output.formSubmitted,
   fn: ({ formData, transactions }) => ({
-    event: [{ ...formData, transaction: transactions.wrappedTx }],
+    event: [{ ...formData, transaction: transactions.wrappedTx, coreTx: transactions.coreTx }],
     step: Step.CONFIRM,
   }),
   target: spread({

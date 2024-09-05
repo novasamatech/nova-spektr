@@ -7,9 +7,12 @@ import {
   type Balance,
   type Chain,
   type ProxiedAccount,
+  type Transaction,
   type Wallet,
 } from '@shared/core';
-import { transferableAmount } from '@shared/lib/utils';
+import { nonNullable, transferableAmount } from '@shared/lib/utils';
+import { networkModel } from '@/entities/network';
+import { operationsModel, operationsUtils } from '@/entities/operations';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { walletModel, walletUtils } from '@entities/wallet';
 import {
@@ -37,6 +40,7 @@ type Input = {
   fee: string;
   xcmFee: string;
   multisigDeposit: string;
+  coreTx?: Transaction | null;
 };
 
 const formInitiated = createEvent<Input[]>();
@@ -277,11 +281,25 @@ sample({
   target: formConfirmed,
 });
 
+const $isMultisigExists = combine(
+  {
+    apis: networkModel.$apis,
+    coreTxs: $storeMap.map((storeMap) =>
+      Object.values(storeMap)
+        .map((store) => store.coreTx)
+        .filter(nonNullable),
+    ),
+    transactions: operationsModel.$multisigTransactions,
+  },
+  ({ apis, coreTxs, transactions }) => operationsUtils.isMultisigAlreadyExists({ apis, coreTxs, transactions }),
+);
+
 export const confirmModel = {
   $confirmStore: $storeMap,
   $initiatorWallets,
   $proxiedWallets,
   $signerWallets,
+  $isMultisigExists,
 
   $isXcm,
   events: {

@@ -236,9 +236,10 @@ sample({
     feeData: $feeData,
     walletData: $walletData,
     txWrappers: $txWrappers,
+    coreTxs: $pureTxs,
   },
   filter: ({ payeeData, walletData }) => Boolean(payeeData) && Boolean(walletData),
-  fn: ({ payeeData, feeData, walletData, txWrappers }) => {
+  fn: ({ payeeData, feeData, walletData, txWrappers, coreTxs }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
 
     return {
@@ -250,6 +251,7 @@ sample({
           ...feeData,
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
           ...(wrapper && { shards: [wrapper.proxyAccount] }),
+          coreTx: coreTxs[0],
         },
       ],
       step: Step.CONFIRM,

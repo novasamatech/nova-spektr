@@ -1,5 +1,5 @@
 import { BN } from '@polkadot/util';
-import { useGate, useStoreMap } from 'effector-react';
+import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
@@ -14,6 +14,7 @@ import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, accou
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { allTracks } from '@/widgets/DelegateModal/lib/constants';
 import { type Config } from '../../../OperationsValidation';
+import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -65,6 +66,8 @@ export const Confirmation = ({
   });
 
   useGate(locksPeriodsAggregate.gates.flow, { chain: confirmStore?.chain });
+
+  const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
   if (!confirmStore || !initiatorWallet) {
     return null;
@@ -123,6 +126,8 @@ export const Confirmation = ({
           {confirmStore.description}
         </FootnoteText>
       </div>
+
+      <MultisigExistsAlert active={isMultisigExists} />
 
       <dl className="flex w-full flex-col gap-y-4">
         {proxiedWallet && confirmStore.proxiedAccount && (
@@ -297,7 +302,7 @@ export const Confirmation = ({
         <div className="flex gap-4">
           {secondaryActionButton}
 
-          {!hideSignButton && (
+          {!hideSignButton && !isMultisigExists && (
             <SignButton
               isDefault={Boolean(secondaryActionButton)}
               type={(signerWallet || initiatorWallet).type}

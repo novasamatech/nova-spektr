@@ -80,10 +80,17 @@ sample({
 
 sample({
   clock: formModel.output.formSubmitted,
-  source: $networkStore,
-  filter: (network: NetworkStore | null): network is NetworkStore => Boolean(network),
-  fn: ({ chain }, { formData }) => ({
-    event: [{ ...formData, chain, asset: getRelaychainAsset(chain.assets)! }],
+  source: { networkStore: $networkStore, coreTxs: $coreTxs },
+  filter: ({ networkStore }) => Boolean(networkStore),
+  fn: ({ networkStore, coreTxs }, { formData }) => ({
+    event: [
+      {
+        ...formData,
+        chain: networkStore!.chain,
+        asset: getRelaychainAsset(networkStore!.chain.assets)!,
+        coreTx: coreTxs![0],
+      },
+    ],
     step: Step.CONFIRM,
   }),
   target: spread({
