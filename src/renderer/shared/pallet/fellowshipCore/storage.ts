@@ -1,7 +1,8 @@
 import { type ApiPromise } from '@polkadot/api';
 
+import { substrateRpcPool } from '@/shared/api/substrate-helpers';
 import { type Address } from '@/shared/core';
-import { pjsSchema } from '@/shared/polkadotjsSchemas';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
 import { coreFellowshipMemberEvidence, coreFellowshipMemberStatus, coreFellowshipParams } from './schema';
 
@@ -25,7 +26,7 @@ export const storage = {
    * The overall status of the system.
    */
   params(api: ApiPromise) {
-    return getQuery(api, 'params').entries().then(coreFellowshipParams.parse);
+    return substrateRpcPool.call(() => getQuery(api, 'params').entries()).then(coreFellowshipParams.parse);
   },
 
   /**
@@ -36,7 +37,7 @@ export const storage = {
       pjsSchema.tuppleMap(['account', pjsSchema.accountId], ['status', coreFellowshipMemberStatus]),
     );
 
-    return getQuery(api, 'member').entries(addresses).then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(api, 'member').entries(addresses)).then(schema.parse);
   },
 
   /**
@@ -47,6 +48,6 @@ export const storage = {
       pjsSchema.tuppleMap(['account', pjsSchema.accountId], ['status', coreFellowshipMemberEvidence]),
     );
 
-    return getQuery(api, 'member').entries(addresses).then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(api, 'member').entries(addresses)).then(schema.parse);
   },
 };

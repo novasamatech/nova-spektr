@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { pjsSchema } from '../../polkadotjsSchemas';
+import { pjsSchema } from '../../polkadotjs-schemas';
 
 export type SalaryClaimState = z.infer<typeof salaryClaimState>;
 export const salaryClaimState = pjsSchema.enumValue({

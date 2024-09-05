@@ -1,9 +1,10 @@
 import { type ApiPromise } from '@polkadot/api';
 
+import { substrateRpcPool } from '@/shared/api/substrate-helpers';
 import { type AccountId } from '@/shared/core';
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { pjsSchema } from '@/shared/polkadotjsSchemas';
-import { referendumId } from '../referenda/schema';
+import { referendaPallet } from '@/shared/pallet/referenda';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
 import { getPalletName } from './helpers';
 import { type CollectiveRank, collectiveMemberRecord, collectiveRank, collectiveVoteRecord } from './schemas';
@@ -37,7 +38,7 @@ export const storage = {
       ),
     );
 
-    return getQuery(type, api, 'idToIndex').entries().then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(type, api, 'idToIndex').entries()).then(schema.parse);
   },
 
   /**
@@ -53,7 +54,7 @@ export const storage = {
       ),
     );
 
-    return getQuery(type, api, 'indexToId').entries().then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(type, api, 'indexToId').entries()).then(schema.parse);
   },
 
   /**
@@ -68,7 +69,7 @@ export const storage = {
       ),
     );
 
-    return getQuery(type, api, 'memberCount').entries(ranks).then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(type, api, 'memberCount').entries(ranks)).then(schema.parse);
   },
 
   /**
@@ -82,21 +83,23 @@ export const storage = {
       ),
     );
 
-    return getQuery(type, api, 'members').entries().then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(type, api, 'members').entries()).then(schema.parse);
   },
 
   /**
    * Votes on a given proposal, if it is ongoing.
    */
   voting(type: PalletType, api: ApiPromise, keys: [referendum: ReferendumId, account: AccountId][]) {
-    const keySchema = pjsSchema.storageKey(referendumId, pjsSchema.accountId).transform(([referendum, account]) => ({
-      referendum,
-      account,
-    }));
+    const keySchema = pjsSchema
+      .storageKey(referendaPallet.schema.referendumId, pjsSchema.accountId)
+      .transform(([referendum, account]) => ({
+        referendum,
+        account,
+      }));
     const schema = pjsSchema.vec(
       pjsSchema.tuppleMap(['key', keySchema], ['vote', pjsSchema.optional(collectiveVoteRecord)]),
     );
 
-    return getQuery(type, api, 'voting').multi(keys).then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(type, api, 'voting').multi(keys)).then(schema.parse);
   },
 };

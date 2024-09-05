@@ -1,7 +1,8 @@
 import { type ApiPromise } from '@polkadot/api';
 
+import { substrateRpcPool } from '@/shared/api/substrate-helpers';
 import { type ReferendumId } from '@/shared/core';
-import { pjsSchema } from '@/shared/polkadotjsSchemas';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
 import { getPalletName } from './helpers';
 import { type TrackId, referendaReferendumInfoConvictionVotingTally, referendumId, trackId } from './schema';
@@ -29,7 +30,7 @@ export const storage = {
   decidingCount(type: PalletType, api: ApiPromise) {
     const schema = pjsSchema.vec(pjsSchema.tuppleMap(['track', trackId], ['decidingCount', pjsSchema.u32]));
 
-    return getQuery(type, api, 'decidingCount').entries().then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(type, api, 'decidingCount').entries()).then(schema.parse);
   },
 
   /**
@@ -44,9 +45,9 @@ export const storage = {
     );
 
     if (ids) {
-      return getQuery(type, api, 'referendumInfoFor').entries(ids).then(schema.parse);
+      return substrateRpcPool.call(() => getQuery(type, api, 'referendumInfoFor').entries(ids)).then(schema.parse);
     } else {
-      return getQuery(type, api, 'referendumInfoFor').entries().then(schema.parse);
+      return substrateRpcPool.call(() => getQuery(type, api, 'referendumInfoFor').entries()).then(schema.parse);
     }
   },
 
@@ -54,7 +55,7 @@ export const storage = {
    * The next free referendum index, aka the number of referenda started so far.
    */
   referendumCount(type: PalletType, api: ApiPromise) {
-    return getQuery(type, api, 'referendumCount')().then(pjsSchema.u32.parse);
+    return substrateRpcPool.call(() => getQuery(type, api, 'referendumCount')()).then(pjsSchema.u32.parse);
   },
 
   /**
@@ -65,8 +66,10 @@ export const storage = {
    * `TrackInfo::max_deciding`.
    */
   trackQueue(type: PalletType, api: ApiPromise, track: TrackId) {
-    const schema = pjsSchema.vec(pjsSchema.tuppleMap(['approval', pjsSchema.u32], ['referendum', referendumId]));
+    const schema = pjsSchema.vec(
+      pjsSchema.tuppleMap(['approval', pjsSchema.blockHeight], ['referendum', referendumId]),
+    );
 
-    return getQuery(type, api, 'trackQueue')(track).then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(type, api, 'trackQueue')(track)).then(schema.parse);
   },
 };

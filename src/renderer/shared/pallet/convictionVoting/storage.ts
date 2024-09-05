@@ -1,7 +1,8 @@
 import { type ApiPromise } from '@polkadot/api';
 
+import { substrateRpcPool } from '@/shared/api/substrate-helpers';
 import { type Address, type TrackId } from '@/shared/core';
-import { pjsSchema } from '../../polkadotjsSchemas';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
 import { type ConvictionVotingVoteVoting, convictionVotingClassLock, convictionVotingVoteVoting } from './schema';
 
@@ -29,7 +30,7 @@ export const storage = {
   classLocksFor(api: ApiPromise, addresses: Address[]) {
     const schema = pjsSchema.vec(pjsSchema.vec(convictionVotingClassLock));
 
-    return getQuery(api, 'classLocksFor').entries(addresses).then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(api, 'classLocksFor').entries(addresses)).then(schema.parse);
   },
 
   /**
@@ -39,7 +40,7 @@ export const storage = {
   votingFor(api: ApiPromise, keys: [address: Address, trackId: TrackId][]) {
     const schema = pjsSchema.vec(convictionVotingVoteVoting);
 
-    return getQuery(api, 'votingFor').multi(keys).then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(api, 'votingFor').multi(keys)).then(schema.parse);
   },
 
   /**

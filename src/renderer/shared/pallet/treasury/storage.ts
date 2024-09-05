@@ -1,8 +1,9 @@
 import { type ApiPromise } from '@polkadot/api';
 import { z } from 'zod';
 
+import { substrateRpcPool } from '@/shared/api/substrate-helpers';
 import { type TrackId } from '@/shared/pallet/referenda';
-import { pjsSchema } from '@/shared/polkadotjsSchemas';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
 import { getPalletName } from './helpers';
 import { treasuryProposal, treasurySpendStatus } from './schema';
@@ -30,21 +31,21 @@ export const storage = {
   approvals(type: PalletType, api: ApiPromise) {
     const schema = pjsSchema.vec(pjsSchema.u32);
 
-    return getQuery(type, api, 'approvals')().then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(type, api, 'approvals')()).then(schema.parse);
   },
 
   /**
    * The amount which has been reported as inactive to Currency.
    */
   deactivated(type: PalletType, api: ApiPromise) {
-    return getQuery(type, api, 'deactivated')().then(pjsSchema.u128.parse);
+    return substrateRpcPool.call(() => getQuery(type, api, 'deactivated')()).then(pjsSchema.u128.parse);
   },
 
   /**
    * Number of proposals that have been made.
    */
   proposalCount(type: PalletType, api: ApiPromise) {
-    return getQuery(type, api, 'proposalCount')().then(pjsSchema.u32.parse);
+    return substrateRpcPool.call(() => getQuery(type, api, 'proposalCount')()).then(pjsSchema.u32.parse);
   },
 
   /**
@@ -56,7 +57,7 @@ export const storage = {
       ['proposals', pjsSchema.vec(pjsSchema.optional(treasuryProposal))],
     );
 
-    return getQuery(type, api, 'proposals').entries(tracks).then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(type, api, 'proposals').entries(tracks)).then(schema.parse);
   },
 
   /**
@@ -65,7 +66,7 @@ export const storage = {
   spendCount(type: PalletType, api: ApiPromise) {
     const schema = pjsSchema.tuppleMap(['key', pjsSchema.storageKey(z.undefined())], ['spendCount', pjsSchema.u32]);
 
-    return getQuery(type, api, 'spendCount').entries().then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(type, api, 'spendCount').entries()).then(schema.parse);
   },
 
   /**
@@ -78,6 +79,6 @@ export const storage = {
       ['spendCount', pjsSchema.optional(treasurySpendStatus)],
     );
 
-    return getQuery(type, api, 'spends').entries().then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(type, api, 'spends').entries()).then(schema.parse);
   },
 };

@@ -1,7 +1,7 @@
 import { GenericVote } from '@polkadot/types/generic/Vote';
 import { type z } from 'zod';
 
-import { pjsSchema } from '@/shared/polkadotjsSchemas';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
 export type ConvictionVotingConviction = z.infer<typeof convictionVotingConviction>;
 export const convictionVotingConviction = pjsSchema.enumType(

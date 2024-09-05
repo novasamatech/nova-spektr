@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { pjsSchema } from '@/shared/polkadotjsSchemas';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
 export type TreasuryProposal = z.infer<typeof treasuryProposal>;
 export const treasuryProposal = pjsSchema.object({

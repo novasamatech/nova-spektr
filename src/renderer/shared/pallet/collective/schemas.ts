@@ -1,6 +1,6 @@
 import { type z } from 'zod';
 
-import { pjsSchema } from '../../polkadotjsSchemas';
+import { pjsSchema } from '../../polkadotjs-schemas';
 
 export type CollectiveRank = z.infer<typeof collectiveRank>;
 export const collectiveRank = pjsSchema.u16;

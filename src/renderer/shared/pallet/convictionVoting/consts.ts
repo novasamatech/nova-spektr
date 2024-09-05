@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { pjsSchema } from '@/shared/polkadotjsSchemas';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
 const getPallet = (api: ApiPromise) => {
   const convictionVoting = api.consts['convictionVoting'];

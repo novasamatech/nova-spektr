@@ -1,6 +1,6 @@
 import { type z } from 'zod';
 
-import { pjsSchema } from '@/shared/polkadotjsSchemas';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
 export type CoreFellowshipParams = z.infer<typeof coreFellowshipParams>;
 export const coreFellowshipParams = pjsSchema.object({
