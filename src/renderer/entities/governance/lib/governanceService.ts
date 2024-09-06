@@ -33,18 +33,18 @@ async function getReferendums(api: ApiPromise, ids?: ReferendumId[]): Promise<Re
         mappedReferemdum = {
           referendumId,
           type: info.type,
-          track: info._.track.toString(),
-          proposal: info._.proposal._,
-          submitted: info._.submitted,
+          track: info.data.track.toString(),
+          proposal: info.data.proposal.data,
+          submitted: info.data.submitted,
           enactment: {
-            value: info._.enactment._,
-            type: info._.enactment.type,
+            value: info.data.enactment.data,
+            type: info.data.enactment.type,
           },
-          inQueue: info._.inQueue,
-          deciding: info._.deciding,
-          tally: info._.tally,
-          decisionDeposit: info._.decisionDeposit,
-          submissionDeposit: info._.submissionDeposit,
+          inQueue: info.data.inQueue,
+          deciding: info.data.deciding,
+          tally: info.data.tally,
+          decisionDeposit: info.data.decisionDeposit,
+          submissionDeposit: info.data.submissionDeposit,
         };
         break;
       case 'Approved':
@@ -54,16 +54,16 @@ async function getReferendums(api: ApiPromise, ids?: ReferendumId[]): Promise<Re
         mappedReferemdum = {
           type: info.type,
           referendumId,
-          since: info._.since,
-          submissionDeposit: info._.submissionDeposit,
-          decisionDeposit: info._.decisionDeposit,
+          since: info.data.since,
+          submissionDeposit: info.data.submissionDeposit,
+          decisionDeposit: info.data.decisionDeposit,
         };
         break;
       case 'Killed':
         mappedReferemdum = {
           type: info.type,
           referendumId,
-          since: info._,
+          since: info.data,
         };
         break;
     }
@@ -119,24 +119,24 @@ const mapCurve = (value: ReferendaCurve): VotingCurve => {
     case 'LinearDecreasing':
       return {
         type: 'LinearDecreasing',
-        length: value._.length,
-        floor: value._.floor,
-        ceil: value._.ceil,
+        length: value.data.length,
+        floor: value.data.floor,
+        ceil: value.data.ceil,
       };
     case 'SteppedDecreasing':
       return {
         type: 'SteppedDecreasing',
-        begin: value._.begin,
-        end: value._.end,
-        period: value._.period,
-        step: value._.step,
+        begin: value.data.begin,
+        end: value.data.end,
+        period: value.data.period,
+        step: value.data.step,
       };
     case 'Reciprocal':
       return {
         type: 'Reciprocal',
-        factor: value._.factor,
-        xOffset: value._.xOffset,
-        yOffset: value._.yOffset,
+        factor: value.data.factor,
+        xOffset: value.data.xOffset,
+        yOffset: value.data.yOffset,
       };
   }
 };

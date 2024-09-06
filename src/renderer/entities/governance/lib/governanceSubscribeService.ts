@@ -75,16 +75,16 @@ function subscribeVotingFor(
             type: 'Delegating',
             address,
             track: trackId,
-            balance: convictionVoting._.balance,
-            conviction: convictionVoting._.conviction,
-            target: toAddress(convictionVoting._.target),
-            prior: convictionVoting._.prior,
+            balance: convictionVoting.data.balance,
+            conviction: convictionVoting.data.conviction,
+            target: toAddress(convictionVoting.data.target),
+            prior: convictionVoting.data.prior,
           };
           break;
         }
         case 'Casting': {
           const votes: Record<ReferendumId, AccountVote> = {};
-          for (const { referendum, vote } of convictionVoting._.votes) {
+          for (const { referendum, vote } of convictionVoting.data.votes) {
             const referendumId = referendum.toString();
 
             switch (vote.type) {
@@ -92,25 +92,25 @@ function subscribeVotingFor(
                 votes[referendumId] = {
                   type: 'Standard',
                   vote: {
-                    aye: vote._.vote.isAye,
-                    conviction: vote._.vote.conviction.type,
+                    aye: vote.data.vote.isAye,
+                    conviction: vote.data.vote.conviction.type,
                   },
-                  balance: vote._.balance,
+                  balance: vote.data.balance,
                 };
                 break;
               case 'Split':
                 votes[referendumId] = {
                   type: 'Split',
-                  aye: vote._.aye,
-                  nay: vote._.nay,
+                  aye: vote.data.aye,
+                  nay: vote.data.nay,
                 };
                 break;
               case 'SplitAbstain':
                 votes[referendumId] = {
                   type: 'SplitAbstain',
-                  aye: vote._.aye,
-                  nay: vote._.nay,
-                  abstain: vote._.abstain,
+                  aye: vote.data.aye,
+                  nay: vote.data.nay,
+                  abstain: vote.data.abstain,
                 };
                 break;
             }
@@ -121,7 +121,7 @@ function subscribeVotingFor(
             track: trackId,
             address,
             votes,
-            prior: convictionVoting._.prior,
+            prior: convictionVoting.data.prior,
           };
         }
       }
