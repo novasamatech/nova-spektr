@@ -66,7 +66,7 @@ export const BaseModal = ({
 
                     {closeButton && (
                       <Dialog.Close asChild>
-                        <IconButton name="close" size={20} className="m-1" onClick={() => onClose()} />
+                        <IconButton name="close" size={20} className="m-1" />
                       </Dialog.Close>
                     )}
                   </div>
