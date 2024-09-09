@@ -33,6 +33,24 @@ const getBoxSize = <T extends string | number | void>(size: BoxSpacing | string 
   return size as T;
 };
 
+/**
+ * Basic building block for positioning elements on surface. Abstraction over
+ * flexbox container.
+ *
+ * ```tsx
+ * const Component = () => {
+ *   return (
+ *     <Surface>
+ *       <Box direction="horizontal" gap={2} padding={4}>
+ *         <Input />
+ *         <Button />
+ *         <Description />
+ *       </Box>
+ *     </Surface>
+ *   );
+ * };
+ * ```
+ */
 export const Box = forwardRef<HTMLDivElement, BoxProps>(
   (
     {

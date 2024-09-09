@@ -1,6 +1,7 @@
 import * as RadixPopover from '@radix-ui/react-popover';
 import { type PropsWithChildren, createContext, useContext, useMemo } from 'react';
 
+import { Surface } from '../Surface/Surface';
 import { useTheme } from '../Theme/useTheme';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
 import { type XOR } from '../_types/helpers';
@@ -67,15 +68,17 @@ const Content = ({ children }: PropsWithChildren) => {
   return (
     <RadixPopover.Portal container={portalContainer}>
       <RadixPopover.Content
-        className="z-50 rounded-md border border-token-container-border bg-block-background-default text-body shadow-card-shadow duration-100 animate-in fade-in zoom-in-95"
         side={side}
         align={align}
         collisionPadding={gridSpaceConverter(2)}
         alignOffset={alignOffset && gridSpaceConverter(alignOffset)}
         sideOffset={sideOffset && gridSpaceConverter(sideOffset)}
         data-testid={testId}
+        asChild
       >
-        {children}
+        <Surface className="z-50 duration-100 animate-in fade-in zoom-in-95" elevation={1}>
+          {children}
+        </Surface>
       </RadixPopover.Content>
     </RadixPopover.Portal>
   );

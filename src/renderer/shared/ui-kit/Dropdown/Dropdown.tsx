@@ -4,6 +4,7 @@ import { type PropsWithChildren, type ReactNode, createContext, useContext, useM
 import { Checkbox } from '@/shared/ui';
 import { cnTw } from '../../lib/utils';
 import { ScrollArea } from '../ScrollArea/ScrollArea';
+import { Surface } from '../Surface/Surface';
 import { useTheme } from '../Theme/useTheme';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
 import { type XOR } from '../_types/helpers';
@@ -66,11 +67,6 @@ const Content = ({ children }: PropsWithChildren) => {
   return (
     <DropdownMenu.Portal container={portalContainer}>
       <DropdownMenu.Content
-        className={cnTw(
-          'min-w-20 overflow-hidden rounded-md border border-token-container-border bg-block-background-default text-body shadow-shadow-2 duration-100 animate-in fade-in zoom-in-95',
-          'h-max max-h-[--radix-popper-available-height] max-w-60',
-          'flex flex-col',
-        )}
         loop
         avoidCollisions={false}
         side={side}
@@ -79,10 +75,20 @@ const Content = ({ children }: PropsWithChildren) => {
         alignOffset={alignOffset && gridSpaceConverter(alignOffset)}
         sideOffset={sideOffset && gridSpaceConverter(sideOffset)}
         data-testid={testId}
+        asChild
       >
-        <ScrollArea>
-          <div className="flex flex-col gap-1 p-1">{children}</div>
-        </ScrollArea>
+        <Surface
+          elevation={1}
+          className={cnTw(
+            'min-w-20 overflow-hidden duration-100 animate-in fade-in zoom-in-95',
+            'h-max max-h-[--radix-popper-available-height] max-w-60',
+            'flex flex-col',
+          )}
+        >
+          <ScrollArea>
+            <div className="flex flex-col gap-1 p-1">{children}</div>
+          </ScrollArea>
+        </Surface>
       </DropdownMenu.Content>
     </DropdownMenu.Portal>
   );
