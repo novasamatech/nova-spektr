@@ -4,7 +4,7 @@ import { Box } from './Box';
 
 const meta: Meta<typeof Box> = {
   component: Box,
-  title: 'kit/Box',
+  title: 'Design System/kit/Box',
 };
 
 export default meta;

@@ -67,7 +67,7 @@ const Content = ({ children }: PropsWithChildren) => {
   return (
     <RadixPopover.Portal container={portalContainer}>
       <RadixPopover.Content
-        className="z-50 rounded-md border border-token-container-border bg-block-background-default text-body shadow-shadow-2 duration-100 animate-in fade-in zoom-in-95"
+        className="z-50 rounded-md border border-token-container-border bg-block-background-default text-body shadow-card-shadow duration-100 animate-in fade-in zoom-in-95"
         side={side}
         align={align}
         collisionPadding={gridSpaceConverter(2)}

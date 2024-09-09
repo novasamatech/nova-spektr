@@ -5,7 +5,7 @@ import { Box } from '../Box/Box';
 import { ScrollArea } from './ScrollArea';
 
 const meta: Meta<typeof ScrollArea> = {
-  title: 'kit/ScrollArea',
+  title: 'Design System/kit/ScrollArea',
   component: ScrollArea,
   parameters: {
     layout: 'centered',

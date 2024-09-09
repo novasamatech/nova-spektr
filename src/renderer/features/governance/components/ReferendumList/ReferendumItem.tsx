@@ -3,7 +3,7 @@ import { memo } from 'react';
 import { useI18n } from '@app/providers';
 import { nonNullable } from '@shared/lib/utils';
 import { FootnoteText, HeadlineText, Shimmering } from '@shared/ui';
-import { TrackInfo, VoteChart, Voted, referendumService, votingService } from '@entities/governance';
+import { ReferendumVoteChart, TrackInfo, Voted, referendumService, votingService } from '@entities/governance';
 import { type AggregatedReferendum } from '../../types/structs';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 
@@ -50,7 +50,7 @@ export const ReferendumItem = memo<Props>(({ referendum, isTitlesLoading, onSele
         <HeadlineText className="pointer-events-auto flex-1">{titleNode}</HeadlineText>
         <div className="shrink-0 basis-[200px]">
           {voteFractions ? (
-            <VoteChart aye={voteFractions.aye} nay={voteFractions.nay} pass={voteFractions.pass} />
+            <ReferendumVoteChart aye={voteFractions.aye} nay={voteFractions.nay} pass={voteFractions.pass} />
           ) : null}
         </div>
       </div>
