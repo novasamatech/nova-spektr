@@ -258,7 +258,7 @@ sample({
 sample({
   clock: voteConfirmModel.events.submitFinished,
   source: transaction.$isMultisig,
-  filter: (isMultisig, results) => isMultisig && results[0].result === ExtrinsicResult.SUCCESS,
+  filter: (isMultisig, results) => isMultisig && results[0]?.result === ExtrinsicResult.SUCCESS,
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
 });

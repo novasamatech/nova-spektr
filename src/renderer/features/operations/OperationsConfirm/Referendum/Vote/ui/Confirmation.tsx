@@ -11,8 +11,8 @@ import { Fee } from '@/entities/transaction';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
-import { ConfirmDetails } from '../../../common/ConfirmDetails';
-import { MultisigExistsAlert } from '../../../common/MultisigExistsAlert';
+import { ConfirmDetails } from '@/features/operations/OperationsConfirm/common/ConfirmDetails';
+import { MultisigExistsAlert } from '@/features/operations/OperationsConfirm/common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -51,7 +51,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const { asset, existingVote, wrappedTransactions, api } = confirm.meta;
 
   if (
-    !voteTransactionService.isVoteTransaction(wrappedTransactions.coreTx) ||
+    !voteTransactionService.isVoteTransaction(wrappedTransactions.coreTx) &&
     !voteTransactionService.isRevoteTransaction(wrappedTransactions.coreTx)
   ) {
     return null;
