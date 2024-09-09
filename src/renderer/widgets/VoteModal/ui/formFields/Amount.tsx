@@ -6,7 +6,7 @@ import { fromPrecision, toPrecision } from '@shared/lib/utils';
 import { AmountInput, InputHint } from '@shared/ui';
 
 type Props = {
-  value: BN | undefined;
+  value: BN | null;
   asset: Asset;
   availableBalance: BN;
   hasError: boolean;
