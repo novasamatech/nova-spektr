@@ -73,7 +73,7 @@ export const ReferendumDetailsDialog = ({
           {nonNullable(referendum.vote) && (
             <DetailsCard>
               <VotingBalance
-                votes={votingService.calculateAccountVotePower(referendum.vote)}
+                votes={votingService.calculateAccountVotePower(referendum.vote.vote)}
                 asset={asset}
                 onInfoClick={toggleShowWalletVotes}
               />
