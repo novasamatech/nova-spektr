@@ -14,7 +14,7 @@ import {
   TransactionType,
 } from '@shared/core';
 import { TEST_ACCOUNTS, formatAmount, getAssetId, toAccountId, toAddress } from '@shared/lib/utils';
-import { type TransactionVote, type VoteTransaction } from '@/entities/governance';
+import { type RevoteTransaction, type TransactionVote, type VoteTransaction } from '@/entities/governance';
 
 import { TransferType } from './common/constants';
 import { transactionService } from './transactionService';
@@ -33,6 +33,7 @@ export const transactionBuilder = {
   buildEditDelegation,
   buildUnlock,
   buildVote,
+  buildRevote,
   buildRemoveVote,
 
   buildBatchAll,
@@ -404,6 +405,27 @@ function buildVote({ chain, accountId, referendumId, trackId, vote }: VoteParams
     chainId: chain.chainId,
     address: toAddress(accountId, { prefix: chain.addressPrefix }),
     type: TransactionType.VOTE,
+    args: {
+      track: trackId,
+      referendum: referendumId,
+      vote,
+    },
+  };
+}
+
+type RevoteParams = {
+  chain: Chain;
+  accountId: AccountId;
+  trackId: TrackId;
+  referendumId: ReferendumId;
+  vote: TransactionVote;
+};
+
+function buildRevote({ chain, accountId, referendumId, trackId, vote }: RevoteParams): RevoteTransaction {
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.REVOTE,
     args: {
       track: trackId,
       referendum: referendumId,

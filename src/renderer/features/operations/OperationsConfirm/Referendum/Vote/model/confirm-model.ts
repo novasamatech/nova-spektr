@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { createEvent } from 'effector';
 
-import { type Asset, type Conviction } from '@/shared/core';
+import { type AccountVote, type Asset } from '@/shared/core';
 import { networkModel } from '@/entities/network';
 import { operationsModel } from '@/entities/operations';
 import { walletModel } from '@/entities/wallet';
@@ -11,7 +11,7 @@ import { type ConfirmInfo, createTransactionConfirmStore } from '@/features/oper
 export type VoteConfirm = ConfirmInfo & {
   api: ApiPromise;
   asset: Asset;
-  initialConviction: Conviction;
+  existingVote: AccountVote | null;
 };
 
 const sign = createEvent();

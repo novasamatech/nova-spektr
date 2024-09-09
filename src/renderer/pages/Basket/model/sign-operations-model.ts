@@ -343,6 +343,19 @@ sample({
   target: voteConfirmModel.events.fillConfirm,
 });
 
+// Revote
+
+sample({
+  clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.REVOTE).length > 0;
+  },
+  fn: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.REVOTE).map((tx) => tx.params) || [];
+  },
+  target: voteConfirmModel.events.fillConfirm,
+});
+
 // Remove vote
 
 sample({

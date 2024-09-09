@@ -14,8 +14,8 @@ import { votingListService } from '../../lib/votingListService';
 
 type Props = {
   referendum: Referendum;
-  asset: Asset | null;
-  chain: Chain | null;
+  asset: Asset;
+  chain: Chain;
   onClose: VoidFunction;
 };
 
@@ -38,10 +38,6 @@ export const MyVotesDialog = ({ referendum, asset, chain, onClose }: Props) => {
       }),
     [votes, referendum],
   );
-
-  if (!asset) {
-    return null;
-  }
 
   return (
     <BaseModal
@@ -69,7 +65,7 @@ export const MyVotesDialog = ({ referendum, asset, chain, onClose }: Props) => {
                 key={address}
                 className="min-h-11"
                 accountId={toAccountId(address)}
-                addressPrefix={chain?.addressPrefix}
+                addressPrefix={chain.addressPrefix}
               >
                 <AddressWithName addressFont="text-text-secondary" address={address} type="adaptive" />
               </SignatoryCard>

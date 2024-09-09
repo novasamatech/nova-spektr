@@ -1,9 +1,9 @@
 import { useForm } from 'effector-forms';
 import { useGate, useStoreMap, useUnit } from 'effector-react';
-import { useState } from 'react';
 
 import { useI18n } from '@app/providers';
 import { type Asset, type Chain } from '@shared/core';
+import { useToggle } from '@shared/lib/hooks';
 import { formatAsset } from '@shared/lib/utils';
 import {
   Alert,
@@ -16,7 +16,7 @@ import {
   Shimmering,
   SmallTitleText,
 } from '@shared/ui';
-import { LockPeriodDiff, LockValueDiff } from '@entities/governance';
+import { LockPeriodDiff, LockValueDiff, votingService } from '@entities/governance';
 import { locksPeriodsAggregate } from '@features/governance';
 import { voteModalAggregate } from '../aggregates/voteModal';
 
@@ -36,7 +36,7 @@ export const VoteForm = ({ chain, asset }: Props) => {
 
   const lock = useUnit(voteModalAggregate.$lock);
 
-  const initialConviction = useUnit(voteModalAggregate.$initialConviction);
+  const existingVote = useUnit(voteModalAggregate.$existingVote);
   const fee = useUnit(voteModalAggregate.transaction.$fee);
 
   const availableBalance = useUnit(voteModalAggregate.$availableBalance);
@@ -59,7 +59,9 @@ export const VoteForm = ({ chain, asset }: Props) => {
     fields: { account, signatory, conviction, amount, decision },
   } = useForm(voteModalAggregate.form);
 
-  const [showAbstainConfirm, setShowAbstainConfirm] = useState<boolean>(false);
+  const [showAbstainConfirm, toggleAbstainConfirm] = useToggle();
+
+  const initialConviction = existingVote ? votingService.getAccountVoteConviction(existingVote) : 'None';
 
   return (
     <>
@@ -143,7 +145,7 @@ export const VoteForm = ({ chain, asset }: Props) => {
             icon="minusCircle"
             pallet="secondary"
             disabled={hasDelegatedTrack}
-            onClick={() => setShowAbstainConfirm(true)}
+            onClick={toggleAbstainConfirm}
           >
             {t('governance.referendum.abstain')}
           </ButtonCard>
@@ -168,9 +170,9 @@ export const VoteForm = ({ chain, asset }: Props) => {
           panelClass="w-60"
           cancelText={t('general.button.cancelButton')}
           confirmText={t('general.button.continueButton')}
-          onClose={() => setShowAbstainConfirm(false)}
+          onClose={toggleAbstainConfirm}
           onConfirm={() => {
-            setShowAbstainConfirm(false);
+            toggleAbstainConfirm();
             conviction.onChange('None');
             decision.onChange('abstain');
             submit();

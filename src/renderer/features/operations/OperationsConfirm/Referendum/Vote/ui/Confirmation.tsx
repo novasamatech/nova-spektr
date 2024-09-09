@@ -11,8 +11,8 @@ import { Fee } from '@/entities/transaction';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
-import { ConfirmDetails } from '../../../common/ConfirmDetails';
-import { MultisigExistsAlert } from '../../../common/MultisigExistsAlert';
+import { ConfirmDetails } from '@/features/operations/OperationsConfirm/common/ConfirmDetails';
+import { MultisigExistsAlert } from '@/features/operations/OperationsConfirm/common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -48,9 +48,12 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     return null;
   }
 
-  const { asset, initialConviction, wrappedTransactions, api } = confirm.meta;
+  const { asset, existingVote, wrappedTransactions, api } = confirm.meta;
 
-  if (!voteTransactionService.isVoteTransaction(wrappedTransactions.coreTx)) {
+  if (
+    !voteTransactionService.isVoteTransaction(wrappedTransactions.coreTx) &&
+    !voteTransactionService.isRevoteTransaction(wrappedTransactions.coreTx)
+  ) {
     return null;
   }
 
@@ -63,6 +66,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   );
 
   const votingPower = votingService.calculateVotingPower(amount, conviction);
+  const initialConviction = existingVote ? votingService.getAccountVoteConviction(existingVote) : 'None';
 
   const address = toAddress(confirm.meta.account.accountId, { prefix: confirm.meta.chain.addressPrefix });
   const locksForAddress = getLocksForAddress(address, trackLocks);
@@ -70,7 +74,11 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   return (
     <div className="flex flex-col items-center gap-4 px-5 py-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
-        <Icon className="text-icon-default" name="voteMst" size={60} />
+        {existingVote ? (
+          <Icon className="text-icon-default" name="revoteMst" size={60} />
+        ) : (
+          <Icon className="text-icon-default" name="voteMst" size={60} />
+        )}
 
         <div className="flex flex-col items-center gap-y-1">
           <span className="font-manrope text-[32px] font-bold leading-[36px] text-text-primary">

@@ -3,8 +3,8 @@ import { combine, createEvent, createStore, sample } from 'effector';
 import { isNil } from 'lodash';
 import { and, empty, not, reset } from 'patronum';
 
-import { type Conviction, type OngoingReferendum } from '@shared/core';
-import { nonNullable, toAddress } from '@shared/lib/utils';
+import { type AccountVote, type Conviction, type OngoingReferendum } from '@shared/core';
+import { nonNullable, nullable, toAddress } from '@shared/lib/utils';
 import { balanceModel } from '@entities/balance';
 import { voteTransactionService } from '@entities/governance';
 import { type WrappedTransactions, transactionBuilder } from '@entities/transaction';
@@ -29,7 +29,7 @@ type FormInput = {
   wrappedTransactions: WrappedTransactions;
 };
 
-const $initialConviction = createStore<Conviction>('None');
+const $existingVote = createStore<AccountVote | null>(null);
 const $referendum = createStore<OngoingReferendum | null>(null);
 const $availableBalance = createStore(BN_ZERO);
 const $lockForAccount = createStore(BN_ZERO);
@@ -52,14 +52,25 @@ const transactionForm = createTransactionForm<Form>({
       {
         chain: $chain,
         referendum: $referendum,
+        existingVote: $existingVote,
         conviction: form.fields.conviction.$value,
         account: form.fields.account.$value,
         amount: form.fields.amount.$value,
         decision: form.fields.decision.$value,
       },
-      ({ chain, referendum, account, amount, conviction, decision }) => {
-        if (!referendum || !chain || !account) {
+      ({ chain, referendum, account, amount, conviction, decision, existingVote }) => {
+        if (nullable(referendum) || nullable(chain) || nullable(account)) {
           return null;
+        }
+
+        if (existingVote) {
+          return transactionBuilder.buildRevote({
+            chain: chain,
+            accountId: account.accountId,
+            trackId: referendum.track,
+            referendumId: referendum.referendumId,
+            vote: voteTransactionService.createTransactionVote(decision ?? 'aye', amount, conviction),
+          });
         }
 
         return transactionBuilder.buildVote({
@@ -139,7 +150,7 @@ sample({
 
 reset({
   clock: resetForm,
-  target: [$referendum, $initialConviction],
+  target: [$referendum, $existingVote],
 });
 
 // Submit
@@ -173,14 +184,15 @@ sample({
 sample({
   clock: form.formValidated,
   source: {
-    initialConviction: $initialConviction,
+    form: form.$values,
+    existingVote: $existingVote,
     network: networkSelectorModel.$network,
     wrappedTransactions: transaction.$wrappedTx,
   },
   filter: ({ network, wrappedTransactions }, { account, decision }) => {
     return nonNullable(network) && nonNullable(account) && nonNullable(decision) && nonNullable(wrappedTransactions);
   },
-  fn: ({ initialConviction, network, wrappedTransactions }, { account, signatory, description }): VoteConfirm => {
+  fn: ({ existingVote, network, wrappedTransactions }, { account, signatory, description }): VoteConfirm => {
     return {
       api: network!.api,
       chain: network!.chain,
@@ -188,7 +200,7 @@ sample({
       account: account!,
       signatory: signatory ?? undefined,
       description: description,
-      initialConviction,
+      existingVote,
       wrappedTransactions: wrappedTransactions!,
     };
   },
@@ -210,7 +222,7 @@ export const voteFormAggregate = {
   transactionForm,
 
   $referendum,
-  $initialConviction,
+  $existingVote,
   $lockForAccount,
   $availableBalance,
 

@@ -11,11 +11,12 @@ import { Threshold } from './Threshold';
 
 type Props = {
   referendum: AggregatedReferendum;
-  asset: Asset | null;
+  asset: Asset;
   canVote: boolean;
   wallet?: Wallet;
   hasAccount: boolean;
   onVoteRequest: () => unknown;
+  onRevoteRequest: () => unknown;
   onRemoveVoteRequest: () => unknown;
 };
 
@@ -26,15 +27,12 @@ export const VotingStatus = ({
   wallet,
   hasAccount,
   onVoteRequest,
+  onRevoteRequest,
   onRemoveVoteRequest,
 }: Props) => {
   const { t } = useI18n();
 
-  const { approvalThreshold, supportThreshold } = referendum;
-
-  if (!asset) {
-    return null;
-  }
+  const { approvalThreshold, supportThreshold, vote } = referendum;
 
   const isPassing = supportThreshold?.passing ?? false;
 
@@ -50,10 +48,17 @@ export const VotingStatus = ({
   return (
     <div className="flex flex-col items-start gap-6">
       <VotingStatusBadge passing={isPassing} referendum={referendum} />
-      {votedFractions && <VoteChart descriptionPosition="bottom" {...votedFractions} />}
+      {votedFractions && (
+        <VoteChart
+          descriptionPosition="bottom"
+          aye={votedFractions.aye}
+          nay={votedFractions.nay}
+          pass={votedFractions.pass}
+        />
+      )}
       {votedCount && <Threshold voited={votedCount.voted} threshold={votedCount.threshold} asset={asset} />}
 
-      {canVote && nonNullable(asset) && nullable(referendum.vote) && referendumService.isOngoing(referendum) && (
+      {canVote && referendumService.isOngoing(referendum) && nonNullable(asset) && nullable(vote) && (
         <div className="flex w-full flex-col gap-4">
           <Button className="w-full" disabled={!hasAccount || !canVote} onClick={onVoteRequest}>
             {t('governance.referendum.vote')}
@@ -71,6 +76,12 @@ export const VotingStatus = ({
             </FootnoteText>
           )}
         </div>
+      )}
+
+      {canVote && nonNullable(asset) && nonNullable(vote) && referendumService.isOngoing(referendum) && (
+        <Button className="w-full" disabled={!hasAccount || !canVote} onClick={onRevoteRequest}>
+          {t('governance.referendum.revote')}
+        </Button>
       )}
 
       {canVote && nonNullable(asset) && nonNullable(referendum.vote) && referendumService.isOngoing(referendum) && (

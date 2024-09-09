@@ -526,13 +526,8 @@ export const getExtrinsic: Record<
   [TransactionType.VOTE]: ({ referendum, vote }, api) => {
     return api.tx.convictionVoting.vote(referendum, vote);
   },
-  [TransactionType.REVOTE]: ({ trackId, referendumId, vote }, api) => {
-    const calls = [
-      api.tx.convictionVoting.removeVote(trackId, referendumId),
-      api.tx.convictionVoting.vote(referendumId, vote),
-    ];
-
-    return api.tx.utility.batchAll(calls);
+  [TransactionType.REVOTE]: ({ referendum, vote }, api) => {
+    return api.tx.convictionVoting.vote(referendum, vote);
   },
   [TransactionType.REMOVE_VOTE]: ({ trackId, referendumId }, api) => {
     return api.tx.convictionVoting.removeVote(trackId, referendumId);

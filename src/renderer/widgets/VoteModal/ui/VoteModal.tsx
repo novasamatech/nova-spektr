@@ -21,7 +21,7 @@ type Props = {
 };
 
 export const VoteModal = ({ referendum, asset, chain, onClose }: Props) => {
-  useGate(voteModalAggregate.gates.flow, { referendum, conviction: 'None' as const });
+  useGate(voteModalAggregate.gates.flow, { referendum, vote: null });
 
   const { t } = useI18n();
   const step = useUnit(voteModalAggregate.$step);
