@@ -31,6 +31,7 @@ export type { GovernanceApiSource } from './types/governanceApiSource';
 export type {
   TransactionVote,
   VoteTransaction,
+  RevoteTransaction,
   TransactionSplitAbstainVote,
   TransactionStandardVote,
 } from './types/voteTransaction';

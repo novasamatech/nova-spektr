@@ -26,7 +26,7 @@ export const Tooltip = ({
     contentClass={cnTw('px-2 py-1', contentClass)}
     wrapperClass={wrapperClass}
     panelClass={cnTw(
-      'w-max max-w-[184px] rounded border-none bg-switch-background-active shadow-none',
+      'text-text-white w-max max-w-[184px] rounded border-none bg-switch-background-active shadow-none',
       'spektr-arrow spektr-arrow__' + pointer,
       'spektr-arrow__' + arrow,
       panelClass,

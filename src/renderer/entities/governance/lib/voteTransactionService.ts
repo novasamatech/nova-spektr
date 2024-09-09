@@ -4,6 +4,7 @@ import { type Conviction, type Transaction, TransactionType } from '@shared/core
 import { toSerializable } from '@shared/lib/utils';
 import {
   type RemoveVoteTransaction,
+  type RevoteTransaction,
   type TransactionSplitAbstainVote,
   type TransactionStandardVote,
   type TransactionVote,
@@ -22,6 +23,10 @@ const isSplitAbstainVote = (vote: TransactionVote): vote is TransactionSplitAbst
 
 const isVoteTransaction = (t: Transaction): t is VoteTransaction => {
   return t.type === TransactionType.VOTE;
+};
+
+const isRevoteTransaction = (t: Transaction): t is RevoteTransaction => {
+  return t.type === TransactionType.REVOTE;
 };
 
 const isRemoveVoteTransaction = (t: Transaction): t is RemoveVoteTransaction => {
@@ -83,6 +88,7 @@ export const voteTransactionService = {
   getVotes,
 
   isVoteTransaction,
+  isRevoteTransaction,
   isRemoveVoteTransaction,
   isStandardVote,
   isSplitAbstainVote,

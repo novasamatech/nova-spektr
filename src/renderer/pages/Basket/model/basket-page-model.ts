@@ -126,6 +126,7 @@ const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
       [TransactionType.UNLOCK]: unlockValidateModel.events.validationStarted,
       [TransactionType.DELEGATE]: delegateValidateModel.events.validationStarted,
       [TransactionType.VOTE]: voteValidateModel.events.validationStarted,
+      [TransactionType.REVOTE]: voteValidateModel.events.validationStarted,
     };
 
     if (coreTx.type in TransactionValidators) {

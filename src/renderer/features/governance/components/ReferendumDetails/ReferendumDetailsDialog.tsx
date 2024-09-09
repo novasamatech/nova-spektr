@@ -1,9 +1,9 @@
-import { useGate, useStoreMap, useUnit } from 'effector-react';
-import { useMemo, useState } from 'react';
+import { useGate, useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { type Chain } from '@shared/core';
-import { useModalClose } from '@shared/lib/hooks';
+import { type Asset, type Chain } from '@shared/core';
+import { useModalClose, useToggle } from '@shared/lib/hooks';
+import { nonNullable } from '@shared/lib/utils';
 import { BaseModal, Button, Plate } from '@shared/ui';
 import { walletModel } from '@/entities/wallet';
 import { referendumService, votingService } from '@entities/governance';
@@ -23,36 +23,34 @@ import { VotingSummary } from './VotingSummary';
 
 type Props = {
   chain: Chain;
+  asset: Asset;
   referendum: AggregatedReferendum;
   onVoteRequest: () => unknown;
+  onRevoteRequest: () => unknown;
   onRemoveVoteRequest: () => unknown;
   onClose: VoidFunction;
 };
 
-export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onRemoveVoteRequest, onClose }: Props) => {
+export const ReferendumDetailsDialog = ({
+  chain,
+  asset,
+  referendum,
+  onClose,
+  onVoteRequest,
+  onRevoteRequest,
+  onRemoveVoteRequest,
+}: Props) => {
   useGate(detailsAggregate.gates.flow, { chain, referendum });
 
-  const [showWalletVotes, setShowWalletVotes] = useState(false);
-  const [showVoteHistory, setShowVoteHistory] = useState(false);
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showWalletVotes, toggleShowWalletVotes] = useToggle();
+  const [showVoteHistory, toggleShowVoteHistory] = useToggle();
+  const [showAdvanced, toggleShowAdvanced] = useToggle();
 
   const { t } = useI18n();
 
-  const votingAsset = useUnit(detailsAggregate.$votingAsset);
   const canVote = useUnit(detailsAggregate.$canVote);
   const hasAccount = useUnit(detailsAggregate.$hasAccount);
   const wallet = useUnit(walletModel.$activeWallet);
-
-  const votes = useStoreMap({
-    store: detailsAggregate.$votes,
-    keys: [referendum.referendumId],
-    fn: (votes, [referendumId]) => votingService.getReferendumAccountVotes(referendumId, votes),
-  });
-
-  const totalVotes = useMemo(
-    () => votingService.calculateAccountVotesTotalBalance(Object.values(votes)),
-    [votes, votingAsset],
-  );
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
@@ -72,34 +70,39 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onRe
         </Plate>
 
         <div className="flex shrink-0 grow basis-[320px] flex-row flex-wrap gap-4">
-          {referendum.vote && votingAsset && (
+          {nonNullable(referendum.vote) && (
             <DetailsCard>
-              <VotingBalance votes={totalVotes} asset={votingAsset} onInfoClick={() => setShowWalletVotes(true)} />
+              <VotingBalance
+                votes={votingService.calculateAccountVotePower(referendum.vote.vote)}
+                asset={asset}
+                onInfoClick={toggleShowWalletVotes}
+              />
             </DetailsCard>
           )}
 
           <DetailsCard title={t('governance.referendum.votingStatus')}>
             <VotingStatus
               referendum={referendum}
-              asset={votingAsset}
+              asset={asset}
               canVote={canVote}
               hasAccount={hasAccount}
               wallet={wallet}
               onVoteRequest={onVoteRequest}
+              onRevoteRequest={onRevoteRequest}
               onRemoveVoteRequest={onRemoveVoteRequest}
             />
           </DetailsCard>
 
-          {referendumService.isOngoing(referendum) && !!votingAsset && (
+          {referendumService.isOngoing(referendum) && (
             <DetailsCard
               title={t('governance.referendum.votingSummary')}
               action={
-                <Button variant="text" size="sm" className="h-fit p-0" onClick={() => setShowVoteHistory(true)}>
+                <Button variant="text" size="sm" className="h-fit p-0" onClick={toggleShowVoteHistory}>
                   {t('governance.voteHistory.viewVoteHistory')}
                 </Button>
               }
             >
-              <VotingSummary referendum={referendum} asset={votingAsset} />
+              <VotingSummary referendum={referendum} asset={asset} />
             </DetailsCard>
           )}
 
@@ -111,9 +114,9 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onRe
             <Timeline referendumId={referendum.referendumId} />
           </DetailsCard>
 
-          {referendumService.isOngoing(referendum) && !!votingAsset && (
+          {referendumService.isOngoing(referendum) && (
             <DetailsCard>
-              <Button className="h-auto w-fit p-0" size="sm" variant="text" onClick={() => setShowAdvanced(true)}>
+              <Button className="h-auto w-fit p-0" size="sm" variant="text" onClick={toggleShowAdvanced}>
                 {t('governance.referendum.advanced')}
               </Button>
             </DetailsCard>
@@ -122,18 +125,13 @@ export const ReferendumDetailsDialog = ({ chain, referendum, onVoteRequest, onRe
       </div>
 
       {showWalletVotes && (
-        <MyVotesDialog
-          referendum={referendum}
-          chain={chain}
-          asset={votingAsset}
-          onClose={() => setShowWalletVotes(false)}
-        />
+        <MyVotesDialog referendum={referendum} chain={chain} asset={asset} onClose={toggleShowWalletVotes} />
       )}
 
-      {showVoteHistory && <VotingHistoryDialog referendum={referendum} onClose={() => setShowVoteHistory(false)} />}
+      {showVoteHistory && <VotingHistoryDialog referendum={referendum} onClose={toggleShowVoteHistory} />}
 
-      {showAdvanced && referendumService.isOngoing(referendum) && !!votingAsset && (
-        <AdvancedDialog asset={votingAsset} referendum={referendum} onClose={() => setShowAdvanced(false)} />
+      {showAdvanced && referendumService.isOngoing(referendum) && (
+        <AdvancedDialog asset={asset} referendum={referendum} onClose={toggleShowAdvanced} />
       )}
     </BaseModal>
   );
