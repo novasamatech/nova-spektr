@@ -1,0 +1,6 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": ["src/renderer/**/index.{ts,tsx}", "src/main/**/index.{ts,tsx}", "src/webpack/*"],
+  "project": ["src/renderer/**/*.{js,ts,tsx}"],
+  "webpack": true
+}
