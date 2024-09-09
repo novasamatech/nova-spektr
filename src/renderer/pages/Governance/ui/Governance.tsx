@@ -168,7 +168,7 @@ export const Governance = () => {
         referendumService.isOngoing(selectedReferendum) && (
           <RevoteModal
             referendum={selectedReferendum}
-            vote={selectedReferendum.vote}
+            vote={selectedReferendum.vote.vote}
             chain={network.chain}
             asset={network.asset}
             onClose={() => setShowRevoteModal(false)}
