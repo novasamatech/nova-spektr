@@ -1,4 +1,9 @@
 :root {
+  /* SCROLLBAR */
+  --scrollbar-bg: rgba(0, 0, 0, 0.15);
+  --scrollbar-bg-hover: rgba(0, 0, 0, 0.3);
+  --scrollbar-thumb-bg: #84828e;
+
   /* TEXT */
   --text-primary: #363643;
   --text-secondary: #79797d;
