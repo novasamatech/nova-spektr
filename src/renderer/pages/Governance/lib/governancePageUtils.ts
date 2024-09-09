@@ -40,7 +40,11 @@ function isReferendumVoted({ selectedVoteId, referendum }: FilterByVoteParams) {
     return true;
   }
 
-  return selectedVoteId === VoteStatus.VOTED ? nonNullable(referendum.vote) : nullable(referendum.vote);
+  if (selectedVoteId === VoteStatus.VOTED) {
+    return nonNullable(referendum.vote) || nonNullable(referendum.votedByDelegate);
+  }
+
+  return nullable(referendum.vote) && nullable(referendum.votedByDelegate);
 }
 
 function isReferendumInTrack(selectedTrackIds: string[], referendum: AggregatedReferendum) {
