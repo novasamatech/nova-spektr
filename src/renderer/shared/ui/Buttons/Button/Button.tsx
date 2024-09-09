@@ -1,24 +1,24 @@
 import noop from 'lodash/noop';
-import { type MouseEvent, type PropsWithChildren, type ReactNode, forwardRef } from 'react';
+import { type ComponentProps, type PropsWithChildren, type ReactNode, forwardRef } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
 import { Loader } from '../../Loader/Loader';
 import { Padding, SizeClass, ViewClass } from '../common/constants';
 import { type Pallet, type Variant } from '../common/types';
 
-type Props = {
+type HTMLButtonProps = Pick<
+  ComponentProps<'button'>,
+  'onClick' | 'onMouseDown' | 'onPointerDown' | 'disabled' | 'tabIndex' | 'type'
+>;
+type Props = HTMLButtonProps & {
   className?: string;
-  type?: 'button' | 'submit';
   form?: string;
   variant?: Variant;
   pallet?: Pallet;
   size?: keyof typeof SizeClass;
-  disabled?: boolean;
-  tabIndex?: number;
   isLoading?: boolean;
   prefixElement?: ReactNode;
   suffixElement?: ReactNode;
-  onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
 };
 
 export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
@@ -37,6 +37,8 @@ export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
       children,
       isLoading,
       onClick = noop,
+      onMouseDown = noop,
+      onPointerDown = noop,
     },
     ref,
   ) => (
@@ -55,6 +57,8 @@ export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
       )}
       tabIndex={tabIndex}
       onClick={(e) => !isLoading && onClick(e)}
+      onMouseDown={(e) => !isLoading && onMouseDown(e)}
+      onPointerDown={(e) => !isLoading && onPointerDown(e)}
     >
       {isLoading && <Loader color="white" />}
       {prefixElement && <div data-testid="prefix">{prefixElement}</div>}

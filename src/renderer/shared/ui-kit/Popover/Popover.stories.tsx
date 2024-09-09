@@ -8,7 +8,7 @@ import { Popover } from './Popover';
 
 const meta: Meta<typeof Popover> = {
   component: Popover,
-  title: 'Popover',
+  title: 'kit/Popover',
   parameters: {
     layout: 'centered',
   },

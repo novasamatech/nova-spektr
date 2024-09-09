@@ -1,4 +1,4 @@
-import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react';
 
 import { Identicon } from '../../Identicon/Identicon';
 
@@ -15,9 +15,9 @@ export default {
       </div>
     ),
   ],
-} as ComponentMeta<typeof MultiSelect>;
+} as Meta<typeof MultiSelect>;
 
-const Template: ComponentStory<typeof MultiSelect> = (args) => <MultiSelect {...args} />;
+const Template: StoryFn<typeof MultiSelect> = (args) => <MultiSelect {...args} />;
 
 const data = [
   { value: 'Durward Reynolds', address: '13mK8AssyPekT5cFuYQ7ijKNXcjHPq8Gnx6TxF5eFCAwoLQ' },

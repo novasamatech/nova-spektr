@@ -1,4 +1,4 @@
-import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react';
 
 import { TEST_ACCOUNTS } from '@shared/lib/utils';
 
@@ -8,9 +8,9 @@ export default {
   title: 'AddressWithName',
   component: AddressWithName,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof AddressWithName>;
+} as Meta<typeof AddressWithName>;
 
-const Template: ComponentStory<typeof AddressWithName> = (args) => <AddressWithName {...args} />;
+const Template: StoryFn<typeof AddressWithName> = (args) => <AddressWithName {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {

@@ -7,7 +7,7 @@ import { Box } from '../Box/Box';
 import { Dropdown } from './Dropdown';
 
 const meta: Meta<typeof Dropdown> = {
-  title: 'Dropdown',
+  title: 'kit/Dropdown',
   component: Dropdown,
   parameters: {
     layout: 'centered',

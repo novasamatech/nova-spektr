@@ -1,8 +1,8 @@
-import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react';
 
 import { BlockExplorer } from './BlockExplorer';
 
-const meta: ComponentMeta<typeof BlockExplorer> = {
+const meta: Meta<typeof BlockExplorer> = {
   title: 'BlockExplorer',
   component: BlockExplorer,
   parameters: { actions: { argTypesRegex: '^on.*' } },
@@ -10,7 +10,7 @@ const meta: ComponentMeta<typeof BlockExplorer> = {
 
 export default meta;
 
-const Template: ComponentStory<typeof BlockExplorer> = (args) => <BlockExplorer {...args} />;
+const Template: StoryFn<typeof BlockExplorer> = (args) => <BlockExplorer {...args} />;
 
 export const Default = Template.bind({});
 Default.args = {

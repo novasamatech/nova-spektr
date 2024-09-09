@@ -1,4 +1,4 @@
-import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react';
 
 import { VoteChart } from './VoteChart';
 
@@ -13,18 +13,21 @@ export default {
       </div>
     ),
   ],
-} as ComponentMeta<typeof VoteChart>;
+} as Meta<typeof VoteChart>;
 
-const Template: ComponentStory<typeof VoteChart> = (args) => <VoteChart {...args} />;
+const Template: StoryFn<typeof VoteChart> = (args) => <VoteChart {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {
   aye: 70,
   nay: 30,
+  pass: 50,
 };
 
 export const Large = Template.bind({});
 Large.args = {
   aye: 1,
   nay: 99,
+  pass: 50,
+  descriptionPosition: 'bottom',
 };
