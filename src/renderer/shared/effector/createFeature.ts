@@ -3,15 +3,15 @@ import { readonly } from 'patronum';
 
 import { nonNullable } from '@/shared/lib/utils';
 
-type StaleState = { status: 'stale' };
+type IdleState = { status: 'idle' };
 type StartingState = { status: 'starting' };
 type RunningState<T> = { status: 'running'; data: T };
 type FailedState = { status: 'failed'; error: Error };
 
-export type State<T> = StaleState | StartingState | RunningState<T> | FailedState;
+export type State<T> = IdleState | StartingState | RunningState<T> | FailedState;
 
 export const createFeature = <T = null>(input: Store<T | null> = createStore<null>(null)) => {
-  const $state = createStore<State<T>>({ status: 'stale' });
+  const $state = createStore<State<T>>({ status: 'idle' });
   const $status = $state.map((x) => x.status);
   const start = createEvent();
   const stop = createEvent();
@@ -21,6 +21,7 @@ export const createFeature = <T = null>(input: Store<T | null> = createStore<nul
   const restore = createEvent();
 
   const isRunning = $status.map((x) => x === 'running');
+  const isStarting = $status.map((x) => x === 'starting');
 
   const inputFulfill = input.updates.filter({ fn: nonNullable }) as Event<T>;
 
@@ -33,7 +34,7 @@ export const createFeature = <T = null>(input: Store<T | null> = createStore<nul
 
   sample({
     clock: stop,
-    fn: (): StaleState => ({ status: 'stale' }),
+    fn: (): IdleState => ({ status: 'idle' }),
     target: $state,
   });
 
@@ -73,7 +74,7 @@ export const createFeature = <T = null>(input: Store<T | null> = createStore<nul
 
   sample({
     clock: $status,
-    filter: (status) => status === 'stale' || status === 'failed',
+    filter: (status) => status === 'idle' || status === 'failed',
     target: stopped,
   });
 
@@ -84,6 +85,7 @@ export const createFeature = <T = null>(input: Store<T | null> = createStore<nul
     stopped,
     running,
     isRunning,
+    isStarting,
     start,
     stop,
     fail,
