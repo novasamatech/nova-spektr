@@ -1,3 +1,5 @@
+export { useResizeObserver } from './hooks/useResizeObserver';
+
 export { useTheme } from './Theme/useTheme';
 
 export { ThemeProvider } from './Theme/ThemeProvider';

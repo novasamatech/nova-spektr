@@ -1,10 +1,10 @@
 import * as RadixPopover from '@radix-ui/react-popover';
 import { type PropsWithChildren, createContext, useContext, useMemo } from 'react';
 
+import { type XOR } from '@/shared/core';
 import { Surface } from '../Surface/Surface';
 import { useTheme } from '../Theme/useTheme';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
-import { type XOR } from '../_types/helpers';
 
 type ContextProps = {
   side?: 'top' | 'right' | 'bottom' | 'left';

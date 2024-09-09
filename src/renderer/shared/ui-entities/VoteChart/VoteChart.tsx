@@ -8,8 +8,6 @@ type Props = {
 };
 
 export const VoteChart = ({ value, threshold, disabled, thresholdIndicatorBorder = 'icon-button' }: Props) => {
-  console.log(4 - 4 / value);
-
   return (
     <div className="relative flex h-5.5 w-full items-center justify-between gap-x-1">
       {disabled && <div className="h-2.5 w-full rounded-md bg-tab-icon-inactive" />}

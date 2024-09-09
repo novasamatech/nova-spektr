@@ -1,13 +1,13 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { type PropsWithChildren, type ReactNode, createContext, useContext, useMemo } from 'react';
 
+import { type XOR } from '@/shared/core';
+import { cnTw } from '@/shared/lib/utils';
 import { Checkbox } from '@/shared/ui';
-import { cnTw } from '../../lib/utils';
 import { ScrollArea } from '../ScrollArea/ScrollArea';
 import { Surface } from '../Surface/Surface';
 import { useTheme } from '../Theme/useTheme';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
-import { type XOR } from '../_types/helpers';
 
 type ContextProps = {
   preventClosing?: boolean;

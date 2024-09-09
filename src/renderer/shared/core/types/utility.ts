@@ -31,3 +31,7 @@ export type Serializable<T> = T extends string | number | null | undefined | boo
                 [K in keyof T]: Serializable<T[K]>;
               }
             : never;
+
+type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never };
+
+export type XOR<T, U = object> = T | U extends object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U;

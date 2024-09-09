@@ -1,29 +1,26 @@
-import { type CSSProperties, memo, useEffect, useRef, useState } from 'react';
+import { type CSSProperties, memo, useRef, useState } from 'react';
 
-import { useDebouncedCallback } from '@/shared/lib/hooks';
-import { cnTw, nullable } from '@/shared/lib/utils';
+import { useDebouncedCallback } from '../../lib/hooks';
+import { nullable } from '../../lib/utils';
+import { useResizeObserver } from '../../ui-kit';
 
 import { getContainerMeasurement, getTextMeasurement } from './utils';
 
 type Props = {
   text: string;
   ellipsis?: string;
-  end?: number;
-  start?: number;
-  className?: string;
 };
 
-const containerStyle = {
+const containerStyle: CSSProperties = {
   display: 'block',
   overflow: 'hidden',
   whiteSpace: 'nowrap',
-} satisfies CSSProperties;
+};
 
-/**
- * @deprecated Truncate is used only in context of hex/hash values.\
- *   Use `import { Hash } from '@/shared/ui-entities'` instead.
- */
-export const Truncate = memo<Props>(({ text, ellipsis = '...', end = 5, start = 5, className = '' }) => {
+const MIN_START_SYMBOLS = 5;
+const MIN_END_SYMBOLS = 5;
+
+export const Truncate = memo<Props>(({ text, ellipsis = '...' }) => {
   const [container, setContainer] = useState<HTMLElement | null>(null);
   const textRef = useRef<HTMLElement>(null);
   const ellipsisRef = useRef<HTMLElement>(null);
@@ -34,7 +31,7 @@ export const Truncate = memo<Props>(({ text, ellipsis = '...', end = 5, start = 
     return {
       container: getContainerMeasurement(container),
       ellipsis: getTextMeasurement(ellipsisRef.current),
-      text: getTextMeasurement(textRef.current),
+      text: getTextMeasurement(textRef.current, text),
     };
   };
 
@@ -57,7 +54,7 @@ export const Truncate = memo<Props>(({ text, ellipsis = '...', end = 5, start = 
         containerWidth +
         ellipsisWidth +
         // special fix for wide characters like W,M,etc.
-        charWidth / 8,
+        charWidth,
     );
 
     const lettersToRemove = Math.ceil(delta / charWidth);
@@ -65,15 +62,14 @@ export const Truncate = memo<Props>(({ text, ellipsis = '...', end = 5, start = 
     const removeStart = center - Math.ceil(lettersToRemove / 2);
     const removeEnd = removeStart + lettersToRemove;
 
-    const leftSide = text.slice(0, Math.max(start, removeStart));
-    const rightSide = text.slice(Math.min(removeEnd, text.length - end));
+    const leftSide = text.slice(0, Math.max(MIN_START_SYMBOLS, removeStart));
+    const rightSide = text.slice(Math.min(removeEnd, text.length - MIN_END_SYMBOLS));
 
     return `${leftSide}${ellipsis}${rightSide}`;
   };
 
-  const parseTextForTruncation = useDebouncedCallback(0, (text: string) => {
+  const parseTextForTruncation = (text: string) => {
     const measurements = calculateMeasurements();
-
     if (!measurements.text.width || !measurements.container.width) {
       return;
     }
@@ -82,28 +78,16 @@ export const Truncate = memo<Props>(({ text, ellipsis = '...', end = 5, start = 
       measurements.text.width.value > measurements.container.width.value ? truncateText(measurements) : text;
 
     setTruncatedText(truncatedText);
-  });
+  };
 
-  const handleResize = useDebouncedCallback(150, () => {
+  const handleResize = useDebouncedCallback(0, () => {
     parseTextForTruncation(text);
   });
 
-  useEffect(() => {
-    if (container) {
-      const resizeObserver = new ResizeObserver(handleResize);
-      resizeObserver.observe(container);
-
-      return () => resizeObserver.disconnect();
-    }
-  }, [container]);
-
-  useEffect(() => {
-    handleResize.cancel();
-    parseTextForTruncation(text);
-  }, [text, start, end]);
+  useResizeObserver(container, handleResize);
 
   return (
-    <span ref={setContainer} style={containerStyle} className={cnTw('block w-full max-w-full', className)}>
+    <span ref={setContainer} style={containerStyle} className="block w-full max-w-full">
       <span ref={textRef} className="hidden">
         {text}
       </span>

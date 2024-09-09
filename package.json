@@ -155,6 +155,7 @@
     "@storybook/addon-webpack5-compiler-swc": "^1.0.5",
     "@storybook/react": "^8.2.9",
     "@storybook/react-webpack5": "^8.2.9",
+    "@storybook/test": "8.2.9",
     "@svgr/webpack": "^6.2.1",
     "@swc/cli": "0.4.0",
     "@swc/core": "1.6.7",

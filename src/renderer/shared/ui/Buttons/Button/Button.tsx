@@ -19,6 +19,7 @@ type Props = HTMLButtonProps & {
   isLoading?: boolean;
   prefixElement?: ReactNode;
   suffixElement?: ReactNode;
+  testId?: string;
 };
 
 export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
@@ -39,6 +40,7 @@ export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
       onClick = noop,
       onMouseDown = noop,
       onPointerDown = noop,
+      testId = 'Button',
     },
     ref,
   ) => (
@@ -56,6 +58,7 @@ export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
         className,
       )}
       tabIndex={tabIndex}
+      data-testid={testId}
       onClick={(e) => !isLoading && onClick(e)}
       onMouseDown={(e) => !isLoading && onMouseDown(e)}
       onPointerDown={(e) => !isLoading && onPointerDown(e)}

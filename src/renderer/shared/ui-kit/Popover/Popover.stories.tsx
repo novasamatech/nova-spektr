@@ -1,4 +1,5 @@
 import { type Meta, type StoryObj } from '@storybook/react';
+import { expect, userEvent, within } from '@storybook/test';
 import { useState } from 'react';
 
 import { Button, Switch } from '../../ui';
@@ -30,7 +31,15 @@ export default meta;
 
 type Story = StoryObj<typeof Popover>;
 
-export const Default: Story = {};
+export const Default: Story = {
+  async play({ canvasElement }) {
+    const canvas = within(canvasElement);
+    const button = await canvas.findByTestId('Button');
+    await userEvent.click(button);
+    const popover = await canvas.findByTestId('Popover');
+    expect(popover).toBeTruthy();
+  },
+};
 
 export const Controlled: Story = {
   decorators: [
