@@ -1,0 +1,19 @@
+.spektr-skeleton {
+  animation: spektr-slide 2.2s linear infinite forwards;
+  background: linear-gradient(
+    90deg,
+    rgba(69, 69, 137, 0.06) 0%,
+    rgba(69, 69, 137, 0.12) 50.52%,
+    rgba(69, 69, 137, 0.06) 100%
+  );
+  background-size: 1400px 100%;
+}
+
+@keyframes spektr-slide {
+  from {
+    background-position: -1400px 0;
+  }
+  to {
+    background-position: 1400px 0;
+  }
+}

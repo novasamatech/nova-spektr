@@ -11,6 +11,9 @@ type Props = {
   className?: string;
 };
 
+/**
+ * @deprecated Use `import { Skeleton } from '@/shared/ui-kit'` instead.
+ */
 export const Shimmering = ({ width, height, circle, className }: Props) => {
   const formattedWidth = isNumber(width) ? `${width}px` : width;
   const formattedHeight = isNumber(height) ? `${height}px` : height;
