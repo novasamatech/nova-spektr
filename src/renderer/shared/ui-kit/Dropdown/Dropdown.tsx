@@ -137,6 +137,12 @@ type CheckboxItemProps = PropsWithChildren<{
 
 const CheckboxItem = ({ checked, onChange, onSelect, children }: CheckboxItemProps) => {
   const { preventClosing } = useContext(Context);
+  const handleSelect = (event: Event) => {
+    if (preventClosing) {
+      event.preventDefault();
+    }
+    onSelect?.();
+  };
 
   return (
     <DropdownMenu.CheckboxItem
@@ -150,12 +156,7 @@ const CheckboxItem = ({ checked, onChange, onSelect, children }: CheckboxItemPro
         },
       )}
       onCheckedChange={onChange}
-      onSelect={(event) => {
-        if (preventClosing) {
-          event.preventDefault();
-        }
-        onSelect?.();
-      }}
+      onSelect={handleSelect}
     >
       <Checkbox checked={checked} />
       {children}
