@@ -1,4 +1,4 @@
-import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react';
 
 import { InputHint } from './InputHint';
 
@@ -6,9 +6,9 @@ export default {
   title: 'Input Hint',
   component: InputHint,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof InputHint>;
+} as Meta<typeof InputHint>;
 
-const Template: ComponentStory<typeof InputHint> = (args) => <InputHint {...args} />;
+const Template: StoryFn<typeof InputHint> = (args) => <InputHint {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {

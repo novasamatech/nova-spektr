@@ -1,4 +1,4 @@
-import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react';
 
 import { InputArea } from './InputArea';
 
@@ -6,9 +6,9 @@ export default {
   title: 'InputArea',
   component: InputArea,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof InputArea>;
+} as Meta<typeof InputArea>;
 
-const Template: ComponentStory<typeof InputArea> = (args) => <InputArea {...args} />;
+const Template: StoryFn<typeof InputArea> = (args) => <InputArea {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {

@@ -2,7 +2,7 @@ import { useI18n } from '@app/providers';
 import { type Asset, type Wallet } from '@shared/core';
 import { nonNullable, nullable } from '@shared/lib/utils';
 import { Button, FootnoteText } from '@shared/ui';
-import { VoteChart, referendumService, votingService } from '@entities/governance';
+import { ReferendumVoteChart, referendumService, votingService } from '@entities/governance';
 import { EmptyAccountMessage } from '@/features/emptyList';
 import { type AggregatedReferendum } from '../../types/structs';
 import { VotingStatusBadge } from '../VotingStatusBadge';
@@ -49,7 +49,7 @@ export const VotingStatus = ({
     <div className="flex flex-col items-start gap-6">
       <VotingStatusBadge passing={isPassing} referendum={referendum} />
       {votedFractions && (
-        <VoteChart
+        <ReferendumVoteChart
           descriptionPosition="bottom"
           aye={votedFractions.aye}
           nay={votedFractions.nay}

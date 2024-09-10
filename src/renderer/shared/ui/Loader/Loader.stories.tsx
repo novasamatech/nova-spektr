@@ -1,4 +1,4 @@
-import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react';
 
 import { Loader } from './Loader';
 
@@ -13,9 +13,9 @@ export default {
       </div>
     ),
   ],
-} as ComponentMeta<typeof Loader>;
+} as Meta<typeof Loader>;
 
-const Template: ComponentStory<typeof Loader> = (args) => <Loader {...args} />;
+const Template: StoryFn<typeof Loader> = (args) => <Loader {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {

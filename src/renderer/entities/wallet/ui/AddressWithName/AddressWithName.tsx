@@ -7,6 +7,9 @@ type Props = {
   canCopySubName?: boolean;
 } & AccountAddressProps;
 
+/**
+ * @deprecated Use `import { Address } from '@/shared/ui-entities'` instead.
+ */
 export const AddressWithName = ({
   className,
   symbols,

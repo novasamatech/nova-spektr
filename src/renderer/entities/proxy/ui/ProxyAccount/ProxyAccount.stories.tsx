@@ -1,4 +1,4 @@
-import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react';
 
 import { ProxyType } from '@shared/core';
 import { TEST_ACCOUNTS } from '@shared/lib/utils';
@@ -9,9 +9,9 @@ export default {
   title: 'ProxyAccount',
   component: ProxyAccount,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof ProxyAccount>;
+} as Meta<typeof ProxyAccount>;
 
-const Template: ComponentStory<typeof ProxyAccount> = (args) => <ProxyAccount {...args} />;
+const Template: StoryFn<typeof ProxyAccount> = (args) => <ProxyAccount {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {

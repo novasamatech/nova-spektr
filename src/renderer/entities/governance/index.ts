@@ -9,7 +9,7 @@ export { proposerIdentityModel } from './model/proposerIdentity';
 
 export { Voted } from './ui/Voted/Voted';
 export { TrackInfo } from './ui/TrackInfo';
-export { VoteChart } from './ui/VoteCharts';
+export { ReferendumVoteChart } from './ui/VoteCharts';
 export { ReferendumTimer } from './ui/ReferendumTimer/ReferendumTimer';
 export { LockValueDiff } from './ui/LockValueDiff';
 export { LockPeriodDiff } from './ui/LockPeriodDiff';

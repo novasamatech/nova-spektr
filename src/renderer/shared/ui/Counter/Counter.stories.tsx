@@ -1,4 +1,4 @@
-import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react';
 
 import { Counter } from './Counter';
 
@@ -6,9 +6,9 @@ export default {
   title: 'Counter',
   component: Counter,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof Counter>;
+} as Meta<typeof Counter>;
 
-const Template: ComponentStory<typeof Counter> = (args) => <Counter {...args} />;
+const Template: StoryFn<typeof Counter> = (args) => <Counter {...args} />;
 export const Waiting = Template.bind({});
 Waiting.args = {
   variant: 'waiting',

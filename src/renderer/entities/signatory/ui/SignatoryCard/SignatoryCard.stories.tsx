@@ -1,4 +1,4 @@
-import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react';
 
 import { TEST_ADDRESS } from '@shared/lib/utils';
 
@@ -8,9 +8,9 @@ export default {
   title: 'Signatory',
   component: SignatoryCard,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof SignatoryCard>;
+} as Meta<typeof SignatoryCard>;
 
-const Template: ComponentStory<typeof SignatoryCard> = (args) => <SignatoryCard {...args} />;
+const Template: StoryFn<typeof SignatoryCard> = (args) => <SignatoryCard {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {

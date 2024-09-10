@@ -1,4 +1,4 @@
-import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react';
 
 import { Tooltip } from './Tooltip';
 
@@ -13,9 +13,9 @@ export default {
       </div>
     ),
   ],
-} as ComponentMeta<typeof Tooltip>;
+} as Meta<typeof Tooltip>;
 
-const Template: ComponentStory<typeof Tooltip> = (args) => <Tooltip {...args} />;
+const Template: StoryFn<typeof Tooltip> = (args) => <Tooltip {...args} />;
 
 export const Default = Template.bind({});
 Default.args = {

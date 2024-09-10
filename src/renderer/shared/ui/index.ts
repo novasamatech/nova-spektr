@@ -51,7 +51,6 @@ export { Truncate } from './Truncate/Truncate';
 export { Countdown } from './Countdown/Countdown';
 export { Tabs } from './Tabs/Tabs';
 export { Markdown } from './Markdown/Markdown';
-export { Slider } from './Slider/Slider';
 export { BlockExplorer } from './BlockExplorer/BlockExplorer';
 export { EmptyList } from './EmptyList/EmptyList';
 
