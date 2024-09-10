@@ -6,7 +6,7 @@ import { fromPrecision, toPrecision } from '@shared/lib/utils';
 import { AmountInput, InputHint } from '@shared/ui';
 
 type Props = {
-  value: BN;
+  value: BN | null;
   asset: Asset;
   availableBalance: BN;
   hasError: boolean;
@@ -27,7 +27,7 @@ export const Amount = ({ value, availableBalance, errorText, asset, hasError, on
         placeholder={t('governance.vote.field.balance')}
         showCurrency={false}
         balance={availableBalance.toString()}
-        value={fromPrecision(value, asset.precision).toString()}
+        value={value ? fromPrecision(value, asset.precision).toString() : ''}
         invalid={hasError}
         asset={asset}
         onChange={handleChange}

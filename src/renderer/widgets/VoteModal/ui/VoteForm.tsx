@@ -1,3 +1,4 @@
+import { BN_ZERO } from '@polkadot/util';
 import { useForm } from 'effector-forms';
 import { useGate, useStoreMap, useUnit } from 'effector-react';
 
@@ -105,13 +106,13 @@ export const VoteForm = ({ chain, asset }: Props) => {
           <ConvictionSelect
             value={conviction.value}
             asset={asset}
-            amount={amount.value}
+            amount={amount.value || BN_ZERO}
             onChange={conviction.onChange}
           />
         </div>
         <div className="flex flex-col gap-4">
           <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.governanceLock')}>
-            <LockValueDiff from={lock} to={amount.value} asset={asset} />
+            <LockValueDiff from={lock} to={amount.value || BN_ZERO} asset={asset} />
           </DetailRow>
           <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.lockingPeriod')}>
             <LockPeriodDiff from={initialConviction} to={conviction.value} lockPeriods={lockPeriods} />

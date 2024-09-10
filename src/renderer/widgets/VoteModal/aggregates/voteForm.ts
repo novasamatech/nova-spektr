@@ -18,7 +18,7 @@ import { votingAssetModel } from '@features/governance/model/votingAsset';
 import { type VoteConfirm, voteConfirmModel } from '@features/operations/OperationsConfirm';
 
 type Form = {
-  amount: BN;
+  amount: BN | null;
   conviction: Conviction;
   description: string;
   decision: 'aye' | 'nay' | 'abstain' | null;
@@ -69,7 +69,7 @@ const transactionForm = createTransactionForm<Form>({
             accountId: account.accountId,
             trackId: referendum.track,
             referendumId: referendum.referendumId,
-            vote: voteTransactionService.createTransactionVote(decision ?? 'aye', amount, conviction),
+            vote: voteTransactionService.createTransactionVote(decision ?? 'aye', amount || BN_ZERO, conviction),
           });
         }
 
@@ -78,7 +78,7 @@ const transactionForm = createTransactionForm<Form>({
           accountId: account.accountId,
           trackId: referendum.track,
           referendumId: referendum.referendumId,
-          vote: voteTransactionService.createTransactionVote(decision ?? 'aye', amount, conviction),
+          vote: voteTransactionService.createTransactionVote(decision ?? 'aye', amount || BN_ZERO, conviction),
         });
       },
     ),
@@ -88,18 +88,18 @@ const transactionForm = createTransactionForm<Form>({
     validateOn: ['submit'],
     fields: {
       amount: {
-        init: BN_ZERO,
+        init: null,
         rules: [
           {
             name: 'notZero',
             errorText: 'transfer.notZeroAmountError',
-            validator: (value) => value.gt(BN_ZERO),
+            validator: (value) => nonNullable(value) && value.gt(BN_ZERO),
           },
           {
             name: 'notEnoughBalance',
             errorText: 'governance.errors.notEnoughBalanceError',
             source: $availableBalance,
-            validator: (value, _, balance: BN) => value.lte(balance),
+            validator: (value, _, balance: BN) => nullable(value) || value.lte(balance),
           },
         ],
       },
