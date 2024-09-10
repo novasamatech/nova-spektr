@@ -8,6 +8,7 @@ import HotkeyOptionImg, { ReactComponent as HotkeyOptionSvg } from '@shared/asse
 import IndividualImg, { ReactComponent as IndividualSvg } from '@shared/assets/images/aesthetics/individual.svg';
 import InfoImg, { ReactComponent as InfoSvg } from '@shared/assets/images/aesthetics/info.svg';
 import LoaderImg, { ReactComponent as LoaderSvg } from '@shared/assets/images/aesthetics/loader.svg';
+import MembersImg, { ReactComponent as MembersSvg } from '@shared/assets/images/aesthetics/members.svg';
 import OrganizationImg, { ReactComponent as OrganizationSvg } from '@shared/assets/images/aesthetics/organization.svg';
 import PolkadotImg, { ReactComponent as PolkadotSvg } from '@shared/assets/images/aesthetics/polkadot.svg';
 import QuestionImg, { ReactComponent as QuestionSvg } from '@shared/assets/images/aesthetics/question.svg';
@@ -36,6 +37,7 @@ const AestheticImages = {
   voting: { svg: VotingSvg, img: VotingImg },
   individual: { svg: IndividualSvg, img: IndividualImg },
   organization: { svg: OrganizationSvg, img: OrganizationImg },
+  members: { svg: MembersSvg, img: MembersImg },
 } as const;
 
 export type Aesthetic = keyof typeof AestheticImages;
