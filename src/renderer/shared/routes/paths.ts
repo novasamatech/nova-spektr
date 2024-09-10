@@ -30,6 +30,9 @@ export const Paths = {
   // Governance
   GOVERNANCE: '/governance',
 
+  // Fellowship
+  FELLOWSHIP: '/fellowship',
+
   // Staking
   STAKING: '/staking',
 

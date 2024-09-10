@@ -279,6 +279,12 @@
     "omniLogoAlt": "Nova Spektr logo",
     "reloadButton": "Refresh"
   },
+  "fellowship": {
+    "fellow_one": "{ count } Fellow",
+    "fellow_other": "{ count } Fellows",
+    "members": "Members",
+    "title": "Fellowship"
+  },
   "general": {
     "actions": {
       "multiply": "{value} × {multiplier}"
@@ -634,6 +640,7 @@
     "addressBookLabel": "Address Book",
     "balancesLabel": "Portfolio",
     "basketLabel": "Basket",
+    "fellowship": "Fellowship",
     "governance": "Governance",
     "historyLabel": "History",
     "mstOperationLabel": "Operations",
