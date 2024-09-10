@@ -7,7 +7,7 @@ import { TEST_HASH } from '@shared/lib/utils';
 import { Hash } from './Hash';
 
 const meta: Meta<typeof Hash> = {
-  title: 'Design System/entries/Hash',
+  title: 'Design System/entities/Hash',
   component: Hash,
   args: {
     value: TEST_HASH,

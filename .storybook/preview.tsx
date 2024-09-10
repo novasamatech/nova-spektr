@@ -8,6 +8,14 @@ import { ThemeProvider } from '@/shared/ui-kit';
 import type { Preview } from '@storybook/react';
 
 const preview: Preview = {
+  parameters: {
+    options: {
+      storySort: {
+        method: 'alphabetical',
+        order: ['Design System', ['kit', 'entities'], '*'],
+      },
+    },
+  },
   decorators: [
     (Story) => {
       return (

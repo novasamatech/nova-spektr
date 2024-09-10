@@ -5,7 +5,7 @@ import { Box } from '@/shared/ui-kit';
 import { VoteChart } from './VoteChart';
 
 const meta: Meta<typeof VoteChart> = {
-  title: 'Design System/entries/VoteChart',
+  title: 'Design System/entities/VoteChart',
   component: VoteChart,
   parameters: {
     layout: 'centered',

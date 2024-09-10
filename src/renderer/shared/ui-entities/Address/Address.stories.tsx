@@ -7,7 +7,7 @@ import { TEST_ADDRESS } from '@shared/lib/utils';
 import { Address } from './Address';
 
 const meta: Meta<typeof Address> = {
-  title: 'Design System/entries/Address',
+  title: 'Design System/entities/Address',
   component: Address,
   args: {
     address: TEST_ADDRESS,
