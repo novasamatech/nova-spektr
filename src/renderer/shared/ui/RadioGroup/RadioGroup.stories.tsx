@@ -1,4 +1,4 @@
-import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react';
 
 import { RadioGroup } from './RadioGroup';
 
@@ -6,9 +6,9 @@ export default {
   title: 'RadioGroup',
   component: RadioGroup,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof RadioGroup>;
+} as Meta<typeof RadioGroup>;
 
-const Template: ComponentStory<typeof RadioGroup> = (args) => <RadioGroup {...args} />;
+const Template: StoryFn<typeof RadioGroup> = (args) => <RadioGroup {...args} />;
 
 const defaultOptions = [
   { id: '1', value: 1, title: 'Test 1' },

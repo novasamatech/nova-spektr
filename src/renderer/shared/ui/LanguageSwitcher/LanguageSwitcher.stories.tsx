@@ -1,4 +1,4 @@
-import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react';
 import { enGB } from 'date-fns/locale';
 
 import { type LanguageItem } from '@shared/api/translation/lib/types';
@@ -18,9 +18,9 @@ export default {
   title: 'LanguageSwitcher',
   component: LanguageSwitcher,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof LanguageSwitcher>;
+} as Meta<typeof LanguageSwitcher>;
 
-const Template: ComponentStory<typeof LanguageSwitcher> = (args) => (
+const Template: StoryFn<typeof LanguageSwitcher> = (args) => (
   <div className="w-60">
     <LanguageSwitcher {...args} />
   </div>

@@ -1,4 +1,4 @@
-import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react';
 
 import { InputFile } from './InputFile';
 
@@ -6,9 +6,9 @@ export default {
   title: 'InputFile',
   component: InputFile,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof InputFile>;
+} as Meta<typeof InputFile>;
 
-const Template: ComponentStory<typeof InputFile> = (args) => <InputFile {...args} />;
+const Template: StoryFn<typeof InputFile> = (args) => <InputFile {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {

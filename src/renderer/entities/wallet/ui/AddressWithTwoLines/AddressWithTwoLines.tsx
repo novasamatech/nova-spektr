@@ -25,6 +25,9 @@ type Props = {
   iconTheme?: IconTheme;
 } & (WithAccountId | WithAddress);
 
+/**
+ * @deprecated Use `import { Address } from '@/shared/ui-entities'` instead.
+ */
 export const AddressWithTwoLines = ({
   className,
   size,

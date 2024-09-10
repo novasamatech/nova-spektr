@@ -1,4 +1,4 @@
-import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react';
 
 import { BaseModal } from './BaseModal';
 
@@ -6,9 +6,9 @@ export default {
   title: 'Base Modal',
   component: BaseModal,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof BaseModal>;
+} as Meta<typeof BaseModal>;
 
-const Template: ComponentStory<typeof BaseModal> = (args) => <BaseModal {...args} />;
+const Template: StoryFn<typeof BaseModal> = (args) => <BaseModal {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {

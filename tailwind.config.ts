@@ -81,6 +81,7 @@ const tailwindConfig: Config = {
       },
       fontSize: fontSizes,
       borderRadius: {
+        md: '4px',
         '2lg': '10px',
       },
       outlineOffset: {

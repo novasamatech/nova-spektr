@@ -1,1 +1,1 @@
-export { VoteChart } from './VoteChart/VoteChart';
+export { ReferendumVoteChart } from './ReferendumVoteChart/ReferendumVoteChart';

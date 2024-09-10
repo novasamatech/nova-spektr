@@ -1,7 +1,7 @@
 import * as RadixSlider from '@radix-ui/react-slider';
 import { type ReactNode, forwardRef, memo } from 'react';
 
-import { cnTw } from '@shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 
 import { StepIndicators } from './StepIndicators';
 import { StepLabels } from './StepLabels';

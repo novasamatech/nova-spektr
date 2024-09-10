@@ -18,6 +18,9 @@ type Props = {
   onClose: () => void;
 };
 
+/**
+ * @deprecated Use `import { Modal } from '@/shared/ui-kit'`
+ */
 export const BaseModal = ({
   isOpen,
   title,

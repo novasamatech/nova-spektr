@@ -1,4 +1,4 @@
-import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import { Icon } from '../../Icon/Icon';
@@ -16,9 +16,9 @@ export default {
       </MemoryRouter>
     ),
   ],
-} as ComponentMeta<typeof ButtonWebLink>;
+} as Meta<typeof ButtonWebLink>;
 
-const Template: ComponentStory<typeof ButtonWebLink> = (args) => <ButtonWebLink {...args} />;
+const Template: StoryFn<typeof ButtonWebLink> = (args) => <ButtonWebLink {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {

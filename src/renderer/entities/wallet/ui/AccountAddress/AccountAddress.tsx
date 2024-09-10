@@ -41,6 +41,9 @@ export const getAddress = (props: WithAccountId | WithAddress): Address => {
   return toAddress(accountId, { prefix: addressPrefix });
 };
 
+/**
+ * @deprecated Use `import { Address } from '@/shared/ui-entities'` instead.
+ */
 export const AccountAddress = ({
   className,
   symbols = 8,

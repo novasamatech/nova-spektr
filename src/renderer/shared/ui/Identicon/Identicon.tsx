@@ -14,6 +14,7 @@ type Props = {
   canCopy?: boolean;
   className?: string;
   buttonClassName?: string;
+  testId?: string;
 };
 
 export const Identicon = ({

@@ -29,7 +29,7 @@ export const getSwcConfig = (isDev: boolean) => {
         },
       },
       experimental: {
-        plugins: isDev ? [['effector-swc-plugin', {}]] : [],
+        plugins: isDev ? [['@effector/swc-plugin', {}]] : [],
       },
     },
   };

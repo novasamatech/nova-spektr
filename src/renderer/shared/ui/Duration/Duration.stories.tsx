@@ -1,4 +1,4 @@
-import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react';
 
 import { Duration } from './Duration';
 
@@ -6,9 +6,9 @@ export default {
   title: 'Duration',
   component: Duration,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof Duration>;
+} as Meta<typeof Duration>;
 
-const Template: ComponentStory<typeof Duration> = (args) => <Duration {...args} />;
+const Template: StoryFn<typeof Duration> = (args) => <Duration {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {
