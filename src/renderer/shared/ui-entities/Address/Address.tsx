@@ -10,7 +10,7 @@ type IconProps = XOR<{
   iconSize?: number;
 }>;
 
-export type AccountAddressProps = IconProps & {
+type AccountAddressProps = IconProps & {
   address: AddressType;
   title?: string;
   variant?: AddressVariant;

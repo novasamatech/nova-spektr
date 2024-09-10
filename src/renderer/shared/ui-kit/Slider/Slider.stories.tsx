@@ -35,17 +35,17 @@ type Story = StoryObj<typeof Slider>;
 
 export const Default: Story = {
   args: {
-    value: 5,
+    value: 2,
     min: 0,
-    max: 10,
+    max: 5,
   },
 };
 
 export const Range: Story = {
   args: {
-    value: [2, 7],
+    value: [2, 4],
     min: 0,
-    max: 10,
+    max: 6,
     range: true,
   },
 };
@@ -63,9 +63,17 @@ export const Labels: Story = {
   args: {
     value: 5,
     min: 0,
-    max: 6,
+    max: 9,
     renderLabel: (value) => {
       return <span className="text-footnote">{value}</span>;
     },
+  },
+};
+
+export const ALotOfValues: Story = {
+  args: {
+    value: 0,
+    min: 0,
+    max: 100,
   },
 };

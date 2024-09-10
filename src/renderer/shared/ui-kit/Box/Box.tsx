@@ -95,7 +95,7 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(
     return (
       <div
         ref={ref}
-        className={cnTw('flex h-fit min-h-0 w-fit min-w-0', {
+        className={cnTw('flex h-fit min-h-0 min-w-0', {
           'flex-col': direction === 'column',
           'flex-col-reverse': direction === 'column-reverse',
           'flex-row': direction === 'row',

@@ -18,7 +18,7 @@ const preview: Preview = {
     },
     (Story) => {
       return (
-        <ThemeProvider>
+        <ThemeProvider bodyAsPortalContainer>
           <Story />
         </ThemeProvider>
       );

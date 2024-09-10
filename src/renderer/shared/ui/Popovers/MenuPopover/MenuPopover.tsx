@@ -3,7 +3,7 @@ import { type MouseEvent, type PropsWithChildren, type ReactNode, useRef } from 
 
 import { cnTw } from '@shared/lib/utils';
 
-export type Props = {
+type Props = {
   content: ReactNode; // for a11y features support use this popover with Menu.Item elements from headless ui
   className?: string;
   containerClassName?: string;

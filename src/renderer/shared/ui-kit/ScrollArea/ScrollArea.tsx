@@ -9,7 +9,7 @@ type Props = PropsWithChildren<{
 }>;
 
 export const ScrollArea = ({ orientation = 'vertical', children }: Props) => (
-  <RadixScrollArea.Root type="always" scrollHideDelay={500} className="flex h-full w-full flex-col overflow-hidden">
+  <RadixScrollArea.Root type="scroll" scrollHideDelay={500} className="flex h-full w-full flex-col overflow-hidden">
     <RadixScrollArea.Viewport className="h-full w-full">{children}</RadixScrollArea.Viewport>
     <RadixScrollArea.Scrollbar
       className={cnTw(
