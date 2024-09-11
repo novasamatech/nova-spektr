@@ -1,8 +1,9 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { BodyText, FootnoteText, Icon, Plate, Shimmering } from '@shared/ui';
-import { membersAggregate } from '../aggregates/members';
+import { Skeleton } from '@/shared/ui-kit';
+import { BodyText, FootnoteText, Icon, Plate } from '@shared/ui';
+import { membersModel } from '../model/members';
 
 type Props = {
   onClick: () => void;
@@ -11,8 +12,8 @@ type Props = {
 export const Members = ({ onClick }: Props) => {
   const { t } = useI18n();
 
-  const members = useUnit(membersAggregate.$members);
-  const isLoading = useUnit(membersAggregate.$isLoading);
+  const members = useUnit(membersModel.$members);
+  const isLoading = useUnit(membersModel.$isLoading);
 
   return (
     <button disabled={isLoading} onClick={onClick}>
@@ -22,11 +23,9 @@ export const Members = ({ onClick }: Props) => {
             <Icon name="members" size={16} />
             <FootnoteText>{t('fellowship.members')}</FootnoteText>
           </div>
-          {isLoading ? (
-            <Shimmering width={120} height={18} />
-          ) : (
+          <Skeleton active={isLoading}>
             <BodyText className="text-small-title">{t('fellowship.fellow', { count: members.length })}</BodyText>
-          )}
+          </Skeleton>
         </div>
         <Icon name="arrowRight" />
       </Plate>

@@ -78,7 +78,7 @@ export const storage = {
   members(type: PalletType, api: ApiPromise) {
     const schema = pjsSchema.vec(
       pjsSchema.tuppleMap(
-        ['account', pjsSchema.storageKey(pjsSchema.accountId).transform(x => x[0])],
+        ['accountId', pjsSchema.storageKey(pjsSchema.accountId).transform(x => x[0])],
         ['member', pjsSchema.optional(collectiveMemberRecord)],
       ),
     );

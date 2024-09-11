@@ -2,12 +2,12 @@ import { useGate } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { Header } from '@shared/ui';
-import { Members } from '@/features/fellowship/memebers/ui/Members';
-import { fellowshipPageAggregate } from '../aggregates/fellowshipPage';
+import { Members } from '@/features/fellowship/members/ui/Members';
+import { fellowshipPageModel } from '../model/fellowshipPage';
 
 export const Fellowship = () => {
   const { t } = useI18n();
-  useGate(fellowshipPageAggregate.gates.flow);
+  useGate(fellowshipPageModel.gates.flow);
 
   return (
     <div className="flex h-full flex-col">
