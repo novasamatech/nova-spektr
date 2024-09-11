@@ -62,7 +62,7 @@ export const DelegationCard = ({ delegate, votes, tracks }: Props) => {
 
             <div className="flex flex-col gap-1 pl-6">
               <FootnoteText className="text-text-secondary">{t('governance.addDelegation.card.voted')}</FootnoteText>
-              <BodyText>{delegate.delegateVotes || '0'}</BodyText>
+              <BodyText>{delegate.delegateVotesMonth || '0'}</BodyText>
             </div>
           </div>
         </div>

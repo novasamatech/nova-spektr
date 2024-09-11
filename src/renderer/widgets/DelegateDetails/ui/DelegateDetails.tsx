@@ -4,6 +4,7 @@ import { useI18n } from '@/app/providers';
 import { BaseModal, Plate } from '@/shared/ui';
 import { delegateDetailsModel } from '../model/delegate-details-model';
 
+import { DelegateActivity } from './DelegateActivity';
 import { DelegateInfo } from './DelegateInfo';
 import { YourDelegation } from './YourDelegation';
 import { YourDelegations } from './YourDelegations';
@@ -32,6 +33,9 @@ export const DelegateDetails = () => {
         <div className="flex flex-col gap-4">
           <Plate className="w-[350px] border-filter-border p-6 shadow-card-shadow">
             <YourDelegation />
+          </Plate>
+          <Plate className="w-[350px] border-filter-border p-6 shadow-card-shadow">
+            <DelegateActivity />
           </Plate>
         </div>
       </div>

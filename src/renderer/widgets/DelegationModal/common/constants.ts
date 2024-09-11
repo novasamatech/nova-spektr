@@ -8,7 +8,7 @@ export const enum SortType {
 
 export const SortProp: Record<SortType, keyof DelegateStat> = {
   [SortType.DELEGATIONS]: 'delegators',
-  [SortType.VOTED]: 'delegateVotes',
+  [SortType.VOTED]: 'delegateVotesMonth',
   [SortType.VOTES]: 'delegatorVotes',
 };
 

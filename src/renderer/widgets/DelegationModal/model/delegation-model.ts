@@ -121,6 +121,7 @@ sample({
       delegators: 0,
       delegatorVotes: '0',
       delegateVotes: 0,
+      delegateVotesMonth: 0,
     }) as DelegateAccount,
   target: delegateModel.events.flowStarted,
 });

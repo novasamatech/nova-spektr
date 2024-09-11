@@ -80,6 +80,7 @@ export type DelegateStat = {
   delegators: number;
   delegatorVotes: string;
   delegateVotes: number;
+  delegateVotesMonth: number;
 };
 
 export type DelegateAccount = DelegateStat & Partial<DelegateDetails>;
