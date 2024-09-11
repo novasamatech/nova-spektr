@@ -324,9 +324,6 @@
     }
   },
   "governance": {
-    "revokeDelegation": {
-      "title": "Revoke delegation on"
-    },
     "addDelegation": {
       "accountLabel": "Your accounts",
       "accountPlaceholder": "Select",
@@ -546,6 +543,9 @@
       "treasurySmallSpend": "Treasury: Small spend",
       "treasurySmallTips": "Treasury: Small tips",
       "wishForChange": "Wish for change"
+    },
+    "revokeDelegation": {
+      "title": "Revoke delegation on"
     },
     "searchPlaceholder": "Search",
     "timeline": {
