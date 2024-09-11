@@ -3,7 +3,7 @@ import { type ChainId } from '@/shared/core';
 import { type CollectivePalletsType, type Store } from './types';
 
 export const updateStore = (
-  store: Partial<Store>,
+  store: Partial<Store<any>>,
   params: { palletType: CollectivePalletsType; chainId: ChainId },
   updatedField: Record<string, unknown>,
 ) => {

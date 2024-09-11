@@ -1,18 +1,31 @@
-import { createEffect } from 'effector';
+import { createEffect, createStore, sample } from 'effector';
 
+import { merge } from '@/shared/lib/utils';
 import { collectivePallet } from '@/shared/pallet/collective';
-import { type Member, type RequestCollectiveParams } from '../lib/types';
+import { updateStore } from '../lib/helpers';
+import { type RequestCollectiveParams, type Store } from '../lib/types';
 
-const requestMembersFx = createEffect(({ api, palletType }: RequestCollectiveParams): Promise<Member[]> => {
+const $membersStore = createStore<Partial<Store<{ members: null }>>>({});
+
+const requestMembersFx = createEffect(({ api, palletType }: RequestCollectiveParams) => {
   return collectivePallet.storage.members(palletType, api);
 });
 
-export const membersModal = {
-  $isLoading: requestMembersFx.pending,
+sample({
+  clock: requestMembersFx.done,
+  source: $membersStore,
+  fn: (store, { params, result }) => {
+    const currentStore = store[params.palletType]?.[params.chainId]?.members || [];
+    const updatedField = { members: merge(currentStore, result, x => x?.accountId) };
 
-  events: {
-    requestDone: requestMembersFx.done,
+    return updateStore(store, params, updatedField);
   },
+  target: $membersStore,
+});
+
+export const membersDomainModal = {
+  $isLoading: requestMembersFx.pending,
+  $membersStore,
 
   effects: {
     requestMembersFx,

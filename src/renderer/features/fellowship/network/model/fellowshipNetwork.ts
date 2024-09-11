@@ -11,16 +11,11 @@ const selectCollective = createEvent<{ chainId: ChainId; palletType: CollectiveP
 const $selectedPallet = createStore<CollectivePalletsType | null>(null);
 const $selectedChainId = createStore<ChainId | null>(null);
 
-const $fellowshipStore = combine(
-  collectiveDomain.$store,
-  $selectedPallet,
-  (store, selectedPallet) => {
-    if (!selectedPallet) return null;
+const $fellowshipStore = combine(collectiveDomain.$store, $selectedPallet, (store, selectedPallet) => {
+  if (!selectedPallet) return null;
 
-    return store[selectedPallet];
-  },
-  { skipVoid: false },
-);
+  return store[selectedPallet] || null;
+});
 
 sample({
   clock: selectCollective,
@@ -40,14 +35,9 @@ const $selectedCollectiveData = combine($fellowshipStore, $selectedChainId, (fel
   return fellowshipStore[selectedChainId];
 });
 
-const $fellowshipChain = combine(
-  networkModel.$chains,
-  $selectedChainId,
-  (chains, collectiveChainId) => {
-    return Object.values(chains).find((chain) => chain.chainId === collectiveChainId);
-  },
-  { skipVoid: false },
-);
+const $fellowshipChain = combine(networkModel.$chains, $selectedChainId, (chains, collectiveChainId) => {
+  return Object.values(chains).find((chain) => chain.chainId === collectiveChainId) || null;
+});
 
 const $isConnecting = combine(
   {
@@ -97,7 +87,7 @@ const $palletInfo = combine($selectedChainId, $selectedPallet, $fellowshipChainA
   };
 });
 
-export const fellowshipNetworkAggregate = {
+export const fellowshipNetworkModel = {
   $network,
   $palletInfo,
   $selectedCollectiveData,
