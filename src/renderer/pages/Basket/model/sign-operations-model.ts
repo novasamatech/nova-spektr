@@ -17,7 +17,14 @@ import { toAccountId } from '@shared/lib/utils';
 import { balanceModel } from '@/entities/balance';
 import { basketModel } from '@entities/basket';
 import { networkModel } from '@entities/network';
-import { TransferTypes, XcmTypes } from '@entities/transaction';
+import {
+  type MultisigTransactionTypes,
+  type TransferTransactionTypes,
+  TransferTypes,
+  type UtilityTransactionTypes,
+  type XcmTransactionTypes,
+  XcmTypes,
+} from '@entities/transaction';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
@@ -34,13 +41,14 @@ import {
   removePureProxiedConfirmModel,
   removeVoteConfirmModel,
   restakeConfirmModel,
+  revokeDelegationConfirmModel,
   transferConfirmModel,
   unstakeConfirmModel,
   voteConfirmModel,
   withdrawConfirmModel,
 } from '@features/operations/OperationsConfirm';
 import { unlockConfirmAggregate } from '@/widgets/UnlockModal/aggregates/unlockConfirm';
-import { prepareTransaction } from '../lib/prepareTransactions';
+import { type DataParams, prepareTransaction } from '../lib/prepareTransactions';
 import { getCoreTx } from '../lib/utils';
 import { Step } from '../types';
 
@@ -84,7 +92,20 @@ const startDataPreparationFx = createEffect(
         dataParams.push({ type: TransactionType.TRANSFER, params });
       }
 
-      const TransactionValidators = {
+      const TransactionData: Record<
+        Exclude<
+          TransactionType,
+          | TransferTransactionTypes
+          | XcmTransactionTypes
+          | MultisigTransactionTypes
+          | UtilityTransactionTypes
+          // TODO: Add vote types
+          | TransactionType.VOTE
+          | TransactionType.REMOVE_VOTE
+          | TransactionType.REVOTE
+        >,
+        (dataParams: DataParams) => Promise<unknown>
+      > = {
         [TransactionType.ADD_PROXY]: prepareTransaction.prepareAddProxyTransaction,
         [TransactionType.CREATE_PURE_PROXY]: prepareTransaction.prepareAddPureProxiedTransaction,
         [TransactionType.REMOVE_PROXY]: prepareTransaction.prepareRemoveProxyTransaction,
@@ -99,11 +120,12 @@ const startDataPreparationFx = createEffect(
         [TransactionType.REDEEM]: prepareTransaction.prepareWithdrawTransaction,
         [TransactionType.UNLOCK]: prepareTransaction.prepareUnlockTransaction,
         [TransactionType.DELEGATE]: prepareTransaction.prepareDelegateTransaction,
+        [TransactionType.UNDELEGATE]: prepareTransaction.prepareRevokeDelegationTransaction,
       };
 
-      if (coreTx.type in TransactionValidators) {
-        // @ts-expect-error TS thinks that transfer should be in TransactionValidators
-        const params = await TransactionValidators[coreTx.type]({
+      if (coreTx.type in TransactionData) {
+        // @ts-expect-error TS thinks that transfer should be in TransactionData
+        const params = await TransactionData[coreTx.type]({
           transaction,
           wallets,
           chains,
@@ -399,6 +421,19 @@ sample({
   target: delegateConfirmModel.events.formInitiated,
 });
 
+// revoke delegation (redelegate)
+
+sample({
+  clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.UNDELEGATE).length > 0;
+  },
+  fn: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.UNDELEGATE).map((tx) => tx.params) || [];
+  },
+  target: revokeDelegationConfirmModel.events.formInitiated,
+});
+
 sample({
   clock: flowFinished,
   fn: () => Step.NONE,
@@ -420,6 +455,7 @@ sample({
     unstakeConfirmModel.output.formSubmitted,
     withdrawConfirmModel.output.formSubmitted,
     delegateConfirmModel.output.formSubmitted,
+    revokeDelegationConfirmModel.output.formSubmitted,
     unlockConfirmAggregate.output.formSubmitted,
     voteConfirmModel.events.sign,
     removeVoteConfirmModel.events.sign,

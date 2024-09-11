@@ -9,7 +9,14 @@ import { BaseModal, HeaderTitleText, IconButton } from '@shared/ui';
 import { OperationTitle } from '@entities/chain';
 import { networkModel } from '@entities/network';
 import { SignButton } from '@entities/operations';
-import { TransferTypes, XcmTypes } from '@entities/transaction';
+import {
+  type MultisigTransactionTypes,
+  type TransferTransactionTypes,
+  TransferTypes,
+  type UtilityTransactionTypes,
+  type XcmTransactionTypes,
+  XcmTypes,
+} from '@entities/transaction';
 import { OperationSign, OperationSubmit } from '@features/operations';
 import {
   AddProxyConfirm,
@@ -21,9 +28,12 @@ import {
   PayeeConfirmation,
   RemoveProxyConfirm,
   RemovePureProxiedConfirm,
+  RemoveVoteConfirmation,
   RestakeConfirmation,
+  RevokeDelegationConfirmation,
   TransferConfirm,
   UnstakeConfirmation,
+  VoteConfirmation,
   WithdrawConfirmation,
 } from '@features/operations/OperationsConfirm';
 import { UnlockConfirmation } from '@/widgets/UnlockModal/ui/UnlockConfirmation';
@@ -83,7 +93,13 @@ export const SignOperations = () => {
       return () => <TransferConfirm id={transaction.id} hideSignButton />;
     }
 
-    const Components = {
+    const Components: Record<
+      Exclude<
+        TransactionType,
+        TransferTransactionTypes | XcmTransactionTypes | MultisigTransactionTypes | UtilityTransactionTypes
+      >,
+      () => ReactNode
+    > = {
       // Proxy
       [TransactionType.ADD_PROXY]: () => <AddProxyConfirm id={transaction.id} hideSignButton />,
       [TransactionType.REMOVE_PROXY]: () => <RemoveProxyConfirm id={transaction.id} hideSignButton />,
@@ -98,6 +114,12 @@ export const SignOperations = () => {
       [TransactionType.DESTINATION]: () => <PayeeConfirmation id={transaction.id} hideSignButton />,
       [TransactionType.UNSTAKE]: () => <UnstakeConfirmation id={transaction.id} hideSignButton />,
       [TransactionType.DELEGATE]: () => <DelegateConfirmation id={transaction.id} hideSignButton config={config} />,
+      [TransactionType.UNDELEGATE]: () => (
+        <RevokeDelegationConfirmation id={transaction.id} hideSignButton config={config} />
+      ),
+      [TransactionType.VOTE]: () => <VoteConfirmation id={transaction.id} hideSignButton />,
+      [TransactionType.REVOTE]: () => <VoteConfirmation id={transaction.id} hideSignButton />,
+      [TransactionType.REMOVE_VOTE]: () => <RemoveVoteConfirmation id={transaction.id} hideSignButton />,
       [TransactionType.UNLOCK]: () => <UnlockConfirmation id={transaction.id} hideSignButton />,
     };
 

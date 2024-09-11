@@ -76,6 +76,10 @@ const $isViewAvailable = $activeDelegations.map((delegations) => {
   return Object.values(delegations).length > 1;
 });
 
+const $isRevokeAvailable = $activeDelegations.map((activeDelegations) => {
+  return Object.values(activeDelegations).length === 1;
+});
+
 sample({
   clock: flowStarted,
   fn: () => true,
@@ -114,6 +118,7 @@ export const delegateDetailsModel = {
 
   $isAddAvailable,
   $isViewAvailable,
+  $isRevokeAvailable,
   $isDelegationsOpen,
 
   $chain: networkSelectorModel.$governanceChain,

@@ -17,7 +17,7 @@ export const TotalDelegation = ({ onClick }: Props) => {
   const { confirm } = useConfirmContext();
 
   const totalDelegation = useUnit(delegationAggregate.$totalDelegations);
-  const asset = useUnit(delegationAggregate.$asset);
+  const network = useUnit(delegationAggregate.$network);
   const isLoading = useUnit(delegationAggregate.$isLoading);
   const hasAccount = useUnit(delegationAggregate.$hasAccount);
   const canDelegate = useUnit(delegationAggregate.$canDelegate);
@@ -66,14 +66,15 @@ export const TotalDelegation = ({ onClick }: Props) => {
             <FootnoteText>{t('governance.delegations.label')}</FootnoteText>
           </div>
 
-          {isLoading && <Shimmering width={120} height={20} />}
-          {!isLoading &&
-            asset &&
-            (totalDelegation !== '0' ? (
-              <AssetBalance className="text-small-title" value={totalDelegation} asset={asset} />
+          {!isLoading && network?.asset ? (
+            totalDelegation !== '0' ? (
+              <AssetBalance className="text-small-title" value={totalDelegation} asset={network.asset} />
             ) : (
               <SmallTitleText>{t('governance.addDelegation.actionButton')}</SmallTitleText>
-            ))}
+            )
+          ) : (
+            <Shimmering width={120} height={20} />
+          )}
         </div>
 
         <Icon name="arrowRight" />

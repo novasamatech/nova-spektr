@@ -110,12 +110,25 @@ export const isDelegateTransaction = (transaction?: Transaction | DecodedTransac
   return false;
 };
 
+export const isUndelegateTransaction = (transaction?: Transaction | DecodedTransaction): boolean => {
+  if (transaction?.type === TransactionType.BATCH_ALL) {
+    return !!transaction.args.transactions?.find((tx: Transaction) => tx.type === TransactionType.UNDELEGATE);
+  }
+
+  if (transaction?.type === TransactionType.UNDELEGATE) {
+    return true;
+  }
+
+  return false;
+};
+
 export const isWrappedInBatchAll = (type: TransactionType) => {
   const batchAllOperations = new Set([
     TransactionType.UNSTAKE,
     TransactionType.BOND,
     TransactionType.UNLOCK,
     TransactionType.DELEGATE,
+    TransactionType.UNDELEGATE,
   ]);
 
   return batchAllOperations.has(type);

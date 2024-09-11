@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
@@ -45,6 +46,7 @@ import {
   getProxyType,
   getReferendumId,
   getSender,
+  getUndelegationData,
   getVote,
 } from '../common/utils';
 
@@ -81,6 +83,18 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const addressPrefix = extendedChain?.addressPrefix;
   const explorers = extendedChain?.explorers;
   const connection = extendedChain?.connection;
+
+  const [undelegationVotes, setUndelegationVotes] = useState<string>();
+  const [undelegationTarget, setUndelegationTarget] = useState<Address>();
+
+  useEffect(() => {
+    if (!api) return;
+
+    getUndelegationData(api, tx).then(({ votes, target }) => {
+      setUndelegationVotes(votes);
+      setUndelegationTarget(target);
+    });
+  }, [api, tx]);
 
   const [isAdvancedShown, toggleAdvanced] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
@@ -279,12 +293,38 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         </DetailRow>
       )}
 
+      {undelegationTarget && (
+        <DetailRow label={t('operation.details.delegationTarget')} className={valueClass}>
+          <AddressWithExplorers
+            explorers={explorers}
+            addressFont={AddressStyle}
+            type="short"
+            address={undelegationTarget}
+            addressPrefix={addressPrefix}
+            wrapperClassName="-mr-2 min-w-min"
+          />
+        </DetailRow>
+      )}
+
       {delegationVotes && (
         <DetailRow label={t('operation.details.delegationVotes')} className={valueClass}>
           <FootnoteText className={valueClass}>
             <AssetBalance
               className={valueClass}
               value={delegationVotes}
+              asset={defaultAsset}
+              showSymbol={false}
+            ></AssetBalance>
+          </FootnoteText>
+        </DetailRow>
+      )}
+
+      {undelegationVotes && (
+        <DetailRow label={t('operation.details.delegationVotes')} className={valueClass}>
+          <FootnoteText className={valueClass}>
+            <AssetBalance
+              className={valueClass}
+              value={undelegationVotes}
               asset={defaultAsset}
               showSymbol={false}
             ></AssetBalance>

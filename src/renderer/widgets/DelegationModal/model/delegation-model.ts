@@ -59,10 +59,10 @@ const $customError = combine(
     delegate: $customDelegate,
     votes: delegationAggregate.$activeDelegations,
     wallet: walletModel.$activeWallet,
-    chain: delegationAggregate.$chain,
+    network: delegationAggregate.$network,
   },
-  ({ delegate, votes, wallet, chain }): DelegationErrors | null => {
-    if (!wallet || !chain || !delegate || !validateAddress(delegate)) return DelegationErrors.INVALID_ADDRESS;
+  ({ delegate, votes, wallet, network }): DelegationErrors | null => {
+    if (!wallet || !network?.chain || !delegate || !validateAddress(delegate)) return DelegationErrors.INVALID_ADDRESS;
 
     const isOwnAccount = wallet.accounts.some((a) => a.accountId === toAccountId(delegate));
 

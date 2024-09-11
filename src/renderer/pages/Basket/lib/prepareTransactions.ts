@@ -1,6 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_ZERO } from '@polkadot/util';
 
+import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { proxyService } from '@shared/api/proxy';
 import {
   type Account,
@@ -12,6 +13,7 @@ import {
   type Chain,
   type ChainId,
   type Connection,
+  type Conviction,
   type ProxiedAccount,
   type ProxyType,
   type Transaction,
@@ -19,9 +21,9 @@ import {
   type Validator,
   type Wallet,
 } from '@shared/core';
-import { getAssetById, redeemableAmount, toAccountId, transferableAmount } from '@shared/lib/utils';
+import { getAssetById, redeemableAmount, toAccountId, toAddress, transferableAmount } from '@shared/lib/utils';
 import { balanceUtils } from '@/entities/balance';
-import { governanceService } from '@/entities/governance';
+import { governanceService, votingService } from '@/entities/governance';
 import { networkUtils } from '@entities/network';
 import { eraService, useStakingData, validatorsService } from '@entities/staking';
 import { transactionService } from '@entities/transaction';
@@ -41,21 +43,7 @@ type PrepareDataParams = {
   balances: Balance[];
 };
 
-type DataParams = Omit<PrepareDataParams, 'transactions'> & { transaction: BasketTransaction };
-
-type TransferInput = {
-  xcmChain: Chain;
-  chain: Chain;
-  asset: Asset;
-  account: Account;
-  amount: string;
-  destination: Address;
-  description: string;
-
-  fee: string;
-  xcmFee: string;
-  multisigDeposit: string;
-};
+export type DataParams = Omit<PrepareDataParams, 'transactions'> & { transaction: BasketTransaction };
 
 export const prepareTransaction = {
   prepareTransferTransactionData,
@@ -72,11 +60,17 @@ export const prepareTransaction = {
   preparePayeeTransaction,
   prepareUnlockTransaction,
   prepareDelegateTransaction,
+  prepareRevokeDelegationTransaction,
 };
 
-async function prepareTransferTransactionData({ transaction, wallets, chains, apis, feeMap }: DataParams) {
+async function getTransactionData(
+  transaction: BasketTransaction,
+  feeMap: FeeMap,
+  apis: Record<`0x${string}`, ApiPromise>,
+  chains: Record<`0x${string}`, Chain>,
+  wallets: Wallet[],
+) {
   const chainId = transaction.coreTx.chainId as ChainId;
-
   const fee =
     feeMap[chainId][transaction.coreTx.type] ||
     (await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]));
@@ -84,6 +78,26 @@ async function prepareTransferTransactionData({ transaction, wallets, chains, ap
   const chain = chains[chainId]!;
   const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
   const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+
+  return { chainId, chain, account, fee };
+}
+
+type TransferInput = {
+  xcmChain: Chain;
+  chain: Chain;
+  asset: Asset;
+  account: Account;
+  amount: string;
+  destination: Address;
+  description: string;
+
+  fee: string;
+  xcmFee: string;
+  multisigDeposit: string;
+};
+
+async function prepareTransferTransactionData({ transaction, wallets, chains, apis, feeMap }: DataParams) {
+  const { chain, account, fee } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
 
   const xcmChain = chains[transaction.coreTx.args.destinationChain] || chain;
 
@@ -119,14 +133,7 @@ type AddProxyInput = {
 };
 
 async function prepareAddProxyTransaction({ transaction, wallets, chains, apis, feeMap }: DataParams) {
-  const chainId = transaction.coreTx.chainId as ChainId;
-  const fee =
-    feeMap[chainId][transaction.coreTx.type] ||
-    (await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]));
-
-  const chain = chains[chainId]!;
-  const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-  const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+  const { chainId, chain, account, fee } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
 
   const proxy = await proxyService.getProxiesForAccount(apis[chainId], transaction.coreTx.address);
   const proxyDeposit = proxyService.getProxyDeposit(apis[chainId], proxy.deposit, proxy.accounts.length + 1);
@@ -157,14 +164,8 @@ type AddPureProxiedInput = {
 };
 
 async function prepareAddPureProxiedTransaction({ transaction, wallets, chains, apis, feeMap }: DataParams) {
-  const chainId = transaction.coreTx.chainId as ChainId;
-  const fee =
-    feeMap[chainId][transaction.coreTx.type] ||
-    (await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]));
+  const { chainId, chain, account, fee } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
 
-  const chain = chains[chainId]!;
-  const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-  const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
   const proxyDeposit = proxyService.getProxyDeposit(apis[chainId], '0', 1);
 
   return {
@@ -191,14 +192,7 @@ type RemoveProxyInput = {
 };
 
 async function prepareRemoveProxyTransaction({ transaction, wallets, chains, apis, feeMap }: DataParams) {
-  const chainId = transaction.coreTx.chainId as ChainId;
-  const fee =
-    feeMap[chainId][transaction.coreTx.type] ||
-    (await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]));
-
-  const chain = chains[chainId]!;
-  const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-  const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+  const { chain, account, fee } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
 
   return {
     id: transaction.id,
@@ -225,14 +219,7 @@ type RemovePureProxiedInput = {
 };
 
 async function prepareRemovePureProxiedTransaction({ transaction, wallets, chains, apis, feeMap }: DataParams) {
-  const chainId = transaction.coreTx.chainId as ChainId;
-  const fee =
-    feeMap[chainId][transaction.coreTx.type] ||
-    (await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]));
-
-  const chain = chains[chainId]!;
-  const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-  const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+  const { chain, account, fee } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
 
   return {
     id: transaction.id,
@@ -266,14 +253,7 @@ async function prepareBondNominateTransaction({ transaction, wallets, chains, ap
     (t: Transaction) => t.type === TransactionType.NOMINATE,
   )!;
 
-  const chainId = transaction.coreTx.chainId as ChainId;
-  const fee =
-    feeMap[chainId][transaction.coreTx.type] ||
-    (await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]));
-
-  const chain = chains[chainId]!;
-  const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-  const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+  const { chainId, chain, account, fee } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
 
   const era = await eraService.getActiveEra(apis[chainId]);
   const isLightClient = networkUtils.isLightClientConnection(connections[chain!.chainId]);
@@ -308,19 +288,12 @@ type BondExtraInput = {
 };
 
 async function prepareBondExtraTransaction({ transaction, wallets, chains, apis, feeMap }: DataParams) {
-  const chainId = transaction.coreTx.chainId as ChainId;
-  const fee =
-    feeMap[chainId][transaction.coreTx.type] ||
-    (await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]));
-
-  const chain = chains[chainId]!;
-  const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-  const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+  const { chain, account, fee } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
 
   return {
     id: transaction.id,
     chain,
-    asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
+    asset: chain.assets[0],
     shards: [account],
     amount: transaction.coreTx.args.maxAdditional,
     description: '',
@@ -343,17 +316,10 @@ type NominateInput = {
 };
 
 async function prepareNominateTransaction({ transaction, wallets, chains, connections, apis, feeMap }: DataParams) {
-  const chainId = transaction.coreTx.chainId as ChainId;
-  const fee =
-    feeMap[chainId][transaction.coreTx.type] ||
-    (await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]));
-
-  const chain = chains[chainId]!;
-  const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-  const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+  const { chainId, chain, account, fee } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
 
   const era = await eraService.getActiveEra(apis[chainId]);
-  const isLightClient = networkUtils.isLightClientConnection(connections[chain!.chainId]);
+  const isLightClient = networkUtils.isLightClientConnection(connections[chainId]);
   const validatorsMap = await validatorsService.getValidatorsWithInfo(apis[chainId], era || 0, isLightClient);
 
   const validators = transaction.coreTx.args.targets.map((address: string) => validatorsMap[address]);
@@ -361,7 +327,7 @@ async function prepareNominateTransaction({ transaction, wallets, chains, connec
   return {
     id: transaction.id,
     chain,
-    asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
+    asset: chain.assets[0],
     shards: [account],
     validators,
     destination: transaction.coreTx.args.dest,
@@ -383,19 +349,12 @@ type PayeeInput = {
 };
 
 async function preparePayeeTransaction({ transaction, wallets, chains, apis, feeMap }: DataParams) {
-  const chainId = transaction.coreTx.chainId as ChainId;
-  const fee =
-    feeMap[chainId][transaction.coreTx.type] ||
-    (await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]));
-
-  const chain = chains[chainId]!;
-  const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-  const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+  const { chain, account, fee } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
 
   return {
     id: transaction.id,
     chain,
-    asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
+    asset: chain.assets[0],
     shards: [account],
     destination: transaction.coreTx.args.dest,
     description: '',
@@ -421,19 +380,12 @@ type UnstakeInput = {
 async function prepareUnstakeTransaction({ transaction, wallets, chains, apis, feeMap }: DataParams) {
   const coreTx = getCoreTx(transaction);
 
-  const chainId = coreTx.chainId as ChainId;
-  const fee =
-    feeMap[chainId][transaction.coreTx.type] ||
-    (await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]));
-
-  const chain = chains[chainId]!;
-  const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-  const account = wallet.accounts.find((a) => a.accountId === toAccountId(coreTx.address));
+  const { chain, account, fee } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
 
   return {
     id: transaction.id,
     chain,
-    asset: getAssetById(coreTx.args.assetId, chain.assets),
+    asset: chain.assets[0],
     shards: [account],
     amount: coreTx.args.value,
     description: '',
@@ -456,19 +408,12 @@ type RestakeInput = {
 };
 
 async function prepareRestakeTransaction({ transaction, wallets, chains, apis, feeMap }: DataParams) {
-  const chainId = transaction.coreTx.chainId as ChainId;
-  const fee =
-    feeMap[chainId][transaction.coreTx.type] ||
-    (await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]));
-
-  const chain = chains[chainId]!;
-  const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-  const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+  const { chain, account, fee } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
 
   return {
     id: transaction.id,
     chain,
-    asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
+    asset: chain.assets[0],
     shards: [account],
     amount: transaction.coreTx.args.value,
     description: '',
@@ -494,14 +439,7 @@ type WithdrawInput = {
 };
 
 async function prepareWithdrawTransaction({ transaction, wallets, chains, apis, feeMap }: DataParams) {
-  const chainId = transaction.coreTx.chainId as ChainId;
-  const fee =
-    feeMap[chainId][transaction.coreTx.type] ||
-    (await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]));
-
-  const chain = chains[chainId]!;
-  const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-  const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
+  const { chainId, chain, account, fee } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
   const era = await eraService.getActiveEra(apis[chainId]);
 
   const staking = (await new Promise((resolve) => {
@@ -513,7 +451,7 @@ async function prepareWithdrawTransaction({ transaction, wallets, chains, apis, 
   return {
     id: transaction.id,
     chain,
-    asset: getAssetById(transaction.coreTx.args.assetId, chain.assets),
+    asset: chain.assets[0],
     shards: [account],
     amount,
     description: '',
@@ -527,15 +465,9 @@ async function prepareWithdrawTransaction({ transaction, wallets, chains, apis, 
 async function prepareUnlockTransaction({ transaction, wallets, chains, apis, feeMap }: DataParams) {
   const coreTx = getCoreTx(transaction);
 
-  const chainId = transaction.coreTx.chainId as ChainId;
-  const fee =
-    feeMap[chainId][transaction.coreTx.type] ||
-    (await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]));
+  const { chainId, chain, account, fee } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
 
   const address = transaction.coreTx.address;
-  const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-  const account = wallet.accounts.find((a) => a.accountId === toAccountId(address));
-
   const totalLock = await governanceService.getTrackLocks(apis[chainId], [address]).then((data) => {
     const lock = data[address];
     const totalLock = Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
@@ -548,8 +480,8 @@ async function prepareUnlockTransaction({ transaction, wallets, chains, apis, fe
     shards: [account!],
     amount: coreTx.args.value,
     description: '',
-    chain: chains[chainId]!,
-    asset: getAssetById(transaction.coreTx.args.assetId, chains[chainId]!.assets)!,
+    chain,
+    asset: chain.assets[0],
 
     fee,
     totalLock,
@@ -568,7 +500,7 @@ type DelegateInput = {
 
   tracks: number[];
   target: Address;
-  conviction: number;
+  conviction: Conviction;
   balance: string;
 
   description: string;
@@ -579,15 +511,73 @@ type DelegateInput = {
 };
 
 async function prepareDelegateTransaction({ transaction, wallets, chains, apis, feeMap, balances }: DataParams) {
-  const chainId = transaction.coreTx.chainId as ChainId;
-  const fee =
-    feeMap[chainId][transaction.coreTx.type] ||
-    (await transactionService.getTransactionFee(transaction.coreTx, apis[chainId]));
+  const { chainId, chain, account, fee } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
+  const asset = chain.assets[0];
 
-  const wallet = wallets.find((c) => c.id === transaction.initiatorWallet)!;
-  const account = wallet.accounts.find((a) => a.accountId === toAccountId(transaction.coreTx.address));
-  const chain = chains[chainId]!;
-  const asset = chains[chainId]!.assets[0];
+  const transferable = transferableAmount(
+    balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId.toString()),
+  );
+
+  const locks = await governanceService.getTrackLocks(apis[chainId], [transaction.coreTx.address]).then((data) => {
+    const lock = data[transaction.coreTx.address];
+    const totalLock = Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
+
+    return totalLock;
+  });
+
+  const coreTxs = transaction.coreTx.args.transactions || [transaction.coreTx];
+
+  return {
+    id: transaction.id,
+    chain,
+    asset,
+    transferable,
+
+    shards: [account!],
+    balance: coreTxs[0].args.balance,
+    conviction: votingService.getConviction(coreTxs[0].args.conviction),
+    target: coreTxs[0].args.target,
+    tracks: coreTxs.map((t: Transaction) => t.args.track),
+    description: '',
+    locks,
+
+    fee,
+    totalFee: '0',
+    multisigDeposit: '0',
+  } satisfies DelegateInput;
+}
+
+type RevokeDelegationInput = {
+  id?: number;
+  chain: Chain;
+  asset: Asset;
+  account: Account;
+  transferable: string;
+  locks: BN;
+
+  tracks: number[];
+  target: Address;
+  conviction: Conviction;
+  balance: string;
+
+  description: string;
+
+  fee: string;
+  totalFee: string;
+  multisigDeposit: string;
+};
+
+async function prepareRevokeDelegationTransaction({
+  transaction,
+  wallets,
+  chains,
+  apis,
+  feeMap,
+  balances,
+}: DataParams) {
+  const { chainId, chain, account, fee } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
+  const asset = chain.assets[0];
+
   const transferable = transferableAmount(
     balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId.toString()),
   );
@@ -598,22 +588,30 @@ async function prepareDelegateTransaction({ transaction, wallets, chains, apis, 
     return totalLock;
   });
 
+  const coreTxs = transaction.coreTx.args.transactions || [transaction.coreTx];
+
+  const votes = await convictionVotingPallet.storage.votingFor(apis[chainId], [
+    [transaction.coreTx.address, coreTxs[0].args.track],
+  ]);
+
+  const delegation = votes.find((vote) => vote.type === 'Delegating');
+
   return {
     id: transaction.id,
     chain,
     asset,
     transferable,
 
-    shards: [account!],
-    balance: transaction.coreTx.args.transactions[0].args.balance,
-    conviction: transaction.coreTx.args.transactions[0].args.conviction,
-    target: transaction.coreTx.args.transactions[0].args.target,
-    tracks: transaction.coreTx.args.transactions.map((t: Transaction) => t.args.track),
+    account: account!,
+    balance: delegation ? delegation._.balance.toString() : coreTxs[0].args.balance,
+    conviction: delegation ? delegation._.conviction : votingService.getConviction(coreTxs[0].args.conviction),
+    target: delegation ? toAddress(delegation._.target, { prefix: chain.addressPrefix }) : coreTxs[0].args.target,
+    tracks: coreTxs.map((t: Transaction) => t.args.track),
     description: '',
     locks,
 
     fee,
     totalFee: '0',
     multisigDeposit: '0',
-  } satisfies DelegateInput;
+  } satisfies RevokeDelegationInput;
 }

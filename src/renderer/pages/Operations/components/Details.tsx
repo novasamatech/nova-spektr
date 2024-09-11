@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
@@ -45,6 +45,7 @@ import {
   getProxyType,
   getReferendumId,
   getSpawner,
+  getUndelegationData,
   getVote,
 } from '../common/utils';
 
@@ -73,12 +74,25 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
   const delegationTracks = getDelegationTracks(tx);
   const delegationVotes = getDelegationVotes(tx);
 
+  const [undelegationVotes, setUndelegationVotes] = useState<string>();
+  const [undelegationTarget, setUndelegationTarget] = useState<Address>();
+
   const referendumId = getReferendumId(tx);
   const vote = getVote(tx);
 
   const signatoryWallet = wallets.find((w) => w.id === signatory?.walletId);
 
   const api = extendedChain?.api;
+
+  useEffect(() => {
+    if (!api) return;
+
+    getUndelegationData(api, tx).then(({ votes, target }) => {
+      setUndelegationVotes(votes);
+      setUndelegationTarget(target);
+    });
+  }, [api, tx]);
+
   const connection = extendedChain?.connection;
   const defaultAsset = extendedChain?.assets[0];
   const addressPrefix = extendedChain?.addressPrefix;
@@ -369,12 +383,38 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
         </DetailRow>
       )}
 
+      {undelegationTarget && (
+        <DetailRow label={t('operation.details.delegationTarget')} className="text-text-secondary">
+          <AddressWithExplorers
+            explorers={explorers}
+            addressFont={AddressStyle}
+            type="short"
+            address={undelegationTarget}
+            addressPrefix={addressPrefix}
+            wrapperClassName="-mr-2 min-w-min"
+          />
+        </DetailRow>
+      )}
+
       {delegationVotes && (
         <DetailRow label={t('operation.details.delegationVotes')}>
           <FootnoteText>
             <AssetBalance
               className="text-text-secondary"
               value={delegationVotes}
+              asset={defaultAsset}
+              showSymbol={false}
+            ></AssetBalance>
+          </FootnoteText>
+        </DetailRow>
+      )}
+
+      {undelegationVotes && (
+        <DetailRow label={t('operation.details.delegationVotes')}>
+          <FootnoteText>
+            <AssetBalance
+              className="text-text-secondary"
+              value={undelegationVotes}
               asset={defaultAsset}
               showSymbol={false}
             ></AssetBalance>

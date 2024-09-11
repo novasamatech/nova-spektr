@@ -2,12 +2,14 @@ import { useUnit } from 'effector-react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/app/providers';
+import { toAddress } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, SmallTitleText, Tooltip } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { votingService } from '@/entities/governance';
-import { AddressWithExplorers } from '@/entities/wallet';
+import { AddressWithExplorers, accountUtils, walletModel } from '@/entities/wallet';
 import { allTracks } from '@/widgets/DelegateModal/lib/constants';
 import { delegationModel } from '@/widgets/DelegationModal/model/delegation-model';
+import { revokeDelegationModel } from '@/widgets/RevokeDelegationModal';
 import { delegateDetailsModel } from '../model/delegate-details-model';
 
 export const YourDelegation = () => {
@@ -17,10 +19,19 @@ export const YourDelegation = () => {
   const uniqueTracks = useUnit(delegateDetailsModel.$uniqueTracks);
   const activeDelegations = useUnit(delegateDetailsModel.$activeDelegations);
   const chain = useUnit(delegateDetailsModel.$chain);
+  const wallet = useUnit(walletModel.$activeWallet);
 
   const isAddAvailable = useUnit(delegateDetailsModel.$isAddAvailable);
   const isViewAvailable = useUnit(delegateDetailsModel.$isViewAvailable);
+  const isRevokeAvailable = useUnit(delegateDetailsModel.$isRevokeAvailable);
   const delegate = useUnit(delegateDetailsModel.$delegate);
+
+  const accounts = wallet?.accounts.filter(
+    (account) =>
+      chain &&
+      accountUtils.isChainAndCryptoMatch(account, chain) &&
+      activeAccounts.includes(toAddress(account.accountId, { prefix: chain.addressPrefix })),
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -80,6 +91,17 @@ export const YourDelegation = () => {
         {isAddAvailable && (
           <Button onClick={() => delegate && delegationModel.events.selectDelegate(delegate)}>
             {t('governance.addDelegation.addDelegationButton')}
+          </Button>
+        )}
+        {isRevokeAvailable && accounts?.length === 1 && (
+          <Button
+            onClick={() => {
+              if (delegate) {
+                revokeDelegationModel.events.flowStarted({ delegate: delegate.accountId, accounts: [accounts[0]] });
+              }
+            }}
+          >
+            {t('governance.addDelegation.revokeDelegationButton')}
           </Button>
         )}
         {isViewAvailable && (

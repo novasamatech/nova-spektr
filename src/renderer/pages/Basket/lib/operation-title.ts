@@ -1,6 +1,13 @@
 import { type BasketTransaction, type Chain, TransactionType } from '@shared/core';
 import { getAssetById } from '@shared/lib/utils';
-import { TransferTypes, XcmTypes } from '@entities/transaction';
+import {
+  type MultisigTransactionTypes,
+  type TransferTransactionTypes,
+  TransferTypes,
+  type UtilityTransactionTypes,
+  type XcmTransactionTypes,
+  XcmTypes,
+} from '@entities/transaction';
 
 import { getCoreTx } from './utils';
 
@@ -23,7 +30,13 @@ export const getOperationTitle = (transaction: BasketTransaction, chain: Chain):
     return { title: 'transfer.xcmTitle', params: { asset: asset?.symbol } };
   }
 
-  const Title = {
+  const Title: Record<
+    Exclude<
+      TransactionType,
+      TransferTransactionTypes | XcmTransactionTypes | MultisigTransactionTypes | UtilityTransactionTypes
+    >,
+    string
+  > = {
     // Proxy
     [TransactionType.ADD_PROXY]: 'operations.modalTitles.addProxyOn',
     [TransactionType.REMOVE_PROXY]: 'operations.modalTitles.removeProxyOn',
@@ -40,6 +53,7 @@ export const getOperationTitle = (transaction: BasketTransaction, chain: Chain):
     // Governance
     [TransactionType.UNLOCK]: 'operations.modalTitles.unlockOn',
     [TransactionType.DELEGATE]: 'operations.modalTitles.delegateOn',
+    [TransactionType.UNDELEGATE]: 'operations.modalTitles.undelegateOn',
     [TransactionType.VOTE]: 'operations.modalTitles.vote',
     [TransactionType.REVOTE]: 'operations.modalTitles.revote',
     [TransactionType.REMOVE_VOTE]: 'operations.modalTitles.removeVote',

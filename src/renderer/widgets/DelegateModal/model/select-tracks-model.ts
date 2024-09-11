@@ -34,10 +34,10 @@ const $availableTracks = combine(tracksAggregate.$tracks, (tracks) => {
   return Object.keys(tracks);
 });
 
-const $addresses = combine({ accounts: $accounts, chain: delegationAggregate.$chain }, ({ accounts, chain }) => {
-  if (!chain) return [];
+const $addresses = combine({ accounts: $accounts, network: delegationAggregate.$network }, ({ accounts, network }) => {
+  if (!network?.chain) return [];
 
-  return accounts.map((a) => toAddress(a.accountId, { prefix: chain.addressPrefix }));
+  return accounts.map((a) => toAddress(a.accountId, { prefix: network.chain.addressPrefix }));
 });
 
 const $votedTracks = combine(
@@ -69,16 +69,19 @@ const $availableAccounts = combine(
   {
     wallet: walletModel.$activeWallet,
     delegations: delegationAggregate.$activeDelegations,
-    chain: delegationAggregate.$chain,
+    network: delegationAggregate.$network,
     delegate: $delegate,
   },
-  ({ wallet, delegations, chain, delegate }) => {
-    if (!wallet || !chain || !delegate) return [];
+  ({ wallet, delegations, network, delegate }) => {
+    if (!wallet || !network?.chain || !delegate) return [];
 
     return wallet.accounts
-      .filter((a) => accountUtils.isNonBaseVaultAccount(a, wallet) && accountUtils.isChainIdMatch(a, chain.chainId))
       .filter(
-        (account) => !delegations[delegate.accountId]?.[toAddress(account.accountId, { prefix: chain.addressPrefix })],
+        (a) => accountUtils.isNonBaseVaultAccount(a, wallet) && accountUtils.isChainIdMatch(a, network.chain.chainId),
+      )
+      .filter(
+        (account) =>
+          !delegations[delegate.accountId]?.[toAddress(account.accountId, { prefix: network.chain.addressPrefix })],
       );
   },
 );
@@ -225,7 +228,7 @@ export const selectTracksModel = {
   $accounts,
   $availableAccounts,
   $accountsBalances,
-  $chain: delegationAggregate.$chain,
+  $chain: delegationAggregate.$network.map((network) => network?.chain || null),
   $isMaxWeightReached,
   $isMaxWeightLoading: checkMaxWeightReachedFx.pending,
 

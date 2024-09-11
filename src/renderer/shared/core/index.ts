@@ -124,4 +124,6 @@ export type {
   SplitVote,
   SplitAbstainVote,
   VotingMap,
+  DelegationBalanceMap,
+  DelegationTracksMap,
 } from './types/voting';

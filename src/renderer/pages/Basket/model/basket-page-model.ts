@@ -22,6 +22,7 @@ import {
   removeProxyValidateModel,
   removePureProxiedValidateModel,
   restakeValidateModel,
+  revokeDelegationValidateModel,
   transferValidateModel,
   unstakeValidateModel,
   withdrawValidateModel,
@@ -125,6 +126,7 @@ const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
       [TransactionType.REDEEM]: withdrawValidateModel.events.validationStarted,
       [TransactionType.UNLOCK]: unlockValidateModel.events.validationStarted,
       [TransactionType.DELEGATE]: delegateValidateModel.events.validationStarted,
+      [TransactionType.UNDELEGATE]: revokeDelegationValidateModel.events.validationStarted,
       [TransactionType.VOTE]: voteValidateModel.events.validationStarted,
       [TransactionType.REVOTE]: voteValidateModel.events.validationStarted,
     };
@@ -163,6 +165,7 @@ const txValidated = [
   withdrawValidateModel.output.txValidated,
   unlockValidateModel.output.txValidated,
   delegateValidateModel.output.txValidated,
+  revokeDelegationValidateModel.output.txValidated,
   voteValidateModel.output.txValidated,
 ];
 
