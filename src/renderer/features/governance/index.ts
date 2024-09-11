@@ -21,7 +21,7 @@ export { Locks } from './components/Locks';
 export { AccountsMultiSelector } from './components/AccountsMultiSelector/AccountsMultiSelector';
 export { TotalDelegation, DelegateBadge, DelegateIcon, DelegateTitle, DelegateName } from './components/Delegations';
 export { NetworkSelector } from './components/NetworkSelector';
-export { ReferendumDetailsDialog } from './components/ReferendumDetails/ReferendumDetailsDialog';
+export { ReferendumDetailsModal } from './components/ReferendumDetails/ReferendumDetailsModal';
 export { ReferendumSearch, ReferendumFilters, VoteStatus } from './components/ReferendumFilter';
 export { OffChainDataSource } from './components/OffChainDataSource';
 export { CompletedReferendums, OngoingReferendums } from './components/ReferendumList';

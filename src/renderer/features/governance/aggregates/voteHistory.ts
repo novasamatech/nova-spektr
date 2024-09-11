@@ -39,7 +39,7 @@ const $voteHistory = combine(
         .flatMap((vote) => {
           const proposer = proposers[vote.voter] ?? null;
 
-          const splitVotes = votingListService.getDecoupledVotesFromSubQueryVote(referendumId, vote);
+          const splitVotes = votingListService.getDecoupledVotesFromVoteHistory(vote);
 
           return splitVotes.map((vote) => {
             return {
