@@ -59,6 +59,7 @@ export const VotingHistoryList = memo<Props>(({ items, asset, chain, loading }) 
                         className="min-h-11.5"
                         accountId={toAccountId(voter)}
                         addressPrefix={chain?.addressPrefix}
+                        explorers={chain?.explorers}
                       >
                         <AddressWithName
                           addressFont="text-text-secondary"
