@@ -1,3 +1,5 @@
+import { BN } from '@polkadot/util';
+
 import {
   type SubsquareReferendumVote,
   type SubsquareSimpleReferendum,
@@ -64,9 +66,18 @@ const getReferendumTimeline: GovernanceApi['getReferendumTimeline'] = async (cha
     .then((r) => r.onchainData.timeline.map(mapTimeline));
 };
 
+const getReferendumSummary: GovernanceApi['getReferendumSummary'] = async (chain, referendumId) => {
+  return subsquareApiService.fetchReferendum({ network: chain.specName, referendumId }).then((r) => ({
+    ayes: new BN(r.onchainData.tally ? BigInt(r.onchainData.tally.ayes).toString() : '0'),
+    nays: new BN(r.onchainData.tally ? BigInt(r.onchainData.tally.nays).toString() : '0'),
+    support: new BN(r.onchainData.tally ? BigInt(r.onchainData.tally.support).toString() : '0'),
+  }));
+};
+
 export const subsquareService: GovernanceApi = {
   getReferendumList,
   getReferendumVotes,
   getReferendumDetails,
   getReferendumTimeline,
+  getReferendumSummary,
 };

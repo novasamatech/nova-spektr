@@ -1,8 +1,6 @@
-import { BN } from '@polkadot/util';
-
-import { type SubQueryVoting } from '@shared/api/governance';
 import { type ReferendumId, type Voting } from '@shared/core';
 import { votingService } from '@entities/governance';
+import { type VoteHistoryRecord } from '@entities/governance/model/voteHistory';
 import { type DecoupledVote } from '../types/structs';
 
 const getDecoupledVotesFromVote = (referendumId: ReferendumId, voting: Voting) => {
@@ -89,87 +87,77 @@ const getDecoupledVotesFromVote = (referendumId: ReferendumId, voting: Voting) =
   return res;
 };
 
-const getDecoupledVotesFromSubQueryVote = (referendumId: ReferendumId, voting: SubQueryVoting) => {
+const getDecoupledVotesFromVotingHistory = (voting: VoteHistoryRecord) => {
   const res: DecoupledVote[] = [];
 
-  if (voting.standardVote) {
-    const amount = new BN(voting.standardVote.vote.amount);
-    const conviction = voting.standardVote.vote.conviction;
-
+  if (votingService.isStandardVote(voting.vote)) {
     res.push({
-      decision: voting.standardVote.aye ? 'aye' : 'nay',
+      decision: voting.vote.vote.aye ? 'aye' : 'nay',
       voter: voting.voter,
-      votingPower: votingService.calculateVotingPower(amount, conviction),
-      conviction: votingService.getConvictionMultiplier(conviction),
-      balance: amount,
+      votingPower: votingService.calculateVotingPower(voting.vote.balance, voting.vote.vote.conviction),
+      conviction: votingService.getConvictionMultiplier(voting.vote.vote.conviction),
+      balance: voting.vote.balance,
     });
 
-    for (const delegatedVote of voting.delegatorVotes.nodes) {
-      const amount = new BN(delegatedVote.vote.amount);
+    for (const delegatedVote of voting.delegatorVotes) {
       res.push({
-        decision: voting.standardVote.aye ? 'aye' : 'nay',
+        decision: voting.vote.vote.aye ? 'aye' : 'nay',
         voter: delegatedVote.delegator,
-        votingPower: votingService.calculateVotingPower(amount, delegatedVote.vote.conviction),
-        conviction: votingService.getConvictionMultiplier(delegatedVote.vote.conviction),
-        balance: amount,
+        votingPower: votingService.calculateVotingPower(delegatedVote.amount, delegatedVote.conviction),
+        conviction: votingService.getConvictionMultiplier(delegatedVote.conviction),
+        balance: delegatedVote.amount,
       });
     }
   }
 
-  if (voting.splitVote) {
-    const conviction = 'Locked1x';
-
-    const ayeAmount = new BN(voting.splitVote.ayeAmount);
+  if (votingService.isSplitVote(voting.vote)) {
+    const conviction = votingService.getAccountVoteConviction(voting.vote);
     res.push({
       decision: 'aye',
       voter: voting.voter,
-      votingPower: votingService.calculateVotingPower(ayeAmount, conviction),
+      votingPower: votingService.calculateVotingPower(voting.vote.aye, conviction),
       conviction: votingService.getConvictionMultiplier(conviction),
-      balance: ayeAmount,
+      balance: voting.vote.aye,
     });
 
-    const nayAmount = new BN(voting.splitVote.nayAmount);
     res.push({
-      decision: 'nay',
+      decision: 'aye',
       voter: voting.voter,
-      votingPower: votingService.calculateVotingPower(nayAmount, conviction),
+      votingPower: votingService.calculateVotingPower(voting.vote.nay, conviction),
       conviction: votingService.getConvictionMultiplier(conviction),
-      balance: nayAmount,
+      balance: voting.vote.nay,
     });
   }
 
-  if (voting.splitAbstainVote) {
-    const conviction = 'None';
+  if (votingService.isSplitAbstainVote(voting.vote)) {
+    const conviction = votingService.getAccountVoteConviction(voting.vote);
 
-    const ayeAmount = new BN(voting.splitAbstainVote.ayeAmount);
-    if (!ayeAmount.isZero()) {
+    if (!voting.vote.aye.isZero()) {
       res.push({
         decision: 'aye',
         voter: voting.voter,
-        votingPower: votingService.calculateVotingPower(ayeAmount, conviction),
+        votingPower: votingService.calculateVotingPower(voting.vote.aye, conviction),
         conviction: votingService.getConvictionMultiplier(conviction),
-        balance: ayeAmount,
+        balance: voting.vote.aye,
       });
     }
 
-    const nayAmount = new BN(voting.splitAbstainVote.nayAmount);
-    if (!nayAmount.isZero()) {
+    if (!voting.vote.nay.isZero()) {
       res.push({
         decision: 'nay',
         voter: voting.voter,
-        votingPower: votingService.calculateVotingPower(nayAmount, conviction),
+        votingPower: votingService.calculateVotingPower(voting.vote.nay, conviction),
         conviction: votingService.getConvictionMultiplier(conviction),
-        balance: nayAmount,
+        balance: voting.vote.nay,
       });
     }
 
-    const abstainAmount = new BN(voting.splitAbstainVote.abstainAmount);
     res.push({
       decision: 'abstain',
       voter: voting.voter,
-      votingPower: votingService.calculateVotingPower(abstainAmount, conviction),
+      votingPower: votingService.calculateVotingPower(voting.vote.abstain, conviction),
       conviction: votingService.getConvictionMultiplier(conviction),
-      balance: abstainAmount,
+      balance: voting.vote.abstain,
     });
   }
 
@@ -178,5 +166,5 @@ const getDecoupledVotesFromSubQueryVote = (referendumId: ReferendumId, voting: S
 
 export const votingListService = {
   getDecoupledVotesFromVote,
-  getDecoupledVotesFromSubQueryVote,
+  getDecoupledVotesFromVotingHistory,
 };

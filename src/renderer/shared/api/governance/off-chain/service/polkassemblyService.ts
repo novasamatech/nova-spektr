@@ -1,3 +1,5 @@
+import { BN } from '@polkadot/util';
+
 import {
   type PolkassemblyListingPost,
   type PolkassemblyPostVote,
@@ -77,9 +79,24 @@ const getReferendumTimeline: GovernanceApi['getReferendumTimeline'] = async (cha
     .then((r) => r.timeline.flatMap((timeline) => timeline.statuses.map(mapTimeline)));
 };
 
+const getReferendumSummary: GovernanceApi['getReferendumSummary'] = async (chain, referendumId) => {
+  return polkassemblyApiService
+    .fetchPost({
+      network: chain.specName,
+      postId: referendumId,
+      proposalType: 'referendums_v2',
+    })
+    .then((r) => ({
+      ayes: new BN(r.tally.ayes),
+      nays: new BN(r.tally.nays),
+      support: new BN(r.tally.support),
+    }));
+};
+
 export const polkassemblyService: GovernanceApi = {
   getReferendumList,
   getReferendumVotes,
   getReferendumDetails,
   getReferendumTimeline,
+  getReferendumSummary,
 };

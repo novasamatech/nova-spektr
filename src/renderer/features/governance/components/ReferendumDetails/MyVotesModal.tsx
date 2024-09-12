@@ -19,7 +19,7 @@ type Props = {
   onClose: VoidFunction;
 };
 
-export const MyVotesDialog = ({ referendum, asset, chain, onClose }: Props) => {
+export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
   const { t } = useI18n();
   const [isOpen, closeModal] = useModalClose(true, onClose);
 

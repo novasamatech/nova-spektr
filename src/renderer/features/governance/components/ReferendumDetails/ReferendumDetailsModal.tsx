@@ -11,9 +11,9 @@ import { detailsAggregate } from '../../aggregates/details';
 import { type AggregatedReferendum } from '../../types/structs';
 import { VotingHistoryDialog } from '../VotingHistory/VotingHistoryDialog';
 
-import { AdvancedDialog } from './AdvancedDialog';
+import { AdvancedModal } from './AdvancedModal';
 import { DetailsCard } from './DetailsCard';
-import { MyVotesDialog } from './MyVotesDialog';
+import { MyVotesModal } from './MyVotesModal';
 import { ProposalDescription } from './ProposalDescription';
 import { ReferendumAdditional } from './ReferendumAdditional';
 import { Timeline } from './Timeline';
@@ -31,7 +31,7 @@ type Props = {
   onClose: VoidFunction;
 };
 
-export const ReferendumDetailsDialog = ({
+export const ReferendumDetailsModal = ({
   chain,
   asset,
   referendum,
@@ -93,18 +93,16 @@ export const ReferendumDetailsDialog = ({
             />
           </DetailsCard>
 
-          {referendumService.isOngoing(referendum) && (
-            <DetailsCard
-              title={t('governance.referendum.votingSummary')}
-              action={
-                <Button variant="text" size="sm" className="h-fit p-0" onClick={toggleShowVoteHistory}>
-                  {t('governance.voteHistory.viewVoteHistory')}
-                </Button>
-              }
-            >
-              <VotingSummary referendum={referendum} asset={asset} />
-            </DetailsCard>
-          )}
+          <DetailsCard
+            title={t('governance.referendum.votingSummary')}
+            action={
+              <Button variant="text" size="sm" className="h-fit p-0" onClick={toggleShowVoteHistory}>
+                {t('governance.voteHistory.viewVoteHistory')}
+              </Button>
+            }
+          >
+            <VotingSummary referendum={referendum} chain={chain} asset={asset} />
+          </DetailsCard>
 
           <DetailsCard title={t('governance.referendum.additional')}>
             <ReferendumAdditional network={chain.specName} referendumId={referendum.referendumId} />
@@ -125,13 +123,13 @@ export const ReferendumDetailsDialog = ({
       </div>
 
       {showWalletVotes && (
-        <MyVotesDialog referendum={referendum} chain={chain} asset={asset} onClose={toggleShowWalletVotes} />
+        <MyVotesModal referendum={referendum} chain={chain} asset={asset} onClose={toggleShowWalletVotes} />
       )}
 
       {showVoteHistory && <VotingHistoryDialog referendum={referendum} onClose={toggleShowVoteHistory} />}
 
       {showAdvanced && referendumService.isOngoing(referendum) && (
-        <AdvancedDialog asset={asset} referendum={referendum} onClose={toggleShowAdvanced} />
+        <AdvancedModal asset={asset} referendum={referendum} onClose={toggleShowAdvanced} />
       )}
     </BaseModal>
   );
