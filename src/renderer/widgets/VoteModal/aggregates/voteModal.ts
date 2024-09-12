@@ -36,15 +36,18 @@ const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flow.o
 const $hasDelegatedTrack = combine(
   voteFormAggregate.$referendum,
   voteFormAggregate.transactionForm.form.fields.account.$value,
+  networkSelectorModel.$network,
   delegationAggregate.$activeTracks,
-  (referendum, account, tracks) => {
-    if (nullable(account) || nullable(referendum)) {
+  (referendum, account, network, tracks) => {
+    if (nullable(account) || nullable(referendum) || nullable(network)) {
       return false;
     }
 
+    const accountAddress = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
+
     for (const dalegators of Object.values(tracks)) {
       for (const [address, tracks] of Object.entries(dalegators)) {
-        if (address === toAddress(account.accountId) && tracks.includes(referendum.track)) {
+        if (address === accountAddress && tracks.includes(referendum.track)) {
           return true;
         }
       }
