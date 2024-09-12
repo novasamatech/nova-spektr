@@ -93,8 +93,8 @@ const $coreTx = combine(flow.state, $account, ({ chain, referendum }, account) =
   return transactionBuilder.buildRemoveVote({
     accountId: account.accountId,
     chain: chain,
-    trackId: referendum.track,
-    referendumId: referendum.referendumId,
+    track: referendum.track,
+    referendum: referendum.referendumId,
   });
 });
 

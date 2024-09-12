@@ -369,8 +369,8 @@ function buildUnlock({ chain, accountId, actions, amount: value }: UnlockParams)
         ...transaction,
         type: TransactionType.REMOVE_VOTE,
         args: {
-          trackId: action.trackId,
-          referendumId: action.referendumId,
+          track: action.trackId,
+          referendum: action.referendumId,
           value,
         },
       };
@@ -437,15 +437,15 @@ function buildRevote({ chain, accountId, referendumId, trackId, vote }: RevotePa
 type RemoveVoteParams = {
   chain: Chain;
   accountId: AccountId;
-  referendumId: ReferendumId;
-  trackId: TrackId;
+  referendum: ReferendumId;
+  track: TrackId;
 };
 
-function buildRemoveVote({ chain, accountId, trackId, referendumId }: RemoveVoteParams): Transaction {
+function buildRemoveVote({ chain, accountId, track, referendum }: RemoveVoteParams): Transaction {
   return {
     chainId: chain.chainId,
     address: toAddress(accountId, { prefix: chain.addressPrefix }),
     type: TransactionType.REMOVE_VOTE,
-    args: { trackId, referendumId },
+    args: { track: track, referendum: referendum },
   };
 }
