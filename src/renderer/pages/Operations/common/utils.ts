@@ -225,7 +225,9 @@ export const getDelegationTracks = (tx: MultisigTransaction): string[] | undefin
     coreTxs = [tx.transaction];
   }
 
-  return coreTxs?.map((tx: Transaction) => tx.args.track.toString());
+  if (!coreTxs.length) return;
+
+  return coreTxs.map((tx: Transaction) => tx.args.track.toString());
 };
 
 export const getReferendumId = (tx: MultisigTransaction): string | undefined => {
