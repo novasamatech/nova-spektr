@@ -1,22 +1,11 @@
-import { useStoreMap, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/app/providers';
-import { Button, DetailRow, FootnoteText, InfoLink, Plate, SmallTitleText } from '@/shared/ui';
+import { Button, DetailRow, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
-import { proposerIdentityAggregate } from '@/features/governance';
-import { getIdentityList } from '../lib/utils';
 import { delegateDetailsModel } from '../model/delegate-details-model';
 
-export const DelegateInfo = () => (
-  <>
-    <Plate className="w-[350px] border-filter-border p-6 shadow-card-shadow">
-      <DelegateActivity />
-    </Plate>
-    <DelegateIdentity />
-  </>
-);
-
-const DelegateActivity = () => {
+export const DelegateActivity = () => {
   const { t } = useI18n();
 
   const chain = useUnit(delegateDetailsModel.$chain);
@@ -65,33 +54,5 @@ const DelegateActivity = () => {
         <FootnoteText>{delegate.delegateVotes || '0'}</FootnoteText>
       </DetailRow>
     </div>
-  );
-};
-
-const DelegateIdentity = () => {
-  const { t } = useI18n();
-  const delegate = useUnit(delegateDetailsModel.$delegate);
-
-  const identity = useStoreMap({
-    store: proposerIdentityAggregate.$proposers,
-    keys: [delegate?.address],
-    fn: (proposers, [address]) => (address ? (proposers[address] ?? null) : null),
-  });
-
-  if (!delegate || !identity) return null;
-
-  return (
-    <Plate className="w-[350px] border-filter-border p-6 shadow-card-shadow">
-      <div className="flex flex-col gap-6">
-        <SmallTitleText>{t('governance.addDelegation.delegateIdentity')}</SmallTitleText>
-        {getIdentityList(identity).map(({ key, value, url }) => (
-          <DetailRow key={key} label={<FootnoteText className="text-text-secondary">{key}</FootnoteText>}>
-            <InfoLink url={url} className="text-tab-text-accent">
-              {value}
-            </InfoLink>
-          </DetailRow>
-        ))}
-      </div>
-    </Plate>
   );
 };
