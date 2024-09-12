@@ -28,7 +28,7 @@ sample({
   filter: ({ wallet, network }) => nonNullable(wallet) && nonNullable(network),
   fn: ({ wallet, network }) => {
     return {
-      addresses: wallet!.accounts.map((acc) => toAddress(acc.accountId, { prefix: network?.chain.addressPrefix })),
+      addresses: wallet!.accounts.map((acc) => toAddress(acc.accountId, { prefix: network!.chain.addressPrefix })),
       chain: network!.chain,
     };
   },
