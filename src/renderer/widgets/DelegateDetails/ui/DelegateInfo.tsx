@@ -1,7 +1,7 @@
 import { useStoreMap, useUnit } from 'effector-react';
 
 import { useI18n } from '@/app/providers';
-import { Button, DetailRow, FootnoteText, Plate, SmallTitleText } from '@/shared/ui';
+import { Button, DetailRow, FootnoteText, InfoLink, Plate, SmallTitleText } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { proposerIdentityAggregate } from '@/features/governance';
 import { getIdentityList } from '../lib/utils';
@@ -28,7 +28,7 @@ const DelegateActivity = () => {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <SmallTitleText>{t('governance.addDelegation.delegateActivity')}</SmallTitleText>
-        <Button pallet="primary" variant="text" size="sm" onClick={() => {}}>
+        <Button pallet="primary" variant="text" size="sm" className="px-0" onClick={() => {}}>
           {t('governance.addDelegation.viewSummary')}
         </Button>
       </div>
@@ -86,9 +86,11 @@ const DelegateIdentity = () => {
         <div className="flex items-center justify-between">
           <SmallTitleText>{t('governance.addDelegation.delegateIdentity')}</SmallTitleText>
         </div>
-        {getIdentityList(identity).map(({ key, value }) => (
+        {getIdentityList(identity).map(({ key, value, url }) => (
           <DetailRow key={key} label={<FootnoteText className="text-text-secondary">{key}</FootnoteText>}>
-            <FootnoteText className="text-tab-text-accent">{value}</FootnoteText>
+            <InfoLink url={url} className="text-tab-text-accent">
+              {value}
+            </InfoLink>
           </DetailRow>
         ))}
       </div>

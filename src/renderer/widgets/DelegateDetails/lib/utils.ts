@@ -2,12 +2,27 @@ import capitalize from 'lodash/capitalize';
 
 import { type Identity } from '@/shared/core';
 
+type IdentityListParam = {
+  key: string;
+  value: string;
+  url: string;
+};
 export const getIdentityList = (identity: Identity) => {
-  return Object.entries(identity).reduce<{ key: string; value: string }[]>((acc, [key, value]) => {
-    if (key === 'parent' || !value) return acc;
+  return Object.entries(identity).reduce<IdentityListParam[]>((acc, [key, value]) => {
+    if (typeof value !== 'string' || !value) return acc;
+    const capitalizedKey = capitalize(key);
 
-    acc.push({ key: capitalize(key), value: value as string }); // Store both key and value explicitly
-
-    return acc;
+    switch (key) {
+      case 'twitter':
+        return [...acc, { key: capitalizedKey, value, url: `https://x.com/${value}` }];
+      case 'email':
+        return [...acc, { key: capitalizedKey, value, url: `mailto:${value}` }];
+      case 'website':
+        return [...acc, { key: capitalizedKey, value, url: value }];
+      case 'parent':
+        return acc;
+      default:
+        return [...acc, { key: capitalizedKey, value: value, url: '' }];
+    }
   }, []);
 };
