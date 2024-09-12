@@ -83,9 +83,7 @@ const DelegateIdentity = () => {
   return (
     <Plate className="w-[350px] border-filter-border p-6 shadow-card-shadow">
       <div className="flex flex-col gap-6">
-        <div className="flex items-center justify-between">
-          <SmallTitleText>{t('governance.addDelegation.delegateIdentity')}</SmallTitleText>
-        </div>
+        <SmallTitleText>{t('governance.addDelegation.delegateIdentity')}</SmallTitleText>
         {getIdentityList(identity).map(({ key, value, url }) => (
           <DetailRow key={key} label={<FootnoteText className="text-text-secondary">{key}</FootnoteText>}>
             <InfoLink url={url} className="text-tab-text-accent">
