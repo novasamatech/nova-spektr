@@ -225,6 +225,8 @@ export const getDelegationTracks = (tx: MultisigTransaction): string[] | undefin
     coreTxs = [tx.transaction];
   }
 
+  if (!coreTxs.length) return;
+
   return coreTxs?.map((tx: Transaction) => tx.args.track.toString());
 };
 
