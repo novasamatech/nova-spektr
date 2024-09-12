@@ -12,7 +12,7 @@ import {
   Locks,
   NetworkSelector,
   OngoingReferendums,
-  ReferendumDetailsDialog,
+  ReferendumDetailsModal,
   ReferendumFilters,
   ReferendumSearch,
   TotalDelegation,
@@ -121,7 +121,7 @@ export const Governance = () => {
       </div>
 
       {nonNullable(selectedReferendum) && nonNullable(network) && (
-        <ReferendumDetailsDialog
+        <ReferendumDetailsModal
           referendum={selectedReferendum}
           chain={network.chain}
           asset={network.asset}

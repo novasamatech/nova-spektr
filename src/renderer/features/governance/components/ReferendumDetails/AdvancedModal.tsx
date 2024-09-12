@@ -14,7 +14,7 @@ type Props = {
   onClose: VoidFunction;
 };
 
-export const AdvancedDialog = ({ asset, referendum, onClose }: Props) => {
+export const AdvancedModal = ({ asset, referendum, onClose }: Props) => {
   const { t } = useI18n();
   const [isOpen, closeModal] = useModalClose(true, onClose);
 

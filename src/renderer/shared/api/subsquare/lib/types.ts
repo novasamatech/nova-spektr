@@ -53,9 +53,21 @@ export type SubsquareSimpleReferendum = {
       blockHash: HexString;
       blockTime: number;
     };
+    args: {
+      tally?: {
+        ayes: string | number;
+        nays: string | number;
+        support: string | number;
+      };
+    };
   };
   onchainData: {
     timeline: SubsquareTimelineRecord[];
+    tally?: {
+      ayes: string | number;
+      nays: string | number;
+      support: string | number;
+    };
   };
   author: {
     username: string;

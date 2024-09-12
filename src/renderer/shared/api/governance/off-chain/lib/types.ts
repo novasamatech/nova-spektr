@@ -24,6 +24,12 @@ export type ReferendumTimelineRecord = {
   status: ReferendumTimelineRecordStatus;
 };
 
+export type ReferendumSummary = {
+  ayes: BN;
+  nays: BN;
+  support: BN;
+};
+
 export interface GovernanceApi {
   getReferendumList: (chain: Chain, callback: (data: Record<ReferendumId, string>, done: boolean) => void) => void;
   getReferendumDetails: (chain: Chain, referendumId: ReferendumId) => Promise<string | undefined>;
@@ -33,6 +39,7 @@ export interface GovernanceApi {
     callback: (data: Address[], done: boolean) => void,
   ) => Promise<Address[]>;
   getReferendumTimeline: (chain: Chain, referendumId: ReferendumId) => Promise<ReferendumTimelineRecord[]>;
+  getReferendumSummary: (chain: Chain, referendumId: ReferendumId) => Promise<ReferendumSummary>;
 }
 
 export type SubQueryVoting = {
