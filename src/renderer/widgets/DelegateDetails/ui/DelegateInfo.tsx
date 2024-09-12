@@ -1,17 +1,97 @@
-import { type DelegateAccount } from '@/shared/api/governance';
-import { Markdown } from '@/shared/ui';
-import { DelegateName } from '@/features/governance';
+import { useStoreMap, useUnit } from 'effector-react';
 
-type Props = {
-  delegate: DelegateAccount;
+import { useI18n } from '@/app/providers';
+import { Button, DetailRow, FootnoteText, Plate, SmallTitleText } from '@/shared/ui';
+import { AssetBalance } from '@/entities/asset';
+import { proposerIdentityAggregate } from '@/features/governance';
+import { getIdentityList } from '../lib/utils';
+import { delegateDetailsModel } from '../model/delegate-details-model';
+
+export const DelegateInfo = () => (
+  <>
+    <Plate className="w-[350px] border-filter-border p-6 shadow-card-shadow">
+      <DelegateActivity />
+    </Plate>
+    <DelegateIdentity />
+  </>
+);
+
+const DelegateActivity = () => {
+  const { t } = useI18n();
+
+  const chain = useUnit(delegateDetailsModel.$chain);
+  const delegate = useUnit(delegateDetailsModel.$delegate);
+
+  if (!delegate) return null;
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between">
+        <SmallTitleText>{t('governance.addDelegation.delegateActivity')}</SmallTitleText>
+        <Button pallet="primary" variant="text" size="sm" onClick={() => {}}>
+          {t('governance.addDelegation.viewSummary')}
+        </Button>
+      </div>
+
+      <DetailRow
+        label={<FootnoteText className="text-text-secondary">{t('governance.addDelegation.card.votes')}</FootnoteText>}
+      >
+        <AssetBalance
+          showSymbol={false}
+          value={delegate.delegatorVotes?.toString() || '0'}
+          asset={chain?.assets[0]}
+          className="text-footnote"
+        />
+      </DetailRow>
+
+      <DetailRow
+        label={
+          <FootnoteText className="text-text-secondary">{t('governance.addDelegation.card.delegations')}</FootnoteText>
+        }
+      >
+        <FootnoteText>{delegate.delegators || '0'}</FootnoteText>
+      </DetailRow>
+
+      <DetailRow
+        label={<FootnoteText className="text-text-secondary">{t('governance.addDelegation.card.voted')}</FootnoteText>}
+      >
+        <FootnoteText>{delegate.delegateVotesMonth || '0'}</FootnoteText>
+      </DetailRow>
+      <DetailRow
+        label={
+          <FootnoteText className="text-text-secondary">{t('governance.addDelegation.votedAllTime')}</FootnoteText>
+        }
+      >
+        <FootnoteText>{delegate.delegateVotes || '0'}</FootnoteText>
+      </DetailRow>
+    </div>
+  );
 };
 
-export const DelegateInfo = ({ delegate }: Props) => {
-  return (
-    <div className="flex flex-col gap-4">
-      <DelegateName delegate={delegate} titleClassName="max-w-[430px]" />
+const DelegateIdentity = () => {
+  const { t } = useI18n();
+  const delegate = useUnit(delegateDetailsModel.$delegate);
 
-      {delegate.longDescription && <Markdown>{delegate.longDescription}</Markdown>}
-    </div>
+  const identity = useStoreMap({
+    store: proposerIdentityAggregate.$proposers,
+    keys: [delegate?.address],
+    fn: (proposers, [address]) => (address ? (proposers[address] ?? null) : null),
+  });
+
+  if (!delegate || !identity) return null;
+
+  return (
+    <Plate className="w-[350px] border-filter-border p-6 shadow-card-shadow">
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center justify-between">
+          <SmallTitleText>{t('governance.addDelegation.delegateIdentity')}</SmallTitleText>
+        </div>
+        {getIdentityList(identity).map(({ key, value }) => (
+          <DetailRow key={key} label={<FootnoteText className="text-text-secondary">{key}</FootnoteText>}>
+            <FootnoteText className="text-tab-text-accent">{value}</FootnoteText>
+          </DetailRow>
+        ))}
+      </div>
+    </Plate>
   );
 };

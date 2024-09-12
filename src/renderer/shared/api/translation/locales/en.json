@@ -357,6 +357,7 @@
       "customDelegationPlaceholder": "Enter address",
       "customDelegationTitle": "Add custom delegation on",
       "delegateActivity": "Delegate activity",
+      "delegateIdentity": "Delegate identity",
       "delegateTitle": "Delegate",
       "editDelegationButton": "Edit delegation",
       "emptyDescription": "Update the search or cancel filtering",
