@@ -189,9 +189,11 @@ module.exports = {
         '@typescript-eslint/no-empty-function': 'off',
         '@typescript-eslint/no-unused-vars': 'off',
         '@typescript-eslint/no-explicit-any': 'off',
+
         '@typescript-eslint/no-unnecessary-type-constraint': 'error',
-        // TODO make error
         '@typescript-eslint/array-type': ['error', { default: 'array', readonly: 'array' }],
+        // TODO error
+        '@typescript-eslint/no-unnecessary-condition': 'off',
 
         // Stricter rules
         'effector/no-watch': 'error',
