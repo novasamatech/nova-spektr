@@ -5,7 +5,12 @@ import { type Address } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
 import { accountUtils, permissionUtils, walletModel } from '@/entities/wallet';
-import { delegationAggregate, networkSelectorModel, votingAggregate } from '@/features/governance';
+import {
+  delegationAggregate,
+  networkSelectorModel,
+  proposerIdentityAggregate,
+  votingAggregate,
+} from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
 
 const flowStarted = createEvent<DelegateAccount>();
@@ -85,6 +90,16 @@ sample({
 sample({
   clock: flowStarted,
   target: $delegate,
+});
+
+sample({
+  clock: flowStarted,
+  fn: (delegate) => {
+    return {
+      addresses: [delegate.accountId],
+    };
+  },
+  target: proposerIdentityAggregate.events.requestProposers,
 });
 
 sample({

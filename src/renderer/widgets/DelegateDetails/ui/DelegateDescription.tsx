@@ -6,7 +6,7 @@ type Props = {
   delegate: DelegateAccount;
 };
 
-export const DelegateInfo = ({ delegate }: Props) => {
+export const DelegateDescription = ({ delegate }: Props) => {
   return (
     <div className="flex flex-col gap-4">
       <DelegateName delegate={delegate} titleClassName="max-w-[430px]" />

@@ -44,12 +44,15 @@ async function getDelegatesFromExternalSource(chain: Chain, blockNumber: number)
     .request(GET_DELEGATE_LIST, { activityStartBlock: blockNumber })
     .then((data) => {
       return (
-        (data as any)?.delegates?.nodes?.map(({ accountId, delegators, delegatorVotes, delegateVotes }: any) => ({
-          accountId,
-          delegators,
-          delegatorVotes,
-          delegateVotes: delegateVotes.totalCount,
-        })) || []
+        (data as any)?.delegates?.nodes?.map(
+          ({ accountId, delegators, delegatorVotes, delegateVotes, delegateVotesMonth }: any) => ({
+            accountId,
+            delegators,
+            delegatorVotes,
+            delegateVotes: delegateVotes.totalCount,
+            delegateVotesMonth: delegateVotesMonth.totalCount,
+          }),
+        ) || []
       );
     })
     .catch(() => []);
