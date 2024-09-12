@@ -87,7 +87,7 @@ const getDecoupledVotesFromVote = (referendumId: ReferendumId, voting: Voting) =
   return res;
 };
 
-const getDecoupledVotesFromVoteHistory = (voting: VoteHistoryRecord) => {
+const getDecoupledVotesFromVotingHistory = (voting: VoteHistoryRecord) => {
   const res: DecoupledVote[] = [];
 
   if (votingService.isStandardVote(voting.vote)) {
@@ -166,5 +166,5 @@ const getDecoupledVotesFromVoteHistory = (voting: VoteHistoryRecord) => {
 
 export const votingListService = {
   getDecoupledVotesFromVote,
-  getDecoupledVotesFromVoteHistory,
+  getDecoupledVotesFromVotingHistory,
 };
