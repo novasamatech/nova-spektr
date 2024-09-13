@@ -28,7 +28,7 @@ export const StatusModal = ({
 }: PropsWithChildren<Props>) => {
   return (
     <Transition appear leave="duration-400" show={isOpen} as={Fragment}>
-      <Dialog as="div" className={cnTw('relative', zIndex)} onClose={onClose}>
+      <Dialog as="div" className={cnTw('pointer-events-auto relative', zIndex)} onClose={onClose}>
         <ModalBackdrop />
 
         <div className="fixed inset-0 flex min-h-full w-full items-center justify-center overflow-hidden text-center">
