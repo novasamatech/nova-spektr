@@ -5,7 +5,9 @@ import { collectivePallet } from '@/shared/pallet/collective';
 import { updateStore } from '../lib/helpers';
 import { type RequestCollectiveParams, type Store } from '../lib/types';
 
-const $membersStore = createStore<Partial<Store<{ members: null }>>>({});
+export type MembersType = Awaited<ReturnType<typeof requestMembersFx>>;
+
+const $membersStore = createStore<Partial<Store<{ members: MembersType | null }>>>({});
 
 const requestMembersFx = createEffect(({ api, palletType }: RequestCollectiveParams) => {
   return collectivePallet.storage.members(palletType, api);

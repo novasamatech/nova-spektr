@@ -283,7 +283,33 @@
     "fellow_one": "{ count } Fellow",
     "fellow_other": "{ count } Fellows",
     "members": "Members",
-    "title": "Fellowship"
+    "referendums": {
+      "tracks": {
+        "architects": "Architects",
+        "architectsAdept": "Architects Adept",
+        "fellows": "Fellows",
+        "grandArchitects": "Grand Architects",
+        "grandMasters": "Grand Masters",
+        "masters": "Masters",
+        "mastersConstant": "Masters Constant",
+        "members": "Members",
+        "proficientMembers": "Proficient Members",
+        "promoteToIDan": "Promote To I Dan",
+        "promoteToIiDan": "Promote To II Dan",
+        "promoteToIiiDan": "Promote To III Dan",
+        "promoteToIvDan": "Promote To IV Dan",
+        "promoteToVDan": "Promote To V Dan",
+        "promoteToViDan": "Promote To VI Dan",
+        "retainAtIDan": "Retain At I Dan",
+        "retainAtIiDan": "Retain At II Dan2",
+        "retainAtIiiDan": "Retain At III Dan",
+        "retainAtIvDan": "Retain At IV Dan",
+        "retainAtVDan": "Retain At V Dan",
+        "retainAtViDan": "Retain At VI Dan"
+      }
+    },
+    "title": "Fellowship",
+    "yourProfile": "Your profile"
   },
   "general": {
     "actions": {
