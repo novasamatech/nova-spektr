@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { createStore, sample } from 'effector';
+import { createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
 import { type Address, type TrackId, type VotingMap } from '@/shared/core';
@@ -12,8 +12,10 @@ type VotingParams = {
   addresses: Address[];
 };
 
+const subscribeVoting = createEvent<VotingParams>();
+
 const {
-  subscribe: subscribeVoting,
+  subscribe: subscribe,
   received: receiveVoting,
   unsubscribe: unsubscribeVoting,
 } = createSubscriber<VotingParams, VotingMap>(({ api, tracks, addresses }, cb) => {
@@ -27,6 +29,12 @@ const $isLoading = createStore(true);
 
 sample({
   clock: subscribeVoting,
+  filter: ({ addresses }) => addresses.length > 0,
+  target: subscribe,
+});
+
+sample({
+  clock: subscribe,
   fn: () => true,
   target: $isLoading,
 });
