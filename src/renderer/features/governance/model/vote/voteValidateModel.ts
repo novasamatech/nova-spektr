@@ -9,13 +9,14 @@ import { balanceModel, balanceUtils } from '@entities/balance';
 import { votingService } from '@entities/governance';
 import { networkModel } from '@entities/network';
 import { transactionService } from '@entities/transaction';
-import { type AmountFeeStore, type Validation, validationUtils } from '@/features/operations/OperationsValidation';
+import {
+  type AmountFeeStore,
+  type Validation,
+  type ValidationStartedParams,
+  validationUtils,
+} from '@/features/operations/OperationsValidation';
 
-const validationStarted = createEvent<{
-  id: ID;
-  transaction: Transaction;
-  signerOptions?: Partial<SignerOptions>;
-}>();
+const validationStarted = createEvent<ValidationStartedParams>();
 
 type ValidateParams = {
   id: ID;

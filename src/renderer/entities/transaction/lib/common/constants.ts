@@ -42,6 +42,25 @@ export const XcmTypes = [
   TransactionType.XTOKENS_TRANSFER_MULTIASSET,
 ];
 
+export type TransferTransactionTypes =
+  | TransactionType.TRANSFER
+  | TransactionType.ASSET_TRANSFER
+  | TransactionType.ORML_TRANSFER;
+
+export type XcmTransactionTypes =
+  | TransactionType.XCM_TELEPORT
+  | TransactionType.XCM_LIMITED_TRANSFER
+  | TransactionType.POLKADOT_XCM_TELEPORT
+  | TransactionType.POLKADOT_XCM_LIMITED_TRANSFER
+  | TransactionType.XTOKENS_TRANSFER_MULTIASSET;
+
+export type MultisigTransactionTypes =
+  | TransactionType.MULTISIG_APPROVE_AS_MULTI
+  | TransactionType.MULTISIG_AS_MULTI
+  | TransactionType.MULTISIG_CANCEL_AS_MULTI;
+
+export type UtilityTransactionTypes = TransactionType.BATCH_ALL | TransactionType.CHILL | TransactionType.PROXY;
+
 export const DEFAULT_FEE_ASSET_ITEM = 0;
 
 export const DESCRIPTION_LENGTH = 120;

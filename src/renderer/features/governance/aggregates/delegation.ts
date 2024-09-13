@@ -2,11 +2,10 @@ import { BN } from '@polkadot/util';
 import { combine } from 'effector';
 import uniq from 'lodash/uniq';
 
-import { type Address, type Conviction } from '@/shared/core';
+import { type DelegationBalanceMap, type DelegationTracksMap } from '@/shared/core';
 import { permissionUtils, walletModel } from '@/entities/wallet';
 import { votingService } from '@entities/governance';
 import { networkSelectorModel } from '../model/networkSelector';
-import { votingAssetModel } from '../model/votingAsset';
 
 import { votingAggregate } from './voting';
 
@@ -26,7 +25,7 @@ const $totalDelegations = combine(
 );
 
 const $activeDelegations = votingAggregate.$activeWalletVotes.map((activeVotes) => {
-  const activeBalances: Record<Address, Record<Address, { conviction: Conviction; balance: BN }>> = {};
+  const activeBalances: DelegationBalanceMap = {};
 
   for (const [address, delegations] of Object.entries(activeVotes)) {
     for (const delegation of Object.values(delegations)) {
@@ -47,7 +46,7 @@ const $activeDelegations = votingAggregate.$activeWalletVotes.map((activeVotes) 
 });
 
 const $activeTracks = votingAggregate.$activeWalletVotes.map((activeVotes) => {
-  const activeTracks: Record<Address, Record<Address, string[]>> = {};
+  const activeTracks: DelegationTracksMap = {};
 
   for (const [address, delegations] of Object.entries(activeVotes)) {
     for (const [track, delegation] of Object.entries(delegations)) {
@@ -78,8 +77,6 @@ const $canDelegate = walletModel.$activeWallet.map((wallet) => !!wallet && permi
 
 export const delegationAggregate = {
   $isLoading: votingAggregate.$isLoading,
-  $asset: votingAssetModel.$votingAsset,
-  $chain: networkSelectorModel.$governanceChain,
   $network: networkSelectorModel.$network,
 
   $canDelegate,

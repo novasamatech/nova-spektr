@@ -1,4 +1,14 @@
-import { type Asset, type Balance, type Chain } from '@shared/core';
+import { type SignerOptions } from '@polkadot/api/types';
+
+import {
+  type Asset,
+  type Balance,
+  type Chain,
+  type ChainId,
+  type ID,
+  type Transaction,
+  type TransactionType,
+} from '@shared/core';
 
 export type BalanceMap = Record<'balance' | 'native', string>;
 
@@ -127,4 +137,13 @@ export type DelegateFeeStore = {
   balance: BalanceMap;
   network: NetworkStore | null;
   isMultisig: boolean;
+};
+
+export type FeeMap = Record<ChainId, Record<TransactionType, string>>;
+
+export type ValidationStartedParams = {
+  id: ID;
+  transaction: Transaction;
+  feeMap: FeeMap;
+  signerOptions?: Partial<SignerOptions>;
 };

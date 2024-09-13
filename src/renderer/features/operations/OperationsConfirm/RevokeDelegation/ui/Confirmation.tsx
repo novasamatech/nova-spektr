@@ -82,10 +82,11 @@ export const Confirmation = ({
   return (
     <div className="flex w-modal flex-col items-center gap-y-4 px-5 py-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
-        <Icon className="text-icon-default" name="addDelegationConfirm" size={60} />
+        <Icon className="text-icon-default" name="revokeDelegationConfirm" size={60} />
 
         <div className="flex flex-col items-center gap-y-1">
           <LargeTitleText>
+            {'-'}
             <Trans
               t={t}
               i18nKey="governance.addDelegation.votesValue"
@@ -179,7 +180,7 @@ export const Confirmation = ({
                 type="short"
                 wrapperClassName="text-text-secondary"
                 explorers={confirmStore.chain.explorers}
-                accountId={confirmStore.shards[0].accountId}
+                accountId={confirmStore.account.accountId}
                 addressPrefix={confirmStore.chain.addressPrefix}
               />
             </DetailRow>
@@ -229,23 +230,23 @@ export const Confirmation = ({
         <DetailRow label={t('governance.operations.transferable')} wrapperClassName="items-start">
           <BalanceDiff
             from={confirmStore.transferable}
-            to={new BN(confirmStore.transferable).sub(new BN(amountValue))}
+            to={new BN(confirmStore.transferable).add(new BN(amountValue))}
             asset={confirmStore.asset}
             lock={confirmStore.locks}
           />
         </DetailRow>
 
         <DetailRow label={t('governance.locks.governanceLock')} wrapperClassName="items-start">
-          <LockValueDiff from={confirmStore.locks} to={amountValue} asset={confirmStore.asset} />
+          <LockValueDiff from={confirmStore.balance} to="0" asset={confirmStore.asset} />
         </DetailRow>
 
         <DetailRow label={t('governance.locks.undelegatePeriod')} wrapperClassName="items-start">
-          <LockPeriodDiff from="None" to={confirmStore.conviction} lockPeriods={lockPeriods} />
+          <LockPeriodDiff from={confirmStore.conviction} to="None" lockPeriods={lockPeriods} />
         </DetailRow>
 
         <hr className="w-full border-filter-border pr-2" />
 
-        {accountUtils.isMultisigAccount(confirmStore.shards[0]) && (
+        {accountUtils.isMultisigAccount(confirmStore.account) && (
           <DetailRow
             className="text-text-primary"
             label={
@@ -267,29 +268,13 @@ export const Confirmation = ({
 
         <DetailRow
           className="text-text-primary"
-          label={
-            <FootnoteText className="text-text-tertiary">
-              {t('staking.networkFee', { count: confirmStore.shards.length || 1 })}
-            </FootnoteText>
-          }
+          label={<FootnoteText className="text-text-tertiary">{t('staking.networkFee', { count: 1 })}</FootnoteText>}
         >
           <div className="flex flex-col items-end gap-y-0.5">
             <AssetBalance value={confirmStore.fee} asset={confirmStore.chain.assets[0]} />
             <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.fee} />
           </div>
         </DetailRow>
-
-        {confirmStore.shards.length > 1 && (
-          <DetailRow
-            className="text-text-primary"
-            label={<FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>}
-          >
-            <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={confirmStore.totalFee} asset={confirmStore.chain.assets[0]} />
-              <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.totalFee} />
-            </div>
-          </DetailRow>
-        )}
       </dl>
 
       <div className="mt-3 flex w-full justify-between">

@@ -40,13 +40,10 @@ const txsConfirmed = createEvent();
 
 const $step = restore(stepChanged, Step.NONE);
 
-const $walletData = combine(
-  {
-    wallet: walletModel.$activeWallet,
-    chain: networkSelectorModel.$governanceChain,
-  },
-  ({ wallet, chain }) => ({ wallet, chain }),
-);
+const $walletData = combine({
+  wallet: walletModel.$activeWallet,
+  chain: networkSelectorModel.$governanceChain,
+});
 
 const $target = createStore<DelegateAccount | null>(null).reset(flowFinished);
 const $tracks = createStore<number[]>([]).reset(flowFinished);

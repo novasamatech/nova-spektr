@@ -214,6 +214,7 @@ sample({
   fn: (transactions) => ({
     id: 0,
     transaction: transactions!.wrappedTx,
+    feeMap: {},
   }),
   target: voteValidateModel.events.validationStarted,
 });

@@ -8,9 +8,9 @@ import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel } from '@entities/network';
 import { PayeeRules } from '../lib/payee-rules';
 import { validationUtils } from '../lib/validation-utils';
-import { type ShardsBondBalanceStore, type ValidationResult } from '../types/types';
+import { type ShardsBondBalanceStore, type ValidationResult, type ValidationStartedParams } from '../types/types';
 
-const validationStarted = createEvent<{ id: ID; transaction: Transaction; signerOptions?: Partial<SignerOptions> }>();
+const validationStarted = createEvent<ValidationStartedParams>();
 const txValidated = createEvent<{ id: ID; result: ValidationResult }>();
 
 type ValidateParams = {

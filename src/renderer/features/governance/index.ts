@@ -30,3 +30,12 @@ export { VotingHistoryDialog } from './components/VotingHistory/VotingHistoryDia
 export { listService } from './lib/listService';
 
 export { type AggregatedReferendum } from './types/structs';
+
+export {
+  treasurySpendsDescription,
+  adminTracks,
+  governanceTracks,
+  treasuryTracks,
+  fellowshipTracks,
+  allTracks,
+} from './constants/tracks';

@@ -12,6 +12,9 @@ import DelegatedAuthoritiesImg, {
 import ReturnToStakeImg, {
   ReactComponent as ReturnToStakeSvg,
 } from '@shared/assets/images/confirm/return-to-stake.svg';
+import RevokeDelegationImg, {
+  ReactComponent as RevokeDelegationSvg,
+} from '@shared/assets/images/confirm/revoke-delegation.svg';
 import StakeMoreImg, { ReactComponent as StakeMoreSvg } from '@shared/assets/images/confirm/stake-more.svg';
 import StartStakingImg, { ReactComponent as StartStakingSvg } from '@shared/assets/images/confirm/start-staking.svg';
 import TransferImg, { ReactComponent as TransferSvg } from '@shared/assets/images/confirm/transfer.svg';
@@ -32,6 +35,7 @@ const ConfirmImages = {
   returnToStakeConfirm: { svg: ReturnToStakeSvg, img: ReturnToStakeImg },
   proxyConfirm: { svg: DelegatedAuthoritiesSvg, img: DelegatedAuthoritiesImg },
   addDelegationConfirm: { svg: AddDelegationSvg, img: AddDelegationImg },
+  revokeDelegationConfirm: { svg: RevokeDelegationSvg, img: RevokeDelegationImg },
 } as const;
 
 export type Confirm = keyof typeof ConfirmImages;

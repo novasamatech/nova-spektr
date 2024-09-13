@@ -3,11 +3,12 @@ import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/app/providers';
 import { toAddress } from '@/shared/lib/utils';
-import { BaseModal, BodyText, FootnoteText, Icon, Tooltip } from '@/shared/ui';
+import { BaseModal, BodyText, FootnoteText, Icon, IconButton, Tooltip } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { votingService } from '@/entities/governance';
 import { ContactItem, ExplorersPopover, accountUtils, walletModel } from '@/entities/wallet';
-import { allTracks } from '@/widgets/DelegateModal/lib/constants';
+import { allTracks } from '@/features/governance';
+import { revokeDelegationModel } from '@/widgets/RevokeDelegationModal';
 import { delegateDetailsModel } from '../model/delegate-details-model';
 
 export const YourDelegations = () => {
@@ -18,7 +19,16 @@ export const YourDelegations = () => {
   const activeAccounts = useUnit(delegateDetailsModel.$activeAccounts);
   const activeDelegations = useUnit(delegateDetailsModel.$activeDelegations);
   const activeTracks = useUnit(delegateDetailsModel.$activeTracks);
+  const delegate = useUnit(delegateDetailsModel.$delegate);
   const wallet = useUnit(walletModel.$activeWallet);
+
+  const accounts =
+    wallet?.accounts.filter(
+      (account) =>
+        chain &&
+        accountUtils.isChainAndCryptoMatch(account, chain) &&
+        activeAccounts.includes(toAddress(account.accountId, { prefix: chain.addressPrefix })),
+    ) || [];
 
   if (!chain) return null;
 
@@ -43,8 +53,10 @@ export const YourDelegations = () => {
           <FootnoteText className="w-[62px] px-3 text-text-tertiary">
             {t('governance.addDelegation.tracksLabel')}
           </FootnoteText>
+          <div className="w-[44px]"></div>
+          <div className="w-[44px]"></div>
         </div>
-        {activeAccounts.map((address) => {
+        {activeAccounts.map((address, index) => {
           const account = wallet?.accounts.find((a) => toAddress(a.accountId) === address);
           const activeDelegation = activeDelegations[address];
 
@@ -112,6 +124,21 @@ export const YourDelegations = () => {
                     <Icon className="group-hover:text-icon-hover" name="info" size={16} />
                   </div>
                 </Tooltip>
+              </div>
+              <div className="w-[44px] items-center justify-center"></div>
+              <div className="w-[44px] items-center justify-center">
+                {accounts?.length > 1 && (
+                  <IconButton
+                    name="delete"
+                    onClick={() =>
+                      delegate &&
+                      revokeDelegationModel.events.flowStarted({
+                        delegate: delegate.accountId,
+                        accounts: [accounts[index]],
+                      })
+                    }
+                  />
+                )}
               </div>
             </div>
           );

@@ -115,6 +115,16 @@ export const getTransactionOptions = (t: TFunction) => {
       element: t('operations.titles.removeVote'),
     },
     {
+      id: TransactionType.DELEGATE,
+      value: TransactionType.DELEGATE,
+      element: t('operations.titles.delegate'),
+    },
+    {
+      id: TransactionType.UNDELEGATE,
+      value: TransactionType.UNDELEGATE,
+      element: t('operations.titles.undelegate'),
+    },
+    {
       id: UNKNOWN_TYPE,
       value: UNKNOWN_TYPE,
       element: t('operations.titles.unknown'),

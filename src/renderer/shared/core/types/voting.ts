@@ -58,3 +58,6 @@ export type SplitAbstainVote = {
 export type AccountVote = StandardVote | SplitVote | SplitAbstainVote;
 
 export type VotingMap = Record<Address, Record<TrackId, Voting>>;
+
+export type DelegationBalanceMap = Record<Address, Record<Address, { conviction: Conviction; balance: BN }>>;
+export type DelegationTracksMap = Record<Address, Record<Address, string[]>>;
