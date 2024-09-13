@@ -283,6 +283,7 @@
     "fellow_one": "{ count } Fellow",
     "fellow_other": "{ count } Fellows",
     "members": "Members",
+    "noProfile": "No profile",
     "referendums": {
       "tracks": {
         "architects": "Architects",

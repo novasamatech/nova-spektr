@@ -25,7 +25,7 @@ export const Profile = ({ onClick }: Props) => {
           <Skeleton active={isLoading}>
             <BodyText className="text-small-title">
               {/* TODO: change to identety */}
-              {fellowshipAccount ? fellowshipAccount.accountId : t('fellowship.yourProfile')}
+              {fellowshipAccount ? fellowshipAccount.accountId : t('fellowship.noProfile')}
             </BodyText>
           </Skeleton>
         </div>
