@@ -446,6 +446,6 @@ function buildRemoveVote({ chain, accountId, track, referendum }: RemoveVotePara
     chainId: chain.chainId,
     address: toAddress(accountId, { prefix: chain.addressPrefix }),
     type: TransactionType.REMOVE_VOTE,
-    args: { track: track, referendum: referendum },
+    args: { track, referendum },
   };
 }
