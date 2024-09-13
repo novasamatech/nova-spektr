@@ -11,6 +11,7 @@ import LoaderImg, { ReactComponent as LoaderSvg } from '@shared/assets/images/ae
 import MembersImg, { ReactComponent as MembersSvg } from '@shared/assets/images/aesthetics/members.svg';
 import OrganizationImg, { ReactComponent as OrganizationSvg } from '@shared/assets/images/aesthetics/organization.svg';
 import PolkadotImg, { ReactComponent as PolkadotSvg } from '@shared/assets/images/aesthetics/polkadot.svg';
+import ProfileImg, { ReactComponent as ProfileSvg } from '@shared/assets/images/aesthetics/profile.svg';
 import QuestionImg, { ReactComponent as QuestionSvg } from '@shared/assets/images/aesthetics/question.svg';
 import RocketImg, { ReactComponent as RocketSvg } from '@shared/assets/images/aesthetics/rocket.svg';
 import StakingImg, { ReactComponent as StakingSvg } from '@shared/assets/images/aesthetics/staking.svg';
@@ -38,6 +39,7 @@ const AestheticImages = {
   individual: { svg: IndividualSvg, img: IndividualImg },
   organization: { svg: OrganizationSvg, img: OrganizationImg },
   members: { svg: MembersSvg, img: MembersImg },
+  profile: { svg: ProfileSvg, img: ProfileImg },
 } as const;
 
 export type Aesthetic = keyof typeof AestheticImages;
