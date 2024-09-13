@@ -416,8 +416,8 @@ export const getUnsignedTransaction: Record<
   [TransactionType.REMOVE_VOTE]: (transaction, info, options) => {
     return convictionVotingMethods.removeVote(
       {
-        class: transaction.args.trackId,
-        index: transaction.args.referendumId,
+        class: transaction.args.track,
+        index: transaction.args.referendum,
       },
       info,
       options,
@@ -529,8 +529,8 @@ export const getExtrinsic: Record<
   [TransactionType.REVOTE]: ({ referendum, vote }, api) => {
     return api.tx.convictionVoting.vote(referendum, vote);
   },
-  [TransactionType.REMOVE_VOTE]: ({ trackId, referendumId }, api) => {
-    return api.tx.convictionVoting.removeVote(trackId, referendumId);
+  [TransactionType.REMOVE_VOTE]: ({ track, referendum }, api) => {
+    return api.tx.convictionVoting.removeVote(track, referendum);
   },
   [TransactionType.DELEGATE]: ({ track, target, conviction, balance }, api) => {
     return api.tx.convictionVoting.delegate(track, target, conviction, balance);

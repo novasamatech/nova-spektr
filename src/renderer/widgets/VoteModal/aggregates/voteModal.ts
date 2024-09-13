@@ -131,7 +131,7 @@ sample({
 
 sample({
   clock: flow.close,
-  fn: () => Step.NONE,
+  fn: () => Step.INIT,
   target: $step,
 });
 
