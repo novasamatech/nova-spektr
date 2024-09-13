@@ -26,6 +26,7 @@ import {
   XcmTypes,
 } from '@entities/transaction';
 import { walletModel, walletUtils } from '@entities/wallet';
+import { type FeeMap } from '@/features/operations/OperationsValidation';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { ExtrinsicResult } from '@features/operations/OperationSubmit/lib/types';
@@ -51,8 +52,6 @@ import { unlockConfirmAggregate } from '@/widgets/UnlockModal/aggregates/unlockC
 import { type DataParams, prepareTransaction } from '../lib/prepareTransactions';
 import { getCoreTx } from '../lib/utils';
 import { Step } from '../types';
-
-type FeeMap = Record<ChainId, Record<TransactionType, string>>;
 
 const flowStarted = createEvent<{ transactions: BasketTransaction[]; feeMap: FeeMap }>();
 const flowFinished = createEvent();

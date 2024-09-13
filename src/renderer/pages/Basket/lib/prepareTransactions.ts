@@ -27,11 +27,10 @@ import { governanceService, votingService } from '@/entities/governance';
 import { networkUtils } from '@entities/network';
 import { eraService, useStakingData, validatorsService } from '@entities/staking';
 import { transactionService } from '@entities/transaction';
+import { type FeeMap } from '@/features/operations/OperationsValidation';
 import { type UnlockFormData } from '@features/governance/types/structs';
 
 import { getCoreTx } from './utils';
-
-type FeeMap = Record<ChainId, Record<TransactionType, string>>;
 
 type PrepareDataParams = {
   wallets: Wallet[];

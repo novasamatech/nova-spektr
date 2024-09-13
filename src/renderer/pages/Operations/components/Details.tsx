@@ -32,7 +32,7 @@ import {
   isXcmTransaction,
 } from '@entities/transaction';
 import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, walletModel } from '@entities/wallet';
-import { allTracks } from '@/widgets/DelegateModal/lib/constants';
+import { allTracks } from '@/features/governance';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import {
   getDelegate,

@@ -1,15 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type Store, createEffect, createEvent, sample } from 'effector';
 
-import {
-  type Asset,
-  type Balance,
-  type Chain,
-  type ChainId,
-  type ID,
-  type Transaction,
-  type TransactionType,
-} from '@shared/core';
+import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@shared/core';
 import { getAssetById, toAccountId, transferableAmount } from '@shared/lib/utils';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel } from '@entities/network';
@@ -19,14 +11,14 @@ import { DelegateRules } from '../lib/delegate-rules';
 import { validationUtils } from '../lib/validation-utils';
 import {
   type DelegateFeeStore,
+  type FeeMap,
   type TransferAccountStore,
   type TransferSignatoryFeeStore,
   type ValidationResult,
+  type ValidationStartedParams,
 } from '../types/types';
 
-type FeeMap = Record<ChainId, Record<TransactionType, string>>;
-
-const validationStarted = createEvent<{ id: ID; transaction: Transaction; feeMap: FeeMap }>();
+const validationStarted = createEvent<ValidationStartedParams>();
 const txValidated = createEvent<{ id: ID; result: ValidationResult }>();
 
 type ValidateParams = {

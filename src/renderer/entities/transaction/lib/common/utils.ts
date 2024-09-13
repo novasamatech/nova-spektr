@@ -87,10 +87,8 @@ export const isProxyTransaction = (transaction?: Transaction | DecodedTransactio
 
 export const isEditDelegationTransaction = (transaction?: Transaction | DecodedTransaction): boolean => {
   if (transaction?.type === TransactionType.BATCH_ALL) {
-    const delegateTx = transaction.args.transactions?.find((tx: Transaction) => tx.type === TransactionType.DELEGATE);
-    const undelegateTx = transaction.args.transactions?.find(
-      (tx: Transaction) => tx.type === TransactionType.UNDELEGATE,
-    );
+    const delegateTx = transaction.args.transactions?.some(isDelegateTransaction);
+    const undelegateTx = transaction.args.transactions?.some(isUndelegateTransaction);
 
     return delegateTx && undelegateTx;
   }
@@ -99,27 +97,22 @@ export const isEditDelegationTransaction = (transaction?: Transaction | DecodedT
 };
 
 export const isDelegateTransaction = (transaction?: Transaction | DecodedTransaction): boolean => {
-  if (transaction?.type === TransactionType.BATCH_ALL) {
-    return !!transaction.args.transactions?.find((tx: Transaction) => tx.type === TransactionType.DELEGATE);
-  }
-
-  if (transaction?.type === TransactionType.DELEGATE) {
-    return true;
-  }
-
-  return false;
+  return !!transaction && hasTransaction(transaction, (tx) => tx.type === TransactionType.DELEGATE);
 };
 
 export const isUndelegateTransaction = (transaction?: Transaction | DecodedTransaction): boolean => {
-  if (transaction?.type === TransactionType.BATCH_ALL) {
-    return !!transaction.args.transactions?.find((tx: Transaction) => tx.type === TransactionType.UNDELEGATE);
+  return !!transaction && hasTransaction(transaction, (tx) => tx.type === TransactionType.UNDELEGATE);
+};
+
+export const hasTransaction = (
+  transaction: Transaction | DecodedTransaction,
+  filter: (transaction: Transaction | DecodedTransaction) => boolean,
+): boolean => {
+  if (transaction.type === TransactionType.BATCH_ALL) {
+    return transaction.args.transactions?.some((tx: Transaction) => hasTransaction(tx, filter)) ?? false;
   }
 
-  if (transaction?.type === TransactionType.UNDELEGATE) {
-    return true;
-  }
-
-  return false;
+  return filter(transaction);
 };
 
 export const isWrappedInBatchAll = (type: TransactionType) => {

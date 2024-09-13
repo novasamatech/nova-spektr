@@ -66,7 +66,7 @@ export const TotalDelegation = ({ onClick }: Props) => {
             <FootnoteText>{t('governance.delegations.label')}</FootnoteText>
           </div>
 
-          {!isLoading && network?.asset ? (
+          {!isLoading && network ? (
             totalDelegation !== '0' ? (
               <AssetBalance className="text-small-title" value={totalDelegation} asset={network.asset} />
             ) : (

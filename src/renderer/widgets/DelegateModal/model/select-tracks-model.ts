@@ -15,8 +15,16 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingService } from '@/entities/governance';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { delegationAggregate, networkSelectorModel, tracksAggregate, votingAggregate } from '@/features/governance';
-import { adminTracks, fellowshipTracks, governanceTracks, treasuryTracks } from '../lib/constants';
+import {
+  adminTracks,
+  delegationAggregate,
+  fellowshipTracks,
+  governanceTracks,
+  networkSelectorModel,
+  tracksAggregate,
+  treasuryTracks,
+  votingAggregate,
+} from '@/features/governance';
 
 const formInitiated = createEvent<DelegateAccount>();
 const formSubmitted = createEvent<{ tracks: number[]; accounts: Account[] }>();
