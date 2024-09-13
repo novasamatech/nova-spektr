@@ -15,10 +15,9 @@ import {
   type TransferAccountStore,
   type TransferSignatoryFeeStore,
   type ValidationResult,
-  type ValidationStartedParams,
 } from '../types/types';
 
-const validationStarted = createEvent<ValidationStartedParams>();
+const validationStarted = createEvent<{ id: ID; transaction: Transaction; feeMap: FeeMap }>();
 const txValidated = createEvent<{ id: ID; result: ValidationResult }>();
 
 type ValidateParams = {
@@ -132,7 +131,7 @@ sample({
   target: txValidated,
 });
 
-export const delegateValidateModel = {
+export const revokeDelegationValidateModel = {
   events: {
     validationStarted,
   },

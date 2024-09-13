@@ -1,17 +1,27 @@
 import { type ApiPromise } from '@polkadot/api';
-import { combine, createEffect, createEvent, createStore, restore, sample, split } from 'effector';
+import { type EventCallable, combine, createEffect, createEvent, createStore, restore, sample, split } from 'effector';
 import { delay, throttle } from 'patronum';
 
 import { type BasketTransaction, type ChainId, type ID, TransactionType } from '@shared/core';
 import { addUnique, removeFromCollection } from '@shared/lib/utils';
 import { basketModel } from '@entities/basket';
 import { networkModel, networkUtils } from '@entities/network';
-import { TransferTypes, XcmTypes, transactionService } from '@entities/transaction';
+import {
+  type MultisigTransactionTypes,
+  type TransferTransactionTypes,
+  TransferTypes,
+  type UtilityTransactionTypes,
+  type XcmTransactionTypes,
+  XcmTypes,
+  transactionService,
+} from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
 import { unlockValidateModel, voteValidateModel } from '@/features/governance';
 import { basketFilterModel } from '@features/basket/BasketFilter';
 import {
+  type FeeMap,
   type ValidationResult,
+  type ValidationStartedParams,
   addProxyValidateModel,
   addPureProxiedValidateModel,
   bondExtraValidateModel,
@@ -22,6 +32,7 @@ import {
   removeProxyValidateModel,
   removePureProxiedValidateModel,
   restakeValidateModel,
+  revokeDelegationValidateModel,
   transferValidateModel,
   unstakeValidateModel,
   withdrawValidateModel,
@@ -36,8 +47,6 @@ type BasketTransactionsMap = {
   valid: BasketTransaction[];
   invalid: BasketTransaction[];
 };
-
-type FeeMap = Record<ChainId, Record<TransactionType, string>>;
 
 const txSelected = createEvent<{ id: ID; value: boolean }>();
 const txClicked = createEvent<BasketTransaction>();
@@ -111,7 +120,18 @@ const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
       });
     }
 
-    const TransactionValidators = {
+    const TransactionValidatorsRecord: Record<
+      Exclude<
+        TransactionType,
+        | TransferTransactionTypes
+        | XcmTransactionTypes
+        | MultisigTransactionTypes
+        | UtilityTransactionTypes
+        // TODO: Add remove vote types
+        | TransactionType.REMOVE_VOTE
+      >,
+      EventCallable<ValidationStartedParams>
+    > = {
       [TransactionType.ADD_PROXY]: addProxyValidateModel.events.validationStarted,
       [TransactionType.CREATE_PURE_PROXY]: addPureProxiedValidateModel.events.validationStarted,
       [TransactionType.REMOVE_PROXY]: removeProxyValidateModel.events.validationStarted,
@@ -125,13 +145,14 @@ const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
       [TransactionType.REDEEM]: withdrawValidateModel.events.validationStarted,
       [TransactionType.UNLOCK]: unlockValidateModel.events.validationStarted,
       [TransactionType.DELEGATE]: delegateValidateModel.events.validationStarted,
+      [TransactionType.UNDELEGATE]: revokeDelegationValidateModel.events.validationStarted,
       [TransactionType.VOTE]: voteValidateModel.events.validationStarted,
       [TransactionType.REVOTE]: voteValidateModel.events.validationStarted,
     };
 
-    if (coreTx.type in TransactionValidators) {
+    if (coreTx.type in TransactionValidatorsRecord) {
       // @ts-expect-error TS thinks that transfer should be in TransactionValidators
-      TransactionValidators[coreTx.type]({
+      TransactionValidatorsRecord[coreTx.type]({
         id: tx.id,
         transaction: coreTx,
         feeMap,
@@ -163,6 +184,7 @@ const txValidated = [
   withdrawValidateModel.output.txValidated,
   unlockValidateModel.output.txValidated,
   delegateValidateModel.output.txValidated,
+  revokeDelegationValidateModel.output.txValidated,
   voteValidateModel.output.txValidated,
 ];
 

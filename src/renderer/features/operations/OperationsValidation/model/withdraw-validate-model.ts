@@ -19,9 +19,9 @@ import { type StakingMap, eraService, useStakingData } from '@entities/staking';
 import { transactionService } from '@entities/transaction';
 import { validationUtils } from '../lib/validation-utils';
 import { WithdrawRules } from '../lib/withdraw-rules';
-import { type AmountFeeStore, type ValidationResult } from '../types/types';
+import { type AmountFeeStore, type ValidationResult, type ValidationStartedParams } from '../types/types';
 
-const validationStarted = createEvent<{ id: ID; transaction: Transaction; signerOptions?: Partial<SignerOptions> }>();
+const validationStarted = createEvent<ValidationStartedParams>();
 const txValidated = createEvent<{ id: ID; result: ValidationResult }>();
 const stakingSet = createEvent<StakingMap>();
 

@@ -548,6 +548,9 @@
       "treasurySmallTips": "Treasury: Small tips",
       "wishForChange": "Wish for change"
     },
+    "revokeDelegation": {
+      "title": "Revoke delegation on"
+    },
     "searchPlaceholder": "Search",
     "timeline": {
       "status": {

@@ -14,11 +14,12 @@ import { transactionService } from '@entities/transaction';
 import {
   type AmountFeeStore,
   type ValidationResult,
+  type ValidationStartedParams,
   validationUtils,
 } from '@/features/operations/OperationsValidation';
 import { UnlockRules } from '../../lib/unlock-rules';
 
-const validationStarted = createEvent<{ id: ID; transaction: Transaction; signerOptions?: Partial<SignerOptions> }>();
+const validationStarted = createEvent<ValidationStartedParams>();
 const txValidated = createEvent<{ id: ID; result: ValidationResult }>();
 
 type ValidateParams = {

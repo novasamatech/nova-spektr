@@ -7,7 +7,14 @@ import { useModalClose } from '@shared/lib/hooks';
 import { BaseModal } from '@shared/ui';
 import { OperationTitle } from '@entities/chain';
 import { networkModel } from '@entities/network';
-import { TransferTypes, XcmTypes } from '@entities/transaction';
+import {
+  type MultisigTransactionTypes,
+  type TransferTransactionTypes,
+  TransferTypes,
+  type UtilityTransactionTypes,
+  type XcmTransactionTypes,
+  XcmTypes,
+} from '@entities/transaction';
 import { OperationSign, OperationSubmit } from '@features/operations';
 import {
   AddProxyConfirm,
@@ -21,6 +28,7 @@ import {
   RemovePureProxiedConfirm,
   RemoveVoteConfirmation,
   RestakeConfirmation,
+  RevokeDelegationConfirmation,
   TransferConfirm,
   UnstakeConfirmation,
   VoteConfirmation,
@@ -67,7 +75,13 @@ export const SignOperation = () => {
       return () => <TransferConfirm id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />;
     }
 
-    const Components = {
+    const Components: Record<
+      Exclude<
+        TransactionType,
+        TransferTransactionTypes | XcmTransactionTypes | MultisigTransactionTypes | UtilityTransactionTypes
+      >,
+      () => ReactNode
+    > = {
       // Proxy
       [TransactionType.ADD_PROXY]: () => (
         <AddProxyConfirm id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
@@ -113,6 +127,13 @@ export const SignOperation = () => {
       ),
       [TransactionType.DELEGATE]: () => (
         <DelegateConfirmation
+          id={transaction.id}
+          config={config}
+          onGoBack={() => signOperationsModel.output.flowFinished()}
+        />
+      ),
+      [TransactionType.UNDELEGATE]: () => (
+        <RevokeDelegationConfirmation
           id={transaction.id}
           config={config}
           onGoBack={() => signOperationsModel.output.flowFinished()}
