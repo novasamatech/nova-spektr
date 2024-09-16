@@ -10,9 +10,10 @@ type FailedState = { status: 'failed'; error: Error };
 
 export type State<T> = IdleState | StartingState | RunningState<T> | FailedState;
 
-export const createFeature = <T = null>(input: Store<T | null> = createStore<null>(null)) => {
+export const createFeature = <T = null>(input: Store<T | null> = createStore(null)) => {
   const $state = createStore<State<T>>({ status: 'idle' });
   const $status = $state.map((x) => x.status);
+
   const start = createEvent();
   const stop = createEvent();
   const stopped = createEvent();
@@ -81,11 +82,12 @@ export const createFeature = <T = null>(input: Store<T | null> = createStore<nul
   return {
     status: $status,
     state: readonly($state),
-    updates: $state.updates,
-    stopped,
     running,
+    stopped,
+
     isRunning,
     isStarting,
+
     start,
     stop,
     fail,
