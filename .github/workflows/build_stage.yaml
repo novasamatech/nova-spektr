@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Get version from package.json
         id: pkg
@@ -53,7 +53,7 @@ jobs:
           echo "${{ steps.update_version.outputs.new_version }}" > internal_version.txt
 
       - name: Upload artifact with version
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: internal-version
           path: |
@@ -71,10 +71,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       
       - name: Download build artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: internal-version
       
@@ -108,7 +108,7 @@ jobs:
           pnpm stage:sequence
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifats
           path: |
@@ -122,9 +122,9 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Download build artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: build-artifats
   

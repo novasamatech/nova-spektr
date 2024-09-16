@@ -49,7 +49,7 @@ jobs:
         if: github.event_name == 'schedule'
         run: npx playwright test --grep @fee-test
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: playwright-report
@@ -76,7 +76,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
       - name: Download zipped HTML report
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: playwright-report
           path: ${{ env.HTML_REPORT_URL_PATH }}
