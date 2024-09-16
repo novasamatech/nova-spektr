@@ -7,6 +7,7 @@ import {
   type Referendum,
   type ReferendumId,
   type TrackId,
+  TransactionType,
   type Voting,
   type VotingMap,
 } from '@/shared/core';
@@ -52,7 +53,7 @@ function subscribeVotingFor(
   api: ApiPromise,
   tracksIds: TrackId[],
   addresses: Address[],
-  callback: (res?: VotingMap) => void,
+  callback: (voting: VotingMap) => void,
 ) {
   const tuples = addresses.flatMap((address) => tracksIds.map((trackId) => [address, trackId] as const));
 
@@ -136,7 +137,7 @@ function subscribeReferendums(api: ApiPromise, callback: (referendums: IteratorR
   let currectAbortController = new AbortController();
 
   const fetchPages = async (abort: AbortController) => {
-    for await (const page of referendaPallet.storage.referendumInfoForPaged('governance', api, 100)) {
+    for await (const page of referendaPallet.storage.referendumInfoForPaged('governance', api, 500)) {
       if (abort.signal.aborted) {
         break;
       }
@@ -154,16 +155,29 @@ function subscribeReferendums(api: ApiPromise, callback: (referendums: IteratorR
 
   fetchPages(currectAbortController);
 
-  return polkadotjsHelpers
-    .subscribeSystemEvents({ api, section: 'referenda' }, () => {
+  const fn = () => {
+    currectAbortController.abort();
+    currectAbortController = new AbortController();
+    fetchPages(currectAbortController);
+  };
+
+  const unsubscribeSystemReferenda = polkadotjsHelpers.subscribeSystemEvents({ api, section: 'referenda' }, fn);
+  const unsubscribeSystemConvictionVoting = polkadotjsHelpers.subscribeSystemEvents(
+    { api, section: 'convictionVoting' },
+    fn,
+  );
+
+  const unsubscribeExtrinsics = polkadotjsHelpers.subscribeExtrinsics(
+    { api, name: [TransactionType.VOTE, TransactionType.REMOVE_VOTE] },
+    fn,
+  );
+
+  return Promise.all([unsubscribeSystemReferenda, unsubscribeSystemConvictionVoting, unsubscribeExtrinsics]).then(
+    (fns) => () => {
       currectAbortController.abort();
-      currectAbortController = new AbortController();
-      fetchPages(currectAbortController);
-    })
-    .then((fn) => {
-      return () => {
-        currectAbortController.abort();
+      for (const fn of fns) {
         fn();
-      };
-    });
+      }
+    },
+  );
 }
