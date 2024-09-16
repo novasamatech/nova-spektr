@@ -9,33 +9,34 @@ export function setupAutoUpdater() {
   const isAutoUpdateSupported = checkAutoUpdateSupported();
   const store = new Store({ defaults: { [AUTO_UPDATE_ENABLED]: isAutoUpdateSupported } });
 
-  if (!isAutoUpdateSupported || !store.get(AUTO_UPDATE_ENABLED)) return;
-
   ipcMain.handle('getStoreValue', (_, key) => store.get(key));
-
   ipcMain.handle('setStoreValue', (_, key, value) => store.set(key, value));
+
+  if (!isAutoUpdateSupported) return;
 
   autoUpdater.autoRunAppAfterInstall = true;
   autoUpdater.autoInstallOnAppQuit = false;
 
   app.on('ready', () => {
-    autoUpdater.checkForUpdates();
+    if (store.get(AUTO_UPDATE_ENABLED)) {
+      autoUpdater.checkForUpdates();
+    }
   });
 
   autoUpdater.on('checking-for-update', () => {
-    console.log('[app-updater] Checking for update...');
+    console.info('[app-updater] Checking for update...');
   });
 
   autoUpdater.on('update-not-available', () => {
-    console.log(`[app-updater] No updates available. Application is up to date.`);
+    console.info(`[app-updater] No updates available. Application is up to date.`);
   });
 
   autoUpdater.on('update-available', (info) => {
-    console.log(`[app-updater] New update available ${info.releaseName} ${info.releaseDate} ${info.version}`);
+    console.info(`[app-updater] New update available ${info.releaseName} ${info.releaseDate} ${info.version}`);
   });
 
   autoUpdater.on('download-progress', (progressObj) => {
-    console.log(
+    console.info(
       `[app-updater] Downloading update ${progressObj.percent}% of ${progressObj.total} bytes; ${progressObj.bytesPerSecond} bytes per second`,
     );
   });
@@ -50,7 +51,7 @@ export function setupAutoUpdater() {
   });
 
   autoUpdater.on('update-downloaded', (info) => {
-    console.log(`[app-updater] Downloaded update ${info.releaseName} ${info.releaseDate} ${info.version}`);
+    console.info(`[app-updater] Downloaded update ${info.releaseName} ${info.releaseDate} ${info.version}`);
     dialog
       .showMessageBox({
         title: 'Update Available',
