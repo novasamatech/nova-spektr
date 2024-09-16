@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { createEffect, createEvent, createStore, merge as mergeEvents, sample } from 'effector';
-import { readonly } from 'patronum';
+import { readonly, spread } from 'patronum';
 
 import { type Chain, type ChainId, type Referendum, type ReferendumId } from '@/shared/core';
 import { merge, nonNullable } from '@shared/lib/utils';
@@ -21,11 +21,12 @@ const {
   subscribe: subscribeReferendums,
   received,
   unsubscribe: unsubscribeReferendums,
-} = createSubscriber<RequestListParams, Referendum[]>(({ api }, fn) => {
+} = createSubscriber<RequestListParams, IteratorResult<Referendum[], void>>(({ api }, fn) => {
   return governanceSubscribeService.subscribeReferendums(api, fn);
 });
 
 const $referendums = createStore<Record<ChainId, Referendum[]>>({});
+const $isLoading = createStore(true);
 
 // referendum list
 
@@ -65,7 +66,7 @@ sample({
 });
 
 sample({
-  clock: [received, requestReferendumsFx.done],
+  clock: requestReferendumsFx.done,
   source: $referendums,
   filter: (_, { params }) => nonNullable(params.chain),
   fn: (referendums, { params, result }) => {
@@ -79,9 +80,35 @@ sample({
   target: $referendums,
 });
 
-// loading
+sample({
+  clock: received,
+  source: $referendums,
+  filter: (_, { params }) => nonNullable(params.chain),
+  fn: (referendums, { params, result }) => {
+    const existing = referendums[params.chain.chainId] ?? [];
 
-const $isLoading = createStore(true);
+    if (result.done) {
+      return {
+        isLoading: false,
+        referendums,
+      };
+    }
+
+    return {
+      loading: true,
+      referendums: {
+        ...referendums,
+        [params.chain.chainId]: mergeReferendums(existing, result.value),
+      },
+    };
+  },
+  target: spread({
+    referendums: $referendums,
+    isLoading: $isLoading,
+  }),
+});
+
+// loading
 
 sample({
   clock: [requestReferendum, requestReferendums, subscribeReferendums],
@@ -90,9 +117,20 @@ sample({
 });
 
 sample({
-  clock: [requestReferendumsFx.finally, received],
+  clock: [requestReferendumsFx.finally],
   fn: () => false,
   target: $isLoading,
+});
+
+const subscriptionReceivedReferendum = received.filterMap(({ params, result }) => {
+  if (result.done) {
+    return;
+  }
+
+  return {
+    params,
+    result: result.value,
+  };
 });
 
 export const referendumModel = {
@@ -104,6 +142,6 @@ export const referendumModel = {
     unsubscribeReferendums,
     requestReferendums,
     requestReferendum,
-    referendumsReceived: mergeEvents([requestReferendumsFx.done, received]),
+    referendumsReceived: mergeEvents([requestReferendumsFx.done, subscriptionReceivedReferendum]),
   },
 };

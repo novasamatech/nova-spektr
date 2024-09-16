@@ -9,14 +9,58 @@ import {
   type TrackInfo,
   type VotingCurve,
 } from '@/shared/core';
-import { type ReferendaCurve, referendaPallet } from '@/shared/pallet/referenda';
+import {
+  type ReferendaCurve,
+  type ReferendaReferendumInfoConvictionVotingTally,
+  referendaPallet,
+} from '@/shared/pallet/referenda';
 import { convictionVotingPallet } from '@shared/pallet/convictionVoting';
 
 export const governanceService = {
   getReferendums,
   getTrackLocks,
   getTracks,
+  mapReferendum,
 };
+
+function mapReferendum(referendumId: string, info: ReferendaReferendumInfoConvictionVotingTally): Referendum {
+  switch (info.type) {
+    case 'Ongoing':
+      return {
+        referendumId,
+        type: info.type,
+        track: info.data.track.toString(),
+        proposal: info.data.proposal.data,
+        submitted: info.data.submitted,
+        enactment: {
+          value: info.data.enactment.data,
+          type: info.data.enactment.type,
+        },
+        inQueue: info.data.inQueue,
+        deciding: info.data.deciding,
+        tally: info.data.tally,
+        decisionDeposit: info.data.decisionDeposit,
+        submissionDeposit: info.data.submissionDeposit,
+      };
+    case 'Approved':
+    case 'Rejected':
+    case 'Cancelled':
+    case 'TimedOut':
+      return {
+        type: info.type,
+        referendumId,
+        since: info.data.since,
+        submissionDeposit: info.data.submissionDeposit,
+        decisionDeposit: info.data.decisionDeposit,
+      };
+    case 'Killed':
+      return {
+        type: info.type,
+        referendumId,
+        since: info.data,
+      };
+  }
+}
 
 async function getReferendums(api: ApiPromise, ids?: ReferendumId[]): Promise<Referendum[]> {
   const referendums = await referendaPallet.storage.referendumInfoFor('governance', api, ids);
@@ -25,50 +69,7 @@ async function getReferendums(api: ApiPromise, ids?: ReferendumId[]): Promise<Re
   for (const { id, info } of referendums) {
     if (!info) continue;
 
-    const referendumId = id.toString();
-    let mappedReferemdum: Referendum;
-
-    switch (info.type) {
-      case 'Ongoing':
-        mappedReferemdum = {
-          referendumId,
-          type: info.type,
-          track: info.data.track.toString(),
-          proposal: info.data.proposal.data,
-          submitted: info.data.submitted,
-          enactment: {
-            value: info.data.enactment.data,
-            type: info.data.enactment.type,
-          },
-          inQueue: info.data.inQueue,
-          deciding: info.data.deciding,
-          tally: info.data.tally,
-          decisionDeposit: info.data.decisionDeposit,
-          submissionDeposit: info.data.submissionDeposit,
-        };
-        break;
-      case 'Approved':
-      case 'Rejected':
-      case 'Cancelled':
-      case 'TimedOut':
-        mappedReferemdum = {
-          type: info.type,
-          referendumId,
-          since: info.data.since,
-          submissionDeposit: info.data.submissionDeposit,
-          decisionDeposit: info.data.decisionDeposit,
-        };
-        break;
-      case 'Killed':
-        mappedReferemdum = {
-          type: info.type,
-          referendumId,
-          since: info.data,
-        };
-        break;
-    }
-
-    result.push(mappedReferemdum);
+    result.push(mapReferendum(id.toString(), info));
   }
 
   return result;

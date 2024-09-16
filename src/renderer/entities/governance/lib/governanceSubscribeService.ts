@@ -13,6 +13,7 @@ import {
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { toAddress } from '@shared/lib/utils';
 import { convictionVotingPallet } from '@shared/pallet/convictionVoting';
+import { referendaPallet } from '@shared/pallet/referenda';
 
 import { governanceService } from './governanceService';
 
@@ -131,10 +132,38 @@ function subscribeVotingFor(
   });
 }
 
-function subscribeReferendums(api: ApiPromise, callback: (referendums: Referendum[]) => unknown) {
-  governanceService.getReferendums(api).then(callback);
+function subscribeReferendums(api: ApiPromise, callback: (referendums: IteratorResult<Referendum[], void>) => unknown) {
+  let currectAbortController = new AbortController();
 
-  return polkadotjsHelpers.subscribeSystemEvents({ api, section: 'referenda' }, () => {
-    governanceService.getReferendums(api).then(callback);
-  });
+  const fetchPages = async (abort: AbortController) => {
+    for await (const page of referendaPallet.storage.referendumInfoForPaged('governance', api, 100)) {
+      if (abort.signal.aborted) {
+        break;
+      }
+
+      const value: Referendum[] = [];
+      for (const { id, info } of page) {
+        if (!info) continue;
+        value.push(governanceService.mapReferendum(id.toString(), info));
+      }
+      callback({ done: false, value });
+    }
+
+    callback({ done: true, value: undefined });
+  };
+
+  fetchPages(currectAbortController);
+
+  return polkadotjsHelpers
+    .subscribeSystemEvents({ api, section: 'referenda' }, () => {
+      currectAbortController.abort();
+      currectAbortController = new AbortController();
+      fetchPages(currectAbortController);
+    })
+    .then((fn) => {
+      return () => {
+        currectAbortController.abort();
+        fn();
+      };
+    });
 }
