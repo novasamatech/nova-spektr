@@ -53,7 +53,6 @@ const signFx = createEffect(async (signParams: SignParams[]): Promise<SignRespon
 
   for (const { client, payload } of signParams) {
     // should be signed step by step
-    payload.request.params.transactionPayload.metadataRpc = undefined;
     const response = await client.request<SignResponse>(payload);
 
     results.push(response);
