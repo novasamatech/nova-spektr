@@ -117,7 +117,7 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
     if (!api || !client || !session || !unsignedTxs) return;
 
     signWcModel.events.signingStarted(
-      unsignedTxs.map((unsigned) => ({
+      unsignedTxs.map(({ metadataRpc: _, ...unsigned }) => ({
         client,
         payload: {
           // eslint-disable-next-line i18next/no-literal-string
