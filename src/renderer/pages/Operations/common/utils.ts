@@ -257,8 +257,9 @@ export const getUndelegationData = async (
   const delegation = votes.find((vote) => vote.type === 'Delegating');
 
   return {
-    votes: delegation && votingService.calculateVotingPower(delegation._.balance, delegation._.conviction).toString(),
-    target: delegation && toAddress(delegation._.target),
+    votes:
+      delegation && votingService.calculateVotingPower(delegation.data.balance, delegation.data.conviction).toString(),
+    target: delegation && toAddress(delegation.data.target),
   };
 };
 
