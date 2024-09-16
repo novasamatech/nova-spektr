@@ -5,7 +5,7 @@ import { type SubQueryVoting, votingsService } from '@/shared/api/governance';
 import { type Chain, type ChainId, type Referendum, type ReferendumId } from '@/shared/core';
 import { setNestedValue } from '@/shared/lib/utils';
 
-const $voteHistory = createStore<Record<ChainId, Record<ReferendumId, SubQueryVoting[]>>>({});
+const $voteHistory = createStore<Partial<Record<ChainId, Record<ReferendumId, SubQueryVoting[]>>>>({});
 const $hasError = createStore(false);
 
 const requestVoteHistory = createEvent<{ chain: Chain; referendum: Referendum }>();

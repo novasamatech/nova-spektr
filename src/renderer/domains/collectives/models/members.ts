@@ -1,35 +1,40 @@
-import { createEffect, createStore, sample } from 'effector';
+import { type ApiPromise } from '@polkadot/api';
 
-import { merge } from '@/shared/lib/utils';
-import { collectivePallet } from '@/shared/pallet/collective';
-import { updateStore } from '../lib/helpers';
-import { type RequestCollectiveParams, type Store } from '../lib/types';
+import { merge, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
+import { type CollectiveMemberRecord, collectivePallet } from '@/shared/pallet/collective';
+import { type AccountId, type ChainId } from '@shared/core';
+import { createDataSource } from '@shared/effector';
+import { type CollectivePalletsType, type Store } from '../lib/types';
 
-export type MembersType = Awaited<ReturnType<typeof requestMembersFx>>;
+export type Member = {
+  accountId: AccountId;
+  member: CollectiveMemberRecord | null;
+};
 
-const $membersStore = createStore<Partial<Store<{ members: MembersType | null }>>>({});
+export type RequestParams = {
+  palletType: CollectivePalletsType;
+  api: ApiPromise;
+  chainId: ChainId;
+};
 
-const requestMembersFx = createEffect(({ api, palletType }: RequestCollectiveParams) => {
-  return collectivePallet.storage.members(palletType, api);
-});
+const {
+  $: $membersStore,
+  request: requestMembers,
+  pending,
+} = createDataSource<Store<Member[]>, RequestParams, Member[]>({
+  initial: {},
+  fn: ({ api, palletType }) => collectivePallet.storage.members(palletType, api),
+  map: (store, { params, result }) => {
+    const currentStore = pickNestedValue(store, params.palletType, params.chainId) ?? [];
+    const updatedField = merge(currentStore, result, x => x.accountId);
 
-sample({
-  clock: requestMembersFx.done,
-  source: $membersStore,
-  fn: (store, { params, result }) => {
-    const currentStore = store[params.palletType]?.[params.chainId]?.members || [];
-    const updatedField = { members: merge(currentStore, result, x => x?.accountId) };
-
-    return updateStore(store, params, updatedField);
+    return setNestedValue(store, params.palletType, params.chainId, updatedField);
   },
-  target: $membersStore,
 });
 
-export const membersDomainModal = {
-  $isLoading: requestMembersFx.pending,
+export const membersDomainModel = {
   $membersStore,
 
-  effects: {
-    requestMembersFx,
-  },
+  pending,
+  requestMembers,
 };
