@@ -14,6 +14,10 @@ import { ENVIRONMENT } from './shared/constants/environment';
 import { PLATFORM } from './shared/constants/platform';
 
 runAppSingleInstance(async () => {
+  setupLogger();
+  setupAutoUpdater();
+  registerDeepLinkProtocol();
+
   if (ENVIRONMENT.IS_DEV || ENVIRONMENT.IS_STAGE) {
     app.commandLine.appendSwitch('ignore-certificate-errors');
   }
@@ -29,11 +33,6 @@ runAppSingleInstance(async () => {
 
   // eslint-disable-next-line prefer-const
   let mainWindow: BrowserWindow | undefined;
-
-  setupLogger();
-  setupAutoUpdater();
-
-  registerDeepLinkProtocol();
 
   if (PLATFORM.IS_MAC) {
     // Protocol handler for macos
