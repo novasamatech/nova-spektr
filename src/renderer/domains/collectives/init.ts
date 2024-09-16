@@ -1,8 +1,13 @@
 import { combine } from 'effector';
 
-import { membersDomainModal } from './models/members';
+import { combineStores } from './lib/helpers';
+import { membersDomainModel } from './models/members';
 
-const $store = combine({ members: membersDomainModal.$membersStore }, ({ members }) => ({ ...members }));
+const $store = combine({ members: membersDomainModel.$membersStore }, ({ members }) =>
+  combineStores({
+    members,
+  }),
+);
 
 export const collectiveDomain = {
   $store,

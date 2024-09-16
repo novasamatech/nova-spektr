@@ -1,12 +1,12 @@
 import { type Chain, type Wallet } from '@shared/core';
-import { type MembersType } from '@/domains/collectives/models/members';
+import { type Member } from '@/domains/collectives/models/members';
 import { accountUtils } from '@/entities/wallet';
 
 export const profileUtils = {
   findMachingAccount,
 };
 
-function findMachingAccount(wallet: Wallet, members: MembersType, chain: Chain) {
+function findMachingAccount(wallet: Wallet, members: Member[], chain: Chain) {
   const walletAccounts = wallet.accounts.filter((account) => {
     if (!accountUtils.isNonBaseVaultAccount(account, wallet)) return false;
 

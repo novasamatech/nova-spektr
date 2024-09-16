@@ -2,21 +2,33 @@ import { type ChainId } from '@/shared/core';
 
 import { type CollectivePalletsType, type Store } from './types';
 
-export const updateStore = <T>(
-  store: Partial<Store<any>>,
-  params: { palletType: CollectivePalletsType; chainId: ChainId },
-  updatedField: Record<string, T>,
-) => {
-  const { palletType, chainId } = params;
-  const currentStore = store?.[palletType]?.[chainId] || {};
+export const combineStores = <const T extends Record<string, Store<unknown>>>(fields: T) => {
+  type CombinedValue = Partial<{
+    [K in keyof T]: T[K] extends Store<infer I> ? I : never;
+  }>;
+  type CombinedStore = Partial<Record<CollectivePalletsType, Record<ChainId, CombinedValue>>>;
 
-  const data = {
-    ...store[palletType],
-    [chainId]: {
-      ...currentStore,
-      ...updatedField,
-    },
-  };
+  const store: CombinedStore = {};
+  for (const [fieldName, fieldStore] of Object.entries(fields)) {
+    for (const [palletType, chainStore] of Object.entries(fieldStore)) {
+      let palletStore = store[palletType as CollectivePalletsType];
+      if (!palletStore) {
+        palletStore = {};
+        store[palletType as CollectivePalletsType] = palletStore;
+      }
 
-  return { ...store, ...{ [palletType]: data } };
+      for (const [chainId, value] of Object.entries(chainStore)) {
+        let chainStore = palletStore[chainId as ChainId];
+        if (!chainStore) {
+          chainStore = {};
+          palletStore[chainId as ChainId] = chainStore;
+        }
+
+        // @ts-expect-error Dynamic value
+        chainStore[fieldName] = value;
+      }
+    }
+  }
+
+  return store;
 };

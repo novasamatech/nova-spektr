@@ -3,7 +3,7 @@ import { or } from 'patronum';
 
 import { nonNullable } from '@/shared/lib/utils';
 import { type RequestCollectiveParams } from '@/domains/collectives/lib/types';
-import { membersDomainModal } from '@/domains/collectives/models/members';
+import { membersDomainModel } from '@/domains/collectives/models/members';
 import { fellowshipNetworkModel } from '../../network/model/fellowshipNetwork';
 
 const requestMembers = createEvent<RequestCollectiveParams | null>();
@@ -27,12 +27,12 @@ sample({
     api: palletInfo!.api,
     chainId: palletInfo!.chainId,
   }),
-  target: membersDomainModal.effects.requestMembersFx,
+  target: membersDomainModel.requestMembers,
 });
 
 export const membersModel = {
   $members,
-  $isLoading: or(membersDomainModal.$isLoading, fellowshipNetworkModel.$isConnecting),
+  $isLoading: or(membersDomainModel.pending, fellowshipNetworkModel.$isConnecting),
 
   events: {
     requestMembers,

@@ -288,7 +288,7 @@ module.exports = {
           // effector effect naming convention
           {
             message: 'Use effector naming convention for effects.',
-            selector: 'VariableDeclarator[init.callee.name="createEffect"][id.name!=/.*?Fx$/]',
+            selector: 'VariableDeclarator[init.callee.name="createEffect"][id.name!=/^(.*?Fx|fx)$/]',
           },
           // for..in ban
           {
