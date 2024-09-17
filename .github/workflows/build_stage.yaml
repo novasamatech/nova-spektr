@@ -110,7 +110,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: build-artifats
+          name: build-artifacts-${{ matrix.os }}
           path: |
             release/dist/*.exe
             release/dist/*.dmg
@@ -126,7 +126,8 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: build-artifats
+          pattern: build-artifacts-*
+          merge-multiple: true
   
       - name: Debug
         run: ls -la
@@ -168,7 +169,7 @@ jobs:
         with:
           to: ${{ secrets.TELEGRAM_TO_DEV }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
-          format: markdown
+          format: html
           message: | 
             👨‍💻 Stage build was created successfully, URLs to download:
               - Windows: ${{ steps.interact_with_storage.outputs.windows_app }}
