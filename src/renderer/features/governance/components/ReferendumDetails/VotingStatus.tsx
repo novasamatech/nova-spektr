@@ -79,13 +79,11 @@ export const VotingStatus = ({
       )}
 
       {canVote && nonNullable(asset) && nonNullable(vote) && referendumService.isOngoing(referendum) && (
-        <Button className="w-full" disabled={!hasAccount || !canVote} onClick={onRevoteRequest}>
-          {t('governance.referendum.revote')}
-        </Button>
-      )}
-
-      {canVote && nonNullable(asset) && nonNullable(referendum.vote) && referendumService.isOngoing(referendum) && (
         <div className="flex w-full flex-col justify-stretch gap-4">
+          <Button className="w-full" disabled={!hasAccount || !canVote} onClick={onRevoteRequest}>
+            {t('governance.referendum.revote')}
+          </Button>
+
           <Button className="w-full" pallet="secondary" onClick={onRemoveVoteRequest}>
             {t('governance.referendum.remove')}
           </Button>

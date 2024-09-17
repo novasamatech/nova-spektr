@@ -4,7 +4,6 @@ import {
   type KilledReferendum,
   type OngoingReferendum,
   type Referendum,
-  ReferendumType,
   type RejectedReferendum,
   type TimedOutReferendum,
 } from '@/shared/core';
@@ -21,27 +20,27 @@ export const referendumService = {
 };
 
 function isOngoing(referendum: Referendum): referendum is OngoingReferendum {
-  return referendum.type === ReferendumType.Ongoing;
+  return referendum.type === 'Ongoing';
 }
 
 function isRejected(referendum: Referendum): referendum is RejectedReferendum {
-  return referendum.type === ReferendumType.Rejected;
+  return referendum.type === 'Rejected';
 }
 
 function isApproved(referendum: Referendum): referendum is ApprovedReferendum {
-  return referendum.type === ReferendumType.Approved;
+  return referendum.type === 'Approved';
 }
 
 function isCompleted(referendum: Referendum): referendum is CompletedReferendum {
-  return referendum.type !== ReferendumType.Ongoing;
+  return referendum.type !== 'Ongoing';
 }
 
 function isTimedOut(referendum: Referendum): referendum is TimedOutReferendum {
-  return referendum.type === ReferendumType.TimedOut;
+  return referendum.type === 'TimedOut';
 }
 
 function isKilled(referendum: Referendum): referendum is KilledReferendum {
-  return referendum.type === ReferendumType.Killed;
+  return referendum.type === 'Killed';
 }
 
 // waiting for deposit, deciding, passing

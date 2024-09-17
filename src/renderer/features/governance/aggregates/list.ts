@@ -1,6 +1,7 @@
 import { combine, sample } from 'effector';
 import { readonly } from 'patronum';
 
+import { nullable } from '@/shared/lib/utils';
 import { approveThresholdModel, referendumModel, supportThresholdModel, votingService } from '@entities/governance';
 import { networkSelectorModel } from '../model/networkSelector';
 import { titleModel } from '../model/title';
@@ -21,13 +22,49 @@ const $chainReferendums = combine(
   },
 );
 
+const $chainTitles = combine(titleModel.$titles, networkSelectorModel.$governanceChain, (titles, chain) => {
+  if (nullable(chain)) return {};
+
+  return titles[chain.chainId] ?? {};
+});
+
+const $approvalThresholds = combine(
+  approveThresholdModel.$approvalThresholds,
+  networkSelectorModel.$governanceChain,
+  (approvalThresholds, chain) => {
+    if (nullable(chain)) return {};
+
+    return approvalThresholds[chain.chainId] ?? {};
+  },
+);
+
+const $supportThresholds = combine(
+  supportThresholdModel.$supportThresholds,
+  networkSelectorModel.$governanceChain,
+  (supportThresholds, chain) => {
+    if (nullable(chain)) return {};
+
+    return supportThresholds[chain.chainId] ?? {};
+  },
+);
+
+const $delegatedVotes = combine(
+  delegatedVotesAggregate.$delegatedVotes,
+  networkSelectorModel.$governanceChain,
+  (delegatedVotes, chain) => {
+    if (nullable(chain)) return {};
+
+    return delegatedVotes[chain.chainId] ?? {};
+  },
+);
+
 const $referendums = combine(
   {
     referendums: $chainReferendums,
-    delegatedVotes: delegatedVotesAggregate.$delegatedVotes,
-    titles: titleModel.$titles,
-    approvalThresholds: approveThresholdModel.$approvalThresholds,
-    supportThresholds: supportThresholdModel.$supportThresholds,
+    delegatedVotes: $delegatedVotes,
+    titles: $chainTitles,
+    approvalThresholds: $approvalThresholds,
+    supportThresholds: $supportThresholds,
     chain: networkSelectorModel.$governanceChain,
     voting: votingAggregate.$activeWalletVotes,
   },
@@ -44,11 +81,6 @@ const $referendums = combine(
       return [];
     }
 
-    const delegatedVotesInChain = delegatedVotes[chain.chainId] ?? {};
-    const titlesInChain = titles[chain.chainId] ?? {};
-    const approvalInChain = approvalThresholds[chain.chainId] ?? {};
-    const supportInChain = supportThresholds[chain.chainId] ?? {};
-
     return referendums.map((referendum) => {
       const votes = votingService.getReferendumAccountVotes(referendum.referendumId, voting);
       const voteTupple = Object.entries(votes).at(0);
@@ -56,11 +88,11 @@ const $referendums = combine(
 
       return {
         ...referendum,
-        title: titlesInChain[referendum.referendumId] ?? null,
-        approvalThreshold: approvalInChain[referendum.referendumId] ?? null,
-        supportThreshold: supportInChain[referendum.referendumId] ?? null,
+        title: titles[referendum.referendumId] ?? null,
+        approvalThreshold: approvalThresholds[referendum.referendumId] ?? null,
+        supportThreshold: supportThresholds[referendum.referendumId] ?? null,
         vote,
-        votedByDelegate: delegatedVotesInChain[referendum.referendumId] ?? null,
+        votedByDelegate: delegatedVotes[chain.chainId] ?? null,
       };
     });
   },

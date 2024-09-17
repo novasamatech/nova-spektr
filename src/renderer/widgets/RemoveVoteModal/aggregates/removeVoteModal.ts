@@ -13,7 +13,6 @@ import {
 } from '@shared/core';
 import { Step, nonNullable, nullable, toAddress } from '@shared/lib/utils';
 import { basketModel } from '@entities/basket';
-import { referendumModel } from '@entities/governance';
 import { transactionBuilder } from '@entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { lockPeriodsModel, locksModel, votingAggregate } from '@/features/governance';
@@ -268,18 +267,6 @@ sample({
 sample({
   clock: removeVoteConfirmModel.events.submitFinished,
   target: locksModel.events.subscribeLocks,
-});
-
-sample({
-  clock: removeVoteConfirmModel.events.submitFinished,
-  source: flow.state,
-  filter: ({ referendum, chain, api }) => nonNullable(referendum) && nonNullable(chain) && nonNullable(api),
-  fn: ({ referendum, chain, api }) => ({
-    api: api!,
-    chain: chain!,
-    referendumId: referendum!.referendumId,
-  }),
-  target: referendumModel.events.requestReferendum,
 });
 
 sample({
