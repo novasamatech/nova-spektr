@@ -1,7 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type Header } from '@polkadot/types/interfaces';
 import { type BN } from '@polkadot/util';
-import throttle from 'lodash/throttle';
 
 import {
   type AccountVote,
@@ -9,9 +7,14 @@ import {
   type Referendum,
   type ReferendumId,
   type TrackId,
+  TransactionType,
   type Voting,
   type VotingMap,
 } from '@/shared/core';
+import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
+import { toAddress } from '@shared/lib/utils';
+import { convictionVotingPallet } from '@shared/pallet/convictionVoting';
+import { referendaPallet } from '@shared/pallet/referenda';
 
 import { governanceService } from './governanceService';
 
@@ -50,11 +53,11 @@ function subscribeVotingFor(
   api: ApiPromise,
   tracksIds: TrackId[],
   addresses: Address[],
-  callback: (res?: VotingMap) => void,
-): () => void {
-  const tuples = addresses.flatMap((address) => tracksIds.map((trackId) => [address, trackId]));
+  callback: (voting: VotingMap) => void,
+) {
+  const tuples = addresses.flatMap((address) => tracksIds.map((trackId) => [address, trackId] as const));
 
-  const unsubscribe = api.query.convictionVoting.votingFor.multi(tuples, (votings) => {
+  return convictionVotingPallet.storage.subscribeVotingFor(api, tuples, (votings) => {
     const result = addresses.reduce<Record<Address, Record<TrackId, Voting>>>((acc, address) => {
       acc[address] = {};
 
@@ -62,106 +65,119 @@ function subscribeVotingFor(
     }, {});
 
     for (const [index, convictionVoting] of votings.entries()) {
-      if (convictionVoting.isStorageFallback) continue;
-
       const address = tuples[index]?.[0];
       const trackId = tuples[index]?.[1];
       if (!address || !trackId) {
         continue;
       }
 
-      if (convictionVoting.isDelegating) {
-        const delegation = convictionVoting.asDelegating;
-
-        result[address][trackId] = {
-          type: 'Delegating',
-          address,
-          track: trackId,
-          balance: delegation.balance.toBn(),
-          conviction: delegation.conviction.type,
-          target: delegation.target.toString(),
-          prior: {
-            unlockAt: delegation.prior[0].toNumber(),
-            amount: delegation.prior[1].toBn(),
-          },
-        };
-      }
-
-      if (convictionVoting.isCasting) {
-        const votes: Record<ReferendumId, AccountVote> = {};
-        for (const [referendumIndex, vote] of convictionVoting.asCasting.votes) {
-          const referendumId = referendumIndex.toString();
-
-          if (vote.isStandard) {
-            const standardVote = vote.asStandard;
-            votes[referendumId] = {
-              type: 'Standard',
-              vote: {
-                aye: standardVote.vote.isAye,
-                conviction: standardVote.vote.conviction.type,
-              },
-              balance: standardVote.balance.toBn(),
-            };
-          }
-
-          if (vote.isSplit) {
-            const splitVote = vote.asSplit;
-            votes[referendumId] = {
-              type: 'Split',
-              aye: splitVote.aye.toBn(),
-              nay: splitVote.nay.toBn(),
-            };
-          }
-
-          if (vote.isSplitAbstain) {
-            const splitAbstainVote = vote.asSplitAbstain;
-            votes[referendumId] = {
-              type: 'SplitAbstain',
-              aye: splitAbstainVote.aye.toBn(),
-              nay: splitAbstainVote.nay.toBn(),
-              abstain: splitAbstainVote.abstain.toBn(),
-            };
-          }
+      switch (convictionVoting.type) {
+        case 'Delegating': {
+          result[address][trackId] = {
+            type: 'Delegating',
+            address,
+            track: trackId,
+            balance: convictionVoting.data.balance,
+            conviction: convictionVoting.data.conviction,
+            target: toAddress(convictionVoting.data.target),
+            prior: convictionVoting.data.prior,
+          };
+          break;
         }
+        case 'Casting': {
+          const votes: Record<ReferendumId, AccountVote> = {};
+          for (const { referendum, vote } of convictionVoting.data.votes) {
+            const referendumId = referendum.toString();
 
-        result[address][trackId] = {
-          type: 'Casting',
-          track: trackId,
-          address,
-          votes,
-          prior: {
-            unlockAt: convictionVoting.asCasting.prior[0].toNumber(),
-            amount: convictionVoting.asCasting.prior[1].toBn(),
-          },
-        };
+            switch (vote.type) {
+              case 'Standard':
+                votes[referendumId] = {
+                  type: 'Standard',
+                  vote: {
+                    aye: vote.data.vote.isAye,
+                    conviction: vote.data.vote.conviction.type,
+                  },
+                  balance: vote.data.balance,
+                };
+                break;
+              case 'Split':
+                votes[referendumId] = {
+                  type: 'Split',
+                  aye: vote.data.aye,
+                  nay: vote.data.nay,
+                };
+                break;
+              case 'SplitAbstain':
+                votes[referendumId] = {
+                  type: 'SplitAbstain',
+                  aye: vote.data.aye,
+                  nay: vote.data.nay,
+                  abstain: vote.data.abstain,
+                };
+                break;
+            }
+          }
+
+          result[address][trackId] = {
+            type: 'Casting',
+            track: trackId,
+            address,
+            votes,
+            prior: convictionVoting.data.prior,
+          };
+        }
       }
     }
 
     callback(result);
   });
-
-  return () => {
-    unsubscribe.then((fn) => fn());
-  };
 }
 
-/**
- * TODO move to chain helpers
- */
-function subscribeBlockWithInterval(api: ApiPromise, ttl: number, callback: (header: Header) => unknown) {
-  const throttled = throttle(callback, ttl);
-  const unsubscribe = api.rpc.chain.subscribeNewHeads((header) => {
-    throttled(header);
-  });
+function subscribeReferendums(api: ApiPromise, callback: (referendums: IteratorResult<Referendum[], void>) => unknown) {
+  let currectAbortController = new AbortController();
 
-  return () => {
-    throttled.cancel();
-    unsubscribe.then((fn) => fn());
+  const fetchPages = async (abort: AbortController) => {
+    for await (const page of referendaPallet.storage.referendumInfoForPaged('governance', api, 500)) {
+      if (abort.signal.aborted) {
+        break;
+      }
+
+      const value: Referendum[] = [];
+      for (const { id, info } of page) {
+        if (!info) continue;
+        value.push(governanceService.mapReferendum(id.toString(), info));
+      }
+      callback({ done: false, value });
+    }
+
+    callback({ done: true, value: undefined });
   };
-}
 
-function subscribeReferendums(api: ApiPromise, callback: (referendums: Referendum[]) => unknown) {
-  return subscribeBlockWithInterval(api, 30 * 1000, () => {
-    governanceService.getReferendums(api).then(callback);
-  });
+  fetchPages(currectAbortController);
+
+  const fn = () => {
+    currectAbortController.abort();
+    currectAbortController = new AbortController();
+    fetchPages(currectAbortController);
+  };
+
+  const unsubscribeSystemReferenda = polkadotjsHelpers.subscribeSystemEvents({ api, section: 'referenda' }, fn);
+  const unsubscribeSystemConvictionVoting = polkadotjsHelpers.subscribeSystemEvents(
+    { api, section: 'convictionVoting' },
+    fn,
+  );
+
+  const unsubscribeExtrinsics = polkadotjsHelpers.subscribeExtrinsics(
+    { api, name: [TransactionType.VOTE, TransactionType.REMOVE_VOTE] },
+    fn,
+  );
+
+  return Promise.all([unsubscribeSystemReferenda, unsubscribeSystemConvictionVoting, unsubscribeExtrinsics]).then(
+    (fns) => () => {
+      currectAbortController.abort();
+      for (const fn of fns) {
+        fn();
+      }
+    },
+  );
 }

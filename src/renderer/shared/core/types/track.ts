@@ -6,7 +6,7 @@ export type TrackId = string;
 
 export type TrackInfo = {
   name: string;
-  maxDeciding: BN;
+  maxDeciding: BlockHeight;
   decisionDeposit: BN;
   preparePeriod: BlockHeight;
   decisionPeriod: BlockHeight;

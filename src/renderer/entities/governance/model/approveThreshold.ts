@@ -72,7 +72,10 @@ sample({
   source: $approvalThresholds,
   fn: (thresholds, { params, result }) => ({
     ...thresholds,
-    [params.chain.chainId]: result,
+    [params.chain.chainId]: {
+      ...(thresholds[params.chain.chainId] ?? {}),
+      ...result,
+    },
   }),
   target: $approvalThresholds,
 });

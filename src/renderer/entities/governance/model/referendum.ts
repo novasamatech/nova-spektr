@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { createEffect, createEvent, createStore, merge as mergeEvents, sample } from 'effector';
-import { readonly } from 'patronum';
+import { readonly, spread } from 'patronum';
 
 import { type Chain, type ChainId, type Referendum, type ReferendumId } from '@/shared/core';
 import { merge, nonNullable } from '@shared/lib/utils';
@@ -21,23 +21,33 @@ const {
   subscribe: subscribeReferendums,
   received,
   unsubscribe: unsubscribeReferendums,
-} = createSubscriber<RequestListParams, Referendum[]>(({ api }, fn) => {
+} = createSubscriber<RequestListParams, IteratorResult<Referendum[], void>>(({ api }, fn) => {
   return governanceSubscribeService.subscribeReferendums(api, fn);
 });
 
 const $referendums = createStore<Record<ChainId, Referendum[]>>({});
+const $isLoading = createStore(true);
 
 // referendum list
+
+type RequestRecordParams = {
+  chain: Chain;
+  api: ApiPromise;
+  referendumId: ReferendumId;
+};
+
+const requestReferendum = createEvent<RequestRecordParams>();
 
 type RequestListParams = {
   chain: Chain;
   api: ApiPromise;
+  ids?: ReferendumId[];
 };
 
 const requestReferendums = createEvent<RequestListParams>();
 
-const requestReferendumsFx = createEffect(({ api }: RequestListParams) => {
-  return governanceService.getReferendums(api);
+const requestReferendumsFx = createEffect(({ api, ids }: RequestListParams) => {
+  return governanceService.getReferendums(api, ids);
 });
 
 sample({
@@ -46,7 +56,17 @@ sample({
 });
 
 sample({
-  clock: [received, requestReferendumsFx.done],
+  clock: requestReferendum,
+  fn: ({ api, chain, referendumId }) => ({
+    api,
+    chain,
+    ids: [referendumId],
+  }),
+  target: requestReferendumsFx,
+});
+
+sample({
+  clock: requestReferendumsFx.done,
   source: $referendums,
   filter: (_, { params }) => nonNullable(params.chain),
   fn: (referendums, { params, result }) => {
@@ -60,43 +80,35 @@ sample({
   target: $referendums,
 });
 
-// single referendum
-
-type RequestRecordParams = {
-  chain: Chain;
-  api: ApiPromise;
-  referendumId: ReferendumId;
-};
-
-const requestReferendum = createEvent<RequestRecordParams>();
-
-const requestReferendumFx = createEffect(({ api, referendumId }: RequestRecordParams) => {
-  return governanceService.getReferendum(referendumId, api);
-});
-
 sample({
-  clock: requestReferendum,
-  target: requestReferendumFx,
-});
-
-sample({
-  clock: requestReferendumFx.done,
+  clock: received,
   source: $referendums,
+  filter: (_, { params }) => nonNullable(params.chain),
   fn: (referendums, { params, result }) => {
-    if (!result) return referendums;
     const existing = referendums[params.chain.chainId] ?? [];
 
+    if (result.done) {
+      return {
+        isLoading: false,
+        referendums,
+      };
+    }
+
     return {
-      ...referendums,
-      [params.chain.chainId]: mergeReferendums(existing, [result]),
+      loading: true,
+      referendums: {
+        ...referendums,
+        [params.chain.chainId]: mergeReferendums(existing, result.value),
+      },
     };
   },
-  target: $referendums,
+  target: spread({
+    referendums: $referendums,
+    isLoading: $isLoading,
+  }),
 });
 
 // loading
-
-const $isLoading = createStore(true);
 
 sample({
   clock: [requestReferendum, requestReferendums, subscribeReferendums],
@@ -105,9 +117,20 @@ sample({
 });
 
 sample({
-  clock: [requestReferendumFx.finally, requestReferendumsFx.finally, received],
+  clock: [requestReferendumsFx.finally],
   fn: () => false,
   target: $isLoading,
+});
+
+const subscriptionReceivedReferendum = received.filterMap(({ params, result }) => {
+  if (result.done) {
+    return;
+  }
+
+  return {
+    params,
+    result: result.value,
+  };
 });
 
 export const referendumModel = {
@@ -119,6 +142,6 @@ export const referendumModel = {
     unsubscribeReferendums,
     requestReferendums,
     requestReferendum,
-    referendumsReceived: mergeEvents([requestReferendumsFx.done, received]),
+    referendumsReceived: mergeEvents([requestReferendumsFx.done, subscriptionReceivedReferendum]),
   },
 };

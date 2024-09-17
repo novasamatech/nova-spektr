@@ -10,12 +10,11 @@ import {
   type TrackInfo,
   type Voting,
 } from '@/shared/core';
-import { ReferendumType } from '@/shared/core';
 import { claimScheduleService } from '../claimScheduleService';
 
 describe('claimScheduleService', () => {
   test('should handle empty case', () => {
-    const referendums: Referendum[] = [{ type: ReferendumType.Approved, referendumId: '123' } as ApprovedReferendum];
+    const referendums: Referendum[] = [{ type: 'Approved', referendumId: '123' } as ApprovedReferendum];
     const tracks: Record<TrackId, TrackInfo> = {};
     const trackLocks: Record<TrackId, BN> = {};
     const votingByTrack: Record<TrackId, Voting> = {};
@@ -34,7 +33,7 @@ describe('claimScheduleService', () => {
   });
 
   test('should handle single claimable', () => {
-    const referendums: Referendum[] = [{ type: ReferendumType.Approved, referendumId: '123' } as ApprovedReferendum];
+    const referendums: Referendum[] = [{ type: 'Approved', referendumId: '123' } as ApprovedReferendum];
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
         type: 'Casting',
@@ -153,8 +152,8 @@ describe('claimScheduleService', () => {
 
   test('should take max between two locks with same time', () => {
     const referendums: Referendum[] = [
-      { type: ReferendumType.Approved, referendumId: '12' } as ApprovedReferendum,
-      { type: ReferendumType.Approved, referendumId: '22' } as ApprovedReferendum,
+      { type: 'Approved', referendumId: '12' } as ApprovedReferendum,
+      { type: 'Approved', referendumId: '22' } as ApprovedReferendum,
     ];
 
     const votingByTrack: Record<TrackId, CastingVoting> = {
@@ -202,7 +201,7 @@ describe('claimScheduleService', () => {
   });
 
   test('should handle rejigged prior', () => {
-    const referendums: Referendum[] = [{ type: ReferendumType.Approved, referendumId: '123' } as ApprovedReferendum];
+    const referendums: Referendum[] = [{ type: 'Approved', referendumId: '123' } as ApprovedReferendum];
 
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
@@ -244,8 +243,8 @@ describe('claimScheduleService', () => {
 
   test('should fold several claimable to one', () => {
     const referendums: ApprovedReferendum[] = [
-      { type: ReferendumType.Approved, referendumId: '0', since: 1100, submissionDeposit: null },
-      { type: ReferendumType.Approved, referendumId: '1', since: 1000, submissionDeposit: null },
+      { type: 'Approved', referendumId: '0', since: 1100, submissionDeposit: null, decisionDeposit: null },
+      { type: 'Approved', referendumId: '1', since: 1000, submissionDeposit: null, decisionDeposit: null },
     ];
 
     const votingByTrack: Record<TrackId, CastingVoting> = {
@@ -304,9 +303,9 @@ describe('claimScheduleService', () => {
 
   test('should include shadowed actions', () => {
     const referendums: ApprovedReferendum[] = [
-      { type: ReferendumType.Approved, referendumId: '1', since: 1000, submissionDeposit: null },
-      { type: ReferendumType.Approved, referendumId: '2', since: 1100, submissionDeposit: null },
-      { type: ReferendumType.Approved, referendumId: '3', since: 1200, submissionDeposit: null },
+      { type: 'Approved', referendumId: '1', since: 1000, submissionDeposit: null, decisionDeposit: null },
+      { type: 'Approved', referendumId: '2', since: 1100, submissionDeposit: null, decisionDeposit: null },
+      { type: 'Approved', referendumId: '3', since: 1200, submissionDeposit: null, decisionDeposit: null },
     ];
 
     const votingByTrack: Record<TrackId, CastingVoting> = {
@@ -539,9 +538,9 @@ describe('claimScheduleService', () => {
 
   test('pending should be sorted by remaining time', () => {
     const referendums: ApprovedReferendum[] = [
-      { type: ReferendumType.Approved, referendumId: '0', since: 1100, submissionDeposit: null },
-      { type: ReferendumType.Approved, referendumId: '1', since: 1300, submissionDeposit: null },
-      { type: ReferendumType.Approved, referendumId: '2', since: 1200, submissionDeposit: null },
+      { type: 'Approved', referendumId: '0', since: 1100, submissionDeposit: null, decisionDeposit: null },
+      { type: 'Approved', referendumId: '1', since: 1300, submissionDeposit: null, decisionDeposit: null },
+      { type: 'Approved', referendumId: '2', since: 1200, submissionDeposit: null, decisionDeposit: null },
     ];
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
@@ -600,8 +599,8 @@ describe('claimScheduleService', () => {
 
   test('gap should not be covered by its track locks', () => {
     const referendums: ApprovedReferendum[] = [
-      { type: ReferendumType.Approved, referendumId: '5', since: 1500, submissionDeposit: null },
-      { type: ReferendumType.Approved, referendumId: '13', since: 2000, submissionDeposit: null },
+      { type: 'Approved', referendumId: '5', since: 1500, submissionDeposit: null, decisionDeposit: null },
+      { type: 'Approved', referendumId: '13', since: 2000, submissionDeposit: null, decisionDeposit: null },
     ];
 
     const votingByTrack: Record<TrackId, CastingVoting> = {
@@ -770,7 +769,7 @@ describe('claimScheduleService', () => {
 
   test('delegate plus voting case', () => {
     const referendums: ApprovedReferendum[] = [
-      { type: ReferendumType.Approved, referendumId: '0', since: 1100, submissionDeposit: null },
+      { type: 'Approved', referendumId: '0', since: 1100, submissionDeposit: null, decisionDeposit: null },
     ];
     const votingByTrack: Record<TrackId, DelegatingVoting | CastingVoting> = {
       0: {

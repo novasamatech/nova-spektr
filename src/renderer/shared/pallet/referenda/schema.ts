@@ -125,7 +125,7 @@ export const referendaReferendumStatusRankedCollectiveTally = pjsSchema.object({
 export type ReferendaReferendumInfoCompletedTally = z.infer<typeof referendaReferendumInfoCompletedTally>;
 export const referendaReferendumInfoCompletedTally = pjsSchema.tuppleMap(
   ['since', pjsSchema.blockHeight],
-  ['submitionDeposit', pjsSchema.optional(referendaDeposit)],
+  ['submissionDeposit', pjsSchema.optional(referendaDeposit)],
   ['decisionDeposit', pjsSchema.optional(referendaDeposit)],
 );
 

@@ -6,7 +6,7 @@ import { type PathType, Paths } from '@/shared/routes';
 import { type AccountVote, type BasketTransaction, type OngoingReferendum } from '@shared/core';
 import { Step, isStep, nonNullable, nullable, toAddress } from '@shared/lib/utils';
 import { basketModel } from '@entities/basket';
-import { referendumModel, votingService } from '@entities/governance';
+import { votingService } from '@entities/governance';
 import {
   delegationAggregate,
   lockPeriodsModel,
@@ -223,21 +223,6 @@ sample({
 sample({
   clock: voteConfirmModel.events.submitFinished,
   target: locksModel.events.subscribeLocks,
-});
-
-sample({
-  clock: voteConfirmModel.events.submitFinished,
-  source: {
-    referendum: voteFormAggregate.$referendum,
-    network: networkSelectorModel.$network,
-  },
-  filter: ({ referendum, network }) => nonNullable(referendum) && nonNullable(network),
-  fn: ({ referendum, network }) => ({
-    chain: network!.chain,
-    api: network!.api,
-    referendumId: referendum!.referendumId,
-  }),
-  target: referendumModel.events.requestReferendum,
 });
 
 sample({

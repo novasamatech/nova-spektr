@@ -3,31 +3,12 @@ import { combine, createEffect, createEvent, createStore, sample } from 'effecto
 import { produce } from 'immer';
 import { readonly } from 'patronum';
 
-import {
-  type GovernanceApi,
-  type ReferendumTimelineRecord,
-  type ReferendumTimelineRecordStatus,
-} from '@shared/api/governance';
-import {
-  type Chain,
-  type ChainId,
-  type CompletedReferendum,
-  type Referendum,
-  type ReferendumId,
-  ReferendumType,
-} from '@shared/core';
+import { type GovernanceApi, type ReferendumTimelineRecord } from '@shared/api/governance';
+import { type Chain, type ChainId, type Referendum, type ReferendumId } from '@shared/core';
 import { getCreatedDateFromApi, nonNullable } from '@shared/lib/utils';
 import { governanceModel, referendumService } from '@entities/governance';
 
 import { networkSelectorModel } from './networkSelector';
-
-const referendumTimelineStatus: Record<CompletedReferendum['type'], ReferendumTimelineRecordStatus> = {
-  [ReferendumType.Killed]: 'Killed',
-  [ReferendumType.Cancelled]: 'Cancelled',
-  [ReferendumType.Rejected]: 'Rejected',
-  [ReferendumType.Approved]: 'Approved',
-  [ReferendumType.TimedOut]: 'TimedOut',
-};
 
 const $timelines = createStore<
   Record<ChainId, Record<ReferendumId, { onChain: ReferendumTimelineRecord[]; offChain: ReferendumTimelineRecord[] }>>
@@ -125,7 +106,7 @@ const requestOnChainTimelineFx = createEffect<RequestOnTimelineParams, Referendu
     }
 
     return getCreatedDateFromApi(referendum.since, api).then((time) => [
-      { date: new Date(time), status: referendumTimelineStatus[referendum.type] },
+      { date: new Date(time), status: referendum.type },
     ]);
   },
 );

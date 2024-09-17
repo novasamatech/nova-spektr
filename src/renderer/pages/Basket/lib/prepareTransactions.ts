@@ -602,9 +602,9 @@ async function prepareRevokeDelegationTransaction({
     transferable,
 
     account: account!,
-    balance: delegation ? delegation._.balance.toString() : coreTxs[0].args.balance,
-    conviction: delegation ? delegation._.conviction : votingService.getConviction(coreTxs[0].args.conviction),
-    target: delegation ? toAddress(delegation._.target, { prefix: chain.addressPrefix }) : coreTxs[0].args.target,
+    balance: delegation ? delegation.data.balance.toString() : coreTxs[0].args.balance,
+    conviction: delegation ? delegation.data.conviction : votingService.getConviction(coreTxs[0].args.conviction),
+    target: delegation ? toAddress(delegation.data.target, { prefix: chain.addressPrefix }) : coreTxs[0].args.target,
     tracks: coreTxs.map((t: Transaction) => t.args.track),
     description: '',
     locks,

@@ -19,9 +19,7 @@ const {
   received: receiveVoting,
   unsubscribe: unsubscribeVoting,
 } = createSubscriber<VotingParams, VotingMap>(({ api, tracks, addresses }, cb) => {
-  return governanceSubscribeService.subscribeVotingFor(api, tracks, addresses, (voting) => {
-    if (voting) cb(voting);
-  });
+  return governanceSubscribeService.subscribeVotingFor(api, tracks, addresses, cb);
 });
 
 const $voting = createStore<VotingMap>({});
