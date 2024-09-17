@@ -36,7 +36,7 @@ const $selectedCollectiveData = combine($fellowshipStore, $selectedChainId, (fel
 });
 
 const $fellowshipChain = combine(networkModel.$chains, $selectedChainId, (chains, collectiveChainId) => {
-  return Object.values(chains).find((chain) => chain.chainId === collectiveChainId) || null;
+  return Object.values(chains).find(chain => chain.chainId === collectiveChainId) || null;
 });
 
 const $isConnecting = combine(

@@ -1,18 +1,23 @@
-import { combine, createEvent, sample } from 'effector';
+import { createEvent, sample } from 'effector';
 import { or } from 'patronum';
 
 import { nonNullable } from '@/shared/lib/utils';
+import { collectiveDomain } from '@/domains/collectives';
 import { type RequestCollectiveParams } from '@/domains/collectives/lib/types';
-import { membersDomainModel } from '@/domains/collectives/models/members';
-import { fellowshipNetworkModel } from '../../network/model/fellowshipNetwork';
+import { fellowshipNetworkModel } from '@/features/fellowship/network';
+
+import { collectiveModel } from './collective';
+
+// const enabled = createGate();
 
 const requestMembers = createEvent<RequestCollectiveParams | null>();
 
-const $members = combine(fellowshipNetworkModel.$selectedCollectiveData, (collective) => {
-  if (!collective) return [];
+const $members = collectiveModel.$store.map(x => x?.members ?? []);
 
-  return collective.members ?? [];
-});
+// sample({
+//   clock: [enabled.open, fellowshipNetworkModel.$palletInfo],
+//   source: fellowshipNetworkModel.$palletInfo,
+// })
 
 sample({
   clock: fellowshipNetworkModel.$palletInfo,
@@ -21,18 +26,18 @@ sample({
 
 sample({
   clock: requestMembers,
-  filter: (palletInfo) => nonNullable(palletInfo),
-  fn: (palletInfo) => ({
+  filter: nonNullable,
+  fn: palletInfo => ({
     palletType: palletInfo!.palletType,
     api: palletInfo!.api,
     chainId: palletInfo!.chainId,
   }),
-  target: membersDomainModel.requestMembers,
+  target: collectiveDomain.members.subscribe,
 });
 
 export const membersModel = {
   $members,
-  $isLoading: or(membersDomainModel.pending, fellowshipNetworkModel.$isConnecting),
+  $isLoading: or(collectiveDomain.members.pending, fellowshipNetworkModel.$isConnecting),
 
   events: {
     requestMembers,

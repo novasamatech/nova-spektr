@@ -5,6 +5,7 @@ import { type AccountId } from '@/shared/core';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { referendaPallet } from '@/shared/pallet/referenda';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
+import { polkadotjsHelpers } from '../../polkadotjs-helpers';
 
 import { getPalletName } from './helpers';
 import { type CollectiveRank, collectiveMemberRecord, collectiveRank, collectiveVoteRecord } from './schemas';
@@ -84,6 +85,25 @@ export const storage = {
     );
 
     return substrateRpcPool.call(() => getQuery(type, api, 'members').entries()).then(schema.parse);
+  },
+
+  /**
+   * The current members of the collective.
+   */
+  async *membersPaged(type: PalletType, api: ApiPromise, pageSize: number) {
+    const schema = pjsSchema.vec(
+      pjsSchema.tuppleMap(
+        ['accountId', pjsSchema.storageKey(pjsSchema.accountId).transform(x => x[0])],
+        ['member', pjsSchema.optional(collectiveMemberRecord)],
+      ),
+    );
+
+    for await (const result of polkadotjsHelpers.createPagedRequest({
+      query: getQuery(type, api, 'members'),
+      pageSize,
+    })) {
+      yield schema.parse(result);
+    }
   },
 
   /**

@@ -19,7 +19,7 @@ const $isFiltersSelected = combine($selectedTrackIds, $selectedVoteId, (tracks, 
 
 sample({
   clock: selectedTracksChanged,
-  fn: (data) => data.map(({ id }) => id),
+  fn: data => data.map(({ id }) => id),
   target: $selectedTrackIds,
 });
 

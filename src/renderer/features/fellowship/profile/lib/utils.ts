@@ -7,11 +7,11 @@ export const profileUtils = {
 };
 
 function findMachingAccount(wallet: Wallet, members: Member[], chain: Chain) {
-  const walletAccounts = wallet.accounts.filter((account) => {
+  const walletAccounts = wallet.accounts.filter(account => {
     if (!accountUtils.isNonBaseVaultAccount(account, wallet)) return false;
 
     return accountUtils.isChainAndCryptoMatch(account, chain);
   });
 
-  return members.find((member) => walletAccounts.some((account) => account.accountId === member.accountId));
+  return members.find(member => walletAccounts.some(account => account.accountId === member.accountId));
 }
