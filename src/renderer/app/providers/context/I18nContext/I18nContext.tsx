@@ -1,7 +1,7 @@
 import { type Locale, format as fnsFormatDate } from 'date-fns';
 import { enGB } from 'date-fns/locale';
+import { type TFunction } from 'i18next';
 import { type FC, type PropsWithChildren, createContext, useContext } from 'react';
-import { type TFunction } from 'react-i18next';
 import { useTranslation } from 'react-i18next';
 
 import { LanguageOptions } from '@shared/api/translation/lib/constants';
