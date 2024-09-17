@@ -57,7 +57,7 @@ export type ClaimAction = Unlock | RemoveVote;
 // Unlock chunk
 export enum UnlockChunkType {
   CLAIMABLE = 'claimable',
-  PENDING_DELIGATION = 'pendingDelagation',
+  PENDING_DELEGATION = 'pendingDelagation',
   PENDING_LOCK = 'pendingLock',
 }
 
@@ -68,7 +68,7 @@ export interface ClaimableChunk {
 }
 
 export interface PendingChunk {
-  type: UnlockChunkType.PENDING_DELIGATION | UnlockChunkType.PENDING_LOCK;
+  type: UnlockChunkType.PENDING_DELEGATION | UnlockChunkType.PENDING_LOCK;
   amount: BN;
   claimableAt: ClaimTime;
 }

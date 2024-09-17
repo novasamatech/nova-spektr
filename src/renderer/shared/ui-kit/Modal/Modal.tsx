@@ -7,16 +7,16 @@ import { ScrollArea } from '../ScrollArea/ScrollArea';
 import { useTheme } from '../Theme/useTheme';
 
 type Props = {
-  open: boolean;
+  isOpen: boolean;
   size: 'sm' | 'md' | 'lg' | 'full' | 'fit';
   onToggle: (open: boolean) => void;
 };
 
-const Root = ({ open, size = 'md', children, onToggle }: PropsWithChildren<Props>) => {
+const Root = ({ isOpen, size = 'md', children, onToggle }: PropsWithChildren<Props>) => {
   const { portalContainer } = useTheme();
 
   return (
-    <Dialog.Root open={open} onOpenChange={onToggle}>
+    <Dialog.Root open={isOpen} onOpenChange={onToggle}>
       <Dialog.Portal container={portalContainer}>
         <Dialog.Overlay
           className={cnTw(

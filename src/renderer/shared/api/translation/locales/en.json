@@ -384,6 +384,14 @@
         "voted": "Voted last 30 days",
         "votes": "Delegated votes"
       },
+      "summary": {
+        "accountLabel": "Account",
+        "acrossTracks_one": "Across { count } track",
+        "acrossTracks_other": "Across { count } tracks",
+        "amountLabel": "Amount",
+        "delegateSummary": "Delegate summary",
+        "listEmptyState": "Nothing was found"
+      },
       "title": "Add delegation on",
       "tracks": {
         "crowdloans": "Auction admin",

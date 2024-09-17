@@ -32,3 +32,17 @@ export const GET_VOTINGS_FOR_REFERENDUM = gql`
     }
   }
 `;
+
+export const GET_VOTINGS_FOR_VOTER = gql`
+  query GetVotingsForVoter($voter: String!) {
+    castingVotings(filter: { voter: { equalTo: $voter } }) {
+      nodes {
+        id
+        at
+        referendum {
+          id
+        }
+      }
+    }
+  }
+`;
