@@ -3,7 +3,7 @@ import { readonly } from 'patronum';
 
 import { nonNullable, nullable } from '@shared/lib/utils';
 
-type UnsubscribeFn = () => void;
+type UnsubscribeFn = (() => void) | Promise<() => void>;
 type SubscribeFn<P, V> = (params: P, callback: (value: V) => void) => UnsubscribeFn;
 
 /**
@@ -57,7 +57,13 @@ export const createSubscriber = <P = void, V = void>(fn: SubscribeFn<P, V>, scop
   });
 
   const unsubscribeFx = domain.createEffect(({ fn }: { fn: UnsubscribeFn | null; resubscribe: P | null }) => {
-    if (fn) fn();
+    if (fn) {
+      if (fn instanceof Promise) {
+        return fn.then((x) => x());
+      } else {
+        return fn();
+      }
+    }
   });
 
   // subscribe, if stale

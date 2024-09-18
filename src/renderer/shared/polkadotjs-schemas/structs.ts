@@ -104,7 +104,7 @@ export const enumValueSchema = <const Map extends Record<string, z.ZodTypeAny>>(
   type EnumVariant = {
     [K in keyof Map]: {
       type: K;
-      _: z.infer<Map[K]>;
+      data: z.infer<Map[K]>;
     };
   }[keyof Map];
 
@@ -125,7 +125,7 @@ export const enumValueSchema = <const Map extends Record<string, z.ZodTypeAny>>(
 
         return {
           type,
-          _: result,
+          data: result,
         } as EnumVariant;
       }
 
@@ -150,7 +150,7 @@ export const enumValueLooseSchema = <const Map extends Record<string, z.ZodTypeA
   type EnumVariant = {
     [K in keyof Map]: {
       type: K;
-      _: z.infer<Map[K]>;
+      data: z.infer<Map[K]>;
     };
   }[keyof Map];
 
@@ -171,7 +171,7 @@ export const enumValueLooseSchema = <const Map extends Record<string, z.ZodTypeA
 
         return {
           type,
-          _: result,
+          data: result,
         } as EnumVariant;
       }
 

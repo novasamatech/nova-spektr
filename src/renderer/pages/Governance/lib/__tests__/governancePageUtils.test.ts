@@ -1,6 +1,6 @@
 import { BN_ZERO } from '@polkadot/util';
 
-import { type OngoingReferendum, ReferendumType } from '@shared/core';
+import { type OngoingReferendum } from '@shared/core';
 import { type AggregatedReferendum, VoteStatus } from '@features/governance';
 import { governancePageUtils } from '../governancePageUtils';
 
@@ -16,7 +16,7 @@ const someVote = {
 describe('pages/Governance/lib/governancePageUtils', () => {
   const referendums: AggregatedReferendum[] = [
     {
-      type: ReferendumType.Approved,
+      type: 'Approved',
       referendumId: '111',
       since: 0,
       title: 'Referendum Title 1',
@@ -24,9 +24,10 @@ describe('pages/Governance/lib/governancePageUtils', () => {
       supportThreshold: null,
       vote: null,
       submissionDeposit: null,
+      decisionDeposit: null,
     },
     {
-      type: ReferendumType.Approved,
+      type: 'Approved',
       referendumId: '222',
       since: 0,
       title: 'Referendum Title 2',
@@ -34,6 +35,7 @@ describe('pages/Governance/lib/governancePageUtils', () => {
       supportThreshold: null,
       vote: null,
       submissionDeposit: null,
+      decisionDeposit: null,
     },
   ];
 
@@ -46,7 +48,7 @@ describe('pages/Governance/lib/governancePageUtils', () => {
           }
         : null,
       votedByDelegate: isVotedByDelegate ? 'delegate address' : null,
-      type: ReferendumType.Ongoing,
+      type: 'Ongoing',
       track: '1',
     } as AggregatedReferendum<OngoingReferendum>;
   };
@@ -56,7 +58,7 @@ describe('pages/Governance/lib/governancePageUtils', () => {
       voter: '',
       vote: someVote,
     },
-    type: ReferendumType.Ongoing,
+    type: 'Ongoing',
     track: '1',
   } as AggregatedReferendum<OngoingReferendum>;
 

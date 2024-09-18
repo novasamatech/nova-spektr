@@ -2,6 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 
 import { substrateRpcPool } from '@/shared/api/substrate-helpers';
 import { type ReferendumId } from '@/shared/core';
+import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
 import { getPalletName } from './helpers';
@@ -36,7 +37,7 @@ export const storage = {
   /**
    * Information concerning any given referendum.
    */
-  referendumInfoFor(type: PalletType, api: ApiPromise, ids?: ReferendumId[]) {
+  async referendumInfoFor(type: PalletType, api: ApiPromise, ids?: ReferendumId[]) {
     const schema = pjsSchema.vec(
       pjsSchema.tuppleMap(
         ['id', pjsSchema.storageKey(pjsSchema.u32).transform(keys => keys[0])],
@@ -48,6 +49,25 @@ export const storage = {
       return substrateRpcPool.call(() => getQuery(type, api, 'referendumInfoFor').entries(ids)).then(schema.parse);
     } else {
       return substrateRpcPool.call(() => getQuery(type, api, 'referendumInfoFor').entries()).then(schema.parse);
+    }
+  },
+
+  /**
+   * Information concerning any given referendum.
+   */
+  async *referendumInfoForPaged(type: PalletType, api: ApiPromise, pageSize: number) {
+    const schema = pjsSchema.vec(
+      pjsSchema.tuppleMap(
+        ['id', pjsSchema.storageKey(pjsSchema.u32).transform(keys => keys[0])],
+        ['info', pjsSchema.optional(referendaReferendumInfoConvictionVotingTally)],
+      ),
+    );
+
+    for await (const result of polkadotjsHelpers.createPagedRequest({
+      query: getQuery(type, api, 'referendumInfoFor'),
+      pageSize,
+    })) {
+      yield schema.parse(result);
     }
   },
 
