@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
+import { Skeleton } from '@/shared/ui-kit';
 import {
   type Account,
   type Address,
@@ -74,6 +75,7 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
   const delegationTracks = getDelegationTracks(tx);
   const delegationVotes = getDelegationVotes(tx);
 
+  const [isUndelegationLoading, setIsUndelegationLoading] = useState(true);
   const [undelegationVotes, setUndelegationVotes] = useState<string>();
   const [undelegationTarget, setUndelegationTarget] = useState<Address>();
 
@@ -90,6 +92,7 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
     getUndelegationData(api, tx).then(({ votes, target }) => {
       setUndelegationVotes(votes);
       setUndelegationTarget(target);
+      setIsUndelegationLoading(false);
     });
   }, [api, tx]);
 
@@ -383,16 +386,20 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
         </DetailRow>
       )}
 
-      {!delegationTarget && undelegationTarget && (
+      {((!delegationTarget && undelegationTarget) || isUndelegationLoading) && (
         <DetailRow label={t('operation.details.delegationTarget')} className="text-text-secondary">
-          <AddressWithExplorers
-            explorers={explorers}
-            addressFont={AddressStyle}
-            type="short"
-            address={undelegationTarget}
-            addressPrefix={addressPrefix}
-            wrapperClassName="-mr-2 min-w-min"
-          />
+          {isUndelegationLoading ? (
+            <Skeleton width={40} height={6} />
+          ) : (
+            <AddressWithExplorers
+              explorers={explorers}
+              addressFont={AddressStyle}
+              type="short"
+              address={undelegationTarget!}
+              addressPrefix={addressPrefix}
+              wrapperClassName="-mr-2 min-w-min"
+            />
+          )}
         </DetailRow>
       )}
 
@@ -409,16 +416,20 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
         </DetailRow>
       )}
 
-      {!delegationVotes && undelegationVotes && (
+      {((!delegationVotes && undelegationVotes) || isUndelegationLoading) && (
         <DetailRow label={t('operation.details.delegationVotes')}>
-          <FootnoteText>
-            <AssetBalance
-              className="text-text-secondary"
-              value={undelegationVotes}
-              asset={defaultAsset}
-              showSymbol={false}
-            ></AssetBalance>
-          </FootnoteText>
+          {isUndelegationLoading ? (
+            <Skeleton width={40} height={6} />
+          ) : (
+            <FootnoteText>
+              <AssetBalance
+                className="text-text-secondary"
+                value={undelegationVotes!}
+                asset={defaultAsset}
+                showSymbol={false}
+              ></AssetBalance>
+            </FootnoteText>
+          )}
         </DetailRow>
       )}
 
