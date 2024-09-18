@@ -82,7 +82,7 @@ export const Confirmation = ({
   return (
     <div className="flex w-modal flex-col items-center gap-y-4 px-5 py-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
-        <Icon className="text-icon-default" name="addDelegationConfirm" size={60} />
+        <Icon className="text-icon-default" name="editDelegationConfirm" size={60} />
 
         <div className="flex flex-col items-center gap-y-1">
           <LargeTitleText>

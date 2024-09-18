@@ -39,16 +39,16 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.VOTE]: 'voteMst',
   [TransactionType.REVOTE]: 'revoteMst',
   [TransactionType.REMOVE_VOTE]: 'retractMst',
-  [TransactionType.DELEGATE]: 'delegateMst',
-  [TransactionType.UNDELEGATE]: 'undelegateMst',
-  [TransactionType.EDIT_DELEGATION]: 'editDelegationMst',
+  [TransactionType.DELEGATE]: 'addDelegationConfirm',
+  [TransactionType.UNDELEGATE]: 'revokeDelegationConfirm',
+  [TransactionType.EDIT_DELEGATION]: 'editDelegationConfirm',
 };
 
 export const getIconName = (transaction?: Transaction | DecodedTransaction): IconNames => {
   if (!transaction?.type) return 'unknownConfirm';
 
   if (isEditDelegationTransaction(transaction)) {
-    return 'editDelegationMst';
+    return 'editDelegationConfirm';
   }
 
   if (transaction.type === TransactionType.BATCH_ALL) {
