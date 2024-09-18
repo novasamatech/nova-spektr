@@ -30,6 +30,7 @@ import {
   isRemoveProxyTransaction,
   isRemovePureProxyTransaction,
   isTransferTransaction,
+  isUndelegateTransaction,
   isXcmTransaction,
 } from '@entities/transaction';
 import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, walletModel } from '@entities/wallet';
@@ -75,7 +76,7 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
   const delegationTracks = getDelegationTracks(tx);
   const delegationVotes = getDelegationVotes(tx);
 
-  const [isUndelegationLoading, setIsUndelegationLoading] = useState(true);
+  const [isUndelegationLoading, setIsUndelegationLoading] = useState(false);
   const [undelegationVotes, setUndelegationVotes] = useState<string>();
   const [undelegationTarget, setUndelegationTarget] = useState<Address>();
 
@@ -87,6 +88,10 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
   const api = extendedChain?.api;
 
   useEffect(() => {
+    if (isUndelegateTransaction(transaction)) {
+      setIsUndelegationLoading(true);
+    }
+
     if (!api) return;
 
     getUndelegationData(api, tx).then(({ votes, target }) => {
