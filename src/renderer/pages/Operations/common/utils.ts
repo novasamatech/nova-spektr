@@ -243,7 +243,7 @@ export const getUndelegationData = async (
   api: ApiPromise,
   tx: MultisigTransaction,
 ): Promise<{ votes: string | undefined; target: string | undefined }> => {
-  if (!tx.transaction) return { votes: undefined, target: undefined };
+  if (!tx.transaction || !api) return { votes: undefined, target: undefined };
 
   let coreTx;
 
