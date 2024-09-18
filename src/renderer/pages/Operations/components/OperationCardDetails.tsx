@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
+import { Skeleton } from '@/shared/ui-kit';
 import { chainsService } from '@shared/api/network';
 import {
   type Address,
@@ -84,6 +85,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const explorers = extendedChain?.explorers;
   const connection = extendedChain?.connection;
 
+  const [isUndelegationLoading, setIsUndelegationLoading] = useState(true);
   const [undelegationVotes, setUndelegationVotes] = useState<string>();
   const [undelegationTarget, setUndelegationTarget] = useState<Address>();
 
@@ -93,6 +95,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
     getUndelegationData(api, tx).then(({ votes, target }) => {
       setUndelegationVotes(votes);
       setUndelegationTarget(target);
+      setIsUndelegationLoading(false);
     });
   }, [api, tx]);
 
@@ -293,16 +296,20 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         </DetailRow>
       )}
 
-      {!delegationTarget && undelegationTarget && (
+      {((!delegationTarget && undelegationTarget) || isUndelegationLoading) && (
         <DetailRow label={t('operation.details.delegationTarget')} className={valueClass}>
-          <AddressWithExplorers
-            explorers={explorers}
-            addressFont={AddressStyle}
-            type="short"
-            address={undelegationTarget}
-            addressPrefix={addressPrefix}
-            wrapperClassName="-mr-2 min-w-min"
-          />
+          {isUndelegationLoading ? (
+            <Skeleton width={40} height={6} />
+          ) : (
+            <AddressWithExplorers
+              explorers={explorers}
+              addressFont={AddressStyle}
+              type="short"
+              address={undelegationTarget!}
+              addressPrefix={addressPrefix}
+              wrapperClassName="-mr-2 min-w-min"
+            />
+          )}
         </DetailRow>
       )}
 
@@ -319,16 +326,20 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         </DetailRow>
       )}
 
-      {!delegationVotes && undelegationVotes && (
+      {((!delegationVotes && undelegationVotes) || isUndelegationLoading) && (
         <DetailRow label={t('operation.details.delegationVotes')} className={valueClass}>
-          <FootnoteText className={valueClass}>
-            <AssetBalance
-              className={valueClass}
-              value={undelegationVotes}
-              asset={defaultAsset}
-              showSymbol={false}
-            ></AssetBalance>
-          </FootnoteText>
+          {isUndelegationLoading ? (
+            <Skeleton width={20} height={5} />
+          ) : (
+            <FootnoteText className={valueClass}>
+              <AssetBalance
+                className={valueClass}
+                value={undelegationVotes!}
+                asset={defaultAsset}
+                showSymbol={false}
+              ></AssetBalance>
+            </FootnoteText>
+          )}
         </DetailRow>
       )}
 
