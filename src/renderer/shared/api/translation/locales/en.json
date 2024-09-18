@@ -432,16 +432,6 @@
       "walletTypeRestrictionError": "You can't add a delegation in that wallet type",
       "yourAccountError": "You cannot delegate to the same account"
     },
-    "delegationDetails": {
-      "accountsCounter_one": "{ count } account selected",
-      "accountsCounter_other": "{ count } accounts selected",
-      "yourDelegation": "Your Delegation",
-      "yourDelegationsTitle": "Your delegations",
-      "revokeDelegationButton_one": "Revoke delegation",
-      "revokeDelegationButton_other": "Revoke delegations",
-      "editDelegationButton_one": "Edit delegation",
-      "editDelegationButton_other": "Edit delegations"
-    },
     "additional": {
       "polkassemblyLink": "https://{network}.polkassembly.io/referenda/{referendumId}",
       "polkassemblyLinkTitle": "View in Polkassembly",
@@ -464,6 +454,16 @@
       "LinearDecreasing": "Linear decreasing",
       "Reciprocal": "Reciprocal",
       "SteppedDecreasing": "Stepped decreasing"
+    },
+    "delegationDetails": {
+      "accountsCounter_one": "{ count } account selected",
+      "accountsCounter_other": "{ count } accounts selected",
+      "editDelegationButton_one": "Edit delegation",
+      "editDelegationButton_other": "Edit delegations",
+      "revokeDelegationButton_one": "Revoke delegation",
+      "revokeDelegationButton_other": "Revoke delegations",
+      "yourDelegation": "Your Delegation",
+      "yourDelegationsTitle": "Your delegations"
     },
     "delegations": {
       "label": "Delegations",
