@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { type ChainId, type MultisigTransaction, type Transaction } from '@/shared/core';
+import { type ChainId, type MultisigTransaction, MultisigTxInitStatus, type Transaction } from '@/shared/core';
 import { getExtrinsic } from '@/entities/transaction/lib/extrinsicService';
 
 export const operationsUtils = {
@@ -23,5 +23,5 @@ function isMultisigAlreadyExists({ coreTxs, transactions, apis }: Params) {
 
   const callHash = getExtrinsic[coreTx.type](coreTx.args, api).method.hash.toHex();
 
-  return transactions.some((tx) => callHash === tx.callHash);
+  return transactions.some((tx) => tx.status == MultisigTxInitStatus.SIGNING && callHash === tx.callHash);
 }
