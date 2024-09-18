@@ -2,8 +2,8 @@ import { type z } from 'zod';
 
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
-export type CoreFellowshipParams = z.infer<typeof coreFellowshipParams>;
-export const coreFellowshipParams = pjsSchema.object({
+export type FellowshipCoreParams = z.infer<typeof fellowshipCoreParams>;
+export const fellowshipCoreParams = pjsSchema.object({
   activeSalary: pjsSchema.vec(pjsSchema.u128),
   passiveSalary: pjsSchema.vec(pjsSchema.u128),
   demotionPeriod: pjsSchema.vec(pjsSchema.u32),
@@ -11,12 +11,12 @@ export const coreFellowshipParams = pjsSchema.object({
   offboardTimeout: pjsSchema.u32,
 });
 
-export type CoreFellowshipMemberStatus = z.infer<typeof coreFellowshipMemberStatus>;
-export const coreFellowshipMemberStatus = pjsSchema.object({
+export type FellowshipCoreMemberStatus = z.infer<typeof fellowshipCoreMemberStatus>;
+export const fellowshipCoreMemberStatus = pjsSchema.object({
   isActive: pjsSchema.bool,
   lastPromotion: pjsSchema.u32,
   lastProof: pjsSchema.u32,
 });
 
-export type CoreFellowshipMemberEvidence = z.infer<typeof coreFellowshipMemberEvidence>;
-export const coreFellowshipMemberEvidence = pjsSchema.enumType('Retention', 'Promotion');
+export type FellowshipCoreMemberEvidence = z.infer<typeof fellowshipCoreMemberEvidence>;
+export const fellowshipCoreMemberEvidence = pjsSchema.enumType('Retention', 'Promotion');

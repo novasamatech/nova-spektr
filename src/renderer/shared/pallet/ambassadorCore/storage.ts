@@ -4,15 +4,15 @@ import { substrateRpcPool } from '@/shared/api/substrate-helpers';
 import { type Address } from '@/shared/core';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
-import { fellowshipCoreMemberEvidence, fellowshipCoreMemberStatus, fellowshipCoreParams } from './schema';
+import { ambassadorCoreMemberEvidence, ambassadorCoreMemberStatus, ambassadorCoreParams } from './schema';
 
 const getQuery = (api: ApiPromise, name: string) => {
-  const fellowshipCore = api.query['fellowshipCore'];
-  if (!fellowshipCore) {
-    throw new TypeError(`fellowshipCore pallet not found in ${api.runtimeChain.toString()} chain`);
+  const ambassadorCore = api.query['ambassadorCore'];
+  if (!ambassadorCore) {
+    throw new TypeError(`ambassadorCore pallet not found in ${api.runtimeChain.toString()} chain`);
   }
 
-  const query = fellowshipCore[name];
+  const query = ambassadorCore[name];
 
   if (!query) {
     throw new TypeError(`${name} query not found`);
@@ -26,7 +26,7 @@ export const storage = {
    * The overall status of the system.
    */
   params(api: ApiPromise) {
-    return substrateRpcPool.call(() => getQuery(api, 'params').entries()).then(fellowshipCoreParams.parse);
+    return substrateRpcPool.call(() => getQuery(api, 'params').entries()).then(ambassadorCoreParams.parse);
   },
 
   /**
@@ -34,7 +34,7 @@ export const storage = {
    */
   members(api: ApiPromise, addresses: Address[]) {
     const schema = pjsSchema.vec(
-      pjsSchema.tuppleMap(['account', pjsSchema.accountId], ['status', fellowshipCoreMemberStatus]),
+      pjsSchema.tuppleMap(['account', pjsSchema.accountId], ['status', ambassadorCoreMemberStatus]),
     );
 
     return substrateRpcPool.call(() => getQuery(api, 'member').entries(addresses)).then(schema.parse);
@@ -45,7 +45,7 @@ export const storage = {
    */
   memberEvidences(api: ApiPromise, addresses: Address[]) {
     const schema = pjsSchema.vec(
-      pjsSchema.tuppleMap(['account', pjsSchema.accountId], ['status', fellowshipCoreMemberEvidence]),
+      pjsSchema.tuppleMap(['account', pjsSchema.accountId], ['status', ambassadorCoreMemberEvidence]),
     );
 
     return substrateRpcPool.call(() => getQuery(api, 'member').entries(addresses)).then(schema.parse);
