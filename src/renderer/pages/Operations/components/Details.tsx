@@ -373,6 +373,18 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
         </DetailRow>
       )}
 
+      {isUndelegationLoading && (
+        <>
+          <DetailRow label={t('operation.details.delegationTarget')} className="text-text-secondary">
+            <Skeleton width={40} height={6} />
+          </DetailRow>
+
+          <DetailRow label={t('operation.details.delegationVotes')}>
+            <Skeleton width={20} height={5} />
+          </DetailRow>
+        </>
+      )}
+
       {delegationTarget && (
         <DetailRow label={t('operation.details.delegationTarget')} className="text-text-secondary">
           <AddressWithExplorers
@@ -386,20 +398,16 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
         </DetailRow>
       )}
 
-      {((!delegationTarget && undelegationTarget) || isUndelegationLoading) && (
+      {!delegationTarget && undelegationTarget && (
         <DetailRow label={t('operation.details.delegationTarget')} className="text-text-secondary">
-          {isUndelegationLoading ? (
-            <Skeleton width={40} height={6} />
-          ) : (
-            <AddressWithExplorers
-              explorers={explorers}
-              addressFont={AddressStyle}
-              type="short"
-              address={undelegationTarget!}
-              addressPrefix={addressPrefix}
-              wrapperClassName="-mr-2 min-w-min"
-            />
-          )}
+          <AddressWithExplorers
+            explorers={explorers}
+            addressFont={AddressStyle}
+            type="short"
+            address={undelegationTarget}
+            addressPrefix={addressPrefix}
+            wrapperClassName="-mr-2 min-w-min"
+          />
         </DetailRow>
       )}
 
@@ -416,20 +424,16 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
         </DetailRow>
       )}
 
-      {((!delegationVotes && undelegationVotes) || isUndelegationLoading) && (
+      {!delegationVotes && undelegationVotes && (
         <DetailRow label={t('operation.details.delegationVotes')}>
-          {isUndelegationLoading ? (
-            <Skeleton width={40} height={6} />
-          ) : (
-            <FootnoteText>
-              <AssetBalance
-                className="text-text-secondary"
-                value={undelegationVotes!}
-                asset={defaultAsset}
-                showSymbol={false}
-              ></AssetBalance>
-            </FootnoteText>
-          )}
+          <FootnoteText>
+            <AssetBalance
+              className="text-text-secondary"
+              value={undelegationVotes}
+              asset={defaultAsset}
+              showSymbol={false}
+            ></AssetBalance>
+          </FootnoteText>
         </DetailRow>
       )}
 

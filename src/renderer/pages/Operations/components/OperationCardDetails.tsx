@@ -30,6 +30,7 @@ import {
   isManageProxyTransaction,
   isRemoveProxyTransaction,
   isRemovePureProxyTransaction,
+  isUndelegateTransaction,
   isXcmTransaction,
 } from '@entities/transaction';
 import { AddressWithExplorers, ExplorersPopover, WalletCardSm, walletModel } from '@entities/wallet';
@@ -85,11 +86,15 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const explorers = extendedChain?.explorers;
   const connection = extendedChain?.connection;
 
-  const [isUndelegationLoading, setIsUndelegationLoading] = useState(true);
+  const [isUndelegationLoading, setIsUndelegationLoading] = useState(false);
   const [undelegationVotes, setUndelegationVotes] = useState<string>();
   const [undelegationTarget, setUndelegationTarget] = useState<Address>();
 
   useEffect(() => {
+    if (isUndelegateTransaction(transaction)) {
+      setIsUndelegationLoading(true);
+    }
+
     if (!api) return;
 
     getUndelegationData(api, tx).then(({ votes, target }) => {
@@ -283,6 +288,18 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         </DetailRow>
       )}
 
+      {isUndelegationLoading && (
+        <>
+          <DetailRow label={t('operation.details.delegationTarget')} className="text-text-secondary">
+            <Skeleton width={40} height={6} />
+          </DetailRow>
+
+          <DetailRow label={t('operation.details.delegationVotes')}>
+            <Skeleton width={20} height={5} />
+          </DetailRow>
+        </>
+      )}
+
       {delegationTarget && (
         <DetailRow label={t('operation.details.delegationTarget')} className={valueClass}>
           <AddressWithExplorers
@@ -296,20 +313,16 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         </DetailRow>
       )}
 
-      {((!delegationTarget && undelegationTarget) || isUndelegationLoading) && (
+      {!delegationTarget && undelegationTarget && (
         <DetailRow label={t('operation.details.delegationTarget')} className={valueClass}>
-          {isUndelegationLoading ? (
-            <Skeleton width={40} height={6} />
-          ) : (
-            <AddressWithExplorers
-              explorers={explorers}
-              addressFont={AddressStyle}
-              type="short"
-              address={undelegationTarget!}
-              addressPrefix={addressPrefix}
-              wrapperClassName="-mr-2 min-w-min"
-            />
-          )}
+          <AddressWithExplorers
+            explorers={explorers}
+            addressFont={AddressStyle}
+            type="short"
+            address={undelegationTarget}
+            addressPrefix={addressPrefix}
+            wrapperClassName="-mr-2 min-w-min"
+          />
         </DetailRow>
       )}
 
@@ -326,20 +339,16 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         </DetailRow>
       )}
 
-      {((!delegationVotes && undelegationVotes) || isUndelegationLoading) && (
+      {!delegationVotes && undelegationVotes && (
         <DetailRow label={t('operation.details.delegationVotes')} className={valueClass}>
-          {isUndelegationLoading ? (
-            <Skeleton width={20} height={5} />
-          ) : (
-            <FootnoteText className={valueClass}>
-              <AssetBalance
-                className={valueClass}
-                value={undelegationVotes!}
-                asset={defaultAsset}
-                showSymbol={false}
-              ></AssetBalance>
-            </FootnoteText>
-          )}
+          <FootnoteText className={valueClass}>
+            <AssetBalance
+              className={valueClass}
+              value={undelegationVotes}
+              asset={defaultAsset}
+              showSymbol={false}
+            ></AssetBalance>
+          </FootnoteText>
         </DetailRow>
       )}
 
