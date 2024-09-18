@@ -81,8 +81,8 @@ const $isViewAvailable = $activeDelegations.map((delegations) => {
   return Object.values(delegations).length > 1;
 });
 
-const $isRevokeAvailable = $activeDelegations.map((activeDelegations) => {
-  return Object.values(activeDelegations).length === 1;
+const $isRevokeAvailable = $activeDelegations.map((delegations) => {
+  return Object.values(delegations).length === 1;
 });
 
 sample({
@@ -132,6 +132,7 @@ export const delegateDetailsModel = {
   $activeDelegations,
 
   $isAddAvailable,
+  $isEditAvailable: $isRevokeAvailable,
   $isViewAvailable,
   $isRevokeAvailable,
   $isDelegationsOpen,

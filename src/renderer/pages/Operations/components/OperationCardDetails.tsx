@@ -293,7 +293,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         </DetailRow>
       )}
 
-      {undelegationTarget && (
+      {!delegationTarget && undelegationTarget && (
         <DetailRow label={t('operation.details.delegationTarget')} className={valueClass}>
           <AddressWithExplorers
             explorers={explorers}
@@ -319,7 +319,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         </DetailRow>
       )}
 
-      {undelegationVotes && (
+      {!delegationVotes && undelegationVotes && (
         <DetailRow label={t('operation.details.delegationVotes')} className={valueClass}>
           <FootnoteText className={valueClass}>
             <AssetBalance

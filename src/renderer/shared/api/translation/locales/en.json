@@ -359,7 +359,6 @@
       "delegateActivity": "Delegate activity",
       "delegateIdentity": "Delegate identity",
       "delegateTitle": "Delegate",
-      "editDelegationButton": "Edit delegation",
       "emptyDescription": "Update the search or cancel filtering",
       "emptyTitle": "Nothing was found",
       "formTitle": "Step 2. Select the number of votes and the multiplier.",
@@ -431,9 +430,17 @@
       "votesLabel": "Voting power",
       "votesValue": "<votes /> votes",
       "walletTypeRestrictionError": "You can't add a delegation in that wallet type",
-      "yourAccountError": "You cannot delegate to the same account",
+      "yourAccountError": "You cannot delegate to the same account"
+    },
+    "delegationDetails": {
+      "accountsCounter_one": "{ count } account selected",
+      "accountsCounter_other": "{ count } accounts selected",
       "yourDelegation": "Your Delegation",
-      "yourDelegationsTitle": "Your delegations"
+      "yourDelegationsTitle": "Your delegations",
+      "revokeDelegationButton_one": "Revoke delegation",
+      "revokeDelegationButton_other": "Revoke delegations",
+      "editDelegationButton_one": "Edit delegation",
+      "editDelegationButton_other": "Edit delegations"
     },
     "additional": {
       "polkassemblyLink": "https://{network}.polkassembly.io/referenda/{referendumId}",
