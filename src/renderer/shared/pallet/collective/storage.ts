@@ -1,11 +1,11 @@
 import { type ApiPromise } from '@polkadot/api';
+import { type z } from 'zod';
 
 import { substrateRpcPool } from '@/shared/api/substrate-helpers';
-import { type AccountId } from '@/shared/core';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { referendaPallet } from '@/shared/pallet/referenda';
-import { pjsSchema } from '@/shared/polkadotjs-schemas';
-import { polkadotjsHelpers } from '../../polkadotjs-helpers';
+import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
+import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 
 import { getPalletName } from './helpers';
 import { type CollectiveRank, collectiveMemberRecord, collectiveRank, collectiveVoteRecord } from './schemas';
@@ -25,6 +25,21 @@ const getQuery = (type: PalletType, api: ApiPromise, name: string) => {
 
   return query;
 };
+
+const votingResponseSchema = pjsSchema.vec(
+  pjsSchema.tuppleMap(
+    [
+      'key',
+      pjsSchema
+        .storageKey(referendaPallet.schema.referendumId, pjsSchema.accountId)
+        .transform(([referendum, account]) => ({
+          referendum,
+          account,
+        })),
+    ],
+    ['vote', pjsSchema.optional(collectiveVoteRecord)],
+  ),
+);
 
 export const storage = {
   /**
@@ -109,17 +124,21 @@ export const storage = {
   /**
    * Votes on a given proposal, if it is ongoing.
    */
-  voting(type: PalletType, api: ApiPromise, keys: [referendum: ReferendumId, account: AccountId][]) {
-    const keySchema = pjsSchema
-      .storageKey(referendaPallet.schema.referendumId, pjsSchema.accountId)
-      .transform(([referendum, account]) => ({
-        referendum,
-        account,
-      }));
-    const schema = pjsSchema.vec(
-      pjsSchema.tuppleMap(['key', keySchema], ['vote', pjsSchema.optional(collectiveVoteRecord)]),
-    );
+  voting(type: PalletType, api: ApiPromise, keys: (readonly [referendum: ReferendumId, account: AccountId])[]) {
+    return substrateRpcPool.call(() => getQuery(type, api, 'voting').multi(keys)).then(votingResponseSchema.parse);
+  },
 
-    return substrateRpcPool.call(() => getQuery(type, api, 'voting').multi(keys)).then(schema.parse);
+  /**
+   * Votes on a given proposal, if it is ongoing.
+   */
+  subscribeVoting(
+    type: PalletType,
+    api: ApiPromise,
+    keys: (readonly [referendum: ReferendumId, account: AccountId])[],
+    callback: (value: z.infer<typeof votingResponseSchema>) => unknown,
+  ) {
+    return getQuery(type, api, 'voting').multi(keys, response => {
+      callback(votingResponseSchema.parse(response));
+    });
   },
 };

@@ -1,9 +1,9 @@
 import { useGate, useUnit } from 'effector-react';
 import { memo } from 'react';
 
-import { useI18n } from '@app/providers';
-import { FootnoteText, Icon, SmallTitleText } from '@shared/ui';
-import { Box, Skeleton, Surface } from '@shared/ui-kit';
+import { useI18n } from '@/app/providers';
+import { FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
+import { Box, Skeleton, Surface } from '@/shared/ui-kit';
 import { membersModel } from '../model/members';
 import { membersFeatureStatus } from '../model/status';
 
@@ -24,7 +24,7 @@ export const MembersCard = memo<Props>(({ onClick }) => {
         <Box gap={2}>
           <Box direction="row" gap={1}>
             <Icon name="members" size={16} />
-            <FootnoteText>{t('fellowship.members')}</FootnoteText>
+            <FootnoteText className="text-text-secondary">{t('fellowship.members')}</FootnoteText>
           </Box>
           <Skeleton active={pending && !fulfilled}>
             <SmallTitleText>{t('fellowship.fellow', { count: members.length })}</SmallTitleText>

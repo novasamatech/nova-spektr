@@ -59,6 +59,7 @@ sample({
 
 export const referendumListModel = {
   $referendums,
+  $filteredReferendum,
   $ongoing,
   $completed,
   $pending: or(collectiveDomain.referendum.pending, fellowshipNetworkFeature.model.network.$isConnecting),

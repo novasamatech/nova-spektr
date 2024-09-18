@@ -1,4 +1,4 @@
-import { type AccountId } from '@shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export type Member = {
   accountId: AccountId;

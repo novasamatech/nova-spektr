@@ -1,10 +1,10 @@
 import { type ChainId } from '@/shared/core';
 
-import { type CollectivePalletsType, type Store } from './types';
+import { type CollectivePalletsType, type CollectivesStruct } from './types';
 
-export const combineStores = <const T extends Record<string, Store<unknown>>>(fields: T) => {
+export const combineStores = <const T extends Record<string, CollectivesStruct<unknown>>>(fields: T) => {
   type CombinedValue = Partial<{
-    [K in keyof T]: T[K] extends Store<infer I> ? I : never;
+    [K in keyof T]: T[K] extends CollectivesStruct<infer I> ? I : never;
   }>;
   type CombinedStore = Partial<Record<CollectivePalletsType, Record<ChainId, CombinedValue>>>;
 

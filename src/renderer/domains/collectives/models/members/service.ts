@@ -1,5 +1,5 @@
-import { type Chain, type Wallet } from '@shared/core';
-import { accountUtils } from '@entities/wallet';
+import { type Chain, type Wallet } from '@/shared/core';
+import { accountUtils } from '@/entities/wallet';
 
 import { type Member } from './types';
 

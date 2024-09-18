@@ -10,6 +10,7 @@ import { referendumsFeatureStatus } from '../../model/status';
 
 import { CompletedReferendums } from './CompletedReferendums';
 import { EmptyState } from './EmptyState';
+import { OngoingReferendums } from './OngoingReferendums';
 
 type Props = {
   onSelect: (referendum: Referendum) => void;
@@ -21,7 +22,7 @@ export const Referendums = memo<Props>(({ onSelect }) => {
   const isSerching = false;
   const isTitlesLoading = false;
 
-  const [referendums, pending] = useUnit([referendumListModel.$referendums, referendumListModel.$pending]);
+  const [referendums, pending] = useUnit([referendumListModel.$filteredReferendum, referendumListModel.$pending]);
   const isApiConnected = useUnit(fellowshipNetworkFeature.model.network.$isConnected);
   const shouldShowLoadingState = pending || (isSerching && isTitlesLoading);
   const shouldNetworkDisabledError = !isApiConnected && !shouldShowLoadingState && referendums.length === 0;
@@ -34,13 +35,11 @@ export const Referendums = memo<Props>(({ onSelect }) => {
       {shouldNetworkDisabledError && <InactiveNetwork active className="grow" />}
       {shouldRenderList && (
         <Box gap={3} padding={[0, 0, 10]}>
-          {/*<OngoingReferendums*/}
-          {/*  referendums={ongoing}*/}
-          {/*  isTitlesLoading={isTitlesLoading}*/}
-          {/*  isLoading={isLoading}*/}
-          {/*  mixLoadingWithData={shouldShowLoadingState}*/}
-          {/*  onSelect={selectReferendum}*/}
-          {/*/>*/}
+          <OngoingReferendums
+            isTitlesLoading={isTitlesLoading}
+            mixLoadingWithData={shouldShowLoadingState}
+            onSelect={onSelect}
+          />
           <CompletedReferendums
             isTitlesLoading={false}
             mixLoadingWithData={shouldShowLoadingState}

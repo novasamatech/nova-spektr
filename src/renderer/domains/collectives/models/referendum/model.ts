@@ -1,11 +1,11 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { type ChainId } from '@shared/core';
-import { createDataSubscription, createPagesHandler } from '@shared/effector';
-import { merge, pickNestedValue, setNestedValue } from '@shared/lib/utils';
-import { referendaPallet } from '@shared/pallet/referenda';
-import { polkadotjsHelpers } from '@shared/polkadotjs-helpers';
-import { type CollectivePalletsType, type Store } from '../../lib/types';
+import { type ChainId } from '@/shared/core';
+import { createDataSubscription, createPagesHandler } from '@/shared/effector';
+import { merge, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
+import { referendaPallet } from '@/shared/pallet/referenda';
+import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
+import { type CollectivePalletsType, type CollectivesStruct } from '../../lib/types';
 
 import { mapReferendum } from './mapper';
 import { type Referendum } from './types';
@@ -22,7 +22,7 @@ const {
   subscribe,
   unsubscribe,
   received,
-} = createDataSubscription<Store<Referendum[]>, ReferendumSubscriptionParams, Referendum[]>({
+} = createDataSubscription<CollectivesStruct<Referendum[]>, ReferendumSubscriptionParams, Referendum[]>({
   initial: {},
   fn: ({ api, palletType }, callback) => {
     let currectAbortController = new AbortController();

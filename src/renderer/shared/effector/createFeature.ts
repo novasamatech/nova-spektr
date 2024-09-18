@@ -9,7 +9,7 @@ type StartingState = { status: 'starting' };
 type RunningState<T> = { status: 'running'; data: T };
 type FailedState = { status: 'failed'; error: Error };
 
-export type State<T> = IdleState | StartingState | RunningState<T> | FailedState;
+type State<T> = IdleState | StartingState | RunningState<T> | FailedState;
 
 export const createFeature = <T = null>(input: Store<T | null> = createStore(null)) => {
   const $state = createStore<State<T>>({ status: 'idle' });

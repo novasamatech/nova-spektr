@@ -6,13 +6,19 @@ import { membersDomainModel } from './models/members/model';
 import { membersService } from './models/members/service';
 import { referendumDomainModel } from './models/referendum/model';
 import { referendumService } from './models/referendum/service';
+import { referendumMetaModel } from './models/referendumMeta/model';
 import { tracksDomainModel } from './models/tracks/model';
+import { tracksService } from './models/tracks/service';
+import { votingDomainModel } from './models/voting/model';
 
 const $store = combine(
   {
     members: membersDomainModel.$list,
     referendums: referendumDomainModel.$list,
+    referendumMeta: referendumMetaModel.$list,
     tracks: tracksDomainModel.$list,
+    maxRank: tracksDomainModel.$maxRank,
+    voting: votingDomainModel.$list,
   },
   combineStores,
 );
@@ -21,13 +27,17 @@ export const collectiveDomain = {
   $store,
   members: {
     service: membersService,
-    ...pick(membersDomainModel, ['pending', 'subscribe', 'unsubscribe', 'pending', 'received']),
+    ...pick(membersDomainModel, ['subscribe', 'unsubscribe', 'pending', 'received']),
   },
   tracks: {
-    ...pick(tracksDomainModel, ['fulfilled', 'pending', 'request']),
+    service: tracksService,
+    ...pick(tracksDomainModel, ['request', 'fulfilled', 'pending']),
   },
   referendum: {
     service: referendumService,
-    ...pick(referendumDomainModel, ['pending', 'subscribe', 'unsubscribe', 'pending', 'received']),
+    ...pick(referendumDomainModel, ['subscribe', 'unsubscribe', 'pending', 'received']),
+  },
+  voting: {
+    ...pick(votingDomainModel, ['subscribe', 'unsubscribe', 'pending']),
   },
 };

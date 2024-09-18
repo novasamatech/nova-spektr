@@ -3,7 +3,7 @@ import { readonly } from 'patronum';
 
 import { nonNullable, nullable } from '@shared/lib/utils';
 
-type CallbackFn<V> = (value: IteratorResult<V, void>) => unknown;
+type CallbackFn<V> = (value: IteratorResult<V, V | void>) => unknown;
 type UnsubscribeFn = (() => void) | Promise<() => void>;
 type SubscribeFn<P, V> = (params: P, callback: CallbackFn<V>) => UnsubscribeFn;
 
@@ -84,6 +84,9 @@ export const createDataSubscription = <Store, Params = void, Response = void>({
 
     return fn(params, (result) => {
       if (result.done) {
+        if (result.value !== undefined) {
+          bindedReceived({ params, result: result.value });
+        }
         bindedDone();
       } else {
         bindedReceived({ params, result: result.value });

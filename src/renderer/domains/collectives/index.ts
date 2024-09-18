@@ -12,3 +12,12 @@ export type {
   Tally,
   TimedOutReferendum,
 } from './models/referendum/types';
+
+export type {
+  LinearDecreasingCurve,
+  ReciprocalCurve,
+  SteppedDecreasingCurve,
+  Track,
+  VotingCurve,
+  VotingThreshold,
+} from './models/tracks/types';

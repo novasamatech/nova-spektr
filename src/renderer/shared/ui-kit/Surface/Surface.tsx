@@ -17,6 +17,7 @@ export const Surface = forwardRef<HTMLDivElement | HTMLButtonElement, Props>(
         className={cnTw('relative rounded-md bg-block-background-default text-body', className, {
           'rounded-md border border-token-container-border shadow-shadow-2': elevation === 1,
           'rounded-lg border border-token-container-border shadow-shadow-1': elevation === 2,
+          'pointer-default': Component === 'button' && 'disabled' in props && props.disabled,
         })}
         {...props}
       ></Component>

@@ -4,7 +4,7 @@ import { convictionVotingTally } from '@/shared/pallet/convictionVoting/schema';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
 export type ReferendumId = z.infer<typeof referendumId>;
-export const referendumId = pjsSchema.u32;
+export const referendumId = pjsSchema.u32.brand('referendumId');
 
 export type TrackId = z.infer<typeof trackId>;
 export const trackId = pjsSchema.u16;

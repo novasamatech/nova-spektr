@@ -1,7 +1,7 @@
 import { type BN } from '@polkadot/util';
 
 import { type ReferendumId, type TrackId } from '@/shared/pallet/referenda';
-import { type AccountId, type BlockHeight } from '@shared/core';
+import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
 
 export type Tally = {
   ayes: number;

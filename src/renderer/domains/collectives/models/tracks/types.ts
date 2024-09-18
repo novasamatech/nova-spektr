@@ -1,7 +1,7 @@
 import { type BN } from '@polkadot/util';
 
-import { type BlockHeight } from '@/shared/core';
 import { type TrackId } from '@/shared/pallet/referenda';
+import { type BlockHeight } from '@/shared/polkadotjs-schemas';
 
 export type Track = {
   id: TrackId;
@@ -40,6 +40,7 @@ export type VotingCurve = LinearDecreasingCurve | SteppedDecreasingCurve | Recip
 
 export type VotingThreshold = {
   value: BN;
+  threshold: BN;
   passing: boolean;
   curve: LinearDecreasingCurve | SteppedDecreasingCurve | ReciprocalCurve | null;
 };

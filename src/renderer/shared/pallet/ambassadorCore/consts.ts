@@ -18,4 +18,11 @@ export const consts = {
   evidenceSize(api: ApiPromise) {
     return pjsSchema.u32.parse(getPallet(api)['evidenceSize']);
   },
+
+  /**
+   * Represents the highest possible rank in this pallet.
+   */
+  maxRank(api: ApiPromise) {
+    return pjsSchema.u32.parse(getPallet(api)['maxRank']);
+  },
 };

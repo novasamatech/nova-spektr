@@ -1,4 +1,5 @@
 import { useStoreMap } from 'effector-react';
+import { memo } from 'react';
 
 import { type TrackId } from '@shared/pallet/referenda';
 import { FootnoteText, Icon } from '@shared/ui';
@@ -32,7 +33,7 @@ type Props = {
   track: TrackId;
 };
 
-export const TrackInfo = ({ track }: Props) => {
+export const TrackInfo = memo<Props>(({ track }) => {
   const trackInfo = useStoreMap({
     store: tracksModel.$list,
     keys: [track],
@@ -51,4 +52,4 @@ export const TrackInfo = ({ track }: Props) => {
       <FootnoteText className="text-inherit">{trackInfo.name}</FootnoteText>
     </div>
   );
-};
+});

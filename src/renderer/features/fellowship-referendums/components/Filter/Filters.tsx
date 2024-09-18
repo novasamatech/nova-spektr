@@ -32,6 +32,7 @@ export const Filters = () => {
           value: id,
           element: name.toString(),
         }))}
+        disabled={tracks.length === 0}
         onChange={filterModel.events.selectTracks}
       />
       <Select

@@ -40,7 +40,7 @@ export const storage = {
   async referendumInfoFor(type: PalletType, api: ApiPromise, ids?: ReferendumId[]) {
     const schema = pjsSchema.vec(
       pjsSchema.tuppleMap(
-        ['id', pjsSchema.storageKey(pjsSchema.u32).transform(keys => keys[0])],
+        ['id', pjsSchema.storageKey(referendumId).transform(keys => keys[0])],
         ['info', pjsSchema.optional(referendaReferendumInfoConvictionVotingTally)],
       ),
     );
@@ -58,7 +58,7 @@ export const storage = {
   async *referendumInfoForPaged(type: PalletType, api: ApiPromise, pageSize: number) {
     const schema = pjsSchema.vec(
       pjsSchema.tuppleMap(
-        ['id', pjsSchema.storageKey(pjsSchema.u32).transform(keys => keys[0])],
+        ['id', pjsSchema.storageKey(referendumId).transform(keys => keys[0])],
         ['info', pjsSchema.optional(referendaReferendumInfoConvictionVotingTally)],
       ),
     );

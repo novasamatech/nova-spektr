@@ -28,17 +28,21 @@ export const ProfileCard = memo<Props>(({ onClick }) => {
         <Box gap={2}>
           <Box direction="row" gap={1}>
             <Icon name="profile" size={16} />
-            <FootnoteText>{t('fellowship.yourProfile')}</FootnoteText>
+            <FootnoteText className="text-text-secondary">{t('fellowship.yourProfile')}</FootnoteText>
           </Box>
           <Skeleton active={pending && !fulfilled}>
-            <SmallTitleText>
-              {/* TODO: change to identity */}
-              {fellowshipAccount ? fellowshipAccount.accountId : t('fellowship.noProfile')}
-            </SmallTitleText>
+            {fellowshipAccount ? (
+              <SmallTitleText>
+                {/* TODO: change to identity */}
+                {fellowshipAccount.accountId}
+              </SmallTitleText>
+            ) : (
+              <SmallTitleText className="text-text-tertiary">{t('fellowship.noProfile')}</SmallTitleText>
+            )}
           </Skeleton>
         </Box>
 
-        <Icon name="arrowRight" />
+        {fellowshipAccount ? <Icon name="arrowRight" /> : null}
       </Box>
     </Surface>
   );

@@ -1,10 +1,13 @@
 import { type ApiPromise } from '@polkadot/api';
+import { createEvent, sample } from 'effector';
 
 import { type ChainId } from '@/shared/core';
-import { createDataSource } from '@shared/effector';
-import { merge, pickNestedValue, setNestedValue } from '@shared/lib/utils';
-import { referendaPallet } from '@shared/pallet/referenda';
-import { type CollectivePalletsType, type Store } from '../../lib/types';
+import { createDataSource } from '@/shared/effector';
+import { merge, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
+import { ambassadorCorePallet } from '@/shared/pallet/ambassadorCore';
+import { fellowshipCorePallet } from '@/shared/pallet/fellowshipCore';
+import { referendaPallet } from '@/shared/pallet/referenda';
+import { type CollectivePalletsType, type CollectivesStruct } from '../../lib/types';
 
 import { mapCurve } from './mapper';
 import { type Track } from './types';
@@ -15,12 +18,14 @@ type RequestTracksParams = {
   chainId: ChainId;
 };
 
+const request = createEvent<RequestTracksParams>();
+
 const {
   $: $list,
   fulfilled,
   pending,
-  request,
-} = createDataSource<Store<Track[]>, RequestTracksParams, Track[]>({
+  request: requestTracks,
+} = createDataSource<CollectivesStruct<Track[]>, RequestTracksParams, Track[]>({
   initial: {},
   fn: ({ api, palletType }) => {
     const tracks = referendaPallet.consts.tracks(palletType, api);
@@ -54,8 +59,30 @@ const {
   },
 });
 
+const { $: $maxRank, request: requestMaxRank } = createDataSource<
+  CollectivesStruct<number>,
+  RequestTracksParams,
+  number
+>({
+  initial: {},
+  fn: ({ api, palletType }) => {
+    return palletType === 'fellowship'
+      ? fellowshipCorePallet.consts.maxRank(api)
+      : ambassadorCorePallet.consts.maxRank(api);
+  },
+  map: (store, { params, result }) => {
+    return setNestedValue(store, params.palletType, params.chainId, result);
+  },
+});
+
+sample({
+  clock: request,
+  target: [requestTracks, requestMaxRank],
+});
+
 export const tracksDomainModel = {
   $list,
+  $maxRank,
   fulfilled,
   pending,
   request,

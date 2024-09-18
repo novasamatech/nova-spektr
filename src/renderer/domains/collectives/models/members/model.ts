@@ -1,11 +1,11 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { type ChainId } from '@shared/core';
-import { createDataSubscription, createPagesHandler } from '@shared/effector';
-import { merge, pickNestedValue, setNestedValue } from '@shared/lib/utils';
-import { collectivePallet } from '@shared/pallet/collective';
-import { polkadotjsHelpers } from '@shared/polkadotjs-helpers';
-import { type CollectivePalletsType, type Store } from '../../lib/types';
+import { type ChainId } from '@/shared/core';
+import { createDataSubscription, createPagesHandler } from '@/shared/effector';
+import { merge, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
+import { collectivePallet } from '@/shared/pallet/collective';
+import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
+import { type CollectivePalletsType, type CollectivesStruct } from '../../lib/types';
 
 import { type Member } from './types';
 
@@ -21,7 +21,7 @@ const {
   subscribe,
   unsubscribe,
   received,
-} = createDataSubscription<Store<Member[]>, RequestParams, Member[]>({
+} = createDataSubscription<CollectivesStruct<Member[]>, RequestParams, Member[]>({
   initial: {},
   fn: ({ api, palletType }, callback) => {
     let currentAbortController = new AbortController();
