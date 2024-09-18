@@ -1,5 +1,5 @@
-import { isNumber } from 'lodash';
-import { type PropsWithChildren } from 'react';
+import { isNumber, isString } from 'lodash';
+import { Children, type PropsWithChildren } from 'react';
 
 import { type XOR } from '@/shared/core';
 import { cnTw } from '@shared/lib/utils';
@@ -36,7 +36,9 @@ export const Skeleton = ({ width, height, circle, fullWidth, active, children }:
           'w-fit': !fullWidth,
         })}
       >
-        {children}
+        {Children.map(children, (child) => {
+          return isString(child) ? <span>{child}</span> : child;
+        })}
       </span>
     );
   }

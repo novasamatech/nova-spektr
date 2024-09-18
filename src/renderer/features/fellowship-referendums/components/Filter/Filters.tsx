@@ -21,7 +21,7 @@ export const Filters = () => {
   }
 
   return (
-    <Box direction="row" gap={4}>
+    <Box direction="row" gap={4} padding={[4, 0, 2]}>
       <MultiSelect
         className="w-[200px]"
         placeholder={t('governance.filters.tracks')}

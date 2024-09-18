@@ -4,10 +4,7 @@ import { type Perbill, type Permill } from '@polkadot/types/interfaces';
 import { BN } from '@polkadot/util';
 import { z } from 'zod';
 
-import { type HexString } from '@/shared/core';
 import { isCorrectAccountId } from '@/shared/lib/utils';
-
-type BrandedType<Value, Tag> = Value & { __tag: Tag };
 
 export const storageKeySchema = <const T extends [z.ZodTypeAny, ...z.ZodTypeAny[]]>(...schema: T) => {
   const argsSchema = z.tuple(schema);
@@ -54,16 +51,16 @@ export const boolSchema = z.instanceof(bool).transform((value) => value.toPrimit
 
 export const structHexSchema = z.instanceof(Struct).transform((value) => value.toHex());
 
-export type BlockHeight = BrandedType<number, 'blockHeight'>;
-export const blockHeightSchema = u32Schema.transform((value) => value as BlockHeight);
+export type BlockHeight = z.infer<typeof blockHeightSchema>;
+export const blockHeightSchema = u32Schema.describe('blockHeight').brand('blockHeight');
 
-export type AccountId = BrandedType<HexString, 'accountId'>;
+export type AccountId = z.infer<typeof accountIdSchema>;
 export const accountIdSchema = z
   .instanceof(GenericAccountId)
   .transform((value, ctx) => {
     const account = value.toHex();
     if (account.startsWith('0x')) {
-      if (isCorrectAccountId(account as AccountId)) {
+      if (isCorrectAccountId(account)) {
         return account;
       }
 
@@ -82,7 +79,8 @@ export const accountIdSchema = z
 
     return z.NEVER;
   })
-  .describe('accountId');
+  .describe('accountId')
+  .brand('accountId');
 
 /**
  * Parts per Billion.

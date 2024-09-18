@@ -8,6 +8,7 @@ import { profileModel } from '../model/profile';
 import { profileFeatureStatus } from '../model/status';
 
 type Props = {
+  // TODO replace with internal modal openning
   onClick: () => void;
 };
 

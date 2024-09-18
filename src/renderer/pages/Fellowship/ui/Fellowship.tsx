@@ -30,9 +30,7 @@ export const Fellowship = () => {
               <MembersCard onClick={() => {}} />
             </div>
 
-            <Box padding={[4, 0, 2]}>
-              <Filters />
-            </Box>
+            <Filters />
 
             <Referendums onSelect={console.log} />
           </Box>

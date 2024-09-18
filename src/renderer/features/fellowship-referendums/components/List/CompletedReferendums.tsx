@@ -44,7 +44,7 @@ export const CompletedReferendums = memo<Props>(({ isTitlesLoading, mixLoadingWi
             {t('governance.referendums.completed')}
           </CaptionText>
           <CaptionText className="font-semibold text-text-tertiary">
-            <Skeleton active={pending}>{referendums.length.toString()}</Skeleton>
+            <Skeleton active={shouldRenderLoadingState}>{referendums.length.toString()}</Skeleton>
           </CaptionText>
         </Box>
       </Accordion.Button>

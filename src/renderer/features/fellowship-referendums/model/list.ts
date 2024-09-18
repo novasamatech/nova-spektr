@@ -61,7 +61,7 @@ export const referendumListModel = {
   $referendums,
   $ongoing,
   $completed,
-  $pending: or(collectiveDomain.referendum.pending, fellowshipNetworkFeature.model.network.$isConnected),
+  $pending: or(collectiveDomain.referendum.pending, fellowshipNetworkFeature.model.network.$isConnecting),
 
   status,
 };

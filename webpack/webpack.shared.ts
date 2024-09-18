@@ -103,7 +103,7 @@ const sharedConfig: Configuration = {
   },
 
   resolve: {
-    extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
+    extensions: ['.ts', '.tsx', '.js', '.json'],
     plugins: [new TsconfigPathsPlugin({})],
     fallback: {
       crypto: require.resolve('crypto-browserify'),
