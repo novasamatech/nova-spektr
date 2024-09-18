@@ -18,59 +18,64 @@ const safeParse = <T extends z.ZodTypeAny>(schema: T, value: unknown, ctx: z.Ref
 export const vecSchema = <T extends z.ZodTypeAny>(schema: T) => z.array(schema);
 
 export const objectSchema = <const T extends z.ZodRawShape>(v: T) => {
-  return z.unknown().transform((map, ctx) => {
-    type PolkadotJSObject = {
-      [P in keyof T]: z.infer<T[P]>;
-    };
+  const description = `{\n${Object.keys(v).join(',\n')}\n}`;
 
-    if (typeof map !== 'object' || map === null) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: `Value not an object`,
-        fatal: true,
-      });
+  return z
+    .unknown()
+    .transform((map, ctx) => {
+      type PolkadotJSObject = {
+        [P in keyof T]: z.infer<T[P]>;
+      };
 
-      return z.NEVER;
-    }
-
-    const result: Record<string, unknown> = {};
-
-    for (const [key, schema] of Object.entries(v)) {
-      let fieldValue;
-      let hasValue = false;
-      if (map instanceof Map) {
-        if (map.has(key)) {
-          fieldValue = map.get(key);
-          hasValue = true;
-        }
-      } else {
-        if (key in map) {
-          // @ts-expect-error dynamic data
-          fieldValue = map[key];
-          hasValue = true;
-        }
-      }
-
-      if (!hasValue) {
+      if (typeof map !== 'object' || map === null) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: `Object does not have key ${key}`,
+          message: `Value not an object`,
           fatal: true,
         });
 
         return z.NEVER;
       }
 
-      const field = safeParse(schema, fieldValue, ctx);
-      if (field === z.NEVER) {
-        return z.NEVER;
+      const result: Record<string, unknown> = {};
+
+      for (const [key, schema] of Object.entries(v)) {
+        let fieldValue;
+        let hasValue = false;
+        if (map instanceof Map) {
+          if (map.has(key)) {
+            fieldValue = map.get(key);
+            hasValue = true;
+          }
+        } else {
+          if (key in map) {
+            // @ts-expect-error dynamic data
+            fieldValue = map[key];
+            hasValue = true;
+          }
+        }
+
+        if (!hasValue) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Object does not have key ${key}`,
+            fatal: true,
+          });
+
+          return z.NEVER;
+        }
+
+        const field = safeParse(schema, fieldValue, ctx);
+        if (field === z.NEVER) {
+          return z.NEVER;
+        }
+
+        result[key] = field;
       }
 
-      result[key] = field;
-    }
-
-    return result as PolkadotJSObject;
-  });
+      return result as PolkadotJSObject;
+    })
+    .describe(description);
 };
 
 export const optionalSchema = <const Value>(schema: z.ZodType<Value, z.ZodTypeDef, unknown>) => {

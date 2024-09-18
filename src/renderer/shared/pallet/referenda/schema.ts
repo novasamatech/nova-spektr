@@ -84,7 +84,7 @@ const frameSupportPreimagesBounded = pjsSchema.enumValue({
 });
 
 export type CollectiveRawOrigin = z.infer<typeof collectiveRawOrigin>;
-const collectiveRawOrigin = pjsSchema.enumValue({
+const collectiveRawOrigin = pjsSchema.enumValueLoose({
   // TODO what does it mean?
   Members: z.tuple([pjsSchema.u32, pjsSchema.u32]),
   Member: pjsSchema.accountId,
@@ -98,6 +98,15 @@ export const kitchensinkRuntimeOriginCaller = pjsSchema.enumValueLoose({
   Council: collectiveRawOrigin,
   TechnicalCommittee: collectiveRawOrigin,
   AllianceMotion: collectiveRawOrigin,
+  FellowshipOrigins: z.unknown(),
+});
+
+// TODO move to ranked pallet
+export type PalletRankedCollectiveTally = z.infer<typeof palletRankedCollectiveTally>;
+export const palletRankedCollectiveTally = pjsSchema.object({
+  bareAyes: pjsSchema.u32,
+  ayes: pjsSchema.u32,
+  nays: pjsSchema.u32,
 });
 
 export type ReferendaReferendumStatusRankedCollectiveTally = z.infer<
@@ -112,7 +121,7 @@ export const referendaReferendumStatusRankedCollectiveTally = pjsSchema.object({
   submissionDeposit: referendaDeposit,
   decisionDeposit: pjsSchema.optional(referendaDeposit),
   deciding: pjsSchema.optional(referendaDecidingStatus),
-  tally: convictionVotingTally,
+  tally: z.union([convictionVotingTally, palletRankedCollectiveTally]),
   inQueue: pjsSchema.bool,
   alarm: pjsSchema.optional(
     pjsSchema.tuppleMap(

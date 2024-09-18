@@ -2,8 +2,15 @@ import { useGate } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { Header } from '@shared/ui';
-import { Members, Profile, ReferendumFilters, ReferendumSearch } from '@/features/fellowship';
+import { Box, ScrollArea } from '@shared/ui-kit';
+import { fellowshipMembersFeature } from '@/features/fellowship-members';
+import { fellowshipProfileFeature } from '@/features/fellowship-profile';
+import { fellowshipReferendumsFeature } from '@/features/fellowship-referendums';
 import { fellowshipPageModel } from '../model/fellowshipPage';
+
+const { MembersCard } = fellowshipMembersFeature.views;
+const { ProfileCard } = fellowshipProfileFeature.views;
+const { Referendums, Filters, Search } = fellowshipReferendumsFeature.views;
 
 export const Fellowship = () => {
   const { t } = useI18n();
@@ -12,21 +19,25 @@ export const Fellowship = () => {
   return (
     <div className="flex h-full flex-col">
       <Header title={t('fellowship.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
-        <ReferendumSearch />
+        <Search />
       </Header>
 
-      <div className="h-full w-full overflow-y-auto py-6">
-        <section className="mx-auto flex h-full w-[736px] flex-col">
-          <div className="mb-2 flex gap-x-3">
-            <Profile onClick={() => {}} />
-            <Members onClick={() => {}} />
-          </div>
+      <ScrollArea>
+        <Box horizontalAlign="center" height="100%" padding={[6, 0]}>
+          <Box width="736px" height="100%" gap={3}>
+            <div className="grid grid-cols-3 gap-3">
+              <ProfileCard onClick={() => {}} />
+              <MembersCard onClick={() => {}} />
+            </div>
 
-          <div className="mb-4 mt-5">
-            <ReferendumFilters />
-          </div>
-        </section>
-      </div>
+            <Box padding={[4, 0, 2]}>
+              <Filters />
+            </Box>
+
+            <Referendums onSelect={console.log} />
+          </Box>
+        </Box>
+      </ScrollArea>
     </div>
   );
 };

@@ -2,6 +2,7 @@ export { useResizeObserver } from './hooks/useResizeObserver';
 export { useTheme } from './Theme/useTheme';
 
 export { ThemeProvider } from './Theme/ThemeProvider';
+export { ScrollArea } from './ScrollArea/ScrollArea';
 export { Dropdown } from './Dropdown/Dropdown';
 export { Skeleton } from './Skeleton/Skeleton';
 export { Popover } from './Popover/Popover';

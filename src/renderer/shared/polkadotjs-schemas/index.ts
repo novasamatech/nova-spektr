@@ -1,6 +1,6 @@
 import {
   accountIdSchema,
-  addressSchema,
+  blockHeightSchema,
   boolSchema,
   bytesHexSchema,
   bytesSchema,
@@ -42,10 +42,9 @@ export const pjsSchema = {
   bytes: bytesSchema,
   bytesHex: bytesHexSchema,
   accountId: accountIdSchema,
-  address: addressSchema,
   storageKey: storageKeySchema,
   bool: boolSchema,
-  blockHeight: u32Schema,
+  blockHeight: blockHeightSchema,
   structHex: structHexSchema,
 
   object: objectSchema,
@@ -57,3 +56,5 @@ export const pjsSchema = {
   complex: complexSchema,
   vec: vecSchema,
 };
+
+export type { AccountId, BlockHeight } from './primitives';

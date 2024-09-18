@@ -1,4 +1,5 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
+import { readonly } from 'patronum';
 
 type FactoryParams<Params, Store, Response> = {
   initial: Store;
@@ -6,7 +7,7 @@ type FactoryParams<Params, Store, Response> = {
   map(store: Store, params: { params: Params; result: Response }): Store;
 };
 
-export const createDataSource = <Store, Params, Response>({
+export const createDataSource = <Store, Params, Response = Store>({
   initial,
   fn,
   map,
@@ -53,8 +54,9 @@ export const createDataSource = <Store, Params, Response>({
   });
 
   return {
-    $: $store,
-    $fulfilled,
+    $: readonly($store),
+
+    fulfilled: readonly($fulfilled),
 
     request,
     retry,

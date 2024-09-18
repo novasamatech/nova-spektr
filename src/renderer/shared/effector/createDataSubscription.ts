@@ -79,8 +79,8 @@ export const createDataSubscription = <Store, Params = void, Response = void>({
   const $subscribed = $unsubscribeFn.map(nonNullable);
 
   const subscribeFx = createEffect<Params, UnsubscribeFn>((params) => {
-    const bindedReceived = scopeBind(received, { scope });
-    const bindedDone = scopeBind(done, { scope });
+    const bindedReceived = scope ? scopeBind(received, { scope }) : received;
+    const bindedDone = scope ? scopeBind(done, { scope }) : done;
 
     return fn(params, (result) => {
       if (result.done) {
@@ -183,13 +183,18 @@ export const createDataSubscription = <Store, Params = void, Response = void>({
   };
 };
 
-export const createPagesHandler = <Value>(fn: () => AsyncGenerator<Value, void>) => {
-  return async (abort: AbortController, callback: CallbackFn<Value>) => {
+type PageHandlerParams<Input, Output> = {
+  fn: () => AsyncGenerator<Input, void>;
+  map: (input: Input) => Output;
+};
+
+export const createPagesHandler = <Input, Output>({ fn, map }: PageHandlerParams<Input, Output>) => {
+  return async (abort: AbortController, callback: CallbackFn<Output>) => {
     for await (const value of fn()) {
       if (abort.signal.aborted) {
         break;
       }
-      callback({ done: false, value });
+      callback({ done: false, value: map(value) });
     }
 
     callback({ done: true, value: undefined });

@@ -48,8 +48,8 @@ importers:
         specifier: 1.1.1
         version: 1.1.1(@types/react-dom@18.0.5)(@types/react@18.0.14)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@radix-ui/react-scroll-area':
-        specifier: 1.1.0
-        version: 1.1.0(@types/react-dom@18.0.5)(@types/react@18.0.14)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+        specifier: 1.2.0-rc.7
+        version: 1.2.0-rc.7(@types/react-dom@18.0.5)(@types/react@18.0.14)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@radix-ui/react-slider':
         specifier: 1.2.0
         version: 1.2.0(@types/react-dom@18.0.5)(@types/react@18.0.14)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -2845,8 +2845,8 @@ packages:
       '@types/react-dom':
         optional: true
 
-  '@radix-ui/react-scroll-area@1.1.0':
-    resolution: {integrity: sha512-9ArIZ9HWhsrfqS765h+GZuLoxaRHD/j0ZWOWilsCvYTpYJp8XwCqNG7Dt9Nu/TItKOdgLGkOPCodQvDc+UMwYg==}
+  '@radix-ui/react-scroll-area@1.2.0-rc.7':
+    resolution: {integrity: sha512-uUTySL0lZ26t2YgJBs7Z5QLBg8Fbp05Nr0vA6b1Cd5PnfYcG9T62yafckr4t7GrPhQCrNm5deiHBKewEAY1qOQ==}
     peerDependencies:
       '@types/react': '*'
       '@types/react-dom': '*'
@@ -13919,7 +13919,7 @@ snapshots:
       '@types/react': 18.0.14
       '@types/react-dom': 18.0.5
 
-  '@radix-ui/react-scroll-area@1.1.0(@types/react-dom@18.0.5)(@types/react@18.0.14)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
+  '@radix-ui/react-scroll-area@1.2.0-rc.7(@types/react-dom@18.0.5)(@types/react@18.0.14)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
     dependencies:
       '@radix-ui/number': 1.1.0
       '@radix-ui/primitive': 1.1.0

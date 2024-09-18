@@ -225,7 +225,7 @@ module.exports = {
               },
               {
                 from: 'domains',
-                allow: ['shared', 'domains'],
+                allow: ['shared', 'domains', /* TODO fix */ 'entities'],
               },
               {
                 from: 'processes',

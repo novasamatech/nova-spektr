@@ -2,8 +2,13 @@
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
-      "@/*": ["./src/renderer/*"],
-      "@renderer/*": ["./src/renderer/*"],
+      "@/app/*": ["./src/renderer/app/*"],
+      "@/domains/*": ["./src/renderer/domains/*"],
+      "@/features/*": ["./src/renderer/features/*"],
+      "@/shared/*": ["./src/renderer/shared/*"],
+      "@/pages/*": ["./src/renderer/pages/*"],
+      "@/entities/*": ["./src/renderer/entities/*"],
+      "@/widgets/*": ["./src/renderer/widgets/*"],
       "@app/*": ["./src/renderer/app/*"],
       "@pages/*": ["./src/renderer/pages/*"],
       "@processes/*": ["./src/renderer/processes/*"],
