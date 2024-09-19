@@ -55,7 +55,7 @@ export const ReferendumItem = memo<Props>(({ referendum, isTitlesLoading, onSele
         <Box direction="row" horizontalAlign="flex-start" gap={6}>
           <HeadlineText className="pointer-events-auto flex-1">{titleNode}</HeadlineText>
           <Box width="200px">
-            <ReferendumVoteChart referendum={referendum} />
+            <ReferendumVoteChart referendum={referendum} descriptionPosition="tooltip" />
           </Box>
         </Box>
       </Box>
