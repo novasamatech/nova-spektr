@@ -6,10 +6,11 @@ import { FootnoteText, HeadlineText } from '@shared/ui';
 import { Box, Skeleton, Surface } from '@shared/ui-kit';
 import { type Referendum, collectiveDomain } from '@/domains/collectives';
 import { thresholdsModel } from '../../model/thresholds';
+import { ReferendumVoteChart } from '../shared/ReferendumVoteChart';
+import { TrackInfo } from '../shared/TrackInfo';
 
-import { ReferendumVoteChart } from './ReferendumVoteChart';
-import { TrackInfo } from './TrackInfo';
 import { VotingStatusBadge } from './VotingStatusBadge';
+import { WalletVoted } from './WalletVoted';
 
 type Props = {
   isTitlesLoading: boolean;
@@ -27,10 +28,6 @@ export const ReferendumItem = memo<Props>(({ referendum, isTitlesLoading, onSele
     fn: (thresholds, [id]) => thresholds[id] ?? null,
   });
   const isPassing = thresholds ? thresholds.support.passing : false;
-  // const voteFractions =
-  //   referendumService.isOngoing(referendum) && approvalThreshold
-  //     ? votingService.getVoteFractions(referendum.tally, approvalThreshold.value)
-  //     : null;
 
   const titleNode = (
     <Skeleton active={isTitlesLoading && !title}>
@@ -42,14 +39,16 @@ export const ReferendumItem = memo<Props>(({ referendum, isTitlesLoading, onSele
     <Surface onClick={() => onSelect(referendum)}>
       <Box gap={3} padding={[4, 3]}>
         <Box direction="row" verticalAlign="center" gap={2}>
-          {/*<Voted active={nonNullable(referendum.vote)} />*/}
+          <WalletVoted />
           {/*<VotedBy address={referendum.votedByDelegate} />*/}
           <VotingStatusBadge passing={isPassing} referendum={referendum} />
 
           {/*<ReferendumTimer status="reject" time={600000} />*/}
-          <div className="ml-auto flex text-text-secondary">
-            <FootnoteText className="text-inherit">#{referendum.id}</FootnoteText>
-            {collectiveDomain.referendum.service.isOngoing(referendum) && <TrackInfo track={referendum.track} />}
+          <div className="ml-auto">
+            <Box direction="row" gap={2}>
+              <FootnoteText className="text-text-secondary">#{referendum.id}</FootnoteText>
+              {collectiveDomain.referendum.service.isOngoing(referendum) && <TrackInfo track={referendum.track} />}
+            </Box>
           </div>
         </Box>
         <Box direction="row" horizontalAlign="flex-start" gap={6}>

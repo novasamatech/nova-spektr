@@ -3,10 +3,10 @@ import { useStoreMap } from 'effector-react';
 import { memo } from 'react';
 
 import { useI18n } from '@app/providers';
-import { Tooltip } from '@/shared/ui-kit';
 import { nullable } from '@shared/lib/utils';
 import { FootnoteText } from '@shared/ui';
 import { VoteChart } from '@shared/ui-entities';
+import { Tooltip } from '@shared/ui-kit';
 import { type Referendum, collectiveDomain } from '@/domains/collectives';
 import { thresholdsModel } from '../../model/thresholds';
 
@@ -43,7 +43,7 @@ export const ReferendumVoteChart = memo<Props>(({ referendum, descriptionPositio
 
   if (descriptionPosition === 'tooltip') {
     return (
-      <Tooltip side="top">
+      <Tooltip side="top" disableHoverableContent>
         <Tooltip.Trigger>{chartNode}</Tooltip.Trigger>
         <Tooltip.Content>
           <span className="text-inherit">{`${t('voteChart.toPass')} ${threshold.toFixed(2)}%`}</span>

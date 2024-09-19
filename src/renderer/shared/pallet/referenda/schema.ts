@@ -91,6 +91,40 @@ const collectiveRawOrigin = pjsSchema.enumValueLoose({
   Phantom: z.undefined(),
 });
 
+export type FellowshipRawOrigin = z.infer<typeof collectiveRawOrigin>;
+const fellowshipRawOrigin = pjsSchema.enumValueLoose({
+  Architects: pjsSchema.null,
+
+  FastPromoteTo1Dan: pjsSchema.null,
+  FastPromoteTo2Dan: pjsSchema.null,
+  FastPromoteTo3Dan: pjsSchema.null,
+
+  Fellows: pjsSchema.null,
+
+  Fellowship2Dan: pjsSchema.null,
+  Fellowship5Dan: pjsSchema.null,
+  Fellowship6Dan: pjsSchema.null,
+  Fellowship8Dan: pjsSchema.null,
+  Fellowship9Dan: pjsSchema.null,
+
+  Masters: pjsSchema.null,
+  Members: pjsSchema.null,
+
+  PromoteTo1Dan: pjsSchema.null,
+  PromoteTo2Dan: pjsSchema.null,
+  PromoteTo3Dan: pjsSchema.null,
+  PromoteTo4Dan: pjsSchema.null,
+  PromoteTo5Dan: pjsSchema.null,
+  PromoteTo6Dan: pjsSchema.null,
+
+  RetainAt1Dan: pjsSchema.null,
+  RetainAt2Dan: pjsSchema.null,
+  RetainAt3Dan: pjsSchema.null,
+  RetainAt4Dan: pjsSchema.null,
+  RetainAt5Dan: pjsSchema.null,
+  RetainAt6Dan: pjsSchema.null,
+});
+
 export type KitchensinkRuntimeOriginCaller = z.infer<typeof kitchensinkRuntimeOriginCaller>;
 export const kitchensinkRuntimeOriginCaller = pjsSchema.enumValueLoose({
   Void: z.undefined(),
@@ -98,7 +132,7 @@ export const kitchensinkRuntimeOriginCaller = pjsSchema.enumValueLoose({
   Council: collectiveRawOrigin,
   TechnicalCommittee: collectiveRawOrigin,
   AllianceMotion: collectiveRawOrigin,
-  FellowshipOrigins: z.unknown(),
+  FellowshipOrigins: fellowshipRawOrigin,
 });
 
 // TODO move to ranked pallet

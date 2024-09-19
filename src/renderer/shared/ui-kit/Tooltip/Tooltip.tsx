@@ -19,11 +19,13 @@ type RootProps = PropsWithChildren<
     open?: boolean;
     onToggle?: (value: boolean) => unknown;
     delay?: number;
+    disableHoverableContent?: boolean;
   }
 >;
 
 const Root = ({
   delay = 100,
+  disableHoverableContent,
   open,
   onToggle,
   children,
@@ -40,7 +42,7 @@ const Root = ({
 
   return (
     <Context.Provider value={ctx}>
-      <RadixTooltip.Provider delayDuration={delay}>
+      <RadixTooltip.Provider delayDuration={delay} disableHoverableContent={disableHoverableContent}>
         <RadixTooltip.Root open={open} onOpenChange={onToggle}>
           {children}
         </RadixTooltip.Root>

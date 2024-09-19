@@ -29,6 +29,7 @@ const {
   Awaited<ReturnType<typeof collectivePallet.storage.voting>>
 >({
   initial: {},
+
   fn: ({ palletType, api, accounts, referendums }, callback) => {
     const keys = referendums.flatMap(referendum => accounts.map(account => [referendum, account] as const));
 
@@ -36,6 +37,7 @@ const {
       callback({ done: true, value });
     });
   },
+
   map: (store, { params, result: response }) => {
     const result: Voting[] = [];
     for (const { key, vote } of response) {

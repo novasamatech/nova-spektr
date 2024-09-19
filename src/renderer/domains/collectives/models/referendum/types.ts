@@ -17,6 +17,7 @@ export type Deposit = {
 export type OngoingReferendum = {
   type: 'Ongoing';
   id: ReferendumId;
+  origin: string;
   track: TrackId;
   submitted: BlockHeight;
   submissionDeposit: Deposit | null;

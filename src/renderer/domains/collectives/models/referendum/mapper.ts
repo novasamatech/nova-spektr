@@ -6,7 +6,9 @@ export const mapReferendum = (id: ReferendumId, info: ReferendaReferendumInfoCon
   switch (info.type) {
     case 'Ongoing':
       if (!('bareAyes' in info.data.tally)) {
-        throw new Error('Tally is incorrect');
+        throw new Error(
+          `Fellowship of Ambassador tally is incorrect, got\n${JSON.stringify(info.data.tally, null, 2)}`,
+        );
       }
 
       return {
@@ -14,6 +16,7 @@ export const mapReferendum = (id: ReferendumId, info: ReferendaReferendumInfoCon
         type: info.type,
         track: info.data.track,
         submitted: info.data.submitted,
+        origin: info.data.origin.type,
         enactment: {
           value: info.data.enactment.data,
           type: info.data.enactment.type,
@@ -29,16 +32,16 @@ export const mapReferendum = (id: ReferendumId, info: ReferendaReferendumInfoCon
     case 'Cancelled':
     case 'TimedOut':
       return {
-        type: info.type,
         id,
+        type: info.type,
         since: info.data.since,
         submissionDeposit: info.data.submissionDeposit,
         decisionDeposit: info.data.decisionDeposit,
       };
     case 'Killed':
       return {
-        type: info.type,
         id,
+        type: info.type,
         since: info.data,
       };
   }
