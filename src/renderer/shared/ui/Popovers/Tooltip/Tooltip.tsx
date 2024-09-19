@@ -10,6 +10,9 @@ type PopoverProps = ComponentProps<typeof Popover> & {
   pointer?: 'up' | 'down';
 };
 
+/**
+ * @deprecated Use `import { Tooltip } from '@/shared/ui-kit'` instead.
+ */
 export const Tooltip = ({
   offsetPx = 8,
   content,
