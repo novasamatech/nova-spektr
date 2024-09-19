@@ -164,7 +164,7 @@ export const createDataSubscription = <Store, Params = void, Response = void>({
   // status
 
   sample({
-    clock: received,
+    clock: [subscribe, received],
     fn: () => true,
     target: $pending,
   });
