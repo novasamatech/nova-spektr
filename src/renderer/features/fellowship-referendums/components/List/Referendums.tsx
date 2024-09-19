@@ -3,8 +3,8 @@ import { memo } from 'react';
 
 import { Box } from '@shared/ui-kit';
 import { type Referendum } from '@/domains/collectives';
-import { InactiveNetwork } from '@entities/network';
-import { fellowshipNetworkFeature } from '@/features/fellowship-network';
+import { InactiveNetwork } from '@/entities/network';
+import { error } from '../../constants';
 import { referendumListModel } from '../../model/list';
 import { referendumsFeatureStatus } from '../../model/status';
 
@@ -22,11 +22,15 @@ export const Referendums = memo<Props>(({ onSelect }) => {
   const isSerching = false;
   const isTitlesLoading = false;
 
-  const [referendums, pending] = useUnit([referendumListModel.$filteredReferendum, referendumListModel.$pending]);
-  const isApiConnected = useUnit(fellowshipNetworkFeature.model.network.$isConnected);
+  const featureState = useUnit(referendumsFeatureStatus.state);
+  const referendums = useUnit(referendumListModel.$filteredReferendum);
+  const pending = useUnit(referendumListModel.$pending);
+
+  const hasNetworkError = featureState.status === 'failed' && featureState.error.message === error.networkDisabled;
+
   const shouldShowLoadingState = pending || (isSerching && isTitlesLoading);
-  const shouldNetworkDisabledError = !isApiConnected && !shouldShowLoadingState && referendums.length === 0;
-  const shouldRenderEmptyState = !shouldShowLoadingState && isApiConnected && referendums.length === 0;
+  const shouldNetworkDisabledError = hasNetworkError && !shouldShowLoadingState && referendums.length === 0;
+  const shouldRenderEmptyState = !shouldShowLoadingState && !hasNetworkError && referendums.length === 0;
   const shouldRenderList = shouldShowLoadingState || (!shouldRenderEmptyState && !shouldNetworkDisabledError);
 
   return (

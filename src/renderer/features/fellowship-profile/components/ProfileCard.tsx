@@ -4,6 +4,7 @@ import { memo } from 'react';
 import { useI18n } from '@app/providers';
 import { FootnoteText, Icon, SmallTitleText } from '@shared/ui';
 import { Box, Skeleton, Surface } from '@shared/ui-kit';
+import { error } from '../constants';
 import { profileModel } from '../model/profile';
 import { profileFeatureStatus } from '../model/status';
 
@@ -16,11 +17,14 @@ export const ProfileCard = memo<Props>(({ onClick }) => {
   useGate(profileFeatureStatus.gate);
 
   const { t } = useI18n();
+  const featureState = useUnit(profileFeatureStatus.state);
   const [fellowshipAccount, pending, fulfilled] = useUnit([
     profileModel.$account,
     profileModel.$pending,
     profileModel.$fulfilled,
   ]);
+
+  const isNetworkDisabled = featureState.status === 'failed' && featureState.error.message === error.networkDisabled;
 
   return (
     <Surface disabled={pending} onClick={onClick}>
@@ -30,7 +34,7 @@ export const ProfileCard = memo<Props>(({ onClick }) => {
             <Icon name="profile" size={16} />
             <FootnoteText className="text-text-secondary">{t('fellowship.yourProfile')}</FootnoteText>
           </Box>
-          <Skeleton active={pending && !fulfilled}>
+          <Skeleton active={pending && !fulfilled && !isNetworkDisabled}>
             {fellowshipAccount ? (
               <SmallTitleText>
                 {/* TODO: change to identity */}

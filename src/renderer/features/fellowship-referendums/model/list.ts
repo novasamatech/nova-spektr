@@ -3,7 +3,6 @@ import { either, or } from 'patronum';
 
 import { performSearch } from '@shared/lib/utils';
 import { collectiveDomain } from '@/domains/collectives';
-import { fellowshipNetworkFeature } from '@/features/fellowship-network';
 
 import { fellowshipModel } from './fellowship';
 import { filterModel } from './filter';
@@ -62,7 +61,7 @@ export const referendumListModel = {
   $filteredReferendum,
   $ongoing,
   $completed,
-  $pending: or(collectiveDomain.referendum.pending, fellowshipNetworkFeature.model.network.$isConnecting),
+  $pending: or(collectiveDomain.referendum.pending, referendumsFeatureStatus.isStarting),
 
   status,
 };

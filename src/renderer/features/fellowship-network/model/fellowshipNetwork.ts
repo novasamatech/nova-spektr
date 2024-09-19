@@ -1,4 +1,5 @@
 import { combine, createEvent, createStore, sample } from 'effector';
+import { or } from 'patronum';
 
 import { type ChainId, ConnectionStatus } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
@@ -25,6 +26,8 @@ const $connectionStatus = combine($selectedChainId, networkModel.$connectionStat
 
 const $isConnecting = $connectionStatus.map(networkUtils.isConnectingStatus);
 const $isConnected = $connectionStatus.map(networkUtils.isConnectedStatus);
+const $isActive = or($isConnecting, $isConnected);
+const $isDisconnected = $connectionStatus.map(networkUtils.isDisconnectedStatus);
 
 const $fellowshipChainApi = combine($selectedChainId, networkModel.$apis, (chainId, apis) =>
   chainId ? (apis[chainId] ?? null) : null,
@@ -48,8 +51,10 @@ const $network = combine($fellowshipChain, $fellowshipChainApi, (chain, api) => 
 export const fellowshipNetworkModel = {
   $network,
 
+  $isActive,
   $isConnected,
   $isConnecting,
+  $isDisconnected,
 
   selectCollective,
 };

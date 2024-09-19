@@ -93,8 +93,7 @@ export const createFeature = <T = null>(input: Store<T | null> = createStore(nul
     state: readonly($state),
     gate,
 
-    // TODO make readonly
-    running,
+    running: readonly(running),
     stopped,
 
     isRunning,

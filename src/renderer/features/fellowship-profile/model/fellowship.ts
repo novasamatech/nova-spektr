@@ -2,19 +2,18 @@ import { combine } from 'effector';
 
 import { nullable } from '@shared/lib/utils';
 import { collectiveDomain } from '@/domains/collectives';
-import { fellowshipNetworkFeature } from '@/features/fellowship-network';
+
+import { profileFeatureStatus } from './status';
 
 const $fellowshipStore = collectiveDomain.$store.map(store => store['fellowship'] || null);
 
-const $store = combine(
-  $fellowshipStore,
-  fellowshipNetworkFeature.model.network.$network,
-  (fellowshipStore, network) => {
-    if (nullable(fellowshipStore) || nullable(network)) return null;
+const $store = combine($fellowshipStore, profileFeatureStatus.state, (fellowshipStore, state) => {
+  if (nullable(fellowshipStore) || state.status !== 'running') {
+    return null;
+  }
 
-    return fellowshipStore[network.chain.chainId];
-  },
-);
+  return fellowshipStore[state.data.chainId];
+});
 
 export const fellowshipModel = {
   $store,
