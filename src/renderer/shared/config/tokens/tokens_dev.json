@@ -4133,6 +4133,41 @@
     ]
   },
   {
+    "name": "vASTR",
+    "precision": 18,
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vASTR.svg",
+    "symbol": "vASTR",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
+        "name": "Hydration",
+        "assetId": 43,
+        "assetSymbol": "vASTR",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x21000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "133689839572193000",
+          "transfersEnabled": true
+        }
+      },
+      {
+        "chainId": "0x262e1b2ad728475fd6fe88e62d34c200abe6fd693931ddad144059b1eb884e5b",
+        "name": "Bifrost Polkadot",
+        "assetId": 8,
+        "assetSymbol": "vASTR",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x0903",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "10000000000000000",
+          "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
     "name": "Interlay DOT",
     "precision": 10,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
@@ -4231,28 +4266,6 @@
         "type": "statemine",
         "typeExtras": {
           "assetId": "272547899416482196831721420898811311297"
-        }
-      }
-    ]
-  },
-  {
-    "name": "vASTR",
-    "precision": 18,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vASTR.svg",
-    "symbol": "vASTR",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0x262e1b2ad728475fd6fe88e62d34c200abe6fd693931ddad144059b1eb884e5b",
-        "name": "Bifrost Polkadot",
-        "assetId": 8,
-        "assetSymbol": "vASTR",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0903",
-          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
-          "existentialDeposit": "10000000000000000",
-          "transfersEnabled": true
         }
       }
     ]
@@ -4581,6 +4594,22 @@
         "name": "Bittensor",
         "assetId": 0,
         "assetSymbol": "TAO"
+      }
+    ]
+  },
+  {
+    "name": "AVAIL",
+    "precision": 18,
+    "priceId": "avail",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Avail_(AVAIL).svg",
+    "symbol": "AVAIL",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0xb91746b45e0346cc2f815a520b9c6cb4d5c0902af848db0a80f85932d2e8276a",
+        "name": "Avail",
+        "assetId": 0,
+        "assetSymbol": "AVAIL"
       }
     ]
   }
