@@ -3,7 +3,7 @@ import { createEvent, sample } from 'effector';
 
 import { type ChainId } from '@/shared/core';
 import { createDataSource } from '@/shared/effector';
-import { merge, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
+import { setNestedValue } from '@/shared/lib/utils';
 import { ambassadorCorePallet } from '@/shared/pallet/ambassadorCore';
 import { fellowshipCorePallet } from '@/shared/pallet/fellowshipCore';
 import { referendaPallet } from '@/shared/pallet/referenda';
@@ -47,15 +47,7 @@ const {
     });
   },
   map: (store, { params, result }) => {
-    const currentStore = pickNestedValue(store, params.palletType, params.chainId) ?? [];
-    const updatedField = merge(
-      currentStore,
-      result,
-      x => x.id,
-      (a, b) => a.id - b.id,
-    );
-
-    return setNestedValue(store, params.palletType, params.chainId, updatedField);
+    return setNestedValue(store, params.palletType, params.chainId, result);
   },
 });
 

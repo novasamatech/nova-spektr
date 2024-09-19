@@ -39,7 +39,7 @@ const {
     fetchPages(currentAbortController, callback);
 
     // TODO check if section name is correct
-    return polkadotjsHelpers.subscribeSystemEvents({ api, section: 'fellowshipCore' }, fn).then(fn => () => {
+    return polkadotjsHelpers.subscribeSystemEvents({ api, section: `${palletType}Core` }, fn).then(fn => () => {
       currentAbortController.abort();
       fn();
     });
