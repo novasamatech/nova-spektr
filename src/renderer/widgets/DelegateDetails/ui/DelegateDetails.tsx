@@ -9,6 +9,7 @@ import { delegateDetailsModel } from '../model/delegate-details-model';
 import { DelegateActivity } from './DelegateActivity';
 import { DelegateDescription } from './DelegateDescription';
 import { DelegateIdentity } from './DelegateIdentity';
+import { DelegateSummary } from './DelegateSummary';
 import { YourDelegation } from './YourDelegation';
 import { YourDelegations } from './YourDelegations';
 
@@ -47,6 +48,7 @@ export const DelegateDetails = () => {
       <YourDelegations />
 
       <RevokeDelegation />
+      <DelegateSummary />
       <EditDelegation />
     </BaseModal>
   );

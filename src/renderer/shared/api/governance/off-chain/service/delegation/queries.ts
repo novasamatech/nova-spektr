@@ -34,3 +34,22 @@ export const GET_DELEGATOR = gql`
     }
   }
 `;
+
+export const GET_DELEGATES_FOR_ACCOUNT = gql`
+  query GetDelegateByAccountId($accountId: String!) {
+    delegates(filter: { accountId: { equalTo: $accountId } }) {
+      nodes {
+        id
+        accountId
+        delegations {
+          nodes {
+            id
+            delegator
+            delegation
+            trackId
+          }
+        }
+      }
+    }
+  }
+`;

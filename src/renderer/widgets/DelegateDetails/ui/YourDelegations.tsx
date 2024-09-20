@@ -61,7 +61,7 @@ export const YourDelegations = () => {
   return (
     <Modal
       size="lg"
-      open={isOpen}
+      isOpen={isOpen}
       onToggle={(state) => {
         if (!state) delegateDetailsModel.events.closeDelegationsModal();
       }}

@@ -418,7 +418,7 @@ function toUnlockChunk(lock: ClaimableLock, currentBlockNumber: BlockHeight): Ch
       actions: toClaimActions(lock.affected),
     };
   }
-  const type = locksService.isClaimAt(lock.claimAt) ? UnlockChunkType.PENDING_LOCK : UnlockChunkType.PENDING_DELIGATION;
+  const type = locksService.isClaimAt(lock.claimAt) ? UnlockChunkType.PENDING_LOCK : UnlockChunkType.PENDING_DELEGATION;
 
   return { type: type, amount: lock.amount, claimableAt: lock.claimAt };
 }

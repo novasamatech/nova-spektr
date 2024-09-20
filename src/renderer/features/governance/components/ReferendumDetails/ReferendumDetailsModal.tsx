@@ -25,6 +25,7 @@ type Props = {
   chain: Chain;
   asset: Asset;
   referendum: AggregatedReferendum;
+  showActions?: boolean;
   onVoteRequest: () => unknown;
   onRevoteRequest: () => unknown;
   onRemoveVoteRequest: () => unknown;
@@ -35,6 +36,7 @@ export const ReferendumDetailsModal = ({
   chain,
   asset,
   referendum,
+  showActions,
   onClose,
   onVoteRequest,
   onRevoteRequest,
@@ -84,7 +86,7 @@ export const ReferendumDetailsModal = ({
             <VotingStatus
               referendum={referendum}
               asset={asset}
-              canVote={canVote}
+              canVote={showActions ?? canVote}
               hasAccount={hasAccount}
               wallet={wallet}
               onVoteRequest={onVoteRequest}
