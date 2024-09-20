@@ -13,6 +13,7 @@ import {
   type UtilityTransactionTypes,
   type XcmTransactionTypes,
   XcmTypes,
+  isEditDelegationTransaction,
   transactionService,
 } from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
@@ -120,6 +121,14 @@ const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
       });
     }
 
+    if (isEditDelegationTransaction(coreTx)) {
+      delegateValidateModel.events.validationStarted({
+        id: tx.id,
+        transaction: coreTx,
+        feeMap,
+      });
+    }
+
     const TransactionValidatorsRecord: Record<
       Exclude<
         TransactionType,
@@ -146,6 +155,7 @@ const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
       [TransactionType.UNLOCK]: unlockValidateModel.events.validationStarted,
       [TransactionType.DELEGATE]: delegateValidateModel.events.validationStarted,
       [TransactionType.UNDELEGATE]: revokeDelegationValidateModel.events.validationStarted,
+      [TransactionType.EDIT_DELEGATION]: delegateValidateModel.events.validationStarted,
       [TransactionType.VOTE]: voteValidateModel.events.validationStarted,
       [TransactionType.REVOTE]: voteValidateModel.events.validationStarted,
     };

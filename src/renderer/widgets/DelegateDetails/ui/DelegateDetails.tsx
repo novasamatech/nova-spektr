@@ -2,6 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/app/providers';
 import { BaseModal, Plate } from '@/shared/ui';
+import { EditDelegation } from '@/widgets/EditDelegationModal';
 import { RevokeDelegation } from '@/widgets/RevokeDelegationModal';
 import { delegateDetailsModel } from '../model/delegate-details-model';
 
@@ -48,6 +49,7 @@ export const DelegateDetails = () => {
 
       <RevokeDelegation />
       <DelegateSummary />
+      <EditDelegation />
     </BaseModal>
   );
 };

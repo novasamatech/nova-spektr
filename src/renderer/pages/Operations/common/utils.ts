@@ -222,9 +222,14 @@ export const getDelegationTracks = (tx: MultisigTransaction): string[] | undefin
   if (isProxyTransaction(tx.transaction)) {
     coreTxs = [tx.transaction.args.transaction];
   } else if (tx.transaction.type === TransactionType.BATCH_ALL) {
-    coreTxs = tx.transaction.args.transactions?.filter((tx: Transaction) =>
-      [TransactionType.DELEGATE, TransactionType.UNDELEGATE].includes(tx.type),
+    const delegateTxs = tx.transaction.args.transactions?.filter(
+      (tx: Transaction) => TransactionType.DELEGATE === tx.type,
     );
+    const undelegateTxs = tx.transaction.args.transactions?.filter(
+      (tx: Transaction) => TransactionType.UNDELEGATE === tx.type,
+    );
+
+    coreTxs = delegateTxs?.length > 0 ? delegateTxs : undelegateTxs;
   } else if (isDelegateTransaction(tx.transaction) || isUndelegateTransaction(tx.transaction)) {
     coreTxs = [tx.transaction];
   }
@@ -238,7 +243,7 @@ export const getUndelegationData = async (
   api: ApiPromise,
   tx: MultisigTransaction,
 ): Promise<{ votes: string | undefined; target: string | undefined }> => {
-  if (!tx.transaction) return { votes: undefined, target: undefined };
+  if (!tx.transaction || !api) return { votes: undefined, target: undefined };
 
   let coreTx;
 

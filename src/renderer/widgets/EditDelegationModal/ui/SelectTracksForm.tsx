@@ -1,0 +1,306 @@
+import { useUnit } from 'effector-react';
+
+import { useI18n } from '@/app/providers';
+import { type Account, type Chain } from '@/shared/core';
+import { toAddress } from '@/shared/lib/utils';
+import {
+  Alert,
+  BaseModal,
+  Button,
+  Checkbox,
+  FootnoteText,
+  Icon,
+  IconButton,
+  SmallTitleText,
+  Tooltip,
+} from '@/shared/ui';
+import { AssetBalance } from '@/entities/asset';
+import { OperationTitle } from '@/entities/chain';
+import { AccountAddress, AddressWithName, ExplorersPopover, accountUtils } from '@/entities/wallet';
+import { AccountsMultiSelector, networkSelectorModel } from '@/features/governance';
+import {
+  getGovernanceTrackDescription,
+  getGroupPallet,
+  getTrackIds,
+  getTreasuryTrackDescription,
+} from '../lib/helpers';
+import { editDelegationModel } from '../model/edit-delegation-model';
+import { selectTracksModel } from '../model/select-tracks-model';
+
+type Props = {
+  isOpen: boolean;
+  onClose: () => void;
+};
+
+export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
+  const { t } = useI18n();
+
+  const chain = useUnit(selectTracksModel.$chain);
+  const tracks = useUnit(selectTracksModel.$tracks);
+  const accounts = useUnit(selectTracksModel.$accounts);
+  const votedTracks = useUnit(selectTracksModel.$votedTracks);
+  const tracksGroup = useUnit(selectTracksModel.$tracksGroup);
+  const allTracks = useUnit(selectTracksModel.$allTracks);
+  const isMaxWeightReached = useUnit(selectTracksModel.$isMaxWeightReached);
+  const isMaxWeightLoading = useUnit(selectTracksModel.$isMaxWeightLoading);
+  const network = useUnit(networkSelectorModel.$network);
+
+  const { adminTracks, governanceTracks, treasuryTracks, fellowshipTracks } = tracksGroup;
+
+  if (!network) return null;
+
+  return (
+    <BaseModal
+      closeButton
+      headerClass="px-5 py-3"
+      panelClass="flex h-[678px] w-[896px] flex-col bg-white"
+      contentClass="flex min-h-0 w-full flex-1 flex-col gap-6 bg-card-background py-4 rounded-lg"
+      isOpen={isOpen}
+      title={chain && <OperationTitle title={t('operations.modalTitles.editDelegationOn')} chainId={chain.chainId} />}
+      onClose={onClose}
+    >
+      <SmallTitleText className="px-5">{t('governance.addDelegation.selectTrackTitle')}</SmallTitleText>
+
+      <hr className="w-full border-filter-border" />
+
+      <AccountsSelector />
+
+      <div className="flex flex-1 flex-col gap-6 px-5">
+        <div className="flex gap-3">
+          <Button
+            disabled={accounts.length === 0}
+            pallet={getGroupPallet(allTracks, votedTracks, tracks)}
+            variant="chip"
+            onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(allTracks, votedTracks))}
+          >
+            {t('governance.addDelegation.group.selectAll')}
+          </Button>
+          <Button
+            disabled={accounts.length === 0}
+            pallet={getGroupPallet(adminTracks, votedTracks, tracks)}
+            variant="chip"
+            onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(adminTracks, votedTracks))}
+          >
+            {t('governance.addDelegation.group.admin')}
+          </Button>
+          <Button
+            disabled={accounts.length === 0}
+            pallet={getGroupPallet(governanceTracks, votedTracks, tracks)}
+            variant="chip"
+            onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(governanceTracks, votedTracks))}
+          >
+            {t('governance.addDelegation.group.governance')}
+          </Button>
+          <Button
+            disabled={accounts.length === 0}
+            pallet={getGroupPallet(treasuryTracks, votedTracks, tracks)}
+            variant="chip"
+            onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(treasuryTracks, votedTracks))}
+          >
+            {t('governance.addDelegation.group.treasury')}
+          </Button>
+          <Button
+            disabled={accounts.length === 0}
+            pallet={getGroupPallet(fellowshipTracks, votedTracks, tracks)}
+            variant="chip"
+            onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(fellowshipTracks, votedTracks))}
+          >
+            {t('governance.addDelegation.group.fellowship')}
+          </Button>
+        </div>
+        <div className="flex gap-6">
+          <div className="flex flex-1 flex-col gap-4">
+            {adminTracks.map((track) => (
+              <Checkbox
+                key={track.id}
+                checked={tracks.includes(Number(track.id))}
+                disabled={votedTracks.includes(track.id) || accounts.length === 0}
+                onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
+              >
+                <div className="flex w-full items-center justify-between">
+                  {t(track.value)}
+                  <Tooltip content={t(track.description)} pointer="up">
+                    <Icon size={16} name="info" />
+                  </Tooltip>
+                </div>
+              </Checkbox>
+            ))}
+          </div>
+          <div className="flex flex-1 flex-col gap-4">
+            {governanceTracks.map((track) => (
+              <Checkbox
+                key={track.id}
+                checked={tracks.includes(Number(track.id))}
+                disabled={votedTracks.includes(track.id) || accounts.length === 0}
+                onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
+              >
+                <div className="flex w-full items-center justify-between">
+                  {t(track.value)}
+                  <Tooltip content={getGovernanceTrackDescription(network.asset, track.description, t)} pointer="up">
+                    <Icon size={16} name="info" />
+                  </Tooltip>
+                </div>
+              </Checkbox>
+            ))}
+          </div>
+          <div className="flex flex-1 flex-col gap-4">
+            {treasuryTracks.map((track) => (
+              <Checkbox
+                key={track.id}
+                checked={tracks.includes(Number(track.id))}
+                disabled={votedTracks.includes(track.id) || accounts.length === 0}
+                onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
+              >
+                <div className="flex w-full items-center justify-between">
+                  {t(track.value)}
+                  <Tooltip content={getTreasuryTrackDescription(network.asset, track.description, t)} offsetPx={-80}>
+                    <Icon size={16} name="info" />
+                  </Tooltip>
+                </div>
+              </Checkbox>
+            ))}
+          </div>
+          <div className="flex flex-1 flex-col gap-4">
+            {fellowshipTracks.map((track) => (
+              <Checkbox
+                key={track.id}
+                checked={tracks.includes(Number(track.id))}
+                disabled={votedTracks.includes(track.id) || accounts.length === 0}
+                onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
+              >
+                <div className="flex w-full items-center justify-between">
+                  {t(track.value)}
+                  <Tooltip content={t(track.description)} offsetPx={-60}>
+                    <Icon size={16} name="info" />
+                  </Tooltip>
+                </div>
+              </Checkbox>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="px-5">
+        <Alert variant="error" active={isMaxWeightReached} title={t('governance.addDelegation.maxWeightError')}>
+          <Alert.Item withDot={false}>{t('governance.addDelegation.maxWeightErrorDescription')} </Alert.Item>
+        </Alert>
+      </div>
+      <div className="flex items-center justify-end px-5">
+        <Button
+          disabled={tracks.length === 0 || accounts.length === 0 || isMaxWeightReached || isMaxWeightLoading}
+          isLoading={isMaxWeightLoading}
+          onClick={() => selectTracksModel.output.formSubmitted({ tracks, accounts })}
+        >
+          {t('governance.addDelegation.continueButton')}
+        </Button>
+      </div>
+    </BaseModal>
+  );
+};
+
+const AccountsSelector = () => {
+  const { t } = useI18n();
+
+  const accounts = useUnit(selectTracksModel.$accounts);
+  const availableAccounts = useUnit(selectTracksModel.$availableAccounts);
+  const accountsBalances = useUnit(selectTracksModel.$accountsBalances);
+  const { wallet, chain } = useUnit(editDelegationModel.$walletData);
+
+  if (!wallet || !chain || availableAccounts.length <= 1) {
+    return null;
+  }
+
+  const groups = accountUtils.getAccountsAndShardGroups(availableAccounts);
+
+  const options =
+    groups.map((shards) => {
+      const isAccountWithShards = accountUtils.isAccountWithShards(shards);
+      if (isAccountWithShards) {
+        return {
+          id: '',
+          value: '',
+          group: {
+            groupName: shards[0].name,
+            list: shards.map((account) => ({
+              id: account.id.toString(),
+              value: account,
+              element: (
+                <AccountAddress
+                  size={20}
+                  type="short"
+                  address={toAddress(account.accountId, { prefix: chain.addressPrefix })}
+                  canCopy={false}
+                />
+              ),
+              additionalElement: (
+                <AccountInfo account={account} chain={chain} balance={accountsBalances[account.accountId]} />
+              ),
+            })),
+          },
+        };
+      }
+      const address = toAddress(shards.accountId, { prefix: chain.addressPrefix });
+
+      return {
+        id: shards.id.toString(),
+        value: shards,
+        element: (
+          <AddressWithName
+            size={20}
+            symbols={16}
+            address={address}
+            name={shards.name}
+            nameFont="text-text-secondary"
+            type="short"
+            canCopy={false}
+          />
+        ),
+        additionalElement: <AccountInfo account={shards} chain={chain} balance={accountsBalances[shards.accountId]} />,
+      };
+    }) || [];
+
+  return (
+    <>
+      <div className="flex items-end gap-6 px-5">
+        <div className="flex flex-1 flex-col gap-y-2">
+          <AccountsMultiSelector
+            label={t('governance.addDelegation.accountLabel')}
+            placeholder={t('governance.addDelegation.accountPlaceholder')}
+            multiPlaceholder={t('governance.addDelegation.manyAccountsPlaceholder')}
+            selectedIds={accounts.map(({ id }) => id.toString())}
+            options={options}
+            onChange={(values) => selectTracksModel.events.accountsChanged(values.map(({ value }) => value))}
+          />
+        </div>
+        <FootnoteText className="flex-1 text-text-tertiary">
+          {t('governance.addDelegation.multishardDescription')}
+        </FootnoteText>
+      </div>
+
+      <hr className="w-full border-filter-border" />
+    </>
+  );
+};
+
+type AccountProps = {
+  account: Account;
+  chain: Chain;
+  balance: string;
+};
+
+const AccountInfo = ({ account, chain, balance }: AccountProps) => (
+  <div className="flex w-full items-center text-center">
+    <div className="w-8">
+      <ExplorersPopover
+        button={<IconButton name="details" />}
+        address={account.accountId}
+        explorers={chain.explorers}
+        addressPrefix={chain.addressPrefix}
+      />
+    </div>
+    <AssetBalance
+      value={balance}
+      asset={chain.assets[0]}
+      className="w-full text-right text-footnote text-text-secondary"
+    />
+  </div>
+);

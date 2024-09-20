@@ -1,28 +1,27 @@
 import { useUnit } from 'effector-react';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-import { Step, cnTw, isStep, nonNullable, nullable } from '@/shared/lib/utils';
+import { Step, cnTw, isStep } from '@/shared/lib/utils';
 import { useModalClose } from '@shared/lib/hooks';
 import { BaseModal, Button, IconButton } from '@shared/ui';
 import { SignButton } from '@/entities/operations';
 import { OperationTitle } from '@entities/chain';
 import { OperationResult } from '@entities/transaction';
 import { OperationSign, OperationSubmit } from '@features/operations';
-import { RevokeDelegationConfirmation as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
-import { SignatorySelectModal } from '@/pages/Operations/components/modals/SignatorySelectModal';
-import { revokeDelegationModel } from '../model/revoke-delegation-model';
+import { EditDelegationConfirmation as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
+import { editDelegationModel } from '../model/edit-delegation-model';
 
-export const RevokeDelegation = () => {
+import { DelegateForm } from './DelegateForm';
+import { SelectTrackForm } from './SelectTracksForm';
+
+export const EditDelegation = () => {
   const { t } = useI18n();
 
-  const step = useUnit(revokeDelegationModel.$step);
-  const walletData = useUnit(revokeDelegationModel.$walletData);
-  const initiatorWallet = useUnit(revokeDelegationModel.$initiatorWallet);
-  const transactions = useUnit(revokeDelegationModel.$transactions);
-  const signatory = useUnit(revokeDelegationModel.$signatory);
-  const signatories = useUnit(revokeDelegationModel.$signatories);
-  const network = useUnit(revokeDelegationModel.$network);
+  const step = useUnit(editDelegationModel.$step);
+  const walletData = useUnit(editDelegationModel.$walletData);
+  const initiatorWallet = useUnit(editDelegationModel.$initiatorWallet);
+  const transactions = useUnit(editDelegationModel.$transactions);
 
   const [currentTx, setCurrentTx] = useState(0);
 
@@ -35,30 +34,11 @@ export const RevokeDelegation = () => {
     );
   };
 
-  const [isModalOpen, closeModal] = useModalClose(!isStep(step, Step.NONE), revokeDelegationModel.output.flowFinished);
+  const [isModalOpen, closeModal] = useModalClose(!isStep(step, Step.NONE), editDelegationModel.output.flowFinished);
   const [isBasketModalOpen, closeBasketModal] = useModalClose(
     isStep(step, Step.BASKET),
-    revokeDelegationModel.output.flowFinished,
+    editDelegationModel.output.flowFinished,
   );
-
-  const shouldPickSignatory = nullable(signatory) && signatories.length > 0;
-  const [isSelectSignatoryOpen, setIsSelectSignatoryOpen] = useState(shouldPickSignatory);
-  const [isSelectSignatoryClosed, setIsSelectSignatoryClosed] = useState(false);
-
-  const handleSelectSignatoryClose = () => {
-    setIsSelectSignatoryOpen(false);
-    setIsSelectSignatoryClosed(true);
-  };
-
-  useEffect(() => {
-    if (shouldPickSignatory) {
-      if (isSelectSignatoryClosed) {
-        closeModal();
-      } else {
-        setIsSelectSignatoryOpen(true);
-      }
-    }
-  }, [shouldPickSignatory, isSelectSignatoryClosed, isSelectSignatoryClosed, setIsSelectSignatoryOpen, closeModal]);
 
   const nextTx = () => {
     if (transactions && currentTx < transactions.length - 1) {
@@ -80,7 +60,7 @@ export const RevokeDelegation = () => {
 
   const currentPage = currentTx + 1;
 
-  if (!walletData || !network) {
+  if (!walletData) {
     return null;
   }
 
@@ -100,6 +80,20 @@ export const RevokeDelegation = () => {
     );
   }
 
+  if (isStep(step, Step.SELECT_TRACK)) {
+    return <SelectTrackForm isOpen={isStep(step, Step.SELECT_TRACK)} onClose={closeModal} />;
+  }
+
+  if (isStep(step, Step.INIT)) {
+    return (
+      <DelegateForm
+        isOpen={isStep(step, Step.INIT)}
+        onClose={closeModal}
+        onGoBack={() => editDelegationModel.events.stepChanged(Step.SELECT_TRACK)}
+      />
+    );
+  }
+
   if (transactions === undefined) {
     return null;
   }
@@ -110,23 +104,22 @@ export const RevokeDelegation = () => {
       contentClass="overflow-y-auto flex-1"
       panelClass="max-h-[736px] w-fit flex flex-col"
       isOpen={isModalOpen}
-      title={<OperationTitle title={t('governance.revokeDelegation.title')} chainId={walletData.chain!.chainId} />}
+      title={
+        <OperationTitle title={t('operations.modalTitles.editDelegationOn')} chainId={walletData.chain!.chainId} />
+      }
       onClose={closeModal}
     >
       {isStep(step, Step.CONFIRM) && transactions.length === 1 && (
         <Confirmation
-          config={{ withFormatAmount: false }}
-          hideSignButton={shouldPickSignatory}
           secondaryActionButton={
-            !shouldPickSignatory &&
-            nonNullable(initiatorWallet) &&
+            initiatorWallet &&
             basketUtils.isBasketAvailable(initiatorWallet) && (
-              <Button pallet="secondary" onClick={() => revokeDelegationModel.events.txSaved()}>
+              <Button pallet="secondary" onClick={() => editDelegationModel.events.txSaved()}>
                 {t('operation.addToBasket')}
               </Button>
             )
           }
-          onGoBack={() => revokeDelegationModel.events.stepChanged(Step.INIT)}
+          onGoBack={() => editDelegationModel.events.stepChanged(Step.INIT)}
         />
       )}
 
@@ -137,9 +130,9 @@ export const RevokeDelegation = () => {
               <div className="flex w-[478px] gap-2 first:ml-4">
                 {transactions?.map((t, index) => (
                   // eslint-disable-next-line react/no-array-index-key
-                  <div key={index} className="flex h-[622px] flex-col last-of-type:pr-4">
+                  <div key={index} className="flex h-[600px] flex-col last-of-type:pr-4">
                     <div className="max-h-full w-[440px] overflow-y-auto rounded-lg bg-white shadow-shadow-2">
-                      <Confirmation id={index} hideSignButton config={{ withFormatAmount: false }} />
+                      <Confirmation id={index} hideSignButton />
                     </div>
                   </div>
                 ))}
@@ -175,31 +168,19 @@ export const RevokeDelegation = () => {
             </div>
 
             {initiatorWallet && basketUtils.isBasketAvailable(initiatorWallet) && (
-              <Button pallet="secondary" onClick={() => revokeDelegationModel.events.txSaved()}>
+              <Button pallet="secondary" onClick={() => editDelegationModel.events.txSaved()}>
                 {t('operation.addToBasket')}
               </Button>
             )}
 
-            <SignButton isDefault type={walletData.wallet?.type} onClick={revokeDelegationModel.events.txsConfirmed} />
+            <SignButton isDefault type={walletData.wallet?.type} onClick={editDelegationModel.events.txsConfirmed} />
           </div>
         </>
       )}
 
       {isStep(step, Step.SIGN) && (
-        <OperationSign onGoBack={() => revokeDelegationModel.events.stepChanged(Step.CONFIRM)} />
+        <OperationSign onGoBack={() => editDelegationModel.events.stepChanged(Step.CONFIRM)} />
       )}
-
-      <SignatorySelectModal
-        isOpen={isSelectSignatoryOpen}
-        accounts={signatories}
-        chain={network.chain}
-        nativeAsset={network.asset}
-        onClose={handleSelectSignatoryClose}
-        onSelect={(a) => {
-          revokeDelegationModel.events.selectSignatory(a);
-          setIsSelectSignatoryOpen(false);
-        }}
-      />
     </BaseModal>
   );
 };
