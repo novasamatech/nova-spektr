@@ -75,8 +75,8 @@ const Loading = () => (
     {Array.from({ length: 4 }).map((_, index) => (
       // eslint-disable-next-line react/no-array-index-key
       <div key={index} className="flex items-center justify-between">
-        <Skeleton height={5} width={200} />
-        <Skeleton height={5} width={20} />
+        <Skeleton height={5} width={120} />
+        <Skeleton height={5} width={50} />
       </div>
     ))}
   </div>
