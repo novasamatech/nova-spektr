@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
+import { Skeleton } from '@/shared/ui-kit';
 import { chainsService } from '@shared/api/network';
 import {
   type Address,
@@ -29,6 +30,7 @@ import {
   isManageProxyTransaction,
   isRemoveProxyTransaction,
   isRemovePureProxyTransaction,
+  isUndelegateTransaction,
   isXcmTransaction,
 } from '@entities/transaction';
 import { AddressWithExplorers, ExplorersPopover, WalletCardSm, walletModel } from '@entities/wallet';
@@ -84,15 +86,21 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const explorers = extendedChain?.explorers;
   const connection = extendedChain?.connection;
 
+  const [isUndelegationLoading, setIsUndelegationLoading] = useState(false);
   const [undelegationVotes, setUndelegationVotes] = useState<string>();
   const [undelegationTarget, setUndelegationTarget] = useState<Address>();
 
   useEffect(() => {
+    if (isUndelegateTransaction(transaction)) {
+      setIsUndelegationLoading(true);
+    }
+
     if (!api) return;
 
     getUndelegationData(api, tx).then(({ votes, target }) => {
       setUndelegationVotes(votes);
       setUndelegationTarget(target);
+      setIsUndelegationLoading(false);
     });
   }, [api, tx]);
 
@@ -280,6 +288,18 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         </DetailRow>
       )}
 
+      {isUndelegationLoading && (
+        <>
+          <DetailRow label={t('operation.details.delegationTarget')} className="text-text-secondary">
+            <Skeleton width={40} height={6} />
+          </DetailRow>
+
+          <DetailRow label={t('operation.details.delegationVotes')}>
+            <Skeleton width={20} height={5} />
+          </DetailRow>
+        </>
+      )}
+
       {delegationTarget && (
         <DetailRow label={t('operation.details.delegationTarget')} className={valueClass}>
           <AddressWithExplorers
@@ -293,7 +313,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         </DetailRow>
       )}
 
-      {undelegationTarget && (
+      {!delegationTarget && undelegationTarget && (
         <DetailRow label={t('operation.details.delegationTarget')} className={valueClass}>
           <AddressWithExplorers
             explorers={explorers}
@@ -319,7 +339,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         </DetailRow>
       )}
 
-      {undelegationVotes && (
+      {!delegationVotes && undelegationVotes && (
         <DetailRow label={t('operation.details.delegationVotes')} className={valueClass}>
           <FootnoteText className={valueClass}>
             <AssetBalance

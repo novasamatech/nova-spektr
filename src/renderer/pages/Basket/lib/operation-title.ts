@@ -7,6 +7,7 @@ import {
   type UtilityTransactionTypes,
   type XcmTransactionTypes,
   XcmTypes,
+  isEditDelegationTransaction,
 } from '@entities/transaction';
 
 import { getCoreTx } from './utils';
@@ -28,6 +29,10 @@ export const getOperationTitle = (transaction: BasketTransaction, chain: Chain):
 
   if (XcmTypes.includes(type)) {
     return { title: 'transfer.xcmTitle', params: { asset: asset?.symbol } };
+  }
+
+  if (isEditDelegationTransaction(coreTx)) {
+    return { title: 'operations.modalTitles.editDelegationOn', params: {} };
   }
 
   const Title: Record<
@@ -53,6 +58,7 @@ export const getOperationTitle = (transaction: BasketTransaction, chain: Chain):
     // Governance
     [TransactionType.UNLOCK]: 'operations.modalTitles.unlockOn',
     [TransactionType.DELEGATE]: 'operations.modalTitles.delegateOn',
+    [TransactionType.EDIT_DELEGATION]: 'operations.modalTitles.editDelegationOn',
     [TransactionType.UNDELEGATE]: 'operations.modalTitles.undelegateOn',
     [TransactionType.VOTE]: 'operations.modalTitles.vote',
     [TransactionType.REVOTE]: 'operations.modalTitles.revote',

@@ -152,6 +152,15 @@ export const getTransactionAmount = (tx: Transaction | DecodedTransaction): stri
     return tx.args.balance;
   }
 
+  if (isEditDelegationTransaction(tx)) {
+    const transactions = tx.args?.transactions;
+    if (!transactions) return null;
+
+    const txMatch = transactions.find((tx: Transaction) => tx.type === TransactionType.DELEGATE);
+
+    return getTransactionAmount(txMatch);
+  }
+
   if (txType === TransactionType.BATCH_ALL) {
     // multi tx made with batch all:
     // unstake - chill, unbond
@@ -226,6 +235,7 @@ const TransactionTitles: Record<TransactionType, string> = {
   [TransactionType.REMOVE_VOTE]: 'operations.titles.removeVote',
   [TransactionType.DELEGATE]: 'operations.titles.delegate',
   [TransactionType.UNDELEGATE]: 'operations.titles.undelegate',
+  [TransactionType.EDIT_DELEGATION]: 'operations.titles.editDelegation',
 };
 
 const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => string> = {
@@ -272,6 +282,7 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.REMOVE_VOTE]: () => 'operations.modalTitles.removeVote',
   [TransactionType.DELEGATE]: () => 'operations.modalTitles.delegateOn',
   [TransactionType.UNDELEGATE]: () => 'operations.modalTitles.undelegateOn',
+  [TransactionType.EDIT_DELEGATION]: () => 'operations.modalTitles.editDelegationOn',
 };
 
 export const getTransactionTitle = (t: TFunction, transaction?: Transaction | DecodedTransaction): string => {

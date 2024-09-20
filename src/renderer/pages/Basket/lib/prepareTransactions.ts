@@ -60,6 +60,7 @@ export const prepareTransaction = {
   prepareUnlockTransaction,
   prepareDelegateTransaction,
   prepareRevokeDelegationTransaction,
+  prepareEditDelegationTransaction,
 };
 
 async function getTransactionData(
@@ -525,6 +526,45 @@ async function prepareDelegateTransaction({ transaction, wallets, chains, apis, 
   });
 
   const coreTxs = transaction.coreTx.args.transactions || [transaction.coreTx];
+
+  return {
+    id: transaction.id,
+    chain,
+    asset,
+    transferable,
+
+    shards: [account!],
+    balance: coreTxs[0].args.balance,
+    conviction: votingService.getConviction(coreTxs[0].args.conviction),
+    target: coreTxs[0].args.target,
+    tracks: coreTxs.map((t: Transaction) => t.args.track),
+    description: '',
+    locks,
+
+    fee,
+    totalFee: '0',
+    multisigDeposit: '0',
+  } satisfies DelegateInput;
+}
+
+async function prepareEditDelegationTransaction({ transaction, wallets, chains, apis, feeMap, balances }: DataParams) {
+  const { chainId, chain, account, fee } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
+  const asset = chain.assets[0];
+
+  const transferable = transferableAmount(
+    balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId.toString()),
+  );
+
+  const locks = await governanceService.getTrackLocks(apis[chainId], [transaction.coreTx.address]).then((data) => {
+    const lock = data[transaction.coreTx.address];
+    const totalLock = Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
+
+    return totalLock;
+  });
+
+  const coreTxs = transaction.coreTx.args.transactions?.filter(
+    (t: Transaction) => t.type === TransactionType.DELEGATE,
+  ) || [transaction.coreTx];
 
   return {
     id: transaction.id,

@@ -393,6 +393,18 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
+  [TransactionType.EDIT_DELEGATION]: (transaction, info, options) => {
+    return convictionVotingMethods.delegate(
+      {
+        class: transaction.args.track,
+        to: transaction.args.target,
+        conviction: transaction.args.conviction,
+        balance: transaction.args.balance,
+      },
+      info,
+      options,
+    );
+  },
   [TransactionType.VOTE]: (transaction, info, options) => {
     return convictionVotingMethods.vote(
       {
@@ -533,6 +545,9 @@ export const getExtrinsic: Record<
     return api.tx.convictionVoting.removeVote(track, referendum);
   },
   [TransactionType.DELEGATE]: ({ track, target, conviction, balance }, api) => {
+    return api.tx.convictionVoting.delegate(track, target, conviction, balance);
+  },
+  [TransactionType.EDIT_DELEGATION]: ({ track, target, conviction, balance }, api) => {
     return api.tx.convictionVoting.delegate(track, target, conviction, balance);
   },
   [TransactionType.UNDELEGATE]: ({ track }, api) => {

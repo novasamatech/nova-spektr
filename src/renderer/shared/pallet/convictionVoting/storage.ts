@@ -30,7 +30,7 @@ export const storage = {
   classLocksFor(api: ApiPromise, addresses: Address[]) {
     const schema = pjsSchema.vec(pjsSchema.vec(convictionVotingClassLock));
 
-    return substrateRpcPool.call(() => getQuery(api, 'classLocksFor').entries(addresses)).then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(api, 'classLocksFor').multi(addresses)).then(schema.parse);
   },
 
   /**

@@ -8,7 +8,7 @@ import { useTheme } from '../Theme/useTheme';
 
 type Props = {
   open: boolean;
-  size: 'sm' | 'md' | 'lg' | 'full' | 'fit';
+  size: 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'fit';
   onToggle: (open: boolean) => void;
 };
 
@@ -32,7 +32,8 @@ const Root = ({ open, size = 'md', children, onToggle }: PropsWithChildren<Props
               {
                 'w-modal-sm': size === 'sm',
                 'w-modal': size === 'md',
-                'w-modal-xl': size === 'lg',
+                'w-modal-lg': size === 'lg',
+                'w-modal-xl': size === 'xl',
                 'w-full': size === 'full',
                 'w-fit': size === 'fit',
               },

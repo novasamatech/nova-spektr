@@ -16,6 +16,7 @@ export * from './Unstake';
 export * from './Withdraw';
 
 export * from './Delegate';
+export * from './EditDelegation';
 export * from './RevokeDelegation';
 export * from './Referendum/Vote';
 export * from './Referendum/RemoveVote';

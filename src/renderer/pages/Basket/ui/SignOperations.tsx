@@ -16,6 +16,7 @@ import {
   type UtilityTransactionTypes,
   type XcmTransactionTypes,
   XcmTypes,
+  isEditDelegationTransaction,
 } from '@entities/transaction';
 import { OperationSign, OperationSubmit } from '@features/operations';
 import {
@@ -24,6 +25,7 @@ import {
   BondExtraConfirmation,
   BondNominateConfirmation,
   DelegateConfirmation,
+  EditDelegationConfirmation,
   NominateConfirmation,
   PayeeConfirmation,
   RemoveProxyConfirm,
@@ -93,6 +95,10 @@ export const SignOperations = () => {
       return () => <TransferConfirm id={transaction.id} hideSignButton />;
     }
 
+    if (isEditDelegationTransaction(coreTx)) {
+      return () => <EditDelegationConfirmation id={transaction.id} hideSignButton config={config} />;
+    }
+
     const Components: Record<
       Exclude<
         TransactionType,
@@ -114,6 +120,9 @@ export const SignOperations = () => {
       [TransactionType.DESTINATION]: () => <PayeeConfirmation id={transaction.id} hideSignButton />,
       [TransactionType.UNSTAKE]: () => <UnstakeConfirmation id={transaction.id} hideSignButton />,
       [TransactionType.DELEGATE]: () => <DelegateConfirmation id={transaction.id} hideSignButton config={config} />,
+      [TransactionType.EDIT_DELEGATION]: () => (
+        <EditDelegationConfirmation id={transaction.id} hideSignButton config={config} />
+      ),
       [TransactionType.UNDELEGATE]: () => (
         <RevokeDelegationConfirmation id={transaction.id} hideSignButton config={config} />
       ),
