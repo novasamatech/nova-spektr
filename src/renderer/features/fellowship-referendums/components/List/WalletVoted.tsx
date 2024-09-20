@@ -1,13 +1,26 @@
+import { useStoreMap } from 'effector-react';
+
 import { useI18n } from '@/app/providers';
 import { FootnoteText, Icon } from '@/shared/ui';
+import { type Referendum } from '@/domains/collectives';
+import { votingModel } from '../../model/voting';
 
-// type Props = {
-//   referendum: Referendum;
-// };
+type Props = {
+  referendum: Referendum;
+};
 
-// TODO implement
-export const WalletVoted = () => {
+export const WalletVoted = ({ referendum }: Props) => {
   const { t } = useI18n();
+
+  const voting = useStoreMap({
+    store: votingModel.$walletVoting,
+    keys: [referendum.id],
+    fn: (votings, [id]) => votings.find(voting => voting.referendumId === id),
+  });
+
+  if (!voting) {
+    return null;
+  }
 
   return (
     <div className="flex items-center gap-x-1">

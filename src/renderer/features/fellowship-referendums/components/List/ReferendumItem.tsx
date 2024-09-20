@@ -39,7 +39,7 @@ export const ReferendumItem = memo<Props>(({ referendum, isTitlesLoading, onSele
     <Surface onClick={() => onSelect(referendum)}>
       <Box gap={3} padding={[4, 3]}>
         <Box direction="row" verticalAlign="center" gap={2}>
-          <WalletVoted />
+          <WalletVoted referendum={referendum} />
           {/*<VotedBy address={referendum.votedByDelegate} />*/}
           <VotingStatusBadge passing={isPassing} referendum={referendum} />
 

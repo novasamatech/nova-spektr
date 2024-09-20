@@ -62,6 +62,4 @@ export const referendumListModel = {
   $ongoing,
   $completed,
   $pending: or(collectiveDomain.referendum.pending, referendumsFeatureStatus.isStarting),
-
-  status,
 };

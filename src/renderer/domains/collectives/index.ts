@@ -21,3 +21,5 @@ export type {
   VotingCurve,
   VotingThreshold,
 } from './models/tracks/types';
+
+export type { Voting } from './models/voting/types';
