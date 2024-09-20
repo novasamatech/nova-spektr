@@ -90,12 +90,27 @@ export type DelegateStat = {
   delegateVotesMonth: number;
 };
 
+export type Delegation = {
+  delegator: Address;
+  delegation: {
+    amount: string;
+    conviction: Conviction;
+  };
+  trackId: number;
+};
+
+export type DelegationsByAccount = {
+  accountId: Address;
+  delegations: Delegation[];
+};
+
 export type DelegateAccount = DelegateStat & Partial<DelegateDetails>;
 
 export interface DelegationApi {
   getDelegatesFromRegistry: (chain: Chain) => Promise<DelegateDetails[]>;
   getDelegatedVotesFromExternalSource: (chain: Chain, voter: Address[]) => Promise<Record<ReferendumId, Address>>;
   getDelegatesFromExternalSource: (chain: Chain, blockNumber: number) => Promise<DelegateStat[]>;
+  getDelegatesForAccount: (chain: Chain, accountId: string) => Promise<DelegationsByAccount | null>;
   aggregateDelegateAccounts: (accounts: DelegateDetails[], stats: DelegateStat[]) => DelegateAccount[];
 
   calculateTotalVotes: (votingPower: BN, tracks: number[], chain: Chain) => BN;

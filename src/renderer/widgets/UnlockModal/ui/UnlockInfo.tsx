@@ -44,7 +44,7 @@ export const UnlockInfo = () => {
           className="mb-3 flex items-center justify-between self-stretch"
         >
           <AssetBalance value={lock.amount.toString()} asset={asset} />
-          {lock.type === UnlockChunkType.PENDING_DELIGATION && (
+          {lock.type === UnlockChunkType.PENDING_DELEGATION && (
             <FootnoteText className="text-text-tertiary">{t('governance.locks.yourDelegation')}</FootnoteText>
           )}
           {lock.type === UnlockChunkType.PENDING_LOCK && <UnlockCountdown lock={lock} />}

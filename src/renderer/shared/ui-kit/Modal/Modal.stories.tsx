@@ -14,12 +14,12 @@ const meta: Meta<typeof Modal> = {
   },
   decorators: [
     (Story, { args }) => {
-      const [open, onToggle] = useState(false);
+      const [isOpen, onToggle] = useState(false);
 
       return (
         <>
           <Button onClick={() => onToggle((x) => !x)}>Toggle Modal</Button>
-          <Story args={{ ...args, open, onToggle }} />
+          <Story args={{ ...args, isOpen, onToggle }} />
         </>
       );
     },

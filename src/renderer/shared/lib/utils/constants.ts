@@ -62,3 +62,5 @@ export const OpenGov: Record<ChainId, string> = {
 export const THRESHOLD = BN_THOUSAND.div(BN_TWO);
 export const DEFAULT_TIME = new BN(6_000);
 export const ONE_DAY = new BN(24 * 60 * 60 * 1000);
+
+export const MONTH = 30 * 24 * 60 * 60 * 1000;

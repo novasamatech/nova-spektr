@@ -4,6 +4,7 @@ import { useI18n } from '@/app/providers';
 import { Button, DetailRow, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { delegateDetailsModel } from '../model/delegate-details-model';
+import { delegateSummaryModel } from '../model/delegate-summary-model';
 
 export const DelegateActivity = () => {
   const { t } = useI18n();
@@ -17,7 +18,13 @@ export const DelegateActivity = () => {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <SmallTitleText>{t('governance.addDelegation.delegateActivity')}</SmallTitleText>
-        <Button pallet="primary" variant="text" size="sm" className="px-0" onClick={() => {}}>
+        <Button
+          pallet="primary"
+          variant="text"
+          size="sm"
+          className="px-0"
+          onClick={() => delegateSummaryModel.events.openSummaryModal()}
+        >
           {t('governance.addDelegation.viewSummary')}
         </Button>
       </div>

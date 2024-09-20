@@ -686,7 +686,7 @@ describe('claimScheduleService', () => {
 
     expect(result).toEqual([
       {
-        type: UnlockChunkType.PENDING_DELIGATION,
+        type: UnlockChunkType.PENDING_DELEGATION,
         amount: BN_ONE,
         claimableAt: { type: 'until' },
       },
@@ -723,7 +723,7 @@ describe('claimScheduleService', () => {
         claimableAt: { type: 'at', block: 1100 },
       },
       {
-        type: UnlockChunkType.PENDING_DELIGATION,
+        type: UnlockChunkType.PENDING_DELEGATION,
         amount: BN_ONE,
         claimableAt: { type: 'until' },
       },
@@ -760,7 +760,7 @@ describe('claimScheduleService', () => {
         actions: [{ type: 'unlock', trackId: '0' }],
       },
       {
-        type: UnlockChunkType.PENDING_DELIGATION,
+        type: UnlockChunkType.PENDING_DELEGATION,
         amount: BN_ONE,
         claimableAt: { type: 'until' },
       },
@@ -821,7 +821,7 @@ describe('claimScheduleService', () => {
       },
       // 1 is delayed indefinitely because of track 1 delegation
       {
-        type: UnlockChunkType.PENDING_DELIGATION,
+        type: UnlockChunkType.PENDING_DELEGATION,
         amount: BN_ONE,
         claimableAt: { type: 'until' },
       },
