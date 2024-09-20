@@ -49,6 +49,7 @@ export const enum TransactionType {
   REMOVE_VOTE = 'remove_vote',
   DELEGATE = 'delegate',
   UNDELEGATE = 'undelegate',
+  EDIT_DELEGATION = 'edit_delegation',
 }
 
 export type SigningStatus =

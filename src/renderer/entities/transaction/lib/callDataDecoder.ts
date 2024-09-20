@@ -399,6 +399,14 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
         balance: decoded.args[3].toString(),
       };
     },
+    [TransactionType.EDIT_DELEGATION]: (decoded): Record<string, any> => {
+      return {
+        track: decoded.args[0].toString(),
+        target: decoded.args[1].toString(),
+        conviction: decoded.args[2].toString(),
+        balance: decoded.args[3].toString(),
+      };
+    },
   };
 
   const isBatchExtrinsic = (method: string, section: string): boolean => {
