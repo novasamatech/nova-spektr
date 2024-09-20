@@ -4,7 +4,7 @@ import { combine, createEffect, createEvent, createStore, sample } from 'effecto
 
 import { delegationService, votingsService } from '@/shared/api/governance';
 import { type Address, type Chain, type ChainId } from '@/shared/core';
-import { getBlockTimeAgo, nonNullable, setNestedValue } from '@/shared/lib/utils';
+import { MONTH, getBlockTimeAgo, nonNullable, setNestedValue } from '@/shared/lib/utils';
 import { type AggregatedReferendum, listAggregate, listService, networkSelectorModel } from '@/features/governance';
 import { getDelegationsList } from '../lib/utils';
 
@@ -40,7 +40,7 @@ const getReferendumsForVoterFx = createEffect(({ accountId, chain }: RequestPara
 });
 
 const getMonthBlockFx = createEffect((api: ApiPromise) => {
-  return getBlockTimeAgo(1000 * 60 * 60 * 24 * 30, api);
+  return getBlockTimeAgo(MONTH, api);
 });
 
 sample({

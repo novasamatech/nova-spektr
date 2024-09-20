@@ -35,21 +35,13 @@ export const getDelegationsList = (delegations: Delegation[]) => {
   const map = new Map();
 
   for (const delegation of delegations) {
-    const currentMap = map.get(delegation.delegator);
+    const delegator = map.get(delegation.delegator);
     const multiplier = votingService.getConvictionMultiplier(delegation.delegation.conviction);
-
-    if (!currentMap) {
-      map.set(delegation.delegator, {
-        tracks: [delegation.trackId],
-        amount: new BN(delegation.delegation.amount).multipliedBy(new BN(multiplier)),
-      });
-
-      continue;
-    }
+    const multipliedAmount = new BN(delegation.delegation.amount).multipliedBy(new BN(multiplier));
 
     map.set(delegation.delegator, {
-      tracks: [...currentMap.tracks, delegation.trackId],
-      amount: currentMap.amount.plus(new BN(delegation.delegation.amount).multipliedBy(new BN(multiplier))),
+      tracks: delegator ? [...delegator.tracks, delegation.trackId] : [delegation.trackId],
+      amount: delegator ? delegator.amount.plus(multipliedAmount) : multipliedAmount,
     });
   }
 
