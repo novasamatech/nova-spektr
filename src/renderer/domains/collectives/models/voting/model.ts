@@ -38,30 +38,34 @@ const {
     });
   },
 
-  map: (store, { params, result: response }) => {
+  map: (store, { params: { accounts, referendums, chainId, palletType }, result: response }) => {
     const result: Voting[] = [];
-    for (const { key, vote } of response) {
+    for (const [index, vote] of response.entries()) {
       if (nullable(vote)) continue;
+      const accountId = accounts.at(index);
+      const referendumId = referendums.at(index);
+
+      if (nullable(accountId) || nullable(referendumId)) continue;
 
       switch (vote.type) {
         case 'Aye':
           result.push({
-            accountId: key.account,
-            referendumId: key.referendum,
+            accountId,
+            referendumId,
             aye: vote.data,
           });
           break;
         case 'Nay':
           result.push({
-            accountId: key.account,
-            referendumId: key.referendum,
+            accountId,
+            referendumId,
             nay: vote.data,
           });
           break;
       }
     }
 
-    return setNestedValue(store, params.palletType, params.chainId, result);
+    return setNestedValue(store, palletType, chainId, result);
   },
 });
 

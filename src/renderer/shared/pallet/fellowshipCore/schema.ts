@@ -14,8 +14,8 @@ export const fellowshipCoreParams = pjsSchema.object({
 export type FellowshipCoreMemberStatus = z.infer<typeof fellowshipCoreMemberStatus>;
 export const fellowshipCoreMemberStatus = pjsSchema.object({
   isActive: pjsSchema.bool,
-  lastPromotion: pjsSchema.u32,
-  lastProof: pjsSchema.u32,
+  lastPromotion: pjsSchema.blockHeight,
+  lastProof: pjsSchema.blockHeight,
 });
 
 export type FellowshipCoreMemberEvidence = z.infer<typeof fellowshipCoreMemberEvidence>;

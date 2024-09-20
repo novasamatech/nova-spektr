@@ -36,5 +36,5 @@ sample({
 export const profileModel = {
   $account,
   $pending: or(collectiveDomain.members.pending, profileFeatureStatus.isStarting),
-  $fulfilled: $members.map(x => x.length > 0),
+  $fulfilled: collectiveDomain.members.fulfilled,
 };

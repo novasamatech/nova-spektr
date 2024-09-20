@@ -1,5 +1,5 @@
 import { combine, sample } from 'effector';
-import { either, or } from 'patronum';
+import { and, either, or } from 'patronum';
 
 import { performSearch } from '@shared/lib/utils';
 import { collectiveDomain } from '@/domains/collectives';
@@ -62,4 +62,5 @@ export const referendumListModel = {
   $ongoing,
   $completed,
   $pending: or(collectiveDomain.referendum.pending, referendumsFeatureStatus.isStarting),
+  $fulfulled: and(collectiveDomain.referendum.fulfilled, referendumsFeatureStatus.isRunning),
 };

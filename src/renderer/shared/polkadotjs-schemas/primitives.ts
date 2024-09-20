@@ -1,7 +1,7 @@
-import { Bytes, Null, StorageKey, Struct, Text, bool, i64, u128, u16, u32, u64, u8 } from '@polkadot/types';
+import { Bytes, Data, Null, StorageKey, Struct, Text, bool, i64, u128, u16, u32, u64, u8 } from '@polkadot/types';
 import { GenericAccountId } from '@polkadot/types/generic/AccountId';
 import { type Perbill, type Permill } from '@polkadot/types/interfaces';
-import { BN } from '@polkadot/util';
+import { BN, u8aToString } from '@polkadot/util';
 import { z } from 'zod';
 
 import { isCorrectAccountId } from '@/shared/lib/utils';
@@ -45,11 +45,16 @@ export const textSchema = z
   .transform((value) => value.toString())
   .describe('text');
 export const bytesSchema = z.instanceof(Bytes).transform((value) => value.toU8a());
+export const bytesString = z.instanceof(Bytes).transform((value) => value.toString());
 export const bytesHexSchema = z.instanceof(Bytes).transform((value) => value.toHex());
 
 export const boolSchema = z.instanceof(bool).transform((value) => value.toPrimitive());
 
 export const structHexSchema = z.instanceof(Struct).transform((value) => value.toHex());
+
+export const dataStringSchema = z
+  .instanceof(Data)
+  .transform((value) => (value.isRaw ? u8aToString(value.asRaw) : value.value.toString()));
 
 export type BlockHeight = z.infer<typeof blockHeightSchema>;
 export const blockHeightSchema = u32Schema.describe('blockHeight').brand('blockHeight');

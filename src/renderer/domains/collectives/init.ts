@@ -27,7 +27,7 @@ export const collectiveDomain = {
   $store,
   members: {
     service: membersService,
-    ...pick(membersDomainModel, ['subscribe', 'unsubscribe', 'pending', 'received']),
+    ...pick(membersDomainModel, ['subscribe', 'unsubscribe', 'pending', 'fulfilled', 'received']),
   },
   tracks: {
     service: tracksService,
@@ -35,7 +35,7 @@ export const collectiveDomain = {
   },
   referendum: {
     service: referendumService,
-    ...pick(referendumDomainModel, ['subscribe', 'unsubscribe', 'pending', 'received']),
+    ...pick(referendumDomainModel, ['subscribe', 'unsubscribe', 'pending', 'fulfilled', 'received']),
   },
   voting: {
     ...pick(votingDomainModel, ['subscribe', 'unsubscribe', 'pending']),

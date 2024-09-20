@@ -1,10 +1,12 @@
 import { type ApiPromise } from '@polkadot/api';
 
 import { type ChainId } from '@/shared/core';
-import { createDataSubscription, createPagesHandler } from '@/shared/effector';
-import { merge, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
+import { createDataSubscription } from '@/shared/effector';
+import { nullable, setNestedValue } from '@/shared/lib/utils';
 import { collectivePallet } from '@/shared/pallet/collective';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
+import { ambassadorCorePallet } from '@shared/pallet/ambassadorCore';
+import { fellowshipCorePallet } from '@shared/pallet/fellowshipCore';
 import { type CollectivePalletsType, type CollectivesStruct } from '../../lib/types';
 
 import { type Member } from './types';
@@ -20,23 +22,50 @@ const {
   pending,
   subscribe,
   unsubscribe,
+  fulfilled,
   received,
 } = createDataSubscription<CollectivesStruct<Member[]>, RequestParams, Member[]>({
   initial: {},
   fn: ({ api, palletType }, callback) => {
     let currentAbortController = new AbortController();
 
-    const fetchPages = createPagesHandler({
-      fn: () => collectivePallet.storage.membersPaged(palletType, api, 50),
-      map: response => response.map<Member>(x => ({ accountId: x.accountId, rank: x.member?.rank ?? 0 })),
-    });
-    const fn = () => {
+    const fn = async () => {
       currentAbortController.abort();
       currentAbortController = new AbortController();
-      fetchPages(currentAbortController, callback);
+
+      const collectiveMembers = await collectivePallet.storage.members(palletType, api);
+      if (currentAbortController.signal.aborted) return;
+
+      const coreMembers =
+        palletType === 'fellowship'
+          ? await fellowshipCorePallet.storage.member(api)
+          : await ambassadorCorePallet.storage.member(api);
+      if (currentAbortController.signal.aborted) return;
+
+      const result: Member[] = [];
+
+      for (const collectiveMember of collectiveMembers) {
+        if (nullable(collectiveMember.member)) continue;
+
+        const coreMember = coreMembers.find(x => x.account === collectiveMember.account);
+        if (nullable(coreMember) || nullable(coreMember.status)) continue;
+
+        result.push({
+          accountId: collectiveMember.account,
+          rank: collectiveMember.member.rank,
+          isActive: coreMember.status.isActive,
+          lastPromotion: coreMember.status.lastPromotion,
+          lastProof: coreMember.status.lastProof,
+        });
+      }
+
+      callback({
+        done: true,
+        value: result,
+      });
     };
 
-    fetchPages(currentAbortController, callback);
+    fn();
 
     // TODO check if section name is correct
     return polkadotjsHelpers.subscribeSystemEvents({ api, section: `${palletType}Core` }, fn).then(fn => () => {
@@ -45,15 +74,12 @@ const {
     });
   },
   map: (store, { params, result }) => {
-    const currentStore = pickNestedValue(store, params.palletType, params.chainId) ?? [];
-    const updatedField = merge(
-      currentStore,
-      result,
-      x => x.accountId,
-      (a, b) => a.rank - b.rank,
+    return setNestedValue(
+      store,
+      params.palletType,
+      params.chainId,
+      result.sort((a, b) => b.rank - a.rank),
     );
-
-    return setNestedValue(store, params.palletType, params.chainId, updatedField);
   },
 });
 
@@ -63,5 +89,6 @@ export const membersDomainModel = {
   pending,
   subscribe,
   unsubscribe,
+  fulfilled,
   received,
 };

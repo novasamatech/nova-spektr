@@ -282,7 +282,12 @@
   "fellowship": {
     "fellow_one": "{ count } Fellow",
     "fellow_other": "{ count } Fellows",
-    "members": "Members",
+    "members": {
+      "cardTitle": "Members",
+      "emptyList": "There is no members",
+      "modalAccountTitle": "Account",
+      "modalTitle": "Fellowship members"
+    },
     "noProfile": "Profile doesn’t exist",
     "referendums": {
       "tracks": {
@@ -342,6 +347,7 @@
       "availableLabel": "Available:",
       "descriptionLabel": "Description",
       "descriptionPlaceholder": "Choose an operation description",
+      "searchLabel": "Search",
       "searchPlaceholder": "Search",
       "signerLabel": "Select signer",
       "transferableLabel": "Transferable"

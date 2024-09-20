@@ -1,6 +1,7 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { or } from 'patronum';
 
+import { nullable } from '@/shared/lib/utils';
 import { type ChainId, ConnectionStatus } from '@shared/core';
 import { networkModel, networkUtils } from '@entities/network';
 
@@ -34,10 +35,10 @@ const $fellowshipChainApi = combine($selectedChainId, networkModel.$apis, (chain
 );
 
 const $network = combine($fellowshipChain, $fellowshipChainApi, (chain, api) => {
-  if (!chain || !api) return null;
+  if (nullable(chain) || nullable(api)) return null;
 
   const asset = chain.assets.at(0);
-  if (!asset) return null;
+  if (nullable(asset)) return null;
 
   return {
     palletType: 'fellowship' as const,

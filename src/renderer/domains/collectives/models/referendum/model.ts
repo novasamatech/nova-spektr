@@ -22,6 +22,7 @@ const {
   subscribe,
   unsubscribe,
   received,
+  fulfilled,
 } = createDataSubscription<CollectivesStruct<Referendum[]>, ReferendumSubscriptionParams, Referendum[]>({
   initial: {},
   fn: ({ api, palletType }, callback) => {
@@ -77,4 +78,5 @@ export const referendumDomainModel = {
   subscribe,
   unsubscribe,
   received,
+  fulfilled,
 };

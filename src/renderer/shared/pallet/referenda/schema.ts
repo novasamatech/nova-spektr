@@ -158,15 +158,15 @@ export const referendaReferendumStatusRankedCollectiveTally = pjsSchema.object({
   tally: z.union([convictionVotingTally, palletRankedCollectiveTally]),
   inQueue: pjsSchema.bool,
   alarm: pjsSchema.optional(
-    pjsSchema.tuppleMap(
+    pjsSchema.tupleMap(
       ['referendum', referendumId],
-      ['info', pjsSchema.tuppleMap(['referendum', referendumId], ['since', pjsSchema.blockHeight])],
+      ['info', pjsSchema.tupleMap(['referendum', referendumId], ['since', pjsSchema.blockHeight])],
     ),
   ),
 });
 
 export type ReferendaReferendumInfoCompletedTally = z.infer<typeof referendaReferendumInfoCompletedTally>;
-export const referendaReferendumInfoCompletedTally = pjsSchema.tuppleMap(
+export const referendaReferendumInfoCompletedTally = pjsSchema.tupleMap(
   ['since', pjsSchema.blockHeight],
   ['submissionDeposit', pjsSchema.optional(referendaDeposit)],
   ['decisionDeposit', pjsSchema.optional(referendaDeposit)],

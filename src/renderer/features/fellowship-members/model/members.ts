@@ -21,5 +21,5 @@ sample({
 export const membersModel = {
   $list,
   $pending: or(collectiveDomain.members.pending, membersFeatureStatus.isStarting),
-  $fulfilled: $list.map(x => x.length > 0),
+  $fulfilled: collectiveDomain.members.fulfilled,
 };

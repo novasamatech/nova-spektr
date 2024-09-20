@@ -24,11 +24,11 @@ export const Referendums = memo<Props>(({ onSelect }) => {
 
   const featureState = useUnit(referendumsFeatureStatus.state);
   const referendums = useUnit(referendumListModel.$filteredReferendum);
-  const pending = useUnit(referendumListModel.$pending);
+  const fulfulled = useUnit(referendumListModel.$fulfulled);
 
   const hasNetworkError = featureState.status === 'failed' && featureState.error.message === error.networkDisabled;
 
-  const shouldShowLoadingState = pending || (isSerching && isTitlesLoading);
+  const shouldShowLoadingState = !fulfulled || (isSerching && isTitlesLoading);
   const shouldNetworkDisabledError = hasNetworkError && !shouldShowLoadingState && referendums.length === 0;
   const shouldRenderEmptyState = !shouldShowLoadingState && !hasNetworkError && referendums.length === 0;
   const shouldRenderList = shouldShowLoadingState || (!shouldRenderEmptyState && !shouldNetworkDisabledError);

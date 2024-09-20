@@ -18,23 +18,20 @@ export const ProfileCard = memo<Props>(({ onClick }) => {
 
   const { t } = useI18n();
   const featureState = useUnit(profileFeatureStatus.state);
-  const [fellowshipAccount, pending, fulfilled] = useUnit([
-    profileModel.$account,
-    profileModel.$pending,
-    profileModel.$fulfilled,
-  ]);
+  const fellowshipAccount = useUnit(profileModel.$account);
+  const fulfilled = useUnit(profileModel.$fulfilled);
 
   const isNetworkDisabled = featureState.status === 'failed' && featureState.error.message === error.networkDisabled;
 
   return (
-    <Surface disabled={pending} onClick={onClick}>
+    <Surface disabled={!fulfilled} onClick={onClick}>
       <Box direction="row" verticalAlign="center" horizontalAlign="space-between" padding={[6, 4]}>
         <Box gap={2}>
           <Box direction="row" gap={1}>
             <Icon name="profile" size={16} />
             <FootnoteText className="text-text-secondary">{t('fellowship.yourProfile')}</FootnoteText>
           </Box>
-          <Skeleton active={pending && !fulfilled && !isNetworkDisabled}>
+          <Skeleton active={!fulfilled && !isNetworkDisabled}>
             {fellowshipAccount ? (
               <SmallTitleText>
                 {/* TODO: change to identity */}

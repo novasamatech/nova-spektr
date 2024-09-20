@@ -29,7 +29,7 @@ export const storage = {
    * The number of referenda being decided currently.
    */
   decidingCount(type: PalletType, api: ApiPromise) {
-    const schema = pjsSchema.vec(pjsSchema.tuppleMap(['track', trackId], ['decidingCount', pjsSchema.u32]));
+    const schema = pjsSchema.vec(pjsSchema.tupleMap(['track', trackId], ['decidingCount', pjsSchema.u32]));
 
     return substrateRpcPool.call(() => getQuery(type, api, 'decidingCount').entries()).then(schema.parse);
   },
@@ -39,7 +39,7 @@ export const storage = {
    */
   async referendumInfoFor(type: PalletType, api: ApiPromise, ids?: ReferendumId[]) {
     const schema = pjsSchema.vec(
-      pjsSchema.tuppleMap(
+      pjsSchema.tupleMap(
         ['id', pjsSchema.storageKey(referendumId).transform(keys => keys[0])],
         ['info', pjsSchema.optional(referendaReferendumInfoConvictionVotingTally)],
       ),
@@ -57,7 +57,7 @@ export const storage = {
    */
   async *referendumInfoForPaged(type: PalletType, api: ApiPromise, pageSize: number) {
     const schema = pjsSchema.vec(
-      pjsSchema.tuppleMap(
+      pjsSchema.tupleMap(
         ['id', pjsSchema.storageKey(referendumId).transform(keys => keys[0])],
         ['info', pjsSchema.optional(referendaReferendumInfoConvictionVotingTally)],
       ),
@@ -86,9 +86,7 @@ export const storage = {
    * `TrackInfo::max_deciding`.
    */
   trackQueue(type: PalletType, api: ApiPromise, track: TrackId) {
-    const schema = pjsSchema.vec(
-      pjsSchema.tuppleMap(['approval', pjsSchema.blockHeight], ['referendum', referendumId]),
-    );
+    const schema = pjsSchema.vec(pjsSchema.tupleMap(['approval', pjsSchema.blockHeight], ['referendum', referendumId]));
 
     return substrateRpcPool.call(() => getQuery(type, api, 'trackQueue')(track)).then(schema.parse);
   },

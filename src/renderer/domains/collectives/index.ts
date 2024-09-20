@@ -23,3 +23,5 @@ export type {
 } from './models/tracks/types';
 
 export type { Voting } from './models/voting/types';
+
+export type { Member } from './models/members/types';

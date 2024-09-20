@@ -196,7 +196,7 @@ export const enumValueLooseSchema = <const Map extends Record<string, z.ZodTypeA
   });
 };
 
-export const tuppleMapSchema = <const Entries extends [name: string, schema: z.ZodTypeAny][]>(...args: Entries) => {
+export const tupleMapSchema = <const Entries extends [name: string, schema: z.ZodTypeAny][]>(...args: Entries) => {
   type EntriesTupple = [string, z.ZodTypeAny];
 
   type FromEntries<T extends EntriesTupple[]> = T['length'] extends 0

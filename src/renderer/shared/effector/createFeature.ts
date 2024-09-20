@@ -14,6 +14,7 @@ type State<T> = IdleState | StartingState | RunningState<T> | FailedState;
 export const createFeature = <T = null>(input: Store<T | null> = createStore(null)) => {
   const $state = createStore<State<T>>({ status: 'idle' });
   const $status = $state.map((x) => x.status);
+  const $input = createStore<T | null>(null);
 
   const start = createEvent();
   const stop = createEvent();
@@ -75,6 +76,12 @@ export const createFeature = <T = null>(input: Store<T | null> = createStore(nul
   });
 
   sample({
+    clock: $state,
+    fn: (state) => (state.status === 'running' ? state.data : null),
+    target: $input,
+  });
+
+  sample({
     clock: restore,
     source: input,
     filter: $status.map((status) => status === 'failed'),
@@ -91,6 +98,7 @@ export const createFeature = <T = null>(input: Store<T | null> = createStore(nul
   return {
     status: $status,
     state: readonly($state),
+    input: $input,
     gate,
 
     running: readonly(running),

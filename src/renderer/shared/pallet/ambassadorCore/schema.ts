@@ -14,8 +14,8 @@ export const ambassadorCoreParams = pjsSchema.object({
 export type AmbassadorCoreMemberStatus = z.infer<typeof ambassadorCoreMemberStatus>;
 export const ambassadorCoreMemberStatus = pjsSchema.object({
   isActive: pjsSchema.bool,
-  lastPromotion: pjsSchema.u32,
-  lastProof: pjsSchema.u32,
+  lastPromotion: pjsSchema.blockHeight,
+  lastProof: pjsSchema.blockHeight,
 });
 
 export type AmbassadorCoreMemberEvidence = z.infer<typeof ambassadorCoreMemberEvidence>;

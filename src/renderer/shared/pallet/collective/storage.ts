@@ -3,7 +3,6 @@ import { type z } from 'zod';
 
 import { substrateRpcPool } from '@/shared/api/substrate-helpers';
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { referendaPallet } from '@/shared/pallet/referenda';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 
@@ -26,20 +25,7 @@ const getQuery = (type: PalletType, api: ApiPromise, name: string) => {
   return query;
 };
 
-const votingResponseSchema = pjsSchema.vec(
-  pjsSchema.tuppleMap(
-    [
-      'key',
-      pjsSchema
-        .storageKey(referendaPallet.schema.referendumId, pjsSchema.accountId)
-        .transform(([referendum, account]) => ({
-          referendum,
-          account,
-        })),
-    ],
-    ['vote', pjsSchema.optional(collectiveVoteRecord)],
-  ),
-);
+const votingResponseSchema = pjsSchema.vec(pjsSchema.optional(collectiveVoteRecord));
 
 export const storage = {
   /**
@@ -48,7 +34,7 @@ export const storage = {
    */
   idToIndex(type: PalletType, api: ApiPromise) {
     const schema = pjsSchema.vec(
-      pjsSchema.tuppleMap(
+      pjsSchema.tupleMap(
         ['key', pjsSchema.storageKey(pjsSchema.u16, pjsSchema.accountId)],
         ['index', pjsSchema.optional(pjsSchema.u32)],
       ),
@@ -64,7 +50,7 @@ export const storage = {
    */
   indexToId(type: PalletType, api: ApiPromise) {
     const schema = pjsSchema.vec(
-      pjsSchema.tuppleMap(
+      pjsSchema.tupleMap(
         ['key', pjsSchema.storageKey(collectiveRank, pjsSchema.u32)],
         ['index', pjsSchema.optional(pjsSchema.accountId)],
       ),
@@ -79,10 +65,7 @@ export const storage = {
    */
   memberCount(type: PalletType, api: ApiPromise, ranks: CollectiveRank[]) {
     const schema = pjsSchema.vec(
-      pjsSchema.tuppleMap(
-        ['rank', pjsSchema.storageKey(collectiveRank).transform(x => x[0])],
-        ['count', pjsSchema.u32],
-      ),
+      pjsSchema.tupleMap(['rank', pjsSchema.storageKey(collectiveRank).transform(x => x[0])], ['count', pjsSchema.u32]),
     );
 
     return substrateRpcPool.call(() => getQuery(type, api, 'memberCount').entries(ranks)).then(schema.parse);
@@ -93,8 +76,8 @@ export const storage = {
    */
   members(type: PalletType, api: ApiPromise) {
     const schema = pjsSchema.vec(
-      pjsSchema.tuppleMap(
-        ['accountId', pjsSchema.storageKey(pjsSchema.accountId).transform(x => x[0])],
+      pjsSchema.tupleMap(
+        ['account', pjsSchema.storageKey(pjsSchema.accountId).transform(x => x[0])],
         ['member', pjsSchema.optional(collectiveMemberRecord)],
       ),
     );
@@ -107,7 +90,7 @@ export const storage = {
    */
   async *membersPaged(type: PalletType, api: ApiPromise, pageSize: number) {
     const schema = pjsSchema.vec(
-      pjsSchema.tuppleMap(
+      pjsSchema.tupleMap(
         ['accountId', pjsSchema.storageKey(pjsSchema.accountId).transform(x => x[0])],
         ['member', pjsSchema.optional(collectiveMemberRecord)],
       ),

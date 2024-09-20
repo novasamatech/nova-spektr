@@ -75,6 +75,7 @@ export const createDataSubscription = <Store, Params = void, Response = void>({
 
   const $store = createStore<Store>(initial);
   const $pending = createStore(false);
+  const $fulfilled = createStore(false);
   const $unsubscribeFn = createStore<UnsubscribeFn | null>(null);
   const $subscribed = $unsubscribeFn.map(nonNullable);
 
@@ -175,6 +176,18 @@ export const createDataSubscription = <Store, Params = void, Response = void>({
     target: $pending,
   });
 
+  sample({
+    clock: done,
+    fn: () => true,
+    target: $fulfilled,
+  });
+
+  sample({
+    clock: unsubscribe,
+    fn: () => false,
+    target: $fulfilled,
+  });
+
   return {
     $: $store,
 
@@ -182,6 +195,7 @@ export const createDataSubscription = <Store, Params = void, Response = void>({
     subscribe,
     unsubscribe,
     pending: $pending,
+    fulfilled: $fulfilled,
     received: readonly(received),
   };
 };

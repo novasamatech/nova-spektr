@@ -3,8 +3,9 @@ import { type ApiPromise } from '@polkadot/api';
 import { substrateRpcPool } from '@/shared/api/substrate-helpers';
 import { type Address } from '@/shared/core';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
+import { ambassadorCoreMemberStatus } from '../ambassadorCore/schema';
 
-import { fellowshipCoreMemberEvidence, fellowshipCoreMemberStatus, fellowshipCoreParams } from './schema';
+import { fellowshipCoreMemberEvidence, fellowshipCoreParams } from './schema';
 
 const getQuery = (api: ApiPromise, name: string) => {
   const fellowshipCore = api.query['fellowshipCore'];
@@ -32,12 +33,15 @@ export const storage = {
   /**
    * The status of a claimant.
    */
-  members(api: ApiPromise, addresses: Address[]) {
+  member(api: ApiPromise) {
     const schema = pjsSchema.vec(
-      pjsSchema.tuppleMap(['account', pjsSchema.accountId], ['status', fellowshipCoreMemberStatus]),
+      pjsSchema.tupleMap(
+        ['account', pjsSchema.storageKey(pjsSchema.accountId).transform(x => x[0])],
+        ['status', pjsSchema.optional(ambassadorCoreMemberStatus)],
+      ),
     );
 
-    return substrateRpcPool.call(() => getQuery(api, 'member').entries(addresses)).then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(api, 'member').entries()).then(schema.parse);
   },
 
   /**
@@ -45,9 +49,12 @@ export const storage = {
    */
   memberEvidences(api: ApiPromise, addresses: Address[]) {
     const schema = pjsSchema.vec(
-      pjsSchema.tuppleMap(['account', pjsSchema.accountId], ['status', fellowshipCoreMemberEvidence]),
+      pjsSchema.tupleMap(
+        ['account', pjsSchema.storageKey(pjsSchema.accountId).transform(x => x[0])],
+        ['status', pjsSchema.optional(fellowshipCoreMemberEvidence)],
+      ),
     );
 
-    return substrateRpcPool.call(() => getQuery(api, 'member').entries(addresses)).then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(api, 'memberEvidences').entries(addresses)).then(schema.parse);
   },
 };
