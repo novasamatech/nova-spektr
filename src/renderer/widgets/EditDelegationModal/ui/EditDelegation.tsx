@@ -96,7 +96,6 @@ export const EditDelegation = () => {
           count={transactions.length}
           footer={
             <>
-              {' '}
               {initiatorWallet && basketUtils.isBasketAvailable(initiatorWallet) && (
                 <Button pallet="secondary" onClick={() => editDelegationModel.events.txSaved()}>
                   {t('operation.addToBasket')}
@@ -109,7 +108,7 @@ export const EditDelegation = () => {
           {transactions?.map((t, index) => (
             // eslint-disable-next-line react/no-array-index-key
             <div key={index} className="flex h-[600px] flex-col last-of-type:pr-4">
-              <div className="max-h-full w-[440px] overflow-y-auto rounded-lg bg-white shadow-shadow-2">
+              <div className="max-h-full w-[440px] rounded-lg bg-white shadow-shadow-2">
                 <Confirmation id={index} hideSignButton />
               </div>
             </div>
