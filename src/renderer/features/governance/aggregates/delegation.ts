@@ -2,7 +2,8 @@ import { BN } from '@polkadot/util';
 import { combine } from 'effector';
 import uniq from 'lodash/uniq';
 
-import { type DelegationBalanceMap, type DelegationTracksMap } from '@/shared/core';
+import { type DelegatingVoting, type DelegationBalanceMap, type DelegationTracksMap } from '@/shared/core';
+import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { permissionUtils, walletModel } from '@/entities/wallet';
 import { votingService } from '@entities/governance';
 import { networkSelectorModel } from '../model/networkSelector';
@@ -16,7 +17,13 @@ const $totalDelegations = combine(
   ({ voting }): string => {
     return Object.values(voting)
       .reduce((acc, value) => {
-        const voting = Object.values(value).find(votingService.isDelegating);
+        const voting = Object.values(value).reduce<DelegatingVoting | undefined>((acc, vote) => {
+          if (votingService.isDelegating(vote)) {
+            return acc?.balance.gt(vote.balance) ? acc : vote;
+          }
+
+          return acc;
+        }, undefined);
 
         return voting ? acc.iadd(voting.balance) : acc;
       }, new BN(0))
@@ -24,48 +31,58 @@ const $totalDelegations = combine(
   },
 );
 
-const $activeDelegations = votingAggregate.$activeWalletVotes.map((activeVotes) => {
-  const activeBalances: DelegationBalanceMap = {};
+const $activeDelegations = combine(
+  { activeVotes: votingAggregate.$activeWalletVotes, chain: networkSelectorModel.$governanceChain },
+  ({ activeVotes, chain }) => {
+    const activeBalances: DelegationBalanceMap = {};
 
-  for (const [address, delegations] of Object.entries(activeVotes)) {
-    for (const delegation of Object.values(delegations)) {
-      if (!votingService.isDelegating(delegation)) continue;
+    for (const [address, delegations] of Object.entries(activeVotes)) {
+      for (const delegation of Object.values(delegations)) {
+        if (!votingService.isDelegating(delegation)) continue;
 
-      if (!activeBalances[delegation.target]) {
-        activeBalances[delegation.target] = {};
+        const target = toAddress(toAccountId(delegation.target), { prefix: chain?.addressPrefix });
+
+        if (!activeBalances[target]) {
+          activeBalances[target] = {};
+        }
+
+        activeBalances[target][address] = {
+          conviction: delegation.conviction,
+          balance: delegation.balance,
+        };
       }
-
-      activeBalances[delegation.target][address] = {
-        conviction: delegation.conviction,
-        balance: delegation.balance,
-      };
     }
-  }
 
-  return activeBalances;
-});
+    return activeBalances;
+  },
+);
 
-const $activeTracks = votingAggregate.$activeWalletVotes.map((activeVotes) => {
-  const activeTracks: DelegationTracksMap = {};
+const $activeTracks = combine(
+  { activeVotes: votingAggregate.$activeWalletVotes, chain: networkSelectorModel.$governanceChain },
+  ({ activeVotes, chain }) => {
+    const activeTracks: DelegationTracksMap = {};
 
-  for (const [address, delegations] of Object.entries(activeVotes)) {
-    for (const [track, delegation] of Object.entries(delegations)) {
-      if (!votingService.isDelegating(delegation)) continue;
+    for (const [address, delegations] of Object.entries(activeVotes)) {
+      for (const [track, delegation] of Object.entries(delegations)) {
+        if (!votingService.isDelegating(delegation)) continue;
 
-      if (!activeTracks[delegation.target]) {
-        activeTracks[delegation.target] = {};
+        const target = toAddress(toAccountId(delegation.target), { prefix: chain?.addressPrefix });
+
+        if (!activeTracks[target]) {
+          activeTracks[target] = {};
+        }
+
+        if (!activeTracks[target][address]) {
+          activeTracks[target][address] = [];
+        }
+
+        activeTracks[target][address].push(track);
       }
-
-      if (!activeTracks[delegation.target][address]) {
-        activeTracks[delegation.target][address] = [];
-      }
-
-      activeTracks[delegation.target][address].push(track);
     }
-  }
 
-  return activeTracks;
-});
+    return activeTracks;
+  },
+);
 
 const $activeWalletDelegatedTracks = $activeTracks.map((tracks) => {
   return uniq(Object.values(tracks).flatMap((map) => Object.values(map).flat()));

@@ -54,8 +54,8 @@ export const CurrentDelegationModal = () => {
                     <DelegationCard
                       key={delegate.accountId}
                       delegate={delegate}
-                      votes={Object.values(activeDelegations[delegate.accountId])}
-                      tracks={[...new Set(Object.values(activeTracks[delegate.accountId]).flat())]}
+                      votes={Object.values(activeDelegations[delegate.accountId] || {})}
+                      tracks={[...new Set(Object.values(activeTracks[delegate.accountId] || {}).flat())]}
                     />
                   </button>
                 ))}
