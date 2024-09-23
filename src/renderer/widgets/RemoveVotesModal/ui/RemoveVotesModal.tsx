@@ -3,7 +3,7 @@ import { useGate, useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-import { type AccountVote, type Address, type Asset, type Chain, type OngoingReferendum } from '@/shared/core';
+import { type AccountVote, type Address, type Asset, type Chain, type ReferendumId, type TrackId } from '@/shared/core';
 import { useModalClose } from '@/shared/lib/hooks';
 import { Step, isStep, nonNullable, nullable } from '@/shared/lib/utils';
 import { BaseModal, Button } from '@shared/ui';
@@ -12,26 +12,35 @@ import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { RemoveVoteConfirmation, basketUtils } from '@/features/operations/OperationsConfirm';
 import { SignatorySelectModal } from '@/pages/Operations/components/modals/SignatorySelectModal';
-import { removeVoteModalAggregate } from '../aggregates/removeVoteModal';
+import { removeVotesModalAggregate } from '../aggregates/removeVotesModal';
 
 type Props = {
-  referendum: OngoingReferendum;
   voter: Address;
-  vote: AccountVote;
+  votes: {
+    referendum: ReferendumId;
+    track: TrackId;
+    vote?: AccountVote;
+  }[];
   api: ApiPromise;
   chain: Chain;
   asset: Asset;
   onClose: VoidFunction;
 };
 
-export const RemoveVoteModal = ({ referendum, vote, voter, chain, asset, api, onClose }: Props) => {
-  useGate(removeVoteModalAggregate.gates.flow, { referendum, vote, voter, chain, asset, api });
+export const RemoveVotesModal = ({ votes, voter, chain, asset, api, onClose }: Props) => {
+  useGate(removeVotesModalAggregate.gates.flow, {
+    votes,
+    voter,
+    chain,
+    asset,
+    api,
+  });
 
   const { t } = useI18n();
-  const step = useUnit(removeVoteModalAggregate.$step);
-  const signatory = useUnit(removeVoteModalAggregate.$signatory);
-  const signatories = useUnit(removeVoteModalAggregate.$signatories);
-  const initiatorWallet = useUnit(removeVoteModalAggregate.$initiatorWallet);
+  const step = useUnit(removeVotesModalAggregate.$step);
+  const signatory = useUnit(removeVotesModalAggregate.$signatory);
+  const signatories = useUnit(removeVotesModalAggregate.$signatories);
+  const initiatorWallet = useUnit(removeVotesModalAggregate.$initiatorWallet);
 
   const shouldPickSignatory = nullable(signatory) && signatories.length > 0;
 
@@ -91,7 +100,7 @@ export const RemoveVoteModal = ({ referendum, vote, voter, chain, asset, api, on
               !shouldPickSignatory &&
               nonNullable(initiatorWallet) &&
               basketUtils.isBasketAvailable(initiatorWallet) && (
-                <Button pallet="secondary" onClick={() => removeVoteModalAggregate.events.txSaved()}>
+                <Button pallet="secondary" onClick={() => removeVotesModalAggregate.events.txSaved()}>
                   {t('operation.addToBasket')}
                 </Button>
               )
@@ -99,9 +108,10 @@ export const RemoveVoteModal = ({ referendum, vote, voter, chain, asset, api, on
           />
         )}
         {isStep(step, Step.SIGN) && (
-          <OperationSign onGoBack={() => removeVoteModalAggregate.events.setStep(Step.CONFIRM)} />
+          <OperationSign onGoBack={() => removeVotesModalAggregate.events.setStep(Step.CONFIRM)} />
         )}
       </BaseModal>
+
       <SignatorySelectModal
         isOpen={isSelectSignatoryOpen}
         accounts={signatories}
@@ -109,7 +119,7 @@ export const RemoveVoteModal = ({ referendum, vote, voter, chain, asset, api, on
         nativeAsset={asset}
         onClose={handleSelectSignatoryClose}
         onSelect={(a) => {
-          removeVoteModalAggregate.events.selectSignatory(a);
+          removeVotesModalAggregate.events.selectSignatory(a);
           setIsSelectSignatoryOpen(false);
         }}
       />

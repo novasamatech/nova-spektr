@@ -9,7 +9,8 @@ import {
   type Asset,
   type BasketTransaction,
   type Chain,
-  type OngoingReferendum,
+  type ReferendumId,
+  type TrackId,
 } from '@shared/core';
 import { Step, nonNullable, nullable, toAddress } from '@shared/lib/utils';
 import { basketModel } from '@entities/basket';
@@ -23,9 +24,12 @@ import { removeVoteConfirmModel } from '@features/operations/OperationsConfirm';
 import { type RemoveVoteConfirm } from '@features/operations/OperationsConfirm/Referendum/RemoveVote/model/confirm-model';
 
 const flow = createGate<{
-  referendum: OngoingReferendum | null;
   voter: Address | null;
-  vote: AccountVote | null;
+  votes: {
+    referendum: ReferendumId;
+    track: TrackId;
+    vote?: AccountVote;
+  }[];
   chain: Chain | null;
   asset: Asset | null;
   api: ApiPromise | null;
@@ -33,10 +37,9 @@ const flow = createGate<{
   defaultState: {
     api: null,
     voter: null,
-    vote: null,
+    votes: [],
     chain: null,
     asset: null,
-    referendum: null,
   },
 });
 
@@ -86,14 +89,13 @@ sample({
 
 // Transaction
 
-const $coreTx = combine(flow.state, $account, ({ chain, referendum }, account) => {
-  if (nullable(account) || nullable(chain) || nullable(referendum)) return null;
+const $coreTx = combine(flow.state, $account, ({ chain, votes }, account) => {
+  if (nullable(account) || nullable(chain) || nullable(votes)) return null;
 
-  return transactionBuilder.buildRemoveVote({
+  return transactionBuilder.buildRemoveVotes({
     accountId: account.accountId,
-    chain: chain,
-    track: referendum.track,
-    referendum: referendum.referendumId,
+    chain,
+    votes,
   });
 });
 
@@ -184,11 +186,10 @@ sample({
     signatory: $signatory,
     wrappedTx: $wrappedTx,
   },
-  fn: ({ account, signatory, wrappedTx, state: { referendum, vote, api, asset, chain } }): RemoveVoteConfirm[] => {
+  fn: ({ account, signatory, wrappedTx, state: { votes, api, asset, chain } }): RemoveVoteConfirm[] => {
     if (
+      nullable(votes) ||
       nullable(account) ||
-      nullable(referendum) ||
-      nullable(vote) ||
       nullable(asset) ||
       nullable(chain) ||
       nullable(api) ||
@@ -201,12 +202,10 @@ sample({
       api,
       chain,
       asset,
-      vote,
+      votes,
       account,
       signatory: signatory ?? undefined,
       description: '',
-      referendumId: referendum.referendumId,
-      trackId: referendum.track,
       wrappedTransactions: wrappedTx,
     };
 
@@ -292,7 +291,7 @@ sample({
 
 // Aggregate
 
-export const removeVoteModalAggregate = {
+export const removeVotesModalAggregate = {
   $initiatorWallet,
   $lockPeriods: lockPeriodsModel.$lockPeriods,
 

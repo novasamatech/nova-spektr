@@ -1,13 +1,13 @@
 import { useUnit } from 'effector-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-import { Step, cnTw, isStep, nonNullable, nullable } from '@/shared/lib/utils';
+import { Step, isStep, nonNullable, nullable } from '@/shared/lib/utils';
 import { useModalClose } from '@shared/lib/hooks';
-import { BaseModal, Button, IconButton } from '@shared/ui';
+import { BaseModal, Button } from '@shared/ui';
 import { SignButton } from '@/entities/operations';
 import { OperationTitle } from '@entities/chain';
-import { OperationResult } from '@entities/transaction';
+import { OperationResult, TransactionSlider } from '@entities/transaction';
 import { OperationSign, OperationSubmit } from '@features/operations';
 import { RevokeDelegationConfirmation as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
 import { SignatorySelectModal } from '@/pages/Operations/components/modals/SignatorySelectModal';
@@ -23,17 +23,6 @@ export const RevokeDelegation = () => {
   const signatory = useUnit(revokeDelegationModel.$signatory);
   const signatories = useUnit(revokeDelegationModel.$signatories);
   const network = useUnit(revokeDelegationModel.$network);
-
-  const [currentTx, setCurrentTx] = useState(0);
-
-  const ref = useRef<HTMLDivElement>(null);
-
-  const scroll = (value: number) => {
-    setTimeout(() =>
-      // @ts-expect-error TS doesn't recognize offsetLeft
-      ref.current?.scrollTo({ left: ref.current?.childNodes[0].childNodes[value].offsetLeft - 16, behavior: 'smooth' }),
-    );
-  };
 
   const [isModalOpen, closeModal] = useModalClose(!isStep(step, Step.NONE), revokeDelegationModel.output.flowFinished);
   const [isBasketModalOpen, closeBasketModal] = useModalClose(
@@ -59,26 +48,6 @@ export const RevokeDelegation = () => {
       }
     }
   }, [shouldPickSignatory, isSelectSignatoryClosed, isSelectSignatoryClosed, setIsSelectSignatoryOpen, closeModal]);
-
-  const nextTx = () => {
-    if (transactions && currentTx < transactions.length - 1) {
-      const newValue = currentTx + 1;
-
-      setCurrentTx(newValue);
-      scroll(newValue);
-    }
-  };
-
-  const previousTx = () => {
-    if (currentTx > 0) {
-      const newValue = currentTx - 1;
-
-      setCurrentTx(newValue);
-      scroll(newValue);
-    }
-  };
-
-  const currentPage = currentTx + 1;
 
   if (!walletData || !network) {
     return null;
@@ -131,58 +100,33 @@ export const RevokeDelegation = () => {
       )}
 
       {isStep(step, Step.CONFIRM) && transactions.length > 1 && (
-        <>
-          <div className="overflow-x-hidden bg-background-default py-4" ref={ref}>
-            {transactions.length > 1 && (
-              <div className="flex w-[478px] gap-2 first:ml-4">
-                {transactions?.map((t, index) => (
-                  // eslint-disable-next-line react/no-array-index-key
-                  <div key={index} className="flex h-[622px] flex-col last-of-type:pr-4">
-                    <div className="max-h-full w-[440px] overflow-y-auto rounded-lg bg-white shadow-shadow-2">
-                      <Confirmation id={index} hideSignButton config={{ withFormatAmount: false }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+        <TransactionSlider
+          count={transactions.length}
+          footer={
+            <>
+              {initiatorWallet && basketUtils.isBasketAvailable(initiatorWallet) && (
+                <Button pallet="secondary" onClick={() => revokeDelegationModel.events.txSaved()}>
+                  {t('operation.addToBasket')}
+                </Button>
+              )}
 
-          <div className="flex justify-between rounded-lg bg-white px-5 pb-4 pt-3">
-            <div className="flex gap-2">
-              <IconButton
-                size={20}
-                className="flex h-[42px] w-[42px] items-center justify-center border"
-                name="left"
-                onClick={previousTx}
+              <SignButton
+                isDefault
+                type={walletData.wallet?.type}
+                onClick={revokeDelegationModel.events.txsConfirmed}
               />
-
-              <div
-                className={cnTw(
-                  'h-[42px] w-[77px] rounded-full border border-divider font-semibold',
-                  'flex items-center justify-center text-text-secondary',
-                  'shadow-shadow-1',
-                )}
-              >
-                {currentPage}/{transactions?.length}
+            </>
+          }
+        >
+          {transactions?.map((t, index) => (
+            // eslint-disable-next-line react/no-array-index-key
+            <div key={index} className="flex h-[622px] flex-col last-of-type:pr-4">
+              <div className="max-h-full w-[440px] overflow-y-auto rounded-lg bg-white shadow-shadow-2">
+                <Confirmation id={index} hideSignButton config={{ withFormatAmount: false }} />
               </div>
-
-              <IconButton
-                size={20}
-                className="flex h-[42px] w-[42px] items-center justify-center border"
-                name="right"
-                onClick={nextTx}
-              />
             </div>
-
-            {initiatorWallet && basketUtils.isBasketAvailable(initiatorWallet) && (
-              <Button pallet="secondary" onClick={() => revokeDelegationModel.events.txSaved()}>
-                {t('operation.addToBasket')}
-              </Button>
-            )}
-
-            <SignButton isDefault type={walletData.wallet?.type} onClick={revokeDelegationModel.events.txsConfirmed} />
-          </div>
-        </>
+          ))}
+        </TransactionSlider>
       )}
 
       {isStep(step, Step.SIGN) && (
