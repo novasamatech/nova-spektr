@@ -27,6 +27,7 @@ export const DelegateTitle = ({ delegate, className }: Props) => {
               button={<IconButton className="ml-2 flex" name="info" />}
               address={delegate.address}
               addressPrefix={chain?.addressPrefix}
+              explorers={chain?.explorers}
             />
           </span>
         )}

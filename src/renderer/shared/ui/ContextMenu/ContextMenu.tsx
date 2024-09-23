@@ -49,6 +49,7 @@ const ContextMenuRoot = ({ button, children, className }: PropsWithChildren<Prop
             'border border-token-container-border bg-token-container-background shadow-card-shadow',
             className,
           )}
+          onClick={(e) => e.stopPropagation()}
         >
           {children}
         </Popover.Panel>

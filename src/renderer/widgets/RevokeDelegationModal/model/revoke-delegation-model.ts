@@ -192,9 +192,10 @@ sample({
       transactionBuilder.buildUndelegate({
         chain: walletData.chain!,
         accountId: data.account!.accountId,
-        tracks: Object.keys(
-          activeTracks[data.target][toAddress(data.account.accountId, { prefix: walletData.chain?.addressPrefix })],
-        ).map(Number),
+        tracks:
+          activeTracks[data.target][toAddress(data.account.accountId, { prefix: walletData.chain?.addressPrefix })].map(
+            Number,
+          ),
       }),
     );
   },

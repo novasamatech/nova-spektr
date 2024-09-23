@@ -1,8 +1,9 @@
 import { combine, createEvent, createStore, sample } from 'effector';
+import uniq from 'lodash/uniq';
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { type Address } from '@/shared/core';
-import { toAddress } from '@/shared/lib/utils';
+import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
 import { accountUtils, permissionUtils, walletModel } from '@/entities/wallet';
 import {
@@ -24,13 +25,17 @@ const closeModal = $isModalOpen.reinit;
 const closeDelegationsModal = $isDelegationsOpen.reinit;
 
 const $activeTracks = combine(
-  { votes: votingAggregate.$activeWalletVotes, delegate: $delegate },
-  ({ votes, delegate }) => {
+  { votes: votingAggregate.$activeWalletVotes, delegate: $delegate, chain: networkSelectorModel.$governanceChain },
+  ({ votes, delegate, chain }) => {
     const activeTracks: Record<Address, Set<string>> = {};
 
     for (const [address, delegations] of Object.entries(votes)) {
       for (const [key, vote] of Object.entries(delegations)) {
-        if (votingService.isDelegating(vote) && vote.target === delegate?.accountId) {
+        if (!votingService.isDelegating(vote)) continue;
+
+        const target = toAddress(toAccountId(vote.target), { prefix: chain?.addressPrefix });
+
+        if (votingService.isDelegating(vote) && target === delegate?.accountId) {
           if (!activeTracks[address]) {
             activeTracks[address] = new Set();
           }
@@ -128,7 +133,13 @@ export const delegateDetailsModel = {
   $delegate,
   $activeAccounts,
   $activeTracks,
-  $uniqueTracks: delegationAggregate.$activeWalletDelegatedTracks,
+  $uniqueTracks: $activeTracks.map((tracks) =>
+    uniq(
+      Object.values(tracks)
+        .map((tracks) => [...tracks])
+        .flat(),
+    ),
+  ),
   $activeDelegations,
 
   $isAddAvailable,

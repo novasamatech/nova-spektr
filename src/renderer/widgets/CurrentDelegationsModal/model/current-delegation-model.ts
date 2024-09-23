@@ -4,7 +4,7 @@ import { readonly } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { type Address } from '@/shared/core';
-import { includesMultiple } from '@/shared/lib/utils';
+import { includesMultiple, toAccountId, toAddress } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
 import { delegateRegistryAggregate, networkSelectorModel, votingAggregate } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
@@ -23,15 +23,16 @@ const $delegateList = combine(
   {
     list: delegateRegistryAggregate.$delegateRegistry,
     activeVotes: votingAggregate.$activeWalletVotes,
+    chain: networkSelectorModel.$governanceChain,
     query: $query,
   },
-  ({ list, activeVotes, query }) => {
+  ({ list, activeVotes, query, chain }) => {
     const activeDelegationsSet = new Set<Address>();
 
     for (const voteList of Object.values(activeVotes)) {
       for (const vote of Object.values(voteList)) {
         if (votingService.isDelegating(vote)) {
-          activeDelegationsSet.add(vote.target);
+          activeDelegationsSet.add(toAddress(toAccountId(vote.target), { prefix: chain?.addressPrefix }));
         }
       }
     }
@@ -41,7 +42,9 @@ const $delegateList = combine(
 
     const delegationsList = [
       ...list,
-      ...activeDelegationsList.filter((d) => !addresses.has(d)).map((d) => ({ accountId: d }) as DelegateAccount),
+      ...activeDelegationsList
+        .filter((d) => !addresses.has(toAddress(toAccountId(d), { prefix: chain?.addressPrefix })))
+        .map((d) => ({ accountId: d }) as DelegateAccount),
     ];
 
     const delegatedList = delegationsList.filter((delegate) => activeDelegationsList.includes(delegate.accountId));
