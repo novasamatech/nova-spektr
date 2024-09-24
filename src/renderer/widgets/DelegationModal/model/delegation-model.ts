@@ -5,7 +5,7 @@ import { readonly } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { type Address } from '@/shared/core';
-import { Step, includesMultiple, toAccountId, validateAddress } from '@/shared/lib/utils';
+import { Step, includesMultiple, isStep, toAccountId, validateAddress } from '@/shared/lib/utils';
 import { walletModel } from '@/entities/wallet';
 import { delegateRegistryAggregate, delegationAggregate, networkSelectorModel } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
@@ -132,6 +132,8 @@ sample({
 
 sample({
   clock: delegateModel.events.flowStarted,
+  source: $step,
+  filter: (step) => isStep(step, Step.CUSTOM_DELEGATION),
   target: closeCustomModal,
 });
 
