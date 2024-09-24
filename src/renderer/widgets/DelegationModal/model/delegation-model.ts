@@ -30,13 +30,17 @@ const $customDelegate = restore(customDelegateChanged, '').reset(openCustomModal
 
 const $delegateList = combine(
   {
+    activeWallet: walletModel.$activeWallet,
     delegationsList: delegateRegistryAggregate.$delegateRegistry,
     query: $query,
     sortType: $sortType,
   },
-  ({ delegationsList, query, sortType }) => {
+  ({ activeWallet, delegationsList, query, sortType }) => {
+    const accounts = activeWallet?.accounts.map((a) => a.accountId) || [];
+    const list = delegationsList.filter((d) => !accounts.includes(toAccountId(d.accountId)));
+
     if (!sortType && !query) {
-      const grouped = groupBy(delegationsList, (delegate) => !!delegate.name);
+      const grouped = groupBy(list, (delegate) => !!delegate.name);
 
       return [
         ...sortBy(grouped['true'], (delegate) => delegate[SortProp[SortType.DELEGATIONS]] || 0).reverse(),
@@ -44,7 +48,7 @@ const $delegateList = combine(
       ];
     }
 
-    const searched = delegationsList.filter((delegate) =>
+    const searched = list.filter((delegate) =>
       includesMultiple([delegate.accountId, delegate.address, delegate.name, delegate.shortDescription], query),
     );
 
