@@ -1,7 +1,7 @@
 import { BN } from '@polkadot/util';
 import { combine, createEvent, restore, sample } from 'effector';
 import { groupBy, sortBy } from 'lodash';
-import { readonly } from 'patronum';
+import { combineEvents, readonly } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { type Address } from '@/shared/core';
@@ -9,6 +9,7 @@ import { Step, includesMultiple, isStep, toAccountId, validateAddress } from '@/
 import { walletModel } from '@/entities/wallet';
 import { delegateRegistryAggregate, delegationAggregate, networkSelectorModel } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
+import { submitModel } from '@/features/operations/OperationSubmit';
 import { delegateModel } from '@/widgets/DelegateModal/model/delegate-model';
 import { DelegationErrors, SortProp, SortType } from '../common/constants';
 
@@ -138,7 +139,13 @@ sample({
 });
 
 sample({
-  clock: navigationModel.events.navigateTo,
+  clock: [
+    combineEvents({
+      events: [delegateModel.output.flowFinished, submitModel.output.formSubmitted],
+      reset: flowStarted,
+    }),
+    navigationModel.events.navigateTo,
+  ],
   target: flowFinished,
 });
 

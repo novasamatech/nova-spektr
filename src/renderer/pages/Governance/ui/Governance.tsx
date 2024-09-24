@@ -21,6 +21,7 @@ import {
 } from '@features/governance';
 import { CurrentDelegationModal, currentDelegationModel } from '@/widgets/CurrentDelegationsModal';
 import { DelegateDetails } from '@/widgets/DelegateDetails';
+import { Delegate } from '@/widgets/DelegateModal';
 import { DelegationModal, delegationModel } from '@/widgets/DelegationModal';
 import { UnlockModal, unlockAggregate } from '@/widgets/UnlockModal';
 import { RemoveVoteModal } from '@widgets/RemoveVoteModal';
@@ -194,6 +195,7 @@ export const Governance = () => {
       <CurrentDelegationModal />
       <DelegationModal />
       <DelegateDetails />
+      <Delegate />
 
       <UnlockModal />
     </div>
