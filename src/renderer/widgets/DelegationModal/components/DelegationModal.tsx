@@ -7,7 +7,6 @@ import { BaseModal } from '@/shared/ui';
 import { OperationTitle } from '@/entities/chain';
 import { networkSelectorModel } from '@/features/governance';
 import { delegateDetailsModel } from '@/widgets/DelegateDetails';
-import { Delegate } from '@/widgets/DelegateModal';
 import { delegationModel } from '../model/delegation-model';
 
 import { AddCustomDelegationModel } from './AddCustomDelegationModal';
@@ -37,8 +36,6 @@ export const DelegationModal = () => {
       />
 
       <AddCustomDelegationModel />
-
-      <Delegate />
     </BaseModal>
   );
 };
