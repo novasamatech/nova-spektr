@@ -96,6 +96,7 @@ const EmptyState = () => {
 const DelegationsList = () => {
   const { t } = useI18n();
 
+  const proposers = useUnit(delegateSummaryModel.$proposers);
   const currentDelegations = useUnit(delegateSummaryModel.$currentDelegations);
   const isDelegatingLoading = useUnit(delegateSummaryModel.$isDelegatingLoading);
   const chain = useUnit(delegateDetailsModel.$chain);
@@ -120,7 +121,7 @@ const DelegationsList = () => {
       {currentDelegations.map(([address, delegation]) => (
         <div key={address} className="flex items-center justify-between py-2">
           <BodyText className="flex-1">
-            <Address showIcon address={address} variant="full" iconSize={20} />
+            <Address showIcon address={address} title={proposers[address]?.parent.name} variant="full" iconSize={20} />
           </BodyText>
           <div className="mr-6 gap-y-1">
             <BodyText className="text-right">
@@ -154,7 +155,7 @@ const DelegationReferendumList = ({ votedReferendums }: { votedReferendums: Vote
     return <EmptyState />;
   }
 
-  if (isReferendumsLoading) {
+  if (isReferendumsLoading || !network) {
     return <Loading />;
   }
 
@@ -172,8 +173,8 @@ const DelegationReferendumList = ({ votedReferendums }: { votedReferendums: Vote
       {selectedReferendum && (
         <ReferendumDetailsModal
           referendum={selectedReferendum}
-          chain={network!.chain}
-          asset={network!.asset}
+          chain={network.chain}
+          asset={network.asset}
           showActions={false}
           onClose={() => setSelectedReferendum(null)}
           onVoteRequest={() => {}}
