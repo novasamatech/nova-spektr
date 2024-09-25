@@ -1,5 +1,6 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import uniq from 'lodash/uniq';
+import { combineEvents } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { type Address } from '@/shared/core';
@@ -13,6 +14,8 @@ import {
   votingAggregate,
 } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
+import { submitModel } from '@/features/operations/OperationSubmit';
+import { delegateModel } from '@/widgets/DelegateModal';
 
 const flowStarted = createEvent<DelegateAccount>();
 const openDelegations = createEvent();
@@ -124,7 +127,13 @@ sample({
 });
 
 sample({
-  clock: navigationModel.events.navigateTo,
+  clock: [
+    navigationModel.events.navigateTo,
+    combineEvents({
+      events: [delegateModel.output.flowFinished, submitModel.output.formSubmitted],
+      reset: flowStarted,
+    }),
+  ],
   target: [closeModal, closeDelegationsModal],
 });
 

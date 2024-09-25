@@ -316,9 +316,10 @@ sample({
     walletData: $walletData,
     transactions: $transactions,
     txWrappers: $txWrappers,
+    step: $step,
   },
-  filter: ({ revokeDelegationData, walletData, transactions }) => {
-    return revokeDelegationData.length > 0 && !!walletData && !!transactions;
+  filter: ({ revokeDelegationData, walletData, transactions, step }) => {
+    return revokeDelegationData.length > 0 && !!walletData && !!transactions && isStep(step, Step.CONFIRM);
   },
   fn: ({ revokeDelegationData, walletData, transactions, txWrappers }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
@@ -348,9 +349,10 @@ sample({
     walletData: $walletData,
     transactions: $transactions,
     revokeDelegationData: $revokeDelegationData,
+    step: $step,
   },
-  filter: ({ revokeDelegationData, walletData, transactions }) => {
-    return !!revokeDelegationData && !!walletData && !!transactions;
+  filter: ({ revokeDelegationData, walletData, transactions, step }) => {
+    return !!revokeDelegationData && !!walletData && !!transactions && isStep(step, Step.SIGN);
   },
   fn: ({ walletData, revokeDelegationData, transactions }, signParams) => ({
     event: {

@@ -1,13 +1,14 @@
 import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
-import { readonly } from 'patronum';
+import { combineEvents, readonly } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { type Address } from '@/shared/core';
-import { includesMultiple, toAccountId, toAddress } from '@/shared/lib/utils';
+import { includesMultiple, nonNullable, toAccountId, toAddress } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
 import { delegateRegistryAggregate, networkSelectorModel, votingAggregate } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
+import { submitModel } from '@/features/operations/OperationSubmit';
 import { delegateModel } from '@/widgets/DelegateModal/model/delegate-model';
 import { SortProp, SortType } from '@/widgets/DelegationModal/common/constants';
 
@@ -60,6 +61,16 @@ const $delegateList = combine(
     return searched.sort((a, b) => (new BN(a[sortProp] || 0).lt(new BN(b[sortProp] || 0)) ? 1 : -1));
   },
 );
+
+sample({
+  clock: combineEvents({
+    events: [delegateModel.output.flowFinished, submitModel.output.formSubmitted],
+    reset: flowStarted,
+  }),
+  source: $delegateList,
+  filter: nonNullable,
+  target: flowStarted,
+});
 
 sample({
   clock: flowStarted,

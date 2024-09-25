@@ -14,7 +14,7 @@ import {
   type TxWrapper,
   WrapperKind,
 } from '@shared/core';
-import { Step, formatAmount, getRelaychainAsset, nonNullable, transferableAmount } from '@shared/lib/utils';
+import { Step, formatAmount, getRelaychainAsset, isStep, nonNullable, transferableAmount } from '@shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingService } from '@/entities/governance';
 import { basketModel } from '@entities/basket/model/basket-model';
@@ -296,9 +296,10 @@ sample({
     txWrappers: $txWrappers,
     delegateData: $delegateData,
     coreTxs: $coreTxs,
+    step: $step,
   },
-  filter: ({ walletData, delegateData }) =>
-    Boolean(delegateData) && Boolean(walletData.wallet) && Boolean(walletData.chain),
+  filter: ({ walletData, delegateData, step }) =>
+    Boolean(delegateData) && Boolean(walletData.wallet) && Boolean(walletData.chain) && isStep(step, Step.INIT),
   fn: ({ feeData, balances, walletData, txWrappers, tracks, target, shards, delegateData, coreTxs }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
     const asset = getRelaychainAsset(walletData.chain!.assets)!;
@@ -338,9 +339,10 @@ sample({
     transactions: $transactions,
     txWrappers: $txWrappers,
     accounts: $accounts,
+    step: $step,
   },
-  filter: ({ delegateData, walletData, transactions }) => {
-    return Boolean(delegateData) && Boolean(walletData) && Boolean(transactions);
+  filter: ({ delegateData, walletData, transactions, step }) => {
+    return Boolean(delegateData) && Boolean(walletData) && Boolean(transactions) && isStep(step, Step.CONFIRM);
   },
   fn: ({ delegateData, walletData, transactions, txWrappers, accounts }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
@@ -371,9 +373,10 @@ sample({
     transactions: $transactions,
     delegateData: $delegateData,
     accounts: $accounts,
+    step: $step,
   },
-  filter: ({ delegateData, walletData, transactions }) => {
-    return Boolean(delegateData) && Boolean(walletData) && Boolean(transactions);
+  filter: ({ delegateData, walletData, transactions, step }) => {
+    return Boolean(delegateData) && Boolean(walletData) && Boolean(transactions) && isStep(step, Step.SIGN);
   },
   fn: (delegateFlowData, signParams) => ({
     event: {
