@@ -10,7 +10,7 @@ import { Governance } from './Governance';
 import { Notifications } from './Notifications/Notifications';
 import { Onboarding } from './Onboarding';
 import { Operations } from './Operations/Operations';
-import { Currency, Matrix, Networks, ReferendumData, Overview as Settings } from './Settings';
+import { Currency, Networks, ReferendumData, Overview as Settings } from './Settings';
 import { Staking } from './Staking';
 
 // React routes v6 hint:
@@ -47,7 +47,6 @@ export const ROUTES_CONFIG: RouteObject[] = [
         element: <Settings />,
         children: [
           { path: Paths.NETWORK, element: <Networks /> },
-          { path: Paths.MATRIX, element: <Matrix /> },
           { path: Paths.CURRENCY, element: <Currency /> },
           { path: Paths.REFERENDUM_DATA, element: <ReferendumData /> },
         ],

@@ -19,7 +19,6 @@ import { Button, DetailRow, FootnoteText, Icon } from '@shared/ui';
 import { TracksDetails, voteTransactionService } from '@/entities/governance';
 import { AssetBalance } from '@entities/asset';
 import { ChainTitle } from '@entities/chain';
-import { matrixModel } from '@entities/matrix';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
 import { type ExtendedChain, networkModel, networkUtils } from '@entities/network';
 import { proxyUtils } from '@entities/proxy';
@@ -63,7 +62,6 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);
   const chains = useUnit(networkModel.$chains);
-  const matrix = useUnit(matrixModel.$matrix);
 
   const payee = getPayee(tx);
   const sender = getSender(tx);
@@ -456,7 +454,6 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
                   name={depositorSignatory.name}
                   addressFont={AddressStyle}
                   addressPrefix={addressPrefix}
-                  matrixId={matrix.userId}
                   wrapperClassName="-mr-2 min-w-min"
                   type="short"
                 />

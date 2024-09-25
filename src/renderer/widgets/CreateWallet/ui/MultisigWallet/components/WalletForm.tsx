@@ -14,7 +14,6 @@ import {
 import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@shared/ui';
 import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
 import { ChainTitle } from '@entities/chain';
-import { matrixModel } from '@entities/matrix';
 import { networkModel, networkUtils } from '@entities/network';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 
@@ -69,7 +68,6 @@ export const WalletForm = ({
 }: Props) => {
   const { t } = useI18n();
 
-  const matrix = useUnit(matrixModel.$matrix);
   const wallets = useUnit(walletModel.$wallets);
   const chains = useUnit(networkModel.$chains);
 
@@ -111,8 +109,14 @@ export const WalletForm = ({
       cryptoType,
     );
 
+  const ownedSignatories = signatories.filter((s) => {
+    return !!walletUtils.getAccountBy(wallets, (account) => account.accountId === s.accountId);
+  });
+
+  const hasOwnSignatory = ownedSignatories.length > 0;
+
   const submitMstAccount: SubmitHandler<MultisigAccountForm> = ({ name, threshold }) => {
-    const creator = signatories.find((s) => s.matrixId === matrix.userId);
+    const creator = hasOwnSignatory && ownedSignatories[0];
 
     if (!threshold || !creator) return;
 

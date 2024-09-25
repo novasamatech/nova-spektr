@@ -67,7 +67,6 @@
   "dependencies": {
     "@apollo/client": "^3.7.1",
     "@headlessui/react": "^1.7.17",
-    "@matrix-org/olm": "3.2.15",
     "@polkadot/api": "12.4.2",
     "@polkadot/keyring": "13.0.2",
     "@polkadot/react-identicon": "3.9.1",
@@ -111,7 +110,6 @@
     "immer": "10.1.1",
     "lodash": "^4.17.21",
     "lottie-react": "^2.4.0",
-    "matrix-js-sdk": "30.3.0",
     "parity-scale-codec": "^0.6.1",
     "patronum": "^2.2.0",
     "qr-code-styling": "1.6.0-rc.1",

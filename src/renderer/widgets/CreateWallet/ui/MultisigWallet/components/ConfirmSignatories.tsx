@@ -1,7 +1,7 @@
 import { useI18n } from '@app/providers';
 import { type Chain, WalletType } from '@shared/core';
 import { RootExplorers } from '@shared/lib/utils';
-import { FootnoteText, HelpText, SmallTitleText } from '@shared/ui';
+import { FootnoteText, SmallTitleText } from '@shared/ui';
 import { ContactItem, ExplorersPopover } from '@entities/wallet';
 import { type ExtendedAccount, type ExtendedContact, type ExtendedWallet } from '../common/types';
 
@@ -64,17 +64,13 @@ export const ConfirmSignatories = ({ chain, wallets = [], accounts = [], contact
               {t('createMultisigAccount.contactsTab')} <span className="ml-2">{contacts.length}</span>
             </FootnoteText>
             <ul className="gap-y-2">
-              {contacts.map(({ index, accountId, name, matrixId }) => (
+              {contacts.map(({ index, accountId, name }) => (
                 <li key={index} className="rounded-md p-1 hover:bg-action-background-hover">
                   <ExplorersPopover
                     address={accountId}
                     explorers={explorers}
                     button={<ContactItem name={name} address={accountId} />}
-                  >
-                    <ExplorersPopover.Group active={Boolean(matrixId)} title={t('general.explorers.matrixIdTitle')}>
-                      <HelpText className="break-all text-text-secondary">{matrixId}</HelpText>
-                    </ExplorersPopover.Group>
-                  </ExplorersPopover>
+                  />
                 </li>
               ))}
             </ul>

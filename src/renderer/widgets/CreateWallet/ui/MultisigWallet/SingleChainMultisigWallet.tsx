@@ -6,9 +6,8 @@ import { useI18n } from '@app/providers';
 import { type HexString } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
 import { DEFAULT_TRANSITION, dictionary } from '@shared/lib/utils';
-import { BaseModal, Button, HeaderTitleText, IconButton, StatusLabel } from '@shared/ui';
+import { BaseModal, Button, HeaderTitleText, IconButton } from '@shared/ui';
 import { contactModel } from '@entities/contact';
-import { matrixModel, matrixUtils } from '@entities/matrix';
 import { networkModel } from '@entities/network';
 import { OperationResult } from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
@@ -34,9 +33,6 @@ type Props = {
 
 export const SingleChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack }: Props) => {
   const { t } = useI18n();
-
-  const matrix = useUnit(matrixModel.$matrix);
-  const loginStatus = useUnit(matrixModel.$loginStatus);
 
   const accounts = useUnit(createMultisigWalletModel.$availableAccounts);
   const wallets = useUnit(walletModel.$wallets);
@@ -103,7 +99,6 @@ export const SingleChainMultisigWallet = ({ isOpen, onClose, onComplete, onBack 
   const modalTitle = (
     <div className="flex w-[464px] items-center justify-between rounded-tl-lg bg-white px-5 py-3">
       <HeaderTitleText className="py-[3px]">{t('createMultisigAccount.title')}</HeaderTitleText>
-      {matrixUtils.isLoggedIn(loginStatus) && <StatusLabel title={matrix.userId || ''} variant="success" />}
     </div>
   );
 
