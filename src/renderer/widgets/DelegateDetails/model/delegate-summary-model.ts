@@ -5,7 +5,13 @@ import { combine, createEffect, createEvent, createStore, sample } from 'effecto
 import { delegationService, votingsService } from '@/shared/api/governance';
 import { type Address, type Chain, type ChainId } from '@/shared/core';
 import { MONTH, getBlockTimeAgo, nonNullable, setNestedValue } from '@/shared/lib/utils';
-import { type AggregatedReferendum, listAggregate, listService, networkSelectorModel } from '@/features/governance';
+import {
+  type AggregatedReferendum,
+  listAggregate,
+  listService,
+  networkSelectorModel,
+  proposerIdentityAggregate,
+} from '@/features/governance';
 import { getDelegationsList } from '../lib/utils';
 
 import { delegateDetailsModel } from './delegate-details-model';
@@ -140,11 +146,20 @@ sample({
   target: $votedReferendumsMonth,
 });
 
+sample({
+  clock: $currentDelegations,
+  fn: (delegations) => ({
+    addresses: delegations.map(([address]) => address),
+  }),
+  target: proposerIdentityAggregate.events.requestProposers,
+});
+
 export const delegateSummaryModel = {
   $isModalOpen,
   $currentDelegations,
   $votedReferendums,
   $votedReferendumsMonth,
+  $proposers: proposerIdentityAggregate.$proposers,
 
   $isDelegatingLoading: getDelegatesFx.pending,
   $isReferendumsLoading: getReferendumsForVoterFx.pending,
