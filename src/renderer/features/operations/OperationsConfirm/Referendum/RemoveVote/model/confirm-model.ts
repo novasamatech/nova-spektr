@@ -11,9 +11,11 @@ import { type ConfirmInfo, createTransactionConfirmStore } from '@/features/oper
 export type RemoveVoteConfirm = ConfirmInfo & {
   api: ApiPromise;
   asset: Asset;
-  referendumId: ReferendumId;
-  trackId: TrackId;
-  vote: AccountVote;
+  votes: {
+    referendum: ReferendumId;
+    track: TrackId;
+    vote?: AccountVote;
+  }[];
 };
 
 const sign = createEvent();
