@@ -375,6 +375,7 @@
       "maxWeightErrorDescription": "Max transaction weight for this wallet type reached. Select fewer tracks or select wallet with another type.",
       "multishardDescription": "You can select multiple accounts and delegate them in several tracks. If you are already delegating an account and want to add more tracks, select it separately.",
       "proxyRestrictionMessage": "Please add a new proxy connections to delegate",
+      "removeVotesButton": "Remove votes",
       "revokeDelegationButton": "Revoke delegation",
       "selectTrackTitle": "Step 1. Select tracks of delegation.",
       "sort": {
@@ -435,6 +436,8 @@
       "viewDelegationButton": "View delegations",
       "viewSummary": "View summary",
       "votedAllTime": "Voted for all time",
+      "votedTracksDescription": "We have inaccessible tracks because you have voted on them. Remove votes in order to delegate in these tracks.",
+      "votedTracksTitle": "We have inaccessible tracks",
       "votesLabel": "Voting power",
       "votesValue": "<votes /> votes",
       "walletTypeRestrictionError": "You can't add a delegation in that wallet type",
@@ -603,7 +606,8 @@
         "decision": "Vote",
         "governanceLock": "Governance lock",
         "lockingPeriod": "Locking period",
-        "networkFee": "Network fee"
+        "networkFee": "Network fee",
+        "tracks": "Tracks"
       }
     },
     "voteHistory": {

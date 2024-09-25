@@ -15,9 +15,9 @@ import {
 } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
 import { cnTw, toAccountId } from '@shared/lib/utils';
-import { CaptionText, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
+import { CaptionText, DetailRow, FootnoteText, Icon } from '@shared/ui';
 import { AssetBalance } from '@/entities/asset';
-import { voteTransactionService } from '@/entities/governance';
+import { TracksDetails, voteTransactionService } from '@/entities/governance';
 import { ChainTitle } from '@entities/chain';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
 import { type ExtendedChain, networkModel, networkUtils } from '@entities/network';
@@ -34,7 +34,6 @@ import {
   isXcmTransaction,
 } from '@entities/transaction';
 import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, walletModel } from '@entities/wallet';
-import { allTracks } from '@/features/governance';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import {
   getDelegate,
@@ -444,17 +443,7 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
 
       {delegationTracks && (
         <DetailRow label={t('operation.details.delegationTracks')} className="text-text-secondary">
-          <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
-            <CaptionText className="text-white">{delegationTracks.length}</CaptionText>
-          </div>
-          <Tooltip
-            content={delegationTracks
-              .map((trackId) => t(allTracks.find((track) => track.id === trackId)?.value || ''))
-              .join(', ')}
-            pointer="up"
-          >
-            <Icon className="group-hover:text-icon-hover" name="info" size={16} />
-          </Tooltip>
+          <TracksDetails tracks={delegationTracks.map(Number)} />
         </DetailRow>
       )}
 

@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { useState } from 'react';
 
 import { useI18n } from '@/app/providers';
 import { type Account, type Chain } from '@/shared/core';
@@ -16,14 +17,15 @@ import {
 } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { OperationTitle } from '@/entities/chain';
-import { AccountAddress, AddressWithName, ExplorersPopover, accountUtils } from '@/entities/wallet';
-import { AccountsMultiSelector, networkSelectorModel } from '@/features/governance';
 import {
   getGovernanceTrackDescription,
   getGroupPallet,
   getTrackIds,
   getTreasuryTrackDescription,
-} from '../lib/helpers';
+} from '@/entities/governance';
+import { AccountAddress, AddressWithName, ExplorersPopover, accountUtils } from '@/entities/wallet';
+import { AccountsMultiSelector, networkSelectorModel } from '@/features/governance';
+import { RemoveVotesModal } from '@/widgets/RemoveVotesModal';
 import { editDelegationModel } from '../model/edit-delegation-model';
 import { selectTracksModel } from '../model/select-tracks-model';
 
@@ -34,6 +36,7 @@ type Props = {
 
 export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
+  const [showRemoveVoteModal, setShowRemoveVoteModal] = useState(false);
 
   const chain = useUnit(selectTracksModel.$chain);
   const tracks = useUnit(selectTracksModel.$tracks);
@@ -44,6 +47,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
   const isMaxWeightReached = useUnit(selectTracksModel.$isMaxWeightReached);
   const isMaxWeightLoading = useUnit(selectTracksModel.$isMaxWeightLoading);
   const network = useUnit(networkSelectorModel.$network);
+  const votesToRemove = useUnit(selectTracksModel.$votesToRemove);
 
   const { adminTracks, governanceTracks, treasuryTracks, fellowshipTracks } = tracksGroup;
 
@@ -182,6 +186,35 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
       <div className="px-5">
         <Alert variant="error" active={isMaxWeightReached} title={t('governance.addDelegation.maxWeightError')}>
           <Alert.Item withDot={false}>{t('governance.addDelegation.maxWeightErrorDescription')} </Alert.Item>
+        </Alert>
+
+        <Alert
+          variant="info"
+          active={
+            // TODO: Add support multishard wallet
+            accounts.length === 0 &&
+            votesToRemove[toAddress(accounts[0].accountId, { prefix: network.chain.addressPrefix })]?.length > 0
+          }
+          title={t('governance.addDelegation.votedTracksTitle')}
+        >
+          <Alert.Item withDot={false}>{t('governance.addDelegation.votedTracksDescription')} </Alert.Item>
+          <Alert.Item withDot={false}>
+            <Button variant="text" size="sm" onClick={() => setShowRemoveVoteModal(true)}>
+              {t('governance.addDelegation.removeVotesButton')}
+            </Button>
+          </Alert.Item>
+
+          {showRemoveVoteModal &&
+            votesToRemove[toAddress(accounts[0].accountId, { prefix: network.chain.addressPrefix })] && (
+              <RemoveVotesModal
+                voter={toAddress(accounts[0].accountId, { prefix: network.chain.addressPrefix })}
+                votes={votesToRemove[toAddress(accounts[0].accountId, { prefix: network.chain.addressPrefix })]}
+                chain={network.chain}
+                asset={network.asset}
+                api={network.api}
+                onClose={() => setShowRemoveVoteModal(false)}
+              />
+            )}
         </Alert>
       </div>
       <div className="flex items-center justify-end px-5">

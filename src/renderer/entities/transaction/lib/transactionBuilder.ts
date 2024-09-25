@@ -35,6 +35,7 @@ export const transactionBuilder = {
   buildVote,
   buildRevote,
   buildRemoveVote,
+  buildRemoveVotes,
 
   buildBatchAll,
   splitBatchAll,
@@ -450,4 +451,30 @@ function buildRemoveVote({ chain, accountId, track, referendum }: RemoveVotePara
     type: TransactionType.REMOVE_VOTE,
     args: { track, referendum },
   };
+}
+
+type RemoveVotesParams = {
+  chain: Chain;
+  accountId: AccountId;
+  votes: {
+    referendum: ReferendumId;
+    track: TrackId;
+  }[];
+};
+
+function buildRemoveVotes({ chain, accountId, votes }: RemoveVotesParams): Transaction {
+  const transactions = votes.map(({ referendum, track }) =>
+    buildRemoveVote({
+      chain,
+      accountId,
+      track,
+      referendum,
+    }),
+  );
+
+  if (transactions.length === 1) {
+    return transactions[0];
+  }
+
+  return buildBatchAll({ chain, accountId, transactions });
 }

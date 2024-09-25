@@ -4,7 +4,15 @@ import { combine, createEffect, createEvent, createStore, sample } from 'effecto
 import { spread } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
-import { type Account, type Chain, TransactionType, type Wallet } from '@/shared/core';
+import {
+  type Account,
+  type Address,
+  type Chain,
+  type ReferendumId,
+  type TrackId,
+  TransactionType,
+  type Wallet,
+} from '@/shared/core';
 import {
   addUniqueItems,
   formatAmount,
@@ -13,19 +21,10 @@ import {
   transferableAmount,
 } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { votingService } from '@/entities/governance';
+import { adminTracks, fellowshipTracks, governanceTracks, treasuryTracks, votingService } from '@/entities/governance';
 import { transactionBuilder } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
-import {
-  adminTracks,
-  delegationAggregate,
-  fellowshipTracks,
-  governanceTracks,
-  networkSelectorModel,
-  tracksAggregate,
-  treasuryTracks,
-  votingAggregate,
-} from '@/features/governance';
+import { delegationAggregate, networkSelectorModel, tracksAggregate, votingAggregate } from '@/features/governance';
 
 const formInitiated = createEvent<{ delegate: DelegateAccount; accounts: Account[] }>();
 const formSubmitted = createEvent<{ tracks: number[]; accounts: Account[] }>();
@@ -75,26 +74,36 @@ const $votedTracks = combine(
   },
 );
 
-// const $availableAccounts = combine(
-//   {
-//     wallet: walletModel.$activeWallet,
-//     delegations: delegationAggregate.$activeDelegations,
-//     network: delegationAggregate.$network,
-//     delegate: $delegate,
-//   },
-//   ({ wallet, delegations, network, delegate }) => {
-//     if (!wallet || !network?.chain || !delegate) return [];
+const $votesToRemove = combine(
+  {
+    votes: votingAggregate.$activeWalletVotes,
+    addresses: $addresses,
+  },
+  ({ votes, addresses }) => {
+    const activeVotes: Record<Address, { referendum: ReferendumId; track: TrackId }[]> = {};
 
-//     return wallet.accounts
-//       .filter(
-//         (a) => accountUtils.isNonBaseVaultAccount(a, wallet) && accountUtils.isChainIdMatch(a, network.chain.chainId),
-//       )
-//       .filter(
-//         (account) =>
-//           !delegations[delegate.accountId]?.[toAddress(account.accountId, { prefix: network.chain.addressPrefix })],
-//       );
-//   },
-// );
+    for (const [address, voteList] of Object.entries(votes)) {
+      if (!addresses.includes(address)) continue;
+
+      for (const [track, vote] of Object.entries(voteList)) {
+        if (votingService.isCasting(vote) && !votingService.isUnlockingDelegation(vote)) {
+          if (!activeVotes[address]) {
+            activeVotes[address] = [];
+          }
+
+          activeVotes[address].push(
+            ...Object.keys(vote.votes).map((referendum) => ({
+              track,
+              referendum,
+            })),
+          );
+        }
+      }
+    }
+
+    return activeVotes;
+  },
+);
 
 const $accountsBalances = combine(
   {
@@ -237,6 +246,7 @@ export const selectTracksModel = {
   $tracks,
   $availableTracks,
   $votedTracks,
+  $votesToRemove,
   $tracksGroup,
   $allTracks: $tracksGroup.map(({ adminTracks, governanceTracks, treasuryTracks, fellowshipTracks }) => {
     return [...adminTracks, ...governanceTracks, ...treasuryTracks, ...fellowshipTracks];
