@@ -14,6 +14,7 @@ export { ReferendumTimer } from './ui/ReferendumTimer/ReferendumTimer';
 export { LockValueDiff } from './ui/LockValueDiff';
 export { LockPeriodDiff } from './ui/LockPeriodDiff';
 export { BalanceDiff } from './ui/BalanceDiff';
+export { TracksDetails } from './ui/TracksDetails';
 
 export { referendumService } from './lib/referendumService';
 export { votingService } from './lib/votingService';
@@ -24,6 +25,12 @@ export { claimScheduleService } from './lib/claimScheduleService';
 export { fellowshipThresholdService } from './lib/fellowshipThresholdService';
 export { opengovThresholdService } from './lib/opengovThresholdService';
 export { voteTransactionService } from './lib/voteTransactionService';
+export {
+  getGovernanceTrackDescription,
+  getGroupPallet,
+  getTrackIds,
+  getTreasuryTrackDescription,
+} from './lib/tracksService';
 
 export { createSubscriber } from './utils/createSubscriber';
 
@@ -35,3 +42,13 @@ export type {
   TransactionSplitAbstainVote,
   TransactionStandardVote,
 } from './types/voteTransaction';
+export type { Track } from './types/tracks';
+
+export {
+  treasurySpendsDescription,
+  adminTracks,
+  governanceTracks,
+  treasuryTracks,
+  fellowshipTracks,
+  allTracks,
+} from './constants/tracks';

@@ -23,8 +23,8 @@ import { CurrentDelegationModal, currentDelegationModel } from '@/widgets/Curren
 import { DelegateDetails } from '@/widgets/DelegateDetails';
 import { Delegate } from '@/widgets/DelegateModal';
 import { DelegationModal, delegationModel } from '@/widgets/DelegationModal';
+import { RemoveVotesModal } from '@/widgets/RemoveVotesModal';
 import { UnlockModal, unlockAggregate } from '@/widgets/UnlockModal';
-import { RemoveVoteModal } from '@widgets/RemoveVoteModal';
 import { RevoteModal, VoteModal } from '@widgets/VoteModal';
 import { governancePageAggregate } from '../aggregates/governancePage';
 
@@ -181,10 +181,15 @@ export const Governance = () => {
         nonNullable(selectedReferendum.vote) &&
         nonNullable(network) &&
         referendumService.isOngoing(selectedReferendum) && (
-          <RemoveVoteModal
-            referendum={selectedReferendum}
+          <RemoveVotesModal
             voter={selectedReferendum.vote.voter}
-            vote={selectedReferendum.vote.vote}
+            votes={[
+              {
+                vote: selectedReferendum.vote.vote,
+                referendum: selectedReferendum.referendumId,
+                track: selectedReferendum.track,
+              },
+            ]}
             chain={network.chain}
             asset={network.asset}
             api={network.api}

@@ -4,7 +4,13 @@ import { type ReactNode } from 'react';
 import { useI18n } from '@/app/providers';
 import { formatAsset, formatBalance, toAddress, toNumberWithPrecision } from '@/shared/lib/utils';
 import { DetailRow, HeadlineText, Icon } from '@/shared/ui';
-import { LockPeriodDiff, LockValueDiff, voteTransactionService, votingService } from '@/entities/governance';
+import {
+  LockPeriodDiff,
+  LockValueDiff,
+  TracksDetails,
+  voteTransactionService,
+  votingService,
+} from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
 import { Fee } from '@/entities/transaction';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
@@ -47,15 +53,17 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
     return null;
   }
 
-  const { asset, wrappedTransactions, api, vote } = confirm.meta;
+  const { asset, wrappedTransactions, api, votes } = confirm.meta;
+  const vote = votes[0].vote;
+  const tracks = votes.map(({ track }) => Number(track));
 
   if (!voteTransactionService.isRemoveVoteTransaction(wrappedTransactions.coreTx)) {
     return null;
   }
 
-  const amount = votingService.calculateAccountVoteAmount(vote);
-  const conviction = votingService.getAccountVoteConviction(vote);
-  const votingPower = votingService.calculateAccountVotePower(vote);
+  const amount = vote && votingService.calculateAccountVoteAmount(vote);
+  const conviction = vote && votingService.getAccountVoteConviction(vote);
+  const votingPower = vote && votingService.calculateAccountVotePower(vote);
 
   const address = toAddress(confirm.meta.account.accountId, { prefix: confirm.meta.chain.addressPrefix });
   const locksForAddress = getLocksForAddress(address, trackLocks);
@@ -65,32 +73,46 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name="retractMst" size={60} />
 
-        <div className="flex flex-col items-center gap-y-1">
-          <span className="font-manrope text-[32px] font-bold leading-[36px] text-text-primary">
-            {t('governance.referendum.votes', {
-              votes: '-' + formatBalance(votingPower, asset.precision).formatted,
-              count: toNumberWithPrecision(votingPower, asset.precision),
-            })}
-          </span>
-          <HeadlineText className="text-text-tertiary">
-            {t('general.actions.multiply', {
-              value: formatAsset(amount, asset),
-              multiplier: `${votingService.getConvictionMultiplier(conviction)}x`,
-            })}
-          </HeadlineText>
-        </div>
+        {votingPower && amount && conviction && (
+          <div className="flex flex-col items-center gap-y-1">
+            <span className="font-manrope text-[32px] font-bold leading-[36px] text-text-primary">
+              {t('governance.referendum.votes', {
+                votes: '-' + formatBalance(votingPower, asset.precision).formatted,
+                count: toNumberWithPrecision(votingPower, asset.precision),
+              })}
+            </span>
+
+            <HeadlineText className="text-text-tertiary">
+              {t('general.actions.multiply', {
+                value: formatAsset(amount, asset),
+                multiplier: `${votingService.getConvictionMultiplier(conviction)}x`,
+              })}
+            </HeadlineText>
+          </div>
+        )}
       </div>
 
       <MultisigExistsAlert active={isMultisigExists} />
 
       <ConfirmDetails confirm={confirm}>
         <hr className="w-full border-filter-border pr-2" />
-        <DetailRow label={t('governance.vote.field.governanceLock')} wrapperClassName="items-start">
-          <LockValueDiff from={locksForAddress} to={amount} asset={asset} />
-        </DetailRow>
-        <DetailRow label={t('governance.vote.field.lockingPeriod')} wrapperClassName="items-start">
-          <LockPeriodDiff from={conviction} to="None" lockPeriods={lockPeriods} />
-        </DetailRow>
+
+        {votingPower && amount && conviction ? (
+          <>
+            <DetailRow label={t('governance.vote.field.governanceLock')} wrapperClassName="items-start">
+              <LockValueDiff from={locksForAddress} to={amount} asset={asset} />
+            </DetailRow>
+            <DetailRow label={t('governance.vote.field.lockingPeriod')} wrapperClassName="items-start">
+              <LockPeriodDiff from={conviction} to="None" lockPeriods={lockPeriods} />
+            </DetailRow>
+          </>
+        ) : (
+          tracks && (
+            <DetailRow label={t('governance.vote.field.tracks')} wrapperClassName="items-start">
+              <TracksDetails tracks={tracks} />
+            </DetailRow>
+          )
+        )}
         <hr className="w-full border-filter-border pr-2" />
         <DetailRow label={t('governance.vote.field.networkFee')}>
           <Fee api={api} asset={asset} transaction={wrappedTransactions.wrappedTx} />

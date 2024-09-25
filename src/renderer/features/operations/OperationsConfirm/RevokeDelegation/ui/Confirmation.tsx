@@ -4,14 +4,14 @@ import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
-import { formatAmount, nonNullable } from '@shared/lib/utils';
-import { Button, CaptionText, DetailRow, FootnoteText, HeadlineText, Icon, LargeTitleText, Tooltip } from '@shared/ui';
-import { BalanceDiff, LockPeriodDiff, LockValueDiff, votingService } from '@/entities/governance';
+import { formatAmount } from '@shared/lib/utils';
+import { Button, DetailRow, FootnoteText, HeadlineText, Icon, LargeTitleText, Tooltip } from '@shared/ui';
+import { BalanceDiff, LockPeriodDiff, LockValueDiff, TracksDetails, votingService } from '@/entities/governance';
 import { AssetBalance } from '@entities/asset';
 import { SignButton } from '@entities/operations';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, accountUtils } from '@entities/wallet';
-import { allTracks, lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
+import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { type Config } from '../../../OperationsValidation';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
@@ -205,24 +205,7 @@ export const Confirmation = ({
         </DetailRow>
 
         <DetailRow label={t('governance.addDelegation.confirmation.tracks')}>
-          <button
-            type="button"
-            className="group flex items-center gap-x-1 rounded px-2 py-1 hover:bg-action-background-hover"
-            onClick={() => {}}
-          >
-            <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
-              <CaptionText className="text-white">{confirmStore.tracks.length}</CaptionText>
-            </div>
-            <Tooltip
-              content={confirmStore.tracks
-                .map((trackId) => t(allTracks.find((track) => Number(track.id) === trackId)?.value || ''))
-                .filter(nonNullable)
-                .join(', ')}
-              pointer="up"
-            >
-              <Icon className="group-hover:text-icon-hover" name="info" size={16} />
-            </Tooltip>
-          </button>
+          <TracksDetails tracks={confirmStore.tracks} />
         </DetailRow>
 
         <hr className="w-full border-filter-border pr-2" />

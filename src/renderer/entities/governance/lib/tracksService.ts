@@ -2,9 +2,8 @@ import { type TFunction } from 'i18next';
 
 import { type Asset } from '@/shared/core';
 import { nonNullable } from '@shared/lib/utils';
-import { treasurySpendsDescription } from '@/features/governance';
-
-import { type Track } from './types';
+import { treasurySpendsDescription } from '@/entities/governance';
+import { type Track } from '../types/tracks';
 
 export const getTreasuryTrackDescription = (asset: Asset | null, description: string, t: TFunction) => {
   if (nonNullable(asset) && treasurySpendsDescription[description]?.[asset.symbol]) {
