@@ -103,7 +103,7 @@ export const RevokeDelegation = () => {
         <TransactionSlider
           count={transactions.length}
           footer={
-            <>
+            <div className="flex gap-2">
               {initiatorWallet && basketUtils.isBasketAvailable(initiatorWallet) && (
                 <Button pallet="secondary" onClick={() => revokeDelegationModel.events.txSaved()}>
                   {t('operation.addToBasket')}
@@ -115,12 +115,12 @@ export const RevokeDelegation = () => {
                 type={walletData.wallet?.type}
                 onClick={revokeDelegationModel.events.txsConfirmed}
               />
-            </>
+            </div>
           }
         >
           {transactions?.map((t, index) => (
             // eslint-disable-next-line react/no-array-index-key
-            <div key={index} className="flex h-[622px] flex-col last-of-type:pr-4">
+            <div key={index} className="flex h-[582px] flex-col last-of-type:pr-4">
               <div className="max-h-full w-[440px] overflow-y-auto rounded-lg bg-white shadow-shadow-2">
                 <Confirmation id={index} hideSignButton config={{ withFormatAmount: false }} />
               </div>
