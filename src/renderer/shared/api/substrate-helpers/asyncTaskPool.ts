@@ -1,7 +1,9 @@
+import { isNumber } from 'lodash';
+
 type Params = {
   poolSize: number;
   retryCount: number;
-  retryDelay: (attempt: number) => number;
+  retryDelay: ((attempt: number) => number) | number;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -62,10 +64,14 @@ export class AsyncTaskPool {
       if (task.retry >= this.config.retryCount) {
         task.reject(error);
       } else {
+        const retryDelay = isNumber(this.config.retryDelay)
+          ? this.config.retryDelay
+          : this.config.retryDelay(task.retry);
+
         setTimeout(() => {
           this.queue.push(task);
           this.processQueue();
-        }, this.config.retryDelay(task.retry));
+        }, retryDelay);
         task.retry++;
       }
     } finally {

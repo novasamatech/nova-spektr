@@ -48,7 +48,7 @@ const $completed = $filteredReferendum.map(collectiveDomain.referendum.service.g
 
 sample({
   clock: referendumsFeatureStatus.running,
-  target: collectiveDomain.referendum.subscribe,
+  target: [collectiveDomain.referendum.subscribe, collectiveDomain.referendumMeta.request],
 });
 
 sample({

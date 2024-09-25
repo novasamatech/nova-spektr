@@ -1,8 +1,8 @@
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { polkassemblyApiService } from '@shared/api/polkassembly';
+import { subsquareApiService } from '@shared/api/subsquare';
 import { type ChainId } from '@shared/core';
 import { createDataSource } from '@shared/effector';
-import { pickNestedValue, setNestedValue } from '@shared/lib/utils';
+import { dictionary, pickNestedValue, setNestedValue } from '@shared/lib/utils';
 import { type CollectivePalletsType, type CollectivesStruct } from '../../lib/types';
 
 import { type ReferendumMeta } from './types';
@@ -12,35 +12,42 @@ type RequestParams = {
   chainId: ChainId;
 };
 
-const { $: $list } = createDataSource<
-  CollectivesStruct<Record<ReferendumId, ReferendumMeta>>,
-  RequestParams,
-  Record<ReferendumId, ReferendumMeta>
->({
+const {
+  $: $list,
+  request,
+  pending,
+  fulfilled,
+} = createDataSource<CollectivesStruct<Record<ReferendumId, ReferendumMeta>>, RequestParams, ReferendumMeta[]>({
   initial: {},
-  fn: async () => {
+  fn: () => {
     // TODO implement
-    const a = await polkassemblyApiService
-      .fetchPostsList({
+    return subsquareApiService
+      .fetchReferendumList({
         network: 'collectives',
-        proposalType: 'fellowship_referendums',
+        referendumType: 'fellowship',
       })
-      .catch(console.error);
-
-    console.log(a);
-
-    return {};
+      .then<ReferendumMeta[]>(response => {
+        return response.map(x => ({
+          referendumId: x.referendumIndex,
+          title: x.title,
+          description: x.content,
+        }));
+      });
   },
   map: (store, { params, result }) => {
     const currectValue = pickNestedValue(store, params.palletType, params.chainId);
+    const resultMap = dictionary(result, 'referendumId');
 
     return setNestedValue(store, params.palletType, params.chainId, {
       ...(currectValue ?? {}),
-      ...result,
+      ...resultMap,
     });
   },
 });
 
 export const referendumMetaModel = {
   $list,
+  request,
+  pending,
+  fulfilled,
 };

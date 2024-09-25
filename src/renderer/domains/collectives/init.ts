@@ -37,6 +37,9 @@ export const collectiveDomain = {
     service: referendumService,
     ...pick(referendumDomainModel, ['subscribe', 'unsubscribe', 'pending', 'fulfilled', 'received']),
   },
+  referendumMeta: {
+    ...pick(referendumMetaModel, ['request', 'pending', 'fulfilled']),
+  },
   voting: {
     ...pick(votingDomainModel, ['subscribe', 'unsubscribe', 'pending']),
   },

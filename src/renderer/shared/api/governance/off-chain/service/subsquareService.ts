@@ -17,14 +17,14 @@ const getReferendumList: GovernanceApi['getReferendumList'] = async (chain, call
     dictionary(data, 'referendumIndex', (item) => item.title);
 
   return subsquareApiService
-    .fetchReferendumList({ network }, (data, done) => callback(parseSubsquareData(data), done))
+    .fetchReferendumList({ network, referendumType: 'gov2' }, (data, done) => callback(parseSubsquareData(data), done))
     .then(parseSubsquareData);
 };
 
 const getReferendumDetails: GovernanceApi['getReferendumDetails'] = async (chain, referendumId) => {
   const network = chain.specName;
   try {
-    const details = await subsquareApiService.fetchReferendum({ network, referendumId });
+    const details = await subsquareApiService.fetchReferendum({ network, referendumType: 'gov2', referendumId });
 
     return details.content;
   } catch {
@@ -38,7 +38,9 @@ const getReferendumVotes: GovernanceApi['getReferendumVotes'] = (chain, referend
   const mapVote = (vote: SubsquareReferendumVote) => vote.account;
 
   return subsquareApiService
-    .fetchReferendumVotes({ network, referendumId }, (data, done) => callback(data.map(mapVote), done))
+    .fetchReferendumVotes({ network, referendumType: 'gov2', referendumId }, (data, done) =>
+      callback(data.map(mapVote), done),
+    )
     .then((data) => data.map(mapVote));
 };
 
@@ -62,16 +64,18 @@ const getReferendumTimeline: GovernanceApi['getReferendumTimeline'] = async (cha
   };
 
   return subsquareApiService
-    .fetchReferendum({ network: chain.specName, referendumId })
+    .fetchReferendum({ network: chain.specName, referendumType: 'gov2', referendumId })
     .then((r) => r.onchainData.timeline.map(mapTimeline));
 };
 
 const getReferendumSummary: GovernanceApi['getReferendumSummary'] = async (chain, referendumId) => {
-  return subsquareApiService.fetchReferendum({ network: chain.specName, referendumId }).then((r) => ({
-    ayes: new BN(r.onchainData.tally ? BigInt(r.onchainData.tally.ayes).toString() : '0'),
-    nays: new BN(r.onchainData.tally ? BigInt(r.onchainData.tally.nays).toString() : '0'),
-    support: new BN(r.onchainData.tally ? BigInt(r.onchainData.tally.support).toString() : '0'),
-  }));
+  return subsquareApiService
+    .fetchReferendum({ network: chain.specName, referendumType: 'gov2', referendumId })
+    .then((r) => ({
+      ayes: new BN(r.onchainData.tally ? BigInt(r.onchainData.tally.ayes).toString() : '0'),
+      nays: new BN(r.onchainData.tally ? BigInt(r.onchainData.tally.nays).toString() : '0'),
+      support: new BN(r.onchainData.tally ? BigInt(r.onchainData.tally.support).toString() : '0'),
+    }));
 };
 
 export const subsquareService: GovernanceApi = {
