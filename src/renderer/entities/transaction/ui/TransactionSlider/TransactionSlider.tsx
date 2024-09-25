@@ -11,12 +11,13 @@ type Props = {
 export const TransactionSlider = ({ children, footer, count }: PropsWithChildren<Props>) => {
   const [currentTx, setCurrentTx] = useState(0);
 
+  const scrollRef = useRef<HTMLDivElement>(null);
   const ref = useRef<HTMLDivElement>(null);
 
   const scroll = (value: number) => {
     setTimeout(() =>
       // @ts-expect-error TS doesn't recognize offsetLeft
-      ref.current?.scrollTo({ left: ref.current?.childNodes[0].childNodes[value].offsetLeft - 16, behavior: 'smooth' }),
+      scrollRef.current?.scrollTo({ left: ref.current?.childNodes[value].offsetLeft - 16, behavior: 'smooth' }),
     );
   };
 
@@ -42,8 +43,10 @@ export const TransactionSlider = ({ children, footer, count }: PropsWithChildren
 
   return (
     <>
-      <div className="overflow-x-hidden bg-background-default py-4" ref={ref}>
-        <div className="flex w-[478px] gap-2 first:ml-4">{children}</div>
+      <div className="overflow-x-hidden bg-background-default py-4" ref={scrollRef}>
+        <div className="flex w-[478px] gap-2 first:ml-4" ref={ref}>
+          {children}
+        </div>
       </div>
       <div className="flex justify-between rounded-lg bg-white px-5 pb-4 pt-3">
         <div className="flex gap-2">
