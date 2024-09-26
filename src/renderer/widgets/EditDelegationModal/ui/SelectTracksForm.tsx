@@ -192,7 +192,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
           variant="info"
           active={
             // TODO: Add support multishard wallet
-            accounts.length === 0 &&
+            accounts.length > 0 &&
             votesToRemove[toAddress(accounts[0].accountId, { prefix: network.chain.addressPrefix })]?.length > 0
           }
           title={t('governance.addDelegation.votedTracksTitle')}
