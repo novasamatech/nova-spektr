@@ -1,6 +1,9 @@
 import { useUnit } from 'effector-react';
 
+import { Loader } from '@/shared/ui';
+import { Box } from '@/shared/ui-kit';
 import { type HexString } from '@shared/core';
+import { walletUtils } from '@/entities/wallet';
 import { signModel } from '../model/sign-model';
 
 import { SigningSwitch } from './SigningSwitch';
@@ -15,7 +18,13 @@ export const OperationSign = ({ onGoBack }: Props) => {
   const signerWallet = useUnit(signModel.$signerWallet);
 
   if (!apis || !signStore || !signerWallet) {
-    return null;
+    const height = walletUtils.isWalletConnectGroup(signerWallet) ? '430px' : '490px';
+
+    return (
+      <Box width="440px" height={height} verticalAlign="center" horizontalAlign="center">
+        <Loader color="primary" />
+      </Box>
+    );
   }
 
   const onSignResult = (signatures: HexString[], txPayloads: Uint8Array[]) => {

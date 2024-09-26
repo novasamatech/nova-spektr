@@ -31,15 +31,24 @@ type SplitParams = {
 
 const splitTxsFx = createEffect(async ({ input, apis }: SplitParams): Promise<Input> => {
   const { signingPayloads } = input;
-  let result: SigningPayload[] = [];
+  const result: SigningPayload[] = [];
+  const txsToSplit: SigningPayload[] = [];
 
   for (const tx of signingPayloads) {
     if (!apis[tx.chain.chainId]) continue;
 
     if (tx.transaction.type === TransactionType.BATCH_ALL) {
+      txsToSplit.push(tx);
+    } else {
+      result.push(tx);
+    }
+  }
+
+  const splittedBatches = await Promise.all(
+    txsToSplit.map(async (tx) => {
       const txs = await transactionService.splitTxsByWeight(apis[tx.chain.chainId], tx.transaction.args.transactions);
 
-      const splittedBatch = txs.map((transactions) => ({
+      return txs.map((transactions) => ({
         ...tx,
         transaction: transactionBuilder.buildBatchAll({
           chain: tx.chain,
@@ -47,12 +56,10 @@ const splitTxsFx = createEffect(async ({ input, apis }: SplitParams): Promise<In
           transactions,
         }),
       }));
+    }),
+  );
 
-      result = result.concat(splittedBatch);
-    } else {
-      result.push(tx);
-    }
-  }
+  result.push(...splittedBatches.flat());
 
   return {
     signingPayloads: result,
