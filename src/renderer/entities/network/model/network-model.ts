@@ -18,6 +18,7 @@ import {
   type Connection,
   ConnectionStatus,
   ConnectionType,
+  type ID,
   type Metadata,
   type NoID,
 } from '@shared/core';
@@ -86,6 +87,10 @@ const saveMetadataFx = createEffect((metadata: NoID<ChainMetadata>): Promise<Cha
   return storageService.metadata.put(metadata);
 });
 
+const removeMetadataFx = createEffect((ids: ID[]): Promise<ID[] | undefined> => {
+  return storageService.metadata.deleteAll(ids);
+});
+
 type ProviderMetadataParams = {
   provider: ProviderWithMetadata;
   metadata: Metadata;
@@ -95,7 +100,9 @@ const updateProviderMetadataFx = createEffect(({ provider, metadata }: ProviderM
 });
 
 const initConnectionsFx = createEffect((chains: Record<ChainId, Chain>) => {
-  Object.keys(chains).forEach((chainId) => chainConnected(chainId as ChainId));
+  for (const chainId of Object.keys(chains)) {
+    chainConnected(chainId as ChainId);
+  }
 });
 
 type CreateProviderParams = {
@@ -103,9 +110,16 @@ type CreateProviderParams = {
   nodes: string[];
   metadata?: ChainMetadata;
   providerType: ProviderType;
+  DEBUG_NETWORKS?: boolean;
 };
 const createProviderFx = createEffect(
-  async ({ chainId, nodes, metadata, providerType }: CreateProviderParams): Promise<ProviderWithMetadata> => {
+  async ({
+    chainId,
+    nodes,
+    metadata,
+    providerType,
+    DEBUG_NETWORKS,
+  }: CreateProviderParams): Promise<ProviderWithMetadata> => {
     const boundConnected = scopeBind(connected, { safe: true });
     const boundDisconnected = scopeBind(disconnected, { safe: true });
     const boundFailed = scopeBind(failed, { safe: true });
@@ -116,15 +130,21 @@ const createProviderFx = createEffect(
       { nodes, metadata: metadata?.metadata },
       {
         onConnected: () => {
-          console.info('🟢 Provider connected ==> ', chainId);
+          if (DEBUG_NETWORKS) {
+            console.info('🟢 Provider connected ==> ', chainId);
+          }
           boundConnected(chainId);
         },
         onDisconnected: () => {
-          console.info('🟠 Provider disconnected ==> ', chainId);
+          if (DEBUG_NETWORKS) {
+            console.info('🟠 Provider disconnected ==> ', chainId);
+          }
           boundDisconnected(chainId);
         },
         onError: () => {
-          console.info('🔴 Provider error ==> ', chainId);
+          if (DEBUG_NETWORKS) {
+            console.info('🔴 Provider error ==> ', chainId);
+          }
           boundFailed(chainId);
         },
       },
@@ -132,8 +152,9 @@ const createProviderFx = createEffect(
 
     if (providerType === ProviderType.LIGHT_CLIENT) {
       /**
-       * HINT: Light Client provider must be connected manually
-       * GitHub Light Client section - https://github.com/polkadot-js/api/tree/master/packages/rpc-provider#readme
+       * HINT: Light Client provider must be connected manually GitHub Light
+       * Client section -
+       * https://github.com/polkadot-js/api/tree/master/packages/rpc-provider#readme
        */
       await provider.connect();
     }
@@ -234,7 +255,14 @@ sample({
 
     const metadata = networkUtils.getNewestMetadata(store.metadata)[chainId];
 
-    return { chainId, nodes, metadata, providerType };
+    return {
+      chainId,
+      nodes,
+      metadata,
+      providerType,
+      // set true in case of some network issues
+      DEBUG_NETWORKS: false,
+    };
   },
   target: createProviderFx,
 });
@@ -388,12 +416,24 @@ sample({
   fn: (_, metadata) => metadata,
   target: saveMetadataFx,
 });
+
 sample({
   clock: saveMetadataFx.doneData,
   source: $metadata,
   filter: (_, newMetadata) => Boolean(newMetadata),
-  fn: (metadata, newMetadata) => metadata.concat(newMetadata!),
-  target: $metadata,
+  fn: (metadata, newMetadata) => {
+    const oldMetadata = metadata.filter(({ chainId }) => chainId === newMetadata!.chainId).map(({ id }) => id);
+    const cleanMetadata = metadata.filter(({ chainId }) => chainId !== newMetadata!.chainId);
+
+    return {
+      metadata: [...cleanMetadata, newMetadata!],
+      oldMetadata,
+    };
+  },
+  target: spread({
+    metadata: $metadata,
+    oldMetadata: removeMetadataFx,
+  }),
 });
 
 sample({

@@ -7,7 +7,7 @@ import { type MultisigTransactionDS } from '@shared/api/storage';
 import { type MultisigEvent, type MultisigTransactionKey } from '@shared/core';
 import { sortByDateDesc } from '@shared/lib/utils';
 import { FootnoteText, Header } from '@shared/ui';
-import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
+import { operationsModel } from '@/entities/operations';
 import { networkModel } from '@entities/network';
 import { priceProviderModel } from '@entities/price';
 import { accountUtils, walletModel } from '@entities/wallet';
@@ -21,19 +21,14 @@ export const Operations = () => {
 
   const activeWallet = useUnit(walletModel.$activeWallet);
   const chains = useUnit(networkModel.$chains);
-
-  const { getLiveAccountMultisigTxs } = useMultisigTx({});
-  const { getLiveEventsByKeys } = useMultisigEvent({});
+  const allTxs = useUnit(operationsModel.$multisigTransactions);
+  const events = useUnit(operationsModel.$multisigEvents);
 
   const activeAccount = activeWallet?.accounts.at(0);
   const account = activeAccount && accountUtils.isMultisigAccount(activeAccount) ? activeAccount : undefined;
 
-  const allTxs = getLiveAccountMultisigTxs(account?.accountId ? [account.accountId] : []);
-
   const [txs, setTxs] = useState<MultisigTransactionDS[]>([]);
   const [filteredTxs, setFilteredTxs] = useState<MultisigTransactionDS[]>([]);
-
-  const events = getLiveEventsByKeys(txs.filter((tx) => !tx.dateCreated));
 
   const getEventsByTransaction = (tx: MultisigTransactionKey): MultisigEvent[] => {
     return events.filter((e) => {
@@ -59,26 +54,26 @@ export const Operations = () => {
 
   useEffect(() => {
     setTxs(allTxs.filter((tx) => chains[tx.chainId]));
-  }, [allTxs.length]);
+  }, [allTxs]);
 
   useEffect(() => {
     setFilteredTxs([]);
   }, [activeAccount]);
 
   return (
-    <div className="flex flex-col items-center relative h-full">
+    <div className="relative flex h-full flex-col items-center">
       <Header title={t('operations.title')} />
 
       {Boolean(txs.length) && <OperationsFilter txs={txs} onChange={setFilteredTxs} />}
 
       {Boolean(filteredTxs.length) && (
-        <div className="pl-6 overflow-y-auto w-full mt-4 h-full flex flex-col items-center">
+        <div className="mt-4 flex h-full w-full flex-col items-center overflow-y-auto pl-6">
           {Object.entries(groupedTxs)
             .sort(sortByDateDesc)
             .map(([date, txs]) => (
-              <section className="w-fit mt-6" key={date}>
-                <FootnoteText className="text-text-tertiary mb-3 ml-2">{date}</FootnoteText>
-                <ul className="flex flex-col gap-y-1.5 w-[736px]">
+              <section className="mt-6 w-fit" key={date}>
+                <FootnoteText className="mb-3 ml-2 text-text-tertiary">{date}</FootnoteText>
+                <ul className="flex w-[736px] flex-col gap-y-1.5">
                   {txs
                     .sort((a, b) => (b.dateCreated || 0) - (a.dateCreated || 0))
                     .map((tx) => (

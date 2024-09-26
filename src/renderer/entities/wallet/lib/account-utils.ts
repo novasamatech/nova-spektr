@@ -135,10 +135,10 @@ function getMultisigAccountId(
   return u8aToHex(isEthereum ? accountId.subarray(0, 20) : accountId);
 }
 
-function getAccountsAndShardGroups(accounts: Account[]): Array<ChainAccount | ShardAccount[]> {
+function getAccountsAndShardGroups(accounts: Account[]): (ChainAccount | ShardAccount[])[] {
   const shardsIndexes: Record<string, number> = {};
 
-  return accounts.reduce<Array<ChainAccount | ShardAccount[]>>((acc, account) => {
+  return accounts.reduce<(ChainAccount | ShardAccount[])[]>((acc, account) => {
     if (isBaseAccount(account)) return acc;
 
     if (!isShardAccount(account)) {
@@ -205,7 +205,7 @@ function isNonBaseVaultAccount(account: Account, wallet: Wallet): boolean {
 
 function getAddressesForWallet(wallet: Wallet, chain: Chain) {
   const matchedAccounts = walletUtils.getAccountsBy([wallet], (account) => {
-    return isChainIdMatch(account, chain.chainId);
+    return accountUtils.isNonBaseVaultAccount(account, wallet) && isChainIdMatch(account, chain.chainId);
   });
 
   return matchedAccounts.map((a) => toAddress(a.accountId, { prefix: chain.addressPrefix }));

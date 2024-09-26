@@ -29,13 +29,13 @@ export const SignatoryCard = ({
   const button = (
     <div
       className={cnTw(
-        'group flex items-center gap-x-2 px-2 py-1.5 cursor-pointer flex-1 text-text-secondary rounded',
+        'group flex flex-1 cursor-pointer items-center justify-between gap-x-2 rounded px-2 py-1.5 text-text-secondary',
         'transition-colors hover:bg-action-background-hover hover:text-text-primary',
         className,
       )}
     >
       {children}
-      <Icon name="info" size={16} className="text-icon-hover transition-opacity opacity-0 group-hover:opacity-100" />
+      <Icon name="details" size={16} className="text-icon-hover opacity-0 transition-opacity group-hover:opacity-100" />
       {status && status in IconProps && <Icon size={16} {...IconProps[status as keyof typeof IconProps]} />}
     </div>
   );

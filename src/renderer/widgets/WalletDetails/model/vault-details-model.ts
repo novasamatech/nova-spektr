@@ -25,12 +25,12 @@ const shardsSelected = createEvent<ShardAccount[]>();
 const shardsCleared = createEvent();
 const accountsCreated = createEvent<AccountsCreatedParams>();
 
-const keysRemoved = createEvent<Array<ChainAccount | ShardAccount>>();
-const keysAdded = createEvent<Array<DraftAccount<ChainAccount | ShardAccount>>>();
+const keysRemoved = createEvent<(ChainAccount | ShardAccount)[]>();
+const keysAdded = createEvent<DraftAccount<ChainAccount | ShardAccount>[]>();
 
 const $shards = createStore<ShardAccount[]>([]).reset(shardsCleared);
 const $chain = createStore<Chain>({} as Chain).reset(shardsCleared);
-const $keysToAdd = createStore<Array<DraftAccount<ChainAccount | ShardAccount>>>([]).reset(accountsCreated);
+const $keysToAdd = createStore<DraftAccount<ChainAccount | ShardAccount>[]>([]).reset(accountsCreated);
 
 const chainSetFx = createEffect((chainId: ChainId): Chain | undefined => {
   return chainsService.getChainById(chainId);

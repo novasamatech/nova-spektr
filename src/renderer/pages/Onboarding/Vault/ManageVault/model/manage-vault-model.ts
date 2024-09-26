@@ -42,8 +42,8 @@ const callbacksApi = createApi($callbacks, {
 
 const $keys = createStore<DraftAccount<ChainAccount | ShardAccount>[]>([]);
 
-const $keysGroups = combine($keys, (accounts): Array<ChainAccount | ShardAccount[]> => {
-  return accountUtils.getAccountsAndShardGroups(accounts as Array<ChainAccount | ShardAccount>);
+const $keysGroups = combine($keys, (accounts): (ChainAccount | ShardAccount[])[] => {
+  return accountUtils.getAccountsAndShardGroups(accounts as (ChainAccount | ShardAccount)[]);
 });
 
 const $hasKeys = combine($keys, (keys): boolean => {

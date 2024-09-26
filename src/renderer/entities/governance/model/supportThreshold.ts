@@ -64,11 +64,9 @@ sample({
 });
 
 sample({
-  clock: referendumModel.events.requestDone,
-  source: {
-    tracks: tracksModel.$tracks,
-  },
-  fn: ({ tracks }, { params, result: referendums }) => ({
+  clock: referendumModel.events.referendumsReceived,
+  source: tracksModel.$tracks,
+  fn: (tracks, { params, result: referendums }) => ({
     api: params.api,
     chain: params.chain,
     referendums: referendums.filter(referendumService.isOngoing),
@@ -82,14 +80,17 @@ sample({
   source: $supportThresholds,
   fn: (thresholds, { params, result }) => ({
     ...thresholds,
-    [params.chain.chainId]: result,
+    [params.chain.chainId]: {
+      ...(thresholds[params.chain.chainId] ?? {}),
+      ...result,
+    },
   }),
   target: $supportThresholds,
 });
 
 export const supportThresholdModel = {
   $supportThresholds,
-  $isSupportThresholdsLoading: requestSupportThresholdsFx.pending,
+  $isLoading: requestSupportThresholdsFx.pending,
 
   effects: {
     requestSupportThresholdsFx,

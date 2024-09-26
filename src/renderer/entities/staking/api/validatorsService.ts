@@ -43,14 +43,16 @@ async function getValidatorsWithInfo(api: ApiPromise, era: EraIndex, isLightClie
   return merge(mergedValidators, identity, slashes);
 }
 
-function getValidatorFunction(api: ApiPromise): (era: EraIndex) => Promise<any> {
+function getValidatorFunction(api: ApiPromise) {
   return isOldRuntimeForValidators(api)
     ? (era: EraIndex) => getValidatorsStake_OLD(api, era)
     : (era: EraIndex) => getValidatorsStake(api, era);
 }
 
 /**
- * Gets Validators information including nominators that will receive rewards (runtime pre1_4_0)
+ * Gets Validators information including nominators that will receive rewards
+ * (runtime pre1_4_0)
+ *
  * @deprecated Will become deprecated after runtime upgrade for DOT/KSM
  */
 async function getValidatorsStake_OLD(api: ApiPromise, era: EraIndex): Promise<ValidatorMap> {

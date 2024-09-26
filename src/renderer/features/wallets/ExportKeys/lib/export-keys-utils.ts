@@ -8,19 +8,19 @@ export const exportKeysUtils = {
 
 const IMPORT_FILE_VERSION = 1;
 
-function getExportStructure(rootAccountId: AccountId, accounts: Array<ChainAccount | ShardAccount[]>): string {
+function getExportStructure(rootAccountId: AccountId, accounts: (ChainAccount | ShardAccount[])[]): string {
   const set = new Set<ChainId>();
   let output = `version: ${IMPORT_FILE_VERSION}\n`;
   output += `public address: ${rootAccountId}\n`;
 
-  accounts.forEach((account) => {
+  for (const account of accounts) {
     const chainId = Array.isArray(account) ? account[0].chainId : account.chainId;
     if (!set.has(chainId)) {
       set.add(chainId);
       output += `genesis: ${chainId}\n`;
     }
     output += accountToDerivationExport(account);
-  });
+  }
 
   return output;
 }

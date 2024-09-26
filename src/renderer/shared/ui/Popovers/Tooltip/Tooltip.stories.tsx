@@ -1,4 +1,4 @@
-import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react';
 
 import { Tooltip } from './Tooltip';
 
@@ -8,18 +8,18 @@ export default {
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [
     (Story) => (
-      <div className="mt-28 mx-auto w-max">
+      <div className="mx-auto mt-28 w-max">
         <Story />
       </div>
     ),
   ],
-} as ComponentMeta<typeof Tooltip>;
+} as Meta<typeof Tooltip>;
 
-const Template: ComponentStory<typeof Tooltip> = (args) => <Tooltip {...args} />;
+const Template: StoryFn<typeof Tooltip> = (args) => <Tooltip {...args} />;
 
 export const Default = Template.bind({});
 Default.args = {
   content: 'Staking will automatically start when the next era starts',
   contentClass: 'p-2',
-  children: <p className="py-2 px-3 bg-gray-200 w-40 text-center">Hover me</p>,
+  children: <p className="w-40 bg-gray-200 px-3 py-2 text-center">Hover me</p>,
 };

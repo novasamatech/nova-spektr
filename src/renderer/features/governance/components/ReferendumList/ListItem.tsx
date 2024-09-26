@@ -6,7 +6,7 @@ type Props = PropsWithChildren<{
 
 export const ListItem = ({ children, onClick }: Props) => {
   return (
-    <button type="button" className="flex flex-col gap-y-3 p-3 w-full rounded-md bg-white" onClick={onClick}>
+    <button type="button" className="flex w-full flex-col gap-y-3 rounded-md bg-white p-3" onClick={onClick}>
       {children}
     </button>
   );

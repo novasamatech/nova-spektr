@@ -2,7 +2,7 @@ import { memo, useDeferredValue, useMemo, useState } from 'react';
 
 import { useI18n } from '@app/providers';
 import { type Asset, type Chain } from '@shared/core';
-import { formatBalance, performSearch, toAccountId } from '@shared/lib/utils';
+import { formatAsset, formatBalance, performSearch, toAccountId } from '@shared/lib/utils';
 import { BodyText, FootnoteText, SearchInput } from '@shared/ui';
 import { SignatoryCard } from '@entities/signatory';
 import { AddressWithName } from '@entities/wallet';
@@ -37,9 +37,9 @@ export const VotingHistoryList = memo<Props>(({ items, asset, chain, loading }) 
   const shouldRenderList = !shouldRenderLoader && deferredItems.length > 0;
 
   return (
-    <div className="flex flex-col gap-6 pt-6">
+    <div className="flex flex-col gap-6 pb-4 pt-6">
       <SearchInput placeholder={t('governance.searchPlaceholder')} value={query} onChange={setQuery} />
-      <div className="overflow-y-auto min-h-0">
+      <div className="min-h-0">
         <div className="flex flex-col gap-2">
           <div className="flex justify-between px-2">
             <FootnoteText className="text-text-tertiary">{t('governance.voteHistory.listColumnAccount')}</FootnoteText>
@@ -53,27 +53,32 @@ export const VotingHistoryList = memo<Props>(({ items, asset, chain, loading }) 
             {shouldRenderList &&
               deferredItems.map(({ voter, balance, votingPower, conviction, name }) => {
                 return (
-                  <div key={voter} className="flex">
-                    <div className="grow shrink min-w-0">
+                  <div key={`${voter}-${balance.toString()}-${conviction}`} className="flex gap-2">
+                    <div className="min-w-0 shrink grow">
                       <SignatoryCard
                         className="min-h-11.5"
                         accountId={toAccountId(voter)}
                         addressPrefix={chain?.addressPrefix}
+                        explorers={chain?.explorers}
                       >
-                        <AddressWithName address={voter} type="adaptive" name={name ?? undefined} />
+                        <AddressWithName
+                          addressFont="text-text-secondary"
+                          address={voter}
+                          type="adaptive"
+                          name={name ?? undefined}
+                        />
                       </SignatoryCard>
                     </div>
-                    <div className="flex flex-col basis-32 shrink-0 px-2 gap-0.5 items-end">
+                    <div className="flex shrink-0 basis-28 flex-col items-end gap-0.5 pe-2">
                       <BodyText className="whitespace-nowrap">
                         {t('governance.voteHistory.totalVotesCount', {
                           value: formatBalance(votingPower, asset.precision).formatted,
-                          symbol: asset.symbol,
                         })}
                       </BodyText>
                       <FootnoteText className="whitespace-nowrap text-text-tertiary">
-                        {t('governance.voteHistory.totalVotesCountConviction', {
-                          value: `${formatBalance(balance, asset.precision).formatted} ${asset.symbol}`,
-                          conviction,
+                        {t('general.actions.multiply', {
+                          value: formatAsset(balance, asset),
+                          multiplier: conviction,
                         })}
                       </FootnoteText>
                     </div>

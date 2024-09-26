@@ -1,10 +1,12 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
-import { delay, or, spread } from 'patronum';
+import { spread } from 'patronum';
 
-import { type Transaction } from '@/shared/core';
+import { type BasketTransaction, type Transaction } from '@/shared/core';
+import { type PathType, Paths } from '@/shared/routes';
 import { type ClaimChunkWithAddress, UnlockChunkType } from '@shared/api/governance';
 import { Step, isStep, nonNullable } from '@shared/lib/utils';
-import { referendumModel } from '@/entities/governance';
+import { basketModel } from '@/entities/basket';
+import { navigationModel } from '@/features/navigation';
 import { locksModel } from '@features/governance/model/locks';
 import { networkSelectorModel } from '@features/governance/model/networkSelector';
 import { unlockModel } from '@features/governance/model/unlock/unlock';
@@ -24,25 +26,22 @@ const unlockFormStarted = createEvent();
 const txSaved = createEvent();
 
 const $unlockData = createStore<UnlockFormData | null>(null).reset(flowFinished);
-const $wrappedTxs = createStore<Transaction[] | null>(null);
-const $multisigTxs = createStore<Transaction[] | null>(null);
-const $coreTxs = createStore<Transaction[] | null>(null);
+const $wrappedTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
+const $multisigTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
+const $coreTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
+const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
 const $step = restore<Step>(stepChanged, Step.NONE);
 
 const $pendingSchedule = combine(unlockModel.$claimSchedule, (chunks) =>
-  chunks.filter((claim) => claim.type !== UnlockChunkType.CLAIMABLE),
+  (chunks || []).filter((claim) => claim.type !== UnlockChunkType.CLAIMABLE),
 );
+
+const $isMultisig = $multisigTxs.map((txs) => !!txs?.length);
 
 sample({
   clock: flowStarted,
   fn: () => Step.INIT,
-  target: stepChanged,
-});
-
-sample({
-  clock: txSaved,
-  fn: () => Step.BASKET,
   target: stepChanged,
 });
 
@@ -60,7 +59,8 @@ sample({
 sample({
   clock: unlockFormStarted,
   source: unlockModel.$claimSchedule,
-  fn: (claims) => claims.filter((claim) => claim.type === UnlockChunkType.CLAIMABLE) as ClaimChunkWithAddress[],
+  filter: (claims) => nonNullable(claims),
+  fn: (claims) => claims!.filter((claim) => claim.type === UnlockChunkType.CLAIMABLE) as ClaimChunkWithAddress[],
   target: unlockFormAggregate.events.formInitiated,
 });
 
@@ -69,7 +69,10 @@ sample({
   fn: ({ transactions, formData }) => {
     const wrappedTxs = transactions.map((tx) => tx.wrappedTx);
     const multisigTxs = transactions.map((tx) => tx.multisigTx).filter(nonNullable);
-    const coreTxs = transactions.map((tx) => tx.coreTx);
+    const coreTxs = transactions.map((tx) => ({
+      ...tx.coreTx,
+      args: { ...tx.coreTx.args, assetId: formData.asset.assetId },
+    }));
 
     return {
       wrappedTxs,
@@ -88,8 +91,8 @@ sample({
 
 sample({
   clock: unlockFormAggregate.output.formSubmitted,
-  fn: ({ formData }) => ({
-    event: [formData],
+  fn: ({ transactions, formData }) => ({
+    event: [{ ...formData, coreTx: transactions[0].coreTx }],
     step: Step.CONFIRM,
   }),
   target: spread({
@@ -166,39 +169,88 @@ sample({
 });
 
 sample({
-  clock: delay(submitModel.output.formSubmitted, 2000),
-  source: $step,
-  filter: (step) => isStep(step, Step.SUBMIT),
-  target: flowFinished,
-});
-
-sample({
   clock: submitModel.$submitStep,
   source: {
     chunks: unlockModel.$claimSchedule,
+    chain: networkSelectorModel.$governanceChain,
     unlockData: $unlockData,
+    step: $step,
   },
-  filter: ({ unlockData }, { step }) => !!unlockData && submitUtils.isSuccessStep(step),
+  filter: ({ unlockData, step, chain }, { step: submitStep }) =>
+    !!unlockData &&
+    isStep(step, Step.SUBMIT) &&
+    submitUtils.isSuccessStep(submitStep) &&
+    chain?.chainId === unlockData.chain.chainId,
   fn: ({ chunks, unlockData }) => {
-    return chunks.filter((chunk) => {
-      return (
-        chunk.type === UnlockChunkType.CLAIMABLE && unlockData!.shards.some((shard) => shard.address !== chunk.address)
+    return (chunks || []).filter((chunk) => {
+      if (chunk.type !== UnlockChunkType.CLAIMABLE) return true;
+
+      return !unlockData!.shards.some(
+        (shard) => (shard.address || unlockData!.proxiedAccount?.address) === chunk.address,
       );
     });
   },
-  target: [unlockModel.$claimSchedule, locksModel.events.getTracksLocks],
+  target: [unlockModel.$claimSchedule, locksModel.events.subscribeLocks],
 });
 
 sample({
   clock: flowFinished,
   fn: () => Step.NONE,
+  target: [stepChanged, unlockFormAggregate.events.formCleared],
+});
+
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: $isMultisig,
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
+  fn: () => Paths.OPERATIONS,
+  target: $redirectAfterSubmitPath,
+});
+
+sample({
+  clock: flowFinished,
+  source: $redirectAfterSubmitPath,
+  filter: nonNullable,
+  target: navigationModel.events.navigateTo,
+});
+
+// Basket
+
+sample({
+  clock: txSaved,
+  source: {
+    unlockData: $unlockData,
+    coreTxs: $coreTxs,
+    txWrappers: unlockFormAggregate.$txWrappers,
+  },
+  filter: ({ unlockData, coreTxs, txWrappers }) => {
+    return !!unlockData && !!coreTxs && !!txWrappers;
+  },
+  fn: ({ unlockData, coreTxs, txWrappers }) => {
+    const txs = coreTxs!.map(
+      (coreTx) =>
+        ({
+          initiatorWallet: unlockData!.shards[0].walletId,
+          coreTx,
+          txWrappers,
+          groupId: Date.now(),
+        }) as BasketTransaction,
+    );
+
+    return txs;
+  },
+  target: basketModel.events.transactionsCreated,
+});
+
+sample({
+  clock: txSaved,
+  fn: () => Step.BASKET,
   target: stepChanged,
 });
 
 export const unlockAggregate = {
   $step,
-  $totalUnlock: unlockModel.$totalUnlock,
-  $isLoading: or(unlockModel.$isLoading, referendumModel.$isReferendumsLoading),
+  $isLoading: unlockModel.$isLoading,
   $isUnlockable: unlockModel.$isUnlockable,
   $pendingSchedule,
 

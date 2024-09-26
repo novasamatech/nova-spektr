@@ -41,6 +41,9 @@ export const getAddress = (props: WithAccountId | WithAddress): Address => {
   return toAddress(accountId, { prefix: addressPrefix });
 };
 
+/**
+ * @deprecated Use `import { Address } from '@/shared/ui-entities'` instead.
+ */
 export const AccountAddress = ({
   className,
   symbols = 8,
@@ -61,28 +64,28 @@ export const AccountAddress = ({
   const typeIsAdaptive = type === 'adaptive';
   const addressToShow = type === 'short' ? toShortAddress(currentAddress, symbols) : currentAddress;
 
-  const nameContent = name && <p className={cnTw('text-footnote text-text-primary truncate', addressFont)}>{name}</p>;
+  const nameContent = name && <p className={cnTw('truncate text-footnote text-text-primary', addressFont)}>{name}</p>;
 
   const addressContent = typeIsAdaptive ? (
     <Truncate
-      className={cnTw('transition-colors text-footnote text-inherit', addressFont)}
+      className={cnTw('text-footnote text-inherit transition-colors', addressFont)}
       ellipsis="..."
       start={4}
       end={4}
       text={addressToShow}
     />
   ) : (
-    <p className={cnTw('transition-colors inline-block break-all text-footnote text-inherit truncate', addressFont)}>
+    <span className={cnTw('inline-block truncate break-all text-footnote text-inherit transition-colors', addressFont)}>
       {addressToShow}
-    </p>
+    </span>
   );
 
   return (
-    <div className={cnTw('flex items-center gap-x-2', className)}>
+    <span className={cnTw('flex items-center gap-x-2', className)}>
       {showIcon && (
         <Identicon className="inline-block" address={currentAddress} size={size} background={false} canCopy={canCopy} />
       )}
       {nameContent || addressContent}
-    </div>
+    </span>
   );
 };

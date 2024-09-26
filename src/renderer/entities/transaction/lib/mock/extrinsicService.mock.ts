@@ -1,4 +1,4 @@
-import { TransactionType } from '@shared/core';
+import { type Serializable, type StandardVote, TransactionType } from '@shared/core';
 import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
 
 export const extrinsicTests = [
@@ -172,6 +172,22 @@ export const extrinsicTests = [
     },
     transactionType: TransactionType.UNLOCK,
     callData: '0x140300000008eb319467ea54784cd9edfbd03bbcc53f7a021ed8d9ed2ca97b6ae46b3f6014',
+  },
+  {
+    testName: 'should create extrinsic to vote tx and get call data',
+    args: {
+      class: 1,
+      vote: {
+        type: 'Standard',
+        balance: '1000000000000',
+        vote: {
+          aye: true,
+          conviction: 'Locked1x',
+        },
+      } satisfies Serializable<StandardVote>,
+    },
+    transactionType: TransactionType.REMOVE_VOTE,
+    callData: '0x14040000000000',
   },
   {
     testName: 'should create extrinsic for remove vote tx and get call data',

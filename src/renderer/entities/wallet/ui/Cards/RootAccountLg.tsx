@@ -17,8 +17,8 @@ export const RootAccountLg = ({ name, accountId, className, onInfoClick }: Props
   };
 
   return (
-    <div className={cnTw('flex items-center gap-x-2 w-full', className)}>
-      <div className="flex items-center gap-x-2 w-full py-[3px] overflow-hidden" onClick={handleClick}>
+    <div className={cnTw('flex w-full items-center gap-x-2', className)}>
+      <div className="flex w-full items-center gap-x-2 overflow-hidden py-[3px]" onClick={handleClick}>
         <Identicon
           theme="jdenticon"
           background={false}
@@ -26,10 +26,10 @@ export const RootAccountLg = ({ name, accountId, className, onInfoClick }: Props
           address={toAddress(accountId, { prefix: SS58_PUBLIC_KEY_PREFIX })}
           size={28}
         />
-        <BodyText className="text-text-secondary truncate">{name}</BodyText>
+        <BodyText className="truncate text-text-secondary">{name}</BodyText>
       </div>
 
-      <IconButton name="info" className="mx-1.5" onClick={onInfoClick} />
+      <IconButton name="details" className="mx-1.5" onClick={onInfoClick} />
     </div>
   );
 };

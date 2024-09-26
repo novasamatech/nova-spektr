@@ -1,4 +1,4 @@
-import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react';
 
 import { XcmChains } from './XcmChains';
 
@@ -6,9 +6,9 @@ export default {
   title: 'ui/XcmChains',
   component: XcmChains,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof XcmChains>;
+} as Meta<typeof XcmChains>;
 
-const Template: ComponentStory<typeof XcmChains> = (args) => <XcmChains {...args} />;
+const Template: StoryFn<typeof XcmChains> = (args) => <XcmChains {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {

@@ -14,6 +14,9 @@ const $votingAsset = combine($votingAssets, networkSelectorModel.$governanceChai
   return assets[chain.chainId] ?? null;
 });
 
+/**
+ * @deprecated Use `networkSelectorModel.$network` instead
+ */
 export const votingAssetModel = {
   $votingAssets,
   $votingAsset,

@@ -1,6 +1,7 @@
 import headlessPlugin from '@headlessui/tailwindcss';
 import { type Config } from 'tailwindcss';
 import defaultTheme from 'tailwindcss/defaultTheme';
+import animatePlugin from 'tailwindcss-animate';
 
 import colors from './tw-config-consts/colors';
 import fontSizes from './tw-config-consts/font-sizes';
@@ -14,9 +15,12 @@ const tailwindConfig: Config = {
       width: {
         90: '22.5rem',
         modal: '27.5rem',
+        'modal-sm': '23rem',
+        'modal-lg': '49rem',
+        'modal-xl': '59.625rem',
       },
       height: {
-        modal: '576px',
+        modal: '36rem',
       },
       fontFamily: {
         sans: ['Inter', ...defaultTheme.fontFamily.sans],
@@ -78,6 +82,7 @@ const tailwindConfig: Config = {
       },
       fontSize: fontSizes,
       borderRadius: {
+        md: '4px',
         '2lg': '10px',
       },
       outlineOffset: {
@@ -95,7 +100,7 @@ const tailwindConfig: Config = {
       },
     },
   },
-  plugins: [headlessPlugin],
+  plugins: [headlessPlugin, animatePlugin],
 };
 
 export default tailwindConfig;

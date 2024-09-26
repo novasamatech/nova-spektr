@@ -58,11 +58,11 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
 
   return (
     <BaseModal isOpen={isOpen} title={t('dynamicDerivations.importKeys.modalTitle')} onClose={onClose}>
-      <div className="flex flex-col gap-y-4 items-start">
+      <div className="flex flex-col items-start gap-y-4">
         <InputFile
           placeholder={t('dynamicDerivations.importKeys.fileInputPlaceholder')}
           accept=".yaml,.txt"
-          className={cnTw('w-full h-[126px]', validationError && 'mb-2', successReport && 'mb-4')}
+          className={cnTw('h-[126px] w-full', validationError && 'mb-2', successReport && 'mb-4')}
           invalid={Boolean(validationError?.error)}
           onChange={handleFileUpload}
         />
@@ -84,7 +84,7 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
           ))}
         </Alert>
 
-        <InfoLink url={TEMPLATE_GITHUB_LINK} className="gap-x-1 mt-2 px-3" iconName="import" iconPosition="right">
+        <InfoLink url={TEMPLATE_GITHUB_LINK} className="mt-2 gap-x-1 px-3" iconName="import" iconPosition="right">
           {t('dynamicDerivations.importKeys.downloadTemplateButton')}
         </InfoLink>
       </div>

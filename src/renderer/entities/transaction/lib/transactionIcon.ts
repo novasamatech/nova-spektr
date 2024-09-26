@@ -38,9 +38,12 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.REMARK]: 'unknownMst',
   // Governance
   [TransactionType.UNLOCK]: 'unlockMst',
-  [TransactionType.REMOVE_VOTE]: 'unlockMst',
+  [TransactionType.VOTE]: 'voteMst',
+  [TransactionType.REVOTE]: 'revoteMst',
+  [TransactionType.REMOVE_VOTE]: 'retractMst',
   [TransactionType.DELEGATE]: 'delegateMst',
   [TransactionType.UNDELEGATE]: 'undelegateMst',
+  [TransactionType.EDIT_DELEGATION]: 'editDelegationMst',
 };
 
 export const getIconName = (transaction?: Transaction | DecodedTransaction): IconNames => {

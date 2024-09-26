@@ -28,12 +28,12 @@ export const ProxyCreatedNotification = ({ notification }: Props) => {
     <div className="flex gap-x-2">
       <div className="relative">
         <WalletIcon type={WalletType.PROXIED} />
-        <div className="absolute top-[13px] -right-[1px] h-2 w-2 rounded-full bg-icon-positive border border-white" />
+        <div className="absolute -right-[1px] top-[13px] h-2 w-2 rounded-full border border-white bg-icon-positive" />
       </div>
 
       <div className="flex flex-col gap-y-2">
         <BodyText>{t('notifications.details.proxyCreatedTitle')}</BodyText>
-        <BodyText className="inline-flex flex-wrap gap-y-2 items-center">
+        <BodyText className="inline-flex flex-wrap items-center gap-y-2">
           <Trans
             t={t}
             i18nKey="notifications.details.proxyWalletAction"
@@ -46,7 +46,7 @@ export const ProxyCreatedNotification = ({ notification }: Props) => {
             }}
           />
         </BodyText>
-        <BodyText className="inline-flex flex-wrap gap-y-2 items-center">
+        <BodyText className="inline-flex flex-wrap items-center gap-y-2">
           <Trans
             t={t}
             i18nKey="notifications.details.proxyCreatedDetails"

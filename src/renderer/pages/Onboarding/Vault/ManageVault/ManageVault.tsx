@@ -1,5 +1,4 @@
 import { u8aToHex } from '@polkadot/util';
-import cn from 'classnames';
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
@@ -65,7 +64,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
   const [isAddressModalOpen, toggleIsAddressModalOpen] = useToggle();
   const [isImportModalOpen, toggleIsImportModalOpen] = useToggle();
   const [isConstructorModalOpen, toggleConstructorModal] = useToggle();
-  const [chainElements, setChainElements] = useState<[string, Array<ChainAccount | ShardAccount[]>][]>([]);
+  const [chainElements, setChainElements] = useState<[string, (ChainAccount | ShardAccount[])[]][]>([]);
 
   const {
     submit,
@@ -89,24 +88,23 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
     const chains = chainsService.getChainsData({ sort: true });
     const chainsMap = dictionary(chains, 'chainId', () => []);
 
-    keysGroups.forEach((account) => {
+    for (const account of keysGroups) {
       const chainId = Array.isArray(account) ? account[0].chainId : account.chainId;
-
       chainsMap[chainId].push(account);
-    });
+    }
 
     setChainElements(Object.entries(chainsMap));
   }, [keysGroups]);
 
   useEffect(() => {
-    Object.values(accordions.current).forEach((item) => {
+    for (const item of Object.values(accordions.current)) {
       const toOpen = isAltPressed && !item.isOpen;
       const toClose = !isAltPressed && item.isOpen;
 
       if (toOpen || toClose) {
         item.el?.click();
       }
-    });
+    }
   }, [isAltPressed]);
 
   const submitForm = (event: FormEvent) => {
@@ -148,8 +146,8 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
   };
 
   const handleConstructorKeys = (
-    keysToAdd: Array<ChainAccount | ShardAccount[]>,
-    keysToRemove: Array<ChainAccount | ShardAccount[]>,
+    keysToAdd: (ChainAccount | ShardAccount[])[],
+    keysToRemove: (ChainAccount | ShardAccount[])[],
   ) => {
     manageVaultModel.events.keysRemoved(keysToRemove.flat());
     manageVaultModel.events.keysAdded(keysToAdd.flat());
@@ -174,14 +172,14 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
 
   return (
     <>
-      <div className="w-[472px] flex flex-col px-5 py-4 bg-white rounded-l-lg">
+      <div className="flex w-[472px] flex-col rounded-l-lg bg-white px-5 py-4">
         <HeaderTitleText className="mb-10">{t('onboarding.vault.title')}</HeaderTitleText>
         <SmallTitleText className="mb-6">{t('onboarding.vault.manageTitle')}</SmallTitleText>
 
-        <form className="flex flex-col h-full" onSubmit={submitForm}>
+        <form className="flex h-full flex-col" onSubmit={submitForm}>
           <div className="flex flex-col gap-y-2">
             <Input
-              wrapperClass={cn('flex items-center')}
+              wrapperClass="flex items-center"
               label={t('onboarding.walletNameLabel')}
               placeholder={t('onboarding.walletNamePlaceholder')}
               invalid={name?.hasError()}
@@ -193,7 +191,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
             </InputHint>
           </div>
 
-          <div className="flex flex-1 justify-between items-end">
+          <div className="flex flex-1 items-end justify-between">
             <Button variant="text" onClick={onBack}>
               {t('onboarding.backButton')}
             </Button>
@@ -205,10 +203,10 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
         </form>
       </div>
 
-      <div className="relative w-[472px] flex flex-col pt-4 rounded-r-lg border-l border-divider">
+      <div className="relative flex w-[472px] flex-col rounded-r-lg border-l border-divider pt-4">
         <IconButton name="close" size={20} className="absolute right-3 top-3 m-1" onClick={() => onClose()} />
 
-        <div className="flex items-center justify-between px-5 mt-[52px] mb-6">
+        <div className="mb-6 mt-[52px] flex items-center justify-between px-5">
           <div className="flex items-center gap-x-1.5">
             <SmallTitleText>{t('onboarding.vault.vaultTitle')}</SmallTitleText>
             <VaultInfoPopover />
@@ -223,18 +221,18 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
           </div>
         </div>
 
-        <div className="pl-5 mb-6">
+        <div className="mb-6 pl-5">
           <HelpText className="flex items-center gap-1 text-text-tertiary">
             <Trans t={t} i18nKey="onboarding.vault.altHint" components={{ button }} />
           </HelpText>
         </div>
 
-        <div className="overflow-y-auto h-[470px] pl-3 pr-3.5">
-          <div className="flex items-center justify-between w-full gap-2 pb-4">
+        <div className="h-[470px] overflow-y-auto pl-3 pr-3.5">
+          <div className="flex w-full items-center justify-between gap-2 pb-4">
             <ContextMenu button={<RootAccountLg name={walletName} accountId={publicKey} />}>
               <ContextMenu.Group title="Public key">
                 <div className="flex items-center gap-x-2">
-                  <HelpText className="text-text-secondary break-all">{publicKeyAddress}</HelpText>
+                  <HelpText className="break-all text-text-secondary">{publicKeyAddress}</HelpText>
                   <IconButton
                     className="shrink-0"
                     name="copy"
@@ -246,9 +244,9 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
             </ContextMenu>
           </div>
 
-          <FootnoteText className="text-text-tertiary ml-9 pl-2">{t('onboarding.vault.accountTitle')}</FootnoteText>
+          <FootnoteText className="ml-9 pl-2 text-text-tertiary">{t('onboarding.vault.accountTitle')}</FootnoteText>
 
-          <div className="flex flex-col gap-2 divide-y ml-9">
+          <div className="ml-9 flex flex-col gap-2 divide-y">
             {chainElements.map(([chainId, chainAccounts]) => {
               if (chainAccounts.length === 0) return;
 
@@ -278,7 +276,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
                           }
                         >
                           <ContextMenu.Group title={t('general.explorers.derivationTitle')}>
-                            <HelpText className="text-text-secondary break-all">
+                            <HelpText className="break-all text-text-secondary">
                               {accountUtils.getDerivationPath(account)}
                             </HelpText>
                           </ContextMenu.Group>
@@ -312,7 +310,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
       <DerivationsAddressModal
         isOpen={isAddressModalOpen}
         rootAccountId={publicKey}
-        keys={keys as Array<ShardAccount | ChainAccount>}
+        keys={keys as (ShardAccount | ChainAccount)[]}
         onClose={toggleIsAddressModalOpen}
         onComplete={handleCreateVault}
       />

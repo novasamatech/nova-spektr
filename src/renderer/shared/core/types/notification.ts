@@ -28,6 +28,7 @@ type BaseNotification = {
 
 type MultisigBaseNotification = BaseNotification & {
   multisigAccountId: AccountId;
+  originatorAccountId: AccountId;
 };
 
 export type MultisigCreated = MultisigBaseNotification & {

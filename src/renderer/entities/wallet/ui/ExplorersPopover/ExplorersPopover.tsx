@@ -11,6 +11,7 @@ type Props = {
   explorers?: Explorer[];
   addressPrefix?: number;
   className?: string;
+  contextClassName?: string;
 };
 
 const ExplorersPopoverRoot = ({
@@ -20,15 +21,16 @@ const ExplorersPopoverRoot = ({
   addressPrefix,
   children,
   className,
+  contextClassName,
 }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
   const formattedAddress = toAddress(address, { prefix: addressPrefix });
 
   return (
-    <ContextMenu button={button}>
+    <ContextMenu button={button} className={contextClassName}>
       <ContextMenu.Group title={t('general.explorers.addressTitle')}>
         <div className={cnTw('flex items-center gap-x-2', className)}>
-          <HelpText className="text-text-secondary break-all">{formattedAddress}</HelpText>
+          <HelpText className="break-all text-text-secondary">{formattedAddress}</HelpText>
           <IconButton className="shrink-0" name="copy" size={20} onClick={() => copyToClipboard(formattedAddress)} />
         </div>
       </ContextMenu.Group>

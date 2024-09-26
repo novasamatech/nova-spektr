@@ -79,8 +79,10 @@ export const QrMultiframeSignatureReader = ({
       streamRef.current = await navigator.mediaDevices.getUserMedia({ video: true });
 
       const mediaDevices = await BrowserCodeReader.listVideoInputDevices();
-      mediaDevices.forEach(({ deviceId, label }) => cameras.push({ id: deviceId, label }));
-    } catch (error) {
+      for (const { deviceId, label } of mediaDevices) {
+        cameras.push({ id: deviceId, label });
+      }
+    } catch {
       throw QR_READER_ERRORS[QrError.USER_DENY];
     }
 
@@ -160,7 +162,7 @@ export const QrMultiframeSignatureReader = ({
 
       try {
         fountainResult = raptorDecoder.decode(packet);
-      } catch (error) {
+      } catch {
         packets.current.delete(key);
         collected.delete(blockNumber);
         onProgress?.({ decoded: collected.size, total });
@@ -236,13 +238,18 @@ export const QrMultiframeSignatureReader = ({
       }
 
       onStart?.();
-    } catch (error) {
+    } catch {
       throw QR_READER_ERRORS[QrError.DECODE_ERROR];
     }
   };
 
   const stopScanning = () => {
-    streamRef.current?.getVideoTracks().forEach((track) => track.stop());
+    if (streamRef.current) {
+      for (const track of streamRef.current.getVideoTracks()) {
+        track.stop();
+      }
+    }
+
     controlsRef.current?.stop();
     bgControlsRef.current?.stop();
   };
@@ -277,7 +284,7 @@ export const QrMultiframeSignatureReader = ({
         controlsRef.current?.stop();
         bgControlsRef.current?.stop();
         await startScanning();
-      } catch (error) {
+      } catch {
         onError?.(QR_READER_ERRORS[QrError.BAD_NEW_CAMERA]);
       }
     })();
@@ -291,7 +298,7 @@ export const QrMultiframeSignatureReader = ({
         controls={false}
         ref={videoRef}
         data-testid="qr-reader"
-        className={cnTw('object-cover  absolute -scale-x-100', className)}
+        className={cnTw('absolute -scale-x-100 object-cover', className)}
         style={videoStyle}
       >
         {t('qrReader.videoError')}
@@ -301,14 +308,14 @@ export const QrMultiframeSignatureReader = ({
 
   return (
     <>
-      <div className="relative w-[240px] h-[240px] rounded-[22px] overflow-hidden">
+      <div className="relative h-[240px] w-[240px] overflow-hidden rounded-[22px]">
         <video
           muted
           autoPlay
           controls={false}
           ref={videoRef}
           data-testid="qr-reader"
-          className={cnTw('object-cover absolute -scale-x-100', className)}
+          className={cnTw('absolute -scale-x-100 object-cover', className)}
         >
           {t('qrReader.videoError')}
         </video>
@@ -319,7 +326,7 @@ export const QrMultiframeSignatureReader = ({
         controls={false}
         ref={bgVideoRef}
         data-testid="qr-reader"
-        className={cnTw('absolute -scale-x-100 object-cover top-0 left-0 blur-[14px] max-w-none', bgVideoClassName)}
+        className={cnTw('absolute left-0 top-0 max-w-none -scale-x-100 object-cover blur-[14px]', bgVideoClassName)}
       />
       <div className="video-cover rounded-b-lg" />
     </>

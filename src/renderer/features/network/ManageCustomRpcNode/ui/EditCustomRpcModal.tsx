@@ -37,7 +37,7 @@ export const EditCustomRpcModal = () => {
       onClose={closeModal}
     >
       <form id="edit-rpc-form" onSubmit={onSubmit}>
-        <div className="flex flex-col gap-y-4 mt-4">
+        <div className="mt-4 flex flex-col gap-y-4">
           <NameInput />
           <UrlInput />
           <Alerts />
@@ -137,7 +137,7 @@ const ActionSection = () => {
   const canSubmit = useUnit(editCustomRpcModel.$canSubmit);
 
   return (
-    <div className="flex justify-end mt-7 w-full">
+    <div className="mt-7 flex w-full justify-end">
       <Button type="submit" form="edit-rpc-form" isLoading={isLoading} disabled={!canSubmit}>
         {t('settings.networks.editNodeButton')}
       </Button>

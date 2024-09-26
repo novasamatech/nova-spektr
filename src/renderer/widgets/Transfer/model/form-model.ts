@@ -265,7 +265,7 @@ const $signatories = combine(
 
     const { chain } = network;
 
-    return txWrappers.reduce<Array<{ signer: Account; balance: string }[]>>((acc, wrapper) => {
+    return txWrappers.reduce<{ signer: Account; balance: string }[][]>((acc, wrapper) => {
       if (!transactionService.hasMultisig([wrapper])) return acc;
 
       const balancedSignatories = (wrapper as MultisigTxWrapper).signatories.map((signatory) => {
@@ -358,16 +358,16 @@ const $pureTx = combine(
 
 const $transaction = combine(
   {
-    apis: networkModel.$apis,
+    api: $api,
     networkStore: $networkStore,
     pureTx: $pureTx,
     txWrappers: $txWrappers,
   },
-  ({ apis, networkStore, pureTx, txWrappers }) => {
-    if (!networkStore || !pureTx) return undefined;
+  ({ api, networkStore, pureTx, txWrappers }) => {
+    if (!networkStore || !pureTx || !api) return undefined;
 
     return transactionService.getWrappedTransaction({
-      api: apis[networkStore.chain.chainId],
+      api,
       addressPrefix: networkStore.chain.addressPrefix,
       transaction: pureTx,
       txWrappers,
@@ -677,6 +677,7 @@ export const formModel = {
     isXcmFeeLoadingChanged: xcmTransferModel.events.isXcmFeeLoadingChanged,
     xcmFeeChanged: xcmTransferModel.events.xcmFeeChanged,
   },
+
   output: {
     formSubmitted,
   },

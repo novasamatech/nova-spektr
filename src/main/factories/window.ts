@@ -35,11 +35,11 @@ export function createWindow(): BrowserWindow {
 
   if (ENVIRONMENT.IS_DEV) {
     window.loadURL(`${RENDERER.DEV_SERVER.URL}:${RENDERER.DEV_SERVER.PORT}`);
+
+    window.webContents.openDevTools({ mode: 'bottom' });
   } else {
     window.loadURL('file://' + __dirname + '/index.html');
   }
-
-  ENVIRONMENT.IS_DEV && window.webContents.openDevTools({ mode: 'bottom' });
 
   session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
     details.requestHeaders['User-Agent'] = 'Nova Spektr';
@@ -63,7 +63,9 @@ export function createWindow(): BrowserWindow {
   });
 
   window.on('close', () => {
-    BrowserWindow.getAllWindows().forEach((window) => window.destroy());
+    for (const w of BrowserWindow.getAllWindows()) {
+      w.destroy();
+    }
   });
 
   window.on('closed', window.destroy);

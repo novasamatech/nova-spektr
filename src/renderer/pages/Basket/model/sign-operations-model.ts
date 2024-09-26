@@ -4,6 +4,7 @@ import { spread } from 'patronum';
 
 import {
   type Account,
+  type Balance,
   type BasketTransaction,
   type Chain,
   type ChainId,
@@ -13,10 +14,20 @@ import {
 } from '@shared/core';
 import { type ChainError } from '@shared/core/types/basket';
 import { toAccountId } from '@shared/lib/utils';
+import { balanceModel } from '@/entities/balance';
 import { basketModel } from '@entities/basket';
 import { networkModel } from '@entities/network';
-import { TransferTypes, XcmTypes } from '@entities/transaction';
+import {
+  type MultisigTransactionTypes,
+  type TransferTransactionTypes,
+  TransferTypes,
+  type UtilityTransactionTypes,
+  type XcmTransactionTypes,
+  XcmTypes,
+  isEditDelegationTransaction,
+} from '@entities/transaction';
 import { walletModel, walletUtils } from '@entities/wallet';
+import { type FeeMap } from '@/features/operations/OperationsValidation';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { ExtrinsicResult } from '@features/operations/OperationSubmit/lib/types';
@@ -25,21 +36,24 @@ import {
   addPureProxiedConfirmModel,
   bondExtraConfirmModel,
   bondNominateConfirmModel,
+  delegateConfirmModel,
+  editDelegationConfirmModel,
   nominateConfirmModel,
   payeeConfirmModel,
   removeProxyConfirmModel,
   removePureProxiedConfirmModel,
+  removeVoteConfirmModel,
   restakeConfirmModel,
+  revokeDelegationConfirmModel,
   transferConfirmModel,
   unstakeConfirmModel,
+  voteConfirmModel,
   withdrawConfirmModel,
 } from '@features/operations/OperationsConfirm';
 import { unlockConfirmAggregate } from '@/widgets/UnlockModal/aggregates/unlockConfirm';
-import { prepareTransaction } from '../lib/prepareTransactions';
+import { type DataParams, prepareTransaction } from '../lib/prepareTransactions';
 import { getCoreTx } from '../lib/utils';
 import { Step } from '../types';
-
-type FeeMap = Record<ChainId, Record<TransactionType, string>>;
 
 const flowStarted = createEvent<{ transactions: BasketTransaction[]; feeMap: FeeMap }>();
 const flowFinished = createEvent();
@@ -55,62 +69,78 @@ type PrepareDataParams = {
   transactions: BasketTransaction[];
   connections: Record<ChainId, Connection>;
   feeMap: FeeMap;
+  balances: Balance[];
 };
 
-const startDataPreparationFx = createEffect(
-  async ({ transactions, wallets, chains, apis, connections, feeMap }: PrepareDataParams) => {
-    const dataParams = [];
+const startDataPreparationFx = createEffect(async ({ transactions, ...preparationParams }: PrepareDataParams) => {
+  const dataParams = [];
 
-    for (const transaction of transactions) {
-      const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE, TransactionType.BOND]);
+  for (const transaction of transactions) {
+    if (isEditDelegationTransaction(transaction.coreTx)) {
+      const params = await prepareTransaction.prepareEditDelegationTransaction({
+        transaction,
+        ...preparationParams,
+      });
 
-      if (TransferTypes.includes(coreTx.type) || XcmTypes.includes(coreTx.type)) {
-        const params = await prepareTransaction.prepareTransferTransactionData({
-          transaction,
-          wallets,
-          chains,
-          apis,
-          connections,
-          feeMap,
-        });
-
-        dataParams.push({ type: TransactionType.TRANSFER, params });
-      }
-
-      const TransactionValidators = {
-        [TransactionType.ADD_PROXY]: prepareTransaction.prepareAddProxyTransaction,
-        [TransactionType.CREATE_PURE_PROXY]: prepareTransaction.prepareAddPureProxiedTransaction,
-        [TransactionType.REMOVE_PROXY]: prepareTransaction.prepareRemoveProxyTransaction,
-        [TransactionType.REMOVE_PURE_PROXY]: prepareTransaction.prepareRemovePureProxiedTransaction,
-
-        [TransactionType.BOND]: prepareTransaction.prepareBondNominateTransaction,
-        [TransactionType.NOMINATE]: prepareTransaction.prepareNominateTransaction,
-        [TransactionType.STAKE_MORE]: prepareTransaction.prepareBondExtraTransaction,
-        [TransactionType.DESTINATION]: prepareTransaction.preparePayeeTransaction,
-        [TransactionType.RESTAKE]: prepareTransaction.prepareRestakeTransaction,
-        [TransactionType.UNSTAKE]: prepareTransaction.prepareUnstakeTransaction,
-        [TransactionType.REDEEM]: prepareTransaction.prepareWithdrawTransaction,
-        [TransactionType.UNLOCK]: prepareTransaction.prepareUnlockTransaction,
-      };
-
-      if (coreTx.type in TransactionValidators) {
-        // @ts-expect-error TS thinks that transfer should be in TransactionValidators
-        const params = await TransactionValidators[coreTx.type]({
-          transaction,
-          wallets,
-          chains,
-          apis,
-          connections,
-          feeMap,
-        });
-
-        dataParams.push({ type: coreTx.type, params });
-      }
+      dataParams.push({ type: TransactionType.EDIT_DELEGATION, params });
     }
 
-    return dataParams;
-  },
-);
+    const coreTx = getCoreTx(transaction);
+
+    if (TransferTypes.includes(coreTx.type) || XcmTypes.includes(coreTx.type)) {
+      const params = await prepareTransaction.prepareTransferTransactionData({
+        transaction,
+        ...preparationParams,
+      });
+
+      dataParams.push({ type: TransactionType.TRANSFER, params });
+    }
+
+    const TransactionData: Record<
+      Exclude<
+        TransactionType,
+        | TransferTransactionTypes
+        | XcmTransactionTypes
+        | MultisigTransactionTypes
+        | UtilityTransactionTypes
+        // TODO: Add vote types
+        | TransactionType.VOTE
+        | TransactionType.REMOVE_VOTE
+        | TransactionType.REVOTE
+      >,
+      (dataParams: DataParams) => Promise<unknown>
+    > = {
+      [TransactionType.ADD_PROXY]: prepareTransaction.prepareAddProxyTransaction,
+      [TransactionType.CREATE_PURE_PROXY]: prepareTransaction.prepareAddPureProxiedTransaction,
+      [TransactionType.REMOVE_PROXY]: prepareTransaction.prepareRemoveProxyTransaction,
+      [TransactionType.REMOVE_PURE_PROXY]: prepareTransaction.prepareRemovePureProxiedTransaction,
+
+      [TransactionType.BOND]: prepareTransaction.prepareBondNominateTransaction,
+      [TransactionType.NOMINATE]: prepareTransaction.prepareNominateTransaction,
+      [TransactionType.STAKE_MORE]: prepareTransaction.prepareBondExtraTransaction,
+      [TransactionType.DESTINATION]: prepareTransaction.preparePayeeTransaction,
+      [TransactionType.RESTAKE]: prepareTransaction.prepareRestakeTransaction,
+      [TransactionType.UNSTAKE]: prepareTransaction.prepareUnstakeTransaction,
+      [TransactionType.REDEEM]: prepareTransaction.prepareWithdrawTransaction,
+      [TransactionType.UNLOCK]: prepareTransaction.prepareUnlockTransaction,
+      [TransactionType.DELEGATE]: prepareTransaction.prepareDelegateTransaction,
+      [TransactionType.EDIT_DELEGATION]: prepareTransaction.prepareEditDelegationTransaction,
+      [TransactionType.UNDELEGATE]: prepareTransaction.prepareRevokeDelegationTransaction,
+    };
+
+    if (coreTx.type in TransactionData) {
+      // @ts-expect-error TS thinks that transfer should be in TransactionData
+      const params = await TransactionData[coreTx.type]({
+        transaction,
+        ...preparationParams,
+      });
+
+      dataParams.push({ type: coreTx.type, params });
+    }
+  }
+
+  return dataParams;
+});
 
 const $step = restore(stepChanged, Step.NONE);
 const $transactions = createStore<BasketTransaction[]>([]).reset(flowFinished);
@@ -121,18 +151,20 @@ const $txDataParams = combine({
   apis: networkModel.$apis,
   connections: networkModel.$connections,
   signerOptions: $signerOptions,
+  balances: balanceModel.$balances,
 });
 
 sample({
   clock: flowStarted,
   source: $txDataParams,
-  fn: ({ wallets, chains, apis, connections }, { transactions, feeMap }) => ({
+  fn: ({ wallets, chains, apis, connections, balances }, { transactions, feeMap }) => ({
     transactions,
     wallets,
     chains,
     apis,
     connections,
     feeMap,
+    balances,
   }),
   target: startDataPreparationFx,
 });
@@ -319,6 +351,45 @@ sample({
   target: withdrawConfirmModel.events.formInitiated,
 });
 
+// Vote
+
+sample({
+  clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.VOTE).length > 0;
+  },
+  fn: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.VOTE).map((tx) => tx.params) || [];
+  },
+  target: voteConfirmModel.events.fillConfirm,
+});
+
+// Revote
+
+sample({
+  clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.REVOTE).length > 0;
+  },
+  fn: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.REVOTE).map((tx) => tx.params) || [];
+  },
+  target: voteConfirmModel.events.fillConfirm,
+});
+
+// Remove vote
+
+sample({
+  clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.REMOVE_VOTE).length > 0;
+  },
+  fn: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.REMOVE_VOTE).map((tx) => tx.params) || [];
+  },
+  target: removeVoteConfirmModel.events.fillConfirm,
+});
+
 // Unlock
 
 sample({
@@ -334,6 +405,45 @@ sample({
     );
   },
   target: unlockConfirmAggregate.events.formInitiated,
+});
+
+// Delegate
+
+sample({
+  clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.DELEGATE).length > 0;
+  },
+  fn: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.DELEGATE).map((tx) => tx.params) || [];
+  },
+  target: delegateConfirmModel.events.formInitiated,
+});
+
+// Edit delegation
+
+sample({
+  clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.EDIT_DELEGATION).length > 0;
+  },
+  fn: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.EDIT_DELEGATION).map((tx) => tx.params) || [];
+  },
+  target: editDelegationConfirmModel.events.formInitiated,
+});
+
+// revoke delegation (undelegate)
+
+sample({
+  clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.UNDELEGATE).length > 0;
+  },
+  fn: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.UNDELEGATE).map((tx) => tx.params) || [];
+  },
+  target: revokeDelegationConfirmModel.events.formInitiated,
 });
 
 sample({
@@ -356,6 +466,11 @@ sample({
     restakeConfirmModel.output.formSubmitted,
     unstakeConfirmModel.output.formSubmitted,
     withdrawConfirmModel.output.formSubmitted,
+    delegateConfirmModel.output.formSubmitted,
+    revokeDelegationConfirmModel.output.formSubmitted,
+    unlockConfirmAggregate.output.formSubmitted,
+    voteConfirmModel.events.sign,
+    removeVoteConfirmModel.events.sign,
     txsConfirmed,
   ],
   source: {

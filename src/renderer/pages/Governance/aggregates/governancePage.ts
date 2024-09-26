@@ -2,7 +2,11 @@ import { combine, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { either, readonly } from 'patronum';
 
-import { filterModel, listAggregate, listService, networkSelectorModel, titleModel } from '@features/governance';
+import { nonNullable, nullable } from '@shared/lib/utils';
+import { referendumModel, votingModel } from '@/entities/governance';
+import { accountUtils, walletModel } from '@/entities/wallet';
+import { locksModel } from '@/features/governance/model/locks';
+import { filterModel, listAggregate, listService, networkSelectorModel, votingAggregate } from '@features/governance';
 import { governancePageUtils } from '../lib/governancePageUtils';
 
 const flow = createGate();
@@ -48,16 +52,52 @@ const $completed = $displayedCurrentReferendums.map((x) =>
 
 sample({
   clock: flow.open,
-  source: { chain: networkSelectorModel.$governanceChain },
-  filter: ({ chain }) => chain === null,
-  target: networkSelectorModel.input.defaultChainSet,
+  source: networkSelectorModel.$network,
+  filter: nullable,
+  target: networkSelectorModel.events.resetNetwork,
+});
+
+sample({
+  clock: flow.open,
+  source: {
+    network: networkSelectorModel.$network,
+    wallet: walletModel.$activeWallet,
+  },
+  filter: ({ network, wallet }) => nonNullable(network) && nonNullable(wallet),
+  fn: ({ network, wallet }) => ({
+    api: network!.api,
+    addresses: accountUtils.getAddressesForWallet(wallet!, network!.chain),
+    chain: network!.chain,
+  }),
+  target: [
+    votingAggregate.events.requestVoting,
+    referendumModel.events.subscribeReferendums,
+    locksModel.events.subscribeLocks,
+  ],
+});
+
+sample({
+  clock: flow.close,
+  target: locksModel.events.unsubscribeLocks,
+});
+
+sample({
+  clock: flow.close,
+  target: votingModel.events.unsubscribeVoting,
+});
+
+sample({
+  clock: flow.close,
+  target: referendumModel.events.unsubscribeReferendums,
 });
 
 export const governancePageAggregate = {
+  $all: $displayedCurrentReferendums,
   $ongoing: readonly($ongoing),
   $completed: readonly($completed),
+  $isSerching: filterModel.$query.map((x) => x.length > 0),
   $isLoading: listAggregate.$isLoading,
-  $isTitlesLoading: titleModel.$isTitlesLoading,
+  $isTitlesLoading: listAggregate.$isTitlesLoading,
 
   gates: {
     flow,

@@ -8,9 +8,9 @@ import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel } from '@entities/network';
 import { NominateRules } from '../lib/nominate-rules';
 import { validationUtils } from '../lib/validation-utils';
-import { type ShardsBondBalanceStore, type ValidationResult } from '../types/types';
+import { type ShardsBondBalanceStore, type ValidationResult, type ValidationStartedParams } from '../types/types';
 
-const validationStarted = createEvent<{ id: ID; transaction: Transaction; signerOptions?: Partial<SignerOptions> }>();
+const validationStarted = createEvent<ValidationStartedParams>();
 const txValidated = createEvent<{ id: ID; result: ValidationResult }>();
 
 type ValidateParams = {
@@ -23,29 +23,27 @@ type ValidateParams = {
   signerOptions?: Partial<SignerOptions>;
 };
 
-const validateFx = createEffect(
-  async ({ id, api, chain, asset, transaction, balances, signerOptions }: ValidateParams) => {
-    const accountId = toAccountId(transaction.address);
-    const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
+const validateFx = createEffect(async ({ id, chain, asset, transaction, balances }: ValidateParams) => {
+  const accountId = toAccountId(transaction.address);
+  const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
 
-    const rules = [
-      {
-        value: [{ accountId }],
-        form: {
-          amount: transaction.args.amount,
-        },
-        ...NominateRules.shards.noBondBalance({} as Store<ShardsBondBalanceStore>),
-        source: {
-          isProxy: false,
-          network: { chain, asset },
-          accountsBalances: [stakeableAmount(shardBalance)],
-        } as ShardsBondBalanceStore,
+  const rules = [
+    {
+      value: [{ accountId }],
+      form: {
+        amount: transaction.args.amount,
       },
-    ];
+      ...NominateRules.shards.noBondBalance({} as Store<ShardsBondBalanceStore>),
+      source: {
+        isProxy: false,
+        network: { chain, asset },
+        accountsBalances: [stakeableAmount(shardBalance)],
+      } as ShardsBondBalanceStore,
+    },
+  ];
 
-    return { id, result: validationUtils.applyValidationRules(rules) };
-  },
-);
+  return { id, result: validationUtils.applyValidationRules(rules) };
+});
 
 sample({
   clock: validationStarted,

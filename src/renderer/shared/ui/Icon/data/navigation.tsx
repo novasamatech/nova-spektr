@@ -6,7 +6,6 @@ import NotificationImg, { ReactComponent as NotificationSvg } from '@shared/asse
 import OperationsImg, { ReactComponent as OperationsSvg } from '@shared/assets/images/navigation/operations.svg';
 import SettingsImg, { ReactComponent as SettingsSvg } from '@shared/assets/images/navigation/settings.svg';
 import StakingImg, { ReactComponent as StakingSvg } from '@shared/assets/images/navigation/staking.svg';
-import MatrixImg, { ReactComponent as MatrixSvg } from '@shared/assets/images/social/matrix.svg';
 
 const NavigationImages = {
   asset: { svg: AssetSvg, img: AssetImg },
@@ -17,7 +16,6 @@ const NavigationImages = {
   addressBook: { svg: AddressBookSvg, img: AddressBookImg },
   notification: { svg: NotificationSvg, img: NotificationImg },
   network: { svg: NetworkSvg, img: NetworkImg },
-  matrix: { svg: MatrixSvg, img: MatrixImg },
 } as const;
 
 export type Navigation = keyof typeof NavigationImages;

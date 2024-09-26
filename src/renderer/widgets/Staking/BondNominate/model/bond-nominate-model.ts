@@ -1,8 +1,9 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
-import { delay, spread } from 'patronum';
+import { spread } from 'patronum';
 
+import { type PathType, Paths } from '@/shared/routes';
 import {
   type Account,
   type BasketTransaction,
@@ -13,13 +14,15 @@ import {
   WrapperKind,
 } from '@shared/core';
 import { TEST_ADDRESS, getRelaychainAsset, nonNullable } from '@shared/lib/utils';
+import { operationsModel, operationsUtils } from '@/entities/operations';
 import { basketModel } from '@entities/basket/model/basket-model';
 import { networkModel } from '@entities/network';
 import { validatorsService } from '@entities/staking';
 import { transactionBuilder, transactionService } from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
+import { navigationModel } from '@/features/navigation';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@features/operations/OperationSubmit';
+import { submitModel, submitUtils } from '@features/operations/OperationSubmit';
 import { bondNominateConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { validatorsModel } from '@features/staking';
 import { bondUtils } from '../lib/bond-utils';
@@ -35,12 +38,14 @@ const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
-const $walletData = restore<WalletData | null>(flowStarted, null);
-const $bondNominateData = createStore<BondNominateData | null>(null);
+const $walletData = restore<WalletData | null>(flowStarted, null).reset(flowFinished);
+const $bondNominateData = createStore<BondNominateData | null>(null).reset(flowFinished);
 const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
 
-const $txWrappers = createStore<TxWrapper[]>([]);
-const $pureTxs = createStore<Transaction[]>([]);
+const $txWrappers = createStore<TxWrapper[]>([]).reset(flowFinished);
+const $pureTxs = createStore<Transaction[]>([]).reset(flowFinished);
+
+const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
 const $maxValidators = createStore<number>(0);
 
@@ -95,6 +100,15 @@ const $transactions = combine(
     );
   },
   { skipVoid: false },
+);
+
+const $multisigAlreadyExists = combine(
+  {
+    apis: networkModel.$apis,
+    coreTxs: $pureTxs,
+    transactions: operationsModel.$multisigTransactions,
+  },
+  ({ apis, coreTxs, transactions }) => operationsUtils.isMultisigAlreadyExists({ apis, coreTxs, transactions }),
 );
 
 // Max validators
@@ -291,9 +305,10 @@ sample({
     feeData: $feeData,
     walletData: $walletData,
     txWrappers: $txWrappers,
+    coreTxs: $pureTxs,
   },
   filter: ({ bondData, walletData }) => Boolean(bondData) && Boolean(walletData),
-  fn: ({ bondData, feeData, walletData, txWrappers }) => {
+  fn: ({ bondData, feeData, walletData, txWrappers, coreTxs }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
 
     return {
@@ -305,6 +320,7 @@ sample({
           ...feeData,
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
           ...(wrapper && { shards: [wrapper.proxyAccount] }),
+          coreTx: coreTxs[0],
         },
       ],
       step: Step.CONFIRM,
@@ -379,16 +395,24 @@ sample({
 });
 
 sample({
-  clock: delay(submitModel.output.formSubmitted, 2000),
-  source: $step,
-  filter: (step) => bondUtils.isSubmitStep(step),
-  target: flowFinished,
+  clock: flowFinished,
+  fn: () => Step.NONE,
+  target: [stepChanged, formModel.events.formCleared, validatorsModel.events.formCleared],
+});
+
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: formModel.$isMultisig,
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
+  fn: () => Paths.OPERATIONS,
+  target: $redirectAfterSubmitPath,
 });
 
 sample({
   clock: flowFinished,
-  fn: () => Step.NONE,
-  target: [stepChanged, formModel.events.formCleared, validatorsModel.events.formCleared],
+  source: $redirectAfterSubmitPath,
+  filter: nonNullable,
+  target: navigationModel.events.navigateTo,
 });
 
 sample({
@@ -427,6 +451,7 @@ export const bondNominateModel = {
   $step,
   $walletData,
   $initiatorWallet: $walletData.map((data) => data?.wallet || null),
+  $multisigAlreadyExists,
 
   events: {
     flowStarted,

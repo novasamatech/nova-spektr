@@ -6,13 +6,15 @@ import {
   defineMethod,
 } from '@substrate/txwrapper-polkadot';
 
+import { type TransactionVote } from '../../../governance';
+
 interface UnlockArgs extends Args {
   /**
-   *  class: The class of polls to unlock. - trackId.
+   * Class: The class of polls to unlock. - trackId.
    */
   class: number;
   /**
-   * target: The account to remove the lock on. - address.
+   * Target: The account to remove the lock on. - address.
    */
   target: string;
 }
@@ -30,13 +32,40 @@ const unlock = (args: UnlockArgs, info: BaseTxInfo, options: OptionsWithMeta): U
     options,
   );
 
+interface VoteArgs extends Args {
+  /**
+   * PollIndex: referendum id
+   */
+  pollIndex: number;
+
+  /**
+   * Vote: describes vote to submit.
+   */
+  vote: TransactionVote;
+}
+
+const vote = (args: VoteArgs, info: BaseTxInfo, options: OptionsWithMeta): UnsignedTransaction => {
+  return defineMethod(
+    {
+      method: {
+        args,
+        name: 'vote',
+        pallet: 'convictionVoting',
+      },
+      ...info,
+    },
+    options,
+  );
+};
+
 interface RemoveVoteArgs extends Args {
   /**
-   * class: Optional parameter, if given it indicates the class of the poll. For polls which have finished or are cancelled, this must be Some. - trackId.
+   * Class: Optional parameter, if given it indicates the class of the poll. For
+   * polls which have finished or are cancelled, this must be Some. - trackId.
    */
   class: number;
   /**
-   * index: The index of poll of the vote to be removed. - referendumId.
+   * Index: The index of poll of the vote to be removed. - referendumId.
    */
   index: string;
 }
@@ -56,19 +85,22 @@ const removeVote = (args: RemoveVoteArgs, info: BaseTxInfo, options: OptionsWith
 
 type DelegateArgs = {
   /**
-   *  class: The class of polls to delegate. - trackId.
+   * Class: The class of polls to delegate. - trackId.
    */
   class: number;
   /**
-   * to: The account to which the voting power is delegated. - address.
+   * To: The account to which the voting power is delegated.
+   *
+   * - Address.
    */
   to: string;
   /**
-   * conviction: The conviction with which the voting power is delegated - conviction.
+   * Conviction: The conviction with which the voting power is delegated -
+   * conviction.
    */
   conviction: number;
   /**
-   * balance: The amount of balance delegated. - string.
+   * Balance: The amount of balance delegated. - string.
    */
   balance: string;
 };
@@ -88,7 +120,7 @@ const delegate = (args: DelegateArgs, info: BaseTxInfo, options: OptionsWithMeta
 
 type UndelegateArgs = {
   /**
-   *  class: The class of polls to undelegate. - trackId.
+   * Class: The class of polls to undelegate. - trackId.
    */
   class: number;
 };
@@ -108,6 +140,7 @@ const undelegate = (args: UndelegateArgs, info: BaseTxInfo, options: OptionsWith
 
 export const convictionVotingMethods = {
   unlock,
+  vote,
   removeVote,
   delegate,
   undelegate,

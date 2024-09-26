@@ -10,15 +10,14 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED
+ * "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+ * LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 /**
@@ -26,15 +25,17 @@
  * a new version of `measure-text` is released.
  *
  * @see https://github.com/matt-d-rat/react-middle-truncate/issues/4
- **/
+ */
 
 import units from 'units-css';
+
+type UnitsParseResult = { value: number; unit: string };
 
 const DEFAULT_CANVAS = document.createElement('canvas');
 const DEFAULT_FONT_WEIGHT = 400;
 const DEFAULT_FONT_STYLE = 'normal';
 
-const measureHeight = (size: any, lineHeight: any) => {
+const measureHeight = (size: any, lineHeight: any): UnitsParseResult => {
   // If the line-height is unitless,
   // multiply it by the font size.
   if (!lineHeight.unit) {
@@ -88,7 +89,7 @@ const measureText = ({
 
   ctx.font = `${fontWeight} ${fontStyle} ${fontSize} ${fontFamily}`;
 
-  const measure = (line: string) => {
+  const measure = (line: string): { text: string; width: UnitsParseResult; height: UnitsParseResult } => {
     return {
       text: line,
       width: units.parse(`${ctx.measureText(line).width}px`),
@@ -132,7 +133,9 @@ export const getTextMeasurement = (ref: HTMLElement | null) => {
   return { width, height };
 };
 
-export const getContainerMeasurement = (ref: HTMLElement | null) => {
+export const getContainerMeasurement = (
+  ref: HTMLElement | null,
+): { width?: UnitsParseResult; height?: UnitsParseResult } => {
   if (!ref) {
     return {};
   }

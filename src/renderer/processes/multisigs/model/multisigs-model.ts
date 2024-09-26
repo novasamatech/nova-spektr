@@ -47,12 +47,12 @@ type GetMultisigsResult = {
 };
 
 const getMultisigsFx = createEffect(({ chains, wallets }: GetMultisigsParams) => {
-  chains.forEach((chain) => {
+  for (const chain of chains) {
     const accounts = walletUtils.getAccountsBy(wallets, (a) => accountUtils.isChainIdMatch(a, chain.chainId));
     const multisigIndexerUrl = chain.externalApi?.[ExternalType.MULTISIG]?.[0]?.url;
     const boundMultisigSaved = scopeBind(multisigSaved, { safe: true });
 
-    if (!multisigIndexerUrl || !accounts.length) return;
+    if (!multisigIndexerUrl || !accounts.length) continue;
 
     const client = new GraphQLClient(multisigIndexerUrl);
     const accountIds = accounts.map((account) => account.accountId);
@@ -74,11 +74,11 @@ const getMultisigsFx = createEffect(({ chains, wallets }: GetMultisigsParams) =>
         }
       })
       .catch(console.error);
-  });
+  }
 });
 
 const saveMultisigFx = createEffect((multisigsToSave: SaveMultisigParams[]) => {
-  multisigsToSave.forEach((multisig) => {
+  for (const multisig of multisigsToSave) {
     walletModel.events.multisigCreated(multisig);
 
     const signatories = multisig.accounts[0].signatories.map((signatory) => signatory.accountId);
@@ -92,9 +92,10 @@ const saveMultisigFx = createEffect((multisigsToSave: SaveMultisigParams[]) => {
         chainId: multisig.accounts[0].chainId,
         signatories,
         threshold: multisig.accounts[0].threshold,
+        originatorAccountId: '' as string,
       } as NoID<MultisigCreated>,
     ]);
-  });
+  }
 });
 
 const { tick: multisigsDiscoveryTriggered } = interval({

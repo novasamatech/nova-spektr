@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useNavigate, useRoutes } from 'react-router-dom';
@@ -6,6 +6,7 @@ import { useNavigate, useRoutes } from 'react-router-dom';
 import { Paths } from '@shared/routes';
 import { FallbackScreen } from '@shared/ui';
 import { walletModel } from '@entities/wallet';
+import { navigationModel } from '@/features/navigation';
 import { CreateWalletProvider } from '@widgets/CreateWallet';
 import { WalletDetailsProvider } from '@widgets/WalletDetails';
 import { ROUTES_CONFIG } from '@pages/index';
@@ -23,6 +24,8 @@ const SPLASH_SCREEN_DELAY = 450;
 export const App = () => {
   const navigate = useNavigate();
   const appRoutes = useRoutes(ROUTES_CONFIG);
+
+  useGate(navigationModel.gates.flow, { navigate });
 
   const wallets = useUnit(walletModel.$wallets);
   const isLoadingWallets = useUnit(walletModel.$isLoadingWallets);

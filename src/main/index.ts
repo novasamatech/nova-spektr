@@ -14,6 +14,10 @@ import { ENVIRONMENT } from './shared/constants/environment';
 import { PLATFORM } from './shared/constants/platform';
 
 runAppSingleInstance(async () => {
+  setupLogger();
+  setupAutoUpdater();
+  registerDeepLinkProtocol();
+
   if (ENVIRONMENT.IS_DEV || ENVIRONMENT.IS_STAGE) {
     app.commandLine.appendSwitch('ignore-certificate-errors');
   }
@@ -23,15 +27,12 @@ runAppSingleInstance(async () => {
   process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true';
   delete process.env.ELECTRON_ENABLE_SECURITY_WARNINGS;
 
-  PLATFORM.IS_LINUX && app.disableHardwareAcceleration();
+  if (PLATFORM.IS_LINUX) {
+    app.disableHardwareAcceleration();
+  }
 
   // eslint-disable-next-line prefer-const
   let mainWindow: BrowserWindow | undefined;
-
-  setupLogger();
-  setupAutoUpdater();
-
-  registerDeepLinkProtocol();
 
   if (PLATFORM.IS_MAC) {
     // Protocol handler for macos

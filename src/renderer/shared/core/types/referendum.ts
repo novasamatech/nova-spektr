@@ -6,7 +6,7 @@ import { type TrackId } from './track';
 export type ReferendumId = string;
 
 export type OngoingReferendum = {
-  type: ReferendumType.Ongoing;
+  type: 'Ongoing';
   referendumId: ReferendumId;
   track: TrackId;
   proposal: string;
@@ -15,42 +15,50 @@ export type OngoingReferendum = {
   decisionDeposit: Deposit | null;
   inQueue: boolean;
   enactment: {
-    value: BN;
+    value: number;
     type: 'At' | 'After';
   };
   deciding: {
     since: BlockHeight;
-    confirming: BlockHeight;
+    confirming: BlockHeight | null;
   } | null;
   tally: Tally;
 };
 
 export type RejectedReferendum = {
-  type: ReferendumType.Rejected;
+  type: 'Rejected';
   referendumId: ReferendumId;
   since: BlockHeight;
+  submissionDeposit: Deposit | null;
+  decisionDeposit: Deposit | null;
 };
 
 export type ApprovedReferendum = {
-  type: ReferendumType.Approved;
+  type: 'Approved';
   referendumId: ReferendumId;
   since: BlockHeight;
+  submissionDeposit: Deposit | null;
+  decisionDeposit: Deposit | null;
 };
 
 export type CancelledReferendum = {
-  type: ReferendumType.Cancelled;
+  type: 'Cancelled';
   referendumId: ReferendumId;
   since: BlockHeight;
+  submissionDeposit: Deposit | null;
+  decisionDeposit: Deposit | null;
 };
 
 export type TimedOutReferendum = {
-  type: ReferendumType.TimedOut;
+  type: 'TimedOut';
   referendumId: ReferendumId;
   since: BlockHeight;
+  submissionDeposit: Deposit | null;
+  decisionDeposit: Deposit | null;
 };
 
 export type KilledReferendum = {
-  type: ReferendumType.Killed;
+  type: 'Killed';
   referendumId: ReferendumId;
   since: BlockHeight;
 };
@@ -63,15 +71,7 @@ export type CompletedReferendum =
   | KilledReferendum;
 
 export type Referendum = OngoingReferendum | CompletedReferendum;
-
-export const enum ReferendumType {
-  Rejected = 'rejected',
-  Approved = 'approved',
-  Ongoing = 'ongoing',
-  Cancelled = 'cancelled',
-  TimedOut = 'timedOut',
-  Killed = 'killed',
-}
+export type ReferendumType = 'Ongoing' | 'Approved' | 'Rejected' | 'Cancelled' | 'TimedOut' | 'Killed';
 
 export type Tally = {
   ayes: BN;
@@ -79,7 +79,7 @@ export type Tally = {
   support: BN;
 };
 
-type Deposit = {
+export type Deposit = {
   who: Address;
   amount: BN;
 };

@@ -1,7 +1,9 @@
+import { type ApiPromise } from '@polkadot/api';
 import { type BN, BN_ZERO, bnMax } from '@polkadot/util';
 
-import { type ClaimTime, type ClaimTimeAt, type ClaimTimeUntil } from '@shared/api/governance';
-import { type Conviction, type Voting } from '@shared/core';
+import { type ClaimTime, type ClaimTimeAt, type ClaimTimeUntil } from '@/shared/api/governance';
+import { type Conviction, type Voting } from '@/shared/core';
+import { getRelativeTimeFromApi } from '@/shared/lib/utils';
 
 import { votingService } from './votingService';
 
@@ -15,7 +17,7 @@ enum LockPeriod {
   Locked6x = 32,
 }
 
-const getLockPeriods = (conviction: Conviction): number => LockPeriod[conviction];
+const getLockPeriodsMultiplier = (conviction: Conviction): number => LockPeriod[conviction];
 
 // Claim time types
 
@@ -25,31 +27,54 @@ const isClaimUntil = (claim: ClaimTime): claim is ClaimTimeUntil => claim.type =
 
 const getTotalLock = (voting: Voting): BN => {
   if (votingService.isCasting(voting)) {
-    const maxVote = Object.values(voting.casting.votes).reduce<BN>((acc, vote) => {
-      if (vote.type === 'standard') {
+    const maxVote = Object.values(voting.votes).reduce<BN>((acc, vote) => {
+      if (votingService.isStandardVote(vote)) {
         acc = bnMax(vote.balance, acc);
       }
-      if (vote.type === 'split') {
+      if (votingService.isSplitVote(vote)) {
         acc = bnMax(vote.aye.add(vote.nay), acc);
       }
-      if (vote.type === 'splitAbstain') {
+      if (votingService.isSplitAbstainVote(vote)) {
         acc = bnMax(vote.aye.add(vote.nay).add(vote.abstain), acc);
       }
 
       return acc;
     }, BN_ZERO);
 
-    return bnMax(maxVote, voting.casting.prior.amount);
+    return bnMax(maxVote, voting.prior.amount);
   }
 
   if (votingService.isDelegating(voting)) {
-    return bnMax(voting.delegating.balance, voting.delegating.prior.amount);
+    return bnMax(voting.balance, voting.prior.amount);
   }
 
   return BN_ZERO;
 };
 
+const getLockPeriods = async (api: ApiPromise) => {
+  const voteLockingPeriod = await api.consts.convictionVoting.voteLockingPeriod.toNumber();
+  const convictionList = votingService.getConvictionList();
+  const requests = convictionList.map(
+    async (conviction) =>
+      [
+        conviction,
+        await getRelativeTimeFromApi(voteLockingPeriod * locksService.getLockPeriodsMultiplier(conviction), api),
+      ] as const,
+  );
+  const responses = await Promise.all(requests);
+
+  return responses.reduce(
+    (acc, [conviction, lockPeriod]) => {
+      acc[conviction] = lockPeriod;
+
+      return acc;
+    },
+    {} as Record<Conviction, number>,
+  );
+};
+
 export const locksService = {
+  getLockPeriodsMultiplier,
   getLockPeriods,
   getTotalLock,
   isClaimAt,

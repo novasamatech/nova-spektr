@@ -35,7 +35,7 @@ export const I18Provider = ({ children }: PropsWithChildren) => {
     try {
       setLocale(locale);
       await i18n.changeLanguage(locale);
-    } catch (error) {
+    } catch {
       throw new Error(`Locale ${locale} not found or configured wrong`);
     }
   };

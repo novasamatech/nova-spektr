@@ -3,14 +3,14 @@ import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { type SignerOptions } from '@polkadot/api/types/submittable';
 import { u32 } from '@polkadot/types';
 import { type Weight } from '@polkadot/types/interfaces';
-import { hexToU8a } from '@polkadot/util';
+import { BN, BN_ZERO, hexToU8a } from '@polkadot/util';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 import { type UnsignedTransaction, construct } from '@substrate/txwrapper-polkadot';
-import { useState } from 'react';
 
 import {
   type Account,
   type AccountId,
+  type Address,
   type HexString,
   type MultisigAccount,
   type MultisigThreshold,
@@ -18,26 +18,28 @@ import {
   type ProxiedAccount,
   type ProxyTxWrapper,
   type Transaction,
+  type TransactionType,
   type TxWrapper,
-  type TxWrappers_OLD,
   type Wallet,
-  type WrapAsMulti,
   WrapperKind,
 } from '@shared/core';
 import { type TxMetadata, createTxMetadata, dictionary, toAccountId } from '@shared/lib/utils';
 import { walletUtils } from '../../wallet';
 
-import { useCallDataDecoder } from './callDataDecoder';
-import { type HashData, type ITransactionService } from './common/types';
+import { LEAVE_SOME_SPACE_MULTIPLIER } from './common/constants';
 import { decodeDispatchError } from './common/utils';
 import { getExtrinsic, getUnsignedTransaction, wrapAsMulti, wrapAsProxy } from './extrinsicService';
 
 export const transactionService = {
+  isMultisig,
+  isProxy,
+
   hasMultisig,
   hasProxy,
 
   getTransactionFee,
   getMultisigDeposit,
+  getExtrinsicFee,
 
   createPayload,
   createPayloadWithMetadata,
@@ -46,10 +48,12 @@ export const transactionService = {
 
   getTxWrappers,
   getWrappedTransaction,
-};
 
-const shouldWrapAsMulti = (wrapper: TxWrappers_OLD): wrapper is WrapAsMulti =>
-  'signatoryId' in wrapper && 'account' in wrapper;
+  getExtrinsicWeight,
+  getTxWeight,
+  verifySignature,
+  splitTxsByWeight,
+};
 
 async function getTransactionFee(
   transaction: Transaction,
@@ -60,6 +64,16 @@ async function getTransactionFee(
   const paymentInfo = await extrinsic.paymentInfo(transaction.address, options);
 
   return paymentInfo.partialFee.toString();
+}
+
+async function getExtrinsicFee(
+  extrinsic: SubmittableExtrinsic<'promise'>,
+  address: Address,
+  options?: Partial<SignerOptions>,
+) {
+  const paymentInfo = await extrinsic.paymentInfo(address, options);
+
+  return paymentInfo.partialFee.toBn();
 }
 
 async function signAndSubmit(
@@ -84,8 +98,8 @@ async function signAndSubmit(
       let extrinsicSuccess = false;
 
       if (status.isInBlock) {
-        events.forEach(({ event, phase }: any) => {
-          if (!phase.isApplyExtrinsic || !phase.asApplyExtrinsic.eq(txIndex)) return;
+        for (const { event, phase } of events) {
+          if (!phase.isApplyExtrinsic || !phase.asApplyExtrinsic.eq(txIndex)) continue;
 
           if (api.events.multisig.MultisigExecuted.is(event)) {
             isFinalApprove = true;
@@ -103,7 +117,7 @@ async function signAndSubmit(
 
             callback(false, errorInfo);
           }
-        });
+        }
       }
 
       if (extrinsicSuccess) {
@@ -128,12 +142,20 @@ function getMultisigDeposit(threshold: MultisigThreshold, api: ApiPromise): stri
   return deposit.toString();
 }
 
+function isMultisig(wrapper: TxWrapper): wrapper is MultisigTxWrapper {
+  return wrapper.kind === WrapperKind.MULTISIG;
+}
+
 function hasMultisig(txWrappers: TxWrapper[]): boolean {
-  return txWrappers.some((wrapper) => wrapper.kind === WrapperKind.MULTISIG);
+  return txWrappers.some(isMultisig);
+}
+
+function isProxy(wrapper: TxWrapper): wrapper is ProxyTxWrapper {
+  return wrapper.kind === WrapperKind.PROXY;
 }
 
 function hasProxy(txWrappers: TxWrapper[]): boolean {
-  return txWrappers.some((wrapper) => wrapper.kind === WrapperKind.PROXY);
+  return txWrappers.some(isProxy);
 }
 
 type TxWrappersParams = {
@@ -143,11 +165,13 @@ type TxWrappersParams = {
   signatories?: Account[];
 };
 /**
- * Get array of transaction wrappers (proxy/multisig)
- * Every wrapper recursively calls getTxWrappers until it finds regular account
- * @param wallet wallet that requires wrapping
- * @param params wallets, accounts and signatories
- * @return {Array}
+ * Get array of transaction wrappers (proxy/multisig) Every wrapper recursively
+ * calls getTxWrappers until it finds regular account
+ *
+ * @param wallet Wallet that requires wrapping
+ * @param params Wallets, accounts and signatories
+ *
+ * @returns {Array}
  */
 function getTxWrappers({ wallet, ...params }: TxWrappersParams): TxWrapper[] {
   if (walletUtils.isMultisig(wallet)) {
@@ -231,7 +255,7 @@ type WrapperParams = {
   transaction: Transaction;
   txWrappers: TxWrapper[];
 };
-type WrappedTransactions = {
+export type WrappedTransactions = {
   wrappedTx: Transaction;
   coreTx: Transaction;
   multisigTx?: Transaction;
@@ -239,22 +263,24 @@ type WrappedTransactions = {
 function getWrappedTransaction({ api, addressPrefix, transaction, txWrappers }: WrapperParams): WrappedTransactions {
   return txWrappers.reduce<WrappedTransactions>(
     (acc, txWrapper) => {
-      if (hasMultisig([txWrapper])) {
-        acc.coreTx = acc.wrappedTx;
-        acc.wrappedTx = wrapAsMulti({
+      if (isMultisig(txWrapper)) {
+        const multisigTx = wrapAsMulti({
           api,
           addressPrefix,
           transaction: acc.wrappedTx,
-          txWrapper: txWrapper as MultisigTxWrapper,
+          txWrapper: txWrapper,
         });
-        acc.multisigTx = acc.wrappedTx;
+
+        acc.coreTx = acc.wrappedTx;
+        acc.wrappedTx = multisigTx;
+        acc.multisigTx = multisigTx;
       }
 
-      if (hasProxy([txWrapper])) {
+      if (isProxy(txWrapper)) {
         acc.wrappedTx = wrapAsProxy({
           addressPrefix,
           transaction: acc.wrappedTx,
-          txWrapper: txWrapper as ProxyTxWrapper,
+          txWrapper: txWrapper,
         });
       }
 
@@ -307,76 +333,75 @@ async function createSignerOptions(api: ApiPromise): Promise<Partial<SignerOptio
   };
 }
 
-export const useTransaction = (): ITransactionService => {
-  const { decodeCallData } = useCallDataDecoder();
+async function getExtrinsicWeight(
+  extrinsic: SubmittableExtrinsic<'promise'>,
+  options?: Partial<SignerOptions>,
+): Promise<Weight> {
+  const { weight } = await extrinsic.paymentInfo(extrinsic.signer, options);
 
-  const [txs, setTxs] = useState<Transaction[]>([]);
-  const [wrappers, setWrappers] = useState<TxWrappers_OLD[]>([]);
+  return weight;
+}
 
-  const getTransactionHash = (transaction: Transaction, api: ApiPromise): HashData => {
-    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+async function getTxWeight(
+  transaction: Transaction,
+  api: ApiPromise,
+  options?: Partial<SignerOptions>,
+): Promise<Weight> {
+  const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
 
-    return {
-      callData: extrinsic.method.toHex(),
-      callHash: extrinsic.method.hash.toHex(),
-    };
-  };
+  return getExtrinsicWeight(extrinsic, options);
+}
 
-  const getExtrinsicWeight = async (
-    extrinsic: SubmittableExtrinsic<'promise'>,
-    options?: Partial<SignerOptions>,
-  ): Promise<Weight> => {
-    const paymentInfo = await extrinsic.paymentInfo(extrinsic.signer, options);
+function verifySignature(payload: Uint8Array, signature: HexString, accountId: AccountId): boolean {
+  // For big transaction we get hash from payload
+  const payloadToVerify = payload.length > 256 ? blake2AsU8a(payload) : payload;
 
-    return paymentInfo.weight;
-  };
+  return signatureVerify(payloadToVerify, signature, accountId).isValid;
+}
 
-  const getTxWeight = async (
-    transaction: Transaction,
-    api: ApiPromise,
-    options?: Partial<SignerOptions>,
-  ): Promise<Weight> => {
-    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-    const { weight } = await extrinsic.paymentInfo(transaction.address, options);
+async function getBlockLimit(api: ApiPromise): Promise<BN> {
+  const maxExtrinsicWeight = api.consts.system.blockWeights.perClass.normal.maxExtrinsic.value.refTime.toBn();
+  const maxBlockWeight = api.consts.system.blockWeights.maxBlock.refTime.toBn();
+  const blockWeight = await api.query.system.blockWeight();
 
-    return weight;
-  };
+  const totalWeight = blockWeight.normal.refTime
+    .toBn()
+    .add(blockWeight.operational.refTime.toBn())
+    .add(blockWeight.mandatory.refTime.toBn());
 
-  const verifySignature = (payload: Uint8Array, signature: HexString, accountId: AccountId): boolean => {
-    const payloadToVerify = payload.length > 256 ? blake2AsU8a(payload) : payload;
+  const freeSpaceInLastBlock = maxBlockWeight.sub(totalWeight);
 
-    return signatureVerify(payloadToVerify, signature, accountId).isValid;
-  };
+  return BN.min(
+    maxExtrinsicWeight.muln(LEAVE_SOME_SPACE_MULTIPLIER),
+    freeSpaceInLastBlock.muln(LEAVE_SOME_SPACE_MULTIPLIER),
+  );
+}
 
-  const wrapTx = (transaction: Transaction, api: ApiPromise, addressPrefix: number) => {
-    wrappers.forEach((wrapper) => {
-      if (shouldWrapAsMulti(wrapper)) {
-        transaction = wrapAsMulti({
-          api,
-          addressPrefix,
-          transaction,
-          txWrapper: {
-            kind: WrapperKind.MULTISIG,
-            multisigAccount: wrapper.account,
-            signatories: wrapper.account.signatories.map((s) => ({ accountId: s.accountId })) as Account[],
-            signer: { accountId: wrapper.signatoryId } as Account,
-          },
-        });
-      }
-    });
+async function splitTxsByWeight(api: ApiPromise, txs: Transaction[], options?: Partial<SignerOptions>) {
+  const blockLimit = await getBlockLimit(api);
+  const result: Transaction[][] = [[]];
 
-    return transaction;
-  };
+  let totalRefTime = BN_ZERO;
 
-  return {
-    getExtrinsicWeight,
-    getTxWeight,
-    getTransactionHash,
-    decodeCallData,
-    verifySignature,
-    txs,
-    setTxs,
-    setWrappers,
-    wrapTx,
-  };
-};
+  const txsWeights: Partial<Record<TransactionType, Weight>> = {};
+
+  for (const tx of txs) {
+    const weight = txsWeights[tx.type] || (await getTxWeight(tx, api, options));
+
+    if (!txsWeights[tx.type]) {
+      txsWeights[tx.type] = weight;
+    }
+
+    totalRefTime = totalRefTime.add(weight.refTime.toBn());
+
+    if (totalRefTime.lt(blockLimit) && result.length > 0) {
+      result[result.length - 1].push(tx);
+    } else {
+      result.push([tx]);
+
+      totalRefTime = weight.refTime.toBn();
+    }
+  }
+
+  return result;
+}

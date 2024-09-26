@@ -1,5 +1,4 @@
-import cn from 'classnames';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
 import { type HexString } from '@shared/core';
@@ -84,7 +83,7 @@ export const QrReaderWrapper = ({ className, onResult, countdown, validationErro
 
     try {
       setTimeout(() => onResult(qrPayload), RESULT_DELAY);
-    } catch (error) {
+    } catch {
       setError(CameraError.INVALID_ERROR);
       setIsSuccess(false);
 
@@ -110,7 +109,7 @@ export const QrReaderWrapper = ({ className, onResult, countdown, validationErro
     size: 240,
     bgVideoClassName: 'w-[440px] h-[544px]',
     className: cnTw(
-      'z-10 w-[440px] h-[544px] top-[-126px]',
+      'top-[-126px] z-10 h-[544px] w-[440px]',
       error === CameraError.INVALID_ERROR && 'blur-[13px]',
       className,
     ),
@@ -123,7 +122,7 @@ export const QrReaderWrapper = ({ className, onResult, countdown, validationErro
   return (
     <div
       className={cnTw(
-        'flex flex-col items-center flex-1 w-full relative pt-[52px] overflow-y-hidden',
+        'relative flex w-full flex-1 flex-col items-center overflow-y-hidden pt-[52px]',
         isLoading && 'bg-black',
       )}
     >
@@ -134,16 +133,16 @@ export const QrReaderWrapper = ({ className, onResult, countdown, validationErro
       <Countdown countdown={countdown} />
 
       {/* scanning frame */}
-      <div className="w-[240px] h-[240px] mb-4">
+      <div className="mb-4 h-[240px] w-[240px]">
         <div className="relative">
           <div
             className={cnTw(
-              'absolute w-[240px] h-[240px] z-20',
+              'absolute z-20 h-[240px] w-[240px]',
               isCameraOn ? (isSuccess ? 'border-text-positive' : 'border-white') : 'border-filter-border',
-              'border-2 rounded-[22px]',
+              'rounded-[22px] border-2',
             )}
           ></div>
-          <div className="z-30 absolute flex flex-col items-center justify-center gap-y-4 w-full h-[240px]">
+          <div className="absolute z-30 flex h-[240px] w-full flex-col items-center justify-center gap-y-4">
             <SignatureReaderError error={error} isCameraOn={isCameraOn && !isLoading} onTryAgain={onRetryCamera} />
           </div>
         </div>
@@ -151,7 +150,7 @@ export const QrReaderWrapper = ({ className, onResult, countdown, validationErro
         {isLoading && <Shimmering width={240} height={240} className="absolute rounded-[22px]" />}
 
         {isCameraOn && (
-          <div className={cn(isLoading && 'hidden', className)}>
+          <div className={cnTw(isLoading && 'hidden', className)}>
             {isMultiFrame ? (
               <QrMultiframeSignatureReader {...qrReaderProps} onResult={onScanResult} onProgress={setProgress} />
             ) : (
@@ -161,7 +160,7 @@ export const QrReaderWrapper = ({ className, onResult, countdown, validationErro
         )}
       </div>
 
-      <div className="h-8.5 mb-4">
+      <div className="mb-4 h-8.5">
         {availableCameras && availableCameras.length > 1 && (
           <Select
             theme="dark"
@@ -174,19 +173,19 @@ export const QrReaderWrapper = ({ className, onResult, countdown, validationErro
         )}
       </div>
 
-      <div className="h-9 mb-3 z-10">
+      <div className="z-10 mb-3 h-9">
         {validationError && (
-          <FootnoteText className="text-white text-center max-w-[320px] h-full flex items-center justify-center ">
+          <FootnoteText className="flex h-full max-w-[320px] items-center justify-center text-center text-white">
             {t(ValidationErrorLabels[validationError as keyof typeof ValidationErrorLabels])}
           </FootnoteText>
         )}
       </div>
 
-      <footer className="flex w-full justify-between items-center mt-auto h-[66px] px-5 mb-1 z-10">
+      <footer className="z-10 mb-1 mt-auto flex h-[66px] w-full items-center justify-between px-5">
         {onGoBack && (
           <Button
             variant="text"
-            className={cn('h-6.5 px-4', isCameraOn ? WhiteTextButtonStyle : '')}
+            className={cnTw('h-6.5 px-4', isCameraOn ? WhiteTextButtonStyle : '')}
             onClick={onGoBack}
           >
             {t('operation.goBackButton')}
@@ -194,9 +193,9 @@ export const QrReaderWrapper = ({ className, onResult, countdown, validationErro
         )}
 
         {progress && (
-          <div className="flex items-center gap-x-2 z-10 p-1.5 pl-3 rounded-2xl bg-black-background">
+          <div className="z-10 flex items-center gap-x-2 rounded-2xl bg-black-background p-1.5 pl-3">
             <FootnoteText className="text-text-tertiary">{t('signing.parsingLabel')}</FootnoteText>
-            <CaptionText as="span" className="bg-label-background-gray text-white uppercase px-2 py-1 rounded-[26px]">
+            <CaptionText as="span" className="rounded-[26px] bg-label-background-gray px-2 py-1 uppercase text-white">
               {t('signing.parsingCount', { current: progress.decoded, total: progress.total })}
             </CaptionText>
           </div>

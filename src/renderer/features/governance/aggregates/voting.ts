@@ -1,11 +1,14 @@
-import { combine, sample } from 'effector';
+import { combine, createEvent, sample } from 'effector';
 
-import { type VotingMap } from '@shared/core';
+import { type Address, type TrackId, type VotingMap } from '@shared/core';
+import { nonNullable } from '@shared/lib/utils';
 import { votingModel } from '@entities/governance';
 import { accountUtils, walletModel } from '@entities/wallet';
 import { networkSelectorModel } from '../model/networkSelector';
 
 import { tracksAggregate } from './tracks';
+
+const requestVoting = createEvent<{ addresses: Address[]; tracks?: TrackId[] }>();
 
 const $activeWalletVotes = combine(
   {
@@ -32,22 +35,31 @@ const $activeWalletVotes = combine(
 );
 
 sample({
+  clock: requestVoting,
+  source: {
+    network: networkSelectorModel.$network,
+    tracks: tracksAggregate.$tracks,
+  },
+  filter: ({ network }) => nonNullable(network),
+  fn: ({ network, tracks: allTracks }, { addresses, tracks }) => ({
+    api: network!.api,
+    tracks: tracks || Object.keys(allTracks),
+    addresses,
+  }),
+  target: votingModel.events.subscribeVoting,
+});
+
+sample({
   clock: [tracksAggregate.$tracks, walletModel.$activeWallet],
   source: {
-    tracks: tracksAggregate.$tracks,
     wallet: walletModel.$activeWallet,
     chain: networkSelectorModel.$governanceChain,
-    api: networkSelectorModel.$governanceChainApi,
   },
-  filter: ({ wallet, api, chain }) => !!wallet && !!chain && !!api,
-  fn: ({ wallet, api, chain, tracks }) => {
-    return {
-      api: api!,
-      tracks: Object.keys(tracks),
-      addresses: accountUtils.getAddressesForWallet(wallet!, chain!),
-    };
-  },
-  target: votingModel.events.requestVoting,
+  filter: ({ wallet, chain }) => nonNullable(wallet) && nonNullable(chain),
+  fn: ({ wallet, chain }) => ({
+    addresses: accountUtils.getAddressesForWallet(wallet!, chain!),
+  }),
+  target: requestVoting,
 });
 
 export const votingAggregate = {
@@ -56,8 +68,6 @@ export const votingAggregate = {
   $isLoading: votingModel.$isLoading,
 
   events: {
-    requestVoting: votingModel.events.requestVoting,
-    requestDone: votingModel.effects.requestVotingFx.done,
-    requestPending: votingModel.effects.requestVotingFx.pending,
+    requestVoting,
   },
 };

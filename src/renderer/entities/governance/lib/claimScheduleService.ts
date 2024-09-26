@@ -1,5 +1,4 @@
 import { BN, BN_ZERO } from '@polkadot/util';
-import clone from 'lodash/clone';
 import isEqual from 'lodash/isEqual';
 import orderBy from 'lodash/orderBy';
 import sortBy from 'lodash/sortBy';
@@ -157,12 +156,12 @@ function castingClaimableLocks(
   undecidingTimeout: BlockHeight,
 ): ClaimableLock[] {
   const priorLock = {
-    claimAt: { type: 'at', block: voting.casting.prior.unlockAt },
-    amount: voting.casting.prior.amount,
+    claimAt: { type: 'at', block: voting.prior.unlockAt },
+    amount: voting.prior.amount,
     affected: [{ trackId, type: 'track' }],
   } satisfies ClaimableLock;
 
-  const standardVotes = Object.entries(voting.casting.votes);
+  const standardVotes = Object.entries(voting.votes);
 
   const standardVoteLocks = standardVotes.map<ClaimableLock>(([referendumId, standardVote]) => {
     const estimatedEnd = maxConvictionEndOf(
@@ -192,13 +191,13 @@ function castingClaimableLocks(
 function delegatingClaimableLocks(trackId: TrackId, voting: DelegatingVoting): ClaimableLock[] {
   const delegationLock = {
     claimAt: { type: 'until' },
-    amount: voting.delegating.balance,
+    amount: voting.balance,
     affected: [],
   } satisfies ClaimableLock;
 
   const priorLock = {
-    claimAt: { type: 'at', block: voting.delegating.prior.unlockAt },
-    amount: voting.delegating.prior.amount,
+    claimAt: { type: 'at', block: voting.prior.unlockAt },
+    amount: voting.prior.amount,
     affected: [{ type: 'track', trackId }],
   } satisfies ClaimableLock;
 
@@ -261,8 +260,8 @@ function completedReferendumLockDuration(
   lockPeriod: BlockHeight,
 ): BlockHeight {
   // vote has the same direction as outcome
-  if (votingService.isStandardVote(vote) && vote.vote.type === referendumOutcome) {
-    return locksService.getLockPeriods(vote.vote.conviction) * lockPeriod;
+  if (votingService.isStandardVote(vote) && vote.vote.aye === (referendumOutcome === 'aye')) {
+    return lockPeriod * locksService.getLockPeriodsMultiplier(vote.vote.conviction);
   }
 
   return 0;
@@ -304,7 +303,7 @@ function maxOngoingConvictionEnd(
 
 function voteMaxLockDuration(vote: AccountVote, lockPeriod: BlockHeight): BlockHeight {
   if (votingService.isStandardVote(vote)) {
-    return locksService.getLockPeriods(vote.vote.conviction) * lockPeriod;
+    return lockPeriod * locksService.getLockPeriodsMultiplier(vote.vote.conviction);
   }
 
   return 0;
@@ -347,37 +346,43 @@ function constructUnlockSchedule(maxUnlockedByTime: [ClaimTime, ClaimableLock][]
   let currentMaxLock = BN_ZERO;
   let currentMaxLockAt: ClaimTime | null = null;
 
-  const result = new Map(clone(maxUnlockedByTime));
+  const resultMap: Map<ClaimTime, ClaimableLock> = new Map();
   const sortedMaxUnlock = orderBy(maxUnlockedByTime, ([claimTime]) => getClaimTimeSortKey(claimTime), 'desc');
 
-  sortedMaxUnlock.forEach(([claimAt, lock]) => {
+  for (const [claimAt, lock] of sortedMaxUnlock) {
     const newMaxLock = BN.max(currentMaxLock, lock.amount);
     const unlockedAmount = lock.amount.sub(currentMaxLock);
 
-    const shouldSetNewMax = currentMaxLockAt === null || currentMaxLock.lt(newMaxLock);
-    if (shouldSetNewMax) {
+    if (currentMaxLockAt === null || currentMaxLock.lt(newMaxLock)) {
       currentMaxLock = newMaxLock;
       currentMaxLockAt = claimAt;
     }
 
     if (unlockedAmount.isNeg()) {
-      // this lock is completely shadowed by later (in time) lock with greater value
-      result.delete(claimAt);
-
-      // but we want to keep its actions, so we move it to the current known maximum that goes later in time
-      if (currentMaxLockAt && result.has(currentMaxLockAt)) {
-        const maxLockItem = result.get(currentMaxLockAt)!;
-        maxLockItem.affected = uniqWith(maxLockItem.affected.concat(lock.affected), isEqual);
+      // This lock is completely shadowed by a later lock with a greater value
+      // But we want to keep its actions, so we move it to the current known maximum that goes later in time
+      if (resultMap.has(currentMaxLockAt)) {
+        const maxLockItem = resultMap.get(currentMaxLockAt)!;
+        maxLockItem.affected = maxLockItem.affected.concat(lock.affected);
       }
     } else {
-      // there is something to unlock at this point
-      result.get(claimAt)!.amount = unlockedAmount;
+      // There is something to unlock at this point
+      if (resultMap.has(claimAt)) {
+        const existingLock = resultMap.get(claimAt)!;
+        existingLock.amount = unlockedAmount;
+        existingLock.affected = existingLock.affected.concat(lock.affected);
+      } else {
+        resultMap.set(claimAt, {
+          ...lock,
+          amount: unlockedAmount,
+        });
+      }
     }
-  });
+  }
 
-  return sortBy(Array.from(result.entries()), ([claimTime]) => getClaimTimeSortKey(claimTime)).map(
-    ([_, claim]) => claim,
-  );
+  const array = Array.from(resultMap.values()).map((i) => ({ ...i, affected: uniqWith(i.affected, isEqual) }));
+
+  return sortBy(array, (claim) => getClaimTimeSortKey(claim.claimAt));
 }
 
 function getClaimTimeSortKey(claimTime: ClaimTime): string {
@@ -413,7 +418,7 @@ function toUnlockChunk(lock: ClaimableLock, currentBlockNumber: BlockHeight): Ch
       actions: toClaimActions(lock.affected),
     };
   }
-  const type = locksService.isClaimAt(lock.claimAt) ? UnlockChunkType.PENDING_LOCK : UnlockChunkType.PENDING_DELIGATION;
+  const type = locksService.isClaimAt(lock.claimAt) ? UnlockChunkType.PENDING_LOCK : UnlockChunkType.PENDING_DELEGATION;
 
   return { type: type, amount: lock.amount, claimableAt: lock.claimAt };
 }
@@ -431,13 +436,13 @@ function toClaimActions(claimAffects: ClaimAffect[]): ClaimAction[] {
     }
 
     if (trackAffects.votes.length > 0) {
-      trackAffects.votes.forEach((voteAffect) => {
+      for (const voteAffect of trackAffects.votes) {
         acc.push({
           type: 'remove_vote',
           trackId: voteAffect.trackId,
           referendumId: voteAffect.referendumId,
         });
-      });
+      }
 
       acc.push({ type: 'unlock', trackId: trackAffects.votes[0].trackId });
     }

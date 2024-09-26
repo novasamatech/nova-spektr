@@ -2,18 +2,24 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { DEFAULT_TRANSITION } from '@shared/lib/utils';
 
+import { useLooseRef } from './useLooseRef';
+
 /**
  * Modal open-flag with delayed callback
- * @param initialValue value to toggle
- * @param closeCallback value to toggle
- * @param delay value to toggle
- * @return {Array}
+ *
+ * @param initialValue Value to toggle
+ * @param closeCallback Value to toggle
+ * @param delay Value to toggle
+ *
+ * @returns {Array}
  */
 export function useModalClose(
   initialValue: boolean,
   closeCallback: () => void,
   delay = DEFAULT_TRANSITION,
 ): [boolean, () => void] {
+  const cb = useLooseRef(closeCallback);
+
   const [isOpen, setIsOpen] = useState(initialValue);
 
   useEffect(() => {
@@ -25,8 +31,8 @@ export function useModalClose(
   const closeModal = useCallback(() => {
     setIsOpen(false);
 
-    setTimeout(closeCallback, delay);
-  }, [closeCallback, delay]);
+    setTimeout(() => cb()(), delay);
+  }, [delay]);
 
   return [isOpen, closeModal];
 }

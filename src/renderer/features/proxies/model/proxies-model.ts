@@ -66,13 +66,13 @@ type StartChainsParams = {
 const startChainsFx = createEffect(({ chains, connections, endpoint }: StartChainsParams) => {
   const boundConnected = scopeBind(connected, { safe: true });
 
-  chains.forEach((chain) => {
-    if (networkUtils.isDisabledConnection(connections[chain.chainId])) return;
+  for (const chain of chains) {
+    if (networkUtils.isDisabledConnection(connections[chain.chainId])) continue;
 
     endpoint.call.initConnection(chain, connections[chain.chainId]).then(() => {
       boundConnected(chain.chainId);
     });
-  });
+  }
 });
 
 type GetProxiesParams = {
@@ -129,14 +129,14 @@ const getProxiesFx = createEffect(
 
       const pureProxiesMap = dictionary(pureProxies, 'accountId');
 
-      for (const i in proxiedAccountsToAdd) {
-        const pureProxy = pureProxiesMap[proxiedAccountsToAdd[i].accountId];
+      for (const proxiedAccount of proxiedAccountsToAdd) {
+        const pureProxy = pureProxiesMap[proxiedAccount.accountId];
         if (pureProxy) {
-          proxiedAccountsToAdd[i].proxyVariant = ProxyVariant.PURE;
-          proxiedAccountsToAdd[i].blockNumber = pureProxy.blockNumber;
-          proxiedAccountsToAdd[i].extrinsicIndex = pureProxy.extrinsicIndex;
+          proxiedAccount.proxyVariant = ProxyVariant.PURE;
+          proxiedAccount.blockNumber = pureProxy.blockNumber;
+          proxiedAccount.extrinsicIndex = pureProxy.extrinsicIndex;
         } else {
-          proxiedAccountsToAdd[i].proxyVariant = ProxyVariant.REGULAR;
+          proxiedAccount.proxyVariant = ProxyVariant.REGULAR;
         }
       }
     }

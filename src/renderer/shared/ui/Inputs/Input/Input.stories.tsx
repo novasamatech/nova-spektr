@@ -1,4 +1,4 @@
-import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react';
 
 import { Icon } from '@shared/ui';
 
@@ -8,9 +8,9 @@ export default {
   title: 'Input',
   component: Input,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof Input>;
+} as Meta<typeof Input>;
 
-const Template: ComponentStory<typeof Input> = (args) => <Input {...args} />;
+const Template: StoryFn<typeof Input> = (args) => <Input {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {
@@ -46,5 +46,5 @@ export const Suffix = Template.bind({});
 Suffix.args = {
   label: 'With suffix element',
   value: 'This is value',
-  suffixElement: <Icon name="warnCutout" className="text-alert right-2 top-[9px] absolute" size={16} />,
+  suffixElement: <Icon name="warnCutout" className="absolute right-2 top-[9px] text-alert" size={16} />,
 };

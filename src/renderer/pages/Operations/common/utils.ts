@@ -1,3 +1,7 @@
+import { type ApiPromise } from '@polkadot/api';
+import { BN } from '@polkadot/util';
+
+import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import {
   type Account,
   type AccountId,
@@ -5,16 +9,20 @@ import {
   type Chain,
   type ChainId,
   type Contact,
+  type DecodedTransaction,
   type Explorer,
   type HexString,
   type MultisigEvent,
   type MultisigTransaction,
   type ProxyType,
   type Signatory,
+  type Transaction,
+  TransactionType,
   type Wallet,
 } from '@shared/core';
 import { toAddress } from '@shared/lib/utils';
-import { isProxyTransaction } from '@entities/transaction';
+import { type TransactionVote, votingService } from '@/entities/governance';
+import { isDelegateTransaction, isProxyTransaction, isUndelegateTransaction } from '@entities/transaction';
 import { accountUtils, walletUtils } from '@entities/wallet';
 
 export const getMultisigExtrinsicLink = (
@@ -84,7 +92,9 @@ export const getSignatoryAccounts = (
       const legacySignatoryAccount = filteredAccounts.find(
         (a) => accountUtils.isChainAccount(a) && a.chainId === chainId,
       );
-      legacySignatoryAccount && acc.push(legacySignatoryAccount);
+      if (legacySignatoryAccount) {
+        acc.push(legacySignatoryAccount);
+      }
     }
 
     return acc;
@@ -165,4 +175,117 @@ export const getProxyType = (tx: MultisigTransaction): ProxyType | undefined => 
   }
 
   return tx.transaction.args.proxyType;
+};
+
+export const getDelegationVotes = (tx: MultisigTransaction): string | undefined => {
+  if (!tx.transaction) return undefined;
+
+  let coreTx;
+
+  if (isProxyTransaction(tx.transaction)) {
+    coreTx = tx.transaction.args.transaction;
+  } else if (tx.transaction.type === TransactionType.BATCH_ALL) {
+    coreTx = tx.transaction.args.transactions?.find((tx: Transaction) => tx.type === TransactionType.DELEGATE);
+  } else if (isDelegateTransaction(tx.transaction)) {
+    coreTx = tx.transaction;
+  }
+
+  if (!coreTx) return;
+
+  const balance = new BN(coreTx.args.balance || 0);
+  const conviction = new BN(votingService.getConvictionMultiplier(coreTx.args.conviction) || 0);
+
+  return balance.mul(conviction).toString();
+};
+
+export const getDelegationTarget = (tx: MultisigTransaction): string | undefined => {
+  if (!tx.transaction) return undefined;
+
+  let coreTx;
+
+  if (isProxyTransaction(tx.transaction)) {
+    coreTx = tx.transaction.args.transaction;
+  } else if (tx.transaction.type === TransactionType.BATCH_ALL) {
+    coreTx = tx.transaction.args.transactions?.find((tx: Transaction) => tx.type === TransactionType.DELEGATE);
+  } else if (isDelegateTransaction(tx.transaction)) {
+    coreTx = tx.transaction;
+  }
+
+  return coreTx?.args.target;
+};
+
+export const getDelegationTracks = (tx: MultisigTransaction): string[] | undefined => {
+  if (!tx.transaction) return undefined;
+
+  let coreTxs;
+
+  if (isProxyTransaction(tx.transaction)) {
+    coreTxs = [tx.transaction.args.transaction];
+  } else if (tx.transaction.type === TransactionType.BATCH_ALL) {
+    const delegateTxs = tx.transaction.args.transactions?.filter(
+      (tx: Transaction) => TransactionType.DELEGATE === tx.type,
+    );
+    const undelegateTxs = tx.transaction.args.transactions?.filter(
+      (tx: Transaction) => TransactionType.UNDELEGATE === tx.type,
+    );
+
+    coreTxs = delegateTxs?.length > 0 ? delegateTxs : undelegateTxs;
+  } else if (isDelegateTransaction(tx.transaction) || isUndelegateTransaction(tx.transaction)) {
+    coreTxs = [tx.transaction];
+  }
+
+  if (!coreTxs || coreTxs.length === 0) return;
+
+  return coreTxs.map((tx: Transaction) => tx.args.track.toString());
+};
+
+export const getUndelegationData = async (
+  api: ApiPromise,
+  tx: MultisigTransaction,
+): Promise<{ votes: string | undefined; target: string | undefined }> => {
+  if (!tx.transaction || !api) return { votes: undefined, target: undefined };
+
+  let coreTx;
+
+  if (isProxyTransaction(tx.transaction)) {
+    coreTx = tx.transaction.args.transaction;
+  } else if (tx.transaction.type === TransactionType.BATCH_ALL) {
+    coreTx = tx.transaction.args.transactions?.find((tx: Transaction) => tx.type === TransactionType.UNDELEGATE);
+  } else if (isUndelegateTransaction(tx.transaction)) {
+    coreTx = tx.transaction;
+  }
+
+  if (!coreTx) return { votes: undefined, target: undefined };
+
+  const votes = await convictionVotingPallet.storage.votingFor(api, [[coreTx.address, coreTx.args.track]]);
+
+  const delegation = votes.find((vote) => vote.type === 'Delegating');
+
+  return {
+    votes:
+      delegation && votingService.calculateVotingPower(delegation.data.balance, delegation.data.conviction).toString(),
+    target: delegation && toAddress(delegation.data.target),
+  };
+};
+
+export const getReferendumId = (tx: MultisigTransaction): string | undefined => {
+  const coreTx = getCoreTx(tx);
+
+  return coreTx?.args.referendum;
+};
+
+export const getVote = (tx: MultisigTransaction): TransactionVote | undefined => {
+  const coreTx = getCoreTx(tx);
+
+  return coreTx?.args.vote;
+};
+
+const getCoreTx = (tx: MultisigTransaction): Transaction | DecodedTransaction | undefined => {
+  if (!tx.transaction) return undefined;
+
+  if (isProxyTransaction(tx.transaction)) {
+    return tx.transaction.args.transaction;
+  }
+
+  return tx.transaction;
 };

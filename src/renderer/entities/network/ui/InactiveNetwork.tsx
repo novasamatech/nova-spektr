@@ -1,6 +1,5 @@
-import cn from 'classnames';
-
 import { useI18n } from '@app/providers';
+import { cnTw } from '@/shared/lib/utils';
 import NoConnection from '@shared/assets/images/misc/no-connection.webp';
 import { Paths } from '@shared/routes';
 import { ButtonLink, FootnoteText } from '@shared/ui';
@@ -19,9 +18,9 @@ export const InactiveNetwork = ({ active, isLoading, className }: Props) => {
   }
 
   return (
-    <div className={cn('flex flex-col items-center justify-center', className)}>
+    <div className={cnTw('flex flex-col items-center justify-center', className)}>
       <img src={NoConnection} alt="" width="147" height="147" />
-      <FootnoteText align="center" className="w-[280px] text-text-tertiary mt-4">
+      <FootnoteText align="center" className="mt-4 w-[280px] text-text-tertiary">
         {t('general.title.inactiveNetwork')}
       </FootnoteText>
 

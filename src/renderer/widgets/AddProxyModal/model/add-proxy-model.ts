@@ -1,16 +1,18 @@
 import { combine, createEvent, createStore, sample } from 'effector';
-import { delay, spread } from 'patronum';
+import { spread } from 'patronum';
 
+import { nonNullable } from '@/shared/lib/utils';
+import { type PathType, Paths } from '@/shared/routes';
 import { type BasketTransaction, type Transaction } from '@shared/core';
 import { basketModel } from '@entities/basket';
 import { walletModel, walletUtils } from '@entities/wallet';
+import { navigationModel } from '@/features/navigation';
+import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { balanceSubModel } from '@features/balances';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@features/operations/OperationSubmit';
 import { addProxyConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { proxiesModel } from '@features/proxies';
 import { walletSelectModel } from '@features/wallets';
-import { addProxyUtils } from '../lib/add-proxy-utils';
 import { type AddProxyStore, Step } from '../lib/types';
 
 import { formModel } from './form-model';
@@ -28,6 +30,7 @@ const $addProxyStore = createStore<AddProxyStore | null>(null).reset(flowFinishe
 const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
+const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
 const $initiatorWallet = combine(
   {
@@ -89,7 +92,7 @@ sample({
 sample({
   clock: formModel.output.formSubmitted,
   fn: ({ formData, transactions }) => ({
-    event: [{ ...formData, transaction: transactions.wrappedTx }],
+    event: [{ ...formData, transaction: transactions.wrappedTx, coreTx: transactions.coreTx }],
     step: Step.CONFIRM,
   }),
   target: spread({
@@ -155,13 +158,6 @@ sample({
 });
 
 sample({
-  clock: delay(submitModel.output.formSubmitted, 2000),
-  source: $step,
-  filter: (step) => addProxyUtils.isSubmitStep(step),
-  target: flowFinished,
-});
-
-sample({
   clock: flowFinished,
   source: {
     activeWallet: walletModel.$activeWallet,
@@ -179,6 +175,21 @@ sample({
 sample({
   clock: flowFinished,
   target: proxiesModel.events.workerStarted,
+});
+
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: formModel.$isMultisig,
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
+  fn: () => Paths.OPERATIONS,
+  target: $redirectAfterSubmitPath,
+});
+
+sample({
+  clock: flowFinished,
+  source: $redirectAfterSubmitPath,
+  filter: nonNullable,
+  target: navigationModel.events.navigateTo,
 });
 
 sample({

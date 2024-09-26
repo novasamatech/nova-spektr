@@ -1,19 +1,19 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type BN, BN_ZERO } from '@polkadot/util';
-import { createEffect, createStore, sample } from 'effector';
-import { combineEvents } from 'patronum';
+import { combine, createEffect, createStore, sample } from 'effector';
 
 import { type ClaimTimeAt, type UnlockChunk, UnlockChunkType } from '@shared/api/governance';
 import { type Address, type Referendum, type TrackId, type TrackInfo, type VotingMap } from '@shared/core';
-import { getCreatedDateFromApi, getCurrentBlockNumber } from '@shared/lib/utils';
+import { getCreatedDateFromApi, getCurrentBlockNumber, nonNullable, nullable } from '@shared/lib/utils';
 import { claimScheduleService, referendumModel, tracksModel, votingModel } from '@entities/governance';
 import { walletModel } from '@entities/wallet';
 import { unlockService } from '../../lib/unlockService';
 import { locksModel } from '../locks';
 import { networkSelectorModel } from '../networkSelector';
 
-const $claimSchedule = createStore<UnlockChunk[]>([]).reset(walletModel.$activeWallet);
+const $claimSchedule = createStore<UnlockChunk[] | null>(null);
 const $totalUnlock = createStore<BN>(BN_ZERO);
+const $isLoading = createStore(true);
 
 type Props = {
   api: ApiPromise;
@@ -57,25 +57,44 @@ const getClaimScheduleFx = createEffect(
 );
 
 sample({
-  clock: [
-    referendumModel.events.requestDone,
-    combineEvents([locksModel.events.requestDone, votingModel.effects.requestVotingFx.done]),
-  ],
+  clock: [networkSelectorModel.$network, walletModel.$activeWallet],
+  target: [$claimSchedule.reinit, $totalUnlock.reinit],
+});
+
+sample({
+  clock: [locksModel.$isLoading, votingModel.$isLoading, referendumModel.$isLoading],
   source: {
-    api: networkSelectorModel.$governanceChainApi,
+    claimSchedule: $claimSchedule,
+    isLoadingLock: locksModel.$isLoading,
+    isLoadingVoting: votingModel.$isLoading,
+    isLoadingReferendum: referendumModel.$isLoading,
+  },
+  filter: ({ claimSchedule }) => nullable(claimSchedule),
+  fn: ({ isLoadingLock, isLoadingVoting, isLoadingReferendum }) => {
+    return isLoadingLock || isLoadingVoting || isLoadingReferendum;
+  },
+  target: $isLoading,
+});
+
+sample({
+  clock: [referendumModel.$referendums.updates, locksModel.$trackLocks.updates, votingModel.$voting.updates],
+  source: {
+    network: networkSelectorModel.$network,
     tracks: tracksModel.$tracks,
     trackLocks: locksModel.$trackLocks,
+    totalLock: locksModel.$totalLock,
     voting: votingModel.$voting,
+    isLoading: $isLoading,
     referendums: referendumModel.$referendums,
-    chain: networkSelectorModel.$governanceChain,
   },
-  filter: ({ api, chain, referendums }) => !!api && !!chain && !!referendums[chain!.chainId],
-  fn: ({ api, tracks, trackLocks, voting, referendums, chain }) => ({
-    api: api!,
+  filter: ({ network, referendums, totalLock, isLoading }) =>
+    nonNullable(network) && nonNullable(referendums[network.chain.chainId]) && !isLoading && !totalLock.isZero(),
+  fn: ({ network, tracks, trackLocks, voting, referendums }) => ({
+    api: network!.api,
     tracks,
-    trackLocks,
+    trackLocks: trackLocks[network!.chain.chainId],
     voting,
-    referendums: referendums[chain!.chainId],
+    referendums: referendums[network!.chain.chainId],
   }),
   target: getClaimScheduleFx,
 });
@@ -87,8 +106,9 @@ sample({
 
 sample({
   clock: $claimSchedule.updates,
+  filter: (claimSchedule) => nonNullable(claimSchedule),
   fn: (claimSchedule) => {
-    return claimSchedule.reduce((acc, claim) => {
+    return claimSchedule!.reduce((acc, claim) => {
       if (claim.type !== UnlockChunkType.CLAIMABLE) return acc;
 
       return acc.add(claim.amount);
@@ -98,8 +118,8 @@ sample({
 });
 
 export const unlockModel = {
-  $isLoading: getClaimScheduleFx.pending,
+  $isLoading,
   $totalUnlock,
   $claimSchedule,
-  $isUnlockable: $claimSchedule.map((c) => c.some((claim) => claim.type === UnlockChunkType.CLAIMABLE)),
+  $isUnlockable: combine($totalUnlock, (totalUnlock) => !totalUnlock.isZero()),
 };

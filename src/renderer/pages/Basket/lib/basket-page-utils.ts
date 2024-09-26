@@ -1,4 +1,5 @@
 import { type BasketTransaction, TransactionType } from '@shared/core';
+import { isEditDelegationTransaction } from '@/entities/transaction';
 import { Step } from '../types/basket-page-types';
 
 import { getCoreTx } from './utils';
@@ -19,7 +20,11 @@ function isSignStep(step: Step): boolean {
 }
 
 function getTransactionType(transaction: BasketTransaction): TransactionType {
-  const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE, TransactionType.BOND]);
+  const coreTx = getCoreTx(transaction);
+
+  if (isEditDelegationTransaction(coreTx)) {
+    return TransactionType.EDIT_DELEGATION;
+  }
 
   return coreTx.type;
 }

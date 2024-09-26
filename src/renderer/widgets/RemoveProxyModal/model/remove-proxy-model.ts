@@ -1,6 +1,7 @@
 import { combine, createEvent, createStore, sample, split } from 'effector';
-import { delay, spread } from 'patronum';
+import { spread } from 'patronum';
 
+import { type PathType, Paths } from '@/shared/routes';
 import {
   type Account,
   type BasketTransaction,
@@ -16,16 +17,17 @@ import {
   type TxWrapper,
   WrapperKind,
 } from '@shared/core';
-import { toAccountId, toAddress, transferableAmount } from '@shared/lib/utils';
+import { nonNullable, toAccountId, toAddress, transferableAmount } from '@shared/lib/utils';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { basketModel } from '@entities/basket/model/basket-model';
 import { networkModel } from '@entities/network';
 import { proxyModel } from '@entities/proxy';
 import { transactionService } from '@entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { navigationModel } from '@/features/navigation';
 import { balanceSubModel } from '@features/balances';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@features/operations/OperationSubmit';
+import { submitModel, submitUtils } from '@features/operations/OperationSubmit';
 import { removeProxyConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { proxiesModel } from '@features/proxies';
 import { walletSelectModel } from '@features/wallets';
@@ -58,6 +60,7 @@ const $availableSignatories = createStore<Account[][]>([]);
 const $isProxy = createStore<boolean>(false);
 const $isMultisig = createStore<boolean>(false);
 const $selectedSignatories = createStore<Account[]>([]);
+const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
 const $chain = $removeProxyStore.map((store) => store?.chain, { skipVoid: false });
 const $account = $removeProxyStore.map((store) => store?.account, { skipVoid: false });
@@ -135,7 +138,7 @@ const $signatories = combine(
   ({ chain, availableSignatories, balances }) => {
     if (!chain) return [];
 
-    return availableSignatories.reduce<Array<{ signer: Account; balance: string }[]>>((acc, signatories) => {
+    return availableSignatories.reduce<{ signer: Account; balance: string }[][]>((acc, signatories) => {
       const balancedSignatories = signatories.map((signatory) => {
         const balance = balanceUtils.getBalance(
           balances,
@@ -313,6 +316,7 @@ sample({
   clock: formModel.output.formSubmitted,
   source: {
     wrappedTx: $wrappedTx,
+    coreTx: $coreTx,
     chain: $chain,
     account: $account,
     realAccount: $realAccount,
@@ -321,7 +325,7 @@ sample({
   filter: ({ wrappedTx, chain, realAccount, account, store }) => {
     return Boolean(wrappedTx) && Boolean(chain) && Boolean(realAccount) && Boolean(account) && Boolean(store);
   },
-  fn: ({ wrappedTx, chain, account, realAccount, store }, formData) => ({
+  fn: ({ wrappedTx, coreTx, chain, account, realAccount, store }, formData) => ({
     event: [
       {
         ...formData,
@@ -331,6 +335,7 @@ sample({
         transaction: wrappedTx as Transaction,
         delegate: store!.delegate,
         proxyType: store!.proxyType,
+        coreTx,
       },
     ],
     step: Step.CONFIRM,
@@ -451,13 +456,6 @@ sample({
 });
 
 sample({
-  clock: delay(submitModel.output.formSubmitted, 2000),
-  source: $step,
-  filter: (step) => removeProxyUtils.isSubmitStep(step),
-  target: flowFinished,
-});
-
-sample({
   clock: flowFinished,
   source: {
     activeWallet: walletModel.$activeWallet,
@@ -481,6 +479,21 @@ sample({
   clock: flowFinished,
   fn: () => Step.NONE,
   target: stepChanged,
+});
+
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: formModel.$isMultisig,
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
+  fn: () => Paths.OPERATIONS,
+  target: $redirectAfterSubmitPath,
+});
+
+sample({
+  clock: flowFinished,
+  source: $redirectAfterSubmitPath,
+  filter: nonNullable,
+  target: navigationModel.events.navigateTo,
 });
 
 export const removeProxyModel = {

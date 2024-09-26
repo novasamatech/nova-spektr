@@ -7,22 +7,36 @@ import { useModalClose } from '@shared/lib/hooks';
 import { BaseModal } from '@shared/ui';
 import { OperationTitle } from '@entities/chain';
 import { networkModel } from '@entities/network';
-import { TransferTypes, XcmTypes } from '@entities/transaction';
+import {
+  type MultisigTransactionTypes,
+  type TransferTransactionTypes,
+  TransferTypes,
+  type UtilityTransactionTypes,
+  type XcmTransactionTypes,
+  XcmTypes,
+  isEditDelegationTransaction,
+} from '@entities/transaction';
 import { OperationSign, OperationSubmit } from '@features/operations';
 import {
   AddProxyConfirm,
   AddPureProxiedConfirm,
   BondExtraConfirmation,
   BondNominateConfirmation,
+  DelegateConfirmation,
+  EditDelegationConfirmation,
   NominateConfirmation,
   PayeeConfirmation,
   RemoveProxyConfirm,
   RemovePureProxiedConfirm,
+  RemoveVoteConfirmation,
   RestakeConfirmation,
+  RevokeDelegationConfirmation,
   TransferConfirm,
   UnstakeConfirmation,
+  VoteConfirmation,
   WithdrawConfirmation,
 } from '@features/operations/OperationsConfirm';
+import { UnlockConfirmation } from '@/widgets/UnlockModal/ui/UnlockConfirmation';
 import { getOperationTitle } from '../lib/operation-title';
 import { signOperationsUtils } from '../lib/sign-operations-utils';
 import { getCoreTx } from '../lib/utils';
@@ -54,7 +68,7 @@ export const SignOperation = () => {
   };
 
   const getConfirmScreen = (transaction: BasketTransaction) => {
-    const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE, TransactionType.BOND]);
+    const coreTx = getCoreTx(transaction);
 
     const type = coreTx.type;
     const config = { withFormatAmount: false };
@@ -63,7 +77,23 @@ export const SignOperation = () => {
       return () => <TransferConfirm id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />;
     }
 
-    const Components = {
+    if (isEditDelegationTransaction(coreTx)) {
+      return () => (
+        <EditDelegationConfirmation
+          id={transaction.id}
+          config={config}
+          onGoBack={() => signOperationsModel.output.flowFinished()}
+        />
+      );
+    }
+
+    const Components: Record<
+      Exclude<
+        TransactionType,
+        TransferTransactionTypes | XcmTransactionTypes | MultisigTransactionTypes | UtilityTransactionTypes
+      >,
+      () => ReactNode
+    > = {
       // Proxy
       [TransactionType.ADD_PROXY]: () => (
         <AddProxyConfirm id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
@@ -106,6 +136,39 @@ export const SignOperation = () => {
       ),
       [TransactionType.UNSTAKE]: () => (
         <UnstakeConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
+      ),
+      [TransactionType.DELEGATE]: () => (
+        <DelegateConfirmation
+          id={transaction.id}
+          config={config}
+          onGoBack={() => signOperationsModel.output.flowFinished()}
+        />
+      ),
+      [TransactionType.EDIT_DELEGATION]: () => (
+        <EditDelegationConfirmation
+          id={transaction.id}
+          config={config}
+          onGoBack={() => signOperationsModel.output.flowFinished()}
+        />
+      ),
+      [TransactionType.UNDELEGATE]: () => (
+        <RevokeDelegationConfirmation
+          id={transaction.id}
+          config={config}
+          onGoBack={() => signOperationsModel.output.flowFinished()}
+        />
+      ),
+      [TransactionType.VOTE]: () => (
+        <VoteConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
+      ),
+      [TransactionType.REVOTE]: () => (
+        <VoteConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
+      ),
+      [TransactionType.REMOVE_VOTE]: () => (
+        <RemoveVoteConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
+      ),
+      [TransactionType.UNLOCK]: () => (
+        <UnlockConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
       ),
     };
 

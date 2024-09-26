@@ -87,14 +87,14 @@ const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImpor
         const errors = importKeysUtils.getDerivationError(derivation);
         if (!errors) return acc;
 
-        errors.forEach((err) => {
+        for (const err of errors) {
           if (PATH_ERRORS.includes(err)) {
             acc[err].push(derivation.derivationPath!);
           }
           if (err === DerivationValidationError.WRONG_SHARDS_NUMBER) {
             acc[err].push(derivation.sharded || '');
           }
-        });
+        }
 
         return acc;
       },
@@ -202,7 +202,7 @@ sample({
 sample({
   clock: validateDerivationsFx.doneData,
   source: $existingDerivations,
-  filter: (existingDerivations, importedDerivations) => Boolean(existingDerivations),
+  filter: (existingDerivations) => Boolean(existingDerivations),
   fn: (existingDerivations, importedDerivations) => ({ imported: importedDerivations, existing: existingDerivations! }),
   target: mergePathsFx,
 });

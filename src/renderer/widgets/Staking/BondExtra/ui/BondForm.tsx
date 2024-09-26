@@ -26,15 +26,15 @@ export const BondForm = ({ onGoBack }: Props) => {
   };
 
   return (
-    <div className="pb-4 px-5 w-modal">
-      <form id="transfer-form" className="flex flex-col gap-y-4 mt-4" onSubmit={submitForm}>
+    <div className="px-5 pb-4">
+      <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
         <ProxyFeeAlert />
         <AccountsSelector />
         <Signatories />
         <Amount />
         <Description />
       </form>
-      <div className="flex flex-col gap-y-6 pt-6 pb-4">
+      <div className="flex flex-col gap-y-6 pb-4 pt-6">
         <FeeSection />
       </div>
       <ActionsSection onGoBack={onGoBack} />
@@ -92,7 +92,7 @@ const AccountsSelector = () => {
       id: account.id.toString(),
       value: account,
       element: (
-        <div className="flex justify-between w-full" key={account.id}>
+        <div className="flex w-full justify-between" key={account.id}>
           <AccountAddress
             size={20}
             type="short"
@@ -243,12 +243,12 @@ const FeeSection = () => {
               <Icon className="text-text-tertiary" name="lock" size={12} />
               <FootnoteText className="text-text-tertiary">{t('staking.multisigDepositLabel')}</FootnoteText>
               <Tooltip content={t('staking.tooltips.depositDescription')} offsetPx={-90}>
-                <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
+                <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
               </Tooltip>
             </>
           }
         >
-          <div className="flex flex-col gap-y-0.5 items-end">
+          <div className="flex flex-col items-end gap-y-0.5">
             <AssetBalance value={feeData.multisigDeposit} asset={network.chain.assets[0]} />
             <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.multisigDeposit} />
           </div>
@@ -266,7 +266,7 @@ const FeeSection = () => {
         {isFeeLoading ? (
           <FeeLoader fiatFlag={Boolean(fiatFlag)} />
         ) : (
-          <div className="flex flex-col gap-y-0.5 items-end">
+          <div className="flex flex-col items-end gap-y-0.5">
             <AssetBalance value={feeData.fee} asset={network.chain.assets[0]} />
             <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.fee} />
           </div>
@@ -281,7 +281,7 @@ const FeeSection = () => {
           {isFeeLoading ? (
             <FeeLoader fiatFlag={Boolean(fiatFlag)} />
           ) : (
-            <div className="flex flex-col gap-y-0.5 items-end">
+            <div className="flex flex-col items-end gap-y-0.5">
               <AssetBalance value={feeData.totalFee} asset={network.chain.assets[0]} />
               <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.totalFee} />
             </div>
@@ -298,7 +298,7 @@ const ActionsSection = ({ onGoBack }: Props) => {
   const canSubmit = useUnit(formModel.$canSubmit);
 
   return (
-    <div className="flex justify-between items-center mt-4">
+    <div className="mt-4 flex items-center justify-between">
       <Button variant="text" onClick={onGoBack}>
         {t('operation.goBackButton')}
       </Button>

@@ -6,8 +6,10 @@ import { DEFAULT_QR_LIFETIME, getExpectedBlockTime } from '@shared/lib/utils';
 
 /**
  * Start countdown based on Expected block time
+ *
  * @param api ApiPromise to make RPC calls
- * @return {Array}
+ *
+ * @returns {Array}
  */
 export function useCountdown(apis?: ApiPromise[]): [number, () => void] {
   const [countdown, setCountdown] = useState(DEFAULT_QR_LIFETIME);

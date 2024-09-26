@@ -65,9 +65,9 @@ function subscribeStatemineAssetsChange(
   if (!api || !assets.length || !accountIds.length || !api.query.assets) return Promise.resolve(noop);
 
   const assetsTuples = assets.reduce<[string, Address][]>((acc, asset) => {
-    accountIds.forEach((accountId) => {
+    for (const accountId of accountIds) {
       acc.push([getAssetId(asset), toAddress(accountId, { prefix: chain.addressPrefix })]);
-    });
+    }
 
     return acc;
   }, []);
@@ -106,9 +106,9 @@ function getOrmlAssetTuples(
     const ormlAssetId = (asset?.typeExtras as OrmlExtras).currencyIdScale;
     const assetId = api.createType(currencyIdType, hexToU8a(ormlAssetId));
 
-    accountIds.forEach((accountId) => {
+    for (const accountId of accountIds) {
       acc.push([toAddress(accountId, { prefix: addressPrefix }), assetId]);
-    });
+    }
 
     return acc;
   }, []);

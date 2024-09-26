@@ -6,7 +6,7 @@ import { useGraphql, useI18n } from '@app/providers';
 import { type Account, type Address, type Chain, type ChainId, type Stake, type Validator } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
 import { getRelaychainAsset, toAddress } from '@shared/lib/utils';
-import { Header } from '@shared/ui';
+import { Button, EmptyList, Header } from '@shared/ui';
 import { InactiveNetwork, networkUtils, useNetworkData } from '@entities/network';
 import { priceProviderModel } from '@entities/price';
 import {
@@ -19,6 +19,8 @@ import {
 } from '@entities/staking';
 import { eraService } from '@entities/staking/api';
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
+import { EmptyAccountMessage } from '@/features/emptyList';
+import { walletSelectModel } from '@/features/wallets';
 import * as Operations from '@widgets/Staking';
 import { type NominatorInfo, Operations as StakeOperations } from '../lib/types';
 
@@ -206,7 +208,7 @@ export const Staking = () => {
 
   const selectedStakes = selectedNominators.reduce<Stake[]>((acc, address) => {
     const stake = staking[address];
-    stake ? acc.push(stake) : acc.push({ address } as Stake);
+    acc.push(stake ?? ({ address } as Stake));
 
     return acc;
   }, []);
@@ -274,11 +276,11 @@ export const Staking = () => {
 
   return (
     <>
-      <div className="h-full flex flex-col">
+      <div className="flex h-full flex-col">
         <Header title={t('staking.title')} />
 
-        <div className="overflow-y-auto w-full h-full mt-6">
-          <section className="flex flex-col gap-y-6 mx-auto h-full w-[546px]">
+        <div className="mt-6 h-full w-full overflow-y-auto">
+          <section className="mx-auto flex h-full w-[546px] flex-col gap-y-6">
             <NetworkInfo
               rewards={Object.values(rewards)}
               isRewardsLoading={isRewardsLoading}
@@ -317,7 +319,17 @@ export const Staking = () => {
               </>
             )}
 
-            <InactiveNetwork active={!networkIsActive} className="flex-grow mb-28" />
+            {networkIsActive && activeWallet && accounts.length === 0 && (
+              <EmptyList message={<EmptyAccountMessage walletType={activeWallet.type} />}>
+                {walletUtils.isPolkadotVault(activeWallet) && (
+                  <Button variant="text" onClick={() => walletSelectModel.events.walletIdSet(activeWallet.id)}>
+                    {t('emptyState.addNewAccountButton')}
+                  </Button>
+                )}
+              </EmptyList>
+            )}
+
+            <InactiveNetwork active={!networkIsActive} className="mb-28 flex-grow" />
           </section>
         </div>
       </div>

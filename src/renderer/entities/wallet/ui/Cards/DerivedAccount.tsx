@@ -1,20 +1,10 @@
 import { type MouseEvent } from 'react';
 
 import { type ChainAccount, type ShardAccount } from '@shared/core';
-import { KeyType } from '@shared/core';
 import { SS58_PUBLIC_KEY_PREFIX, cnTw, toAddress } from '@shared/lib/utils';
 import { BodyText, CaptionText, FootnoteText, HelpText, Icon, IconButton, Identicon } from '@shared/ui';
-import { type IconNames } from '@shared/ui/Icon/data';
 import { accountUtils } from '../../lib/account-utils';
-
-const KeyIcon: Record<KeyType, IconNames> = {
-  [KeyType.CUSTOM]: 'keyCustom',
-  [KeyType.GOVERNANCE]: 'keyGovernance',
-  [KeyType.HOT]: 'keyHot',
-  [KeyType.MAIN]: 'keyMain',
-  [KeyType.PUBLIC]: 'keyPublic',
-  [KeyType.STAKING]: 'keyStaking',
-};
+import { KeyIcon } from '../../lib/constants';
 
 type Props = {
   account: ChainAccount | ShardAccount[];
@@ -51,14 +41,14 @@ export const DerivedAccount = ({
   return (
     <div
       className={cnTw(
-        'group relative flex items-center w-full rounded transition-colors',
-        'hover:bg-action-background-hover focus-within:bg-action-background-hover',
+        'group relative flex w-full items-center rounded transition-colors',
+        'focus-within:bg-action-background-hover hover:bg-action-background-hover',
         className,
       )}
     >
-      <button className="flex items-center gap-x-2 w-full py-1.5 px-2 rounded" onClick={handleClick(onClick)}>
+      <button className="flex w-full items-center gap-x-2 rounded px-2 py-1.5" onClick={handleClick(onClick)}>
         {isShardedAccount && (
-          <div className="flex items-center justify-center w-7.5 h-5 rounded-2lg bg-input-background-disabled">
+          <div className="flex h-5 w-7.5 items-center justify-center rounded-2lg bg-input-background-disabled">
             <CaptionText className="text-text-secondary">{account.length}</CaptionText>
           </div>
         )}
@@ -72,7 +62,7 @@ export const DerivedAccount = ({
               size={20}
             />
             <Icon
-              className="z-10 -ml-2.5 text-text-secondary rounded-full border bg-white"
+              className="z-10 -ml-2.5 rounded-full border bg-white text-text-secondary"
               size={20}
               name={KeyIcon[account.keyType]}
             />
@@ -80,7 +70,7 @@ export const DerivedAccount = ({
         )}
 
         {chainWithoutAccountId && (
-          <div className="flex items-center w-7.5 h-5">
+          <div className="flex h-5 w-7.5 items-center">
             <Icon size={30} name={KeyIcon[account.keyType]} className="mx-auto text-text-secondary" />
           </div>
         )}
@@ -88,14 +78,14 @@ export const DerivedAccount = ({
         <div className="flex flex-col overflow-hidden pr-5">
           <BodyText
             className={cnTw(
-              'text-text-secondary truncate transition-colors',
-              'group-hover:text-text-primary group-focus-within:text-text-primary',
+              'truncate text-text-secondary transition-colors',
+              'group-focus-within:text-text-primary group-hover:text-text-primary',
             )}
           >
             {isShardedAccount ? account[0].name : account.name}
           </BodyText>
           {chainWithAccountId && (
-            <HelpText className="text-text-tertiary truncate">
+            <HelpText className="truncate text-text-tertiary">
               {toAddress(account.accountId, { prefix: addressPrefix })}
             </HelpText>
           )}
@@ -107,22 +97,22 @@ export const DerivedAccount = ({
           <IconButton
             className={cnTw(
               'absolute right-0 opacity-0 transition-opacity',
-              'group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100',
+              'focus:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100',
               showSuffix && 'hidden',
             )}
-            name="info"
+            name="details"
             onClick={onInfoClick}
           />
         )}
 
         <div
           className={cnTw(
-            'absolute right-0 pl-2 transition-all opacity-0 bg-white',
+            'absolute right-0 bg-white pl-2 opacity-0 transition-all',
             'group-hover:bg-background-suffix-hover group-focus:bg-background-suffix-hover',
             showSuffix && 'opacity-100',
           )}
         >
-          <FootnoteText align="right" className="text-text-tertiary ">
+          <FootnoteText align="right" className="text-text-tertiary">
             {accountUtils.getDerivationPath(account)}
           </FootnoteText>
         </div>

@@ -66,8 +66,8 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   }, []);
 
   const handleConstructorKeys = (
-    keysToAdd: Array<ChainAccount | ShardAccount[]>,
-    keysToRemove: Array<ChainAccount | ShardAccount[]>,
+    keysToAdd: (ChainAccount | ShardAccount[])[],
+    keysToRemove: (ChainAccount | ShardAccount[])[],
   ) => {
     toggleConstructorModal();
 
@@ -168,7 +168,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
           <ContextMenu button={<RootAccountLg name={wallet.name} accountId={root.accountId} className="px-5" />}>
             <ContextMenu.Group title={t('general.explorers.publicKeyTitle')}>
               <div className="flex items-center gap-x-2">
-                <HelpText className="text-text-secondary break-all">
+                <HelpText className="break-all text-text-secondary">
                   {toAddress(root.accountId, { prefix: 1 })}
                 </HelpText>
                 <IconButton
@@ -182,7 +182,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
           </ContextMenu>
 
           <VaultAccountsList
-            className="h-[321px] mt-4 pb-4 px-5"
+            className="mt-4 h-[321px] px-5 pb-4"
             chains={Object.values(chains)}
             accountsMap={accountsMap}
             onShardClick={vaultDetailsModel.events.shardsSelected}
@@ -194,10 +194,10 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       id: 'proxies',
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList className="h-[371px] mt-4" canCreateProxy={canCreateProxy} />
+        <ProxiesList className="mt-4 h-[371px]" canCreateProxy={canCreateProxy} />
       ) : (
         <NoProxiesAction
-          className="h-[371px] mt-4"
+          className="mt-4 h-[371px]"
           canCreateProxy={canCreateProxy}
           onAddProxy={addProxyModel.events.flowStarted}
         />
@@ -215,8 +215,8 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
       isOpen={isModalOpen}
       onClose={closeModal}
     >
-      <div className="flex flex-col gap-y-4 w-full">
-        <div className="py-6 px-5 border-b border-divider">
+      <div className="flex w-full flex-col gap-y-4">
+        <div className="border-b border-divider px-5 py-6">
           <WalletCardLg wallet={wallet} />
         </div>
 

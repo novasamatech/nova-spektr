@@ -1,16 +1,20 @@
-import { Shimmering } from '@shared/ui';
+import { HeaderTitleText, Shimmering } from '@shared/ui';
 
 export const ListItemPlaceholder = () => {
   return (
-    <div className="flex flex-col gap-y-3 p-3 w-full rounded-md bg-white">
+    <div className="flex w-full flex-col gap-y-3 rounded-md bg-white p-3">
       <div className="flex justify-between gap-x-2">
         <Shimmering width={240} height={20} />
         <Shimmering width={125} height={20} />
       </div>
-      <div className="flex justify-between gap-x-6 w-full">
-        <Shimmering className="rounded-lg" width={332} height={62} />
-        <div className="w-[1px] h-[62px] bg-divider" />
-        <Shimmering className="rounded-lg" width={332} height={62} />
+      <div className="flex w-full justify-between gap-x-6">
+        <HeaderTitleText>
+          <Shimmering className="rounded-lg" width="28ch" height="1em" />
+        </HeaderTitleText>
+        <div className="h-full w-[1px] bg-divider" />
+        <HeaderTitleText>
+          <Shimmering className="rounded-lg" width="28ch" height="1em" />
+        </HeaderTitleText>
       </div>
     </div>
   );

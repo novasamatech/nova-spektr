@@ -1,4 +1,4 @@
-import BigNumber from 'bignumber.js';
+import { default as BigNumber } from 'bignumber.js';
 
 import { type PriceObject } from '@shared/api/price-provider';
 import { type Asset, type Balance } from '@shared/core';

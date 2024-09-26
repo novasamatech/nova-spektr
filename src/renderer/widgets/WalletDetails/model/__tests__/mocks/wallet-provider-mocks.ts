@@ -145,6 +145,7 @@ const multisiigWallet: MultisigWallet = {
       cryptoType: 0,
       chainType: 0,
       threshold: 2,
+      creatorAccountId: TEST_ACCOUNTS[1],
       signatories: [
         {
           accountId: '0x01',

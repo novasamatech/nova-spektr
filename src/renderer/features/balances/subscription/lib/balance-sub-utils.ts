@@ -52,7 +52,7 @@ function formSubAccounts(
   const newSubAccounts = accountsToSub.reduce<SubAccounts>((acc, account) => {
     const chainsToUpdate = chainIds.filter((chainId) => accountUtils.isChainAndCryptoMatch(account, chains[chainId]));
 
-    chainsToUpdate.forEach((chainId) => {
+    for (const chainId of chainsToUpdate) {
       if (!acc[chainId]) {
         acc[chainId] = { [walletId]: [account.accountId] };
       } else if (acc[chainId][walletId]) {
@@ -60,7 +60,7 @@ function formSubAccounts(
       } else {
         acc[chainId][walletId] = [account.accountId];
       }
-    });
+    }
 
     return acc;
   }, {});

@@ -1,4 +1,4 @@
-import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react';
 
 import { Plate } from './Plate';
 
@@ -6,9 +6,9 @@ export default {
   title: 'Plate',
   component: Plate,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof Plate>;
+} as Meta<typeof Plate>;
 
-const Template: ComponentStory<typeof Plate> = (args) => <Plate {...args} />;
+const Template: StoryFn<typeof Plate> = (args) => <Plate {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {

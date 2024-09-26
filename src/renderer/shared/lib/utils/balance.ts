@@ -1,7 +1,7 @@
 import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
-import BigNumber from 'bignumber.js';
+import { default as BigNumber } from 'bignumber.js';
 
-import { type AssetBalance, type Balance, LockTypes, type Unlocking } from '@shared/core';
+import { type Asset, type AssetBalance, type Balance, LockTypes, type Unlocking } from '@shared/core';
 
 import { ZERO_BALANCE } from './constants';
 
@@ -114,8 +114,69 @@ export const formatBalance = (
     value,
     suffix,
     decimalPlaces,
-    formatted: value + suffix,
+    formatted: formatGroups(value) + suffix,
   };
+};
+
+export const formatAsset = (
+  value: BN | string,
+  asset: Asset,
+  shorthands: Partial<FormatBalanceShorthands> = defaultBalanceShorthands,
+) => {
+  return `${formatBalance(value, asset.precision, shorthands).formatted} ${asset.symbol}`;
+};
+
+export const toPrecision = (balance: string | BN, precision: number): BN => {
+  return balance ? new BN(formatAmount(balance.toString(), precision)) : BN_ZERO;
+};
+
+export const toNumberWithPrecision = (value: number | BN, precision: number): number => {
+  if (BN.isBN(value)) {
+    const fixedValue = value.div(BN_TEN.pow(new BN(precision)));
+
+    if (fixedValue.bitLength() >= 53) {
+      return Number.MAX_SAFE_INTEGER;
+    }
+
+    return fixedValue.toNumber();
+  }
+
+  return value / 10 ** precision;
+};
+
+export const fromPrecision = (balance: string | BN, precision: number): string => {
+  const stringBalance = balance.toString();
+
+  const BNWithConfig = BigNumber.clone();
+  BNWithConfig.config({
+    // HOOK: for divide with decimal part
+    DECIMAL_PLACES: precision || Decimal.SMALL_NUMBER,
+    ROUNDING_MODE: BNWithConfig.ROUND_DOWN,
+    FORMAT: {
+      decimalSeparator: '.',
+      groupSeparator: '',
+    },
+  });
+  const TEN = new BNWithConfig(10);
+  const bnPrecision = new BNWithConfig(precision);
+  const bnBalance = new BNWithConfig(stringBalance).div(TEN.pow(bnPrecision));
+  let decimalPlaces = 0;
+
+  if (bnBalance.lt(1)) {
+    decimalPlaces = Math.max(precision - stringBalance.length + 1, 5);
+  } else if (bnBalance.lt(10)) {
+    decimalPlaces = Decimal.SMALL_NUMBER;
+  } else if (bnBalance.lt(1_000_000)) {
+    decimalPlaces = Decimal.BIG_NUMBER;
+  } else if (bnBalance.lt(1_000_000_000)) {
+    decimalPlaces = Decimal.BIG_NUMBER;
+  } else if (bnBalance.lt(1_000_000_000_000)) {
+    decimalPlaces = Decimal.BIG_NUMBER;
+  } else {
+    decimalPlaces = Decimal.BIG_NUMBER;
+  }
+
+  return new BNWithConfig(bnBalance).decimalPlaces(decimalPlaces).toFormat();
 };
 
 export const totalAmount = <T extends AssetBalance>(balance?: T): string => {
@@ -134,13 +195,17 @@ export const lockedAmount = ({ locked = [] }: Balance): string => {
   return bnFrozen.toString();
 };
 
-export const transferableAmount = <T extends AssetBalance>(balance?: T): string => {
-  if (!balance) return ZERO_BALANCE;
+export const transferableAmountBN = <T extends AssetBalance>(balance?: T): BN => {
+  if (!balance) return BN_ZERO;
 
   const bnFree = new BN(balance.free || ZERO_BALANCE);
   const bnFrozen = new BN(balance.frozen || ZERO_BALANCE);
 
-  return bnFree.gt(bnFrozen) ? bnFree.sub(bnFrozen).toString() : ZERO_BALANCE;
+  return bnFree.gt(bnFrozen) ? bnFree.sub(bnFrozen) : BN_ZERO;
+};
+
+export const transferableAmount = <T extends AssetBalance>(balance?: T): string => {
+  return transferableAmountBN(balance).toString();
 };
 
 export const stakedAmount = ({ locked = [] }: Balance): string => {
@@ -192,6 +257,11 @@ export const validatePrecision = (amount: string, precision: number) => {
 export const formatGroups = (amount: string): string => {
   if (!amount) return '';
 
+  const isNegative = amount.startsWith('-');
+  if (isNegative) {
+    amount = amount.slice(1);
+  }
+
   const [integer, decimal] = amount.split('.');
   const groups = [];
   let index = integer.length;
@@ -201,7 +271,9 @@ export const formatGroups = (amount: string): string => {
     index -= 3;
   }
 
-  return groups.reverse().join(',') + (decimal || amount.includes('.') ? `.${decimal}` : '');
+  const result = groups.reverse().join(',') + (decimal || amount.includes('.') ? `.${decimal}` : '');
+
+  return isNegative ? `-${result}` : result;
 };
 
 export const cleanAmount = (amount: string) => {

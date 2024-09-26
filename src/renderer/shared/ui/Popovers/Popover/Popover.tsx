@@ -30,6 +30,9 @@ type Props = {
   tabIndex?: number;
 };
 
+/**
+ * @deprecated Use `import { Popover } from '@/shared/ui-kit'` instead.
+ */
 export const Popover = ({
   content,
   offsetPx = 10,

@@ -1,8 +1,9 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
-import { delay, spread } from 'patronum';
+import { spread } from 'patronum';
 
+import { type PathType, Paths } from '@/shared/routes';
 import {
   type Account,
   type BasketTransaction,
@@ -17,8 +18,9 @@ import { basketModel } from '@entities/basket/model/basket-model';
 import { networkModel } from '@entities/network';
 import { transactionBuilder, transactionService } from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
+import { navigationModel } from '@/features/navigation';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@features/operations/OperationSubmit';
+import { submitModel, submitUtils } from '@features/operations/OperationSubmit';
 import { bondExtraConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { bondExtraUtils } from '../lib/bond-extra-utils';
 import { type BondExtraData, type FeeData, Step, type WalletData } from '../lib/types';
@@ -33,12 +35,13 @@ const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
-const $walletData = restore<WalletData | null>(flowStarted, null);
-const $bondExtraData = createStore<BondExtraData | null>(null);
+const $walletData = restore<WalletData | null>(flowStarted, null).reset(flowFinished);
+const $bondExtraData = createStore<BondExtraData | null>(null).reset(flowFinished);
 const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
+const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
-const $txWrappers = createStore<TxWrapper[]>([]);
-const $pureTxs = createStore<Transaction[]>([]);
+const $txWrappers = createStore<TxWrapper[]>([]).reset(flowFinished);
+const $pureTxs = createStore<Transaction[]>([]).reset(flowFinished);
 
 type FeeParams = {
   api: ApiPromise;
@@ -239,9 +242,10 @@ sample({
     feeData: $feeData,
     walletData: $walletData,
     txWrappers: $txWrappers,
+    coreTxs: $pureTxs,
   },
   filter: ({ bondData, walletData }) => Boolean(bondData) && Boolean(walletData),
-  fn: ({ bondData, feeData, walletData, txWrappers }) => {
+  fn: ({ bondData, feeData, walletData, txWrappers, coreTxs }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
 
     return {
@@ -253,6 +257,7 @@ sample({
           ...feeData,
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
           ...(wrapper && { shards: [wrapper.proxyAccount] }),
+          coreTx: coreTxs[0],
         },
       ],
       step: Step.CONFIRM,
@@ -327,16 +332,24 @@ sample({
 });
 
 sample({
-  clock: delay(submitModel.output.formSubmitted, 2000),
-  source: $step,
-  filter: (step) => bondExtraUtils.isSubmitStep(step),
-  target: flowFinished,
+  clock: flowFinished,
+  fn: () => Step.NONE,
+  target: [stepChanged, formModel.events.formCleared],
+});
+
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: formModel.$isMultisig,
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
+  fn: () => Paths.OPERATIONS,
+  target: $redirectAfterSubmitPath,
 });
 
 sample({
   clock: flowFinished,
-  fn: () => Step.NONE,
-  target: [stepChanged, formModel.events.formCleared],
+  source: $redirectAfterSubmitPath,
+  filter: nonNullable,
+  target: navigationModel.events.navigateTo,
 });
 
 sample({

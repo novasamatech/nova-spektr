@@ -1,4 +1,4 @@
-export { Button, ButtonLink, ButtonWebLink, IconButton } from './Buttons';
+export { Button, ButtonCard, ButtonLink, ButtonWebLink, IconButton } from './Buttons';
 
 export { BaseModal, ConfirmModal, StatusModal } from './Modals';
 
@@ -51,7 +51,8 @@ export { Truncate } from './Truncate/Truncate';
 export { Countdown } from './Countdown/Countdown';
 export { Tabs } from './Tabs/Tabs';
 export { Markdown } from './Markdown/Markdown';
-export { Slider } from './Slider/Slider';
+export { BlockExplorer } from './BlockExplorer/BlockExplorer';
+export { EmptyList } from './EmptyList/EmptyList';
 
 // FIXME: Animation component exported separately.
 // Adding them to this file causes to crash all tests which use anything from that file

@@ -8,9 +8,9 @@ export async function setupApplication(window: BrowserWindow): Promise<void> {
   app.on('activate', async () => {
     if (!BrowserWindow.getAllWindows().length) return window;
 
-    return BrowserWindow.getAllWindows()
-      ?.reverse()
-      .forEach((window) => window.restore());
+    for (const w of BrowserWindow.getAllWindows().reverse()) {
+      w.restore();
+    }
   });
 
   app.on('web-contents-created', (_, contents) =>

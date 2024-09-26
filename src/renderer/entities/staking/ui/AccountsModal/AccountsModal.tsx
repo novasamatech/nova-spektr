@@ -33,17 +33,17 @@ export const AccountsModal = ({ isOpen, accounts, asset, chainId, addressPrefix,
     <BaseModal
       closeButton
       contentClass="pb-3 px-3"
-      panelClass="w-[368px]"
+      panelClass="w-modal-sm"
       title={t('staking.confirmation.accountsTitle')}
       isOpen={isOpen}
       onClose={onClose}
     >
       <ul className={cnTw('flex flex-col gap-y-3', accounts.length > 7 && 'max-h-[388px] overflow-y-auto')}>
         {accounts.map((account) => (
-          <li key={account.accountId} className="flex justify-between items-center p-2" data-testid="account">
+          <li key={account.accountId} className="flex items-center justify-between p-2" data-testid="account">
             <div className="flex items-center gap-x-2">
               <Identicon address={account.accountId} size={20} background={false} />
-              <div className="flex flex-col max-w-[175px]">
+              <div className="flex max-w-[175px] flex-col">
                 <BodyText className="text-text-secondary">{account.name}</BodyText>
                 <Truncate
                   className="text-help-text text-text-tertiary"
@@ -57,7 +57,7 @@ export const AccountsModal = ({ isOpen, accounts, asset, chainId, addressPrefix,
             <AssetBalance
               value={findBalance(account.accountId)}
               asset={asset}
-              className="text-text-secondary text-end w-full ml-2"
+              className="ml-2 w-full text-end text-text-secondary"
             />
           </li>
         ))}

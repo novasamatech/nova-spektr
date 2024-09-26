@@ -56,7 +56,7 @@ sample({
 });
 
 sample({
-  clock: referendumModel.events.requestDone,
+  clock: referendumModel.events.referendumsReceived,
   source: tracksModel.$tracks,
   fn: (tracks, { params, result: referendums }) => ({
     api: params.api,
@@ -72,7 +72,10 @@ sample({
   source: $approvalThresholds,
   fn: (thresholds, { params, result }) => ({
     ...thresholds,
-    [params.chain.chainId]: result,
+    [params.chain.chainId]: {
+      ...(thresholds[params.chain.chainId] ?? {}),
+      ...result,
+    },
   }),
   target: $approvalThresholds,
 });

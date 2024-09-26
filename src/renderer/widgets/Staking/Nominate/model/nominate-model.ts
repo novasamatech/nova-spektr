@@ -1,8 +1,9 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
-import { delay, spread } from 'patronum';
+import { spread } from 'patronum';
 
+import { type PathType, Paths } from '@/shared/routes';
 import {
   type Account,
   type BasketTransaction,
@@ -18,8 +19,9 @@ import { networkModel } from '@entities/network';
 import { validatorsService } from '@entities/staking';
 import { transactionBuilder, transactionService } from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
+import { navigationModel } from '@/features/navigation';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@features/operations/OperationSubmit';
+import { submitModel, submitUtils } from '@features/operations/OperationSubmit';
 import { nominateConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { validatorsModel } from '@features/staking';
 import { nominateUtils } from '../lib/nominate-utils';
@@ -35,14 +37,15 @@ const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
-const $walletData = restore<WalletData | null>(flowStarted, null);
-const $nominateData = createStore<NominateData | null>(null);
+const $walletData = restore<WalletData | null>(flowStarted, null).reset(flowFinished);
+const $nominateData = createStore<NominateData | null>(null).reset(flowFinished);
 const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
 
-const $txWrappers = createStore<TxWrapper[]>([]);
-const $pureTxs = createStore<Transaction[]>([]);
+const $txWrappers = createStore<TxWrapper[]>([]).reset(flowFinished);
+const $pureTxs = createStore<Transaction[]>([]).reset(flowFinished);
 
 const $maxValidators = createStore<number>(0);
+const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
 const getMaxValidatorsFx = createEffect((api: ApiPromise): number => {
   return validatorsService.getMaxValidators(api);
@@ -288,9 +291,10 @@ sample({
     feeData: $feeData,
     walletData: $walletData,
     txWrappers: $txWrappers,
+    coreTxs: $pureTxs,
   },
   filter: ({ nominateData, walletData }) => Boolean(nominateData) && Boolean(walletData),
-  fn: ({ nominateData, feeData, walletData, txWrappers }) => {
+  fn: ({ nominateData, feeData, walletData, txWrappers, coreTxs }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
 
     return {
@@ -302,6 +306,7 @@ sample({
           ...feeData,
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
           ...(wrapper && { shards: [wrapper.proxyAccount] }),
+          coreTxs: coreTxs[0],
         },
       ],
       step: Step.CONFIRM,
@@ -375,16 +380,24 @@ sample({
 });
 
 sample({
-  clock: delay(submitModel.output.formSubmitted, 2000),
-  source: $step,
-  filter: (step) => nominateUtils.isSubmitStep(step),
-  target: flowFinished,
+  clock: flowFinished,
+  fn: () => Step.NONE,
+  target: [stepChanged, formModel.events.formCleared, validatorsModel.events.formCleared],
+});
+
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: formModel.$isMultisig,
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
+  fn: () => Paths.OPERATIONS,
+  target: $redirectAfterSubmitPath,
 });
 
 sample({
   clock: flowFinished,
-  fn: () => Step.NONE,
-  target: [stepChanged, formModel.events.formCleared, validatorsModel.events.formCleared],
+  source: $redirectAfterSubmitPath,
+  filter: nonNullable,
+  target: navigationModel.events.navigateTo,
 });
 
 sample({

@@ -61,7 +61,7 @@ export const Fee = memo(({ api, multiply = 1, asset, transaction, className, onF
   }
 
   return (
-    <div className="flex flex-col gap-y-0.5 items-end">
+    <div className="flex flex-col items-end gap-y-0.5">
       <AssetBalance value={fee} asset={asset} className={className} />
       <AssetFiatBalance asset={asset} amount={fee} />
     </div>

@@ -8,7 +8,7 @@ import { type RadioOption } from './common/types';
 import './RadioGroup.css';
 
 type Props = {
-  option: RadioOption;
+  option: RadioOption<unknown>;
 };
 
 export const Option = ({ option, children }: PropsWithChildren<Props>) => {
@@ -21,13 +21,13 @@ export const Option = ({ option, children }: PropsWithChildren<Props>) => {
       {({ checked }) => (
         <div
           className={cnTw(
-            'rounded border border-filter-border cursor-pointer mb-2 last:mb-0',
+            'mb-2 cursor-pointer rounded border border-filter-border last:mb-0',
             checked && 'border-active-container-border',
           )}
         >
           <div
             className={cnTw(
-              'flex justify-between items-center p-3 cursor-pointer hover:bg-hover focus:bg-hover transition',
+              'flex cursor-pointer items-center justify-between p-3 transition hover:bg-hover focus:bg-hover',
               checked ? 'bg-hover' : 'bg-tab-background',
             )}
           >
@@ -36,7 +36,7 @@ export const Option = ({ option, children }: PropsWithChildren<Props>) => {
             </SmallTitleText>
             <span
               className={cnTw(
-                'relative w-4 h-4 rounded-full border border-filter-border bg-card-background',
+                'relative h-4 w-4 rounded-full border border-filter-border bg-card-background',
                 checked ? 'spektr-radio border-0 bg-primary-button-background-default' : 'border-filter-border',
               )}
             />

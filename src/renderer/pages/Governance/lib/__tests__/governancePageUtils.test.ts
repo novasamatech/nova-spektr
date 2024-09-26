@@ -1,40 +1,64 @@
-import { type OngoingReferendum, ReferendumType } from '@shared/core';
+import { BN_ZERO } from '@polkadot/util';
+
+import { type OngoingReferendum } from '@shared/core';
 import { type AggregatedReferendum, VoteStatus } from '@features/governance';
 import { governancePageUtils } from '../governancePageUtils';
+
+const someVote = {
+  type: 'Standard',
+  vote: {
+    aye: true,
+    conviction: 'None',
+  },
+  balance: BN_ZERO,
+} as const;
 
 describe('pages/Governance/lib/governancePageUtils', () => {
   const referendums: AggregatedReferendum[] = [
     {
-      type: ReferendumType.Approved,
+      type: 'Approved',
       referendumId: '111',
       since: 0,
       title: 'Referendum Title 1',
       approvalThreshold: null,
       supportThreshold: null,
-      isVoted: false,
+      vote: null,
+      submissionDeposit: null,
+      decisionDeposit: null,
     },
     {
-      type: ReferendumType.Approved,
+      type: 'Approved',
       referendumId: '222',
       since: 0,
       title: 'Referendum Title 2',
       approvalThreshold: null,
       supportThreshold: null,
-      isVoted: false,
+      vote: null,
+      submissionDeposit: null,
+      decisionDeposit: null,
     },
   ];
 
-  const createVotingReferendum = (isVoted: boolean) => {
+  const createVotingReferendum = (isVoted: boolean, isVotedByDelegate = false) => {
     return {
-      isVoted,
-      type: ReferendumType.Ongoing,
+      vote: isVoted
+        ? {
+            voter: '',
+            vote: someVote,
+          }
+        : null,
+      votedByDelegate: isVotedByDelegate ? 'delegate address' : null,
+      type: 'Ongoing',
       track: '1',
     } as AggregatedReferendum<OngoingReferendum>;
   };
 
   const referendum = {
-    isVoted: true,
-    type: ReferendumType.Ongoing,
+    vote: {
+      voter: '',
+      vote: someVote,
+    },
+    type: 'Ongoing',
     track: '1',
   } as AggregatedReferendum<OngoingReferendum>;
 
@@ -49,10 +73,14 @@ describe('pages/Governance/lib/governancePageUtils', () => {
   });
 
   test.each([
-    { referendum: createVotingReferendum(true), selectedVoteId: VoteStatus.VOTED, expected: true },
-    { referendum: createVotingReferendum(false), selectedVoteId: VoteStatus.VOTED, expected: false },
-    { referendum: createVotingReferendum(true), selectedVoteId: VoteStatus.NOT_VOTED, expected: false },
-    { referendum: createVotingReferendum(false), selectedVoteId: VoteStatus.NOT_VOTED, expected: true },
+    { referendum: createVotingReferendum(true, false), selectedVoteId: VoteStatus.VOTED, expected: true },
+    { referendum: createVotingReferendum(true, true), selectedVoteId: VoteStatus.VOTED, expected: true },
+    { referendum: createVotingReferendum(false, true), selectedVoteId: VoteStatus.VOTED, expected: true },
+    { referendum: createVotingReferendum(false, false), selectedVoteId: VoteStatus.VOTED, expected: false },
+    { referendum: createVotingReferendum(true, false), selectedVoteId: VoteStatus.NOT_VOTED, expected: false },
+    { referendum: createVotingReferendum(true, true), selectedVoteId: VoteStatus.NOT_VOTED, expected: false },
+    { referendum: createVotingReferendum(false, true), selectedVoteId: VoteStatus.NOT_VOTED, expected: false },
+    { referendum: createVotingReferendum(false, false), selectedVoteId: VoteStatus.NOT_VOTED, expected: true },
   ])(
     'should return $expected if selectedVoteId is $selectedVoteId and referendum.isVoted is $referendum.isVoted',
     ({ referendum, selectedVoteId, expected }) => {

@@ -107,9 +107,29 @@ export const getTransactionOptions = (t: TFunction) => {
       element: t('operations.titles.unlock'),
     },
     {
+      id: TransactionType.VOTE,
+      value: TransactionType.VOTE,
+      element: t('operations.titles.vote'),
+    },
+    {
+      id: TransactionType.REVOTE,
+      value: TransactionType.REVOTE,
+      element: t('operations.titles.vote'),
+    },
+    {
       id: TransactionType.REMOVE_VOTE,
       value: TransactionType.REMOVE_VOTE,
-      element: t('operations.titles.unlock'),
+      element: t('operations.titles.removeVote'),
+    },
+    {
+      id: TransactionType.DELEGATE,
+      value: TransactionType.DELEGATE,
+      element: t('operations.titles.delegate'),
+    },
+    {
+      id: TransactionType.UNDELEGATE,
+      value: TransactionType.UNDELEGATE,
+      element: t('operations.titles.undelegate'),
     },
     {
       id: UNKNOWN_TYPE,

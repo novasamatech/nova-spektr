@@ -1,7 +1,9 @@
-import cn from 'classnames';
 import { useUnit } from 'effector-react';
+import { useEffect, useState } from 'react';
+import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
+import { Skeleton } from '@/shared/ui-kit';
 import { chainsService } from '@shared/api/network';
 import {
   type Address,
@@ -14,30 +16,38 @@ import { TransactionType } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
 import { cnTw, copyToClipboard, getAssetById, truncate } from '@shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@shared/ui';
+import { TracksDetails, voteTransactionService } from '@/entities/governance';
 import { AssetBalance } from '@entities/asset';
 import { ChainTitle } from '@entities/chain';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
 import { type ExtendedChain, networkModel, networkUtils } from '@entities/network';
 import { proxyUtils } from '@entities/proxy';
-import { singnatoryUtils } from '@entities/signatory';
+import { signatoryUtils } from '@entities/signatory';
 import { ValidatorsModal, useValidatorsMap } from '@entities/staking';
 import {
   isAddProxyTransaction,
   isManageProxyTransaction,
   isRemoveProxyTransaction,
   isRemovePureProxyTransaction,
+  isUndelegateTransaction,
   isXcmTransaction,
 } from '@entities/transaction';
 import { AddressWithExplorers, ExplorersPopover, WalletCardSm, walletModel } from '@entities/wallet';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import {
   getDelegate,
+  getDelegationTarget,
+  getDelegationTracks,
+  getDelegationVotes,
   getDestination,
   getDestinationChain,
   getMultisigExtrinsicLink,
   getPayee,
   getProxyType,
+  getReferendumId,
   getSender,
+  getUndelegationData,
+  getVote,
 } from '../common/utils';
 
 type Props = {
@@ -60,11 +70,36 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const destinationChain = getDestinationChain(tx);
   const destination = getDestination(tx, chains, destinationChain);
 
+  const delegationTarget = getDelegationTarget(tx);
+  const delegationTracks = getDelegationTracks(tx);
+  const delegationVotes = getDelegationVotes(tx);
+
+  const referendumId = getReferendumId(tx);
+  const vote = getVote(tx);
+
   const api = extendedChain?.api;
   const defaultAsset = extendedChain?.assets[0];
   const addressPrefix = extendedChain?.addressPrefix;
   const explorers = extendedChain?.explorers;
   const connection = extendedChain?.connection;
+
+  const [isUndelegationLoading, setIsUndelegationLoading] = useState(false);
+  const [undelegationVotes, setUndelegationVotes] = useState<string>();
+  const [undelegationTarget, setUndelegationTarget] = useState<Address>();
+
+  useEffect(() => {
+    if (isUndelegateTransaction(transaction)) {
+      setIsUndelegationLoading(true);
+    }
+
+    if (!api) return;
+
+    getUndelegationData(api, tx).then(({ votes, target }) => {
+      setUndelegationVotes(votes);
+      setUndelegationTarget(target);
+      setIsUndelegationLoading(false);
+    });
+  }, [api, tx]);
 
   const [isAdvancedShown, toggleAdvanced] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
@@ -94,10 +129,10 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
 
   const valueClass = 'text-text-secondary';
   const depositorWallet =
-    depositorSignatory && singnatoryUtils.getSignatoryWallet(wallets, depositorSignatory.accountId);
+    depositorSignatory && signatoryUtils.getSignatoryWallet(wallets, depositorSignatory.accountId);
 
   return (
-    <dl className="flex flex-col gap-y-1 w-full">
+    <dl className="flex w-full flex-col gap-y-1">
       {description && (
         <div className={DescriptionBlockStyle}>
           <FootnoteText as="dt" className="text-text-tertiary">
@@ -217,12 +252,115 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         </DetailRow>
       )}
 
+      {referendumId && (
+        <DetailRow label={t('operation.details.referendum')} className={valueClass}>
+          <FootnoteText className={valueClass}>#{referendumId}</FootnoteText>
+        </DetailRow>
+      )}
+
+      {vote && (
+        <DetailRow label={t('operation.details.votes')} className={valueClass}>
+          <FootnoteText className={valueClass}>
+            <>
+              <span className="uppercase">
+                {t(`governance.referendum.${voteTransactionService.getDecision(vote)}`)}
+              </span>
+              :{' '}
+              <Trans
+                t={t}
+                i18nKey="governance.addDelegation.votesValue"
+                components={{
+                  votes: (
+                    <AssetBalance
+                      value={voteTransactionService.getVotes(vote)}
+                      asset={defaultAsset}
+                      showSymbol={false}
+                      className={valueClass}
+                    />
+                  ),
+                }}
+              />
+            </>
+          </FootnoteText>
+        </DetailRow>
+      )}
+
+      {isUndelegationLoading && (
+        <>
+          <DetailRow label={t('operation.details.delegationTarget')} className="text-text-secondary">
+            <Skeleton width={40} height={6} />
+          </DetailRow>
+
+          <DetailRow label={t('operation.details.delegationVotes')}>
+            <Skeleton width={20} height={5} />
+          </DetailRow>
+        </>
+      )}
+
+      {delegationTarget && (
+        <DetailRow label={t('operation.details.delegationTarget')} className={valueClass}>
+          <AddressWithExplorers
+            explorers={explorers}
+            addressFont={AddressStyle}
+            type="short"
+            address={delegationTarget}
+            addressPrefix={addressPrefix}
+            wrapperClassName="-mr-2 min-w-min"
+          />
+        </DetailRow>
+      )}
+
+      {!delegationTarget && undelegationTarget && (
+        <DetailRow label={t('operation.details.delegationTarget')} className={valueClass}>
+          <AddressWithExplorers
+            explorers={explorers}
+            addressFont={AddressStyle}
+            type="short"
+            address={undelegationTarget}
+            addressPrefix={addressPrefix}
+            wrapperClassName="-mr-2 min-w-min"
+          />
+        </DetailRow>
+      )}
+
+      {delegationVotes && (
+        <DetailRow label={t('operation.details.delegationVotes')} className={valueClass}>
+          <FootnoteText className={valueClass}>
+            <AssetBalance
+              className={valueClass}
+              value={delegationVotes}
+              asset={defaultAsset}
+              showSymbol={false}
+            ></AssetBalance>
+          </FootnoteText>
+        </DetailRow>
+      )}
+
+      {!delegationVotes && undelegationVotes && (
+        <DetailRow label={t('operation.details.delegationVotes')} className={valueClass}>
+          <FootnoteText className={valueClass}>
+            <AssetBalance
+              className={valueClass}
+              value={undelegationVotes}
+              asset={defaultAsset}
+              showSymbol={false}
+            ></AssetBalance>
+          </FootnoteText>
+        </DetailRow>
+      )}
+
+      {delegationTracks && (
+        <DetailRow label={t('operation.details.delegationTracks')} className={valueClass}>
+          <TracksDetails tracks={delegationTracks.map(Number)} />
+        </DetailRow>
+      )}
+
       {Boolean(selectedValidators?.length) && defaultAsset && (
         <>
           <DetailRow label={t('operation.details.validators')} className={valueClass}>
             <button
               type="button"
-              className={cn('flex gap-x-1 items-center text-text-secondary', InteractionStyle)}
+              className={cnTw('flex items-center gap-x-1 text-text-secondary', InteractionStyle)}
               onClick={toggleValidators}
             >
               <FootnoteText as="span" className="text-inherit">
@@ -264,7 +402,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         pallet="primary"
         size="sm"
         suffixElement={<Icon name={isAdvancedShown ? 'up' : 'down'} size={16} />}
-        className="text-action-text-default hover:text-action-text-default w-fit -ml-2"
+        className="-ml-2 w-fit text-action-text-default hover:text-action-text-default"
         onClick={toggleAdvanced}
       >
         {t('operation.advanced')}
@@ -276,7 +414,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
             <DetailRow label={t('operation.details.callHash')} className={valueClass}>
               <button
                 type="button"
-                className={cn('flex gap-x-1 items-center group', InteractionStyle)}
+                className={cnTw('group flex items-center gap-x-1', InteractionStyle)}
                 onClick={() => copyToClipboard(callHash)}
               >
                 <FootnoteText className="text-inherit">{truncate(callHash, 7, 8)}</FootnoteText>
@@ -289,7 +427,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
             <DetailRow label={t('operation.details.callData')} className={valueClass}>
               <button
                 type="button"
-                className={cn('flex gap-x-1 items-center group', InteractionStyle)}
+                className={cnTw('group flex items-center gap-x-1', InteractionStyle)}
                 onClick={() => copyToClipboard(callData)}
               >
                 <FootnoteText className="text-inherit">{truncate(callData, 7, 8)}</FootnoteText>
@@ -302,24 +440,26 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
 
           {depositorSignatory && (
             <DetailRow label={t('operation.details.depositor')} className={valueClass}>
-              {depositorWallet ? (
-                <ExplorersPopover
-                  button={<WalletCardSm wallet={depositorWallet} />}
-                  address={depositorSignatory.accountId}
-                  explorers={explorers}
-                  addressPrefix={addressPrefix}
-                />
-              ) : (
-                <AddressWithExplorers
-                  explorers={explorers}
-                  accountId={depositorSignatory.accountId}
-                  name={depositorSignatory.name}
-                  addressFont={AddressStyle}
-                  addressPrefix={addressPrefix}
-                  wrapperClassName="-mr-2 min-w-min"
-                  type="short"
-                />
-              )}
+              <div className="-mr-2">
+                {depositorWallet ? (
+                  <ExplorersPopover
+                    button={<WalletCardSm wallet={depositorWallet} />}
+                    address={depositorSignatory.accountId}
+                    explorers={explorers}
+                    addressPrefix={addressPrefix}
+                  />
+                ) : (
+                  <AddressWithExplorers
+                    explorers={explorers}
+                    accountId={depositorSignatory.accountId}
+                    name={depositorSignatory.name}
+                    addressFont={AddressStyle}
+                    addressPrefix={addressPrefix}
+                    wrapperClassName="-mr-2 min-w-min"
+                    type="short"
+                  />
+                )}
+              </div>
             </DetailRow>
           )}
 
@@ -329,7 +469,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
                 value={deposit}
                 asset={defaultAsset}
                 showIcon={false}
-                className="text-footnote text-text-secondary py-[3px]"
+                className="py-[3px] text-footnote text-text-secondary"
               />
             </DetailRow>
           )}
@@ -340,7 +480,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
             <DetailRow label={t('operation.details.timePoint')} className={valueClass}>
               {extrinsicLink ? (
                 <a
-                  className={cn('flex gap-x-1 items-center group', InteractionStyle)}
+                  className={cnTw('group flex items-center gap-x-1', InteractionStyle)}
                   href={extrinsicLink}
                   target="_blank"
                   rel="noopener noreferrer"

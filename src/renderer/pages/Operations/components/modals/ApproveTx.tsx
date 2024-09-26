@@ -29,7 +29,6 @@ import {
   isXcmTransaction,
   transactionService,
   useCallDataDecoder,
-  useTransaction,
   validateBalance,
 } from '@entities/transaction';
 import { permissionUtils, walletModel } from '@entities/wallet';
@@ -60,7 +59,6 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const balances = useUnit(balanceModel.$balances);
   const apis = useUnit(networkModel.$apis);
 
-  const { getExtrinsicWeight, getTxWeight } = useTransaction();
   const { getTxFromCallData } = useCallDataDecoder();
   const { getLiveTxEvents } = useMultisigEvent({});
   const events = getLiveTxEvents(tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated);
@@ -113,10 +111,10 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
       const transaction = getTxFromCallData(connection.api, tx.callData);
 
-      weight = await getExtrinsicWeight(transaction);
-    } catch (e) {
+      weight = await transactionService.getExtrinsicWeight(transaction);
+    } catch {
       if (tx.transaction?.args && connection.api) {
-        weight = await getTxWeight(tx.transaction as Transaction, connection.api);
+        weight = await transactionService.getTxWeight(tx.transaction as Transaction, connection.api);
       } else {
         weight = connection.api?.createType('Weight', MAX_WEIGHT);
       }

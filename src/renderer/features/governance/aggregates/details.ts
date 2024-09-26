@@ -1,8 +1,10 @@
-import { sample } from 'effector';
+import { combine, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type Chain, type Referendum } from '@shared/core';
+import { permissionUtils, walletModel } from '@entities/wallet';
 import { descriptionsModel } from '../model/description';
+import { networkSelectorModel } from '../model/networkSelector';
 import { timelineModel } from '../model/timeline';
 import { titleModel } from '../model/title';
 import { votingAssetModel } from '../model/votingAsset';
@@ -12,27 +14,40 @@ import { votingAggregate } from './voting';
 
 const flow = createGate<{ chain: Chain; referendum: Referendum }>();
 
-sample({
-  clock: flow.open,
-  target: [proposerIdentityAggregate.events.requestReferendumProposer, descriptionsModel.events.requestDescription],
-});
+const $canVote = walletModel.$activeWallet.map((wallet) => (wallet ? permissionUtils.canVote(wallet) : false));
+
+const $titles = combine(
+  {
+    titles: titleModel.$titles,
+    network: networkSelectorModel.$network,
+  },
+  ({ titles, network }) => (network ? (titles[network.chain.chainId] ?? {}) : {}),
+);
 
 sample({
   clock: flow.open,
-  fn: ({ referendum }) => ({ referendumId: referendum.referendumId }),
-  target: timelineModel.events.requestTimeline,
+  target: [
+    proposerIdentityAggregate.events.requestReferendumProposer,
+    descriptionsModel.events.requestDescription,
+    timelineModel.events.requestTimeline,
+  ],
 });
 
 export const detailsAggregate = {
   $votingAsset: votingAssetModel.$votingAsset,
   $descriptions: descriptionsModel.$descriptions,
-  $titles: titleModel.$referendumTitles,
   $timelines: timelineModel.$currentChainTimelines,
   $votes: votingAggregate.$activeWalletVotes,
   $proposers: proposerIdentityAggregate.$proposers,
-  $isTimelinesLoading: timelineModel.$isTimelineLoading,
+
+  $isTitlesLoading: titleModel.$isTitlesLoading,
+  $isTimelinesLoading: timelineModel.$isLoading,
   $isProposersLoading: proposerIdentityAggregate.$isProposersLoading,
   $isDescriptionLoading: descriptionsModel.$isDescriptionLoading,
+  $hasAccount: networkSelectorModel.$hasAccount,
+
+  $titles,
+  $canVote,
 
   gates: { flow },
 };

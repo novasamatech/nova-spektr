@@ -1,4 +1,4 @@
-import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react';
 
 import { Loader } from './Loader';
 
@@ -8,14 +8,14 @@ export default {
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [
     (Story) => (
-      <div className="mt-28 mx-auto w-[200px] bg-gray-200 rounded-lg">
+      <div className="mx-auto mt-28 w-[200px] rounded-lg bg-gray-200">
         <Story />
       </div>
     ),
   ],
-} as ComponentMeta<typeof Loader>;
+} as Meta<typeof Loader>;
 
-const Template: ComponentStory<typeof Loader> = (args) => <Loader {...args} />;
+const Template: StoryFn<typeof Loader> = (args) => <Loader {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {

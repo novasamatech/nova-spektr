@@ -1,10 +1,12 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SignerOptions } from '@polkadot/api/submittable/types';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { type Store, createEffect, createEvent, sample } from 'effector';
 import { combineEvents } from 'patronum';
 
 import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@shared/core';
 import { toAccountId, transferableAmount } from '@shared/lib/utils';
+import { governanceService } from '@/entities/governance';
 import { balanceModel, balanceUtils } from '@entities/balance';
 import { networkModel } from '@entities/network';
 import { transactionService } from '@entities/transaction';
@@ -12,11 +14,12 @@ import { transactionService } from '@entities/transaction';
 import {
   type AmountFeeStore,
   type ValidationResult,
+  type ValidationStartedParams,
   validationUtils,
 } from '@/features/operations/OperationsValidation';
 import { UnlockRules } from '../../lib/unlock-rules';
 
-const validationStarted = createEvent<{ id: ID; transaction: Transaction; signerOptions?: Partial<SignerOptions> }>();
+const validationStarted = createEvent<ValidationStartedParams>();
 const txValidated = createEvent<{ id: ID; result: ValidationResult }>();
 
 type ValidateParams = {
@@ -34,6 +37,13 @@ const validateFx = createEffect(
     const accountId = toAccountId(transaction.address);
     const fee = await transactionService.getTransactionFee(transaction, api, signerOptions);
 
+    const totalLock = await governanceService.getTrackLocks(api, [transaction.address]).then((data) => {
+      const lock = data[transaction.address];
+      const totalLock = Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
+
+      return totalLock;
+    });
+
     const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
 
     const rules = [
@@ -49,6 +59,15 @@ const validateFx = createEffect(
           feeData: { fee },
           accountsBalances: [transferableAmount(shardBalance)],
         } as AmountFeeStore,
+      },
+      {
+        value: transaction.args.value,
+        form: {
+          shards: [{ accountId }],
+          amount: transaction.args.value,
+        },
+        ...UnlockRules.amount.noLockedAmount({} as Store<BN>),
+        source: totalLock,
       },
     ];
 

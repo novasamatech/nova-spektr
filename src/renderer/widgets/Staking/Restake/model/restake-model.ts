@@ -1,14 +1,15 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
-import { delay, spread } from 'patronum';
+import { spread } from 'patronum';
 
+import { type PathType, Paths } from '@/shared/routes';
 import { type BasketTransaction, type Transaction } from '@shared/core';
 import { getRelaychainAsset, nonNullable } from '@shared/lib/utils';
 import { basketModel } from '@entities/basket';
 import { walletModel, walletUtils } from '@entities/wallet';
+import { navigationModel } from '@/features/navigation';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@features/operations/OperationSubmit';
+import { submitModel, submitUtils } from '@features/operations/OperationSubmit';
 import { restakeConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
-import { restakeUtils } from '../lib/restake-utils';
 import { type NetworkStore, type RestakeStore, Step } from '../lib/types';
 
 import { formModel } from './form-model';
@@ -21,12 +22,13 @@ const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
-const $restakeStore = createStore<RestakeStore | null>(null);
+const $restakeStore = createStore<RestakeStore | null>(null).reset(flowFinished);
 const $networkStore = restore<NetworkStore | null>(flowStarted, null);
 
-const $wrappedTxs = createStore<Transaction[] | null>(null);
-const $multisigTxs = createStore<Transaction[] | null>(null);
-const $coreTxs = createStore<Transaction[] | null>(null);
+const $wrappedTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
+const $multisigTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
+const $coreTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
+const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
 const $initiatorWallet = combine(
   {
@@ -78,10 +80,17 @@ sample({
 
 sample({
   clock: formModel.output.formSubmitted,
-  source: $networkStore,
-  filter: (network: NetworkStore | null): network is NetworkStore => Boolean(network),
-  fn: ({ chain }, { formData }) => ({
-    event: [{ ...formData, chain, asset: getRelaychainAsset(chain.assets)! }],
+  source: { networkStore: $networkStore, coreTxs: $coreTxs },
+  filter: ({ networkStore }) => Boolean(networkStore),
+  fn: ({ networkStore, coreTxs }, { formData }) => ({
+    event: [
+      {
+        ...formData,
+        chain: networkStore!.chain,
+        asset: getRelaychainAsset(networkStore!.chain.assets)!,
+        coreTx: coreTxs![0],
+      },
+    ],
     step: Step.CONFIRM,
   }),
   target: spread({
@@ -154,16 +163,24 @@ sample({
 });
 
 sample({
-  clock: delay(submitModel.output.formSubmitted, 2000),
-  source: $step,
-  filter: (step) => restakeUtils.isSubmitStep(step),
-  target: flowFinished,
+  clock: flowFinished,
+  fn: () => Step.NONE,
+  target: [stepChanged, formModel.events.formCleared],
+});
+
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: formModel.$isMultisig,
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
+  fn: () => Paths.OPERATIONS,
+  target: $redirectAfterSubmitPath,
 });
 
 sample({
   clock: flowFinished,
-  fn: () => Step.NONE,
-  target: [stepChanged, formModel.events.formCleared],
+  source: $redirectAfterSubmitPath,
+  filter: nonNullable,
+  target: navigationModel.events.navigateTo,
 });
 
 sample({

@@ -26,7 +26,7 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
 
   if (!canInteract) {
     return (
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <SmallTitleText className="leading-[42px]">{t('staking.overview.actionsTitle')}</SmallTitleText>
       </div>
     );
@@ -158,10 +158,10 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
 
   return (
     <>
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <SmallTitleText>{t('staking.overview.actionsTitle')}</SmallTitleText>
         <DropdownButton
-          className="min-w-[228px] h-8.5"
+          className="h-8.5 min-w-[228px]"
           title={getActionButtonText()}
           disabled={isStakingLoading || noStakes || wrongOverlaps}
           options={getAvailableButtonOptions()}
@@ -186,7 +186,7 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
           <Trans t={t} i18nKey={warningMessage} />
         </p>
 
-        <div className="flex items-center gap-2.5 mt-5">
+        <div className="mt-5 flex items-center gap-2.5">
           <Button className="flex-1" variant="text" onClick={toggleIsDialogOpen}>
             {t('staking.warning.noButton')}
           </Button>

@@ -14,11 +14,11 @@ type Props = {
 // TODO: Rebuild with new components
 export const WalletItem = memo(({ name, type, className = '' }: Props) => {
   return (
-    <div className={cnTw('flex items-center gap-x-2 w-full', className)}>
+    <div className={cnTw('flex w-full items-center gap-x-2', className)}>
       <WalletIcon type={type} />
 
-      <div className="flex flex-col max-w-[348px]">
-        <BodyText as="span" className="text-text-secondary tracking-tight truncate">
+      <div className="flex max-w-[348px] flex-col">
+        <BodyText as="span" className="truncate tracking-tight text-text-secondary">
           {name}
         </BodyText>
       </div>

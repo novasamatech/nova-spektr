@@ -3,7 +3,7 @@ import { type MouseEvent, type PropsWithChildren, type ReactNode, useRef } from 
 
 import { cnTw } from '@shared/lib/utils';
 
-export type Props = {
+type Props = {
   content: ReactNode; // for a11y features support use this popover with Menu.Item elements from headless ui
   className?: string;
   containerClassName?: string;
@@ -41,8 +41,8 @@ export const MenuPopover = ({
             ref={menuRef}
             style={{ marginTop: offsetPx + 'px' }}
             className={cnTw(
-              'bg-token-container-background z-10 absolute rounded-md border border-token-container-border',
-              'shadow-card-shadow w-max py-4 px-3',
+              'absolute z-10 rounded-md border border-token-container-border bg-token-container-background',
+              'w-max px-3 py-4 shadow-card-shadow',
               position,
               className,
             )}

@@ -25,13 +25,13 @@ export const RootAccountMd = ({ name, accountId, className, onClick, onInfoClick
   return (
     <div
       className={cnTw(
-        'group relative flex items-center w-full rounded transition-colors',
-        'hover:bg-action-background-hover focus-within:bg-action-background-hover',
+        'group relative flex w-full items-center rounded transition-colors',
+        'focus-within:bg-action-background-hover hover:bg-action-background-hover',
         className,
       )}
     >
       <button
-        className="flex items-center gap-x-2 w-full py-1.5 px-2 rounded overflow-hidden"
+        className="flex w-full items-center gap-x-2 overflow-hidden rounded px-2 py-1.5"
         onClick={handleClick(onClick)}
       >
         <Identicon
@@ -41,10 +41,10 @@ export const RootAccountMd = ({ name, accountId, className, onClick, onInfoClick
           address={toAddress(accountId, { prefix: SS58_PUBLIC_KEY_PREFIX })}
           size={20}
         />
-        <BodyText className="text-text-secondary truncate pr-5">{name}</BodyText>
+        <BodyText className="truncate pr-5 text-text-secondary">{name}</BodyText>
       </button>
 
-      <IconButton name="info" className="absolute right-2 mx-1.5" onClick={onInfoClick} />
+      <IconButton name="details" className="absolute right-2 mx-1.5" onClick={onInfoClick} />
     </div>
   );
 };

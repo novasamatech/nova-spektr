@@ -6,16 +6,15 @@ import { ExplorersPopover } from '../ExplorersPopover/ExplorersPopover';
 
 type Props = {
   explorers?: Explorer[];
-  position?: string;
   wrapperClassName?: string;
 } & AccountAddressProps;
 
-export const AddressWithExplorers = ({ explorers = [], position, wrapperClassName, ...addressProps }: Props) => {
+export const AddressWithExplorers = ({ explorers = [], wrapperClassName, ...addressProps }: Props) => {
   const button = (
     <div
       className={cnTw(
-        'group flex items-center gap-x-1 px-2 h-6 rounded cursor-pointer transition-colors',
-        'hover:bg-action-background-hover focus-within:bg-action-background-hover',
+        'group flex h-6 cursor-pointer items-center gap-x-1 rounded px-2 transition-colors',
+        'focus-within:bg-action-background-hover hover:bg-action-background-hover',
         wrapperClassName,
       )}
     >
@@ -24,7 +23,7 @@ export const AddressWithExplorers = ({ explorers = [], position, wrapperClassNam
         addressFont="text-text-secondary group-hover:text-text-primary group-focus-within:text-text-primary"
         {...addressProps}
       />
-      <IconButton name="info" />
+      <IconButton name="details" />
     </div>
   );
 

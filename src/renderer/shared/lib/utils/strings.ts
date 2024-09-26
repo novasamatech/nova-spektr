@@ -2,8 +2,10 @@ import { type Identity } from '@shared/core/types/identity';
 
 /**
  * Validate Polkadot Vault QR format
- * @param value qr code to validate
- * @return {Boolean}
+ *
+ * @param value Qr code to validate
+ *
+ * @returns {Boolean}
  */
 export const validateSignerFormat = (value: string): boolean => {
   return validateSubstrateSignerFormat(value) || validateEthereumSignerFormat(value);
@@ -11,8 +13,10 @@ export const validateSignerFormat = (value: string): boolean => {
 
 /**
  * Validate Substrate QR format
- * @param value qr code to validate
- * @return {Boolean}
+ *
+ * @param value Qr code to validate
+ *
+ * @returns {Boolean}
  */
 export const validateSubstrateSignerFormat = (value: string): boolean => {
   return /^substrate:[a-zA-Z0-9]+:0x[a-zA-Z0-9]+$/.test(value);
@@ -20,8 +24,10 @@ export const validateSubstrateSignerFormat = (value: string): boolean => {
 
 /**
  * Validate Ethereum QR format
- * @param value qr code to validate
- * @return {Boolean}
+ *
+ * @param value Qr code to validate
+ *
+ * @returns {Boolean}
  */
 export const validateEthereumSignerFormat = (value: string): boolean => {
   return /^ethereum:0x[a-zA-Z0-9]+:0x[a-zA-Z0-9]+$/.test(value);
@@ -29,22 +35,26 @@ export const validateEthereumSignerFormat = (value: string): boolean => {
 
 /**
  * Copies string value to clipboard
- * @param text value to copy
- * @return {Promise}
+ *
+ * @param text Value to copy
+ *
+ * @returns {Promise}
  */
 export const copyToClipboard = async (text = ''): Promise<void> => {
   try {
     await navigator.clipboard.writeText(text);
-  } catch (error) {
+  } catch {
     console.warn('Clipboard is not supported');
   }
 };
 
 /**
  * Check does arguments contain query string
- * @param query string value
- * @param args values to be checked
- * @return {Boolean}
+ *
+ * @param query String value
+ * @param args Values to be checked
+ *
+ * @returns {Boolean}
  */
 export const isStringsMatchQuery = (query: string, args: string[]): boolean => {
   return args.reduce((acc, word) => acc.concat(word.toLowerCase()), '').includes(query.toLowerCase());
@@ -52,8 +62,10 @@ export const isStringsMatchQuery = (query: string, args: string[]): boolean => {
 
 /**
  * Get full identity or just part of it
- * @param identity validator's identity
- * @return {String}
+ *
+ * @param identity Validator's identity
+ *
+ * @returns {String}
  */
 export const getComposedIdentity = (identity?: Identity): string => {
   if (!identity) return '';
@@ -67,16 +79,18 @@ export const includes = (value?: string, searchString = ''): boolean => {
   return value.toLowerCase().includes(searchString.toLowerCase());
 };
 
-export const includesMultiple = (values: Array<string | undefined>, searchString = ''): boolean => {
+export const includesMultiple = (values: (string | undefined)[], searchString = ''): boolean => {
   return values.some((value) => includes(value, searchString));
 };
 
 /**
  * Truncate text leaving fixed number of characters
- * @param text text to truncate
- * @param start number of leading symbols
- * @param end number of ending symbols
- * @return {String}
+ *
+ * @param text Text to truncate
+ * @param start Number of leading symbols
+ * @param end Number of ending symbols
+ *
+ * @returns {String}
  */
 export const truncate = (text: string, start = 5, end = 5): string => {
   if (text.length <= start + end) return text;
@@ -85,11 +99,14 @@ export const truncate = (text: string, start = 5, end = 5): string => {
 };
 
 /**
- * Formats the section and method of transaction to the format:
- * Section split camel case to separate words, 1st capital: Method split camel case to separate words - 1st capital
- * @param section extrinsic call section
- * @param method extrinsic call method
- * @return {String}
+ * Formats the section and method of transaction to the format: Section split
+ * camel case to separate words, 1st capital: Method split camel case to
+ * separate words - 1st capital
+ *
+ * @param section Extrinsic call section
+ * @param method Extrinsic call method
+ *
+ * @returns {String}
  */
 export const formatSectionAndMethod = (section: string, method: string): string => {
   const splitFn = (value: string) => `${value[0].toUpperCase()}${value.slice(1)}`;
@@ -102,9 +119,11 @@ export const formatSectionAndMethod = (section: string, method: string): string 
 
 /**
  * Formats number without exponential notation and removes trailing zeros
- * @param value number to format
+ *
+ * @param value Number to format
  * @param maxPrecision Maximum number of characters in decimal part
- * @return {String}
+ *
+ * @returns {String}
  */
 export const toFixedNotation = (value: number, maxPrecision = 20): string => {
   const fixedValue = value.toFixed(maxPrecision);
@@ -121,8 +140,10 @@ export const toFixedNotation = (value: number, maxPrecision = 20): string => {
 
 /**
  * Splits string in camelCase by capital letters and adds spaces
- * @param value string in camel case
- * @return {String}
+ *
+ * @param value String in camel case
+ *
+ * @returns {String}
  */
 export const splitCamelCaseString = (value: string): string => {
   return value.replace(/([a-zA-Z])(?=[A-Z])/g, '$1 ');
@@ -130,8 +151,10 @@ export const splitCamelCaseString = (value: string): string => {
 
 /**
  * Add leading zero to the number below 10
- * @param value number to edit
- * @return {String}
+ *
+ * @param value Number to edit
+ *
+ * @returns {String}
  */
 export const addLeadingZero = (value: number): string => {
   return value < 10 ? `0${value}` : `${value}`;

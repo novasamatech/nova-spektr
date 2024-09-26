@@ -11,8 +11,43 @@ export const GET_DELEGATE_LIST = gql`
         accountId
         delegators
         delegatorVotes
-        delegateVotes(filter: { at: { greaterThanOrEqualTo: $activityStartBlock } }) {
+        delegateVotes {
           totalCount
+        }
+        delegateVotesMonth: delegateVotes(filter: { at: { greaterThanOrEqualTo: $activityStartBlock } }) {
+          totalCount
+        }
+      }
+    }
+  }
+`;
+
+export const GET_DELEGATOR = gql`
+  query DelegatorVotings($voters: [String!]) {
+    delegatorVotings(filter: { delegator: { in: $voters } }) {
+      nodes {
+        parent {
+          referendumId
+          voter
+        }
+      }
+    }
+  }
+`;
+
+export const GET_DELEGATES_FOR_ACCOUNT = gql`
+  query GetDelegateByAccountId($accountId: String!) {
+    delegates(filter: { accountId: { equalTo: $accountId } }) {
+      nodes {
+        id
+        accountId
+        delegations {
+          nodes {
+            id
+            delegator
+            delegation
+            trackId
+          }
         }
       }
     }

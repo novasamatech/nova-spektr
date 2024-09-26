@@ -1,17 +1,16 @@
 import { useUnit } from 'effector-react';
-import { useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
 import { useModalClose } from '@shared/lib/hooks';
 import { Step, isStep } from '@shared/lib/utils';
-import { BaseModal, HeaderTitleText } from '@shared/ui';
+import { BaseModal, Button, HeaderTitleText } from '@shared/ui';
 import { OperationTitle } from '@entities/chain';
 import { OperationResult } from '@entities/transaction';
 import { networkSelectorModel } from '@features/governance/model/networkSelector';
 import { OperationSign, OperationSubmit } from '@features/operations';
 import { unlockAggregate } from '../aggregates/unlock';
 
-import { Confirmation } from './Confirmation';
+import { UnlockConfirmation } from './UnlockConfirmation';
 import { UnlockForm } from './UnlockForm';
 import { UnlockInfo } from './UnlockInfo';
 
@@ -27,14 +26,6 @@ export const UnlockModal = () => {
     unlockAggregate.output.flowFinished,
   );
 
-  useEffect(() => {
-    if (isStep(step, Step.BASKET)) {
-      const timer = setTimeout(() => closeBasketModal(), 1450);
-
-      return () => clearTimeout(timer);
-    }
-  }, [step]);
-
   if (!governanceChain) {
     return null;
   }
@@ -49,6 +40,7 @@ export const UnlockModal = () => {
         isOpen={isBasketModalOpen}
         variant="success"
         title={t('operation.addedToBasket')}
+        autoCloseTimeout={2000}
         onClose={closeBasketModal}
       />
     );
@@ -64,7 +56,16 @@ export const UnlockModal = () => {
     <BaseModal closeButton contentClass="" isOpen={isModalOpen} title={title} onClose={closeModal}>
       {isStep(step, Step.INIT) && <UnlockInfo />}
       {isStep(step, Step.SELECT) && <UnlockForm onGoBack={() => unlockAggregate.events.stepChanged(Step.INIT)} />}
-      {isStep(step, Step.CONFIRM) && <Confirmation onGoBack={() => unlockAggregate.events.stepChanged(Step.SELECT)} />}
+      {isStep(step, Step.CONFIRM) && (
+        <UnlockConfirmation
+          secondaryActionButton={
+            <Button pallet="secondary" onClick={() => unlockAggregate.events.txSaved()}>
+              {t('operation.addToBasket')}
+            </Button>
+          }
+          onGoBack={() => unlockAggregate.events.stepChanged(Step.SELECT)}
+        />
+      )}
       {isStep(step, Step.SIGN) && <OperationSign onGoBack={() => unlockAggregate.events.stepChanged(Step.CONFIRM)} />}
     </BaseModal>
   );

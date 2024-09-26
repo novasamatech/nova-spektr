@@ -29,67 +29,63 @@ export const SelectMultisigWalletType = ({ isOpen, onClose, onContinue }: Props)
   };
 
   return (
-    <>
-      <BaseModal
-        title={<HeaderTitleText className="py-[3px]">{t('createMultisigAccount.title')}</HeaderTitleText>}
-        isOpen={isOpen}
-        panelClass="w-[664px]"
-        onClose={onClose}
+    <BaseModal
+      title={<HeaderTitleText className="py-[3px]">{t('createMultisigAccount.title')}</HeaderTitleText>}
+      isOpen={isOpen}
+      panelClass="w-[664px]"
+      onClose={onClose}
+    >
+      <RadioGroup
+        className="mt-7 flex gap-6"
+        activeId={walletType}
+        options={[singleChainOption, multiChainOption]}
+        onChange={(option) => setWalletType(option.value)}
       >
-        <RadioGroup
-          className="flex gap-6 mt-7"
-          activeId={walletType}
-          options={[singleChainOption, multiChainOption]}
-          onChange={(option) => setWalletType(option.value)}
-        >
-          <RadioGroup.CardOption option={singleChainOption}>
-            <div className="flex flex-col gap-4 pl-3.5">
-              <BodyText className="text-text-primary list-item list-disc">
-                {t('createMultisigAccount.singleChain.featureOne')}
-              </BodyText>
-              <BodyText className="text-text-primary list-item list-disc">
-                {t('createMultisigAccount.singleChain.featureTwo')}
-              </BodyText>
-              <BodyText className="text-text-primary list-item list-disc">
-                {t('createMultisigAccount.singleChain.featureThree')}
-              </BodyText>
-              <BodyText className="text-text-primary list-item list-disc">
-                {t('createMultisigAccount.singleChain.featureFour')}
-              </BodyText>
-            </div>
-            <BodyText className="text-text-tertiary mt-8">
-              {t('createMultisigAccount.singleChain.description')}
+        <RadioGroup.CardOption option={singleChainOption}>
+          <div className="flex flex-col gap-4 pl-3.5">
+            <BodyText className="list-item list-disc text-text-primary">
+              {t('createMultisigAccount.singleChain.featureOne')}
             </BodyText>
-          </RadioGroup.CardOption>
-          <RadioGroup.CardOption option={multiChainOption}>
-            <div className="flex flex-col gap-4 pl-3.5">
-              <BodyText className="text-text-primary list-item list-disc">
-                {t('createMultisigAccount.multiChain.featureOne')}
-              </BodyText>
-              <BodyText className="text-text-primary list-item list-disc">
-                {t('createMultisigAccount.multiChain.featureTwo')}
-              </BodyText>
-              <BodyText className="text-text-primary list-item list-disc">
-                {t('createMultisigAccount.multiChain.featureThree')}
-              </BodyText>
-              <BodyText className="text-text-primary list-item list-disc">
-                {t('createMultisigAccount.multiChain.featureFour')}
-              </BodyText>
-            </div>
-            <BodyText className="text-text-tertiary mt-8">{t('createMultisigAccount.multiChain.description')}</BodyText>
-          </RadioGroup.CardOption>
-        </RadioGroup>
+            <BodyText className="list-item list-disc text-text-primary">
+              {t('createMultisigAccount.singleChain.featureTwo')}
+            </BodyText>
+            <BodyText className="list-item list-disc text-text-primary">
+              {t('createMultisigAccount.singleChain.featureThree')}
+            </BodyText>
+            <BodyText className="list-item list-disc text-text-primary">
+              {t('createMultisigAccount.singleChain.featureFour')}
+            </BodyText>
+          </div>
+          <BodyText className="mt-8 text-text-tertiary">{t('createMultisigAccount.singleChain.description')}</BodyText>
+        </RadioGroup.CardOption>
+        <RadioGroup.CardOption option={multiChainOption}>
+          <div className="flex flex-col gap-4 pl-3.5">
+            <BodyText className="list-item list-disc text-text-primary">
+              {t('createMultisigAccount.multiChain.featureOne')}
+            </BodyText>
+            <BodyText className="list-item list-disc text-text-primary">
+              {t('createMultisigAccount.multiChain.featureTwo')}
+            </BodyText>
+            <BodyText className="list-item list-disc text-text-primary">
+              {t('createMultisigAccount.multiChain.featureThree')}
+            </BodyText>
+            <BodyText className="list-item list-disc text-text-primary">
+              {t('createMultisigAccount.multiChain.featureFour')}
+            </BodyText>
+          </div>
+          <BodyText className="mt-8 text-text-tertiary">{t('createMultisigAccount.multiChain.description')}</BodyText>
+        </RadioGroup.CardOption>
+      </RadioGroup>
 
-        <div className="flex justify-between items-center mt-7">
-          <Button variant="text" onClick={onClose}>
-            {t('operation.goBackButton')}
-          </Button>
+      <div className="mt-7 flex items-center justify-between">
+        <Button variant="text" onClick={onClose}>
+          {t('operation.goBackButton')}
+        </Button>
 
-          <Button disabled={!walletType} onClick={() => onContinue(walletType!)}>
-            {t('signing.continueButton')}
-          </Button>
-        </div>
-      </BaseModal>
-    </>
+        <Button disabled={!walletType} onClick={() => onContinue(walletType!)}>
+          {t('signing.continueButton')}
+        </Button>
+      </div>
+    </BaseModal>
   );
 };

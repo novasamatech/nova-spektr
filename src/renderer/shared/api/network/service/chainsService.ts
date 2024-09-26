@@ -1,5 +1,5 @@
 import { BN } from '@polkadot/util';
-import BigNumber from 'bignumber.js';
+import { default as BigNumber } from 'bignumber.js';
 import concat from 'lodash/concat';
 import keyBy from 'lodash/keyBy';
 import orderBy from 'lodash/orderBy';
@@ -66,13 +66,13 @@ function sortChains<T extends Pick<Chain, 'name' | 'options'>>(chains: T[]): T[]
   const parachains = [] as T[];
   const numberchains = [] as T[];
 
-  chains.forEach((chain) => {
+  for (const chain of chains) {
     if (isPolkadot(chain.name)) polkadot = chain;
     else if (isKusama(chain.name)) kusama = chain;
     else if (isTestnet(chain.options)) testnets.push(chain);
     else if (isNameStartsWithNumber(chain.name)) numberchains.push(chain);
     else parachains.push(chain);
-  });
+  }
 
   return concat(
     [polkadot, kusama].filter(nonNullable),
@@ -106,7 +106,7 @@ function sortChainsByBalance(
     return acc;
   }, {});
 
-  chains.forEach((chain) => {
+  for (const chain of chains) {
     const fiatBalance = chain.assets.reduce((acc, a) => {
       const amount = totalAmount(balancesMap[`${chain.chainId}_${a.assetId}`]);
       const assetPrice = a.priceId && currency && assetPrices?.[a.priceId]?.[currency]?.price;
@@ -130,7 +130,7 @@ function sortChainsByBalance(
 
       chainsWithFiatBalance.push(chain as ChainWithFiatBalance);
 
-      return;
+      continue;
     }
 
     const hasBalance = chain.assets.some((a) => {
@@ -148,7 +148,7 @@ function sortChainsByBalance(
     }
 
     collection.push(chain);
-  });
+  }
 
   return concat(
     chainsWithFiatBalance.sort(compareFiatBalances),

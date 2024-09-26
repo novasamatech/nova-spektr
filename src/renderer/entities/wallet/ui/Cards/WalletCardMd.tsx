@@ -31,18 +31,18 @@ export const WalletCardMd = ({ wallet, description, prefix, hideIcon, className,
   return (
     <div
       className={cnTw(
-        'group relative flex items-center w-full rounded transition-colors',
-        'hover:bg-action-background-hover focus-within:bg-action-background-hover',
+        'group relative flex w-full items-center rounded transition-colors',
+        'focus-within:bg-action-background-hover hover:bg-action-background-hover',
         className,
       )}
     >
-      <button className="w-full flex gap-x-2 items-center py-1.5 px-2 rounded" onClick={handleClick(onClick)}>
+      <button className="flex w-full items-center gap-x-2 rounded px-2 py-1.5" onClick={handleClick(onClick)}>
         {prefix}
 
         {!hideIcon && <WalletIcon type={wallet.type} size={20} />}
-        <div className="flex flex-col min-w-0">
+        <div className="flex min-w-0 flex-col">
           <div className="flex items-center gap-x-2">
-            <FootnoteText className="text-text-primary truncate">{wallet.name}</FootnoteText>
+            <FootnoteText className="truncate text-text-primary">{wallet.name}</FootnoteText>
             {isWalletConnect && (
               <span
                 className={cnTw(
@@ -64,9 +64,9 @@ export const WalletCardMd = ({ wallet, description, prefix, hideIcon, className,
         <IconButton
           className={cnTw(
             'absolute right-2 opacity-0 transition-opacity',
-            'group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100',
+            'focus:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100',
           )}
-          name="info"
+          name="details"
           onClick={handleClick(onInfoClick)}
         />
       )}

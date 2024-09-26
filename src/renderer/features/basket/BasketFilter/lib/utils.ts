@@ -2,7 +2,7 @@ import { type TFunction } from 'react-i18next';
 
 import { type BasketTransaction, type Chain, type Transaction, TransactionType } from '@shared/core';
 import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
-import { XcmTypes } from '@entities/transaction';
+import { XcmTypes, isWrappedInBatchAll } from '@entities/transaction';
 import { type SelectedFilters } from '../common/types';
 
 import { TransferTypes, TxStatus, UNKNOWN_TYPE } from './constants';
@@ -100,9 +100,29 @@ export const getTransactionOptions = (t: TFunction) => {
       element: t('operations.titles.unlock'),
     },
     {
+      id: TransactionType.VOTE,
+      value: TransactionType.VOTE,
+      element: t('operations.titles.vote'),
+    },
+    {
+      id: TransactionType.REVOTE,
+      value: TransactionType.REVOTE,
+      element: t('operations.titles.revote'),
+    },
+    {
       id: TransactionType.REMOVE_VOTE,
       value: TransactionType.REMOVE_VOTE,
-      element: t('operations.titles.unlock'),
+      element: t('operations.titles.removeVote'),
+    },
+    {
+      id: TransactionType.DELEGATE,
+      value: TransactionType.DELEGATE,
+      element: t('operations.titles.delegate'),
+    },
+    {
+      id: TransactionType.UNDELEGATE,
+      value: TransactionType.UNDELEGATE,
+      element: t('operations.titles.undelegate'),
     },
     {
       id: UNKNOWN_TYPE,
@@ -141,7 +161,7 @@ export const getFilterableTxType = (tx: BasketTransaction): TransactionType | ty
 
   if (tx.coreTx.type === TransactionType.BATCH_ALL) {
     const txMatch = tx.coreTx.args?.transactions?.find((tx: Transaction) => {
-      return tx.type === TransactionType.BOND || tx.type === TransactionType.UNSTAKE;
+      return isWrappedInBatchAll(tx.type);
     });
 
     return txMatch?.type || UNKNOWN_TYPE;

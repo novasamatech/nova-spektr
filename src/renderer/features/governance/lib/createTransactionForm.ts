@@ -1,0 +1,285 @@
+import { type ApiPromise } from '@polkadot/api';
+import { type BN, BN_ZERO } from '@polkadot/util';
+import { type Store, combine, createEvent, createStore, sample } from 'effector';
+import { type Form, type FormConfig, createForm } from 'effector-forms';
+import { isNil } from 'lodash';
+
+import { type Account, type Asset, type Balance, type Chain, type Transaction, type Wallet } from '@shared/core';
+import { transferableAmountBN } from '@shared/lib/utils';
+import { balanceUtils } from '@entities/balance';
+import { transactionService } from '@entities/transaction';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+
+import { createTxStore } from './createTxStore';
+
+export type BasicFormParams = {
+  account: Account | null;
+  signatory: Account | null;
+};
+
+type Params<FormShape extends NonNullable<unknown>> = {
+  $activeWallet: Store<Wallet | null>;
+  $wallets: Store<Wallet[]>;
+  $chain: Store<Chain | null>;
+  $asset: Store<Asset | null>;
+  $api: Store<ApiPromise | null>;
+  $balances: Store<Balance[]>;
+  createTransactionStore: TransactionFactory<FormShape>;
+  form: FormConfig<Omit<FormShape, keyof BasicFormParams>>;
+};
+
+type TransactionFactory<FormShape extends NonNullable<unknown>> = (
+  params: Omit<Params<FormShape>, 'createTransactionStore' | 'form'> & { form: Form<FormShape & BasicFormParams> },
+) => Store<Transaction | null>;
+
+export type AccountOption = { account: Account; balance: BN };
+
+export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
+  $activeWallet,
+  $wallets,
+  $chain,
+  $asset,
+  $balances,
+  $api,
+  createTransactionStore,
+  form: formConfig,
+}: Params<FormShape>) => {
+  // Stores
+
+  const $accounts = createStore<AccountOption[]>([]);
+  const $signatories = createStore<AccountOption[]>([]);
+
+  // Form
+
+  const form = createForm<FormShape & BasicFormParams>({
+    ...formConfig,
+    // @ts-expect-error TODO fix
+    fields: {
+      account: {
+        init: null,
+        rules: [
+          {
+            name: 'emptyAccount',
+            errorText: 'governance.vote.errors.noAccountError',
+            validator: (account) => !isNil(account),
+          },
+        ],
+      },
+      signatory: {
+        init: null,
+        rules: [
+          {
+            name: 'emptySignatory',
+            errorText: 'governance.vote.errors.noSignatoryError',
+            source: $signatories,
+            validator: (signatory, _, signatories) => signatories.length === 0 || !isNil(signatory),
+          },
+        ],
+      },
+      ...formConfig.fields,
+    },
+  });
+
+  // Transactions
+
+  const $coreTx = createTransactionStore({
+    $activeWallet,
+    $wallets,
+    $chain,
+    $asset,
+    $balances,
+    $api,
+    form,
+  });
+
+  const tx = createTxStore({
+    $api,
+    $activeWallet,
+    $wallets,
+    $chain,
+    $coreTx,
+    $account: form.fields.account.$value,
+    $signatory: form.fields.signatory.$value,
+  });
+
+  // Derived
+
+  sample({
+    clock: [$chain, $asset, $activeWallet, $balances],
+    source: { chain: $chain, asset: $asset, wallet: $activeWallet, balances: $balances },
+    fn: ({ chain, asset, wallet, balances }) => {
+      if (!wallet || !chain || !asset) return [];
+
+      const walletAccounts = walletUtils.getAccountsBy([wallet], (a, w) => {
+        const isBase = accountUtils.isBaseAccount(a);
+        const isPolkadotVault = walletUtils.isPolkadotVault(w);
+
+        return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, chain);
+      });
+
+      return walletAccounts.map<AccountOption>((account) => {
+        const balance = balanceUtils.getBalance(balances, account.accountId, chain.chainId, asset.assetId.toString());
+
+        return {
+          account,
+          balance: transferableAmountBN(balance),
+        };
+      });
+    },
+    target: $accounts,
+  });
+
+  sample({
+    clock: [$chain, $asset, $wallets, $activeWallet, tx.$txWrappers, $balances],
+    source: {
+      chain: $chain,
+      asset: $asset,
+      wallets: $wallets,
+      txWrappers: tx.$txWrappers,
+      balances: $balances,
+    },
+    fn: ({ chain, asset, txWrappers, wallets, balances }) => {
+      if (!chain || !asset) return [];
+
+      const multiSigWrapper = txWrappers.find(transactionService.isMultisig);
+      if (!multiSigWrapper) return [];
+
+      return multiSigWrapper.multisigAccount.signatories.flatMap((signatory) => {
+        const account = walletUtils.getAccountsBy(wallets, (a) => a.accountId === signatory.accountId);
+        const firstAccount = account.at(0);
+        if (!firstAccount) return [];
+
+        const balance = balanceUtils.getBalance(
+          balances,
+          firstAccount.accountId,
+          chain.chainId,
+          asset.assetId.toString(),
+        );
+
+        return { account: firstAccount, balance: transferableAmountBN(balance) };
+      });
+    },
+    target: $signatories,
+  });
+
+  const $realAccount = combine(tx.$txWrappers, form.fields.account.$value, (txWrappers, account) => {
+    const firstWrapper = txWrappers.at(0);
+    if (!firstWrapper) return account;
+
+    if (transactionService.isMultisig(firstWrapper)) {
+      return firstWrapper.multisigAccount;
+    }
+
+    if (transactionService.isProxy(firstWrapper)) {
+      return firstWrapper.proxyAccount;
+    }
+
+    return null;
+  });
+
+  const $initiatorWallet = combine(
+    { account: form.fields.account.$value, wallets: walletModel.$wallets },
+    ({ account, wallets }) => {
+      if (!account) return null;
+
+      return walletUtils.getWalletById(wallets, account.walletId) ?? null;
+    },
+  );
+
+  const $proxyWallet = combine(
+    {
+      isProxy: tx.$isProxy,
+      realAccount: $realAccount,
+      wallets: $wallets,
+    },
+    ({ isProxy, realAccount, wallets }) => {
+      if (!isProxy || !realAccount) return null;
+
+      return walletUtils.getWalletById(wallets, realAccount.walletId);
+    },
+  );
+
+  const $proxyBalance = combine(
+    {
+      txWrappers: tx.$txWrappers,
+      balances: $balances,
+      chain: $chain,
+      asset: $asset,
+      realAccount: $realAccount,
+    },
+    ({ balances, chain, asset, realAccount, txWrappers }) => {
+      if (!realAccount || !chain || !asset) return BN_ZERO;
+
+      if (transactionService.hasProxy(txWrappers)) {
+        const balance = balanceUtils.getBalance(
+          balances,
+          realAccount.accountId,
+          chain.chainId,
+          asset.assetId.toString(),
+        );
+
+        return transferableAmountBN(balance);
+      }
+
+      return BN_ZERO;
+    },
+  );
+
+  const reinitForm = createEvent();
+  const resetForm = createEvent();
+
+  sample({
+    clock: [reinitForm, resetForm],
+    target: form.reset,
+  });
+
+  // @ts-expect-error Types mismatch somehow
+  sample({
+    clock: reinitForm,
+    source: $accounts,
+    filter: (accounts) => accounts.length > 0,
+    fn: (accounts) => accounts.at(0)?.account ?? null,
+    target: form.fields.account.onChange,
+  });
+
+  // auto select the only one signatory
+  // @ts-expect-error Types mismatch somehow
+  sample({
+    clock: reinitForm,
+    source: $signatories,
+    filter: $signatories.map((x) => x.length < 2),
+    fn: (s) => s.at(0) ?? null,
+    target: form.fields.signatory.onChange,
+  });
+
+  // @ts-expect-error Types mismatch somehow
+  sample({
+    clock: form.fields.signatory.changed,
+    source: {
+      accounts: $accounts,
+      field: form.fields.account.$value,
+    },
+    filter: ({ field, accounts }) => !field && accounts.length > 0,
+    fn: ({ accounts }) => accounts.at(0)?.account ?? null,
+    target: form.fields.account.onChange,
+  });
+
+  return {
+    form,
+    resetForm,
+    reinitForm,
+    transaction: tx,
+    signatory: {
+      $available: $signatories,
+    },
+    accounts: {
+      $initiatorWallet,
+      $available: $accounts,
+      $real: $realAccount,
+    },
+    proxy: {
+      $wallet: $proxyWallet,
+      $balance: $proxyBalance,
+    },
+  };
+};

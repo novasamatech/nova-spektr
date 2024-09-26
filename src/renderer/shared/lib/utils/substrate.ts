@@ -10,7 +10,15 @@ import {
   getRegistry,
 } from '@substrate/txwrapper-polkadot';
 
-import { type Address, type CallData, type CallHash, type ProxyType, XcmPallets } from '@shared/core';
+import {
+  type Address,
+  type BlockHeight,
+  type CallData,
+  type CallHash,
+  type HexString,
+  type ProxyType,
+  XcmPallets,
+} from '@shared/core';
 import { XcmTransferType } from '../../api/xcm';
 
 import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './constants';
@@ -22,9 +30,12 @@ const SUPPORTED_VERSIONS = ['V2'];
 const UNUSED_LABEL = 'unused';
 
 /**
- * Compose and return all the data needed for @substrate/txwrapper-polkadot signing
- * @param address account address
- * @param api polkadot connector
+ * Compose and return all the data needed for
+ *
+ * @param address Account address
+ * @param api Polkadot connector
+ *
+ * @substrate/txwrapper-polkadot signing
  */
 export const createTxMetadata = async (address: Address, api: ApiPromise): Promise<TxMetadata> => {
   const [{ block }, blockHash, metadataRpc, nonce, { specVersion, transactionVersion, specName }] = await Promise.all([
@@ -66,9 +77,11 @@ export const createTxMetadata = async (address: Address, api: ApiPromise): Promi
 
 /**
  * Check that callData correctly resembles callHash
- * @param callHash callHash value
- * @param callData callData value
- * @return {Boolean}
+ *
+ * @param callHash CallHash value
+ * @param callData CallData value
+ *
+ * @returns {Boolean}
  */
 export const validateCallData = <T extends string = CallData, K extends string = CallHash>(
   callData: T,
@@ -81,6 +94,12 @@ export const getCurrentBlockNumber = async (api: ApiPromise): Promise<number> =>
   const { block } = await api.rpc.chain.getBlock();
 
   return block.header.number.toNumber();
+};
+
+export const getCurrentBlockHash = async (api: ApiPromise): Promise<HexString> => {
+  const { block } = await api.rpc.chain.getBlock();
+
+  return block.header.hash.toHex();
 };
 
 export async function getParachainId(api: ApiPromise): Promise<number> {
@@ -113,18 +132,32 @@ export const getExpectedBlockTime = (api: ApiPromise): BN => {
   return bnMin(ONE_DAY, DEFAULT_TIME);
 };
 
-export const getCreatedDate = (neededBlock: number, currentBlock: number, blockTime: number): number => {
+export const getCreatedDate = (neededBlock: BlockHeight, currentBlock: number, blockTime: number): number => {
   return Date.now() - (currentBlock - neededBlock) * blockTime;
 };
 
-export const getCreatedDateFromApi = async (neededBlock: number, api: ApiPromise): Promise<number> => {
+export const getCreatedDateFromApi = async (neededBlock: BlockHeight, api: ApiPromise): Promise<number> => {
   const currentBlock = await getCurrentBlockNumber(api);
   const blockTime = getExpectedBlockTime(api);
 
   return getCreatedDate(neededBlock, currentBlock, blockTime.toNumber());
 };
 
-export const getTimeFromBlock = async (neededTime: number, api: ApiPromise): Promise<number> => {
+export const getRelativeTimeFromApi = async (neededBlock: BlockHeight, api: ApiPromise): Promise<number> => {
+  const blockTime = getExpectedBlockTime(api);
+
+  return neededBlock * blockTime.toNumber();
+};
+
+/**
+ * Get the block number that completed the specified time period ago
+ *
+ * @param neededTime - The time period in milliseconds.
+ * @param api - The Polkadot API instance.
+ *
+ * @returns A promise that resolves to the block number.
+ */
+export const getBlockTimeAgo = async (neededTime: number, api: ApiPromise): Promise<number> => {
   const currentBlock = await getCurrentBlockNumber(api);
   const blockTime = getExpectedBlockTime(api);
 

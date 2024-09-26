@@ -1,3 +1,4 @@
+import AddDelegationImg, { ReactComponent as AddDelegationSvg } from '@shared/assets/images/confirm/add-delegation.svg';
 import DestinationImg, {
   ReactComponent as DestinationSvg,
 } from '@shared/assets/images/confirm/change-rewards-dest.svg';
@@ -8,9 +9,15 @@ import CrossChainImg, { ReactComponent as CrossChainSvg } from '@shared/assets/i
 import DelegatedAuthoritiesImg, {
   ReactComponent as DelegatedAuthoritiesSvg,
 } from '@shared/assets/images/confirm/delegated-authorities.svg';
+import EditDelegationImg, {
+  ReactComponent as EditDelegationSvg,
+} from '@shared/assets/images/confirm/edit-delegation.svg';
 import ReturnToStakeImg, {
   ReactComponent as ReturnToStakeSvg,
 } from '@shared/assets/images/confirm/return-to-stake.svg';
+import RevokeDelegationImg, {
+  ReactComponent as RevokeDelegationSvg,
+} from '@shared/assets/images/confirm/revoke-delegation.svg';
 import StakeMoreImg, { ReactComponent as StakeMoreSvg } from '@shared/assets/images/confirm/stake-more.svg';
 import StartStakingImg, { ReactComponent as StartStakingSvg } from '@shared/assets/images/confirm/start-staking.svg';
 import TransferImg, { ReactComponent as TransferSvg } from '@shared/assets/images/confirm/transfer.svg';
@@ -30,6 +37,9 @@ const ConfirmImages = {
   changeValidatorsConfirm: { svg: ChangeValidatorsSvg, img: ChangeValidatorsImg },
   returnToStakeConfirm: { svg: ReturnToStakeSvg, img: ReturnToStakeImg },
   proxyConfirm: { svg: DelegatedAuthoritiesSvg, img: DelegatedAuthoritiesImg },
+  addDelegationConfirm: { svg: AddDelegationSvg, img: AddDelegationImg },
+  editDelegationConfirm: { svg: EditDelegationSvg, img: EditDelegationImg },
+  revokeDelegationConfirm: { svg: RevokeDelegationSvg, img: RevokeDelegationImg },
 } as const;
 
 export type Confirm = keyof typeof ConfirmImages;

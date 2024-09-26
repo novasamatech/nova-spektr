@@ -7,7 +7,7 @@ const Links = [
     icon: 'twitter',
     title: 'settings.overview.twitterLabel',
     subtitle: 'settings.overview.twitterDescription',
-    href: 'https://twitter.com/NovaSpektr',
+    href: 'https://x.com/NovaSpektr',
   },
   {
     icon: 'github',
@@ -47,7 +47,7 @@ export const SocialLinks = () => {
           <Plate as="li" key={link.title} className="p-0">
             <a
               className={cnTw(
-                'w-full grid grid-flow-col grid-cols-[auto,1fr,auto] items-center gap-x-2 p-3 rounded-md',
+                'grid w-full grid-flow-col grid-cols-[auto,1fr,auto] items-center gap-x-2 rounded-md p-3',
                 'transition hover:shadow-card-shadow focus:shadow-card-shadow',
               )}
               href={link.href}

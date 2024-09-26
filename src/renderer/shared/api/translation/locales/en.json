@@ -271,15 +271,30 @@
       }
     }
   },
+  "emptyState": {
+    "accountDescription": "You don't have an account in that network.",
+    "addAccountButton": "Add account",
+    "addNewAccountButton": "Add new account",
+    "createAccount": "Create a new account",
+    "createMultisig": "Create a new multisig wallet",
+    "createOrImportAccount": "Create a new account or import an existing one"
+  },
   "fallbackScreen": {
     "message": "Sorry, something went wrong",
     "omniLogoAlt": "Nova Spektr logo",
     "reloadButton": "Refresh"
   },
   "general": {
+    "actions": {
+      "multiply": "{value} × {multiplier}"
+    },
     "button": {
+      "cancelButton": "Cancel",
+      "closeButton": "Close",
+      "continueButton": "Continue",
       "networkSettingsLink": "Network settings",
       "pasteButton": "Paste",
+      "refreshButton": "Refresh",
       "uploadButton": "Upload"
     },
     "explorers": {
@@ -314,7 +329,21 @@
   },
   "governance": {
     "addDelegation": {
+      "accountLabel": "Your accounts",
+      "accountPlaceholder": "Select",
+      "accountsLabel_one": "Account",
+      "accountsLabel_other": "Accounts",
       "actionButton": "Add delegation",
+      "addCustom": "Add custom",
+      "addDelegationButton": "Add new delegation",
+      "addToRegistry": {
+        "link": "Describe yourself",
+        "message": "Tell us more about yourself so Spektr users get to know you better.",
+        "title": "Are you a delegate?"
+      },
+      "alreadyDelegatedError": "Already delegated",
+      "balanceValue": "<balance /> × {conviction}x",
+      "cantAddDelegationTitle": "You can't add a delegation",
       "card": {
         "delegations": "Delegations",
         "individual": "Individual",
@@ -322,15 +351,101 @@
         "voted": "Voted last 30 days",
         "votes": "Delegated votes"
       },
+      "confirmation": {
+        "target": "Delegate",
+        "tracks": "Tracks"
+      },
+      "continueButton": "Continue",
+      "convictionLabel": "Conviction",
+      "customDelegationLabel": "Delegate to",
+      "customDelegationPlaceholder": "Enter address",
+      "customDelegationTitle": "Add custom delegation on",
+      "delegateActivity": "Delegate activity",
+      "delegateIdentity": "Delegate identity",
+      "delegateTitle": "Delegate",
       "emptyDescription": "Update the search or cancel filtering",
       "emptyTitle": "Nothing was found",
+      "formTitle": "Step 2. Select the number of votes and the multiplier.",
+      "group": {
+        "admin": "Admin",
+        "fellowship": "Fellowship",
+        "governance": "Governance",
+        "selectAll": "Select all",
+        "treasury": "Treasury"
+      },
+      "invalidAddressError": "Invalid address",
+      "manyAccountsPlaceholder": "Select accounts",
+      "maxWeightError": "Max transaction weight reached",
+      "maxWeightErrorDescription": "Max transaction weight for this wallet type reached. Select fewer tracks or select wallet with another type.",
+      "multishardDescription": "You can select multiple accounts and delegate them in several tracks. If you are already delegating an account and want to add more tracks, select it separately.",
+      "proxyRestrictionMessage": "Please add a new proxy connections to delegate",
+      "removeVotesButton": "Remove votes",
+      "revokeDelegationButton": "Revoke delegation",
+      "selectTrackTitle": "Step 1. Select tracks of delegation.",
       "sort": {
         "delegations": "Delegations",
         "placeholder": "Sort by",
         "voted": "Voted last 30 days",
         "votes": "Delegated votes"
       },
-      "title": "Add delegation on"
+      "summary": {
+        "accountLabel": "Account",
+        "acrossTracks_one": "Across { count } track",
+        "acrossTracks_other": "Across { count } tracks",
+        "amountLabel": "Amount",
+        "delegateSummary": "Delegate summary",
+        "listEmptyState": "Nothing was found"
+      },
+      "title": "Add delegation on",
+      "tracks": {
+        "crowdloans": "Auction admin",
+        "crowdloansDescription": "Origin for starting auctions.",
+        "fellowshipAdmin": "Fellowship: Admin",
+        "fellowshipAdminDescription": "Origin for managing the composition of the fellowship.",
+        "fellowshipWhitelist": "Fellowship: Whitelist",
+        "fellowshipWhitelistDescription": "Origin commanded by members of the Polkadot Fellowship.",
+        "governanceCanceller": "Governance: Canceller",
+        "governanceCancellerDescription": "Origin able to cancel referenda.",
+        "governanceKiller": "Governance: Killer",
+        "governanceKillerDescription": "Origin able to kill referenda.",
+        "governanceLease": "Lease admin",
+        "governanceLeaseDescription": "Origin able to force slot leases.",
+        "governanceRegistrar": "Governance: Registrar",
+        "governanceRegistrarDescription": "Origin for managing the registrar.",
+        "root": "Root",
+        "rootDescription": "Origin for upgrades, fixes, and network rescues.",
+        "staking": "Staking admin",
+        "stakingDescription": "Origin for canceling slashes.",
+        "treasuryAny": "Treasury: Any",
+        "treasuryAnyDescription": "Origin for spending (any amount of) funds until the upper limit of { value } { asset } or equivalent value in stablecoins.",
+        "treasuryBigSpend": "Treasury: Big spend",
+        "treasuryBigSpendDescription": "Origin able to spend up to { value } { asset } from the treasury at once or equivalent value in stablecoins.",
+        "treasuryBigSpendDescriptionGeneral": "Origin able to spend big amount from the treasury.",
+        "treasuryBigTips": "Treasury: Big tips",
+        "treasuryBigTipsDescription": "Origin able to spend up to { value } { asset } from the treasury at once or equivalent value in stablecoins.",
+        "treasuryBigTipsDescriptionGeneral": "Origin able to spend big tips amount from the treasury.",
+        "treasuryMediumSpend": "Treasury: Medium spend",
+        "treasuryMediumSpendDescription": "Origin able to spend up to { value } { asset } from the treasury at once or equivalent value in stablecoins.",
+        "treasuryMediumSpendDescriptionGeneral": "Origin able to spend medium amount from the treasury.",
+        "treasurySmallSpend": "Treasury: Small spend",
+        "treasurySmallSpendDescription": "Origin able to spend up to { value } { asset } from the treasury at once or equivalent value in stablecoins.",
+        "treasurySmallSpendDescriptionGeneral": "Origin able to spend small amount from the treasury.",
+        "treasurySmallTips": "Treasury: Small tips",
+        "treasurySmallTipsDescription": "Origin able to spend up to { value } { asset} from the treasury at once or equivalent value in stablecoins.",
+        "treasurySmallTipsDescriptionGeneral": "Origin able to spend small tips amount from the treasury.",
+        "wishForChange": "Wish for change",
+        "wishForChangeDescription": "Origin for signaling that the network wishes for some change."
+      },
+      "tracksLabel": "Tracks",
+      "viewDelegationButton": "View delegations",
+      "viewSummary": "View summary",
+      "votedAllTime": "Voted for all time",
+      "votedTracksDescription": "We have inaccessible tracks because you have voted on them. Remove votes in order to delegate in these tracks.",
+      "votedTracksTitle": "We have inaccessible tracks",
+      "votesLabel": "Voting power",
+      "votesValue": "<votes /> votes",
+      "walletTypeRestrictionError": "You can't add a delegation in that wallet type",
+      "yourAccountError": "You cannot delegate to the same account"
     },
     "additional": {
       "polkassemblyLink": "https://{network}.polkassembly.io/referenda/{referendumId}",
@@ -343,7 +458,7 @@
         "approveCurve": "Approve curve",
         "callHash": "Call hash",
         "deposit": "Deposit",
-        "electrorate": "Electrorate",
+        "electorate": "Electorate",
         "proposer": "Proposer",
         "supportCurve": "Support curve",
         "turnout": "Turnout"
@@ -355,9 +470,27 @@
       "Reciprocal": "Reciprocal",
       "SteppedDecreasing": "Stepped decreasing"
     },
-    "delegations": "Delegations",
+    "delegationDetails": {
+      "accountsCounter_one": "{ count } account selected",
+      "accountsCounter_other": "{ count } accounts selected",
+      "editDelegationButton_one": "Edit delegation",
+      "editDelegationButton_other": "Edit delegations",
+      "revokeDelegationButton_one": "Revoke delegation",
+      "revokeDelegationButton_other": "Revoke delegations",
+      "yourDelegation": "Your Delegation",
+      "yourDelegationsTitle": "Your delegations"
+    },
+    "delegations": {
+      "label": "Delegations",
+      "title": "Delegations on",
+      "tracksLabel_one": "across { count } track",
+      "tracksLabel_other": "across { count } tracks"
+    },
     "emptyStateDescription": "Update the search or cancel filtering",
     "emptyStateLabel": "Nothing was found",
+    "errors": {
+      "notEnoughBalanceError": "Not enough funds to vote"
+    },
     "filters": {
       "notVoted": "Not Voted",
       "tracks": "Tracks",
@@ -366,9 +499,12 @@
     "locks": {
       "governanceLock": "Governance lock",
       "lock": "Lock",
+      "noLockedAmount": "No available locked token",
       "title": "Unlock on",
+      "undelegatePeriod": "Undelegate period",
       "unlock": "Unlock",
       "unlockable": "Unlockable",
+      "unlockableIn": "Unlockable in",
       "yourDelegation": "Your Delegation"
     },
     "offChainDataSource": {
@@ -392,12 +528,16 @@
       "nay": "Nay",
       "nays": "Nays",
       "proposer": "Proposer:",
+      "proxyRestrictionMessage": "Please add a new proxy connections to voting",
+      "remove": "Remove vote",
+      "revote": "Revote",
       "support": "Support",
       "threshold": "Threshold",
       "timeline": "Timeline",
       "vote": "Vote",
       "votedTokens": "{voted} of {total} {asset}",
-      "votes": "{votes} votes",
+      "votes_one": "{votes} vote",
+      "votes_other": "{votes} votes",
       "votingStatus": "Voting status",
       "votingSummary": "Summary"
     },
@@ -430,6 +570,9 @@
       "treasurySmallTips": "Treasury: Small tips",
       "wishForChange": "Wish for change"
     },
+    "revokeDelegation": {
+      "title": "Revoke delegation on"
+    },
     "searchPlaceholder": "Search",
     "timeline": {
       "status": {
@@ -437,6 +580,7 @@
         "Approved": "Approved",
         "Awarded": "Awarded",
         "Cancelled": "Cancelled",
+        "ConfirmAborted": "Confirm aborted",
         "ConfirmStarted": "Confirm started",
         "Confirmed": "Confirmed",
         "Created": "Created",
@@ -450,30 +594,53 @@
       }
     },
     "title": "Governance",
+    "vote": {
+      "abstainConvictionWarningDescription": "When you cast abstain votes you can only vote with 0.1x conviction. You will vote with 1 vote.",
+      "abstainConvictionWarningTitle": "Vote conviction will be set to 0.1x",
+      "delegationError": "You are delegating votes for selected referendum's track. Please either ask your delegatee to vote or remove delegation to be able to vote directly.",
+      "errors": {
+        "noAccountError": "Please select your account",
+        "noSignatoryError": "Please select operation signatory"
+      },
+      "field": {
+        "accounts": "Your account",
+        "accountsPlaceholder": "Select account",
+        "balance": "Vote value",
+        "conviction": "Multiply votes by increasing locking period",
+        "decision": "Vote",
+        "governanceLock": "Governance lock",
+        "lockingPeriod": "Locking period",
+        "networkFee": "Network fee",
+        "tracks": "Tracks"
+      }
+    },
     "voteHistory": {
       "listColumnAccount": "Account",
       "listColumnVotingPower": "Voting power",
       "listEmptyState": "No one voted here",
+      "notAvailable": "Vote history is unavailable",
+      "notAvailableDescription": "Please refresh to update the information.",
       "title": "Vote history",
-      "totalVotesCount": "{value} votes {symbol}",
-      "totalVotesCountConviction": "{value} × {conviction}",
+      "totalVotesCount": "{value} votes",
       "viewVoteHistory": "View vote history"
     },
     "voted": "Voted",
+    "votedBy": "Voted via",
     "votedWithAmount": "Voted:",
     "voting": {
       "aboutLabel": "About voting",
       "aboutVoting": "<header>Voting</header><p>In the Polkadot OpenGov voting system, there are three types of votes:</p><ul><li>Aye vote - a vote \"for\" a proposal. Votes are counted with a conviction multiplier that increases the\nnumber of votes based on the voter's conviction.</li><li>Nay vote - a vote \"against.\" Similar to the aye vote, it considers the level of conviction, multiplying the number of votes.</li><li>Abstain vote - abstaining from voting. Abstain votes do not affect the conviction level and are not counted in the vote tally with conviction.</li></ul>",
       "aboutVotingPower": "<header>Voting power and lock period</header><p>Conviction is a mechanism that allows participants to amplify their vote by locking their tokens for various periods (lock period). The longer the tokens are locked, the stronger the vote. \nFor example, a six-times conviction increases the vote's weight and requires a token lock for 32 weeks after voting ends.</p>",
-      "title": "Vote on"
+      "removeTitle": "Remove vote from",
+      "revoteTitle": "Revote on",
+      "voteTitle": "Vote on"
     },
     "walletVotes": {
       "listColumnAccount": "Account",
       "listColumnVote": "Vote",
       "listColumnVotingPower": "Voting power",
       "title": "My votes",
-      "totalVotesCount": "{value} votes {symbol}",
-      "totalVotesCountConviction": "{value} × {conviction}"
+      "totalVotesCount": "{value} votes"
     }
   },
   "log": {
@@ -669,6 +836,9 @@
       "callHash": "Call Hash",
       "controller": "Controller",
       "delegateTo": "Delegate to",
+      "delegationTarget": "Delegate",
+      "delegationTracks": "Tracks",
+      "delegationVotes": "Number of votes",
       "deposit": "Multisig deposit",
       "depositor": "Depositor",
       "description": "Description",
@@ -677,6 +847,7 @@
       "multisigWallet": "Wallet",
       "payee": "Rewards destination",
       "recipient": "Recipient",
+      "referendum": "Referendum",
       "rejectReason": "Reject reason",
       "revokeAccessType": "Revoke access type",
       "revokeFor": "Revoke for",
@@ -686,6 +857,7 @@
       "timePoint": "Time Point",
       "toNetwork": "To network",
       "validators": "Validators",
+      "votes": "Number of votes",
       "wallet": "Wallet"
     },
     "detailsTitle": "Details",
@@ -695,8 +867,11 @@
     "goBackButton": "Back",
     "inProgress": "Submitting approval...",
     "logButton": "Log",
+    "multisigExistsDescription": "Due to the blockchain limitations, multisig operations with identical details can't be in a signing status simultaneously. Wait for the current one to be signed or reject it to create a new one.",
+    "multisigExistsTitle": "Same transaction already exist",
     "networkFee": "Network fee",
     "networkFeeTotal": "Total network fee",
+    "openOperationsButton": "Open operations",
     "proxyFeeErrorDescription": "Delegated authority<wallet />doesn't have enough balance to pay the network fee of {fee} {symbol}<br />Available balance to pay fee: {balance} {symbol}",
     "proxyFeeErrorTitle": "Not enough tokens to pay the fee",
     "rejectButton": "Reject",
@@ -743,7 +918,8 @@
         "title": "{ walletName } is not connected"
       },
       "rejected": "Rejected",
-      "signTitle": "Confirm the operation on your { walletName } app",
+      "signTitle_one": "Confirm the operation on your { walletName } app",
+      "signTitle_other": "Confirm { count } operations on your { walletName } app",
       "tryAgainButton": "Try again"
     },
     "walletSignatoriesTitle": "Your wallets",
@@ -786,15 +962,19 @@
       "removeProxyOn": "Revoke delegated authority (proxy) on",
       "removePureProxy": "Revoke delegated authority (pure proxy)",
       "removePureProxyOn": "Revoke delegated authority (pure proxy) on",
+      "removeVote": "Remove vote { asset } on",
+      "removeVoteOn": "Remove Vote",
       "restakeOn": "Restake { asset } on",
+      "revote": "Revote { asset } on",
       "stakeMoreOn": "Stake More { asset } on",
       "startStakingOn": "Start Staking { asset } on",
       "transferFrom": "Transfer { asset } from",
       "transferOn": "Transfer { asset } on",
       "undelegateOn": "Revoke delegation on",
       "unknownOn": "Unknown Operation on",
-      "unlockOn": "Unlock { asset } on",
-      "unstakeOn": "Unstake { asset } on"
+      "unlockOn": "Unlock on",
+      "unstakeOn": "Unstake { asset } on",
+      "vote": "Vote { asset } on"
     },
     "noOperationsDescription": "Your operation history will appear here",
     "noOperationsFilters": "Nothing was found for the filters. Try changing filters or canceling filtering.",
@@ -814,14 +994,17 @@
       "remark": "Remark",
       "removeProxy": "Revoke delegated authority (proxy)",
       "removePureProxy": "Revoke delegated authority (pure proxy)",
+      "removeVote": "Remove vote",
       "restake": "Restake",
+      "revote": "Revote",
       "stakeMore": "Stake More",
       "startStaking": "Start Staking",
       "transfer": "Transfer",
       "undelegate": "Revoke delegation",
       "unknown": "Unknown Operation",
       "unlock": "Unlock",
-      "unstake": "Unstake"
+      "unstake": "Unstake",
+      "vote": "Vote"
     }
   },
   "portfolilo": {

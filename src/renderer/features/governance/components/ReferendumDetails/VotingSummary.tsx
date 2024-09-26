@@ -1,48 +1,49 @@
-import { useI18n } from '@app/providers';
-import { type Asset } from '@shared/core';
-import { formatBalance } from '@shared/lib/utils';
-import { FootnoteText } from '@shared/ui';
-import { referendumService } from '@entities/governance';
+import { useGate, useStoreMap } from 'effector-react';
+
+import { useI18n } from '@/app/providers';
+import { type Asset, type Chain } from '@/shared/core';
+import { formatAsset } from '@/shared/lib/utils';
+import { FootnoteText } from '@/shared/ui';
+import { votingSummaryModel } from '../../model/votingSummary';
 import { type AggregatedReferendum } from '../../types/structs';
 
 type Props = {
   referendum: AggregatedReferendum;
+  chain: Chain;
   asset: Asset;
 };
 
-export const VotingSummary = ({ referendum, asset }: Props) => {
+export const VotingSummary = ({ referendum, chain, asset }: Props) => {
+  useGate(votingSummaryModel.gates.flow, { referendum, chain });
+
   const { t } = useI18n();
 
-  if (!referendumService.isOngoing(referendum)) {
+  const votingSummary = useStoreMap({
+    store: votingSummaryModel.$votingSummary,
+    keys: [chain.chainId, referendum.referendumId],
+    fn: (summary, [chain, referendum]) => summary[chain]?.[referendum] ?? null,
+  });
+
+  if (!votingSummary) {
     return null;
   }
 
-  const ayeBalance = formatBalance(referendum.tally.ayes, asset.precision);
-  const naysBalance = formatBalance(referendum.tally.nays, asset.precision);
-  const supportBalance = formatBalance(referendum.tally.support, asset.precision);
-
   return (
     <div className="flex flex-col items-start gap-3">
-      <div className="flex gap-2 items-center w-full">
-        <div className="w-1 h-3 rounded-[4px] bg-icon-positive" />
+      <div className="flex w-full items-center gap-2">
+        <div className="h-3 w-1 rounded-[0.25em] bg-icon-positive" />
         <FootnoteText>{t('governance.referendum.aye')}</FootnoteText>
-        <FootnoteText className="text-end grow">
-          {t('governance.referendum.votes', { votes: ayeBalance.formatted })}
-        </FootnoteText>
+        <FootnoteText className="grow text-end">{formatAsset(votingSummary.ayes, asset)}</FootnoteText>
       </div>
-      <div className="flex gap-2 items-center w-full">
-        <div className="w-1 h-3 rounded-[4px] bg-icon-negative" />
+      <div className="flex w-full items-center gap-2">
+        <div className="h-3 w-1 rounded-[4px] bg-icon-negative" />
         <FootnoteText>{t('governance.referendum.nay')}</FootnoteText>
-        <FootnoteText className="text-end grow">
-          {t('governance.referendum.votes', { votes: naysBalance.formatted })}
-        </FootnoteText>
+        <FootnoteText className="grow text-end">{formatAsset(votingSummary.nays, asset)}</FootnoteText>
       </div>
-      <div className="flex gap-2 items-center w-full">
-        <div className="w-1 h-3 rounded-[4px] bg-icon-default" />
+      <div className="flex w-full items-center gap-2">
+        <div className="h-3 w-1 rounded-[4px] bg-icon-default" />
         <FootnoteText>{t('governance.referendum.support')}</FootnoteText>
-        <FootnoteText className="text-end grow">
-          {t('governance.referendum.votes', { votes: supportBalance.formatted })}
-        </FootnoteText>
+        <FootnoteText className="grow text-end">{formatAsset(votingSummary.support, asset)}</FootnoteText>
       </div>
     </div>
   );

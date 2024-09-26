@@ -14,7 +14,7 @@ export const EmptyNotifications = () => {
   }
 
   return (
-    <div className="flex flex-col h-full items-center justify-center">
+    <div className="flex h-full flex-col items-center justify-center">
       <Icon as="img" name="emptyList" size={178} />
       <BodyText className="text-text-tertiary">{t('notifications.noNotificationsDescription')}</BodyText>
     </div>

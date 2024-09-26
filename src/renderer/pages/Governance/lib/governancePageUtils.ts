@@ -1,5 +1,5 @@
 import { type CompletedReferendum, type OngoingReferendum } from '@shared/core';
-import { performSearch } from '@shared/lib/utils';
+import { nonNullable, nullable, performSearch } from '@shared/lib/utils';
 import { referendumService } from '@entities/governance';
 import { type AggregatedReferendum, VoteStatus } from '@features/governance';
 
@@ -40,7 +40,11 @@ function isReferendumVoted({ selectedVoteId, referendum }: FilterByVoteParams) {
     return true;
   }
 
-  return selectedVoteId === VoteStatus.VOTED ? referendum.isVoted : !referendum.isVoted;
+  if (selectedVoteId === VoteStatus.VOTED) {
+    return nonNullable(referendum.vote) || nonNullable(referendum.votedByDelegate);
+  }
+
+  return nullable(referendum.vote) && nullable(referendum.votedByDelegate);
 }
 
 function isReferendumInTrack(selectedTrackIds: string[], referendum: AggregatedReferendum) {

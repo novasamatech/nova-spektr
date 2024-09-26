@@ -20,7 +20,7 @@ export const SelectSignatories = () => {
   };
 
   return (
-    <div className="max-h-full flex flex-col flex-1">
+    <div className="flex max-h-full flex-1 flex-col">
       <div className="flex flex-col gap-2">
         {Array.from(signatories.keys()).map((key) => (
           <Signatory key={key} index={key} isOwnAccount={key === 0} onDelete={() => onDeleteSignatoryClick(key)} />

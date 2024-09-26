@@ -371,10 +371,22 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
         target: decoded.args[1].toString(),
       };
     },
+    [TransactionType.VOTE]: (decoded): Record<string, any> => {
+      return {
+        referendum: decoded.args[0].toString(),
+        vote: decoded.args[1].toHuman(),
+      };
+    },
+    [TransactionType.REVOTE]: (decoded): Record<string, any> => {
+      return {
+        referendum: decoded.args[0].toString(),
+        vote: decoded.args[1].toHuman(),
+      };
+    },
     [TransactionType.REMOVE_VOTE]: (decoded): Record<string, any> => {
       return {
-        class: decoded.args[0].toString(),
-        index: decoded.args[1].toString(),
+        track: decoded.args[0].toString(),
+        referendum: decoded.args[1].toString(),
       };
     },
     [TransactionType.UNDELEGATE]: (decoded): Record<string, any> => {
@@ -383,6 +395,14 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
       };
     },
     [TransactionType.DELEGATE]: (decoded): Record<string, any> => {
+      return {
+        track: decoded.args[0].toString(),
+        target: decoded.args[1].toString(),
+        conviction: decoded.args[2].toString(),
+        balance: decoded.args[3].toString(),
+      };
+    },
+    [TransactionType.EDIT_DELEGATION]: (decoded): Record<string, any> => {
       return {
         track: decoded.args[0].toString(),
         target: decoded.args[1].toString(),
@@ -489,7 +509,9 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
 
     return {
       removeVote: TransactionType.REMOVE_VOTE,
+      vote: TransactionType.VOTE,
       unlock: TransactionType.UNLOCK,
+      revote: TransactionType.REVOTE,
       delegate: TransactionType.DELEGATE,
       undelegate: TransactionType.UNDELEGATE,
     }[method];

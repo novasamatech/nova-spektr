@@ -1,6 +1,14 @@
 import { type BasketTransaction, type Chain, TransactionType } from '@shared/core';
 import { getAssetById } from '@shared/lib/utils';
-import { TransferTypes, XcmTypes } from '@entities/transaction';
+import {
+  type MultisigTransactionTypes,
+  type TransferTransactionTypes,
+  TransferTypes,
+  type UtilityTransactionTypes,
+  type XcmTransactionTypes,
+  XcmTypes,
+  isEditDelegationTransaction,
+} from '@entities/transaction';
 
 import { getCoreTx } from './utils';
 
@@ -10,7 +18,7 @@ type Title = {
 };
 
 export const getOperationTitle = (transaction: BasketTransaction, chain: Chain): Title => {
-  const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE, TransactionType.BOND]);
+  const coreTx = getCoreTx(transaction);
 
   const type = coreTx.type;
   const asset = getAssetById(coreTx.args.assetId, chain.assets);
@@ -23,7 +31,17 @@ export const getOperationTitle = (transaction: BasketTransaction, chain: Chain):
     return { title: 'transfer.xcmTitle', params: { asset: asset?.symbol } };
   }
 
-  const Title = {
+  if (isEditDelegationTransaction(coreTx)) {
+    return { title: 'operations.modalTitles.editDelegationOn', params: {} };
+  }
+
+  const Title: Record<
+    Exclude<
+      TransactionType,
+      TransferTransactionTypes | XcmTransactionTypes | MultisigTransactionTypes | UtilityTransactionTypes
+    >,
+    string
+  > = {
     // Proxy
     [TransactionType.ADD_PROXY]: 'operations.modalTitles.addProxyOn',
     [TransactionType.REMOVE_PROXY]: 'operations.modalTitles.removeProxyOn',
@@ -39,7 +57,12 @@ export const getOperationTitle = (transaction: BasketTransaction, chain: Chain):
     [TransactionType.UNSTAKE]: 'operations.modalTitles.unstakeOn',
     // Governance
     [TransactionType.UNLOCK]: 'operations.modalTitles.unlockOn',
-    [TransactionType.REMOVE_VOTE]: 'operations.modalTitles.unlockOn',
+    [TransactionType.DELEGATE]: 'operations.modalTitles.delegateOn',
+    [TransactionType.EDIT_DELEGATION]: 'operations.modalTitles.editDelegationOn',
+    [TransactionType.UNDELEGATE]: 'operations.modalTitles.undelegateOn',
+    [TransactionType.VOTE]: 'operations.modalTitles.vote',
+    [TransactionType.REVOTE]: 'operations.modalTitles.revote',
+    [TransactionType.REMOVE_VOTE]: 'operations.modalTitles.removeVote',
   };
 
   // @ts-expect-error TODO fix not all types used

@@ -1,7 +1,9 @@
 import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
+import { Skeleton } from '@/shared/ui-kit';
 import {
   type Account,
   type Address,
@@ -14,6 +16,8 @@ import {
 import { useToggle } from '@shared/lib/hooks';
 import { cnTw, toAccountId } from '@shared/lib/utils';
 import { CaptionText, DetailRow, FootnoteText, Icon } from '@shared/ui';
+import { AssetBalance } from '@/entities/asset';
+import { TracksDetails, voteTransactionService } from '@/entities/governance';
 import { ChainTitle } from '@entities/chain';
 import { getTransactionFromMultisigTx } from '@entities/multisig';
 import { type ExtendedChain, networkModel, networkUtils } from '@entities/network';
@@ -26,11 +30,25 @@ import {
   isRemoveProxyTransaction,
   isRemovePureProxyTransaction,
   isTransferTransaction,
+  isUndelegateTransaction,
   isXcmTransaction,
 } from '@entities/transaction';
 import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, walletModel } from '@entities/wallet';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
-import { getDelegate, getDestination, getDestinationChain, getPayee, getProxyType, getSpawner } from '../common/utils';
+import {
+  getDelegate,
+  getDelegationTarget,
+  getDelegationTracks,
+  getDelegationVotes,
+  getDestination,
+  getDestinationChain,
+  getPayee,
+  getProxyType,
+  getReferendumId,
+  getSpawner,
+  getUndelegationData,
+  getVote,
+} from '../common/utils';
 
 type Props = {
   tx: MultisigTransaction;
@@ -53,9 +71,35 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
   const destinationChain = getDestinationChain(tx);
   const destination = getDestination(tx, chains, destinationChain);
 
+  const delegationTarget = getDelegationTarget(tx);
+  const delegationTracks = getDelegationTracks(tx);
+  const delegationVotes = getDelegationVotes(tx);
+
+  const [isUndelegationLoading, setIsUndelegationLoading] = useState(false);
+  const [undelegationVotes, setUndelegationVotes] = useState<string>();
+  const [undelegationTarget, setUndelegationTarget] = useState<Address>();
+
+  const referendumId = getReferendumId(tx);
+  const vote = getVote(tx);
+
   const signatoryWallet = wallets.find((w) => w.id === signatory?.walletId);
 
   const api = extendedChain?.api;
+
+  useEffect(() => {
+    if (isUndelegateTransaction(transaction)) {
+      setIsUndelegationLoading(true);
+    }
+
+    if (!api) return;
+
+    getUndelegationData(api, tx).then(({ votes, target }) => {
+      setUndelegationVotes(votes);
+      setUndelegationTarget(target);
+      setIsUndelegationLoading(false);
+    });
+  }, [api, tx]);
+
   const connection = extendedChain?.connection;
   const defaultAsset = extendedChain?.assets[0];
   const addressPrefix = extendedChain?.addressPrefix;
@@ -113,7 +157,7 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
     transaction?.args.payee;
 
   return (
-    <dl className="flex flex-col gap-y-4 w-full">
+    <dl className="flex w-full flex-col gap-y-4">
       {cancelDescription && (
         <div className={DescriptionBlockStyle}>
           <FootnoteText as="dt" className="text-text-tertiary">
@@ -128,7 +172,7 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
       {proxied && (
         <>
           <DetailRow label={t('operation.details.senderProxiedWallet')}>
-            <div className="flex gap-x-2 items-center max-w-none">
+            <div className="flex max-w-none items-center gap-x-2">
               <WalletIcon type={proxied.wallet.type} size={16} />
               <FootnoteText>{proxied.wallet.name}</FootnoteText>
             </div>
@@ -151,7 +195,7 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
 
       {account && activeWallet && (
         <DetailRow label={t('operation.details.multisigWallet')}>
-          <div className="flex gap-x-2 items-center max-w-none">
+          <div className="flex max-w-none items-center gap-x-2">
             <WalletIcon type={activeWallet.type} size={16} />
             <FootnoteText>{activeWallet.name}</FootnoteText>
           </div>
@@ -159,7 +203,7 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
       )}
 
       {signatory && signatoryWallet && (
-        <DetailRow label={t('transfer.signatoryLabel')} className="text-text-secondary -mr-2">
+        <DetailRow label={t('transfer.signatoryLabel')} className="-mr-2 text-text-secondary">
           <ExplorersPopover
             button={<WalletCardSm wallet={signatoryWallet} />}
             address={signatory.accountId}
@@ -190,10 +234,10 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
           <DetailRow label={t('operation.details.validators')}>
             <button
               type="button"
-              className={cnTw('flex gap-x-1 items-center', InteractionStyle)}
+              className={cnTw('flex items-center gap-x-1', InteractionStyle)}
               onClick={toggleValidators}
             >
-              <div className="rounded-[30px] px-1.5 py-[1px] bg-icon-accent">
+              <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
                 <CaptionText className="text-white" align="center">
                   {selectedValidators.length}
                 </CaptionText>
@@ -297,6 +341,109 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
               wrapperClassName="-mr-2 min-w-min"
             />
           )}
+        </DetailRow>
+      )}
+
+      {referendumId && (
+        <DetailRow label={t('operation.details.referendum')}>
+          <FootnoteText className="text-text-secondary">#{referendumId}</FootnoteText>
+        </DetailRow>
+      )}
+
+      {vote && (
+        <DetailRow label={t('operation.details.votes')}>
+          <FootnoteText className="text-text-secondary">
+            <>
+              <span className="uppercase">
+                {t(`governance.referendum.${voteTransactionService.getDecision(vote)}`)}
+              </span>
+              :{' '}
+              <Trans
+                t={t}
+                i18nKey="governance.addDelegation.votesValue"
+                components={{
+                  votes: (
+                    <AssetBalance
+                      value={voteTransactionService.getVotes(vote)}
+                      asset={defaultAsset}
+                      showSymbol={false}
+                      className="text-text-secondary"
+                    />
+                  ),
+                }}
+              />
+            </>
+          </FootnoteText>
+        </DetailRow>
+      )}
+
+      {isUndelegationLoading && (
+        <>
+          <DetailRow label={t('operation.details.delegationTarget')} className="text-text-secondary">
+            <Skeleton width={40} height={6} />
+          </DetailRow>
+
+          <DetailRow label={t('operation.details.delegationVotes')}>
+            <Skeleton width={20} height={5} />
+          </DetailRow>
+        </>
+      )}
+
+      {delegationTarget && (
+        <DetailRow label={t('operation.details.delegationTarget')} className="text-text-secondary">
+          <AddressWithExplorers
+            explorers={explorers}
+            addressFont={AddressStyle}
+            type="short"
+            address={delegationTarget}
+            addressPrefix={addressPrefix}
+            wrapperClassName="-mr-2 min-w-min"
+          />
+        </DetailRow>
+      )}
+
+      {!delegationTarget && undelegationTarget && (
+        <DetailRow label={t('operation.details.delegationTarget')} className="text-text-secondary">
+          <AddressWithExplorers
+            explorers={explorers}
+            addressFont={AddressStyle}
+            type="short"
+            address={undelegationTarget}
+            addressPrefix={addressPrefix}
+            wrapperClassName="-mr-2 min-w-min"
+          />
+        </DetailRow>
+      )}
+
+      {delegationVotes && (
+        <DetailRow label={t('operation.details.delegationVotes')}>
+          <FootnoteText>
+            <AssetBalance
+              className="text-text-secondary"
+              value={delegationVotes}
+              asset={defaultAsset}
+              showSymbol={false}
+            ></AssetBalance>
+          </FootnoteText>
+        </DetailRow>
+      )}
+
+      {!delegationVotes && undelegationVotes && (
+        <DetailRow label={t('operation.details.delegationVotes')}>
+          <FootnoteText>
+            <AssetBalance
+              className="text-text-secondary"
+              value={undelegationVotes}
+              asset={defaultAsset}
+              showSymbol={false}
+            ></AssetBalance>
+          </FootnoteText>
+        </DetailRow>
+      )}
+
+      {delegationTracks && (
+        <DetailRow label={t('operation.details.delegationTracks')} className="text-text-secondary">
+          <TracksDetails tracks={delegationTracks.map(Number)} />
         </DetailRow>
       )}
 

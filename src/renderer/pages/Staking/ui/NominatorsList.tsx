@@ -22,7 +22,7 @@ import { ShardedList } from './ShardedList';
 import { TimeToEra } from './TimeToEra';
 
 type Props = {
-  nominators: Array<NominatorInfo<BaseAccount> | NominatorInfo<ShardAccount>[]>;
+  nominators: (NominatorInfo<BaseAccount> | NominatorInfo<ShardAccount>[])[];
   isStakingLoading: boolean;
   api?: ApiPromise;
   era?: number;
@@ -53,7 +53,7 @@ export const NominatorsList = ({
 
     return (
       <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey="staking.tooltips.unstakeDescription" />}>
-        <div className="flex gap-x-1 items-center rounded-md bg-badge-background px-2 py-0.5">
+        <div className="flex items-center gap-x-1 rounded-md bg-badge-background px-2 py-0.5">
           <Icon name="unstake" className="text-icon-accent" size={14} />
           <HelpText className="text-icon-accent">
             <TimeToEra className="my-1" api={api} era={nextUnstakingEra} />
@@ -68,7 +68,7 @@ export const NominatorsList = ({
 
     return (
       <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey="staking.tooltips.redeemDescription" />}>
-        <div className="flex gap-x-1 items-center rounded-md bg-positive-background text-text-positive px-2 py-0.5">
+        <div className="flex items-center gap-x-1 rounded-md bg-positive-background px-2 py-0.5 text-text-positive">
           <Icon name="redeem" className="text-text-positive" size={14} />
           <HelpText className="text-text-positive">{t('staking.tooltips.redeemTitle')}</HelpText>
         </div>

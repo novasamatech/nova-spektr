@@ -10,11 +10,11 @@ export const Overview = () => {
 
   return (
     <>
-      <div className="h-full flex flex-col">
+      <div className="flex h-full flex-col">
         <Header title={t('settings.title')} />
 
-        <section className="w-full h-full overflow-y-auto mt-4">
-          <div className="w-[546px] flex flex-col gap-y-4 mx-auto">
+        <section className="mt-4 h-full w-full overflow-y-auto">
+          <div className="mx-auto flex w-[546px] flex-col gap-y-4">
             <GeneralActions />
             <SocialLinks />
             <Version />

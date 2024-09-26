@@ -29,13 +29,15 @@ type GraphqlContextProps = {
 const GraphqlContext = createContext<GraphqlContextProps>({} as GraphqlContextProps);
 
 const errorLink = onError(({ graphQLErrors, networkError }) => {
-  graphQLErrors?.forEach(({ message, locations, path }) => {
-    console.group('[GraphQL error]');
-    console.log('Message: ', message);
-    console.log('Location: ', locations);
-    console.log('Path: ', path);
-    console.groupEnd();
-  });
+  if (graphQLErrors) {
+    for (const { message, locations, path } of graphQLErrors) {
+      console.group('[GraphQL error]');
+      console.log('Message: ', message);
+      console.log('Location: ', locations);
+      console.log('Path: ', path);
+      console.groupEnd();
+    }
+  }
 
   if (networkError) {
     console.log(`[Network error]:`, networkError);
@@ -67,8 +69,6 @@ export const GraphqlProvider = ({ children }: PropsWithChildren) => {
       if (subqueryMatch) {
         return { ...acc, [chain.chainId]: subqueryMatch.url };
       }
-
-      console.warn(`${chain.name} doesn't contain Subquery URL`);
 
       return acc;
     }, {});

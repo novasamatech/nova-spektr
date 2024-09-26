@@ -1,4 +1,4 @@
-import BigNumber from 'bignumber.js';
+import { default as BigNumber } from 'bignumber.js';
 import { attach, combine, createApi, createEffect, createEvent, createStore, sample } from 'effector';
 import { once, previous } from 'patronum';
 
@@ -194,6 +194,7 @@ export const walletSelectModel = {
   $filteredWalletGroups,
   $walletBalance,
   $walletForDetails,
+
   events: {
     walletSelected,
     walletIdSet,

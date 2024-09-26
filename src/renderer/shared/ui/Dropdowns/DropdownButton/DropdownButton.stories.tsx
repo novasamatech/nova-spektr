@@ -1,4 +1,4 @@
-import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react';
 
 import { type ButtonDropdownOption } from '../common/types';
 
@@ -15,9 +15,9 @@ export default {
       </div>
     ),
   ],
-} as ComponentMeta<typeof DropdownButton>;
+} as Meta<typeof DropdownButton>;
 
-const Template: ComponentStory<typeof DropdownButton> = (args) => <DropdownButton {...args} />;
+const Template: StoryFn<typeof DropdownButton> = (args) => <DropdownButton {...args} />;
 
 const options: ButtonDropdownOption[] = [
   { id: 'button1', title: 'Button Option 1', icon: 'globe', onClick: () => alert('click1') },

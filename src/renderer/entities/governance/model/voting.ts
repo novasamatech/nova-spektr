@@ -1,11 +1,10 @@
 import { type ApiPromise } from '@polkadot/api';
-import { createEffect, createEvent, createStore, sample } from 'effector';
+import { createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
 import { type Address, type TrackId, type VotingMap } from '@/shared/core';
-import { governanceService } from '../lib/governanceService';
-
-const $voting = createStore<VotingMap>({});
+import { governanceSubscribeService } from '../lib/governanceSubscribeService';
+import { createSubscriber } from '../utils/createSubscriber';
 
 type VotingParams = {
   api: ApiPromise;
@@ -13,33 +12,49 @@ type VotingParams = {
   addresses: Address[];
 };
 
-const requestVoting = createEvent<VotingParams>();
+const subscribeVoting = createEvent<VotingParams>();
 
-const requestVotingFx = createEffect(({ api, tracks, addresses }: VotingParams): Promise<VotingMap> => {
-  return governanceService.getVotingFor(api, tracks, addresses);
+const {
+  subscribe: subscribe,
+  received: receiveVoting,
+  unsubscribe: unsubscribeVoting,
+} = createSubscriber<VotingParams, VotingMap>(({ api, tracks, addresses }, cb) => {
+  return governanceSubscribeService.subscribeVotingFor(api, tracks, addresses, cb);
+});
+
+const $voting = createStore<VotingMap>({});
+const $isLoading = createStore(true);
+
+sample({
+  clock: subscribeVoting,
+  filter: ({ addresses }) => addresses.length > 0,
+  target: subscribe,
 });
 
 sample({
-  clock: requestVoting,
-  target: requestVotingFx,
+  clock: subscribe,
+  fn: () => true,
+  target: $isLoading,
 });
 
 sample({
-  clock: requestVotingFx.doneData,
-  source: $voting,
-  fn: (voting, newVoting) => ({ ...voting, ...newVoting }),
+  clock: receiveVoting,
+  fn: () => false,
+  target: $isLoading,
+});
+
+sample({
+  clock: receiveVoting,
+  fn: ({ result }) => result,
   target: $voting,
 });
 
 export const votingModel = {
   $voting: readonly($voting),
-  $isLoading: requestVotingFx.pending,
-
-  effects: {
-    requestVotingFx,
-  },
+  $isLoading,
 
   events: {
-    requestVoting,
+    subscribeVoting,
+    unsubscribeVoting,
   },
 };

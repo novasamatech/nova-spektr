@@ -11,7 +11,7 @@ type Props = {
 export const ContactRow = ({ contact, children }: PropsWithChildren<Props>) => {
   return (
     <Plate className="flex p-0">
-      <div className="flex flex-1 gap-x-2 items-center p-3">
+      <div className="flex flex-1 items-center gap-x-2 p-3">
         <Identicon address={contact.address} size={20} background={false} />
         <div className="overflow-hidden">
           <BodyText className="truncate">{contact.name}</BodyText>

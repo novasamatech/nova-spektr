@@ -1,4 +1,4 @@
-import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react';
 
 import { Voted } from './Voted';
 
@@ -6,9 +6,9 @@ export default {
   title: 'Voted',
   component: Voted,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof Voted>;
+} as Meta<typeof Voted>;
 
-const Template: ComponentStory<typeof Voted> = (args) => <Voted {...args} />;
+const Template: StoryFn<typeof Voted> = (args) => <Voted {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {

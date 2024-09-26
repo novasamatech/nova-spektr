@@ -1,4 +1,4 @@
-import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react';
 
 import { StatusLabel } from './StatusLabel';
 
@@ -6,9 +6,9 @@ export default {
   title: 'StatusLabel',
   component: StatusLabel,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof StatusLabel>;
+} as Meta<typeof StatusLabel>;
 
-const Template: ComponentStory<typeof StatusLabel> = (args) => <StatusLabel {...args} />;
+const Template: StoryFn<typeof StatusLabel> = (args) => <StatusLabel {...args} />;
 export const Waiting = Template.bind({});
 Waiting.args = {
   title: '@user_name:matrix.org',

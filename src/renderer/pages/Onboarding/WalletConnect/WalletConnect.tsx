@@ -64,7 +64,9 @@ export const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
     const timeout = isOpen && setTimeout(handleClose, EXPIRE_TIMEOUT);
 
     return () => {
-      timeout && clearTimeout(timeout);
+      if (timeout) {
+        clearTimeout(timeout);
+      }
     };
   }, [isOpen]);
 
@@ -102,30 +104,30 @@ export const WalletConnect = ({ isOpen, onClose, onComplete }: Props) => {
   };
 
   return (
-    <BaseModal isOpen={isOpen} contentClass="flex h-full" panelClass="w-[944px] h-[576px]" onClose={handleClose}>
+    <BaseModal isOpen={isOpen} contentClass="flex h-full" panelClass="w-modal-xl h-modal" onClose={handleClose}>
       {step === Step.SCAN && qrCode && (
         <>
-          <div className="w-[472px] flex flex-col px-5 py-4 bg-white rounded-l-lg">
+          <div className="flex w-[472px] flex-col rounded-l-lg bg-white px-5 py-4">
             <HeaderTitleText className="mb-10">{t('onboarding.walletConnect.title')}</HeaderTitleText>
             <SmallTitleText className="mb-6">{t('onboarding.walletConnect.scanTitle')}</SmallTitleText>
 
-            <div className="flex flex-1 relative items-center justify-center">
-              <div className="z-0 absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2">
+            <div className="relative flex flex-1 items-center justify-center">
+              <div className="absolute left-[50%] top-[50%] z-0 -translate-x-1/2 -translate-y-1/2">
                 <Loader color="primary" />
               </div>
 
               <div key="wallet-connect" className="z-10" ref={ref}></div>
             </div>
 
-            <div className="flex justify-between items-end">
+            <div className="flex items-end justify-between">
               <Button variant="text" onClick={handleClose}>
                 {t('onboarding.backButton')}
               </Button>
             </div>
           </div>
 
-          <div className="w-[472px] flex flex-col bg-black">
-            <video className="object-contain h-full" autoPlay loop>
+          <div className="flex w-[472px] flex-col bg-black">
+            <video className="h-full object-contain" autoPlay loop>
               <source src={novawallet_onboarding_tutorial_webm} type="video/webm" />
               <source src={novawallet_onboarding_tutorial} type="video/mp4" />
             </video>

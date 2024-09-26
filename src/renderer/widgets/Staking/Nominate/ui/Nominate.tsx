@@ -1,5 +1,4 @@
 import { useUnit } from 'effector-react';
-import { useEffect } from 'react';
 
 import { useI18n } from '@app/providers';
 import { useModalClose } from '@shared/lib/hooks';
@@ -28,13 +27,6 @@ export const Nominate = () => {
     nominateModel.output.flowFinished,
   );
 
-  useEffect(() => {
-    if (nominateUtils.isBasketStep(step)) {
-      const timer = setTimeout(() => closeBasketModal(), 1450);
-
-      return () => clearTimeout(timer);
-    }
-  }, [step]);
   if (!walletData) {
     return null;
   }
@@ -48,6 +40,7 @@ export const Nominate = () => {
         isOpen={isBasketModalOpen}
         variant="success"
         title={t('operation.addedToBasket')}
+        autoCloseTimeout={2000}
         onClose={closeBasketModal}
       />
     );
@@ -57,7 +50,7 @@ export const Nominate = () => {
     <BaseModal
       closeButton
       contentClass=""
-      panelClass="w-max"
+      panelClass="w-fit"
       isOpen={isModalOpen}
       title={<OperationTitle title={t('staking.validators.title')} chainId={walletData.chain.chainId} />}
       onClose={closeModal}

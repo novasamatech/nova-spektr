@@ -3,8 +3,10 @@ import { type Node } from './types';
 
 /**
  * Transform little endian byte array to nibbles array
- * @param key little endian byte array
- * @return {Array}
+ *
+ * @param key Little endian byte array
+ *
+ * @returns {Array}
  */
 export const keyLEToNibbles = (key: Uint8Array): Uint8Array => {
   if (key.length === 0) {
@@ -18,18 +20,20 @@ export const keyLEToNibbles = (key: Uint8Array): Uint8Array => {
   const nibblesLength = key.length * 2;
   const nibbles = new Uint8Array(nibblesLength);
 
-  key.forEach((value, i) => {
+  for (const [i, value] of key.entries()) {
     nibbles[2 * i] = value / 16;
     nibbles[2 * i + 1] = value % 16;
-  });
+  }
 
   return nibbles;
 };
 
 /**
  * Get node type by children amount
- * @param n node
- * @return {Object}
+ *
+ * @param n Node
+ *
+ * @returns {Object}
  */
 export const getNodeType = (n: Node): NodeType => {
   if (n.children?.length > 0) {

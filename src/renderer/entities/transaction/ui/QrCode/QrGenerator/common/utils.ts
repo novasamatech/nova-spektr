@@ -23,7 +23,8 @@ const MULTIPART = new Uint8Array([0]);
 
 // HACK The default function take string -> number[], the Uint8array is compatible
 // with that signature and the use thereof
-(qrcode as any).stringToBytes = (data: Uint8Array): Uint8Array => data;
+// @ts-expect-error hack
+qrcode.stringToBytes = (data: Uint8Array): Uint8Array => data;
 
 export const getSvgString = (value: Uint8Array, bgColor = 'none'): string => {
   const qr = qrcode(0, 'M');
@@ -125,10 +126,13 @@ export const createFrames = (input: Uint8Array, encoder?: Encoder): Uint8Array[]
 };
 
 /**
- * CryptoType enum indexes are different from MULTI_SIGNER taggedUnion fields order
- * MULTI_SIGNER can't be changed and changing CryptoType would require DB migration
- * @param cryptoType crypto type
- * @return {Number}
+ * CryptoType enum indexes are different from MULTI_SIGNER taggedUnion fields
+ * order MULTI_SIGNER can't be changed and changing CryptoType would require DB
+ * migration
+ *
+ * @param cryptoType Crypto type
+ *
+ * @returns {Number}
  */
 export const cryptoTypeToMultisignerIndex = (cryptoType: CryptoType): number => {
   return {

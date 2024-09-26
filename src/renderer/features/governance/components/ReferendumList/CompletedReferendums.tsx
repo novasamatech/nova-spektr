@@ -1,58 +1,66 @@
-import { memo, useDeferredValue } from 'react';
+import { memo } from 'react';
 
 import { useI18n } from '@app/providers';
-import { type CompletedReferendum } from '@shared/core';
+import { useDeferredList } from '@shared/lib/hooks';
 import { Accordion, CaptionText, Shimmering } from '@shared/ui';
 import { type AggregatedReferendum } from '../../types/structs';
 
-import { CompletedReferendumItem } from './CompletedReferendumItem';
 import { ListItemPlaceholder } from './ListItemPlaceholder';
+import { ReferendumItem } from './ReferendumItem';
 
 type Props = {
-  referendums: AggregatedReferendum<CompletedReferendum>[];
+  referendums: AggregatedReferendum[];
   isLoading: boolean;
   isTitlesLoading: boolean;
-  onSelect: (value: AggregatedReferendum<CompletedReferendum>) => void;
+  mixLoadingWithData: boolean;
+  onSelect: (value: AggregatedReferendum) => void;
 };
 
-const placeholder = Array.from({ length: 4 }, (_, index) => (
-  <li key={index}>
-    <ListItemPlaceholder />
-  </li>
-));
+const createPlaceholders = (size: number) => {
+  return Array.from({ length: size }, (_, index) => (
+    <li key={`placeholder${index}`}>
+      <ListItemPlaceholder />
+    </li>
+  ));
+};
 
-export const CompletedReferendums = memo<Props>(({ referendums, isLoading, isTitlesLoading, onSelect }) => {
-  const { t } = useI18n();
-  const deferredReferendums = useDeferredValue(referendums);
+export const CompletedReferendums = memo<Props>(
+  ({ referendums, isLoading, isTitlesLoading, mixLoadingWithData, onSelect }) => {
+    const { t } = useI18n();
 
-  if (deferredReferendums.length === 0) {
-    return null;
-  }
+    const { isLoading: shouldRenderLoadingState, list: deferredReferendums } = useDeferredList({
+      isLoading,
+      list: referendums,
+    });
 
-  return (
-    <Accordion isDefaultOpen>
-      <Accordion.Button buttonClass="py-1.5 px-2 mb-2">
-        <div className="flex items-center gap-x-2 w-full">
-          <CaptionText className="uppercase text-text-secondary tracking-[0.75px] font-semibold">
-            {t('governance.referendums.completed')}
-          </CaptionText>
-          {isLoading ? (
-            <Shimmering width={25} height={12} />
-          ) : (
-            <CaptionText className="text-text-tertiary font-semibold">{referendums.length}</CaptionText>
-          )}
-        </div>
-      </Accordion.Button>
-      <Accordion.Content as="ul" className="flex flex-col gap-y-2">
-        {isLoading && placeholder}
+    const placeholdersCount = shouldRenderLoadingState
+      ? Math.min(referendums.length || 4, 50)
+      : Math.max(1, 3 - referendums.length);
 
-        {!isLoading &&
-          deferredReferendums.map((referendum) => (
-            <li key={referendum.referendumId}>
-              <CompletedReferendumItem referendum={referendum} isTitlesLoading={isTitlesLoading} onSelect={onSelect} />
-            </li>
-          ))}
-      </Accordion.Content>
-    </Accordion>
-  );
-});
+    if (!isLoading && referendums.length === 0) return null;
+
+    return (
+      <Accordion isDefaultOpen>
+        <Accordion.Button buttonClass="py-1.5 px-2 mb-2">
+          <div className="flex w-full items-center gap-x-2">
+            <CaptionText className="font-semibold uppercase tracking-[0.75px] text-text-secondary">
+              {t('governance.referendums.completed')}
+            </CaptionText>
+            <CaptionText className="font-semibold text-text-tertiary">
+              {isLoading ? <Shimmering width="3ch" height="1em" /> : referendums.length.toString()}
+            </CaptionText>
+          </div>
+        </Accordion.Button>
+        <Accordion.Content as="ul" className="flex flex-col gap-y-2">
+          {(!shouldRenderLoadingState || mixLoadingWithData) &&
+            deferredReferendums.map((referendum) => (
+              <li key={referendum.referendumId}>
+                <ReferendumItem referendum={referendum} isTitlesLoading={isTitlesLoading} onSelect={onSelect} />
+              </li>
+            ))}
+          {(shouldRenderLoadingState || mixLoadingWithData) && createPlaceholders(placeholdersCount)}
+        </Accordion.Content>
+      </Accordion>
+    );
+  },
+);

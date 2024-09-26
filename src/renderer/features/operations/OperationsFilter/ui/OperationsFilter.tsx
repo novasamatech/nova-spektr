@@ -6,6 +6,7 @@ import { type MultisigTransactionDS } from '@shared/api/storage';
 import { type ChainId, type MultisigTransaction, type Transaction, TransactionType } from '@shared/core';
 import { Button, MultiSelect } from '@shared/ui';
 import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
+import { isWrappedInBatchAll } from '@/entities/transaction';
 import { TransferTypes, XcmTypes } from '@entities/transaction/lib/common/constants';
 import { UNKNOWN_TYPE } from '../lib/constants';
 import { getStatusOptions, getTransactionOptions } from '../lib/utils';
@@ -74,7 +75,7 @@ export const OperationsFilter = ({ txs, onChange }: Props) => {
 
     if (tx.transaction.type === TransactionType.BATCH_ALL) {
       const txMatch = tx.transaction.args?.transactions?.find((tx: Transaction) => {
-        return tx.type === TransactionType.BOND || tx.type === TransactionType.UNSTAKE;
+        return isWrappedInBatchAll(tx.type);
       });
 
       return txMatch?.type || UNKNOWN_TYPE;
@@ -145,7 +146,7 @@ export const OperationsFilter = ({ txs, onChange }: Props) => {
     selectedOptions.network.length || selectedOptions.status.length || selectedOptions.type.length;
 
   return (
-    <div className="flex items-center gap-2 my-4 w-[736px] h-9 ml-6">
+    <div className="my-4 ml-6 flex h-9 w-[736px] items-center gap-2">
       <MultiSelect
         className="w-[200px]"
         placeholder={t('operations.filters.statusPlaceholder')}
@@ -169,7 +170,7 @@ export const OperationsFilter = ({ txs, onChange }: Props) => {
       />
 
       {Boolean(filtersSelected) && (
-        <Button variant="text" className="ml-auto py-0 h-8.5" onClick={clearFilters}>
+        <Button variant="text" className="ml-auto h-8.5 py-0" onClick={clearFilters}>
           {t('operations.filters.clearAll')}
         </Button>
       )}

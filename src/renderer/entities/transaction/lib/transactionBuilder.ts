@@ -1,3 +1,5 @@
+import { type ApiPromise } from '@polkadot/api';
+
 import { type ClaimAction } from '@/shared/api/governance';
 import {
   type AccountId,
@@ -5,12 +7,17 @@ import {
   type Asset,
   type Chain,
   type ChainId,
+  type Conviction,
+  type ReferendumId,
+  type TrackId,
   type Transaction,
   TransactionType,
 } from '@shared/core';
-import { TEST_ACCOUNTS, formatAmount, getAssetId, toAddress } from '@shared/lib/utils';
+import { TEST_ACCOUNTS, formatAmount, getAssetId, toAccountId, toAddress } from '@shared/lib/utils';
+import { type RevoteTransaction, type TransactionVote, type VoteTransaction } from '@/entities/governance';
 
 import { TransferType } from './common/constants';
+import { transactionService } from './transactionService';
 
 export const transactionBuilder = {
   buildTransfer,
@@ -25,6 +32,13 @@ export const transactionBuilder = {
   buildUndelegate,
   buildEditDelegation,
   buildUnlock,
+  buildVote,
+  buildRevote,
+  buildRemoveVote,
+  buildRemoveVotes,
+
+  buildBatchAll,
+  splitBatchAll,
 };
 
 type TransferParams = {
@@ -234,12 +248,26 @@ function buildBatchAll({ chain, accountId, transactions }: BatchParams): Transac
   };
 }
 
+type SplitBatchAllParams = { transaction: Transaction; chain: Chain; api: ApiPromise };
+
+async function splitBatchAll({ transaction, chain, api }: SplitBatchAllParams): Promise<Transaction[] | Transaction> {
+  if (transaction.type !== TransactionType.BATCH_ALL) {
+    return transaction;
+  }
+
+  const splittedTxs = await transactionService.splitTxsByWeight(api, transaction.args.transactions);
+
+  return splittedTxs.map((transactions) =>
+    buildBatchAll({ chain, accountId: toAccountId(transaction.address), transactions }),
+  );
+}
+
 type DelegateParams = {
   chain: Chain;
   accountId: AccountId;
   tracks: number[];
   target: Address;
-  conviction: number;
+  conviction: Conviction;
   balance: string;
 };
 
@@ -286,8 +314,9 @@ type EditDelegationParams = {
   chain: Chain;
   accountId: AccountId;
   tracks: number[];
+  undelegateTracks: number[];
   target: Address;
-  conviction: number;
+  conviction: Conviction;
   balance: string;
 };
 
@@ -295,11 +324,12 @@ function buildEditDelegation({
   chain,
   accountId,
   tracks,
+  undelegateTracks,
   target,
   conviction,
   balance,
 }: EditDelegationParams): Transaction {
-  const undelegateTxs = tracks.map((track) => ({
+  const undelegateTxs = undelegateTracks.map((track) => ({
     chainId: chain.chainId,
     address: toAddress(accountId, { prefix: chain.addressPrefix }),
     type: TransactionType.UNDELEGATE,
@@ -327,9 +357,10 @@ type UnlockParams = {
   chain: Chain;
   accountId: AccountId;
   actions: ClaimAction[];
+  amount: string;
 };
 
-function buildUnlock({ chain, accountId, actions }: UnlockParams): Transaction {
+function buildUnlock({ chain, accountId, actions, amount: value }: UnlockParams): Transaction {
   const unlockTxs = actions.map((action) => {
     const transaction = {
       chainId: chain.chainId,
@@ -341,8 +372,9 @@ function buildUnlock({ chain, accountId, actions }: UnlockParams): Transaction {
         ...transaction,
         type: TransactionType.REMOVE_VOTE,
         args: {
-          trackId: action.trackId,
-          referendumId: action.referendumId,
+          track: action.trackId,
+          referendum: action.referendumId,
+          value,
         },
       };
     }
@@ -353,6 +385,7 @@ function buildUnlock({ chain, accountId, actions }: UnlockParams): Transaction {
       args: {
         trackId: action.trackId,
         target: toAddress(accountId, { prefix: chain.addressPrefix }),
+        value,
       },
     };
   });
@@ -360,4 +393,88 @@ function buildUnlock({ chain, accountId, actions }: UnlockParams): Transaction {
   if (unlockTxs.length === 1) return unlockTxs[0];
 
   return buildBatchAll({ chain, accountId, transactions: unlockTxs });
+}
+
+type VoteParams = {
+  chain: Chain;
+  accountId: AccountId;
+  trackId: TrackId;
+  referendumId: ReferendumId;
+  vote: TransactionVote;
+};
+
+function buildVote({ chain, accountId, referendumId, trackId, vote }: VoteParams): VoteTransaction {
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.VOTE,
+    args: {
+      track: trackId,
+      referendum: referendumId,
+      vote,
+    },
+  };
+}
+
+type RevoteParams = {
+  chain: Chain;
+  accountId: AccountId;
+  trackId: TrackId;
+  referendumId: ReferendumId;
+  vote: TransactionVote;
+};
+
+function buildRevote({ chain, accountId, referendumId, trackId, vote }: RevoteParams): RevoteTransaction {
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.REVOTE,
+    args: {
+      track: trackId,
+      referendum: referendumId,
+      vote,
+    },
+  };
+}
+
+type RemoveVoteParams = {
+  chain: Chain;
+  accountId: AccountId;
+  referendum: ReferendumId;
+  track: TrackId;
+};
+
+function buildRemoveVote({ chain, accountId, track, referendum }: RemoveVoteParams): Transaction {
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.REMOVE_VOTE,
+    args: { track, referendum },
+  };
+}
+
+type RemoveVotesParams = {
+  chain: Chain;
+  accountId: AccountId;
+  votes: {
+    referendum: ReferendumId;
+    track: TrackId;
+  }[];
+};
+
+function buildRemoveVotes({ chain, accountId, votes }: RemoveVotesParams): Transaction {
+  const transactions = votes.map(({ referendum, track }) =>
+    buildRemoveVote({
+      chain,
+      accountId,
+      track,
+      referendum,
+    }),
+  );
+
+  if (transactions.length === 1) {
+    return transactions[0];
+  }
+
+  return buildBatchAll({ chain, accountId, transactions });
 }

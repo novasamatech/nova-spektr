@@ -9,9 +9,14 @@ import { networkModel } from '@entities/network';
 import { transactionService } from '@entities/transaction';
 import { BondNominateRules } from '../lib/bond-nominate-rules';
 import { validationUtils } from '../lib/validation-utils';
-import { type AmountFeeStore, type ShardsBondBalanceStore, type ValidationResult } from '../types/types';
+import {
+  type AmountFeeStore,
+  type ShardsBondBalanceStore,
+  type ValidationResult,
+  type ValidationStartedParams,
+} from '../types/types';
 
-const validationStarted = createEvent<{ id: ID; transaction: Transaction; signerOptions?: Partial<SignerOptions> }>();
+const validationStarted = createEvent<ValidationStartedParams>();
 const txValidated = createEvent<{ id: ID; result: ValidationResult }>();
 
 type ValidateParams = {

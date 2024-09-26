@@ -1,30 +1,44 @@
 import { useUnit } from 'effector-react';
-import { type ReactNode, useRef, useState } from 'react';
+import { type ReactNode } from 'react';
 
 import { useI18n } from '@app/providers';
 import { type BasketTransaction, TransactionType, WalletType } from '@shared/core';
 import { useModalClose } from '@shared/lib/hooks';
-import { cnTw } from '@shared/lib/utils';
-import { BaseModal, HeaderTitleText, IconButton } from '@shared/ui';
+import { BaseModal, HeaderTitleText } from '@shared/ui';
 import { OperationTitle } from '@entities/chain';
 import { networkModel } from '@entities/network';
 import { SignButton } from '@entities/operations';
-import { TransferTypes, XcmTypes } from '@entities/transaction';
+import {
+  type MultisigTransactionTypes,
+  TransactionSlider,
+  type TransferTransactionTypes,
+  TransferTypes,
+  type UtilityTransactionTypes,
+  type XcmTransactionTypes,
+  XcmTypes,
+  isEditDelegationTransaction,
+} from '@entities/transaction';
 import { OperationSign, OperationSubmit } from '@features/operations';
 import {
   AddProxyConfirm,
   AddPureProxiedConfirm,
   BondExtraConfirmation,
   BondNominateConfirmation,
+  DelegateConfirmation,
+  EditDelegationConfirmation,
   NominateConfirmation,
   PayeeConfirmation,
   RemoveProxyConfirm,
   RemovePureProxiedConfirm,
+  RemoveVoteConfirmation,
   RestakeConfirmation,
+  RevokeDelegationConfirmation,
   TransferConfirm,
   UnstakeConfirmation,
+  VoteConfirmation,
   WithdrawConfirmation,
 } from '@features/operations/OperationsConfirm';
+import { UnlockConfirmation } from '@/widgets/UnlockModal/ui/UnlockConfirmation';
 import { getOperationTitle } from '../lib/operation-title';
 import { signOperationsUtils } from '../lib/sign-operations-utils';
 import { getCoreTx } from '../lib/utils';
@@ -38,21 +52,10 @@ export const SignOperations = () => {
   const transactions = useUnit(signOperationsModel.$transactions);
   const chains = useUnit(networkModel.$chains);
 
-  const [currentTx, setCurrentTx] = useState(0);
-
   const [isModalOpen, closeModal] = useModalClose(
     !signOperationsUtils.isNoneStep(step),
     signOperationsModel.output.flowFinished,
   );
-
-  const ref = useRef<HTMLDivElement>(null);
-
-  const scroll = (value: number) => {
-    setTimeout(() =>
-      // @ts-expect-error TS doesn't recognize offsetLeft
-      ref.current?.scrollTo({ left: ref.current?.childNodes[0].childNodes[value].offsetLeft - 16, behavior: 'smooth' }),
-    );
-  };
 
   if (signOperationsUtils.isSubmitStep(step)) {
     return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
@@ -65,7 +68,7 @@ export const SignOperations = () => {
 
     return (
       <OperationTitle
-        className="justify-center my-3"
+        className="my-3 justify-center"
         title={`${t(title, { ...params })}`}
         chainId={basketTransaction.coreTx.chainId}
       />
@@ -73,7 +76,7 @@ export const SignOperations = () => {
   };
 
   const getConfirmScreen = (transaction: BasketTransaction) => {
-    const coreTx = getCoreTx(transaction, [TransactionType.UNSTAKE, TransactionType.BOND]);
+    const coreTx = getCoreTx(transaction);
     const type = coreTx.type;
     const config = { withFormatAmount: false };
 
@@ -81,7 +84,17 @@ export const SignOperations = () => {
       return () => <TransferConfirm id={transaction.id} hideSignButton />;
     }
 
-    const Components = {
+    if (isEditDelegationTransaction(coreTx)) {
+      return () => <EditDelegationConfirmation id={transaction.id} hideSignButton config={config} />;
+    }
+
+    const Components: Record<
+      Exclude<
+        TransactionType,
+        TransferTransactionTypes | XcmTransactionTypes | MultisigTransactionTypes | UtilityTransactionTypes
+      >,
+      () => ReactNode
+    > = {
       // Proxy
       [TransactionType.ADD_PROXY]: () => <AddProxyConfirm id={transaction.id} hideSignButton />,
       [TransactionType.REMOVE_PROXY]: () => <RemoveProxyConfirm id={transaction.id} hideSignButton />,
@@ -95,31 +108,22 @@ export const SignOperations = () => {
       [TransactionType.RESTAKE]: () => <RestakeConfirmation id={transaction.id} hideSignButton />,
       [TransactionType.DESTINATION]: () => <PayeeConfirmation id={transaction.id} hideSignButton />,
       [TransactionType.UNSTAKE]: () => <UnstakeConfirmation id={transaction.id} hideSignButton />,
+      [TransactionType.DELEGATE]: () => <DelegateConfirmation id={transaction.id} hideSignButton config={config} />,
+      [TransactionType.EDIT_DELEGATION]: () => (
+        <EditDelegationConfirmation id={transaction.id} hideSignButton config={config} />
+      ),
+      [TransactionType.UNDELEGATE]: () => (
+        <RevokeDelegationConfirmation id={transaction.id} hideSignButton config={config} />
+      ),
+      [TransactionType.VOTE]: () => <VoteConfirmation id={transaction.id} hideSignButton />,
+      [TransactionType.REVOTE]: () => <VoteConfirmation id={transaction.id} hideSignButton />,
+      [TransactionType.REMOVE_VOTE]: () => <RemoveVoteConfirmation id={transaction.id} hideSignButton />,
+      [TransactionType.UNLOCK]: () => <UnlockConfirmation id={transaction.id} hideSignButton />,
     };
 
     // @ts-expect-error not all types are used
     return Components[type];
   };
-
-  const nextTx = () => {
-    if (currentTx < transactions.length - 1) {
-      const newValue = currentTx + 1;
-
-      setCurrentTx(newValue);
-      scroll(newValue);
-    }
-  };
-
-  const previousTx = () => {
-    if (currentTx > 0) {
-      const newValue = currentTx - 1;
-
-      setCurrentTx(newValue);
-      scroll(newValue);
-    }
-  };
-
-  const currentPage = currentTx + 1;
 
   return (
     <BaseModal
@@ -139,56 +143,24 @@ export const SignOperations = () => {
       title={
         <HeaderTitleText>{t('basket.signOperations.title', { transactions: transactions?.length })}</HeaderTitleText>
       }
-      onClose={() => {
-        closeModal();
-        setCurrentTx(0);
-      }}
+      onClose={() => closeModal()}
     >
       {signOperationsUtils.isConfirmStep(step) && (
-        <>
-          <div className="bg-background-default overflow-x-hidden py-4" ref={ref}>
-            {transactions.length > 0 && signOperationsUtils.isConfirmStep(step) && (
-              <div className="flex gap-2 first:ml-4 ">
-                {transactions.map((t) => (
-                  <div key={t.id} className="flex flex-col h-[622px]  last-of-type:pr-4">
-                    <div className="w-[440px] bg-white rounded-lg shadow-shadow-2 max-h-full overflow-y-auto">
-                      {getModalTitle(t)}
-                      {getConfirmScreen(t)?.()}
-                    </div>
-                  </div>
-                ))}
+        <TransactionSlider
+          count={transactions.length}
+          footer={
+            <SignButton isDefault type={WalletType.POLKADOT_VAULT} onClick={signOperationsModel.events.txsConfirmed} />
+          }
+        >
+          {transactions.map((t) => (
+            <div key={t.id} className="flex h-[622px] flex-col last-of-type:pr-4">
+              <div className="max-h-full w-[440px] overflow-y-auto rounded-lg bg-white shadow-shadow-2">
+                {getModalTitle(t)}
+                {getConfirmScreen(t)?.()}
               </div>
-            )}
-          </div>
-
-          <div className="flex justify-between bg-white pt-3 px-5 pb-4 rounded-lg">
-            <div className="flex gap-2">
-              <IconButton
-                size={20}
-                className="border w-[42px] h-[42px] flex items-center justify-center"
-                name="left"
-                onClick={previousTx}
-              />
-              <div
-                className={cnTw(
-                  'rounded-full font-semibold border border-divider w-[77px] h-[42px]',
-                  'text-text-secondary flex items-center justify-center',
-                  'shadow-shadow-1',
-                )}
-              >
-                {currentPage}/{transactions.length}
-              </div>
-              <IconButton
-                size={20}
-                className="border w-[42px] h-[42px] flex items-center justify-center"
-                name="right"
-                onClick={nextTx}
-              />
             </div>
-
-            <SignButton type={WalletType.POLKADOT_VAULT} onClick={signOperationsModel.events.txsConfirmed} />
-          </div>
-        </>
+          ))}
+        </TransactionSlider>
       )}
 
       {signOperationsUtils.isSignStep(step) && (

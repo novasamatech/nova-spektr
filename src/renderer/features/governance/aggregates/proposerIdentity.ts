@@ -1,6 +1,7 @@
 import { combine, createEvent, sample } from 'effector';
 
 import { type Address, type Referendum } from '@shared/core';
+import { nonNullable } from '@shared/lib/utils';
 import { proposerIdentityModel } from '@entities/governance';
 import { networkSelectorModel } from '../model/networkSelector';
 
@@ -17,14 +18,11 @@ const requestProposers = createEvent<{ addresses: Address[] }>();
 
 sample({
   clock: requestReferendumProposer,
-  source: {
-    api: networkSelectorModel.$governanceChainApi,
-    chain: networkSelectorModel.$governanceChain,
-  },
-  filter: ({ chain, api }) => !!chain && !!api,
-  fn: ({ chain, api }, { referendum }) => ({
-    api: api!,
-    chain: chain!,
+  source: networkSelectorModel.$network,
+  filter: nonNullable,
+  fn: (network, { referendum }) => ({
+    api: network!.api,
+    chain: network!.chain,
     referendum,
   }),
   target: proposerIdentityModel.events.requestReferendumProposer,
@@ -32,14 +30,11 @@ sample({
 
 sample({
   clock: requestProposers,
-  source: {
-    api: networkSelectorModel.$governanceChainApi,
-    chain: networkSelectorModel.$governanceChain,
-  },
-  filter: ({ chain, api }) => !!chain && !!api,
-  fn: ({ chain, api }, { addresses }) => ({
-    api: api!,
-    chain: chain!,
+  source: networkSelectorModel.$network,
+  filter: nonNullable,
+  fn: (network, { addresses }) => ({
+    api: network!.api,
+    chain: network!.chain,
     addresses,
   }),
   target: proposerIdentityModel.events.requestProposers,

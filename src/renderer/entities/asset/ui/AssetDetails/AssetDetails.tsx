@@ -1,7 +1,7 @@
 import { type Asset } from '@shared/core';
 import { HelpText, Shimmering } from '@shared/ui';
 import { AssetFiatBalance } from '@entities/price';
-import { AssetBalance } from '../index';
+import { AssetBalance } from '../AssetBalance/AssetBalance';
 
 type Props = {
   asset: Asset;
@@ -11,7 +11,7 @@ type Props = {
 
 export const AssetDetails = ({ asset, value, label }: Props) => {
   return (
-    <div className="flex flex-col flex-1 gap-y-0.5 pl-4">
+    <div className="flex flex-1 flex-col gap-y-0.5 pl-4">
       <HelpText as="dt" className="text-text-tertiary">
         {label}
       </HelpText>

@@ -1,6 +1,11 @@
+import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, restore, sample } from 'effector';
 
+import { nonNullable, transferableAmount } from '@/shared/lib/utils';
 import { type Wallet } from '@shared/core';
+import { balanceModel, balanceUtils } from '@/entities/balance';
+import { networkModel } from '@/entities/network';
+import { operationsModel, operationsUtils } from '@/entities/operations';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { type UnlockFormData } from '@features/governance/types/structs';
 
@@ -96,11 +101,57 @@ sample({
   target: $confirmStore,
 });
 
+const $transferableAmount = combine(
+  {
+    store: $confirmStore,
+    balances: balanceModel.$balances,
+  },
+  ({ store, balances }) => {
+    if (!store) return {};
+
+    return store.reduce<Record<number, BN>>((acc, storeItem, index) => {
+      const accountId = storeItem.proxiedAccount ? storeItem.proxiedAccount.accountId : storeItem.shards[0]?.accountId;
+      const amount = storeItem.shards.reduce((acc) => {
+        const balance = balanceUtils.getBalance(
+          balances,
+          accountId,
+          storeItem.chain.chainId,
+          storeItem.asset.assetId.toString(),
+        );
+
+        return acc.add(new BN(transferableAmount(balance)));
+      }, BN_ZERO);
+
+      const id = storeItem.id ?? index;
+
+      return {
+        ...acc,
+        [id]: amount,
+      };
+    }, {});
+  },
+);
+
+const $isMultisigExists = combine(
+  {
+    apis: networkModel.$apis,
+    coreTxs: $storeMap.map((storeMap) =>
+      Object.values(storeMap)
+        .map((store) => store.coreTx)
+        .filter(nonNullable),
+    ),
+    transactions: operationsModel.$multisigTransactions,
+  },
+  ({ apis, coreTxs, transactions }) => operationsUtils.isMultisigAlreadyExists({ apis, coreTxs, transactions }),
+);
+
 export const unlockConfirmAggregate = {
   $confirmStore: $storeMap,
   $initiatorWallets,
   $signerWallets,
   $proxiedWallets,
+  $transferableAmount,
+  $isMultisigExists,
 
   events: {
     formInitiated,

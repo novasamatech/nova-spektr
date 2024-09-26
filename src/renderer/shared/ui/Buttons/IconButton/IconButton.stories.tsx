@@ -1,4 +1,4 @@
-import { type ComponentMeta, type ComponentStory } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react';
 
 import { IconButton } from './IconButton';
 
@@ -6,9 +6,9 @@ export default {
   title: 'Icon Button',
   component: IconButton,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof IconButton>;
+} as Meta<typeof IconButton>;
 
-const Template: ComponentStory<typeof IconButton> = (args) => <IconButton {...args} />;
+const Template: StoryFn<typeof IconButton> = (args) => <IconButton {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {

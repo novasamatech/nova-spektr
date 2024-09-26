@@ -15,3 +15,4 @@ export * from './chains';
 export * from './derivation';
 export * from './search';
 export * from './step';
+export * from './createQueuedRequest';

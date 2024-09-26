@@ -178,14 +178,14 @@ function getDerivationsFromFile(fileContent: ParsedImportFile): FormattedResult 
   const chains = fileContent[rootAccountId as AccountId];
   const derivations: ImportedDerivation[] = [];
 
-  Object.entries(chains).forEach(([key, value]) => {
-    const chainDerivations = (value as ImportFileKey[]).map((keyObject) => ({
+  for (const [key, value] of Object.entries(chains)) {
+    const chainDerivations = value.map((keyObject) => ({
       ...keyObject.key,
       chainId: key,
     }));
 
     derivations.push(...chainDerivations);
-  });
+  }
 
   return {
     derivations,

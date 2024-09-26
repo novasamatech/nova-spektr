@@ -1,4 +1,3 @@
-import cn from 'classnames';
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
@@ -107,12 +106,12 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
   };
 
   return (
-    <BaseModal contentClass="flex h-full" panelClass="w-[944px] h-[576px]" isOpen={isModalOpen} onClose={closeWowModal}>
-      <div className="w-[472px] flex flex-col px-5 py-4 bg-white rounded-l-lg">
+    <BaseModal contentClass="flex h-full" panelClass="w-modal-xl h-modal" isOpen={isModalOpen} onClose={closeWowModal}>
+      <div className="flex w-[472px] flex-col rounded-l-lg bg-white px-5 py-4">
         <HeaderTitleText className="mb-10">{t('onboarding.watchOnly.title')}</HeaderTitleText>
         <SmallTitleText className="mb-6">{t('onboarding.watchOnly.manageTitle')}</SmallTitleText>
 
-        <form className="flex flex-col gap-4 h-full" onSubmit={handleSubmit(createWallet)}>
+        <form className="flex h-full flex-col gap-4" onSubmit={handleSubmit(createWallet)}>
           <Controller
             name="walletName"
             control={control}
@@ -120,7 +119,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
             render={({ field: { onChange, value } }) => (
               <div>
                 <Input
-                  wrapperClass={cn('flex items-center')}
+                  wrapperClass="flex items-center"
                   label={t('onboarding.walletNameLabel')}
                   placeholder={t('onboarding.walletNamePlaceholder')}
                   invalid={Boolean(errors.walletName)}
@@ -144,7 +143,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
             render={({ field: { onChange, value } }) => (
               <div>
                 <Input
-                  wrapperClass={cn('flex items-center')}
+                  wrapperClass="flex items-center"
                   invalid={Boolean(errors.address)}
                   label={t('onboarding.accountAddressLabel')}
                   placeholder={t('onboarding.watchOnly.accountAddressPlaceholder')}
@@ -164,7 +163,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
             )}
           />
 
-          <div className="flex flex-1 justify-between items-end">
+          <div className="flex flex-1 items-end justify-between">
             <Button variant="text" onClick={() => closeWowModal()}>
               {t('onboarding.backButton')}
             </Button>
@@ -176,12 +175,12 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
         </form>
       </div>
 
-      <div className="relative w-[472px] flex flex-col gap-y-6 bg-input-background-disabled py-4 rounded-r-lg">
+      <div className="relative flex w-[472px] flex-col gap-y-6 rounded-r-lg bg-input-background-disabled py-4">
         <IconButton name="close" size={20} className="absolute right-3 top-3 m-1" onClick={() => closeWowModal()} />
 
         {accountId && accountId.length > 12 ? (
           <>
-            <SmallTitleText className="px-5 mt-[52px]">{t('onboarding.watchOnly.accountsTitle')}</SmallTitleText>
+            <SmallTitleText className="mt-[52px] px-5">{t('onboarding.watchOnly.accountsTitle')}</SmallTitleText>
             <AccountsList chains={chains} accountId={accountId} className="h-[440px]" />
           </>
         ) : (

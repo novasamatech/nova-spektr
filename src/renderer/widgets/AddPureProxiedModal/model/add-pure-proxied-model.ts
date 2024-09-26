@@ -3,6 +3,7 @@ import { type UnsubscribePromise } from '@polkadot/api/types';
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { combineEvents, delay, spread } from 'patronum';
 
+import { type PathType, Paths } from '@/shared/routes';
 import {
   type Account,
   type AccountId,
@@ -15,16 +16,17 @@ import {
   type Timepoint,
   type Transaction,
 } from '@shared/core';
-import { toAddress } from '@shared/lib/utils';
+import { nonNullable, toAddress } from '@shared/lib/utils';
 import { basketModel } from '@entities/basket/model/basket-model';
 import { subscriptionService } from '@entities/chain';
 import { networkModel } from '@entities/network';
 import { proxyModel, proxyUtils } from '@entities/proxy';
 import { type ExtrinsicResultParams, transactionService } from '@entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { navigationModel } from '@/features/navigation';
 import { balanceSubModel } from '@features/balances';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@features/operations/OperationSubmit';
+import { submitModel, submitUtils } from '@features/operations/OperationSubmit';
 import { addPureProxiedConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
 import { proxiesModel } from '@features/proxies';
 import { walletSelectModel } from '@features/wallets';
@@ -47,6 +49,7 @@ const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $selectedSignatories = createStore<Account[]>([]);
+const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
 const $txWrappers = combine(
   {
@@ -175,10 +178,10 @@ sample({
 
 sample({
   clock: formModel.output.formSubmitted,
-  source: $addProxyStore,
-  filter: (network: AddPureProxiedStore | null): network is AddPureProxiedStore => Boolean(network),
-  fn: ({ chain }, { formData }) => ({
-    event: [{ ...formData, chain }],
+  source: { addProxyStore: $addProxyStore, coreTx: $coreTx },
+  filter: ({ addProxyStore }) => Boolean(addProxyStore),
+  fn: ({ addProxyStore, coreTx }, { formData }) => ({
+    event: [{ ...formData, chain: addProxyStore!.chain, coreTx }],
     step: Step.CONFIRM,
   }),
   target: spread({
@@ -331,6 +334,21 @@ sample({
     toAdd: proxyModel.events.proxyGroupsAdded,
     toUpdate: proxyModel.events.proxyGroupsUpdated,
   }),
+});
+
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: formModel.$isMultisig,
+  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
+  fn: () => Paths.OPERATIONS,
+  target: $redirectAfterSubmitPath,
+});
+
+sample({
+  clock: flowFinished,
+  source: $redirectAfterSubmitPath,
+  filter: nonNullable,
+  target: navigationModel.events.navigateTo,
 });
 
 sample({
