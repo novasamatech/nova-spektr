@@ -315,7 +315,7 @@ sample({
   fn: (bondFlowData, signParams) => ({
     event: {
       ...signParams,
-      chainId: bondFlowData.walletData!.chain.chainId,
+      chain: bondFlowData.walletData!.chain,
       account: bondFlowData.bondData!.shards[0],
       signatory: bondFlowData.bondData!.signatory,
       description: bondFlowData.bondData!.description,

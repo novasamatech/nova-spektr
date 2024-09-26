@@ -308,7 +308,7 @@ sample({
   fn: (payeeFlowData, signParams) => ({
     event: {
       ...signParams,
-      chainId: payeeFlowData.walletData!.chain.chainId,
+      chain: payeeFlowData.walletData!.chain,
       account: payeeFlowData.payeeData!.shards[0],
       signatory: payeeFlowData.payeeData!.signatory,
       description: payeeFlowData.payeeData!.description,

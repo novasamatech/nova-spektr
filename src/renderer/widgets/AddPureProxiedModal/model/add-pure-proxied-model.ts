@@ -231,7 +231,7 @@ sample({
   fn: (proxyData, signParams) => ({
     event: {
       ...signParams,
-      chainId: proxyData.addProxyStore!.chain.chainId,
+      chain: proxyData.addProxyStore!.chain,
       account: proxyData.addProxyStore!.account,
       signatory: proxyData.addProxyStore!.signatory,
       description: proxyData.addProxyStore!.description,

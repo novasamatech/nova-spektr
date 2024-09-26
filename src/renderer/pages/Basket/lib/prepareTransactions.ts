@@ -61,6 +61,7 @@ export const prepareTransaction = {
   prepareDelegateTransaction,
   prepareRevokeDelegationTransaction,
   prepareEditDelegationTransaction,
+  prepareRemarkTransaction,
 };
 
 async function getTransactionData(
@@ -653,4 +654,29 @@ async function prepareRevokeDelegationTransaction({
     totalFee: '0',
     multisigDeposit: '0',
   } satisfies RevokeDelegationInput;
+}
+
+type RemarkInput = {
+  chain: Chain;
+  asset: Asset;
+
+  shards: Account[];
+  proxiedAccount?: ProxiedAccount;
+  signatory?: Account;
+  remark: string;
+};
+
+async function prepareRemarkTransaction({ transaction, wallets, chains, apis, feeMap }: DataParams) {
+  const { chain, account, fee } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
+
+  return {
+    id: transaction.id,
+    chain,
+    asset: chain.assets[0],
+    shards: [account],
+    destination: transaction.coreTx.args.dest,
+    remark: '',
+
+    fee,
+  } as RemarkInput;
 }

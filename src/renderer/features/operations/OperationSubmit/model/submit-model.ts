@@ -275,6 +275,5 @@ export const submitModel = {
   },
   output: {
     formSubmitted,
-    extrinsicSucceeded,
   },
 };

@@ -146,7 +146,7 @@ sample({
   fn: (transferData, signParams) => ({
     event: {
       ...signParams,
-      chainId: transferData.networkStore!.chain.chainId,
+      chain: transferData.networkStore!.chain,
       account: transferData.restakeStore!.shards[0],
       signatory: transferData.restakeStore!.signatory,
       description: transferData.restakeStore!.description,

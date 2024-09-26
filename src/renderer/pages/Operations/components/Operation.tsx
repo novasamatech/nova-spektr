@@ -9,7 +9,7 @@ import { ChainTitle, XcmChains } from '@entities/chain';
 import { useMultisigEvent } from '@entities/multisig';
 import { TransactionTitle, getTransactionAmount, isXcmTransaction } from '@entities/transaction';
 
-import OperationFullInfo from './OperationFullInfo';
+import { OperationFullInfo } from './OperationFullInfo';
 import { Status } from './Status';
 
 type Props = {

@@ -21,7 +21,7 @@ type Props = {
   account?: MultisigAccount;
 };
 
-const OperationFullInfo = ({ tx, account }: Props) => {
+export const OperationFullInfo = ({ tx, account }: Props) => {
   const { t } = useI18n();
   const { api, chain, connection, extendedChain } = useNetworkData(tx.chainId);
 
@@ -85,5 +85,3 @@ const OperationFullInfo = ({ tx, account }: Props) => {
     </div>
   );
 };
-
-export default OperationFullInfo;

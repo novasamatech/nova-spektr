@@ -154,7 +154,7 @@ sample({
   fn: (transferData, signParams) => ({
     event: {
       ...signParams,
-      chainId: transferData.networkStore!.chain.chainId,
+      chain: transferData.networkStore!.chain,
       account: transferData.transferStore!.account,
       signatory: transferData.transferStore!.signatory,
       description: transferData.transferStore!.description,

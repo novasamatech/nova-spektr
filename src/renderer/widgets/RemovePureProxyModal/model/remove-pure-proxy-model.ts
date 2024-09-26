@@ -418,7 +418,7 @@ sample({
   fn: (proxyData, signParams) => ({
     event: {
       ...signParams,
-      chainId: proxyData.removeProxyStore!.chain.chainId,
+      chain: proxyData.removeProxyStore!.chain,
       account: proxyData.removeProxyStore!.account,
       signatory: proxyData.removeProxyStore!.signatory,
       description: proxyData.removeProxyStore!.description,
