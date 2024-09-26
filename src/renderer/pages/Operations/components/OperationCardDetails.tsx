@@ -442,25 +442,27 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
 
           {depositorSignatory && (
             <DetailRow label={t('operation.details.depositor')} className={valueClass}>
-              {depositorWallet ? (
-                <ExplorersPopover
-                  button={<WalletCardSm wallet={depositorWallet} />}
-                  address={depositorSignatory.accountId}
-                  explorers={explorers}
-                  addressPrefix={addressPrefix}
-                />
-              ) : (
-                <AddressWithExplorers
-                  explorers={explorers}
-                  accountId={depositorSignatory.accountId}
-                  name={depositorSignatory.name}
-                  addressFont={AddressStyle}
-                  addressPrefix={addressPrefix}
-                  matrixId={matrix.userId}
-                  wrapperClassName="-mr-2 min-w-min"
-                  type="short"
-                />
-              )}
+              <div className="-mr-2">
+                {depositorWallet ? (
+                  <ExplorersPopover
+                    button={<WalletCardSm wallet={depositorWallet} />}
+                    address={depositorSignatory.accountId}
+                    explorers={explorers}
+                    addressPrefix={addressPrefix}
+                  />
+                ) : (
+                  <AddressWithExplorers
+                    explorers={explorers}
+                    accountId={depositorSignatory.accountId}
+                    name={depositorSignatory.name}
+                    addressFont={AddressStyle}
+                    addressPrefix={addressPrefix}
+                    matrixId={matrix.userId}
+                    wrapperClassName="-mr-2 min-w-min"
+                    type="short"
+                  />
+                )}
+              </div>
             </DetailRow>
           )}
 
