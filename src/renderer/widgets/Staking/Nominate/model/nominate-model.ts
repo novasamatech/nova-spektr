@@ -363,7 +363,7 @@ sample({
   fn: (nominateFlowData, signParams) => ({
     event: {
       ...signParams,
-      chainId: nominateFlowData.walletData!.chain.chainId,
+      chain: nominateFlowData.walletData!.chain,
       account: nominateFlowData.nominateData!.shards[0],
       signatory: nominateFlowData.nominateData!.signatory,
       description: nominateFlowData.nominateData!.description,
