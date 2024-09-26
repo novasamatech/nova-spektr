@@ -51,6 +51,7 @@ const $network = combine($fellowshipChain, $fellowshipChainApi, (chain, api) => 
 
 export const fellowshipNetworkModel = {
   $network,
+  $selectedChainId,
 
   $isActive,
   $isConnected,

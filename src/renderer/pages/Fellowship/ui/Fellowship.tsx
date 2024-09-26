@@ -2,7 +2,7 @@ import { useGate, useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { type ChainId } from '@/shared/core';
-import { FootnoteText, Header, Select } from '@shared/ui';
+import { BodyText, Header, Icon, Select } from '@shared/ui';
 import { Box, ScrollArea } from '@shared/ui-kit';
 import { fellowshipMembersFeature } from '@/features/fellowship-members';
 import { fellowshipProfileFeature } from '@/features/fellowship-profile';
@@ -18,27 +18,12 @@ export const Fellowship = () => {
   const { t } = useI18n();
   useGate(fellowshipPageModel.gates.flow);
 
-  const network = useUnit(fellowshipNetworkFeature.model.network.$network);
+  const selectedChain = useUnit(fellowshipNetworkFeature.model.network.$selectedChainId);
 
   return (
     <div className="flex h-full flex-col">
       <Header title={t('fellowship.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
-        <Box direction="row" gap={2} verticalAlign="center">
-          {/*TODO remove before release*/}
-          {/* eslint-disable-next-line i18next/no-literal-string */}
-          <FootnoteText className="text-error">Select network:</FootnoteText>
-          <Select
-            className="rounded-md border border-error"
-            placeholder="Select network"
-            selectedId={network?.chainId}
-            options={[
-              { id: COLLECTIVES_CHAIN_ID, value: COLLECTIVES_CHAIN_ID, element: 'Polkadot People' },
-              { id: COLLECTIVES_WESTEND_CHAIN_ID, value: COLLECTIVES_WESTEND_CHAIN_ID, element: 'Test People' },
-            ]}
-            onChange={(x) => fellowshipNetworkFeature.model.network.selectCollective({ chainId: x.id as ChainId })}
-          />
-          <Search />
-        </Box>
+        <Search />
       </Header>
 
       <ScrollArea>
@@ -47,6 +32,27 @@ export const Fellowship = () => {
             <div className="grid grid-cols-3 gap-3">
               <ProfileCard onClick={() => {}} />
               <MembersCard onClick={() => {}} />
+
+              {/*TODO remove before release*/}
+              <div className="flex flex-col justify-center gap-1 rounded-md border-4 border-alert bg-alert-background-warning px-3">
+                {/* eslint-disable-next-line i18next/no-literal-string */}
+                <BodyText className="flex items-center gap-1 text-alert">
+                  <Icon name="warn" size={12} className="text-inherit" />
+                  {/* eslint-disable-next-line i18next/no-literal-string */}
+                  <span>DEV MODE</span>
+                </BodyText>
+                <Select
+                  placeholder="Select network"
+                  selectedId={selectedChain ?? undefined}
+                  options={[
+                    { id: COLLECTIVES_CHAIN_ID, value: COLLECTIVES_CHAIN_ID, element: 'Polkadot People' },
+                    { id: COLLECTIVES_WESTEND_CHAIN_ID, value: COLLECTIVES_WESTEND_CHAIN_ID, element: 'Test People' },
+                  ]}
+                  onChange={(x) =>
+                    fellowshipNetworkFeature.model.network.selectCollective({ chainId: x.id as ChainId })
+                  }
+                />
+              </div>
             </div>
 
             <Filters />
