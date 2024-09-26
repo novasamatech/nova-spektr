@@ -24,7 +24,10 @@ export const MembersModal = ({ children }: PropsWithChildren) => {
       <Modal.Title close>{t('fellowship.members.modalTitle')}</Modal.Title>
       <Modal.Content>
         <Box padding={[4, 5]} gap={6}>
-          <SearchInput placeholder={t('general.input.searchLabel')} value={query} onChange={setQuery} />
+          {members.length !== 0 ? (
+            <SearchInput placeholder={t('general.input.searchLabel')} value={query} onChange={setQuery} />
+          ) : null}
+
           {members.length === 0 ? (
             <MembersListEmptyState />
           ) : (
@@ -34,9 +37,7 @@ export const MembersModal = ({ children }: PropsWithChildren) => {
               </FootnoteText>
 
               {nonNullable(input) &&
-                members.map(item => {
-                  return <Member key={item.accountId} item={item} chain={input.chain}></Member>;
-                })}
+                members.map(item => <Member key={item.accountId} item={item} chain={input.chain} />)}
             </Box>
           )}
         </Box>
