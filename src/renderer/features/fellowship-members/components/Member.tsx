@@ -37,19 +37,27 @@ export const Member = ({ item, chain }: Props) => {
 const Rank = ({ rank }: { rank: number }) => {
   let variant: ComponentProps<typeof Label>['variant'] = 'gray';
 
-  if (rank >= 4) {
+  if (rank === 2) {
+    variant = 'orange';
+  }
+
+  if (rank === 3) {
+    variant = 'red';
+  }
+
+  if (rank === 4) {
     variant = 'purple';
   }
 
-  if (rank >= 5) {
+  if (rank === 5) {
     variant = 'lightBlue';
   }
 
-  if (rank >= 6) {
+  if (rank === 6) {
     variant = 'green';
   }
 
-  if (rank >= 7) {
+  if (rank === 7) {
     variant = 'blue';
   }
 
