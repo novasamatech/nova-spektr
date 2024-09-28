@@ -15,6 +15,6 @@ sample({
 sample({
   clock: [fellowshipNetworkFeature.model.network.$isDisconnected, membersFeatureStatus.start],
   filter: fellowshipNetworkFeature.model.network.$isDisconnected,
-  fn: () => new Error(error.networkDisabled),
+  fn: () => ({ type: 'warning' as const, error: new Error(error.networkDisabled) }),
   target: membersFeatureStatus.fail,
 });

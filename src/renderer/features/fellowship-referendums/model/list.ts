@@ -9,6 +9,7 @@ import { filterModel } from './filter';
 import { referendumsFeatureStatus } from './status';
 
 const $referendums = fellowshipModel.$store.map(store => store?.referendums ?? []);
+const $meta = fellowshipModel.$store.map(store => store?.referendumMeta ?? {});
 
 const $referendumsFilteredByQuery = combine($referendums, filterModel.$debouncedQuery, (referendums, query) => {
   return performSearch({
@@ -61,6 +62,7 @@ export const referendumListModel = {
   $filteredReferendum,
   $ongoing,
   $completed,
+  $meta,
   $pending: or(collectiveDomain.referendum.pending, referendumsFeatureStatus.isStarting),
   $fulfulled: and(collectiveDomain.referendum.fulfilled, referendumsFeatureStatus.isRunning),
 };

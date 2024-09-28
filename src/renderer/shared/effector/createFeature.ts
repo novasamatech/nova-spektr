@@ -4,12 +4,16 @@ import { readonly } from 'patronum';
 
 import { nonNullable } from '@/shared/lib/utils';
 
+type ErrorType = 'fatal' | 'error' | 'warning';
+
 type IdleState = { status: 'idle' };
 type StartingState = { status: 'starting' };
 type RunningState<T> = { status: 'running'; data: T };
-type FailedState = { status: 'failed'; error: Error };
+type FailedState = { status: 'failed'; error: Error; type: ErrorType };
 
 type State<T> = IdleState | StartingState | RunningState<T> | FailedState;
+
+export type Feature<T> = ReturnType<typeof createFeature<T>>;
 
 export const createFeature = <T = null>(input: Store<T | null> = createStore(null)) => {
   const $state = createStore<State<T>>({ status: 'idle' });
@@ -18,16 +22,18 @@ export const createFeature = <T = null>(input: Store<T | null> = createStore(nul
 
   const start = createEvent();
   const stop = createEvent();
-  const fail = createEvent<Error>();
+  const fail = createEvent<{ error: Error; type: ErrorType }>();
   const restore = createEvent();
 
   const running = createEvent<T>();
-  const stopped = $status.updates.filter({ fn: (x) => x === 'idle' });
+  const failed = $status.updates.filter({ fn: (x) => x === 'failed' });
+  const stopped = $status.updates.filter({ fn: (x) => x === 'idle' || x === 'failed' });
 
   const gate = createGate();
 
   const isRunning = $status.map((x) => x === 'running');
   const isStarting = $status.map((x) => x === 'starting');
+  const isFailed = $status.map((x) => x === 'failed');
 
   const inputFulfill = input.updates.filter({ fn: nonNullable }) as Event<T>;
 
@@ -44,7 +50,8 @@ export const createFeature = <T = null>(input: Store<T | null> = createStore(nul
   sample({
     clock: start,
     source: input,
-    fn: (data): StartingState | RunningState<T> => (data ? { status: 'running', data } : { status: 'starting' }),
+    fn: (data): StartingState | RunningState<T> =>
+      data !== null ? { status: 'running', data } : { status: 'starting' },
     target: $state,
   });
 
@@ -56,7 +63,7 @@ export const createFeature = <T = null>(input: Store<T | null> = createStore(nul
 
   sample({
     clock: inputFulfill,
-    filter: $status.map((status) => status === 'starting'),
+    filter: isStarting,
     fn: (data): RunningState<T> => ({ status: 'running', data }),
     target: $state,
   });
@@ -70,8 +77,9 @@ export const createFeature = <T = null>(input: Store<T | null> = createStore(nul
 
   sample({
     clock: input.updates,
-    filter: $status.map((status) => status === 'running'),
-    fn: (data): StartingState | RunningState<T> => (data ? { status: 'running', data } : { status: 'starting' }),
+    filter: isRunning,
+    fn: (data): StartingState | RunningState<T> =>
+      data !== null ? { status: 'running', data } : { status: 'starting' },
     target: $state,
   });
 
@@ -84,28 +92,32 @@ export const createFeature = <T = null>(input: Store<T | null> = createStore(nul
   sample({
     clock: restore,
     source: input,
-    filter: $status.map((status) => status === 'failed'),
-    fn: (data): StartingState | RunningState<T> => (data ? { status: 'running', data } : { status: 'starting' }),
+    filter: isFailed,
+    fn: (data): StartingState | RunningState<T> =>
+      data !== null ? { status: 'running', data } : { status: 'starting' },
     target: $state,
   });
 
   sample({
     clock: fail,
-    fn: (error): FailedState => ({ status: 'failed', error }),
+    fn: ({ error, type }): FailedState => ({ status: 'failed', error, type }),
     target: $state,
   });
 
   return {
-    status: $status,
+    status: readonly($status),
     state: readonly($state),
-    input: $input,
+    input: readonly($input),
+
     gate,
 
     running: readonly(running),
-    stopped,
+    stopped: readonly(stopped),
+    failed: readonly(failed),
 
-    isRunning,
-    isStarting,
+    isRunning: readonly(isRunning),
+    isStarting: readonly(isStarting),
+    isFailed: readonly(isFailed),
 
     start,
     stop,

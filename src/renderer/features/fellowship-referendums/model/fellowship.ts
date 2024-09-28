@@ -12,7 +12,7 @@ const $store = combine($fellowshipStore, referendumsFeatureStatus.state, (fellow
     return null;
   }
 
-  return fellowshipStore[state.data.chainId];
+  return fellowshipStore[state.data.chainId] ?? null;
 });
 
 export const fellowshipModel = {

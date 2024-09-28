@@ -1,6 +1,6 @@
 import { createStore, sample } from 'effector';
 
-import { connectToFeatureInput } from '@/shared/effector';
+import { attachToFeatureInput } from '@/shared/effector';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { toKeysRecord } from '@shared/lib/utils';
 import { type Voting, collectiveDomain } from '@/domains/collectives';
@@ -10,14 +10,13 @@ import { referendumsFeatureStatus } from './status';
 
 const $voting = fellowshipModel.$store.map(x => x?.voting ?? []);
 const $referendums = fellowshipModel.$store.map(store => store?.referendums ?? []);
-const $walletVoting = createStore<Voting[]>([]);
 
-const referendumUpdates = connectToFeatureInput(referendumsFeatureStatus, $referendums);
-const votingUpdates = connectToFeatureInput(referendumsFeatureStatus, $voting);
+const $walletVoting = createStore<Voting[]>([]).reset(referendumsFeatureStatus.stopped);
 
 sample({
-  clock: referendumUpdates,
-  fn: ({ input: { palletType, api, chainId, wallet }, store: referendums }) => {
+  clock: attachToFeatureInput(referendumsFeatureStatus, $referendums),
+
+  fn: ({ input: { palletType, api, chainId, wallet }, data: referendums }) => {
     return {
       palletType,
       api,
@@ -27,16 +26,19 @@ sample({
       accounts: wallet.accounts.map(a => a.accountId as AccountId),
     };
   },
+
   target: collectiveDomain.voting.subscribe,
 });
 
 sample({
-  clock: votingUpdates,
-  fn: ({ input: { wallet }, store: voting }) => {
+  clock: attachToFeatureInput(referendumsFeatureStatus, $voting),
+
+  fn: ({ input: { wallet }, data: voting }) => {
     const accounts = toKeysRecord(wallet.accounts.map(a => a.accountId));
 
     return voting.filter(voting => voting.accountId in accounts);
   },
+
   target: $walletVoting,
 });
 

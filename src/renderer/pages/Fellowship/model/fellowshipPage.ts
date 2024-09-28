@@ -13,7 +13,7 @@ const flow = createGate<{ chainId: ChainId }>();
 // We want to show main fellowship on specific chain - Polkadot Collectives
 sample({
   clock: flow.open,
-  fn: () => ({ chainId: COLLECTIVES_WESTEND_CHAIN_ID }),
+  fn: () => ({ chainId: COLLECTIVES_CHAIN_ID }),
   target: fellowshipNetworkFeature.model.network.selectCollective,
 });
 

@@ -23,7 +23,13 @@ export const createDataSource = <Store, Params, Response = Store>({
 
   sample({
     clock: request,
-    target: [fx, $lastParams],
+    target: fx,
+  });
+
+  sample({
+    clock: fx.fail,
+    fn: ({ params }) => params,
+    target: $lastParams,
   });
 
   sample({

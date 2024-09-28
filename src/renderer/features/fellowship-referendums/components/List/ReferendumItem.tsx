@@ -5,7 +5,7 @@ import { useI18n } from '@app/providers';
 import { FootnoteText, HeadlineText } from '@shared/ui';
 import { Box, Skeleton, Surface } from '@shared/ui-kit';
 import { type Referendum, collectiveDomain } from '@/domains/collectives';
-import { fellowshipModel } from '../../model/fellowship';
+import { referendumListModel } from '../../model/list';
 import { thresholdsModel } from '../../model/thresholds';
 import { ReferendumVoteChart } from '../shared/ReferendumVoteChart';
 import { TrackInfo } from '../shared/TrackInfo';
@@ -29,9 +29,9 @@ export const ReferendumItem = memo<Props>(({ referendum, isTitlesLoading, onSele
   });
 
   const title = useStoreMap({
-    store: fellowshipModel.$store,
+    store: referendumListModel.$meta,
     keys: [referendum.id],
-    fn: (store, [id]) => store?.referendumMeta?.[id]?.title ?? null,
+    fn: (store, [id]) => store[id]?.title ?? null,
   });
   const isPassing = thresholds ? thresholds.support.passing : false;
 
