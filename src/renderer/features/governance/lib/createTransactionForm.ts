@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type BN, BN_ZERO } from '@polkadot/util';
+import { BN_ZERO } from '@polkadot/util';
 import { type Store, combine, createEvent, createStore, sample } from 'effector';
 import { type Form, type FormConfig, createForm } from 'effector-forms';
 import { isNil } from 'lodash';
@@ -32,7 +32,7 @@ type TransactionFactory<FormShape extends NonNullable<unknown>> = (
   params: Omit<Params<FormShape>, 'createTransactionStore' | 'form'> & { form: Form<FormShape & BasicFormParams> },
 ) => Store<Transaction | null>;
 
-export type AccountOption = { account: Account; balance: BN };
+export type AccountOption = { account: Account; balance: Balance | null };
 
 export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
   $activeWallet,
@@ -122,7 +122,7 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
 
         return {
           account,
-          balance: transferableAmountBN(balance),
+          balance: balance ?? null,
         };
       });
     },
@@ -156,7 +156,7 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
           asset.assetId.toString(),
         );
 
-        return { account: firstAccount, balance: transferableAmountBN(balance) };
+        return { account: firstAccount, balance: balance ?? null };
       });
     },
     target: $signatories,

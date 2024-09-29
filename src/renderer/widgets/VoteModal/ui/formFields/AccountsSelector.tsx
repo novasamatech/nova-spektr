@@ -1,17 +1,18 @@
-import { type BN } from '@polkadot/util';
+import { BN_ZERO } from '@polkadot/util';
 import { useMemo } from 'react';
 
-import { useI18n } from '@app/providers';
-import { type Account, type Asset, type Chain } from '@shared/core';
-import { toAddress, toShortAddress } from '@shared/lib/utils';
-import { InputHint, Select } from '@shared/ui';
-import { type DropdownOption } from '@shared/ui/Dropdowns/common/types';
-import { AssetBalance } from '@entities/asset';
-import { AccountAddress, accountUtils } from '@entities/wallet';
+import { useI18n } from '@/app/providers';
+import { type Account, type Asset, type Balance, type Chain } from '@/shared/core';
+import { toAddress, toShortAddress } from '@/shared/lib/utils';
+import { InputHint, Select } from '@/shared/ui';
+import { type DropdownOption } from '@/shared/ui/Dropdowns/common/types';
+import { AssetBalance } from '@/entities/asset';
+import { AccountAddress, accountUtils } from '@/entities/wallet';
+import { locksService } from '@entities/governance';
 
 type Props = {
   value: Account | null;
-  accounts: { account: Account; balance: BN }[];
+  accounts: { account: Account; balance: Balance | null }[];
   hasError: boolean;
   errorText: string;
   asset: Asset;
@@ -27,6 +28,7 @@ export const AccountsSelector = ({ value, accounts, asset, chain, hasError, erro
       accounts.map<DropdownOption>(({ account, balance }) => {
         const isShard = accountUtils.isShardAccount(account);
         const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
+        const availableBalance = balance ? locksService.getAvailableBalance(balance) : BN_ZERO;
 
         return {
           id: account.id.toString(),
@@ -40,7 +42,7 @@ export const AccountsSelector = ({ value, accounts, asset, chain, hasError, erro
                 name={isShard ? toShortAddress(address, 16) : account.name}
                 canCopy={false}
               />
-              <AssetBalance value={balance} asset={asset} />
+              <AssetBalance value={availableBalance} asset={asset} />
             </div>
           ),
         };
