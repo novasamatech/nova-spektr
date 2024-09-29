@@ -16,9 +16,17 @@ const getReferendumList: GovernanceApi['getReferendumList'] = async (chain, call
   const parseSubsquareData = (data: SubsquareSimpleReferendum[]) =>
     dictionary(data, 'referendumIndex', (item) => item.title);
 
-  return subsquareApiService
-    .fetchReferendumList({ network, referendumType: 'gov2' }, (data, done) => callback(parseSubsquareData(data), done))
-    .then(parseSubsquareData);
+  for await (const page of subsquareApiService.fetchReferendumList({ network, referendumType: 'gov2' })) {
+    callback({
+      done: false,
+      value: parseSubsquareData(page),
+    });
+  }
+
+  callback({
+    done: true,
+    value: undefined,
+  });
 };
 
 const getReferendumDetails: GovernanceApi['getReferendumDetails'] = async (chain, referendumId) => {
@@ -32,15 +40,13 @@ const getReferendumDetails: GovernanceApi['getReferendumDetails'] = async (chain
   }
 };
 
-const getReferendumVotes: GovernanceApi['getReferendumVotes'] = (chain, referendumId, callback) => {
+const getReferendumVotes: GovernanceApi['getReferendumVotes'] = (chain, referendumId) => {
   const network = chain.specName;
 
   const mapVote = (vote: SubsquareReferendumVote) => vote.account;
 
   return subsquareApiService
-    .fetchReferendumVotes({ network, referendumType: 'gov2', referendumId }, (data, done) =>
-      callback(data.map(mapVote), done),
-    )
+    .fetchReferendumVotes({ network, referendumType: 'gov2', referendumId })
     .then((data) => data.map(mapVote));
 };
 

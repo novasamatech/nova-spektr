@@ -14,7 +14,7 @@ type Task<T = any> = {
   reject: (error: unknown) => void;
 };
 
-export class AsyncTaskPool {
+class AsyncTaskPool {
   private queue: Task[] = [];
   private activeTasks: Task[] = [];
 
@@ -80,3 +80,5 @@ export class AsyncTaskPool {
     }
   }
 }
+
+export const createAsyncTaskPool = (params: Params) => new AsyncTaskPool(params);

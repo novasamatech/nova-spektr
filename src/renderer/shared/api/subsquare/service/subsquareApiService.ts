@@ -1,4 +1,4 @@
-import { createQueuedRequest } from '@/shared/lib/utils';
+import { createAsyncTaskPool } from '../../substrate-helpers';
 import {
   type SubsquareFullReferendum,
   type SubsquareReferendumListResponse,
@@ -6,7 +6,12 @@ import {
 } from '../lib/types';
 
 type ReferendumType = 'gov2' | 'fellowship';
-type ChunkDataCallback<T> = (chunk: T, done: boolean) => unknown;
+
+const subsquareRequestPool = createAsyncTaskPool({
+  retryCount: 3,
+  poolSize: 5,
+  retryDelay: 100,
+});
 
 const createURL = (network: string, href: string, query?: Record<string, string | number | undefined>) => {
   const url = new URL(href, `https://${network}.subsquare.io`);
@@ -27,10 +32,11 @@ type FetchReferendumListParams = {
   limit?: number;
 };
 
-const fetchReferendumList = async (
-  { network, referendumType, limit = Number.MAX_SAFE_INTEGER }: FetchReferendumListParams,
-  callback?: ChunkDataCallback<SubsquareFullReferendum[]>,
-): Promise<SubsquareFullReferendum[]> => {
+async function* fetchReferendumList({
+  network,
+  referendumType,
+  limit = Number.MAX_SAFE_INTEGER,
+}: FetchReferendumListParams) {
   const pageSize = Math.min(100, limit);
 
   const getApiUrl = (page: number, size: number) => {
@@ -44,15 +50,21 @@ const fetchReferendumList = async (
     );
   };
 
-  const requestParams = { method: 'GET' };
+  const request = (page: number): Promise<SubsquareReferendumListResponse> =>
+    subsquareRequestPool.call(() => fetch(getApiUrl(page, pageSize), { method: 'GET' }).then((res) => res.json()));
 
-  return createQueuedRequest<SubsquareReferendumListResponse, SubsquareFullReferendum>({
-    makeRequest: (index) => fetch(getApiUrl(index + 1, pageSize), requestParams).then((res) => res.json()),
-    getRecords: (res) => res.items,
-    getTotalRequests: (res) => Math.ceil(res.total / pageSize),
-    callback,
-  });
-};
+  const firstPage = await request(1);
+  yield firstPage.items;
+
+  if (firstPage.total < pageSize) {
+    return;
+  }
+
+  const totalRequests = Math.ceil(firstPage.total / pageSize) + 1;
+  for (let pageNumber = 2; pageNumber < totalRequests; pageNumber++) {
+    yield request(pageNumber).then((x) => x.items);
+  }
+}
 
 type FetchReferendumParams = {
   network: string;
@@ -65,9 +77,12 @@ const fetchReferendum = async ({
   referendumType,
   referendumId,
 }: FetchReferendumParams): Promise<SubsquareFullReferendum> => {
-  const url = createURL(network, `/api/${referendumType}/referendums/${referendumId}`);
+  const url = createURL(
+    network,
+    `/api/${referendumType === 'fellowship' ? `${referendumType}/referenda/${referendumId}` : `${referendumType}/referendums/${referendumId}`}`,
+  );
 
-  return fetch(url, { method: 'GET' }).then((r) => r.json());
+  return subsquareRequestPool.call(() => fetch(url, { method: 'GET' }).then((r) => r.json()));
 };
 
 type FetchVotesParams = {
@@ -76,19 +91,14 @@ type FetchVotesParams = {
   referendumId: string;
 };
 
-const fetchReferendumVotes = async (
-  { network, referendumType, referendumId }: FetchVotesParams,
-  callback?: ChunkDataCallback<SubsquareReferendumVote[]>,
-): Promise<SubsquareReferendumVote[]> => {
+const fetchReferendumVotes = async ({
+  network,
+  referendumType,
+  referendumId,
+}: FetchVotesParams): Promise<SubsquareReferendumVote[]> => {
   const url = createURL(network, `/api/${referendumType}/referenda/${referendumId}/votes`);
 
-  return fetch(url, { method: 'GET' })
-    .then((r) => r.json())
-    .then((votes: SubsquareReferendumVote[]) => {
-      callback?.(votes, true);
-
-      return votes;
-    });
+  return subsquareRequestPool.call(() => fetch(url, { method: 'GET' }).then((r) => r.json()));
 };
 
 export const subsquareApiService = {

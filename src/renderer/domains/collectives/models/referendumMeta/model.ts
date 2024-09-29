@@ -19,20 +19,26 @@ const {
   fulfilled,
 } = createDataSource<CollectivesStruct<Record<ReferendumId, ReferendumMeta>>, RequestParams, ReferendumMeta[]>({
   initial: {},
-  fn: () => {
+  fn: async () => {
+    let response: ReferendumMeta[] = [];
+
     // TODO implement
-    return subsquareApiService
-      .fetchReferendumList({
-        network: 'collectives',
-        referendumType: 'fellowship',
-      })
-      .then<ReferendumMeta[]>(response => {
-        return response.map(x => ({
+    const pages = subsquareApiService.fetchReferendumList({
+      network: 'collectives',
+      referendumType: 'fellowship',
+    });
+
+    for await (const page of pages) {
+      response = response.concat(
+        page.map(x => ({
           referendumId: x.referendumIndex,
           title: x.title,
           description: x.content,
-        }));
-      });
+        })),
+      );
+    }
+
+    return response;
   },
   map: (store, { params, result }) => {
     const currectValue = pickNestedValue(store, params.palletType, params.chainId);

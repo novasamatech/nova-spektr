@@ -22,7 +22,7 @@ import {
   type Metadata,
   type NoID,
 } from '@shared/core';
-import { dictionary } from '@shared/lib/utils';
+import { dictionary, nonNullable } from '@shared/lib/utils';
 import { networkUtils } from '../lib/network-utils';
 
 const networkStarted = createEvent();
@@ -439,7 +439,7 @@ sample({
 sample({
   clock: saveMetadataFx.doneData,
   source: $providers,
-  filter: (metadata) => Boolean(metadata),
+  filter: (_, metadata) => nonNullable(metadata),
   fn: (providers, metadata) => ({
     provider: providers[metadata!.chainId],
     metadata: metadata!.metadata,
