@@ -96,6 +96,7 @@ const $referendums = combine(
 
     return referendums.map((referendum) => {
       const votes = votingService.getReferendumAccountVotes(referendum.referendumId, voting);
+      // TODO support multishard voting
       const voteTupple = Object.entries(votes).at(0);
       const vote = voteTupple ? { voter: voteTupple[0], vote: voteTupple[1] } : null;
 
