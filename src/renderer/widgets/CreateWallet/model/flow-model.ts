@@ -29,6 +29,7 @@ import { type AddMultisigStore, type FormSubmitEvent, Step } from '../lib/types'
 import { confirmModel } from './confirm-model';
 import { formModel } from './form-model';
 import { signatoryModel } from './signatory-model';
+import { walletProviderModel } from './wallet-provider-model';
 
 const stepChanged = createEvent<Step>();
 const feeChanged = createEvent<string>();
@@ -261,6 +262,14 @@ sample({
     };
   },
   target: createWalletFx,
+});
+
+sample({
+  clock: submitModel.output.formSubmitted,
+  filter: (results) => {
+    return submitUtils.isSuccessResult(results[0].result);
+  },
+  target: walletProviderModel.events.completed,
 });
 
 sample({

@@ -64,7 +64,11 @@ export const Signatory = ({
 
         return acc.concat(
           wallet.accounts
-            .filter((account) => (account as ChainAccount).chainId === chain.value.chainId)
+            .filter(
+              (account) =>
+                (account as ChainAccount).chainId === undefined ||
+                (account as ChainAccount).chainId === chain.value.chainId,
+            )
             .map((account) => {
               const address = toAddress(account.accountId, { prefix: chain.value.addressPrefix });
 
