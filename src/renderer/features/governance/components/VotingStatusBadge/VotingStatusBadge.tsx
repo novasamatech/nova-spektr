@@ -28,6 +28,7 @@ export const VotingStatusBadge = ({ referendum }: Props) => {
       NoDeposit: t('governance.referendums.noDeposit'),
       Deciding: t('governance.referendums.deciding'),
       Passing: t('governance.referendums.passing'),
+      Execute: t('governance.referendums.approved'),
     }[status];
 
     return <OperationStatus pallet={status === 'Passing' ? 'success' : 'default'}>{statusText}</OperationStatus>;
