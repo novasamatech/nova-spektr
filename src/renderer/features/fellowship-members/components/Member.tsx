@@ -13,7 +13,15 @@ type Props = {
 };
 
 export const Member = ({ item, chain }: Props) => {
+  // const identity = useStoreMap({
+  //   store: identityModel.$identity,
+  //   keys: [item.accountId],
+  //   fn: (identity, [accountId]) => identity[accountId] ?? null,
+  // });
+
   const address = toAddress(item.accountId, { prefix: chain.addressPrefix });
+
+  // console.log({ address, identity });
 
   return (
     <div className="flex items-center gap-2 rounded-md px-2 py-3 contain-inline-size hover:bg-block-background-hover">

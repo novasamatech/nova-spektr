@@ -11,7 +11,7 @@ export type {
   RejectedReferendum,
   Tally,
   TimedOutReferendum,
-} from './models/referendum/types';
+} from './model/referendum/types';
 
 export type {
   LinearDecreasingCurve,
@@ -20,8 +20,8 @@ export type {
   Track,
   VotingCurve,
   VotingThreshold,
-} from './models/tracks/types';
+} from './model/tracks/types';
 
-export type { Voting } from './models/voting/types';
+export type { Voting } from './model/voting/types';
 
-export type { Member } from './models/members/types';
+export type { Member } from './model/members/types';

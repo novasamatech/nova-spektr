@@ -2,14 +2,14 @@ import { combine } from 'effector';
 import { pick } from 'lodash';
 
 import { combineStores } from './lib/helpers';
-import { membersDomainModel } from './models/members/model';
-import { membersService } from './models/members/service';
-import { referendumDomainModel } from './models/referendum/model';
-import { referendumService } from './models/referendum/service';
-import { referendumMetaModel } from './models/referendumMeta/model';
-import { tracksDomainModel } from './models/tracks/model';
-import { tracksService } from './models/tracks/service';
-import { votingDomainModel } from './models/voting/model';
+import { membersDomainModel } from './model/members/model';
+import { membersService } from './model/members/service';
+import { referendumDomainModel } from './model/referendum/model';
+import { referendumService } from './model/referendum/service';
+import { referendumMetaModel } from './model/referendumMeta/model';
+import { tracksDomainModel } from './model/tracks/model';
+import { tracksService } from './model/tracks/service';
+import { votingDomainModel } from './model/voting/model';
 
 const $store = combine(
   {

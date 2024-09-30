@@ -8,6 +8,16 @@ import { fellowshipModel } from './fellowship';
 import { filterModel } from './filter';
 import { referendumsFeatureStatus } from './status';
 
+sample({
+  clock: referendumsFeatureStatus.running,
+  target: [collectiveDomain.referendum.subscribe, collectiveDomain.referendumMeta.request],
+});
+
+sample({
+  clock: referendumsFeatureStatus.stopped,
+  target: collectiveDomain.referendum.unsubscribe,
+});
+
 const $referendums = fellowshipModel.$store.map(store => store?.referendums ?? []);
 const $meta = fellowshipModel.$store.map(store => store?.referendumMeta ?? {});
 
@@ -46,16 +56,6 @@ const $filteredReferendum = either(
 
 const $ongoing = $filteredReferendum.map(collectiveDomain.referendum.service.getOngoingReferendums);
 const $completed = $filteredReferendum.map(collectiveDomain.referendum.service.getCompletedReferendums);
-
-sample({
-  clock: referendumsFeatureStatus.running,
-  target: [collectiveDomain.referendum.subscribe, collectiveDomain.referendumMeta.request],
-});
-
-sample({
-  clock: referendumsFeatureStatus.stopped,
-  target: collectiveDomain.referendum.unsubscribe,
-});
 
 export const referendumListModel = {
   $referendums,

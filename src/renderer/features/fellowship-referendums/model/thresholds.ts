@@ -5,17 +5,17 @@ import { type VotingThreshold, collectiveDomain } from '@/domains/collectives';
 
 import { fellowshipModel } from './fellowship';
 import { referendumListModel } from './list';
-import { membersModel } from './members';
 import { tracksModel } from './tracks';
 
 type Thresholds = Record<ReferendumId, Record<'support' | 'approval', VotingThreshold>>;
 
 const $maxRank = fellowshipModel.$store.map(x => x?.maxRank ?? 0);
+const $members = fellowshipModel.$store.map(x => x?.members ?? []);
 
 const $thresholds = combine(
   referendumListModel.$referendums,
   $maxRank,
-  membersModel.$list,
+  $members,
   tracksModel.$list,
   (referendums, maxRank, members, tracks) => {
     const result: Thresholds = {};
