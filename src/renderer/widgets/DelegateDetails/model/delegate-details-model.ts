@@ -8,6 +8,7 @@ import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
 import { accountUtils, permissionUtils, walletModel } from '@/entities/wallet';
 import {
+  delegateRegistryAggregate,
   delegationAggregate,
   networkSelectorModel,
   proposerIdentityAggregate,
@@ -102,6 +103,11 @@ sample({
 sample({
   clock: flowStarted,
   target: $delegate,
+});
+
+sample({
+  clock: flowStarted,
+  target: delegateRegistryAggregate.events.requestDelegateRegistry,
 });
 
 sample({
