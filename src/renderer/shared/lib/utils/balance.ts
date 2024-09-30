@@ -188,11 +188,15 @@ export const totalAmount = <T extends AssetBalance>(balance?: T): string => {
   return bnFree.add(bnReserved).toString();
 };
 
-export const lockedAmount = ({ locked = [] }: Balance): string => {
+export const lockedAmountBN = ({ locked = [] }: Balance) => {
   const bnLocks = locked.map((lock) => new BN(lock.amount));
-  const bnFrozen = bnLocks?.reduce((acc, bnLock) => acc.add(bnLock), new BN(0));
+  const bnFrozen = bnLocks.reduce((acc, bnLock) => acc.add(bnLock), new BN(0));
 
-  return bnFrozen.toString();
+  return bnFrozen;
+};
+
+export const lockedAmount = (balance: Balance): string => {
+  return lockedAmountBN(balance).toString();
 };
 
 export const transferableAmountBN = <T extends AssetBalance>(balance?: T): BN => {
