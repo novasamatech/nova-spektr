@@ -18,17 +18,19 @@ const statusesMap: Record<
   TimedOut: { text: 'governance.referendums.timedOut', pallet: 'default' },
 };
 
-export const VotingStatusBadge = ({ passing, referendum }: Props) => {
+export const VotingStatusBadge = ({ referendum }: Props) => {
   const { t } = useI18n();
 
   if (referendumService.isOngoing(referendum)) {
-    const isPassing = passing ?? false;
+    const status = referendumService.getReferendumStatus(referendum);
 
-    return (
-      <OperationStatus pallet={isPassing ? 'success' : 'default'}>
-        {isPassing ? t('governance.referendums.passing') : t('governance.referendums.deciding')}
-      </OperationStatus>
-    );
+    const statusText = {
+      NoDeposit: t('governance.referendums.noDeposit'),
+      Deciding: t('governance.referendums.deciding'),
+      Passing: t('governance.referendums.passing'),
+    }[status];
+
+    return <OperationStatus pallet={status === 'Passing' ? 'success' : 'default'}>{statusText}</OperationStatus>;
   }
 
   if (referendumService.isApproved(referendum)) {
