@@ -143,6 +143,13 @@ export const getCreatedDateFromApi = async (neededBlock: BlockHeight, api: ApiPr
   return getCreatedDate(neededBlock, currentBlock, blockTime.toNumber());
 };
 
+export const getTimeToBlock = async (neededBlock: BlockHeight, api: ApiPromise): Promise<number> => {
+  const currentBlock = await getCurrentBlockNumber(api);
+  const blockTime = getExpectedBlockTime(api);
+
+  return Math.abs(neededBlock - currentBlock) * blockTime.toNumber();
+};
+
 export const getRelativeTimeFromApi = async (neededBlock: BlockHeight, api: ApiPromise): Promise<number> => {
   const blockTime = getExpectedBlockTime(api);
 

@@ -100,13 +100,14 @@ export const Governance = () => {
 
           {shouldRenderEmptyState && <EmptyGovernance />}
           {shouldNetworkDisabledError && <InactiveNetwork active className="grow" />}
-          {shouldRenderList && (
+          {shouldRenderList && network && (
             <div className="flex flex-col gap-y-3 pb-10">
               <OngoingReferendums
                 referendums={ongoing}
                 isTitlesLoading={isTitlesLoading}
                 isLoading={isLoading}
                 mixLoadingWithData={shouldShowLoadingState}
+                api={network.api}
                 onSelect={selectReferendum}
               />
               <CompletedReferendums
@@ -114,6 +115,7 @@ export const Governance = () => {
                 isTitlesLoading={isTitlesLoading}
                 isLoading={isLoading}
                 mixLoadingWithData={shouldShowLoadingState}
+                api={network.api}
                 onSelect={selectReferendum}
               />
             </div>

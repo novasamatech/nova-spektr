@@ -1,11 +1,14 @@
 import {
   type ApprovedReferendum,
+  type BlockHeight,
   type CompletedReferendum,
   type KilledReferendum,
   type OngoingReferendum,
   type Referendum,
+  type ReferendumStatus,
   type RejectedReferendum,
   type TimedOutReferendum,
+  type TrackInfo,
 } from '@/shared/core';
 
 export const referendumService = {
@@ -16,7 +19,8 @@ export const referendumService = {
   isTimedOut,
   isKilled,
 
-  getOperationStatus,
+  getReferendumStatus,
+  getReferendumEndTime,
 };
 
 function isOngoing(referendum: Referendum): referendum is OngoingReferendum {
@@ -44,10 +48,18 @@ function isKilled(referendum: Referendum): referendum is KilledReferendum {
 }
 
 // waiting for deposit, deciding, passing
-function getOperationStatus(referendum: OngoingReferendum) {
-  if (!referendum.decisionDeposit) return 'no_deposit';
+function getReferendumStatus(referendum: OngoingReferendum): ReferendumStatus {
+  if (!referendum.decisionDeposit) return 'NoDeposit';
 
-  if (referendum.deciding) return 'no_deposit';
+  if (referendum.deciding?.confirming) return 'Passing';
 
-  return 'deciding';
+  return 'Deciding';
+}
+
+function getReferendumEndTime(referendum: OngoingReferendum, track: TrackInfo, undecidingTimeout: number): BlockHeight {
+  if (referendum.deciding?.confirming) return referendum.deciding.confirming;
+
+  if (referendum.deciding) return referendum.deciding.since + track.decisionPeriod;
+
+  return referendum.submitted + undecidingTimeout;
 }

@@ -104,6 +104,7 @@ export type {
   Tally,
   ReferendumId,
   ReferendumType,
+  ReferendumStatus,
   ApprovedReferendum,
   RejectedReferendum,
   OngoingReferendum,

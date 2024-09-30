@@ -12,12 +12,12 @@ const Template: StoryFn<typeof ReferendumTimer> = (args) => <ReferendumTimer {..
 
 export const Primary = Template.bind({});
 Primary.args = {
-  status: 'execute',
+  status: 'Execute',
   time: 60000,
 };
 
 export const Pending = Template.bind({});
 Pending.args = {
-  status: 'approve',
+  status: 'Passing',
   time: 600000,
 };

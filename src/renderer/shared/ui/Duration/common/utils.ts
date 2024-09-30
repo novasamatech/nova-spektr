@@ -25,7 +25,7 @@ function secondsToDuration(seconds: number): Duration {
     days,
     hours,
     minutes: addLeadingZero(minutes),
-    seconds: addLeadingZero(remainingSeconds),
+    seconds: addLeadingZero(Math.round(remainingSeconds)),
   };
 }
 
