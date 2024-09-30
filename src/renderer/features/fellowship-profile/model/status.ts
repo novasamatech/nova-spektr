@@ -4,7 +4,10 @@ import { createFeature } from '@shared/effector';
 import { fellowshipNetworkFeature } from '@/features/fellowship-network';
 import { error } from '../constants';
 
-export const profileFeatureStatus = createFeature(fellowshipNetworkFeature.model.network.$network);
+export const profileFeatureStatus = createFeature({
+  name: 'profile',
+  input: fellowshipNetworkFeature.model.network.$network,
+});
 
 sample({
   clock: fellowshipNetworkFeature.model.network.$isActive,

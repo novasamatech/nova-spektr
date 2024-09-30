@@ -1,8 +1,13 @@
-import { type Event, type Store, createEvent, createStore, sample } from 'effector';
+import { type Event, type Store, createDomain, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { readonly } from 'patronum';
 
 import { nonNullable } from '@/shared/lib/utils';
+
+type Params<T> = {
+  name: string;
+  input?: Store<T | null>;
+};
 
 type ErrorType = 'fatal' | 'error' | 'warning';
 
@@ -15,21 +20,21 @@ type State<T> = IdleState | StartingState | RunningState<T> | FailedState;
 
 export type Feature<T> = ReturnType<typeof createFeature<T>>;
 
-export const createFeature = <T = null>(input: Store<T | null> = createStore(null)) => {
-  const $state = createStore<State<T>>({ status: 'idle' });
+export const createFeature = <T = null>({ name, input = createStore(null) }: Params<T>) => {
+  const domain = createDomain(name);
+
+  const $input = domain.createStore<T | null>(null);
+  const $state = domain.createStore<State<T>>({ status: 'idle' }, { name: 'state' });
   const $status = $state.map((x) => x.status);
-  const $input = createStore<T | null>(null);
 
-  const start = createEvent();
-  const stop = createEvent();
-  const fail = createEvent<{ error: Error; type: ErrorType }>();
-  const restore = createEvent();
+  const start = domain.createEvent('start');
+  const stop = domain.createEvent('stop');
+  const fail = domain.createEvent<{ error: Error; type: ErrorType }>('fail');
+  const restore = domain.createEvent('restore');
 
-  const running = createEvent<T>();
+  const running = domain.createEvent<T>('running');
   const failed = $status.updates.filter({ fn: (x) => x === 'failed' });
   const stopped = $status.updates.filter({ fn: (x) => x === 'idle' || x === 'failed' });
-
-  const gate = createGate();
 
   const isRunning = $status.map((x) => x === 'running');
   const isStarting = $status.map((x) => x === 'starting');
@@ -37,15 +42,7 @@ export const createFeature = <T = null>(input: Store<T | null> = createStore(nul
 
   const inputFulfill = input.updates.filter({ fn: nonNullable }) as Event<T>;
 
-  sample({
-    clock: gate.open,
-    target: start,
-  });
-
-  sample({
-    clock: gate.close,
-    target: stop,
-  });
+  // Status management
 
   sample({
     clock: start,
@@ -60,6 +57,23 @@ export const createFeature = <T = null>(input: Store<T | null> = createStore(nul
     fn: (): IdleState => ({ status: 'idle' }),
     target: $state,
   });
+
+  sample({
+    clock: restore,
+    source: input,
+    filter: isFailed,
+    fn: (data): StartingState | RunningState<T> =>
+      data !== null ? { status: 'running', data } : { status: 'starting' },
+    target: $state,
+  });
+
+  sample({
+    clock: fail,
+    fn: ({ error, type }): FailedState => ({ status: 'failed', error, type }),
+    target: $state,
+  });
+
+  // Input data management
 
   sample({
     clock: inputFulfill,
@@ -89,19 +103,24 @@ export const createFeature = <T = null>(input: Store<T | null> = createStore(nul
     target: $input,
   });
 
+  // Gate management
+
+  const gate = createGate(name ? `${name}/gate` : undefined);
+  const $gatesOpened = domain.createStore(0, { name: 'gatesOpened' });
+
+  $gatesOpened.on(gate.open, (x) => x + 1);
+  $gatesOpened.on(gate.close, (x) => x - 1);
+
   sample({
-    clock: restore,
-    source: input,
-    filter: isFailed,
-    fn: (data): StartingState | RunningState<T> =>
-      data !== null ? { status: 'running', data } : { status: 'starting' },
-    target: $state,
+    clock: $gatesOpened,
+    filter: (x) => x === 1,
+    target: start,
   });
 
   sample({
-    clock: fail,
-    fn: ({ error, type }): FailedState => ({ status: 'failed', error, type }),
-    target: $state,
+    clock: $gatesOpened,
+    filter: (x) => x === 0,
+    target: stop,
   });
 
   return {

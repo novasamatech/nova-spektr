@@ -23,7 +23,10 @@ const $input = combine(
   },
 );
 
-export const referendumsFeatureStatus = createFeature($input);
+export const referendumsFeatureStatus = createFeature({
+  name: 'referendums',
+  input: $input,
+});
 
 sample({
   clock: fellowshipNetworkFeature.model.network.$isActive,

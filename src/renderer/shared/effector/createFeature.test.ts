@@ -6,7 +6,7 @@ describe('createFeature', () => {
   it('should work', async () => {
     const scope = fork();
     const $input = createStore<{ ready: true } | null>(null);
-    const featureStatus = createFeature($input);
+    const featureStatus = createFeature({ name: 'test', input: $input });
 
     await allSettled(featureStatus.start, { scope });
 

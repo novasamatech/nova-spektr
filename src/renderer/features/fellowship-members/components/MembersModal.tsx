@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 import { type PropsWithChildren, useState } from 'react';
 
 import { useI18n } from '@/app/providers';
@@ -12,6 +12,8 @@ import { Member } from './Member';
 import { MembersListEmptyState } from './MembersListEmptyState';
 
 export const MembersModal = ({ children }: PropsWithChildren) => {
+  useGate(membersFeatureStatus.gate);
+
   const { t } = useI18n();
   const [query, setQuery] = useState('');
 
