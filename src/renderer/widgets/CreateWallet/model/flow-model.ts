@@ -23,7 +23,7 @@ import { networkModel, networkUtils } from '@entities/network';
 import { transactionService } from '@entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@features/operations/OperationSubmit';
+import { submitModel, submitUtils } from '@features/operations/OperationSubmit';
 import { type AddMultisigStore, type FormSubmitEvent, Step } from '../lib/types';
 
 import { confirmModel } from './confirm-model';
@@ -199,6 +199,7 @@ const createWalletFx = createEffect(
           name: name.trim(),
           accountId: accountId,
           threshold: threshold,
+          creatorAccountId: accountId,
           cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
           chainType: isEthereumChain ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
           type: AccountType.MULTISIG,
@@ -235,12 +236,15 @@ sample({
 });
 
 sample({
-  clock: submitModel.output.extrinsicSucceeded,
+  clock: submitModel.output.formSubmitted,
   source: {
     name: formModel.$createMultisigForm.fields.name.$value,
     threshold: formModel.$createMultisigForm.fields.threshold.$value,
     signatories: signatoryModel.$signatories,
     chain: formModel.$createMultisigForm.fields.chain.$value,
+  },
+  filter: (_, results) => {
+    return submitUtils.isSuccessResult(results[0].result);
   },
   fn: ({ signatories, chain, name, threshold }) => {
     const sortedSignatories = sortBy(
@@ -367,7 +371,7 @@ sample({
   fn: ({ addMultisigStore, coreTx, wrappedTx, multisigTx, signer }, signParams) => ({
     event: {
       ...signParams,
-      chainId: addMultisigStore!.chain.chainId,
+      chain: addMultisigStore!.chain,
       account: signer!,
       coreTxs: [coreTx!],
       wrappedTxs: [wrappedTx!],

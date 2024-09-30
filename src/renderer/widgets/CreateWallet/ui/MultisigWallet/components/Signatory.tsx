@@ -16,20 +16,27 @@ import { formModel } from '@/widgets/CreateWallet/model/form-model';
 import { signatoryModel } from '../../../model/signatory-model';
 
 interface Props {
-  index: number;
+  signatoryName?: string;
+  signatoryAddress?: string;
+  signtoryIndex: number;
   isOwnAccount?: boolean;
   onDelete?: (index: number) => void;
 }
 
-export const Signatory = ({ index, onDelete, isOwnAccount = false }: Props) => {
+export const Signatory = ({
+  signtoryIndex,
+  onDelete,
+  isOwnAccount = false,
+  signatoryName = '',
+  signatoryAddress = '',
+}: Props) => {
   const { t } = useI18n();
   const [query, setQuery] = useState('');
   const [options, setOptions] = useState<ComboboxOption[]>([]);
 
   const [contacts, contactsFiltered] = useUnit([contactModel.$contacts, filterModel.$contactsFiltered]);
-  const signatory = useUnit(signatoryModel.$signatories).get(index);
-  const [address, setAddress] = useState(signatory?.address || '');
-  const [name, setName] = useState(signatory?.name || '');
+  const [address, setAddress] = useState(signatoryAddress);
+  const [name, setName] = useState(signatoryName);
   const wallets = useUnit(walletModel.$wallets);
   const {
     fields: { chain },
@@ -78,9 +85,9 @@ export const Signatory = ({ index, onDelete, isOwnAccount = false }: Props) => {
         {
           id: index.toString(),
           element: (
-            <div className="flex gap-x-2 items-center" key={walletType}>
+            <div className="flex items-center gap-x-2" key={walletType}>
               <WalletIcon type={walletType as WalletFamily} />
-              <CaptionText className="text-text-secondary  font-semibold uppercase">
+              <CaptionText className="font-semibold uppercase text-text-secondary">
                 {t(GroupLabels[walletType as WalletFamily])}
               </CaptionText>
             </div>
@@ -106,7 +113,7 @@ export const Signatory = ({ index, onDelete, isOwnAccount = false }: Props) => {
     if (isOwnAccount || contacts.length === 0) return;
     setOptions(
       contactsFiltered.map(({ name, address }) => ({
-        id: index.toString(),
+        id: signtoryIndex.toString(),
         element: <AddressWithName name={name} address={address} />,
         value: address,
       })),
@@ -116,7 +123,7 @@ export const Signatory = ({ index, onDelete, isOwnAccount = false }: Props) => {
   const onNameChange = (newName: string) => {
     setName(newName);
     signatoryModel.events.signatoriesChanged({
-      index,
+      index: signtoryIndex,
       name: newName,
       address,
     });
@@ -131,7 +138,7 @@ export const Signatory = ({ index, onDelete, isOwnAccount = false }: Props) => {
 
     setAddress(newAddress);
     signatoryModel.events.signatoriesChanged({
-      index,
+      index: signtoryIndex,
       name,
       address: newAddress,
     });
@@ -185,7 +192,7 @@ export const Signatory = ({ index, onDelete, isOwnAccount = false }: Props) => {
         onInput={handleQueryChange}
       />
       {!isOwnAccount && onDelete && (
-        <IconButton className="mt-4 ml-2" name="delete" size={20} onClick={() => onDelete(index)} />
+        <IconButton className="ml-2 mt-4" name="delete" size={20} onClick={() => onDelete(signtoryIndex)} />
       )}
     </div>
   );

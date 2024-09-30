@@ -33,15 +33,15 @@ export const NameNetworkSelection = () => {
   const isNameError = name.isTouched && !name.value;
 
   return (
-    <section className="flex flex-col flex-1 h-full">
-      <SmallTitleText className="px-5 mt-2 text-text-secondary">
+    <section className="flex h-full flex-1 flex-col">
+      <SmallTitleText className="mt-2 px-5 text-text-secondary">
         {t('createMultisigAccount.multisigStep', { step: 1 })}
       </SmallTitleText>
-      <SmallTitleText className="px-5 pb-6 mb-6 text-text-tertiary font-medium border-b border-container-border">
+      <SmallTitleText className="mb-6 border-b border-container-border px-5 pb-6 font-medium text-text-tertiary">
         {t('createMultisigAccount.nameNetworkDescription')}
       </SmallTitleText>
-      <form id="multisigForm" className="flex flex-col px-5 pb-6 gap-y-4 h-full">
-        <div className="flex gap-x-4 items-end">
+      <form id="multisigForm" className="flex h-full flex-col gap-y-4 px-5 pb-6">
+        <div className="flex items-end gap-x-4">
           <Input
             className="w-[360px]"
             placeholder={t('createMultisigAccount.namePlaceholder')}
@@ -54,7 +54,7 @@ export const NameNetworkSelection = () => {
             {t('createMultisigAccount.disabledError.emptyName')}
           </InputHint>
         </div>
-        <div className="flex gap-x-4 items-end">
+        <div className="flex items-end gap-x-4">
           <Select
             placeholder={t('createMultisigAccount.chainPlaceholder')}
             label={t('createMultisigAccount.chainName')}
@@ -67,7 +67,7 @@ export const NameNetworkSelection = () => {
             {t('createMultisigAccount.networkDescription')}
           </FootnoteText>
         </div>
-        <div className="flex justify-end items-center mt-auto">
+        <div className="mt-auto flex items-center justify-end">
           <Button
             key="create"
             disabled={isNameError || !name.isTouched}

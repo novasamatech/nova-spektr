@@ -49,16 +49,16 @@ export const SelectSignatoriesThreshold = () => {
   };
 
   return (
-    <section className="flex flex-col flex-1 h-full">
+    <section className="flex h-full flex-1 flex-col">
       <SmallTitleText className="px-5 text-text-secondary">
         {t('createMultisigAccount.multisigStep', { step: 2 })}
       </SmallTitleText>
-      <SmallTitleText className="px-5 pb-6 mb-6 text-text-tertiary font-medium border-b border-container-border">
+      <SmallTitleText className="mb-6 border-b border-container-border px-5 pb-6 font-medium text-text-tertiary">
         {t('createMultisigAccount.signatoryThresholdDescription')}
       </SmallTitleText>
       <div className="flex flex-col gap-y-4 px-5 py-4">
         <SelectSignatories />
-        <div className="flex gap-x-4 items-end">
+        <div className="flex items-end gap-x-4">
           <Alert
             active={!hasOwnSignatory && signatories.length > 0}
             title={t('createMultisigAccount.noOwnSignatoryTitle')}
@@ -74,7 +74,7 @@ export const SelectSignatoriesThreshold = () => {
             <Alert.Item withDot={false}>{t('createMultisigAccount.notEnoughSignatories')}</Alert.Item>
           </Alert>
         </div>
-        <div className="flex gap-x-4 items-end">
+        <div className="flex items-end gap-x-4">
           <Select
             placeholder={t('createMultisigAccount.thresholdPlaceholder')}
             label={t('createMultisigAccount.thresholdName')}
@@ -88,7 +88,7 @@ export const SelectSignatoriesThreshold = () => {
             {t('createMultisigAccount.thresholdHint')}
           </InputHint>
         </div>
-        <div className="flex gap-x-4 items-end">
+        <div className="flex items-end gap-x-4">
           <Alert
             active={Boolean(multisigAlreadyExists)}
             title={t('createMultisigAccount.multisigExistTitle')}
@@ -97,7 +97,7 @@ export const SelectSignatoriesThreshold = () => {
             <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
           </Alert>
         </div>
-        <div className="flex justify-between items-center mt-auto">
+        <div className="mt-auto flex items-center justify-between">
           <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.NAME_NETWORK)}>
             {t('createMultisigAccount.backButton')}
           </Button>

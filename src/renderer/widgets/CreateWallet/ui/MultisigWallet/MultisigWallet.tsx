@@ -48,8 +48,8 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
   }
 
   const modalTitle = (
-    <div className="flex justify-between items-center py-3 w-[464px] bg-white rounded-tl-lg rounded-tr-lg">
-      <HeaderTitleText className="py-[3px] flex">
+    <div className="flex w-[464px] items-center justify-between rounded-tl-lg rounded-tr-lg bg-white py-3">
+      <HeaderTitleText className="flex py-[3px]">
         {t('createMultisigAccount.title')}
         {createMultisigUtils.isNotFirstStep(activeStep) && (
           <>
@@ -66,20 +66,18 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
   );
 
   return (
-    <>
-      <BaseModal
-        closeButton
-        title={modalTitle}
-        isOpen={isModalOpen}
-        contentClass="flex"
-        panelClass={isStep(activeStep, Step.SIGN) ? 'w-[440px]' : 'w-[784px]'}
-        onClose={handleClose}
-      >
-        {isStep(activeStep, Step.NAME_NETWORK) && <NameNetworkSelection />}
-        {isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold />}
-        {isStep(activeStep, Step.CONFIRM) && <ConfirmationStep chain={chain.value} />}
-        {isStep(activeStep, Step.SIGN) && <OperationSign onGoBack={() => flowModel.events.stepChanged(Step.CONFIRM)} />}
-      </BaseModal>
-    </>
+    <BaseModal
+      closeButton
+      title={modalTitle}
+      isOpen={isModalOpen}
+      contentClass="flex"
+      panelClass={isStep(activeStep, Step.SIGN) ? 'w-[440px]' : 'w-[784px]'}
+      onClose={handleClose}
+    >
+      {isStep(activeStep, Step.NAME_NETWORK) && <NameNetworkSelection />}
+      {isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold />}
+      {isStep(activeStep, Step.CONFIRM) && <ConfirmationStep chain={chain.value} />}
+      {isStep(activeStep, Step.SIGN) && <OperationSign onGoBack={() => flowModel.events.stepChanged(Step.CONFIRM)} />}
+    </BaseModal>
   );
 };

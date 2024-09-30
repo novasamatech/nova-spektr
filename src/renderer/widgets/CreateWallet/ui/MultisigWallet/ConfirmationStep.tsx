@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { type Chain, WalletType } from '@shared/core';
-import { RootExplorers, cnTw } from '@shared/lib/utils';
+import { RootExplorers } from '@shared/lib/utils';
 import { BodyText, Button, FootnoteText, SmallTitleText } from '@shared/ui';
 import { SignButton } from '@entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
@@ -36,26 +36,24 @@ export const ConfirmationStep = ({ chain }: Props) => {
   const explorers = chain ? chain.explorers : RootExplorers;
 
   return (
-    <section className="relative flex flex-col px-5 py-4 flex-1 bg-input-background-disabled h-full">
-      <div className={cnTw('max-h-full flex flex-col flex-1')}>
+    <section className="relative flex h-full flex-1 flex-col bg-input-background-disabled px-5 py-4">
+      <div className="flex max-h-full flex-1 flex-col">
         <SmallTitleText className="py-2">{t('createMultisigAccount.newMultisigTitle')}</SmallTitleText>
-        <WalletItem className="py-2 mb-4" name={name.value} type={WalletType.MULTISIG} />
+        <WalletItem className="mb-4 py-2" name={name.value} type={WalletType.MULTISIG} />
 
         <SmallTitleText className="py-2">{t('createMultisigAccount.thresholdName')}</SmallTitleText>
-        <BodyText as="span" className="text-text-secondary tracking-tight truncate mb-4">
+        <BodyText as="span" className="mb-4 truncate tracking-tight text-text-secondary">
           {threshold.value}/{signatories.length}
         </BodyText>
 
         <SmallTitleText className="py-2">{t('createMultisigAccount.selectedSignatoriesTitle')}</SmallTitleText>
-        <div className="flex flex-col gap-y-2 flex-1 overflow-y-auto">
-          <>
-            <FootnoteText className="text-text-tertiary">{t('createMultisigAccount.walletsTab')}</FootnoteText>
-            <ul className="flex flex-col gap-y-2">
-              <li className="py-1.5 px-1 rounded-md hover:bg-action-background-hover">
-                <WalletItem name={signer?.name || ''} type={signerWallet?.type || WalletType.POLKADOT_VAULT} />
-              </li>
-            </ul>
-          </>
+        <div className="flex flex-1 flex-col gap-y-2 overflow-y-auto">
+          <FootnoteText className="text-text-tertiary">{t('createMultisigAccount.walletsTab')}</FootnoteText>
+          <ul className="flex flex-col gap-y-2">
+            <li className="rounded-md px-1 py-1.5 hover:bg-action-background-hover">
+              <WalletItem name={signer?.name || ''} type={signerWallet?.type || WalletType.POLKADOT_VAULT} />
+            </li>
+          </ul>
           {signatoriesWithoutSelf.length > 0 && (
             <>
               <FootnoteText className="text-text-tertiary">
@@ -63,7 +61,7 @@ export const ConfirmationStep = ({ chain }: Props) => {
               </FootnoteText>
               <ul className="gap-y-2">
                 {signatoriesWithoutSelf.map(({ address, name }) => (
-                  <li key={address} className="p-1 rounded-md hover:bg-action-background-hover">
+                  <li key={address} className="rounded-md p-1 hover:bg-action-background-hover">
                     <ExplorersPopover
                       address={address}
                       explorers={explorers}
@@ -75,7 +73,7 @@ export const ConfirmationStep = ({ chain }: Props) => {
             </>
           )}
         </div>
-        <div className="flex flex-col gap-y-2 my-2 flex-1">
+        <div className="my-2 flex flex-1 flex-col gap-y-2">
           <MultisigDepositWithLabel
             api={api}
             asset={chain!.assets[0]}
@@ -90,7 +88,7 @@ export const ConfirmationStep = ({ chain }: Props) => {
             onFeeLoading={flowModel.events.isFeeLoadingChanged}
           />
         </div>
-        <div className="flex justify-between items-center mt-auto">
+        <div className="mt-auto flex items-center justify-between">
           <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.SIGNATORIES_THRESHOLD)}>
             {t('createMultisigAccount.backButton')}
           </Button>

@@ -16,7 +16,6 @@ import { signatoryModel } from '../signatory-model';
 import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
 
 jest.mock('@entities/transaction/lib/extrinsicService', () => ({
-  ...jest.requireActual('@entities/transaction/lib/extrinsicService'),
   wrapAsMulti: jest.fn().mockResolvedValue({
     chainId: '0x00',
     address: 'mockAddress',

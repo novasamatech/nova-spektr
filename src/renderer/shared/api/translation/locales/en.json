@@ -958,6 +958,7 @@
       "redeemOn": "Withdraw Unstaked { asset } on",
       "reject": "Reject",
       "remark": "System Remark",
+      "remarkOn": "Send remark on",
       "removeProxy": "Revoke delegated authority (proxy)",
       "removeProxyOn": "Revoke delegated authority (proxy) on",
       "removePureProxy": "Revoke delegated authority (pure proxy)",

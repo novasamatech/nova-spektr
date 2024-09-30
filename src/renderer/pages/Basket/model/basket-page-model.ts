@@ -136,8 +136,10 @@ const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
         | XcmTransactionTypes
         | MultisigTransactionTypes
         | UtilityTransactionTypes
+
         // TODO: Add remove vote types
         | TransactionType.REMOVE_VOTE
+        | TransactionType.REMARK
       >,
       EventCallable<ValidationStartedParams>
     > = {

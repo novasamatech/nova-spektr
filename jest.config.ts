@@ -21,8 +21,6 @@ const swcConfig = {
   },
 };
 const config: Config = {
-  maxConcurrency: 5,
-  maxWorkers: '50%',
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
   coverageReporters: ['json-summary', 'text', 'text-summary'],
