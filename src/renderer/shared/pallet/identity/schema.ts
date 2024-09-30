@@ -4,33 +4,32 @@ import { pjsSchema } from '../../polkadotjs-schemas';
 
 export type IdentityJudgement = z.infer<typeof identityJudgement>;
 export const identityJudgement = pjsSchema.enumValue({
-  Unknown: pjsSchema.bool,
+  Unknown: pjsSchema.null,
   FeePaid: pjsSchema.u128,
-  Reasonable: pjsSchema.bool,
-  KnownGood: pjsSchema.bool,
-  OutOfDate: pjsSchema.bool,
-  LowQuality: pjsSchema.bool,
-  Erroneous: pjsSchema.bool,
+  Reasonable: pjsSchema.null,
+  KnownGood: pjsSchema.null,
+  OutOfDate: pjsSchema.null,
+  LowQuality: pjsSchema.null,
+  Erroneous: pjsSchema.null,
 });
 
 export type IdentityLegacyIdentityInfo = z.infer<typeof identityLegacyIdentityInfo>;
 export const identityLegacyIdentityInfo = pjsSchema.object({
   display: pjsSchema.dataString,
   legal: pjsSchema.dataString,
-  web: pjsSchema.optional(pjsSchema.dataString),
-  riot: pjsSchema.optional(pjsSchema.dataString),
-  matrix: pjsSchema.optional(pjsSchema.dataString),
+  web: pjsSchema.dataString,
+  matrix: pjsSchema.dataString,
   email: pjsSchema.dataString,
   pgpFingerprint: pjsSchema.optional(z.unknown()),
-  image: pjsSchema.optional(pjsSchema.dataString),
-  twitter: pjsSchema.optional(pjsSchema.dataString),
-  github: pjsSchema.optional(pjsSchema.dataString),
-  discord: pjsSchema.optional(pjsSchema.dataString),
+  image: pjsSchema.dataString,
+  twitter: pjsSchema.dataString,
+  github: pjsSchema.dataString,
+  discord: pjsSchema.dataString,
 });
 
 export type IdentityRegistration = z.infer<typeof identityRegistration>;
 export const identityRegistration = pjsSchema.object({
-  judgements: pjsSchema.vec(pjsSchema.tupleMap(['account', pjsSchema.accountId], ['judgement', identityJudgement])),
+  judgements: pjsSchema.vec(pjsSchema.tupleMap(['index', pjsSchema.u32], ['judgement', identityJudgement])),
   deposit: pjsSchema.u128,
   info: identityLegacyIdentityInfo,
 });

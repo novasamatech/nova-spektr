@@ -50,14 +50,23 @@ export const storage = {
    * TWOX-NOTE: OK ― `AccountId` is a secure hash.
    */
   identityOf(api: ApiPromise, accounts: AccountId[]) {
+    // const schema = pjsSchema.vec(
+    //   pjsSchema.tupleMap(
+    //     ['account', pjsSchema.storageKey(pjsSchema.accountId).transform(x => x[0])],
+    //     ['identity', pjsSchema.optional(z.tuple([identityRegistration, pjsSchema.optional(pjsSchema.bytes)]))],
+    //   ),
+    // );
     const schema = pjsSchema.vec(
-      pjsSchema.tupleMap(
-        ['account', pjsSchema.storageKey(pjsSchema.accountId).transform(x => x[0])],
-        ['identity', pjsSchema.optional(z.tuple([identityRegistration, pjsSchema.optional(pjsSchema.bytes)]))],
-      ),
+      pjsSchema.optional(z.tuple([identityRegistration, pjsSchema.optional(pjsSchema.bytes)])),
     );
 
-    return substrateRpcPool.call(() => getQuery(api, 'identityOf').entries(accounts)).then(schema.parse);
+    return substrateRpcPool
+      .call(() => getQuery(api, 'identityOf').multi(accounts))
+      .then(response => {
+        const data = schema.parse(response);
+
+        return accounts.map((account, index) => ({ account, identity: data[index] ?? null }));
+      });
   },
 
   // TODO implement

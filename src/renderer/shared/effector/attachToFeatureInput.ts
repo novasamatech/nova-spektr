@@ -1,5 +1,7 @@
 import { type Event, type Store, createEvent, createStore, is, sample } from 'effector';
-import { readonly } from 'patronum';
+import { previous, readonly } from 'patronum';
+
+import { shallowEqual } from '../lib/utils';
 
 import { type createFeature } from './createFeature';
 
@@ -18,16 +20,19 @@ export const attachToFeatureInput = <Input, Data>(
       target: combinedEvent,
     });
 
+    // triggered by source
+    const $prevSource = previous(source);
+
     sample({
       clock: source,
-      source: feature.state,
-      filter: (featureState) => featureState.status === 'running',
-      fn: (featureState, data) => {
-        if (featureState.status !== 'running') {
+      source: { state: feature.state, prevSource: $prevSource },
+      filter: ({ state, prevSource }, source) => state.status === 'running' && !shallowEqual(prevSource, source),
+      fn: ({ state }, data) => {
+        if (state.status !== 'running') {
           throw new Error('Incorrect feature status');
         }
 
-        return { data, input: featureState.data };
+        return { data, input: state.data };
       },
       target: combinedEvent,
     });

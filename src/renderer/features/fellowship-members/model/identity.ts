@@ -16,10 +16,9 @@ const $identity = combine(identityDomain.identity.$list, membersFeatureStatus.st
 
 sample({
   clock: membersUpdate,
-  fn: ({ input: { chainId, api }, data: members }) => ({
+  fn: ({ input: { chainId }, data: members }) => ({
     accounts: members.map(m => m.accountId),
     chainId,
-    api,
   }),
   target: identityDomain.identity.request,
 });

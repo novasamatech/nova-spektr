@@ -1,11 +1,13 @@
+import { useStoreMap } from 'effector-react';
 import { type ComponentProps } from 'react';
 
 import { type Chain } from '@/shared/core';
-import { AccountExplorers, Hash } from '@/shared/ui-entities';
+import { Identicon } from '@/shared/ui';
+import { AccountExplorers, Address } from '@/shared/ui-entities';
 import { Label } from '@/shared/ui-kit';
 import { cnTw, toAddress } from '@shared/lib/utils';
-import { Identicon } from '@shared/ui';
 import { type Member as MemberType } from '@/domains/collectives';
+import { identityModel } from '../model/identity';
 
 type Props = {
   item: MemberType;
@@ -13,15 +15,13 @@ type Props = {
 };
 
 export const Member = ({ item, chain }: Props) => {
-  // const identity = useStoreMap({
-  //   store: identityModel.$identity,
-  //   keys: [item.accountId],
-  //   fn: (identity, [accountId]) => identity[accountId] ?? null,
-  // });
+  const identity = useStoreMap({
+    store: identityModel.$identity,
+    keys: [item.accountId],
+    fn: (identity, [accountId]) => identity[accountId] ?? null,
+  });
 
   const address = toAddress(item.accountId, { prefix: chain.addressPrefix });
-
-  // console.log({ address, identity });
 
   return (
     <div className="flex items-center gap-2 rounded-md px-2 py-3 contain-inline-size hover:bg-block-background-hover">
@@ -31,7 +31,7 @@ export const Member = ({ item, chain }: Props) => {
       <div className="relative min-w-0 shrink grow">
         <div className="flex grow items-center gap-4.5 text-text-secondary">
           <Identicon address={address} size={20} canCopy background={false} />
-          <Hash value={address} variant="truncate" />
+          <Address title={identity?.name} address={address} showIcon={false} variant="truncate" />
         </div>
         <div className="absolute inset-y-0 left-3 my-auto h-fit w-fit">
           <Indicator active={item.isActive} />
