@@ -46,8 +46,9 @@ export const createFeature = <T = null>({ name, input = createStore(null) }: Par
 
   sample({
     clock: start,
-    source: input,
-    fn: (data): StartingState | RunningState<T> =>
+    source: { data: input, status: $status },
+    filter: ({ status }) => status !== 'starting' && status !== 'running',
+    fn: ({ data }): StartingState | RunningState<T> =>
       data !== null ? { status: 'running', data } : { status: 'starting' },
     target: $state,
   });

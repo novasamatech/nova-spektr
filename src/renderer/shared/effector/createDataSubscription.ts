@@ -110,6 +110,7 @@ export const createDataSubscription = <Store, Params = void, Response = void>({
     clock: subscribe,
     source: $unsubscribeFn,
     filter: nullable,
+    // TODO check params with shallow equal fn
     fn: (_, params) => params,
     target: subscribeFx,
   });
