@@ -107,6 +107,7 @@ const startDataPreparationFx = createEffect(async ({ transactions, ...preparatio
         | TransactionType.VOTE
         | TransactionType.REMOVE_VOTE
         | TransactionType.REVOTE
+        | TransactionType.REMARK
       >,
       (dataParams: DataParams) => Promise<unknown>
     > = {
@@ -126,7 +127,6 @@ const startDataPreparationFx = createEffect(async ({ transactions, ...preparatio
       [TransactionType.DELEGATE]: prepareTransaction.prepareDelegateTransaction,
       [TransactionType.EDIT_DELEGATION]: prepareTransaction.prepareEditDelegationTransaction,
       [TransactionType.UNDELEGATE]: prepareTransaction.prepareRevokeDelegationTransaction,
-      [TransactionType.REMARK]: prepareTransaction.prepareRemarkTransaction,
     };
 
     if (coreTx.type in TransactionData) {
