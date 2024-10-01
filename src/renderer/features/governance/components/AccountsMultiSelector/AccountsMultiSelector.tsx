@@ -19,7 +19,7 @@ type DropdownOption<T = any> = {
   id: string;
   value: T;
   element?: ReactNode;
-  group?: { list: DropdownOption[]; groupName: string };
+  group?: { list: DropdownOption[]; groupName: string; groupValue: ReactNode };
   additionalElement?: ReactNode;
   disabled?: boolean;
 };
@@ -212,6 +212,7 @@ type PropsGroup = {
   group: {
     list: DropdownOption[];
     groupName: string;
+    groupValue: ReactNode;
   };
   selectedIds: DropdownOption['id'][];
   theme: Theme;
@@ -220,7 +221,7 @@ type PropsGroup = {
 };
 
 const Group = ({ group, selectedIds, selectedOptions, theme, onChange }: PropsGroup) => {
-  const { list, groupName } = group;
+  const { list, groupName, groupValue } = group;
   const isChecked = list.every(({ id }) => selectedIds.includes(id));
 
   const toggleGroup = (checked: boolean) => {
@@ -250,7 +251,8 @@ const Group = ({ group, selectedIds, selectedOptions, theme, onChange }: PropsGr
           <div className="flex h-5 w-7.5 items-center justify-center rounded-2lg bg-input-background-disabled">
             <CaptionText className="text-text-secondary">{list.length}</CaptionText>
           </div>
-          <FootnoteText className="text-text-tertiary">{groupName}</FootnoteText>
+          <FootnoteText className="flex-1 text-text-tertiary">{groupName}</FootnoteText>
+          <FootnoteText className="text-text-secondary">{groupValue}</FootnoteText>
         </Checkbox>
       </div>
       <ul>
