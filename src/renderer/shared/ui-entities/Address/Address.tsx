@@ -8,13 +8,13 @@ type AddressVariant = 'full' | 'truncate';
 type IconProps = XOR<{
   showIcon: boolean;
   iconSize?: number;
+  canCopy?: boolean;
 }>;
 
 type AccountAddressProps = IconProps & {
   address: AddressType;
   title?: string;
   variant?: AddressVariant;
-  canCopy?: boolean;
   testId?: string;
 };
 
@@ -30,7 +30,7 @@ export const Address = ({
   const titleNode = title ? <span className="truncate text-text-primary">{title}</span> : null;
   const addressNode = (
     <span
-      className={cnTw('w-full', {
+      className={cnTw('w-full text-left', {
         'text-help-text text-text-tertiary': title,
       })}
     >
