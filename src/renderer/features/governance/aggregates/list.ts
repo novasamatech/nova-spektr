@@ -9,6 +9,7 @@ import {
   supportThresholdModel,
   votingService,
 } from '@entities/governance';
+import { walletModel } from '@entities/wallet';
 import { networkSelectorModel } from '../model/networkSelector';
 import { titleModel } from '../model/title';
 import { type AggregatedReferendum } from '../types/structs';
@@ -76,6 +77,7 @@ const $referendums = combine(
     voting: votingAggregate.$activeWalletVotes,
     tracks: tracksAggregate.$tracks,
     api: networkSelectorModel.$governanceChainApi,
+    wallet: walletModel.$activeWallet,
   },
   ({
     referendums,
@@ -87,18 +89,19 @@ const $referendums = combine(
     delegatedVotes,
     tracks,
     api,
+    wallet,
   }): AggregatedReferendum[] => {
-    if (!chain || !api) {
+    if (!chain || !api || !wallet) {
       return [];
     }
 
     const undecidingTimeout = api.consts.referenda.undecidingTimeout.toNumber();
 
+    const walletAccounts = wallet.accounts.filter((a) => 'chainId' in a && a.chainId === chain.chainId);
+
     return referendums.map((referendum) => {
-      const votes = votingService.getReferendumAccountVotes(referendum.referendumId, voting);
-      // TODO support multishard voting
-      const voteTupple = Object.entries(votes).at(0);
-      const vote = voteTupple ? { voter: voteTupple[0], vote: voteTupple[1] } : null;
+      const referendumVotes = votingService.getReferendumAccountVotes(referendum.referendumId, voting);
+      const votes = Object.entries(referendumVotes).map((x) => ({ voter: x[0], vote: x[1] }));
 
       let end = null;
       let status = null;
@@ -115,12 +118,17 @@ const $referendums = combine(
         title: titles[referendum.referendumId] ?? null,
         approvalThreshold: approvalThresholds[referendum.referendumId] ?? null,
         supportThreshold: supportThresholds[referendum.referendumId] ?? null,
-        vote,
+        voting: {
+          of: walletAccounts.length,
+          votes,
+        },
         votedByDelegate: delegatedVotes[chain.chainId] ?? null,
       };
     });
   },
 );
+
+$referendums.watch((x) => console.log('$referendums', x));
 
 const $isTitlesLoading = combine(titleModel.$loadingTitles, networkSelectorModel.$governanceChain, (titles, chain) => {
   if (!chain) return false;
