@@ -1,3 +1,4 @@
+import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useState } from 'react';
 
@@ -248,11 +249,16 @@ const AccountsSelector = () => {
     groups.map((shards) => {
       const isAccountWithShards = accountUtils.isAccountWithShards(shards);
       if (isAccountWithShards) {
+        const groupValue = shards.reduce((acc, curr) => acc.add(new BN(accountsBalances[curr.accountId])), new BN(0));
+
         return {
           id: '',
           value: '',
           group: {
             groupName: shards[0].name,
+            groupValue: (
+              <AssetBalance value={groupValue} asset={chain.assets[0]} className="text-footnote text-inherit" />
+            ),
             list: shards.map((account) => ({
               id: account.id.toString(),
               value: account,
