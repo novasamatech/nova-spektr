@@ -30,7 +30,8 @@ const multisigSaved = createEvent<GetMultisigsResult>();
 const $multisigChains = combine(networkModel.$chains, (chains) => {
   return Object.values(chains).filter((chain) => {
     const isMultisigSupported = multisigUtils.isMultisigSupported(chain);
-    const hasIndexerUrl = chain.externalApi?.[ExternalType.MULTISIG]?.[0]?.url;
+    const hasIndexerUrl =
+      networkUtils.isMultisigSupported(chain.options) && chain.externalApi?.[ExternalType.PROXY]?.[0]?.url;
 
     return isMultisigSupported && hasIndexerUrl;
   });
@@ -49,7 +50,7 @@ type GetMultisigsResult = {
 const getMultisigsFx = createEffect(({ chains, wallets }: GetMultisigsParams) => {
   for (const chain of chains) {
     const accounts = walletUtils.getAccountsBy(wallets, (a) => accountUtils.isChainIdMatch(a, chain.chainId));
-    const multisigIndexerUrl = chain.externalApi?.[ExternalType.MULTISIG]?.[0]?.url;
+    const multisigIndexerUrl = chain.externalApi?.[ExternalType.PROXY]?.[0]?.url;
     const boundMultisigSaved = scopeBind(multisigSaved, { safe: true });
 
     if (!multisigIndexerUrl || !accounts.length) continue;

@@ -52,7 +52,6 @@ export const enum ExternalType {
   STAKING = 'staking',
   CROWDLOANS = 'crowdloans',
   PROXY = 'proxy',
-  MULTISIG = 'multisig',
   DELEGATIONS = 'governance-delegations',
 }
 type HistoryType = 'subquery' | 'github';
