@@ -25,6 +25,8 @@ describe('pages/Governance/lib/governancePageUtils', () => {
       vote: null,
       submissionDeposit: null,
       decisionDeposit: null,
+      end: null,
+      status: null,
     },
     {
       type: 'Approved',
@@ -36,6 +38,8 @@ describe('pages/Governance/lib/governancePageUtils', () => {
       vote: null,
       submissionDeposit: null,
       decisionDeposit: null,
+      end: null,
+      status: null,
     },
   ];
 

@@ -166,6 +166,7 @@ const DelegationReferendumList = ({ votedReferendums }: { votedReferendums: Vote
           key={referendum.referendumId}
           referendum={referendum}
           isTitlesLoading={false}
+          api={network.api}
           onSelect={(referendum) => setSelectedReferendum(referendum)}
         />
       ))}
