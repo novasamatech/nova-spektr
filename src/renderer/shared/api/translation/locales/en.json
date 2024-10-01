@@ -114,9 +114,6 @@
     }
   },
   "createMultisigAccount": {
-    "multisigCreationFeeLabel": "Additional costs",
-    "multisigDeposit": "Multisig deposit:",
-    "networkFee": "Network fee:",
     "accountsTab": "Accounts",
     "addContact": "Add new",
     "addContactsButton": "Add selected",
@@ -147,6 +144,8 @@
       "featureTwo": "Some wallets are not supported",
       "title": "Multi-chain multisig"
     },
+    "multisigCreationFeeLabel": "Additional costs",
+    "multisigDeposit": "Multisig deposit:",
     "multisigExistText": "Multisig account with selected signatories and threshold already exists",
     "multisigExistTitle": "Account already exists",
     "multisigStep": "Step { step }",
@@ -155,6 +154,7 @@
     "nameNetworkDescription": "Select the network and name for your multisig wallet",
     "namePlaceholder": "Choose wallet name",
     "networkDescription": "The multisig will only work on this network, if you want to use a different network, you will need to create a new multisig",
+    "networkFee": "Network fee:",
     "newMultisigTitle": "New multisig",
     "noOwnSignatory": "You need at least 1 owned account as part of the signatories",
     "noOwnSignatoryTitle": "No owned account",
