@@ -76,7 +76,7 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
     >
       {isStep(activeStep, Step.NAME_NETWORK) && <NameNetworkSelection />}
       {isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold />}
-      {isStep(activeStep, Step.CONFIRM) && <ConfirmationStep chain={chain.value} />}
+      {isStep(activeStep, Step.CONFIRM) && <ConfirmationStep />}
       {isStep(activeStep, Step.SIGN) && <OperationSign onGoBack={() => flowModel.events.stepChanged(Step.CONFIRM)} />}
     </BaseModal>
   );

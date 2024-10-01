@@ -114,6 +114,9 @@
     }
   },
   "createMultisigAccount": {
+    "multisigCreationFeeLabel": "Additional costs",
+    "multisigDeposit": "Multisig deposit:",
+    "networkFee": "Network fee:",
     "accountsTab": "Accounts",
     "addContact": "Add new",
     "addContactsButton": "Add selected",

@@ -2,11 +2,11 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { type Chain, WalletType } from '@shared/core';
+import { WalletType } from '@shared/core';
 import { RootExplorers } from '@shared/lib/utils';
 import { BodyText, Button, FootnoteText, SmallTitleText } from '@shared/ui';
+import { MultisigCreationFees } from '@/entities/transaction/ui/MultisigCreationFees.tsx/MultisigCreationFees';
 import { SignButton } from '@entities/operations';
-import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
 import { ContactItem, ExplorersPopover } from '@entities/wallet';
 import { Step } from '../../lib/types';
 import { confirmModel } from '../../model/confirm-model';
@@ -16,11 +16,7 @@ import { signatoryModel } from '../../model/signatory-model';
 
 import { WalletItem } from './components/WalletItem';
 
-type Props = {
-  chain?: Chain;
-};
-
-export const ConfirmationStep = ({ chain }: Props) => {
+export const ConfirmationStep = () => {
   const { t } = useI18n();
   const signatoriesMap = useUnit(signatoryModel.$signatories);
   const signatories = Array.from(signatoriesMap.values());
@@ -28,12 +24,12 @@ export const ConfirmationStep = ({ chain }: Props) => {
   const signer = useUnit(flowModel.$signer);
   const signatoriesWithoutSelf = signatories.slice(1);
   const {
-    fields: { name, threshold },
+    fields: { name, threshold, chain },
   } = useForm(formModel.$createMultisigForm);
   const api = useUnit(flowModel.$api);
   const fakeTx = useUnit(flowModel.$fakeTx);
 
-  const explorers = chain ? chain.explorers : RootExplorers;
+  const explorers = chain.value ? chain.value.explorers : RootExplorers;
 
   return (
     <section className="relative flex h-full flex-1 flex-col bg-input-background-disabled px-5 py-4">
@@ -73,29 +69,22 @@ export const ConfirmationStep = ({ chain }: Props) => {
             </>
           )}
         </div>
-        <div className="my-2 flex flex-1 flex-col gap-y-2">
-          <MultisigDepositWithLabel
-            api={api}
-            asset={chain!.assets[0]}
-            threshold={threshold.value}
-            onDepositChange={flowModel.events.multisigDepositChanged}
-          />
-          <FeeWithLabel
-            api={api}
-            asset={chain!.assets[0]}
-            transaction={fakeTx}
-            onFeeChange={flowModel.events.feeChanged}
-            onFeeLoading={flowModel.events.isFeeLoadingChanged}
-          />
-        </div>
         <div className="mt-auto flex items-center justify-between">
           <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.SIGNATORIES_THRESHOLD)}>
             {t('createMultisigAccount.backButton')}
           </Button>
-          <SignButton
-            type={signerWallet?.type || WalletType.POLKADOT_VAULT}
-            onClick={confirmModel.output.formSubmitted}
-          />
+          <div className="mt-auto flex items-center justify-end">
+            <MultisigCreationFees
+              api={api}
+              asset={chain.value.assets[0]}
+              threshold={threshold.value}
+              transaction={fakeTx}
+            />
+            <SignButton
+              type={signerWallet?.type || WalletType.POLKADOT_VAULT}
+              onClick={confirmModel.output.formSubmitted}
+            />
+          </div>
         </div>
       </div>
     </section>

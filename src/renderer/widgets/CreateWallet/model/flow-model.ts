@@ -221,7 +221,7 @@ const $fakeTx = combine(
     return {
       chainId: chain.chainId,
       address: toAddress(TEST_ACCOUNTS[0], { prefix: SS58_DEFAULT_PREFIX }),
-      type: TransactionType.ADD_PROXY,
+      type: TransactionType.MULTISIG_AS_MULTI,
       args: {
         remark: 'Multisig created with Nova Spektr',
       },

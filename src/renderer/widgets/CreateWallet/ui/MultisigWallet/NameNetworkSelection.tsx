@@ -5,6 +5,7 @@ import { useI18n } from '@app/providers';
 import { type Chain } from '@shared/core';
 import { Button, FootnoteText, Input, InputHint, Select, SmallTitleText } from '@shared/ui';
 import { type DropdownOption } from '@shared/ui/types';
+import { MultisigCreationFees } from '@/entities/transaction/ui/MultisigCreationFees.tsx/MultisigCreationFees';
 import { ChainTitle } from '@entities/chain';
 import { networkModel, networkUtils } from '@entities/network';
 import { Step } from '../../lib/types';
@@ -23,11 +24,12 @@ const getChainOptions = (chains: Chain[]): DropdownOption<Chain>[] => {
 
 export const NameNetworkSelection = () => {
   const { t } = useI18n();
-
+  const fakeTx = useUnit(flowModel.$fakeTx);
   const chains = useUnit(networkModel.$chains);
   const {
-    fields: { name, chain },
+    fields: { name, chain, threshold },
   } = useForm(formModel.$createMultisigForm);
+  const api = useUnit(flowModel.$api);
 
   const chainOptions = getChainOptions(Object.values(chains));
   const isNameError = name.isTouched && !name.value;
@@ -68,6 +70,12 @@ export const NameNetworkSelection = () => {
           </FootnoteText>
         </div>
         <div className="mt-auto flex items-center justify-end">
+          <MultisigCreationFees
+            api={api}
+            asset={chain.value.assets[0]}
+            threshold={threshold.value}
+            transaction={fakeTx}
+          />
           <Button
             key="create"
             disabled={isNameError || !name.isTouched}

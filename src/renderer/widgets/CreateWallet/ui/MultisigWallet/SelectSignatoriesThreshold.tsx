@@ -1,10 +1,11 @@
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
-import { type FormEvent } from 'react';
+import { type FormEvent, useState } from 'react';
 
 import { useI18n } from '@app/providers';
 import { Alert, Button, InputHint, Select, SmallTitleText } from '@shared/ui';
 import { type DropdownOption } from '@shared/ui/types';
+import { MultisigCreationFees } from '@/entities/transaction/ui/MultisigCreationFees.tsx/MultisigCreationFees';
 import { Step } from '../../lib/types';
 import { flowModel } from '../../model/flow-model';
 import { formModel } from '../../model/form-model';
@@ -29,10 +30,12 @@ const getThresholdOptions = (optionsAmount: number): DropdownOption<number>[] =>
 export const SelectSignatoriesThreshold = () => {
   const { t } = useI18n();
 
+  const [hasClickedNext, setHasClickedNext] = useState(false);
   const signatoriesMap = useUnit(signatoryModel.$signatories);
   const signatories = Array.from(signatoriesMap.values());
+  const fakeTx = useUnit(flowModel.$fakeTx);
   const {
-    fields: { threshold },
+    fields: { threshold, chain },
     submit,
   } = useForm(formModel.$createMultisigForm);
   const multisigAlreadyExists = useUnit(formModel.$multisigAlreadyExists);
@@ -43,7 +46,15 @@ export const SelectSignatoriesThreshold = () => {
   const hasEnoughSignatories = signatories.length >= 2;
   const canSubmit = hasOwnSignatory && hasEnoughSignatories && !multisigAlreadyExists;
 
+  const api = useUnit(flowModel.$api);
+
   const onSubmit = (event: FormEvent) => {
+    if (!hasClickedNext) {
+      setHasClickedNext(true);
+    }
+
+    if (!canSubmit) return;
+
     event.preventDefault();
     submit();
   };
@@ -60,14 +71,14 @@ export const SelectSignatoriesThreshold = () => {
         <SelectSignatories />
         <div className="flex items-end gap-x-4">
           <Alert
-            active={!hasOwnSignatory && signatories.length > 0}
+            active={hasClickedNext && !hasOwnSignatory && signatories.length > 0}
             title={t('createMultisigAccount.noOwnSignatoryTitle')}
             variant="error"
           >
             <Alert.Item withDot={false}>{t('createMultisigAccount.noOwnSignatory')}</Alert.Item>
           </Alert>
           <Alert
-            active={hasOwnSignatory && !hasEnoughSignatories}
+            active={hasClickedNext && hasOwnSignatory && !hasEnoughSignatories}
             title={t('createMultisigAccount.notEnoughSignatoriesTitle')}
             variant="error"
           >
@@ -101,9 +112,17 @@ export const SelectSignatoriesThreshold = () => {
           <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.NAME_NETWORK)}>
             {t('createMultisigAccount.backButton')}
           </Button>
-          <Button key="create" type="submit" disabled={!canSubmit} onClick={onSubmit}>
-            {t('createMultisigAccount.continueButton')}
-          </Button>
+          <div className="mt-auto flex items-center justify-end">
+            <MultisigCreationFees
+              api={api}
+              asset={chain.value.assets[0]}
+              threshold={threshold.value}
+              transaction={fakeTx}
+            />
+            <Button key="create" type="submit" disabled={hasClickedNext && !canSubmit} onClick={onSubmit}>
+              {t('createMultisigAccount.continueButton')}
+            </Button>
+          </div>
         </div>
       </div>
     </section>
