@@ -5,6 +5,7 @@ import { type Account, type Asset, type Chain } from '@/shared/core';
 import { cnTw, formatBalance, toAddress } from '@/shared/lib/utils';
 import { BodyText, Icon } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
+import { AccountExplorers } from '../AccountExplorer/AccountExplorers';
 import { Address } from '../Address/Address';
 
 type AccountOption = { account: Account; balance?: BN; title?: string };
@@ -34,7 +35,7 @@ export const AccountSelectModal = ({
     <Modal isOpen={isOpen} size="sm" onToggle={onToggle}>
       <Modal.Title close={closeButton}>{title}</Modal.Title>
       <Modal.Content>
-        <Box padding={[0, 2, 2]}>
+        <Box padding={[2, 3, 3]}>
           {options.map(({ account, title, balance }) => (
             <AccountItem
               key={account.accountId}
@@ -72,6 +73,7 @@ const AccountItem = ({ asset, account, chain, title, balance, onSelect }: ItemPr
       <div className="w-full min-w-0 shrink truncate">
         <Address title={title} address={address} showIcon variant="truncate" />
       </div>
+      <AccountExplorers account={account.accountId} chain={chain} />
       {balance && asset && (
         <BodyText className="shrink-0 whitespace-nowrap text-inherit">
           {formatBalance(balance, asset.precision).formatted} {asset.symbol}
