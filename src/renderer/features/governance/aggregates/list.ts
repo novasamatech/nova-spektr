@@ -9,7 +9,6 @@ import {
   supportThresholdModel,
   votingService,
 } from '@entities/governance';
-import { walletModel } from '@entities/wallet';
 import { networkSelectorModel } from '../model/networkSelector';
 import { titleModel } from '../model/title';
 import { type AggregatedReferendum } from '../types/structs';
@@ -77,7 +76,7 @@ const $referendums = combine(
     voting: votingAggregate.$activeWalletVotes,
     tracks: tracksAggregate.$tracks,
     api: networkSelectorModel.$governanceChainApi,
-    wallet: walletModel.$activeWallet,
+    accounts: votingAggregate.$possibleAccountsForVoting,
   },
   ({
     referendums,
@@ -89,15 +88,13 @@ const $referendums = combine(
     delegatedVotes,
     tracks,
     api,
-    wallet,
+    accounts,
   }): AggregatedReferendum[] => {
-    if (!chain || !api || !wallet) {
+    if (!chain || !api) {
       return [];
     }
 
     const undecidingTimeout = api.consts.referenda.undecidingTimeout.toNumber();
-
-    const walletAccounts = wallet.accounts.filter((a) => 'chainId' in a && a.chainId === chain.chainId);
 
     return referendums.map((referendum) => {
       const referendumVotes = votingService.getReferendumAccountVotes(referendum.referendumId, voting);
@@ -119,7 +116,7 @@ const $referendums = combine(
         approvalThreshold: approvalThresholds[referendum.referendumId] ?? null,
         supportThreshold: supportThresholds[referendum.referendumId] ?? null,
         voting: {
-          of: walletAccounts.length,
+          of: accounts.length,
           votes,
         },
         votedByDelegate: delegatedVotes[chain.chainId] ?? null,
@@ -127,8 +124,6 @@ const $referendums = combine(
     });
   },
 );
-
-$referendums.watch((x) => console.log('$referendums', x));
 
 const $isTitlesLoading = combine(titleModel.$loadingTitles, networkSelectorModel.$governanceChain, (titles, chain) => {
   if (!chain) return false;
