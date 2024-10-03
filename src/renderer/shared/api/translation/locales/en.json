@@ -390,6 +390,7 @@
         "acrossTracks_other": "Across { count } tracks",
         "amountLabel": "Amount",
         "delegateSummary": "Delegate summary",
+        "delegateVoted": "Delegate voted:",
         "listEmptyState": "Nothing was found"
       },
       "title": "Add delegation on",

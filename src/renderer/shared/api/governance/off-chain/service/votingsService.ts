@@ -30,17 +30,25 @@ async function getVotingsForReferendum(chain: Chain, referendumId: ReferendumId)
   return client.request(GET_VOTINGS_FOR_REFERENDUM, { referendumId }).then((x: any) => x.castingVotings.nodes);
 }
 
-async function getVotingsForVoter(chain: Chain, voter: string): Promise<Record<ReferendumId, number>> {
+async function getVotingsForVoter(chain: Chain, voter: string): Promise<Record<ReferendumId, SubQueryVoting>> {
   const client = getGraphQLClient(chain);
   if (!client) {
     return {};
   }
 
-  return client
-    .request(GET_VOTINGS_FOR_VOTER, { voter })
-    .then((x: any) =>
-      x.castingVotings.nodes.reduce((acc: any, current: any) => ({ ...acc, [current.referendum.id]: current.at }), {}),
-    );
+  return client.request(GET_VOTINGS_FOR_VOTER, { voter }).then((x: any) =>
+    x.castingVotings.nodes.reduce(
+      (acc: any, current: any) => ({
+        ...acc,
+        [current.referendum.id]: {
+          at: current.at,
+          standardVote: current.standardVote,
+          splitAbstainVote: current.splitAbstainVote,
+        },
+      }),
+      {},
+    ),
+  );
 }
 
 export const votingsService = {
