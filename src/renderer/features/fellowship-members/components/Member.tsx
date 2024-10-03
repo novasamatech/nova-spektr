@@ -78,7 +78,7 @@ type IndicatorProps = {
 
 const Indicator = ({ active }: IndicatorProps) => {
   return (
-    <div className="relative flex h-4 w-4 items-center justify-center rounded-full bg-white">
+    <div className="pointer-events-none relative flex h-4 w-4 items-center justify-center rounded-full bg-white">
       <div
         className={cnTw('h-2 w-2 rounded-full shadow-[0_0_0_1.5px]', {
           ['bg-text-positive shadow-badge-green-background-default']: active,

@@ -21,16 +21,22 @@ sample({
 const $referendums = fellowshipModel.$store.map(store => store?.referendums ?? []);
 const $meta = fellowshipModel.$store.map(store => store?.referendumMeta ?? {});
 
-const $referendumsFilteredByQuery = combine($referendums, filterModel.$debouncedQuery, (referendums, query) => {
-  return performSearch({
-    records: referendums,
-    query,
-    weights: {
-      // title: 1,
-      id: 0.5,
-    },
-  });
-});
+const $referendumsFilteredByQuery = combine(
+  { referendums: $referendums, meta: $meta, query: filterModel.$debouncedQuery },
+  ({ referendums, meta, query }) => {
+    return performSearch({
+      records: referendums,
+      getMeta: referendum => ({
+        title: meta[referendum.id]?.title ?? '',
+      }),
+      query,
+      weights: {
+        title: 1,
+        id: 0.5,
+      },
+    });
+  },
+);
 
 const $referendumsFilteredByStatus = combine(
   {

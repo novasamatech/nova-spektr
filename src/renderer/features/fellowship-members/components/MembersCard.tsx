@@ -4,7 +4,6 @@ import { memo } from 'react';
 import { useI18n } from '@/app/providers';
 import { FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Box, Skeleton, Surface } from '@/shared/ui-kit';
-import { profileFeatureStatus } from '../../fellowship-profile/model/status';
 import { error } from '../constants';
 import { membersModel } from '../model/members';
 import { membersFeatureStatus } from '../model/status';
@@ -21,7 +20,7 @@ export const MembersCard = memo<Props>(({ onClick }) => {
 
   const { t } = useI18n();
 
-  const featureState = useUnit(profileFeatureStatus.state);
+  const featureState = useUnit(membersFeatureStatus.state);
   const [members, pending, fulfilled] = useUnit([membersModel.$list, membersModel.$pending, membersModel.$fulfilled]);
   const isNetworkDisabled = featureState.status === 'failed' && featureState.error.message === error.networkDisabled;
 

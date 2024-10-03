@@ -7,6 +7,8 @@ import { cnTw, nonNullable } from '@shared/lib/utils';
 import { ScrollArea } from '../ScrollArea/ScrollArea';
 import { useTheme } from '../Theme/useTheme';
 
+import './Modal.css';
+
 type Props = {
   isOpen?: boolean;
   size: 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'fit';
@@ -35,7 +37,7 @@ const Root = ({ isOpen, size = 'md', children, onToggle }: PropsWithChildren<Pro
         >
           <Dialog.Content
             className={cnTw(
-              'flex max-h-[95%] min-w-32 max-w-[95%] transform flex-col rounded-lg bg-white text-left align-middle text-body shadow-modal transition-all',
+              'ui-kit-modal-height flex min-w-32 max-w-[95%] transform flex-col rounded-lg bg-white text-left align-middle text-body shadow-modal transition-all',
               'duration-200 animate-in fade-in zoom-in-95',
               {
                 'w-modal-sm': size === 'sm',

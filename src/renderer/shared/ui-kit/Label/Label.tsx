@@ -21,7 +21,7 @@ type Props = PropsWithChildren<{
 export const Label = ({ variant, children }: Props) => {
   return (
     <span
-      className={cnTw('flex h-fit w-fit max-w-full truncate rounded-2xl px-2 py-1 text-caption uppercase', {
+      className={cnTw('flex h-fit w-fit max-w-full select-none truncate rounded-2xl px-2 py-1 text-caption uppercase', {
         ['bg-badge-red-background-default text-text-negative']: variant === 'red',
         ['bg-label-background-red text-white']: variant === 'darkRed',
         ['bg-badge-orange-background-default text-text-warning']: variant === 'orange',
