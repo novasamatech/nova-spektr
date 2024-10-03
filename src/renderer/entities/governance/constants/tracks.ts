@@ -44,15 +44,14 @@ export const adminTracks = [
     description: 'governance.addDelegation.tracks.wishForChangeDescription',
   },
   {
-    id: '20',
-    value: 'governance.addDelegation.tracks.governanceCanceller',
-    description: 'governance.addDelegation.tracks.governanceCancellerDescription',
+    id: '10',
+    value: 'governance.addDelegation.tracks.staking',
+    description: 'governance.addDelegation.tracks.stakingDescription',
   },
-
   {
-    id: '21',
-    value: 'governance.addDelegation.tracks.governanceKiller',
-    description: 'governance.addDelegation.tracks.governanceKillerDescription',
+    id: '15',
+    value: 'governance.addDelegation.tracks.crowdloans',
+    description: 'governance.addDelegation.tracks.crowdloansDescription',
   },
 ];
 
@@ -63,28 +62,28 @@ export const governanceTracks = [
     description: 'governance.addDelegation.tracks.governanceLeaseDescription',
   },
   {
-    id: '15',
-    value: 'governance.addDelegation.tracks.crowdloans',
-    description: 'governance.addDelegation.tracks.crowdloansDescription',
-  },
-  {
-    id: '11',
-    value: 'governance.addDelegation.tracks.treasuryAny',
-    description: 'governance.addDelegation.tracks.treasuryAnyDescription',
-  },
-  {
     id: '14',
     value: 'governance.addDelegation.tracks.governanceRegistrar',
     description: 'governance.addDelegation.tracks.governanceRegistrarDescription',
   },
   {
-    id: '10',
-    value: 'governance.addDelegation.tracks.staking',
-    description: 'governance.addDelegation.tracks.stakingDescription',
+    id: '20',
+    value: 'governance.addDelegation.tracks.governanceCanceller',
+    description: 'governance.addDelegation.tracks.governanceCancellerDescription',
+  },
+  {
+    id: '21',
+    value: 'governance.addDelegation.tracks.governanceKiller',
+    description: 'governance.addDelegation.tracks.governanceKillerDescription',
   },
 ];
 
 export const treasuryTracks = [
+  {
+    id: '11',
+    value: 'governance.addDelegation.tracks.treasuryAny',
+    description: 'governance.addDelegation.tracks.treasuryAnyDescription',
+  },
   {
     id: '30',
     value: 'governance.addDelegation.tracks.treasurySmallTips',
