@@ -1,10 +1,11 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type BN } from '@polkadot/util';
+import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 
 import { delegationService, votingsService } from '@/shared/api/governance';
 import { type Address, type Chain, type ChainId } from '@/shared/core';
 import { MONTH, getBlockTimeAgo, nonNullable, setNestedValue } from '@/shared/lib/utils';
+import { votingService } from '@/entities/governance';
 import {
   type AggregatedReferendum,
   listAggregate,
@@ -22,7 +23,14 @@ type RequestParams = {
 };
 
 type Delegation = [Address, { tracks: number[]; amount: BN }];
-export type VotedReferendum = AggregatedReferendum & { votedAt: number };
+type Voted = {
+  votedAt: number;
+  voted: {
+    vote: string;
+    value: BN;
+  };
+};
+export type VotedReferendum = AggregatedReferendum & Voted;
 
 const openSummaryModal = createEvent();
 
@@ -87,7 +95,27 @@ sample({
   fn: ({ currentReferendums, referedumsList }, { params, result }) => {
     const referendums = currentReferendums.reduce<VotedReferendum[]>((acc, val) => {
       if (val.referendumId in result) {
-        return [...acc, { ...val, votedAt: result[val.referendumId] }];
+        const votedReferendum = result[val.referendumId];
+
+        const amount = new BN(
+          votedReferendum.splitAbstainVote?.abstainAmount ?? votedReferendum.standardVote?.vote.amount ?? '0',
+        );
+
+        const votingPower = votingService.calculateVotingPower(
+          amount,
+          votedReferendum.standardVote?.vote?.conviction || 'None',
+        );
+
+        return [
+          ...acc,
+          {
+            ...val,
+            votedAt: votedReferendum.at,
+            voted: votedReferendum.splitAbstainVote
+              ? { vote: 'abstain', value: votingPower }
+              : { vote: votedReferendum.standardVote?.aye ? 'aye' : 'nay', value: votingPower },
+          },
+        ];
       }
 
       return acc;

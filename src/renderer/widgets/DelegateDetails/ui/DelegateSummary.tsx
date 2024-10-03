@@ -9,7 +9,7 @@ import { Modal, Skeleton } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { ExplorersPopover } from '@/entities/wallet';
 import { type AggregatedReferendum, ReferendumDetailsModal, networkSelectorModel } from '@/features/governance';
-import { ReferendumItem } from '@/features/governance/components/ReferendumList/ReferendumItem';
+import { VotedReferendumItem } from '@/features/governance/components/ReferendumList/VotedReferendumItem';
 import { delegateDetailsModel } from '../model/delegate-details-model';
 import { type VotedReferendum, delegateSummaryModel } from '../model/delegate-summary-model';
 
@@ -162,11 +162,11 @@ const DelegationReferendumList = ({ votedReferendums }: { votedReferendums: Vote
   return (
     <div className="flex flex-col gap-2 px-5">
       {votedReferendums.map((referendum) => (
-        <ReferendumItem
+        <VotedReferendumItem
           key={referendum.referendumId}
           referendum={referendum}
-          isTitlesLoading={false}
-          api={network.api}
+          network={network}
+          vote={referendum.voted}
           onSelect={(referendum) => setSelectedReferendum(referendum)}
         />
       ))}
