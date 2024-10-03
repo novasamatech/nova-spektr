@@ -193,29 +193,26 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
           variant="info"
           active={
             // TODO: Add support multishard wallet
-            accounts.length > 0 &&
-            votesToRemove[toAddress(accounts[0].accountId, { prefix: network.chain.addressPrefix })]?.length > 0
+            accounts.length > 0 && votesToRemove?.length > 0
           }
           title={t('governance.addDelegation.votedTracksTitle')}
         >
           <Alert.Item withDot={false}>{t('governance.addDelegation.votedTracksDescription')} </Alert.Item>
           <Alert.Item withDot={false}>
-            <Button variant="text" size="sm" onClick={() => setShowRemoveVoteModal(true)}>
+            <Button variant="text" size="sm" className="p-0" onClick={() => setShowRemoveVoteModal(true)}>
               {t('governance.addDelegation.removeVotesButton')}
             </Button>
           </Alert.Item>
 
-          {showRemoveVoteModal &&
-            votesToRemove[toAddress(accounts[0].accountId, { prefix: network.chain.addressPrefix })] && (
-              <RemoveVotesModal
-                voter={toAddress(accounts[0].accountId, { prefix: network.chain.addressPrefix })}
-                votes={votesToRemove[toAddress(accounts[0].accountId, { prefix: network.chain.addressPrefix })]}
-                chain={network.chain}
-                asset={network.asset}
-                api={network.api}
-                onClose={() => setShowRemoveVoteModal(false)}
-              />
-            )}
+          {showRemoveVoteModal && votesToRemove.length > 0 && (
+            <RemoveVotesModal
+              votes={votesToRemove}
+              chain={network.chain}
+              asset={network.asset}
+              api={network.api}
+              onClose={() => setShowRemoveVoteModal(false)}
+            />
+          )}
         </Alert>
       </div>
       <div className="flex items-center justify-end px-5">
