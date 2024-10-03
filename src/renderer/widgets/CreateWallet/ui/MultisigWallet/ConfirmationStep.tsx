@@ -4,7 +4,7 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@app/providers';
 import { WalletType } from '@shared/core';
 import { RootExplorers } from '@shared/lib/utils';
-import { BodyText, Button, FootnoteText, SmallTitleText } from '@shared/ui';
+import { Button, Counter, DetailRow, Icon, Separator, Tooltip } from '@shared/ui';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
 import { SignButton } from '@entities/operations';
 import { ContactItem, ExplorersPopover } from '@entities/wallet';
@@ -22,7 +22,6 @@ export const ConfirmationStep = () => {
   const signatories = Array.from(signatoriesMap.values());
   const signerWallet = useUnit(flowModel.$signerWallet);
   const signer = useUnit(flowModel.$signer);
-  const signatoriesWithoutSelf = signatories.slice(1);
   const {
     fields: { name, threshold, chain },
   } = useForm(formModel.$createMultisigForm);
@@ -32,44 +31,49 @@ export const ConfirmationStep = () => {
   const explorers = chain.value ? chain.value.explorers : RootExplorers;
 
   return (
-    <section className="relative flex h-full flex-1 flex-col bg-input-background-disabled px-5 py-4">
+    <section className="relative flex h-full flex-1 flex-col px-5 py-4">
       <div className="flex max-h-full flex-1 flex-col">
-        <SmallTitleText className="py-2">{t('createMultisigAccount.newMultisigTitle')}</SmallTitleText>
-        <WalletItem className="mb-4 py-2" name={name.value} type={WalletType.MULTISIG} />
-
-        <SmallTitleText className="py-2">{t('createMultisigAccount.thresholdName')}</SmallTitleText>
-        <BodyText as="span" className="mb-4 truncate tracking-tight text-text-secondary">
-          {threshold.value}/{signatories.length}
-        </BodyText>
-
-        <SmallTitleText className="py-2">{t('createMultisigAccount.selectedSignatoriesTitle')}</SmallTitleText>
-        <div className="flex flex-1 flex-col gap-y-2 overflow-y-auto">
-          <FootnoteText className="text-text-tertiary">{t('createMultisigAccount.walletsTab')}</FootnoteText>
-          <ul className="flex flex-col gap-y-2">
-            <li className="rounded-md px-1 py-1.5 hover:bg-action-background-hover">
-              <WalletItem name={signer?.name || ''} type={signerWallet?.type || WalletType.POLKADOT_VAULT} />
-            </li>
-          </ul>
-          {signatoriesWithoutSelf.length > 0 && (
-            <>
-              <FootnoteText className="text-text-tertiary">
-                {t('createMultisigAccount.contactsTab')} <span className="ml-2">{signatoriesWithoutSelf.length}</span>
-              </FootnoteText>
-              <ul className="gap-y-2">
-                {signatoriesWithoutSelf.map(({ address, name }) => (
-                  <li key={address} className="rounded-md p-1 hover:bg-action-background-hover">
-                    <ExplorersPopover
-                      address={address}
-                      explorers={explorers}
-                      button={<ContactItem name={name} address={address} />}
-                    />
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
+        <div className="mb-6 flex flex-col items-center">
+          <Icon className="text-icon-default" name="multisigCreationConfirm" size={60} />
         </div>
-        <div className="my-2 flex flex-1 flex-col gap-y-2">
+        <DetailRow wrapperClassName="mb-8" label={t('createMultisigAccount.walletName')}>
+          {name.value}
+        </DetailRow>
+        <DetailRow wrapperClassName="mb-8" label={t('createMultisigAccount.signatoriesLabel')}>
+          <>
+            <Counter className="mr-2" variant="neutral">
+              {signatories.length}
+            </Counter>
+            <Tooltip
+              content={signatories.map(({ address }) => (
+                <ExplorersPopover
+                  key={address}
+                  address={address}
+                  explorers={explorers}
+                  button={<ContactItem address={address} />}
+                />
+              ))}
+              offsetPx={-70}
+            >
+              <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+            </Tooltip>
+          </>
+        </DetailRow>
+        <DetailRow wrapperClassName="mb-8" label={t('createMultisigAccount.thresholdName')}>
+          {t('createMultisigAccount.thresholdOutOf', {
+            threshold: threshold.value,
+            signatoriesLength: signatories.length,
+          })}
+        </DetailRow>
+        <Separator className="border-filter-border" />
+        <DetailRow wrapperClassName="my-4" label={t('createMultisigAccount.signingWallet')}>
+          <WalletItem
+            name={signer?.name || (signerWallet?.type === WalletType.POLKADOT_VAULT && signerWallet?.name) || ''}
+            type={signerWallet?.type || WalletType.POLKADOT_VAULT}
+          />
+        </DetailRow>
+        <Separator className="border-filter-border" />
+        <div className="my-2 mb-8 flex flex-1 flex-col gap-y-2">
           <MultisigDepositWithLabel
             api={api}
             asset={chain.value.assets[0]}

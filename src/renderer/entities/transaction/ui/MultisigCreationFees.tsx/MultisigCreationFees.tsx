@@ -92,9 +92,9 @@ export const MultisigCreationFees = memo(
           </>
         }
         className={cnTw('text-text-primary', wrapperClassName)}
-        wrapperClassName="w-auto mr-1"
+        wrapperClassName="w-auto mx-4"
       >
-        <div className="ml-1 flex flex-col items-end gap-y-0.5">
+        <div className="ml-4 flex flex-col items-end gap-y-0.5">
           <AssetBalance value={fee.toString()} asset={asset} className="" />
         </div>
       </DetailRow>

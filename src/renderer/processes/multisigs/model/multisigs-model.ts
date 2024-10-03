@@ -49,7 +49,12 @@ type GetMultisigsResult = {
 
 const getMultisigsFx = createEffect(({ chains, wallets }: GetMultisigsParams) => {
   for (const chain of chains) {
-    const accounts = walletUtils.getAccountsBy(wallets, (a) => accountUtils.isChainIdMatch(a, chain.chainId));
+    const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
+      walletFn: (w) => !walletUtils.isMultisig(w) && !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w),
+    });
+    const accounts = walletUtils.getAccountsBy(filteredWallets || [], (a) =>
+      accountUtils.isChainIdMatch(a, chain.chainId),
+    );
     const multisigIndexerUrl = chain.externalApi?.[ExternalType.PROXY]?.[0]?.url;
     const boundMultisigSaved = scopeBind(multisigSaved, { safe: true });
 
@@ -116,13 +121,9 @@ sample({
       (chain) => connections[chain.chainId] && !networkUtils.isDisabledConnection(connections[chain.chainId]),
     );
 
-    const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
-      walletFn: (w) => !walletUtils.isMultisig(w) && !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w),
-    });
-
     return {
       chains: filteredChains,
-      wallets: filteredWallets || [],
+      wallets,
     };
   },
   target: getMultisigsFx,
