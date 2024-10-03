@@ -71,7 +71,9 @@ const getConviction = (conviction: number): Conviction => {
 };
 
 const getVoteFractions = (tally: Tally, approve: BN) => {
-  const pass = parseInt(approve.toString().slice(0, 8)) / 1_000_000;
+  // Need -1 for waiting for deposit referendums
+  const pass = parseInt(approve.subn(1).toString().slice(0, 8)) / 1_000_000;
+
   const total = tally.ayes.add(tally.nays);
 
   if (total.isZero()) {

@@ -24,7 +24,7 @@ const TimerColor: Record<Status, string> = {
 
 const TimerText: Record<Status, string> = {
   approve: 'governance.referendums.approveIn',
-  reject: 'governance.referendums.approveIn',
+  reject: 'governance.referendums.rejectIn',
   execute: 'governance.referendums.executeIn',
   timeout: 'governance.referendums.timeoutIn',
 };
