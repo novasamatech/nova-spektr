@@ -69,7 +69,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
   const locksForAddress = getLocksForAddress(address, trackLocks);
 
   return (
-    <div className="flex flex-col items-center gap-4 px-5 py-4">
+    <div className="flex w-modal flex-col items-center gap-4 px-5 py-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name="retractMst" size={60} />
 

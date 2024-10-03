@@ -184,9 +184,9 @@ export const Governance = () => {
         nonNullable(network) &&
         referendumService.isOngoing(selectedReferendum) && (
           <RemoveVotesModal
-            voter={selectedReferendum.vote.voter}
             votes={[
               {
+                voter: selectedReferendum.vote.voter,
                 vote: selectedReferendum.vote.vote,
                 referendum: selectedReferendum.referendumId,
                 track: selectedReferendum.track,
