@@ -53,14 +53,14 @@ export const adminTracks = [
     value: 'governance.addDelegation.tracks.crowdloans',
     description: 'governance.addDelegation.tracks.crowdloansDescription',
   },
+];
+
+export const governanceTracks = [
   {
     id: '12',
     value: 'governance.addDelegation.tracks.governanceLease',
     description: 'governance.addDelegation.tracks.governanceLeaseDescription',
   },
-];
-
-export const governanceTracks = [
   {
     id: '14',
     value: 'governance.addDelegation.tracks.governanceRegistrar',
