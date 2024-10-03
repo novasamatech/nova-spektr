@@ -1,7 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { combine, createEvent, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
-import uniq from 'lodash/uniq';
 
 import {
   type Account,
@@ -52,9 +51,11 @@ const $account = createStore<Account | null>(null);
 const $accounts = combine(walletModel.$activeWallet, flow.state, (wallet, { votes, chain }) => {
   if (nullable(wallet) || nullable(chain)) return [];
 
-  return walletUtils.getAccountsBy([wallet], (a) =>
-    votes.some(({ voter }) => toAddress(a.accountId, { prefix: chain.addressPrefix }) === voter),
-  );
+  return walletUtils.getAccountsBy([wallet], (a) => {
+    if (!accountUtils.isChainAndCryptoMatch(a, chain)) return false;
+
+    return votes.some(({ voter }) => toAddress(a.accountId, { prefix: chain.addressPrefix }) === voter);
+  });
 });
 
 sample({

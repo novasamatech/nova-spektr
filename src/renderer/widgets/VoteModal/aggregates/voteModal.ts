@@ -144,12 +144,12 @@ sample({
 
 sample({
   clock: form.fields.account.$value,
-  source: flow.state,
-  fn: ({ votes }, account) => {
-    if (nullable(account) || votes.length === 0) return null;
+  source: { state: flow.state, network: networkSelectorModel.$network },
+  fn: ({ state, network }, account) => {
+    if (nullable(account) || nullable(network) || state.votes.length === 0) return null;
 
-    const record = votes.find(({ voter }) => {
-      return voter === account.accountId;
+    const record = state.votes.find(({ voter }) => {
+      return voter === toAddress(account.accountId, { prefix: network.chain.addressPrefix });
     });
 
     if (!record) return null;
