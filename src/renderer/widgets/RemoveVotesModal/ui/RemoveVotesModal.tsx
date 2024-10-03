@@ -8,15 +8,16 @@ import { useModalClose } from '@/shared/lib/hooks';
 import { Step, isStep, nonNullable, nullable } from '@/shared/lib/utils';
 import { BaseModal, Button } from '@shared/ui';
 import { OperationTitle } from '@/entities/chain';
-import { OperationResult } from '@/entities/transaction';
+import { SignButton } from '@/entities/operations';
+import { OperationResult, TransactionSlider } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
-import { RemoveVoteConfirmation, basketUtils } from '@/features/operations/OperationsConfirm';
+import { RemoveVoteConfirmation, basketUtils, removeVoteConfirmModel } from '@/features/operations/OperationsConfirm';
 import { SignatorySelectModal } from '@/pages/Operations/components/modals/SignatorySelectModal';
 import { removeVotesModalAggregate } from '../aggregates/removeVotesModal';
 
 type Props = {
-  voter: Address;
   votes: {
+    voter: Address;
     referendum: ReferendumId;
     track: TrackId;
     vote?: AccountVote;
@@ -27,10 +28,9 @@ type Props = {
   onClose: VoidFunction;
 };
 
-export const RemoveVotesModal = ({ votes, voter, chain, asset, api, onClose }: Props) => {
+export const RemoveVotesModal = ({ votes, chain, asset, api, onClose }: Props) => {
   useGate(removeVotesModalAggregate.gates.flow, {
     votes,
-    voter,
     chain,
     asset,
     api,
@@ -41,6 +41,7 @@ export const RemoveVotesModal = ({ votes, voter, chain, asset, api, onClose }: P
   const signatory = useUnit(removeVotesModalAggregate.$signatory);
   const signatories = useUnit(removeVotesModalAggregate.$signatories);
   const initiatorWallet = useUnit(removeVotesModalAggregate.$initiatorWallet);
+  const votesList = useUnit(removeVotesModalAggregate.$votesList);
 
   const shouldPickSignatory = nullable(signatory) && signatories.length > 0;
 
@@ -89,11 +90,11 @@ export const RemoveVotesModal = ({ votes, voter, chain, asset, api, onClose }: P
           <OperationTitle title={t('operations.modalTitles.removeVoteOn')} chainId={chain.chainId}></OperationTitle>
         }
         headerClass="px-5 py-3"
-        panelClass="flex flex-col w-modal max-h-[678px]"
+        panelClass="flex flex-col w-fit max-h-[678px]"
         contentClass="flex flex-col h-full min-h-0 overflow-y-auto shrink"
         onClose={onClose}
       >
-        {isStep(step, Step.CONFIRM) && (
+        {isStep(step, Step.CONFIRM) && votesList.length === 1 && (
           <RemoveVoteConfirmation
             hideSignButton={shouldPickSignatory}
             secondaryActionButton={
@@ -107,6 +108,31 @@ export const RemoveVotesModal = ({ votes, voter, chain, asset, api, onClose }: P
             }
           />
         )}
+
+        {isStep(step, Step.CONFIRM) && votesList.length > 1 && (
+          <TransactionSlider
+            footer={
+              <div className="flex gap-2">
+                {initiatorWallet && basketUtils.isBasketAvailable(initiatorWallet) && (
+                  <Button pallet="secondary" onClick={() => removeVotesModalAggregate.events.txSaved()}>
+                    {t('operation.addToBasket')}
+                  </Button>
+                )}
+                <SignButton isDefault type={initiatorWallet?.type} onClick={removeVoteConfirmModel.events.sign} />
+              </div>
+            }
+            count={votesList.length}
+          >
+            {votesList.map((_, index) => (
+              <div key={index} className="flex h-[582px] flex-col last-of-type:pr-4">
+                <div className="max-h-full w-[440px] overflow-y-auto rounded-lg bg-white shadow-shadow-2">
+                  <RemoveVoteConfirmation id={index} hideSignButton />
+                </div>
+              </div>
+            ))}
+          </TransactionSlider>
+        )}
+
         {isStep(step, Step.SIGN) && (
           <OperationSign onGoBack={() => removeVotesModalAggregate.events.setStep(Step.CONFIRM)} />
         )}
