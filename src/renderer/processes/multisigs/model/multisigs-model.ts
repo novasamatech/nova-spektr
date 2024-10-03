@@ -116,9 +116,13 @@ sample({
       (chain) => connections[chain.chainId] && !networkUtils.isDisabledConnection(connections[chain.chainId]),
     );
 
+    const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
+      walletFn: (w) => !walletUtils.isMultisig(w) && !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w),
+    });
+
     return {
       chains: filteredChains,
-      wallets,
+      wallets: filteredWallets || [],
     };
   },
   target: getMultisigsFx,

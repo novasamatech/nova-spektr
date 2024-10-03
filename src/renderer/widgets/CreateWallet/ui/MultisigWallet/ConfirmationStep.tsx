@@ -5,7 +5,7 @@ import { useI18n } from '@app/providers';
 import { WalletType } from '@shared/core';
 import { RootExplorers } from '@shared/lib/utils';
 import { BodyText, Button, FootnoteText, SmallTitleText } from '@shared/ui';
-import { MultisigCreationFees } from '@/entities/transaction/ui/MultisigCreationFees.tsx/MultisigCreationFees';
+import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
 import { SignButton } from '@entities/operations';
 import { ContactItem, ExplorersPopover } from '@entities/wallet';
 import { Step } from '../../lib/types';
@@ -69,22 +69,29 @@ export const ConfirmationStep = () => {
             </>
           )}
         </div>
+        <div className="my-2 flex flex-1 flex-col gap-y-2">
+          <MultisigDepositWithLabel
+            api={api}
+            asset={chain.value.assets[0]}
+            threshold={threshold.value}
+            onDepositChange={flowModel.events.multisigDepositChanged}
+          />
+          <FeeWithLabel
+            api={api}
+            asset={chain.value.assets[0]}
+            transaction={fakeTx}
+            onFeeChange={flowModel.events.feeChanged}
+            onFeeLoading={flowModel.events.isFeeLoadingChanged}
+          />
+        </div>
         <div className="mt-auto flex items-center justify-between">
           <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.SIGNATORIES_THRESHOLD)}>
             {t('createMultisigAccount.backButton')}
           </Button>
-          <div className="mt-auto flex items-center justify-end">
-            <MultisigCreationFees
-              api={api}
-              asset={chain.value.assets[0]}
-              threshold={threshold.value}
-              transaction={fakeTx}
-            />
-            <SignButton
-              type={signerWallet?.type || WalletType.POLKADOT_VAULT}
-              onClick={confirmModel.output.formSubmitted}
-            />
-          </div>
+          <SignButton
+            type={signerWallet?.type || WalletType.POLKADOT_VAULT}
+            onClick={confirmModel.output.formSubmitted}
+          />
         </div>
       </div>
     </section>

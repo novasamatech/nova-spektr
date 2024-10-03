@@ -71,7 +71,7 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
       title={modalTitle}
       isOpen={isModalOpen}
       contentClass="flex"
-      panelClass={isStep(activeStep, Step.SIGN) ? 'w-[440px]' : 'w-[784px]'}
+      panelClass={isStep(activeStep, Step.SIGN) || isStep(activeStep, Step.CONFIRM) ? 'w-[440px]' : 'w-[784px]'}
       onClose={handleClose}
     >
       {isStep(activeStep, Step.NAME_NETWORK) && <NameNetworkSelection />}
