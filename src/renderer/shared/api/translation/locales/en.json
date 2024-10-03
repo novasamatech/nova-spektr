@@ -156,7 +156,6 @@
     "networkDescription": "The multisig will only work on this network, if you want to use a different network, you will need to create a new multisig",
     "networkFee": "Network fee:",
     "newMultisigTitle": "New multisig",
-    "walletName": "Wallet name",
     "noOwnSignatory": "You need at least 1 owned account as part of the signatories",
     "noOwnSignatoryTitle": "No owned account",
     "noWallets": "Looks like you don't have any non-watch only wallets",
@@ -173,6 +172,7 @@
     "signatorySelection": "Choose or paste an address",
     "signatoryThresholdDescription": "Set the signatory wallet of your flexible multisig and how many need to confirm to execute a valid transaction",
     "signatoryTitle": "Select signatories",
+    "signingWallet": "Signing wallet",
     "signingWith": "Signing with",
     "singleChain": {
       "description": "Creation is free, the wallet can work on one network only",
@@ -189,9 +189,9 @@
     "thresholdOutOf": "{ threshold } out of { signatoriesLength }",
     "thresholdPlaceholder": "Select threshold",
     "title": "Create multisig",
-    "signingWallet": "Signing wallet",
     "titleOn": "on",
     "walletFormTitle": "Set up your wallet",
+    "walletName": "Wallet name",
     "walletNameLabel": "Wallet name",
     "walletsTab": "Your wallets",
     "yourAccounts": "Your accounts"
