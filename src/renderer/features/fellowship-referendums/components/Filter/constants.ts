@@ -1,9 +1,7 @@
-export const enum VoteStatus {
-  VOTED = 'voted',
-  NOT_VOTED = 'notVoted',
-}
+import { type DropdownOption } from '@/shared/ui/Dropdowns/common/types';
+import { type VotingStatus } from '../../model/filter';
 
 export const voteOptions = [
-  { id: VoteStatus.VOTED, value: 'governance.voted' },
-  { id: VoteStatus.NOT_VOTED, value: 'governance.filters.notVoted' },
-];
+  { id: 'voted', value: 'voted', element: 'governance.voted' },
+  { id: 'notVoted', value: 'notVoted', element: 'governance.filters.notVoted' },
+] satisfies DropdownOption<VotingStatus>[];

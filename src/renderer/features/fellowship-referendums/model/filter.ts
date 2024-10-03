@@ -1,34 +1,24 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { debounce } from 'patronum';
 
-import { type TrackId } from '@shared/pallet/referenda';
-import { type DropdownResult } from '@shared/ui/types';
+import { type TrackId } from '@/shared/pallet/referenda';
+
+export type VotingStatus = 'voted' | 'notVoted';
 
 const queryChanged = createEvent<string>();
-const selectTracks = createEvent<DropdownResult<number>[]>();
-const selectVotingStatus = createEvent<DropdownResult>();
+const selectTracks = createEvent<TrackId[]>();
+const selectVotingStatus = createEvent<VotingStatus | null>();
 const filtersReset = createEvent();
 
-const $selectedTracks = createStore<TrackId[]>([]);
-const $selectedVotingStatus = createStore<string>('');
-const $query = restore<string>(queryChanged, '');
-const $debouncedQuery = restore<string>(debounce(queryChanged, 100), '');
+const $selectedTracks = restore(selectTracks, []);
+const $selectedVotingStatus = createStore<VotingStatus | null>(null).on(selectVotingStatus, (v, p) =>
+  v === p ? null : p,
+);
+
+const $query = restore(debounce(queryChanged, 100), '');
 
 const $isFiltersSelected = combine($selectedTracks, $selectedVotingStatus, (tracks, voteId) => {
-  return tracks.length > 0 || voteId !== '';
-});
-
-sample({
-  clock: selectTracks,
-  fn: data => data.map(({ value }) => value),
-  target: $selectedTracks,
-});
-
-sample({
-  clock: selectVotingStatus,
-  source: $selectedVotingStatus,
-  fn: (selectedVoteId, { id }) => (selectedVoteId === id ? '' : id),
-  target: $selectedVotingStatus,
+  return tracks.length > 0 || voteId !== null;
 });
 
 sample({
@@ -38,7 +28,6 @@ sample({
 
 export const filterModel = {
   $query,
-  $debouncedQuery,
   $selectedTracks,
   $selectedVotingStatus,
   $isFiltersSelected,

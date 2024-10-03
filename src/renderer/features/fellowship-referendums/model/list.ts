@@ -1,12 +1,13 @@
 import { combine, sample } from 'effector';
 import { and, either, or } from 'patronum';
 
-import { performSearch } from '@shared/lib/utils';
+import { dictionary, performSearch } from '@shared/lib/utils';
 import { collectiveDomain } from '@/domains/collectives';
 
 import { fellowshipModel } from './fellowship';
 import { filterModel } from './filter';
 import { referendumsFeatureStatus } from './status';
+import { votingModel } from './voting';
 
 sample({
   clock: referendumsFeatureStatus.running,
@@ -22,7 +23,7 @@ const $referendums = fellowshipModel.$store.map(store => store?.referendums ?? [
 const $meta = fellowshipModel.$store.map(store => store?.referendumMeta ?? {});
 
 const $referendumsFilteredByQuery = combine(
-  { referendums: $referendums, meta: $meta, query: filterModel.$debouncedQuery },
+  { referendums: $referendums, meta: $meta, query: filterModel.$query },
   ({ referendums, meta, query }) => {
     return performSearch({
       records: referendums,
@@ -42,12 +43,22 @@ const $referendumsFilteredByStatus = combine(
   {
     referendums: $referendums,
     selectedTracks: filterModel.$selectedTracks,
+    selectedVotingStatus: filterModel.$selectedVotingStatus,
+    voting: votingModel.$walletVoting,
   },
-  ({ referendums, selectedTracks }) => {
+  ({ referendums, voting, selectedTracks, selectedVotingStatus }) => {
+    const votingMap = dictionary(voting, 'referendumId');
+
     return referendums.filter(referendum => {
       const isInTrack = collectiveDomain.referendum.service.isReferendumInTrack(selectedTracks, referendum);
 
-      // TODO add filtering by voting status
+      if (selectedVotingStatus === 'voted') {
+        return isInTrack && referendum.id in votingMap;
+      }
+
+      if (selectedVotingStatus === 'notVoted') {
+        return isInTrack && !(referendum.id in votingMap);
+      }
 
       return isInTrack;
     });

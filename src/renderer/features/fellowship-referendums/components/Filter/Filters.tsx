@@ -20,6 +20,18 @@ export const Filters = () => {
     return null;
   }
 
+  const trackFilterOptions = tracks.map(({ id, name }) => ({
+    id: id.toString(),
+    value: id,
+    element: name.toString(),
+  }));
+
+  const voteFilterOptions = voteOptions.map(({ id, value, element }) => ({
+    id,
+    value,
+    element: t(element),
+  }));
+
   return (
     <Box direction="row" gap={4} padding={[4, 0, 2]}>
       <MultiSelect
@@ -27,24 +39,20 @@ export const Filters = () => {
         placeholder={t('governance.filters.tracks')}
         multiPlaceholder={t('governance.filters.tracks')}
         selectedIds={selectedTrackIds.map(x => x.toString())}
-        options={tracks.map(({ id, name }) => ({
-          id: id.toString(),
-          value: id,
-          element: name.toString(),
-        }))}
+        options={trackFilterOptions}
         disabled={tracks.length === 0}
-        onChange={filterModel.events.selectTracks}
+        onChange={value => {
+          filterModel.events.selectTracks(value.map(x => x.value));
+        }}
       />
       <Select
         className="w-[103px]"
         placeholder={t('governance.filters.vote')}
-        selectedId={selectedVoteId}
-        options={voteOptions.map(({ id, value }) => ({
-          id,
-          value,
-          element: t(value),
-        }))}
-        onChange={filterModel.events.selectVotingStatus}
+        selectedId={selectedVoteId ?? ''}
+        options={voteFilterOptions}
+        onChange={value => {
+          filterModel.events.selectVotingStatus(value.value);
+        }}
       />
       {Boolean(isFiltersSelected) && (
         <Button variant="text" className="ml-auto h-8.5 py-0" onClick={() => filterModel.events.filtersReset()}>
