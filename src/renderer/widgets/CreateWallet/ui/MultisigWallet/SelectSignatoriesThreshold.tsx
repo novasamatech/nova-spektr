@@ -5,7 +5,7 @@ import { type FormEvent, useState } from 'react';
 import { useI18n } from '@app/providers';
 import { Alert, Button, InputHint, Select, SmallTitleText } from '@shared/ui';
 import { type DropdownOption } from '@shared/ui/types';
-import { MultisigCreationFees } from '@/entities/transaction/ui/MultisigCreationFees.tsx/MultisigCreationFees';
+import { MultisigCreationFees } from '@/widgets/CreateWallet/ui/MultisigWallet/components';
 import { Step } from '../../lib/types';
 import { flowModel } from '../../model/flow-model';
 import { formModel } from '../../model/form-model';
