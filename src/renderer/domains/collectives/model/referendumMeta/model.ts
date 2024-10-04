@@ -1,13 +1,15 @@
+import { polkassemblyApiService } from '@/shared/api/polkassembly';
+import { subsquareApiService } from '@/shared/api/subsquare';
+import { type ChainId } from '@/shared/core';
+import { createDataSource } from '@/shared/effector';
+import { dictionary, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { subsquareApiService } from '@shared/api/subsquare';
-import { type ChainId } from '@shared/core';
-import { createDataSource } from '@shared/effector';
-import { dictionary, pickNestedValue, setNestedValue } from '@shared/lib/utils';
 import { type CollectivePalletsType, type CollectivesStruct } from '../../lib/types';
 
 import { type ReferendumMeta } from './types';
 
 type RequestParams = {
+  provider: 'subsquare' | 'polkassembly';
   palletType: CollectivePalletsType;
   chainId: ChainId;
 };
@@ -19,23 +21,40 @@ const {
   fulfilled,
 } = createDataSource<CollectivesStruct<Record<ReferendumId, ReferendumMeta>>, RequestParams, ReferendumMeta[]>({
   initial: {},
-  fn: async () => {
+  fn: async ({ provider }) => {
     let response: ReferendumMeta[] = [];
 
-    // TODO implement
-    const pages = subsquareApiService.fetchReferendumList({
-      network: 'collectives',
-      referendumType: 'fellowship',
-    });
+    if (provider === 'subsquare') {
+      const pages = subsquareApiService.fetchReferendumList({
+        network: 'collectives',
+        referendumType: 'fellowship',
+      });
 
-    for await (const page of pages) {
-      response = response.concat(
-        page.map(x => ({
-          referendumId: x.referendumIndex,
-          title: x.title,
-          description: x.content,
-        })),
-      );
+      for await (const page of pages) {
+        response = response.concat(
+          page.map(x => ({
+            referendumId: x.referendumIndex,
+            title: x.title,
+            description: x.content,
+          })),
+        );
+      }
+    }
+
+    if (provider === 'polkassembly') {
+      const pages = polkassemblyApiService.fetchFellowshipReferendumsList({
+        network: 'collectives',
+      });
+
+      for await (const page of pages) {
+        response = response.concat(
+          page.map(x => ({
+            referendumId: x.id,
+            title: x.title,
+            description: x.description ?? '',
+          })),
+        );
+      }
     }
 
     return response;

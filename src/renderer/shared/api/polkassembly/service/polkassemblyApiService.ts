@@ -1,6 +1,7 @@
 import { createAsyncTaskPool } from '../../substrate-helpers';
 import {
   type PolkassemblyDetailedPost,
+  type PolkassemblyFellowshipListingReferendum,
   type PolkassemblyListingPost,
   type PolkassemblyPostVote,
   type PolkassemblyPostVotesResponse,
@@ -151,8 +152,52 @@ const fetchPostVotes = async (
   return createRequest(1);
 };
 
+type FellowshipReferendumListingParams = {
+  network: string;
+  trackStatus?: PolkassemblyTrackStatus;
+  sortBy?: 'commented' | 'newest' | 'oldest';
+  limit?: number;
+};
+
+async function* fetchFellowshipReferendumsList({
+  network,
+  trackStatus,
+  sortBy,
+  limit = Number.MAX_SAFE_INTEGER,
+}: FellowshipReferendumListingParams) {
+  const pageSize = Math.min(100, limit);
+
+  const getApiUrl = (page: number, size: number) => {
+    return createURL('https://collectives.polkassembly.io/api/v1/fellowship_referendums', {
+      trackStatus,
+      page,
+      limit: size,
+      sortBy,
+      'x-network': network,
+    });
+  };
+
+  const requestParams = { method: 'GET' };
+
+  const request = (page: number): Promise<{ totalCount: number; posts: PolkassemblyFellowshipListingReferendum[] }> =>
+    polkassemblyRequestPool.call(() => fetch(getApiUrl(page, pageSize), requestParams).then((res) => res.json()));
+
+  const firstPage = await request(1);
+  yield firstPage.posts;
+
+  if (firstPage.totalCount < pageSize) {
+    return;
+  }
+
+  const totalRequests = Math.ceil(firstPage.totalCount / pageSize) + 1;
+  for (let pageNumber = 2; pageNumber < totalRequests; pageNumber++) {
+    yield request(pageNumber).then((x) => x.posts);
+  }
+}
+
 export const polkassemblyApiService = {
   fetchPost,
   fetchPostsList,
   fetchPostVotes,
+  fetchFellowshipReferendumsList,
 };

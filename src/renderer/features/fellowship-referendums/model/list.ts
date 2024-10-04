@@ -1,13 +1,29 @@
 import { combine, sample } from 'effector';
 import { and, either, or } from 'patronum';
 
-import { dictionary, performSearch } from '@shared/lib/utils';
+import { attachToFeatureInput } from '@/shared/effector';
+import { dictionary, nonNullable, performSearch } from '@shared/lib/utils';
 import { collectiveDomain } from '@/domains/collectives';
+import { governanceModel } from '@/entities/governance';
 
 import { fellowshipModel } from './fellowship';
 import { filterModel } from './filter';
 import { referendumsFeatureStatus } from './status';
 import { votingModel } from './voting';
+
+// TODO do smth about it, this connection looks terrible
+const offChainProviderUpdated = attachToFeatureInput(referendumsFeatureStatus, governanceModel.$governanceApi);
+
+sample({
+  clock: offChainProviderUpdated,
+  filter: ({ data }) => nonNullable(data),
+  fn: ({ input: { chainId, palletType }, data: api }) => ({
+    provider: api!.type,
+    chainId,
+    palletType,
+  }),
+  target: collectiveDomain.referendumMeta.request,
+});
 
 sample({
   clock: referendumsFeatureStatus.running,

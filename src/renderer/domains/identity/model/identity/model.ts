@@ -3,9 +3,9 @@ import { createEvent, sample } from 'effector';
 
 import { type ChainId } from '@/shared/core';
 import { createDataSource } from '@/shared/effector';
+import { nullable } from '@/shared/lib/utils';
 import { identityPallet } from '@/shared/pallet/identity';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { nullable } from '@shared/lib/utils';
 import { networkModel } from '@/entities/network';
 
 import { identityService } from './service';

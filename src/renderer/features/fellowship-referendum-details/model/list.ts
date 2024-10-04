@@ -8,7 +8,7 @@ import { referendumsDetailsFeatureStatus } from './status';
 
 sample({
   clock: referendumsDetailsFeatureStatus.running,
-  target: [collectiveDomain.referendum.subscribe, collectiveDomain.referendumMeta.request],
+  target: collectiveDomain.referendum.subscribe,
 });
 
 sample({

@@ -3,10 +3,10 @@ import { type ApiPromise } from '@polkadot/api';
 import { type ChainId } from '@/shared/core';
 import { createDataSubscription } from '@/shared/effector';
 import { nullable, setNestedValue } from '@/shared/lib/utils';
+import { ambassadorCorePallet } from '@/shared/pallet/ambassadorCore';
 import { collectivePallet } from '@/shared/pallet/collective';
+import { fellowshipCorePallet } from '@/shared/pallet/fellowshipCore';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
-import { ambassadorCorePallet } from '@shared/pallet/ambassadorCore';
-import { fellowshipCorePallet } from '@shared/pallet/fellowshipCore';
 import { type CollectivePalletsType, type CollectivesStruct } from '../../lib/types';
 
 import { type Member } from './types';
