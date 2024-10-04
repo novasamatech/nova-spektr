@@ -2,18 +2,19 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
+import { useToggle } from '@/shared/lib/hooks';
+import { RootExplorers } from '@/shared/lib/utils';
 import { WalletType } from '@shared/core';
-import { RootExplorers } from '@shared/lib/utils';
-import { Button, Counter, DetailRow, Icon, Separator, Tooltip } from '@shared/ui';
+import { Button, Counter, DetailRow, Icon, IconButton, Separator } from '@shared/ui';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
 import { SignButton } from '@entities/operations';
-import { ContactItem, ExplorersPopover } from '@entities/wallet';
 import { Step } from '../../lib/types';
 import { confirmModel } from '../../model/confirm-model';
 import { flowModel } from '../../model/flow-model';
 import { formModel } from '../../model/form-model';
 import { signatoryModel } from '../../model/signatory-model';
 
+import { SelectedSignatoriesModal } from './components/SelectedSignatoriesModal';
 import { WalletItem } from './components/WalletItem';
 
 export const ConfirmationStep = () => {
@@ -27,7 +28,7 @@ export const ConfirmationStep = () => {
   } = useForm(formModel.$createMultisigForm);
   const api = useUnit(flowModel.$api);
   const fakeTx = useUnit(flowModel.$fakeTx);
-
+  const [isSignatoriesModalOpen, toggleSignatoriesModalOpen] = useToggle();
   const explorers = chain.value ? chain.value.explorers : RootExplorers;
 
   return (
@@ -44,19 +45,12 @@ export const ConfirmationStep = () => {
             <Counter className="mr-2" variant="neutral">
               {signatories.length}
             </Counter>
-            <Tooltip
-              content={signatories.map(({ address }) => (
-                <ExplorersPopover
-                  key={address}
-                  address={address}
-                  explorers={explorers}
-                  button={<ContactItem address={address} />}
-                />
-              ))}
-              offsetPx={-70}
-            >
-              <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
-            </Tooltip>
+            <IconButton
+              name="info"
+              className="cursor-pointer hover:text-icon-hover"
+              size={16}
+              onClick={toggleSignatoriesModalOpen}
+            />
           </>
         </DetailRow>
         <DetailRow wrapperClassName="mb-8" label={t('createMultisigAccount.thresholdName')}>
@@ -98,6 +92,13 @@ export const ConfirmationStep = () => {
           />
         </div>
       </div>
+      <SelectedSignatoriesModal
+        isOpen={isSignatoriesModalOpen}
+        signatories={signatories}
+        explorers={explorers}
+        addressPrefix={chain.value.addressPrefix}
+        onClose={toggleSignatoriesModalOpen}
+      />
     </section>
   );
 };
