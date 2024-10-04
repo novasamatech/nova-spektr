@@ -8,12 +8,7 @@ import { error } from '../constants';
 import { profileModel } from '../model/profile';
 import { profileFeatureStatus } from '../model/status';
 
-type Props = {
-  // TODO replace with internal modal openning
-  onClick: () => void;
-};
-
-export const ProfileCard = memo<Props>(({ onClick }) => {
+export const ProfileCard = memo(() => {
   useGate(profileFeatureStatus.gate);
 
   const { t } = useI18n();
@@ -24,7 +19,7 @@ export const ProfileCard = memo<Props>(({ onClick }) => {
   const isNetworkDisabled = featureState.status === 'failed' && featureState.error.message === error.networkDisabled;
 
   return (
-    <Surface disabled={!fulfilled} onClick={onClick}>
+    <Surface disabled={!fulfilled}>
       <Box direction="row" verticalAlign="center" horizontalAlign="space-between" padding={[6, 4]}>
         <Box gap={2}>
           <Box direction="row" gap={1}>
@@ -42,8 +37,6 @@ export const ProfileCard = memo<Props>(({ onClick }) => {
             )}
           </Skeleton>
         </Box>
-
-        {fellowshipAccount ? <Icon name="arrowRight" /> : null}
       </Box>
     </Surface>
   );

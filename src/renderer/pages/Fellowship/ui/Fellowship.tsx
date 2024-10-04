@@ -28,7 +28,7 @@ export const Fellowship = () => {
     if (chainId && chainId.startsWith('0x')) {
       fellowshipNetworkFeature.model.network.selectCollective({ chainId: chainId as ChainId });
     } else {
-      // navigating to default chain
+      // navigate to default chain
       navigationModel.events.navigateTo(generatePath(Paths.FELLOWSHIP_LIST, { chainId: COLLECTIVES_CHAIN_ID }));
     }
   }, [chainId]);
@@ -45,7 +45,7 @@ export const Fellowship = () => {
         <Box horizontalAlign="center" height="100%" padding={[6, 0]}>
           <Box width="736px" height="100%" gap={3}>
             <div className="grid grid-cols-3 gap-3">
-              <ProfileCard onClick={() => {}} />
+              <ProfileCard />
               <MembersCard onClick={() => {}} />
 
               {/*TODO remove before release*/}
