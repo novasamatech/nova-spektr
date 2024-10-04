@@ -1,8 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
-import { memo, useEffect, useState } from 'react';
+import { memo } from 'react';
 
 import { useI18n } from '@app/providers';
-import { getTimeToBlock } from '@shared/lib/utils';
 import { FootnoteText, HeadlineText, Shimmering } from '@shared/ui';
 import {
   ReferendumTimer,
@@ -13,6 +12,7 @@ import {
   votingService,
 } from '@entities/governance';
 import { type AggregatedReferendum } from '../../types/structs';
+import { useReferendumEndTime } from '../../utils/useReferendumEndTime';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 
 import { ListItem } from './ListItem';
@@ -28,15 +28,7 @@ type Props = {
 export const ReferendumItem = memo<Props>(({ referendum, isTitlesLoading, api, onSelect }) => {
   const { t } = useI18n();
 
-  const [endTime, setEndTime] = useState<number>();
-
-  useEffect(() => {
-    if (referendum.end) {
-      getTimeToBlock(referendum.end, api).then((date) => {
-        setEndTime(date / 1000);
-      });
-    }
-  }, []);
+  const endTime = useReferendumEndTime({ api, referendum });
 
   const { referendumId, approvalThreshold } = referendum;
 

@@ -1,10 +1,10 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type BN } from '@polkadot/util';
-import { memo, useEffect, useState } from 'react';
+import { memo } from 'react';
 
 import { useI18n } from '@app/providers';
 import { type Asset, type Chain } from '@/shared/core';
-import { formatBalance, getTimeToBlock, toNumberWithPrecision } from '@shared/lib/utils';
+import { formatBalance, toNumberWithPrecision } from '@shared/lib/utils';
 import { FootnoteText, HeadlineText, Icon } from '@shared/ui';
 import {
   ReferendumTimer,
@@ -14,6 +14,7 @@ import {
   votingService,
 } from '@entities/governance';
 import { type AggregatedReferendum } from '../../types/structs';
+import { useReferendumEndTime } from '../../utils/useReferendumEndTime';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 
 import { ListItem } from './ListItem';
@@ -28,15 +29,7 @@ type Props = {
 export const VotedReferendumItem = memo<Props>(({ referendum, network, vote, onSelect }) => {
   const { t } = useI18n();
 
-  const [endTime, setEndTime] = useState<number>();
-
-  useEffect(() => {
-    if (referendum.end) {
-      getTimeToBlock(referendum.end, network.api).then((date) => {
-        setEndTime(date / 1000);
-      });
-    }
-  }, []);
+  const endTime = useReferendumEndTime({ api: network.api, referendum });
 
   const { referendumId, approvalThreshold } = referendum;
 

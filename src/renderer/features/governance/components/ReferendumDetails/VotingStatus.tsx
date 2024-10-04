@@ -1,15 +1,19 @@
+import { type ApiPromise } from '@polkadot/api';
+
 import { useI18n } from '@app/providers';
 import { type Asset, type Wallet } from '@shared/core';
 import { nonNullable } from '@shared/lib/utils';
 import { Button, FootnoteText } from '@shared/ui';
-import { ReferendumVoteChart, referendumService, votingService } from '@entities/governance';
+import { ReferendumTimer, ReferendumVoteChart, referendumService, votingService } from '@entities/governance';
 import { EmptyAccountMessage } from '@/features/emptyList';
 import { type AggregatedReferendum } from '../../types/structs';
+import { useReferendumEndTime } from '../../utils/useReferendumEndTime';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 
 import { Threshold } from './Threshold';
 
 type Props = {
+  api: ApiPromise;
   referendum: AggregatedReferendum;
   asset: Asset;
   canVote: boolean;
@@ -21,6 +25,7 @@ type Props = {
 };
 
 export const VotingStatus = ({
+  api,
   referendum,
   asset,
   canVote,
@@ -31,6 +36,8 @@ export const VotingStatus = ({
   onRemoveVoteRequest,
 }: Props) => {
   const { t } = useI18n();
+
+  const endTime = useReferendumEndTime({ api, referendum });
 
   const { approvalThreshold, supportThreshold, voting } = referendum;
 
@@ -49,7 +56,11 @@ export const VotingStatus = ({
 
   return (
     <div className="flex flex-col items-start gap-6">
-      <VotingStatusBadge passing={isPassing} referendum={referendum} />
+      <div className="flex w-full justify-between">
+        <VotingStatusBadge passing={isPassing} referendum={referendum} />
+
+        {endTime && referendum.status && <ReferendumTimer status={referendum.status} time={endTime} />}
+      </div>
       {votedFractions && (
         <ReferendumVoteChart
           descriptionPosition="bottom"
