@@ -113,7 +113,12 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
       let walletAccounts: Account[] = [];
 
       if (walletUtils.isPolkadotVault(wallet)) {
-        const shards = wallet.accounts.filter((a) => accountUtils.isShardAccount(a) && a.chainId === chain.chainId);
+        const shards = wallet.accounts.filter((a) => {
+          return (
+            accountUtils.isChainAndCryptoMatch(a, chain) &&
+            (accountUtils.isShardAccount(a) || accountUtils.isChainAccount(a))
+          );
+        });
 
         if (shards.length) {
           walletAccounts = shards;

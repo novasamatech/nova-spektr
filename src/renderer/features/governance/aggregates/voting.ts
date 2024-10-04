@@ -41,10 +41,15 @@ const $possibleAccountsForVoting = combine(
     if (nullable(wallet) || nullable(chain)) return [];
 
     if (walletUtils.isPolkadotVault(wallet)) {
-      const shards = wallet.accounts.filter((a) => accountUtils.isShardAccount(a) && a.chainId === chain.chainId);
+      const accounts = wallet.accounts.filter((a) => {
+        return (
+          accountUtils.isChainAndCryptoMatch(a, chain) &&
+          (accountUtils.isShardAccount(a) || accountUtils.isChainAccount(a))
+        );
+      });
 
-      if (shards.length) {
-        return shards;
+      if (accounts.length) {
+        return accounts;
       } else {
         return wallet.accounts.filter(
           (a) => accountUtils.isBaseAccount(a) && accountUtils.isChainAndCryptoMatch(a, chain),
