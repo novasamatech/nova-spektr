@@ -86,7 +86,7 @@ export const Item = ({ children }: PropsWithChildren) => {
   return (
     <div className="flex h-[582px] flex-col last-of-type:pr-4">
       <ScrollArea>
-        <div className="max-h-full w-[440px] rounded-lg bg-white shadow-shadow-2">{children}</div>
+        <div className="flex max-h-full w-[440px] flex-col rounded-lg bg-white shadow-shadow-2">{children}</div>
       </ScrollArea>
     </div>
   );
