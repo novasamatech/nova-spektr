@@ -122,6 +122,7 @@ export const isWrappedInBatchAll = (type: TransactionType) => {
     TransactionType.UNLOCK,
     TransactionType.DELEGATE,
     TransactionType.UNDELEGATE,
+    TransactionType.REMOVE_VOTE,
   ]);
 
   return batchAllOperations.has(type);

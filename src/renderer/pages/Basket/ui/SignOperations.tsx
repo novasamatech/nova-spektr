@@ -68,7 +68,7 @@ export const SignOperations = () => {
 
     return (
       <OperationTitle
-        className="my-3 justify-center"
+        className="m-3 justify-center"
         title={`${t(title, { ...params })}`}
         chainId={basketTransaction.coreTx.chainId}
       />

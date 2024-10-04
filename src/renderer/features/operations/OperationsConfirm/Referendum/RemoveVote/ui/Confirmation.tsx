@@ -3,7 +3,8 @@ import { type ReactNode } from 'react';
 
 import { useI18n } from '@/app/providers';
 import { formatAsset, formatBalance, toAddress, toNumberWithPrecision } from '@/shared/lib/utils';
-import { DetailRow, HeadlineText, Icon } from '@/shared/ui';
+import { DetailRow, HeadlineText, Icon, Loader } from '@/shared/ui';
+import { Box } from '@/shared/ui-kit';
 import {
   LockPeriodDiff,
   LockValueDiff,
@@ -58,7 +59,11 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
   const tracks = votes.map(({ track }) => Number(track));
 
   if (!voteTransactionService.isRemoveVoteTransaction(wrappedTransactions.coreTx)) {
-    return null;
+    return (
+      <Box width="440px" height="440px" verticalAlign="center" horizontalAlign="center">
+        <Loader color="primary" />
+      </Box>
+    );
   }
 
   const amount = vote && votingService.calculateAccountVoteAmount(vote);
