@@ -2,6 +2,7 @@ import { useStoreMap } from 'effector-react';
 import { memo } from 'react';
 
 import { useI18n } from '@app/providers';
+import { nonNullable } from '@shared/lib/utils';
 import { FootnoteText, HeadlineText } from '@shared/ui';
 import { Box, Skeleton, Surface } from '@shared/ui-kit';
 import { type Referendum, collectiveDomain } from '@/domains/collectives';
@@ -28,16 +29,18 @@ export const ReferendumItem = memo<Props>(({ referendum, isTitlesLoading, onSele
     fn: (thresholds, [id]) => thresholds[id] ?? null,
   });
 
-  const title = useStoreMap({
+  const meta = useStoreMap({
     store: referendumListModel.$meta,
     keys: [referendum.id],
-    fn: (store, [id]) => store[id]?.title ?? null,
+    fn: (store, [id]) => store[id] ?? null,
   });
   const isPassing = thresholds ? thresholds.support.passing : false;
 
+  const track = collectiveDomain.referendum.service.isOngoing(referendum) ? referendum.track : (meta?.track ?? null);
+
   const titleNode = (
-    <Skeleton active={isTitlesLoading && !title}>
-      {title || t('governance.referendums.referendumTitle', { index: referendum.id })}
+    <Skeleton active={isTitlesLoading && !meta?.title}>
+      {meta?.title || t('governance.referendums.referendumTitle', { index: referendum.id })}
     </Skeleton>
   );
 
@@ -53,7 +56,7 @@ export const ReferendumItem = memo<Props>(({ referendum, isTitlesLoading, onSele
           <div className="ml-auto">
             <Box direction="row" gap={2}>
               <FootnoteText className="text-text-secondary">#{referendum.id}</FootnoteText>
-              {collectiveDomain.referendum.service.isOngoing(referendum) && <TrackInfo track={referendum.track} />}
+              {nonNullable(track) && <TrackInfo track={track} />}
             </Box>
           </div>
         </Box>

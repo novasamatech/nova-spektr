@@ -36,6 +36,7 @@ const {
             referendumId: x.referendumIndex,
             title: x.title,
             description: x.content,
+            track: x.track,
           })),
         );
       }
@@ -52,6 +53,7 @@ const {
             referendumId: x.id,
             title: x.title,
             description: x.description ?? '',
+            track: x.trackNumber,
           })),
         );
       }
