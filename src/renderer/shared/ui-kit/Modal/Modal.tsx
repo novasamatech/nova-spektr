@@ -12,10 +12,11 @@ import './Modal.css';
 type Props = {
   isOpen?: boolean;
   size: 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'fit';
+  height?: 'full' | 'fit';
   onToggle?: (open: boolean) => void;
 };
 
-const Root = ({ isOpen, size = 'md', children, onToggle }: PropsWithChildren<Props>) => {
+const Root = ({ isOpen, size = 'md', height = 'fit', children, onToggle }: PropsWithChildren<Props>) => {
   const { portalContainer } = useTheme();
 
   const arrayChildren = Children.toArray(children);
@@ -46,6 +47,8 @@ const Root = ({ isOpen, size = 'md', children, onToggle }: PropsWithChildren<Pro
                 'w-modal-xl': size === 'xl',
                 'w-full': size === 'full',
                 'w-fit': size === 'fit',
+                'h-fit': height === 'fit',
+                'h-full': height === 'full',
               },
             )}
           >
@@ -87,9 +90,7 @@ const Title = ({ action, close, children }: TitleProps) => {
 const Content = ({ children }: PropsWithChildren) => {
   return (
     <Dialog.Description asChild>
-      <ScrollArea>
-        <section>{children}</section>
-      </ScrollArea>
+      <ScrollArea>{children}</ScrollArea>
     </Dialog.Description>
   );
 };

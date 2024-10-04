@@ -24,7 +24,7 @@ export const Member = ({ item, chain }: Props) => {
   const address = toAddress(item.accountId, { prefix: chain.addressPrefix });
 
   return (
-    <div className="flex items-center gap-2 rounded-md px-2 py-3 contain-inline-size hover:bg-block-background-hover">
+    <div className="flex items-center gap-2 px-2 py-3 contain-inline-size">
       <div className="shrink-0">
         <Rank rank={item.rank} />
       </div>

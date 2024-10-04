@@ -41,13 +41,13 @@ export const MembersModal = ({ children }: PropsWithChildren) => {
   }, [members, chain, deferredQuery]);
 
   return (
-    <Modal size="md">
+    <Modal size="md" height="full">
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{t('fellowship.members.modalTitle')}</Modal.Title>
       <Modal.Content>
-        <Box padding={[4, 5]} gap={6}>
+        <Box padding={[4, 5]} gap={6} fillContainer>
           {members.length !== 0 ? (
-            <SearchInput placeholder={t('general.input.searchLabel')} value={query} onChange={setQuery} />
+            <SearchInput autoFocus placeholder={t('general.input.searchLabel')} value={query} onChange={setQuery} />
           ) : null}
 
           {filteredMembers.length === 0 ? (

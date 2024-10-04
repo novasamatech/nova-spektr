@@ -1,13 +1,14 @@
 import { type ApiPromise } from '@polkadot/api';
 import { createEvent, sample } from 'effector';
 
-import { type Chain, type ChainId } from '@/shared/core';
+import { type ChainId } from '@/shared/core';
 import { createDataSource } from '@/shared/effector';
 import { identityPallet } from '@/shared/pallet/identity';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { nullable } from '@shared/lib/utils';
 import { networkModel } from '@/entities/network';
 
+import { identityService } from './service';
 import { type AccountIdentity } from './types';
 
 type Data = Record<AccountId, AccountIdentity>;
@@ -30,6 +31,17 @@ const {
   fail,
 } = createDataSource<Store, InnerRequestParams, Data>({
   initial: {},
+  mutateParams(params, store) {
+    const chainIdentities = store[params.chainId] ?? {};
+    const accounts = params.accounts.filter(account => !(account in chainIdentities));
+
+    return {
+      chainId: params.chainId,
+      api: params.api,
+      accounts,
+    };
+  },
+  filter: ({ accounts }) => accounts.length > 0,
   async fn({ api, accounts }) {
     const response = await identityPallet.storage.identityOf(api, accounts);
 
@@ -66,35 +78,13 @@ const request = createEvent<RequestParams>();
 sample({
   clock: request,
   source: { apis: $apis, chains: $chains },
-  filter: (_, { accounts }) => accounts.length > 0,
   fn: ({ apis, chains }, { chainId, accounts }) => {
-    let chain = chains[chainId];
-    let identityChain: Chain | null = null;
-
-    if (nullable(chain)) {
-      throw new Error(`Chain ${chainId} not found`);
-    }
-
-    while (nullable(identityChain)) {
-      if (chain.parentId) {
-        chain = chains[chain.parentId];
-
-        if (nullable(chain)) {
-          throw new Error(`Parent for ${chainId} not found`);
-        }
-      } else {
-        const identityChainId = chain.additional?.identityChain;
-
-        if (nullable(identityChainId)) {
-          throw new Error(`Identity chain not found`);
-        }
-
-        identityChain = chains[identityChainId] ?? null;
-      }
+    const identityChain = identityService.findIdentityChain(chains, chainId);
+    if (nullable(identityChain)) {
+      throw new Error(`Chain path from ${chainId} is broken, trace chain.parentId fields in config.`);
     }
 
     const api = apis[identityChain.chainId];
-
     if (nullable(api)) {
       throw new Error(`ApiPromise for chain ${identityChain.chainId} not found`);
     }

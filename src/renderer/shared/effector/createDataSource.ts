@@ -5,12 +5,16 @@ type FactoryParams<Params, Store, Response> = {
   initial: Store;
   fn(params: Params): Response | Promise<Response>;
   map(store: Store, params: { params: Params; result: Response }): Store;
+  mutateParams?(params: Params, store: Store): Params;
+  filter?(params: Params, store: Store): boolean;
 };
 
 export const createDataSource = <Store, Params, Response = Store>({
   initial,
   fn,
   map,
+  filter = () => true,
+  mutateParams = (params) => params,
 }: FactoryParams<Params, Store, Awaited<Response>>) => {
   const empty = Symbol();
 
@@ -18,11 +22,22 @@ export const createDataSource = <Store, Params, Response = Store>({
   const $fulfilled = createStore(false);
   const $lastParams = createStore<Params | symbol>(empty);
   const request = createEvent<Params>();
+  const mutatedRequest = createEvent<Params>();
   const retry = createEvent();
   const fx = createEffect(fn);
 
   sample({
     clock: request,
+    source: $store,
+    fn: (store, params) => mutateParams(params, store),
+    target: mutatedRequest,
+  });
+
+  sample({
+    clock: mutatedRequest,
+    source: $store,
+    filter: (store, params) => filter(params, store),
+    fn: (_, params) => params,
     target: fx,
   });
 
@@ -33,7 +48,7 @@ export const createDataSource = <Store, Params, Response = Store>({
   });
 
   sample({
-    clock: fx.done,
+    clock: fx,
     fn: () => empty,
     target: $lastParams,
   });

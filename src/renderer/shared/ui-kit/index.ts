@@ -12,4 +12,3 @@ export { Slider } from './Slider/Slider';
 export { Label } from './Label/Label';
 export { Modal } from './Modal/Modal';
 export { Box } from './Box/Box';
-export { ScrollArea } from './ScrollArea/ScrollArea';
