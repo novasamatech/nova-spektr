@@ -1,11 +1,11 @@
-import { memo, useDeferredValue, useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 
 import { useI18n } from '@app/providers';
+import { AccountExplorers, Address } from '@/shared/ui-entities';
 import { type Asset, type Chain } from '@shared/core';
+import { useDeferredList } from '@shared/lib/hooks';
 import { formatAsset, formatBalance, performSearch, toAccountId } from '@shared/lib/utils';
 import { BodyText, FootnoteText, SearchInput } from '@shared/ui';
-import { SignatoryCard } from '@entities/signatory';
-import { AddressWithName } from '@entities/wallet';
 import { type AggregatedVoteHistory } from '../../types/structs';
 
 import { VotingHistoryListEmptyState } from './VotingHistoryListEmptyState';
@@ -26,13 +26,13 @@ export const VotingHistoryList = memo<Props>(({ items, asset, chain, loading }) 
     () => performSearch({ records: items, query, weights: { voter: 0.5, name: 1 } }),
     [items, query],
   );
-  const deferredItems = useDeferredValue(filteredItems);
+  const { list: deferredItems, isLoading } = useDeferredList({ list: filteredItems, isLoading: !!loading });
 
   if (!chain || !asset) {
     return null;
   }
 
-  const shouldRenderLoader = !!loading;
+  const shouldRenderLoader = isLoading;
   const shouldRenderEmptyState = !shouldRenderLoader && deferredItems.length === 0;
   const shouldRenderList = !shouldRenderLoader && deferredItems.length > 0;
 
@@ -53,23 +53,12 @@ export const VotingHistoryList = memo<Props>(({ items, asset, chain, loading }) 
             {shouldRenderList &&
               deferredItems.map(({ voter, balance, votingPower, conviction, name }) => {
                 return (
-                  <div key={`${voter}-${balance.toString()}-${conviction}`} className="flex gap-2">
-                    <div className="min-w-0 shrink grow">
-                      <SignatoryCard
-                        className="min-h-11.5"
-                        accountId={toAccountId(voter)}
-                        addressPrefix={chain?.addressPrefix}
-                        explorers={chain?.explorers}
-                      >
-                        <AddressWithName
-                          addressFont="text-text-secondary"
-                          address={voter}
-                          type="adaptive"
-                          name={name ?? undefined}
-                        />
-                      </SignatoryCard>
+                  <div key={`${voter}-${balance.toString()}-${conviction}`} className="flex gap-3 px-2 text-body">
+                    <div className="flex min-w-0 shrink grow items-center gap-1">
+                      <Address address={voter} title={name ?? ''} variant="truncate" showIcon />
+                      <AccountExplorers account={toAccountId(voter)} chain={chain} />
                     </div>
-                    <div className="flex shrink-0 basis-28 flex-col items-end gap-0.5 pe-2">
+                    <div className="flex shrink-0 basis-28 flex-col items-end gap-0.5">
                       <BodyText className="whitespace-nowrap">
                         {t('governance.voteHistory.totalVotesCount', {
                           value: formatBalance(votingPower, asset.precision).formatted,
