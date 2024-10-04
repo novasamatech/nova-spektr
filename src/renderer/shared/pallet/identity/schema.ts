@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { pjsSchema } from '../../polkadotjs-schemas';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
 export type IdentityJudgement = z.infer<typeof identityJudgement>;
 export const identityJudgement = pjsSchema.enumValue({
