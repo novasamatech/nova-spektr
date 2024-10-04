@@ -4,10 +4,10 @@ import { useI18n } from '@app/providers';
 import { type Asset, type Wallet } from '@shared/core';
 import { nonNullable } from '@shared/lib/utils';
 import { Button, FootnoteText } from '@shared/ui';
-import { ReferendumTimer, ReferendumVoteChart, referendumService, votingService } from '@entities/governance';
+import { ReferendumVoteChart, referendumService, votingService } from '@entities/governance';
 import { EmptyAccountMessage } from '@/features/emptyList';
 import { type AggregatedReferendum } from '../../types/structs';
-import { useReferendumEndTime } from '../../utils/useReferendumEndTime';
+import { ReferendumEndTimer } from '../ReferendumEndTimer/ReferendumEndTimer';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 
 import { Threshold } from './Threshold';
@@ -37,8 +37,6 @@ export const VotingStatus = ({
 }: Props) => {
   const { t } = useI18n();
 
-  const endTime = useReferendumEndTime({ api, referendum });
-
   const { approvalThreshold, supportThreshold, voting } = referendum;
 
   const isPassing = supportThreshold?.passing ?? false;
@@ -59,7 +57,7 @@ export const VotingStatus = ({
       <div className="flex w-full justify-between">
         <VotingStatusBadge passing={isPassing} referendum={referendum} />
 
-        {endTime && referendum.status && <ReferendumTimer status={referendum.status} time={endTime} />}
+        <ReferendumEndTimer status={referendum.status} endBlock={referendum.end} api={api} />
       </div>
       {votedFractions && (
         <ReferendumVoteChart
