@@ -1,6 +1,6 @@
 import { useI18n } from '@app/providers';
 import { type Asset, type Wallet } from '@shared/core';
-import { nonNullable, nullable } from '@shared/lib/utils';
+import { nonNullable } from '@shared/lib/utils';
 import { Button, FootnoteText } from '@shared/ui';
 import { ReferendumVoteChart, referendumService, votingService } from '@entities/governance';
 import { EmptyAccountMessage } from '@/features/emptyList';
@@ -32,7 +32,7 @@ export const VotingStatus = ({
 }: Props) => {
   const { t } = useI18n();
 
-  const { approvalThreshold, supportThreshold, vote } = referendum;
+  const { approvalThreshold, supportThreshold, voting } = referendum;
 
   const isPassing = supportThreshold?.passing ?? false;
 
@@ -44,6 +44,8 @@ export const VotingStatus = ({
     referendumService.isOngoing(referendum) && supportThreshold
       ? votingService.getVotedCount(referendum.tally, supportThreshold.value)
       : null;
+
+  const shouldShowVotingButtons = canVote && referendumService.isOngoing(referendum) && nonNullable(asset);
 
   return (
     <div className="flex flex-col items-start gap-6">
@@ -58,7 +60,7 @@ export const VotingStatus = ({
       )}
       {votedCount && <Threshold voited={votedCount.voted} threshold={votedCount.threshold} asset={asset} />}
 
-      {canVote && referendumService.isOngoing(referendum) && nonNullable(asset) && nullable(vote) && (
+      {shouldShowVotingButtons && voting.votes.length < voting.of && (
         <div className="flex w-full flex-col gap-4">
           <Button className="w-full" disabled={!hasAccount || !canVote} onClick={onVoteRequest}>
             {t('governance.referendum.vote')}
@@ -78,7 +80,7 @@ export const VotingStatus = ({
         </div>
       )}
 
-      {canVote && nonNullable(asset) && nonNullable(vote) && referendumService.isOngoing(referendum) && (
+      {shouldShowVotingButtons && voting.votes.length > 0 && (
         <div className="flex w-full flex-col justify-stretch gap-4">
           <Button className="w-full" disabled={!hasAccount || !canVote} onClick={onRevoteRequest}>
             {t('governance.referendum.revote')}

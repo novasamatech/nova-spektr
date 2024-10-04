@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { memo, useEffect, useState } from 'react';
 
 import { useI18n } from '@app/providers';
-import { getTimeToBlock, nonNullable } from '@shared/lib/utils';
+import { getTimeToBlock } from '@shared/lib/utils';
 import { FootnoteText, HeadlineText, Shimmering } from '@shared/ui';
 import {
   ReferendumTimer,
@@ -56,7 +56,7 @@ export const ReferendumItem = memo<Props>(({ referendum, isTitlesLoading, api, o
   return (
     <ListItem onClick={() => onSelect(referendum)}>
       <div className="flex w-full items-center gap-x-2">
-        <Voted active={nonNullable(referendum.vote)} />
+        <Voted active={referendum.voting.votes.length > 0} />
         <VotedBy address={referendum.votedByDelegate} />
         <VotingStatusBadge referendum={referendum} />
 

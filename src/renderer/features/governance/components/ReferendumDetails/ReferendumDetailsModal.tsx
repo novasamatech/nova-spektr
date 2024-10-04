@@ -1,9 +1,9 @@
+import { BN_ZERO } from '@polkadot/util';
 import { useGate, useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { type Asset, type Chain } from '@shared/core';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { nonNullable } from '@shared/lib/utils';
 import { BaseModal, Button, Plate } from '@shared/ui';
 import { walletModel } from '@/entities/wallet';
 import { referendumService, votingService } from '@entities/governance';
@@ -56,6 +56,11 @@ export const ReferendumDetailsModal = ({
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
+  const votingBalance = referendum.voting.votes.reduce(
+    (acc, vote) => acc.add(votingService.calculateAccountVotePower(vote.vote)),
+    BN_ZERO,
+  );
+
   return (
     <BaseModal
       isOpen={isModalOpen}
@@ -72,13 +77,9 @@ export const ReferendumDetailsModal = ({
         </Plate>
 
         <div className="flex shrink-0 grow basis-[320px] flex-row flex-wrap gap-4">
-          {nonNullable(referendum.vote) && (
+          {referendum.voting.votes.length > 0 && (
             <DetailsCard>
-              <VotingBalance
-                votes={votingService.calculateAccountVotePower(referendum.vote.vote)}
-                asset={asset}
-                onInfoClick={toggleShowWalletVotes}
-              />
+              <VotingBalance votes={votingBalance} asset={asset} onInfoClick={toggleShowWalletVotes} />
             </DetailsCard>
           )}
 

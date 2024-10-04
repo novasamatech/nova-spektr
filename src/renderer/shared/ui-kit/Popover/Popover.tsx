@@ -75,6 +75,7 @@ const Content = ({ children }: PropsWithChildren) => {
         sideOffset={sideOffset && gridSpaceConverter(sideOffset)}
         data-testid={testId}
         asChild
+        onClick={(e) => e.stopPropagation()}
       >
         <Surface className="z-50 duration-100 animate-in fade-in zoom-in-95" elevation={1}>
           {children}

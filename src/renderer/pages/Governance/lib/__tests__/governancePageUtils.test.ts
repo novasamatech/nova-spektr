@@ -22,7 +22,7 @@ describe('pages/Governance/lib/governancePageUtils', () => {
       title: 'Referendum Title 1',
       approvalThreshold: null,
       supportThreshold: null,
-      vote: null,
+      voting: { of: 0, votes: [] },
       submissionDeposit: null,
       decisionDeposit: null,
       end: null,
@@ -35,7 +35,7 @@ describe('pages/Governance/lib/governancePageUtils', () => {
       title: 'Referendum Title 2',
       approvalThreshold: null,
       supportThreshold: null,
-      vote: null,
+      voting: { of: 0, votes: [] },
       submissionDeposit: null,
       decisionDeposit: null,
       end: null,
@@ -45,12 +45,10 @@ describe('pages/Governance/lib/governancePageUtils', () => {
 
   const createVotingReferendum = (isVoted: boolean, isVotedByDelegate = false) => {
     return {
-      vote: isVoted
-        ? {
-            voter: '',
-            vote: someVote,
-          }
-        : null,
+      voting: {
+        of: isVoted ? 1 : 0,
+        votes: isVoted ? [{ voter: '', vote: someVote }] : [],
+      },
       votedByDelegate: isVotedByDelegate ? 'delegate address' : null,
       type: 'Ongoing',
       track: '1',
@@ -58,9 +56,9 @@ describe('pages/Governance/lib/governancePageUtils', () => {
   };
 
   const referendum = {
-    vote: {
-      voter: '',
-      vote: someVote,
+    voting: {
+      of: 1,
+      votes: [{ voter: '', vote: someVote }],
     },
     type: 'Ongoing',
     track: '1',

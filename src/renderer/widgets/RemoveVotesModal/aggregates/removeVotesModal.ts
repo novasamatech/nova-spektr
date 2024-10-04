@@ -1,7 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { combine, createEvent, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
-import uniq from 'lodash/uniq';
 
 import {
   type Account,
@@ -45,19 +44,34 @@ const flow = createGate<{
 
 // Account
 
+const selectAccount = createEvent<Account>();
+
+const $account = createStore<Account | null>(null);
+
 const $accounts = combine(walletModel.$activeWallet, flow.state, (wallet, { votes, chain }) => {
-  if (nullable(wallet) || nullable(votes.length) || nullable(chain)) return [];
+  if (nullable(wallet) || nullable(chain)) return [];
 
-  const accounts = uniq(votes.map((vote) => vote.voter).filter(nonNullable));
+  return walletUtils.getAccountsBy([wallet], (a) => {
+    if (!accountUtils.isChainAndCryptoMatch(a, chain)) return false;
 
-  return accounts.map(
-    (address) =>
-      walletUtils.getAccountBy([wallet], (a) => toAddress(a.accountId, { prefix: chain.addressPrefix }) === address)!,
-  );
+    return votes.some(({ voter }) => toAddress(a.accountId, { prefix: chain.addressPrefix }) === voter);
+  });
+});
+
+sample({
+  clock: $accounts,
+  filter: $accounts.map((x) => x.length < 2),
+  fn: (s) => s.at(0) ?? null,
+  target: $account,
+});
+
+sample({
+  clock: selectAccount,
+  target: $account,
 });
 
 const $initiatorWallet = combine($accounts, walletModel.$wallets, (accounts, wallets) => {
-  if (!accounts[0]) return null;
+  if (accounts.length === 0) return null;
 
   return walletUtils.getWalletById(wallets, accounts[0].walletId) ?? null;
 });
@@ -305,10 +319,14 @@ export const removeVotesModalAggregate = {
   $signatories,
   $votesList,
 
+  $account,
+  $accounts,
+
   events: {
     txSaved,
     setStep,
     selectSignatory,
+    selectAccount,
   },
 
   gates: {

@@ -1,9 +1,8 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
-import { spread } from 'patronum';
 
 import { type PathType, Paths } from '@/shared/routes';
-import { type AccountVote, type BasketTransaction, type OngoingReferendum } from '@shared/core';
+import { type AccountVote, type Address, type BasketTransaction, type OngoingReferendum } from '@shared/core';
 import { Step, isStep, nonNullable, nullable, toAddress } from '@shared/lib/utils';
 import { basketModel } from '@entities/basket';
 import { votingService } from '@entities/governance';
@@ -23,10 +22,10 @@ import { voteFormAggregate } from './voteForm';
 
 const flow = createGate<{
   referendum: OngoingReferendum | null;
-  vote: AccountVote | null;
+  votes: { voter: Address; vote: AccountVote }[];
 }>({
   defaultState: {
-    vote: null,
+    votes: [],
     referendum: null,
   },
 });
@@ -139,10 +138,25 @@ sample({
 
 sample({
   clock: flow.open,
-  target: spread({
-    vote: voteFormAggregate.$existingVote,
-    referendum: voteFormAggregate.$referendum,
-  }),
+  fn: ({ referendum }) => referendum,
+  target: voteFormAggregate.$referendum,
+});
+
+sample({
+  clock: form.fields.account.$value,
+  source: { state: flow.state, network: networkSelectorModel.$network },
+  fn: ({ state, network }, account) => {
+    if (nullable(account) || nullable(network) || state.votes.length === 0) return null;
+
+    const record = state.votes.find(({ voter }) => {
+      return voter === toAddress(account.accountId, { prefix: network.chain.addressPrefix });
+    });
+
+    if (!record) return null;
+
+    return record.vote;
+  },
+  target: voteFormAggregate.$existingVote,
 });
 
 sample({
@@ -151,9 +165,9 @@ sample({
 });
 
 sample({
-  clock: flow.open,
-  filter: ({ vote }) => nonNullable(vote),
-  fn: ({ vote }) => {
+  clock: voteFormAggregate.$existingVote,
+  filter: nonNullable,
+  fn: (vote) => {
     if (nullable(vote)) return {};
 
     return {

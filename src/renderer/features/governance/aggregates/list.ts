@@ -76,6 +76,7 @@ const $referendums = combine(
     voting: votingAggregate.$activeWalletVotes,
     tracks: tracksAggregate.$tracks,
     api: networkSelectorModel.$governanceChainApi,
+    accounts: votingAggregate.$possibleAccountsForVoting,
   },
   ({
     referendums,
@@ -87,6 +88,7 @@ const $referendums = combine(
     delegatedVotes,
     tracks,
     api,
+    accounts,
   }): AggregatedReferendum[] => {
     if (!chain || !api) {
       return [];
@@ -95,9 +97,8 @@ const $referendums = combine(
     const undecidingTimeout = api.consts.referenda.undecidingTimeout.toNumber();
 
     return referendums.map((referendum) => {
-      const votes = votingService.getReferendumAccountVotes(referendum.referendumId, voting);
-      const voteTupple = Object.entries(votes).at(0);
-      const vote = voteTupple ? { voter: voteTupple[0], vote: voteTupple[1] } : null;
+      const referendumVotes = votingService.getReferendumAccountVotes(referendum.referendumId, voting);
+      const votes = Object.entries(referendumVotes).map((x) => ({ voter: x[0], vote: x[1] }));
 
       let end = null;
       let status = null;
@@ -114,7 +115,10 @@ const $referendums = combine(
         title: titles[referendum.referendumId] ?? null,
         approvalThreshold: approvalThresholds[referendum.referendumId] ?? null,
         supportThreshold: supportThresholds[referendum.referendumId] ?? null,
-        vote,
+        voting: {
+          of: accounts.length,
+          votes,
+        },
         votedByDelegate: delegatedVotes[chain.chainId] ?? null,
       };
     });

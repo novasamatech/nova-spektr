@@ -635,6 +635,7 @@
       "aboutVotingPower": "<header>Voting power and lock period</header><p>Conviction is a mechanism that allows participants to amplify their vote by locking their tokens for various periods (lock period). The longer the tokens are locked, the stronger the vote. \nFor example, a six-times conviction increases the vote's weight and requires a token lock for 32 weeks after voting ends.</p>",
       "removeTitle": "Remove vote from",
       "revoteTitle": "Revote on",
+      "selectAccountTitle": "Select account which vote you want to remove",
       "voteTitle": "Vote on"
     },
     "walletVotes": {

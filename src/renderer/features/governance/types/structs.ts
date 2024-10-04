@@ -20,10 +20,10 @@ export type AggregatedReferendum<T extends Referendum = Referendum> = T & {
   approvalThreshold: VotingThreshold | null;
   supportThreshold: VotingThreshold | null;
   votedByDelegate?: Address | null;
-  vote: {
-    voter: Address;
-    vote: AccountVote;
-  } | null;
+  voting: {
+    of: number;
+    votes: { voter: Address; vote: AccountVote }[];
+  };
   end: BlockHeight | null;
   status: ReferendumStatus | null;
 };
