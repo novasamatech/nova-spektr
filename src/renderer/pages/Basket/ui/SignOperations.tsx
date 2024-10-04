@@ -10,7 +10,6 @@ import { networkModel } from '@entities/network';
 import { SignButton } from '@entities/operations';
 import {
   type MultisigTransactionTypes,
-  TransactionSlider,
   type TransferTransactionTypes,
   TransferTypes,
   type UtilityTransactionTypes,
@@ -24,6 +23,7 @@ import {
   AddPureProxiedConfirm,
   BondExtraConfirmation,
   BondNominateConfirmation,
+  ConfirmSlider,
   DelegateConfirmation,
   EditDelegationConfirmation,
   NominateConfirmation,
@@ -146,21 +146,19 @@ export const SignOperations = () => {
       onClose={() => closeModal()}
     >
       {signOperationsUtils.isConfirmStep(step) && (
-        <TransactionSlider
+        <ConfirmSlider
           count={transactions.length}
           footer={
             <SignButton isDefault type={WalletType.POLKADOT_VAULT} onClick={signOperationsModel.events.txsConfirmed} />
           }
         >
           {transactions.map((t) => (
-            <div key={t.id} className="flex h-[622px] flex-col last-of-type:pr-4">
-              <div className="max-h-full w-[440px] overflow-y-auto rounded-lg bg-white shadow-shadow-2">
-                {getModalTitle(t)}
-                {getConfirmScreen(t)?.()}
-              </div>
-            </div>
+            <ConfirmSlider.Item key={t.id}>
+              {getModalTitle(t)}
+              {getConfirmScreen(t)?.()}
+            </ConfirmSlider.Item>
           ))}
-        </TransactionSlider>
+        </ConfirmSlider>
       )}
 
       {signOperationsUtils.isSignStep(step) && (
