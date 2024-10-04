@@ -5,17 +5,8 @@ import { useState } from 'react';
 import { useI18n } from '@/app/providers';
 import { type Account, type Chain } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
-import {
-  Alert,
-  BaseModal,
-  Button,
-  Checkbox,
-  FootnoteText,
-  Icon,
-  IconButton,
-  SmallTitleText,
-  Tooltip,
-} from '@/shared/ui';
+import { Alert, Button, Checkbox, FootnoteText, Icon, IconButton, SmallTitleText, Tooltip } from '@/shared/ui';
+import { Modal } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { OperationTitle } from '@/entities/chain';
 import {
@@ -40,7 +31,6 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
 
   const [showRemoveVoteModal, setShowRemoveVoteModal] = useState(false);
 
-  const chain = useUnit(selectTracksModel.$chain);
   const tracks = useUnit(selectTracksModel.$tracks);
   const accounts = useUnit(selectTracksModel.$accounts);
   const votedTracks = useUnit(selectTracksModel.$votedTracks);
@@ -56,166 +46,168 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
   if (!network) return null;
 
   return (
-    <BaseModal
-      closeButton
-      headerClass="px-5 py-3"
-      panelClass="flex h-[678px] w-[896px] flex-col bg-white"
-      contentClass="flex min-h-0 w-full flex-1 flex-col gap-6 bg-card-background py-4 rounded-lg"
-      isOpen={isOpen}
-      title={chain && <OperationTitle title={t('governance.addDelegation.title')} chainId={chain.chainId} />}
-      onClose={onClose}
-    >
-      <SmallTitleText className="px-5">{t('governance.addDelegation.selectTrackTitle')}</SmallTitleText>
+    <Modal isOpen={isOpen} size="fit" onToggle={(isOpen) => !isOpen && onClose()}>
+      <Modal.Title close>
+        <OperationTitle title={t('governance.addDelegation.title')} chainId={network.chain.chainId} />
+      </Modal.Title>
+      <Modal.Content>
+        <div className="flex h-[582px] w-[896px] flex-col gap-6 bg-card-background">
+          <SmallTitleText className="px-5">{t('governance.addDelegation.selectTrackTitle')}</SmallTitleText>
+          <hr className="w-full border-filter-border" />
+          <AccountsSelector />
+          <div className="flex flex-1 flex-col gap-6 px-5">
+            <div className="flex gap-3">
+              <Button
+                disabled={accounts.length === 0}
+                pallet={getGroupPallet(allTracks, votedTracks, tracks)}
+                variant="chip"
+                onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(allTracks, votedTracks))}
+              >
+                {t('governance.addDelegation.group.selectAll')}
+              </Button>
+              <Button
+                disabled={accounts.length === 0}
+                pallet={getGroupPallet(adminTracks, votedTracks, tracks)}
+                variant="chip"
+                onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(adminTracks, votedTracks))}
+              >
+                {t('governance.addDelegation.group.admin')}
+              </Button>
+              <Button
+                disabled={accounts.length === 0}
+                pallet={getGroupPallet(governanceTracks, votedTracks, tracks)}
+                variant="chip"
+                onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(governanceTracks, votedTracks))}
+              >
+                {t('governance.addDelegation.group.governance')}
+              </Button>
+              <Button
+                disabled={accounts.length === 0}
+                pallet={getGroupPallet(treasuryTracks, votedTracks, tracks)}
+                variant="chip"
+                onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(treasuryTracks, votedTracks))}
+              >
+                {t('governance.addDelegation.group.treasury')}
+              </Button>
+              <Button
+                disabled={accounts.length === 0}
+                pallet={getGroupPallet(fellowshipTracks, votedTracks, tracks)}
+                variant="chip"
+                onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(fellowshipTracks, votedTracks))}
+              >
+                {t('governance.addDelegation.group.fellowship')}
+              </Button>
+            </div>
+            <div className="flex gap-6">
+              <div className="flex flex-1 flex-col gap-4">
+                {adminTracks.map((track) => (
+                  <Checkbox
+                    key={track.id}
+                    checked={tracks.includes(Number(track.id))}
+                    disabled={votedTracks.includes(track.id) || accounts.length === 0}
+                    onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
+                  >
+                    <div className="flex w-full items-center justify-between">
+                      {t(track.value)}
+                      <Tooltip content={t(track.description)} pointer="up">
+                        <Icon size={16} name="info" />
+                      </Tooltip>
+                    </div>
+                  </Checkbox>
+                ))}
+              </div>
+              <div className="flex flex-1 flex-col gap-4">
+                {governanceTracks.map((track) => (
+                  <Checkbox
+                    key={track.id}
+                    checked={tracks.includes(Number(track.id))}
+                    disabled={votedTracks.includes(track.id) || accounts.length === 0}
+                    onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
+                  >
+                    <div className="flex w-full items-center justify-between">
+                      {t(track.value)}
+                      <Tooltip
+                        content={getGovernanceTrackDescription(network.asset, track.description, t)}
+                        pointer="up"
+                      >
+                        <Icon size={16} name="info" />
+                      </Tooltip>
+                    </div>
+                  </Checkbox>
+                ))}
+              </div>
+              <div className="flex flex-1 flex-col gap-4">
+                {treasuryTracks.map((track) => (
+                  <Checkbox
+                    key={track.id}
+                    checked={tracks.includes(Number(track.id))}
+                    disabled={votedTracks.includes(track.id) || accounts.length === 0}
+                    onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
+                  >
+                    <div className="flex w-full items-center justify-between">
+                      {t(track.value)}
+                      <Tooltip
+                        content={getTreasuryTrackDescription(network.asset, track.description, t)}
+                        offsetPx={-80}
+                      >
+                        <Icon size={16} name="info" />
+                      </Tooltip>
+                    </div>
+                  </Checkbox>
+                ))}
+              </div>
+              <div className="flex flex-1 flex-col gap-4">
+                {fellowshipTracks.map((track) => (
+                  <Checkbox
+                    key={track.id}
+                    checked={tracks.includes(Number(track.id))}
+                    disabled={votedTracks.includes(track.id) || accounts.length === 0}
+                    onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
+                  >
+                    <div className="flex w-full items-center justify-between">
+                      {t(track.value)}
+                      <Tooltip content={t(track.description)} offsetPx={-60}>
+                        <Icon size={16} name="info" />
+                      </Tooltip>
+                    </div>
+                  </Checkbox>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="px-5">
+            <Alert variant="error" active={isMaxWeightReached} title={t('governance.addDelegation.maxWeightError')}>
+              <Alert.Item withDot={false}>{t('governance.addDelegation.maxWeightErrorDescription')} </Alert.Item>
+            </Alert>
+            <Alert
+              variant="info"
+              active={
+                // TODO: Add support multishard wallet
+                accounts.length > 0 && votesToRemove?.length > 0
+              }
+              title={t('governance.addDelegation.votedTracksTitle')}
+            >
+              <Alert.Item withDot={false}>{t('governance.addDelegation.votedTracksDescription')} </Alert.Item>
+              <Alert.Item withDot={false}>
+                <Button variant="text" size="sm" className="p-0" onClick={() => setShowRemoveVoteModal(true)}>
+                  {t('governance.addDelegation.removeVotesButton')}
+                </Button>
+              </Alert.Item>
 
-      <hr className="w-full border-filter-border" />
-
-      <AccountsSelector />
-
-      <div className="flex flex-1 flex-col gap-6 px-5">
-        <div className="flex gap-3">
-          <Button
-            disabled={accounts.length === 0}
-            pallet={getGroupPallet(allTracks, votedTracks, tracks)}
-            variant="chip"
-            onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(allTracks, votedTracks))}
-          >
-            {t('governance.addDelegation.group.selectAll')}
-          </Button>
-          <Button
-            disabled={accounts.length === 0}
-            pallet={getGroupPallet(adminTracks, votedTracks, tracks)}
-            variant="chip"
-            onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(adminTracks, votedTracks))}
-          >
-            {t('governance.addDelegation.group.admin')}
-          </Button>
-          <Button
-            disabled={accounts.length === 0}
-            pallet={getGroupPallet(governanceTracks, votedTracks, tracks)}
-            variant="chip"
-            onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(governanceTracks, votedTracks))}
-          >
-            {t('governance.addDelegation.group.governance')}
-          </Button>
-          <Button
-            disabled={accounts.length === 0}
-            pallet={getGroupPallet(treasuryTracks, votedTracks, tracks)}
-            variant="chip"
-            onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(treasuryTracks, votedTracks))}
-          >
-            {t('governance.addDelegation.group.treasury')}
-          </Button>
-          <Button
-            disabled={accounts.length === 0}
-            pallet={getGroupPallet(fellowshipTracks, votedTracks, tracks)}
-            variant="chip"
-            onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(fellowshipTracks, votedTracks))}
-          >
-            {t('governance.addDelegation.group.fellowship')}
-          </Button>
+              {showRemoveVoteModal && votesToRemove.length > 0 && (
+                <RemoveVotesModal
+                  votes={votesToRemove}
+                  chain={network.chain}
+                  asset={network.asset}
+                  api={network.api}
+                  onClose={() => setShowRemoveVoteModal(false)}
+                />
+              )}
+            </Alert>
+          </div>
         </div>
-        <div className="flex gap-6">
-          <div className="flex flex-1 flex-col gap-4">
-            {adminTracks.map((track) => (
-              <Checkbox
-                key={track.id}
-                checked={tracks.includes(Number(track.id))}
-                disabled={votedTracks.includes(track.id) || accounts.length === 0}
-                onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
-              >
-                <div className="flex w-full items-center justify-between">
-                  {t(track.value)}
-                  <Tooltip content={t(track.description)} pointer="up">
-                    <Icon size={16} name="info" />
-                  </Tooltip>
-                </div>
-              </Checkbox>
-            ))}
-          </div>
-          <div className="flex flex-1 flex-col gap-4">
-            {governanceTracks.map((track) => (
-              <Checkbox
-                key={track.id}
-                checked={tracks.includes(Number(track.id))}
-                disabled={votedTracks.includes(track.id) || accounts.length === 0}
-                onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
-              >
-                <div className="flex w-full items-center justify-between">
-                  {t(track.value)}
-                  <Tooltip content={getGovernanceTrackDescription(network.asset, track.description, t)} pointer="up">
-                    <Icon size={16} name="info" />
-                  </Tooltip>
-                </div>
-              </Checkbox>
-            ))}
-          </div>
-          <div className="flex flex-1 flex-col gap-4">
-            {treasuryTracks.map((track) => (
-              <Checkbox
-                key={track.id}
-                checked={tracks.includes(Number(track.id))}
-                disabled={votedTracks.includes(track.id) || accounts.length === 0}
-                onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
-              >
-                <div className="flex w-full items-center justify-between">
-                  {t(track.value)}
-                  <Tooltip content={getTreasuryTrackDescription(network.asset, track.description, t)} offsetPx={-80}>
-                    <Icon size={16} name="info" />
-                  </Tooltip>
-                </div>
-              </Checkbox>
-            ))}
-          </div>
-          <div className="flex flex-1 flex-col gap-4">
-            {fellowshipTracks.map((track) => (
-              <Checkbox
-                key={track.id}
-                checked={tracks.includes(Number(track.id))}
-                disabled={votedTracks.includes(track.id) || accounts.length === 0}
-                onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
-              >
-                <div className="flex w-full items-center justify-between">
-                  {t(track.value)}
-                  <Tooltip content={t(track.description)} offsetPx={-60}>
-                    <Icon size={16} name="info" />
-                  </Tooltip>
-                </div>
-              </Checkbox>
-            ))}
-          </div>
-        </div>
-      </div>
-      <div className="px-5">
-        <Alert variant="error" active={isMaxWeightReached} title={t('governance.addDelegation.maxWeightError')}>
-          <Alert.Item withDot={false}>{t('governance.addDelegation.maxWeightErrorDescription')} </Alert.Item>
-        </Alert>
-        <Alert
-          variant="info"
-          active={
-            // TODO: Add support multishard wallet
-            accounts.length > 0 && votesToRemove?.length > 0
-          }
-          title={t('governance.addDelegation.votedTracksTitle')}
-        >
-          <Alert.Item withDot={false}>{t('governance.addDelegation.votedTracksDescription')} </Alert.Item>
-          <Alert.Item withDot={false}>
-            <Button variant="text" size="sm" className="p-0" onClick={() => setShowRemoveVoteModal(true)}>
-              {t('governance.addDelegation.removeVotesButton')}
-            </Button>
-          </Alert.Item>
-
-          {showRemoveVoteModal && votesToRemove.length > 0 && (
-            <RemoveVotesModal
-              votes={votesToRemove}
-              chain={network.chain}
-              asset={network.asset}
-              api={network.api}
-              onClose={() => setShowRemoveVoteModal(false)}
-            />
-          )}
-        </Alert>
-      </div>
-      <div className="flex items-center justify-end px-5">
+      </Modal.Content>
+      <Modal.Footer>
         <Button
           disabled={tracks.length === 0 || accounts.length === 0 || isMaxWeightReached || isMaxWeightLoading}
           isLoading={isMaxWeightLoading}
@@ -223,8 +215,8 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
         >
           {t('governance.addDelegation.continueButton')}
         </Button>
-      </div>
-    </BaseModal>
+      </Modal.Footer>
+    </Modal>
   );
 };
 
