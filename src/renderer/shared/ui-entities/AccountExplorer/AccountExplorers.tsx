@@ -1,4 +1,4 @@
-import { type PropsWithChildren } from 'react';
+import { type PropsWithChildren, memo } from 'react';
 
 import { useI18n } from '@/app/providers';
 import { type AccountId, type Chain } from '@/shared/core';
@@ -7,12 +7,12 @@ import { ExplorerLink, FootnoteText, HelpText, IconButton, Separator } from '@/s
 import { Box, Popover } from '@/shared/ui-kit';
 import { Hash } from '../Hash/Hash';
 
-type Props = {
+type Props = PropsWithChildren<{
   account: AccountId;
   chain: Chain;
-};
+}>;
 
-export const AccountExplorers = ({ account, chain, children }: PropsWithChildren<Props>) => {
+export const AccountExplorers = memo<Props>(({ account, chain, children }) => {
   const { t } = useI18n();
   const { explorers } = chain;
   const address = toAddress(account, { prefix: chain.addressPrefix });
@@ -59,4 +59,4 @@ export const AccountExplorers = ({ account, chain, children }: PropsWithChildren
       </Popover.Content>
     </Popover>
   );
-};
+});
