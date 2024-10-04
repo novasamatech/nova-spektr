@@ -167,8 +167,9 @@ sample({
 sample({
   clock: getMonthBlockFx.doneData,
   source: $votedReferendums,
-  filter: (votedReferendums) => votedReferendums.length > 0,
   fn: (votedReferendums, block) => {
+    if (votedReferendums.length === 0) return [];
+
     return votedReferendums.filter(({ votedAt }) => votedAt >= block);
   },
   target: $votedReferendumsMonth,
