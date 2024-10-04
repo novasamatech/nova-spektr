@@ -7,6 +7,8 @@ import { Contacts, CreateContact, EditContact } from './AddressBook';
 import { Assets, ReceiveAsset, SendAsset } from './Assets';
 import { Basket } from './Basket';
 import { Fellowship } from './Fellowship/ui/Fellowship';
+import { FellowshipReferendumDetails } from './Fellowship/ui/FellowshipReferendumDetails';
+import { FellowshipReferendumList } from './Fellowship/ui/FellowshipReferendumList';
 import { Governance } from './Governance';
 import { Notifications } from './Notifications/Notifications';
 import { Onboarding } from './Onboarding';
@@ -33,7 +35,22 @@ export const ROUTES_CONFIG: RouteObject[] = [
       },
       { path: Paths.STAKING, element: <Staking /> },
       { path: Paths.GOVERNANCE, element: <Governance /> },
-      { path: Paths.FELLOWSHIP, element: <Fellowship /> },
+      {
+        path: Paths.FELLOWSHIP,
+        element: <Fellowship />,
+        children: [
+          {
+            path: Paths.FELLOWSHIP_LIST,
+            element: <FellowshipReferendumList />,
+            children: [
+              {
+                path: Paths.FELLOWSHIP_REFERENDUM,
+                element: <FellowshipReferendumDetails />,
+              },
+            ],
+          },
+        ],
+      },
       { path: Paths.NOTIFICATIONS, element: <Notifications /> },
       {
         path: Paths.ADDRESS_BOOK,

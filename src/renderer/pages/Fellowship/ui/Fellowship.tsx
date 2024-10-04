@@ -1,22 +1,37 @@
 import { useGate, useUnit } from 'effector-react';
+import { useLayoutEffect } from 'react';
+import { Outlet, generatePath, useParams } from 'react-router-dom';
 
-import { useI18n } from '@app/providers';
+import { useI18n } from '@/app/providers';
 import { type ChainId } from '@/shared/core';
-import { BodyText, Header, Icon, Select } from '@shared/ui';
-import { Box, ScrollArea } from '@shared/ui-kit';
+import { Paths } from '@/shared/routes';
+import { BodyText, Header, Icon, Select } from '@/shared/ui';
+import { Box, ScrollArea } from '@/shared/ui-kit';
 import { fellowshipMembersFeature } from '@/features/fellowship-members';
+import { fellowshipNetworkFeature } from '@/features/fellowship-network';
 import { fellowshipProfileFeature } from '@/features/fellowship-profile';
 import { fellowshipReferendumsFeature } from '@/features/fellowship-referendums';
-import { fellowshipNetworkFeature } from '@features/fellowship-network';
+import { navigationModel } from '@/features/navigation';
 import { COLLECTIVES_CHAIN_ID, COLLECTIVES_WESTEND_CHAIN_ID, fellowshipPageModel } from '../model/fellowshipPage';
 
 const { MembersCard } = fellowshipMembersFeature.views;
 const { ProfileCard } = fellowshipProfileFeature.views;
-const { Referendums, Filters, Search } = fellowshipReferendumsFeature.views;
+const { Search } = fellowshipReferendumsFeature.views;
 
 export const Fellowship = () => {
-  const { t } = useI18n();
   useGate(fellowshipPageModel.gates.flow);
+
+  const { chainId } = useParams<'chainId'>();
+  const { t } = useI18n();
+
+  useLayoutEffect(() => {
+    if (chainId && chainId.startsWith('0x')) {
+      fellowshipNetworkFeature.model.network.selectCollective({ chainId: chainId as ChainId });
+    } else {
+      // navigating to default chain
+      navigationModel.events.navigateTo(generatePath(Paths.FELLOWSHIP_LIST, { chainId: COLLECTIVES_CHAIN_ID }));
+    }
+  }, [chainId]);
 
   const selectedChain = useUnit(fellowshipNetworkFeature.model.network.$selectedChainId);
 
@@ -48,16 +63,14 @@ export const Fellowship = () => {
                     { id: COLLECTIVES_CHAIN_ID, value: COLLECTIVES_CHAIN_ID, element: 'Polkadot People' },
                     { id: COLLECTIVES_WESTEND_CHAIN_ID, value: COLLECTIVES_WESTEND_CHAIN_ID, element: 'Test People' },
                   ]}
-                  onChange={(x) =>
-                    fellowshipNetworkFeature.model.network.selectCollective({ chainId: x.id as ChainId })
-                  }
+                  onChange={(x) => {
+                    navigationModel.events.navigateTo(generatePath(Paths.FELLOWSHIP_LIST, { chainId: x.id }));
+                  }}
                 />
               </div>
             </div>
 
-            <Filters />
-
-            <Referendums onSelect={console.log} />
+            <Outlet />
           </Box>
         </Box>
       </ScrollArea>

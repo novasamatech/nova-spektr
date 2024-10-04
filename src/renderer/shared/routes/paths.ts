@@ -32,6 +32,8 @@ export const Paths = {
 
   // Fellowship
   FELLOWSHIP: '/fellowship',
+  FELLOWSHIP_LIST: '/fellowship/:chainId',
+  FELLOWSHIP_REFERENDUM: '/fellowship/:chainId/referendum/:referendumId',
 
   // Staking
   STAKING: '/staking',
@@ -40,4 +42,10 @@ export const Paths = {
   BASKET: '/basket',
 } as const;
 
-export type PathType = ObjectValues<typeof Paths>;
+type ReplaceDynamicParts<T extends string> = T extends `${infer Start}/:${string}/${infer End}`
+  ? `${Start}/${string}/${End}`
+  : T extends `${infer Start}/:${string}`
+    ? `${Start}/${string}`
+    : T;
+
+export type PathType = ReplaceDynamicParts<ObjectValues<typeof Paths>>;
