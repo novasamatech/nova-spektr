@@ -196,6 +196,8 @@ type AccountProps = {
 };
 
 const VoteAccountSelect = ({ asset, chain, onCancel, onSelect }: AccountProps) => {
+  const { t } = useI18n();
+
   const account = useUnit(removeVotesModalAggregate.$account);
   const accounts = useUnit(removeVotesModalAggregate.$accounts);
   const shouldPickAccount = nullable(account) && accounts.length > 0;
@@ -222,7 +224,7 @@ const VoteAccountSelect = ({ asset, chain, onCancel, onSelect }: AccountProps) =
       isOpen={isSelectAccountOpen}
       asset={asset}
       chain={chain}
-      title="Select account which vote you want to remove"
+      title={t('governance.voting.selectAccountTitle')}
       options={accounts.map((account) => ({ account }))}
       onSelect={(a) => {
         onSelect(a);
