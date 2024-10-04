@@ -6,9 +6,13 @@ import { useModalClose } from '@shared/lib/hooks';
 import { BaseModal, Button } from '@shared/ui';
 import { SignButton } from '@/entities/operations';
 import { OperationTitle } from '@entities/chain';
-import { OperationResult, TransactionSlider } from '@entities/transaction';
+import { OperationResult } from '@entities/transaction';
 import { OperationSign, OperationSubmit } from '@features/operations';
-import { EditDelegationConfirmation as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
+import {
+  ConfirmSlider,
+  EditDelegationConfirmation as Confirmation,
+  basketUtils,
+} from '@features/operations/OperationsConfirm';
 import { editDelegationModel } from '../model/edit-delegation-model';
 
 import { DelegateForm } from './DelegateForm';
@@ -92,7 +96,7 @@ export const EditDelegation = () => {
       )}
 
       {isStep(step, Step.CONFIRM) && transactions.length > 1 && (
-        <TransactionSlider
+        <ConfirmSlider
           count={transactions.length}
           footer={
             <div className="flex gap-2">
@@ -106,14 +110,11 @@ export const EditDelegation = () => {
           }
         >
           {transactions?.map((t, index) => (
-            // eslint-disable-next-line react/no-array-index-key
-            <div key={index} className="flex h-[582px] flex-col last-of-type:pr-4">
-              <div className="max-h-full w-[440px] rounded-lg bg-white shadow-shadow-2">
-                <Confirmation id={index} hideSignButton />
-              </div>
-            </div>
+            <ConfirmSlider.Item key={index}>
+              <Confirmation id={index} hideSignButton />
+            </ConfirmSlider.Item>
           ))}
-        </TransactionSlider>
+        </ConfirmSlider>
       )}
 
       {isStep(step, Step.SIGN) && (

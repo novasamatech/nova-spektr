@@ -9,9 +9,14 @@ import { Step, isStep, nonNullable, nullable } from '@/shared/lib/utils';
 import { BaseModal, Button } from '@shared/ui';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
-import { OperationResult, TransactionSlider } from '@/entities/transaction';
+import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
-import { RemoveVoteConfirmation, basketUtils, removeVoteConfirmModel } from '@/features/operations/OperationsConfirm';
+import {
+  ConfirmSlider,
+  RemoveVoteConfirmation,
+  basketUtils,
+  removeVoteConfirmModel,
+} from '@/features/operations/OperationsConfirm';
 import { SignatorySelectModal } from '@/pages/Operations/components/modals/SignatorySelectModal';
 import { removeVotesModalAggregate } from '../aggregates/removeVotesModal';
 
@@ -110,7 +115,7 @@ export const RemoveVotesModal = ({ votes, chain, asset, api, onClose }: Props) =
         )}
 
         {isStep(step, Step.CONFIRM) && votesList.length > 1 && (
-          <TransactionSlider
+          <ConfirmSlider
             footer={
               <div className="flex gap-2">
                 {initiatorWallet && basketUtils.isBasketAvailable(initiatorWallet) && (
@@ -124,13 +129,11 @@ export const RemoveVotesModal = ({ votes, chain, asset, api, onClose }: Props) =
             count={votesList.length}
           >
             {votesList.map((_, index) => (
-              <div key={index} className="flex h-[582px] flex-col last-of-type:pr-4">
-                <div className="max-h-full w-[440px] overflow-y-auto rounded-lg bg-white shadow-shadow-2">
-                  <RemoveVoteConfirmation id={index} hideSignButton />
-                </div>
-              </div>
+              <ConfirmSlider.Item key={index}>
+                <RemoveVoteConfirmation id={index} hideSignButton />
+              </ConfirmSlider.Item>
             ))}
-          </TransactionSlider>
+          </ConfirmSlider>
         )}
 
         {isStep(step, Step.SIGN) && (

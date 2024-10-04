@@ -22,3 +22,5 @@ export * from './Referendum/Vote';
 export * from './Referendum/RemoveVote';
 
 export { type ConfirmInfo } from './lib/createTransactionConfirmStore';
+
+export { ConfirmSlider } from './common/ConfirmSlider';
