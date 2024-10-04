@@ -9,3 +9,4 @@ export { Surface } from './Surface/Surface';
 export { Slider } from './Slider/Slider';
 export { Modal } from './Modal/Modal';
 export { Box } from './Box/Box';
+export { ScrollArea } from './ScrollArea/ScrollArea';
