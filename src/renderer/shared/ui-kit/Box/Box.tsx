@@ -20,6 +20,7 @@ type BoxProps = PropsWithChildren<{
   shrink?: CSS.Property.FlexShrink;
   fitContainer?: boolean;
   fillContainer?: boolean;
+  grow?: number;
   wrap?: boolean;
   gap?: BoxSpacing;
   padding?: BoxPadding;
@@ -61,6 +62,7 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(
       padding,
       direction = 'column',
       shrink,
+      grow,
       verticalAlign,
       horizontalAlign,
       fitContainer,
@@ -90,6 +92,7 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(
         justifyContent: isHorizontal ? horizontalAlign : verticalAlign,
         flexShrink: shrink,
         gap: getBoxSize<Property.Gap>(gap),
+        flexGrow: grow,
       }),
       [isHorizontal, calculatedPadding, width, height, verticalAlign, horizontalAlign, gap],
     );

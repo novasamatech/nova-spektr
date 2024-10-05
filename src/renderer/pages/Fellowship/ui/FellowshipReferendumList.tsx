@@ -15,7 +15,7 @@ export const FellowshipReferendumList = () => {
   }
 
   return (
-    <Box gap={3}>
+    <Box gap={3} grow={1}>
       <Filters />
       <Referendums
         onSelect={(referendum) => {
