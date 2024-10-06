@@ -127,6 +127,7 @@ export const Governance = () => {
         <ReferendumDetailsModal
           referendum={selectedReferendum}
           chain={network.chain}
+          api={network.api}
           asset={network.asset}
           onClose={() => {
             setShowVoteModal(false);
