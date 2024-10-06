@@ -175,6 +175,7 @@ const DelegationReferendumList = ({ votedReferendums }: { votedReferendums: Vote
         <ReferendumDetailsModal
           referendum={selectedReferendum}
           chain={network.chain}
+          api={network.api}
           asset={network.asset}
           showActions={false}
           onClose={() => setSelectedReferendum(null)}

@@ -1,19 +1,14 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type BN } from '@polkadot/util';
-import { memo, useEffect, useState } from 'react';
+import { memo } from 'react';
 
 import { useI18n } from '@app/providers';
 import { type Asset, type Chain } from '@/shared/core';
-import { formatBalance, getTimeToBlock, toNumberWithPrecision } from '@shared/lib/utils';
+import { formatBalance, toNumberWithPrecision } from '@shared/lib/utils';
 import { FootnoteText, HeadlineText, Icon } from '@shared/ui';
-import {
-  ReferendumTimer,
-  ReferendumVoteChart,
-  TrackInfo,
-  referendumService,
-  votingService,
-} from '@entities/governance';
+import { ReferendumVoteChart, TrackInfo, referendumService, votingService } from '@entities/governance';
 import { type AggregatedReferendum } from '../../types/structs';
+import { ReferendumEndTimer } from '../ReferendumEndTimer/ReferendumEndTimer';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 
 import { ListItem } from './ListItem';
@@ -27,16 +22,6 @@ type Props = {
 
 export const VotedReferendumItem = memo<Props>(({ referendum, network, vote, onSelect }) => {
   const { t } = useI18n();
-
-  const [endTime, setEndTime] = useState<number>();
-
-  useEffect(() => {
-    if (referendum.end) {
-      getTimeToBlock(referendum.end, network.api).then((date) => {
-        setEndTime(date / 1000);
-      });
-    }
-  }, []);
 
   const { referendumId, approvalThreshold } = referendum;
 
@@ -52,7 +37,7 @@ export const VotedReferendumItem = memo<Props>(({ referendum, network, vote, onS
       <div className="flex w-full items-center gap-x-2">
         <VotingStatusBadge referendum={referendum} />
 
-        {endTime && referendum.status && <ReferendumTimer status={referendum.status} time={endTime} />}
+        <ReferendumEndTimer status={referendum.status} endBlock={referendum.end} api={network.api} />
 
         <div className="ml-auto flex text-text-secondary">
           {referendumId && <FootnoteText className="text-inherit">#{referendumId}</FootnoteText>}

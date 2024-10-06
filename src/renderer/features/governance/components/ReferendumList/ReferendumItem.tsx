@@ -1,18 +1,11 @@
 import { type ApiPromise } from '@polkadot/api';
-import { memo, useEffect, useState } from 'react';
+import { memo } from 'react';
 
 import { useI18n } from '@app/providers';
-import { getTimeToBlock } from '@shared/lib/utils';
 import { FootnoteText, HeadlineText, Shimmering } from '@shared/ui';
-import {
-  ReferendumTimer,
-  ReferendumVoteChart,
-  TrackInfo,
-  Voted,
-  referendumService,
-  votingService,
-} from '@entities/governance';
+import { ReferendumVoteChart, TrackInfo, Voted, referendumService, votingService } from '@entities/governance';
 import { type AggregatedReferendum } from '../../types/structs';
+import { ReferendumEndTimer } from '../ReferendumEndTimer/ReferendumEndTimer';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 
 import { ListItem } from './ListItem';
@@ -27,16 +20,6 @@ type Props = {
 
 export const ReferendumItem = memo<Props>(({ referendum, isTitlesLoading, api, onSelect }) => {
   const { t } = useI18n();
-
-  const [endTime, setEndTime] = useState<number>();
-
-  useEffect(() => {
-    if (referendum.end) {
-      getTimeToBlock(referendum.end, api).then((date) => {
-        setEndTime(date / 1000);
-      });
-    }
-  }, []);
 
   const { referendumId, approvalThreshold } = referendum;
 
@@ -60,7 +43,7 @@ export const ReferendumItem = memo<Props>(({ referendum, isTitlesLoading, api, o
         <VotedBy address={referendum.votedByDelegate} />
         <VotingStatusBadge referendum={referendum} />
 
-        {endTime && referendum.status && <ReferendumTimer status={referendum.status} time={endTime} />}
+        <ReferendumEndTimer status={referendum.status} endBlock={referendum.end} api={api} />
 
         <div className="ml-auto flex text-text-secondary">
           {referendumId && <FootnoteText className="text-inherit">#{referendumId}</FootnoteText>}
