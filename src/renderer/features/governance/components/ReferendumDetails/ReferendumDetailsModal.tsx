@@ -1,3 +1,4 @@
+import { type ApiPromise } from '@polkadot/api';
 import { BN_ZERO } from '@polkadot/util';
 import { useGate, useUnit } from 'effector-react';
 
@@ -23,6 +24,7 @@ import { VotingSummary } from './VotingSummary';
 
 type Props = {
   chain: Chain;
+  api: ApiPromise;
   asset: Asset;
   referendum: AggregatedReferendum;
   showActions?: boolean;
@@ -34,6 +36,7 @@ type Props = {
 
 export const ReferendumDetailsModal = ({
   chain,
+  api,
   asset,
   referendum,
   showActions,
@@ -85,6 +88,7 @@ export const ReferendumDetailsModal = ({
 
           <DetailsCard title={t('governance.referendum.votingStatus')}>
             <VotingStatus
+              api={api}
               referendum={referendum}
               asset={asset}
               canVote={showActions ?? canVote}
