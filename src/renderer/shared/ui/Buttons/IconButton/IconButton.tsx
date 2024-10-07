@@ -1,4 +1,4 @@
-import { type ComponentProps, type MouseEvent } from 'react';
+import { type ComponentProps, forwardRef } from 'react';
 
 import { cnTw } from '@shared/lib/utils';
 import { Icon } from '../../Icon/Icon';
@@ -11,20 +11,45 @@ const IconButtonStyle =
   'hover:text-icon-hover hover:bg-hover active:bg-hover active:text-tab-icon-active ' +
   'focus:text-icon-hover focus:bg-hover';
 
-type Props = {
-  ariaLabel?: string;
-  disabled?: boolean;
-  onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
-} & IconProps;
+type HTMLButtonProps = Pick<
+  ComponentProps<'button'>,
+  'onClick' | 'onMouseDown' | 'onPointerDown' | 'onPointerMove' | 'onPointerLeave' | 'disabled' | 'tabIndex' | 'type'
+>;
 
-export const IconButton = ({ onClick, size = 16, disabled, className, ariaLabel, ...iconProps }: Props) => (
-  <button
-    type="button"
-    className={cnTw('spektr-icon-button', IconButtonStyle, className)}
-    aria-label={ariaLabel}
-    disabled={disabled}
-    onClick={onClick}
-  >
-    <Icon size={size} className="text-inherit" {...iconProps} />
-  </button>
+type Props = HTMLButtonProps &
+  IconProps & {
+    ariaLabel?: string;
+  };
+
+export const IconButton = forwardRef<HTMLButtonElement, Props>(
+  (
+    {
+      size = 16,
+      disabled,
+      className,
+      ariaLabel,
+      onClick,
+      onMouseDown,
+      onPointerDown,
+      onPointerMove,
+      onPointerLeave,
+      ...iconProps
+    },
+    ref,
+  ) => (
+    <button
+      ref={ref}
+      type="button"
+      className={cnTw('spektr-icon-button', IconButtonStyle, className)}
+      aria-label={ariaLabel}
+      disabled={disabled}
+      onClick={onClick}
+      onMouseDown={onMouseDown}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerLeave={onPointerLeave}
+    >
+      <Icon size={size} className="text-inherit" {...iconProps} />
+    </button>
+  ),
 );

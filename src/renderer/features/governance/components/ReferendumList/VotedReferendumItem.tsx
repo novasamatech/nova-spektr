@@ -1,24 +1,26 @@
 import { type ApiPromise } from '@polkadot/api';
+import { type BN } from '@polkadot/util';
 import { memo } from 'react';
 
 import { useI18n } from '@app/providers';
-import { FootnoteText, HeadlineText, Shimmering } from '@shared/ui';
-import { ReferendumVoteChart, TrackInfo, Voted, referendumService, votingService } from '@entities/governance';
+import { type Asset, type Chain } from '@/shared/core';
+import { formatBalance, toNumberWithPrecision } from '@shared/lib/utils';
+import { FootnoteText, HeadlineText, Icon } from '@shared/ui';
+import { ReferendumVoteChart, TrackInfo, referendumService, votingService } from '@entities/governance';
 import { type AggregatedReferendum } from '../../types/structs';
 import { ReferendumEndTimer } from '../ReferendumEndTimer/ReferendumEndTimer';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 
 import { ListItem } from './ListItem';
-import { VotedBy } from './VotedBy';
 
 type Props = {
-  isTitlesLoading: boolean;
   referendum: AggregatedReferendum;
-  api: ApiPromise;
+  network: { api: ApiPromise; chain: Chain; asset: Asset };
+  vote: { value: BN; vote: string };
   onSelect: (value: AggregatedReferendum) => void;
 };
 
-export const ReferendumItem = memo<Props>(({ referendum, isTitlesLoading, api, onSelect }) => {
+export const VotedReferendumItem = memo<Props>(({ referendum, network, vote, onSelect }) => {
   const { t } = useI18n();
 
   const { referendumId, approvalThreshold } = referendum;
@@ -28,22 +30,14 @@ export const ReferendumItem = memo<Props>(({ referendum, isTitlesLoading, api, o
       ? votingService.getVoteFractions(referendum.tally, approvalThreshold.value)
       : null;
 
-  const titleNode =
-    referendum.title ||
-    (isTitlesLoading ? (
-      <Shimmering height="1em" width="28ch" />
-    ) : (
-      t('governance.referendums.referendumTitle', { index: referendumId })
-    ));
+  const titleNode = referendum.title || t('governance.referendums.referendumTitle', { index: referendumId });
 
   return (
     <ListItem onClick={() => onSelect(referendum)}>
       <div className="flex w-full items-center gap-x-2">
-        <Voted active={referendum.voting.votes.length > 0} />
-        <VotedBy address={referendum.votedByDelegate} />
         <VotingStatusBadge referendum={referendum} />
 
-        <ReferendumEndTimer status={referendum.status} endBlock={referendum.end} api={api} />
+        <ReferendumEndTimer status={referendum.status} endBlock={referendum.end} api={network.api} />
 
         <div className="ml-auto flex text-text-secondary">
           {referendumId && <FootnoteText className="text-inherit">#{referendumId}</FootnoteText>}
@@ -57,6 +51,20 @@ export const ReferendumItem = memo<Props>(({ referendum, isTitlesLoading, api, o
             <ReferendumVoteChart aye={voteFractions.aye} nay={voteFractions.nay} pass={voteFractions.pass} />
           ) : null}
         </div>
+      </div>
+
+      <div className="flex items-center">
+        <Icon name="voted" className="mr-1 text-icon-accent" size={16} />
+        <FootnoteText className="text-tab-text-accent">
+          {t('governance.addDelegation.summary.delegateVoted')}&nbsp;
+        </FootnoteText>
+        <FootnoteText>
+          {vote.vote.toLocaleUpperCase()}&nbsp;
+          {t('governance.referendum.votes', {
+            votes: formatBalance(vote.value, network.asset.precision).formatted,
+            count: toNumberWithPrecision(+vote.value, network.asset.precision),
+          })}
+        </FootnoteText>
       </div>
     </ListItem>
   );

@@ -70,6 +70,7 @@ export type SubQueryVoting = {
     };
   } | null;
   voter: Address;
+  at: number;
 };
 
 export type DelegateDetails = {

@@ -3,7 +3,8 @@ import { type ReactNode } from 'react';
 
 import { useI18n } from '@/app/providers';
 import { formatAsset, formatBalance, toAddress, toNumberWithPrecision } from '@/shared/lib/utils';
-import { DetailRow, HeadlineText, Icon } from '@/shared/ui';
+import { DetailRow, HeadlineText, Icon, Loader } from '@/shared/ui';
+import { Box } from '@/shared/ui-kit';
 import {
   LockPeriodDiff,
   LockValueDiff,
@@ -58,7 +59,11 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
   const tracks = votes.map(({ track }) => Number(track));
 
   if (!voteTransactionService.isRemoveVoteTransaction(wrappedTransactions.coreTx)) {
-    return null;
+    return (
+      <Box width="440px" height="440px" verticalAlign="center" horizontalAlign="center">
+        <Loader color="primary" />
+      </Box>
+    );
   }
 
   const amount = vote && votingService.calculateAccountVoteAmount(vote);
@@ -69,7 +74,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
   const locksForAddress = getLocksForAddress(address, trackLocks);
 
   return (
-    <div className="flex flex-col items-center gap-4 px-5 py-4">
+    <div className="flex w-modal flex-col items-center gap-4 px-5 py-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name="retractMst" size={60} />
 

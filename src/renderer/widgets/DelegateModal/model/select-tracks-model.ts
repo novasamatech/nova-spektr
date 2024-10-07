@@ -78,19 +78,16 @@ const $votesToRemove = combine(
     addresses: $addresses,
   },
   ({ votes, addresses }) => {
-    const activeVotes: Record<Address, { referendum: ReferendumId; track: TrackId }[]> = {};
+    const activeVotes: { referendum: ReferendumId; track: TrackId; voter: Address }[] = [];
 
     for (const [address, voteList] of Object.entries(votes)) {
       if (!addresses.includes(address)) continue;
 
       for (const [track, vote] of Object.entries(voteList)) {
         if (votingService.isCasting(vote) && !votingService.isUnlockingDelegation(vote)) {
-          if (!activeVotes[address]) {
-            activeVotes[address] = [];
-          }
-
-          activeVotes[address].push(
+          activeVotes.push(
             ...Object.keys(vote.votes).map((referendum) => ({
+              voter: address,
               track,
               referendum,
             })),

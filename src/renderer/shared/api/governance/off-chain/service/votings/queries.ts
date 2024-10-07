@@ -42,6 +42,9 @@ export const GET_VOTINGS_FOR_VOTER = gql`
         referendum {
           id
         }
+        standardVote
+        splitVote
+        splitAbstainVote
       }
     }
   }

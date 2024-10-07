@@ -127,6 +127,7 @@ export const Governance = () => {
         <ReferendumDetailsModal
           referendum={selectedReferendum}
           chain={network.chain}
+          api={network.api}
           asset={network.asset}
           onClose={() => {
             setShowVoteModal(false);
@@ -167,11 +168,10 @@ export const Governance = () => {
       {showRevoteModal &&
         nonNullable(network) &&
         nonNullable(selectedReferendum) &&
-        nonNullable(selectedReferendum.vote) &&
         referendumService.isOngoing(selectedReferendum) && (
           <RevoteModal
             referendum={selectedReferendum}
-            vote={selectedReferendum.vote.vote}
+            votes={selectedReferendum.voting.votes}
             chain={network.chain}
             asset={network.asset}
             onClose={() => setShowRevoteModal(false)}
@@ -180,18 +180,15 @@ export const Governance = () => {
 
       {showRemoveVoteModal &&
         nonNullable(selectedReferendum) &&
-        nonNullable(selectedReferendum.vote) &&
         nonNullable(network) &&
         referendumService.isOngoing(selectedReferendum) && (
           <RemoveVotesModal
-            voter={selectedReferendum.vote.voter}
-            votes={[
-              {
-                vote: selectedReferendum.vote.vote,
-                referendum: selectedReferendum.referendumId,
-                track: selectedReferendum.track,
-              },
-            ]}
+            votes={selectedReferendum.voting.votes.map(({ voter, vote }) => ({
+              vote,
+              voter,
+              referendum: selectedReferendum.referendumId,
+              track: selectedReferendum.track,
+            }))}
             chain={network.chain}
             asset={network.asset}
             api={network.api}

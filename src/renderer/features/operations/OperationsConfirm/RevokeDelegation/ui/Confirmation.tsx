@@ -4,8 +4,9 @@ import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
+import { Box } from '@/shared/ui-kit';
 import { formatAmount } from '@shared/lib/utils';
-import { Button, DetailRow, FootnoteText, HeadlineText, Icon, LargeTitleText, Tooltip } from '@shared/ui';
+import { Button, DetailRow, FootnoteText, HeadlineText, Icon, LargeTitleText, Loader, Tooltip } from '@shared/ui';
 import { BalanceDiff, LockPeriodDiff, LockValueDiff, TracksDetails, votingService } from '@/entities/governance';
 import { AssetBalance } from '@entities/asset';
 import { SignButton } from '@entities/operations';
@@ -69,7 +70,11 @@ export const Confirmation = ({
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
   if (!confirmStore || !initiatorWallet) {
-    return null;
+    return (
+      <Box width="440px" height="430px" verticalAlign="center" horizontalAlign="center">
+        <Loader color="primary" />
+      </Box>
+    );
   }
 
   const amountValue = config.withFormatAmount
