@@ -2,25 +2,49 @@ import { type Event, type Store, createDomain, createStore, sample } from 'effec
 import { createGate } from 'effector-react';
 import { readonly } from 'patronum';
 
-import { nonNullable } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 
 type Params<T> = {
   name: string;
   input?: Store<T | null>;
+  filter?: (input: T) => IdleState | Omit<FailedState<T>, 'data'> | null;
 };
 
 type ErrorType = 'fatal' | 'error' | 'warning';
 
+type FailedStateParams = { error: Error; type: ErrorType };
+
 type IdleState = { status: 'idle' };
 type StartingState = { status: 'starting' };
 type RunningState<T> = { status: 'running'; data: T };
-type FailedState = { status: 'failed'; error: Error; type: ErrorType };
+type FailedState<T> = { status: 'failed'; data: T | null } & FailedStateParams;
 
-type State<T> = IdleState | StartingState | RunningState<T> | FailedState;
+type State<T> = IdleState | StartingState | RunningState<T> | FailedState<T>;
 
 export type Feature<T> = ReturnType<typeof createFeature<T>>;
 
-export const createFeature = <T = null>({ name, input = createStore(null) }: Params<T>) => {
+const calculateState = <T>(data: T | null, filter: Params<T>['filter']): State<T> => {
+  if (nullable(data)) {
+    return { status: 'starting' };
+  }
+
+  if (filter) {
+    const filterResult = filter(data);
+    if (filterResult === null) {
+      return { status: 'running', data };
+    }
+    if (filterResult.status === 'idle') {
+      return filterResult;
+    }
+    if (filterResult.status === 'failed') {
+      return { status: 'failed', data, error: filterResult.error, type: filterResult.type };
+    }
+  }
+
+  return { status: 'running', data };
+};
+
+export const createFeature = <T = null>({ name, filter, input = createStore(null) }: Params<T>) => {
   const domain = createDomain(name);
 
   const $input = domain.createStore<T | null>(null);
@@ -29,7 +53,7 @@ export const createFeature = <T = null>({ name, input = createStore(null) }: Par
 
   const start = domain.createEvent('start');
   const stop = domain.createEvent('stop');
-  const fail = domain.createEvent<{ error: Error; type: ErrorType }>('fail');
+  const fail = domain.createEvent<FailedStateParams>('fail');
   const restore = domain.createEvent('restore');
 
   const running = domain.createEvent<T>('running');
@@ -47,9 +71,8 @@ export const createFeature = <T = null>({ name, input = createStore(null) }: Par
   sample({
     clock: start,
     source: { data: input, status: $status },
-    filter: ({ status }) => status !== 'starting' && status !== 'running' && status !== 'failed',
-    fn: ({ data }): StartingState | RunningState<T> =>
-      data !== null ? { status: 'running', data } : { status: 'starting' },
+    filter: ({ status }) => status !== 'starting' && status !== 'running',
+    fn: ({ data }) => calculateState(data, filter),
     target: $state,
   });
 
@@ -63,14 +86,14 @@ export const createFeature = <T = null>({ name, input = createStore(null) }: Par
     clock: restore,
     source: input,
     filter: isFailed,
-    fn: (data): StartingState | RunningState<T> =>
-      data !== null ? { status: 'running', data } : { status: 'starting' },
+    fn: (data) => calculateState(data, filter),
     target: $state,
   });
 
   sample({
     clock: fail,
-    fn: ({ error, type }): FailedState => ({ status: 'failed', error, type }),
+    source: input,
+    fn: (data, { error, type }): State<T> => ({ status: 'failed', data, error, type }),
     target: $state,
   });
 
@@ -79,7 +102,7 @@ export const createFeature = <T = null>({ name, input = createStore(null) }: Par
   sample({
     clock: inputFulfill,
     filter: isStarting,
-    fn: (data): RunningState<T> => ({ status: 'running', data }),
+    fn: (data) => calculateState(data, filter),
     target: $state,
   });
 
@@ -93,14 +116,13 @@ export const createFeature = <T = null>({ name, input = createStore(null) }: Par
   sample({
     clock: input.updates,
     filter: isRunning,
-    fn: (data): StartingState | RunningState<T> =>
-      data !== null ? { status: 'running', data } : { status: 'starting' },
+    fn: (data) => calculateState(data, filter),
     target: $state,
   });
 
   sample({
     clock: $state,
-    fn: (state) => (state.status === 'running' ? state.data : null),
+    fn: (state) => (state.status === 'running' ? state.data : state.status === 'failed' ? state.data : null),
     target: $input,
   });
 
@@ -129,8 +151,6 @@ export const createFeature = <T = null>({ name, input = createStore(null) }: Par
     state: readonly($state),
     input: readonly($input),
 
-    gate,
-
     running: readonly(running),
     stopped: readonly(stopped),
     failed: readonly(failed),
@@ -138,6 +158,8 @@ export const createFeature = <T = null>({ name, input = createStore(null) }: Par
     isRunning: readonly(isRunning),
     isStarting: readonly(isStarting),
     isFailed: readonly(isFailed),
+
+    gate,
 
     start,
     stop,
