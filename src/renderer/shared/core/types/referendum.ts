@@ -72,6 +72,7 @@ export type CompletedReferendum =
 
 export type Referendum = OngoingReferendum | CompletedReferendum;
 export type ReferendumType = 'Ongoing' | 'Approved' | 'Rejected' | 'Cancelled' | 'TimedOut' | 'Killed';
+export type ReferendumStatus = 'NoDeposit' | 'Deciding' | 'Passing' | 'Execute';
 
 export type Tally = {
   ayes: BN;

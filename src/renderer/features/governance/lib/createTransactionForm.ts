@@ -1,11 +1,11 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type BN, BN_ZERO } from '@polkadot/util';
+import { BN_ZERO } from '@polkadot/util';
 import { type Store, combine, createEvent, createStore, sample } from 'effector';
 import { type Form, type FormConfig, createForm } from 'effector-forms';
 import { isNil } from 'lodash';
 
 import { type Account, type Asset, type Balance, type Chain, type Transaction, type Wallet } from '@shared/core';
-import { transferableAmountBN } from '@shared/lib/utils';
+import { nullable, transferableAmountBN } from '@shared/lib/utils';
 import { balanceUtils } from '@entities/balance';
 import { transactionService } from '@entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
@@ -32,7 +32,7 @@ type TransactionFactory<FormShape extends NonNullable<unknown>> = (
   params: Omit<Params<FormShape>, 'createTransactionStore' | 'form'> & { form: Form<FormShape & BasicFormParams> },
 ) => Store<Transaction | null>;
 
-export type AccountOption = { account: Account; balance: BN };
+export type AccountOption = { account: Account; balance: Balance | null };
 
 export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
   $activeWallet,
@@ -108,21 +108,35 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
     clock: [$chain, $asset, $activeWallet, $balances],
     source: { chain: $chain, asset: $asset, wallet: $activeWallet, balances: $balances },
     fn: ({ chain, asset, wallet, balances }) => {
-      if (!wallet || !chain || !asset) return [];
+      if (nullable(wallet) || nullable(chain) || nullable(asset)) return [];
 
-      const walletAccounts = walletUtils.getAccountsBy([wallet], (a, w) => {
-        const isBase = accountUtils.isBaseAccount(a);
-        const isPolkadotVault = walletUtils.isPolkadotVault(w);
+      let walletAccounts: Account[] = [];
 
-        return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, chain);
-      });
+      if (walletUtils.isPolkadotVault(wallet)) {
+        const shards = wallet.accounts.filter((a) => {
+          return (
+            accountUtils.isChainAndCryptoMatch(a, chain) &&
+            (accountUtils.isShardAccount(a) || accountUtils.isChainAccount(a))
+          );
+        });
+
+        if (shards.length) {
+          walletAccounts = shards;
+        } else {
+          walletAccounts = wallet.accounts.filter(
+            (a) => accountUtils.isBaseAccount(a) && accountUtils.isChainAndCryptoMatch(a, chain),
+          );
+        }
+      } else {
+        walletAccounts = wallet.accounts.filter((a) => accountUtils.isChainAndCryptoMatch(a, chain));
+      }
 
       return walletAccounts.map<AccountOption>((account) => {
         const balance = balanceUtils.getBalance(balances, account.accountId, chain.chainId, asset.assetId.toString());
 
         return {
           account,
-          balance: transferableAmountBN(balance),
+          balance: balance ?? null,
         };
       });
     },
@@ -156,7 +170,7 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
           asset.assetId.toString(),
         );
 
-        return { account: firstAccount, balance: transferableAmountBN(balance) };
+        return { account: firstAccount, balance: balance ?? null };
       });
     },
     target: $signatories,

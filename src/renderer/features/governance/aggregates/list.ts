@@ -2,12 +2,19 @@ import { combine, sample } from 'effector';
 import { readonly } from 'patronum';
 
 import { nullable } from '@/shared/lib/utils';
-import { approveThresholdModel, referendumModel, supportThresholdModel, votingService } from '@entities/governance';
+import {
+  approveThresholdModel,
+  referendumModel,
+  referendumService,
+  supportThresholdModel,
+  votingService,
+} from '@entities/governance';
 import { networkSelectorModel } from '../model/networkSelector';
 import { titleModel } from '../model/title';
 import { type AggregatedReferendum } from '../types/structs';
 
 import { delegatedVotesAggregate } from './delegatedVotes';
+import { tracksAggregate } from './tracks';
 import { votingAggregate } from './voting';
 
 const $chainReferendums = combine(
@@ -67,6 +74,9 @@ const $referendums = combine(
     supportThresholds: $supportThresholds,
     chain: networkSelectorModel.$governanceChain,
     voting: votingAggregate.$activeWalletVotes,
+    tracks: tracksAggregate.$tracks,
+    api: networkSelectorModel.$governanceChainApi,
+    accounts: votingAggregate.$possibleAccountsForVoting,
   },
   ({
     referendums,
@@ -76,22 +86,39 @@ const $referendums = combine(
     supportThresholds,
     voting,
     delegatedVotes,
+    tracks,
+    api,
+    accounts,
   }): AggregatedReferendum[] => {
-    if (!chain) {
+    if (!chain || !api) {
       return [];
     }
 
+    const undecidingTimeout = api.consts.referenda.undecidingTimeout.toNumber();
+
     return referendums.map((referendum) => {
-      const votes = votingService.getReferendumAccountVotes(referendum.referendumId, voting);
-      const voteTupple = Object.entries(votes).at(0);
-      const vote = voteTupple ? { voter: voteTupple[0], vote: voteTupple[1] } : null;
+      const referendumVotes = votingService.getReferendumAccountVotes(referendum.referendumId, voting);
+      const votes = Object.entries(referendumVotes).map((x) => ({ voter: x[0], vote: x[1] }));
+
+      let end = null;
+      let status = null;
+
+      if (referendumService.isOngoing(referendum)) {
+        end = referendumService.getReferendumEndTime(referendum, tracks[referendum.track], undecidingTimeout);
+        status = referendumService.getReferendumStatus(referendum);
+      }
 
       return {
         ...referendum,
+        end,
+        status,
         title: titles[referendum.referendumId] ?? null,
         approvalThreshold: approvalThresholds[referendum.referendumId] ?? null,
         supportThreshold: supportThresholds[referendum.referendumId] ?? null,
-        vote,
+        voting: {
+          of: accounts.length,
+          votes,
+        },
         votedByDelegate: delegatedVotes[chain.chainId] ?? null,
       };
     });

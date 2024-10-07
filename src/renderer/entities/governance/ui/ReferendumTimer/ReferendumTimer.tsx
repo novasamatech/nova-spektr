@@ -1,37 +1,49 @@
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@/app/providers';
+import { type ReferendumStatus } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
 import { Duration, FootnoteText, Icon } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/types';
 
-type Status = 'approve' | 'reject' | 'execute';
+type Status = 'approve' | 'reject' | 'execute' | 'timeout';
 
 const TimerIcon: Record<Status, IconNames> = {
   approve: 'clock',
   reject: 'clock',
   execute: 'fire',
+  timeout: 'clock',
 };
 
 const TimerColor: Record<Status, string> = {
   approve: 'text-text-secondary',
   reject: 'text-text-secondary',
+  timeout: 'text-text-secondary',
   execute: 'text-text-warning',
 };
 
 const TimerText: Record<Status, string> = {
-  approve: 'Approve in',
-  reject: 'Reject in',
-  execute: 'Execute in',
+  approve: 'governance.referendums.approveIn',
+  reject: 'governance.referendums.rejectIn',
+  execute: 'governance.referendums.executeIn',
+  timeout: 'governance.referendums.timeoutIn',
 };
 
 type Props = {
-  status: Status;
+  status: ReferendumStatus;
   time: number;
+};
+
+const StatusMap: Record<ReferendumStatus, Status> = {
+  Passing: 'approve',
+  Deciding: 'reject',
+  NoDeposit: 'timeout',
+  Execute: 'execute',
 };
 
 export const ReferendumTimer = ({ status, time }: Props) => {
   const { t } = useI18n();
+  const referendumStatus = StatusMap[status];
 
   const [countdown, setCountdown] = useState(time);
 
@@ -46,9 +58,9 @@ export const ReferendumTimer = ({ status, time }: Props) => {
   }, [countdown]);
 
   return (
-    <div className={cnTw('flex items-center gap-x-1', TimerColor[status])}>
-      <Icon name={TimerIcon[status]} size={16} className="text-inherit" />
-      <FootnoteText className="text-inherit">{t(TimerText[status])}</FootnoteText>
+    <div className={cnTw('flex items-center gap-x-1', TimerColor[referendumStatus])}>
+      <Icon name={TimerIcon[referendumStatus]} size={16} className="text-inherit" />
+      <FootnoteText className="text-inherit">{t(TimerText[referendumStatus])}</FootnoteText>
       <Duration as={FootnoteText} className="text-inherit" hideDaysHours seconds={countdown} />
     </div>
   );

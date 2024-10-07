@@ -6,9 +6,11 @@ import {
   type AccountVote,
   type Address,
   type Asset,
+  type BlockHeight,
   type Chain,
   type ProxiedAccount,
   type Referendum,
+  type ReferendumStatus,
   type Transaction,
   type VotingThreshold,
 } from '@shared/core';
@@ -18,10 +20,12 @@ export type AggregatedReferendum<T extends Referendum = Referendum> = T & {
   approvalThreshold: VotingThreshold | null;
   supportThreshold: VotingThreshold | null;
   votedByDelegate?: Address | null;
-  vote: {
-    voter: Address;
-    vote: AccountVote;
-  } | null;
+  voting: {
+    of: number;
+    votes: { voter: Address; vote: AccountVote }[];
+  };
+  end: BlockHeight | null;
+  status: ReferendumStatus | null;
 };
 
 export type DecoupledVote = {

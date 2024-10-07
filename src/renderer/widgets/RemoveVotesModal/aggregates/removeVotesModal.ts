@@ -17,15 +17,15 @@ import { basketModel } from '@entities/basket';
 import { transactionBuilder } from '@entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { lockPeriodsModel, locksModel, votingAggregate } from '@/features/governance';
-import { createTxStore } from '@features/governance/lib/createTxStore';
+import { createMultipleTxStore } from '@/features/governance/lib/createMultipleTxStore';
 import { type SigningPayload, signModel } from '@features/operations/OperationSign';
 import { submitModel } from '@features/operations/OperationSubmit';
 import { removeVoteConfirmModel } from '@features/operations/OperationsConfirm';
 import { type RemoveVoteConfirm } from '@features/operations/OperationsConfirm/Referendum/RemoveVote/model/confirm-model';
 
 const flow = createGate<{
-  voter: Address | null;
   votes: {
+    voter: Address | null;
     referendum: ReferendumId;
     track: TrackId;
     vote?: AccountVote;
@@ -36,7 +36,6 @@ const flow = createGate<{
 }>({
   defaultState: {
     api: null,
-    voter: null,
     votes: [],
     chain: null,
     asset: null,
@@ -45,16 +44,36 @@ const flow = createGate<{
 
 // Account
 
-const $account = combine(walletModel.$activeWallet, flow.state, (wallet, { voter, chain }) => {
-  if (nullable(wallet) || nullable(voter) || nullable(chain)) return null;
+const selectAccount = createEvent<Account>();
 
-  return walletUtils.getAccountBy([wallet], (a) => toAddress(a.accountId, { prefix: chain.addressPrefix }) === voter);
+const $account = createStore<Account | null>(null);
+
+const $accounts = combine(walletModel.$activeWallet, flow.state, (wallet, { votes, chain }) => {
+  if (nullable(wallet) || nullable(chain)) return [];
+
+  return walletUtils.getAccountsBy([wallet], (a) => {
+    if (!accountUtils.isChainAndCryptoMatch(a, chain)) return false;
+
+    return votes.some(({ voter }) => toAddress(a.accountId, { prefix: chain.addressPrefix }) === voter);
+  });
 });
 
-const $initiatorWallet = combine($account, walletModel.$wallets, (account, wallets) => {
-  if (!account) return null;
+sample({
+  clock: $accounts,
+  filter: $accounts.map((x) => x.length < 2),
+  fn: (s) => s.at(0) ?? null,
+  target: $account,
+});
 
-  return walletUtils.getWalletById(wallets, account.walletId) ?? null;
+sample({
+  clock: selectAccount,
+  target: $account,
+});
+
+const $initiatorWallet = combine($accounts, walletModel.$wallets, (accounts, wallets) => {
+  if (accounts.length === 0) return null;
+
+  return walletUtils.getWalletById(wallets, accounts[0].walletId) ?? null;
 });
 
 // Signatory
@@ -63,16 +82,22 @@ const selectSignatory = createEvent<Account>();
 
 const $signatory = createStore<Account | null>(null);
 
-const $signatories = combine($account, walletModel.$wallets, (account, wallets) => {
-  if (!account || !accountUtils.isMultisigAccount(account)) {
+const $signatories = combine($accounts, walletModel.$wallets, (accounts, wallets) => {
+  if (!accounts[0] || !accountUtils.isMultisigAccount(accounts[0])) {
     return [];
   }
 
-  const a = account.signatories.map((signatory) =>
+  const a = accounts[0].signatories.map((signatory) =>
     walletUtils.getAccountBy(wallets, (a) => a.accountId === signatory.accountId),
   );
 
   return a.filter((option) => option !== null);
+});
+
+const $votesList = combine($accounts, flow.state, (accounts, { votes, chain }) => {
+  return accounts.map((account) => {
+    return votes.filter((vote) => vote.voter === toAddress(account.accountId, { prefix: chain?.addressPrefix }));
+  });
 });
 
 sample({
@@ -89,24 +114,26 @@ sample({
 
 // Transaction
 
-const $coreTx = combine(flow.state, $account, ({ chain, votes }, account) => {
-  if (nullable(account) || nullable(chain) || nullable(votes)) return null;
+const $coreTxs = combine(flow.state, $accounts, ({ chain, votes }, accounts) => {
+  if (nullable(accounts) || nullable(chain) || nullable(votes)) return [];
 
-  return transactionBuilder.buildRemoveVotes({
-    accountId: account.accountId,
-    chain,
-    votes,
-  });
+  return accounts.map((account) =>
+    transactionBuilder.buildRemoveVotes({
+      accountId: account!.accountId,
+      chain,
+      votes: votes.filter((vote) => vote.voter === toAddress(account!.accountId, { prefix: chain.addressPrefix })),
+    }),
+  );
 });
 
-const { $wrappedTx, $txWrappers } = createTxStore({
+const { $wrappedTxs, $txWrappers } = createMultipleTxStore({
   $api: flow.state.map(({ api }) => api),
   $chain: flow.state.map(({ chain }) => chain),
   $activeWallet: walletModel.$activeWallet.map((wallet) => wallet ?? null),
   $wallets: walletModel.$wallets,
   $signatory,
-  $account,
-  $coreTx,
+  $accounts,
+  $coreTxs,
 });
 
 // Transaction save
@@ -116,21 +143,17 @@ const txSaved = createEvent();
 sample({
   clock: txSaved,
   source: {
-    account: $account,
-    transaction: $wrappedTx,
+    accounts: $accounts,
+    transactions: $wrappedTxs,
     txWrappers: $txWrappers,
   },
-  fn: ({ account, transaction, txWrappers }) => {
-    if (nullable(account) || nullable(transaction)) return [];
+  fn: ({ accounts, transactions, txWrappers }) => {
+    if (nullable(accounts) || nullable(transactions)) return [];
 
     // @ts-expect-error TODO fix id field
-    const tx: BasketTransaction = {
-      initiatorWallet: account.walletId,
-      coreTx: transaction.coreTx,
-      txWrappers,
-    };
-
-    return [tx];
+    return accounts.map<BasketTransaction>((account, index) => {
+      return { initiatorWallet: account.walletId, coreTx: transactions[index].coreTx, txWrappers: txWrappers[index] };
+    });
   },
   target: basketModel.events.transactionsCreated,
 });
@@ -179,37 +202,38 @@ sample({
 // Flow management
 
 sample({
-  clock: [flow.open, $account, $signatory, $wrappedTx],
+  clock: [flow.open, $accounts, $signatory, $wrappedTxs],
   source: {
     state: flow.state,
-    account: $account,
+    accounts: $accounts,
     signatory: $signatory,
-    wrappedTx: $wrappedTx,
+    wrappedTxs: $wrappedTxs,
   },
-  fn: ({ account, signatory, wrappedTx, state: { votes, api, asset, chain } }): RemoveVoteConfirm[] => {
+  fn: ({ accounts, signatory, wrappedTxs, state: { votes, api, asset, chain } }): RemoveVoteConfirm[] => {
     if (
       nullable(votes) ||
-      nullable(account) ||
+      nullable(accounts.length) ||
       nullable(asset) ||
       nullable(chain) ||
       nullable(api) ||
-      nullable(wrappedTx)
+      nullable(wrappedTxs?.length)
     ) {
       return [];
     }
 
-    const confirm: RemoveVoteConfirm = {
+    const confirms = accounts.map<RemoveVoteConfirm>((account, index) => ({
+      id: index,
       api,
       chain,
       asset,
-      votes,
+      votes: votes.filter((vote) => vote.voter === toAddress(account.accountId, { prefix: chain.addressPrefix })),
       account,
       signatory: signatory ?? undefined,
       description: '',
-      wrappedTransactions: wrappedTx,
-    };
+      wrappedTransactions: wrappedTxs[index],
+    }));
 
-    return [confirm];
+    return confirms;
   },
   target: removeVoteConfirmModel.events.fillConfirm,
 });
@@ -218,22 +242,17 @@ sample({
   clock: removeVoteConfirmModel.events.sign,
   source: { confirms: removeVoteConfirmModel.$confirmMap },
   fn: ({ confirms }): { signingPayloads: SigningPayload[] } => {
-    const confirm = confirms[0];
-    if (!confirm) {
+    if (!confirms) {
       return { signingPayloads: [] };
     }
 
-    const { meta, accounts } = confirm;
-
     return {
-      signingPayloads: [
-        {
-          account: accounts.proxy || accounts.initiator,
-          chain: meta.chain,
-          transaction: meta.wrappedTransactions.wrappedTx,
-          signatory: accounts.signer || undefined,
-        },
-      ],
+      signingPayloads: Object.values(confirms).map(({ meta, accounts }) => ({
+        account: accounts.proxy || accounts.initiator,
+        chain: meta.chain,
+        transaction: meta.wrappedTransactions.wrappedTx,
+        signatory: accounts.signer || undefined,
+      })),
     };
   },
   target: signModel.events.formInitiated,
@@ -271,11 +290,11 @@ sample({
 sample({
   clock: removeVoteConfirmModel.events.submitFinished,
   source: {
-    account: $account,
+    accounts: $accounts,
     chain: flow.state.map(({ chain }) => chain),
   },
-  fn: ({ account, chain }) => {
-    const addresses = [account]
+  fn: ({ accounts, chain }) => {
+    const addresses = accounts
       .filter(nonNullable)
       .map((account) => toAddress(account.accountId, { prefix: chain?.addressPrefix }));
 
@@ -298,11 +317,16 @@ export const removeVotesModalAggregate = {
   $step,
   $signatory,
   $signatories,
+  $votesList,
+
+  $account,
+  $accounts,
 
   events: {
     txSaved,
     setStep,
     selectSignatory,
+    selectAccount,
   },
 
   gates: {

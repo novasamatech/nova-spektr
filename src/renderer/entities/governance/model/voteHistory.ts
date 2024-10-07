@@ -12,7 +12,7 @@ import {
   type Referendum,
   type ReferendumId,
 } from '@/shared/core';
-import { nonNullable, setNestedValue } from '@/shared/lib/utils';
+import { nonNullable, setNestedValue, toAccountId, toAddress } from '@/shared/lib/utils';
 
 export type VoteHistoryRecord = {
   delegatorVotes: {
@@ -76,7 +76,8 @@ const requestVoteHistoryFx = createEffect(({ chain, referendum }: RequestVoteHis
 
         return {
           referendumId: voting.referendumId,
-          voter: voting.voter,
+          // subquery somehow send address with incorrect prefix
+          voter: toAddress(toAccountId(voting.voter), { prefix: chain.addressPrefix }),
           vote: accountVote,
           delegatorVotes: voting.delegatorVotes.nodes.map((delegatorVote) => ({
             delegator: delegatorVote.delegator,

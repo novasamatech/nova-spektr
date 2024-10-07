@@ -1,9 +1,9 @@
 import { combine, createEvent, sample } from 'effector';
 
 import { type Address, type TrackId, type VotingMap } from '@shared/core';
-import { nonNullable } from '@shared/lib/utils';
+import { nonNullable, nullable } from '@shared/lib/utils';
 import { votingModel } from '@entities/governance';
-import { accountUtils, walletModel } from '@entities/wallet';
+import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
 import { networkSelectorModel } from '../model/networkSelector';
 
 import { tracksAggregate } from './tracks';
@@ -31,6 +31,33 @@ const $activeWalletVotes = combine(
     }
 
     return res;
+  },
+);
+
+const $possibleAccountsForVoting = combine(
+  walletModel.$activeWallet,
+  networkSelectorModel.$governanceChain,
+  (wallet, chain) => {
+    if (nullable(wallet) || nullable(chain)) return [];
+
+    if (walletUtils.isPolkadotVault(wallet)) {
+      const accounts = wallet.accounts.filter((a) => {
+        return (
+          accountUtils.isChainAndCryptoMatch(a, chain) &&
+          (accountUtils.isShardAccount(a) || accountUtils.isChainAccount(a))
+        );
+      });
+
+      if (accounts.length) {
+        return accounts;
+      } else {
+        return wallet.accounts.filter(
+          (a) => accountUtils.isBaseAccount(a) && accountUtils.isChainAndCryptoMatch(a, chain),
+        );
+      }
+    } else {
+      return wallet.accounts.filter((a) => accountUtils.isChainAndCryptoMatch(a, chain));
+    }
   },
 );
 
@@ -64,6 +91,7 @@ sample({
 
 export const votingAggregate = {
   $activeWalletVotes,
+  $possibleAccountsForVoting,
   $voting: votingModel.$voting,
   $isLoading: votingModel.$isLoading,
 

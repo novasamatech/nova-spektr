@@ -2,13 +2,14 @@ import { type PropsWithChildren, type ReactNode, useRef, useState } from 'react'
 
 import { cnTw } from '@/shared/lib/utils';
 import { IconButton } from '@/shared/ui';
+import { ScrollArea } from '@/shared/ui-kit';
 
 type Props = {
   footer: ReactNode;
   count: number;
 };
 
-export const TransactionSlider = ({ children, footer, count }: PropsWithChildren<Props>) => {
+export const Root = ({ children, footer, count }: PropsWithChildren<Props>) => {
   const [currentTx, setCurrentTx] = useState(0);
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -43,8 +44,8 @@ export const TransactionSlider = ({ children, footer, count }: PropsWithChildren
 
   return (
     <>
-      <div className="overflow-x-hidden bg-background-default py-4" ref={scrollRef}>
-        <div className="flex w-[478px] gap-2 first:ml-4" ref={ref}>
+      <div className="w-[478px] overflow-x-hidden bg-background-default py-4" ref={scrollRef}>
+        <div className="flex gap-2 first:ml-4" ref={ref}>
           {children}
         </div>
       </div>
@@ -80,3 +81,17 @@ export const TransactionSlider = ({ children, footer, count }: PropsWithChildren
     </>
   );
 };
+
+export const Item = ({ children }: PropsWithChildren) => {
+  return (
+    <div className="flex h-[582px] flex-col last-of-type:pr-4">
+      <ScrollArea>
+        <div className="flex max-h-full w-[440px] flex-col rounded-lg bg-white shadow-shadow-2">{children}</div>
+      </ScrollArea>
+    </div>
+  );
+};
+
+export const ConfirmSlider = Object.assign(Root, {
+  Item,
+});
