@@ -63,12 +63,12 @@ describe('widgets/CreateWallet/model/signatory-model', () => {
       params: { index: 1, name: 'Alice', address: toAddress(signatoryWallet.accounts[0].accountId) },
     });
 
-    expect(scope.getState(signatoryModel.$hasOwnSignatory)).toEqual(false);
+    expect(scope.getState(signatoryModel.$ownedSignatoriesWallets)).toEqual(false);
 
     await allSettled(signatoryModel.events.signatoriesChanged, {
       scope,
       params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0].accountId) },
     });
-    expect(scope.getState(signatoryModel.$hasOwnSignatory)).toEqual(true);
+    expect(scope.getState(signatoryModel.$ownedSignatoriesWallets)).toEqual(true);
   });
 });

@@ -9,13 +9,13 @@ const signatoryDeleted = createEvent<number>();
 
 const $signatories = createStore<Map<number, Omit<SignatoryInfo, 'index'>>>(new Map([[0, { name: '', address: '' }]]));
 
-const $hasOwnSignatory = combine(
+const $ownedSignatoriesWallets = combine(
   { wallets: walletModel.$wallets, signatories: $signatories },
   ({ wallets, signatories }) =>
-    !!walletUtils.getWalletsFilteredAccounts(wallets, {
+    walletUtils.getWalletsFilteredAccounts(wallets, {
       walletFn: (w) => !walletUtils.isWatchOnly(w) && !walletUtils.isMultisig(w),
       accountFn: (a) => Array.from(signatories.values()).some((s) => toAccountId(s.address) === a.accountId),
-    })?.length,
+    }),
 );
 
 sample({
@@ -47,7 +47,7 @@ sample({
 
 export const signatoryModel = {
   $signatories,
-  $hasOwnSignatory,
+  $ownedSignatoriesWallets,
   events: {
     signatoriesChanged,
     signatoryDeleted,

@@ -30,6 +30,7 @@ export const ConfirmationStep = () => {
   const fakeTx = useUnit(flowModel.$fakeTx);
   const [isSignatoriesModalOpen, toggleSignatoriesModalOpen] = useToggle();
   const explorers = chain.value ? chain.value.explorers : RootExplorers;
+  const ownedSignatories = useUnit(signatoryModel.$ownedSignatoriesWallets);
 
   return (
     <section className="relative flex h-full flex-1 flex-col px-5 py-4">
@@ -83,7 +84,16 @@ export const ConfirmationStep = () => {
           />
         </div>
         <div className="mt-auto flex items-center justify-between">
-          <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.SIGNATORIES_THRESHOLD)}>
+          <Button
+            variant="text"
+            onClick={() => {
+              if ((ownedSignatories || []).length > 1) {
+                flowModel.events.stepChanged(Step.SIGNER_SELECTION);
+              } else {
+                flowModel.events.stepChanged(Step.SIGNATORIES_THRESHOLD);
+              }
+            }}
+          >
             {t('createMultisigAccount.backButton')}
           </Button>
           <SignButton

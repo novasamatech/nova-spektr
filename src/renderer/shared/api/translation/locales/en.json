@@ -164,6 +164,7 @@
     "notEnoughSignatoriesTitle": "Not enough signatories",
     "ownAccountSelection": "Your account",
     "searchContactPlaceholder": "Search",
+    "selectSigner": "Select signer",
     "selectedSignatoriesTitle": "Selected signatories",
     "signatoriesDescription": "Add signatories to your multisig account",
     "signatoriesLabel": "Signatories",

@@ -16,6 +16,7 @@ import { formModel } from '../../model/form-model';
 import { ConfirmationStep } from './ConfirmationStep';
 import { NameNetworkSelection } from './NameNetworkSelection';
 import { SelectSignatoriesThreshold } from './SelectSignatoriesThreshold';
+import { SignerSelection } from './components/SignerSelection';
 
 type Props = {
   isOpen: boolean;
@@ -71,11 +72,16 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
       title={modalTitle}
       isOpen={isModalOpen}
       contentClass="flex"
-      panelClass={isStep(activeStep, Step.SIGN) || isStep(activeStep, Step.CONFIRM) ? 'w-[440px]' : 'w-[784px]'}
+      panelClass={
+        isStep(activeStep, Step.SIGN) || isStep(activeStep, Step.CONFIRM) || isStep(activeStep, Step.SIGNER_SELECTION)
+          ? 'w-[440px]'
+          : 'w-[784px]'
+      }
       onClose={handleClose}
     >
       {isStep(activeStep, Step.NAME_NETWORK) && <NameNetworkSelection />}
       {isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold />}
+      {isStep(activeStep, Step.SIGNER_SELECTION) && <SignerSelection />}
       {isStep(activeStep, Step.CONFIRM) && <ConfirmationStep />}
       {isStep(activeStep, Step.SIGN) && <OperationSign onGoBack={() => flowModel.events.stepChanged(Step.CONFIRM)} />}
     </BaseModal>

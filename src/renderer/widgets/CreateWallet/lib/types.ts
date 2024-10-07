@@ -4,6 +4,7 @@ export const enum Step {
   NAME_NETWORK,
   SIGNATORIES_THRESHOLD,
   CONFIRM,
+  SIGNER_SELECTION,
   SIGN,
   SUBMIT,
 }

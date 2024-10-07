@@ -4,6 +4,7 @@ import { delay, spread } from 'patronum';
 
 import {
   type Account,
+  type AccountId,
   AccountType,
   type ChainId,
   ChainType,
@@ -37,6 +38,7 @@ const multisigDepositChanged = createEvent<string>();
 const isFeeLoadingChanged = createEvent<boolean>();
 const formSubmitted = createEvent<FormSubmitEvent>();
 const flowFinished = createEvent();
+const signerSelected = createEvent<AccountId>();
 
 const walletCreated = createEvent<{
   name: string;
@@ -52,24 +54,7 @@ const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $addMultisigStore = createStore<AddMultisigStore | null>(null).reset(flowFinished);
-
-const $signer = combine(
-  {
-    signatories: signatoryModel.$signatories,
-    wallets: walletModel.$wallets,
-  },
-  ({ signatories, wallets }) => {
-    if (signatories.size === 0) return null;
-
-    const signerAccount = walletUtils.getAccountsBy(
-      wallets,
-      (a) => a.accountId === toAccountId(signatories.get(0)!.address),
-    );
-
-    return signerAccount[0];
-  },
-  { skipVoid: false },
-);
+const $signer = createStore<Account | null>(null).reset(flowFinished);
 
 const $signerWallet = combine(
   { signer: $signer, wallets: walletModel.$wallets },
@@ -427,6 +412,17 @@ sample({
 });
 
 sample({
+  clock: signerSelected,
+  source: { wallets: walletModel.$wallets },
+  fn: ({ wallets }, accountId) => {
+    const signerAccount = walletUtils.getAccountBy(wallets, (a) => a.accountId === accountId);
+
+    return signerAccount;
+  },
+  target: $signer,
+});
+
+sample({
   clock: delay(flowFinished, 2000),
   fn: () => Step.NAME_NETWORK,
   target: stepChanged,
@@ -452,6 +448,7 @@ export const flowModel = {
   $signer,
   $signerWallet,
   events: {
+    signerSelected,
     walletCreated,
     stepChanged,
     feeChanged,
