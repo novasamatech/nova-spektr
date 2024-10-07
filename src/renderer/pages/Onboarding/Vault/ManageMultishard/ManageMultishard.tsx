@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
 import { useI18n } from '@app/providers';
+import { AccountExplorers, Address } from '@/shared/ui-entities';
 import { chainsService } from '@shared/api/network';
 import { type BaseAccount, type Chain, type ChainAccount, type ChainId, type HexString } from '@shared/core';
 import { AccountType, ChainType, CryptoType, ErrorType, KeyType, SigningType, WalletType } from '@shared/core';
@@ -11,7 +12,7 @@ import { RootExplorers, cnTw, toAccountId, toAddress } from '@shared/lib/utils';
 import { Button, FootnoteText, HeaderTitleText, Icon, IconButton, Input, InputHint, SmallTitleText } from '@shared/ui';
 import { ChainTitle } from '@entities/chain';
 import { type AddressInfo, type CompactSeedInfo, type SeedInfo } from '@entities/transaction';
-import { AddressWithExplorers, walletModel } from '@entities/wallet';
+import { ExplorersPopover, walletModel } from '@entities/wallet';
 
 type WalletForm = {
   walletName: string;
@@ -258,11 +259,21 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
           {accounts.map((account, index) => (
             <div key={getAccountId(index)}>
               <div className="flex w-full items-center justify-between gap-2">
-                <AddressWithExplorers type="short" address={account.address} explorers={RootExplorers} />
+                <ExplorersPopover
+                  button={
+                    <FootnoteText className="flex w-[180px] items-center gap-2 text-text-secondary">
+                      <Address address={account.address} variant="truncate" showIcon />
+                      <IconButton name="details" />
+                    </FootnoteText>
+                  }
+                  address={account.address}
+                  explorers={RootExplorers}
+                  contextClassName="mr-[-2rem]"
+                />
                 <div className="flex items-center">
                   <Input
                     disabled={inactiveAccounts[getAccountId(index)]}
-                    wrapperClass="flex w-[214px] items-center p-3 mr-9"
+                    wrapperClass="flex w-[214px] items-center p-3 mr-[23px]"
                     placeholder={t('onboarding.paritySigner.accountNamePlaceholder')}
                     value={accountNames[getAccountId(index)] || ''}
                     onChange={(name) => updateAccountName(name, index)}
@@ -270,7 +281,7 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
                 </div>
               </div>
               <div className="flex flex-col gap-2.5">
-                {Object.entries(chainsObject).map(([chainId, { explorers }]) => {
+                {Object.entries(chainsObject).map(([chainId, chain]) => {
                   const derivedKeys = account.derivedKeys[chainId as ChainId];
 
                   if (!derivedKeys) return;
@@ -294,8 +305,12 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
                               )}
                             ></div>
                             <div className="h-[2px] w-[8px] bg-divider"></div>
-
-                            <AddressWithExplorers symbols={5} type="short" address={address} explorers={explorers} />
+                            <div className="flex items-center gap-1">
+                              <FootnoteText className="w-[150px] text-text-secondary">
+                                <Address address={address} variant="truncate" showIcon />
+                              </FootnoteText>
+                              <AccountExplorers account={toAccountId(address)} chain={chain} />
+                            </div>
                           </div>
                           <div className="flex items-center gap-2">
                             <Input
