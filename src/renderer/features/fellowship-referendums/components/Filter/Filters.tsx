@@ -1,16 +1,15 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { Button, MultiSelect, Select } from '@shared/ui';
-import { Box } from '@shared/ui-kit';
+import { Button, MultiSelect, Select } from '@/shared/ui';
+import { Box } from '@/shared/ui-kit';
 import { filterModel } from '../../model/filter';
-import { tracksModel } from '../../model/tracks';
 
 import { voteOptions } from './constants';
 
 export const Filters = () => {
   const { t } = useI18n();
-  const tracks = useUnit(tracksModel.$list);
+  const tracks = useUnit(filterModel.$tracks);
   const selectedTrackIds = useUnit(filterModel.$selectedTracks);
   const selectedVoteId = useUnit(filterModel.$selectedVotingStatus);
   const query = useUnit(filterModel.$query);

@@ -1,3 +1,5 @@
+export type ReferendumMetaProvider = 'subsquare' | 'polkassembly';
+
 export type ReferendumMeta = {
   referendumId: number;
   title: string;

@@ -3,7 +3,7 @@ import { createEvent, sample } from 'effector';
 
 import { type ChainId } from '@/shared/core';
 import { createDataSource } from '@/shared/effector';
-import { setNestedValue } from '@/shared/lib/utils';
+import { nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 import { ambassadorCorePallet } from '@/shared/pallet/ambassadorCore';
 import { fellowshipCorePallet } from '@/shared/pallet/fellowshipCore';
 import { referendaPallet } from '@/shared/pallet/referenda';
@@ -27,6 +27,11 @@ const {
   request: requestTracks,
 } = createDataSource<CollectivesStruct<Track[]>, RequestTracksParams, Track[]>({
   initial: {},
+  filter: ({ chainId, palletType }, store) => {
+    const value = pickNestedValue(store, palletType, chainId);
+
+    return nullable(value) || value.length === 0;
+  },
   fn: ({ api, palletType }) => {
     const tracks = referendaPallet.consts.tracks(palletType, api);
 

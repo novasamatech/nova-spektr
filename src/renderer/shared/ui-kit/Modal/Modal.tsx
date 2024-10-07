@@ -37,6 +37,7 @@ const Root = ({ isOpen, size = 'md', height = 'fit', children, onToggle }: Props
           )}
         >
           <Dialog.Content
+            aria-describedby={undefined}
             className={cnTw(
               'ui-kit-modal-height flex min-w-32 max-w-full transform flex-col rounded-lg bg-white text-left align-middle text-body shadow-modal transition-all',
               'duration-200 animate-in fade-in zoom-in-95',
@@ -88,11 +89,7 @@ const Title = ({ action, close, children }: TitleProps) => {
 };
 
 const Content = ({ children }: PropsWithChildren) => {
-  return (
-    <Dialog.Description asChild>
-      <ScrollArea>{children}</ScrollArea>
-    </Dialog.Description>
-  );
+  return <ScrollArea>{children}</ScrollArea>;
 };
 
 const Trigger = ({ children }: PropsWithChildren) => {

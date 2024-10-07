@@ -1,5 +1,5 @@
 import { BN_BILLION, BN_MILLION } from '@polkadot/util';
-import { useStoreMap } from 'effector-react';
+import { useGate, useStoreMap } from 'effector-react';
 import { memo } from 'react';
 
 import { useI18n } from '@app/providers';
@@ -8,6 +8,7 @@ import { FootnoteText } from '@shared/ui';
 import { VoteChart } from '@shared/ui-entities';
 import { Tooltip } from '@shared/ui-kit';
 import { type Referendum, collectiveDomain } from '@/domains/collectives';
+import { referendumsDetailsFeatureStatus } from '../../model/status';
 import { thresholdsModel } from '../../model/thresholds';
 
 type Props = {
@@ -16,6 +17,8 @@ type Props = {
 };
 
 export const ReferendumVoteChart = memo<Props>(({ referendum, descriptionPosition }) => {
+  useGate(referendumsDetailsFeatureStatus.gate);
+
   const { t } = useI18n();
 
   const thresholds = useStoreMap({

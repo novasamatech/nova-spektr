@@ -2,9 +2,9 @@ import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { useI18n } from '@app/providers';
-import { useDeferredList } from '@shared/lib/hooks';
-import { Accordion, CaptionText } from '@shared/ui';
-import { Box, Skeleton } from '@shared/ui-kit';
+import { useDeferredList } from '@/shared/lib/hooks';
+import { Accordion, CaptionText } from '@/shared/ui';
+import { Box, Skeleton } from '@/shared/ui-kit';
 import { type Referendum } from '@/domains/collectives';
 import { referendumListModel } from '../../model/list';
 

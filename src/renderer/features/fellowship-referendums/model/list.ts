@@ -2,7 +2,7 @@ import { combine, sample } from 'effector';
 import { and, either, or } from 'patronum';
 
 import { attachToFeatureInput } from '@/shared/effector';
-import { dictionary, nonNullable, performSearch } from '@shared/lib/utils';
+import { dictionary, nonNullable, performSearch } from '@/shared/lib/utils';
 import { collectiveDomain } from '@/domains/collectives';
 import { governanceModel } from '@/entities/governance';
 

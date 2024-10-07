@@ -6,10 +6,10 @@ import { dictionary, pickNestedValue, setNestedValue } from '@/shared/lib/utils'
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { type CollectivePalletsType, type CollectivesStruct } from '../../lib/types';
 
-import { type ReferendumMeta } from './types';
+import { type ReferendumMeta, type ReferendumMetaProvider } from './types';
 
 type RequestParams = {
-  provider: 'subsquare' | 'polkassembly';
+  provider: ReferendumMetaProvider;
   palletType: CollectivePalletsType;
   chainId: ChainId;
 };
@@ -25,6 +25,7 @@ const {
     let response: ReferendumMeta[] = [];
 
     if (provider === 'subsquare') {
+      // TODO support ambassadors
       const pages = subsquareApiService.fetchReferendumList({
         network: 'collectives',
         referendumType: 'fellowship',
@@ -43,6 +44,7 @@ const {
     }
 
     if (provider === 'polkassembly') {
+      // TODO support ambassadors
       const pages = polkassemblyApiService.fetchFellowshipReferendumsList({
         network: 'collectives',
       });
@@ -52,7 +54,7 @@ const {
           page.map(x => ({
             referendumId: x.id,
             title: x.title,
-            description: x.description ?? '',
+            description: x.content ?? '',
             track: x.trackNumber,
           })),
         );

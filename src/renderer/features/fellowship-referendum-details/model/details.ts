@@ -51,10 +51,12 @@ const $proposerIdentity = combine($identities, $proposer, (identities, proposer)
 
 export const referendumDetailsModel = {
   gate,
+
   $proposer,
   $proposerIdentity,
   $referendum,
   $referendumMeta,
+
   $pendingProposer: identityDomain.identity.pending,
   $pendingMeta: or(collectiveDomain.referendumMeta.pending, referendumsDetailsFeatureStatus.isStarting),
   $pending: or(collectiveDomain.referendum.pending, referendumsDetailsFeatureStatus.isStarting),

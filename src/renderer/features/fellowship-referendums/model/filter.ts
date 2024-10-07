@@ -2,8 +2,14 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { debounce } from 'patronum';
 
 import { type TrackId } from '@/shared/pallet/referenda';
+import { collectiveDomain } from '@/domains/collectives';
+
+import { fellowshipModel } from './fellowship';
+import { referendumsFeatureStatus } from './status';
 
 export type VotingStatus = 'voted' | 'notVoted';
+
+const $tracks = fellowshipModel.$store.map(x => x?.tracks ?? []);
 
 const queryChanged = createEvent<string>();
 const selectTracks = createEvent<TrackId[]>();
@@ -26,8 +32,14 @@ sample({
   target: [$selectedVotingStatus.reinit, $selectedTracks.reinit],
 });
 
+sample({
+  clock: referendumsFeatureStatus.running,
+  target: collectiveDomain.tracks.request,
+});
+
 export const filterModel = {
   $query,
+  $tracks,
   $selectedTracks,
   $selectedVotingStatus,
   $isFiltersSelected,

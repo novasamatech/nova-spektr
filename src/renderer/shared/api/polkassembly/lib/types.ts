@@ -55,6 +55,7 @@ export type PolkassemblyListingPost = {
 export type PolkassemblyFellowshipListingReferendum = Omit<PolkassemblyListingPost, 'post_id'> & {
   id: number;
   trackNumber: number;
+  content: string | null;
 };
 
 export type PolkassembyPostStatus = {

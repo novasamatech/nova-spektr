@@ -1,7 +1,7 @@
 import { useGate, useUnit } from 'effector-react';
 import { memo } from 'react';
 
-import { Box } from '@shared/ui-kit';
+import { Box } from '@/shared/ui-kit';
 import { type Referendum } from '@/domains/collectives';
 import { InactiveNetwork } from '@/entities/network';
 import { error } from '../../constants';

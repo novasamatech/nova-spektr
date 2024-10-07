@@ -1,13 +1,16 @@
 import { useGate, useUnit } from 'effector-react';
 
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { HeaderTitleText, Markdown } from '@/shared/ui';
+import { HeaderTitleText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Modal, Skeleton } from '@/shared/ui-kit';
+import { nonNullable } from '@shared/lib/utils';
 import { referendumDetailsModel } from '../model/details';
 import { referendumsDetailsFeatureStatus } from '../model/status';
 
 import { Card } from './Card';
 import { ProposerName } from './ProposerName';
+import { ReferendumVoteChart } from './shared/ReferendumVoteChart';
+import { ReferendumVotingStatusBadge } from './shared/ReferendumVotingStatusBadge';
 
 type Props = {
   isOpen: boolean;
@@ -19,6 +22,7 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
   useGate(referendumsDetailsFeatureStatus.gate);
   useGate(referendumDetailsModel.gate, { referendumId });
 
+  const referendum = useUnit(referendumDetailsModel.$referendum);
   const referendumMeta = useUnit(referendumDetailsModel.$referendumMeta);
   const pendingReferendumMeta = useUnit(referendumDetailsModel.$pendingMeta);
 
@@ -49,7 +53,13 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
             </Box>
             <Box width="350px" shrink={0}>
               <Card>
-                <Box padding={6}>{'Voting status'}</Box>
+                <Box padding={6} gap={6}>
+                  <SmallTitleText>{'Voting status'}</SmallTitleText>
+                  {nonNullable(referendum) && <ReferendumVotingStatusBadge referendum={referendum} />}
+                  {nonNullable(referendum) && (
+                    <ReferendumVoteChart referendum={referendum} descriptionPosition="bottom" />
+                  )}
+                </Box>
               </Card>
             </Box>
           </Box>

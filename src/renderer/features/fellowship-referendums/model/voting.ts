@@ -1,8 +1,8 @@
 import { createStore, sample } from 'effector';
 
 import { attachToFeatureInput } from '@/shared/effector';
+import { toKeysRecord } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { toKeysRecord } from '@shared/lib/utils';
 import { type Voting, collectiveDomain } from '@/domains/collectives';
 
 import { fellowshipModel } from './fellowship';

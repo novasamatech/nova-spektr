@@ -1,10 +1,11 @@
-import { useStoreMap } from 'effector-react';
+import { useGate, useStoreMap } from 'effector-react';
 import { memo } from 'react';
 
 import { Box } from '@/shared/ui-kit';
 import { type TrackId } from '@shared/pallet/referenda';
 import { FootnoteText, Icon } from '@shared/ui';
 import { type IconNames } from '@shared/ui/Icon/data';
+import { referendumsDetailsFeatureStatus } from '../../model/status';
 import { tracksModel } from '../../model/tracks';
 
 function getTrackInfo(trackId: TrackId) {
@@ -39,7 +40,9 @@ type Props = {
   track: TrackId;
 };
 
-export const TrackInfo = memo<Props>(({ track }) => {
+export const ReferendumTrackInfo = memo<Props>(({ track }) => {
+  useGate(referendumsDetailsFeatureStatus.gate);
+
   const trackInfo = useStoreMap({
     store: tracksModel.$list,
     keys: [track],

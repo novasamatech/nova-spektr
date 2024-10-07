@@ -1,6 +1,6 @@
 import { combine } from 'effector';
 
-import { nullable } from '@shared/lib/utils';
+import { nullable } from '@/shared/lib/utils';
 import { collectiveDomain } from '@/domains/collectives';
 
 import { referendumsFeatureStatus } from './status';
