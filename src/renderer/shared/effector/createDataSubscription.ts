@@ -1,4 +1,13 @@
-import { type Scope, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import {
+  type Scope,
+  type StoreWritable,
+  createEffect,
+  createEvent,
+  createStore,
+  is,
+  sample,
+  scopeBind,
+} from 'effector';
 import { readonly } from 'patronum';
 
 import { nonNullable, nullable } from '@shared/lib/utils';
@@ -7,10 +16,10 @@ type CallbackFn<V> = (value: IteratorResult<V, V | void>) => unknown;
 type UnsubscribeFn = (() => void) | Promise<() => void>;
 type SubscribeFn<P, V> = (params: P, callback: CallbackFn<V>) => UnsubscribeFn;
 
-type SubscriptionParams<Store, Params, Response> = {
-  initial: Store;
+type SubscriptionParams<Value, Params, Response> = {
+  initial: Value | StoreWritable<Value>;
   fn: SubscribeFn<Params, Response>;
-  map: (store: Store, result: { params: Params; result: Response }) => Store;
+  map: (store: Value, result: { params: Params; result: Response }) => Value;
 
   // For testing purposes
   scope?: Scope;
@@ -62,18 +71,18 @@ type SubscriptionParams<Store, Params, Response> = {
  *   function.
  * @param scope - Optional scope for testing
  */
-export const createDataSubscription = <Store, Params = void, Response = void>({
+export const createDataSubscription = <Value, Params = void, Response = void>({
   initial,
   fn,
   map,
   scope,
-}: SubscriptionParams<Store, Params, Response>) => {
+}: SubscriptionParams<Value, Params, Response>) => {
   const subscribe = createEvent<Params>();
   const unsubscribe = createEvent();
   const received = createEvent<{ params: Params; result: Response }>();
   const done = createEvent();
 
-  const $store = createStore<Store>(initial);
+  const $store = is.store(initial) ? initial : createStore<Value>(initial);
   const $pending = createStore(false);
   const $fulfilled = createStore(false);
   const $unsubscribeFn = createStore<UnsubscribeFn | null>(null);

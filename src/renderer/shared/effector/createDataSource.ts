@@ -1,24 +1,24 @@
-import { createEffect, createEvent, createStore, sample } from 'effector';
+import { type StoreWritable, createEffect, createEvent, createStore, is, sample } from 'effector';
 import { readonly } from 'patronum';
 
-type FactoryParams<Params, Store, Response> = {
-  initial: Store;
+type FactoryParams<Params, Value, Response> = {
+  initial: Value | StoreWritable<Value>;
   fn(params: Params): Response | Promise<Response>;
-  map(store: Store, params: { params: Params; result: Response }): Store;
-  mutateParams?(params: Params, store: Store): Params;
-  filter?(params: Params, store: Store): boolean;
+  map(store: Value, params: { params: Params; result: Response }): Value;
+  mutateParams?(params: Params, store: Value): Params;
+  filter?(params: Params, store: Value): boolean;
 };
 
-export const createDataSource = <Store, Params, Response = Store>({
+export const createDataSource = <Value, Params, Response = Value>({
   initial,
   fn,
   map,
   filter = () => true,
   mutateParams = (params) => params,
-}: FactoryParams<Params, Store, Awaited<Response>>) => {
+}: FactoryParams<Params, Value, Awaited<Response>>) => {
   const empty = Symbol();
 
-  const $store = createStore<Store>(initial);
+  const $store = is.store(initial) ? initial : createStore<Value>(initial);
   const $fulfilled = createStore(false);
   const $lastParams = createStore<Params | symbol>(empty);
   const request = createEvent<Params>();
