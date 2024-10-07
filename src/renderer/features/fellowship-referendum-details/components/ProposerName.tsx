@@ -27,7 +27,7 @@ export const ProposerName = () => {
   const proposerName = !shouldRenderPending ? (
     <>
       <Identicon size={16} address={address} canCopy background={false} />
-      {proposerIdentity ? <span>{proposerIdentity.name}</span> : <Address address={address} />}
+      {proposerIdentity ? <span>{proposerIdentity.name}</span> : <Address address={address} variant="truncate" />}
     </>
   ) : null;
 

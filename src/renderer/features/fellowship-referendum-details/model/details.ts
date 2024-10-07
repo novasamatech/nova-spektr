@@ -49,6 +49,9 @@ const $proposerIdentity = combine($identities, $proposer, (identities, proposer)
   return identities[proposer] ?? null;
 });
 
+const $pendingReferendum = and($referendum.map(nullable), collectiveDomain.referendum.pending);
+const $pendingReferendumMeta = and($referendumMeta.map(nullable), collectiveDomain.referendumMeta.pending);
+
 export const referendumDetailsModel = {
   gate,
 
@@ -58,7 +61,7 @@ export const referendumDetailsModel = {
   $referendumMeta,
 
   $pendingProposer: identityDomain.identity.pending,
-  $pendingMeta: or(collectiveDomain.referendumMeta.pending, referendumsDetailsFeatureStatus.isStarting),
-  $pending: or(collectiveDomain.referendum.pending, referendumsDetailsFeatureStatus.isStarting),
+  $pendingMeta: or($pendingReferendumMeta, referendumsDetailsFeatureStatus.isStarting),
+  $pending: or($pendingReferendum, referendumsDetailsFeatureStatus.isStarting),
   $fulfulled: and(collectiveDomain.referendum.fulfilled, referendumsDetailsFeatureStatus.isRunning),
 };

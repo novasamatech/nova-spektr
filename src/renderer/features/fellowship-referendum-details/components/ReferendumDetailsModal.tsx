@@ -25,6 +25,7 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
   const referendum = useUnit(referendumDetailsModel.$referendum);
   const referendumMeta = useUnit(referendumDetailsModel.$referendumMeta);
   const pendingReferendumMeta = useUnit(referendumDetailsModel.$pendingMeta);
+  const pendingReferendum = useUnit(referendumDetailsModel.$pending);
 
   return (
     <Modal size="xl" height="full" isOpen={isOpen} onToggle={onToggle}>
@@ -55,7 +56,9 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
               <Card>
                 <Box padding={6} gap={6}>
                   <SmallTitleText>{'Voting status'}</SmallTitleText>
+                  {pendingReferendum && <Skeleton height={5} width="10ch" />}
                   {nonNullable(referendum) && <ReferendumVotingStatusBadge referendum={referendum} />}
+                  {pendingReferendum && <Skeleton height={15} width="100%" />}
                   {nonNullable(referendum) && (
                     <ReferendumVoteChart referendum={referendum} descriptionPosition="bottom" />
                   )}
