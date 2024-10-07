@@ -6,7 +6,7 @@ import { FootnoteText, Icon, Identicon, SmallTitleText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Box, Skeleton, Surface } from '@/shared/ui-kit';
 import { toAddress } from '@shared/lib/utils';
-import { error } from '../constants';
+import { ERROR } from '../constants';
 import { profileModel } from '../model/profile';
 import { profileFeatureStatus } from '../model/status';
 
@@ -20,7 +20,7 @@ export const ProfileCard = memo(() => {
   const identity = useUnit(profileModel.$identity);
   const fulfilled = useUnit(profileModel.$fulfilled);
 
-  const isNetworkDisabled = featureState.status === 'failed' && featureState.error.message === error.networkDisabled;
+  const isNetworkDisabled = featureState.status === 'failed' && featureState.error.message === ERROR.networkDisabled;
 
   return (
     <Surface disabled={!fulfilled}>

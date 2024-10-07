@@ -2,7 +2,7 @@ import { sample } from 'effector';
 
 import { createFeature } from '@/shared/effector';
 import { fellowshipNetworkFeature } from '@/features/fellowship-network';
-import { error } from '../constants';
+import { ERROR } from '../constants';
 
 export const membersFeatureStatus = createFeature({
   name: 'members',
@@ -18,6 +18,6 @@ sample({
 sample({
   clock: [fellowshipNetworkFeature.model.network.$isDisconnected, membersFeatureStatus.start],
   filter: fellowshipNetworkFeature.model.network.$isDisconnected,
-  fn: () => ({ type: 'warning' as const, error: new Error(error.networkDisabled) }),
+  fn: () => ({ type: 'warning' as const, error: new Error(ERROR.networkDisabled) }),
   target: membersFeatureStatus.fail,
 });

@@ -6,9 +6,7 @@ export const mapReferendum = (id: ReferendumId, info: ReferendaReferendumInfoCon
   switch (info.type) {
     case 'Ongoing':
       if (!('bareAyes' in info.data.tally)) {
-        throw new Error(
-          `Fellowship of Ambassador tally is incorrect, got\n${JSON.stringify(info.data.tally, null, 2)}`,
-        );
+        throw new Error(`Collective tally is incorrect, got\n${JSON.stringify(info.data.tally, null, 2)}`);
       }
 
       return {

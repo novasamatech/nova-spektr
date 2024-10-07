@@ -4,7 +4,7 @@ import { memo } from 'react';
 import { Box } from '@/shared/ui-kit';
 import { type Referendum } from '@/domains/collectives';
 import { InactiveNetwork } from '@/entities/network';
-import { error } from '../../constants';
+import { ERROR } from '../../constants';
 import { referendumListModel } from '../../model/list';
 import { referendumsFeatureStatus } from '../../model/status';
 
@@ -26,7 +26,7 @@ export const Referendums = memo<Props>(({ onSelect }) => {
   const referendums = useUnit(referendumListModel.$filteredReferendum);
   const fulfulled = useUnit(referendumListModel.$fulfulled);
 
-  const hasNetworkError = featureState.status === 'failed' && featureState.error.message === error.networkDisabled;
+  const hasNetworkError = featureState.status === 'failed' && featureState.error.message === ERROR.networkDisabled;
 
   const shouldShowLoadingState = !fulfulled || (isSerching && isTitlesLoading);
   const shouldNetworkDisabledError = hasNetworkError && !shouldShowLoadingState && referendums.length === 0;

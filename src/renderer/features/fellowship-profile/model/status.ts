@@ -4,7 +4,7 @@ import { createFeature } from '@shared/effector';
 import { nullable } from '@shared/lib/utils';
 import { walletModel } from '@entities/wallet';
 import { fellowshipNetworkFeature } from '@/features/fellowship-network';
-import { error } from '../constants';
+import { ERROR } from '../constants';
 
 const $input = combine(
   fellowshipNetworkFeature.model.network.$network,
@@ -37,6 +37,6 @@ sample({
 sample({
   clock: [fellowshipNetworkFeature.model.network.$isDisconnected, profileFeatureStatus.start],
   filter: fellowshipNetworkFeature.model.network.$isDisconnected,
-  fn: () => ({ type: 'warning' as const, error: new Error(error.networkDisabled) }),
+  fn: () => ({ type: 'warning' as const, error: new Error(ERROR.networkDisabled) }),
   target: profileFeatureStatus.fail,
 });
