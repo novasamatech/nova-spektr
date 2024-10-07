@@ -46,12 +46,13 @@ describe('widgets/CreateWallet/model/form-model', () => {
 
     await allSettled(signatoryModel.events.signatoriesChanged, {
       scope,
-      params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0].accountId) },
+      params: { index: 0, name: signerWallet.name, address: toAddress(signerWallet.accounts[0].accountId) },
     });
     await allSettled(signatoryModel.events.signatoriesChanged, {
       scope,
       params: { index: 1, name: 'Alice', address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' },
     });
+    await allSettled(flowModel.events.signerSelected, { scope, params: signerWallet.accounts[0].accountId });
 
     expect(scope.getState(flowModel.$step)).toEqual(Step.NAME_NETWORK);
     await allSettled(formModel.$createMultisigForm.fields.chain.onChange, { scope, params: testChain });

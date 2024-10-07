@@ -15,7 +15,7 @@ const $ownedSignatoriesWallets = combine(
     walletUtils.getWalletsFilteredAccounts(wallets, {
       walletFn: (w) => !walletUtils.isWatchOnly(w) && !walletUtils.isMultisig(w),
       accountFn: (a) => Array.from(signatories.values()).some((s) => toAccountId(s.address) === a.accountId),
-    }),
+    }) || [],
 );
 
 sample({

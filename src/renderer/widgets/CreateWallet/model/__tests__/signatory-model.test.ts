@@ -53,7 +53,7 @@ describe('widgets/CreateWallet/model/signatory-model', () => {
     expect(scope.getState(signatoryModel.$signatories).size).toEqual(0);
   });
 
-  test('should have correct value for $hasOwnSignatory', async () => {
+  test('should have correct value for $ownSignatoryWallets', async () => {
     const scope = fork({
       values: new Map().set(walletModel.$wallets, [initiatorWallet, signerWallet]),
     });
@@ -63,12 +63,12 @@ describe('widgets/CreateWallet/model/signatory-model', () => {
       params: { index: 1, name: 'Alice', address: toAddress(signatoryWallet.accounts[0].accountId) },
     });
 
-    expect(scope.getState(signatoryModel.$ownedSignatoriesWallets)).toEqual(false);
+    expect(scope.getState(signatoryModel.$ownedSignatoriesWallets)?.length).toEqual(0);
 
     await allSettled(signatoryModel.events.signatoriesChanged, {
       scope,
       params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0].accountId) },
     });
-    expect(scope.getState(signatoryModel.$ownedSignatoriesWallets)).toEqual(true);
+    expect(scope.getState(signatoryModel.$ownedSignatoriesWallets)?.length).toEqual(1);
   });
 });
