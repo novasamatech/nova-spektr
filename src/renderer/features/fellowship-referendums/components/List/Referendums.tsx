@@ -9,6 +9,7 @@ import { referendumListModel } from '../../model/list';
 import { referendumsFeatureStatus } from '../../model/status';
 
 import { CompletedReferendums } from './CompletedReferendums';
+import { DisconnectAlert } from './DisconnectAlert';
 import { EmptyState } from './EmptyState';
 import { OngoingReferendums } from './OngoingReferendums';
 
@@ -29,16 +30,18 @@ export const Referendums = memo<Props>(({ onSelect }) => {
   const hasNetworkError = featureState.status === 'failed' && featureState.error.message === ERROR.networkDisabled;
 
   const shouldShowLoadingState = !fulfulled || (isSerching && isTitlesLoading);
-  const shouldNetworkDisabledError = hasNetworkError && !shouldShowLoadingState && referendums.length === 0;
+  const shouldShowNetworkDisabledError = hasNetworkError && !shouldShowLoadingState && referendums.length === 0;
+  const shouldShowNetworkDisabledWarning = hasNetworkError && !shouldShowLoadingState && referendums.length > 0;
   const shouldRenderEmptyState = !shouldShowLoadingState && !hasNetworkError && referendums.length === 0;
-  const shouldRenderList = shouldShowLoadingState || (!shouldRenderEmptyState && !shouldNetworkDisabledError);
+  const shouldRenderList = shouldShowLoadingState || (!shouldRenderEmptyState && !shouldShowNetworkDisabledError);
 
   return (
     <>
       {shouldRenderEmptyState && <EmptyState />}
-      {shouldNetworkDisabledError && <InactiveNetwork active className="grow" />}
+      {shouldShowNetworkDisabledError && <InactiveNetwork active className="grow" />}
       {shouldRenderList && (
         <Box gap={3} padding={[0, 0, 10]}>
+          <DisconnectAlert active={shouldShowNetworkDisabledWarning} />
           <OngoingReferendums
             isTitlesLoading={isTitlesLoading}
             mixLoadingWithData={shouldShowLoadingState}

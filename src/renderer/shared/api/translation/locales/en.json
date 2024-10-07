@@ -280,6 +280,12 @@
     "reloadButton": "Refresh"
   },
   "fellowship": {
+    "errors": {
+      "disconnect": {
+        "description": "Referendum information such as the description and voting statistics cannot be accessed and may be outdated.\nPlease check the connection in your network settings.",
+        "title": "You are not connected to this network"
+      }
+    },
     "fellow_one": "{ count } Fellow",
     "fellow_other": "{ count } Fellows",
     "members": {
