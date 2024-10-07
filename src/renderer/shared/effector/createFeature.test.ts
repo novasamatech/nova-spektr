@@ -31,7 +31,12 @@ describe('createFeature', () => {
 
     await allSettled(featureStatus.fail, { scope, params: { type: 'fatal', error: new Error('test') } });
 
-    expect(scope.getState(featureStatus.state)).toEqual({ status: 'failed', type: 'fatal', error: new Error('test') });
+    expect(scope.getState(featureStatus.state)).toEqual({
+      status: 'failed',
+      type: 'fatal',
+      error: new Error('test'),
+      data: { ready: true },
+    });
 
     await allSettled(featureStatus.restore, { scope });
 
