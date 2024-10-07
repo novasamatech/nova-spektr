@@ -4,8 +4,7 @@ import { createEvent, sample } from 'effector';
 import { type ChainId } from '@/shared/core';
 import { createDataSource } from '@/shared/effector';
 import { nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
-import { ambassadorCorePallet } from '@/shared/pallet/ambassadorCore';
-import { fellowshipCorePallet } from '@/shared/pallet/fellowshipCore';
+import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { referendaPallet } from '@/shared/pallet/referenda';
 import { type CollectivePalletsType, type CollectivesStruct } from '../../lib/types';
 
@@ -62,14 +61,8 @@ const { $: $maxRank, request: requestMaxRank } = createDataSource<
   number
 >({
   initial: {},
-  fn: ({ api, palletType }) => {
-    return palletType === 'fellowship'
-      ? fellowshipCorePallet.consts.maxRank(api)
-      : ambassadorCorePallet.consts.maxRank(api);
-  },
-  map: (store, { params, result }) => {
-    return setNestedValue(store, params.palletType, params.chainId, result);
-  },
+  fn: ({ api, palletType }) => collectiveCorePallet.consts.maxRank(palletType, api),
+  map: (store, { params, result }) => setNestedValue(store, params.palletType, params.chainId, result),
 });
 
 sample({

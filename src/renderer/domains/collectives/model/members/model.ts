@@ -3,9 +3,8 @@ import { type ApiPromise } from '@polkadot/api';
 import { type ChainId } from '@/shared/core';
 import { createDataSubscription } from '@/shared/effector';
 import { nullable, setNestedValue } from '@/shared/lib/utils';
-import { ambassadorCorePallet } from '@/shared/pallet/ambassadorCore';
 import { collectivePallet } from '@/shared/pallet/collective';
-import { fellowshipCorePallet } from '@/shared/pallet/fellowshipCore';
+import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type CollectivePalletsType, type CollectivesStruct } from '../../lib/types';
 
@@ -36,10 +35,7 @@ const {
       const collectiveMembers = await collectivePallet.storage.members(palletType, api);
       if (currentAbortController.signal.aborted) return;
 
-      const coreMembers =
-        palletType === 'fellowship'
-          ? await fellowshipCorePallet.storage.member(api)
-          : await ambassadorCorePallet.storage.member(api);
+      const coreMembers = await collectiveCorePallet.storage.member(palletType, api);
       if (currentAbortController.signal.aborted) return;
 
       const result: Member[] = [];

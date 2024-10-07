@@ -2,14 +2,14 @@ import { consts } from './consts';
 import * as schema from './schema';
 import { storage } from './storage';
 
-export const ambassadorCorePallet = {
+export const collectiveCorePallet = {
   consts,
   schema,
   storage,
 };
 
 export {
-  type AmbassadorCoreMemberEvidence,
-  type AmbassadorCoreMemberStatus,
-  type AmbassadorCoreParams,
+  type CollectiveCoreMemberEvidence,
+  type CollectiveCoreMemberStatus,
+  type CollectiveCoreParams,
 } from './schema';
