@@ -10,10 +10,10 @@ export const DisconnectAlert = ({ active }: Props) => {
   const { t } = useI18n();
 
   return (
-    <Alert title={t('fellowship.errors.disconnect.title')} active={active}>
+    <Alert title={t('fellowship.errors.disconnect.title')} variant="error" active={active}>
       <FootnoteText className="text-text-secondary">{t('fellowship.errors.disconnect.description')}</FootnoteText>
-      <ButtonLink variant="text" size="md" to={Paths.NETWORK}>
-        {t('general.button.networkSettingsLink')}
+      <ButtonLink className="w-fit p-0" size="sm" variant="text" to={Paths.NETWORK}>
+        {t('fellowship.errors.disconnect.action')}
       </ButtonLink>
     </Alert>
   );

@@ -29,9 +29,9 @@ export const Referendums = memo<Props>(({ onSelect }) => {
 
   const hasNetworkError = featureState.status === 'failed' && featureState.error.message === ERROR.networkDisabled;
 
-  const shouldShowLoadingState = !fulfulled || (isSerching && isTitlesLoading);
-  const shouldShowNetworkDisabledError = hasNetworkError && !shouldShowLoadingState && referendums.length === 0;
-  const shouldShowNetworkDisabledWarning = hasNetworkError && !shouldShowLoadingState && referendums.length > 0;
+  const shouldShowNetworkDisabledError = hasNetworkError && referendums.length === 0;
+  const shouldShowNetworkDisabledWarning = hasNetworkError && referendums.length > 0;
+  const shouldShowLoadingState = (!fulfulled || (isSerching && isTitlesLoading)) && !shouldShowNetworkDisabledWarning;
   const shouldRenderEmptyState = !shouldShowLoadingState && !hasNetworkError && referendums.length === 0;
   const shouldRenderList = shouldShowLoadingState || (!shouldRenderEmptyState && !shouldShowNetworkDisabledError);
 
@@ -40,7 +40,7 @@ export const Referendums = memo<Props>(({ onSelect }) => {
       {shouldRenderEmptyState && <EmptyState />}
       {shouldShowNetworkDisabledError && <InactiveNetwork active className="grow" />}
       {shouldRenderList && (
-        <Box gap={3} padding={[0, 0, 10]}>
+        <Box gap={2} padding={[0, 0, 10]}>
           <DisconnectAlert active={shouldShowNetworkDisabledWarning} />
           <OngoingReferendums
             isTitlesLoading={isTitlesLoading}

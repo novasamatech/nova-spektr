@@ -38,7 +38,7 @@ export const CompletedReferendums = memo<Props>(({ isTitlesLoading, mixLoadingWi
 
   return (
     <Accordion isDefaultOpen>
-      <Accordion.Button buttonClass="py-1.5 px-2 mb-2">
+      <Accordion.Button buttonClass="py-1.5 px-2">
         <Box direction="row" gap={2} verticalAlign="center">
           <CaptionText className="font-semibold uppercase tracking-[0.75px] text-text-secondary">
             {t('governance.referendums.completed')}
@@ -48,7 +48,7 @@ export const CompletedReferendums = memo<Props>(({ isTitlesLoading, mixLoadingWi
           </CaptionText>
         </Box>
       </Accordion.Button>
-      <Accordion.Content className="flex flex-col gap-y-2">
+      <Accordion.Content className="mt-2 flex flex-col gap-y-2">
         {(!shouldRenderLoadingState || mixLoadingWithData) &&
           deferredReferendums.map(referendum => (
             <ReferendumItem
