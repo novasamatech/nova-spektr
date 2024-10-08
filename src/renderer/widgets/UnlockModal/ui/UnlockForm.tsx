@@ -5,12 +5,12 @@ import { type FormEvent } from 'react';
 import { useI18n } from '@app/providers';
 import { Address } from '@/shared/ui-entities';
 import { type MultisigAccount } from '@shared/core';
-import { formatBalance, toAddress, toShortAddress } from '@shared/lib/utils';
+import { formatBalance, toAddress } from '@shared/lib/utils';
 import { AmountInput, Button, Input, InputHint, MultiSelect } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
 import { SignatorySelector } from '@entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
-import { ProxyWalletAlert, accountUtils } from '@entities/wallet';
+import { ProxyWalletAlert } from '@entities/wallet';
 import { networkSelectorModel } from '@features/governance/model/networkSelector';
 import { unlockFormAggregate } from '../aggregates/unlockForm';
 
@@ -87,7 +87,6 @@ const AccountsSelector = () => {
   }
 
   const options = accounts.map(({ account, balance }) => {
-    const isShard = accountUtils.isShardAccount(account);
     const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
 
     return {
@@ -95,14 +94,7 @@ const AccountsSelector = () => {
       value: account,
       element: (
         <div className="flex w-full justify-between" key={account.id}>
-          <Address
-            address={address}
-            variant="truncate"
-            iconSize={20}
-            canCopy={false}
-            title={isShard ? toShortAddress(address, 16) : account.name}
-            showIcon
-          />
+          <Address address={address} variant="truncate" iconSize={20} canCopy={false} title={account.name} showIcon />
           <AssetBalance value={balance} asset={network.asset} className="w-min" />
         </div>
       ),
