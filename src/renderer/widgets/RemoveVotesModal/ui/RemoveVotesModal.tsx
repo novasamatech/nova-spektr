@@ -203,7 +203,7 @@ const VoteAccountSelect = ({ asset, chain, onCancel, onSelect }: AccountProps) =
 
   const account = useUnit(removeVotesModalAggregate.$pickedAccount);
   const accounts = useUnit(removeVotesModalAggregate.$availableAccounts);
-  const shouldPickAccount = nullable(account) && accounts.length > 0;
+  const shouldPickAccount = nullable(account) && accounts.length > 1;
   const [isSelectAccountOpen, setIsSelectAccountOpen] = useState(shouldPickAccount);
   const [isSelectAccountClosed, setIsSelectAccountClosed] = useState(false);
 

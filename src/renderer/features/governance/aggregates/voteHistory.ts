@@ -9,6 +9,7 @@ import { votingAssetModel } from '../model/votingAsset';
 import { type AggregatedVoteHistory } from '../types/structs';
 import { votingPowerSorting } from '../utils/votingPowerSorting';
 
+import { listAggregate } from './list';
 import { proposerIdentityAggregate } from './proposerIdentity';
 
 const flow = createGate<{ referendum: Referendum }>();
@@ -78,6 +79,13 @@ sample({
 
 sample({
   clock: flow.open,
+  target: requestVoteHistory,
+});
+
+sample({
+  clock: listAggregate.$referendums,
+  source: flow.state,
+  filter: flow.status,
   target: requestVoteHistory,
 });
 

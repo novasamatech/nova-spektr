@@ -287,7 +287,7 @@ sample({
 sample({
   clock: removeVoteConfirmModel.events.submitFinished,
   source: {
-    accounts: $accounts,
+    accounts: $availableAccounts,
     chain: flow.state.map(({ chain }) => chain),
   },
   fn: ({ accounts, chain }) => {
