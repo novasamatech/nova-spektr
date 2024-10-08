@@ -51,8 +51,10 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
   const modalTitle = (
     <div className="flex w-[464px] items-center justify-between rounded-tl-lg rounded-tr-lg bg-white py-3">
       <HeaderTitleText className="flex py-[3px]">
-        {t('createMultisigAccount.title')}
-        {createMultisigUtils.isNotFirstStep(activeStep) && (
+        {isStep(activeStep, Step.SIGNER_SELECTION)
+          ? t('createMultisigAccount.selectSigner')
+          : t('createMultisigAccount.title')}
+        {createMultisigUtils.isNotFirstStep(activeStep) && !isStep(activeStep, Step.SIGNER_SELECTION) && (
           <>
             <span className="mx-1">{t('createMultisigAccount.titleOn')}</span>
             <ChainTitle

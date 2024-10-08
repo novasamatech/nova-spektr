@@ -5,7 +5,7 @@ import { type FormEvent } from 'react';
 import { useI18n } from '@app/providers';
 import { type AccountId, AccountType, type ChainAccount } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
-import { Button, SmallTitleText } from '@/shared/ui';
+import { Button } from '@/shared/ui';
 import { AddressWithName } from '@/entities/wallet';
 import { Step } from '@/widgets/CreateWallet/lib/types';
 import { flowModel } from '@/widgets/CreateWallet/model/flow-model';
@@ -15,7 +15,6 @@ import { signatoryModel } from '@/widgets/CreateWallet/model/signatory-model';
 export const SignerSelection = () => {
   const { t } = useI18n();
   const ownedSignatoriesWallets = useUnit(signatoryModel.$ownedSignatoriesWallets) || [];
-  console.log('ownedSignatoriesWallets', ownedSignatoriesWallets);
   const {
     fields: { chain },
     submit,
@@ -28,8 +27,7 @@ export const SignerSelection = () => {
   };
 
   return (
-    <section className="max-h-[660px] w-full overflow-x-hidden px-5 py-4">
-      <SmallTitleText className="px-5 text-text-secondary">{t('createMultisigAccount.selectSigner')}</SmallTitleText>
+    <section className="max-h-[660px] w-full overflow-x-hidden px-5 pb-4">
       <ul className="my-4 flex flex-col [overflow-y:overlay]">
         {ownedSignatoriesWallets.map(({ accounts }) => {
           const { accountId, name } =
