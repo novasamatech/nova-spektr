@@ -28,7 +28,7 @@ type Voted = {
   voted: {
     vote: string;
     value: BN;
-  };
+  }[];
 };
 export type VotedReferendum = AggregatedReferendum & Voted;
 
@@ -106,14 +106,29 @@ sample({
           votedReferendum.standardVote?.vote?.conviction || 'None',
         );
 
+        const splitVote = votedReferendum.splitVote
+          ? [
+              {
+                vote: 'aye',
+                value: votingService.calculateVotingPower(new BN(votedReferendum.splitVote.ayeAmount), 'None'),
+              },
+              {
+                vote: 'nay',
+                value: votingService.calculateVotingPower(new BN(votedReferendum.splitVote.nayAmount), 'None'),
+              },
+            ]
+          : null;
+
         return [
           ...acc,
           {
             ...val,
             votedAt: votedReferendum.at,
-            voted: votedReferendum.splitAbstainVote
-              ? { vote: 'abstain', value: votingPower }
-              : { vote: votedReferendum.standardVote?.aye ? 'aye' : 'nay', value: votingPower },
+            voted:
+              splitVote ||
+              (votedReferendum.splitAbstainVote
+                ? [{ vote: 'abstain', value: votingPower }]
+                : [{ vote: votedReferendum.standardVote?.aye ? 'aye' : 'nay', value: votingPower }]),
           },
         ];
       }
