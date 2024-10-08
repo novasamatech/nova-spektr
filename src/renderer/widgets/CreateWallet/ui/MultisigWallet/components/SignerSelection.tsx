@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
 import { useI18n } from '@app/providers';
-import { type AccountId, type ChainAccount } from '@/shared/core';
+import { type AccountId, AccountType, type ChainAccount } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import { Button, SmallTitleText } from '@/shared/ui';
 import { AddressWithName } from '@/entities/wallet';
@@ -15,6 +15,7 @@ import { signatoryModel } from '@/widgets/CreateWallet/model/signatory-model';
 export const SignerSelection = () => {
   const { t } = useI18n();
   const ownedSignatoriesWallets = useUnit(signatoryModel.$ownedSignatoriesWallets) || [];
+  console.log('ownedSignatoriesWallets', ownedSignatoriesWallets);
   const {
     fields: { chain },
     submit,
@@ -32,7 +33,9 @@ export const SignerSelection = () => {
       <ul className="my-4 flex flex-col [overflow-y:overlay]">
         {ownedSignatoriesWallets.map(({ accounts }) => {
           const { accountId, name } =
-            accounts.find((account) => (account as ChainAccount).chainId === chain.value.chainId) || {};
+            accounts[0].type === AccountType.BASE
+              ? accounts[0]
+              : accounts.find((account) => (account as ChainAccount).chainId === chain.value.chainId) || {};
           if (!accountId) {
             return null;
           }
