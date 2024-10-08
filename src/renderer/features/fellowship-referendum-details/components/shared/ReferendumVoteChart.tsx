@@ -34,7 +34,8 @@ export const ReferendumVoteChart = memo<Props>(({ referendum, descriptionPositio
   const perbillMultiplier = BN_MILLION.muln(10);
 
   const aye = thresholds.approval.value.div(perbillMultiplier).toNumber();
-  const nay = BN_BILLION.sub(thresholds.approval.value).div(perbillMultiplier).toNumber();
+  const nay =
+    referendum.tally.nays > 0 ? BN_BILLION.sub(thresholds.approval.value).div(perbillMultiplier).toNumber() : 0;
   const threshold = thresholds.approval.threshold.div(perbillMultiplier).toNumber();
   const disabled = referendum.tally.ayes === 0 && referendum.tally.nays === 0;
 
