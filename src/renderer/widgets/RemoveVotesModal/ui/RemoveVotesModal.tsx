@@ -30,6 +30,7 @@ import { SignatorySelectModal } from '@/pages/Operations/components/modals/Signa
 import { removeVotesModalAggregate } from '../aggregates/removeVotesModal';
 
 type Props = {
+  single?: boolean;
   votes: {
     voter: Address;
     referendum: ReferendumId;
@@ -42,7 +43,7 @@ type Props = {
   onClose: VoidFunction;
 };
 
-export const RemoveVotesModal = ({ votes, chain, asset, api, onClose }: Props) => {
+export const RemoveVotesModal = ({ single, votes, chain, asset, api, onClose }: Props) => {
   useGate(removeVotesModalAggregate.gates.flow, {
     votes,
     chain,
@@ -134,12 +135,14 @@ export const RemoveVotesModal = ({ votes, chain, asset, api, onClose }: Props) =
         onCancel={closeModal}
       />
 
-      <VoteAccountSelect
-        asset={asset}
-        chain={chain}
-        onSelect={removeVotesModalAggregate.events.selectAccount}
-        onCancel={closeModal}
-      />
+      {single ? (
+        <VoteAccountSelect
+          asset={asset}
+          chain={chain}
+          onSelect={removeVotesModalAggregate.events.selectAccount}
+          onCancel={closeModal}
+        />
+      ) : null}
     </>
   );
 };
@@ -198,8 +201,8 @@ type AccountProps = {
 const VoteAccountSelect = ({ asset, chain, onCancel, onSelect }: AccountProps) => {
   const { t } = useI18n();
 
-  const account = useUnit(removeVotesModalAggregate.$account);
-  const accounts = useUnit(removeVotesModalAggregate.$accounts);
+  const account = useUnit(removeVotesModalAggregate.$pickedAccount);
+  const accounts = useUnit(removeVotesModalAggregate.$availableAccounts);
   const shouldPickAccount = nullable(account) && accounts.length > 0;
   const [isSelectAccountOpen, setIsSelectAccountOpen] = useState(shouldPickAccount);
   const [isSelectAccountClosed, setIsSelectAccountClosed] = useState(false);
