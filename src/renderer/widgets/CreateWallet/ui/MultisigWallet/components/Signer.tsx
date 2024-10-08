@@ -1,12 +1,11 @@
 import { BN_ZERO } from '@polkadot/util';
-import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
 import { type AccountId, type Chain } from '@/shared/core';
 import { toAddress, transferableAmount } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
-import { balanceModel, balanceUtils } from '@/entities/balance';
+import { useBalance } from '@/entities/balance';
 import { AddressWithName } from '@/entities/wallet';
 
 interface Props {
@@ -17,17 +16,11 @@ interface Props {
 }
 
 export const Signer = ({ accountId, name, onSubmit, chain }: Props) => {
-  //   const balance = useBalance({
-  //     accountId,
-  //     chainId: chain.chainId,
-  //     assetId: asset.assetId.toString(),
-  //   });
-
-  const balances = useUnit(balanceModel.$balances);
-  const balance = balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0].assetId.toString());
-
-  console.log(accountId, chain.chainId, chain.assets[0].assetId.toString());
-  console.log('balance', balance);
+  const balance = useBalance({
+    accountId,
+    chainId: chain.chainId,
+    assetId: chain.assets[0].assetId.toString(),
+  });
 
   return (
     <li

@@ -8,8 +8,5 @@ type Props = {
   assetId: string;
 };
 export const useBalance = ({ chainId, accountId, assetId }: Props): Balance | undefined => {
-  const rest = useAssetBalances({ chainId, accountIds: [accountId], assetId });
-  console.log('rest', rest);
-
-  return rest[0];
+  return useAssetBalances({ chainId, accountIds: [accountId], assetId })[0];
 };
