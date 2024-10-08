@@ -7,7 +7,6 @@ import { descriptionsModel } from '../model/description';
 import { networkSelectorModel } from '../model/networkSelector';
 import { timelineModel } from '../model/timeline';
 import { titleModel } from '../model/title';
-import { votingAssetModel } from '../model/votingAsset';
 
 import { proposerIdentityAggregate } from './proposerIdentity';
 import { votingAggregate } from './voting';
@@ -34,7 +33,6 @@ sample({
 });
 
 export const detailsAggregate = {
-  $votingAsset: votingAssetModel.$votingAsset,
   $descriptions: descriptionsModel.$descriptions,
   $timelines: timelineModel.$currentChainTimelines,
   $votes: votingAggregate.$activeWalletVotes,

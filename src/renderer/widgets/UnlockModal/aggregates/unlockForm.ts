@@ -14,7 +14,7 @@ import {
   type ProxyTxWrapper,
   type Transaction,
 } from '@/shared/core';
-import { ZERO_BALANCE, formatBalance, toAddress, transferableAmount } from '@/shared/lib/utils';
+import { ZERO_BALANCE, formatBalance, nonNullable, toAddress, transferableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
@@ -23,7 +23,6 @@ import { locksModel } from '@/features/governance/model/locks';
 import { unlockModel } from '@/features/governance/model/unlock/unlock';
 import { UnlockRules } from '@features/governance/lib/unlock-rules';
 import { networkSelectorModel } from '@features/governance/model/networkSelector';
-import { votingAssetModel } from '@features/governance/model/votingAsset';
 import { type AccountWithClaim } from '@features/governance/types/structs';
 
 type Accounts = {
@@ -262,18 +261,23 @@ const $proxyWallet = combine(
 const $signatories = combine(
   {
     chain: networkSelectorModel.$governanceChain,
-    asset: votingAssetModel.$votingAsset,
+    network: networkSelectorModel.$network,
     txWrappers: $txWrappers,
     balances: balanceModel.$balances,
   },
-  ({ chain, asset, txWrappers, balances }) => {
-    if (!chain || !asset || !txWrappers) return [];
+  ({ chain, network, txWrappers, balances }) => {
+    if (!chain || !network || !txWrappers) return [];
 
     return txWrappers.reduce<{ signer: Account; balance: string }[][]>((acc, wrapper) => {
       if (!transactionService.hasMultisig([wrapper])) return acc;
 
       const balancedSignatories = (wrapper as MultisigTxWrapper).signatories.map((signatory) => {
-        const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId.toString());
+        const balance = balanceUtils.getBalance(
+          balances,
+          signatory.accountId,
+          chain.chainId,
+          network.asset.assetId.toString(),
+        );
 
         return { signer: signatory, balance: transferableAmount(balance) };
       });
@@ -387,14 +391,19 @@ sample({
   clock: formInitiated,
   source: {
     chain: networkSelectorModel.$governanceChain,
-    asset: votingAssetModel.$votingAsset,
+    network: networkSelectorModel.$network,
     shards: $unlockForm.fields.shards.$value,
     balances: balanceModel.$balances,
   },
-  filter: ({ chain, asset, shards }) => !!chain || !!asset || shards.length > 0,
-  fn: ({ chain, asset, shards, balances }) => {
+  filter: ({ chain, network, shards }) => !!chain || !!network || shards.length > 0,
+  fn: ({ chain, network, shards, balances }) => {
     return shards.map((shard) => {
-      const balance = balanceUtils.getBalance(balances, shard.accountId, chain!.chainId, asset!.assetId.toString());
+      const balance = balanceUtils.getBalance(
+        balances,
+        shard.accountId,
+        chain!.chainId,
+        network!.asset.assetId.toString(),
+      );
 
       return {
         account: shard,
@@ -486,8 +495,7 @@ sample({
   clock: $unlockForm.formValidated,
   source: {
     realAccounts: $realAccounts,
-    chain: networkSelectorModel.$governanceChain,
-    asset: votingAssetModel.$votingAsset,
+    network: networkSelectorModel.$network,
     transactions: $transactions,
     isProxy: $isProxy,
     fee: $fee,
@@ -495,14 +503,14 @@ sample({
     multisigDeposit: $multisigDeposit,
     totalLock: locksModel.$totalLock,
   },
-  filter: ({ asset, transactions }) => {
-    return Boolean(asset) && Boolean(transactions);
+  filter: ({ network, transactions }) => {
+    return nonNullable(network) && nonNullable(transactions);
   },
-  fn: ({ realAccounts, asset, chain, transactions, totalLock, isProxy, ...fee }, formData) => {
+  fn: ({ realAccounts, network, transactions, totalLock, isProxy, ...fee }, formData) => {
     const { shards, ...rest } = formData;
 
     const signatory = formData.signatory.accountId ? formData.signatory : undefined;
-    const defaultText = `Unlock ${formatBalance(formData.amount, asset!.precision).formatted} ${asset!.symbol}`;
+    const defaultText = `Unlock ${formatBalance(formData.amount, network!.asset.precision).formatted} ${network!.asset.symbol}`;
     const description = signatory ? formData.description || defaultText : '';
 
     return {
@@ -518,8 +526,8 @@ sample({
         amount: formData.amount,
         signatory,
         description,
-        chain: chain!,
-        asset: asset!,
+        chain: network!.chain,
+        asset: network!.asset,
         totalLock,
 
         ...(isProxy && { proxiedAccount: shards[0] as ProxiedAccount }),
