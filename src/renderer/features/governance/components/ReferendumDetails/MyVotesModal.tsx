@@ -1,4 +1,4 @@
-import { useStoreMap } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { useI18n } from '@app/providers';
@@ -8,7 +8,7 @@ import { formatAsset, formatBalance, toAccountId } from '@shared/lib/utils';
 import { BaseModal, BodyText, FootnoteText } from '@shared/ui';
 import { votingService } from '@entities/governance';
 import { SignatoryCard } from '@entities/signatory';
-import { AddressWithName } from '@entities/wallet';
+import { AddressWithName, walletModel, walletUtils } from '@entities/wallet';
 import { detailsAggregate } from '../../aggregates/details';
 import { votingListService } from '../../lib/votingListService';
 
@@ -22,6 +22,7 @@ type Props = {
 export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
   const { t } = useI18n();
   const [isOpen, closeModal] = useModalClose(true, onClose);
+  const activeWallet = useUnit(walletModel.$activeWallet);
 
   const votes = useStoreMap({
     store: detailsAggregate.$votes,
@@ -38,6 +39,8 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
       }),
     [votes, referendum],
   );
+
+  if (!activeWallet) return null;
 
   return (
     <BaseModal
@@ -58,6 +61,11 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
         {t('governance.walletVotes.listColumnVotingPower')}
       </FootnoteText>
       {votesList.map(({ address, vote }) => {
+        const account = walletUtils.getAccountBy(
+          [activeWallet],
+          (account) => account.accountId === toAccountId(address),
+        );
+
         return (
           <>
             <div className="col-span-5">
@@ -67,7 +75,12 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
                 accountId={toAccountId(address)}
                 addressPrefix={chain.addressPrefix}
               >
-                <AddressWithName addressFont="text-text-secondary" address={address} type="adaptive" />
+                <AddressWithName
+                  addressFont="text-text-secondary"
+                  address={address}
+                  type="adaptive"
+                  name={account?.name || ''}
+                />
               </SignatoryCard>
             </div>
             <BodyText key={`decision-${address}`} className="col-span-2 px-2">
