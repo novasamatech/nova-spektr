@@ -20,8 +20,8 @@ type Props = IconProps & {
   testId?: string;
 };
 
-export const Address = memo<Props>(
-  ({ title, variant = 'full', canCopy = true, showIcon, iconSize = 16, address, testId = 'Address' }) => {
+export const Address = memo(
+  ({ title, variant = 'full', canCopy = true, showIcon, iconSize = 16, address, testId = 'Address' }: Props) => {
     const titleNode = title ? <span className="truncate text-text-primary">{title}</span> : null;
     const addressNode = (
       <span

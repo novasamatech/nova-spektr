@@ -1,7 +1,8 @@
 import { useI18n } from '@app/providers';
+import { Hash } from '@/shared/ui-entities';
 import { type Account, type AccountId, type Asset, type ChainId } from '@shared/core';
 import { cnTw, stakeableAmount, toAddress } from '@shared/lib/utils';
-import { BaseModal, BodyText, Identicon, Truncate } from '@shared/ui';
+import { BaseModal, BodyText, HelpText, Identicon } from '@shared/ui';
 import { AssetBalance } from '../../../asset';
 import { useAssetBalances } from '../../../balance';
 
@@ -43,15 +44,11 @@ export const AccountsModal = ({ isOpen, accounts, asset, chainId, addressPrefix,
           <li key={account.accountId} className="flex items-center justify-between p-2" data-testid="account">
             <div className="flex items-center gap-x-2">
               <Identicon address={account.accountId} size={20} background={false} />
-              <div className="flex max-w-[175px] flex-col">
+              <div className="flex w-[175px] flex-col">
                 <BodyText className="text-text-secondary">{account.name}</BodyText>
-                <Truncate
-                  className="text-help-text text-text-tertiary"
-                  ellipsis="..."
-                  start={4}
-                  end={4}
-                  text={toAddress(account.accountId, { prefix: addressPrefix })}
-                />
+                <HelpText className="text-text-tertiary">
+                  <Hash value={toAddress(account.accountId, { prefix: addressPrefix })} variant="truncate" />
+                </HelpText>
               </div>
             </div>
             <AssetBalance
