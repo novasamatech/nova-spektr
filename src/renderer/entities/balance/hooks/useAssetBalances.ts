@@ -12,5 +12,7 @@ type Props = {
 export const useAssetBalances = ({ chainId, accountIds, assetId }: Props): Balance[] => {
   const balances = useUnit(balanceModel.$balances);
 
+  console.log('balances unit', balances);
+
   return balanceUtils.getAssetBalances(balances, accountIds, chainId, assetId);
 };

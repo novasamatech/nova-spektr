@@ -4,13 +4,13 @@ import { type FormEvent } from 'react';
 
 import { useI18n } from '@app/providers';
 import { type AccountId, AccountType, type ChainAccount } from '@/shared/core';
-import { toAddress } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
-import { AddressWithName } from '@/entities/wallet';
 import { Step } from '@/widgets/CreateWallet/lib/types';
 import { flowModel } from '@/widgets/CreateWallet/model/flow-model';
 import { formModel } from '@/widgets/CreateWallet/model/form-model';
 import { signatoryModel } from '@/widgets/CreateWallet/model/signatory-model';
+
+import { Signer } from './Signer';
 
 export const SignerSelection = () => {
   const { t } = useI18n();
@@ -38,15 +38,7 @@ export const SignerSelection = () => {
             return null;
           }
 
-          return (
-            <li
-              className="h-10items-center cursor-pointer truncate py-4 pl-5 pr-2 hover:bg-hover"
-              key={accountId}
-              onClick={(e) => onSubmit(e, accountId)}
-            >
-              <AddressWithName name={name} address={toAddress(accountId, { prefix: chain.value.addressPrefix })} />
-            </li>
-          );
+          return <Signer key={accountId} accountId={accountId} name={name} chain={chain.value} onSubmit={onSubmit} />;
         })}
       </ul>
       <div className="mt-auto flex items-center justify-between">
