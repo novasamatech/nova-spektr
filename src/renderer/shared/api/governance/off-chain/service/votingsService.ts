@@ -44,6 +44,7 @@ async function getVotingsForVoter(chain: Chain, voter: string): Promise<Record<R
           at: current.at,
           standardVote: current.standardVote,
           splitAbstainVote: current.splitAbstainVote,
+          splitVote: current.splitVote,
         },
       }),
       {},
