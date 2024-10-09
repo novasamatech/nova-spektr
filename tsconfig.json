@@ -6,7 +6,7 @@
   "compilerOptions": {
     "strict": true,
     "target": "es2022",
-    "module": "NodeNext",
+    "module": "es2022",
     "lib": ["es2022", "dom", "dom.iterable"],
     "jsx": "react-jsx",
     "pretty": true,
