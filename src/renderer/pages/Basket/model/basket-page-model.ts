@@ -132,12 +132,7 @@ const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
     const TransactionValidatorsRecord: Record<
       Exclude<
         TransactionType,
-        | TransferTransactionTypes
-        | XcmTransactionTypes
-        | MultisigTransactionTypes
-        | UtilityTransactionTypes
-        // TODO: Add remove vote types
-        | TransactionType.REMOVE_VOTE
+        TransferTransactionTypes | XcmTransactionTypes | MultisigTransactionTypes | UtilityTransactionTypes
       >,
       EventCallable<ValidationStartedParams>
     > = {
@@ -158,6 +153,8 @@ const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
       [TransactionType.EDIT_DELEGATION]: delegateValidateModel.events.validationStarted,
       [TransactionType.VOTE]: voteValidateModel.events.validationStarted,
       [TransactionType.REVOTE]: voteValidateModel.events.validationStarted,
+      // TODO: add separate validation for remove vote
+      [TransactionType.REMOVE_VOTE]: voteValidateModel.events.validationStarted,
     };
 
     if (coreTx.type in TransactionValidatorsRecord) {

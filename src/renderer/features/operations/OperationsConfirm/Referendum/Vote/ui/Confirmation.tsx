@@ -4,7 +4,8 @@ import { type ReactNode } from 'react';
 
 import { useI18n } from '@/app/providers';
 import { formatAsset, formatBalance, toAddress, toNumberWithPrecision } from '@/shared/lib/utils';
-import { Button, DetailRow, HeadlineText, Icon } from '@/shared/ui';
+import { Button, DetailRow, HeadlineText, Icon, Loader } from '@/shared/ui';
+import { Box } from '@/shared/ui-kit';
 import { LockPeriodDiff, LockValueDiff, voteTransactionService, votingService } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
 import { Fee } from '@/entities/transaction';
@@ -26,12 +27,14 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const { t } = useI18n();
 
   const trackLocks = useUnit(locksAggregate.$trackLocks);
-
   const confirm = useStoreMap({
     store: confirmModel.$confirmMap,
     keys: [id],
     fn: (value, [id]) => value?.[id] ?? null,
   });
+
+  useGate(locksPeriodsAggregate.gates.flow, { chain: confirm?.meta.chain });
+  useGate(locksAggregate.gates.flow, { chain: confirm?.meta.chain });
 
   const lockPeriods = useStoreMap({
     store: lockPeriodsModel.$lockPeriods,
@@ -41,11 +44,12 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
-  useGate(locksPeriodsAggregate.gates.flow, { chain: confirm?.meta.chain });
-  useGate(locksAggregate.gates.flow, { chain: confirm?.meta.chain });
-
-  if (!confirm) {
-    return null;
+  if (!confirm || !lockPeriods) {
+    return (
+      <Box width="440px" height="430px" verticalAlign="center" horizontalAlign="center">
+        <Loader color="primary" />
+      </Box>
+    );
   }
 
   const { asset, existingVote, wrappedTransactions, api } = confirm.meta;
