@@ -13,7 +13,7 @@ import {
 } from '@shared/core';
 import { MultisigTxInitStatus, TransactionType } from '@shared/core';
 import { getCreatedDate, toAccountId } from '@shared/lib/utils';
-import { type ExtrinsicResultParams, isWrappedInBatchAll } from '@entities/transaction';
+import { type ExtrinsicResultParams, findCoreBatchAll } from '@entities/transaction';
 
 import { type PendingMultisigTransaction } from './types';
 
@@ -196,9 +196,7 @@ export const getTransactionFromMultisigTx = (tx: MultisigTransaction): Transacti
     return tx.transaction;
   }
 
-  const transactionMatch = tx.transaction.args.transactions?.find((tx: Transaction) => {
-    return isWrappedInBatchAll(tx.type);
-  });
+  const transactionMatch = findCoreBatchAll(tx.transaction);
 
   return transactionMatch || tx.transaction.args.transactions?.[0] || tx.transaction.args.transaction;
 };
