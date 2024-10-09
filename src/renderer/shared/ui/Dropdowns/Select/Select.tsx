@@ -67,7 +67,7 @@ export const Select = forwardRef<HTMLButtonElement, Props>(
                 SelectButtonStyle[theme].disabled,
                 CommonInputStyles,
                 CommonInputStylesTheme[theme],
-                'flex w-full items-center justify-between gap-x-2 pr-2',
+                'flex min-h-9 w-full items-center justify-between gap-x-2 pr-2',
               )}
             >
               {selectedOption && !open ? (
