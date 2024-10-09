@@ -4,8 +4,9 @@ import { type ReactNode } from 'react';
 
 import { useI18n } from '@app/providers';
 import { useToggle } from '@/shared/lib/hooks';
+import { Box } from '@/shared/ui-kit';
 import { cnTw } from '@shared/lib/utils';
-import { Button, CaptionText, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
+import { Button, CaptionText, DetailRow, FootnoteText, Icon, Loader, Tooltip } from '@shared/ui';
 import { BalanceDiff } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
 import { AccountsModal } from '@/entities/staking';
@@ -60,8 +61,13 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
 
-  if (!confirmStore || !initiatorWallet || !confirmStore.chain) return null;
-
+  if (!confirmStore || !initiatorWallet || !confirmStore.chain) {
+    return (
+      <Box width="440px" height="430px" verticalAlign="center" horizontalAlign="center">
+        <Loader color="primary" />
+      </Box>
+    );
+  }
   const { chain, asset, amount, shards, totalLock } = confirmStore;
 
   return (
