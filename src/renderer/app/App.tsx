@@ -75,21 +75,13 @@ export const App = () => {
     navigate(Paths.ONBOARDING, { replace: true });
   }, [isLoadingWallets, wallets.length]);
 
-  const getContent = () => {
-    if (isLoadingWallets) {
-      return null;
-    }
-
-    return appRoutes;
-  };
-
   return (
     <MultisigChainProvider>
       <MatrixProvider>
         <ConfirmDialogProvider>
           <StatusModalProvider>
             <GraphqlProvider>
-              {getContent()}
+              {appRoutes}
               <CreateWalletProvider />
               <WalletDetailsProvider />
             </GraphqlProvider>

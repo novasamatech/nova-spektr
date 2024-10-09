@@ -52,7 +52,7 @@ const LazyIcon = lazy(async () => {
     if (iconType === 'img') {
       return (
         <img
-          className={className}
+          className={cnTw(className, 'pointer-events-none select-none')}
           src={IconComponent as string}
           alt={alt}
           width={size}
