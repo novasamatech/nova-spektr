@@ -183,6 +183,7 @@ export const Governance = () => {
         nonNullable(network) &&
         referendumService.isOngoing(selectedReferendum) && (
           <RemoveVotesModal
+            single
             votes={selectedReferendum.voting.votes.map(({ voter, vote }) => ({
               vote,
               voter,

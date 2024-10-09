@@ -6,6 +6,7 @@ import { type AccountVote, type Address, type BasketTransaction, type OngoingRef
 import { Step, isStep, nonNullable, nullable, toAddress } from '@shared/lib/utils';
 import { basketModel } from '@entities/basket';
 import { votingService } from '@entities/governance';
+import { walletModel } from '@entities/wallet';
 import {
   delegationAggregate,
   lockPeriodsModel,
@@ -244,14 +245,12 @@ sample({
   clock: voteConfirmModel.events.submitFinished,
   source: {
     status: flow.status,
-    form: voteFormAggregate.transactionForm.form.$values,
+    wallet: walletModel.$activeWallet,
     chain: networkSelectorModel.$governanceChain,
   },
-  filter: ({ chain, status }) => status && nonNullable(chain),
-  fn: ({ form, chain }) => {
-    const addresses = [form.signatory, form.account]
-      .filter(nonNullable)
-      .map((account) => toAddress(account.accountId, { prefix: chain?.addressPrefix }));
+  filter: ({ chain, status, wallet }) => status && nonNullable(chain) && nonNullable(wallet),
+  fn: ({ wallet, chain }) => {
+    const addresses = wallet!.accounts.map((account) => toAddress(account.accountId, { prefix: chain?.addressPrefix }));
 
     return { addresses };
   },

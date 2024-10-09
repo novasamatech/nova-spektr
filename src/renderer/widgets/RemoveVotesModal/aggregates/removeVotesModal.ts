@@ -1,6 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
-import { combine, createEvent, createStore, sample } from 'effector';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
+import uniq from 'lodash/uniq';
 
 import {
   type Account,
@@ -46,28 +47,23 @@ const flow = createGate<{
 
 const selectAccount = createEvent<Account>();
 
-const $account = createStore<Account | null>(null);
+const $pickedAccount = restore(selectAccount, null).reset(flow.close);
 
-const $accounts = combine(walletModel.$activeWallet, flow.state, (wallet, { votes, chain }) => {
-  if (nullable(wallet) || nullable(chain)) return [];
+const $availableAccounts = combine(walletModel.$activeWallet, flow.state, (wallet, { votes, chain }) => {
+  if (nullable(wallet) || nullable(votes.length) || nullable(chain)) return [];
 
-  return walletUtils.getAccountsBy([wallet], (a) => {
-    if (!accountUtils.isChainAndCryptoMatch(a, chain)) return false;
+  const accounts = uniq(votes.map((vote) => vote.voter).filter(nonNullable));
 
-    return votes.some(({ voter }) => toAddress(a.accountId, { prefix: chain.addressPrefix }) === voter);
-  });
+  return accounts.map(
+    (address) =>
+      walletUtils.getAccountBy([wallet], (a) => toAddress(a.accountId, { prefix: chain.addressPrefix }) === address)!,
+  );
 });
 
-sample({
-  clock: $accounts,
-  filter: $accounts.map((x) => x.length < 2),
-  fn: (s) => s.at(0) ?? null,
-  target: $account,
-});
+const $accounts = combine($availableAccounts, $pickedAccount, (availableAccounts, pickedAccount) => {
+  if (nonNullable(pickedAccount)) return [pickedAccount];
 
-sample({
-  clock: selectAccount,
-  target: $account,
+  return availableAccounts;
 });
 
 const $initiatorWallet = combine($accounts, walletModel.$wallets, (accounts, wallets) => {
@@ -291,7 +287,7 @@ sample({
 sample({
   clock: removeVoteConfirmModel.events.submitFinished,
   source: {
-    accounts: $accounts,
+    accounts: $availableAccounts,
     chain: flow.state.map(({ chain }) => chain),
   },
   fn: ({ accounts, chain }) => {
@@ -315,19 +311,20 @@ export const removeVotesModalAggregate = {
   $initiatorWallet,
   $lockPeriods: lockPeriodsModel.$lockPeriods,
 
+  $availableAccounts,
+  $pickedAccount,
+  $accounts,
+
   $step,
   $signatory,
   $signatories,
   $votesList,
 
-  $account,
-  $accounts,
-
   events: {
     txSaved,
     setStep,
-    selectSignatory,
     selectAccount,
+    selectSignatory,
   },
 
   gates: {

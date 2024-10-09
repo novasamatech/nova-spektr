@@ -121,7 +121,7 @@ const getDecoupledVotesFromVotingHistory = (voting: VoteHistoryRecord) => {
     });
 
     res.push({
-      decision: 'aye',
+      decision: 'nay',
       voter: voting.voter,
       votingPower: votingService.calculateVotingPower(voting.vote.nay, conviction),
       conviction: votingService.getConvictionMultiplier(conviction),
