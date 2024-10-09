@@ -3,7 +3,7 @@ import { combine, createEvent, createStore, sample } from 'effector';
 import { isNil } from 'lodash';
 import { and, empty, not, reset } from 'patronum';
 
-import { type AccountVote, type Conviction, type OngoingReferendum } from '@/shared/core';
+import { type AccountVote, type Address, type Conviction, type OngoingReferendum } from '@/shared/core';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { balanceModel } from '@/entities/balance';
 import { locksService, voteTransactionService } from '@/entities/governance';
@@ -29,6 +29,7 @@ type FormInput = {
   wrappedTransactions: WrappedTransactions;
 };
 
+const $voters = createStore<Address[]>([]);
 const $existingVote = createStore<AccountVote | null>(null);
 const $referendum = createStore<OngoingReferendum | null>(null);
 const $availableBalance = createStore(BN_ZERO);
@@ -39,6 +40,7 @@ const $canSubmit = createStore(false);
 const formSubmitted = createEvent<FormInput>();
 
 const transactionForm = createTransactionForm<Form>({
+  $voters,
   $asset: votingAssetModel.$votingAsset,
   $chain: networkSelectorModel.$governanceChain,
   $api: networkSelectorModel.$governanceChainApi,
@@ -219,6 +221,7 @@ export const voteFormAggregate = {
   transactionForm,
 
   $referendum,
+  $voters,
   $existingVote,
   $lockForAccount,
   $availableBalance,

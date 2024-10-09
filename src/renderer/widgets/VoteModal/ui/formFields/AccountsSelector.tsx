@@ -3,11 +3,11 @@ import { useMemo } from 'react';
 
 import { useI18n } from '@/app/providers';
 import { type Account, type Asset, type Balance, type Chain } from '@/shared/core';
-import { toAddress, toShortAddress } from '@/shared/lib/utils';
+import { toAddress } from '@/shared/lib/utils';
 import { InputHint, Select } from '@/shared/ui';
 import { type DropdownOption } from '@/shared/ui/Dropdowns/common/types';
+import { Address } from '@/shared/ui-entities';
 import { AssetBalance } from '@/entities/asset';
-import { AccountAddress, accountUtils } from '@/entities/wallet';
 import { locksService } from '@entities/governance';
 
 type Props = {
@@ -26,7 +26,6 @@ export const AccountsSelector = ({ value, accounts, asset, chain, hasError, erro
   const options = useMemo(
     () =>
       accounts.map<DropdownOption>(({ account, balance }) => {
-        const isShard = accountUtils.isShardAccount(account);
         const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
         const availableBalance = balance ? locksService.getAvailableBalance(balance) : BN_ZERO;
 
@@ -34,15 +33,16 @@ export const AccountsSelector = ({ value, accounts, asset, chain, hasError, erro
           id: account.id.toString(),
           value: account,
           element: (
-            <div className="flex w-full justify-between" key={account.id}>
-              <AccountAddress
-                size={20}
-                type="short"
+            <div className="flex w-full items-center justify-between gap-2 text-start text-body" key={account.id}>
+              <Address
                 address={address}
-                name={isShard ? toShortAddress(address, 16) : account.name}
+                variant="truncate"
+                showIcon
+                iconSize={16}
                 canCopy={false}
+                title={account.name}
               />
-              <AssetBalance value={availableBalance} asset={asset} />
+              <AssetBalance className="whitespace-nowrap" value={availableBalance} asset={asset} />
             </div>
           ),
         };

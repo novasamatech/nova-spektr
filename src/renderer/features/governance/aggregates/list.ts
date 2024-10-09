@@ -55,20 +55,10 @@ const $supportThresholds = combine(
   },
 );
 
-const $delegatedVotes = combine(
-  delegatedVotesAggregate.$delegatedVotes,
-  networkSelectorModel.$governanceChain,
-  (delegatedVotes, chain) => {
-    if (nullable(chain)) return {};
-
-    return delegatedVotes[chain.chainId] ?? {};
-  },
-);
-
 const $referendums = combine(
   {
     referendums: $chainReferendums,
-    delegatedVotes: $delegatedVotes,
+    delegatedVotes: delegatedVotesAggregate.$delegatedVotesInChain,
     titles: $chainTitles,
     approvalThresholds: $approvalThresholds,
     supportThresholds: $supportThresholds,
@@ -119,7 +109,7 @@ const $referendums = combine(
           of: accounts.length,
           votes,
         },
-        votedByDelegate: delegatedVotes[chain.chainId] ?? null,
+        votedByDelegate: delegatedVotes[referendum.referendumId] ?? null,
       };
     });
   },
