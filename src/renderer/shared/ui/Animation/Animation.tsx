@@ -47,7 +47,7 @@ const LazyAnimation = lazy(async () => {
       setAnimation(JSON.parse(JSON.stringify(images[variant])));
     }, [variant]);
 
-    return <div className={cnTw(className, 'animate-in fade-in')}>{View}</div>;
+    return <div className={cnTw(className, 'animate-in fade-in [&>*]:contain-strict')}>{View}</div>;
   };
 
   return { default: Component };
