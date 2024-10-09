@@ -30,6 +30,9 @@ import { SignatorySelectModal } from '@/pages/Operations/components/modals/Signa
 import { removeVotesModalAggregate } from '../aggregates/removeVotesModal';
 
 type Props = {
+  /**
+   * Adds account select in case of multiple votes with different accounts.
+   */
   single?: boolean;
   votes: {
     voter: Address;
