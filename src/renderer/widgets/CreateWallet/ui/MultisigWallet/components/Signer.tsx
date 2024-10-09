@@ -1,21 +1,22 @@
 import { BN_ZERO } from '@polkadot/util';
 import { type FormEvent } from 'react';
 
-import { type AccountId, type Chain } from '@/shared/core';
-import { toAddress, transferableAmount } from '@/shared/lib/utils';
-import { Icon } from '@/shared/ui';
+import { type AccountId, type Chain, type WalletType } from '@/shared/core';
+import { transferableAmount } from '@/shared/lib/utils';
+import { BodyText, Icon } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { useBalance } from '@/entities/balance';
-import { AddressWithName } from '@/entities/wallet';
+import { WalletIcon } from '@/entities/wallet';
 
 interface Props {
   onSubmit: (event: FormEvent, accountId: AccountId) => void;
   accountId: AccountId;
-  name?: string;
+  walletType: WalletType;
+  walletName?: string;
   chain: Chain;
 }
 
-export const Signer = ({ accountId, name, onSubmit, chain }: Props) => {
+export const Signer = ({ accountId, walletName, walletType, onSubmit, chain }: Props) => {
   const balance = useBalance({
     accountId,
     chainId: chain.chainId,
@@ -24,16 +25,17 @@ export const Signer = ({ accountId, name, onSubmit, chain }: Props) => {
 
   return (
     <li
-      className="grid cursor-pointer grid-flow-col grid-cols-[1fr,100px,30px] items-center justify-items-end truncate py-4 pl-5 pr-2 hover:bg-hover"
+      className="grid cursor-pointer grid-flow-col grid-cols-[30px,1fr,100px,30px] items-center truncate py-4 pl-2 pr-2 hover:bg-hover"
       key={accountId}
       onClick={(e) => onSubmit(e, accountId)}
     >
-      <AddressWithName name={name} address={toAddress(accountId, { prefix: chain.addressPrefix })} type="adaptive" />
+      <WalletIcon type={walletType} />
+      <BodyText className="text-inherit">{walletName}</BodyText>
       {chain.assets[0] && (
         <AssetBalance
           value={transferableAmount(balance) || BN_ZERO}
           asset={chain.assets[0]}
-          className="ml-auto text-body text-inherit"
+          className="ml-auto mr-6 text-body text-inherit"
         />
       )}
       <Icon name="right" size={20} />

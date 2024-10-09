@@ -36,8 +36,8 @@ export const SignerSelection = () => {
   return (
     <section className="max-h-[660px] w-full overflow-x-hidden px-5 pb-4">
       <ul className="my-4 flex flex-col [overflow-y:overlay]">
-        {ownedSignatoriesWallets.map(({ accounts }) => {
-          const { accountId, name } =
+        {ownedSignatoriesWallets.map(({ accounts, type, name }) => {
+          const { accountId } =
             accounts[0].type === AccountType.BASE
               ? accounts[0]
               : accounts.find((account) => (account as ChainAccount).chainId === chain.value.chainId) || {};
@@ -45,7 +45,16 @@ export const SignerSelection = () => {
             return null;
           }
 
-          return <Signer key={accountId} accountId={accountId} name={name} chain={chain.value} onSubmit={onSubmit} />;
+          return (
+            <Signer
+              key={accountId}
+              accountId={accountId}
+              walletName={name}
+              walletType={type}
+              chain={chain.value}
+              onSubmit={onSubmit}
+            />
+          );
         })}
       </ul>
       <div className="mt-auto flex items-center justify-between">
