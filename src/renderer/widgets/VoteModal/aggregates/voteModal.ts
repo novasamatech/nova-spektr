@@ -184,6 +184,12 @@ sample({
   target: [resetForm, voteConfirmModel.events.resetConfirm],
 });
 
+sample({
+  clock: flow.state,
+  fn: ({ votes }) => votes.map((x) => x.voter),
+  target: voteFormAggregate.$voters,
+});
+
 // Data bindings
 
 sample({

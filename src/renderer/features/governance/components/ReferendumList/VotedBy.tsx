@@ -33,7 +33,7 @@ export const VotedBy = memo<Props>(({ address }) => {
   return (
     <div className="flex items-center gap-x-1">
       <Icon name="voted" size={16} className="text-icon-accent" />
-      <FootnoteText className="max-w-56 truncate whitespace-nowrap text-nowrap text-icon-accent">
+      <FootnoteText className="flex max-w-56 truncate whitespace-nowrap text-nowrap text-icon-accent">
         {t('governance.votedBy')}&nbsp;{name}
       </FootnoteText>
     </div>
