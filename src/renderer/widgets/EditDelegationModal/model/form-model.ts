@@ -1,4 +1,4 @@
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { spread } from 'patronum';
@@ -13,6 +13,7 @@ import {
   transferableAmountBN,
 } from '@shared/lib/utils';
 import { balanceModel, balanceUtils } from '@entities/balance';
+import { locksService } from '@entities/governance';
 import { networkModel } from '@entities/network';
 import { walletModel, walletUtils } from '@entities/wallet';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
@@ -81,13 +82,18 @@ const $accounts = combine(
       const address = toAddress(shard.accountId, { prefix: network!.chain.addressPrefix });
       const lock = getLocksForAddress(address, trackLocks);
 
-      return { account: shard, balance: transferableAmountBN(balance), lock };
+      return {
+        account: shard,
+        balance: transferableAmountBN(balance),
+        lock,
+        available: balance ? locksService.getAvailableBalance(balance) : BN_ZERO,
+      };
     });
   },
 );
 
 const $accountsBalances = $accounts.map((accounts) => {
-  return accounts.map(({ balance, lock }) => lock.add(balance).toString());
+  return accounts.map(({ available }) => available.toString());
 });
 
 const $delegateForm = createForm<FormParams>({
