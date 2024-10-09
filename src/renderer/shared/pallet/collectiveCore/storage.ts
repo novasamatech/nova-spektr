@@ -1,8 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 
 import { substrateRpcPool } from '@/shared/api/substrate-helpers';
-import { type Address } from '@/shared/core';
-import { pjsSchema } from '@/shared/polkadotjs-schemas';
+import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 
 import { getPalletName } from './helpers';
 import { collectiveCoreMemberEvidence, collectiveCoreMemberStatus, collectiveCoreParams } from './schema';
@@ -48,7 +47,7 @@ export const storage = {
   /**
    * Some evidence together with the desired outcome for which it was presented.
    */
-  memberEvidences(type: PalletType, api: ApiPromise, addresses: Address[]) {
+  memberEvidences(type: PalletType, api: ApiPromise, addresses: AccountId[]) {
     const schema = pjsSchema.vec(
       pjsSchema.tupleMap(
         ['account', pjsSchema.storageKey(pjsSchema.accountId).transform(x => x[0])],

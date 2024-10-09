@@ -170,9 +170,17 @@ const disconnectProviderFx = createEffect((provider: ProviderWithMetadata): Prom
 type CreateApiParams = {
   chainId: ChainId;
   providers: Record<ChainId, ProviderWithMetadata>;
+  apis: Record<ChainId, ApiPromise>;
 };
-const createApiFx = createEffect(({ chainId, providers }: CreateApiParams): Promise<ApiPromise> => {
-  return networkService.createApi(providers[chainId]);
+const createApiFx = createEffect(async ({ chainId, providers, apis }: CreateApiParams): Promise<ApiPromise> => {
+  if (chainId in apis) {
+    const api = apis[chainId];
+    await api.connect();
+
+    return api;
+  } else {
+    return networkService.createApi(providers[chainId]);
+  }
 });
 
 const disconnectApiFx = createEffect(async (api: ApiPromise): Promise<ChainId> => {
@@ -289,8 +297,8 @@ sample({
 
 sample({
   clock: connected,
-  source: $providers,
-  fn: (providers, chainId) => ({ chainId, providers }),
+  source: { providers: $providers, apis: $apis },
+  fn: ({ providers, apis }, chainId) => ({ chainId, providers, apis }),
   target: createApiFx,
 });
 
@@ -347,17 +355,6 @@ sample({
   source: $apis,
   fn: (apis, chainId) => apis[chainId],
   target: disconnectApiFx,
-});
-
-sample({
-  clock: disconnectApiFx.doneData,
-  source: $apis,
-  fn: (apis, chainId) => {
-    const { [chainId]: _, ...rest } = apis;
-
-    return rest;
-  },
-  target: $apis,
 });
 
 sample({

@@ -7,17 +7,19 @@ import { ERROR } from '../constants';
 export const membersFeatureStatus = createFeature({
   name: 'members',
   input: fellowshipNetworkFeature.model.network.$network,
+  filter: input => {
+    return input.api.isConnected
+      ? null
+      : {
+          status: 'failed',
+          type: 'warning',
+          error: new Error(ERROR.networkDisabled),
+        };
+  },
 });
 
 sample({
   clock: fellowshipNetworkFeature.model.network.$isActive,
   filter: fellowshipNetworkFeature.model.network.$isActive,
   target: membersFeatureStatus.restore,
-});
-
-sample({
-  clock: [fellowshipNetworkFeature.model.network.$isDisconnected, membersFeatureStatus.start],
-  filter: fellowshipNetworkFeature.model.network.$isDisconnected,
-  fn: () => ({ type: 'warning' as const, error: new Error(ERROR.networkDisabled) }),
-  target: membersFeatureStatus.fail,
 });

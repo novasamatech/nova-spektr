@@ -26,17 +26,19 @@ const $input = combine(
 export const referendumsFeatureStatus = createFeature({
   name: 'referendums',
   input: $input,
+  filter: input => {
+    return input.api.isConnected
+      ? null
+      : {
+          status: 'failed',
+          type: 'warning',
+          error: new Error(ERROR.networkDisabled),
+        };
+  },
 });
 
 sample({
   clock: fellowshipNetworkFeature.model.network.$isActive,
   filter: fellowshipNetworkFeature.model.network.$isActive,
   target: referendumsFeatureStatus.restore,
-});
-
-sample({
-  clock: [fellowshipNetworkFeature.model.network.$isDisconnected, referendumsFeatureStatus.start],
-  filter: fellowshipNetworkFeature.model.network.$isDisconnected,
-  fn: () => ({ type: 'warning' as const, error: new Error(ERROR.networkDisabled) }),
-  target: referendumsFeatureStatus.fail,
 });

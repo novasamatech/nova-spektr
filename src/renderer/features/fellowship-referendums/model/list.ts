@@ -12,10 +12,10 @@ import { referendumsFeatureStatus } from './status';
 import { votingModel } from './voting';
 
 // TODO do smth about it, this connection looks terrible
-const offChainProviderUpdated = attachToFeatureInput(referendumsFeatureStatus, governanceModel.$governanceApi);
+const metadataProviderUpdated = attachToFeatureInput(referendumsFeatureStatus, governanceModel.$governanceApi);
 
 sample({
-  clock: offChainProviderUpdated,
+  clock: metadataProviderUpdated,
   filter: ({ data }) => nonNullable(data),
   fn: ({ input: { chainId, palletType }, data: api }) => ({
     provider: api!.type,
