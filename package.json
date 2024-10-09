@@ -94,7 +94,7 @@
     "buffer": "^6.0.3",
     "classnames": "^2.3.1",
     "crypto-browserify": "^3.12.0",
-    "date-fns": "^2.29.3",
+    "date-fns": "4.1.0",
     "dexie": "^3.2.4",
     "dexie-react-hooks": "^1.1.6",
     "effector": "23.2.2",
@@ -109,7 +109,8 @@
     "graphql-request": "^6.1.0",
     "i18next": "^21.8.13",
     "immer": "10.1.1",
-    "lodash": "^4.17.21",
+    "lodash": "4.17.21",
+    "lodash-es": "4.17.21",
     "lottie-react": "^2.4.0",
     "matrix-js-sdk": "30.3.0",
     "parity-scale-codec": "^0.6.1",
@@ -222,6 +223,7 @@
     "storybook": "^8.2.9",
     "style-loader": "^3.3.1",
     "swc-loader": "^0.2.3",
+    "terser-webpack-plugin": "5.3.10",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.1",
     "tsconfig-paths-webpack-plugin": "^4.0.0",
@@ -231,5 +233,6 @@
     "webpack-dev-server": "^4.15.1",
     "webpack-merge": "^5.9.0",
     "whatwg-fetch": "^3.6.2"
-  }
+  },
+  "sideEffects": ["*.css"]
 }

@@ -38,10 +38,6 @@ export const getSwcConfig = (isDev: boolean) => {
 const sharedConfig: Configuration = {
   stats: 'errors-only',
 
-  optimization: {
-    usedExports: true,
-  },
-
   module: {
     rules: [
       {
@@ -94,17 +90,20 @@ const sharedConfig: Configuration = {
       },
       {
         test: /\.(mp4|webm|yaml)$/,
-        loader: 'file-loader',
-        options: {
-          name: '[path][name].[ext]',
+        type: 'asset/resource',
+        generator: {
+          filename: 'video/[name]-[hash:8][ext]',
         },
       },
     ],
   },
 
   resolve: {
-    extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
+    extensions: ['.ts', '.tsx', '.js', '.json'],
     plugins: [new TsconfigPathsPlugin({})],
+    alias: {
+      lodash: 'lodash-es',
+    },
     fallback: {
       crypto: require.resolve('crypto-browserify'),
       stream: require.resolve('stream-browserify'),

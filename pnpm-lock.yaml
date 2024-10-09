@@ -96,8 +96,8 @@ importers:
         specifier: ^3.12.0
         version: 3.12.0
       date-fns:
-        specifier: ^2.29.3
-        version: 2.29.3
+        specifier: 4.1.0
+        version: 4.1.0
       dexie:
         specifier: ^3.2.4
         version: 3.2.4
@@ -141,7 +141,10 @@ importers:
         specifier: 10.1.1
         version: 10.1.1
       lodash:
-        specifier: ^4.17.21
+        specifier: 4.17.21
+        version: 4.17.21
+      lodash-es:
+        specifier: 4.17.21
         version: 4.17.21
       lottie-react:
         specifier: ^2.4.0
@@ -474,6 +477,9 @@ importers:
       swc-loader:
         specifier: ^0.2.3
         version: 0.2.3(@swc/core@1.7.24(@swc/helpers@0.5.13))(webpack@5.88.2(@swc/core@1.7.24(@swc/helpers@0.5.13))(esbuild@0.21.5)(webpack-cli@5.1.4))
+      terser-webpack-plugin:
+        specifier: 5.3.10
+        version: 5.3.10(@swc/core@1.7.24(@swc/helpers@0.5.13))(esbuild@0.21.5)(webpack@5.88.2(@swc/core@1.7.24(@swc/helpers@0.5.13))(esbuild@0.21.5)(webpack-cli@5.1.4))
       ts-jest:
         specifier: ^29.1.2
         version: 29.1.2(@babel/core@7.18.6)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.18.6))(esbuild@0.21.5)(jest@29.7.0(@types/node@18.0.0)(babel-plugin-macros@3.1.0)(ts-node@10.9.1(@swc/core@1.7.24(@swc/helpers@0.5.13))(@types/node@18.0.0)(typescript@5.5.4)))(typescript@5.5.4)
@@ -5159,6 +5165,9 @@ packages:
     resolution: {integrity: sha512-dDCnyH2WnnKusqvZZ6+jA1O51Ibt8ZMRNkDZdyAyK4YfbDwa/cEmuztzG5pk6hqlp9aSBPYcjOlktquahGwGeA==}
     engines: {node: '>=0.11'}
 
+  date-fns@4.1.0:
+    resolution: {integrity: sha512-Ukq0owbQXxa/U3EGtsdVBkR1w7KOQ5gIBqdH2hkvknzZPYvBxb/aa6E8L7tmjFtkwZBu3UXBbjIgPo/Ez4xaNg==}
+
   debounce-fn@4.0.0:
     resolution: {integrity: sha512-8pYCQiL9Xdcg0UPSD3d+0KMlOjp+KGU5EPwYddgzQ7DATsg4fuUDjQtsYLmWjnk2obnNHgV3vE2Y4jejSOJVBQ==}
     engines: {node: '>=10'}
@@ -7295,6 +7304,9 @@ packages:
   locate-path@6.0.0:
     resolution: {integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==}
     engines: {node: '>=10'}
+
+  lodash-es@4.17.21:
+    resolution: {integrity: sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==}
 
   lodash.camelcase@4.3.0:
     resolution: {integrity: sha512-TwuEnCnxbc3rAvhf/LbG7tJUDzhqXyFnv3dtzLOPgCG/hODL7WFnsbwktkD7yUV0RrreP/l1PALq/YSg6VvjlA==}
@@ -9675,8 +9687,8 @@ packages:
     resolution: {integrity: sha512-7jDLIdD2Zp0bDe5r3D2qtkd1QOCacylBuL7oa4udvN6v2pqr4+LcCr67C8DR1zkpaZ8XosF5m1yQSabKAW6f2g==}
     engines: {node: '>=14.16'}
 
-  terser-webpack-plugin@5.3.9:
-    resolution: {integrity: sha512-ZuXsqE07EcggTWQjXUj+Aot/OMcD0bMKGgF63f7UxYcu5/AJF53aIpK1YoP5xR9l6s/Hy2b+t1AM0bLNPRuhwA==}
+  terser-webpack-plugin@5.3.10:
+    resolution: {integrity: sha512-BKFPWlPDndPs+NGGCr1U59t0XScL5317Y0UReNrHaw9/FwhPENlq6bfgs+4yPfyP51vqC1bQ4rp1EfXW5ZSH9w==}
     engines: {node: '>= 10.13.0'}
     peerDependencies:
       '@swc/core': '*'
@@ -12872,7 +12884,7 @@ snapshots:
 
   '@jridgewell/source-map@0.3.5':
     dependencies:
-      '@jridgewell/gen-mapping': 0.3.3
+      '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
   '@jridgewell/sourcemap-codec@1.4.15': {}
@@ -14285,7 +14297,7 @@ snapshots:
       semver: 7.6.3
       storybook: 8.2.9(@babel/preset-env@7.25.4(@babel/core@7.25.2))
       style-loader: 3.3.1(webpack@5.88.2(@swc/core@1.7.24(@swc/helpers@0.5.13))(esbuild@0.21.5)(webpack-cli@5.1.4))
-      terser-webpack-plugin: 5.3.9(@swc/core@1.7.24(@swc/helpers@0.5.13))(esbuild@0.21.5)(webpack@5.88.2(@swc/core@1.7.24(@swc/helpers@0.5.13))(esbuild@0.21.5)(webpack-cli@5.1.4))
+      terser-webpack-plugin: 5.3.10(@swc/core@1.7.24(@swc/helpers@0.5.13))(esbuild@0.21.5)(webpack@5.88.2(@swc/core@1.7.24(@swc/helpers@0.5.13))(esbuild@0.21.5)(webpack-cli@5.1.4))
       ts-dedent: 2.2.0
       url: 0.11.3
       util: 0.12.5
@@ -17001,6 +17013,8 @@ snapshots:
       is-data-view: 1.0.1
 
   date-fns@2.29.3: {}
+
+  date-fns@4.1.0: {}
 
   debounce-fn@4.0.0:
     dependencies:
@@ -19850,6 +19864,8 @@ snapshots:
     dependencies:
       p-locate: 5.0.0
 
+  lodash-es@4.17.21: {}
+
   lodash.camelcase@4.3.0: {}
 
   lodash.debounce@4.0.8: {}
@@ -22575,9 +22591,9 @@ snapshots:
       type-fest: 2.19.0
       unique-string: 3.0.0
 
-  terser-webpack-plugin@5.3.9(@swc/core@1.7.24(@swc/helpers@0.5.13))(esbuild@0.21.5)(webpack@5.88.2(@swc/core@1.7.24(@swc/helpers@0.5.13))(esbuild@0.21.5)(webpack-cli@5.1.4)):
+  terser-webpack-plugin@5.3.10(@swc/core@1.7.24(@swc/helpers@0.5.13))(esbuild@0.21.5)(webpack@5.88.2(@swc/core@1.7.24(@swc/helpers@0.5.13))(esbuild@0.21.5)(webpack-cli@5.1.4)):
     dependencies:
-      '@jridgewell/trace-mapping': 0.3.20
+      '@jridgewell/trace-mapping': 0.3.25
       jest-worker: 27.5.1
       schema-utils: 3.3.0
       serialize-javascript: 6.0.1
@@ -23340,7 +23356,7 @@ snapshots:
       neo-async: 2.6.2
       schema-utils: 3.3.0
       tapable: 2.2.1
-      terser-webpack-plugin: 5.3.9(@swc/core@1.7.24(@swc/helpers@0.5.13))(esbuild@0.21.5)(webpack@5.88.2(@swc/core@1.7.24(@swc/helpers@0.5.13))(esbuild@0.21.5)(webpack-cli@5.1.4))
+      terser-webpack-plugin: 5.3.10(@swc/core@1.7.24(@swc/helpers@0.5.13))(esbuild@0.21.5)(webpack@5.88.2(@swc/core@1.7.24(@swc/helpers@0.5.13))(esbuild@0.21.5)(webpack-cli@5.1.4))
       watchpack: 2.4.0
       webpack-sources: 3.2.3
     optionalDependencies:

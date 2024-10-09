@@ -1,45 +1,35 @@
-import { createRoot } from 'react-dom/client';
-import { HashRouter } from 'react-router-dom';
-
-import { logger } from '@shared/config/utils';
-import { kernelModel } from '@shared/core';
-import { basketModel } from '@entities/basket';
-import { governanceModel } from '@entities/governance';
-import { networkModel } from '@entities/network';
-import { notificationModel } from '@entities/notification';
-import { proxyModel } from '@entities/proxy';
-import { walletModel } from '@entities/wallet';
-import { multisigsModel } from '@processes/multisigs';
-import { assetsSettingsModel } from '@features/assets';
-import { proxiesModel } from '@features/proxies';
-
-import { App } from './App';
-import '@features/balances';
-import './i18n';
 import './index.css';
 import './styles/theme/default.css';
+
+import { Suspense, lazy } from 'react';
+import { createRoot } from 'react-dom/client';
+import { ErrorBoundary } from 'react-error-boundary';
+import { HashRouter } from 'react-router-dom';
+
+import { FallbackScreen } from '@/shared/ui';
+import { isElectron } from '@shared/lib/utils';
+
+import { ElectronSplashScreen } from './components/ElectronSplashScreen/ElectronSplashScreen';
+import { WebSplashScreen } from './components/WebSplashScreen/WebSplashScreen';
+import { I18Provider } from './providers/context/I18nContext';
+
+const delay = (ttl: number) => new Promise((resolve) => setTimeout(resolve, ttl));
+const App = lazy(() => import('./App').then((m) => delay(1000).then(() => ({ default: m.App }))));
 
 const container = document.getElementById('app');
 if (!container) {
   throw new Error('Root container is missing in index.html');
 }
 
-logger.init();
-
-kernelModel.events.appStarted();
-governanceModel.events.governanceStarted();
-proxiesModel.events.workerStarted();
-walletModel.events.walletStarted();
-networkModel.events.networkStarted();
-proxyModel.events.proxyStarted();
-assetsSettingsModel.events.assetsStarted();
-notificationModel.events.notificationsStarted();
-basketModel.events.basketStarted();
-multisigsModel.events.multisigsDiscoveryStarted();
-
 createRoot(container).render(
   <HashRouter>
-    <App />
+    <I18Provider>
+      <ErrorBoundary FallbackComponent={FallbackScreen} onError={console.error}>
+        <Suspense fallback={isElectron() ? <ElectronSplashScreen /> : <WebSplashScreen />}>
+          <App />
+        </Suspense>
+      </ErrorBoundary>
+    </I18Provider>
   </HashRouter>,
 );
 
