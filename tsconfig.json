@@ -1,7 +1,10 @@
 {
   "extends": "./tsconfig.paths.json",
   "ts-node": {
-    "swc": true
+    "swc": true,
+    "compilerOptions": {
+      "module": "CommonJS"
+    }
   },
   "compilerOptions": {
     "strict": true,
