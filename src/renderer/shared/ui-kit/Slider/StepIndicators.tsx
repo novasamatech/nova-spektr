@@ -6,7 +6,7 @@ type Props = {
   steps: number;
 };
 
-export const StepIndicators = memo<Props>(({ steps }) => {
+export const StepIndicators = memo(({ steps }: Props) => {
   const nodes = useMemo(() => {
     // for better visuals
     if (steps > maxIndicationDensity) {

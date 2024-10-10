@@ -8,14 +8,14 @@ import { Box, Popover } from '@/shared/ui-kit';
 import { Hash } from '../Hash/Hash';
 
 type Props = PropsWithChildren<{
-  account: AccountId;
+  accountId: AccountId;
   chain: Chain;
 }>;
 
-export const AccountExplorers = memo<Props>(({ account, chain, children }) => {
+export const AccountExplorers = memo(({ accountId, chain, children }: Props) => {
   const { t } = useI18n();
   const { explorers } = chain;
-  const address = toAddress(account, { prefix: chain.addressPrefix });
+  const address = toAddress(accountId, { prefix: chain.addressPrefix });
 
   return (
     <Popover align="end" dialog testId="AccountExplorers">

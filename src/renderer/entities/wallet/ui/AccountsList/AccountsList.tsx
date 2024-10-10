@@ -1,9 +1,9 @@
 import { useI18n } from '@app/providers';
+import { AccountExplorers, Address } from '@/shared/ui-entities';
 import { type AccountId, type Chain } from '@shared/core';
-import { cnTw } from '@shared/lib/utils';
+import { cnTw, toAddress } from '@shared/lib/utils';
 import { FootnoteText } from '@shared/ui';
 import { ChainTitle } from '@entities/chain';
-import { AddressWithExplorers } from '@entities/wallet';
 
 type Props = {
   accountId: AccountId;
@@ -25,20 +25,17 @@ export const AccountsList = ({ accountId, chains, className }: Props) => {
 
       <ul className={cnTw('flex flex-col divide-y divide-divider overflow-y-auto overflow-x-hidden px-5', className)}>
         {chains.map((chain) => {
-          const { chainId, addressPrefix, explorers } = chain;
+          const { chainId, addressPrefix } = chain;
 
           return (
             <li key={chainId} className="flex items-center py-2">
               <ChainTitle className="flex-1" fontClass="text-text-primary" chain={chain} />
 
-              <div className="flex-1 pl-2">
-                <AddressWithExplorers
-                  type="adaptive"
-                  className="w-[166px]"
-                  accountId={accountId}
-                  addressPrefix={addressPrefix}
-                  explorers={explorers}
-                />
+              <div className="flex flex-1 pl-2">
+                <FootnoteText className="w-[180px] text-text-secondary">
+                  <Address address={toAddress(accountId, { prefix: addressPrefix })} variant="truncate" showIcon />
+                </FootnoteText>
+                <AccountExplorers accountId={accountId} chain={chain} />
               </div>
             </li>
           );

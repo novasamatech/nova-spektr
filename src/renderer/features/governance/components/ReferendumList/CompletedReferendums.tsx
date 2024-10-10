@@ -26,8 +26,8 @@ const createPlaceholders = (size: number) => {
   ));
 };
 
-export const CompletedReferendums = memo<Props>(
-  ({ referendums, isLoading, isTitlesLoading, mixLoadingWithData, api, onSelect }) => {
+export const CompletedReferendums = memo(
+  ({ referendums, isLoading, isTitlesLoading, mixLoadingWithData, api, onSelect }: Props) => {
     const { t } = useI18n();
 
     const { isLoading: shouldRenderLoadingState, list: deferredReferendums } = useDeferredList({
