@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
-import { Animation } from '@shared/ui/Animation/Animation';
+import { Animation } from '@/shared/ui';
+import { useI18n } from '../../providers';
 
 import promo1 from './assets/promo-1.png';
 import promo2 from './assets/promo-2.png';
@@ -14,43 +15,39 @@ import nameUrl from './assets/spectr-name.svg';
 const screens = [
   {
     image: promo1,
-    title: 'Multisig operations',
-    description:
-      'Enhance the security of your assets with Multisig Wallets in Nova Spektr! Multisigs are super easy to use and allow you to further secure access to your Polkadot assets, requiring multiple signatures for transaction approval.',
+    title: 'splashscreen.multisig.title',
+    description: 'splashscreen.multisig.description',
   },
   {
     image: promo2,
-    title: 'Proxy Wallets',
-    description:
-      "Delegate Authority for certain operations to secondary accounts with Nova Spektr's Proxy feature! Manage frequent actions such as changing validator nominations from an easier to access account and more!",
+    title: 'splashscreen.proxy.title',
+    description: 'splashscreen.proxy.description',
   },
   {
     image: promo3,
-    title: 'WalletConnect 2.0',
-    description:
-      'Nova Spektr supports WalletConnect v2! Seamlessly connect to Nova Spektr with any WalletConnect-compatible wallet for a smooth and secure experience.',
+    title: 'splashscreen.walletConnect.title',
+    description: 'splashscreen.walletConnect.description',
   },
   {
     image: promo4,
-    title: 'OpenGov',
-    description:
-      'Decide the fate of the network! Nova Spektr supports Polkadot OpenGov, empowering you to vote, delegate and more! Nova Spektr makes it easier than ever before to observe, participate and delegate in OpenGov!',
+    title: 'splashscreen.opengov.title',
+    description: 'splashscreen.opengov.description',
   },
   {
     image: promo5,
-    title: 'Staking',
-    description:
-      "Nova Spektr makes it easy to stake your assets and earn rewards while contributing to the network's security! Using Nova Spektr you can easily stake your DOT, KSM and more in seconds from your multisig accounts!",
+    title: 'splashscreen.staking.title',
+    description: 'splashscreen.staking.description',
   },
   {
     image: promo6,
-    title: 'Open Source & Trustless',
-    description:
-      "Don't trust, verify. Nova Spektr is fully open-source, meaning that anyone in the world can review its code and ensure transparency and security.",
+    title: 'splashscreen.oss.title',
+    description: 'splashscreen.oss.description',
   },
 ];
 
 export const WebSplashScreen = () => {
+  const { t } = useI18n();
+
   const screen = useMemo(() => {
     return screens[Math.floor(Math.random() * screens.length)];
   }, []);
@@ -67,10 +64,11 @@ export const WebSplashScreen = () => {
             </div>
             <div className="flex w-[500px] flex-col gap-7.5 leading-[normal]">
               {/* eslint-disable-next-line i18next/no-literal-string */}
-              <p className="text-[19.6px] font-bold uppercase tracking-[5px] text-text-secondary">Feature</p>
-              <p className="text-[46.5px] font-bold text-black">{screen.title}</p>
-              {/* eslint-disable-next-line i18next/no-literal-string */}
-              <p className="text-[24px] font-normal text-black">{screen.description}</p>
+              <p className="text-[19.6px] font-bold uppercase tracking-[5px] text-text-secondary">
+                {t('splashscreen.title')}
+              </p>
+              <p className="text-[46.5px] font-bold text-black">{t(screen.title)}</p>
+              <p className="text-[24px] font-normal text-black">{t(screen.description)}</p>
             </div>
           </div>
           <div className="hidden lg:block">

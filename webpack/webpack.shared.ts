@@ -11,7 +11,7 @@ export const getSwcConfig = (isDev: boolean) => {
     minify: !isDev,
     jsc: {
       parser: {
-        target: 'es2021',
+        target: 'es2022',
         syntax: 'typescript',
         jsx: true,
         tsx: true,
@@ -20,8 +20,6 @@ export const getSwcConfig = (isDev: boolean) => {
       },
       transform: {
         react: {
-          pragma: 'React.createElement',
-          pragmaFrag: 'React.Fragment',
           throwIfNamespace: true,
           runtime: 'automatic',
           development: isDev,
@@ -35,13 +33,13 @@ export const getSwcConfig = (isDev: boolean) => {
   };
 };
 
-const sharedConfig: Configuration = {
+export const sharedConfig: Configuration = {
   stats: 'errors-only',
 
   module: {
     rules: [
       {
-        test: /\.(js|ts|jsx|tsx)$/,
+        test: /\.(ts|tsx|js)$/,
         exclude: /node_modules/,
         use: [
           {
@@ -56,15 +54,26 @@ const sharedConfig: Configuration = {
           {
             loader: '@svgr/webpack',
             options: {
+              jsxRuntime: 'classic',
+              svgo: true,
               svgoConfig: {
-                plugins: [{ name: 'removeViewBox', active: false }],
+                plugins: [
+                  {
+                    name: 'preset-default',
+                    params: {
+                      overrides: {
+                        removeViewBox: false,
+                      },
+                    },
+                  },
+                ],
               },
             },
           },
           {
             loader: 'file-loader',
             options: {
-              name: '[name]-[hash:8].[ext]',
+              name: '[name].[contenthash].[ext]',
               outputPath: 'images/',
             },
           },
@@ -78,7 +87,7 @@ const sharedConfig: Configuration = {
         test: /\.(png|jpeg|gif|webp)$/,
         type: 'asset/resource',
         generator: {
-          filename: 'images/[name]-[hash:8][ext]',
+          filename: 'images/[name].[contenthash][ext]',
         },
       },
       {
@@ -92,7 +101,7 @@ const sharedConfig: Configuration = {
         test: /\.(mp4|webm|yaml)$/,
         type: 'asset/resource',
         generator: {
-          filename: 'video/[name]-[hash:8][ext]',
+          filename: 'video/[name].[contenthash][ext]',
         },
       },
     ],
@@ -134,5 +143,3 @@ const sharedConfig: Configuration = {
     }),
   ],
 };
-
-export default sharedConfig;

@@ -9,12 +9,12 @@ import { merge } from 'webpack-merge';
 
 import { APP_CONFIG } from '../app.config';
 
-import baseConfig from './webpack.shared';
+import { sharedConfig } from './webpack.shared';
 
 const { FOLDERS } = APP_CONFIG;
 
 export const sharedRendererConfig = (mode: 'development' | 'production') =>
-  merge(baseConfig, {
+  merge(sharedConfig, {
     mode,
     stats: 'errors-only',
     target: 'web',
@@ -52,9 +52,24 @@ export const sharedRendererConfig = (mode: 'development' | 'production') =>
     optimization: {
       sideEffects: true,
       minimize: mode === 'production',
-      minimizer: [new CssMinimizerPlugin(), new TerserPlugin()],
+      minimizer: [
+        new CssMinimizerPlugin({
+          minimizerOptions: {
+            preset: 'advanced',
+          },
+        }),
+        new TerserPlugin(),
+      ],
       splitChunks: {
         chunks: 'all',
+        cacheGroups: {
+          styles: {
+            name: 'styles',
+            test: /\.css$/,
+            chunks: 'all',
+            enforce: true,
+          },
+        },
       },
     },
 

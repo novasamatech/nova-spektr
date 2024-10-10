@@ -1268,6 +1268,33 @@
     "title": "Signing",
     "troubleshootingLink": "I have an error in Polkadot Vault"
   },
+  "splashscreen": {
+    "multisig": {
+      "description": "Enhance the security of your assets with Multisig Wallets in Nova Spektr! Multisigs are super easy to use and allow you to further secure access to your Polkadot assets, requiring multiple signatures for transaction approval.",
+      "title": "Multisig operations"
+    },
+    "opengov": {
+      "description": "Decide the fate of the network! Nova Spektr supports Polkadot OpenGov, empowering you to vote, delegate and more! Nova Spektr makes it easier than ever before to observe, participate and delegate in OpenGov!",
+      "title": "OpenGov"
+    },
+    "oss": {
+      "description": "Don't trust, verify. Nova Spektr is fully open-source, meaning that anyone in the world can review its code and ensure transparency and security.",
+      "title": "Open Source & Trustless"
+    },
+    "proxy": {
+      "description": "Delegate Authority for certain operations to secondary accounts with Nova Spektr's Proxy feature! Manage frequent actions such as changing validator nominations from an easier to access account and more!",
+      "title": "Proxy Wallets"
+    },
+    "staking": {
+      "description": "Nova Spektr makes it easy to stake your assets and earn rewards while contributing to the network's security! Using Nova Spektr you can easily stake your DOT, KSM and more in seconds from your multisig accounts!",
+      "title": "Staking"
+    },
+    "title": "Feature",
+    "walletConnect": {
+      "description": "Nova Spektr supports WalletConnect v2! Seamlessly connect to Nova Spektr with any WalletConnect-compatible wallet for a smooth and secure experience.",
+      "title": "WalletConnect 2.0"
+    }
+  },
   "staking": {
     "about": {
       "aboutStakingTitle": "About { asset } staking",

@@ -6,8 +6,8 @@ import { createRoot } from 'react-dom/client';
 import { ErrorBoundary } from 'react-error-boundary';
 import { HashRouter } from 'react-router-dom';
 
+import { isElectron } from '@/shared/lib/utils';
 import { FallbackScreen } from '@/shared/ui';
-import { isElectron } from '@shared/lib/utils';
 
 import { LoadingDelay, controlledLazy, suspenseDelayAdapter } from './DelayedSuspense';
 import { ElectronSplashScreen } from './components/ElectronSplashScreen/ElectronSplashScreen';
