@@ -40,7 +40,7 @@ const LazyIcon = lazy(async () => {
     if (iconType === 'svg') {
       return (
         <IconComponent
-          className={cnTw('text-icon-default', className)}
+          className={cnTw('pointer-events-none select-none text-icon-default', className)}
           width={size}
           height={size}
           role="img"
@@ -52,7 +52,7 @@ const LazyIcon = lazy(async () => {
     if (iconType === 'img') {
       return (
         <img
-          className={cnTw(className, 'pointer-events-none select-none')}
+          className={cnTw('pointer-events-none select-none', className)}
           src={IconComponent as string}
           alt={alt}
           width={size}
