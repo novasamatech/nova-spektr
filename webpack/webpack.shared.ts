@@ -1,3 +1,4 @@
+import { type Config as SwcConfig } from '@swc/core';
 import { default as CopyPlugin } from 'copy-webpack-plugin';
 import SimpleProgressWebpackPlugin from 'simple-progress-webpack-plugin';
 import { default as TsconfigPathsPlugin } from 'tsconfig-paths-webpack-plugin';
@@ -6,17 +7,16 @@ import { type Configuration, default as webpack } from 'webpack';
 import { APP_CONFIG } from '../app.config';
 
 export const getSwcConfig = (isDev: boolean) => {
-  return {
+  const config: SwcConfig = {
     sourceMaps: isDev,
     minify: !isDev,
+    env: {
+      targets: '> 0.4%, electron >= 29, not dead',
+    },
     jsc: {
       parser: {
-        target: 'es2022',
         syntax: 'typescript',
-        jsx: true,
         tsx: true,
-        dynamicImport: true,
-        allowJs: true,
       },
       transform: {
         react: {
@@ -31,6 +31,8 @@ export const getSwcConfig = (isDev: boolean) => {
       },
     },
   };
+
+  return config;
 };
 
 export const sharedConfig: Configuration = {
