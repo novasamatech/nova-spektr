@@ -1453,7 +1453,9 @@
     "chainId": "0x64a1c658a48b2e70a7fb1ad4c39eea35022568c20fc44a6e2e3d0a57aee6053b",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/ParallelHeiko.svg",
-    "options": [],
+    "options": [
+      "multisig"
+    ],
     "nodes": [
       {
         "url": "wss://heiko-rpc.parallel.fi",
