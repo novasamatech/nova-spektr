@@ -8,6 +8,7 @@ import { HashRouter } from 'react-router-dom';
 
 import { isElectron } from '@/shared/lib/utils';
 import { FallbackScreen } from '@/shared/ui';
+import { APP_CONFIG } from '../../../app.config';
 
 import { LoadingDelay, controlledLazy, suspenseDelayAdapter } from './DelayedSuspense';
 import { ElectronSplashScreen } from './components/ElectronSplashScreen/ElectronSplashScreen';
@@ -53,6 +54,9 @@ const container = document.getElementById('app');
 if (!container) {
   throw new Error('Root container is missing in index.html');
 }
+
+container.style.minWidth = `${APP_CONFIG.MAIN.WINDOW.WIDTH}px`;
+container.style.minHeight = `${APP_CONFIG.MAIN.WINDOW.HEIGHT}px`;
 
 createRoot(container).render(<Root />);
 

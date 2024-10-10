@@ -53,7 +53,7 @@ export const WebSplashScreen = () => {
   }, []);
 
   return (
-    <div className="flex h-screen w-screen items-center justify-center font-manrope duration-500 animate-in fade-in">
+    <div className="flex h-screen w-full items-center justify-center p-4 font-manrope duration-500 animate-in fade-in">
       <div className="fixed -top-[1100px] left-[50%] h-[1140px] w-[1140px] -translate-x-[50%] rounded-full bg-[#FF57E4] blur-[215px]" />
       <div className="z-10 flex flex-col items-center gap-[86px]">
         <div className="flex items-center gap-[88px]">
