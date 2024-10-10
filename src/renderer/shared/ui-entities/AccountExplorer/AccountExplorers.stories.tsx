@@ -33,7 +33,7 @@ const meta: Meta<typeof AccountExplorers> = {
   title: 'Design System/entities/AccountExplorers',
   component: AccountExplorers,
   args: {
-    account: testAccountId,
+    accountId: testAccountId,
     chain: testChain,
   },
   parameters: {

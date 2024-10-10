@@ -25,8 +25,8 @@ const createPlaceholders = (size: number) => {
   ));
 };
 
-export const OngoingReferendums = memo<Props>(
-  ({ referendums, isLoading, isTitlesLoading, mixLoadingWithData, api, onSelect }) => {
+export const OngoingReferendums = memo(
+  ({ referendums, isLoading, isTitlesLoading, mixLoadingWithData, api, onSelect }: Props) => {
     const { t } = useI18n();
 
     const placeholdersCount = isLoading ? Math.min(referendums.length || 4, 20) : Math.max(1, 4 - referendums.length);

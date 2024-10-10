@@ -11,7 +11,7 @@ type Props = {
   address?: Address | null;
 };
 
-export const VotedBy = memo<Props>(({ address }) => {
+export const VotedBy = memo(({ address }: Props) => {
   const { t } = useI18n();
 
   const voter = useStoreMap({
