@@ -18,7 +18,7 @@ type Props = {
   loading?: boolean;
 };
 
-export const VotingHistoryList = memo<Props>(({ items, asset, chain, loading }) => {
+export const VotingHistoryList = memo(({ items, asset, chain, loading }: Props) => {
   const { t } = useI18n();
   const [query, setQuery] = useState<string>('');
 

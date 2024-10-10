@@ -20,7 +20,7 @@ const containerStyle: CSSProperties = {
 const MIN_START_SYMBOLS = 5;
 const MIN_END_SYMBOLS = 5;
 
-export const Truncate = memo<Props>(({ text, ellipsis = '...' }) => {
+export const Truncate = memo(({ text, ellipsis = '...' }: Props) => {
   const [container, setContainer] = useState<HTMLElement | null>(null);
   const textRef = useRef<HTMLElement>(null);
   const ellipsisRef = useRef<HTMLElement>(null);

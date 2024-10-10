@@ -20,7 +20,7 @@ type Props = {
   onSelect: (value: AggregatedReferendum) => void;
 };
 
-export const VotedReferendumItem = memo<Props>(({ referendum, network, votes, onSelect }) => {
+export const VotedReferendumItem = memo(({ referendum, network, votes, onSelect }: Props) => {
   const { t } = useI18n();
 
   const { referendumId, approvalThreshold } = referendum;
