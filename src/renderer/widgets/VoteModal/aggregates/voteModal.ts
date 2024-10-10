@@ -196,22 +196,17 @@ sample({
   clock: voteConfirmModel.events.sign,
   source: { confirms: voteConfirmModel.$confirmMap },
   fn: ({ confirms }): { signingPayloads: SigningPayload[] } => {
-    const confirm = confirms[0];
-    if (!confirm) {
+    if (!confirms) {
       return { signingPayloads: [] };
     }
 
-    const { meta, accounts } = confirm;
-
     return {
-      signingPayloads: [
-        {
-          account: accounts.proxy || accounts.initiator,
-          chain: meta.chain,
-          transaction: meta.wrappedTransactions.wrappedTx,
-          signatory: accounts.signer || undefined,
-        },
-      ],
+      signingPayloads: Object.values(confirms).map(({ meta, accounts }) => ({
+        account: accounts.proxy || accounts.initiator,
+        chain: meta.chain,
+        transaction: meta.wrappedTransactions.wrappedTx,
+        signatory: accounts.signer || undefined,
+      })),
     };
   },
   target: signModel.events.formInitiated,
