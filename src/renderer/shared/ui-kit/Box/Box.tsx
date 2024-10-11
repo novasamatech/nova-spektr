@@ -19,6 +19,8 @@ type BoxProps = PropsWithChildren<{
   direction?: CSS.Property.FlexDirection;
   shrink?: CSS.Property.FlexShrink;
   fitContainer?: boolean;
+  fillContainer?: boolean;
+  grow?: number;
   wrap?: boolean;
   gap?: BoxSpacing;
   padding?: BoxPadding;
@@ -60,9 +62,11 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(
       padding,
       direction = 'column',
       shrink,
+      grow,
       verticalAlign,
       horizontalAlign,
       fitContainer,
+      fillContainer,
       width,
       height,
       testId = 'Box',
@@ -88,6 +92,7 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(
         justifyContent: isHorizontal ? horizontalAlign : verticalAlign,
         flexShrink: shrink,
         gap: getBoxSize<Property.Gap>(gap),
+        flexGrow: grow,
       }),
       [isHorizontal, calculatedPadding, width, height, verticalAlign, horizontalAlign, gap],
     );
@@ -95,12 +100,13 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(
     return (
       <div
         ref={ref}
-        className={cnTw('flex h-fit min-h-0 min-w-0', {
+        className={cnTw('relative flex h-fit min-h-0 min-w-0', {
           'flex-col': direction === 'column',
           'flex-col-reverse': direction === 'column-reverse',
           'flex-row': direction === 'row',
           'flex-row-reverse': direction === 'row-reverse',
           'max-h-full w-full': fitContainer,
+          'min-h-full min-w-full': fillContainer,
           wrap: wrap,
         })}
         style={style}

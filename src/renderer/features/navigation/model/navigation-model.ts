@@ -4,17 +4,17 @@ import { type NavigateFunction } from 'react-router-dom';
 
 import { type PathType } from '@/shared/routes';
 
-const navigateTo = createEvent<PathType>();
+const navigateTo = createEvent<PathType | (string & {})>();
 
 const flow = createGate<{ navigate: NavigateFunction | null }>({ defaultState: { navigate: null } });
 
 type NavigateParams = {
-  path: PathType;
+  path: PathType | (string & {});
   navigate: NavigateFunction;
 };
 
 const navigateFx = createEffect(({ path, navigate }: NavigateParams) => {
-  navigate(path, { replace: true });
+  navigate(path);
 });
 
 sample({

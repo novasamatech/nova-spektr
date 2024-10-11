@@ -2,6 +2,7 @@ import { type Asset } from './asset';
 import { type ChainId, type HexString } from './general';
 
 export type Chain = {
+  // Also known as "genesis hash"
   chainId: ChainId;
   parentId?: HexString;
   specName: string;

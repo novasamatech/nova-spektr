@@ -26,7 +26,11 @@ const {
   $pending: $isTitlesLoading,
   done: requestReferendumTitlesDone,
 } = createChunksEffect<TitlesRequestParams, TitlesResponse>(({ chain, service }, fn) => {
-  return service.getReferendumList(chain, fn);
+  return service.getReferendumList(chain, (res) => {
+    if (!res.done) {
+      fn(res.value);
+    }
+  });
 });
 
 sample({

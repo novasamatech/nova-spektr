@@ -1,7 +1,13 @@
 import { cnTw, nonNullable } from '@/shared/lib/utils';
 
 type Props = {
+  /**
+   * Value in range of 0..100
+   */
   value: number;
+  /**
+   * Value in range of 0..100
+   */
   threshold?: number;
   disabled?: boolean;
   thresholdIndicatorBorder?: string;

@@ -1,11 +1,10 @@
-import { Bytes, Null, StorageKey, Struct, Text, bool, i64, u128, u16, u32, u64, u8 } from '@polkadot/types';
+import { Bytes, Data, Null, StorageKey, Struct, Text, bool, i64, u128, u16, u32, u64, u8 } from '@polkadot/types';
 import { GenericAccountId } from '@polkadot/types/generic/AccountId';
 import { type Perbill, type Permill } from '@polkadot/types/interfaces';
-import { BN } from '@polkadot/util';
+import { BN, u8aToString } from '@polkadot/util';
 import { z } from 'zod';
 
-import { type AccountId } from '@/shared/core';
-import { isCorrectAccountId, toAddress } from '@/shared/lib/utils';
+import { isCorrectAccountId } from '@/shared/lib/utils';
 
 export const storageKeySchema = <const T extends [z.ZodTypeAny, ...z.ZodTypeAny[]]>(...schema: T) => {
   const argsSchema = z.tuple(schema);
@@ -17,44 +16,76 @@ export const storageKeySchema = <const T extends [z.ZodTypeAny, ...z.ZodTypeAny[
 
 export const nullSchema = z.instanceof(Null).transform((value) => value.toPrimitive());
 
-export const u8Schema = z.instanceof(u8).transform((value) => value.toNumber());
-export const u16Schema = z.instanceof(u16).transform((value) => value.toNumber());
-export const u32Schema = z.instanceof(u32).transform((value) => value.toNumber());
-export const u64Schema = z.instanceof(u64).transform((value) => new BN(value.toString()));
-export const u128Schema = z.instanceof(u128).transform((value) => new BN(value.toString()));
-export const i64Schema = z.instanceof(i64).transform((value) => new BN(value.toString()));
-export const textSchema = z.instanceof(Text).transform((value) => value.toString());
+export const u8Schema = z
+  .instanceof(u8)
+  .transform((value) => value.toNumber())
+  .describe('u8');
+export const u16Schema = z
+  .instanceof(u16)
+  .transform((value) => value.toNumber())
+  .describe('u16');
+export const u32Schema = z
+  .instanceof(u32)
+  .transform((value) => value.toNumber())
+  .describe('u32');
+export const u64Schema = z
+  .instanceof(u64)
+  .transform((value) => new BN(value.toString()))
+  .describe('u64');
+export const u128Schema = z
+  .instanceof(u128)
+  .transform((value) => new BN(value.toString()))
+  .describe('u128');
+export const i64Schema = z
+  .instanceof(i64)
+  .transform((value) => new BN(value.toString()))
+  .describe('i64');
+export const textSchema = z
+  .instanceof(Text)
+  .transform((value) => value.toString())
+  .describe('text');
 export const bytesSchema = z.instanceof(Bytes).transform((value) => value.toU8a());
+export const bytesString = z.instanceof(Bytes).transform((value) => value.toString());
 export const bytesHexSchema = z.instanceof(Bytes).transform((value) => value.toHex());
 
 export const boolSchema = z.instanceof(bool).transform((value) => value.toPrimitive());
 
 export const structHexSchema = z.instanceof(Struct).transform((value) => value.toHex());
 
-export const accountIdSchema = z.instanceof(GenericAccountId).transform((value, ctx) => {
-  const account = value.toHex();
-  if (account.startsWith('0x')) {
-    if (isCorrectAccountId(account as AccountId)) {
-      return account;
+export const dataStringSchema = z
+  .instanceof(Data)
+  .transform((value) => (value.isRaw ? u8aToString(value.asRaw) : value.value.toString()));
+
+export type BlockHeight = z.infer<typeof blockHeightSchema>;
+export const blockHeightSchema = u32Schema.describe('blockHeight').brand('blockHeight');
+
+export type AccountId = z.infer<typeof accountIdSchema>;
+export const accountIdSchema = z
+  .instanceof(GenericAccountId)
+  .transform((value, ctx) => {
+    const account = value.toHex();
+    if (account.startsWith('0x')) {
+      if (isCorrectAccountId(account)) {
+        return account;
+      }
+
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Account id ${account} is invalid`,
+      });
+
+      return z.NEVER;
     }
 
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: `Account id ${account} is invalid`,
+      message: `${ctx.path.join('.')} is not account id`,
     });
 
     return z.NEVER;
-  }
-
-  ctx.addIssue({
-    code: z.ZodIssueCode.custom,
-    message: `${ctx.path.join('.')} is not account id`,
-  });
-
-  return z.NEVER;
-});
-
-export const addressSchema = accountIdSchema.transform((x) => toAddress(x));
+  })
+  .describe('accountId')
+  .brand('accountId');
 
 /**
  * Parts per Billion.

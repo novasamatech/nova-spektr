@@ -26,6 +26,10 @@ export const governanceService = {
 function mapReferendum(referendumId: string, info: ReferendaReferendumInfoConvictionVotingTally): Referendum {
   switch (info.type) {
     case 'Ongoing':
+      if (!('support' in info.data.tally)) {
+        throw new Error('Tally is incorrect');
+      }
+
       return {
         referendumId,
         type: info.type,

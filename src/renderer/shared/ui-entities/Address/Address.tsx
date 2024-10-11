@@ -16,6 +16,7 @@ type IconProps = XOR<{
 type Props = IconProps & {
   address: AddressType;
   title?: string;
+  replaceAddressWithTitle?: boolean;
   variant?: AddressVariant;
   testId?: string;
 };

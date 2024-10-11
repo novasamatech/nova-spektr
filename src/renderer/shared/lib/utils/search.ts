@@ -2,39 +2,54 @@ type CorrectKeys<T extends object> = {
   [K in keyof T]: T[K] extends string | number | undefined | null ? K : never;
 }[keyof T];
 
-type Params<T extends object> = {
+type Params<T extends object, M extends object> = {
   records: T[];
-  weights: Partial<Record<CorrectKeys<T>, number>>;
+  getMeta?: (record: NoInfer<T>) => M;
+  weights: Partial<Record<CorrectKeys<NoInfer<T & M>>, number>>;
   query: string;
   queryMinLength?: number;
+};
+
+const emptyMeta = <M extends object>(): M => {
+  return {} as M;
 };
 
 /**
  * Performs searching by query and sort using weight of each field
  *
  * @param records - List of objects
+ * @param meta - List of additional info, associated with given record by index
  * @param query - Requested string
  * @param queryMinLength - From this query length method starts to perform
  *   search
  * @param weights - Object with keys to search.
  */
-export const performSearch = <T extends object>({ records, query, queryMinLength, weights }: Params<T>) => {
+export const performSearch = <T extends object, M extends object = Record<string, never>>({
+  records,
+  getMeta = emptyMeta<M>,
+  query,
+  queryMinLength,
+  weights,
+}: Params<T, M>) => {
   if (query === '' || (queryMinLength && query.length < queryMinLength)) {
     return records;
   }
 
   const normalizedQuery = query.toLowerCase();
-  const keys = Object.keys(weights) as CorrectKeys<T>[];
+  const keys = Object.keys(weights) as CorrectKeys<T & M>[];
 
   const filteredList: T[] = [];
   const weightsMap: Map<T, number> = new Map();
 
-  for (const item of records) {
+  for (const record of records) {
     let found = false;
     let weight = 0;
 
+    const meta = getMeta(record);
+
     for (const key of keys) {
-      const field = item[key];
+      // @ts-expect-error types are too dynamic :(
+      const field: unknown = record[key] ?? meta[key];
 
       switch (typeof field) {
         case 'string':
@@ -54,8 +69,8 @@ export const performSearch = <T extends object>({ records, query, queryMinLength
     }
 
     if (found) {
-      filteredList.push(item);
-      weightsMap.set(item, weight);
+      filteredList.push(record);
+      weightsMap.set(record, weight);
     }
   }
 

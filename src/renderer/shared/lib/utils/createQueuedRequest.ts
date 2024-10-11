@@ -33,10 +33,10 @@ export const createQueuedRequest = async <T, V>({
 
   let result = getRecords(ping);
 
-  callback?.(result, totalRequests === 1);
+  callback?.(result, totalRequests <= 1);
 
   return createQueuedTasks({
-    totalTasks: totalRequests - 1,
+    totalTasks: Math.max(totalRequests - 1, 0),
     task: (index) => {
       return makeRequest(index + 1).then((data) => {
         const records = getRecords(data);

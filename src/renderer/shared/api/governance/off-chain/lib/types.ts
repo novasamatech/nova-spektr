@@ -31,13 +31,12 @@ export type ReferendumSummary = {
 };
 
 export interface GovernanceApi {
-  getReferendumList: (chain: Chain, callback: (data: Record<ReferendumId, string>, done: boolean) => void) => void;
-  getReferendumDetails: (chain: Chain, referendumId: ReferendumId) => Promise<string | undefined>;
-  getReferendumVotes: (
+  getReferendumList: (
     chain: Chain,
-    referendumId: ReferendumId,
-    callback: (data: Address[], done: boolean) => void,
-  ) => Promise<Address[]>;
+    callback: (data: IteratorResult<Record<ReferendumId, string>, void>) => void,
+  ) => void;
+  getReferendumDetails: (chain: Chain, referendumId: ReferendumId) => Promise<string | undefined>;
+  getReferendumVotes: (chain: Chain, referendumId: ReferendumId) => Promise<Address[]>;
   getReferendumTimeline: (chain: Chain, referendumId: ReferendumId) => Promise<ReferendumTimelineRecord[]>;
   getReferendumSummary: (chain: Chain, referendumId: ReferendumId) => Promise<ReferendumSummary>;
 }

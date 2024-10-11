@@ -97,6 +97,7 @@
   --badge-background-hover: rgba(70, 73, 246, 0.24);
   --badge-red-background-default: rgba(245, 33, 99, 0.16);
   --badge-orange-background-default: rgba(246, 143, 7, 0.16);
+  --badge-green-background-default: rgba(1, 166, 62, 0.16);
   --extended-block-background: rgba(69, 69, 137, 0.03);
   --block-background-default: #fff;
   --negative-action-background: rgba(245, 33, 99, 0.06);
@@ -114,6 +115,8 @@
   --label-background-gray: rgba(128, 128, 128, 0.48);
   --label-background-green: #01a63e;
   --label-background-red: #f52163;
+  --label-lightblue-default: rgba(53, 173, 211, 0.12);
+  --label-purple-default: rgba(123, 41, 255, 0.08);
   --selected-background: rgba(69, 69, 137, 0.1);
   --black-background: rgba(0, 0, 0, 0.5);
   --background-dark: #262626;

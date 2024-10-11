@@ -1,9 +1,11 @@
 import {
   accountIdSchema,
-  addressSchema,
+  blockHeightSchema,
   boolSchema,
   bytesHexSchema,
   bytesSchema,
+  bytesString,
+  dataStringSchema,
   i64Schema,
   nullSchema,
   perbillSchema,
@@ -24,7 +26,7 @@ import {
   enumValueSchema,
   objectSchema,
   optionalSchema,
-  tuppleMapSchema,
+  tupleMapSchema,
   vecSchema,
 } from './structs';
 
@@ -40,20 +42,23 @@ export const pjsSchema = {
   text: textSchema,
   null: nullSchema,
   bytes: bytesSchema,
+  bytesString: bytesString,
   bytesHex: bytesHexSchema,
   accountId: accountIdSchema,
-  address: addressSchema,
   storageKey: storageKeySchema,
   bool: boolSchema,
-  blockHeight: u32Schema,
+  blockHeight: blockHeightSchema,
   structHex: structHexSchema,
+  dataString: dataStringSchema,
 
   object: objectSchema,
   optional: optionalSchema,
   enumType: enumTypeSchema,
   enumValue: enumValueSchema,
   enumValueLoose: enumValueLooseSchema,
-  tuppleMap: tuppleMapSchema,
+  tupleMap: tupleMapSchema,
   complex: complexSchema,
   vec: vecSchema,
 };
+
+export type { AccountId, BlockHeight } from './primitives';

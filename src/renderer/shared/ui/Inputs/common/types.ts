@@ -1,4 +1,4 @@
-type BaseHTMLInputProps = 'value' | 'required' | 'disabled' | 'placeholder' | 'name' | 'className';
+type BaseHTMLInputProps = 'value' | 'required' | 'disabled' | 'placeholder' | 'name' | 'className' | 'autoFocus';
 
 export type HTMLInputProps = BaseHTMLInputProps | 'type' | 'tabIndex' | 'spellCheck';
 

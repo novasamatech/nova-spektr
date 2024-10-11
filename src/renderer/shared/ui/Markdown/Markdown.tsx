@@ -110,6 +110,10 @@ const components: Components = {
 };
 
 export const Markdown = ({ children }: { children: string }) => {
+  if (!children) {
+    return null;
+  }
+
   return (
     <ReactMarkdown
       className="flex flex-col gap-3 overflow-hidden whitespace-pre-line text-body"

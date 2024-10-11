@@ -14,6 +14,7 @@ export const subscriptionService = {
   subscribeEvents,
 };
 
+// @deprecated Use `polkadotjsHelpers.subscribeSystemEvents` instead.
 function subscribeEvents(api: ApiPromise, params: Params, callback: (event: Event) => void): UnsubscribePromise {
   return api.query.system.events((events: Vec<FrameSystemEventRecord>) => {
     for (const { event } of events) {
