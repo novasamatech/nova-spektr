@@ -104,6 +104,10 @@ export const isUndelegateTransaction = (transaction?: Transaction | DecodedTrans
   return !!transaction && hasTransaction(transaction, (tx) => tx.type === TransactionType.UNDELEGATE);
 };
 
+export const isUnlockTransaction = (transaction?: Transaction | DecodedTransaction): boolean => {
+  return !!transaction && hasTransaction(transaction, (tx) => tx.type === TransactionType.UNLOCK);
+};
+
 export const hasTransaction = (
   transaction: Transaction | DecodedTransaction,
   filter: (transaction: Transaction | DecodedTransaction) => boolean,
@@ -126,6 +130,14 @@ export const isWrappedInBatchAll = (type: TransactionType) => {
   ]);
 
   return batchAllOperations.has(type);
+};
+
+export const findCoreBatchAll = (coreTx: Transaction | DecodedTransaction): Transaction => {
+  if (isUnlockTransaction(coreTx)) {
+    return coreTx.args?.transactions?.find((t: Transaction) => t.type === TransactionType.UNLOCK) || coreTx;
+  }
+
+  return coreTx.args?.transactions?.find((tx: Transaction) => isWrappedInBatchAll(tx.type));
 };
 
 export const getTransactionAmount = (tx: Transaction | DecodedTransaction): string | null => {
@@ -167,10 +179,8 @@ export const getTransactionAmount = (tx: Transaction | DecodedTransaction): stri
     // unstake - chill, unbond
     // start staking - bond, nominate
     // unlock - unlock, remove_vote
-    const transactions = tx.args?.transactions;
-    if (!transactions) return null;
-
-    const txMatch = transactions.find((tx: Transaction) => isWrappedInBatchAll(tx.type));
+    if (!tx.args?.transactions) return null;
+    const txMatch = findCoreBatchAll(tx);
 
     return getTransactionAmount(txMatch);
   }
@@ -298,8 +308,7 @@ export const getTransactionTitle = (t: TFunction, transaction?: Transaction | De
   }
 
   if (transaction.type === TransactionType.BATCH_ALL) {
-    const transactions = transaction.args?.transactions;
-    const txMatch = transactions.find((tx: Transaction) => isWrappedInBatchAll(tx.type));
+    const txMatch = findCoreBatchAll(transaction);
 
     return getTransactionTitle(t, txMatch);
   }

@@ -27,8 +27,10 @@ import { governanceService, votingService } from '@/entities/governance';
 import { networkUtils } from '@entities/network';
 import { eraService, useStakingData, validatorsService } from '@entities/staking';
 import { transactionService } from '@entities/transaction';
+import { type VoteConfirm } from '@/features/operations/OperationsConfirm';
 import { type FeeMap } from '@/features/operations/OperationsValidation';
 import { type UnlockFormData } from '@features/governance/types/structs';
+import { type RemoveVoteConfirm } from '@features/operations/OperationsConfirm/Referendum/RemoveVote/model/confirm-model';
 
 import { getCoreTx } from './utils';
 
@@ -61,6 +63,8 @@ export const prepareTransaction = {
   prepareDelegateTransaction,
   prepareRevokeDelegationTransaction,
   prepareEditDelegationTransaction,
+  prepareVoteTransaction,
+  prepareRemoveVoteTransaction,
 };
 
 async function getTransactionData(
@@ -653,4 +657,50 @@ async function prepareRevokeDelegationTransaction({
     totalFee: '0',
     multisigDeposit: '0',
   } satisfies RevokeDelegationInput;
+}
+
+async function prepareVoteTransaction({ transaction, wallets, chains, apis, feeMap }: DataParams) {
+  const coreTx = getCoreTx(transaction);
+
+  const { chainId, chain, account } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
+  const api = apis[chainId];
+
+  return {
+    id: transaction.id,
+    api,
+    chain,
+    asset: chain.assets[0],
+    account: account!,
+    existingVote: coreTx.args.vote,
+    wrappedTransactions: transactionService.getWrappedTransaction({
+      api,
+      addressPrefix: chain.addressPrefix,
+      transaction: transaction.coreTx,
+      txWrappers: transaction.txWrappers,
+    }),
+    description: '',
+  } satisfies VoteConfirm;
+}
+
+async function prepareRemoveVoteTransaction({ transaction, wallets, chains, apis, feeMap }: DataParams) {
+  const coreTxs = transaction.coreTx.args.transactions || [transaction.coreTx];
+  const { chainId, chain, account } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
+  const api = apis[chainId];
+
+  return {
+    id: transaction.id,
+    account: account!,
+    chain,
+    wrappedTransactions: transactionService.getWrappedTransaction({
+      api,
+      addressPrefix: chain.addressPrefix,
+      transaction: transaction.coreTx,
+      txWrappers: transaction.txWrappers,
+    }),
+
+    api,
+    asset: chain.assets[0],
+    votes: coreTxs.map((t: Transaction) => t.args),
+    description: '',
+  } satisfies RemoveVoteConfirm;
 }
