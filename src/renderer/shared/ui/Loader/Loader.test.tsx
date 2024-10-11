@@ -1,19 +1,17 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 
 import { Loader } from './Loader';
 
 describe('ui/Loader', () => {
-  test('should render component', () => {
+  test('should render component', async () => {
     render(<Loader color="primary" />);
 
-    const icon = screen.getByText('loader.svg');
-    expect(icon).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('loader.svg')).toBeInTheDocument());
   });
 
-  test('should spin the loader', () => {
+  test('should spin the loader', async () => {
     render(<Loader color="primary" />);
 
-    const icon = screen.getByText('loader.svg');
-    expect(icon).toHaveClass('animate-spin');
+    await waitFor(() => expect(screen.getByText('loader.svg')).toHaveClass('animate-spin'));
   });
 });

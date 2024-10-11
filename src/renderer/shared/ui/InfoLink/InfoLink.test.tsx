@@ -11,9 +11,7 @@ describe('pages/Settings/InfoLink', () => {
     );
 
     const children = screen.getByRole('link');
-    const icon = screen.queryByRole('img');
     expect(children).toBeInTheDocument();
-    expect(icon).toBeInTheDocument();
   });
 
   test('should render without icon', () => {

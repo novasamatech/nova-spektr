@@ -53,6 +53,7 @@ export { Tabs } from './Tabs/Tabs';
 export { Markdown } from './Markdown/Markdown';
 export { BlockExplorer } from './BlockExplorer/BlockExplorer';
 export { EmptyList } from './EmptyList/EmptyList';
+export { Animation } from './Animation/Animation';
 
 // FIXME: Animation component exported separately.
 // Adding them to this file causes to crash all tests which use anything from that file

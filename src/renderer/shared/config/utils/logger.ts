@@ -1,5 +1,7 @@
 import log from 'electron-log';
 
+import { isElectron } from '@/shared/lib/utils';
+
 export const logger = {
   init,
 };
@@ -9,6 +11,7 @@ export const logger = {
  */
 function init() {
   if (process.env.LOGGER === 'false') return;
+  if (!isElectron()) return;
 
   log.variables.version = process.env.VERSION;
   log.variables.env = process.env.NODE_ENV;

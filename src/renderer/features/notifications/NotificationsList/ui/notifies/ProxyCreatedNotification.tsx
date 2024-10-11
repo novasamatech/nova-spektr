@@ -22,7 +22,7 @@ export const ProxyCreatedNotification = ({ notification }: Props) => {
   const accountId =
     notification.proxyVariant === ProxyVariant.PURE ? notification.proxiedAccountId : notification.proxyAccountId;
 
-  const address = toAddress(accountId, { prefix: chains[notification.chainId].addressPrefix });
+  const address = toAddress(accountId, { prefix: chains[notification.chainId]?.addressPrefix });
 
   return (
     <div className="flex gap-x-2">

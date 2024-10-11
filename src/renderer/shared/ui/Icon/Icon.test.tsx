@@ -1,19 +1,17 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 
 import { Icon } from './Icon';
 
 describe('ui/Icon', () => {
-  test('should render svg component', () => {
+  test('should render svg component', async () => {
     render(<Icon name="copy" />);
 
-    const label = screen.getByTestId('copy-svg');
-    expect(label).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId('copy-svg')).toBeInTheDocument());
   });
 
-  test('should render img component', () => {
+  test('should render img component', async () => {
     render(<Icon as="img" name="copy" />);
 
-    const label = screen.getByTestId('copy-img');
-    expect(label).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId('copy-img')).toBeInTheDocument());
   });
 });

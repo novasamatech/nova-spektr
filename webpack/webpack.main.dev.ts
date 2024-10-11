@@ -6,7 +6,7 @@ import { merge } from 'webpack-merge';
 
 import { APP_CONFIG } from '../app.config';
 
-import sharedConfig from './webpack.shared';
+import { sharedConfig } from './webpack.shared';
 
 const { FOLDERS } = APP_CONFIG;
 
