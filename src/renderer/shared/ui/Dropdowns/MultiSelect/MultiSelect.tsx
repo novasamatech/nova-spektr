@@ -92,7 +92,7 @@ export const MultiSelect = ({
               SelectButtonStyle[theme].disabled,
               CommonInputStyles,
               CommonInputStylesTheme[theme],
-              'inline-flex w-full items-center justify-between gap-x-2 py-2 pr-2',
+              'inline-flex w-full items-center justify-between gap-x-2 py-2 pr-2 text-start',
             )}
             tabIndex={tabIndex}
           >
