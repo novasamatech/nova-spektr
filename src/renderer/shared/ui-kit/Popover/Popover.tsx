@@ -2,7 +2,6 @@ import * as RadixPopover from '@radix-ui/react-popover';
 import { type PropsWithChildren, createContext, useContext, useMemo } from 'react';
 
 import { type XOR } from '@/shared/core';
-import { Surface } from '../Surface/Surface';
 import { useTheme } from '../Theme/useTheme';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
 
@@ -77,9 +76,9 @@ const Content = ({ children }: PropsWithChildren) => {
         asChild
         onClick={(e) => e.stopPropagation()}
       >
-        <Surface className="z-50 duration-100 animate-in fade-in zoom-in-95" elevation={1}>
+        <div className="relative z-50 rounded-md border border-token-container-border bg-block-background-default text-body shadow-shadow-2 duration-100 animate-in fade-in zoom-in-95">
           {children}
-        </Surface>
+        </div>
       </RadixPopover.Content>
     </RadixPopover.Portal>
   );

@@ -24,7 +24,7 @@ export const DetailRow = ({ label, className, wrapperClassName, children }: Prop
         {children}
       </FootnoteText>
     ) : (
-      <dd className={cnTw('flex items-center justify-end', className)}>{children}</dd>
+      <dd className={cnTw('flex min-w-40 items-center justify-end text-end', className)}>{children}</dd>
     )}
   </div>
 );

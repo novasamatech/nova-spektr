@@ -5,7 +5,7 @@ import { HeaderTitleText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Modal, Skeleton } from '@/shared/ui-kit';
 import { nonNullable } from '@shared/lib/utils';
 import { referendumDetailsModel } from '../model/details';
-import { referendumsDetailsFeatureStatus } from '../model/status';
+import { detailsFeatureStatus } from '../model/status';
 
 import { Card } from './Card';
 import { ProposerName } from './ProposerName';
@@ -19,7 +19,7 @@ type Props = {
 };
 
 export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props) => {
-  useGate(referendumsDetailsFeatureStatus.gate);
+  useGate(detailsFeatureStatus.gate);
   useGate(referendumDetailsModel.gate, { referendumId });
 
   const referendum = useUnit(referendumDetailsModel.$referendum);

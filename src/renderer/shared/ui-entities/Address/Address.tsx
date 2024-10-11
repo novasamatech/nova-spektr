@@ -26,7 +26,7 @@ export const Address = memo(
     const titleNode = title ? <span className="truncate text-text-primary">{title}</span> : null;
     const addressNode = (
       <span
-        className={cnTw('w-full text-left', {
+        className={cnTw('w-full', {
           'text-help-text text-text-tertiary': title,
         })}
       >
