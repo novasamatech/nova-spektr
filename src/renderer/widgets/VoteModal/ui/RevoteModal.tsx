@@ -53,7 +53,7 @@ export const RevoteModal = ({ referendum, votes, asset, chain, onClose }: Props)
       closeButton
       title={<OperationTitle title={t('governance.voting.revoteTitle')} chainId={chain.chainId}></OperationTitle>}
       headerClass="px-5 py-3"
-      panelClass="flex flex-col w-modal max-h-[678px]"
+      panelClass="flex flex-col w-modal max-h-[736px]"
       contentClass="flex flex-col h-full min-h-0 overflow-y-auto shrink"
       onClose={onClose}
     >

@@ -463,6 +463,7 @@ sample({
     unstakeConfirmModel.output.formSubmitted,
     withdrawConfirmModel.output.formSubmitted,
     delegateConfirmModel.output.formSubmitted,
+    editDelegationConfirmModel.output.formSubmitted,
     revokeDelegationConfirmModel.output.formSubmitted,
     unlockConfirmAggregate.output.formSubmitted,
     voteConfirmModel.events.sign,
