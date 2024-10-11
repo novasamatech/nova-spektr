@@ -614,7 +614,9 @@
         "lockingPeriod": "Locking period",
         "networkFee": "Network fee",
         "tracks": "Tracks"
-      }
+      },
+      "noVoteForReferendum": "There're no existing votes for this referendum",
+      "timeoutReferendumError": "This referendum has already passed"
     },
     "voteHistory": {
       "listColumnAccount": "Account",
