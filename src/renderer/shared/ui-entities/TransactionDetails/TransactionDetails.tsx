@@ -94,7 +94,7 @@ export const TransactionDetails = memo(({ wallets, chain, proxy, initiator, sign
           <Box direction="row" gap={2}>
             <WalletIcon type={signatoryWallet.type} size={16} />
             <span>{signatoryWallet.name}</span>
-            <AccountExplorers account={signatory.accountId} chain={chain} />
+            <AccountExplorers accountId={signatory.accountId} chain={chain} />
           </Box>
         </DetailRow>
       )}
@@ -108,11 +108,9 @@ export const TransactionDetails = memo(({ wallets, chain, proxy, initiator, sign
 
 const AccountInfo = ({ account, chain }: { account: Account; chain: Chain }) => {
   return (
-    <Box direction="row" gap={2} grow={1}>
-      <div className="w-full text-text-secondary">
-        <Address variant="truncate" address={toAddress(account.accountId, { prefix: chain.addressPrefix })} />
-      </div>
-      <AccountExplorers account={account.accountId} chain={chain} />
-    </Box>
+    <div className="flex w-full min-w-0 gap-2 text-text-secondary">
+      <Address variant="truncate" address={toAddress(account.accountId, { prefix: chain.addressPrefix })} />
+      <AccountExplorers accountId={account.accountId} chain={chain} />
+    </div>
   );
 };

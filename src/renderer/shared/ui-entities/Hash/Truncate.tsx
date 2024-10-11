@@ -1,8 +1,6 @@
 import { type CSSProperties, memo, useRef, useState } from 'react';
 
-import { useDebouncedCallback } from '../../lib/hooks';
-import { nullable } from '../../lib/utils';
-import { useResizeObserver } from '../../ui-kit';
+import { Skeleton, useResizeObserver } from '../../ui-kit';
 
 import { getContainerMeasurement, getTextMeasurement } from './utils';
 
@@ -25,22 +23,34 @@ export const Truncate = memo(({ text, ellipsis = '...' }: Props) => {
   const textRef = useRef<HTMLElement>(null);
   const ellipsisRef = useRef<HTMLElement>(null);
 
+  const [gotFirstCalculation, setGotFirstCalculation] = useState(false);
   const [truncatedText, setTruncatedText] = useState(text);
 
   const calculateMeasurements = () => {
+    /**
+     * Uppercase letter occupies more space, so fixedText is a little wider and
+     * safer for calculation (reduces change to trim last char).
+     */
+    const fixedText = text.toUpperCase();
+    const center = Math.round(text.length / 2);
+    const stringStart = fixedText.substring(0, center);
+    const stringEnd = fixedText.substring(center);
+
     return {
       container: getContainerMeasurement(container),
-      ellipsis: getTextMeasurement(ellipsisRef.current),
-      text: getTextMeasurement(textRef.current, text),
+      ellipsis: getTextMeasurement(ellipsisRef.current, ellipsis),
+      start: getTextMeasurement(textRef.current, stringStart),
+      end: getTextMeasurement(textRef.current, stringEnd),
     };
   };
 
-  const truncateText = (measurements: ReturnType<typeof calculateMeasurements>) => {
-    const containerWidth = measurements.container.width?.value;
-    const ellipsisWidth = measurements.ellipsis.width?.value;
-    const textWidth = measurements.text.width?.value;
+  const truncateText = (measurements: ReturnType<typeof calculateMeasurements>, text: string) => {
+    const containerWidth = measurements.container.width;
+    const ellipsisWidth = measurements.ellipsis.width;
+    const startWidth = measurements.start.width;
+    const endWidth = measurements.end.width;
 
-    if (nullable(containerWidth) || nullable(ellipsisWidth) || nullable(textWidth)) {
+    if (!containerWidth || !ellipsisWidth || !startWidth || !endWidth) {
       return '';
     }
 
@@ -48,53 +58,52 @@ export const Truncate = memo(({ text, ellipsis = '...' }: Props) => {
       return ellipsis;
     }
 
-    const charWidth = textWidth / text.length;
-    const delta = Math.ceil(
-      textWidth -
-        containerWidth +
-        ellipsisWidth +
-        // special fix for wide characters like W,M,etc.
-        charWidth,
-    );
+    const startText = measurements.start.text;
+    const endText = measurements.end.text;
 
-    const lettersToRemove = Math.ceil(delta / charWidth);
-    const center = Math.round(text.length / 2);
-    const removeStart = center - Math.ceil(lettersToRemove / 2);
-    const removeEnd = removeStart + lettersToRemove;
+    const startCharWidth = startWidth / startText.length;
+    const endCharWidth = endWidth / endText.length;
 
-    const leftSide = text.slice(0, Math.max(MIN_START_SYMBOLS, removeStart));
-    const rightSide = text.slice(Math.min(removeEnd, text.length - MIN_END_SYMBOLS));
+    const startDelta = Math.ceil(startWidth - (containerWidth + ellipsisWidth) / 2);
+    const endDelta = Math.ceil(endWidth - (containerWidth + ellipsisWidth) / 2);
+
+    const removeStart = Math.ceil(startDelta / startCharWidth);
+    const removeEnd = Math.ceil(endDelta / endCharWidth);
+
+    const leftSide = text.slice(0, Math.max(MIN_START_SYMBOLS, startText.length - removeStart));
+    const rightSide = text.slice(Math.min(text.length - endText.length + removeEnd, text.length - MIN_END_SYMBOLS));
 
     return `${leftSide}${ellipsis}${rightSide}`;
   };
 
   const parseTextForTruncation = (text: string) => {
     const measurements = calculateMeasurements();
-    if (!measurements.text.width || !measurements.container.width) {
+    if (!measurements.start.width || !measurements.end.width || !measurements.container.width) {
       return;
     }
 
-    const truncatedText =
-      measurements.text.width.value > measurements.container.width.value ? truncateText(measurements) : text;
+    const totalWidth = measurements.start.width + measurements.end.width;
+    const truncatedText = totalWidth > measurements.container.width ? truncateText(measurements, text) : text;
 
     setTruncatedText(truncatedText);
+    setGotFirstCalculation(true);
   };
 
-  const handleResize = useDebouncedCallback(0, () => {
+  useResizeObserver(container, () => {
     parseTextForTruncation(text);
   });
 
-  useResizeObserver(container, handleResize);
-
   return (
-    <span ref={setContainer} style={containerStyle} className="block w-full max-w-full">
-      <span ref={textRef} className="hidden">
+    <span ref={setContainer} style={containerStyle} className="relative block w-full max-w-full">
+      <span ref={textRef} className="invisible">
         {text}
       </span>
       <span ref={ellipsisRef} className="hidden">
         {ellipsis}
       </span>
-      {truncatedText}
+      <span className="absolute inset-0">
+        {gotFirstCalculation ? truncatedText : <Skeleton width="100%" height="100%" />}
+      </span>
     </span>
   );
 });
