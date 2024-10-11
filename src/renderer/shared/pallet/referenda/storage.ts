@@ -45,8 +45,12 @@ export const storage = {
       ),
     );
 
+    const schemaWithIds = pjsSchema
+      .vec(pjsSchema.optional(referendaReferendumInfoConvictionVotingTally))
+      .transform(items => items.map((item, index) => ({ info: item, id: ids![index] })));
+
     if (ids) {
-      return substrateRpcPool.call(() => getQuery(type, api, 'referendumInfoFor').entries(ids)).then(schema.parse);
+      return substrateRpcPool.call(() => getQuery(type, api, 'referendumInfoFor').multi(ids)).then(schemaWithIds.parse);
     } else {
       return substrateRpcPool.call(() => getQuery(type, api, 'referendumInfoFor').entries()).then(schema.parse);
     }
