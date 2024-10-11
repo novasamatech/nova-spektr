@@ -279,6 +279,51 @@
     "omniLogoAlt": "Nova Spektr logo",
     "reloadButton": "Refresh"
   },
+  "fellowship": {
+    "errors": {
+      "disconnect": {
+        "action": "Open network settings",
+        "description": "Referendum information such as the description and voting statistics cannot be accessed and may be outdated.\nPlease check the connection in your network settings.",
+        "title": "You are not connected to this network"
+      }
+    },
+    "fellow_one": "{ count } Fellow",
+    "fellow_other": "{ count } Fellows",
+    "members": {
+      "cardTitle": "Members",
+      "emptyList": "There is no members",
+      "modalAccountTitle": "Account",
+      "modalTitle": "Fellowship members"
+    },
+    "noProfile": "Profile doesn’t exist",
+    "referendums": {
+      "tracks": {
+        "architects": "Architects",
+        "architectsAdept": "Architects Adept",
+        "fellows": "Fellows",
+        "grandArchitects": "Grand Architects",
+        "grandMasters": "Grand Masters",
+        "masters": "Masters",
+        "mastersConstant": "Masters Constant",
+        "members": "Members",
+        "proficientMembers": "Proficient Members",
+        "promoteToIDan": "Promote To I Dan",
+        "promoteToIiDan": "Promote To II Dan",
+        "promoteToIiiDan": "Promote To III Dan",
+        "promoteToIvDan": "Promote To IV Dan",
+        "promoteToVDan": "Promote To V Dan",
+        "promoteToViDan": "Promote To VI Dan",
+        "retainAtIDan": "Retain At I Dan",
+        "retainAtIiDan": "Retain At II Dan2",
+        "retainAtIiiDan": "Retain At III Dan",
+        "retainAtIvDan": "Retain At IV Dan",
+        "retainAtVDan": "Retain At V Dan",
+        "retainAtViDan": "Retain At VI Dan"
+      }
+    },
+    "title": "Fellowship",
+    "yourProfile": "Your profile"
+  },
   "general": {
     "actions": {
       "multiply": "{value} × {multiplier}"
@@ -309,6 +354,7 @@
       "availableLabel": "Available:",
       "descriptionLabel": "Description",
       "descriptionPlaceholder": "Choose an operation description",
+      "searchLabel": "Search",
       "searchPlaceholder": "Search",
       "signerLabel": "Select signer",
       "transferableLabel": "Transferable"
@@ -669,6 +715,7 @@
     "addressBookLabel": "Address Book",
     "balancesLabel": "Portfolio",
     "basketLabel": "Basket",
+    "fellowship": "Fellowship",
     "governance": "Governance",
     "historyLabel": "History",
     "mstOperationLabel": "Operations",

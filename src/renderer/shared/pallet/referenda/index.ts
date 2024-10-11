@@ -1,4 +1,5 @@
 import { consts } from './consts';
+import { toReferendumId } from './helpers';
 import * as schema from './schema';
 import { storage } from './storage';
 
@@ -6,6 +7,9 @@ export const referendaPallet = {
   consts,
   storage,
   schema,
+  helpers: {
+    toReferendumId,
+  },
 };
 
 export {

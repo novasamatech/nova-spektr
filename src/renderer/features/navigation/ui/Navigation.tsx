@@ -26,6 +26,7 @@ export const Navigation = () => {
     { icon: 'asset', title: 'navigation.balancesLabel', link: Paths.ASSETS },
     { icon: 'staking', title: 'navigation.stakingLabel', link: Paths.STAKING },
     { icon: 'governance', title: 'navigation.governance', link: Paths.GOVERNANCE },
+    { icon: 'fellowshipNav', title: 'navigation.fellowship', link: Paths.FELLOWSHIP },
     {
       icon: 'operations',
       title: 'navigation.mstOperationLabel',

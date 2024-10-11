@@ -5,5 +5,5 @@
     "noPropertyAccessFromIndexSignature": true,
     "noUncheckedIndexedAccess": true
   },
-  "include": ["./**/*.ts"]
+  "include": ["./*.ts", "./**/*.ts"]
 }

@@ -19,6 +19,13 @@ const Staking = lazy(() => import('./Staking').then((m) => ({ default: m.Staking
 const Contacts = lazy(() => import('./AddressBook').then((m) => ({ default: m.Contacts })));
 const CreateContact = lazy(() => import('./AddressBook').then((m) => ({ default: m.CreateContact })));
 const EditContact = lazy(() => import('./AddressBook').then((m) => ({ default: m.EditContact })));
+const Fellowship = lazy(() => import('./Fellowship/ui/Fellowship').then((m) => ({ default: m.Fellowship })));
+const FellowshipReferendumDetails = lazy(() =>
+  import('./Fellowship/ui/FellowshipReferendumDetails').then((m) => ({ default: m.FellowshipReferendumDetails })),
+);
+const FellowshipReferendumList = lazy(() =>
+  import('./Fellowship/ui/FellowshipReferendumList').then((m) => ({ default: m.FellowshipReferendumList })),
+);
 
 // React routes v6 hint:
 // https://github.com/remix-run/react-router/blob/main/docs/upgrading/v5.md#use-useroutes-instead-of-react-router-config
@@ -52,6 +59,34 @@ export const ROUTES_CONFIG: RouteObject[] = [
             <Governance />
           </Suspense>
         ),
+      },
+      {
+        path: Paths.FELLOWSHIP,
+        element: (
+          <Suspense fallback={<PageLoadingState />}>
+            <Fellowship />
+          </Suspense>
+        ),
+        children: [
+          {
+            path: Paths.FELLOWSHIP_LIST,
+            element: (
+              <Suspense fallback={<PageLoadingState />}>
+                <FellowshipReferendumList />
+              </Suspense>
+            ),
+            children: [
+              {
+                path: Paths.FELLOWSHIP_REFERENDUM,
+                element: (
+                  <Suspense fallback={<PageLoadingState />}>
+                    <FellowshipReferendumDetails />
+                  </Suspense>
+                ),
+              },
+            ],
+          },
+        ],
       },
       {
         path: Paths.NOTIFICATIONS,
