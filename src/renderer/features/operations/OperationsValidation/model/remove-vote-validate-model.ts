@@ -3,10 +3,11 @@ import { type SignerOptions } from '@polkadot/api/submittable/types';
 import { BN, BN_ZERO } from '@polkadot/util';
 import { createEffect, createEvent, sample } from 'effector';
 
+import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@shared/core';
 import { toAccountId, transferableAmount } from '@shared/lib/utils';
 import { balanceModel, balanceUtils } from '@entities/balance';
-import { governanceService, referendumService, votingService } from '@entities/governance';
+import { votingService } from '@entities/governance';
 import { networkModel } from '@entities/network';
 import { transactionService } from '@entities/transaction';
 import {
@@ -32,8 +33,10 @@ const validateFx = createEffect(
   async ({ id, api, chain, asset, transaction, balances, signerOptions }: ValidateParams) => {
     const accountId = toAccountId(transaction.address);
     const fee = await transactionService.getTransactionFee(transaction, api, signerOptions);
-    const referendum = await governanceService.getReferendums(api, [transaction.args.referendum]);
-    const isOngoing = referendumService.isOngoing(referendum[0]);
+
+    const votes = await convictionVotingPallet.storage.votingFor(api, [[transaction.address, transaction.args.track]]);
+    const voting = votes.find((vote) => vote.type === 'Casting');
+    const isVoteExist = voting?.data.votes.find((vote) => vote.referendum === +transaction.args.referendum);
 
     const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
 
@@ -60,13 +63,13 @@ const validateFx = createEffect(
         },
       },
       {
-        name: 'timeoutReferendum',
-        errorText: 'governance.referendums.vote.timeoutReferendumError',
+        name: 'noVoteForReferendum',
+        errorText: 'governance.referendums.vote.noVoteForReferendum',
         value: BN_ZERO,
         form: { shards: [{ accountId }] },
-        source: isOngoing,
-        validator: (_v, _f, isOngoing: boolean) => {
-          return isOngoing;
+        source: isVoteExist,
+        validator: (_v, _f, isVoteExist: boolean) => {
+          return isVoteExist;
         },
       },
     ];
@@ -101,7 +104,7 @@ sample({
   target: validateFx,
 });
 
-export const voteValidateModel = {
+export const removeVoteValidateModel = {
   events: {
     validationStarted,
   },

@@ -14,6 +14,7 @@ export { unstakeValidateModel } from './model/unstake-validate-model';
 export { withdrawValidateModel } from './model/withdraw-validate-model';
 export { delegateValidateModel } from './model/delegate-validate-model';
 export { revokeDelegationValidateModel } from './model/revoke-delegation-validate-model';
+export { removeVoteValidateModel } from './model/remove-vote-validate-model';
 
 export { TransferRules } from './lib/transfer-rules';
 
