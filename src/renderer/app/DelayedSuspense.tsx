@@ -1,6 +1,10 @@
 import { type ComponentType, lazy, useEffect } from 'react';
 
-export const controlledLazy = (fn: () => Promise<ComponentType>) => {
+/**
+ * React.lazy wrapper with additional onReady callback. Only components with no
+ * props supported.
+ */
+export const controlledLazy = (fn: () => Promise<ComponentType<object>>) => {
   return lazy(async () => {
     const Component = await fn();
     const Wrapper = ({ onReady }: { onReady: VoidFunction }) => {
@@ -15,7 +19,11 @@ export const controlledLazy = (fn: () => Promise<ComponentType>) => {
   });
 };
 
-export const suspenseDelayAdapter = (ttl: number) => {
+/**
+ * This helper creates delay and throw promise until it resolves for
+ * `React.Suspense`.
+ */
+export const suspenseDelay = (ttl: number) => {
   let resolved = false;
   let promise: Promise<unknown> | null = null;
 
@@ -37,6 +45,9 @@ export const suspenseDelayAdapter = (ttl: number) => {
   };
 };
 
-export const LoadingDelay = ({ suspense }: { suspense: ReturnType<typeof suspenseDelayAdapter> | null }) => {
+/**
+ * Adapter between `suspenseDelay` and `React.Suspense`
+ */
+export const LoadingDelay = ({ suspense }: { suspense: ReturnType<typeof suspenseDelay> | null }) => {
   return suspense ? suspense.wait() : null;
 };

@@ -10,7 +10,7 @@ import { isElectron } from '@/shared/lib/utils';
 import { FallbackScreen } from '@/shared/ui';
 import { APP_CONFIG } from '../../../app.config';
 
-import { LoadingDelay, controlledLazy, suspenseDelayAdapter } from './DelayedSuspense';
+import { LoadingDelay, controlledLazy, suspenseDelay } from './DelayedSuspense';
 import { ElectronSplashScreen } from './components/ElectronSplashScreen/ElectronSplashScreen';
 import { WebSplashScreen } from './components/WebSplashScreen/WebSplashScreen';
 import { I18Provider } from './providers/context/I18nContext';
@@ -20,6 +20,12 @@ const DIRTY_LOADING_TIMEOUT = 2000;
 
 const App = controlledLazy(() => import('./App').then((m) => m.App));
 
+/**
+ * All this loading logic can be described like this:
+ *
+ * If App component loads before `CLEAR_LOADING_TIMEOUT` timeout it shows
+ * immediately, else splash screen appears for at least DIRTY_LOADING_TIMEOUT.
+ */
 const Root = () => {
   const [renderSplashScreen, setRenderSplashScreen] = useState(false);
   const [appLoaded, setAppLoaded] = useState(false);
@@ -31,7 +37,7 @@ const Root = () => {
   }, []);
 
   const loadingDelay = useMemo(() => {
-    return !appLoaded && renderSplashScreen ? suspenseDelayAdapter(DIRTY_LOADING_TIMEOUT) : null;
+    return !appLoaded && renderSplashScreen ? suspenseDelay(DIRTY_LOADING_TIMEOUT) : null;
   }, [renderSplashScreen, appLoaded]);
 
   const splashScreen = renderSplashScreen ? isElectron() ? <ElectronSplashScreen /> : <WebSplashScreen /> : null;
