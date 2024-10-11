@@ -309,7 +309,7 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
                               <FootnoteText className="w-[150px] text-text-secondary">
                                 <Address address={address} variant="truncate" showIcon />
                               </FootnoteText>
-                              <AccountExplorers account={toAccountId(address)} chain={chain} />
+                              <AccountExplorers accountId={toAccountId(address)} chain={chain} />
                             </div>
                           </div>
                           <div className="flex items-center gap-2">

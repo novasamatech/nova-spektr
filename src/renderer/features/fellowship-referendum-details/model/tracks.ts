@@ -3,12 +3,12 @@ import { sample } from 'effector';
 import { collectiveDomain } from '@/domains/collectives';
 
 import { fellowshipModel } from './fellowship';
-import { detailsFeatureStatus } from './status';
+import { referendumsDetailsFeatureStatus } from './status';
 
 const $list = fellowshipModel.$store.map(x => x?.tracks ?? []);
 
 sample({
-  clock: detailsFeatureStatus.running,
+  clock: referendumsDetailsFeatureStatus.running,
   target: collectiveDomain.tracks.request,
 });
 

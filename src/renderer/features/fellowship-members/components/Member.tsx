@@ -37,7 +37,7 @@ export const Member = ({ item, chain }: Props) => {
           <Indicator active={item.isActive} />
         </div>
       </div>
-      <AccountExplorers account={item.accountId} chain={chain} />
+      <AccountExplorers accountId={item.accountId} chain={chain} />
     </div>
   );
 };

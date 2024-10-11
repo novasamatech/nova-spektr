@@ -7,7 +7,7 @@ type Props = {
   renderLabel?: (value: number, index: number) => ReactNode;
 };
 
-export const StepLabels = memo<Props>(({ steps, renderLabel, min, stepSize }) => {
+export const StepLabels = memo(({ steps, renderLabel, min, stepSize }: Props) => {
   const nodes = useMemo(() => {
     if (!renderLabel) {
       return [];

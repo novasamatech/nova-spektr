@@ -22,7 +22,7 @@ const $input = combine(
   },
 );
 
-export const detailsFeatureStatus = createFeature({
+export const referendumsDetailsFeatureStatus = createFeature({
   name: 'referendumDetails',
   input: $input,
 });

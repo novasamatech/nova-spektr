@@ -4,8 +4,16 @@ import { type Store, combine, createEvent, createStore, sample } from 'effector'
 import { type Form, type FormConfig, createForm } from 'effector-forms';
 import { isNil } from 'lodash';
 
-import { type Account, type Asset, type Balance, type Chain, type Transaction, type Wallet } from '@shared/core';
-import { nullable, transferableAmountBN } from '@shared/lib/utils';
+import {
+  type Account,
+  type Address,
+  type Asset,
+  type Balance,
+  type Chain,
+  type Transaction,
+  type Wallet,
+} from '@shared/core';
+import { nullable, toAddress, transferableAmountBN } from '@shared/lib/utils';
 import { balanceUtils } from '@entities/balance';
 import { transactionService } from '@entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
@@ -18,6 +26,7 @@ export type BasicFormParams = {
 };
 
 type Params<FormShape extends NonNullable<unknown>> = {
+  $voters: Store<Address[]>;
   $activeWallet: Store<Wallet | null>;
   $wallets: Store<Wallet[]>;
   $chain: Store<Chain | null>;
@@ -35,6 +44,7 @@ type TransactionFactory<FormShape extends NonNullable<unknown>> = (
 export type AccountOption = { account: Account; balance: Balance | null };
 
 export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
+  $voters,
   $activeWallet,
   $wallets,
   $chain,
@@ -83,6 +93,7 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
   // Transactions
 
   const $coreTx = createTransactionStore({
+    $voters,
     $activeWallet,
     $wallets,
     $chain,
@@ -105,9 +116,9 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
   // Derived
 
   sample({
-    clock: [$chain, $asset, $activeWallet, $balances],
-    source: { chain: $chain, asset: $asset, wallet: $activeWallet, balances: $balances },
-    fn: ({ chain, asset, wallet, balances }) => {
+    clock: [$chain, $asset, $activeWallet, $balances, $voters],
+    source: { chain: $chain, asset: $asset, wallet: $activeWallet, balances: $balances, voters: $voters },
+    fn: ({ chain, asset, wallet, balances, voters }) => {
       if (nullable(wallet) || nullable(chain) || nullable(asset)) return [];
 
       let walletAccounts: Account[] = [];
@@ -129,6 +140,12 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
         }
       } else {
         walletAccounts = wallet.accounts.filter((a) => accountUtils.isChainAndCryptoMatch(a, chain));
+      }
+
+      if (voters.length) {
+        walletAccounts = walletAccounts.filter((account) => {
+          return voters.includes(toAddress(account.accountId, { prefix: chain.addressPrefix }));
+        });
       }
 
       return walletAccounts.map<AccountOption>((account) => {

@@ -198,7 +198,7 @@ function parseXcmPalletExtrinsic(args: Omit<XcmPalletTransferArgs, 'feeAssetItem
 
   const parsedPayload = {
     isRelayToken: assetInterior === 'Here',
-    amount: xcmUtils.toRawString(get(args.assets, `${xcmVersion}[0].fun.Fungible`)),
+    amount: xcmUtils.toRawString(get(args.assets, `${xcmVersion}[0].fun.Fungible`) as string),
     destParachain: 0,
     destAccountId: '',
     assetGeneralIndex: '',
@@ -229,7 +229,7 @@ function parseXTokensExtrinsic(args: Omit<XTokenPalletTransferArgs, 'destWeight'
 
   const parsedPayload = {
     isRelayToken: assetInterior === 'Here',
-    amount: xcmUtils.toRawString(get(args.asset, `${xcmVersion}.fun.Fungible`)),
+    amount: xcmUtils.toRawString(get(args.asset, `${xcmVersion}.fun.Fungible`) as string),
     destParachain: 0,
     destAccountId: '',
     assetParachain: 0,

@@ -6,6 +6,7 @@ import { type AccountVote, type Address, type BasketTransaction, type OngoingRef
 import { Step, isStep, nonNullable, nullable, toAddress } from '@shared/lib/utils';
 import { basketModel } from '@entities/basket';
 import { votingService } from '@entities/governance';
+import { walletModel } from '@entities/wallet';
 import {
   delegationAggregate,
   lockPeriodsModel,
@@ -183,28 +184,29 @@ sample({
   target: [resetForm, voteConfirmModel.events.resetConfirm],
 });
 
+sample({
+  clock: flow.state,
+  fn: ({ votes }) => votes.map((x) => x.voter),
+  target: voteFormAggregate.$voters,
+});
+
 // Data bindings
 
 sample({
   clock: voteConfirmModel.events.sign,
   source: { confirms: voteConfirmModel.$confirmMap },
   fn: ({ confirms }): { signingPayloads: SigningPayload[] } => {
-    const confirm = confirms[0];
-    if (!confirm) {
+    if (!confirms) {
       return { signingPayloads: [] };
     }
 
-    const { meta, accounts } = confirm;
-
     return {
-      signingPayloads: [
-        {
-          account: accounts.proxy || accounts.initiator,
-          chain: meta.chain,
-          transaction: meta.wrappedTransactions.wrappedTx,
-          signatory: accounts.signer || undefined,
-        },
-      ],
+      signingPayloads: Object.values(confirms).map(({ meta, accounts }) => ({
+        account: accounts.proxy || accounts.initiator,
+        chain: meta.chain,
+        transaction: meta.wrappedTransactions.wrappedTx,
+        signatory: accounts.signer || undefined,
+      })),
     };
   },
   target: signModel.events.formInitiated,
@@ -244,14 +246,12 @@ sample({
   clock: voteConfirmModel.events.submitFinished,
   source: {
     status: flow.status,
-    form: voteFormAggregate.transactionForm.form.$values,
+    wallet: walletModel.$activeWallet,
     chain: networkSelectorModel.$governanceChain,
   },
-  filter: ({ chain, status }) => status && nonNullable(chain),
-  fn: ({ form, chain }) => {
-    const addresses = [form.signatory, form.account]
-      .filter(nonNullable)
-      .map((account) => toAddress(account.accountId, { prefix: chain?.addressPrefix }));
+  filter: ({ chain, status, wallet }) => status && nonNullable(chain) && nonNullable(wallet),
+  fn: ({ wallet, chain }) => {
+    const addresses = wallet!.accounts.map((account) => toAddress(account.accountId, { prefix: chain?.addressPrefix }));
 
     return { addresses };
   },

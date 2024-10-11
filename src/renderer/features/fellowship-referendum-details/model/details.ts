@@ -8,7 +8,7 @@ import { collectiveDomain } from '@/domains/collectives';
 import { identityDomain } from '@/domains/identity';
 
 import { fellowshipModel } from './fellowship';
-import { detailsFeatureStatus } from './status';
+import { referendumsDetailsFeatureStatus } from './status';
 
 const gate = createGate<{ referendumId: ReferendumId | null }>({ defaultState: { referendumId: null } });
 
@@ -21,11 +21,15 @@ const $referendum = combine($referendums, gate.state, (referendums, { referendum
   return referendums.find(referendum => referendum.id === referendumId) ?? null;
 });
 
-const $identities = combine(identityDomain.identity.$list, detailsFeatureStatus.input, (identities, input) => {
-  if (nullable(input)) return {};
+const $identities = combine(
+  identityDomain.identity.$list,
+  referendumsDetailsFeatureStatus.input,
+  (identities, input) => {
+    if (nullable(input)) return {};
 
-  return identities[input.chainId] ?? {};
-});
+    return identities[input.chainId] ?? {};
+  },
+);
 
 const $referendumMeta = combine($meta, gate.state, (meta, { referendumId }) => {
   if (referendumId === null) return null;
@@ -57,7 +61,7 @@ export const referendumDetailsModel = {
   $referendumMeta,
 
   $pendingProposer: identityDomain.identity.pending,
-  $pendingMeta: or($pendingReferendumMeta, detailsFeatureStatus.isStarting),
-  $pending: or($pendingReferendum, detailsFeatureStatus.isStarting),
-  $fulfulled: and(collectiveDomain.referendum.fulfilled, detailsFeatureStatus.isRunning),
+  $pendingMeta: or($pendingReferendumMeta, referendumsDetailsFeatureStatus.isStarting),
+  $pending: or($pendingReferendum, referendumsDetailsFeatureStatus.isStarting),
+  $fulfulled: and(collectiveDomain.referendum.fulfilled, referendumsDetailsFeatureStatus.isRunning),
 };

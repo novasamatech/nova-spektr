@@ -23,7 +23,7 @@ const containerStyle = {
  * @deprecated Truncate is used only in context of hex/hash values.\
  *   Use `import { Hash } from '@/shared/ui-entities'` instead.
  */
-export const Truncate = memo<Props>(({ text, ellipsis = '...', end = 5, start = 5, className = '' }) => {
+export const Truncate = memo(({ text, ellipsis = '...', end = 5, start = 5, className = '' }: Props) => {
   const [container, setContainer] = useState<HTMLElement | null>(null);
   const textRef = useRef<HTMLElement>(null);
   const ellipsisRef = useRef<HTMLElement>(null);
