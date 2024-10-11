@@ -1,3 +1,4 @@
+import { type Config as SwcConfig } from '@swc/core';
 import { default as CopyPlugin } from 'copy-webpack-plugin';
 import SimpleProgressWebpackPlugin from 'simple-progress-webpack-plugin';
 import { default as TsconfigPathsPlugin } from 'tsconfig-paths-webpack-plugin';
@@ -6,22 +7,19 @@ import { type Configuration, default as webpack } from 'webpack';
 import { APP_CONFIG } from '../app.config';
 
 export const getSwcConfig = (isDev: boolean) => {
-  return {
+  const config: SwcConfig = {
     sourceMaps: isDev,
     minify: !isDev,
+    env: {
+      targets: '> 0.4%, electron >= 29, not dead',
+    },
     jsc: {
       parser: {
-        target: 'es2021',
         syntax: 'typescript',
-        jsx: true,
         tsx: true,
-        dynamicImport: true,
-        allowJs: true,
       },
       transform: {
         react: {
-          pragma: 'React.createElement',
-          pragmaFrag: 'React.Fragment',
           throwIfNamespace: true,
           runtime: 'automatic',
           development: isDev,
@@ -33,19 +31,17 @@ export const getSwcConfig = (isDev: boolean) => {
       },
     },
   };
+
+  return config;
 };
 
-const sharedConfig: Configuration = {
+export const sharedConfig: Configuration = {
   stats: 'errors-only',
-
-  optimization: {
-    usedExports: true,
-  },
 
   module: {
     rules: [
       {
-        test: /\.(js|ts|jsx|tsx)$/,
+        test: /\.(ts|tsx|js)$/,
         exclude: /node_modules/,
         use: [
           {
@@ -60,15 +56,26 @@ const sharedConfig: Configuration = {
           {
             loader: '@svgr/webpack',
             options: {
+              jsxRuntime: 'classic',
+              svgo: true,
               svgoConfig: {
-                plugins: [{ name: 'removeViewBox', active: false }],
+                plugins: [
+                  {
+                    name: 'preset-default',
+                    params: {
+                      overrides: {
+                        removeViewBox: false,
+                      },
+                    },
+                  },
+                ],
               },
             },
           },
           {
             loader: 'file-loader',
             options: {
-              name: '[name]-[hash:8].[ext]',
+              name: '[name].[contenthash].[ext]',
               outputPath: 'images/',
             },
           },
@@ -82,7 +89,7 @@ const sharedConfig: Configuration = {
         test: /\.(png|jpeg|gif|webp)$/,
         type: 'asset/resource',
         generator: {
-          filename: 'images/[name]-[hash:8][ext]',
+          filename: 'images/[name].[contenthash][ext]',
         },
       },
       {
@@ -94,17 +101,20 @@ const sharedConfig: Configuration = {
       },
       {
         test: /\.(mp4|webm|yaml)$/,
-        loader: 'file-loader',
-        options: {
-          name: '[path][name].[ext]',
+        type: 'asset/resource',
+        generator: {
+          filename: 'video/[name].[contenthash][ext]',
         },
       },
     ],
   },
 
   resolve: {
-    extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
+    extensions: ['.ts', '.tsx', '.js', '.json'],
     plugins: [new TsconfigPathsPlugin({})],
+    alias: {
+      lodash: 'lodash-es',
+    },
     fallback: {
       crypto: require.resolve('crypto-browserify'),
       stream: require.resolve('stream-browserify'),
@@ -135,5 +145,3 @@ const sharedConfig: Configuration = {
     }),
   ],
 };
-
-export default sharedConfig;

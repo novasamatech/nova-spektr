@@ -1,13 +1,20 @@
 import { useGate, useUnit } from 'effector-react';
-import { useEffect, useState } from 'react';
-import { ErrorBoundary } from 'react-error-boundary';
+import { useEffect } from 'react';
 import { useNavigate, useRoutes } from 'react-router-dom';
 
-import { WalletType } from '@shared/core';
+import { logger } from '@shared/config/utils';
+import { WalletType, kernelModel } from '@shared/core';
 import { Paths, createLink } from '@shared/routes';
-import { FallbackScreen } from '@shared/ui';
+import { basketModel } from '@entities/basket';
+import { governanceModel } from '@entities/governance';
+import { networkModel } from '@entities/network';
+import { notificationModel } from '@entities/notification';
+import { proxyModel } from '@entities/proxy';
 import { walletModel } from '@entities/wallet';
-import { navigationModel } from '@/features/navigation';
+import { multisigsModel } from '@processes/multisigs';
+import { assetsSettingsModel } from '@features/assets';
+import { navigationModel } from '@features/navigation';
+import { proxiesModel } from '@features/proxies';
 import { walletPairingModel } from '@features/wallets';
 import { CreateWalletProvider } from '@widgets/CreateWallet';
 import { WalletDetailsProvider } from '@widgets/WalletDetails';
@@ -16,13 +23,23 @@ import { ROUTES_CONFIG } from '@pages/index';
 import {
   ConfirmDialogProvider,
   GraphqlProvider,
-  I18Provider,
   MatrixProvider,
   MultisigChainProvider,
   StatusModalProvider,
 } from './providers';
 
-const SPLASH_SCREEN_DELAY = 450;
+logger.init();
+
+kernelModel.events.appStarted();
+governanceModel.events.governanceStarted();
+proxiesModel.events.workerStarted();
+walletModel.events.walletStarted();
+networkModel.events.networkStarted();
+proxyModel.events.proxyStarted();
+assetsSettingsModel.events.assetsStarted();
+notificationModel.events.notificationsStarted();
+basketModel.events.basketStarted();
+multisigsModel.events.multisigsDiscoveryStarted();
 
 export const App = () => {
   const navigate = useNavigate();
@@ -32,12 +49,6 @@ export const App = () => {
 
   const wallets = useUnit(walletModel.$wallets);
   const isLoadingWallets = useUnit(walletModel.$isLoadingWallets);
-
-  const [splashScreenLoading, setSplashScreenLoading] = useState(true);
-
-  useEffect(() => {
-    setTimeout(() => setSplashScreenLoading(false), SPLASH_SCREEN_DELAY);
-  }, []);
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -64,33 +75,19 @@ export const App = () => {
     navigate(Paths.ONBOARDING, { replace: true });
   }, [isLoadingWallets, wallets.length]);
 
-  const getContent = () => {
-    if (splashScreenLoading || isLoadingWallets) {
-      return null;
-    }
-
-    document.querySelector('.splash_placeholder')?.remove();
-
-    return appRoutes;
-  };
-
   return (
-    <I18Provider>
-      <ErrorBoundary FallbackComponent={FallbackScreen} onError={console.error}>
-        <MultisigChainProvider>
-          <MatrixProvider>
-            <ConfirmDialogProvider>
-              <StatusModalProvider>
-                <GraphqlProvider>
-                  {getContent()}
-                  <CreateWalletProvider />
-                  <WalletDetailsProvider />
-                </GraphqlProvider>
-              </StatusModalProvider>
-            </ConfirmDialogProvider>
-          </MatrixProvider>
-        </MultisigChainProvider>
-      </ErrorBoundary>
-    </I18Provider>
+    <MultisigChainProvider>
+      <MatrixProvider>
+        <ConfirmDialogProvider>
+          <StatusModalProvider>
+            <GraphqlProvider>
+              {appRoutes}
+              <CreateWalletProvider />
+              <WalletDetailsProvider />
+            </GraphqlProvider>
+          </StatusModalProvider>
+        </ConfirmDialogProvider>
+      </MatrixProvider>
+    </MultisigChainProvider>
   );
 };

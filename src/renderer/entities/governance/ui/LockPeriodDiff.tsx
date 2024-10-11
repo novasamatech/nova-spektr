@@ -1,4 +1,4 @@
-import { formatDistanceStrict } from 'date-fns';
+import { formatDistanceStrict } from 'date-fns/formatDistanceStrict';
 import { memo } from 'react';
 
 import { useI18n } from '@app/providers';

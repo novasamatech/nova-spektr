@@ -104,10 +104,15 @@ export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
   };
 
   return (
-    <BaseModal isOpen={isOpen} contentClass="flex h-full" panelClass="w-modal-xl h-modal" onClose={handleClose}>
+    <BaseModal
+      isOpen={isOpen}
+      contentClass="flex h-full"
+      panelClass="w-modal-xl h-modal overflow-hidden"
+      onClose={handleClose}
+    >
       {step === Step.SCAN && qrCode && (
         <>
-          <div className="flex w-[472px] flex-col rounded-l-lg bg-white px-5 py-4">
+          <div className="flex w-full min-w-96 max-w-[472px] flex-col rounded-l-lg bg-white px-5 py-4">
             <HeaderTitleText className="mb-10">{t('onboarding.novaWallet.title')}</HeaderTitleText>
             <SmallTitleText className="mb-6">{t('onboarding.novaWallet.scanTitle')}</SmallTitleText>
 
@@ -126,7 +131,7 @@ export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
             </div>
           </div>
 
-          <div className="flex w-[472px] flex-col bg-black">
+          <div className="flex w-full flex-col bg-black">
             <video className="h-full object-contain" autoPlay loop>
               <source src={novawallet_onboarding_tutorial_webm} type="video/webm" />
               <source src={novawallet_onboarding_tutorial} type="video/mp4" />
