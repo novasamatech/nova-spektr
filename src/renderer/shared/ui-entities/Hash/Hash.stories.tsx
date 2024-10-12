@@ -42,16 +42,16 @@ export const Truncate: Story = {
   },
   decorators: [
     (Story) => (
-      <Box width="200px">
+      <div className="w-[200px] resize-x overflow-hidden">
         <Story />
-      </Box>
+      </div>
     ),
   ],
   async play({ canvasElement }) {
     const canvas = within(canvasElement);
     const Hash = await canvas.findByTestId('Hash');
     await new Promise((resolve) => setTimeout(resolve, 500));
-    expect(Hash.innerText).toBe('0x91b171bb158...da7a70ce90c3');
+    expect(Hash.innerText).toBe('0x91b171bb1...a7a70ce90c3');
   },
 };
 
