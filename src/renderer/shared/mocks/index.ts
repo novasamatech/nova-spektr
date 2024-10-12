@@ -57,13 +57,15 @@ export const polkadotChain: Chain = {
   ],
 };
 
-export const createAccountId = (seed: number) => {
-  return toAccountId(testKeyring.addFromUri(`//${Math.round((Math.random() + seed) * 1000)}`).address);
+export const createAccountId = (seed: string) => {
+  const derivationPathSeed = seed.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+
+  return toAccountId(testKeyring.addFromUri(`//${derivationPathSeed * 1000}`).address);
 };
 
 export const createBaseAccount = (id: number): BaseAccount => ({
   id,
-  accountId: createAccountId(id),
+  accountId: createAccountId(`Base account ${id}`),
   chainType: ChainType.SUBSTRATE,
   cryptoType: CryptoType.SR25519,
   name: `Base Account ${id}`,
@@ -73,18 +75,18 @@ export const createBaseAccount = (id: number): BaseAccount => ({
 
 export const createWcAccount = (id: number): WcAccount => ({
   id,
-  accountId: createAccountId(id),
+  accountId: createAccountId(`Wc account ${id}`),
   chainId: polkadotChainId,
   chainType: ChainType.SUBSTRATE,
-  name: `Base Account ${id}`,
+  name: `WalletConnect Account ${id}`,
   type: AccountType.WALLET_CONNECT,
   walletId: 1,
 });
 
 export const createProxiedAccount = (id: number): ProxiedAccount => ({
   id,
-  accountId: createAccountId(id),
-  proxyAccountId: createAccountId(id),
+  accountId: createAccountId(`Proxied account ${id}`),
+  proxyAccountId: createAccountId(`Random account ${id}`),
   delay: 0,
   proxyType: ProxyType.ANY,
   proxyVariant: ProxyVariant.REGULAR,

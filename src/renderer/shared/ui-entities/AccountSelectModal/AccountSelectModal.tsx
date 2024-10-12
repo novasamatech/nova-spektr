@@ -43,7 +43,7 @@ export const AccountSelectModal = ({
               asset={asset}
               chain={chain}
               account={account}
-              title={title}
+              title={title ?? account.name}
               onSelect={onSelect}
             />
           ))}
