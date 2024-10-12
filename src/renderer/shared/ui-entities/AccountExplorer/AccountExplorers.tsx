@@ -45,7 +45,7 @@ export const AccountExplorers = memo(({ accountId, chain, children }: Props) => 
             <>
               <Separator />
               <div className="relative -mx-1.5 flex flex-col gap-2">
-                {explorers?.map((explorer) => (
+                {explorers.map((explorer) => (
                   <ExplorerLink
                     key={explorer.name}
                     name={explorer.name}

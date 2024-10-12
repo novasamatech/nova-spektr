@@ -26,20 +26,22 @@ export const MembersCard = memo<Props>(({ onClick }) => {
 
   return (
     <MembersModal>
-      <Surface disabled={pending || isNetworkDisabled} onClick={onClick}>
-        <Box direction="row" verticalAlign="center" horizontalAlign="space-between" padding={[6, 4]}>
-          <Box gap={2}>
-            <Box direction="row" gap={1}>
-              <Icon name="members" size={16} />
-              <FootnoteText className="text-text-secondary">{t('fellowship.members.cardTitle')}</FootnoteText>
+      <button className="appearance-none" disabled={pending || isNetworkDisabled} onClick={onClick}>
+        <Surface>
+          <Box direction="row" verticalAlign="center" horizontalAlign="space-between" padding={[6, 4]}>
+            <Box gap={2}>
+              <Box direction="row" gap={1}>
+                <Icon name="members" size={16} />
+                <FootnoteText className="text-text-secondary">{t('fellowship.members.cardTitle')}</FootnoteText>
+              </Box>
+              <Skeleton active={pending && !fulfilled && !isNetworkDisabled}>
+                <SmallTitleText>{t('fellowship.fellow', { count: members.length })}</SmallTitleText>
+              </Skeleton>
             </Box>
-            <Skeleton active={pending && !fulfilled && !isNetworkDisabled}>
-              <SmallTitleText>{t('fellowship.fellow', { count: members.length })}</SmallTitleText>
-            </Skeleton>
+            <Icon name="arrowRight" />
           </Box>
-          <Icon name="arrowRight" />
-        </Box>
-      </Surface>
+        </Surface>
+      </button>
     </MembersModal>
   );
 });

@@ -10,7 +10,7 @@ type Props = {
 };
 
 export const DetailRow = ({ label, className, wrapperClassName, children }: PropsWithChildren<Props>) => (
-  <div className={cnTw('flex w-full items-center justify-between gap-2', wrapperClassName)}>
+  <div className={cnTw('flex min-h-6 w-full items-center justify-between gap-2', wrapperClassName)}>
     {typeof label === 'string' ? (
       <FootnoteText as="dt" className="text-text-tertiary">
         {label}
@@ -24,7 +24,9 @@ export const DetailRow = ({ label, className, wrapperClassName, children }: Prop
         {children}
       </FootnoteText>
     ) : (
-      <dd className={cnTw('flex min-w-40 max-w-[60%] items-center justify-end text-end', className)}>{children}</dd>
+      <dd className={cnTw('flex min-w-40 max-w-[60%] items-center justify-end text-footnote', className)}>
+        {children}
+      </dd>
     )}
   </div>
 );

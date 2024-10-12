@@ -23,7 +23,7 @@ export const ProfileCard = memo(() => {
   const isNetworkDisabled = featureState.status === 'failed' && featureState.error.message === ERROR.networkDisabled;
 
   return (
-    <Surface disabled={!fulfilled}>
+    <Surface>
       <Box direction="row" verticalAlign="center" horizontalAlign="space-between" padding={[6, 4]}>
         <Box gap={2} width="100%">
           <Box direction="row" gap={1}>

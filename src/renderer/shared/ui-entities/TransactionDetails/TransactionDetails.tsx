@@ -3,7 +3,7 @@ import { type PropsWithChildren, memo, useMemo } from 'react';
 import { useI18n } from '@/app/providers';
 import { type Account, type Chain, type Wallet } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
-import { DetailRow, FootnoteText } from '@/shared/ui';
+import { DetailRow, FootnoteText, Separator } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { WalletIcon, walletUtils } from '@/entities/wallet';
 import { AccountExplorers } from '../AccountExplorer/AccountExplorers';
@@ -99,7 +99,7 @@ export const TransactionDetails = memo(({ wallets, chain, proxy, initiator, sign
         </DetailRow>
       )}
 
-      {children ? <hr className="w-full border-filter-border pr-2" /> : null}
+      {children ? <Separator className="border-filter-border" /> : null}
 
       {children}
     </dl>
@@ -109,7 +109,7 @@ export const TransactionDetails = memo(({ wallets, chain, proxy, initiator, sign
 const AccountInfo = ({ account, chain }: { account: Account; chain: Chain }) => {
   return (
     <div className="flex w-full min-w-0 gap-2 text-text-secondary">
-      <Address variant="truncate" address={toAddress(account.accountId, { prefix: chain.addressPrefix })} />
+      <Address showIcon variant="truncate" address={toAddress(account.accountId, { prefix: chain.addressPrefix })} />
       <AccountExplorers accountId={account.accountId} chain={chain} />
     </div>
   );

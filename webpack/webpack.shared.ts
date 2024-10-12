@@ -65,6 +65,7 @@ export const sharedConfig: Configuration = {
                     params: {
                       overrides: {
                         removeViewBox: false,
+                        cleanupIds: false,
                       },
                     },
                   },

@@ -4,10 +4,12 @@ import { useI18n } from '@/app/providers';
 import { type ReferendumType } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { OperationStatus } from '@/shared/ui';
+import { Skeleton } from '@shared/ui-kit';
 import { type Referendum, collectiveDomain } from '@/domains/collectives';
 
 type Props = {
-  referendum: Referendum;
+  referendum: Referendum | null;
+  pending: boolean;
 };
 
 const statusesMap: Record<
@@ -20,10 +22,22 @@ const statusesMap: Record<
   TimedOut: { text: 'governance.referendums.timedOut', pallet: 'default' },
 };
 
-export const ReferendumVotingStatusBadge = memo<Props>(({ referendum }) => {
+export const ReferendumVotingStatusBadge = memo<Props>(({ referendum, pending }) => {
   const { t } = useI18n();
 
-  if (collectiveDomain.referendum.service.isOngoing(referendum)) {
+  if (nullable(referendum)) {
+    if (pending) {
+      return (
+        <Skeleton active minWidth={20}>
+          <OperationStatus pallet="default"></OperationStatus>
+        </Skeleton>
+      );
+    } else {
+      return null;
+    }
+  }
+
+  if (collectiveDomain.referendumService.isOngoing(referendum)) {
     let status = 'Deciding';
 
     if (nullable(referendum.decisionDeposit)) {
@@ -41,7 +55,7 @@ export const ReferendumVotingStatusBadge = memo<Props>(({ referendum }) => {
     return <OperationStatus pallet={status === 'Passing' ? 'success' : 'default'}>{statusText}</OperationStatus>;
   }
 
-  if (collectiveDomain.referendum.service.isApproved(referendum)) {
+  if (collectiveDomain.referendumService.isApproved(referendum)) {
     // TODO implement
     const isExecuted = false;
 

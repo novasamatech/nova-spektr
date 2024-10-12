@@ -7,8 +7,9 @@ import { fellowshipNetworkFeature } from '@/features/fellowship-network';
 
 const $input = combine(
   fellowshipNetworkFeature.model.network.$network,
+  walletModel.$wallets,
   walletModel.$activeWallet,
-  (network, wallet) => {
+  (network, wallets, wallet) => {
     if (nullable(network) || nullable(wallet)) return null;
 
     return {
@@ -17,6 +18,7 @@ const $input = combine(
       chain: network.chain,
       chainId: network.chainId,
       palletType: network.palletType,
+      wallets,
       wallet,
     };
   },
