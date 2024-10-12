@@ -3,3 +3,4 @@ export { Hash } from './Hash/Hash';
 export { Address } from './Address/Address';
 export { AccountSelectModal } from './AccountSelectModal/AccountSelectModal';
 export { AccountExplorers } from './AccountExplorer/AccountExplorers';
+export { TransactionDetails } from './TransactionDetails/TransactionDetails';

@@ -11,6 +11,7 @@ type Props = XOR<
   PropsWithChildren<{
     active: boolean;
     fullWidth?: boolean;
+    minWidth?: number | string;
   }>,
   {
     width?: number | string;
@@ -19,7 +20,8 @@ type Props = XOR<
   }
 >;
 
-export const Skeleton = ({ width, height, circle, fullWidth, active, children }: Props) => {
+export const Skeleton = ({ width, height, circle, fullWidth, minWidth, active, children }: Props) => {
+  const formattedMinWidth = isNumber(minWidth) ? `${gridSpaceConverter(minWidth)}px` : minWidth;
   const formattedWidth = isNumber(width) ? `${gridSpaceConverter(width)}px` : width;
   const formattedHeight = isNumber(height) ? `${gridSpaceConverter(height)}px` : height;
 
@@ -35,6 +37,7 @@ export const Skeleton = ({ width, height, circle, fullWidth, active, children }:
           'w-full': fullWidth,
           'w-fit': !fullWidth,
         })}
+        style={{ minWidth: formattedMinWidth }}
       >
         {Children.map(children, (child) => {
           return isString(child) ? <span>{child}</span> : child;
@@ -46,7 +49,7 @@ export const Skeleton = ({ width, height, circle, fullWidth, active, children }:
   return (
     <span
       className={cnTw('spektr-shimmer block h-full w-full', circle ? 'rounded-full' : 'rounded-2lg')}
-      style={{ width: formattedWidth, height: circle ? formattedWidth : formattedHeight }}
+      style={{ width: formattedWidth, height: circle ? formattedWidth : formattedHeight, minWidth: formattedMinWidth }}
       data-testid="shimmer"
     />
   );

@@ -1,0 +1,128 @@
+import { createTestKeyring } from '@polkadot/keyring';
+
+import {
+  AccountType,
+  type Asset,
+  type BaseAccount,
+  type Chain,
+  type ChainAccount,
+  type ChainId,
+  ChainType,
+  CryptoType,
+  type PolkadotVaultWallet,
+  type ProxiedAccount,
+  type ProxiedWallet,
+  ProxyType,
+  ProxyVariant,
+  type ShardAccount,
+  SigningType,
+  type WalletConnectWallet,
+  WalletType,
+  type WcAccount,
+} from '@/shared/core';
+import { toAccountId } from '@/shared/lib/utils';
+
+const testKeyring = createTestKeyring();
+
+export const polkadotChainId: ChainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
+
+export const dotAsset: Asset = {
+  assetId: 0,
+  symbol: 'DOT',
+  precision: 10,
+  icon: 'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg',
+  name: 'Polkadot',
+};
+
+export const polkadotChain: Chain = {
+  name: 'Polkadot',
+  specName: 'polkadot',
+  addressPrefix: 0,
+  chainId: polkadotChainId,
+  icon: '',
+  options: [],
+  nodes: [],
+  assets: [dotAsset],
+  explorers: [
+    {
+      name: 'Subscan',
+      extrinsic: 'https://polkadot.subscan.io/extrinsic/{hash}',
+      account: 'https://polkadot.subscan.io/account/{address}',
+      multisig: 'https://polkadot.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}',
+    },
+    {
+      name: 'Sub.ID',
+      account: 'https://sub.id/{address}',
+    },
+  ],
+};
+
+export const createAccountId = (seed: number) => {
+  return toAccountId(testKeyring.addFromUri(`//${Math.round((Math.random() + seed) * 1000)}`).address);
+};
+
+export const createBaseAccount = (id: number): BaseAccount => ({
+  id,
+  accountId: createAccountId(id),
+  chainType: ChainType.SUBSTRATE,
+  cryptoType: CryptoType.SR25519,
+  name: `Base Account ${id}`,
+  type: AccountType.BASE,
+  walletId: 1,
+});
+
+export const createWcAccount = (id: number): WcAccount => ({
+  id,
+  accountId: createAccountId(id),
+  chainId: polkadotChainId,
+  chainType: ChainType.SUBSTRATE,
+  name: `Base Account ${id}`,
+  type: AccountType.WALLET_CONNECT,
+  walletId: 1,
+});
+
+export const createProxiedAccount = (id: number): ProxiedAccount => ({
+  id,
+  accountId: createAccountId(id),
+  proxyAccountId: createAccountId(id),
+  delay: 0,
+  proxyType: ProxyType.ANY,
+  proxyVariant: ProxyVariant.REGULAR,
+  chainId: polkadotChainId,
+  cryptoType: CryptoType.SR25519,
+  name: `Proxied Account ${id}`,
+  type: AccountType.PROXIED,
+  walletId: 1,
+  chainType: ChainType.SUBSTRATE,
+});
+
+export const createPolkadotWallet = (
+  id: number,
+  accounts: (BaseAccount | ChainAccount | ShardAccount)[],
+): PolkadotVaultWallet => ({
+  id,
+  accounts,
+  type: WalletType.POLKADOT_VAULT,
+  isActive: true,
+  name: `Polkadot vault wallet ${id}`,
+  signingType: SigningType.POLKADOT_VAULT,
+});
+
+export const createWcWallet = (id: number, accounts: WcAccount[]): WalletConnectWallet => ({
+  id,
+  accounts,
+  type: WalletType.WALLET_CONNECT,
+  isActive: true,
+  isConnected: true,
+  name: `WalletConnect ${id}`,
+  signingType: SigningType.WALLET_CONNECT,
+});
+
+export const createProxiedWallet = (id: number, accounts: ProxiedAccount[]): ProxiedWallet => ({
+  id,
+  accounts,
+  type: WalletType.PROXIED,
+  isActive: true,
+  name: `Proxied wallet ${id}`,
+  signingType: SigningType.WALLET_CONNECT,
+});
