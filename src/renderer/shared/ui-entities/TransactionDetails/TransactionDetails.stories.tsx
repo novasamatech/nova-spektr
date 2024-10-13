@@ -1,14 +1,22 @@
 import { type Meta, type StoryObj } from '@storybook/react';
 
-import { createBaseAccount, createPolkadotWallet, polkadotChain } from '@/shared/mocks';
+import {
+  createBaseAccount,
+  createPolkadotWallet,
+  createProxiedAccount,
+  createProxiedWallet,
+  createWcAccount,
+  createWcWallet,
+  polkadotChain,
+} from '@/shared/mocks';
 import { Box } from '@/shared/ui-kit';
 import { DetailRow } from '../../ui';
 
 import { TransactionDetails } from './TransactionDetails';
 
 const initiatorAccount = createBaseAccount(1);
-const proxyAccount = createBaseAccount(2);
-const signatoryAccount = createBaseAccount(3);
+const proxyAccount = createProxiedAccount(1);
+const signatoryAccount = createWcAccount(1);
 
 const meta: Meta<typeof TransactionDetails> = {
   title: 'Design System/entities/TransactionDetails',
@@ -31,37 +39,37 @@ type Story = StoryObj<typeof TransactionDetails>;
 
 export const Default: Story = {
   args: {
-    wallets: [createPolkadotWallet(1, [initiatorAccount, proxyAccount])],
+    wallets: [createPolkadotWallet(1, [initiatorAccount]), createProxiedWallet(1, [proxyAccount])],
     initiator: initiatorAccount,
   },
 };
 
-export const Proxy: Story = {
+export const Proxied: Story = {
   args: {
-    wallets: [createPolkadotWallet(1, [initiatorAccount]), createPolkadotWallet(2, [proxyAccount])],
+    wallets: [createPolkadotWallet(1, [initiatorAccount]), createProxiedWallet(2, [proxyAccount])],
     initiator: initiatorAccount,
-    proxy: proxyAccount,
+    proxied: proxyAccount,
   },
 };
 
 export const Signatory: Story = {
   args: {
-    wallets: [createPolkadotWallet(1, [initiatorAccount]), createPolkadotWallet(2, [signatoryAccount])],
+    wallets: [createPolkadotWallet(1, [initiatorAccount]), createWcWallet(2, [signatoryAccount])],
     initiator: initiatorAccount,
     signatory: signatoryAccount,
   },
 };
 
-export const ProxyAndSignatory: Story = {
+export const ProxiedAndSignatory: Story = {
   args: {
     wallets: [
       createPolkadotWallet(1, [initiatorAccount]),
-      createPolkadotWallet(3, [signatoryAccount]),
-      createPolkadotWallet(2, [proxyAccount]),
+      createProxiedWallet(2, [proxyAccount]),
+      createWcWallet(2, [signatoryAccount]),
     ],
     initiator: initiatorAccount,
     signatory: signatoryAccount,
-    proxy: proxyAccount,
+    proxied: proxyAccount,
   },
 };
 
@@ -69,12 +77,12 @@ export const AdditionalContent: Story = {
   args: {
     wallets: [
       createPolkadotWallet(1, [initiatorAccount]),
-      createPolkadotWallet(3, [signatoryAccount]),
-      createPolkadotWallet(2, [proxyAccount]),
+      createWcWallet(3, [signatoryAccount]),
+      createProxiedWallet(2, [proxyAccount]),
     ],
     initiator: initiatorAccount,
     signatory: signatoryAccount,
-    proxy: proxyAccount,
+    proxied: proxyAccount,
     children: (
       <>
         <DetailRow label="Referendum">#1234</DetailRow>

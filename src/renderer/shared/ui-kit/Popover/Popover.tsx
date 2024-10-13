@@ -67,6 +67,7 @@ const Content = ({ children }: PropsWithChildren) => {
   return (
     <RadixPopover.Portal container={portalContainer}>
       <RadixPopover.Content
+        hideWhenDetached
         side={side}
         align={align}
         collisionPadding={gridSpaceConverter(2)}

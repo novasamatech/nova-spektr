@@ -14,10 +14,10 @@ type Props = PropsWithChildren<{
   chain: Chain;
   initiator: Account;
   signatory?: Account;
-  proxy?: Account;
+  proxied?: Account;
 }>;
 
-export const TransactionDetails = memo(({ wallets, chain, proxy, initiator, signatory, children }: Props) => {
+export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, signatory, children }: Props) => {
   const { t } = useI18n();
 
   const initiatorWallet = useMemo(() => {
@@ -36,13 +36,13 @@ export const TransactionDetails = memo(({ wallets, chain, proxy, initiator, sign
       : null;
   }, [wallets, signatory]);
 
-  const proxyWallet = useMemo(() => {
-    return proxy
+  const proxiedWallet = useMemo(() => {
+    return proxied
       ? (walletUtils.getWalletFilteredAccounts(wallets, {
-          accountFn: (a) => a.accountId === proxy.accountId,
+          accountFn: (a) => a.accountId === proxied.accountId,
         }) ?? null)
       : null;
-  }, [wallets, proxy]);
+  }, [wallets, proxied]);
 
   if (!initiatorWallet) {
     return null;
@@ -50,7 +50,7 @@ export const TransactionDetails = memo(({ wallets, chain, proxy, initiator, sign
 
   return (
     <dl className="flex w-full flex-col gap-y-4 text-footnote">
-      {!proxyWallet && (
+      {!proxiedWallet && (
         <>
           <DetailRow label={t('proxy.details.wallet')} className="flex gap-x-2">
             <WalletIcon type={initiatorWallet.type} size={16} />
@@ -63,28 +63,28 @@ export const TransactionDetails = memo(({ wallets, chain, proxy, initiator, sign
         </>
       )}
 
-      {proxyWallet && proxy && (
+      {proxiedWallet && proxied && (
         <>
           <DetailRow label={t('transfer.senderProxiedWallet')}>
             <Box direction="row" gap={2}>
+              <WalletIcon type={proxiedWallet.type} size={16} />
+              <span>{proxiedWallet.name}</span>
+            </Box>
+          </DetailRow>
+
+          <DetailRow label={t('transfer.senderProxiedAccount')}>
+            <AccountInfo account={proxied} chain={chain} />
+          </DetailRow>
+
+          <DetailRow label={t('transfer.signingWallet')}>
+            <Box direction="row" gap={2} verticalAlign="center">
               <WalletIcon type={initiatorWallet.type} size={16} />
               <span>{initiatorWallet.name}</span>
             </Box>
           </DetailRow>
 
-          <DetailRow label={t('transfer.senderProxiedAccount')}>
-            <AccountInfo account={initiator} chain={chain} />
-          </DetailRow>
-
-          <DetailRow label={t('transfer.signingWallet')}>
-            <Box direction="row" gap={2} verticalAlign="center">
-              <WalletIcon type={proxyWallet.type} size={16} />
-              <span>{proxyWallet.name}</span>
-            </Box>
-          </DetailRow>
-
           <DetailRow label={t('transfer.signingAccount')}>
-            <AccountInfo account={proxy} chain={chain} />
+            <AccountInfo account={initiator} chain={chain} />
           </DetailRow>
         </>
       )}

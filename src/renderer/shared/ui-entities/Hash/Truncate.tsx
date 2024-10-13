@@ -64,8 +64,9 @@ export const Truncate = memo(({ text, ellipsis = '...' }: Props) => {
     const startCharWidth = startWidth / startText.length;
     const endCharWidth = endWidth / endText.length;
 
-    const startDelta = Math.ceil(startWidth - (containerWidth + ellipsisWidth) / 2);
-    const endDelta = Math.ceil(endWidth - (containerWidth + ellipsisWidth) / 2);
+    const halfOfSpace = (containerWidth - ellipsisWidth) / 2;
+    const startDelta = startWidth - halfOfSpace;
+    const endDelta = endWidth - halfOfSpace - startCharWidth / 2;
 
     const removeStart = Math.ceil(startDelta / startCharWidth);
     const removeEnd = Math.ceil(endDelta / endCharWidth);

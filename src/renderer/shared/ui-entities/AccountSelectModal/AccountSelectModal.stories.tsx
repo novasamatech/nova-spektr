@@ -2,21 +2,11 @@ import { BN_MILLION } from '@polkadot/util';
 import { type Meta, type StoryObj } from '@storybook/react';
 import { fn } from '@storybook/test';
 
-import { AccountType, type BaseAccount, ChainType, CryptoType } from '@/shared/core';
-import { dotAsset, polkadotChain } from '@/shared/mocks';
-import { TEST_ACCOUNTS } from '../../lib/utils';
+import { createBaseAccount, createWcAccount, dotAsset, polkadotChain } from '@/shared/mocks';
 
 import { AccountSelectModal } from './AccountSelectModal';
 
-const accounts = TEST_ACCOUNTS.map<BaseAccount>((accountId, index) => ({
-  id: index,
-  accountId,
-  chainType: ChainType.SUBSTRATE,
-  cryptoType: CryptoType.SR25519,
-  name: `Test Account ${index + 1}`,
-  type: AccountType.BASE,
-  walletId: 1,
-}));
+const accounts = [createBaseAccount(1), createWcAccount(2), createBaseAccount(3), createBaseAccount(4)];
 
 const meta: Meta<typeof AccountSelectModal> = {
   title: 'Design System/entities/AccountSelectModal',
