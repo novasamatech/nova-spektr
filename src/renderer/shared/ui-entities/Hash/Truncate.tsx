@@ -1,6 +1,6 @@
 import { type CSSProperties, memo, useRef, useState } from 'react';
 
-import { Skeleton, useResizeObserver } from '../../ui-kit';
+import { Skeleton, useResizeObserver } from '@/shared/ui-kit';
 
 import { getContainerMeasurement, getTextMeasurement } from './utils';
 
