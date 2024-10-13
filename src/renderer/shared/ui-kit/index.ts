@@ -5,6 +5,7 @@ export { ThemeProvider } from './Theme/ThemeProvider';
 export { ScrollArea } from './ScrollArea/ScrollArea';
 export { Dropdown } from './Dropdown/Dropdown';
 export { Skeleton } from './Skeleton/Skeleton';
+export { Carousel } from './Carousel/Carousel';
 export { Tooltip } from './Tooltip/Tooltip';
 export { Popover } from './Popover/Popover';
 export { Surface } from './Surface/Surface';
