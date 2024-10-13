@@ -1,8 +1,8 @@
 import { useStoreMap, useUnit } from 'effector-react';
 
-import { useI18n } from '@app/providers';
-import { ZERO_BALANCE, cnTw, formatFiatBalance } from '@shared/lib/utils';
-import { FootnoteText, Shimmering } from '@shared/ui';
+import { useI18n } from '@/app/providers';
+import { ZERO_BALANCE, cnTw, formatFiatBalance } from '@/shared/lib/utils';
+import { FootnoteText, Shimmering } from '@/shared/ui';
 import { currencyModel } from '../model/currency-model';
 import { priceProviderModel } from '../model/price-provider-model';
 

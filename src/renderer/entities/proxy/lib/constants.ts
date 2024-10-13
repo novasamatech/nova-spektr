@@ -1,4 +1,4 @@
-import { ProxyType } from '@shared/core';
+import { ProxyType } from '@/shared/core';
 
 export const ProxyTypeName: Record<ProxyType, string> = {
   [ProxyType.ANY]: 'proxy.names.any',

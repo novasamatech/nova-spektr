@@ -2,7 +2,7 @@ import { isNumber, isString } from 'lodash';
 import { Children, type PropsWithChildren } from 'react';
 
 import { type XOR } from '@/shared/core';
-import { cnTw } from '@shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
 
 import './Skeleton.css';

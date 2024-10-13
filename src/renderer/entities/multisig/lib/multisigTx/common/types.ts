@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type U8aFixed } from '@polkadot/types';
 import { type PalletMultisigMultisig } from '@polkadot/types/lookup';
 
-import { type MultisigTransactionDS } from '@shared/api/storage';
+import { type MultisigTransactionDS } from '@/shared/api/storage';
 import {
   type AccountId,
   type CallData,
@@ -10,7 +10,7 @@ import {
   type ChainId,
   type MultisigAccount,
   type MultisigTransaction,
-} from '@shared/core';
+} from '@/shared/core';
 
 export interface IMultisigTxService {
   subscribeMultisigAccount: (api: ApiPromise, account: MultisigAccount) => () => void;

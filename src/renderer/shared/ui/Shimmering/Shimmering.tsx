@@ -1,6 +1,6 @@
 import { isNumber } from 'lodash';
 
-import { cnTw } from '@shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 
 import './Shimmering.css';
 

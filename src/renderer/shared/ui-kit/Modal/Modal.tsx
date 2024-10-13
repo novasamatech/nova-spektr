@@ -2,8 +2,8 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { isObject } from 'lodash';
 import { Children, type PropsWithChildren, type ReactNode } from 'react';
 
+import { cnTw, nonNullable } from '@/shared/lib/utils';
 import { HeaderTitleText, IconButton } from '@/shared/ui';
-import { cnTw, nonNullable } from '@shared/lib/utils';
 import { ScrollArea } from '../ScrollArea/ScrollArea';
 import { useTheme } from '../Theme/useTheme';
 

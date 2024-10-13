@@ -1,8 +1,8 @@
 import { type Meta, type StoryObj } from '@storybook/react';
 import { expect, within } from '@storybook/test';
 
+import { TEST_HASH } from '@/shared/lib/utils';
 import { Box } from '@/shared/ui-kit';
-import { TEST_HASH } from '@shared/lib/utils';
 
 import { Hash } from './Hash';
 

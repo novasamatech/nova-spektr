@@ -2,11 +2,11 @@ import { hexToU8a, isHex } from '@polkadot/util';
 import { decodeAddress, encodeAddress, ethereumEncode } from '@polkadot/util-crypto';
 import { useState } from 'react';
 
-import { useI18n } from '@app/providers';
-import { CryptoType } from '@shared/core';
-import { cnTw } from '@shared/lib/utils';
-import { Button, CaptionText, FootnoteText, Icon, Loader, Select, SmallTitleText } from '@shared/ui';
-import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
+import { useI18n } from '@/app/providers';
+import { CryptoType } from '@/shared/core';
+import { cnTw } from '@/shared/lib/utils';
+import { Button, CaptionText, FootnoteText, Icon, Loader, Select, SmallTitleText } from '@/shared/ui';
+import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
 import {
   type DdAddressInfoDecoded,
   type DdSeedInfo,
@@ -15,7 +15,7 @@ import {
   QrReader,
   type VideoInput,
   WhiteTextButtonStyle,
-} from '@entities/transaction';
+} from '@/entities/transaction';
 
 const enum CameraState {
   ACTIVE,

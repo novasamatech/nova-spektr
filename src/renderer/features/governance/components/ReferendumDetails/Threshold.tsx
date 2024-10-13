@@ -1,9 +1,9 @@
 import { type BN } from '@polkadot/util';
 
-import { useI18n } from '@app/providers';
+import { useI18n } from '@/app/providers';
 import { type Asset } from '@/shared/core';
-import { formatAsset, formatBalance } from '@shared/lib/utils';
-import { FootnoteText, Icon } from '@shared/ui';
+import { formatAsset, formatBalance } from '@/shared/lib/utils';
+import { FootnoteText, Icon } from '@/shared/ui';
 
 type Props = {
   voited: BN;

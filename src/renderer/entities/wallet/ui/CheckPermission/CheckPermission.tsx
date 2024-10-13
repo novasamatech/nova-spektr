@@ -1,7 +1,7 @@
 import { type PropsWithChildren } from 'react';
 import { Navigate } from 'react-router-dom';
 
-import { type Wallet } from '@shared/core';
+import { type Wallet } from '@/shared/core';
 import { type OperationType } from '../../common/types';
 import { getOperationTypeFn } from '../../common/utils';
 

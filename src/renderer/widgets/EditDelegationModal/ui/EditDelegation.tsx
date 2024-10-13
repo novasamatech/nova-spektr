@@ -1,18 +1,18 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@app/providers';
+import { useI18n } from '@/app/providers';
+import { useModalClose } from '@/shared/lib/hooks';
 import { Step, isStep } from '@/shared/lib/utils';
-import { useModalClose } from '@shared/lib/hooks';
-import { BaseModal, Button } from '@shared/ui';
+import { BaseModal, Button } from '@/shared/ui';
+import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
-import { OperationTitle } from '@entities/chain';
-import { OperationResult } from '@entities/transaction';
-import { OperationSign, OperationSubmit } from '@features/operations';
+import { OperationResult } from '@/entities/transaction';
+import { OperationSign, OperationSubmit } from '@/features/operations';
 import {
   ConfirmSlider,
   EditDelegationConfirmation as Confirmation,
   basketUtils,
-} from '@features/operations/OperationsConfirm';
+} from '@/features/operations/OperationsConfirm';
 import { editDelegationModel } from '../model/edit-delegation-model';
 
 import { DelegateForm } from './DelegateForm';

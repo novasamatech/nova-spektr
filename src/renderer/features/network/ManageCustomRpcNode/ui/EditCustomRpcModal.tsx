@@ -2,10 +2,10 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
-import { useI18n } from '@app/providers';
-import { useModalClose } from '@shared/lib/hooks';
-import { Alert, BaseModal, Button, Input, InputHint } from '@shared/ui';
-import { OperationTitle } from '@entities/chain';
+import { useI18n } from '@/app/providers';
+import { useModalClose } from '@/shared/lib/hooks';
+import { Alert, BaseModal, Button, Input, InputHint } from '@/shared/ui';
+import { OperationTitle } from '@/entities/chain';
 import { customRpcUtils } from '../lib/custom-rpc-utils';
 import { editCustomRpcModel } from '../model/edit-custom-rpc-model';
 

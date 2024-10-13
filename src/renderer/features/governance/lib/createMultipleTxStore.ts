@@ -1,10 +1,10 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type Store, combine, createStore } from 'effector';
 
+import { type Account, type Chain, type Transaction, type Wallet } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
-import { type Account, type Chain, type Transaction, type Wallet } from '@shared/core';
-import { transactionService } from '@entities/transaction';
-import { accountUtils, walletUtils } from '@entities/wallet';
+import { transactionService } from '@/entities/transaction';
+import { accountUtils, walletUtils } from '@/entities/wallet';
 
 import { createFeeCalculator } from './createFeeCalculator';
 

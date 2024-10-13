@@ -1,7 +1,7 @@
 import { type DelegateAccount } from '@/shared/api/governance';
 import { cnTw } from '@/shared/lib/utils';
 import { Icon, Identicon } from '@/shared/ui';
-import { addDelegationUtils } from '@/widgets/DelegationModal/common/utils';
+import { addDelegationUtils } from '@/widgets/DelegationModal';
 
 type Props = {
   delegate: DelegateAccount;

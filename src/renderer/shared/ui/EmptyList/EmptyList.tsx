@@ -1,6 +1,6 @@
 import { type PropsWithChildren, type ReactNode } from 'react';
 
-import { BodyText, Icon } from '@shared/ui';
+import { BodyText, Icon } from '@/shared/ui';
 
 type Props = {
   iconAlt?: string;

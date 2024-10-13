@@ -3,9 +3,9 @@ import { BrowserCodeReader, BrowserQRCodeReader, type IScannerControls } from '@
 import init, { Decoder, EncodingPacket } from 'raptorq';
 import { useEffect, useRef } from 'react';
 
-import { useI18n } from '@app/providers';
-import { type HexString } from '@shared/core';
-import { cnTw } from '@shared/lib/utils';
+import { useI18n } from '@/app/providers';
+import { type HexString } from '@/shared/core';
+import { cnTw } from '@/shared/lib/utils';
 import { CRYPTO_SR25519 } from '../QrGenerator/common/constants';
 import { ErrorFields, FRAME_KEY, SIGNED_TRANSACTION_BULK } from '../common/constants';
 import { QR_READER_ERRORS } from '../common/errors';

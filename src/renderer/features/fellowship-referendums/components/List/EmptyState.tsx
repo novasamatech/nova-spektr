@@ -1,4 +1,4 @@
-import { useI18n } from '@app/providers';
+import { useI18n } from '@/app/providers';
 import { BodyText, Icon } from '@/shared/ui';
 
 export const EmptyState = () => {

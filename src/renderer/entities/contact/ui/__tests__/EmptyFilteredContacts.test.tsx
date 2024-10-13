@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import { EmptyFilteredContacts } from '../EmptyFilteredContacts';
 
-jest.mock('@app/providers', () => ({
+jest.mock('@/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@app/providers';
+import { useI18n } from '@/app/providers';
 import {
   type Account,
   type Address,
@@ -11,9 +11,9 @@ import {
   type ShardAccount,
   type Transaction,
   type Wallet,
-} from '@shared/core';
-import { CryptoType } from '@shared/core';
-import { Button } from '@shared/ui';
+} from '@/shared/core';
+import { CryptoType } from '@/shared/core';
+import { Button } from '@/shared/ui';
 import { transactionService } from '../../lib';
 import { QrTxGenerator } from '../QrCode/QrGenerator/QrTxGenerator';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';

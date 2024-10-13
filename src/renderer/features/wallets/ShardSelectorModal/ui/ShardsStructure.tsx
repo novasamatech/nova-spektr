@@ -1,12 +1,12 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@app/providers';
-import { type AccountId, type ChainId, type ID } from '@shared/core';
-import { RootExplorers } from '@shared/lib/utils';
-import { Accordion, Checkbox, FootnoteText } from '@shared/ui';
-import { ChainTitle } from '@entities/chain';
-import { networkModel } from '@entities/network';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { useI18n } from '@/app/providers';
+import { type AccountId, type ChainId, type ID } from '@/shared/core';
+import { RootExplorers } from '@/shared/lib/utils';
+import { Accordion, Checkbox, FootnoteText } from '@/shared/ui';
+import { ChainTitle } from '@/entities/chain';
+import { networkModel } from '@/entities/network';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { selectorUtils } from '../lib/selector-utils';
 import { shardsModel } from '../model/shards-model';
 

@@ -1,9 +1,9 @@
 import { Outlet, generatePath, useParams } from 'react-router-dom';
 
+import { Paths } from '@/shared/routes';
 import { Box } from '@/shared/ui-kit';
-import { Paths } from '@shared/routes';
 import { fellowshipReferendumsFeature } from '@/features/fellowship-referendums';
-import { navigationModel } from '@features/navigation';
+import { navigationModel } from '@/features/navigation';
 
 const { Referendums, Filters } = fellowshipReferendumsFeature.views;
 

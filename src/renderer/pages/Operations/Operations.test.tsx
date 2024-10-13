@@ -2,18 +2,18 @@ import { act, render, screen } from '@testing-library/react';
 import { fork } from 'effector';
 import { Provider } from 'effector-react';
 
-import { TEST_ACCOUNTS } from '@shared/lib/utils';
-import { networkModel } from '@entities/network';
+import { TEST_ACCOUNTS } from '@/shared/lib/utils';
+import { networkModel } from '@/entities/network';
 
 import { Operations } from './Operations';
 
-jest.mock('@app/providers', () => ({
+jest.mock('@/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
 
-jest.mock('@entities/multisig', () => ({
+jest.mock('@/entities/multisig', () => ({
   useMultisigTx: jest.fn().mockReturnValue({
     getLiveAccountMultisigTxs: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNTS[0], chainId: '0x00' }],
   }),
@@ -23,7 +23,7 @@ jest.mock('@entities/multisig', () => ({
 }));
 
 jest.mock('./components/Operation', () => () => 'Operation');
-jest.mock('@features/operations', () => ({
+jest.mock('@/features/operations', () => ({
   OperationsFilter: () => 'filter',
 }));
 

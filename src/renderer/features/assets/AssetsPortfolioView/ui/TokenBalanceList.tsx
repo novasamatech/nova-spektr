@@ -1,13 +1,13 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@app/providers';
-import { type AssetByChains } from '@shared/core';
-import { Accordion, BodyText, FootnoteText, HelpText, Icon, IconButton, Plate, Tooltip } from '@shared/ui';
-import { AssetIcon } from '@entities/asset';
-import { ChainIcon } from '@entities/chain';
-import { networkModel } from '@entities/network';
-import { TokenPrice } from '@entities/price';
-import { CheckPermission, OperationType, walletModel } from '@entities/wallet';
+import { useI18n } from '@/app/providers';
+import { type AssetByChains } from '@/shared/core';
+import { Accordion, BodyText, FootnoteText, HelpText, Icon, IconButton, Plate, Tooltip } from '@/shared/ui';
+import { AssetIcon } from '@/entities/asset';
+import { ChainIcon } from '@/entities/chain';
+import { networkModel } from '@/entities/network';
+import { TokenPrice } from '@/entities/price';
+import { CheckPermission, OperationType, walletModel } from '@/entities/wallet';
 import { portfolioModel } from '../model/portfolio-model';
 
 import { AssembledAssetAmount } from './AssembledAssetAmount';

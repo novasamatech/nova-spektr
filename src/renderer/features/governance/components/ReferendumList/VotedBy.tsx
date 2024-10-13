@@ -1,10 +1,10 @@
 import { useStoreMap } from 'effector-react';
 import { memo } from 'react';
 
-import { useI18n } from '@app/providers';
-import { type Address } from '@shared/core';
-import { FootnoteText, Icon } from '@shared/ui';
-import { AccountAddress } from '@entities/wallet';
+import { useI18n } from '@/app/providers';
+import { type Address } from '@/shared/core';
+import { FootnoteText, Icon } from '@/shared/ui';
+import { AccountAddress } from '@/entities/wallet';
 import { proposerIdentityAggregate } from '../../aggregates/proposerIdentity';
 
 type Props = {

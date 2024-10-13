@@ -13,7 +13,7 @@ import {
   type ReferendumStatus,
   type Transaction,
   type VotingThreshold,
-} from '@shared/core';
+} from '@/shared/core';
 
 export type AggregatedReferendum<T extends Referendum = Referendum> = T & {
   title: string | null;

@@ -8,7 +8,7 @@ import { InputHint, Select } from '@/shared/ui';
 import { type DropdownOption } from '@/shared/ui/Dropdowns/common/types';
 import { Address } from '@/shared/ui-entities';
 import { AssetBalance } from '@/entities/asset';
-import { locksService } from '@entities/governance';
+import { locksService } from '@/entities/governance';
 
 type Props = {
   value: Account | null;

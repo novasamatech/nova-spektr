@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@app/providers';
+import { useI18n } from '@/app/providers';
 import { Button, MultiSelect, Select } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { filterModel } from '../../model/filter';

@@ -1,7 +1,7 @@
 import { Menu, Transition } from '@headlessui/react';
 import { type ComponentProps, Fragment, type PropsWithChildren } from 'react';
 
-import { cnTw } from '@shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { IconButton } from '../../Buttons';
 import { Icon } from '../../Icon/Icon';
 import { FootnoteText } from '../../Typography';

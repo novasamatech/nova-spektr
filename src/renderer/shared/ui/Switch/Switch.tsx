@@ -1,7 +1,7 @@
 import { Switch as HeadlessSwitch } from '@headlessui/react';
 import { type PropsWithChildren } from 'react';
 
-import { cnTw } from '@shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { LabelText } from '../Typography';
 
 type Props = {

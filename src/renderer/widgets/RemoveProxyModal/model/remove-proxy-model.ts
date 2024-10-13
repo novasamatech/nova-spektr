@@ -1,7 +1,6 @@
 import { combine, createEvent, createStore, sample, split } from 'effector';
 import { spread } from 'patronum';
 
-import { type PathType, Paths } from '@/shared/routes';
 import {
   type Account,
   type BasketTransaction,
@@ -16,22 +15,23 @@ import {
   TransactionType,
   type TxWrapper,
   WrapperKind,
-} from '@shared/core';
-import { nonNullable, toAccountId, toAddress, transferableAmount } from '@shared/lib/utils';
-import { balanceModel, balanceUtils } from '@entities/balance';
-import { basketModel } from '@entities/basket/model/basket-model';
-import { networkModel } from '@entities/network';
-import { proxyModel } from '@entities/proxy';
-import { transactionService } from '@entities/transaction';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+} from '@/shared/core';
+import { nonNullable, toAccountId, toAddress, transferableAmount } from '@/shared/lib/utils';
+import { type PathType, Paths } from '@/shared/routes';
+import { balanceModel, balanceUtils } from '@/entities/balance';
+import { basketModel } from '@/entities/basket';
+import { networkModel } from '@/entities/network';
+import { proxyModel } from '@/entities/proxy';
+import { transactionService } from '@/entities/transaction';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { balanceSubModel } from '@/features/balances';
 import { navigationModel } from '@/features/navigation';
-import { balanceSubModel } from '@features/balances';
-import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel, submitUtils } from '@features/operations/OperationSubmit';
-import { removeProxyConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
-import { proxiesModel } from '@features/proxies';
-import { walletSelectModel } from '@features/wallets';
-import { walletProviderModel } from '../../WalletDetails/model/wallet-provider-model';
+import { signModel } from '@/features/operations/OperationSign/model/sign-model';
+import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { removeProxyConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
+import { proxiesModel } from '@/features/proxies';
+import { walletSelectModel } from '@/features/wallets';
+import { walletProviderModel } from '@/widgets/WalletDetails';
 import { removeProxyUtils } from '../lib/remove-proxy-utils';
 import { type RemoveProxyStore, Step } from '../lib/types';
 

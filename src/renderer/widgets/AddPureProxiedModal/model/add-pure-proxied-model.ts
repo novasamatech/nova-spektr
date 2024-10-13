@@ -3,7 +3,6 @@ import { type UnsubscribePromise } from '@polkadot/api/types';
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { combineEvents, delay, spread } from 'patronum';
 
-import { type PathType, Paths } from '@/shared/routes';
 import {
   type Account,
   type AccountId,
@@ -15,21 +14,22 @@ import {
   ProxyVariant,
   type Timepoint,
   type Transaction,
-} from '@shared/core';
-import { nonNullable, toAddress } from '@shared/lib/utils';
-import { basketModel } from '@entities/basket/model/basket-model';
-import { subscriptionService } from '@entities/chain';
-import { networkModel } from '@entities/network';
-import { proxyModel, proxyUtils } from '@entities/proxy';
-import { type ExtrinsicResultParams, transactionService } from '@entities/transaction';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+} from '@/shared/core';
+import { nonNullable, toAddress } from '@/shared/lib/utils';
+import { type PathType, Paths } from '@/shared/routes';
+import { basketModel } from '@/entities/basket';
+import { subscriptionService } from '@/entities/chain';
+import { networkModel } from '@/entities/network';
+import { proxyModel, proxyUtils } from '@/entities/proxy';
+import { type ExtrinsicResultParams, transactionService } from '@/entities/transaction';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { balanceSubModel } from '@/features/balances';
 import { navigationModel } from '@/features/navigation';
-import { balanceSubModel } from '@features/balances';
-import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel, submitUtils } from '@features/operations/OperationSubmit';
-import { addPureProxiedConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
-import { proxiesModel } from '@features/proxies';
-import { walletSelectModel } from '@features/wallets';
+import { signModel } from '@/features/operations/OperationSign/model/sign-model';
+import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { addPureProxiedConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
+import { proxiesModel } from '@/features/proxies';
+import { walletSelectModel } from '@/features/wallets';
 import { addPureProxiedUtils } from '../lib/add-pure-proxied-utils';
 import { type AddPureProxiedStore, Step } from '../lib/types';
 

@@ -1,6 +1,6 @@
 import { type BN } from '@polkadot/util';
 
-import { type Address, type Chain, type Conviction, type ReferendumId } from '@shared/core';
+import { type Address, type Chain, type Conviction, type ReferendumId } from '@/shared/core';
 
 export type ReferendumTimelineRecordStatus =
   | 'All'

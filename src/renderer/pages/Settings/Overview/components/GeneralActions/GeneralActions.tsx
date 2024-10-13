@@ -3,12 +3,12 @@ import { capitalize } from 'lodash';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { useI18n } from '@app/providers';
-import { cnTw } from '@shared/lib/utils';
-import { Paths } from '@shared/routes';
-import { BodyText, FootnoteText, HelpText, Icon, Plate, Switch } from '@shared/ui';
-import { governanceModel } from '@entities/governance';
-import { currencyModel, priceProviderModel } from '@entities/price';
+import { useI18n } from '@/app/providers';
+import { cnTw } from '@/shared/lib/utils';
+import { Paths } from '@/shared/routes';
+import { BodyText, FootnoteText, HelpText, Icon, Plate, Switch } from '@/shared/ui';
+import { governanceModel } from '@/entities/governance';
+import { currencyModel, priceProviderModel } from '@/entities/price';
 
 // TODO: Language switcher temporary removed
 export const GeneralActions = () => {

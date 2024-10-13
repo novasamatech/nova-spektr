@@ -1,7 +1,7 @@
 import { Listbox, Transition } from '@headlessui/react';
 import { Fragment, useId } from 'react';
 
-import { cnTw } from '@shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { Checkbox } from '../../Checkbox/Checkbox';
 import { Icon } from '../../Icon/Icon';
 import { CommonInputStyles, CommonInputStylesTheme } from '../../Inputs/common/styles';

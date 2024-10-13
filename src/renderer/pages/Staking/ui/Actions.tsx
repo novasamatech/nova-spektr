@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { useI18n } from '@app/providers';
-import { type Address, type Stake } from '@shared/core';
-import { useToggle } from '@shared/lib/hooks';
-import { toAccountId } from '@shared/lib/utils';
-import { BaseModal, Button, DropdownButton, Icon, SmallTitleText } from '@shared/ui';
-import { type ButtonDropdownOption } from '@shared/ui/types';
+import { useI18n } from '@/app/providers';
+import { type Address, type Stake } from '@/shared/core';
+import { useToggle } from '@/shared/lib/hooks';
+import { toAccountId } from '@/shared/lib/utils';
+import { BaseModal, Button, DropdownButton, Icon, SmallTitleText } from '@/shared/ui';
+import { type ButtonDropdownOption } from '@/shared/ui/types';
 import { ControllerOperations, OperationOptions, StashOperations } from '../lib/constants';
 import { ControllerTypes, type Operations } from '../lib/types';
 

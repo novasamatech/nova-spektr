@@ -1,4 +1,4 @@
-import { useI18n } from '@app/providers';
+import { useI18n } from '@/app/providers';
 
 type Props = {
   amount: string;

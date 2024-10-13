@@ -1,14 +1,14 @@
 import { useGate, useUnit } from 'effector-react';
 
-import { useI18n } from '@app/providers';
-import { type Asset, type Chain, type OngoingReferendum } from '@shared/core';
-import { useModalClose } from '@shared/lib/hooks';
-import { Step, isStep } from '@shared/lib/utils';
-import { BaseModal, Button } from '@shared/ui';
-import { OperationTitle } from '@entities/chain';
-import { OperationResult } from '@entities/transaction';
-import { OperationSign, OperationSubmit } from '@features/operations';
-import { VoteConfirmation, basketUtils } from '@features/operations/OperationsConfirm';
+import { useI18n } from '@/app/providers';
+import { type Asset, type Chain, type OngoingReferendum } from '@/shared/core';
+import { useModalClose } from '@/shared/lib/hooks';
+import { Step, isStep } from '@/shared/lib/utils';
+import { BaseModal, Button } from '@/shared/ui';
+import { OperationTitle } from '@/entities/chain';
+import { OperationResult } from '@/entities/transaction';
+import { OperationSign, OperationSubmit } from '@/features/operations';
+import { VoteConfirmation, basketUtils } from '@/features/operations/OperationsConfirm';
 import { voteModalAggregate } from '../aggregates/voteModal';
 
 import { VoteForm } from './VoteForm';

@@ -1,8 +1,8 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@app/providers';
-import { FootnoteText, Icon, Plate, Shimmering } from '@shared/ui';
-import { AssetBalance } from '@entities/asset';
+import { useI18n } from '@/app/providers';
+import { FootnoteText, Icon, Plate, Shimmering } from '@/shared/ui';
+import { AssetBalance } from '@/entities/asset';
 import { locksModel } from '../../model/locks';
 import { networkSelectorModel } from '../../model/networkSelector';
 import { unlockModel } from '../../model/unlock/unlock';

@@ -1,11 +1,11 @@
 import { memo, useMemo, useState } from 'react';
 
-import { useI18n } from '@app/providers';
+import { useI18n } from '@/app/providers';
+import { type Asset, type Chain } from '@/shared/core';
+import { useDeferredList } from '@/shared/lib/hooks';
+import { formatAsset, formatBalance, performSearch, toAccountId } from '@/shared/lib/utils';
+import { BodyText, FootnoteText, SearchInput } from '@/shared/ui';
 import { AccountExplorers, Address } from '@/shared/ui-entities';
-import { type Asset, type Chain } from '@shared/core';
-import { useDeferredList } from '@shared/lib/hooks';
-import { formatAsset, formatBalance, performSearch, toAccountId } from '@shared/lib/utils';
-import { BodyText, FootnoteText, SearchInput } from '@shared/ui';
 import { type AggregatedVoteHistory } from '../../types/structs';
 
 import { VotingHistoryListEmptyState } from './VotingHistoryListEmptyState';

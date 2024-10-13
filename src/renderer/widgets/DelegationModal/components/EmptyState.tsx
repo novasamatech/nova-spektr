@@ -1,5 +1,5 @@
-import { useI18n } from '@app/providers';
-import { FootnoteText, Icon, SmallTitleText } from '@shared/ui';
+import { useI18n } from '@/app/providers';
+import { FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 
 export const EmptyState = () => {
   const { t } = useI18n();

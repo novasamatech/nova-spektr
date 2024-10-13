@@ -1,8 +1,8 @@
 import { hexToU8a } from '@polkadot/util';
 
-import { type AccountId, type Address } from '@shared/core';
-import { cnTw, toAddress, toShortAddress } from '@shared/lib/utils';
-import { Identicon, Truncate } from '@shared/ui';
+import { type AccountId, type Address } from '@/shared/core';
+import { cnTw, toAddress, toShortAddress } from '@/shared/lib/utils';
+import { Identicon, Truncate } from '@/shared/ui';
 
 type AddressType = 'full' | 'short' | 'adaptive';
 

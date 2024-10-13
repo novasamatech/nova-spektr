@@ -1,16 +1,14 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@app/providers';
-import { type PendingChunkWithAddress, UnlockChunkType } from '@shared/api/governance';
-import { getSecondsDuratonToBlock } from '@shared/lib/utils';
-import { Button, Duration, FootnoteText, Icon, Shimmering } from '@shared/ui';
-import { AssetBalance } from '@entities/asset';
-import { AssetFiatBalance } from '@entities/price';
-import { permissionUtils, walletModel } from '@entities/wallet';
-import { networkSelectorModel } from '@/features/governance';
-import { unlockModel } from '@/features/governance/model/unlock/unlock';
-import { locksModel } from '@features/governance/model/locks';
+import { useI18n } from '@/app/providers';
+import { type PendingChunkWithAddress, UnlockChunkType } from '@/shared/api/governance';
+import { getSecondsDuratonToBlock } from '@/shared/lib/utils';
+import { Button, Duration, FootnoteText, Icon, Shimmering } from '@/shared/ui';
+import { AssetBalance } from '@/entities/asset';
+import { AssetFiatBalance } from '@/entities/price';
+import { permissionUtils, walletModel } from '@/entities/wallet';
+import { locksModel, networkSelectorModel, unlockModel } from '@/features/governance';
 import { unlockAggregate } from '../aggregates/unlock';
 
 export const UnlockInfo = () => {

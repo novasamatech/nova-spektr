@@ -7,7 +7,7 @@ import { Button, DetailRow, FootnoteText, Icon, SmallTitleText, Tooltip } from '
 import { AssetBalance } from '@/entities/asset';
 import { allTracks, votingService } from '@/entities/governance';
 import { AddressWithExplorers, accountUtils, walletModel } from '@/entities/wallet';
-import { delegationModel } from '@/widgets/DelegationModal/model/delegation-model';
+import { delegationModel } from '@/widgets/DelegationModal';
 import { editDelegationModel } from '@/widgets/EditDelegationModal';
 import { revokeDelegationModel } from '@/widgets/RevokeDelegationModal';
 import { delegateDetailsModel } from '../model/delegate-details-model';

@@ -1,18 +1,18 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 
-import { QrError, QrReader } from '@entities/transaction';
+import { QrError, QrReader } from '@/entities/transaction';
 
 import KeyQrReader from './KeyQrReader';
 
-jest.mock('@app/providers', () => ({
+jest.mock('@/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
 
-jest.mock('@entities/transaction');
+jest.mock('@/entities/transaction');
 
-jest.mock('@shared/ui', () => ({
+jest.mock('@/shared/ui', () => ({
   Select: ({ options }: any) => options.map((o: any) => <span key="1">{o.element}</span>),
   Button: ({ children }: any) => <button type="button">{children}</button>,
   Loader: () => '',

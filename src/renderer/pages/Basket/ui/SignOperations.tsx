@@ -1,13 +1,13 @@
 import { useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
-import { useI18n } from '@app/providers';
-import { type BasketTransaction, TransactionType, WalletType } from '@shared/core';
-import { useModalClose } from '@shared/lib/hooks';
-import { BaseModal, HeaderTitleText } from '@shared/ui';
-import { OperationTitle } from '@entities/chain';
-import { networkModel } from '@entities/network';
-import { SignButton } from '@entities/operations';
+import { useI18n } from '@/app/providers';
+import { type BasketTransaction, TransactionType, WalletType } from '@/shared/core';
+import { useModalClose } from '@/shared/lib/hooks';
+import { BaseModal, HeaderTitleText } from '@/shared/ui';
+import { OperationTitle } from '@/entities/chain';
+import { networkModel } from '@/entities/network';
+import { SignButton } from '@/entities/operations';
 import {
   type MultisigTransactionTypes,
   type TransferTransactionTypes,
@@ -16,8 +16,8 @@ import {
   type XcmTransactionTypes,
   XcmTypes,
   isEditDelegationTransaction,
-} from '@entities/transaction';
-import { OperationSign, OperationSubmit } from '@features/operations';
+} from '@/entities/transaction';
+import { OperationSign, OperationSubmit } from '@/features/operations';
 import {
   AddProxyConfirm,
   AddPureProxiedConfirm,
@@ -37,8 +37,8 @@ import {
   UnstakeConfirmation,
   VoteConfirmation,
   WithdrawConfirmation,
-} from '@features/operations/OperationsConfirm';
-import { UnlockConfirmation } from '@/widgets/UnlockModal/ui/UnlockConfirmation';
+} from '@/features/operations/OperationsConfirm';
+import { UnlockConfirmation } from '@/widgets/UnlockModal';
 import { getOperationTitle } from '../lib/operation-title';
 import { signOperationsUtils } from '../lib/sign-operations-utils';
 import { getCoreTx } from '../lib/utils';

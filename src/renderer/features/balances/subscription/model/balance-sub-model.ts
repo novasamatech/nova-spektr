@@ -3,8 +3,8 @@ import { attach, createEffect, createEvent, createStore, sample, scopeBind } fro
 import mapValues from 'lodash/mapValues';
 import { combineEvents, once, previous, spread } from 'patronum';
 
-import { balanceService } from '@shared/api/balances';
-import { storageService } from '@shared/api/storage';
+import { balanceService } from '@/shared/api/balances';
+import { storageService } from '@/shared/api/storage';
 import {
   type AccountId,
   type Balance,
@@ -13,11 +13,11 @@ import {
   type ConnectionStatus,
   type ID,
   type Wallet,
-} from '@shared/core';
-import { isFulfilled } from '@shared/lib/utils';
-import { balanceModel, balanceUtils } from '@entities/balance';
-import { networkModel, networkUtils } from '@entities/network';
-import { walletModel } from '@entities/wallet';
+} from '@/shared/core';
+import { isFulfilled } from '@/shared/lib/utils';
+import { balanceModel, balanceUtils } from '@/entities/balance';
+import { networkModel, networkUtils } from '@/entities/network';
+import { walletModel } from '@/entities/wallet';
 import { balanceSubUtils } from '../lib/balance-sub-utils';
 import { type SubAccounts, type Subscriptions } from '../lib/types';
 

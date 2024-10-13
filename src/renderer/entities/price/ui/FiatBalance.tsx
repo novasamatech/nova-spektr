@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
-import { cnTw } from '@shared/lib/utils';
-import { FootnoteText, Shimmering } from '@shared/ui';
+import { cnTw } from '@/shared/lib/utils';
+import { FootnoteText, Shimmering } from '@/shared/ui';
 import { currencyModel } from '../model/currency-model';
 
 import { Price } from './Price';

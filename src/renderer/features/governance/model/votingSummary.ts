@@ -2,10 +2,10 @@ import { createEffect, createEvent, createStore, sample, split } from 'effector'
 import { createGate } from 'effector-react';
 import { readonly } from 'patronum';
 
-import { type GovernanceApi } from '@shared/api/governance';
-import { type Chain, type ChainId, type Referendum, type ReferendumId, type Tally } from '@shared/core';
-import { nonNullable, setNestedValue } from '@shared/lib/utils';
-import { governanceModel, referendumService } from '@entities/governance';
+import { type GovernanceApi } from '@/shared/api/governance';
+import { type Chain, type ChainId, type Referendum, type ReferendumId, type Tally } from '@/shared/core';
+import { nonNullable, setNestedValue } from '@/shared/lib/utils';
+import { governanceModel, referendumService } from '@/entities/governance';
 
 const flow = createGate<{ chain: Chain; referendum: Referendum }>();
 

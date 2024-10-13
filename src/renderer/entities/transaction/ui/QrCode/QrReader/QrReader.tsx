@@ -3,9 +3,9 @@ import { BrowserCodeReader, BrowserQRCodeReader, type IScannerControls } from '@
 import init, { Decoder, EncodingPacket } from 'raptorq';
 import { useEffect, useRef } from 'react';
 
-import { useI18n } from '@app/providers';
-import { CryptoTypeString } from '@shared/core';
-import { cnTw, validateSignerFormat } from '@shared/lib/utils';
+import { useI18n } from '@/app/providers';
+import { CryptoTypeString } from '@/shared/core';
+import { cnTw, validateSignerFormat } from '@/shared/lib/utils';
 import {
   DYNAMIC_DERIVATIONS_ADDRESS_RESPONSE,
   EXPORT_ADDRESS,

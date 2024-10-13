@@ -1,6 +1,6 @@
-import { useI18n } from '@app/providers';
-import { type ReferendumTimelineRecord, type ReferendumTimelineRecordStatus } from '@shared/api/governance';
-import { FootnoteText, OperationStatus } from '@shared/ui';
+import { useI18n } from '@/app/providers';
+import { type ReferendumTimelineRecord, type ReferendumTimelineRecordStatus } from '@/shared/api/governance';
+import { FootnoteText, OperationStatus } from '@/shared/ui';
 
 type Props = {
   item: ReferendumTimelineRecord;

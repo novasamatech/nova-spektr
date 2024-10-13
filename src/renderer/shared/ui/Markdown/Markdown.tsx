@@ -3,8 +3,8 @@ import ReactMarkdown, { type Components, type Options } from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
 
-import { useI18n } from '@app/providers';
-import { cnTw } from '@shared/lib/utils';
+import { useI18n } from '@/app/providers';
+import { cnTw } from '@/shared/lib/utils';
 import { Button } from '../Buttons';
 import { Checkbox } from '../Checkbox/Checkbox';
 import { Icon } from '../Icon/Icon';

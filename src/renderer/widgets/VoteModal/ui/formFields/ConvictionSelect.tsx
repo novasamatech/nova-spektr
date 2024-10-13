@@ -1,6 +1,6 @@
 import { type BN } from '@polkadot/util';
 
-import { useI18n } from '@app/providers';
+import { useI18n } from '@/app/providers';
 import { type Asset, type Conviction } from '@/shared/core';
 import { formatBalance, toNumberWithPrecision } from '@/shared/lib/utils';
 import { FootnoteText, TitleText } from '@/shared/ui';

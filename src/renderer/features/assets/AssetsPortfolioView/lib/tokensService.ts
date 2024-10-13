@@ -1,11 +1,11 @@
 import { default as BigNumber } from 'bignumber.js';
 import { concat, orderBy, sortBy } from 'lodash';
 
-import { isKusama, isNameStartsWithNumber, isPolkadot } from '@shared/api/network/lib/utils';
-import { sumValues } from '@shared/api/network/service/chainsService';
-import { type PriceObject } from '@shared/api/price-provider';
-import tokensProd from '@shared/config/tokens/tokens.json';
-import tokensDev from '@shared/config/tokens/tokens_dev.json';
+import { isKusama, isNameStartsWithNumber, isPolkadot } from '@/shared/api/network/lib/utils';
+import { sumValues } from '@/shared/api/network/service/chainsService';
+import { type PriceObject } from '@/shared/api/price-provider';
+import tokensProd from '@/shared/config/tokens/tokens.json';
+import tokensDev from '@/shared/config/tokens/tokens_dev.json';
 import {
   type Account,
   type AccountId,
@@ -13,10 +13,10 @@ import {
   type AssetByChains,
   type Balance,
   type ChainId,
-} from '@shared/core';
-import { ZERO_BALANCE, getBalanceBn, totalAmount } from '@shared/lib/utils';
-import { balanceUtils } from '@entities/balance';
-import { accountUtils } from '@entities/wallet';
+} from '@/shared/core';
+import { ZERO_BALANCE, getBalanceBn, totalAmount } from '@/shared/lib/utils';
+import { balanceUtils } from '@/entities/balance';
+import { accountUtils } from '@/entities/wallet';
 
 import { type AssetByChainsWithBalance, type AssetByChainsWithFiatBalance, type AssetChain } from './types';
 

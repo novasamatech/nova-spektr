@@ -1,7 +1,7 @@
 import { createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import { type Account } from '@shared/core';
+import { type Account } from '@/shared/core';
 
 const SignerGate = createGate<Account>('signer');
 

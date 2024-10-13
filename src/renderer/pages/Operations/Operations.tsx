@@ -2,16 +2,16 @@ import { useUnit } from 'effector-react';
 import groupBy from 'lodash/groupBy';
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@app/providers';
-import { type MultisigTransactionDS } from '@shared/api/storage';
-import { type MultisigEvent, type MultisigTransactionKey } from '@shared/core';
-import { sortByDateDesc } from '@shared/lib/utils';
-import { FootnoteText, Header } from '@shared/ui';
+import { useI18n } from '@/app/providers';
+import { type MultisigTransactionDS } from '@/shared/api/storage';
+import { type MultisigEvent, type MultisigTransactionKey } from '@/shared/core';
+import { sortByDateDesc } from '@/shared/lib/utils';
+import { FootnoteText, Header } from '@/shared/ui';
+import { networkModel } from '@/entities/network';
 import { operationsModel } from '@/entities/operations';
-import { networkModel } from '@entities/network';
-import { priceProviderModel } from '@entities/price';
-import { accountUtils, walletModel } from '@entities/wallet';
-import { OperationsFilter } from '@features/operations';
+import { priceProviderModel } from '@/entities/price';
+import { accountUtils, walletModel } from '@/entities/wallet';
+import { OperationsFilter } from '@/features/operations';
 
 import EmptyOperations from './components/EmptyState/EmptyOperations';
 import Operation from './components/Operation';

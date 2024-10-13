@@ -2,12 +2,12 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
-import { useI18n } from '@app/providers';
-import { type MultisigAccount } from '@shared/core';
-import { Alert, Button, Input, InputHint } from '@shared/ui';
-import { SignatorySelector } from '@entities/operations';
-import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
-import { DESCRIPTION_LENGTH } from '@features/operations/OperationsValidation';
+import { useI18n } from '@/app/providers';
+import { type MultisigAccount } from '@/shared/core';
+import { Alert, Button, Input, InputHint } from '@/shared/ui';
+import { SignatorySelector } from '@/entities/operations';
+import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
+import { DESCRIPTION_LENGTH } from '@/features/operations/OperationsValidation';
 import { formModel } from '../model/form-model';
 import { removePureProxyModel } from '../model/remove-pure-proxy-model';
 

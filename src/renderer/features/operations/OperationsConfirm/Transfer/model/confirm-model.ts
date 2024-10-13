@@ -9,12 +9,12 @@ import {
   type ProxiedAccount,
   type Transaction,
   type Wallet,
-} from '@shared/core';
-import { nonNullable, transferableAmount } from '@shared/lib/utils';
+} from '@/shared/core';
+import { nonNullable, transferableAmount } from '@/shared/lib/utils';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { operationsModel, operationsUtils } from '@/entities/operations';
-import { balanceModel, balanceUtils } from '@entities/balance';
-import { walletModel, walletUtils } from '@entities/wallet';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import {
   type BalanceMap,
   type NetworkStore,
@@ -23,7 +23,7 @@ import {
   TransferRules,
   type TransferSignatoryFeeStore,
   validationUtils,
-} from '@features/operations/OperationsValidation';
+} from '@/features/operations/OperationsValidation';
 
 type Input = {
   id?: number;

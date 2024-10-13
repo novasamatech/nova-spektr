@@ -1,8 +1,8 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@app/providers';
-import { BodyText, Icon } from '@shared/ui';
-import { notificationModel } from '@entities/notification';
+import { useI18n } from '@/app/providers';
+import { BodyText, Icon } from '@/shared/ui';
+import { notificationModel } from '@/entities/notification';
 
 export const EmptyNotifications = () => {
   const { t } = useI18n();

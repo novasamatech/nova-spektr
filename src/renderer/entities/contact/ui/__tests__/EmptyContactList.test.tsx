@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 
 import { EmptyContactList } from '../EmptyContactList';
 
-jest.mock('@app/providers', () => ({
+jest.mock('@/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

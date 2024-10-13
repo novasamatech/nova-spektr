@@ -1,12 +1,12 @@
 import { useGate, useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 
-import { useI18n } from '@app/providers';
-import { type Referendum, type ReferendumId } from '@shared/core';
-import { nonNullable } from '@shared/lib/utils';
-import { Header, Plate } from '@shared/ui';
-import { referendumService } from '@entities/governance';
-import { InactiveNetwork } from '@entities/network';
+import { useI18n } from '@/app/providers';
+import { type Referendum, type ReferendumId } from '@/shared/core';
+import { nonNullable } from '@/shared/lib/utils';
+import { Header, Plate } from '@/shared/ui';
+import { referendumService } from '@/entities/governance';
+import { InactiveNetwork } from '@/entities/network';
 import {
   CompletedReferendums,
   Locks,
@@ -18,14 +18,14 @@ import {
   TotalDelegation,
   delegationAggregate,
   networkSelectorModel,
-} from '@features/governance';
+} from '@/features/governance';
 import { CurrentDelegationModal, currentDelegationModel } from '@/widgets/CurrentDelegationsModal';
 import { DelegateDetails } from '@/widgets/DelegateDetails';
 import { Delegate } from '@/widgets/DelegateModal';
 import { DelegationModal, delegationModel } from '@/widgets/DelegationModal';
 import { RemoveVotesModal } from '@/widgets/RemoveVotesModal';
 import { UnlockModal, unlockAggregate } from '@/widgets/UnlockModal';
-import { RevoteModal, VoteModal } from '@widgets/VoteModal';
+import { RevoteModal, VoteModal } from '@/widgets/VoteModal';
 import { governancePageAggregate } from '../aggregates/governancePage';
 
 import { EmptyGovernance } from './EmptyGovernance';

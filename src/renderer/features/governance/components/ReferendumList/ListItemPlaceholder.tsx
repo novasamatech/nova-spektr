@@ -1,4 +1,4 @@
-import { HeaderTitleText, Shimmering } from '@shared/ui';
+import { HeaderTitleText, Shimmering } from '@/shared/ui';
 
 export const ListItemPlaceholder = () => {
   return (

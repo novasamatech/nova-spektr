@@ -1,9 +1,9 @@
 import { combine, createEvent, sample } from 'effector';
 
-import { type Address, type TrackId, type VotingMap } from '@shared/core';
-import { nonNullable, nullable } from '@shared/lib/utils';
-import { votingModel } from '@entities/governance';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { type Address, type TrackId, type VotingMap } from '@/shared/core';
+import { nonNullable, nullable } from '@/shared/lib/utils';
+import { votingModel } from '@/entities/governance';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { networkSelectorModel } from '../model/networkSelector';
 
 import { tracksAggregate } from './tracks';

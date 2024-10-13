@@ -1,10 +1,10 @@
 import { useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
-import { useConfirmContext, useI18n } from '@app/providers';
-import { FootnoteText, Icon, Plate, Shimmering, SmallTitleText } from '@shared/ui';
+import { useConfirmContext, useI18n } from '@/app/providers';
+import { FootnoteText, Icon, Plate, Shimmering, SmallTitleText } from '@/shared/ui';
+import { AssetBalance } from '@/entities/asset';
 import { walletModel, walletUtils } from '@/entities/wallet';
-import { AssetBalance } from '@entities/asset';
 import { EmptyAccountMessage } from '@/features/emptyList';
 import { walletSelectModel } from '@/features/wallets';
 import { delegationAggregate } from '../../aggregates/delegation';

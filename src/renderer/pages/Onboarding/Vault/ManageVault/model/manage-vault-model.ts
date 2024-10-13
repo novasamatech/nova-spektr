@@ -1,7 +1,7 @@
 import { attach, combine, createApi, createEffect, createEvent, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 
-import { storageService } from '@shared/api/storage';
+import { storageService } from '@/shared/api/storage';
 import {
   type BaseAccount,
   type ChainAccount,
@@ -9,13 +9,13 @@ import {
   type NoID,
   type ShardAccount,
   type Wallet,
-} from '@shared/core';
-import { AccountType, ChainType, CryptoType, KeyType } from '@shared/core';
-import { dictionary } from '@shared/lib/utils';
-import { networkModel, networkUtils } from '@entities/network';
-import { type SeedInfo } from '@entities/transaction';
-import { KEY_NAMES, accountUtils, walletModel } from '@entities/wallet';
-import { walletSelectModel } from '@features/wallets';
+} from '@/shared/core';
+import { AccountType, ChainType, CryptoType, KeyType } from '@/shared/core';
+import { dictionary } from '@/shared/lib/utils';
+import { networkModel, networkUtils } from '@/entities/network';
+import { type SeedInfo } from '@/entities/transaction';
+import { KEY_NAMES, accountUtils, walletModel } from '@/entities/wallet';
+import { walletSelectModel } from '@/features/wallets';
 
 const WALLET_NAME_MAX_LENGTH = 256;
 

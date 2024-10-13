@@ -1,4 +1,4 @@
-import { KeyType } from '@shared/core';
+import { KeyType } from '@/shared/core';
 import { type TypedImportedDerivation } from '../../lib/types';
 
 // TODO removed when all derivations features merged and tested

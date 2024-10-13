@@ -2,10 +2,10 @@ import { useGate, useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { useI18n } from '@/app/providers';
+import { toAddress } from '@/shared/lib/utils';
 import { FootnoteText, Icon, Identicon, SmallTitleText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Box, Skeleton, Surface } from '@/shared/ui-kit';
-import { toAddress } from '@shared/lib/utils';
 import { ERROR } from '../constants';
 import { profileModel } from '../model/profile';
 import { profileFeatureStatus } from '../model/status';

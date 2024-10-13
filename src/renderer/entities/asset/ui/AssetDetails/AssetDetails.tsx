@@ -1,6 +1,6 @@
-import { type Asset } from '@shared/core';
-import { HelpText, Shimmering } from '@shared/ui';
-import { AssetFiatBalance } from '@entities/price';
+import { type Asset } from '@/shared/core';
+import { HelpText, Shimmering } from '@/shared/ui';
+import { AssetFiatBalance } from '@/entities/price';
 import { AssetBalance } from '../AssetBalance/AssetBalance';
 
 type Props = {

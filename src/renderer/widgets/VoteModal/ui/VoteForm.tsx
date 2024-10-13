@@ -2,10 +2,10 @@ import { BN_ZERO } from '@polkadot/util';
 import { useForm } from 'effector-forms';
 import { useGate, useStoreMap, useUnit } from 'effector-react';
 
-import { useI18n } from '@app/providers';
-import { type Asset, type Chain } from '@shared/core';
-import { useToggle } from '@shared/lib/hooks';
-import { formatAsset } from '@shared/lib/utils';
+import { useI18n } from '@/app/providers';
+import { type Asset, type Chain } from '@/shared/core';
+import { useToggle } from '@/shared/lib/hooks';
+import { formatAsset } from '@/shared/lib/utils';
 import {
   Alert,
   ButtonCard,
@@ -16,9 +16,9 @@ import {
   Popover,
   Shimmering,
   SmallTitleText,
-} from '@shared/ui';
-import { LockPeriodDiff, LockValueDiff, votingService } from '@entities/governance';
-import { locksPeriodsAggregate } from '@features/governance';
+} from '@/shared/ui';
+import { LockPeriodDiff, LockValueDiff, votingService } from '@/entities/governance';
+import { locksPeriodsAggregate } from '@/features/governance';
 import { voteModalAggregate } from '../aggregates/voteModal';
 
 import { AboutVoting } from './AboutVoting';

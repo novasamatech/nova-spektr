@@ -1,4 +1,4 @@
-import { type IconNames } from '@shared/ui/Icon/data';
+import { type IconNames } from '@/shared/ui/Icon/data';
 
 import { type Variant } from './types';
 

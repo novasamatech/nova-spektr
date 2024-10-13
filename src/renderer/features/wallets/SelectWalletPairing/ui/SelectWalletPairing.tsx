@@ -1,10 +1,10 @@
 import { type TFunction } from 'i18next';
 
-import { useI18n } from '@app/providers';
-import { WalletType } from '@shared/core';
-import { DropdownButton } from '@shared/ui';
-import { type ButtonDropdownOption } from '@shared/ui/types';
-import { WalletIcon } from '@entities/wallet';
+import { useI18n } from '@/app/providers';
+import { WalletType } from '@/shared/core';
+import { DropdownButton } from '@/shared/ui';
+import { type ButtonDropdownOption } from '@/shared/ui/types';
+import { WalletIcon } from '@/entities/wallet';
 import { walletPairingModel } from '../model/wallet-pairing-model';
 
 const getDropdownOptions = (t: TFunction): ButtonDropdownOption[] => {

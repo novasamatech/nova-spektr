@@ -22,8 +22,8 @@ import {
   type TxWrapper,
   type Wallet,
   WrapperKind,
-} from '@shared/core';
-import { type TxMetadata, createTxMetadata, dictionary, toAccountId } from '@shared/lib/utils';
+} from '@/shared/core';
+import { type TxMetadata, createTxMetadata, dictionary, toAccountId } from '@/shared/lib/utils';
 import { walletUtils } from '../../wallet';
 
 import { LEAVE_SOME_SPACE_MULTIPLIER } from './common/constants';

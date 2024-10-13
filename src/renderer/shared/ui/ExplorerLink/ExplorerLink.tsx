@@ -1,4 +1,4 @@
-import { useI18n } from '@app/providers';
+import { useI18n } from '@/app/providers';
 import { cnTw } from '../../lib/utils';
 import { Icon } from '../Icon/Icon';
 import { FootnoteText } from '../Typography';

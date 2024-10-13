@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { useGate, useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@app/providers';
+import { useI18n } from '@/app/providers';
 import {
   type Account,
   type AccountVote,
@@ -26,7 +26,7 @@ import {
   basketUtils,
   removeVoteConfirmModel,
 } from '@/features/operations/OperationsConfirm';
-import { SignatorySelectModal } from '@/pages/Operations/components/modals/SignatorySelectModal';
+import { SignatorySelectModal } from '@/pages/Operations';
 import { removeVotesModalAggregate } from '../aggregates/removeVotesModal';
 
 type Props = {

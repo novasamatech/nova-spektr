@@ -1,8 +1,8 @@
 import { useUnit } from 'effector-react';
 
+import { type HexString } from '@/shared/core';
 import { Loader } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
-import { type HexString } from '@shared/core';
 import { walletUtils } from '@/entities/wallet';
 import { signModel } from '../model/sign-model';
 

@@ -3,9 +3,9 @@ import { BrowserCodeReader, BrowserQRCodeReader, type IScannerControls } from '@
 import init from 'raptorq';
 import { useEffect, useRef } from 'react';
 
-import { useI18n } from '@app/providers';
-import { type HexString } from '@shared/core';
-import { cnTw } from '@shared/lib/utils';
+import { useI18n } from '@/app/providers';
+import { type HexString } from '@/shared/core';
+import { cnTw } from '@/shared/lib/utils';
 import { ErrorFields } from '../common/constants';
 import { QR_READER_ERRORS } from '../common/errors';
 import { type DecodeCallback, type ErrorObject, QrError, type VideoInput } from '../common/types';

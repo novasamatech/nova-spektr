@@ -1,6 +1,6 @@
 import { Suspense, lazy, memo } from 'react';
 
-import { cnTw } from '@shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { Shimmering } from '../Shimmering/Shimmering';
 
 import { type IconNames } from './data';

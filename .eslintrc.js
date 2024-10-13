@@ -8,6 +8,7 @@ const boundaryTypes = ['app', 'shared', 'domains', 'entities', 'processes', 'fea
 const boundaries = boundaryTypes.map((type) => ({
   type,
   pattern: `src/renderer/${type}/*`,
+  capture: ['package'],
 }));
 
 module.exports = {
@@ -41,7 +42,7 @@ module.exports = {
         groups: ['builtin', 'external', 'parent', ['sibling', 'index']],
         pathGroups: boundaryTypes.map((type) => ({
           group: 'parent',
-          pattern: `@{/${type},${type}}/**`,
+          pattern: `@/${type}/**`,
           position: 'before',
         })),
         'newlines-between': 'always',
@@ -182,6 +183,13 @@ module.exports = {
             message: 'Use cnTw instead.',
           },
         ],
+        'import-x/max-dependencies': [
+          'warn',
+          {
+            max: 15,
+            ignoreTypeImports: true,
+          },
+        ],
 
         // Validated by typescript
         '@typescript-eslint/no-empty-interface': 'off',
@@ -206,6 +214,58 @@ module.exports = {
         'effector/enforce-store-naming-convention': 'off',
 
         // Boundaries setup
+        'boundaries/entry-point': [
+          'error',
+          {
+            default: 'disallow',
+            rules: [
+              {
+                target: boundaryTypes,
+                allow: ['index.ts', 'index.tsx'],
+              },
+              {
+                target: ['shared'],
+                allow: ['**/*'],
+              },
+              {
+                target: ['pages'],
+                allow: ['**/*'],
+              },
+              // TODO fix this packages
+              {
+                target: [
+                  ['features', { package: 'operations' }],
+                  ['features', { package: 'governance' }],
+                  ['features', { package: 'wallets' }],
+                ],
+                allow: ['**/*.ts', '**/*.tsx'],
+              },
+            ],
+          },
+        ],
+
+        'boundaries/external': [
+          'error',
+          {
+            default: 'allow',
+            rules: [
+              {
+                from: ['domains'],
+                disallow: ['react', 'effector-react'],
+                message: 'Domain should contain only logic, not views.',
+              },
+              {
+                from: [
+                  ['shared', { package: 'ui-kit' }],
+                  ['shared', { package: 'ui-entities' }],
+                ],
+                disallow: ['effector', 'effector-react'],
+                message: 'Data bindings are forbidden in ui library components.',
+              },
+            ],
+          },
+        ],
+
         'boundaries/element-types': [
           'error',
           {

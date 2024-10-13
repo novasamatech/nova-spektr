@@ -3,8 +3,8 @@ import { useMemo } from 'react';
 
 import { useI18n } from '@/app/providers';
 import { type Account, type Asset, type Balance, type Chain } from '@/shared/core';
+import { locksService } from '@/entities/governance';
 import { SignatorySelector } from '@/entities/operations';
-import { locksService } from '@entities/governance';
 
 type Props = {
   value: Account | null;

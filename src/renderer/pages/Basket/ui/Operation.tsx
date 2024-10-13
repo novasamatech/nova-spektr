@@ -1,14 +1,14 @@
 import { Trans } from 'react-i18next';
 
-import { useI18n } from '@app/providers';
-import { chainsService } from '@shared/api/network';
-import { type BasketTransaction } from '@shared/core';
-import { type ChainError } from '@shared/core/types/basket';
-import { cnTw, getAssetById } from '@shared/lib/utils';
-import { HelpText, IconButton, Shimmering, Tooltip } from '@shared/ui';
-import { AssetBalance } from '@entities/asset';
-import { ChainTitle, XcmChains } from '@entities/chain';
-import { TransactionTitle, getTransactionAmount, isXcmTransaction } from '@entities/transaction';
+import { useI18n } from '@/app/providers';
+import { chainsService } from '@/shared/api/network';
+import { type BasketTransaction } from '@/shared/core';
+import { type ChainError } from '@/shared/core/types/basket';
+import { cnTw, getAssetById } from '@/shared/lib/utils';
+import { HelpText, IconButton, Shimmering, Tooltip } from '@/shared/ui';
+import { AssetBalance } from '@/entities/asset';
+import { ChainTitle, XcmChains } from '@/entities/chain';
+import { TransactionTitle, getTransactionAmount, isXcmTransaction } from '@/entities/transaction';
 import { getCoreTx } from '../lib/utils';
 
 type Props = {

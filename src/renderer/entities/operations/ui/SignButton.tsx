@@ -1,7 +1,7 @@
-import { useI18n } from '@app/providers';
-import { type SignableWalletFamily, WalletType } from '@shared/core';
-import { Button, Icon } from '@shared/ui';
-import { type IconNames } from '@shared/ui/Icon/data';
+import { useI18n } from '@/app/providers';
+import { type SignableWalletFamily, WalletType } from '@/shared/core';
+import { Button, Icon } from '@/shared/ui';
+import { type IconNames } from '@/shared/ui/Icon/data';
 
 const WalletIcon: Record<SignableWalletFamily, IconNames> = {
   [WalletType.POLKADOT_VAULT]: 'vault',

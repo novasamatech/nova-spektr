@@ -1,10 +1,10 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@app/providers';
-import { FootnoteText, HelpText, Icon, IconButton, SmallTitleText } from '@shared/ui';
-import { ChainIcon } from '@entities/chain';
-import { networkModel } from '@entities/network';
-import { accountUtils } from '@entities/wallet';
+import { useI18n } from '@/app/providers';
+import { FootnoteText, HelpText, Icon, IconButton, SmallTitleText } from '@/shared/ui';
+import { ChainIcon } from '@/entities/chain';
+import { networkModel } from '@/entities/network';
+import { accountUtils } from '@/entities/wallet';
 import { constructorModel } from '../model/constructor-model';
 
 export const KeysList = () => {

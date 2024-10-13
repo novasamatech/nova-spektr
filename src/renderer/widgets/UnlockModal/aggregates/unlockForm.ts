@@ -19,11 +19,11 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { networkSelectorModel } from '@/features/governance';
+import { UnlockRules } from '@/features/governance/lib/unlock-rules';
 import { locksModel } from '@/features/governance/model/locks';
 import { unlockModel } from '@/features/governance/model/unlock/unlock';
-import { UnlockRules } from '@features/governance/lib/unlock-rules';
-import { networkSelectorModel } from '@features/governance/model/networkSelector';
-import { type AccountWithClaim } from '@features/governance/types/structs';
+import { type AccountWithClaim } from '@/features/governance/types/structs';
 
 type Accounts = {
   account: AccountWithClaim;

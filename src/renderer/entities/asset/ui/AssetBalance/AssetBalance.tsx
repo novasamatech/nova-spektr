@@ -1,9 +1,9 @@
 import { type BN } from '@polkadot/util';
 
-import { useI18n } from '@app/providers';
-import { type Asset, type AssetByChains } from '@shared/core';
-import { cnTw, formatBalance } from '@shared/lib/utils';
-import { AssetIcon } from '@entities/asset';
+import { useI18n } from '@/app/providers';
+import { type Asset, type AssetByChains } from '@/shared/core';
+import { cnTw, formatBalance } from '@/shared/lib/utils';
+import { AssetIcon } from '@/entities/asset';
 
 type Props = {
   value: BN | string;

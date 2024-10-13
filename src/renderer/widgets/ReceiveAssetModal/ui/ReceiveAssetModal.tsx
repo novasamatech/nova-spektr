@@ -1,16 +1,16 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@app/providers';
-import { type Asset, type Chain } from '@shared/core';
-import { useToggle } from '@shared/lib/hooks';
-import { DEFAULT_TRANSITION, cnTw, copyToClipboard, toAddress } from '@shared/lib/utils';
-import { BaseModal, Button, FootnoteText, HelpText, Icon, Select } from '@shared/ui';
-import { DefaultExplorer, ExplorerIcons } from '@shared/ui/ExplorerLink/constants';
-import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
-import { OperationTitle } from '@entities/chain';
-import { QrTextGenerator } from '@entities/transaction';
-import { AccountAddress, accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { useI18n } from '@/app/providers';
+import { type Asset, type Chain } from '@/shared/core';
+import { useToggle } from '@/shared/lib/hooks';
+import { DEFAULT_TRANSITION, cnTw, copyToClipboard, toAddress } from '@/shared/lib/utils';
+import { BaseModal, Button, FootnoteText, HelpText, Icon, Select } from '@/shared/ui';
+import { DefaultExplorer, ExplorerIcons } from '@/shared/ui/ExplorerLink/constants';
+import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
+import { OperationTitle } from '@/entities/chain';
+import { QrTextGenerator } from '@/entities/transaction';
+import { AccountAddress, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 
 type Props = {
   chain: Chain;

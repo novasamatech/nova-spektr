@@ -2,8 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
-import { useI18n } from '@app/providers';
-import { Address as AddressComponent } from '@/shared/ui-entities';
+import { useI18n } from '@/app/providers';
 import {
   type Account,
   type Address,
@@ -11,10 +10,11 @@ import {
   type BaseAccount,
   type Explorer,
   type ShardAccount,
-} from '@shared/core';
-import { cnTw } from '@shared/lib/utils';
-import { FootnoteText, HelpText, Icon, Tooltip } from '@shared/ui';
-import { useStakingData } from '@entities/staking';
+} from '@/shared/core';
+import { cnTw } from '@/shared/lib/utils';
+import { FootnoteText, HelpText, Icon, Tooltip } from '@/shared/ui';
+import { Address as AddressComponent } from '@/shared/ui-entities';
+import { useStakingData } from '@/entities/staking';
 import { type NominatorInfo } from '../lib/types';
 
 import { NominatorsItem } from './NominatorItem';

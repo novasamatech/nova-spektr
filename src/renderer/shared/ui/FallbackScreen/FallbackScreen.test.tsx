@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 
 import { FallbackScreen } from './FallbackScreen';
 
-jest.mock('@app/providers', () => ({
+jest.mock('@/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

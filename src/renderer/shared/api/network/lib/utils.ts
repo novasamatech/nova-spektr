@@ -1,4 +1,4 @@
-import { ChainOptions } from '@shared/core';
+import { ChainOptions } from '@/shared/core';
 
 export function isPolkadot(chainName: string): boolean {
   return chainName === 'Polkadot';

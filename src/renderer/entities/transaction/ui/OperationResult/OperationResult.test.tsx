@@ -3,7 +3,7 @@ import noop from 'lodash/noop';
 
 import { OperationResult } from './OperationResult';
 
-jest.mock('@shared/ui/Animation/Animation', () => ({
+jest.mock('@/shared/ui/Animation/Animation', () => ({
   Animation: () => <span>animation</span>,
 }));
 
