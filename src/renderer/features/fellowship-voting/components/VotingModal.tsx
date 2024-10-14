@@ -4,9 +4,11 @@ import { type PropsWithChildren, useState } from 'react';
 import { useI18n } from '@app/providers';
 import { Box, Carousel, Modal } from '@/shared/ui-kit';
 import { nonNullable, nullable } from '@shared/lib/utils';
+import { Button } from '@shared/ui';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { walletUtils } from '@entities/wallet';
+import { basketUtils } from '@features/operations/OperationsConfirm';
 import { votingFeatureStatus } from '../model/status';
 import { votingModel } from '../model/voting';
 
@@ -64,7 +66,15 @@ export const VotingModal = ({ children, vote }: Props) => {
           ) : null}
         </Box>
       </Modal.Content>
-      <Modal.Footer>{step === 'confirm' && nonNullable(wallet) && <SignButton type={wallet.type} />}</Modal.Footer>
+      <Modal.Footer>
+        {wallet && basketUtils.isBasketAvailable(wallet) && (
+          <Button pallet="secondary" onClick={() => console.log('aaa')}>
+            {t('operation.addToBasket')}
+          </Button>
+        )}
+        {step === 'confirm' && nonNullable(wallet) && <SignButton type={wallet.type} />}
+        {step === 'confirm' && nonNullable(wallet) && <SignButton type={wallet.type} />}
+      </Modal.Footer>
     </Modal>
   );
 };
