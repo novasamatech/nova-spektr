@@ -947,6 +947,7 @@
       "default": "Sign",
       "novaWallet": "Sign with Nova Wallet",
       "polkadotVault": "Sign with Polkadot Vault",
+      "title": "Sign { count } operations",
       "walletConnect": "Sign with WalletConnect"
     },
     "signatoriesTitle": "Signatories",
