@@ -19,13 +19,11 @@ const $maxRank = fellowshipModel.$store.map(x => x?.maxRank ?? 0);
 const $voting = fellowshipModel.$store.map(x => x?.voting ?? []);
 
 const $referendum = combine($referendums, $referendumId, (referendums, referendumId) => {
-  if (referendums.length === 0 || referendumId === null) return null;
-
   return referendums.find(referendum => referendum.id === referendumId) ?? null;
 });
 
 const $currectMember = combine(votingFeatureStatus.input, $members, (featureInput, members) => {
-  if (nullable(featureInput) || members.length === 0) return null;
+  if (nullable(featureInput)) return null;
 
   // return collectiveDomain.members.service.findMachingMember(featureInput.wallet, members, featureInput.chain);
   return members[0] ?? null;
@@ -43,7 +41,7 @@ const $hasRequiredRank = combine($currectMember, $referendum, $maxRank, (member,
     return false;
   }
 
-  return collectiveDomain.tracksService.getMinimumRank(referendum.track, maxRank) <= member.rank;
+  return collectiveDomain.tracksService.rankSatisfiesVotingThreshold(member.rank, maxRank, referendum.track);
 });
 
 const $canVote = $currectMember.map(nonNullable);

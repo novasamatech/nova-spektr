@@ -124,6 +124,10 @@ const approvalThreshold = ({ track, maxRank, tally }: ApprovalParams): VotingThr
   };
 };
 
+const rankSatisfiesVotingThreshold = (rank: number, maxRank: number, trackId: TrackId) => {
+  return getMinimumRank(trackId, maxRank) <= rank;
+};
+
 export const tracksService = {
   getMinimumRank,
   getLinearVoteWeight,
@@ -131,4 +135,5 @@ export const tracksService = {
   getThreshold,
   supportThreshold,
   approvalThreshold,
+  rankSatisfiesVotingThreshold,
 };
