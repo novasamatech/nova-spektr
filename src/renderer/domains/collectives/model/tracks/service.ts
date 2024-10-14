@@ -9,17 +9,17 @@ import { type Track, type VotingCurve, type VotingThreshold } from './types';
 /**
  * @see https://github.com/paritytech/polkadot-sdk/blob/master/cumulus/parachains/runtimes/collectives/collectives-westend/src/fellowship/tracks.rs#L63
  */
-const getMinimumRank = (track: TrackId, maxRank: number) => {
-  if (track >= 0 && track <= 9) {
-    return track;
+const getMinimumRank = (trackId: TrackId, maxRank: number) => {
+  if (trackId >= 0 && trackId <= 9) {
+    return trackId;
   }
 
-  if (track >= 11 && track <= 16) {
-    return track - 8;
+  if (trackId >= 11 && trackId <= 16) {
+    return trackId - 8;
   }
 
-  if (track >= 21 && track <= 26) {
-    return track - 18;
+  if (trackId >= 21 && trackId <= 26) {
+    return trackId - 18;
   }
 
   return maxRank;
