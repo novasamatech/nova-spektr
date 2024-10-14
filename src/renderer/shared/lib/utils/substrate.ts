@@ -90,7 +90,7 @@ export const validateCallData = <T extends string = CallData, K extends string =
   return isHex(callData) && callHash === blake2AsHex(hexToU8a(callData));
 };
 
-export const getCurrentBlockNumber = async (api: ApiPromise): Promise<number> => {
+export const getCurrentBlockNumber = async (api: ApiPromise): Promise<BlockHeight> => {
   const { block } = await api.rpc.chain.getBlock();
 
   return block.header.number.toNumber();
@@ -141,6 +141,13 @@ export const getCreatedDateFromApi = async (neededBlock: BlockHeight, api: ApiPr
   const blockTime = getExpectedBlockTime(api);
 
   return getCreatedDate(neededBlock, currentBlock, blockTime.toNumber());
+};
+
+export const getTimeToBlock = async (neededBlock: BlockHeight, api: ApiPromise): Promise<number> => {
+  const currentBlock = await getCurrentBlockNumber(api);
+  const blockTime = getExpectedBlockTime(api);
+
+  return Math.abs(neededBlock - currentBlock) * blockTime.toNumber();
 };
 
 export const getRelativeTimeFromApi = async (neededBlock: BlockHeight, api: ApiPromise): Promise<number> => {

@@ -1,17 +1,18 @@
-import { type BN } from '@polkadot/util';
+import { BN_ZERO } from '@polkadot/util';
 import { useMemo } from 'react';
 
-import { useI18n } from '@app/providers';
-import { type Account, type Asset, type Chain } from '@shared/core';
-import { toAddress, toShortAddress } from '@shared/lib/utils';
-import { InputHint, Select } from '@shared/ui';
-import { type DropdownOption } from '@shared/ui/Dropdowns/common/types';
-import { AssetBalance } from '@entities/asset';
-import { AccountAddress, accountUtils } from '@entities/wallet';
+import { useI18n } from '@/app/providers';
+import { type Account, type Asset, type Balance, type Chain } from '@/shared/core';
+import { toAddress } from '@/shared/lib/utils';
+import { InputHint, Select } from '@/shared/ui';
+import { type DropdownOption } from '@/shared/ui/Dropdowns/common/types';
+import { Address } from '@/shared/ui-entities';
+import { AssetBalance } from '@/entities/asset';
+import { locksService } from '@entities/governance';
 
 type Props = {
   value: Account | null;
-  accounts: { account: Account; balance: BN }[];
+  accounts: { account: Account; balance: Balance | null }[];
   hasError: boolean;
   errorText: string;
   asset: Asset;
@@ -25,22 +26,23 @@ export const AccountsSelector = ({ value, accounts, asset, chain, hasError, erro
   const options = useMemo(
     () =>
       accounts.map<DropdownOption>(({ account, balance }) => {
-        const isShard = accountUtils.isShardAccount(account);
         const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
+        const availableBalance = balance ? locksService.getAvailableBalance(balance) : BN_ZERO;
 
         return {
           id: account.id.toString(),
           value: account,
           element: (
-            <div className="flex w-full justify-between" key={account.id}>
-              <AccountAddress
-                size={20}
-                type="short"
+            <div className="flex w-full items-center justify-between gap-2 text-start text-body" key={account.id}>
+              <Address
                 address={address}
-                name={isShard ? toShortAddress(address, 16) : account.name}
+                variant="truncate"
+                showIcon
+                iconSize={16}
                 canCopy={false}
+                title={account.name}
               />
-              <AssetBalance value={balance} asset={asset} />
+              <AssetBalance className="whitespace-nowrap" value={availableBalance} asset={asset} />
             </div>
           ),
         };

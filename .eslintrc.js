@@ -157,7 +157,7 @@ module.exports = {
       parser: '@typescript-eslint/parser',
       parserOptions: {
         sourceType: 'module',
-        project: './tsconfig.json',
+        projectService: true,
         tsconfigRootDir: __dirname,
         createDefaultProgram: true,
       },
@@ -213,7 +213,7 @@ module.exports = {
             rules: [
               {
                 from: 'app',
-                allow: [/* TODO fix */ 'shared', /* TODO fix */ 'entities', /* TODO fix */ 'features'],
+                allow: ['app', /* TODO fix */ 'shared', /* TODO fix */ 'entities', /* TODO fix */ 'features'],
               },
               {
                 from: 'shared',
@@ -225,7 +225,7 @@ module.exports = {
               },
               {
                 from: 'domains',
-                allow: ['shared', 'domains'],
+                allow: ['shared', 'domains', /* TODO fix */ 'entities'],
               },
               {
                 from: 'processes',
@@ -233,11 +233,11 @@ module.exports = {
               },
               {
                 from: 'features',
-                allow: ['app', 'shared', 'entities', /* TODO fix */ 'widgets', /* TODO fix */ 'features'],
+                allow: ['app', 'shared', 'entities', /* TODO fix */ 'widgets', /* TODO fix */ 'features', 'domains'],
               },
               {
                 from: 'pages',
-                allow: ['app', 'shared', 'entities', 'features', 'widgets'],
+                allow: ['app', 'shared', 'entities', 'features', 'widgets', 'domains'],
               },
               {
                 from: 'widgets',
@@ -288,7 +288,7 @@ module.exports = {
           // effector effect naming convention
           {
             message: 'Use effector naming convention for effects.',
-            selector: 'VariableDeclarator[init.callee.name="createEffect"][id.name!=/.*?Fx$/]',
+            selector: 'VariableDeclarator[init.callee.name="createEffect"][id.name!=/^(.*?Fx|fx)$/]',
           },
           // for..in ban
           {

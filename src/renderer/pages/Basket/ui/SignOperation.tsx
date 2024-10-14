@@ -14,6 +14,7 @@ import {
   type UtilityTransactionTypes,
   type XcmTransactionTypes,
   XcmTypes,
+  isEditDelegationTransaction,
 } from '@entities/transaction';
 import { OperationSign, OperationSubmit } from '@features/operations';
 import {
@@ -22,6 +23,7 @@ import {
   BondExtraConfirmation,
   BondNominateConfirmation,
   DelegateConfirmation,
+  EditDelegationConfirmation,
   NominateConfirmation,
   PayeeConfirmation,
   RemoveProxyConfirm,
@@ -73,6 +75,16 @@ export const SignOperation = () => {
 
     if (TransferTypes.includes(type) || XcmTypes.includes(type)) {
       return () => <TransferConfirm id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />;
+    }
+
+    if (isEditDelegationTransaction(coreTx)) {
+      return () => (
+        <EditDelegationConfirmation
+          id={transaction.id}
+          config={config}
+          onGoBack={() => signOperationsModel.output.flowFinished()}
+        />
+      );
     }
 
     const Components: Record<
@@ -127,6 +139,13 @@ export const SignOperation = () => {
       ),
       [TransactionType.DELEGATE]: () => (
         <DelegateConfirmation
+          id={transaction.id}
+          config={config}
+          onGoBack={() => signOperationsModel.output.flowFinished()}
+        />
+      ),
+      [TransactionType.EDIT_DELEGATION]: () => (
+        <EditDelegationConfirmation
           id={transaction.id}
           config={config}
           onGoBack={() => signOperationsModel.output.flowFinished()}

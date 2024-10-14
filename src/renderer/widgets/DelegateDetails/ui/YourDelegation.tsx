@@ -5,10 +5,10 @@ import { useI18n } from '@/app/providers';
 import { toAddress } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, SmallTitleText, Tooltip } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
-import { votingService } from '@/entities/governance';
+import { allTracks, votingService } from '@/entities/governance';
 import { AddressWithExplorers, accountUtils, walletModel } from '@/entities/wallet';
-import { allTracks } from '@/features/governance';
 import { delegationModel } from '@/widgets/DelegationModal/model/delegation-model';
+import { editDelegationModel } from '@/widgets/EditDelegationModal';
 import { revokeDelegationModel } from '@/widgets/RevokeDelegationModal';
 import { delegateDetailsModel } from '../model/delegate-details-model';
 
@@ -22,6 +22,7 @@ export const YourDelegation = () => {
   const wallet = useUnit(walletModel.$activeWallet);
 
   const isAddAvailable = useUnit(delegateDetailsModel.$isAddAvailable);
+  const isEditAvailable = useUnit(delegateDetailsModel.$isEditAvailable);
   const isViewAvailable = useUnit(delegateDetailsModel.$isViewAvailable);
   const isRevokeAvailable = useUnit(delegateDetailsModel.$isRevokeAvailable);
   const delegate = useUnit(delegateDetailsModel.$delegate);
@@ -35,7 +36,7 @@ export const YourDelegation = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <SmallTitleText>{t('governance.addDelegation.yourDelegation')}</SmallTitleText>
+      <SmallTitleText>{t('governance.delegationDetails.yourDelegation')}</SmallTitleText>
 
       {activeAccounts.length > 0 && (
         <div className="flex flex-col gap-4">
@@ -93,8 +94,22 @@ export const YourDelegation = () => {
             {t('governance.addDelegation.addDelegationButton')}
           </Button>
         )}
+
+        {isEditAvailable && accounts?.length === 1 && (
+          <Button
+            onClick={() => {
+              if (delegate) {
+                editDelegationModel.events.flowStarted({ delegate, accounts: [accounts[0]] });
+              }
+            }}
+          >
+            {t('governance.delegationDetails.editDelegationButton', { count: 1 })}
+          </Button>
+        )}
+
         {isRevokeAvailable && accounts?.length === 1 && (
           <Button
+            pallet="secondary"
             onClick={() => {
               if (delegate) {
                 revokeDelegationModel.events.flowStarted({ delegate: delegate.accountId, accounts: [accounts[0]] });
@@ -104,6 +119,7 @@ export const YourDelegation = () => {
             {t('governance.addDelegation.revokeDelegationButton')}
           </Button>
         )}
+
         {isViewAvailable && (
           <Button pallet="secondary" onClick={() => delegateDetailsModel.events.openDelegations()}>
             {t('governance.addDelegation.viewDelegationButton')}

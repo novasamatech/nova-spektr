@@ -34,6 +34,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(
       disabled,
       spellCheck = false,
       theme = 'light',
+      autoFocus,
       ...props
     },
     ref,
@@ -64,6 +65,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(
           )}
           ref={ref}
           type={type}
+          autoFocus={autoFocus}
           disabled={disabled}
           spellCheck={spellCheck}
           onChange={(event) => onChange?.(event.target.value)}

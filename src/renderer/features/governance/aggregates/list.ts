@@ -1,12 +1,20 @@
 import { combine, sample } from 'effector';
 import { readonly } from 'patronum';
 
-import { approveThresholdModel, referendumModel, supportThresholdModel, votingService } from '@entities/governance';
+import { nullable } from '@/shared/lib/utils';
+import {
+  approveThresholdModel,
+  referendumModel,
+  referendumService,
+  supportThresholdModel,
+  votingService,
+} from '@entities/governance';
 import { networkSelectorModel } from '../model/networkSelector';
 import { titleModel } from '../model/title';
 import { type AggregatedReferendum } from '../types/structs';
 
 import { delegatedVotesAggregate } from './delegatedVotes';
+import { tracksAggregate } from './tracks';
 import { votingAggregate } from './voting';
 
 const $chainReferendums = combine(
@@ -21,15 +29,44 @@ const $chainReferendums = combine(
   },
 );
 
+const $chainTitles = combine(titleModel.$titles, networkSelectorModel.$governanceChain, (titles, chain) => {
+  if (nullable(chain)) return {};
+
+  return titles[chain.chainId] ?? {};
+});
+
+const $approvalThresholds = combine(
+  approveThresholdModel.$approvalThresholds,
+  networkSelectorModel.$governanceChain,
+  (approvalThresholds, chain) => {
+    if (nullable(chain)) return {};
+
+    return approvalThresholds[chain.chainId] ?? {};
+  },
+);
+
+const $supportThresholds = combine(
+  supportThresholdModel.$supportThresholds,
+  networkSelectorModel.$governanceChain,
+  (supportThresholds, chain) => {
+    if (nullable(chain)) return {};
+
+    return supportThresholds[chain.chainId] ?? {};
+  },
+);
+
 const $referendums = combine(
   {
     referendums: $chainReferendums,
-    delegatedVotes: delegatedVotesAggregate.$delegatedVotes,
-    titles: titleModel.$titles,
-    approvalThresholds: approveThresholdModel.$approvalThresholds,
-    supportThresholds: supportThresholdModel.$supportThresholds,
+    delegatedVotes: delegatedVotesAggregate.$delegatedVotesInChain,
+    titles: $chainTitles,
+    approvalThresholds: $approvalThresholds,
+    supportThresholds: $supportThresholds,
     chain: networkSelectorModel.$governanceChain,
     voting: votingAggregate.$activeWalletVotes,
+    tracks: tracksAggregate.$tracks,
+    api: networkSelectorModel.$governanceChainApi,
+    accounts: votingAggregate.$possibleAccountsForVoting,
   },
   ({
     referendums,
@@ -39,28 +76,40 @@ const $referendums = combine(
     supportThresholds,
     voting,
     delegatedVotes,
+    tracks,
+    api,
+    accounts,
   }): AggregatedReferendum[] => {
-    if (!chain) {
+    if (!chain || !api) {
       return [];
     }
 
-    const delegatedVotesInChain = delegatedVotes[chain.chainId] ?? {};
-    const titlesInChain = titles[chain.chainId] ?? {};
-    const approvalInChain = approvalThresholds[chain.chainId] ?? {};
-    const supportInChain = supportThresholds[chain.chainId] ?? {};
+    const undecidingTimeout = api.consts.referenda.undecidingTimeout.toNumber();
 
     return referendums.map((referendum) => {
-      const votes = votingService.getReferendumAccountVotes(referendum.referendumId, voting);
-      const voteTupple = Object.entries(votes).at(0);
-      const vote = voteTupple ? { voter: voteTupple[0], vote: voteTupple[1] } : null;
+      const referendumVotes = votingService.getReferendumAccountVotes(referendum.referendumId, voting);
+      const votes = Object.entries(referendumVotes).map((x) => ({ voter: x[0], vote: x[1] }));
+
+      let end = null;
+      let status = null;
+
+      if (referendumService.isOngoing(referendum)) {
+        end = referendumService.getReferendumEndTime(referendum, tracks[referendum.track], undecidingTimeout);
+        status = referendumService.getReferendumStatus(referendum);
+      }
 
       return {
         ...referendum,
-        title: titlesInChain[referendum.referendumId] ?? null,
-        approvalThreshold: approvalInChain[referendum.referendumId] ?? null,
-        supportThreshold: supportInChain[referendum.referendumId] ?? null,
-        vote,
-        votedByDelegate: delegatedVotesInChain[referendum.referendumId] ?? null,
+        end,
+        status,
+        title: titles[referendum.referendumId] ?? null,
+        approvalThreshold: approvalThresholds[referendum.referendumId] ?? null,
+        supportThreshold: supportThresholds[referendum.referendumId] ?? null,
+        voting: {
+          of: accounts.length,
+          votes,
+        },
+        votedByDelegate: delegatedVotes[referendum.referendumId] ?? null,
       };
     });
   },

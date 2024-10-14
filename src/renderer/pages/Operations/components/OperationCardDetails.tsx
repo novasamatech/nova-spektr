@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
+import { Skeleton } from '@/shared/ui-kit';
 import { chainsService } from '@shared/api/network';
 import {
   type Address,
@@ -14,8 +15,8 @@ import {
 import { TransactionType } from '@shared/core';
 import { useToggle } from '@shared/lib/hooks';
 import { cnTw, copyToClipboard, getAssetById, truncate } from '@shared/lib/utils';
-import { Button, CaptionText, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
-import { voteTransactionService } from '@/entities/governance';
+import { Button, DetailRow, FootnoteText, Icon } from '@shared/ui';
+import { TracksDetails, voteTransactionService } from '@/entities/governance';
 import { AssetBalance } from '@entities/asset';
 import { ChainTitle } from '@entities/chain';
 import { matrixModel } from '@entities/matrix';
@@ -29,10 +30,10 @@ import {
   isManageProxyTransaction,
   isRemoveProxyTransaction,
   isRemovePureProxyTransaction,
+  isUndelegateTransaction,
   isXcmTransaction,
 } from '@entities/transaction';
 import { AddressWithExplorers, ExplorersPopover, WalletCardSm, walletModel } from '@entities/wallet';
-import { allTracks } from '@/features/governance';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import {
   getDelegate,
@@ -84,15 +85,21 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const explorers = extendedChain?.explorers;
   const connection = extendedChain?.connection;
 
+  const [isUndelegationLoading, setIsUndelegationLoading] = useState(false);
   const [undelegationVotes, setUndelegationVotes] = useState<string>();
   const [undelegationTarget, setUndelegationTarget] = useState<Address>();
 
   useEffect(() => {
+    if (isUndelegateTransaction(transaction)) {
+      setIsUndelegationLoading(true);
+    }
+
     if (!api) return;
 
     getUndelegationData(api, tx).then(({ votes, target }) => {
       setUndelegationVotes(votes);
       setUndelegationTarget(target);
+      setIsUndelegationLoading(false);
     });
   }, [api, tx]);
 
@@ -280,6 +287,18 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         </DetailRow>
       )}
 
+      {isUndelegationLoading && (
+        <>
+          <DetailRow label={t('operation.details.delegationTarget')} className="text-text-secondary">
+            <Skeleton width={40} height={6} />
+          </DetailRow>
+
+          <DetailRow label={t('operation.details.delegationVotes')}>
+            <Skeleton width={20} height={5} />
+          </DetailRow>
+        </>
+      )}
+
       {delegationTarget && (
         <DetailRow label={t('operation.details.delegationTarget')} className={valueClass}>
           <AddressWithExplorers
@@ -293,7 +312,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         </DetailRow>
       )}
 
-      {undelegationTarget && (
+      {!delegationTarget && undelegationTarget && (
         <DetailRow label={t('operation.details.delegationTarget')} className={valueClass}>
           <AddressWithExplorers
             explorers={explorers}
@@ -319,7 +338,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         </DetailRow>
       )}
 
-      {undelegationVotes && (
+      {!delegationVotes && undelegationVotes && (
         <DetailRow label={t('operation.details.delegationVotes')} className={valueClass}>
           <FootnoteText className={valueClass}>
             <AssetBalance
@@ -334,17 +353,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
 
       {delegationTracks && (
         <DetailRow label={t('operation.details.delegationTracks')} className={valueClass}>
-          <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
-            <CaptionText className="text-white">{delegationTracks.length}</CaptionText>
-          </div>
-          <Tooltip
-            content={delegationTracks
-              .map((trackId) => t(allTracks.find((track) => track.id === trackId)?.value || ''))
-              .join(', ')}
-            pointer="up"
-          >
-            <Icon className="group-hover:text-icon-hover" name="info" size={16} />
-          </Tooltip>
+          <TracksDetails tracks={delegationTracks.map(Number)} />
         </DetailRow>
       )}
 
@@ -433,25 +442,27 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
 
           {depositorSignatory && (
             <DetailRow label={t('operation.details.depositor')} className={valueClass}>
-              {depositorWallet ? (
-                <ExplorersPopover
-                  button={<WalletCardSm wallet={depositorWallet} />}
-                  address={depositorSignatory.accountId}
-                  explorers={explorers}
-                  addressPrefix={addressPrefix}
-                />
-              ) : (
-                <AddressWithExplorers
-                  explorers={explorers}
-                  accountId={depositorSignatory.accountId}
-                  name={depositorSignatory.name}
-                  addressFont={AddressStyle}
-                  addressPrefix={addressPrefix}
-                  matrixId={matrix.userId}
-                  wrapperClassName="-mr-2 min-w-min"
-                  type="short"
-                />
-              )}
+              <div className="-mr-2">
+                {depositorWallet ? (
+                  <ExplorersPopover
+                    button={<WalletCardSm wallet={depositorWallet} />}
+                    address={depositorSignatory.accountId}
+                    explorers={explorers}
+                    addressPrefix={addressPrefix}
+                  />
+                ) : (
+                  <AddressWithExplorers
+                    explorers={explorers}
+                    accountId={depositorSignatory.accountId}
+                    name={depositorSignatory.name}
+                    addressFont={AddressStyle}
+                    addressPrefix={addressPrefix}
+                    matrixId={matrix.userId}
+                    wrapperClassName="-mr-2 min-w-min"
+                    type="short"
+                  />
+                )}
+              </div>
             </DetailRow>
           )}
 

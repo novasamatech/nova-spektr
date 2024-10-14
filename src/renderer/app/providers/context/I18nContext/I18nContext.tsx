@@ -1,13 +1,26 @@
-import { type Locale, format as fnsFormatDate } from 'date-fns';
-import { enGB } from 'date-fns/locale';
+import { type Locale } from 'date-fns';
+import { format as fnsFormatDate } from 'date-fns/format';
+import { enGB } from 'date-fns/locale/en-GB';
+import i18next from 'i18next';
 import { type TFunction } from 'i18next';
 import { type FC, type PropsWithChildren, createContext, useContext } from 'react';
-import { useTranslation } from 'react-i18next';
+import { initReactI18next, useTranslation } from 'react-i18next';
 
 import { LanguageOptions } from '@shared/api/translation/lib/constants';
 import { type LanguageItem, type SupportedLocale } from '@shared/api/translation/lib/types';
 import { useTranslationService } from '@shared/api/translation/translationService';
 import { LanguageSwitcher } from '@shared/ui';
+
+const { getConfig } = useTranslationService();
+
+// eslint-disable-next-line import-x/no-named-as-default-member
+i18next
+  .use(initReactI18next)
+  .init(getConfig())
+  .catch((error) => {
+    console.error(error);
+    throw new Error('Failed to configure react-i18next');
+  });
 
 type Props = {
   className?: string;

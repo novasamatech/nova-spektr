@@ -1,8 +1,10 @@
 import { type BasketTransaction, type Transaction, TransactionType } from '@shared/core';
-import { isWrappedInBatchAll } from '@/entities/transaction';
+import { findCoreBatchAll, isEditDelegationTransaction } from '@/entities/transaction';
 
 export const getCoreTx = (tx: BasketTransaction): Transaction => {
-  return tx.coreTx.type === TransactionType.BATCH_ALL
-    ? tx.coreTx.args.transactions.find((t: Transaction) => isWrappedInBatchAll(t.type)) || tx.coreTx
-    : tx.coreTx;
+  if (isEditDelegationTransaction(tx.coreTx)) {
+    return tx.coreTx;
+  }
+
+  return tx.coreTx.type === TransactionType.BATCH_ALL ? findCoreBatchAll(tx.coreTx) : tx.coreTx;
 };

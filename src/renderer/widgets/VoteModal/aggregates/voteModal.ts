@@ -1,12 +1,12 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
-import { spread } from 'patronum';
 
 import { type PathType, Paths } from '@/shared/routes';
-import { type AccountVote, type BasketTransaction, type OngoingReferendum } from '@shared/core';
+import { type AccountVote, type Address, type BasketTransaction, type OngoingReferendum } from '@shared/core';
 import { Step, isStep, nonNullable, nullable, toAddress } from '@shared/lib/utils';
 import { basketModel } from '@entities/basket';
-import { referendumModel, votingService } from '@entities/governance';
+import { votingService } from '@entities/governance';
+import { walletModel } from '@entities/wallet';
 import {
   delegationAggregate,
   lockPeriodsModel,
@@ -23,10 +23,10 @@ import { voteFormAggregate } from './voteForm';
 
 const flow = createGate<{
   referendum: OngoingReferendum | null;
-  vote: AccountVote | null;
+  votes: { voter: Address; vote: AccountVote }[];
 }>({
   defaultState: {
-    vote: null,
+    votes: [],
     referendum: null,
   },
 });
@@ -139,10 +139,25 @@ sample({
 
 sample({
   clock: flow.open,
-  target: spread({
-    vote: voteFormAggregate.$existingVote,
-    referendum: voteFormAggregate.$referendum,
-  }),
+  fn: ({ referendum }) => referendum,
+  target: voteFormAggregate.$referendum,
+});
+
+sample({
+  clock: form.fields.account.$value,
+  source: { state: flow.state, network: networkSelectorModel.$network },
+  fn: ({ state, network }, account) => {
+    if (nullable(account) || nullable(network) || state.votes.length === 0) return null;
+
+    const record = state.votes.find(({ voter }) => {
+      return voter === toAddress(account.accountId, { prefix: network.chain.addressPrefix });
+    });
+
+    if (!record) return null;
+
+    return record.vote;
+  },
+  target: voteFormAggregate.$existingVote,
 });
 
 sample({
@@ -151,9 +166,9 @@ sample({
 });
 
 sample({
-  clock: flow.open,
-  filter: ({ vote }) => nonNullable(vote),
-  fn: ({ vote }) => {
+  clock: voteFormAggregate.$existingVote,
+  filter: nonNullable,
+  fn: (vote) => {
     if (nullable(vote)) return {};
 
     return {
@@ -169,28 +184,29 @@ sample({
   target: [resetForm, voteConfirmModel.events.resetConfirm],
 });
 
+sample({
+  clock: flow.state,
+  fn: ({ votes }) => votes.map((x) => x.voter),
+  target: voteFormAggregate.$voters,
+});
+
 // Data bindings
 
 sample({
   clock: voteConfirmModel.events.sign,
   source: { confirms: voteConfirmModel.$confirmMap },
   fn: ({ confirms }): { signingPayloads: SigningPayload[] } => {
-    const confirm = confirms[0];
-    if (!confirm) {
+    if (!confirms) {
       return { signingPayloads: [] };
     }
 
-    const { meta, accounts } = confirm;
-
     return {
-      signingPayloads: [
-        {
-          account: accounts.proxy || accounts.initiator,
-          chain: meta.chain,
-          transaction: meta.wrappedTransactions.wrappedTx,
-          signatory: accounts.signer || undefined,
-        },
-      ],
+      signingPayloads: Object.values(confirms).map(({ meta, accounts }) => ({
+        account: accounts.proxy || accounts.initiator,
+        chain: meta.chain,
+        transaction: meta.wrappedTransactions.wrappedTx,
+        signatory: accounts.signer || undefined,
+      })),
     };
   },
   target: signModel.events.formInitiated,
@@ -203,6 +219,7 @@ sample({
   fn: (stores, signParams) => {
     const store = stores[0];
     const { meta } = store;
+    const defaultText = `Vote for referendum #${meta.wrappedTransactions.coreTx.args.referendum}`;
 
     return {
       signatures: signParams.signatures,
@@ -211,7 +228,7 @@ sample({
       chain: meta.chain,
       account: meta.account,
       signatory: meta.signatory,
-      description: meta.description,
+      description: meta.description || defaultText,
       wrappedTxs: [meta.wrappedTransactions.wrappedTx],
       coreTxs: [meta.wrappedTransactions.coreTx],
       multisigTxs: meta.wrappedTransactions.multisigTx ? [meta.wrappedTransactions.multisigTx] : [],
@@ -228,30 +245,13 @@ sample({
 sample({
   clock: voteConfirmModel.events.submitFinished,
   source: {
-    referendum: voteFormAggregate.$referendum,
-    network: networkSelectorModel.$network,
-  },
-  filter: ({ referendum, network }) => nonNullable(referendum) && nonNullable(network),
-  fn: ({ referendum, network }) => ({
-    chain: network!.chain,
-    api: network!.api,
-    referendumId: referendum!.referendumId,
-  }),
-  target: referendumModel.events.requestReferendum,
-});
-
-sample({
-  clock: voteConfirmModel.events.submitFinished,
-  source: {
     status: flow.status,
-    form: voteFormAggregate.transactionForm.form.$values,
+    wallet: walletModel.$activeWallet,
     chain: networkSelectorModel.$governanceChain,
   },
-  filter: ({ chain, status }) => status && nonNullable(chain),
-  fn: ({ form, chain }) => {
-    const addresses = [form.signatory, form.account]
-      .filter(nonNullable)
-      .map((account) => toAddress(account.accountId, { prefix: chain?.addressPrefix }));
+  filter: ({ chain, status, wallet }) => status && nonNullable(chain) && nonNullable(wallet),
+  fn: ({ wallet, chain }) => {
+    const addresses = wallet!.accounts.map((account) => toAddress(account.accountId, { prefix: chain?.addressPrefix }));
 
     return { addresses };
   },

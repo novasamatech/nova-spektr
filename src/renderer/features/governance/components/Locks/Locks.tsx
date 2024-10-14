@@ -4,8 +4,8 @@ import { useI18n } from '@app/providers';
 import { FootnoteText, Icon, Plate, Shimmering } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
 import { locksModel } from '../../model/locks';
+import { networkSelectorModel } from '../../model/networkSelector';
 import { unlockModel } from '../../model/unlock/unlock';
-import { votingAssetModel } from '../../model/votingAsset';
 
 type Props = {
   onClick: () => void;
@@ -14,7 +14,7 @@ type Props = {
 export const Locks = ({ onClick }: Props) => {
   const { t } = useI18n();
 
-  const asset = useUnit(votingAssetModel.$votingAsset);
+  const network = useUnit(networkSelectorModel.$network);
   const totalLock = useUnit(locksModel.$totalLock);
   const isLoading = useUnit(locksModel.$isLoading);
   const isUnlockable = useUnit(unlockModel.$isUnlockable);
@@ -33,8 +33,8 @@ export const Locks = ({ onClick }: Props) => {
             )}
           </div>
           {isLoading && <Shimmering width={120} height={18} />}
-          {!isLoading && asset && (
-            <AssetBalance className="text-small-title" value={totalLock.toString()} asset={asset} />
+          {!isLoading && network && (
+            <AssetBalance className="text-small-title" value={totalLock.toString()} asset={network.asset} />
           )}
         </div>
         <Icon name="arrowRight" />

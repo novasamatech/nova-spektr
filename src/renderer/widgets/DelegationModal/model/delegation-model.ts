@@ -1,14 +1,15 @@
 import { BN } from '@polkadot/util';
 import { combine, createEvent, restore, sample } from 'effector';
 import { groupBy, sortBy } from 'lodash';
-import { readonly } from 'patronum';
+import { combineEvents, readonly } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { type Address } from '@/shared/core';
-import { Step, includesMultiple, toAccountId, validateAddress } from '@/shared/lib/utils';
+import { Step, includesMultiple, isStep, toAccountId, validateAddress } from '@/shared/lib/utils';
 import { walletModel } from '@/entities/wallet';
 import { delegateRegistryAggregate, delegationAggregate, networkSelectorModel } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
+import { submitModel } from '@/features/operations/OperationSubmit';
 import { delegateModel } from '@/widgets/DelegateModal/model/delegate-model';
 import { DelegationErrors, SortProp, SortType } from '../common/constants';
 
@@ -30,13 +31,17 @@ const $customDelegate = restore(customDelegateChanged, '').reset(openCustomModal
 
 const $delegateList = combine(
   {
+    activeWallet: walletModel.$activeWallet,
     delegationsList: delegateRegistryAggregate.$delegateRegistry,
     query: $query,
     sortType: $sortType,
   },
-  ({ delegationsList, query, sortType }) => {
+  ({ activeWallet, delegationsList, query, sortType }) => {
+    const accounts = activeWallet?.accounts.map((a) => a.accountId) || [];
+    const list = delegationsList.filter((d) => !accounts.includes(toAccountId(d.accountId)));
+
     if (!sortType && !query) {
-      const grouped = groupBy(delegationsList, (delegate) => !!delegate.name);
+      const grouped = groupBy(list, (delegate) => !!delegate.name);
 
       return [
         ...sortBy(grouped['true'], (delegate) => delegate[SortProp[SortType.DELEGATIONS]] || 0).reverse(),
@@ -44,7 +49,7 @@ const $delegateList = combine(
       ];
     }
 
-    const searched = delegationsList.filter((delegate) =>
+    const searched = list.filter((delegate) =>
       includesMultiple([delegate.accountId, delegate.address, delegate.name, delegate.shortDescription], query),
     );
 
@@ -128,11 +133,19 @@ sample({
 
 sample({
   clock: delegateModel.events.flowStarted,
+  source: $step,
+  filter: (step) => isStep(step, Step.CUSTOM_DELEGATION),
   target: closeCustomModal,
 });
 
 sample({
-  clock: navigationModel.events.navigateTo,
+  clock: [
+    combineEvents({
+      events: [delegateModel.output.flowFinished, submitModel.output.formSubmitted],
+      reset: flowStarted,
+    }),
+    navigationModel.events.navigateTo,
+  ],
   target: flowFinished,
 });
 

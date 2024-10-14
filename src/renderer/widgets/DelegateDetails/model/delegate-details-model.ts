@@ -1,17 +1,22 @@
 import { combine, createEvent, createStore, sample } from 'effector';
+import uniq from 'lodash/uniq';
+import { combineEvents } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { type Address } from '@/shared/core';
-import { toAddress } from '@/shared/lib/utils';
+import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
 import { accountUtils, permissionUtils, walletModel } from '@/entities/wallet';
 import {
+  delegateRegistryAggregate,
   delegationAggregate,
   networkSelectorModel,
   proposerIdentityAggregate,
   votingAggregate,
 } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
+import { submitModel } from '@/features/operations/OperationSubmit';
+import { delegateModel } from '@/widgets/DelegateModal';
 
 const flowStarted = createEvent<DelegateAccount>();
 const openDelegations = createEvent();
@@ -24,13 +29,17 @@ const closeModal = $isModalOpen.reinit;
 const closeDelegationsModal = $isDelegationsOpen.reinit;
 
 const $activeTracks = combine(
-  { votes: votingAggregate.$activeWalletVotes, delegate: $delegate },
-  ({ votes, delegate }) => {
+  { votes: votingAggregate.$activeWalletVotes, delegate: $delegate, chain: networkSelectorModel.$governanceChain },
+  ({ votes, delegate, chain }) => {
     const activeTracks: Record<Address, Set<string>> = {};
 
     for (const [address, delegations] of Object.entries(votes)) {
       for (const [key, vote] of Object.entries(delegations)) {
-        if (votingService.isDelegating(vote) && vote.target === delegate?.accountId) {
+        if (!votingService.isDelegating(vote)) continue;
+
+        const target = toAddress(toAccountId(vote.target), { prefix: chain?.addressPrefix });
+
+        if (votingService.isDelegating(vote) && target === delegate?.accountId) {
           if (!activeTracks[address]) {
             activeTracks[address] = new Set();
           }
@@ -81,8 +90,8 @@ const $isViewAvailable = $activeDelegations.map((delegations) => {
   return Object.values(delegations).length > 1;
 });
 
-const $isRevokeAvailable = $activeDelegations.map((activeDelegations) => {
-  return Object.values(activeDelegations).length === 1;
+const $isRevokeAvailable = $activeDelegations.map((delegations) => {
+  return Object.values(delegations).length === 1;
 });
 
 sample({
@@ -94,6 +103,11 @@ sample({
 sample({
   clock: flowStarted,
   target: $delegate,
+});
+
+sample({
+  clock: flowStarted,
+  target: delegateRegistryAggregate.events.requestDelegateRegistry,
 });
 
 sample({
@@ -119,7 +133,13 @@ sample({
 });
 
 sample({
-  clock: navigationModel.events.navigateTo,
+  clock: [
+    navigationModel.events.navigateTo,
+    combineEvents({
+      events: [delegateModel.output.flowFinished, submitModel.output.formSubmitted],
+      reset: flowStarted,
+    }),
+  ],
   target: [closeModal, closeDelegationsModal],
 });
 
@@ -128,10 +148,17 @@ export const delegateDetailsModel = {
   $delegate,
   $activeAccounts,
   $activeTracks,
-  $uniqueTracks: delegationAggregate.$activeWalletDelegatedTracks,
+  $uniqueTracks: $activeTracks.map((tracks) =>
+    uniq(
+      Object.values(tracks)
+        .map((tracks) => [...tracks])
+        .flat(),
+    ),
+  ),
   $activeDelegations,
 
   $isAddAvailable,
+  $isEditAvailable: $isRevokeAvailable,
   $isViewAvailable,
   $isRevokeAvailable,
   $isDelegationsOpen,

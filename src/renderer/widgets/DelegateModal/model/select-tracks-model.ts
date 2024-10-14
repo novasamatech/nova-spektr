@@ -3,7 +3,15 @@ import { isArray } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 
 import { type DelegateAccount } from '@/shared/api/governance';
-import { type Account, type Chain, TransactionType, type Wallet } from '@/shared/core';
+import {
+  type Account,
+  type Address,
+  type Chain,
+  type ReferendumId,
+  type TrackId,
+  TransactionType,
+  type Wallet,
+} from '@/shared/core';
 import {
   addUniqueItems,
   formatAmount,
@@ -12,19 +20,10 @@ import {
   transferableAmount,
 } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { votingService } from '@/entities/governance';
+import { adminTracks, fellowshipTracks, governanceTracks, treasuryTracks, votingService } from '@/entities/governance';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import {
-  adminTracks,
-  delegationAggregate,
-  fellowshipTracks,
-  governanceTracks,
-  networkSelectorModel,
-  tracksAggregate,
-  treasuryTracks,
-  votingAggregate,
-} from '@/features/governance';
+import { delegationAggregate, networkSelectorModel, tracksAggregate, votingAggregate } from '@/features/governance';
 
 const formInitiated = createEvent<DelegateAccount>();
 const formSubmitted = createEvent<{ tracks: number[]; accounts: Account[] }>();
@@ -70,6 +69,34 @@ const $votedTracks = combine(
     }
 
     return [...activeTracks];
+  },
+);
+
+const $votesToRemove = combine(
+  {
+    votes: votingAggregate.$activeWalletVotes,
+    addresses: $addresses,
+  },
+  ({ votes, addresses }) => {
+    const activeVotes: { referendum: ReferendumId; track: TrackId; voter: Address }[] = [];
+
+    for (const [address, voteList] of Object.entries(votes)) {
+      if (!addresses.includes(address)) continue;
+
+      for (const [track, vote] of Object.entries(voteList)) {
+        if (votingService.isCasting(vote) && !votingService.isUnlockingDelegation(vote)) {
+          activeVotes.push(
+            ...Object.keys(vote.votes).map((referendum) => ({
+              voter: address,
+              track,
+              referendum,
+            })),
+          );
+        }
+      }
+    }
+
+    return activeVotes;
   },
 );
 
@@ -228,6 +255,7 @@ export const selectTracksModel = {
   $tracks,
   $availableTracks,
   $votedTracks,
+  $votesToRemove,
   $tracksGroup,
   $allTracks: $tracksGroup.map(({ adminTracks, governanceTracks, treasuryTracks, fellowshipTracks }) => {
     return [...adminTracks, ...governanceTracks, ...treasuryTracks, ...fellowshipTracks];

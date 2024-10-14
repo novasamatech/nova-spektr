@@ -1,7 +1,7 @@
 import { useGate, useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
-import { type AccountVote, type Asset, type Chain, type OngoingReferendum } from '@shared/core';
+import { type AccountVote, type Address, type Asset, type Chain, type OngoingReferendum } from '@shared/core';
 import { useModalClose } from '@shared/lib/hooks';
 import { Step, isStep } from '@shared/lib/utils';
 import { BaseModal, Button } from '@shared/ui';
@@ -15,14 +15,14 @@ import { VoteForm } from './VoteForm';
 
 type Props = {
   referendum: OngoingReferendum;
-  vote: AccountVote;
+  votes: { voter: Address; vote: AccountVote }[];
   chain: Chain;
   asset: Asset;
   onClose: VoidFunction;
 };
 
-export const RevoteModal = ({ referendum, vote, asset, chain, onClose }: Props) => {
-  useGate(voteModalAggregate.gates.flow, { referendum, vote });
+export const RevoteModal = ({ referendum, votes, asset, chain, onClose }: Props) => {
+  useGate(voteModalAggregate.gates.flow, { referendum, votes });
 
   const { t } = useI18n();
   const step = useUnit(voteModalAggregate.$step);
@@ -53,7 +53,7 @@ export const RevoteModal = ({ referendum, vote, asset, chain, onClose }: Props) 
       closeButton
       title={<OperationTitle title={t('governance.voting.revoteTitle')} chainId={chain.chainId}></OperationTitle>}
       headerClass="px-5 py-3"
-      panelClass="flex flex-col w-modal max-h-[678px]"
+      panelClass="flex flex-col w-modal max-h-[736px]"
       contentClass="flex flex-col h-full min-h-0 overflow-y-auto shrink"
       onClose={onClose}
     >

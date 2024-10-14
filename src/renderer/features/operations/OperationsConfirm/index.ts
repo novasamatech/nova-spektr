@@ -16,8 +16,11 @@ export * from './Unstake';
 export * from './Withdraw';
 
 export * from './Delegate';
+export * from './EditDelegation';
 export * from './RevokeDelegation';
 export * from './Referendum/Vote';
 export * from './Referendum/RemoveVote';
 
 export { type ConfirmInfo } from './lib/createTransactionConfirmStore';
+
+export { ConfirmSlider } from './common/ConfirmSlider';

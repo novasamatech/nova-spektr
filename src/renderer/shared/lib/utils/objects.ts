@@ -10,9 +10,9 @@ export const pickNestedValue = <T extends string, V>(
   return map[outerKey]?.[innerKey] ?? null;
 };
 
-export const setNestedValue = <T extends string, V>(
-  map: Record<string, Record<T, V>>,
-  outerKey: string,
+export const setNestedValue = <K extends string, T extends string, V>(
+  map: Partial<Record<K, Record<T, V>>>,
+  outerKey: K,
   innerKey: T,
   value: V,
 ): Record<string, Record<T, V>> => {
@@ -22,7 +22,7 @@ export const setNestedValue = <T extends string, V>(
       ...(map[outerKey] ?? {}),
       [innerKey]: value,
     },
-  };
+  } as Record<string, Record<T, V>>;
 };
 
 export const toSerializable = <T>(value: T): Serializable<T> => {

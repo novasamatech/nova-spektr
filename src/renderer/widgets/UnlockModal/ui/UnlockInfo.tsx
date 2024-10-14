@@ -8,33 +8,33 @@ import { Button, Duration, FootnoteText, Icon, Shimmering } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price';
 import { permissionUtils, walletModel } from '@entities/wallet';
+import { networkSelectorModel } from '@/features/governance';
 import { unlockModel } from '@/features/governance/model/unlock/unlock';
 import { locksModel } from '@features/governance/model/locks';
-import { votingAssetModel } from '@features/governance/model/votingAsset';
 import { unlockAggregate } from '../aggregates/unlock';
 
 export const UnlockInfo = () => {
   const { t } = useI18n();
 
   const totalLock = useUnit(locksModel.$totalLock);
-  const asset = useUnit(votingAssetModel.$votingAsset);
+  const network = useUnit(networkSelectorModel.$network);
   const pendingSchedule = useUnit(unlockAggregate.$pendingSchedule);
   const isLoading = useUnit(unlockAggregate.$isLoading);
   const totalUnlock = useUnit(unlockModel.$totalUnlock);
 
-  if (!asset) {
+  if (!network) {
     return null;
   }
 
   return (
     <div className="flex flex-col items-center gap-y-1 px-5 pb-4">
       <Icon name="opengovVotingLock" size={60} />
-      <AssetBalance className="mt-2 text-large-title" value={totalLock.toString()} asset={asset} />
-      <AssetFiatBalance className="mb-5" amount={totalLock.toString()} asset={asset} />
+      <AssetBalance className="mt-2 text-large-title" value={totalLock.toString()} asset={network.asset} />
+      <AssetFiatBalance className="mb-5" amount={totalLock.toString()} asset={network.asset} />
       {isLoading && <Shimmering width={250} height={20} />}
       {!totalUnlock.isZero() && (
         <div className="mb-3 flex items-center justify-between self-stretch">
-          <AssetBalance value={totalUnlock.toString()} asset={asset} />
+          <AssetBalance value={totalUnlock.toString()} asset={network.asset} />
           <FootnoteText className="text-text-positive">{t('governance.locks.unlockable')}</FootnoteText>
         </div>
       )}
@@ -43,8 +43,8 @@ export const UnlockInfo = () => {
           key={`${lock.amount.toString()}-${lock.type}-${lock.address}`}
           className="mb-3 flex items-center justify-between self-stretch"
         >
-          <AssetBalance value={lock.amount.toString()} asset={asset} />
-          {lock.type === UnlockChunkType.PENDING_DELIGATION && (
+          <AssetBalance value={lock.amount.toString()} asset={network.asset} />
+          {lock.type === UnlockChunkType.PENDING_DELEGATION && (
             <FootnoteText className="text-text-tertiary">{t('governance.locks.yourDelegation')}</FootnoteText>
           )}
           {lock.type === UnlockChunkType.PENDING_LOCK && <UnlockCountdown lock={lock} />}

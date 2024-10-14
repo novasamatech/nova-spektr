@@ -1,21 +1,21 @@
-import { BN, BN_ZERO } from '@polkadot/util';
+import { type BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, sample } from 'effector';
 import { isNil } from 'lodash';
 import { and, empty, not, reset } from 'patronum';
 
-import { type AccountVote, type Conviction, type OngoingReferendum } from '@shared/core';
-import { nonNullable, nullable, toAddress } from '@shared/lib/utils';
-import { balanceModel } from '@entities/balance';
-import { voteTransactionService } from '@entities/governance';
-import { type WrappedTransactions, transactionBuilder } from '@entities/transaction';
-import { walletModel } from '@entities/wallet';
+import { type AccountVote, type Address, type Conviction, type OngoingReferendum } from '@/shared/core';
+import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
+import { balanceModel } from '@/entities/balance';
+import { locksService, voteTransactionService } from '@/entities/governance';
+import { type WrappedTransactions, transactionBuilder } from '@/entities/transaction';
+import { walletModel } from '@/entities/wallet';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
+import { networkSelectorModel } from '@/features/governance/model/networkSelector';
+import { voteValidateModel } from '@/features/governance/model/vote/voteValidateModel';
+import { votingAssetModel } from '@/features/governance/model/votingAsset';
 import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
+import { type VoteConfirm, voteConfirmModel } from '@/features/operations/OperationsConfirm';
 import { type BasicFormParams, createTransactionForm } from '@features/governance/lib/createTransactionForm';
-import { networkSelectorModel } from '@features/governance/model/networkSelector';
-import { voteValidateModel } from '@features/governance/model/vote/voteValidateModel';
-import { votingAssetModel } from '@features/governance/model/votingAsset';
-import { type VoteConfirm, voteConfirmModel } from '@features/operations/OperationsConfirm';
 
 type Form = {
   amount: BN | null;
@@ -29,6 +29,7 @@ type FormInput = {
   wrappedTransactions: WrappedTransactions;
 };
 
+const $voters = createStore<Address[]>([]);
 const $existingVote = createStore<AccountVote | null>(null);
 const $referendum = createStore<OngoingReferendum | null>(null);
 const $availableBalance = createStore(BN_ZERO);
@@ -39,6 +40,7 @@ const $canSubmit = createStore(false);
 const formSubmitted = createEvent<FormInput>();
 
 const transactionForm = createTransactionForm<Form>({
+  $voters,
   $asset: votingAssetModel.$votingAsset,
   $chain: networkSelectorModel.$governanceChain,
   $api: networkSelectorModel.$governanceChainApi,
@@ -129,19 +131,15 @@ sample({
 
 sample({
   clock: form.fields.account.onChange,
-  source: {
-    referendum: $referendum,
-    accounts: accounts.$available,
-    lockForAccount: $lockForAccount,
-  },
+  source: { referendum: $referendum, accounts: accounts.$available },
   filter: ({ referendum }, account) => !isNil(account) && !isNil(referendum),
-  fn: ({ referendum, accounts, lockForAccount }, account) => {
+  fn: ({ referendum, accounts }, account) => {
     if (!account || !referendum) return BN_ZERO;
 
-    const accountBalance = accounts.find((x) => x.account.accountId === account.accountId)?.balance ?? BN_ZERO;
+    const accountBalance = accounts.find((x) => x.account.accountId === account.accountId)?.balance ?? null;
     if (!accountBalance) return BN_ZERO;
 
-    return BN.max(BN_ZERO, accountBalance.add(lockForAccount ?? BN_ZERO));
+    return locksService.getAvailableBalance(accountBalance);
   },
   target: $availableBalance,
 });
@@ -223,6 +221,7 @@ export const voteFormAggregate = {
   transactionForm,
 
   $referendum,
+  $voters,
   $existingVote,
   $lockForAccount,
   $availableBalance,

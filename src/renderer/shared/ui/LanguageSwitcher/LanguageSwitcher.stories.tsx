@@ -1,5 +1,5 @@
 import { type Meta, type StoryFn } from '@storybook/react';
-import { enGB } from 'date-fns/locale';
+import { enGB } from 'date-fns/locale/en-GB';
 
 import { type LanguageItem } from '@shared/api/translation/lib/types';
 

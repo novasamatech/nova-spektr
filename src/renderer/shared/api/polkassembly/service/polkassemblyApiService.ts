@@ -1,6 +1,7 @@
-import { createQueuedRequest } from '@/shared/lib/utils';
+import { createAsyncTaskPool } from '../../substrate-helpers';
 import {
   type PolkassemblyDetailedPost,
+  type PolkassemblyFellowshipListingReferendum,
   type PolkassemblyListingPost,
   type PolkassemblyPostVote,
   type PolkassemblyPostVotesResponse,
@@ -10,6 +11,12 @@ import {
 } from '../lib/types';
 
 type ChunkDataCallback<T> = (chunk: T, done: boolean) => unknown;
+
+const polkassemblyRequestPool = createAsyncTaskPool({
+  retryCount: 4,
+  poolSize: 2,
+  retryDelay: 150,
+});
 
 const origin = 'https://api.polkassembly.io';
 
@@ -42,10 +49,14 @@ type PostListingParams = {
   limit?: number;
 };
 
-const fetchPostsList = async (
-  { network, trackStatus, trackNo, proposalType, sortBy, limit = Number.MAX_SAFE_INTEGER }: PostListingParams,
-  callback?: ChunkDataCallback<PolkassemblyListingPost[]>,
-): Promise<PolkassemblyListingPost[]> => {
+async function* fetchPostsList({
+  network,
+  trackStatus,
+  trackNo,
+  proposalType,
+  sortBy,
+  limit = Number.MAX_SAFE_INTEGER,
+}: PostListingParams) {
   const pageSize = Math.min(100, limit);
 
   const getApiUrl = (page: number, size: number) => {
@@ -61,13 +72,21 @@ const fetchPostsList = async (
 
   const requestParams = { method: 'GET', headers: createHeaders(network) };
 
-  return createQueuedRequest<{ count: number; posts: PolkassemblyListingPost[] }, PolkassemblyListingPost>({
-    makeRequest: (index) => fetch(getApiUrl(index + 1, pageSize), requestParams).then((res) => res.json()),
-    getRecords: (res) => res.posts,
-    getTotalRequests: (res) => Math.ceil(res.count / pageSize),
-    callback,
-  });
-};
+  const request = (page: number): Promise<{ count: number; posts: PolkassemblyListingPost[] }> =>
+    polkassemblyRequestPool.call(() => fetch(getApiUrl(page, pageSize), requestParams).then((res) => res.json()));
+
+  const firstPage = await request(1);
+  yield firstPage.posts;
+
+  if (firstPage.count < pageSize) {
+    return;
+  }
+
+  const totalRequests = Math.ceil(firstPage.count / pageSize) + 1;
+  for (let pageNumber = 2; pageNumber < totalRequests; pageNumber++) {
+    yield request(pageNumber).then((x) => x.posts);
+  }
+}
 
 type FetchPostParams = {
   network: string;
@@ -81,7 +100,9 @@ async function fetchPost({ network, postId, proposalType }: FetchPostParams): Pr
     postId,
   });
 
-  return fetch(url, { method: 'GET', headers: createHeaders(network) }).then((r) => r.json());
+  return polkassemblyRequestPool.call(() =>
+    fetch(url, { method: 'GET', headers: createHeaders(network) }).then((r) => r.json()),
+  );
 }
 
 type FetchPostVotesParams = {
@@ -131,8 +152,52 @@ const fetchPostVotes = async (
   return createRequest(1);
 };
 
+type FellowshipReferendumListingParams = {
+  network: string;
+  trackStatus?: PolkassemblyTrackStatus;
+  sortBy?: 'commented' | 'newest' | 'oldest';
+  limit?: number;
+};
+
+async function* fetchFellowshipReferendumsList({
+  network,
+  trackStatus,
+  sortBy,
+  limit = Number.MAX_SAFE_INTEGER,
+}: FellowshipReferendumListingParams) {
+  const pageSize = Math.min(100, limit);
+
+  const getApiUrl = (page: number, size: number) => {
+    return createURL('https://collectives.polkassembly.io/api/v1/fellowship_referendums', {
+      trackStatus,
+      page,
+      limit: size,
+      sortBy,
+      'x-network': network,
+    });
+  };
+
+  const requestParams = { method: 'GET' };
+
+  const request = (page: number): Promise<{ totalCount: number; posts: PolkassemblyFellowshipListingReferendum[] }> =>
+    polkassemblyRequestPool.call(() => fetch(getApiUrl(page, pageSize), requestParams).then((res) => res.json()));
+
+  const firstPage = await request(1);
+  yield firstPage.posts;
+
+  if (firstPage.totalCount < pageSize) {
+    return;
+  }
+
+  const totalRequests = Math.ceil(firstPage.totalCount / pageSize) + 1;
+  for (let pageNumber = 2; pageNumber < totalRequests; pageNumber++) {
+    yield request(pageNumber).then((x) => x.posts);
+  }
+}
+
 export const polkassemblyApiService = {
   fetchPost,
   fetchPostsList,
   fetchPostVotes,
+  fetchFellowshipReferendumsList,
 };

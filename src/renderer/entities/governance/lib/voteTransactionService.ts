@@ -30,6 +30,10 @@ const isRevoteTransaction = (t: Transaction): t is RevoteTransaction => {
 };
 
 const isRemoveVoteTransaction = (t: Transaction): t is RemoveVoteTransaction => {
+  if (t.type === TransactionType.BATCH_ALL) {
+    return t.args.transactions?.some(isRemoveVoteTransaction);
+  }
+
   return t.type === TransactionType.REMOVE_VOTE;
 };
 

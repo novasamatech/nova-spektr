@@ -35,6 +35,7 @@ export const transactionBuilder = {
   buildVote,
   buildRevote,
   buildRemoveVote,
+  buildRemoveVotes,
 
   buildBatchAll,
   splitBatchAll,
@@ -313,8 +314,9 @@ type EditDelegationParams = {
   chain: Chain;
   accountId: AccountId;
   tracks: number[];
+  undelegateTracks: number[];
   target: Address;
-  conviction: number;
+  conviction: Conviction;
   balance: string;
 };
 
@@ -322,11 +324,12 @@ function buildEditDelegation({
   chain,
   accountId,
   tracks,
+  undelegateTracks,
   target,
   conviction,
   balance,
 }: EditDelegationParams): Transaction {
-  const undelegateTxs = tracks.map((track) => ({
+  const undelegateTxs = undelegateTracks.map((track) => ({
     chainId: chain.chainId,
     address: toAddress(accountId, { prefix: chain.addressPrefix }),
     type: TransactionType.UNDELEGATE,
@@ -448,4 +451,30 @@ function buildRemoveVote({ chain, accountId, track, referendum }: RemoveVotePara
     type: TransactionType.REMOVE_VOTE,
     args: { track, referendum },
   };
+}
+
+type RemoveVotesParams = {
+  chain: Chain;
+  accountId: AccountId;
+  votes: {
+    referendum: ReferendumId;
+    track: TrackId;
+  }[];
+};
+
+function buildRemoveVotes({ chain, accountId, votes }: RemoveVotesParams): Transaction {
+  const transactions = votes.map(({ referendum, track }) =>
+    buildRemoveVote({
+      chain,
+      accountId,
+      track,
+      referendum,
+    }),
+  );
+
+  if (transactions.length === 1) {
+    return transactions[0];
+  }
+
+  return buildBatchAll({ chain, accountId, transactions });
 }

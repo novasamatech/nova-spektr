@@ -1,9 +1,9 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type BN, BN_ZERO, bnMax } from '@polkadot/util';
+import { BN, BN_ZERO, bnMax } from '@polkadot/util';
 
 import { type ClaimTime, type ClaimTimeAt, type ClaimTimeUntil } from '@/shared/api/governance';
-import { type Conviction, type Voting } from '@/shared/core';
-import { getRelativeTimeFromApi } from '@/shared/lib/utils';
+import { type Balance, type Conviction, type Voting } from '@/shared/core';
+import { getRelativeTimeFromApi, lockedAmountBN, transferableAmountBN } from '@/shared/lib/utils';
 
 import { votingService } from './votingService';
 
@@ -73,10 +73,17 @@ const getLockPeriods = async (api: ApiPromise) => {
   );
 };
 
+const getAvailableBalance = (balance: Balance) => {
+  const reserved = new BN(balance.reserved || '0');
+
+  return transferableAmountBN(balance).add(lockedAmountBN(balance)).add(reserved);
+};
+
 export const locksService = {
   getLockPeriodsMultiplier,
   getLockPeriods,
   getTotalLock,
+  getAvailableBalance,
   isClaimAt,
   isClaimUntil,
 };

@@ -104,6 +104,10 @@ export const isUndelegateTransaction = (transaction?: Transaction | DecodedTrans
   return !!transaction && hasTransaction(transaction, (tx) => tx.type === TransactionType.UNDELEGATE);
 };
 
+export const isUnlockTransaction = (transaction?: Transaction | DecodedTransaction): boolean => {
+  return !!transaction && hasTransaction(transaction, (tx) => tx.type === TransactionType.UNLOCK);
+};
+
 export const hasTransaction = (
   transaction: Transaction | DecodedTransaction,
   filter: (transaction: Transaction | DecodedTransaction) => boolean,
@@ -122,9 +126,18 @@ export const isWrappedInBatchAll = (type: TransactionType) => {
     TransactionType.UNLOCK,
     TransactionType.DELEGATE,
     TransactionType.UNDELEGATE,
+    TransactionType.REMOVE_VOTE,
   ]);
 
   return batchAllOperations.has(type);
+};
+
+export const findCoreBatchAll = (coreTx: Transaction | DecodedTransaction): Transaction => {
+  if (isUnlockTransaction(coreTx)) {
+    return coreTx.args?.transactions?.find((t: Transaction) => t.type === TransactionType.UNLOCK) || coreTx;
+  }
+
+  return coreTx.args?.transactions?.find((tx: Transaction) => isWrappedInBatchAll(tx.type));
 };
 
 export const getTransactionAmount = (tx: Transaction | DecodedTransaction): string | null => {
@@ -152,15 +165,22 @@ export const getTransactionAmount = (tx: Transaction | DecodedTransaction): stri
     return tx.args.balance;
   }
 
+  if (isEditDelegationTransaction(tx)) {
+    const transactions = tx.args?.transactions;
+    if (!transactions) return null;
+
+    const txMatch = transactions.find((tx: Transaction) => tx.type === TransactionType.DELEGATE);
+
+    return getTransactionAmount(txMatch);
+  }
+
   if (txType === TransactionType.BATCH_ALL) {
     // multi tx made with batch all:
     // unstake - chill, unbond
     // start staking - bond, nominate
     // unlock - unlock, remove_vote
-    const transactions = tx.args?.transactions;
-    if (!transactions) return null;
-
-    const txMatch = transactions.find((tx: Transaction) => isWrappedInBatchAll(tx.type));
+    if (!tx.args?.transactions) return null;
+    const txMatch = findCoreBatchAll(tx);
 
     return getTransactionAmount(txMatch);
   }
@@ -226,6 +246,7 @@ const TransactionTitles: Record<TransactionType, string> = {
   [TransactionType.REMOVE_VOTE]: 'operations.titles.removeVote',
   [TransactionType.DELEGATE]: 'operations.titles.delegate',
   [TransactionType.UNDELEGATE]: 'operations.titles.undelegate',
+  [TransactionType.EDIT_DELEGATION]: 'operations.titles.editDelegation',
 };
 
 const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => string> = {
@@ -272,6 +293,7 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.REMOVE_VOTE]: () => 'operations.modalTitles.removeVote',
   [TransactionType.DELEGATE]: () => 'operations.modalTitles.delegateOn',
   [TransactionType.UNDELEGATE]: () => 'operations.modalTitles.undelegateOn',
+  [TransactionType.EDIT_DELEGATION]: () => 'operations.modalTitles.editDelegationOn',
 };
 
 export const getTransactionTitle = (t: TFunction, transaction?: Transaction | DecodedTransaction): string => {
@@ -286,8 +308,7 @@ export const getTransactionTitle = (t: TFunction, transaction?: Transaction | De
   }
 
   if (transaction.type === TransactionType.BATCH_ALL) {
-    const transactions = transaction.args?.transactions;
-    const txMatch = transactions.find((tx: Transaction) => isWrappedInBatchAll(tx.type));
+    const txMatch = findCoreBatchAll(transaction);
 
     return getTransactionTitle(t, txMatch);
   }

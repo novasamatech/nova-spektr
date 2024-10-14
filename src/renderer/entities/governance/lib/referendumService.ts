@@ -1,12 +1,14 @@
 import {
   type ApprovedReferendum,
+  type BlockHeight,
   type CompletedReferendum,
   type KilledReferendum,
   type OngoingReferendum,
   type Referendum,
-  ReferendumType,
+  type ReferendumStatus,
   type RejectedReferendum,
   type TimedOutReferendum,
+  type TrackInfo,
 } from '@/shared/core';
 
 export const referendumService = {
@@ -17,38 +19,47 @@ export const referendumService = {
   isTimedOut,
   isKilled,
 
-  getOperationStatus,
+  getReferendumStatus,
+  getReferendumEndTime,
 };
 
 function isOngoing(referendum: Referendum): referendum is OngoingReferendum {
-  return referendum.type === ReferendumType.Ongoing;
+  return referendum.type === 'Ongoing';
 }
 
 function isRejected(referendum: Referendum): referendum is RejectedReferendum {
-  return referendum.type === ReferendumType.Rejected;
+  return referendum.type === 'Rejected';
 }
 
 function isApproved(referendum: Referendum): referendum is ApprovedReferendum {
-  return referendum.type === ReferendumType.Approved;
+  return referendum.type === 'Approved';
 }
 
 function isCompleted(referendum: Referendum): referendum is CompletedReferendum {
-  return referendum.type !== ReferendumType.Ongoing;
+  return referendum.type !== 'Ongoing';
 }
 
 function isTimedOut(referendum: Referendum): referendum is TimedOutReferendum {
-  return referendum.type === ReferendumType.TimedOut;
+  return referendum.type === 'TimedOut';
 }
 
 function isKilled(referendum: Referendum): referendum is KilledReferendum {
-  return referendum.type === ReferendumType.Killed;
+  return referendum.type === 'Killed';
 }
 
 // waiting for deposit, deciding, passing
-function getOperationStatus(referendum: OngoingReferendum) {
-  if (!referendum.decisionDeposit) return 'no_deposit';
+function getReferendumStatus(referendum: OngoingReferendum): ReferendumStatus {
+  if (!referendum.decisionDeposit) return 'NoDeposit';
 
-  if (referendum.deciding) return 'no_deposit';
+  if (referendum.deciding?.confirming) return 'Passing';
 
-  return 'deciding';
+  return 'Deciding';
+}
+
+function getReferendumEndTime(referendum: OngoingReferendum, track: TrackInfo, undecidingTimeout: number): BlockHeight {
+  if (referendum.deciding?.confirming) return referendum.deciding.confirming;
+
+  if (referendum.deciding) return referendum.deciding.since + track.decisionPeriod;
+
+  return referendum.submitted + undecidingTimeout;
 }

@@ -1,9 +1,10 @@
+import { type ApiPromise } from '@polkadot/api';
+import { BN_ZERO } from '@polkadot/util';
 import { useGate, useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
 import { type Asset, type Chain } from '@shared/core';
 import { useModalClose, useToggle } from '@shared/lib/hooks';
-import { nonNullable } from '@shared/lib/utils';
 import { BaseModal, Button, Plate } from '@shared/ui';
 import { walletModel } from '@/entities/wallet';
 import { referendumService, votingService } from '@entities/governance';
@@ -23,8 +24,10 @@ import { VotingSummary } from './VotingSummary';
 
 type Props = {
   chain: Chain;
+  api: ApiPromise;
   asset: Asset;
   referendum: AggregatedReferendum;
+  showActions?: boolean;
   onVoteRequest: () => unknown;
   onRevoteRequest: () => unknown;
   onRemoveVoteRequest: () => unknown;
@@ -33,8 +36,10 @@ type Props = {
 
 export const ReferendumDetailsModal = ({
   chain,
+  api,
   asset,
   referendum,
+  showActions,
   onClose,
   onVoteRequest,
   onRevoteRequest,
@@ -54,6 +59,11 @@ export const ReferendumDetailsModal = ({
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
+  const votingBalance = referendum.voting.votes.reduce(
+    (acc, vote) => acc.add(votingService.calculateAccountVotePower(vote.vote)),
+    BN_ZERO,
+  );
+
   return (
     <BaseModal
       isOpen={isModalOpen}
@@ -70,21 +80,18 @@ export const ReferendumDetailsModal = ({
         </Plate>
 
         <div className="flex shrink-0 grow basis-[320px] flex-row flex-wrap gap-4">
-          {nonNullable(referendum.vote) && (
+          {referendum.voting.votes.length > 0 && (
             <DetailsCard>
-              <VotingBalance
-                votes={votingService.calculateAccountVotePower(referendum.vote.vote)}
-                asset={asset}
-                onInfoClick={toggleShowWalletVotes}
-              />
+              <VotingBalance votes={votingBalance} asset={asset} onInfoClick={toggleShowWalletVotes} />
             </DetailsCard>
           )}
 
           <DetailsCard title={t('governance.referendum.votingStatus')}>
             <VotingStatus
+              api={api}
               referendum={referendum}
               asset={asset}
-              canVote={canVote}
+              canVote={showActions ?? canVote}
               hasAccount={hasAccount}
               wallet={wallet}
               onVoteRequest={onVoteRequest}

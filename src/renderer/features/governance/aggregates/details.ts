@@ -2,14 +2,11 @@ import { combine, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type Chain, type Referendum } from '@shared/core';
-import { nonNullable } from '@shared/lib/utils';
-import { referendumModel } from '@entities/governance';
 import { permissionUtils, walletModel } from '@entities/wallet';
 import { descriptionsModel } from '../model/description';
 import { networkSelectorModel } from '../model/networkSelector';
 import { timelineModel } from '../model/timeline';
 import { titleModel } from '../model/title';
-import { votingAssetModel } from '../model/votingAsset';
 
 import { proposerIdentityAggregate } from './proposerIdentity';
 import { votingAggregate } from './voting';
@@ -35,20 +32,7 @@ sample({
   ],
 });
 
-sample({
-  clock: flow.open,
-  source: networkSelectorModel.$network,
-  filter: nonNullable,
-  fn: (network, { referendum }) => ({
-    api: network!.api,
-    chain: network!.chain,
-    referendumId: referendum.referendumId,
-  }),
-  target: referendumModel.events.requestReferendum,
-});
-
 export const detailsAggregate = {
-  $votingAsset: votingAssetModel.$votingAsset,
   $descriptions: descriptionsModel.$descriptions,
   $timelines: timelineModel.$currentChainTimelines,
   $votes: votingAggregate.$activeWalletVotes,

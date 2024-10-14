@@ -2,12 +2,14 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/app/providers';
 import { BaseModal, Plate } from '@/shared/ui';
+import { EditDelegation } from '@/widgets/EditDelegationModal';
 import { RevokeDelegation } from '@/widgets/RevokeDelegationModal';
 import { delegateDetailsModel } from '../model/delegate-details-model';
 
 import { DelegateActivity } from './DelegateActivity';
 import { DelegateDescription } from './DelegateDescription';
 import { DelegateIdentity } from './DelegateIdentity';
+import { DelegateSummary } from './DelegateSummary';
 import { YourDelegation } from './YourDelegation';
 import { YourDelegations } from './YourDelegations';
 
@@ -46,6 +48,8 @@ export const DelegateDetails = () => {
       <YourDelegations />
 
       <RevokeDelegation />
+      <DelegateSummary />
+      <EditDelegation />
     </BaseModal>
   );
 };

@@ -13,6 +13,7 @@ import {
   type UtilityTransactionTypes,
   type XcmTransactionTypes,
   XcmTypes,
+  isEditDelegationTransaction,
   transactionService,
 } from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
@@ -31,6 +32,7 @@ import {
   payeeValidateModel,
   removeProxyValidateModel,
   removePureProxiedValidateModel,
+  removeVoteValidateModel,
   restakeValidateModel,
   revokeDelegationValidateModel,
   transferValidateModel,
@@ -120,15 +122,18 @@ const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
       });
     }
 
+    if (isEditDelegationTransaction(coreTx)) {
+      delegateValidateModel.events.validationStarted({
+        id: tx.id,
+        transaction: coreTx,
+        feeMap,
+      });
+    }
+
     const TransactionValidatorsRecord: Record<
       Exclude<
         TransactionType,
-        | TransferTransactionTypes
-        | XcmTransactionTypes
-        | MultisigTransactionTypes
-        | UtilityTransactionTypes
-        // TODO: Add remove vote types
-        | TransactionType.REMOVE_VOTE
+        TransferTransactionTypes | XcmTransactionTypes | MultisigTransactionTypes | UtilityTransactionTypes
       >,
       EventCallable<ValidationStartedParams>
     > = {
@@ -146,8 +151,10 @@ const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
       [TransactionType.UNLOCK]: unlockValidateModel.events.validationStarted,
       [TransactionType.DELEGATE]: delegateValidateModel.events.validationStarted,
       [TransactionType.UNDELEGATE]: revokeDelegationValidateModel.events.validationStarted,
+      [TransactionType.EDIT_DELEGATION]: delegateValidateModel.events.validationStarted,
       [TransactionType.VOTE]: voteValidateModel.events.validationStarted,
       [TransactionType.REVOTE]: voteValidateModel.events.validationStarted,
+      [TransactionType.REMOVE_VOTE]: removeVoteValidateModel.events.validationStarted,
     };
 
     if (coreTx.type in TransactionValidatorsRecord) {
@@ -186,6 +193,7 @@ const txValidated = [
   delegateValidateModel.output.txValidated,
   revokeDelegationValidateModel.output.txValidated,
   voteValidateModel.output.txValidated,
+  removeVoteValidateModel.output.txValidated,
 ];
 
 sample({

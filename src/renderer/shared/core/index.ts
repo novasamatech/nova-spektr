@@ -99,11 +99,12 @@ export type {
   LinearDecreasingCurve,
 } from './types/track';
 
-export { ReferendumType } from './types/referendum';
 export type {
   Deposit,
   Tally,
   ReferendumId,
+  ReferendumType,
+  ReferendumStatus,
   ApprovedReferendum,
   RejectedReferendum,
   OngoingReferendum,

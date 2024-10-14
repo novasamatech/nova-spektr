@@ -1,0 +1,4 @@
+.ui-kit-modal-height {
+  /* This value was found after some discussion about possible layout variants  */
+  max-height: min(100%, 736px);
+}

@@ -21,9 +21,10 @@ import {
 } from '@features/governance';
 import { CurrentDelegationModal, currentDelegationModel } from '@/widgets/CurrentDelegationsModal';
 import { DelegateDetails } from '@/widgets/DelegateDetails';
+import { Delegate } from '@/widgets/DelegateModal';
 import { DelegationModal, delegationModel } from '@/widgets/DelegationModal';
+import { RemoveVotesModal } from '@/widgets/RemoveVotesModal';
 import { UnlockModal, unlockAggregate } from '@/widgets/UnlockModal';
-import { RemoveVoteModal } from '@widgets/RemoveVoteModal';
 import { RevoteModal, VoteModal } from '@widgets/VoteModal';
 import { governancePageAggregate } from '../aggregates/governancePage';
 
@@ -99,13 +100,14 @@ export const Governance = () => {
 
           {shouldRenderEmptyState && <EmptyGovernance />}
           {shouldNetworkDisabledError && <InactiveNetwork active className="grow" />}
-          {shouldRenderList && (
+          {shouldRenderList && network && (
             <div className="flex flex-col gap-y-3 pb-10">
               <OngoingReferendums
                 referendums={ongoing}
                 isTitlesLoading={isTitlesLoading}
                 isLoading={isLoading}
                 mixLoadingWithData={shouldShowLoadingState}
+                api={network.api}
                 onSelect={selectReferendum}
               />
               <CompletedReferendums
@@ -113,6 +115,7 @@ export const Governance = () => {
                 isTitlesLoading={isTitlesLoading}
                 isLoading={isLoading}
                 mixLoadingWithData={shouldShowLoadingState}
+                api={network.api}
                 onSelect={selectReferendum}
               />
             </div>
@@ -124,6 +127,7 @@ export const Governance = () => {
         <ReferendumDetailsModal
           referendum={selectedReferendum}
           chain={network.chain}
+          api={network.api}
           asset={network.asset}
           onClose={() => {
             setShowVoteModal(false);
@@ -164,11 +168,10 @@ export const Governance = () => {
       {showRevoteModal &&
         nonNullable(network) &&
         nonNullable(selectedReferendum) &&
-        nonNullable(selectedReferendum.vote) &&
         referendumService.isOngoing(selectedReferendum) && (
           <RevoteModal
             referendum={selectedReferendum}
-            vote={selectedReferendum.vote.vote}
+            votes={selectedReferendum.voting.votes}
             chain={network.chain}
             asset={network.asset}
             onClose={() => setShowRevoteModal(false)}
@@ -177,13 +180,16 @@ export const Governance = () => {
 
       {showRemoveVoteModal &&
         nonNullable(selectedReferendum) &&
-        nonNullable(selectedReferendum.vote) &&
         nonNullable(network) &&
         referendumService.isOngoing(selectedReferendum) && (
-          <RemoveVoteModal
-            referendum={selectedReferendum}
-            voter={selectedReferendum.vote.voter}
-            vote={selectedReferendum.vote.vote}
+          <RemoveVotesModal
+            single
+            votes={selectedReferendum.voting.votes.map(({ voter, vote }) => ({
+              vote,
+              voter,
+              referendum: selectedReferendum.referendumId,
+              track: selectedReferendum.track,
+            }))}
             chain={network.chain}
             asset={network.asset}
             api={network.api}
@@ -194,6 +200,7 @@ export const Governance = () => {
       <CurrentDelegationModal />
       <DelegationModal />
       <DelegateDetails />
+      <Delegate />
 
       <UnlockModal />
     </div>

@@ -62,22 +62,21 @@ sample({
 });
 
 sample({
-  clock: [locksModel.$isLoading, votingModel.$isLoading, referendumModel.$isLoading],
+  clock: [locksModel.$isLoading, votingModel.$isLoading],
   source: {
     claimSchedule: $claimSchedule,
     isLoadingLock: locksModel.$isLoading,
     isLoadingVoting: votingModel.$isLoading,
-    isLoadingReferendum: referendumModel.$isLoading,
   },
   filter: ({ claimSchedule }) => nullable(claimSchedule),
-  fn: ({ isLoadingLock, isLoadingVoting, isLoadingReferendum }) => {
-    return isLoadingLock || isLoadingVoting || isLoadingReferendum;
+  fn: ({ isLoadingLock, isLoadingVoting }) => {
+    return isLoadingLock || isLoadingVoting;
   },
   target: $isLoading,
 });
 
 sample({
-  clock: [referendumModel.$referendums.updates, locksModel.$trackLocks.updates, votingModel.$voting.updates],
+  clock: [referendumModel.events.referendumsReceived, locksModel.$trackLocks.updates, votingModel.$voting.updates],
   source: {
     network: networkSelectorModel.$network,
     tracks: tracksModel.$tracks,

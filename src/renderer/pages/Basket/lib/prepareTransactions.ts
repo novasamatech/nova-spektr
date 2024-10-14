@@ -27,8 +27,10 @@ import { governanceService, votingService } from '@/entities/governance';
 import { networkUtils } from '@entities/network';
 import { eraService, useStakingData, validatorsService } from '@entities/staking';
 import { transactionService } from '@entities/transaction';
+import { type VoteConfirm } from '@/features/operations/OperationsConfirm';
 import { type FeeMap } from '@/features/operations/OperationsValidation';
 import { type UnlockFormData } from '@features/governance/types/structs';
+import { type RemoveVoteConfirm } from '@features/operations/OperationsConfirm/Referendum/RemoveVote/model/confirm-model';
 
 import { getCoreTx } from './utils';
 
@@ -60,6 +62,9 @@ export const prepareTransaction = {
   prepareUnlockTransaction,
   prepareDelegateTransaction,
   prepareRevokeDelegationTransaction,
+  prepareEditDelegationTransaction,
+  prepareVoteTransaction,
+  prepareRemoveVoteTransaction,
 };
 
 async function getTransactionData(
@@ -546,6 +551,45 @@ async function prepareDelegateTransaction({ transaction, wallets, chains, apis, 
   } satisfies DelegateInput;
 }
 
+async function prepareEditDelegationTransaction({ transaction, wallets, chains, apis, feeMap, balances }: DataParams) {
+  const { chainId, chain, account, fee } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
+  const asset = chain.assets[0];
+
+  const transferable = transferableAmount(
+    balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId.toString()),
+  );
+
+  const locks = await governanceService.getTrackLocks(apis[chainId], [transaction.coreTx.address]).then((data) => {
+    const lock = data[transaction.coreTx.address];
+    const totalLock = Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
+
+    return totalLock;
+  });
+
+  const coreTxs = transaction.coreTx.args.transactions?.filter(
+    (t: Transaction) => t.type === TransactionType.DELEGATE,
+  ) || [transaction.coreTx];
+
+  return {
+    id: transaction.id,
+    chain,
+    asset,
+    transferable,
+
+    shards: [account!],
+    balance: coreTxs[0].args.balance,
+    conviction: votingService.getConviction(coreTxs[0].args.conviction),
+    target: coreTxs[0].args.target,
+    tracks: coreTxs.map((t: Transaction) => t.args.track),
+    description: '',
+    locks,
+
+    fee,
+    totalFee: '0',
+    multisigDeposit: '0',
+  } satisfies DelegateInput;
+}
+
 type RevokeDelegationInput = {
   id?: number;
   chain: Chain;
@@ -602,9 +646,9 @@ async function prepareRevokeDelegationTransaction({
     transferable,
 
     account: account!,
-    balance: delegation ? delegation._.balance.toString() : coreTxs[0].args.balance,
-    conviction: delegation ? delegation._.conviction : votingService.getConviction(coreTxs[0].args.conviction),
-    target: delegation ? toAddress(delegation._.target, { prefix: chain.addressPrefix }) : coreTxs[0].args.target,
+    balance: delegation ? delegation.data.balance.toString() : coreTxs[0].args.balance,
+    conviction: delegation ? delegation.data.conviction : votingService.getConviction(coreTxs[0].args.conviction),
+    target: delegation ? toAddress(delegation.data.target, { prefix: chain.addressPrefix }) : coreTxs[0].args.target,
     tracks: coreTxs.map((t: Transaction) => t.args.track),
     description: '',
     locks,
@@ -613,4 +657,50 @@ async function prepareRevokeDelegationTransaction({
     totalFee: '0',
     multisigDeposit: '0',
   } satisfies RevokeDelegationInput;
+}
+
+async function prepareVoteTransaction({ transaction, wallets, chains, apis, feeMap }: DataParams) {
+  const coreTx = getCoreTx(transaction);
+
+  const { chainId, chain, account } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
+  const api = apis[chainId];
+
+  return {
+    id: transaction.id,
+    api,
+    chain,
+    asset: chain.assets[0],
+    account: account!,
+    existingVote: coreTx.args.vote,
+    wrappedTransactions: transactionService.getWrappedTransaction({
+      api,
+      addressPrefix: chain.addressPrefix,
+      transaction: transaction.coreTx,
+      txWrappers: transaction.txWrappers,
+    }),
+    description: '',
+  } satisfies VoteConfirm;
+}
+
+async function prepareRemoveVoteTransaction({ transaction, wallets, chains, apis, feeMap }: DataParams) {
+  const coreTxs = transaction.coreTx.args.transactions || [transaction.coreTx];
+  const { chainId, chain, account } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
+  const api = apis[chainId];
+
+  return {
+    id: transaction.id,
+    account: account!,
+    chain,
+    wrappedTransactions: transactionService.getWrappedTransaction({
+      api,
+      addressPrefix: chain.addressPrefix,
+      transaction: transaction.coreTx,
+      txWrappers: transaction.txWrappers,
+    }),
+
+    api,
+    asset: chain.assets[0],
+    votes: coreTxs.map((t: Transaction) => t.args),
+    description: '',
+  } satisfies RemoveVoteConfirm;
 }

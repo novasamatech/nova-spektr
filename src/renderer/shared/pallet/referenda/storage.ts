@@ -2,6 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 
 import { substrateRpcPool } from '@/shared/api/substrate-helpers';
 import { type ReferendumId } from '@/shared/core';
+import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
 import { getPalletName } from './helpers';
@@ -28,7 +29,7 @@ export const storage = {
    * The number of referenda being decided currently.
    */
   decidingCount(type: PalletType, api: ApiPromise) {
-    const schema = pjsSchema.vec(pjsSchema.tuppleMap(['track', trackId], ['decidingCount', pjsSchema.u32]));
+    const schema = pjsSchema.vec(pjsSchema.tupleMap(['track', trackId], ['decidingCount', pjsSchema.u32]));
 
     return substrateRpcPool.call(() => getQuery(type, api, 'decidingCount').entries()).then(schema.parse);
   },
@@ -36,18 +37,41 @@ export const storage = {
   /**
    * Information concerning any given referendum.
    */
-  referendumInfoFor(type: PalletType, api: ApiPromise, ids?: ReferendumId[]) {
+  async referendumInfoFor(type: PalletType, api: ApiPromise, ids?: ReferendumId[]) {
     const schema = pjsSchema.vec(
-      pjsSchema.tuppleMap(
-        ['id', pjsSchema.storageKey(pjsSchema.u32).transform(keys => keys[0])],
+      pjsSchema.tupleMap(
+        ['id', pjsSchema.storageKey(referendumId).transform(keys => keys[0])],
         ['info', pjsSchema.optional(referendaReferendumInfoConvictionVotingTally)],
       ),
     );
 
+    const schemaWithIds = pjsSchema
+      .vec(pjsSchema.optional(referendaReferendumInfoConvictionVotingTally))
+      .transform(items => items.map((item, index) => ({ info: item, id: ids![index] })));
+
     if (ids) {
-      return substrateRpcPool.call(() => getQuery(type, api, 'referendumInfoFor').entries(ids)).then(schema.parse);
+      return substrateRpcPool.call(() => getQuery(type, api, 'referendumInfoFor').multi(ids)).then(schemaWithIds.parse);
     } else {
       return substrateRpcPool.call(() => getQuery(type, api, 'referendumInfoFor').entries()).then(schema.parse);
+    }
+  },
+
+  /**
+   * Information concerning any given referendum.
+   */
+  async *referendumInfoForPaged(type: PalletType, api: ApiPromise, pageSize: number) {
+    const schema = pjsSchema.vec(
+      pjsSchema.tupleMap(
+        ['id', pjsSchema.storageKey(referendumId).transform(keys => keys[0])],
+        ['info', pjsSchema.optional(referendaReferendumInfoConvictionVotingTally)],
+      ),
+    );
+
+    for await (const result of polkadotjsHelpers.createPagedRequest({
+      query: getQuery(type, api, 'referendumInfoFor'),
+      pageSize,
+    })) {
+      yield schema.parse(result);
     }
   },
 
@@ -66,9 +90,7 @@ export const storage = {
    * `TrackInfo::max_deciding`.
    */
   trackQueue(type: PalletType, api: ApiPromise, track: TrackId) {
-    const schema = pjsSchema.vec(
-      pjsSchema.tuppleMap(['approval', pjsSchema.blockHeight], ['referendum', referendumId]),
-    );
+    const schema = pjsSchema.vec(pjsSchema.tupleMap(['approval', pjsSchema.blockHeight], ['referendum', referendumId]));
 
     return substrateRpcPool.call(() => getQuery(type, api, 'trackQueue')(track)).then(schema.parse);
   },

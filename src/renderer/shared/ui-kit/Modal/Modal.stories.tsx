@@ -12,18 +12,6 @@ const meta: Meta<typeof Modal> = {
   parameters: {
     layout: 'centered',
   },
-  decorators: [
-    (Story, { args }) => {
-      const [open, onToggle] = useState(false);
-
-      return (
-        <>
-          <Button onClick={() => onToggle((x) => !x)}>Toggle Modal</Button>
-          <Story args={{ ...args, open, onToggle }} />
-        </>
-      );
-    },
-  ],
 };
 
 export default meta;
@@ -47,6 +35,18 @@ export const Default: Story = {
       </Modal>
     );
   },
+  decorators: [
+    (Story, { args }) => {
+      const [isOpen, onToggle] = useState(false);
+
+      return (
+        <>
+          <Button onClick={() => onToggle((x) => !x)}>Toggle Modal</Button>
+          <Story args={{ ...args, isOpen, onToggle }} />
+        </>
+      );
+    },
+  ],
 };
 
 export const CloseButton: Story = {
@@ -58,6 +58,18 @@ export const CloseButton: Story = {
       </Modal>
     );
   },
+  decorators: [
+    (Story, { args }) => {
+      const [isOpen, onToggle] = useState(false);
+
+      return (
+        <>
+          <Button onClick={() => onToggle((x) => !x)}>Toggle Modal</Button>
+          <Story args={{ ...args, isOpen, onToggle }} />
+        </>
+      );
+    },
+  ],
 };
 
 export const WithoutHeader: Story = {
@@ -68,6 +80,18 @@ export const WithoutHeader: Story = {
       </Modal>
     );
   },
+  decorators: [
+    (Story, { args }) => {
+      const [isOpen, onToggle] = useState(false);
+
+      return (
+        <>
+          <Button onClick={() => onToggle((x) => !x)}>Toggle Modal</Button>
+          <Story args={{ ...args, isOpen, onToggle }} />
+        </>
+      );
+    },
+  ],
 };
 
 export const Footer: Story = {
@@ -77,11 +101,23 @@ export const Footer: Story = {
         <Modal.Title close>Hello! I am a modal</Modal.Title>
         <Modal.Content>{exampleBox}</Modal.Content>
         <Modal.Footer>
-          <Button onClick={() => args.onToggle(false)}>Close</Button>
+          <Button onClick={() => args.onToggle?.(false)}>Close</Button>
         </Modal.Footer>
       </Modal>
     );
   },
+  decorators: [
+    (Story, { args }) => {
+      const [isOpen, onToggle] = useState(false);
+
+      return (
+        <>
+          <Button onClick={() => onToggle((x) => !x)}>Toggle Modal</Button>
+          <Story args={{ ...args, isOpen, onToggle }} />
+        </>
+      );
+    },
+  ],
 };
 
 export const ScrollableContent: Story = {
@@ -95,10 +131,36 @@ export const ScrollableContent: Story = {
           </Box>
         </Modal.Content>
         <Modal.Footer>
-          <Button variant="text" onClick={() => args.onToggle(false)}>
+          <Button variant="text" onClick={() => args.onToggle?.(false)}>
             Done
           </Button>
         </Modal.Footer>
+      </Modal>
+    );
+  },
+  decorators: [
+    (Story, { args }) => {
+      const [isOpen, onToggle] = useState(false);
+
+      return (
+        <>
+          <Button onClick={() => onToggle((x) => !x)}>Toggle Modal</Button>
+          <Story args={{ ...args, isOpen, onToggle }} />
+        </>
+      );
+    },
+  ],
+};
+
+export const Trigger: Story = {
+  render(args) {
+    return (
+      <Modal {...args}>
+        <Modal.Trigger>
+          <Button>Toggle modal with trigger</Button>
+        </Modal.Trigger>
+        <Modal.Title close>Hello! I am a modal</Modal.Title>
+        <Modal.Content>{exampleBox}</Modal.Content>
       </Modal>
     );
   },
@@ -116,6 +178,18 @@ export const Small: Story = {
       </Modal>
     );
   },
+  decorators: [
+    (Story, { args }) => {
+      const [isOpen, onToggle] = useState(false);
+
+      return (
+        <>
+          <Button onClick={() => onToggle((x) => !x)}>Toggle Modal</Button>
+          <Story args={{ ...args, isOpen, onToggle }} />
+        </>
+      );
+    },
+  ],
 };
 
 export const Medium: Story = {
@@ -130,6 +204,18 @@ export const Medium: Story = {
       </Modal>
     );
   },
+  decorators: [
+    (Story, { args }) => {
+      const [isOpen, onToggle] = useState(false);
+
+      return (
+        <>
+          <Button onClick={() => onToggle((x) => !x)}>Toggle Modal</Button>
+          <Story args={{ ...args, isOpen, onToggle }} />
+        </>
+      );
+    },
+  ],
 };
 
 export const Large: Story = {
@@ -144,6 +230,18 @@ export const Large: Story = {
       </Modal>
     );
   },
+  decorators: [
+    (Story, { args }) => {
+      const [isOpen, onToggle] = useState(false);
+
+      return (
+        <>
+          <Button onClick={() => onToggle((x) => !x)}>Toggle Modal</Button>
+          <Story args={{ ...args, isOpen, onToggle }} />
+        </>
+      );
+    },
+  ],
 };
 
 export const Full: Story = {
@@ -158,6 +256,18 @@ export const Full: Story = {
       </Modal>
     );
   },
+  decorators: [
+    (Story, { args }) => {
+      const [isOpen, onToggle] = useState(false);
+
+      return (
+        <>
+          <Button onClick={() => onToggle((x) => !x)}>Toggle Modal</Button>
+          <Story args={{ ...args, isOpen, onToggle }} />
+        </>
+      );
+    },
+  ],
 };
 
 export const Adaptive: Story = {
@@ -172,4 +282,16 @@ export const Adaptive: Story = {
       </Modal>
     );
   },
+  decorators: [
+    (Story, { args }) => {
+      const [isOpen, onToggle] = useState(false);
+
+      return (
+        <>
+          <Button onClick={() => onToggle((x) => !x)}>Toggle Modal</Button>
+          <Story args={{ ...args, isOpen, onToggle }} />
+        </>
+      );
+    },
+  ],
 };

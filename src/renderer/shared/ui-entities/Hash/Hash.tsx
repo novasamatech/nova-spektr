@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 import { Truncate } from './Truncate';
 
 type Props = {
@@ -6,10 +8,10 @@ type Props = {
   testId?: string;
 };
 
-export const Hash = ({ value, variant, testId = 'Hash' }: Props) => {
+export const Hash = memo(({ value, variant, testId = 'Hash' }: Props) => {
   return (
-    <span className="w-full text-inherit transition-colors" data-testid={testId}>
+    <span className="w-full font-mono text-inherit transition-colors" data-testid={testId}>
       {variant === 'truncate' ? <Truncate text={value} /> : <span className="break-all">{value}</span>}
     </span>
   );
-};
+});

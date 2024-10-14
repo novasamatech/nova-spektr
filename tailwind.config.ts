@@ -8,7 +8,7 @@ import fontSizes from './tw-config-consts/font-sizes';
 
 const tailwindConfig: Config = {
   mode: 'jit',
-  content: ['./src/renderer/index.html', './src/renderer/**/*.{js,ts,tsx}'],
+  content: ['./src/renderer/**/*.{html,js,ts,tsx}'],
   darkMode: 'class',
   theme: {
     extend: {
@@ -16,6 +16,7 @@ const tailwindConfig: Config = {
         90: '22.5rem',
         modal: '27.5rem',
         'modal-sm': '23rem',
+        'modal-lg': '49rem',
         'modal-xl': '59.625rem',
       },
       height: {

@@ -1,3 +1,4 @@
+import { type ApiPromise } from '@polkadot/api';
 import { memo } from 'react';
 
 import { useI18n } from '@app/providers';
@@ -12,6 +13,7 @@ type Props = {
   isLoading: boolean;
   isTitlesLoading: boolean;
   mixLoadingWithData: boolean;
+  api: ApiPromise;
   onSelect: (value: AggregatedReferendum) => void;
 };
 
@@ -23,8 +25,8 @@ const createPlaceholders = (size: number) => {
   ));
 };
 
-export const OngoingReferendums = memo<Props>(
-  ({ referendums, isLoading, isTitlesLoading, mixLoadingWithData, onSelect }) => {
+export const OngoingReferendums = memo(
+  ({ referendums, isLoading, isTitlesLoading, mixLoadingWithData, api, onSelect }: Props) => {
     const { t } = useI18n();
 
     const placeholdersCount = isLoading ? Math.min(referendums.length || 4, 20) : Math.max(1, 4 - referendums.length);
@@ -45,7 +47,12 @@ export const OngoingReferendums = memo<Props>(
           {(!isLoading || mixLoadingWithData) &&
             referendums.map((referendum) => (
               <li key={referendum.referendumId}>
-                <ReferendumItem referendum={referendum} isTitlesLoading={isTitlesLoading} onSelect={onSelect} />
+                <ReferendumItem
+                  api={api}
+                  referendum={referendum}
+                  isTitlesLoading={isTitlesLoading}
+                  onSelect={onSelect}
+                />
               </li>
             ))}
           {(isLoading || mixLoadingWithData) && createPlaceholders(placeholdersCount)}
