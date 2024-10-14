@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
+import { type TFunction } from 'i18next';
 import { useState } from 'react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
-import { type TFunction } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
 import { Button, FootnoteText, Icon, Input, InputFile, InputHint, Tabs } from '@shared/ui';
