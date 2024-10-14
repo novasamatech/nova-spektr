@@ -26,7 +26,7 @@ export const MembersCard = memo<Props>(({ onClick }) => {
 
   return (
     <MembersModal>
-      <Surface disabled={pending || isNetworkDisabled} onClick={onClick}>
+      <Surface as="button" disabled={pending || isNetworkDisabled} onClick={onClick}>
         <Box direction="row" verticalAlign="center" horizontalAlign="space-between" padding={[6, 4]}>
           <Box gap={2}>
             <Box direction="row" gap={1}>
