@@ -9,6 +9,7 @@ type Props = {
   className?: string;
   type?: 'button' | 'submit';
   icon: IconNames;
+  fullWidth?: boolean;
   pallet?: 'positive' | 'secondary' | 'negative';
   disabled?: boolean;
   tabIndex?: number;
@@ -16,7 +17,10 @@ type Props = {
 };
 
 export const ButtonCard = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
-  ({ pallet = 'secondary', type = 'button', icon, className, disabled, tabIndex, children, onClick = noop }, ref) => {
+  (
+    { pallet = 'secondary', type = 'button', fullWidth, icon, className, disabled, tabIndex, children, onClick = noop },
+    ref,
+  ) => {
     const iconNode = (
       <Icon
         name={icon}
@@ -46,6 +50,7 @@ export const ButtonCard = forwardRef<HTMLButtonElement, PropsWithChildren<Props>
               pallet === 'negative',
             'bg-secondary-button-background text-text-primary hover:bg-secondary-button-background-hover active:bg-secondary-button-background-active':
               pallet === 'secondary',
+            'w-full': fullWidth,
           },
           className,
         )}

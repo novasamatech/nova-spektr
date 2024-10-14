@@ -97,7 +97,7 @@ const Trigger = ({ children }: PropsWithChildren) => {
 };
 
 const Footer = ({ children }: PropsWithChildren) => {
-  return <footer className="flex h-fit items-end justify-end px-5 pb-4 pt-3">{children}</footer>;
+  return <footer className="flex h-fit items-end justify-end gap-2 px-5 pb-4 pt-3">{children}</footer>;
 };
 
 export const Modal = Object.assign(Root, {
