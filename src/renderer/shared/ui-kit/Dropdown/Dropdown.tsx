@@ -164,16 +164,7 @@ const CheckboxItem = ({ checked, onChange, onSelect, children }: CheckboxItemPro
   );
 };
 
-type DropdownShape = typeof Root & {
-  Trigger: typeof Trigger;
-  Content: typeof Content;
-  Item: typeof Item;
-  CheckboxItem: typeof CheckboxItem;
-  Group: typeof Group;
-  Separator: typeof Separator;
-};
-
-const Dropdown: DropdownShape = Object.assign(Root, {
+const Dropdown = Object.assign(Root, {
   Trigger,
   Content,
   Item,

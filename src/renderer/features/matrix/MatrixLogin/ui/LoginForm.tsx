@@ -255,7 +255,9 @@ export const LoginForm = ({ redirectStep }: Props) => {
       <div className="mt-6 flex flex-col gap-y-6">
         {ssoFlows.length > 0 && (
           <div className="flex flex-col gap-y-6">
-            <Separator text="or sign in" />
+            {/* TODO fix */}
+            {/* eslint-disable-next-line i18next/no-literal-string */}
+            <Separator>or sign in</Separator>
 
             <div className="flex justify-between gap-x-4">
               {ssoFlows.map(({ id, name, brand }) => (
