@@ -2,38 +2,11 @@ import { BN_MILLION } from '@polkadot/util';
 import { type Meta, type StoryObj } from '@storybook/react';
 import { fn } from '@storybook/test';
 
-import { AccountType, type Asset, type BaseAccount, type Chain, ChainType, CryptoType } from '@/shared/core';
-import { TEST_ACCOUNTS } from '../../lib/utils';
+import { createBaseAccount, createWcAccount, dotAsset, polkadotChain } from '@/shared/mocks';
 
 import { AccountSelectModal } from './AccountSelectModal';
 
-const testAsset: Asset = {
-  assetId: 0,
-  symbol: 'DOT',
-  precision: 10,
-  icon: 'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg',
-  name: 'Polkadot',
-};
-
-const testChain: Chain = {
-  name: 'Polkadot',
-  specName: 'polkadot',
-  addressPrefix: 0,
-  chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-  icon: 'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polkadot.svg',
-  nodes: [],
-  assets: [testAsset],
-};
-
-const accounts = TEST_ACCOUNTS.map<BaseAccount>((accountId, index) => ({
-  id: index,
-  accountId,
-  chainType: ChainType.SUBSTRATE,
-  cryptoType: CryptoType.SR25519,
-  name: `Test Account ${index + 1}`,
-  type: AccountType.BASE,
-  walletId: 1,
-}));
+const accounts = [createBaseAccount(1), createWcAccount(2), createBaseAccount(3), createBaseAccount(4)];
 
 const meta: Meta<typeof AccountSelectModal> = {
   title: 'Design System/entities/AccountSelectModal',
@@ -41,8 +14,8 @@ const meta: Meta<typeof AccountSelectModal> = {
   args: {
     isOpen: true,
     title: 'Select test account',
-    chain: testChain,
-    asset: testAsset,
+    chain: polkadotChain,
+    asset: dotAsset,
     onToggle: fn(),
     onSelect: fn(),
   },
