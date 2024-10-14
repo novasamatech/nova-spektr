@@ -1,13 +1,13 @@
 import { useGate, useStoreMap, useUnit } from 'effector-react';
-import { memo } from 'react';
+import { memo, useState } from 'react';
 
-import { nullable } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { ButtonCard, FootnoteText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { collectiveDomain } from '@/domains/collectives';
 import { votingFeatureStatus } from '../model/status';
-import { votingModel } from '../model/voting';
+import { votingStatusModel } from '../model/votingStatus';
 
 import { VotingModal } from './VotingModal';
 
@@ -16,14 +16,16 @@ type Props = {
 };
 
 export const VotingButtons = memo(({ referendumId }: Props) => {
+  const [decision, setDecision] = useState<'aye' | 'nay' | null>(null);
+
   useGate(votingFeatureStatus.gate);
-  useGate(votingModel.gate, { referendumId });
+  useGate(votingStatusModel.gate, { referendumId });
 
   const chain = useStoreMap(votingFeatureStatus.input, input => input?.chain ?? null);
 
-  const referendum = useUnit(votingModel.$referendum);
-  const canVote = useUnit(votingModel.$canVote);
-  const hasRequiredRank = useUnit(votingModel.$hasRequiredRank);
+  const referendum = useUnit(votingStatusModel.$referendum);
+  const canVote = useUnit(votingStatusModel.$canVote);
+  const hasRequiredRank = useUnit(votingStatusModel.$hasRequiredRank);
 
   if (nullable(chain) || nullable(referendum) || collectiveDomain.referendumService.isCompleted(referendum)) {
     return null;
@@ -35,18 +37,29 @@ export const VotingButtons = memo(({ referendumId }: Props) => {
   return (
     <Box gap={4}>
       <Box direction="row" gap={4}>
-        <VotingModal vote="aye">
-          {/* eslint-disable-next-line i18next/no-literal-string */}
-          <ButtonCard pallet="positive" icon="thumbUp" disabled={buttonDiabled} fullWidth>
-            Aye
-          </ButtonCard>
-        </VotingModal>
-        <VotingModal vote="nay">
-          {/* eslint-disable-next-line i18next/no-literal-string */}
-          <ButtonCard pallet="negative" icon="thumbDown" disabled={buttonDiabled} fullWidth>
-            Nay
-          </ButtonCard>
-        </VotingModal>
+        <VotingModal isOpen={nonNullable(decision)} vote={decision} onClose={() => setDecision(null)} />
+
+        {/* eslint-disable-next-line i18next/no-literal-string */}
+        <ButtonCard
+          pallet="positive"
+          icon="thumbUp"
+          disabled={buttonDiabled}
+          fullWidth
+          onClick={() => setDecision('aye')}
+        >
+          Aye
+        </ButtonCard>
+
+        {/* eslint-disable-next-line i18next/no-literal-string */}
+        <ButtonCard
+          pallet="negative"
+          icon="thumbDown"
+          disabled={buttonDiabled}
+          fullWidth
+          onClick={() => setDecision('nay')}
+        >
+          Nay
+        </ButtonCard>
       </Box>
 
       {canVote && !hasRequiredRank ? (

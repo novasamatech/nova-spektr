@@ -82,23 +82,24 @@ type ItemProps = PropsWithChildren<{
 const Item = memo(({ id, children }: ItemProps) => {
   const { item, direction } = useContext(Context);
 
+  const offset = 25;
   const transitions = useTransition(id === item, {
     initial: { opacity: 1, transform: 'translateX(0%)' },
     from: {
-      opacity: 0.95,
-      transform: `translateX(${direction > 0 ? '100' : '-100'}%)`,
+      opacity: 0,
+      transform: `translateX(${direction > 0 ? offset : offset * -1}%)`,
     },
     enter: { opacity: 1, transform: 'translateX(0%)' },
     leave: {
-      opacity: 0.95,
+      opacity: 0,
       top: 0,
       left: 0,
-      transform: `translateX(${direction > 0 ? '-100' : '100'}%)`,
+      transform: `translateX(${direction > 0 ? offset * -1 : offset}%)`,
       position: 'absolute',
     },
     config: {
-      duration: 300,
-      easing: easings.easeOutCubic,
+      duration: 200,
+      easing: easings.easeInOutSine,
     },
   });
 
@@ -124,7 +125,7 @@ const AnimatedResizableBlock = ({ children }: PropsWithChildren) => {
   });
 
   return (
-    <section className="relative w-full overflow-hidden transition-all duration-300 ease-in-out" style={{ height }}>
+    <section className="relative w-full overflow-hidden transition-all duration-100 ease-in-out" style={{ height }}>
       <div ref={setRef}>{children}</div>
     </section>
   );

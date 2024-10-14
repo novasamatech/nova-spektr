@@ -1,7 +1,8 @@
 import { type ApiPromise } from '@polkadot/api';
+import { createStore } from 'effector';
 
-import { type ChainId } from '@/shared/core';
-import { createDataSubscription, createPagesHandler } from '@/shared/effector';
+import { type ChainId, type ReferendumId } from '@/shared/core';
+import { createDataSource, createDataSubscription, createPagesHandler } from '@/shared/effector';
 import { merge, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 import { referendaPallet } from '@/shared/pallet/referenda';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
@@ -16,15 +17,14 @@ type ReferendumSubscriptionParams = {
   chainId: ChainId;
 };
 
-const {
-  $: $list,
-  pending,
-  subscribe,
-  unsubscribe,
-  received,
-  fulfilled,
-} = createDataSubscription<CollectivesStruct<Referendum[]>, ReferendumSubscriptionParams, Referendum[]>({
-  initial: {},
+const $list = createStore<CollectivesStruct<Referendum[]>>({});
+
+const { pending, subscribe, unsubscribe, received, fulfilled } = createDataSubscription<
+  CollectivesStruct<Referendum[]>,
+  ReferendumSubscriptionParams,
+  Referendum[]
+>({
+  initial: $list,
   fn: ({ api, palletType }, callback) => {
     let currectAbortController = new AbortController();
 
@@ -72,9 +72,42 @@ const {
   },
 });
 
+type ReferendumRequestParams = {
+  api: ApiPromise;
+  palletType: CollectivePalletsType;
+  chainId: ChainId;
+  referendums: ReferendumId[];
+};
+
+const { request } = createDataSource<CollectivesStruct<Referendum[]>, ReferendumRequestParams, Referendum[]>({
+  initial: $list,
+  async fn({ api, palletType, referendums }) {
+    const response = await referendaPallet.storage.referendumInfoFor(palletType, api, referendums);
+    const value: Referendum[] = [];
+    for (const { id, info } of response) {
+      if (!info) continue;
+      value.push(mapReferendum(id, info));
+    }
+
+    return value;
+  },
+  map(store, { params, result }) {
+    const currentStore = pickNestedValue(store, params.palletType, params.chainId) ?? [];
+    const updatedField = merge(
+      currentStore,
+      result,
+      x => x.id,
+      (a, b) => b.id - a.id,
+    );
+
+    return setNestedValue(store, params.palletType, params.chainId, updatedField);
+  },
+});
+
 export const referendumDomainModel = {
   $list,
   pending,
+  request,
   subscribe,
   unsubscribe,
   received,

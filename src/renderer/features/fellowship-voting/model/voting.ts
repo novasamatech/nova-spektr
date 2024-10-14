@@ -1,87 +1,88 @@
-import { combine, restore, sample } from 'effector';
+import { combine, createEvent, sample } from 'effector';
 import { createGate } from 'effector-react';
+import { reshape } from 'patronum';
 
-import { attachToFeatureInput } from '@/shared/effector';
-import { nonNullable, nullable, toKeysRecord } from '@/shared/lib/utils';
-import { type ReferendumId } from '@/shared/pallet/referenda';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { createTxStore } from '@/shared/transactions';
+import { nonNullable, nullable } from '@shared/lib/utils';
 import { collectiveDomain } from '@/domains/collectives';
+import { type SigningPayload, signModel } from '@features/operations/OperationSign';
 
-import { fellowshipModel } from './fellowship';
 import { votingFeatureStatus } from './status';
+import { votingStatusModel } from './votingStatus';
 
-const gate = createGate<{ referendumId: ReferendumId | null }>({ defaultState: { referendumId: null } });
+const gate = createGate<{ vote: 'aye' | 'nay' | null }>({ defaultState: { vote: null } });
 
-const $referendumId = gate.state.map(({ referendumId }) => referendumId);
-const $referendums = fellowshipModel.$store.map(store => store?.referendums ?? []);
-const $members = fellowshipModel.$store.map(x => x?.members ?? []);
-const $maxRank = fellowshipModel.$store.map(x => x?.maxRank ?? 0);
-const $voting = fellowshipModel.$store.map(x => x?.voting ?? []);
+const $vote = gate.state.map(({ vote }) => vote);
 
-const $referendum = combine($referendums, $referendumId, (referendums, referendumId) => {
-  return referendums.find(referendum => referendum.id === referendumId) ?? null;
+const { $api, $activeWallet, $chain, $wallets } = reshape({
+  source: votingFeatureStatus.input,
+  shape: {
+    $api: x => x?.api ?? null,
+    $activeWallet: x => x?.wallet ?? null,
+    $wallets: x => x?.wallets ?? [],
+    $chain: x => x?.chain ?? null,
+  },
 });
 
-const $currectMember = combine(votingFeatureStatus.input, $members, (featureInput, members) => {
-  if (nullable(featureInput)) return null;
+const $coreTx = combine(
+  {
+    input: votingFeatureStatus.input,
+    account: votingStatusModel.$votingAccount,
+    referendum: votingStatusModel.$referendum,
+    vote: $vote,
+  },
+  ({ input, referendum, account, vote }) => {
+    if (nullable(input) || nullable(referendum) || nullable(account) || nullable(vote)) return null;
 
-  // return collectiveDomain.members.service.findMachingMember(featureInput.wallet, members, featureInput.chain);
-  return members[0] ?? null;
-});
-
-const $votingAccount = combine(votingFeatureStatus.input, $currectMember, (input, member) => {
-  if (nullable(member) || nullable(input)) return null;
-
-  // return collectiveDomain.members.service.findMachingAccount(input.wallet, member);
-  return input.wallet.accounts[0] ?? null;
-});
-
-const $hasRequiredRank = combine($currectMember, $referendum, $maxRank, (member, referendum, maxRank) => {
-  if (nullable(member) || nullable(referendum) || collectiveDomain.referendumService.isCompleted(referendum)) {
-    return false;
-  }
-
-  return collectiveDomain.tracksService.rankSatisfiesVotingThreshold(member.rank, maxRank, referendum.track);
-});
-
-const $canVote = $currectMember.map(nonNullable);
-
-const $walletVoting = restore(
-  attachToFeatureInput(votingFeatureStatus, $voting).map(({ input: { wallet }, data: voting }) => {
-    const accounts = toKeysRecord(wallet.accounts.map(a => a.accountId));
-
-    return voting.filter(voting => voting.accountId in accounts);
-  }),
-  [],
+    return collectiveDomain.votingService.createVoteTransaction({
+      pallet: 'fellowship',
+      account,
+      chain: input.chain,
+      aye: vote === 'aye',
+      referendumId: referendum.id,
+    });
+  },
 );
 
-const $referendumVoting = combine($walletVoting, $referendumId, (voting, referendumId) => {
-  return voting.find(vote => vote.referendumId === referendumId) ?? null;
+const { $fee, $wrappedTx, $txWrappers } = createTxStore({
+  $api,
+  $activeWallet,
+  $wallets,
+  $chain,
+  $coreTx,
+  $account: votingStatusModel.$votingAccount,
+});
+
+// Signing
+
+const sign = createEvent();
+const signPayloadCreated = createEvent<SigningPayload | null>();
+
+sample({
+  clock: sign,
+  source: { transactions: $wrappedTx, account: votingStatusModel.$votingAccount, chain: $chain },
+  fn: ({ transactions, account, chain }) => {
+    if (nullable(transactions) || nullable(account) || nullable(chain)) return null;
+
+    return {
+      chain,
+      account,
+      transaction: transactions.wrappedTx,
+    };
+  },
+  target: signPayloadCreated,
 });
 
 sample({
-  clock: attachToFeatureInput(votingFeatureStatus, $referendums),
-
-  fn: ({ input: { palletType, api, chainId, wallet }, data: referendums }) => {
-    return {
-      palletType,
-      api,
-      chainId,
-      referendums: referendums.map(r => r.id),
-      // TODO use branded account id
-      accounts: wallet.accounts.map(a => a.accountId as AccountId),
-    };
-  },
-
-  target: collectiveDomain.voting.subscribe,
+  clock: signPayloadCreated.filter({ fn: nonNullable }),
+  fn: payload => ({ signingPayloads: [payload] }),
+  target: signModel.events.formInitiated,
 });
 
 export const votingModel = {
-  $referendumVoting,
-  $hasRequiredRank,
-  $votingAccount,
-  $currectMember,
-  $canVote,
-  $referendum,
   gate,
+  $fee,
+  $wrappedTx,
+  $txWrappers,
+  sign,
 };

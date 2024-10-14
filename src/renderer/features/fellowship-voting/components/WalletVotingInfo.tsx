@@ -4,16 +4,16 @@ import { memo } from 'react';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { Icon } from '@/shared/ui';
 import { Box, Surface } from '@/shared/ui-kit';
-import { votingModel } from '../model/voting';
+import { votingStatusModel } from '../model/votingStatus';
 
 type Props = {
   referendumId: ReferendumId;
 };
 
 export const WalletVotingInfo = memo(({ referendumId }: Props) => {
-  useGate(votingModel.gate, { referendumId });
+  useGate(votingStatusModel.gate, { referendumId });
 
-  const voting = useUnit(votingModel.$referendumVoting);
+  const voting = useUnit(votingStatusModel.$referendumVoting);
 
   if (!voting) {
     return null;

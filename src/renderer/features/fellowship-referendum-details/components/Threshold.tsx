@@ -24,7 +24,7 @@ export const Threshold = memo(({ referendum, pending }: Props) => {
 
   return (
     <Skeleton active={pending && nullable(referendum)} fullWidth>
-      <DetailRow label="Threshold">{threshold}%</DetailRow>;
+      <DetailRow label="Threshold">{threshold}%</DetailRow>
     </Skeleton>
   );
 });

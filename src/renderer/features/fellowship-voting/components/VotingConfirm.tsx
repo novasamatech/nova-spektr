@@ -1,8 +1,11 @@
+import { type BN } from '@polkadot/util';
+
 import { useI18n } from '@/app/providers';
-import { type Account, type Chain, type Wallet } from '@/shared/core';
+import { type Account, type Asset, type Chain, type Wallet } from '@/shared/core';
 import { DetailRow, Icon, Separator } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
+import { formatAsset } from '@shared/lib/utils';
 import { collectiveDomain } from '@/domains/collectives';
 
 type Props = {
@@ -10,10 +13,12 @@ type Props = {
   rank: number;
   wallets: Wallet[];
   chain: Chain;
-  vote: string;
+  asset: Asset;
+  vote: 'aye' | 'nay';
+  fee: BN;
 };
 
-export const VoteConfirm = ({ account, wallets, chain, vote, rank }: Props) => {
+export const VotingConfirm = ({ fee, account, wallets, chain, asset, vote, rank }: Props) => {
   const { t } = useI18n();
 
   const votes = collectiveDomain.tracksService.getGeometricVoteWeight(rank);
@@ -34,7 +39,7 @@ export const VoteConfirm = ({ account, wallets, chain, vote, rank }: Props) => {
         <DetailRow label="Vote">{vote}</DetailRow>
         <Separator className="border-filter-border" />
         {/* eslint-disable-next-line i18next/no-literal-string */}
-        <DetailRow label="Fee">Bibip</DetailRow>
+        <DetailRow label="Fee">{formatAsset(fee, asset)}</DetailRow>
       </TransactionDetails>
     </Box>
   );

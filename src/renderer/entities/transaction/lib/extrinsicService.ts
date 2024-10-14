@@ -445,6 +445,36 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
+
+  // TODO implement
+  [TransactionType.FELLOWSHIP_VOTE]: (transaction, info, options) => {
+    return defineMethod(
+      {
+        method: {
+          args: transaction.args,
+          name: 'vote',
+          pallet: 'fellowshipCollective',
+        },
+        ...info,
+      },
+      options,
+    );
+  },
+
+  // TODO implement
+  [TransactionType.AMBASSADOR_VOTE]: (transaction, info, options) => {
+    return defineMethod(
+      {
+        method: {
+          args: transaction.args,
+          name: 'vote',
+          pallet: 'ambassadorCollective',
+        },
+        ...info,
+      },
+      options,
+    );
+  },
 };
 
 export const getExtrinsic: Record<
@@ -552,6 +582,12 @@ export const getExtrinsic: Record<
   },
   [TransactionType.UNDELEGATE]: ({ track }, api) => {
     return api.tx.convictionVoting.undelegate(track);
+  },
+  [TransactionType.FELLOWSHIP_VOTE]: ({ pool, aye }, api) => {
+    return api.tx.fellowshipCollective.vote(pool, aye);
+  },
+  [TransactionType.AMBASSADOR_VOTE]: ({ pool, aye }, api) => {
+    return api.tx.ambassadorCollective.vote(pool, aye);
   },
 };
 
