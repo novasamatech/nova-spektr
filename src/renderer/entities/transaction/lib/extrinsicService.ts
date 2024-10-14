@@ -446,7 +446,6 @@ export const getUnsignedTransaction: Record<
     );
   },
 
-  // TODO implement
   [TransactionType.FELLOWSHIP_VOTE]: (transaction, info, options) => {
     return defineMethod(
       {
@@ -461,7 +460,6 @@ export const getUnsignedTransaction: Record<
     );
   },
 
-  // TODO implement
   [TransactionType.AMBASSADOR_VOTE]: (transaction, info, options) => {
     return defineMethod(
       {

@@ -63,6 +63,8 @@ export const getOperationTitle = (transaction: BasketTransaction, chain: Chain):
     [TransactionType.VOTE]: 'operations.modalTitles.vote',
     [TransactionType.REVOTE]: 'operations.modalTitles.revote',
     [TransactionType.REMOVE_VOTE]: 'operations.modalTitles.removeVote',
+    [TransactionType.FELLOWSHIP_VOTE]: 'operations.modalTitles.vote',
+    [TransactionType.AMBASSADOR_VOTE]: 'operations.modalTitles.vote',
   };
 
   // @ts-expect-error TODO fix not all types used

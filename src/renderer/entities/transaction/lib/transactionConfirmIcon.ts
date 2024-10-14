@@ -42,6 +42,10 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.DELEGATE]: 'addDelegationConfirm',
   [TransactionType.UNDELEGATE]: 'revokeDelegationConfirm',
   [TransactionType.EDIT_DELEGATION]: 'editDelegationConfirm',
+
+  // Collectives
+  [TransactionType.FELLOWSHIP_VOTE]: 'voteMst',
+  [TransactionType.AMBASSADOR_VOTE]: 'voteMst',
 };
 
 export const getIconName = (transaction?: Transaction | DecodedTransaction): IconNames => {
