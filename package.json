@@ -237,5 +237,7 @@
     "webpack-merge": "6.0.1",
     "whatwg-fetch": "3.6.20"
   },
-  "sideEffects": ["*.css"]
+  "sideEffects": [
+    "*.css"
+  ]
 }

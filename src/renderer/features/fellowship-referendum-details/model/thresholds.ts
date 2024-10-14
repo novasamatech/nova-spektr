@@ -21,7 +21,7 @@ const $thresholds = combine(
     const result: Thresholds = {};
 
     for (const referendum of referendums) {
-      if (collectiveDomain.referendum.service.isCompleted(referendum)) continue;
+      if (collectiveDomain.referendumService.isCompleted(referendum)) continue;
 
       const track = tracks.find(t => t.id === referendum.track);
       if (!track) {
@@ -29,13 +29,13 @@ const $thresholds = combine(
       }
 
       result[referendum.id] = {
-        support: collectiveDomain.tracks.service.supportThreshold({
+        support: collectiveDomain.tracksService.supportThreshold({
           track,
           maxRank,
           members,
           tally: referendum.tally,
         }),
-        approval: collectiveDomain.tracks.service.approvalThreshold({
+        approval: collectiveDomain.tracksService.approvalThreshold({
           track,
           maxRank,
           tally: referendum.tally,

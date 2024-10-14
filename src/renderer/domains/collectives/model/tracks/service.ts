@@ -1,5 +1,6 @@
 import { BN, BN_BILLION, BN_ONE, bnMax, bnMin } from '@polkadot/util';
 
+import { type TrackId } from '@/shared/pallet/referenda';
 import { type Member } from '../members/types';
 import { type Tally } from '../referendum/types';
 
@@ -8,17 +9,17 @@ import { type Track, type VotingCurve, type VotingThreshold } from './types';
 /**
  * @see https://github.com/paritytech/polkadot-sdk/blob/master/cumulus/parachains/runtimes/collectives/collectives-westend/src/fellowship/tracks.rs#L63
  */
-const getMinimumRank = (track: Track, maxRank: number) => {
-  if (track.id >= 0 && track.id <= 9) {
-    return track.id;
+const getMinimumRank = (trackId: TrackId, maxRank: number) => {
+  if (trackId >= 0 && trackId <= 9) {
+    return trackId;
   }
 
-  if (track.id >= 11 && track.id <= 16) {
-    return track.id - 8;
+  if (trackId >= 11 && trackId <= 16) {
+    return trackId - 8;
   }
 
-  if (track.id >= 21 && track.id <= 26) {
-    return track.id - 18;
+  if (trackId >= 21 && trackId <= 26) {
+    return trackId - 18;
   }
 
   return maxRank;
@@ -85,7 +86,7 @@ type SupportParams = {
 };
 
 const supportThreshold = ({ track, members, maxRank, tally }: SupportParams): VotingThreshold => {
-  const minRank = getMinimumRank(track, maxRank);
+  const minRank = getMinimumRank(track.id, maxRank);
   const membersWithRank = members.reduce((acc, member) => (member.rank >= minRank ? acc + 1 : acc), 0);
 
   const bareAyes = new BN(tally.bareAyes);
@@ -107,7 +108,7 @@ type ApprovalParams = {
 };
 
 const approvalThreshold = ({ track, maxRank, tally }: ApprovalParams): VotingThreshold => {
-  const minRank = getMinimumRank(track, maxRank);
+  const minRank = getMinimumRank(track.id, maxRank);
 
   const ayes = new BN(tally.ayes);
   const nays = new BN(tally.nays);

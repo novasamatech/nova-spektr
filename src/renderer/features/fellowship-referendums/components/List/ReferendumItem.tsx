@@ -29,7 +29,7 @@ export const ReferendumItem = memo<Props>(({ referendum, isTitlesLoading, onSele
     fn: (store, [id]) => store[id] ?? null,
   });
 
-  const track = collectiveDomain.referendum.service.isOngoing(referendum) ? referendum.track : (meta?.track ?? null);
+  const track = collectiveDomain.referendumService.isOngoing(referendum) ? referendum.track : (meta?.track ?? null);
 
   const titleNode = (
     <Skeleton active={isTitlesLoading && !meta?.title}>
@@ -43,7 +43,7 @@ export const ReferendumItem = memo<Props>(({ referendum, isTitlesLoading, onSele
         <Box direction="row" verticalAlign="center" gap={2}>
           <WalletVoted referendum={referendum} />
           {/*<VotedBy address={referendum.votedByDelegate} />*/}
-          <ReferendumVotingStatusBadge referendum={referendum} />
+          <ReferendumVotingStatusBadge referendum={referendum} pending={false} />
 
           {/*<ReferendumTimer status="reject" time={600000} />*/}
           <div className="ml-auto">
@@ -56,7 +56,7 @@ export const ReferendumItem = memo<Props>(({ referendum, isTitlesLoading, onSele
         <Box direction="row" horizontalAlign="flex-start" gap={6}>
           <HeadlineText className="pointer-events-auto flex-1">{titleNode}</HeadlineText>
           <Box width="200px">
-            <ReferendumVoteChart referendum={referendum} descriptionPosition="tooltip" />
+            <ReferendumVoteChart referendum={referendum} pending={false} descriptionPosition="tooltip" />
           </Box>
         </Box>
       </Box>

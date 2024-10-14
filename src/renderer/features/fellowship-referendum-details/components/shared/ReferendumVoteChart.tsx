@@ -6,28 +6,41 @@ import { useI18n } from '@app/providers';
 import { nullable } from '@shared/lib/utils';
 import { FootnoteText } from '@shared/ui';
 import { VoteChart } from '@shared/ui-entities';
-import { Tooltip } from '@shared/ui-kit';
+import { Skeleton, Tooltip } from '@shared/ui-kit';
 import { type Referendum, collectiveDomain } from '@/domains/collectives';
 import { referendumsDetailsFeatureStatus } from '../../model/status';
 import { thresholdsModel } from '../../model/thresholds';
 
 type Props = {
-  referendum: Referendum;
+  referendum: Referendum | null;
+  pending: boolean;
   descriptionPosition: 'tooltip' | 'bottom';
 };
 
-export const ReferendumVoteChart = memo<Props>(({ referendum, descriptionPosition }) => {
+export const ReferendumVoteChart = memo<Props>(({ referendum, pending, descriptionPosition }) => {
   useGate(referendumsDetailsFeatureStatus.gate);
 
   const { t } = useI18n();
 
   const thresholds = useStoreMap({
     store: thresholdsModel.$thresholds,
-    keys: [referendum.id],
-    fn: (thresholds, [id]) => thresholds[id] ?? null,
+    keys: [referendum?.id],
+    fn: (thresholds, [id]) => (id ? (thresholds[id] ?? null) : null),
   });
 
-  if (collectiveDomain.referendum.service.isCompleted(referendum) || nullable(thresholds)) {
+  if (nullable(referendum)) {
+    if (pending) {
+      return (
+        <Skeleton active fullWidth>
+          <VoteChart value={0} disabled />
+        </Skeleton>
+      );
+    } else {
+      return null;
+    }
+  }
+
+  if (nullable(thresholds) || collectiveDomain.referendumService.isCompleted(referendum)) {
     return null;
   }
 
@@ -39,16 +52,14 @@ export const ReferendumVoteChart = memo<Props>(({ referendum, descriptionPositio
   const threshold = thresholds.approval.threshold.div(perbillMultiplier).toNumber();
   const disabled = referendum.tally.ayes === 0 && referendum.tally.nays === 0;
 
-  const chartNode = (
-    <div>
-      <VoteChart value={aye} threshold={threshold} disabled={disabled} />
-    </div>
-  );
+  const chartNode = <VoteChart value={aye} threshold={threshold} disabled={disabled} />;
 
   if (descriptionPosition === 'tooltip') {
     return (
       <Tooltip side="top" disableHoverableContent>
-        <Tooltip.Trigger>{chartNode}</Tooltip.Trigger>
+        <Tooltip.Trigger>
+          <div>{chartNode}</div>
+        </Tooltip.Trigger>
         <Tooltip.Content>
           <span className="text-inherit">{`${t('voteChart.toPass')} ${threshold.toFixed(2)}%`}</span>
           <br />
