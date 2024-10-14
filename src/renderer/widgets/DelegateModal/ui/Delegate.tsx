@@ -70,13 +70,18 @@ export const Delegate = () => {
     return null;
   }
 
+  const title =
+    transactions.length > 1
+      ? t('operation.sign.title', { count: transactions.length })
+      : t('governance.addDelegation.title');
+
   return (
     <BaseModal
       closeButton
       contentClass="overflow-y-auto flex-1"
       panelClass="max-h-[736px] w-fit flex flex-col"
       isOpen={isModalOpen}
-      title={<OperationTitle title={t('governance.addDelegation.title')} chainId={walletData.chain!.chainId} />}
+      title={<OperationTitle title={t(title)} chainId={walletData.chain!.chainId} />}
       onClose={closeModal}
     >
       {isStep(step, Step.CONFIRM) && transactions.length === 1 && (
