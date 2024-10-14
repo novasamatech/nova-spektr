@@ -63,7 +63,7 @@ export const createAccountId = (seed: string) => {
   return toAccountId(testKeyring.addFromUri(`//${derivationPathSeed * 1000}`).address);
 };
 
-export const createBaseAccount = (id: number): BaseAccount => ({
+export const createBaseAccount = (id: number = Math.round(Math.random() * 10)): BaseAccount => ({
   id,
   accountId: createAccountId(`Base account ${id}`),
   chainType: ChainType.SUBSTRATE,
@@ -73,7 +73,7 @@ export const createBaseAccount = (id: number): BaseAccount => ({
   walletId: 1,
 });
 
-export const createWcAccount = (id: number): WcAccount => ({
+export const createWcAccount = (id: number = Math.round(Math.random() * 10)): WcAccount => ({
   id,
   accountId: createAccountId(`Wc account ${id}`),
   chainId: polkadotChainId,
@@ -83,7 +83,7 @@ export const createWcAccount = (id: number): WcAccount => ({
   walletId: 1,
 });
 
-export const createProxiedAccount = (id: number): ProxiedAccount => ({
+export const createProxiedAccount = (id: number = Math.round(Math.random() * 10)): ProxiedAccount => ({
   id,
   accountId: createAccountId(`Proxied account ${id}`),
   proxyAccountId: createAccountId(`Random account ${id}`),

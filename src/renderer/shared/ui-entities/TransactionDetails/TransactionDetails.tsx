@@ -2,12 +2,11 @@ import { type PropsWithChildren, memo, useMemo } from 'react';
 
 import { useI18n } from '@/app/providers';
 import { type Account, type Chain, type Wallet } from '@/shared/core';
-import { toAddress } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, Separator } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { WalletIcon, walletUtils } from '@/entities/wallet';
+import { Account as AccountComponent } from '../Account/Account';
 import { AccountExplorers } from '../AccountExplorer/AccountExplorers';
-import { Address } from '../Address/Address';
 
 type Props = PropsWithChildren<{
   wallets: Wallet[];
@@ -58,7 +57,7 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
           </DetailRow>
 
           <DetailRow label={t('proxy.details.account')}>
-            <AccountInfo account={initiator} chain={chain} />
+            <AccountComponent account={initiator} chain={chain} />
           </DetailRow>
         </>
       )}
@@ -73,7 +72,7 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
           </DetailRow>
 
           <DetailRow label={t('transfer.senderProxiedAccount')}>
-            <AccountInfo account={proxied} chain={chain} />
+            <AccountComponent account={proxied} chain={chain} />
           </DetailRow>
 
           <DetailRow label={t('transfer.signingWallet')}>
@@ -84,7 +83,7 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
           </DetailRow>
 
           <DetailRow label={t('transfer.signingAccount')}>
-            <AccountInfo account={initiator} chain={chain} />
+            <AccountComponent account={initiator} chain={chain} />
           </DetailRow>
         </>
       )}
@@ -105,12 +104,3 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
     </dl>
   );
 });
-
-const AccountInfo = ({ account, chain }: { account: Account; chain: Chain }) => {
-  return (
-    <div className="flex w-full min-w-0 gap-2 text-text-secondary">
-      <Address showIcon variant="truncate" address={toAddress(account.accountId, { prefix: chain.addressPrefix })} />
-      <AccountExplorers accountId={account.accountId} chain={chain} />
-    </div>
-  );
-};
