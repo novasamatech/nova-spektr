@@ -1,5 +1,5 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { userEvent } from '@testing-library/user-event';
 import { type Scope, fork } from 'effector';
 import { Provider } from 'effector-react';
 

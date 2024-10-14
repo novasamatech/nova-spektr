@@ -1,6 +1,6 @@
+import { type TFunction } from 'i18next';
 import groupBy from 'lodash/groupBy';
 import unionBy from 'lodash/unionBy';
-import { type TFunction } from 'react-i18next';
 
 import { chainsService } from '@shared/api/network';
 import {

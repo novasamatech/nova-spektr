@@ -1,11 +1,9 @@
 import { type Locale } from 'date-fns';
-// eslint-disable-next-line import-x/no-duplicates
 import { format as fnsFormatDate } from 'date-fns/format';
-// eslint-disable-next-line import-x/no-duplicates
 import { enGB } from 'date-fns/locale/en-GB';
 import i18next from 'i18next';
+import { type TFunction } from 'i18next';
 import { type FC, type PropsWithChildren, createContext, useContext } from 'react';
-import { type TFunction } from 'react-i18next';
 import { initReactI18next, useTranslation } from 'react-i18next';
 
 import { LanguageOptions } from '@shared/api/translation/lib/constants';
