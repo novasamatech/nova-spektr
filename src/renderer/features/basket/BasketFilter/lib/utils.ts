@@ -1,4 +1,4 @@
-import { type TFunction } from 'react-i18next';
+import { type TFunction } from 'i18next';
 
 import { type BasketTransaction, type Chain, TransactionType } from '@shared/core';
 import { type DropdownOption, type DropdownResult } from '@shared/ui/types';

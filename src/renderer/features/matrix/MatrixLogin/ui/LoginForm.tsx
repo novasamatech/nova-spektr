@@ -72,7 +72,6 @@ export const LoginForm = ({ redirectStep }: Props) => {
     defaultValues: { homeserver: DEFAULT_HOMESERVER, username: '', password: '' },
   });
 
-  // @ts-expect-error TODO fix
   const homeserver = watch('homeserver');
 
   useEffect(() => {

@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { type ReactNode } from 'react';
 
 import { useConfirmContext, useI18n } from '@app/providers';
 import { FootnoteText, Icon, Plate, Shimmering, SmallTitleText } from '@shared/ui';
@@ -31,7 +32,7 @@ export const TotalDelegation = ({ onClick }: Props) => {
       return;
     }
 
-    let message = <EmptyAccountMessage walletType={activeWallet?.type} />;
+    let message: ReactNode = <EmptyAccountMessage walletType={activeWallet?.type} />;
 
     if (hasAccount && !canDelegate) {
       if (walletUtils.isWatchOnly(activeWallet)) {
