@@ -1,10 +1,10 @@
 import { BN_MILLION } from '@polkadot/util';
 import { useGate, useStoreMap, useUnit } from 'effector-react';
 
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { DetailRow, HeaderTitleText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Modal, Skeleton } from '@/shared/ui-kit';
-import { nonNullable } from '@shared/lib/utils';
 import { collectiveDomain } from '@/domains/collectives';
 import { fellowshipVotingFeature } from '@/features/fellowship-voting';
 import { referendumDetailsModel } from '../model/details';
@@ -33,11 +33,16 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
   const pendingReferendumMeta = useUnit(referendumDetailsModel.$pendingMeta);
   const pendingReferendum = useUnit(referendumDetailsModel.$pending);
 
+  const loadingState = pendingReferendum && nullable(referendum);
+  const metaLoadingState = pendingReferendumMeta && nullable(referendumMeta);
+
   const thresholds = useStoreMap({
     store: thresholdsModel.$thresholds,
     keys: [referendumId],
     fn: (thresholds, [id]) => thresholds[id] ?? null,
   });
+
+  const threshold = nonNullable(thresholds) ? thresholds.support.value.div(BN_MILLION).toNumber() / 10 : 0;
 
   return (
     <Modal size="xl" height="full" isOpen={isOpen} onToggle={onToggle}>
@@ -50,13 +55,9 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
                 <Box padding={6} gap={4}>
                   <ProposerName />
                   <HeaderTitleText className="text-balance">
-                    {!referendumMeta && pendingReferendumMeta ? (
-                      <Skeleton height="1lh" width="80%" />
-                    ) : (
-                      referendumMeta?.title
-                    )}
+                    {metaLoadingState ? <Skeleton height="1lh" width="80%" /> : referendumMeta?.title}
                   </HeaderTitleText>
-                  {!referendumMeta && pendingReferendumMeta ? (
+                  {metaLoadingState ? (
                     <Skeleton height="8lh" width="100%" />
                   ) : (
                     <Markdown>{referendumMeta?.description ?? ''}</Markdown>
@@ -70,22 +71,14 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
                 <Box padding={6} gap={6}>
                   <SmallTitleText>{'Voting status'}</SmallTitleText>
 
-                  <ReferendumVotingStatusBadge referendum={referendum} pending={pendingReferendum} />
-                  <ReferendumVoteChart
-                    referendum={referendum}
-                    pending={pendingReferendum}
-                    descriptionPosition="bottom"
-                  />
+                  <ReferendumVotingStatusBadge referendum={referendum} pending={loadingState} />
+                  <ReferendumVoteChart referendum={referendum} pending={loadingState} descriptionPosition="bottom" />
 
-                  {nonNullable(referendum) &&
-                  nonNullable(thresholds) &&
-                  collectiveDomain.referendumService.isOngoing(referendum) ? (
-                    <DetailRow label="Threshold">
-                      {nonNullable(thresholds) ? thresholds.support.value.div(BN_MILLION).toNumber() / 10 : 0}%
-                    </DetailRow>
+                  {nonNullable(referendum) && collectiveDomain.referendumService.isOngoing(referendum) ? (
+                    <DetailRow label="Threshold">{threshold}%</DetailRow>
                   ) : null}
 
-                  {pendingReferendum && <Skeleton height="1lh" />}
+                  {loadingState && <Skeleton height="1lh" />}
 
                   <VotingButtons referendumId={referendumId} />
                 </Box>
