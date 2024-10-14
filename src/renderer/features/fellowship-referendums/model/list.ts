@@ -66,7 +66,7 @@ const $referendumsFilteredByStatus = combine(
     const votingMap = dictionary(voting, 'referendumId');
 
     return referendums.filter(referendum => {
-      const isInTrack = collectiveDomain.referendum.service.isReferendumInTrack(selectedTracks, referendum);
+      const isInTrack = collectiveDomain.referendumService.isReferendumInTrack(selectedTracks, referendum);
 
       if (selectedVotingStatus === 'voted') {
         return isInTrack && referendum.id in votingMap;
@@ -87,8 +87,8 @@ const $filteredReferendum = either(
   $referendumsFilteredByStatus,
 );
 
-const $ongoing = $filteredReferendum.map(collectiveDomain.referendum.service.getOngoingReferendums);
-const $completed = $filteredReferendum.map(collectiveDomain.referendum.service.getCompletedReferendums);
+const $ongoing = $filteredReferendum.map(collectiveDomain.referendumService.getOngoingReferendums);
+const $completed = $filteredReferendum.map(collectiveDomain.referendumService.getCompletedReferendums);
 
 export const referendumListModel = {
   $referendums,

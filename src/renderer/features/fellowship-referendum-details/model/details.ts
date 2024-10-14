@@ -38,7 +38,7 @@ const $referendumMeta = combine($meta, gate.state, (meta, { referendumId }) => {
 });
 
 const $proposer = $referendum.map(referendum => {
-  if (nullable(referendum) || collectiveDomain.referendum.service.isKilled(referendum)) return null;
+  if (nullable(referendum) || collectiveDomain.referendumService.isKilled(referendum)) return null;
 
   return referendum.submissionDeposit?.who ?? null;
 });

@@ -1,11 +1,14 @@
-import { useGate, useUnit } from 'effector-react';
+import { BN_MILLION } from '@polkadot/util';
+import { useGate, useStoreMap, useUnit } from 'effector-react';
 
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { HeaderTitleText, Markdown, SmallTitleText } from '@/shared/ui';
+import { DetailRow, HeaderTitleText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Modal, Skeleton } from '@/shared/ui-kit';
-import { nonNullable } from '@shared/lib/utils';
+import { collectiveDomain } from '@/domains/collectives';
 import { referendumDetailsModel } from '../model/details';
 import { referendumsDetailsFeatureStatus } from '../model/status';
+import { thresholdsModel } from '../model/thresholds';
 
 import { Card } from './Card';
 import { ProposerName } from './ProposerName';
@@ -27,6 +30,17 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
   const pendingReferendumMeta = useUnit(referendumDetailsModel.$pendingMeta);
   const pendingReferendum = useUnit(referendumDetailsModel.$pending);
 
+  const loadingState = pendingReferendum && nullable(referendum);
+  const metaLoadingState = pendingReferendumMeta && nullable(referendumMeta);
+
+  const thresholds = useStoreMap({
+    store: thresholdsModel.$thresholds,
+    keys: [referendumId],
+    fn: (thresholds, [id]) => thresholds[id] ?? null,
+  });
+
+  const threshold = nonNullable(thresholds) ? thresholds.support.value.div(BN_MILLION).toNumber() / 10 : 0;
+
   return (
     <Modal size="xl" height="full" isOpen={isOpen} onToggle={onToggle}>
       <Modal.Title close>{`Referendum #${referendumId}`}</Modal.Title>
@@ -38,13 +52,9 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
                 <Box padding={6} gap={4}>
                   <ProposerName />
                   <HeaderTitleText className="text-balance">
-                    {!referendumMeta && pendingReferendumMeta ? (
-                      <Skeleton height="1lh" width="80%" />
-                    ) : (
-                      referendumMeta?.title
-                    )}
+                    {metaLoadingState ? <Skeleton height="1lh" width="80%" /> : referendumMeta?.title}
                   </HeaderTitleText>
-                  {!referendumMeta && pendingReferendumMeta ? (
+                  {metaLoadingState ? (
                     <Skeleton height="8lh" width="100%" />
                   ) : (
                     <Markdown>{referendumMeta?.description ?? ''}</Markdown>
@@ -52,16 +62,19 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
                 </Box>
               </Card>
             </Box>
-            <Box width="350px" shrink={0}>
+            <Box width="350px" shrink={0} gap={4}>
               <Card>
                 <Box padding={6} gap={6}>
                   <SmallTitleText>{'Voting status'}</SmallTitleText>
-                  {pendingReferendum && <Skeleton height={5} width="10ch" />}
-                  {nonNullable(referendum) && <ReferendumVotingStatusBadge referendum={referendum} />}
-                  {pendingReferendum && <Skeleton height={15} width="100%" />}
-                  {nonNullable(referendum) && (
-                    <ReferendumVoteChart referendum={referendum} descriptionPosition="bottom" />
-                  )}
+
+                  <ReferendumVotingStatusBadge referendum={referendum} pending={loadingState} />
+                  <ReferendumVoteChart referendum={referendum} pending={loadingState} descriptionPosition="bottom" />
+
+                  {nonNullable(referendum) && collectiveDomain.referendumService.isOngoing(referendum) ? (
+                    <DetailRow label="Threshold">{threshold}%</DetailRow>
+                  ) : null}
+
+                  {loadingState && <Skeleton height="1lh" />}
                 </Box>
               </Card>
             </Box>
