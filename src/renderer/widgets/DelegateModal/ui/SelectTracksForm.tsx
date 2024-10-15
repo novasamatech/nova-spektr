@@ -67,14 +67,6 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
               </Button>
               <Button
                 disabled={accounts.length === 0}
-                pallet={getGroupPallet(adminTracks, votedTracks, tracks)}
-                variant="chip"
-                onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(adminTracks, votedTracks))}
-              >
-                {t('governance.addDelegation.group.admin')}
-              </Button>
-              <Button
-                disabled={accounts.length === 0}
                 pallet={getGroupPallet(governanceTracks, votedTracks, tracks)}
                 variant="chip"
                 onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(governanceTracks, votedTracks))}
