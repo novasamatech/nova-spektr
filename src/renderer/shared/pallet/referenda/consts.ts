@@ -55,7 +55,7 @@ export const consts = {
    * Information concerning the different referendum tracks.
    */
   tracks(type: PalletType, api: ApiPromise) {
-    const schema = pjsSchema.vec(pjsSchema.tuppleMap(['track', trackId], ['info', referendaTrackInfo]));
+    const schema = pjsSchema.vec(pjsSchema.tupleMap(['track', trackId], ['info', referendaTrackInfo]));
 
     return schema.parse(getPallet(type, api)['tracks']);
   },

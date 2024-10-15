@@ -43,7 +43,7 @@ export const AccountSelectModal = ({
               asset={asset}
               chain={chain}
               account={account}
-              title={title}
+              title={title ?? account.name}
               onSelect={onSelect}
             />
           ))}
@@ -73,7 +73,7 @@ const AccountItem = ({ asset, account, chain, title, balance, onSelect }: ItemPr
       <div className="w-full min-w-0 shrink truncate">
         <Address title={title} address={address} showIcon variant="truncate" />
       </div>
-      <AccountExplorers account={account.accountId} chain={chain} />
+      <AccountExplorers accountId={account.accountId} chain={chain} />
       {balance && asset && (
         <BodyText className="shrink-0 whitespace-nowrap text-inherit">
           {formatBalance(balance, asset.precision).formatted} {asset.symbol}

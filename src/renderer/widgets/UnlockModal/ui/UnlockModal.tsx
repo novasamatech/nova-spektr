@@ -1,9 +1,10 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@app/providers';
+import { Modal } from '@/shared/ui-kit';
 import { useModalClose } from '@shared/lib/hooks';
 import { Step, isStep } from '@shared/lib/utils';
-import { BaseModal, Button, HeaderTitleText } from '@shared/ui';
+import { Button, HeaderTitleText } from '@shared/ui';
 import { OperationTitle } from '@entities/chain';
 import { OperationResult } from '@entities/transaction';
 import { networkSelectorModel } from '@features/governance/model/networkSelector';
@@ -53,20 +54,23 @@ export const UnlockModal = () => {
   );
 
   return (
-    <BaseModal closeButton contentClass="" isOpen={isModalOpen} title={title} onClose={closeModal}>
-      {isStep(step, Step.INIT) && <UnlockInfo />}
-      {isStep(step, Step.SELECT) && <UnlockForm onGoBack={() => unlockAggregate.events.stepChanged(Step.INIT)} />}
-      {isStep(step, Step.CONFIRM) && (
-        <UnlockConfirmation
-          secondaryActionButton={
-            <Button pallet="secondary" onClick={() => unlockAggregate.events.txSaved()}>
-              {t('operation.addToBasket')}
-            </Button>
-          }
-          onGoBack={() => unlockAggregate.events.stepChanged(Step.SELECT)}
-        />
-      )}
-      {isStep(step, Step.SIGN) && <OperationSign onGoBack={() => unlockAggregate.events.stepChanged(Step.CONFIRM)} />}
-    </BaseModal>
+    <Modal isOpen={isModalOpen} size="md" onToggle={(isOpen) => !isOpen && closeModal()}>
+      <Modal.Title close>{title}</Modal.Title>
+      <Modal.Content>
+        {isStep(step, Step.INIT) && <UnlockInfo />}
+        {isStep(step, Step.SELECT) && <UnlockForm onGoBack={() => unlockAggregate.events.stepChanged(Step.INIT)} />}
+        {isStep(step, Step.CONFIRM) && (
+          <UnlockConfirmation
+            secondaryActionButton={
+              <Button pallet="secondary" onClick={() => unlockAggregate.events.txSaved()}>
+                {t('operation.addToBasket')}
+              </Button>
+            }
+            onGoBack={() => unlockAggregate.events.stepChanged(Step.SELECT)}
+          />
+        )}
+        {isStep(step, Step.SIGN) && <OperationSign onGoBack={() => unlockAggregate.events.stepChanged(Step.CONFIRM)} />}
+      </Modal.Content>
+    </Modal>
   );
 };

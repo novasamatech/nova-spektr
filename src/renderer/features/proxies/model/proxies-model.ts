@@ -50,7 +50,6 @@ const $endpoint = createStore<Endpoint<any> | null>(null);
 const $deposits = createStore<ProxyDeposits[]>([]);
 
 const startWorkerFx = createEffect(() => {
-  // @ts-expect-error TODO fix
   const worker = new Worker(new URL('@features/proxies/workers/proxy-worker', import.meta.url));
 
   return createEndpoint(worker, {

@@ -1,5 +1,5 @@
+import { type TFunction } from 'i18next';
 import { type PropsWithChildren } from 'react';
-import { type TFunction } from 'react-i18next';
 
 import { useI18n } from '@app/providers';
 import { ConnectionStatus } from '@shared/core';

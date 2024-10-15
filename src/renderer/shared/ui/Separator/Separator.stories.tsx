@@ -12,5 +12,5 @@ const Template: StoryFn<typeof Separator> = (args) => <Separator {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {
-  text: 'Hello world',
+  children: 'Hello world',
 };

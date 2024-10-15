@@ -6,7 +6,7 @@ import { createEffect, createEvent, sample } from 'effector';
 import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@shared/core';
 import { toAccountId, transferableAmount } from '@shared/lib/utils';
 import { balanceModel, balanceUtils } from '@entities/balance';
-import { votingService } from '@entities/governance';
+import { governanceService, referendumService, votingService } from '@entities/governance';
 import { networkModel } from '@entities/network';
 import { transactionService } from '@entities/transaction';
 import {
@@ -32,10 +32,12 @@ const validateFx = createEffect(
   async ({ id, api, chain, asset, transaction, balances, signerOptions }: ValidateParams) => {
     const accountId = toAccountId(transaction.address);
     const fee = await transactionService.getTransactionFee(transaction, api, signerOptions);
+    const referendum = await governanceService.getReferendums(api, [transaction.args.referendum]);
+    const isOngoing = referendumService.isOngoing(referendum[0]);
 
     const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
 
-    const rules: Validation<BN, { shards: unknown[] }, AmountFeeStore>[] = [
+    const rules: Validation<BN, { shards: unknown[] }>[] = [
       {
         name: 'insufficientBalanceForFee',
         errorText: 'transfer.notEnoughBalanceForFeeError',
@@ -55,6 +57,16 @@ const validateFx = createEffect(
           return form.shards.every((_, index: number) => {
             return feeBN.lte(new BN(accountsBalances[index]));
           });
+        },
+      },
+      {
+        name: 'timeoutReferendum',
+        errorText: 'governance.referendums.vote.timeoutReferendumError',
+        value: BN_ZERO,
+        form: { shards: [{ accountId }] },
+        source: isOngoing,
+        validator: (_v, _f, isOngoing: boolean) => {
+          return isOngoing;
         },
       },
     ];

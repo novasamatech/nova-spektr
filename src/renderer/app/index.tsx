@@ -1,47 +1,70 @@
-import { createRoot } from 'react-dom/client';
-import { HashRouter } from 'react-router-dom';
-
-import { logger } from '@shared/config/utils';
-import { kernelModel } from '@shared/core';
-import { basketModel } from '@entities/basket';
-import { governanceModel } from '@entities/governance';
-import { networkModel } from '@entities/network';
-import { notificationModel } from '@entities/notification';
-import { proxyModel } from '@entities/proxy';
-import { walletModel } from '@entities/wallet';
-import { multisigsModel } from '@processes/multisigs';
-import { assetsSettingsModel } from '@features/assets';
-import { proxiesModel } from '@features/proxies';
-
-import { App } from './App';
-import '@features/balances';
-import './i18n';
 import './index.css';
 import './styles/theme/default.css';
+
+import { Suspense, useEffect, useMemo, useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import { ErrorBoundary } from 'react-error-boundary';
+import { HashRouter } from 'react-router-dom';
+
+import { isElectron } from '@/shared/lib/utils';
+import { FallbackScreen } from '@/shared/ui';
+import { APP_CONFIG } from '../../../app.config';
+
+import { LoadingDelay, controlledLazy, suspenseDelay } from './DelayedSuspense';
+import { ElectronSplashScreen } from './components/ElectronSplashScreen/ElectronSplashScreen';
+import { WebSplashScreen } from './components/WebSplashScreen/WebSplashScreen';
+import { I18Provider } from './providers/context/I18nContext';
+
+const CLEAR_LOADING_TIMEOUT = 700;
+const DIRTY_LOADING_TIMEOUT = 2000;
+
+const App = controlledLazy(() => import('./App').then((m) => m.App));
+
+/**
+ * All this loading logic can be described like this:
+ *
+ * If App component loads before `CLEAR_LOADING_TIMEOUT` timeout it shows
+ * immediately, else splash screen appears for at least DIRTY_LOADING_TIMEOUT.
+ */
+const Root = () => {
+  const [renderSplashScreen, setRenderSplashScreen] = useState(false);
+  const [appLoaded, setAppLoaded] = useState(false);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setRenderSplashScreen(true);
+    }, CLEAR_LOADING_TIMEOUT);
+  }, []);
+
+  const loadingDelay = useMemo(() => {
+    return !appLoaded && renderSplashScreen ? suspenseDelay(DIRTY_LOADING_TIMEOUT) : null;
+  }, [renderSplashScreen, appLoaded]);
+
+  const splashScreen = renderSplashScreen ? isElectron() ? <ElectronSplashScreen /> : <WebSplashScreen /> : null;
+
+  return (
+    <HashRouter>
+      <I18Provider>
+        <ErrorBoundary FallbackComponent={FallbackScreen} onError={console.error}>
+          <Suspense fallback={splashScreen}>
+            <App onReady={() => setAppLoaded(true)} />
+            <LoadingDelay suspense={loadingDelay} />
+          </Suspense>
+        </ErrorBoundary>
+      </I18Provider>
+    </HashRouter>
+  );
+};
 
 const container = document.getElementById('app');
 if (!container) {
   throw new Error('Root container is missing in index.html');
 }
 
-logger.init();
+container.style.minWidth = `${APP_CONFIG.MAIN.WINDOW.WIDTH}px`;
+container.style.minHeight = `${APP_CONFIG.MAIN.WINDOW.HEIGHT}px`;
 
-kernelModel.events.appStarted();
-governanceModel.events.governanceStarted();
-proxiesModel.events.workerStarted();
-walletModel.events.walletStarted();
-networkModel.events.networkStarted();
-proxyModel.events.proxyStarted();
-assetsSettingsModel.events.assetsStarted();
-notificationModel.events.notificationsStarted();
-basketModel.events.basketStarted();
-multisigsModel.events.multisigsDiscoveryStarted();
-
-createRoot(container).render(
-  <HashRouter>
-    <App />
-  </HashRouter>,
-);
+createRoot(container).render(<Root />);
 
 // NOTE: React 18 Strict mode renders twice in DEV mode
 // which leads to errors in components that use camera

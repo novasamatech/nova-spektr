@@ -1,7 +1,8 @@
 import { useI18n } from '@app/providers';
+import { Hash } from '@/shared/ui-entities';
 import { type Asset, type Explorer, type Validator } from '@shared/core';
 import { cnTw, getComposedIdentity } from '@shared/lib/utils';
-import { BodyText, FootnoteText, HelpText, IconButton, Identicon, Truncate } from '@shared/ui';
+import { BodyText, FootnoteText, HelpText, IconButton, Identicon } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
 import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
 import { ExplorersPopover } from '@entities/wallet';
@@ -79,11 +80,13 @@ const ValidatorRow = ({ validator, asset, explorers = [] }: RowProps) => (
 const ValidatorShortRow = ({ validator }: Pick<RowProps, 'validator'>) => (
   <div className="mr-auto flex items-center gap-x-2">
     <Identicon address={validator.address} background={false} size={20} />
-    <div className="flex max-w-[276px] flex-col">
+    <div className="flex w-[276px] flex-col">
       {validator.identity ? (
         <BodyText className="text-text-secondary">{getComposedIdentity(validator.identity)}</BodyText>
       ) : (
-        <Truncate className="text-body text-text-secondary" ellipsis="..." start={4} end={4} text={validator.address} />
+        <BodyText className="text-text-secondary">
+          <Hash value={validator.address} variant="truncate" />
+        </BodyText>
       )}
     </div>
   </div>

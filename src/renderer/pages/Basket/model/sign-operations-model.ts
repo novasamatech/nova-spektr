@@ -103,10 +103,6 @@ const startDataPreparationFx = createEffect(async ({ transactions, ...preparatio
         | XcmTransactionTypes
         | MultisigTransactionTypes
         | UtilityTransactionTypes
-        // TODO: Add vote types
-        | TransactionType.VOTE
-        | TransactionType.REMOVE_VOTE
-        | TransactionType.REVOTE
         | TransactionType.REMARK
       >,
       (dataParams: DataParams) => Promise<unknown>
@@ -127,6 +123,9 @@ const startDataPreparationFx = createEffect(async ({ transactions, ...preparatio
       [TransactionType.DELEGATE]: prepareTransaction.prepareDelegateTransaction,
       [TransactionType.EDIT_DELEGATION]: prepareTransaction.prepareEditDelegationTransaction,
       [TransactionType.UNDELEGATE]: prepareTransaction.prepareRevokeDelegationTransaction,
+      [TransactionType.VOTE]: prepareTransaction.prepareVoteTransaction,
+      [TransactionType.REVOTE]: prepareTransaction.prepareVoteTransaction,
+      [TransactionType.REMOVE_VOTE]: prepareTransaction.prepareRemoveVoteTransaction,
     };
 
     if (coreTx.type in TransactionData) {
@@ -468,6 +467,7 @@ sample({
     unstakeConfirmModel.output.formSubmitted,
     withdrawConfirmModel.output.formSubmitted,
     delegateConfirmModel.output.formSubmitted,
+    editDelegationConfirmModel.output.formSubmitted,
     revokeDelegationConfirmModel.output.formSubmitted,
     unlockConfirmAggregate.output.formSubmitted,
     voteConfirmModel.events.sign,

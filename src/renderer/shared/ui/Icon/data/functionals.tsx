@@ -1,5 +1,8 @@
 import AddCircleImg, { ReactComponent as AddCircleSvg } from '@shared/assets/images/functionals/add-circle.svg';
 import AddImg, { ReactComponent as AddSvg } from '@shared/assets/images/functionals/add.svg';
+import ApproveFellowshipVotingImg, {
+  ReactComponent as ApproveFellowshipVotingSvg,
+} from '@shared/assets/images/functionals/approve-fellowship-voting.svg';
 import CheckCutoutImg, {
   ReactComponent as CheckCutoutSvg,
 } from '@shared/assets/images/functionals/checkmark-cutout.svg';
@@ -40,10 +43,17 @@ import OpenGovLockImg, { ReactComponent as OpenGovLockSvg } from '@shared/assets
 import OpenGovVotingLockImg, {
   ReactComponent as OpenGovVotingLockSvg,
 } from '@shared/assets/images/functionals/opengov-voting-lock.svg';
+import PromoteVotingImg, {
+  ReactComponent as PromoteVotingSvg,
+} from '@shared/assets/images/functionals/promote-voting.svg';
 import QuestionImg, { ReactComponent as QuestionSvg } from '@shared/assets/images/functionals/question.svg';
 import ReferendumImg, { ReactComponent as ReferendumSvg } from '@shared/assets/images/functionals/referendum.svg';
 import RefreshImg, { ReactComponent as RefreshSvg } from '@shared/assets/images/functionals/refresh.svg';
 import RenameImg, { ReactComponent as RenameSvg } from '@shared/assets/images/functionals/rename.svg';
+import RetainVotingImg, {
+  ReactComponent as RetainVotingSvg,
+} from '@shared/assets/images/functionals/retain-voting.svg';
+import RFCVotingImg, { ReactComponent as RFCVotingSvg } from '@shared/assets/images/functionals/rfc-voting.svg';
 import SearchImg, { ReactComponent as SearchSvg } from '@shared/assets/images/functionals/search.svg';
 import SettingsLiteImg, {
   ReactComponent as SettingsLiteSvg,
@@ -57,6 +67,9 @@ import ViewValidatorsImg, {
 } from '@shared/assets/images/functionals/view-validators.svg';
 import VotedImg, { ReactComponent as VotedSvg } from '@shared/assets/images/functionals/voted.svg';
 import WarnCutoutImg, { ReactComponent as WarnCutoutSvg } from '@shared/assets/images/functionals/warning-cutout.svg';
+import WhitelistVotingImg, {
+  ReactComponent as WhitelistVotingSvg,
+} from '@shared/assets/images/functionals/whitelist-voting.svg';
 
 const FunctionalImages = {
   copy: { svg: CopySvg, img: CopyImg },
@@ -100,6 +113,11 @@ const FunctionalImages = {
   thumbDown: { svg: ThumbDownSvg, img: ThumbDownImg },
   minusCircle: { svg: MinusCircleSvg, img: MinusCircleImg },
   details: { svg: DetailsSvg, img: DetailsImg },
+  whitelistVoting: { svg: WhitelistVotingSvg, img: WhitelistVotingImg },
+  rfcVoting: { svg: RFCVotingSvg, img: RFCVotingImg },
+  promoteVoting: { svg: PromoteVotingSvg, img: PromoteVotingImg },
+  retainVoting: { svg: RetainVotingSvg, img: RetainVotingImg },
+  approveFellowshipVoting: { svg: ApproveFellowshipVotingSvg, img: ApproveFellowshipVotingImg },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

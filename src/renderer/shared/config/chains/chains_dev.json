@@ -21,7 +21,7 @@
         "name": "IBP1 node"
       },
       {
-        "url": "wss://rpc.dotters.network/polkadot",
+        "url": "wss://polkadot.dotters.network",
         "name": "IBP2 node"
       },
       {
@@ -124,7 +124,7 @@
         "name": "IBP1 node"
       },
       {
-        "url": "wss://rpc.dotters.network/kusama",
+        "url": "wss://kusama.dotters.network",
         "name": "IBP2 node"
       },
       {
@@ -228,7 +228,7 @@
         "name": "IBP1 node"
       },
       {
-        "url": "wss://rpc.dotters.network/westend",
+        "url": "wss://westend.dotters.network",
         "name": "IBP2 node"
       },
       {
@@ -365,7 +365,7 @@
         "name": "IBP1 node"
       },
       {
-        "url": "wss://sys.dotters.network/statemine",
+        "url": "wss://asset-hub-kusama.dotters.network",
         "name": "IBP2 node"
       },
       {
@@ -1108,7 +1108,7 @@
       "history": [
         {
           "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-shiden"
+          "url": "https://gateway.subquery.network/query/0x40"
         }
       ]
     }
@@ -1355,13 +1355,13 @@
       "history": [
         {
           "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-bifrost"
+          "url": "https://gateway.subquery.network/query/0x38"
         }
       ],
       "staking": [
         {
           "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-bifrost"
+          "url": "https://gateway.subquery.network/query/0x38"
         }
       ]
     }
@@ -1834,7 +1834,7 @@
       "history": [
         {
           "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-basilisk"
+          "url": "https://gateway.subquery.network/query/0x3f"
         }
       ]
     }
@@ -1881,7 +1881,7 @@
       "history": [
         {
           "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-altair"
+          "url": "https://gateway.subquery.network/query/0x37"
         }
       ]
     }
@@ -2118,7 +2118,7 @@
       "history": [
         {
           "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-khala"
+          "url": "https://gateway.subquery.network/query/0x3a"
         }
       ]
     }
@@ -2149,10 +2149,6 @@
       {
         "url": "wss://spiritnet.kilt.io/",
         "name": "KILT Protocol node"
-      },
-      {
-        "url": "wss://spiritnet.api.onfinality.io/public-ws",
-        "name": "OnFinality node"
       }
     ],
     "assets": [
@@ -2181,7 +2177,7 @@
       "history": [
         {
           "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kilt"
+          "url": "https://gateway.subquery.network/query/0x3d"
         }
       ]
     }
@@ -2237,7 +2233,7 @@
       "history": [
         {
           "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-quartz"
+          "url": "https://gateway.subquery.network/query/0x3e"
         }
       ]
     },
@@ -2376,7 +2372,6 @@
         "symbol": "PARA",
         "precision": 12,
         "type": "orml",
-        "priceId": "parallel-finance",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/PARA.svg",
         "typeExtras": {
           "currencyIdScale": "0x050100",
@@ -2535,7 +2530,7 @@
       "history": [
         {
           "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-acala"
+          "url": "https://gateway.subquery.network/query/0x3c"
         }
       ]
     }
@@ -2763,6 +2758,10 @@
     ],
     "nodes": [
       {
+        "url": "wss://polkadot-parallel-rpc.parallel.fi",
+        "name": "Parallel node"
+      },
+      {
         "url": "wss://parallel-rpc.dwellir.com",
         "name": "Dwellir node"
       }
@@ -2772,7 +2771,6 @@
         "assetId": 0,
         "symbol": "PARA",
         "precision": 12,
-        "priceId": "parallel-finance",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/PARA.svg",
         "name": "Parallel Finance"
       },
@@ -2957,7 +2955,7 @@
         "name": "IBP1 node"
       },
       {
-        "url": "wss://sys.dotters.network/asset-hub-polkadot",
+        "url": "wss://asset-hub-polkadot.dotters.network",
         "name": "IBP2 node"
       },
       {
@@ -3131,7 +3129,7 @@
       "history": [
         {
           "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-statemint"
+          "url": "https://gateway.subquery.network/query/0x35"
         }
       ]
     }
@@ -3255,53 +3253,6 @@
         }
       ]
     }
-  },
-  {
-    "name": "Litmus",
-    "specName": "kusama",
-    "addressPrefix": 131,
-    "chainId": "0xda5831fbc8570e3c6336d0d72b8c08f8738beefec812df21ef2afc2982ede09c",
-    "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Litmus.svg",
-    "nodes": [
-      {
-        "url": "wss://rpc.litmus-parachain.litentry.io",
-        "name": "Litentry node"
-      }
-    ],
-    "assets": [
-      {
-        "assetId": 0,
-        "symbol": "LIT",
-        "precision": 18,
-        "priceId": "litentry",
-        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Litentry_(LIT).svg",
-        "name": "Litentry"
-      }
-    ],
-    "explorers": [
-      {
-        "name": "Subscan",
-        "extrinsic": "https://litmus.subscan.io/extrinsic/{hash}",
-        "account": "https://litmus.subscan.io/account/{address}",
-        "multisig": "https://litmus.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
-      },
-      {
-        "name": "Sub.ID",
-        "account": "https://sub.id/{address}"
-      }
-    ],
-    "externalApi": {
-      "history": [
-        {
-          "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-litmus"
-        }
-      ]
-    },
-    "options": [
-      "multisig"
-    ]
   },
   {
     "name": "Subsocial",
@@ -3972,6 +3923,7 @@
         "symbol": "MYTH",
         "precision": 18,
         "type": "orml",
+        "priceId": "mythos",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/MYTH.svg",
         "typeExtras": {
           "currencyIdScale": "0x1e000000",
@@ -5045,7 +4997,8 @@
       "testnet",
       "governance",
       "regular_proxy",
-      "pure_proxy"
+      "pure_proxy",
+      "multisig"
     ],
     "nodes": [
       {
@@ -5362,7 +5315,7 @@
         "name": "IBP1 node"
       },
       {
-        "url": "wss://sys.dotters.network/bridgehub-polkadot",
+        "url": "wss://bridge-hub-polkadot.dotters.network",
         "name": "IBP2 node"
       },
       {
@@ -5413,7 +5366,7 @@
         "name": "IBP1 node"
       },
       {
-        "url": "wss://sys.dotters.network/bridgehub-kusama",
+        "url": "wss://bridge-hub-kusama.dotters.network",
         "name": "IBP2 node"
       },
       {
@@ -5464,7 +5417,7 @@
         "name": "IBP1 node"
       },
       {
-        "url": "wss://sys.dotters.network/collectives-polkadot",
+        "url": "wss://collectives-polkadot.dotters.network",
         "name": "IBP2 node"
       },
       {
@@ -5504,6 +5457,12 @@
         "account": "https://collectives.statescan.io/#/accounts/{address}",
         "event": "https://collectives.statescan.io/#/events/{event}",
         "extrinsic": "https://collectives.statescan.io/#/extrinsics/{hash}"
+      },
+      {
+        "name": "Subscan",
+        "extrinsic": "https://collectives-polkadot.subscan.io/extrinsic/{hash}",
+        "account": "https://collectives-polkadot.subscan.io/account/{address}",
+        "multisig": "https://collectives-polkadot.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       }
     ]
   },
@@ -6041,7 +6000,6 @@
         "symbol": "xcPARA",
         "precision": 12,
         "type": "statemine",
-        "priceId": "parallel-finance",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/PARA.svg",
         "typeExtras": {
           "assetId": "32615670524745285411807346420584982855"
@@ -6334,7 +6292,7 @@
         "name": "IBP-GeoDNS1 node"
       },
       {
-        "url": "wss://sys.dotters.network/bridgehub-westend",
+        "url": "wss://bridge-hub-westend.dotters.network",
         "name": "IBP-GeoDNS2 node"
       },
       {
@@ -6372,7 +6330,7 @@
         "name": "IBP1 node"
       },
       {
-        "url": "wss://sys.dotters.network/people-kusama",
+        "url": "wss://people-kusama.dotters.network",
         "name": "IBP2 node"
       },
       {
@@ -6388,6 +6346,14 @@
         "priceId": "kusama",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Kusama_(KSM).svg",
         "name": "Kusama"
+      }
+    ],
+    "explorers": [
+      {
+        "name": "Subscan",
+        "extrinsic": "https://people-kusama.subscan.io/extrinsic/{hash}",
+        "account": "https://people-kusama.subscan.io/account/{address}",
+        "multisig": "https://people-kusama.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       }
     ]
   },
@@ -6507,7 +6473,7 @@
         "name": "IBP1 node"
       },
       {
-        "url": "wss://sys.dotters.network/people-polkadot",
+        "url": "wss://people-polkadot.dotters.network",
         "name": "IBP2 node"
       },
       {
@@ -6527,6 +6493,14 @@
         "priceId": "polkadot",
         "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
         "name": "Polkadot"
+      }
+    ],
+    "explorers": [
+      {
+        "name": "Subscan",
+        "extrinsic": "https://people-polkadot.subscan.io/extrinsic/{hash}",
+        "account": "https://people-polkadot.subscan.io/account/{address}",
+        "multisig": "https://people-polkadot.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       }
     ]
   },
@@ -6550,8 +6524,34 @@
         "name": "IBP1 node"
       },
       {
-        "url": "wss://sys.dotters.network/people-westend",
+        "url": "wss://people-westend.dotters.network",
         "name": "IBP2 node"
+      }
+    ],
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "WND",
+        "precision": 12,
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Westend_(WND).svg",
+        "name": "Westend"
+      }
+    ]
+  },
+  {
+    "name": "Westend People - Novasama test net",
+    "specName": "westend",
+    "addressPrefix": 42,
+    "chainId": "0xa8681e461e97bf31910577c94bc2eb75439ad47a0d335b1ffff0a70e7e0126fa",
+    "parentId": "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_People.svg",
+    "options": [
+      "testnet"
+    ],
+    "nodes": [
+      {
+        "url": "wss://westend-collectives-a-parachain.novasama-tech.org",
+        "name": "Collectives node"
       }
     ],
     "assets": [
@@ -6619,7 +6619,6 @@
     "chainId": "0xb91746b45e0346cc2f815a520b9c6cb4d5c0902af848db0a80f85932d2e8276a",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Avail.svg",
     "options": [
-      "multisig",
       "regular_proxy",
       "pure_proxy"
     ],
