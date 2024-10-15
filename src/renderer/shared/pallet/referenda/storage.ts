@@ -46,7 +46,6 @@ export const storage = {
     if (ids) {
       const schemaWithIds = pjsSchema
         .vec(pjsSchema.optional(referendaReferendumInfoConvictionVotingTally))
-        // TODO fix this mess
         .transform(items => items.map((item, index) => ({ info: item, id: ids[index]! })));
 
       return substrateRpcPool.call(() => getQuery(type, api, 'referendumInfoFor').multi(ids)).then(schemaWithIds.parse);
