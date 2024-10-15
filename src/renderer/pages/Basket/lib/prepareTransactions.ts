@@ -26,7 +26,7 @@ import { balanceUtils } from '@/entities/balance';
 import { governanceService, votingService } from '@/entities/governance';
 import { networkUtils } from '@entities/network';
 import { eraService, useStakingData, validatorsService } from '@entities/staking';
-import { transactionService } from '@entities/transaction';
+import { type WrappedTransactions, transactionService } from '@entities/transaction';
 import { type VoteConfirm } from '@/features/operations/OperationsConfirm';
 import { type FeeMap } from '@/features/operations/OperationsValidation';
 import { type UnlockFormData } from '@features/governance/types/structs';
@@ -65,6 +65,8 @@ export const prepareTransaction = {
   prepareEditDelegationTransaction,
   prepareVoteTransaction,
   prepareRemoveVoteTransaction,
+  prepareFellowshipVoteTransaction,
+  prepareAmbassadorVoteTransaction,
 };
 
 async function getTransactionData(
@@ -703,4 +705,78 @@ async function prepareRemoveVoteTransaction({ transaction, wallets, chains, apis
     votes: coreTxs.map((t: Transaction) => t.args),
     description: '',
   } satisfies RemoveVoteConfirm;
+}
+
+type FellowshipVoteInput = {
+  id: number;
+  api: ApiPromise;
+  chain: Chain;
+  asset: Asset;
+  account: Account;
+  proxiedAccount?: ProxiedAccount;
+  aye: boolean;
+  referendumId: string;
+  description: string;
+  wrappedTransactions: WrappedTransactions;
+};
+
+async function prepareFellowshipVoteTransaction({ transaction, wallets, chains, apis, feeMap }: DataParams) {
+  const coreTx = getCoreTx(transaction);
+
+  const { chainId, chain, account } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
+  const api = apis[chainId];
+
+  return {
+    id: transaction.id,
+    api,
+    chain,
+    asset: chain.assets[0],
+    account: account!,
+    aye: coreTx.args.aye,
+    referendumId: coreTx.args.poll,
+    wrappedTransactions: transactionService.getWrappedTransaction({
+      api,
+      addressPrefix: chain.addressPrefix,
+      transaction: transaction.coreTx,
+      txWrappers: transaction.txWrappers,
+    }),
+    description: '',
+  } satisfies FellowshipVoteInput;
+}
+
+type AmbassadorVoteInput = {
+  id: number;
+  api: ApiPromise;
+  chain: Chain;
+  asset: Asset;
+  account: Account;
+  proxiedAccount?: ProxiedAccount;
+  aye: boolean;
+  referendumId: string;
+  description: string;
+  wrappedTransactions: WrappedTransactions;
+};
+
+async function prepareAmbassadorVoteTransaction({ transaction, wallets, chains, apis, feeMap }: DataParams) {
+  const coreTx = getCoreTx(transaction);
+
+  const { chainId, chain, account } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
+  const api = apis[chainId];
+
+  return {
+    id: transaction.id,
+    api,
+    chain,
+    asset: chain.assets[0],
+    account: account!,
+    aye: coreTx.args.aye,
+    referendumId: coreTx.args.poll,
+    wrappedTransactions: transactionService.getWrappedTransaction({
+      api,
+      addressPrefix: chain.addressPrefix,
+      transaction: transaction.coreTx,
+      txWrappers: transaction.txWrappers,
+    }),
+    description: '',
+  } satisfies AmbassadorVoteInput;
 }

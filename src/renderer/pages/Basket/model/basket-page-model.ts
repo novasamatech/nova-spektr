@@ -18,16 +18,17 @@ import {
 } from '@entities/transaction';
 import { walletModel } from '@entities/wallet';
 import { unlockValidateModel, voteValidateModel } from '@/features/governance';
-import { basketFilterModel } from '@features/basket/BasketFilter';
 import {
   type FeeMap,
   type ValidationResult,
   type ValidationStartedParams,
   addProxyValidateModel,
   addPureProxiedValidateModel,
+  ambassadorVoteValidateModel,
   bondExtraValidateModel,
   bondNominateValidateModel,
   delegateValidateModel,
+  fellowshipVoteValidateModel,
   nominateValidateModel,
   payeeValidateModel,
   removeProxyValidateModel,
@@ -38,7 +39,8 @@ import {
   transferValidateModel,
   unstakeValidateModel,
   withdrawValidateModel,
-} from '@features/operations/OperationsValidation';
+} from '@/features/operations/OperationsValidation';
+import { basketFilterModel } from '@features/basket/BasketFilter';
 import { basketPageUtils } from '../lib/basket-page-utils';
 import { getCoreTx } from '../lib/utils';
 import { Step } from '../types/basket-page-types';
@@ -155,6 +157,8 @@ const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
       [TransactionType.VOTE]: voteValidateModel.events.validationStarted,
       [TransactionType.REVOTE]: voteValidateModel.events.validationStarted,
       [TransactionType.REMOVE_VOTE]: removeVoteValidateModel.events.validationStarted,
+      [TransactionType.FELLOWSHIP_VOTE]: fellowshipVoteValidateModel.events.validationStarted,
+      [TransactionType.AMBASSADOR_VOTE]: ambassadorVoteValidateModel.events.validationStarted,
     };
 
     if (coreTx.type in TransactionValidatorsRecord) {
