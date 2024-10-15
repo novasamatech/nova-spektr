@@ -1,13 +1,12 @@
 import { type ApiPromise } from '@polkadot/api';
 
 import { substrateRpcPool } from '@/shared/api/substrate-helpers';
-import { type ReferendumId } from '@/shared/core';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
 import { getPalletName } from './helpers';
 import {
-  type ReferendumId as SchemaReferendumId,
+  type ReferendumId,
   type TrackId,
   referendaReferendumInfoConvictionVotingTally,
   referendumId,
@@ -48,9 +47,7 @@ export const storage = {
       const schemaWithIds = pjsSchema
         .vec(pjsSchema.optional(referendaReferendumInfoConvictionVotingTally))
         // TODO fix this mess
-        .transform(items =>
-          items.map((item, index) => ({ info: item, id: parseInt(ids[index]!) as SchemaReferendumId })),
-        );
+        .transform(items => items.map((item, index) => ({ info: item, id: ids[index]! })));
 
       return substrateRpcPool.call(() => getQuery(type, api, 'referendumInfoFor').multi(ids)).then(schemaWithIds.parse);
     } else {

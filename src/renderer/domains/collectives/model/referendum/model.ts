@@ -1,10 +1,10 @@
 import { type ApiPromise } from '@polkadot/api';
 import { createStore } from 'effector';
 
-import { type ChainId, type ReferendumId } from '@/shared/core';
+import { type ChainId } from '@/shared/core';
 import { createDataSource, createDataSubscription, createPagesHandler } from '@/shared/effector';
 import { merge, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
-import { referendaPallet } from '@/shared/pallet/referenda';
+import { type ReferendumId, referendaPallet } from '@/shared/pallet/referenda';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type CollectivePalletsType, type CollectivesStruct } from '../../lib/types';
 
