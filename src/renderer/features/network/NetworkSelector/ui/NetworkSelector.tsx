@@ -2,9 +2,9 @@ import { Listbox, Transition } from '@headlessui/react';
 import { type TFunction } from 'i18next';
 import { Fragment } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type RpcNode } from '@/shared/core';
 import { ConnectionType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { useScrollTo } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
 import { Button, FootnoteText, HelpText, Icon, IconButton } from '@/shared/ui';

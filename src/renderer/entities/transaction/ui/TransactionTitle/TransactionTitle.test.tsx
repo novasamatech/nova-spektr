@@ -5,7 +5,7 @@ import { TEST_ADDRESS, TEST_CHAIN_ID } from '@/shared/lib/utils';
 
 import { TransactionTitle } from './TransactionTitle';
 
-jest.mock('@/app/providers', () => ({
+jest.mock('@/shared/i18n', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

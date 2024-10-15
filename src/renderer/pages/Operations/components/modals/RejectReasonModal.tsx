@@ -1,6 +1,6 @@
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { BaseModal, Button, InputArea, InputHint } from '@/shared/ui';
 
 type RejectReasonForm = {

@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { chainsService } from '@/shared/api/network';
 import { type MultisigTransactionDS } from '@/shared/api/storage';
 import { type ChainId, type MultisigTransaction, TransactionType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { Button, MultiSelect } from '@/shared/ui';
 import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
 import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';

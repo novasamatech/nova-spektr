@@ -2,7 +2,7 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent, useEffect } from 'react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { BaseModal, Button, FootnoteText, HelpText, Icon, InputHint, Select } from '@/shared/ui';
 import { offChainModel } from '../../model/offChain';

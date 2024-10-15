@@ -1,8 +1,8 @@
 import { type PropsWithChildren } from 'react';
 
-import { type Contact } from '@shared/core';
-import { Plate } from '@shared/ui';
-import { Address } from '@shared/ui-entities';
+import { type Contact } from '@/shared/core';
+import { Plate } from '@/shared/ui';
+import { Address } from '@/shared/ui-entities';
 
 type Props = {
   contact: Contact;

@@ -8,7 +8,7 @@ import { walletProviderModel } from '../wallet-provider-model';
 
 import { walletProviderMocks } from './mocks/wallet-provider-mocks';
 
-// @widgets/RemoveProxy export of RemoveProxy causes chain of imports up to wallet-connect model which causes error
+// @/widgets/RemoveProxy export of RemoveProxy causes chain of imports up to wallet-connect model which causes error
 jest.mock('@/features/operations', () => ({
   Signing: () => null,
 }));

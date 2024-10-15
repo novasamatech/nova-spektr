@@ -1,8 +1,8 @@
 import { useUnit } from 'effector-react';
 import noop from 'lodash/noop';
 
-import { useI18n } from '@/app/providers';
 import { type ProxiedWallet, ProxyType, type Wallet } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { BaseModal, DropdownIconButton, FootnoteText, Icon, Tabs } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';

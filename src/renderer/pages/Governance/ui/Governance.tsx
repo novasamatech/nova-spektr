@@ -1,8 +1,8 @@
 import { useGate, useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type Referendum, type ReferendumId } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { Header, Plate } from '@/shared/ui';
 import { referendumService } from '@/entities/governance';

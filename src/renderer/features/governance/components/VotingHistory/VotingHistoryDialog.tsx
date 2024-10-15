@@ -1,8 +1,8 @@
 import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { useMemo, useState } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type Referendum } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
 import { BaseModal, Button, FootnoteText, Icon, SmallTitleText, Tabs } from '@/shared/ui';

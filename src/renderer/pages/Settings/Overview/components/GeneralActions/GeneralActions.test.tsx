@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 
 import { GeneralActions } from './GeneralActions';
 
-jest.mock('@/app/providers', () => ({
+jest.mock('@/shared/i18n', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

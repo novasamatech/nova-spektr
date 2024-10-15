@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { Select } from '@/shared/ui';
 import { ChainTitle } from '@/entities/chain';
 import { networkSelectorModel } from '../../model/networkSelector';

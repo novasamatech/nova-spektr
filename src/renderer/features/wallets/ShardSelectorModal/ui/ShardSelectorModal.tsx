@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { BaseModal, Button } from '@/shared/ui';
 import { type Callbacks, shardsModel } from '../model/shards-model';
 

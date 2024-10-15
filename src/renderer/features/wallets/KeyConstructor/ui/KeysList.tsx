@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { FootnoteText, HelpText, Icon, IconButton, SmallTitleText } from '@/shared/ui';
 import { ChainIcon } from '@/entities/chain';
 import { networkModel } from '@/entities/network';

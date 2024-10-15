@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { BodyText, Icon } from '@/shared/ui';
 import { notificationModel } from '@/entities/notification';
 

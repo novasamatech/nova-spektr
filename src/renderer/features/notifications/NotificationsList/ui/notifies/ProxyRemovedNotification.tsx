@@ -1,8 +1,8 @@
 import { useStoreMap } from 'effector-react';
 import { Trans } from 'react-i18next';
 
-import { useI18n } from '@/app/providers';
 import { type ProxyAction, WalletType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { BodyText, Identicon } from '@/shared/ui';
 import { ChainTitle } from '@/entities/chain';

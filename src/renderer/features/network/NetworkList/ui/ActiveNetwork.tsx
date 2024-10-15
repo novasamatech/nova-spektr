@@ -1,8 +1,8 @@
 import { type TFunction } from 'i18next';
 import { type PropsWithChildren } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { ConnectionStatus } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { BodyText, FootnoteText, HelpText, StatusLabel } from '@/shared/ui';
 import { ChainIcon } from '@/entities/chain';
 import { type ExtendedChain } from '@/entities/network';

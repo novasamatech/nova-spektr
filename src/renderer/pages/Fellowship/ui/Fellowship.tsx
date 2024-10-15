@@ -2,8 +2,8 @@ import { useGate, useUnit } from 'effector-react';
 import { useLayoutEffect } from 'react';
 import { Outlet, generatePath, useParams } from 'react-router-dom';
 
-import { useI18n } from '@/app/providers';
 import { type ChainId } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { Paths } from '@/shared/routes';
 import { BodyText, Header, Icon, Select } from '@/shared/ui';
 import { Box, ScrollArea } from '@/shared/ui-kit';

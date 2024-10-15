@@ -1,7 +1,7 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { Button, MultiSelect } from '@/shared/ui';
 import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
 import { networkModel } from '@/entities/network';

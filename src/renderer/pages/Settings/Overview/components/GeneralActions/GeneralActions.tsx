@@ -3,7 +3,7 @@ import { capitalize } from 'lodash';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { BodyText, FootnoteText, HelpText, Icon, Plate, Switch } from '@/shared/ui';

@@ -1,8 +1,8 @@
 import { useUnit } from 'effector-react';
 import { type KeyboardEvent } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type Asset, type Balance, type ChainId } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { KeyboardKey, cnTw, totalAmount, transferableAmount } from '@/shared/lib/utils';
 import { BodyText, Shimmering } from '@/shared/ui';

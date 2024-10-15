@@ -1,7 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@/app/providers';
 import {
   type Account,
   type Address,
@@ -13,6 +12,7 @@ import {
   type Wallet,
 } from '@/shared/core';
 import { CryptoType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
 import { transactionService } from '../../lib';
 import { QrTxGenerator } from '../QrCode/QrGenerator/QrTxGenerator';

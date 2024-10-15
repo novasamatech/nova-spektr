@@ -2,8 +2,8 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent, useEffect } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type CurrencyItem } from '@/shared/api/price-provider';
+import { useI18n } from '@/shared/i18n';
 import { Button, FootnoteText, HelpText, Select, Switch } from '@/shared/ui';
 import { type DropdownOption } from '@/shared/ui/types';
 import { type Callbacks, currencyFormModel } from '../model/currency-form';

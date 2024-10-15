@@ -1,9 +1,11 @@
-import { useI18n } from '@/app/providers';
 import { type Chain, type ChainAccount, type ChainId, type ShardAccount } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { Accordion, FootnoteText, HelpText } from '@/shared/ui';
 import { ChainTitle } from '@/entities/chain';
-import { DerivedAccount, ExplorersPopover, accountUtils } from '@/entities/wallet';
+import { accountUtils } from '../../lib/account-utils';
+import { DerivedAccount } from '../Cards/DerivedAccount';
+import { ExplorersPopover } from '../ExplorersPopover/ExplorersPopover';
 
 type Props = {
   chains: Chain[];

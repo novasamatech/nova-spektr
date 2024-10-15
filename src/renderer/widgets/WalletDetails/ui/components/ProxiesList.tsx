@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@/app/providers';
 import { type ProxiedAccount, type ProxyAccount, ProxyType, ProxyVariant } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
 import { Accordion, ConfirmModal, FootnoteText, HelpText, SmallTitleText } from '@/shared/ui';

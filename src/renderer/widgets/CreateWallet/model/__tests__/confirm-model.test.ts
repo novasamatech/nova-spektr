@@ -1,8 +1,8 @@
 import { allSettled, fork } from 'effector';
 
-import { type Account, type Chain } from '@shared/core';
-import { networkModel } from '@entities/network';
-import { walletModel } from '@entities/wallet';
+import { type Account, type Chain } from '@/shared/core';
+import { networkModel } from '@/entities/network';
+import { walletModel } from '@/entities/wallet';
 import { confirmModel } from '../confirm-model';
 
 import { initiatorWallet, signerWallet, testApi } from './mock';

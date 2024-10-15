@@ -1,6 +1,6 @@
 import { type PropsWithChildren } from 'react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { DetailRow, FootnoteText } from '@/shared/ui';
 import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon } from '@/entities/wallet';
 import { type ConfirmItem } from '../lib/createTransactionConfirmStore';

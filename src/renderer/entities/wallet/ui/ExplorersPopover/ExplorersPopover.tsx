@@ -1,7 +1,7 @@
 import { type PropsWithChildren, type ReactNode } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type AccountId, type Address, type Explorer } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { cnTw, copyToClipboard, getAccountExplorer, toAddress } from '@/shared/lib/utils';
 import { ContextMenu, ExplorerLink, HelpText, IconButton } from '@/shared/ui';
 

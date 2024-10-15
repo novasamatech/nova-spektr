@@ -6,7 +6,7 @@ import { type Asset, type Transaction } from '@/shared/core';
 
 import { XcmFee } from './XcmFee';
 
-jest.mock('@/app/providers', () => ({
+jest.mock('@/shared/i18n', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

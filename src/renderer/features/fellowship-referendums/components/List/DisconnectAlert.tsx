@@ -1,4 +1,4 @@
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { Paths } from '@/shared/routes';
 import { Alert, ButtonLink, FootnoteText } from '@/shared/ui';
 

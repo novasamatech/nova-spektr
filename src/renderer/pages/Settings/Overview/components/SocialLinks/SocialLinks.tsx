@@ -1,4 +1,4 @@
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, HelpText, Icon, Plate } from '@/shared/ui';
 

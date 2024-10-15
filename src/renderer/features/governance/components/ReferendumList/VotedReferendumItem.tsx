@@ -2,8 +2,8 @@ import { type ApiPromise } from '@polkadot/api';
 import { type BN } from '@polkadot/util';
 import { memo } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type Asset, type Chain } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { formatBalance, toNumberWithPrecision } from '@/shared/lib/utils';
 import { FootnoteText, HeadlineText, Icon } from '@/shared/ui';
 import { ReferendumVoteChart, TrackInfo, referendumService, votingService } from '@/entities/governance';

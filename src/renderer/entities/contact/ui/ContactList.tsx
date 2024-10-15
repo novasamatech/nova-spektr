@@ -1,6 +1,6 @@
 import { type PropsWithChildren } from 'react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
 
 export const ContactList = ({ children }: PropsWithChildren) => {

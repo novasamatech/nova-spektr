@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { Button, Checkbox, ConfirmModal, FootnoteText, Header, Icon, SmallTitleText } from '@/shared/ui';
 import { BasketFilter, basketFilterModel } from '@/features/basket';
 import { basketPageUtils } from '../lib/basket-page-utils';

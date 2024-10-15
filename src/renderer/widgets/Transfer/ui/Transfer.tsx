@@ -1,8 +1,8 @@
 import { useUnit } from 'effector-react';
 import { type ReactNode, useEffect } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type Asset, type Chain } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { BaseModal, Button } from '@/shared/ui';
 import { OperationTitle } from '@/entities/chain';

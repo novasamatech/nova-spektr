@@ -1,5 +1,5 @@
-import { useI18n } from '@/app/providers';
 import NoConnection from '@/shared/assets/images/misc/no-connection.webp';
+import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { ButtonLink, FootnoteText } from '@/shared/ui';

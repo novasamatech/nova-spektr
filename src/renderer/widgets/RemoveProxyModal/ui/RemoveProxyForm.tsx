@@ -2,8 +2,8 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type MultisigAccount } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { Alert, Button, Input, InputHint } from '@/shared/ui';
 import { SignatorySelector } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';

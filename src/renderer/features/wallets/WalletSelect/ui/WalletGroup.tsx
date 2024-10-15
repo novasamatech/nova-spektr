@@ -1,5 +1,5 @@
-import { useI18n } from '@/app/providers';
 import { type Wallet, type WalletFamily, WalletType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { Accordion, CaptionText, Icon } from '@/shared/ui';
 import { WalletCardMd, WalletIcon, walletUtils } from '@/entities/wallet';
 import { walletSelectModel } from '../model/wallet-select-model';

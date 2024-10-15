@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type Address, type HexString } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { useCountdown } from '@/shared/lib/hooks';
 import { ValidationErrors, toAddress } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';

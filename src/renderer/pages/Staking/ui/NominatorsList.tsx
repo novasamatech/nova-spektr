@@ -2,7 +2,6 @@ import { type ApiPromise } from '@polkadot/api';
 import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
-import { useI18n } from '@/app/providers';
 import {
   type Account,
   type Address,
@@ -11,6 +10,7 @@ import {
   type Explorer,
   type ShardAccount,
 } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, HelpText, Icon, Tooltip } from '@/shared/ui';
 import { Address as AddressComponent } from '@/shared/ui-entities';

@@ -1,6 +1,6 @@
 import { type Meta, type StoryObj } from '@storybook/react';
 
-import { createBaseAccount, polkadotChain } from '@shared/mocks';
+import { createBaseAccount, polkadotChain } from '@/shared/mocks';
 
 import { Account } from './Account';
 

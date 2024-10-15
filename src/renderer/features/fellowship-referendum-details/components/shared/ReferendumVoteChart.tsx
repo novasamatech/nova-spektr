@@ -2,11 +2,11 @@ import { BN_BILLION, BN_MILLION } from '@polkadot/util';
 import { useGate, useStoreMap } from 'effector-react';
 import { memo } from 'react';
 
-import { useI18n } from '@app/providers';
-import { nullable } from '@shared/lib/utils';
-import { FootnoteText } from '@shared/ui';
-import { VoteChart } from '@shared/ui-entities';
-import { Skeleton, Tooltip } from '@shared/ui-kit';
+import { useI18n } from '@/shared/i18n';
+import { nullable } from '@/shared/lib/utils';
+import { FootnoteText } from '@/shared/ui';
+import { VoteChart } from '@/shared/ui-entities';
+import { Skeleton, Tooltip } from '@/shared/ui-kit';
 import { type Referendum, collectiveDomain } from '@/domains/collectives';
 import { referendumsDetailsFeatureStatus } from '../../model/status';
 import { thresholdsModel } from '../../model/thresholds';

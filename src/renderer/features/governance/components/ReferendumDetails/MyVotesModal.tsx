@@ -1,8 +1,8 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type Asset, type Chain, type Referendum } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { formatAsset, formatBalance, toAccountId } from '@/shared/lib/utils';
 import { BaseModal, BodyText, FootnoteText } from '@/shared/ui';

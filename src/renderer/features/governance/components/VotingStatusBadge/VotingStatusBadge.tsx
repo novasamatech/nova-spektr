@@ -1,5 +1,5 @@
-import { useI18n } from '@/app/providers';
 import { type CompletedReferendum, type OngoingReferendum, type ReferendumType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { OperationStatus } from '@/shared/ui';
 import { referendumService } from '@/entities/governance';
 

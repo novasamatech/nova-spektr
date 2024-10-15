@@ -1,7 +1,7 @@
 import { useStoreMap } from 'effector-react';
 
-import { useI18n } from '@/app/providers';
 import { type Referendum } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { FootnoteText, Shimmering } from '@/shared/ui';
 import { referendumService } from '@/entities/governance';

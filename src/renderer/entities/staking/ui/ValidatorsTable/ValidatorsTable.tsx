@@ -1,5 +1,5 @@
-import { useI18n } from '@/app/providers';
 import { type Asset, type Explorer, type Validator } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { cnTw, getComposedIdentity } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, HelpText, IconButton, Identicon } from '@/shared/ui';
 import { Hash } from '@/shared/ui-entities';

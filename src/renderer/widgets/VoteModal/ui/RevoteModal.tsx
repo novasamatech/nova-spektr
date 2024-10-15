@@ -1,7 +1,7 @@
 import { useGate, useUnit } from 'effector-react';
 
-import { useI18n } from '@/app/providers';
 import { type AccountVote, type Address, type Asset, type Chain, type OngoingReferendum } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { Step, isStep } from '@/shared/lib/utils';
 import { BaseModal, Button } from '@/shared/ui';

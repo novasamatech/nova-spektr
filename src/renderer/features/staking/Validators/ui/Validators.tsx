@@ -1,8 +1,8 @@
 import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type Validator } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { BodyText, Button, Checkbox, Icon, Loader, SearchInput, Shimmering, SmallTitleText } from '@/shared/ui';
 import { ValidatorsTable } from '@/entities/staking';

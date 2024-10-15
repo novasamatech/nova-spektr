@@ -1,7 +1,7 @@
 import { Listbox, Transition } from '@headlessui/react';
 import { Fragment, type ReactNode, useId } from 'react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { CaptionText, Checkbox, FootnoteText, Icon, LabelText } from '@/shared/ui';
 import {

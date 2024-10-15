@@ -1,6 +1,6 @@
 import { type ComponentProps } from 'react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText } from '@/shared/ui';
 import { Fee } from '../Fee/Fee';

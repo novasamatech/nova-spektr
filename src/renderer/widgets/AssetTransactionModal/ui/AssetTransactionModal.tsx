@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { Link } from 'react-router-dom';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { totalAmount } from '@/shared/lib/utils';
 import { type PathType, Paths, createLink } from '@/shared/routes';

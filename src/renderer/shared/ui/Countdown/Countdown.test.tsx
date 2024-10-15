@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import { Countdown } from './Countdown';
 
-jest.mock('@/app/providers', () => ({
+jest.mock('@/shared/i18n', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

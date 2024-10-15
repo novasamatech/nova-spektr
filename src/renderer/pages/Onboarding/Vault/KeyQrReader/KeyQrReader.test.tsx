@@ -4,7 +4,7 @@ import { QrError, QrReader } from '@/entities/transaction';
 
 import KeyQrReader from './KeyQrReader';
 
-jest.mock('@/app/providers', () => ({
+jest.mock('@/shared/i18n', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

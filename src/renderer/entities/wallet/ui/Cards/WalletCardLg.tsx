@@ -1,7 +1,7 @@
 import { type ReactNode } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type Wallet } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, StatusLabel } from '@/shared/ui';
 import { walletUtils } from '../../lib/wallet-utils';

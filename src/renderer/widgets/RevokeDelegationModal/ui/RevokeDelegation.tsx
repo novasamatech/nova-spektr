@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { Step, isStep, nonNullable, nullable } from '@/shared/lib/utils';
 import { BaseModal, Button } from '@/shared/ui';

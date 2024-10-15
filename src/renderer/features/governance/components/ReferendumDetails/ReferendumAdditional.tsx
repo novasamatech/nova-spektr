@@ -1,5 +1,5 @@
-import { useI18n } from '@/app/providers';
 import { type ReferendumId } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { BlockExplorer } from '@/shared/ui';
 
 type Props = {

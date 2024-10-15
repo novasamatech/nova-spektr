@@ -1,8 +1,8 @@
 import { useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type Account, type Address, type Asset, type Explorer } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { Checkbox, FootnoteText, Icon, IconButton, Plate, Shimmering } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';

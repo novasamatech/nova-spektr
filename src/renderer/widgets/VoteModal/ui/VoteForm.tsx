@@ -2,8 +2,8 @@ import { BN_ZERO } from '@polkadot/util';
 import { useForm } from 'effector-forms';
 import { useGate, useStoreMap, useUnit } from 'effector-react';
 
-import { useI18n } from '@/app/providers';
 import { type Asset, type Chain } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { formatAsset } from '@/shared/lib/utils';
 import {

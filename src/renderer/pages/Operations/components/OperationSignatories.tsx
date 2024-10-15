@@ -1,7 +1,6 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@/app/providers';
 import {
   type AccountId,
   type MultisigAccount,
@@ -11,6 +10,7 @@ import {
   type SigningStatus,
   type Wallet,
 } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { nonNullable } from '@/shared/lib/utils';
 import { BodyText, Button, CaptionText, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';

@@ -1,5 +1,5 @@
-import { useI18n } from '@/app/providers';
 import { type AccountId, type Chain } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { AccountExplorers, Address } from '@/shared/ui-entities';

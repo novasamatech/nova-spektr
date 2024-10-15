@@ -2,8 +2,8 @@ import { type ApiPromise } from '@polkadot/api';
 import { BN_ZERO } from '@polkadot/util';
 import { useGate, useUnit } from 'effector-react';
 
-import { useI18n } from '@/app/providers';
 import { type Asset, type Chain } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { BaseModal, Button, Plate } from '@/shared/ui';
 import { referendumService, votingService } from '@/entities/governance';

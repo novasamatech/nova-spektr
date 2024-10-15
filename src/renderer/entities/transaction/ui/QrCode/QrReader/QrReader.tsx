@@ -3,8 +3,8 @@ import { BrowserCodeReader, BrowserQRCodeReader, type IScannerControls } from '@
 import init, { Decoder, EncodingPacket } from 'raptorq';
 import { useEffect, useRef } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { CryptoTypeString } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { cnTw, validateSignerFormat } from '@/shared/lib/utils';
 import {
   DYNAMIC_DERIVATIONS_ADDRESS_RESPONSE,

@@ -2,7 +2,6 @@ import { useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { useI18n } from '@/app/providers';
 import {
   type Account,
   type Address,
@@ -12,6 +11,7 @@ import {
   type Validator,
   type Wallet,
 } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { cnTw, toAccountId } from '@/shared/lib/utils';
 import { CaptionText, DetailRow, FootnoteText, Icon } from '@/shared/ui';

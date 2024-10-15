@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
-import { useConfirmContext, useI18n } from '@/app/providers';
+import { useConfirmContext, useI18n } from '@/shared/providers';
 import { FootnoteText, Icon, Plate, Shimmering, SmallTitleText } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { walletModel, walletUtils } from '@/entities/wallet';

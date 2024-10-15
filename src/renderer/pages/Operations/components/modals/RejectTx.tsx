@@ -2,7 +2,6 @@ import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type MultisigTransactionDS } from '@/shared/api/storage';
 import {
   type Account,
@@ -13,6 +12,7 @@ import {
   type Transaction,
 } from '@/shared/core';
 import { TransactionType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { getAssetById, toAddress, transferableAmount } from '@/shared/lib/utils';
 import { BaseModal, Button } from '@/shared/ui';

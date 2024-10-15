@@ -1,8 +1,8 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode, useState } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { ProxyType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { SignButton } from '@/entities/operations';

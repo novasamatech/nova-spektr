@@ -1,5 +1,5 @@
-import { useI18n } from '@/app/providers';
 import { type SignableWalletFamily, WalletType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { Button, Icon } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
 

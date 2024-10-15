@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { type ComponentProps, useEffect } from 'react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { useTaskQueue } from '@/shared/lib/hooks';
 import { Button } from '@/shared/ui';
 import { useMultisigEvent, useMultisigTx } from '@/entities/multisig';

@@ -1,7 +1,8 @@
 import { type DelegateAccount } from '@/shared/api/governance';
 import { cnTw } from '@/shared/lib/utils';
 import { Icon, Identicon } from '@/shared/ui';
-import { addDelegationUtils } from '@/widgets/DelegationModal';
+
+const isDefaultImage = (image?: string) => !image || image.includes('default');
 
 type Props = {
   delegate: DelegateAccount;
@@ -11,7 +12,7 @@ type Props = {
 export const DelegateIcon = ({ delegate, className }: Props) => {
   if (!delegate.name) return <Identicon address={delegate.accountId} size={46} />;
 
-  if (addDelegationUtils.isDefaultImage(delegate.image)) {
+  if (isDefaultImage(delegate.image)) {
     <div
       className={cnTw(
         'flex h-11.5 w-11.5 items-center justify-center rounded-full',

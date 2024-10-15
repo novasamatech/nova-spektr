@@ -1,5 +1,5 @@
-import { useI18n } from '@/app/providers';
 import { type MultisigAccount } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { BodyText, Icon } from '@/shared/ui';
 
 type Props = {

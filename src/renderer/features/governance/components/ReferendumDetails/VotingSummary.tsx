@@ -1,7 +1,7 @@
 import { useGate, useStoreMap } from 'effector-react';
 
-import { useI18n } from '@/app/providers';
 import { type Asset, type Chain } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { formatAsset } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { votingSummaryModel } from '../../model/votingSummary';

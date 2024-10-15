@@ -1,4 +1,4 @@
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { Tooltip } from '@/shared/ui/Popovers';
 import { FootnoteText, HelpText } from '@/shared/ui/Typography';
 import { VoteChart } from '@/shared/ui-entities';

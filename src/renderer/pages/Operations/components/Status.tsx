@@ -1,10 +1,10 @@
-import { useI18n } from '@/app/providers';
 import {
   type MultisigTransaction,
   MultisigTxFinalStatus,
   MultisigTxInitStatus,
   type MultisigTxStatus,
 } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { OperationStatus } from '@/shared/ui';
 
 const StatusTitle: Record<MultisigTxStatus, string> = {

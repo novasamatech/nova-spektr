@@ -1,7 +1,7 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 
-import { toAccountId } from '@shared/lib/utils';
-import { walletModel, walletUtils } from '@entities/wallet';
+import { toAccountId } from '@/shared/lib/utils';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { type SignatoryInfo } from '../lib/types';
 
 const signatoriesChanged = createEvent<SignatoryInfo>();

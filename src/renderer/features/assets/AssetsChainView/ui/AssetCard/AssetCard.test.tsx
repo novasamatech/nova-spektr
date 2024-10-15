@@ -11,7 +11,7 @@ import { walletModel } from '@/entities/wallet';
 
 import { AssetCard } from './AssetCard';
 
-jest.mock('@/app/providers', () => ({
+jest.mock('@/shared/i18n', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

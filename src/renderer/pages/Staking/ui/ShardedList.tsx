@@ -1,9 +1,9 @@
 import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
-import { useI18n } from '@/app/providers';
 import { type Address, type Asset, type Explorer } from '@/shared/core';
 import { type ShardAccount } from '@/shared/core/types/account';
+import { useI18n } from '@/shared/i18n';
 import { Accordion, Checkbox, FootnoteText, Plate, Shimmering, Tooltip } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { AssetFiatBalance } from '@/entities/price';

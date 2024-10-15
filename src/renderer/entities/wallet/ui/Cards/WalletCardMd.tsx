@@ -3,7 +3,7 @@ import { type MouseEvent, type ReactNode } from 'react';
 import { type Wallet } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, IconButton } from '@/shared/ui';
-import { walletUtils } from '@/entities/wallet';
+import { walletUtils } from '../../lib/wallet-utils';
 import { WalletIcon } from '../WalletIcon/WalletIcon';
 
 type Props = {

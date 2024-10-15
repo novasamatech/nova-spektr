@@ -2,10 +2,10 @@ import { type UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useGate, useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@/app/providers';
 import wallet_connect_confirm from '@/shared/assets/video/wallet_connect_confirm.mp4';
 import wallet_connect_confirm_webm from '@/shared/assets/video/wallet_connect_confirm.webm';
 import { type HexString } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { useCountdown } from '@/shared/lib/hooks';
 import { ValidationErrors, createTxMetadata, toAddress, upgradeNonce } from '@/shared/lib/utils';
 import { Button, ConfirmModal, Countdown, FootnoteText, SmallTitleText, StatusModal } from '@/shared/ui';

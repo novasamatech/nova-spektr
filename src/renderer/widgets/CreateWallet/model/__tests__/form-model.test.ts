@@ -1,9 +1,9 @@
 import { allSettled, fork } from 'effector';
 
-import { ConnectionStatus } from '@shared/core';
-import { toAddress } from '@shared/lib/utils';
-import { networkModel } from '@entities/network';
-import { walletModel } from '@entities/wallet';
+import { ConnectionStatus } from '@/shared/core';
+import { toAddress } from '@/shared/lib/utils';
+import { networkModel } from '@/entities/network';
+import { walletModel } from '@/entities/wallet';
 import { formModel } from '../form-model';
 import { signatoryModel } from '../signatory-model';
 
@@ -17,8 +17,8 @@ import {
   wrongChainWallet,
 } from './mock';
 
-jest.mock('@shared/lib/utils', () => ({
-  ...jest.requireActual('@shared/lib/utils'),
+jest.mock('@/shared/lib/utils', () => ({
+  ...jest.requireActual('@/shared/lib/utils'),
   getProxyTypes: jest.fn().mockReturnValue(['Any', 'Staking']),
 }));
 

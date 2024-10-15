@@ -1,8 +1,8 @@
 import { useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type BasketTransaction, TransactionType, WalletType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { BaseModal, HeaderTitleText } from '@/shared/ui';
 import { OperationTitle } from '@/entities/chain';

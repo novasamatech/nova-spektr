@@ -2,8 +2,8 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent, useState } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type Address, RewardsDestination } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { formatBalance, toAddress, toShortAddress, validateAddress } from '@/shared/lib/utils';
 import {
   AmountInput,

@@ -1,7 +1,6 @@
 import { useUnit } from 'effector-react';
 import groupBy from 'lodash/groupBy';
 
-import { useI18n } from '@/app/providers';
 import { chainsService } from '@/shared/api/network';
 import { type MultisigTransactionDS } from '@/shared/api/storage';
 import {
@@ -14,6 +13,7 @@ import {
   type Wallet,
   type WalletsMap,
 } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { SS58_DEFAULT_PREFIX, getAssetById, getExtrinsicExplorer, sortByDateAsc, toAddress } from '@/shared/lib/utils';
 import { BaseModal, BodyText, ContextMenu, ExplorerLink, FootnoteText, IconButton, Identicon } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';

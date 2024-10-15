@@ -1,8 +1,8 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type Account, type MultisigAccount, type MultisigTransaction, type Transaction } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { getAssetById } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';

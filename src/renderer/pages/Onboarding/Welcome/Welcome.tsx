@@ -1,8 +1,8 @@
 import throttle from 'lodash/throttle';
 import { useLayoutEffect, useRef, useState } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { WalletType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { Icon, TitleText } from '@/shared/ui';
 import { walletPairingModel } from '@/features/wallets';

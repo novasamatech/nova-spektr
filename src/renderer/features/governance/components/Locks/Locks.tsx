@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { FootnoteText, Icon, Plate, Shimmering } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { locksModel } from '../../model/locks';

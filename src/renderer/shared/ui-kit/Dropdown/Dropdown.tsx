@@ -3,7 +3,7 @@ import { type PropsWithChildren, type ReactNode, createContext, useContext, useM
 
 import { type XOR } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
-import { Checkbox } from '@/shared/ui';
+import { Checkbox } from '@/shared/ui/Checkbox/Checkbox';
 import { ScrollArea } from '../ScrollArea/ScrollArea';
 import { Surface } from '../Surface/Surface';
 import { useTheme } from '../Theme/useTheme';

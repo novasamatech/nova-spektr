@@ -2,9 +2,9 @@ import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
-import { useI18n } from '@/app/providers';
 import { type AccountId, type Chain } from '@/shared/core';
 import { AccountType, ChainType, CryptoType, ErrorType, SigningType, WalletType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { DEFAULT_TRANSITION, isEthereumAccountId, toAccountId, validateAddress } from '@/shared/lib/utils';
 import {

@@ -1,13 +1,13 @@
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@app/providers';
+import { WalletType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { RootExplorers } from '@/shared/lib/utils';
-import { WalletType } from '@shared/core';
-import { Button, Counter, DetailRow, Icon, IconButton, Separator } from '@shared/ui';
+import { Button, Counter, DetailRow, Icon, IconButton, Separator } from '@/shared/ui';
+import { SignButton } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
-import { SignButton } from '@entities/operations';
 import { Step } from '../../lib/types';
 import { confirmModel } from '../../model/confirm-model';
 import { flowModel } from '../../model/flow-model';

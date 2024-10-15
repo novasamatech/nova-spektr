@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@/app/providers';
 import { type Wallet, WalletType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
 import { AssetsListView, EmptyAssetsState } from '@/entities/asset';
 import { priceProviderModel } from '@/entities/price';

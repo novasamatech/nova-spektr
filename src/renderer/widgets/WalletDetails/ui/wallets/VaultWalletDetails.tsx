@@ -1,7 +1,6 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@/app/providers';
 import {
   type BaseAccount,
   type Chain,
@@ -11,6 +10,7 @@ import {
   type ShardAccount,
 } from '@/shared/core';
 import { KeyType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { copyToClipboard, toAddress } from '@/shared/lib/utils';
 import { BaseModal, ContextMenu, DropdownIconButton, HelpText, IconButton, Tabs } from '@/shared/ui';

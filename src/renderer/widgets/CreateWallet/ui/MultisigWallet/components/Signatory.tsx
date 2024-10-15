@@ -2,16 +2,16 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@app/providers';
 import { type ChainAccount, type WalletFamily } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
+import { CaptionText, Combobox, Icon, IconButton, Identicon, Input } from '@/shared/ui';
 import { type ComboboxOption } from '@/shared/ui/types';
-import { toAccountId, toAddress, validateAddress } from '@shared/lib/utils';
-import { CaptionText, Combobox, Icon, IconButton, Identicon, Input } from '@shared/ui';
+import { contactModel } from '@/entities/contact';
 import { AddressWithName, WalletIcon, walletModel, walletUtils } from '@/entities/wallet';
-import { contactModel } from '@entities/contact';
+import { filterModel } from '@/features/contacts';
+import { walletSelectUtils } from '@/features/wallets/WalletSelect/lib/wallet-select-utils';
 import { GroupLabels } from '@/features/wallets/WalletSelect/ui/WalletGroup';
-import { filterModel } from '@features/contacts';
-import { walletSelectUtils } from '@features/wallets/WalletSelect/lib/wallet-select-utils';
 import { formModel } from '@/widgets/CreateWallet/model/form-model';
 import { signatoryModel } from '../../../model/signatory-model';
 

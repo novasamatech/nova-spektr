@@ -30,6 +30,8 @@ module.exports = {
   },
   rules: {
     'sort-imports': ['error', { ignoreDeclarationSort: true }],
+    // For debugging purpose, too slow for every day usage
+    // 'import-x/no-cycle': ['error', { maxDepth: Number.Infinity }],
     'import-x/no-unresolved': 'off',
     'import-x/named': 'off',
     'import-x/namespace': 'off',

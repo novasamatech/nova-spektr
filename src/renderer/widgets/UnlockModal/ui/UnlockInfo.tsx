@@ -1,8 +1,8 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type PendingChunkWithAddress, UnlockChunkType } from '@/shared/api/governance';
+import { useI18n } from '@/shared/i18n';
 import { getSecondsDuratonToBlock } from '@/shared/lib/utils';
 import { Button, Duration, FootnoteText, Icon, Shimmering } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';

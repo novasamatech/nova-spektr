@@ -31,7 +31,9 @@ import { submitModel, submitUtils } from '@/features/operations/OperationSubmit'
 import { removeProxyConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
 import { proxiesModel } from '@/features/proxies';
 import { walletSelectModel } from '@/features/wallets';
-import { walletProviderModel } from '@/widgets/WalletDetails';
+// TODO fix cycle widgets/WalletDetails <=> widgets/RemoveProxyModal
+// eslint-disable-next-line boundaries/entry-point
+import { walletProviderModel } from '@/widgets/WalletDetails/model/wallet-provider-model';
 import { removeProxyUtils } from '../lib/remove-proxy-utils';
 import { type RemoveProxyStore, Step } from '../lib/types';
 

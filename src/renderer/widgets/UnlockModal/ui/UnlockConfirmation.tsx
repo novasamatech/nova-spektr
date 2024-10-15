@@ -2,7 +2,7 @@ import { BN } from '@polkadot/util';
 import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
 import { Button, CaptionText, DetailRow, FootnoteText, Icon, Loader, Tooltip } from '@/shared/ui';

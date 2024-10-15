@@ -5,7 +5,7 @@ import { TEST_ACCOUNTS, TEST_ADDRESS } from '@/shared/lib/utils';
 
 import { ProxyAccount } from './ProxyAccount';
 
-jest.mock('@/app/providers', () => ({
+jest.mock('@/shared/i18n', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

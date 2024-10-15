@@ -1,7 +1,7 @@
 import { type TFunction } from 'i18next';
 
-import { useI18n } from '@/app/providers';
 import { WalletType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { DropdownButton } from '@/shared/ui';
 import { type ButtonDropdownOption } from '@/shared/ui/types';
 import { WalletIcon } from '@/entities/wallet';

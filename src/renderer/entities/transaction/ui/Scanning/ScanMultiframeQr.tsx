@@ -3,8 +3,8 @@ import { u8aConcat } from '@polkadot/util';
 import init, { Encoder } from 'raptorq';
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type Address, type BaseAccount, type ChainId, type ShardAccount, type Wallet } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { type TxMetadata, createTxMetadata, toAddress, upgradeNonce } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { transactionService } from '@/entities/transaction';

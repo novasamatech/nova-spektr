@@ -1,4 +1,4 @@
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { Header } from '@/shared/ui';
 import { EmptyNotifications, NotificationsList } from '@/features/notifications';
 

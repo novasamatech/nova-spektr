@@ -3,7 +3,7 @@ import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { formatAmount } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, HeadlineText, Icon, LargeTitleText, Loader, Tooltip } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';

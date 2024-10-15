@@ -1,7 +1,7 @@
 import noop from 'lodash/noop';
 
-import { useI18n } from '@/app/providers';
 import { type Chain, type ProxyAccount } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { copyToClipboard, toAddress } from '@/shared/lib/utils';
 import { DropdownIconButton, HelpText, IconButton } from '@/shared/ui';
 import { type DropdownIconButtonOption } from '@/shared/ui/types';

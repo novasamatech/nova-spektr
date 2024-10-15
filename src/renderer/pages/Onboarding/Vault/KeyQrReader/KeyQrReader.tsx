@@ -2,8 +2,8 @@ import { hexToU8a, isHex } from '@polkadot/util';
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import { useState } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { CryptoTypeString } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { Button, CaptionText, FootnoteText, Icon, Loader, Select } from '@/shared/ui';
 import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';

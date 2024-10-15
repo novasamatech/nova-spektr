@@ -2,7 +2,7 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, Input, InputHint, MultiSelect, Tooltip } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';

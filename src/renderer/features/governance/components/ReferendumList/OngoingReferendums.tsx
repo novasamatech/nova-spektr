@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { memo } from 'react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { Accordion, CaptionText, Shimmering } from '@/shared/ui';
 import { type AggregatedReferendum } from '../../types/structs';
 

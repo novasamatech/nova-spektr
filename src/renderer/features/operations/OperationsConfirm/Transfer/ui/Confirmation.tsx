@@ -1,7 +1,7 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';

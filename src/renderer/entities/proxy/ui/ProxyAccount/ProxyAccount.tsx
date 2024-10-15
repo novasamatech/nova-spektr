@@ -1,7 +1,7 @@
 import { type ReactNode } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type AccountId, type ProxyType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { cnTw, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { BodyText, HelpText, Identicon, Truncate } from '@/shared/ui';
 import { proxyUtils } from '../../lib/proxy-utils';

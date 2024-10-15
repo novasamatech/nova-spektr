@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { Trans } from 'react-i18next';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, SmallTitleText, Tooltip } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';

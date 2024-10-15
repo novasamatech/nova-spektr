@@ -1,8 +1,8 @@
 import { default as BigNumber } from 'bignumber.js';
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@/app/providers';
 import { type ID } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { formatFiatBalance } from '@/shared/lib/utils';
 import { Shimmering } from '@/shared/ui';
 import { FiatBalance, priceProviderModel } from '@/entities/price';

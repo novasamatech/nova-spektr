@@ -1,7 +1,7 @@
 import { type BN } from '@polkadot/util';
 
-import { useI18n } from '@/app/providers';
 import { type Asset } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { formatBalance, toNumberWithPrecision } from '@/shared/lib/utils';
 import { FootnoteText, Icon, IconButton } from '@/shared/ui';
 

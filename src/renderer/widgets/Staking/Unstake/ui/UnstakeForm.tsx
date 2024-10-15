@@ -2,8 +2,8 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type MultisigAccount } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { AmountInput, Button, Input, InputHint, MultiSelect, Shimmering } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';

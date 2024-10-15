@@ -5,7 +5,7 @@ import { type Validator } from '@/shared/core/types/validator';
 
 import { ValidatorsModal } from './ValidatorsModal';
 
-jest.mock('@/app/providers', () => ({
+jest.mock('@/shared/i18n', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

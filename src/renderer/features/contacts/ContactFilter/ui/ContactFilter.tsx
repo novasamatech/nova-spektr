@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { SearchInput } from '@/shared/ui';
 import { filterModel } from '../model/contact-filter';
 

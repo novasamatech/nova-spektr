@@ -1,5 +1,5 @@
-import { useI18n } from '@/app/providers';
 import { type TrackId } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { FootnoteText, Icon } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
 

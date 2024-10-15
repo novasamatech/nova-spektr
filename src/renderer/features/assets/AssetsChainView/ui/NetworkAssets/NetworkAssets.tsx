@@ -2,9 +2,9 @@ import { useUnit } from 'effector-react';
 import groupBy from 'lodash/groupBy';
 import { useEffect, useMemo, useState } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { sumBalances } from '@/shared/api/network/service/chainsService';
 import { type Account, type AccountId, type Asset, type Balance, type Chain } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { ZERO_BALANCE, cnTw, includes, totalAmount } from '@/shared/lib/utils';
 import { Accordion, CaptionText, Icon, Tooltip } from '@/shared/ui';
 import { balanceModel } from '@/entities/balance';

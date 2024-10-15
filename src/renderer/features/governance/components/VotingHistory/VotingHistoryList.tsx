@@ -1,7 +1,7 @@
 import { memo, useMemo, useState } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type Asset, type Chain } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { formatAsset, formatBalance, performSearch, toAccountId } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, SearchInput } from '@/shared/ui';

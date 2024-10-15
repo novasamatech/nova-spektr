@@ -1,8 +1,8 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type ChainAccount, type DraftAccount, type ShardAccount } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { BaseModal, Button } from '@/shared/ui';
 import { constructorModel } from '../model/constructor-model';
 
