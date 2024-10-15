@@ -362,6 +362,9 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
         call: decoded.args[2].toHex(),
       };
     },
+    [TransactionType.REMARK]: (decoded): Record<string, any> => {
+      return { remark: decoded.args[0].toString() };
+    },
     [TransactionType.UNLOCK]: (decoded): Record<string, any> => {
       return {
         class: decoded.args[0].toString(),

@@ -12,6 +12,9 @@ import DelegatedAuthoritiesImg, {
 import EditDelegationImg, {
   ReactComponent as EditDelegationSvg,
 } from '@shared/assets/images/confirm/edit-delegation.svg';
+import MultisigCreationImg, {
+  ReactComponent as MultisigCreationSvg,
+} from '@shared/assets/images/confirm/multisig-creation.svg';
 import ReturnToStakeImg, {
   ReactComponent as ReturnToStakeSvg,
 } from '@shared/assets/images/confirm/return-to-stake.svg';
@@ -40,6 +43,7 @@ const ConfirmImages = {
   addDelegationConfirm: { svg: AddDelegationSvg, img: AddDelegationImg },
   editDelegationConfirm: { svg: EditDelegationSvg, img: EditDelegationImg },
   revokeDelegationConfirm: { svg: RevokeDelegationSvg, img: RevokeDelegationImg },
+  multisigCreationConfirm: { svg: MultisigCreationSvg, img: MultisigCreationImg },
 } as const;
 
 export type Confirm = keyof typeof ConfirmImages;

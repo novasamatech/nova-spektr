@@ -1,1 +1,1 @@
-export type Variant = 'waiting' | 'success' | 'warn' | 'error';
+export type Variant = 'waiting' | 'success' | 'warn' | 'error' | 'neutral';

@@ -27,7 +27,6 @@ type Props = {
   txPayload: Uint8Array;
   signature: HexString;
   rejectReason?: string;
-
   isReject?: boolean;
   onClose: () => void;
 };

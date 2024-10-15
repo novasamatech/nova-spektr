@@ -6,6 +6,7 @@ import {
   ChainType,
   ConnectionType,
   CryptoType,
+  ExternalType,
   SigningType,
   WalletType,
 } from '@shared/core';
@@ -76,7 +77,7 @@ describe('features/multisigs/model/multisigs-model', () => {
             chainId: '0x01',
             name: 'Westend',
             options: [ChainOptions.MULTISIG],
-            externalApi: { multisig: [{ url: 'http://mock-url' }] },
+            externalApi: { [ExternalType.PROXY]: [{ url: 'http://mock-url' }] },
           },
         }),
     });

@@ -428,7 +428,7 @@ importers:
         version: 1.44.1
       pnpm:
         specifier: ^9.2.0
-        version: 9.2.0
+        version: 9.11.0
       postcss:
         specifier: 8.4.47
         version: 8.4.47
@@ -8020,8 +8020,8 @@ packages:
   pnglib@0.0.1:
     resolution: {integrity: sha512-95ChzOoYLOPIyVmL+Y6X+abKGXUJlvOVLkB1QQkyXl7Uczc6FElUy/x01NS7r2GX6GRezloO/ecCX9h4U9KadA==}
 
-  pnpm@9.2.0:
-    resolution: {integrity: sha512-mKgP0RwucJZ0d2IwQQZDKz3cZ9z1S1qMAck/aKLNXgXmghhJUioG+3YoTUGiZg1eM08u47vykYO/LnObHa+ncQ==}
+  pnpm@9.11.0:
+    resolution: {integrity: sha512-CiA/+u1aP2MkLNBkyPtYkjZsED4ygHkxj3gGLyTqjJ1QvGpHqjVnyr79gk0XDnj6J0XtHxaxMuFkNhRrdojxmw==}
     engines: {node: '>=18.12'}
     hasBin: true
 
@@ -20279,7 +20279,7 @@ snapshots:
 
   pnglib@0.0.1: {}
 
-  pnpm@9.2.0: {}
+  pnpm@9.11.0: {}
 
   polished@4.3.1:
     dependencies:

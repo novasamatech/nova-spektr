@@ -133,7 +133,11 @@ const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
     const TransactionValidatorsRecord: Record<
       Exclude<
         TransactionType,
-        TransferTransactionTypes | XcmTransactionTypes | MultisigTransactionTypes | UtilityTransactionTypes
+        | TransferTransactionTypes
+        | XcmTransactionTypes
+        | MultisigTransactionTypes
+        | UtilityTransactionTypes
+        | TransactionType.REMARK
       >,
       EventCallable<ValidationStartedParams>
     > = {
