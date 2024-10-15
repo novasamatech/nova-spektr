@@ -99,7 +99,11 @@ const startDataPreparationFx = createEffect(async ({ transactions, ...preparatio
     const TransactionData: Record<
       Exclude<
         TransactionType,
-        TransferTransactionTypes | XcmTransactionTypes | MultisigTransactionTypes | UtilityTransactionTypes
+        | TransferTransactionTypes
+        | XcmTransactionTypes
+        | MultisigTransactionTypes
+        | UtilityTransactionTypes
+        | TransactionType.REMARK
       >,
       (dataParams: DataParams) => Promise<unknown>
     > = {

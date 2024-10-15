@@ -34,6 +34,8 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.REMOVE_PROXY]: 'proxyMst',
   [TransactionType.REMOVE_PURE_PROXY]: 'proxyMst',
   [TransactionType.PROXY]: 'unknownMst',
+  // Remark
+  [TransactionType.REMARK]: 'unknownMst',
   // Governance
   [TransactionType.UNLOCK]: 'unlockMst',
   [TransactionType.VOTE]: 'voteMst',

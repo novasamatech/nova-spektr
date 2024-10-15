@@ -74,6 +74,7 @@ export const Combobox = ({
                 key={option.id}
                 value={option}
                 className={({ active, selected }) => cnTw(OptionStyle, OptionStyleTheme[theme](active, selected))}
+                disabled={!!option.disabled}
               >
                 {typeof option.element === 'string' ? <FootnoteText>{option.element}</FootnoteText> : option.element}
               </HeadlessCombobox.Option>

@@ -370,6 +370,17 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
+
+  [TransactionType.REMARK]: (transaction, info, options) => {
+    return methods.system.remark(
+      {
+        remark: transaction.args.remark,
+      },
+      info,
+      options,
+    );
+  },
+
   [TransactionType.UNLOCK]: (transaction, info, options) => {
     return convictionVotingMethods.unlock(
       {
@@ -532,6 +543,7 @@ export const getExtrinsic: Record<
   [TransactionType.CREATE_PURE_PROXY]: ({ proxyType, delay, index }, api) => {
     return api.tx.proxy.createPure(proxyType, delay, index);
   },
+  [TransactionType.REMARK]: ({ remark }, api) => api.tx.system.remark(remark),
   [TransactionType.UNLOCK]: ({ target, trackId }, api) => {
     return api.tx.convictionVoting.unlock(trackId, target);
   },

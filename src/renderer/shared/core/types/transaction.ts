@@ -43,6 +43,8 @@ export const enum TransactionType {
   CREATE_PURE_PROXY = 'create_pure_proxy',
   REMOVE_PURE_PROXY = 'kill_pure_proxy',
 
+  REMARK = 'remark',
+
   UNLOCK = 'unlock',
   VOTE = 'vote',
   REVOTE = 'revote',

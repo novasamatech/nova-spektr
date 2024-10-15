@@ -49,7 +49,6 @@ export type MultisigAccount = GenericAccount & {
   chainId?: ChainId;
   cryptoType: CryptoType;
   creatorAccountId: AccountId;
-  matrixRoomId: string;
 };
 
 export type WcAccount = GenericAccount & {

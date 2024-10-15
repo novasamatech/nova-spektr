@@ -14,6 +14,10 @@ const createContactFx = createEffect(async (contact: Omit<Contact, 'id'>): Promi
   return storageService.contacts.create(contact);
 });
 
+const createContactsFx = createEffect((contacts: Omit<Contact, 'id'>[]): Promise<Contact | undefined>[] => {
+  return contacts.map(async (contact) => storageService.contacts.create(contact));
+});
+
 const updateContactFx = createEffect(async ({ id, ...rest }: Contact): Promise<Contact> => {
   await storageService.contacts.update(id, rest);
 
@@ -51,6 +55,7 @@ export const contactModel = {
   $contacts,
   effects: {
     createContactFx,
+    createContactsFx,
     deleteContactFx,
     updateContactFx,
   },

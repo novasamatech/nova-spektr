@@ -19,6 +19,6 @@ export const enum Step {
  *
  * @returns {boolean}
  */
-export function isStep(step: Step, targetStep: Step): boolean {
+export function isStep<T>(step: T, targetStep: T): boolean {
   return step === targetStep;
 }

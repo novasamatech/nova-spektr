@@ -2,7 +2,6 @@ import { attach, combine, createApi, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { not } from 'patronum';
 
-import { validateFullUserName } from '@shared/api/matrix';
 import { type Contact } from '@shared/core';
 import { toAccountId, validateAddress } from '@shared/lib/utils';
 import { contactModel } from '@entities/contact';
@@ -54,10 +53,6 @@ const $contactForm = createForm({
         },
       ],
     },
-    matrixId: {
-      init: '',
-      rules: [{ name: 'invalid', errorText: 'addressBook.editContact.matrixIdError', validator: validateMatrixId }],
-    },
   },
   validateOn: ['change', 'submit'],
 });
@@ -71,7 +66,7 @@ sample({
 sample({
   clock: contactApi.formInitiated,
   filter: not($contactForm.$isDirty),
-  fn: ({ name, address, matrixId }) => ({ name, address, matrixId }),
+  fn: ({ name, address }) => ({ name, address }),
   target: $contactForm.setForm,
 });
 
@@ -96,12 +91,6 @@ function validateAddressExist(value: string, _: unknown, params: SourceParams): 
   const isUnique = params.contacts.every((contact) => contact.accountId !== accountId);
 
   return isSameAddress || isUnique;
-}
-
-function validateMatrixId(value: string): boolean {
-  if (!value) return true;
-
-  return validateFullUserName(value);
 }
 
 sample({
