@@ -30,6 +30,7 @@ export const tokensService = {
   getChainWithBalance,
   sumTokenBalances,
   sortTokensByBalance,
+  hideZeroBalances,
 };
 
 function getTokensData(): AssetByChains[] {
@@ -61,7 +62,6 @@ function getSelectedAccountIds(accounts: Account[], chainId: ChainId): AccountId
 function getChainWithBalance(
   balances: Balance[],
   chains: AssetChain[],
-  hideZeroBalances: boolean,
   accounts: Account[],
 ): [AssetChain[], AssetBalance] {
   let totalBalance = {} as AssetBalance;
@@ -82,7 +82,7 @@ function getChainWithBalance(
 
     totalBalance = sumTokenBalances(assetBalance, totalBalance);
 
-    if (!hideZeroBalances || assetBalance.verified === false || totalAmount(assetBalance) !== ZERO_BALANCE) {
+    if (assetBalance.verified !== false) {
       acc.push({ ...chain, balance: assetBalance });
     }
 
@@ -90,6 +90,12 @@ function getChainWithBalance(
   }, [] as AssetChain[]);
 
   return [chainsWithBalance, totalBalance];
+}
+
+function hideZeroBalances(hideZeroBalance: boolean, activeTokensWithBalance: AssetByChains[]): AssetByChains[] {
+  return activeTokensWithBalance.filter((token) => {
+    return hideZeroBalance && totalAmount(token.totalBalance) === ZERO_BALANCE ? false : true;
+  });
 }
 
 function sortTokensByBalance(
