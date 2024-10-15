@@ -2,11 +2,11 @@ import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
-import { useI18n } from '@app/providers';
-import { type AccountId, type Chain } from '@shared/core';
-import { AccountType, ChainType, CryptoType, ErrorType, SigningType, WalletType } from '@shared/core';
-import { useToggle } from '@shared/lib/hooks';
-import { DEFAULT_TRANSITION, isEthereumAccountId, toAccountId, validateAddress } from '@shared/lib/utils';
+import { type AccountId, type Chain } from '@/shared/core';
+import { AccountType, ChainType, CryptoType, ErrorType, SigningType, WalletType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { useToggle } from '@/shared/lib/hooks';
+import { DEFAULT_TRANSITION, isEthereumAccountId, toAccountId, validateAddress } from '@/shared/lib/utils';
 import {
   BaseModal,
   Button,
@@ -17,9 +17,9 @@ import {
   Input,
   InputHint,
   SmallTitleText,
-} from '@shared/ui';
-import { networkModel, networkUtils } from '@entities/network';
-import { AccountsList, walletModel } from '@entities/wallet';
+} from '@/shared/ui';
+import { networkModel, networkUtils } from '@/entities/network';
+import { AccountsList, walletModel } from '@/entities/wallet';
 
 import { EmptyState } from './EmptyState';
 

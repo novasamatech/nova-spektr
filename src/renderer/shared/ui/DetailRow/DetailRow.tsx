@@ -1,6 +1,6 @@
 import { type PropsWithChildren, type ReactNode } from 'react';
 
-import { cnTw } from '@shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText } from '../Typography';
 
 type Props = {

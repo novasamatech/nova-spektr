@@ -1,7 +1,7 @@
 import { u8aConcat } from '@polkadot/util';
 
-import { type ChainId, type SigningType } from '@shared/core';
-import { CryptoType } from '@shared/core';
+import { type ChainId, type SigningType } from '@/shared/core';
+import { CryptoType } from '@/shared/core';
 
 import { DEFAULT_FRAME_DELAY, SUBSTRATE_ID } from './common/constants';
 import useGenerator from './common/useGenerator';

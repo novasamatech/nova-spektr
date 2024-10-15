@@ -1,14 +1,14 @@
 import { allSettled, fork } from 'effector';
 
-import { ConnectionStatus } from '@shared/core';
-import { networkModel } from '@entities/network';
-import { walletModel } from '@entities/wallet';
+import { ConnectionStatus } from '@/shared/core';
+import { networkModel } from '@/entities/network';
+import { walletModel } from '@/entities/wallet';
 import { formModel } from '../form-model';
 
 import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
 
-jest.mock('@shared/lib/utils', () => ({
-  ...jest.requireActual('@shared/lib/utils'),
+jest.mock('@/shared/lib/utils', () => ({
+  ...jest.requireActual('@/shared/lib/utils'),
   getProxyTypes: jest.fn().mockReturnValue(['Any', 'Staking']),
 }));
 

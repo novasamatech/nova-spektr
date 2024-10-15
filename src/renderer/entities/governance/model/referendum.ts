@@ -3,7 +3,7 @@ import { createEffect, createEvent, createStore, merge as mergeEvents, sample } 
 import { readonly, spread } from 'patronum';
 
 import { type Chain, type ChainId, type Referendum, type ReferendumId } from '@/shared/core';
-import { merge, nonNullable } from '@shared/lib/utils';
+import { merge, nonNullable } from '@/shared/lib/utils';
 import { governanceService } from '../lib/governanceService';
 import { governanceSubscribeService } from '../lib/governanceSubscribeService';
 import { createSubscriber } from '../utils/createSubscriber';

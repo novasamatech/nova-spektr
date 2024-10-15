@@ -1,5 +1,5 @@
-import { useI18n } from '@app/providers';
-import { FootnoteText, Icon } from '@shared/ui';
+import { useI18n } from '@/shared/i18n';
+import { FootnoteText, Icon } from '@/shared/ui';
 
 export const MembersListEmptyState = () => {
   const { t } = useI18n();

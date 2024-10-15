@@ -10,7 +10,7 @@ import { walletModel } from '@/entities/wallet';
 import { delegateRegistryAggregate, delegationAggregate, networkSelectorModel } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
 import { submitModel } from '@/features/operations/OperationSubmit';
-import { delegateModel } from '@/widgets/DelegateModal/model/delegate-model';
+import { delegateModel } from '@/widgets/DelegateModal';
 import { DelegationErrors, SortProp, SortType } from '../common/constants';
 
 const flowFinished = createEvent();

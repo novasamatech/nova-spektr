@@ -2,9 +2,9 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent, useState } from 'react';
 
-import { useI18n } from '@app/providers';
-import { Alert, Button, InputHint, Select, SmallTitleText } from '@shared/ui';
-import { type DropdownOption } from '@shared/ui/types';
+import { useI18n } from '@/shared/i18n';
+import { Alert, Button, InputHint, Select, SmallTitleText } from '@/shared/ui';
+import { type DropdownOption } from '@/shared/ui/types';
 import { MultisigCreationFees } from '@/widgets/CreateWallet/ui/MultisigWallet/components';
 import { Step } from '../../lib/types';
 import { flowModel } from '../../model/flow-model';

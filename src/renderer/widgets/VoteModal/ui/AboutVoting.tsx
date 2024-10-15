@@ -1,7 +1,7 @@
 import { Trans } from 'react-i18next';
 
-import { useI18n } from '@app/providers';
-import { FootnoteText, SmallTitleText } from '@shared/ui';
+import { useI18n } from '@/shared/i18n';
+import { FootnoteText, SmallTitleText } from '@/shared/ui';
 
 export const AboutVoting = () => {
   const { t } = useI18n();

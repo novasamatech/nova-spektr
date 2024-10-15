@@ -1,7 +1,7 @@
 import { Combobox as HeadlessCombobox, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 
-import { cnTw } from '@shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { Input, type Props as InputProps } from '../../Inputs/Input/Input';
 import { FootnoteText } from '../../Typography';
 import {

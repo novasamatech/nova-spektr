@@ -1,6 +1,6 @@
 import { type DetailedHTMLProps, type LabelHTMLAttributes } from 'react';
 
-import { cnTw } from '@shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 
 // eslint-plugin-react has problems with DetailedHTMLProps so this workaround needed
 // https://github.com/jsx-eslint/eslint-plugin-react/issues/3284

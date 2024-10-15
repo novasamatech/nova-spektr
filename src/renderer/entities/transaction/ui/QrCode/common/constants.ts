@@ -10,7 +10,7 @@ import {
   uint8Array,
 } from 'parity-scale-codec';
 
-import { type ChainId, type CryptoType, CryptoTypeString } from '@shared/core';
+import { type ChainId, type CryptoType, CryptoTypeString } from '@/shared/core';
 
 import { type AddressInfo, type DdAddressInfo, type DdSeedInfo, type SeedInfo } from './types';
 

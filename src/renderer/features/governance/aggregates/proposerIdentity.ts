@@ -1,8 +1,8 @@
 import { combine, createEvent, sample } from 'effector';
 
-import { type Address, type Referendum } from '@shared/core';
-import { nonNullable } from '@shared/lib/utils';
-import { proposerIdentityModel } from '@entities/governance';
+import { type Address, type Referendum } from '@/shared/core';
+import { nonNullable } from '@/shared/lib/utils';
+import { proposerIdentityModel } from '@/entities/governance';
 import { networkSelectorModel } from '../model/networkSelector';
 
 const $proposers = combine(

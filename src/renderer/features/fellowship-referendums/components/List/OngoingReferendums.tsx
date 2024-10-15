@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
-import { useI18n } from '@app/providers';
+import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { Accordion, CaptionText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';

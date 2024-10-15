@@ -9,8 +9,8 @@ import {
   chainsService,
   metadataService,
   networkService,
-} from '@shared/api/network';
-import { storageService } from '@shared/api/storage';
+} from '@/shared/api/network';
+import { storageService } from '@/shared/api/storage';
 import {
   type Chain,
   type ChainId,
@@ -21,8 +21,8 @@ import {
   type ID,
   type Metadata,
   type NoID,
-} from '@shared/core';
-import { dictionary, nonNullable } from '@shared/lib/utils';
+} from '@/shared/core';
+import { dictionary, nonNullable } from '@/shared/lib/utils';
 import { networkUtils } from '../lib/network-utils';
 
 const networkStarted = createEvent();

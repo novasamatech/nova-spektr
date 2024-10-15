@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type ComponentProps, useEffect, useState } from 'react';
 
-import { useI18n, useMultisigChainContext } from '@app/providers';
+import { useMultisigChainContext } from '@/app/providers';
 import {
   type Account,
   type HexString,
@@ -9,13 +9,14 @@ import {
   type MultisigTransaction,
   type SigningStatus,
   type Transaction,
-} from '@shared/core';
-import { MultisigTxFinalStatus, TransactionType } from '@shared/core';
-import { useToggle } from '@shared/lib/hooks';
-import { Button, StatusModal } from '@shared/ui';
-import { Animation } from '@shared/ui/Animation/Animation';
-import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
-import { type ExtrinsicResultParams, transactionService } from '@entities/transaction';
+} from '@/shared/core';
+import { MultisigTxFinalStatus, TransactionType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { useToggle } from '@/shared/lib/hooks';
+import { Button, StatusModal } from '@/shared/ui';
+import { Animation } from '@/shared/ui/Animation/Animation';
+import { useMultisigEvent, useMultisigTx } from '@/entities/multisig';
+import { type ExtrinsicResultParams, transactionService } from '@/entities/transaction';
 
 type ResultProps = Pick<ComponentProps<typeof StatusModal>, 'title' | 'content' | 'description'>;
 

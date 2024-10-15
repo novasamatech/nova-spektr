@@ -2,8 +2,8 @@ import { combine } from 'effector';
 import { createGate } from 'effector-react';
 import { and, or } from 'patronum';
 
+import { nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { nullable } from '@shared/lib/utils';
 import { collectiveDomain } from '@/domains/collectives';
 import { identityDomain } from '@/domains/identity';
 

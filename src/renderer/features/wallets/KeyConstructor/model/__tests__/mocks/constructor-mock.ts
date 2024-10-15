@@ -1,4 +1,4 @@
-import { AccountType, ChainType, CryptoType, KeyType } from '@shared/core';
+import { AccountType, ChainType, CryptoType, KeyType } from '@/shared/core';
 
 const defaultKeys = [
   {

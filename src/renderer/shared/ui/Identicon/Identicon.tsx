@@ -1,8 +1,8 @@
 import { type IconTheme } from '@polkadot/react-identicon/types';
 import { Suspense, type SyntheticEvent, lazy, useLayoutEffect, useRef } from 'react';
 
-import { type AccountId, type Address } from '@shared/core';
-import { cnTw, copyToClipboard, isEthereumAccountId } from '@shared/lib/utils';
+import { type AccountId, type Address } from '@/shared/core';
+import { cnTw, copyToClipboard, isEthereumAccountId } from '@/shared/lib/utils';
 import { Icon } from '../Icon/Icon';
 
 type Props = {

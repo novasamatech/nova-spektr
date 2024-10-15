@@ -1,8 +1,8 @@
 import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
 
-import { type Account } from '@shared/core';
-import { formatAmount } from '@shared/lib/utils';
+import { type Account } from '@/shared/core';
+import { formatAmount } from '@/shared/lib/utils';
 import {
   type AmountFeeStore,
   type BondAmountBalanceStore,

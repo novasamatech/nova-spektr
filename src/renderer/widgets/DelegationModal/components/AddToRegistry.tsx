@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { Alert, ButtonWebLink, FootnoteText } from '@/shared/ui';
 import { NOVASAMA_DELEGATE_REGISTRY } from '../common/constants';
 import { addToRegistryModel } from '../model/add-to-registry-model';

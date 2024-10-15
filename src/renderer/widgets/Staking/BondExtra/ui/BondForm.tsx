@@ -2,15 +2,24 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
-import { useI18n } from '@app/providers';
-import { formatBalance, toAddress, toShortAddress } from '@shared/lib/utils';
-import { AmountInput, Button, DetailRow, FootnoteText, Icon, Input, InputHint, MultiSelect, Tooltip } from '@shared/ui';
-import { AssetBalance } from '@entities/asset';
-import { SignatorySelector } from '@entities/operations';
-import { priceProviderModel } from '@entities/price';
-import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
-import { FeeLoader } from '@entities/transaction';
-import { AccountAddress, ProxyWalletAlert, accountUtils } from '@entities/wallet';
+import { useI18n } from '@/shared/i18n';
+import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
+import {
+  AmountInput,
+  Button,
+  DetailRow,
+  FootnoteText,
+  Icon,
+  Input,
+  InputHint,
+  MultiSelect,
+  Tooltip,
+} from '@/shared/ui';
+import { AssetBalance } from '@/entities/asset';
+import { SignatorySelector } from '@/entities/operations';
+import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
+import { FeeLoader } from '@/entities/transaction';
+import { AccountAddress, ProxyWalletAlert, accountUtils } from '@/entities/wallet';
 import { formModel } from '../model/form-model';
 
 type Props = {

@@ -2,8 +2,8 @@ import { useUnit } from 'effector-react';
 import { useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { useI18n } from '@/app/providers';
 import { type Account } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { nonNullable, toAddress } from '@/shared/lib/utils';
 import { BodyText, Button, Checkbox, FootnoteText, Icon, IconButton, Tooltip } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';

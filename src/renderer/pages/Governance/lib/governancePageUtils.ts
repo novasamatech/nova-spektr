@@ -1,7 +1,7 @@
-import { type CompletedReferendum, type OngoingReferendum } from '@shared/core';
-import { nonNullable, nullable, performSearch } from '@shared/lib/utils';
-import { referendumService } from '@entities/governance';
-import { type AggregatedReferendum, VoteStatus } from '@features/governance';
+import { type CompletedReferendum, type OngoingReferendum } from '@/shared/core';
+import { nonNullable, nullable, performSearch } from '@/shared/lib/utils';
+import { referendumService } from '@/entities/governance';
+import { type AggregatedReferendum, VoteStatus } from '@/features/governance';
 
 export const governancePageUtils = {
   filteredByQuery,

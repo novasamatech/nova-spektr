@@ -1,9 +1,9 @@
 import { useUnit } from 'effector-react';
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 
-import { useI18n } from '@app/providers';
-import { type Asset } from '@shared/core';
-import { useToggle } from '@shared/lib/hooks';
+import { type Asset } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { useToggle } from '@/shared/lib/hooks';
 import {
   cleanAmount,
   cnTw,
@@ -14,9 +14,9 @@ import {
   toFixedNotation,
   validatePrecision,
   validateSymbols,
-} from '@shared/lib/utils';
-import { AssetBalance, AssetIcon } from '@entities/asset';
-import { currencyModel, useCurrencyRate } from '@entities/price';
+} from '@/shared/lib/utils';
+import { AssetBalance, AssetIcon } from '@/entities/asset';
+import { currencyModel, useCurrencyRate } from '@/entities/price';
 import { IconButton } from '../../Buttons';
 import { FootnoteText, HelpText, TitleText } from '../../Typography';
 import { Input } from '../Input/Input';

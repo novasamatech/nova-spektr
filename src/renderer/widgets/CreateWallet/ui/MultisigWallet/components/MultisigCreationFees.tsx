@@ -3,13 +3,13 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { memo, useEffect, useMemo, useState } from 'react';
 
-import { useI18n } from '@/app/providers';
+import { type Asset, type MultisigThreshold, type Transaction } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, Icon, Tooltip } from '@/shared/ui';
-import { type Asset, type MultisigThreshold, type Transaction } from '@shared/core';
-import { AssetBalance } from '@entities/asset';
-import { priceProviderModel } from '@entities/price';
-import { FeeLoader, transactionService } from '@entities/transaction';
+import { AssetBalance } from '@/entities/asset';
+import { priceProviderModel } from '@/entities/price';
+import { FeeLoader, transactionService } from '@/entities/transaction';
 
 type Props = {
   api?: ApiPromise;

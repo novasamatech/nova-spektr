@@ -1,11 +1,11 @@
 import { combine } from 'effector';
 import { createForm } from 'effector-forms';
 
-import chains from '@shared/config/chains/chains.json';
-import { type Chain, CryptoType, type MultisigAccount } from '@shared/core';
-import { toAccountId } from '@shared/lib/utils';
-import { networkUtils } from '@entities/network';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import chains from '@/shared/config/chains/chains.json';
+import { type Chain, CryptoType, type MultisigAccount } from '@/shared/core';
+import { toAccountId } from '@/shared/lib/utils';
+import { networkUtils } from '@/entities/network';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { type FormParams } from '../lib/types';
 
 import { signatoryModel } from './signatory-model';

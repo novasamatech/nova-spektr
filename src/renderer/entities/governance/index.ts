@@ -43,6 +43,7 @@ export type {
   TransactionStandardVote,
 } from './types/voteTransaction';
 export type { Track } from './types/tracks';
+export type { VoteHistoryRecord } from './model/voteHistory';
 
 export {
   treasurySpendsDescription,

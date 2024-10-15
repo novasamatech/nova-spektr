@@ -3,7 +3,7 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { spread } from 'patronum';
 
-import { type Account, type Address, type Asset, type Chain, type PartialBy, RewardsDestination } from '@shared/core';
+import { type Account, type Address, type Asset, type Chain, type PartialBy, RewardsDestination } from '@/shared/core';
 import {
   formatAmount,
   getRelaychainAsset,
@@ -13,11 +13,11 @@ import {
   toShortAddress,
   transferableAmount,
   validateAddress,
-} from '@shared/lib/utils';
-import { balanceModel, balanceUtils } from '@entities/balance';
-import { networkModel } from '@entities/network';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { PayeeRules } from '@features/operations/OperationsValidation';
+} from '@/shared/lib/utils';
+import { balanceModel, balanceUtils } from '@/entities/balance';
+import { networkModel } from '@/entities/network';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { PayeeRules } from '@/features/operations/OperationsValidation';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {

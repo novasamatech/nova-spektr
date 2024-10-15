@@ -2,9 +2,9 @@ import { attach, combine, createApi, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { not } from 'patronum';
 
-import { type Contact } from '@shared/core';
-import { toAccountId, validateAddress } from '@shared/lib/utils';
-import { contactModel } from '@entities/contact';
+import { type Contact } from '@/shared/core';
+import { toAccountId, validateAddress } from '@/shared/lib/utils';
+import { contactModel } from '@/entities/contact';
 
 export type Callbacks = {
   onSubmit: () => void;

@@ -2,28 +2,28 @@ import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { useI18n } from '@app/providers';
-import { Skeleton } from '@/shared/ui-kit';
-import { chainsService } from '@shared/api/network';
+import { chainsService } from '@/shared/api/network';
 import {
   type Address,
   type MultisigAccount,
   type MultisigTransaction,
   type Transaction,
   type Validator,
-} from '@shared/core';
-import { TransactionType } from '@shared/core';
-import { useToggle } from '@shared/lib/hooks';
-import { cnTw, copyToClipboard, getAssetById, truncate } from '@shared/lib/utils';
-import { Button, DetailRow, FootnoteText, Icon } from '@shared/ui';
+} from '@/shared/core';
+import { TransactionType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { useToggle } from '@/shared/lib/hooks';
+import { cnTw, copyToClipboard, getAssetById, truncate } from '@/shared/lib/utils';
+import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
+import { Skeleton } from '@/shared/ui-kit';
+import { AssetBalance } from '@/entities/asset';
+import { ChainTitle } from '@/entities/chain';
 import { TracksDetails, voteTransactionService } from '@/entities/governance';
-import { AssetBalance } from '@entities/asset';
-import { ChainTitle } from '@entities/chain';
-import { getTransactionFromMultisigTx } from '@entities/multisig';
-import { type ExtendedChain, networkModel, networkUtils } from '@entities/network';
-import { proxyUtils } from '@entities/proxy';
-import { signatoryUtils } from '@entities/signatory';
-import { ValidatorsModal, useValidatorsMap } from '@entities/staking';
+import { getTransactionFromMultisigTx } from '@/entities/multisig';
+import { type ExtendedChain, networkModel, networkUtils } from '@/entities/network';
+import { proxyUtils } from '@/entities/proxy';
+import { signatoryUtils } from '@/entities/signatory';
+import { ValidatorsModal, useValidatorsMap } from '@/entities/staking';
 import {
   isAddProxyTransaction,
   isManageProxyTransaction,
@@ -31,8 +31,8 @@ import {
   isRemovePureProxyTransaction,
   isUndelegateTransaction,
   isXcmTransaction,
-} from '@entities/transaction';
-import { AddressWithExplorers, ExplorersPopover, WalletCardSm, walletModel } from '@entities/wallet';
+} from '@/entities/transaction';
+import { AddressWithExplorers, ExplorersPopover, WalletCardSm, walletModel } from '@/entities/wallet';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import {
   getDelegate,

@@ -2,7 +2,7 @@ import { combine, createEffect, createEvent, createStore, sample } from 'effecto
 import groupBy from 'lodash/groupBy';
 import { combineEvents } from 'patronum';
 
-import { storageService } from '@shared/api/storage';
+import { storageService } from '@/shared/api/storage';
 import {
   type Account,
   type BaseAccount,
@@ -12,8 +12,8 @@ import {
   type NoID,
   type Wallet,
   type WcAccount,
-} from '@shared/core';
-import { dictionary } from '@shared/lib/utils';
+} from '@/shared/core';
+import { dictionary } from '@/shared/lib/utils';
 import { modelUtils } from '../lib/model-utils';
 
 type DbWallet = Omit<Wallet, 'accounts'>;

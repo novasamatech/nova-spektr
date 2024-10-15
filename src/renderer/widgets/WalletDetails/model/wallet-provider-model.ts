@@ -11,12 +11,12 @@ import {
   type ProxyGroup,
   type Signatory,
   type Wallet,
-} from '@shared/core';
-import { dictionary } from '@shared/lib/utils';
-import { networkModel } from '@entities/network';
-import { proxyModel, proxyUtils } from '@entities/proxy';
-import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
-import { walletSelectModel } from '@features/wallets';
+} from '@/shared/core';
+import { dictionary } from '@/shared/lib/utils';
+import { networkModel } from '@/entities/network';
+import { proxyModel, proxyUtils } from '@/entities/proxy';
+import { accountUtils, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { walletSelectModel } from '@/features/wallets';
 import { type MultishardMap, type VaultMap } from '../lib/types';
 import { walletDetailsUtils } from '../lib/utils';
 

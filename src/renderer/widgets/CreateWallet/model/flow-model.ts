@@ -17,14 +17,14 @@ import {
   TransactionType,
   WalletType,
   WrapperKind,
-} from '@shared/core';
-import { SS58_DEFAULT_PREFIX, TEST_ACCOUNTS, ZERO_BALANCE, isStep, toAccountId, toAddress } from '@shared/lib/utils';
+} from '@/shared/core';
+import { SS58_DEFAULT_PREFIX, TEST_ACCOUNTS, ZERO_BALANCE, isStep, toAccountId, toAddress } from '@/shared/lib/utils';
 import { contactModel } from '@/entities/contact';
-import { networkModel, networkUtils } from '@entities/network';
-import { transactionService } from '@entities/transaction';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel, submitUtils } from '@features/operations/OperationSubmit';
+import { networkModel, networkUtils } from '@/entities/network';
+import { transactionService } from '@/entities/transaction';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { signModel } from '@/features/operations/OperationSign/model/sign-model';
+import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { type AddMultisigStore, type FormSubmitEvent, Step } from '../lib/types';
 
 import { confirmModel } from './confirm-model';

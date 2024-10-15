@@ -1,8 +1,10 @@
 import { type PropsWithChildren, memo, useMemo } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type Account, type Chain, type Wallet } from '@/shared/core';
-import { DetailRow, FootnoteText, Separator } from '@/shared/ui';
+import { useI18n } from '@/shared/i18n';
+import { DetailRow } from '@/shared/ui/DetailRow/DetailRow';
+import { Separator } from '@/shared/ui/Separator/Separator';
+import { FootnoteText } from '@/shared/ui/Typography/index';
 import { Box } from '@/shared/ui-kit';
 import { WalletIcon, walletUtils } from '@/entities/wallet';
 import { Account as AccountComponent } from '../Account/Account';

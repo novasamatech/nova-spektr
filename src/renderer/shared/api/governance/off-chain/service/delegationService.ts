@@ -1,8 +1,8 @@
 import { BN } from '@polkadot/util';
 import { GraphQLClient } from 'graphql-request';
 
+import { type Address, type Chain, ExternalType, type ReferendumId } from '@/shared/core';
 import { dictionary, toPrecision } from '@/shared/lib/utils';
-import { type Address, type Chain, ExternalType, type ReferendumId } from '@shared/core';
 import {
   type DelegateAccount,
   type DelegateDetails,

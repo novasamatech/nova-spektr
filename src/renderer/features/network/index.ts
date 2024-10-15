@@ -1,5 +1,11 @@
 export { NetworksFilter, networksFilterModel } from './NetworksFilter';
-export { NetworkSelector, networkSelectorModel, networkSelectorUtils } from './NetworkSelector';
+export {
+  NetworkSelector,
+  networkSelectorModel,
+  networkSelectorUtils,
+  type ConnectionItem,
+  type SelectorPayload,
+} from './NetworkSelector';
 export {
   AddCustomRpcModal,
   EditCustomRpcModal,

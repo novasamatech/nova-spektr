@@ -9,9 +9,9 @@ import {
   useState,
 } from 'react';
 
-import { useToggle } from '@shared/lib/hooks';
-import { DEFAULT_TRANSITION } from '@shared/lib/utils';
-import { ConfirmModal, FootnoteText, SmallTitleText } from '@shared/ui';
+import { useToggle } from '@/shared/lib/hooks';
+import { DEFAULT_TRANSITION } from '@/shared/lib/utils';
+import { ConfirmModal, FootnoteText, SmallTitleText } from '@/shared/ui';
 
 type Pallet = 'primary' | 'secondary' | 'error';
 

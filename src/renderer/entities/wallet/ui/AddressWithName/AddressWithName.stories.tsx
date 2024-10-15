@@ -1,6 +1,6 @@
 import { type Meta, type StoryFn } from '@storybook/react';
 
-import { TEST_ACCOUNTS } from '@shared/lib/utils';
+import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 
 import { AddressWithName } from './AddressWithName';
 

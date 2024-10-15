@@ -1,4 +1,4 @@
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { CaptionText, Icon, Tooltip } from '@/shared/ui';
 import { allTracks } from '../constants/tracks';

@@ -7,7 +7,7 @@ import {
   type ProxyVariant,
   type Timepoint,
   type WalletType,
-} from '@shared/core';
+} from '@/shared/core';
 
 export const enum NotificationType {
   MULTISIG_CREATED = 'MultisigCreatedNotification',

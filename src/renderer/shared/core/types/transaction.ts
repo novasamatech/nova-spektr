@@ -10,7 +10,7 @@ import {
   type PartialBy,
   type ProxiedAccount,
   type Signatory,
-} from '@shared/core';
+} from '@/shared/core';
 
 export const enum TransactionType {
   TRANSFER = 'transfer',

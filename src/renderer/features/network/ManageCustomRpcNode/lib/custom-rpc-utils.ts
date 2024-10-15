@@ -1,4 +1,4 @@
-import { type RpcNode } from '@shared/core';
+import { type RpcNode } from '@/shared/core';
 
 import { RpcValidation } from './types';
 

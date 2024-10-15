@@ -1,11 +1,11 @@
 import { Trans } from 'react-i18next';
 
-import { useI18n } from '@app/providers';
-import { type MultisigCreated } from '@shared/core';
-import { WalletType } from '@shared/core';
-import { BodyText } from '@shared/ui';
-import { ChainTitle } from '@entities/chain';
-import { WalletIcon } from '@entities/wallet';
+import { type MultisigCreated } from '@/shared/core';
+import { WalletType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { BodyText } from '@/shared/ui';
+import { ChainTitle } from '@/entities/chain';
+import { WalletIcon } from '@/entities/wallet';
 
 type Props = {
   notification: MultisigCreated;

@@ -2,8 +2,8 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent, useEffect } from 'react';
 
-import { useI18n } from '@app/providers';
 import { type AccountId, AccountType, type ChainAccount } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
 import { balanceSubModel } from '@/features/balances';
 import { Step } from '@/widgets/CreateWallet/lib/types';

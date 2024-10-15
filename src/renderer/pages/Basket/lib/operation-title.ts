@@ -1,5 +1,5 @@
-import { type BasketTransaction, type Chain, TransactionType } from '@shared/core';
-import { getAssetById } from '@shared/lib/utils';
+import { type BasketTransaction, type Chain, TransactionType } from '@/shared/core';
+import { getAssetById } from '@/shared/lib/utils';
 import {
   type MultisigTransactionTypes,
   type TransferTransactionTypes,
@@ -8,7 +8,7 @@ import {
   type XcmTransactionTypes,
   XcmTypes,
   isEditDelegationTransaction,
-} from '@entities/transaction';
+} from '@/entities/transaction';
 
 import { getCoreTx } from './utils';
 

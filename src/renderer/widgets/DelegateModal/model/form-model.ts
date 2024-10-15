@@ -3,7 +3,7 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { spread } from 'patronum';
 
-import { type Account, type Asset, type Chain, type Conviction, type PartialBy } from '@shared/core';
+import { type Account, type Asset, type Chain, type Conviction, type PartialBy } from '@/shared/core';
 import {
   ZERO_BALANCE,
   formatAmount,
@@ -11,14 +11,14 @@ import {
   toAddress,
   transferableAmount,
   transferableAmountBN,
-} from '@shared/lib/utils';
-import { balanceModel, balanceUtils } from '@entities/balance';
-import { locksService } from '@entities/governance';
-import { networkModel } from '@entities/network';
-import { walletModel, walletUtils } from '@entities/wallet';
+} from '@/shared/lib/utils';
+import { balanceModel, balanceUtils } from '@/entities/balance';
+import { locksService } from '@/entities/governance';
+import { networkModel } from '@/entities/network';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
-import { BondNominateRules } from '@features/operations/OperationsValidation';
+import { BondNominateRules } from '@/features/operations/OperationsValidation';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {

@@ -1,8 +1,8 @@
 import { Suspense, lazy } from 'react';
 import { Navigate, type RouteObject } from 'react-router-dom';
 
-import { Paths } from '@shared/routes';
-import { MainLayout } from '@widgets/Layout';
+import { Paths } from '@/shared/routes';
+import { MainLayout } from '@/widgets/Layout';
 
 import { Assets, ReceiveAsset, SendAsset } from './Assets';
 import { Onboarding } from './Onboarding';

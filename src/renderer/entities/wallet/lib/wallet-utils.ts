@@ -13,7 +13,7 @@ import {
   type WalletConnectWallet,
   WalletType,
   type WatchOnlyWallet,
-} from '@shared/core';
+} from '@/shared/core';
 
 export const walletUtils = {
   isPolkadotVault,

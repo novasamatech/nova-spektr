@@ -4,8 +4,8 @@ import { useUnit } from 'effector-react';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { useI18n, useStatusContext } from '@app/providers';
-import { chainsService } from '@shared/api/network';
+import { useStatusContext } from '@/app/providers';
+import { chainsService } from '@/shared/api/network';
 import {
   AccountType,
   type ChainAccount,
@@ -16,9 +16,10 @@ import {
   type ShardAccount,
   SigningType,
   WalletType,
-} from '@shared/core';
-import { useAltOrCtrlKeyPressed, useToggle } from '@shared/lib/hooks';
-import { IS_MAC, copyToClipboard, dictionary, toAddress } from '@shared/lib/utils';
+} from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { useAltOrCtrlKeyPressed, useToggle } from '@/shared/lib/hooks';
+import { IS_MAC, copyToClipboard, dictionary, toAddress } from '@/shared/lib/utils';
 import {
   Accordion,
   Button,
@@ -31,12 +32,12 @@ import {
   Input,
   InputHint,
   SmallTitleText,
-} from '@shared/ui';
-import { Animation } from '@shared/ui/Animation/Animation';
-import { ChainTitle } from '@entities/chain';
-import { type SeedInfo } from '@entities/transaction';
-import { DerivedAccount, RootAccountLg, accountUtils } from '@entities/wallet';
-import { DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@features/wallets';
+} from '@/shared/ui';
+import { Animation } from '@/shared/ui/Animation/Animation';
+import { ChainTitle } from '@/entities/chain';
+import { type SeedInfo } from '@/entities/transaction';
+import { DerivedAccount, RootAccountLg, accountUtils } from '@/entities/wallet';
+import { DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@/features/wallets';
 
 import { VaultInfoPopover } from './VaultInfoPopover';
 import { manageVaultModel } from './model/manage-vault-model';

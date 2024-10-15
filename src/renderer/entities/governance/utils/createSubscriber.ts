@@ -1,7 +1,7 @@
 import { type Scope, createDomain, sample, scopeBind } from 'effector';
 import { readonly } from 'patronum';
 
-import { nonNullable, nullable } from '@shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 
 type UnsubscribeFn = (() => void) | Promise<() => void>;
 type SubscribeFn<P, V> = (params: P, callback: (value: V) => void) => UnsubscribeFn;

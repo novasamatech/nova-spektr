@@ -2,12 +2,12 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
-import { useI18n } from '@app/providers';
+import { useI18n } from '@/shared/i18n';
+import { useModalClose } from '@/shared/lib/hooks';
 import { DEFAULT_TRANSITION, isStep } from '@/shared/lib/utils';
-import { useModalClose } from '@shared/lib/hooks';
-import { BaseModal, HeaderTitleText } from '@shared/ui';
-import { ChainTitle } from '@entities/chain';
-import { OperationSign, OperationSubmit } from '@features/operations';
+import { BaseModal, HeaderTitleText } from '@/shared/ui';
+import { ChainTitle } from '@/entities/chain';
+import { OperationSign, OperationSubmit } from '@/features/operations';
 import { createMultisigUtils } from '../../lib/create-multisig-utils';
 import { Step } from '../../lib/types';
 import { flowModel } from '../../model/flow-model';

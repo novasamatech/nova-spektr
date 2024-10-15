@@ -5,8 +5,8 @@ import {
   type PolkassemblyPostVote,
   type PolkassembyPostStatus,
   polkassemblyApiService,
-} from '@shared/api/polkassembly';
-import { dictionary } from '@shared/lib/utils';
+} from '@/shared/api/polkassembly';
+import { dictionary } from '@/shared/lib/utils';
 import { type GovernanceApi, type ReferendumTimelineRecord } from '../lib/types';
 
 const getReferendumList: GovernanceApi['getReferendumList'] = async (chain, callback) => {

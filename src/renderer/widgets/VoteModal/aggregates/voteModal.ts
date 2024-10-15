@@ -1,12 +1,12 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
+import { type AccountVote, type Address, type BasketTransaction, type OngoingReferendum } from '@/shared/core';
+import { Step, isStep, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
-import { type AccountVote, type Address, type BasketTransaction, type OngoingReferendum } from '@shared/core';
-import { Step, isStep, nonNullable, nullable, toAddress } from '@shared/lib/utils';
-import { basketModel } from '@entities/basket';
-import { votingService } from '@entities/governance';
-import { walletModel } from '@entities/wallet';
+import { basketModel } from '@/entities/basket';
+import { votingService } from '@/entities/governance';
+import { walletModel } from '@/entities/wallet';
 import {
   delegationAggregate,
   lockPeriodsModel,
@@ -15,9 +15,9 @@ import {
   votingAggregate,
 } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
-import { type SigningPayload, signModel } from '@features/operations/OperationSign';
-import { ExtrinsicResult, submitModel } from '@features/operations/OperationSubmit';
-import { voteConfirmModel } from '@features/operations/OperationsConfirm';
+import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
+import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
+import { voteConfirmModel } from '@/features/operations/OperationsConfirm';
 
 import { voteFormAggregate } from './voteForm';
 

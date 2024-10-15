@@ -1,4 +1,4 @@
-import { addLeadingZero } from '@shared/lib/utils';
+import { addLeadingZero } from '@/shared/lib/utils';
 
 import { DurationFormat } from './types';
 

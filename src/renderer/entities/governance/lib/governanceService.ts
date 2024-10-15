@@ -9,12 +9,12 @@ import {
   type TrackInfo,
   type VotingCurve,
 } from '@/shared/core';
+import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import {
   type ReferendaCurve,
   type ReferendaReferendumInfoConvictionVotingTally,
   referendaPallet,
 } from '@/shared/pallet/referenda';
-import { convictionVotingPallet } from '@shared/pallet/convictionVoting';
 
 export const governanceService = {
   getReferendums,

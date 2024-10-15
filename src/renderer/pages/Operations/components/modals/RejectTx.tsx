@@ -2,8 +2,7 @@ import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@app/providers';
-import { type MultisigTransactionDS } from '@shared/api/storage';
+import { type MultisigTransactionDS } from '@/shared/api/storage';
 import {
   type Account,
   type Address,
@@ -11,24 +10,25 @@ import {
   type MultisigAccount,
   type Timepoint,
   type Transaction,
-} from '@shared/core';
-import { TransactionType } from '@shared/core';
-import { useToggle } from '@shared/lib/hooks';
-import { getAssetById, toAddress, transferableAmount } from '@shared/lib/utils';
-import { BaseModal, Button } from '@shared/ui';
-import { balanceModel, balanceUtils } from '@entities/balance';
-import { OperationTitle } from '@entities/chain';
-import { type ExtendedChain, networkModel } from '@entities/network';
-import { priceProviderModel } from '@entities/price';
+} from '@/shared/core';
+import { TransactionType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { useToggle } from '@/shared/lib/hooks';
+import { getAssetById, toAddress, transferableAmount } from '@/shared/lib/utils';
+import { BaseModal, Button } from '@/shared/ui';
+import { balanceModel, balanceUtils } from '@/entities/balance';
+import { OperationTitle } from '@/entities/chain';
+import { type ExtendedChain, networkModel } from '@/entities/network';
+import { priceProviderModel } from '@/entities/price';
 import {
   OperationResult,
   getMultisigSignOperationTitle,
   isXcmTransaction,
   transactionService,
   validateBalance,
-} from '@entities/transaction';
-import { walletModel, walletUtils } from '@entities/wallet';
-import { SigningSwitch } from '@features/operations';
+} from '@/entities/transaction';
+import { walletModel, walletUtils } from '@/entities/wallet';
+import { SigningSwitch } from '@/features/operations';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { Submit } from '../ActionSteps/Submit';
 
