@@ -4,8 +4,8 @@ import { type Type } from '@polkadot/types';
 import { type Call } from '@polkadot/types/interfaces';
 import { type HexString } from '@polkadot/util/types';
 
-import { xcmService } from '@shared/api/xcm';
-import { type Address, type CallData, type ChainId, type DecodedTransaction, TransactionType } from '@shared/core';
+import { xcmService } from '@/shared/api/xcm';
+import { type Address, type CallData, type ChainId, type DecodedTransaction, TransactionType } from '@/shared/core';
 
 import {
   BOND_WITH_CONTROLLER_ARGS_AMOUNT,
@@ -361,6 +361,9 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
         forceProxyType: decoded.args[1].toString(),
         call: decoded.args[2].toHex(),
       };
+    },
+    [TransactionType.REMARK]: (decoded): Record<string, any> => {
+      return { remark: decoded.args[0].toString() };
     },
     [TransactionType.UNLOCK]: (decoded): Record<string, any> => {
       return {

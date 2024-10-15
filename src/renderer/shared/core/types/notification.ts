@@ -7,7 +7,7 @@ import {
   type ProxyVariant,
   type Timepoint,
   type WalletType,
-} from '@shared/core';
+} from '@/shared/core';
 
 export const enum NotificationType {
   MULTISIG_CREATED = 'MultisigCreatedNotification',
@@ -29,13 +29,13 @@ type BaseNotification = {
 type MultisigBaseNotification = BaseNotification & {
   multisigAccountId: AccountId;
   originatorAccountId: AccountId;
-  smpRoomId: string;
 };
 
 export type MultisigCreated = MultisigBaseNotification & {
   signatories: AccountId[];
   threshold: number;
   multisigAccountName: string;
+  chainId: ChainId;
 };
 
 export type MultisigOperation = MultisigBaseNotification & {

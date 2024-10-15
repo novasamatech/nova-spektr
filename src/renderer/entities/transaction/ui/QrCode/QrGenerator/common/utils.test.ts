@@ -1,7 +1,7 @@
 import { stringToU8a, u8aToHex } from '@polkadot/util';
 import { u8aConcat } from '@polkadot/util/u8a/concat';
 
-import { SigningType } from '@shared/core';
+import { SigningType } from '@/shared/core';
 
 import { SUBSTRATE_ID } from './constants';
 import { createFrames, createSignPayload, createSubstrateSignPayload, encodeNumber, getSvgString } from './utils';

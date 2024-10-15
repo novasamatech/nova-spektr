@@ -1,6 +1,6 @@
 import { BN, BN_THOUSAND, BN_TWO } from '@polkadot/util';
 
-import { type AccountId, type ChainId } from '@shared/core';
+import { type AccountId, type ChainId } from '@/shared/core';
 
 export const ZERO_BALANCE = '0';
 

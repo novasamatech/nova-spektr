@@ -8,7 +8,6 @@ import {
   type ReferendumId,
   referendaPallet,
 } from '@/shared/pallet/referenda';
-import { convictionVotingPallet } from '@shared/pallet/convictionVoting';
 
 export const governanceService = {
   getReferendums,

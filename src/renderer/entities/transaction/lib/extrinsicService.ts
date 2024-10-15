@@ -10,10 +10,10 @@ import {
 } from '@substrate/txwrapper-polkadot';
 import sortBy from 'lodash/sortBy';
 
-import { type MultisigTxWrapper, type ProxyTxWrapper, type Transaction, TransactionType } from '@shared/core';
-import { toAddress } from '@shared/lib/utils';
-import { DEFAULT_FEE_ASSET_ITEM } from '@entities/transaction';
-import * as xcmMethods from '@entities/transaction/lib/common/xcmMethods';
+import { type MultisigTxWrapper, type ProxyTxWrapper, type Transaction, TransactionType } from '@/shared/core';
+import { toAddress } from '@/shared/lib/utils';
+import { DEFAULT_FEE_ASSET_ITEM } from '@/entities/transaction';
+import * as xcmMethods from '@/entities/transaction/lib/common/xcmMethods';
 
 import { getMaxWeight, hasDestWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
 import { convictionVotingMethods } from './wrappers/convictionVoting';
@@ -370,6 +370,17 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
+
+  [TransactionType.REMARK]: (transaction, info, options) => {
+    return methods.system.remark(
+      {
+        remark: transaction.args.remark,
+      },
+      info,
+      options,
+    );
+  },
+
   [TransactionType.UNLOCK]: (transaction, info, options) => {
     return convictionVotingMethods.unlock(
       {
@@ -560,6 +571,7 @@ export const getExtrinsic: Record<
   [TransactionType.CREATE_PURE_PROXY]: ({ proxyType, delay, index }, api) => {
     return api.tx.proxy.createPure(proxyType, delay, index);
   },
+  [TransactionType.REMARK]: ({ remark }, api) => api.tx.system.remark(remark),
   [TransactionType.UNLOCK]: ({ target, trackId }, api) => {
     return api.tx.convictionVoting.unlock(trackId, target);
   },

@@ -7,9 +7,9 @@ import {
   CryptoType,
   KeyType,
   type ShardAccount,
-} from '@shared/core';
-import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@shared/lib/utils';
-import { accountUtils } from '@entities/wallet';
+} from '@/shared/core';
+import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@/shared/lib/utils';
+import { accountUtils } from '../account-utils';
 
 const accounts: (ChainAccount | ShardAccount)[] = [
   {

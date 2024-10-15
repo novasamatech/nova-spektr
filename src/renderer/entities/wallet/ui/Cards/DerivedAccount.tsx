@@ -1,8 +1,8 @@
 import { type MouseEvent } from 'react';
 
-import { type ChainAccount, type ShardAccount } from '@shared/core';
-import { SS58_PUBLIC_KEY_PREFIX, cnTw, toAddress } from '@shared/lib/utils';
-import { BodyText, CaptionText, FootnoteText, HelpText, Icon, IconButton, Identicon } from '@shared/ui';
+import { type ChainAccount, type ShardAccount } from '@/shared/core';
+import { SS58_PUBLIC_KEY_PREFIX, cnTw, toAddress } from '@/shared/lib/utils';
+import { BodyText, CaptionText, FootnoteText, HelpText, Icon, IconButton, Identicon } from '@/shared/ui';
 import { accountUtils } from '../../lib/account-utils';
 import { KeyIcon } from '../../lib/constants';
 

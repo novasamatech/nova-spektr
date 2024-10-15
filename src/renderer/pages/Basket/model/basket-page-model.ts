@@ -2,10 +2,10 @@ import { type ApiPromise } from '@polkadot/api';
 import { type EventCallable, combine, createEffect, createEvent, createStore, restore, sample, split } from 'effector';
 import { delay, throttle } from 'patronum';
 
-import { type BasketTransaction, type ChainId, type ID, TransactionType } from '@shared/core';
-import { addUnique, removeFromCollection } from '@shared/lib/utils';
-import { basketModel } from '@entities/basket';
-import { networkModel, networkUtils } from '@entities/network';
+import { type BasketTransaction, type ChainId, type ID, TransactionType } from '@/shared/core';
+import { addUnique, removeFromCollection } from '@/shared/lib/utils';
+import { basketModel } from '@/entities/basket';
+import { networkModel, networkUtils } from '@/entities/network';
 import {
   type MultisigTransactionTypes,
   type TransferTransactionTypes,
@@ -15,8 +15,9 @@ import {
   XcmTypes,
   isEditDelegationTransaction,
   transactionService,
-} from '@entities/transaction';
-import { walletModel } from '@entities/wallet';
+} from '@/entities/transaction';
+import { walletModel } from '@/entities/wallet';
+import { basketFilterModel } from '@/features/basket';
 import { unlockValidateModel, voteValidateModel } from '@/features/governance';
 import {
   type FeeMap,
@@ -40,7 +41,6 @@ import {
   unstakeValidateModel,
   withdrawValidateModel,
 } from '@/features/operations/OperationsValidation';
-import { basketFilterModel } from '@features/basket/BasketFilter';
 import { basketPageUtils } from '../lib/basket-page-utils';
 import { getCoreTx } from '../lib/utils';
 import { Step } from '../types/basket-page-types';
@@ -135,7 +135,11 @@ const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
     const TransactionValidatorsRecord: Record<
       Exclude<
         TransactionType,
-        TransferTransactionTypes | XcmTransactionTypes | MultisigTransactionTypes | UtilityTransactionTypes
+        | TransferTransactionTypes
+        | XcmTransactionTypes
+        | MultisigTransactionTypes
+        | UtilityTransactionTypes
+        | TransactionType.REMARK
       >,
       EventCallable<ValidationStartedParams>
     > = {

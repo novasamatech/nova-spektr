@@ -1,10 +1,10 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { useI18n } from '@app/providers';
-import { type Asset, type Wallet } from '@shared/core';
-import { nonNullable } from '@shared/lib/utils';
-import { Button, FootnoteText } from '@shared/ui';
-import { ReferendumVoteChart, referendumService, votingService } from '@entities/governance';
+import { type Asset, type Wallet } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { nonNullable } from '@/shared/lib/utils';
+import { Button, FootnoteText } from '@/shared/ui';
+import { ReferendumVoteChart, referendumService, votingService } from '@/entities/governance';
 import { EmptyAccountMessage } from '@/features/emptyList';
 import { type AggregatedReferendum } from '../../types/structs';
 import { ReferendumEndTimer } from '../ReferendumEndTimer/ReferendumEndTimer';

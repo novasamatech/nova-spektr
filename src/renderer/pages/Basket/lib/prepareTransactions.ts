@@ -1,8 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_ZERO } from '@polkadot/util';
 
-import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
-import { proxyService } from '@shared/api/proxy';
+import { proxyService } from '@/shared/api/proxy';
 import {
   type Account,
   type AccountId,
@@ -20,17 +19,18 @@ import {
   TransactionType,
   type Validator,
   type Wallet,
-} from '@shared/core';
-import { getAssetById, redeemableAmount, toAccountId, toAddress, transferableAmount } from '@shared/lib/utils';
+} from '@/shared/core';
+import { getAssetById, redeemableAmount, toAccountId, toAddress, transferableAmount } from '@/shared/lib/utils';
+import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { balanceUtils } from '@/entities/balance';
 import { governanceService, votingService } from '@/entities/governance';
-import { networkUtils } from '@entities/network';
-import { eraService, useStakingData, validatorsService } from '@entities/staking';
-import { type WrappedTransactions, transactionService } from '@entities/transaction';
+import { networkUtils } from '@/entities/network';
+import { eraService, useStakingData, validatorsService } from '@/entities/staking';
+import { type WrappedTransactions, transactionService } from '@/entities/transaction';
+import { type UnlockFormData } from '@/features/governance/types/structs';
 import { type VoteConfirm } from '@/features/operations/OperationsConfirm';
+import { type RemoveVoteConfirm } from '@/features/operations/OperationsConfirm/Referendum/RemoveVote/model/confirm-model';
 import { type FeeMap } from '@/features/operations/OperationsValidation';
-import { type UnlockFormData } from '@features/governance/types/structs';
-import { type RemoveVoteConfirm } from '@features/operations/OperationsConfirm/Referendum/RemoveVote/model/confirm-model';
 
 import { getCoreTx } from './utils';
 

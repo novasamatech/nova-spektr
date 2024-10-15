@@ -1,7 +1,7 @@
 import { Menu } from '@headlessui/react';
 import { type MouseEvent, type PropsWithChildren, type ReactNode, useRef } from 'react';
 
-import { cnTw } from '@shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 
 type Props = {
   content: ReactNode; // for a11y features support use this popover with Menu.Item elements from headless ui

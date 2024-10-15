@@ -1,4 +1,4 @@
-import { FootnoteText, Shimmering } from '@shared/ui';
+import { FootnoteText, Shimmering } from '@/shared/ui';
 
 type Props = {
   count: number;

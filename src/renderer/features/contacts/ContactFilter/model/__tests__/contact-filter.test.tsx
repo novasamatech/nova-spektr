@@ -1,6 +1,6 @@
 import { allSettled, fork } from 'effector';
 
-import { contactModel } from '@entities/contact';
+import { contactModel } from '@/entities/contact';
 import { filterModel } from '../contact-filter';
 
 const contacts = [
@@ -9,14 +9,12 @@ const contacts = [
     name: 'name 1',
     address: '222',
     accountId: '0x333',
-    matrixId: '@444',
   },
   {
     id: 5,
     name: 'name 6',
     address: '777',
     accountId: '0x888',
-    matrixId: '@999',
   },
 ];
 
@@ -57,15 +55,5 @@ describe('features/contacts/model/contact-filter-model', () => {
     await allSettled(filterModel.events.queryChanged, { scope, params: contacts[0].address });
 
     expect(scope.getState(filterModel.$contactsFiltered)).toEqual([contacts[0]]);
-  });
-
-  test('should search by matrix id', async () => {
-    const scope = fork({
-      values: new Map().set(contactModel.$contacts, contacts),
-    });
-
-    await allSettled(filterModel.events.queryChanged, { scope, params: contacts[1].matrixId });
-
-    expect(scope.getState(filterModel.$contactsFiltered)).toEqual([contacts[1]]);
   });
 });

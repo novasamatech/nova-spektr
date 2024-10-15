@@ -1,5 +1,5 @@
-import { type BasketTransaction, type Chain, TransactionType } from '@shared/core';
-import { getAssetById } from '@shared/lib/utils';
+import { type BasketTransaction, type Chain, TransactionType } from '@/shared/core';
+import { getAssetById } from '@/shared/lib/utils';
 import {
   type MultisigTransactionTypes,
   type TransferTransactionTypes,
@@ -8,7 +8,7 @@ import {
   type XcmTransactionTypes,
   XcmTypes,
   isEditDelegationTransaction,
-} from '@entities/transaction';
+} from '@/entities/transaction';
 
 import { getCoreTx } from './utils';
 
@@ -63,6 +63,9 @@ export const getOperationTitle = (transaction: BasketTransaction, chain: Chain):
     [TransactionType.VOTE]: 'operations.modalTitles.vote',
     [TransactionType.REVOTE]: 'operations.modalTitles.revote',
     [TransactionType.REMOVE_VOTE]: 'operations.modalTitles.removeVote',
+    // Remark
+    [TransactionType.REMARK]: 'operations.modalTitles.remarkOn',
+    // Collectives
     [TransactionType.FELLOWSHIP_VOTE]: 'operations.modalTitles.vote',
     [TransactionType.AMBASSADOR_VOTE]: 'operations.modalTitles.vote',
   };

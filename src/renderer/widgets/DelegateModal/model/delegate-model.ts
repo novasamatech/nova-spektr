@@ -4,7 +4,6 @@ import { combine, createEffect, createEvent, createStore, restore, sample } from
 import { spread } from 'patronum';
 
 import { type DelegateAccount, delegationService } from '@/shared/api/governance';
-import { type PathType, Paths } from '@/shared/routes';
 import {
   type Account,
   type BasketTransaction,
@@ -13,19 +12,20 @@ import {
   type Transaction,
   type TxWrapper,
   WrapperKind,
-} from '@shared/core';
-import { Step, formatAmount, getRelaychainAsset, isStep, nonNullable, transferableAmount } from '@shared/lib/utils';
+} from '@/shared/core';
+import { Step, formatAmount, getRelaychainAsset, isStep, nonNullable, transferableAmount } from '@/shared/lib/utils';
+import { type PathType, Paths } from '@/shared/routes';
 import { balanceModel, balanceUtils } from '@/entities/balance';
+import { basketModel } from '@/entities/basket';
 import { votingService } from '@/entities/governance';
-import { basketModel } from '@entities/basket/model/basket-model';
-import { networkModel } from '@entities/network';
-import { transactionBuilder, transactionService } from '@entities/transaction';
-import { walletModel } from '@entities/wallet';
+import { networkModel } from '@/entities/network';
+import { transactionBuilder, transactionService } from '@/entities/transaction';
+import { walletModel } from '@/entities/wallet';
 import { delegateRegistryAggregate, networkSelectorModel, tracksAggregate } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
-import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel, submitUtils } from '@features/operations/OperationSubmit';
-import { delegateConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
+import { signModel } from '@/features/operations/OperationSign/model/sign-model';
+import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { delegateConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
 import { type DelegateData, type FeeData } from '../lib/types';
 
 import { formModel } from './form-model';

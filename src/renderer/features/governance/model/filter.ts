@@ -1,7 +1,7 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { debounce } from 'patronum';
 
-import { type DropdownResult } from '@shared/ui/types';
+import { type DropdownResult } from '@/shared/ui/types';
 
 const queryChanged = createEvent<string>();
 const selectedTracksChanged = createEvent<DropdownResult[]>();

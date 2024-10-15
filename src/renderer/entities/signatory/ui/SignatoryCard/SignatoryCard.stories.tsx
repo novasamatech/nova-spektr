@@ -1,6 +1,6 @@
 import { type Meta, type StoryFn } from '@storybook/react';
 
-import { TEST_ADDRESS } from '@shared/lib/utils';
+import { TEST_ADDRESS } from '@/shared/lib/utils';
 
 import { SignatoryCard } from './SignatoryCard';
 

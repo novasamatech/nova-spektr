@@ -2,10 +2,10 @@ import { type ApiPromise } from '@polkadot/api';
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { once } from 'patronum';
 
-import { type ChainId, type HexString, TransactionType } from '@shared/core';
+import { type ChainId, type HexString, TransactionType } from '@/shared/core';
+import { networkModel } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
-import { networkModel } from '@entities/network';
-import { walletModel, walletUtils } from '@entities/wallet';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { type SigningPayload } from '../lib/types';
 
 // TODO: Use it for signing

@@ -1,6 +1,6 @@
 import { allSettled, fork } from 'effector';
 
-import { notificationModel } from '@entities/notification';
+import { notificationModel } from '@/entities/notification';
 import { notificationListModel } from '../notification-list-model';
 
 describe('features/notifications/NotificationList/notification-list-model', () => {

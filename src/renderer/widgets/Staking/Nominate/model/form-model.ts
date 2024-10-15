@@ -3,12 +3,18 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { spread } from 'patronum';
 
-import { type Account, type Asset, type Chain, type PartialBy } from '@shared/core';
-import { ZERO_BALANCE, formatAmount, getRelaychainAsset, stakeableAmount, transferableAmount } from '@shared/lib/utils';
-import { balanceModel, balanceUtils } from '@entities/balance';
-import { networkModel } from '@entities/network';
-import { walletModel, walletUtils } from '@entities/wallet';
-import { NominateRules } from '@features/operations/OperationsValidation';
+import { type Account, type Asset, type Chain, type PartialBy } from '@/shared/core';
+import {
+  ZERO_BALANCE,
+  formatAmount,
+  getRelaychainAsset,
+  stakeableAmount,
+  transferableAmount,
+} from '@/shared/lib/utils';
+import { balanceModel, balanceUtils } from '@/entities/balance';
+import { networkModel } from '@/entities/network';
+import { walletModel, walletUtils } from '@/entities/wallet';
+import { NominateRules } from '@/features/operations/OperationsValidation';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {

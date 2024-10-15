@@ -1,6 +1,6 @@
 import { type Meta, type StoryFn } from '@storybook/react';
 
-import { TEST_CHAIN_ID } from '@shared/lib/utils';
+import { TEST_CHAIN_ID } from '@/shared/lib/utils';
 
 import { ChainTitle } from './ChainTitle';
 

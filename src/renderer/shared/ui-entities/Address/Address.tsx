@@ -2,7 +2,7 @@ import { memo } from 'react';
 
 import { type Address as AddressType, type XOR } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
-import { Identicon } from '@/shared/ui';
+import { Identicon } from '@/shared/ui/Identicon/Identicon';
 import { Hash } from '../Hash/Hash';
 
 type AddressVariant = 'full' | 'truncate';

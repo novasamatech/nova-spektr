@@ -1,5 +1,5 @@
+import { KeyType } from '@/shared/core';
 import { type IconNames } from '@/shared/ui/types';
-import { KeyType } from '@shared/core';
 
 export const KEY_NAMES = {
   [KeyType.MAIN]: 'Main',

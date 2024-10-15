@@ -1,12 +1,12 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type Store, createEffect, createEvent, sample } from 'effector';
 
-import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@shared/core';
-import { getAssetById, toAccountId, transferableAmount } from '@shared/lib/utils';
-import { balanceModel, balanceUtils } from '@entities/balance';
-import { networkModel } from '@entities/network';
-import { transactionService } from '@entities/transaction';
-import { type BalanceMap, type NetworkStore } from '@widgets/Transfer/lib/types';
+import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@/shared/core';
+import { getAssetById, toAccountId, transferableAmount } from '@/shared/lib/utils';
+import { balanceModel, balanceUtils } from '@/entities/balance';
+import { networkModel } from '@/entities/network';
+import { transactionService } from '@/entities/transaction';
+import { type BalanceMap, type NetworkStore } from '@/widgets/Transfer';
 import { DelegateRules } from '../lib/delegate-rules';
 import { validationUtils } from '../lib/validation-utils';
 import {

@@ -9,9 +9,9 @@ import {
   type ChainId,
   type ID,
   type ShardAccount,
-} from '@shared/core';
-import { isStringsMatchQuery, toAddress } from '@shared/lib/utils';
-import { accountUtils } from '@entities/wallet';
+} from '@/shared/core';
+import { isStringsMatchQuery, toAddress } from '@/shared/lib/utils';
+import { accountUtils } from '@/entities/wallet';
 
 import { type ChainTuple, type ChainsMap, type RootTuple, type SelectedStruct } from './types';
 

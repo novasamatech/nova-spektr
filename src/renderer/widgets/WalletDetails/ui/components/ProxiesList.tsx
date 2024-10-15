@@ -1,17 +1,17 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@app/providers';
-import { type ProxiedAccount, type ProxyAccount, ProxyType, ProxyVariant } from '@shared/core';
-import { useToggle } from '@shared/lib/hooks';
-import { cnTw } from '@shared/lib/utils';
-import { Accordion, ConfirmModal, FootnoteText, HelpText, SmallTitleText } from '@shared/ui';
-import { AssetBalance } from '@entities/asset';
-import { ChainTitle } from '@entities/chain';
-import { networkModel } from '@entities/network';
-import { accountUtils } from '@entities/wallet';
-import { walletSelectModel } from '@features/wallets';
-import { RemoveProxy, removeProxyModel } from '@widgets/RemoveProxyModal';
-import { RemovePureProxy, removePureProxyModel } from '@widgets/RemovePureProxyModal';
+import { type ProxiedAccount, type ProxyAccount, ProxyType, ProxyVariant } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { useToggle } from '@/shared/lib/hooks';
+import { cnTw } from '@/shared/lib/utils';
+import { Accordion, ConfirmModal, FootnoteText, HelpText, SmallTitleText } from '@/shared/ui';
+import { AssetBalance } from '@/entities/asset';
+import { ChainTitle } from '@/entities/chain';
+import { networkModel } from '@/entities/network';
+import { accountUtils } from '@/entities/wallet';
+import { walletSelectModel } from '@/features/wallets';
+import { RemoveProxy, removeProxyModel } from '@/widgets/RemoveProxyModal';
+import { RemovePureProxy, removePureProxyModel } from '@/widgets/RemovePureProxyModal';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 
 import { ProxyAccountWithActions } from './ProxyAccountWithActions';

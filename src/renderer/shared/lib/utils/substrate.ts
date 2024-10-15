@@ -18,7 +18,7 @@ import {
   type HexString,
   type ProxyType,
   XcmPallets,
-} from '@shared/core';
+} from '@/shared/core';
 import { XcmTransferType } from '../../api/xcm';
 
 import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './constants';

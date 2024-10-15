@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { type Chain, SigningType, type Wallet, WalletType } from '@shared/core';
+import { type Chain, ChainOptions, SigningType, type Wallet, WalletType } from '@/shared/core';
 
 export const testApi = {
   key: 'test-api',
@@ -9,7 +9,7 @@ export const testApi = {
 export const testChain = {
   name: 'test-chain',
   chainId: '0x00',
-  options: ['regular_proxy'],
+  options: [ChainOptions.REGULAR_PROXY],
 } as unknown as Chain;
 
 export const initiatorWallet = {

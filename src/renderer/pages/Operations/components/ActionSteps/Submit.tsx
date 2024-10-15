@@ -1,8 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
-import { useUnit } from 'effector-react';
 import { type ComponentProps, useEffect, useState } from 'react';
 
-import { useI18n, useMultisigChainContext } from '@app/providers';
+import { useMultisigChainContext } from '@/app/providers';
 import {
   type Account,
   type HexString,
@@ -10,15 +9,14 @@ import {
   type MultisigTransaction,
   type SigningStatus,
   type Transaction,
-} from '@shared/core';
-import { MultisigTxFinalStatus, TransactionType } from '@shared/core';
-import { useToggle } from '@shared/lib/hooks';
-import { toAccountId } from '@shared/lib/utils';
-import { Button, StatusModal } from '@shared/ui';
-import { Animation } from '@shared/ui/Animation/Animation';
-import { matrixModel } from '@entities/matrix';
-import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
-import { type ExtrinsicResultParams, transactionService } from '@entities/transaction';
+} from '@/shared/core';
+import { MultisigTxFinalStatus, TransactionType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { useToggle } from '@/shared/lib/hooks';
+import { Button, StatusModal } from '@/shared/ui';
+import { Animation } from '@/shared/ui/Animation/Animation';
+import { useMultisigEvent, useMultisigTx } from '@/entities/multisig';
+import { type ExtrinsicResultParams, transactionService } from '@/entities/transaction';
 
 type ResultProps = Pick<ComponentProps<typeof StatusModal>, 'title' | 'content' | 'description'>;
 
@@ -30,7 +28,6 @@ type Props = {
   txPayload: Uint8Array;
   signature: HexString;
   rejectReason?: string;
-  matrixRoomId?: string;
   isReject?: boolean;
   onClose: () => void;
 };
@@ -43,13 +40,10 @@ export const Submit = ({
   txPayload,
   signature,
   rejectReason,
-  matrixRoomId,
   isReject,
   onClose,
 }: Props) => {
   const { t } = useI18n();
-
-  const matrix = useUnit(matrixModel.$matrix);
 
   const { addTask } = useMultisigChainContext();
   const { updateMultisigTx } = useMultisigTx({ addTask });
@@ -100,10 +94,6 @@ export const Submit = ({
           };
 
           await addEventWithQueue(event);
-
-          if (matrix.userIsLoggedIn && matrixRoomId) {
-            sendMultisigEvent(updatedTx, typedParams, rejectReason);
-          }
         }
 
         toggleSuccessMessage();
@@ -116,32 +106,6 @@ export const Submit = ({
       }
       toggleInProgress();
     });
-  };
-
-  const sendMultisigEvent = (updatedTx: MultisigTransaction, params: ExtrinsicResultParams, rejectReason?: string) => {
-    if (!tx || !updatedTx || !matrixRoomId) return;
-
-    const payload = {
-      senderAccountId: toAccountId(tx.address),
-      chainId: updatedTx.chainId,
-      callHash: updatedTx.callHash,
-      extrinsicTimepoint: params.timepoint,
-      extrinsicHash: params.extrinsicHash,
-      error: Boolean(params.multisigError),
-      description: rejectReason,
-      callTimepoint: {
-        height: updatedTx.blockCreated || params.timepoint.height,
-        index: updatedTx.indexCreated || params.timepoint.index,
-      },
-    };
-
-    if (tx.type === TransactionType.MULTISIG_CANCEL_AS_MULTI) {
-      matrix.sendCancel(matrixRoomId, payload).catch(console.warn);
-    } else if (params.isFinalApprove) {
-      matrix.sendFinalApprove(matrixRoomId, { ...payload, callOutcome: updatedTx.status }).catch(console.warn);
-    } else {
-      matrix.sendApprove(matrixRoomId, payload).catch(console.warn);
-    }
   };
 
   const getResultProps = (): ResultProps => {

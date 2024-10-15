@@ -3,8 +3,8 @@ import { createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type Chain } from '@/shared/core';
-import { nonNullable } from '@shared/lib/utils';
-import { networkModel } from '@entities/network';
+import { nonNullable } from '@/shared/lib/utils';
+import { networkModel } from '@/entities/network';
 import { lockPeriodsModel } from '../model/lockPeriods';
 import { networkSelectorModel } from '../model/networkSelector';
 

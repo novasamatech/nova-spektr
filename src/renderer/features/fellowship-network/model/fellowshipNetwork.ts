@@ -1,9 +1,9 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { or } from 'patronum';
 
+import { type ChainId, ConnectionStatus } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
-import { type ChainId, ConnectionStatus } from '@shared/core';
-import { networkModel, networkUtils } from '@entities/network';
+import { networkModel, networkUtils } from '@/entities/network';
 
 const selectCollective = createEvent<{ chainId: ChainId }>();
 

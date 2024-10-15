@@ -1,15 +1,15 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
-import { useI18n } from '@app/providers';
-import { useToggle } from '@shared/lib/hooks';
-import { formatAmount } from '@shared/lib/utils';
-import { Button, CaptionText, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
-import { AssetBalance } from '@entities/asset';
-import { SignButton } from '@entities/operations';
-import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
-import { AccountsModal, StakingPopover } from '@entities/staking';
-import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, accountUtils } from '@entities/wallet';
+import { useI18n } from '@/shared/i18n';
+import { useToggle } from '@/shared/lib/hooks';
+import { formatAmount } from '@/shared/lib/utils';
+import { Button, CaptionText, DetailRow, FootnoteText, Icon, Tooltip } from '@/shared/ui';
+import { AssetBalance } from '@/entities/asset';
+import { SignButton } from '@/entities/operations';
+import { AssetFiatBalance } from '@/entities/price';
+import { AccountsModal, StakingPopover } from '@/entities/staking';
+import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, accountUtils } from '@/entities/wallet';
 import { type Config } from '../../../OperationsValidation';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';

@@ -1,20 +1,20 @@
 import { allSettled, fork } from 'effector';
 
-import { storageService } from '@shared/api/storage';
-import { type BaseAccount, ConnectionStatus, ProxyType, type Transaction } from '@shared/core';
-import { networkModel } from '@entities/network';
-import { walletModel } from '@entities/wallet';
-import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@features/operations/OperationSubmit';
-import { addProxyConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
+import { storageService } from '@/shared/api/storage';
+import { type BaseAccount, ConnectionStatus, ProxyType, type Transaction } from '@/shared/core';
+import { networkModel } from '@/entities/network';
+import { walletModel } from '@/entities/wallet';
+import { signModel } from '@/features/operations/OperationSign/model/sign-model';
+import { submitModel } from '@/features/operations/OperationSubmit';
+import { addProxyConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
 import { Step } from '../../lib/types';
 import { addProxyModel } from '../add-proxy-model';
 import { formModel } from '../form-model';
 
 import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
 
-jest.mock('@shared/lib/utils', () => ({
-  ...jest.requireActual('@shared/lib/utils'),
+jest.mock('@/shared/lib/utils', () => ({
+  ...jest.requireActual('@/shared/lib/utils'),
   getProxyTypes: jest.fn().mockReturnValue(['Any', 'Staking']),
 }));
 

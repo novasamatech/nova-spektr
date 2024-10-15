@@ -10,7 +10,7 @@ import {
   type PartialBy,
   type ProxiedAccount,
   type Signatory,
-} from '@shared/core';
+} from '@/shared/core';
 
 export const enum TransactionType {
   TRANSFER = 'transfer',
@@ -42,6 +42,8 @@ export const enum TransactionType {
   PROXY = 'proxy',
   CREATE_PURE_PROXY = 'create_pure_proxy',
   REMOVE_PURE_PROXY = 'kill_pure_proxy',
+
+  REMARK = 'remark',
 
   UNLOCK = 'unlock',
   VOTE = 'vote',

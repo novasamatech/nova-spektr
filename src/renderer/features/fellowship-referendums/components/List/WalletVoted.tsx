@@ -1,6 +1,6 @@
 import { useStoreMap } from 'effector-react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { FootnoteText, Icon } from '@/shared/ui';
 import { type Referendum } from '@/domains/collectives';
 import { votingModel } from '../../model/voting';

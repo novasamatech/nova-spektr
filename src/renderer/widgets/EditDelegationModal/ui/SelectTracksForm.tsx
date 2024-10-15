@@ -2,8 +2,8 @@ import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useState } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type Account, type Chain } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { Alert, Button, Checkbox, FootnoteText, Icon, IconButton, SmallTitleText, Tooltip } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
@@ -66,14 +66,6 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
                 onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(allTracks, votedTracks))}
               >
                 {t('governance.addDelegation.group.selectAll')}
-              </Button>
-              <Button
-                disabled={accounts.length === 0}
-                pallet={getGroupPallet(adminTracks, votedTracks, tracks)}
-                variant="chip"
-                onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(adminTracks, votedTracks))}
-              >
-                {t('governance.addDelegation.group.admin')}
               </Button>
               <Button
                 disabled={accounts.length === 0}

@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@app/providers';
-import { BodyText, Icon } from '@shared/ui';
+import { useI18n } from '@/shared/i18n';
+import { BodyText, Icon } from '@/shared/ui';
 import { activeNetworksModel } from '../model/active-networks-model';
 import { inactiveNetworksModel } from '../model/inactive-networks-model';
 
