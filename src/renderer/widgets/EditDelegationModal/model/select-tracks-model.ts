@@ -17,6 +17,7 @@ import {
   addUniqueItems,
   formatAmount,
   removeItemsFromCollection,
+  toAccountId,
   toAddress,
   transferableAmount,
 } from '@/shared/lib/utils';
@@ -63,7 +64,7 @@ const $votedTracks = combine(
       for (const [track, vote] of Object.entries(voteList)) {
         if (
           (votingService.isCasting(vote) && !votingService.isUnlockingDelegation(vote)) ||
-          (votingService.isDelegating(vote) && delegate?.accountId !== vote.target)
+          (votingService.isDelegating(vote) && delegate && toAccountId(delegate.accountId) !== toAccountId(vote.target))
         ) {
           activeTracks.add(track);
         }
