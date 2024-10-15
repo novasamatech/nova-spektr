@@ -81,6 +81,7 @@ function isWalletConnectGroup(wallet?: Wallet): wallet is WalletConnectGroup {
 }
 
 const VALID_SIGNATORY_WALLET_TYPES = [
+  WalletType.POLKADOT_VAULT,
   WalletType.SINGLE_PARITY_SIGNER,
   WalletType.MULTISHARD_PARITY_SIGNER,
   WalletType.WALLET_CONNECT,

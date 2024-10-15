@@ -1,3 +1,3 @@
 export { SelectSignatories } from './SelectSignatories';
-export { ConfirmSignatories } from './ConfirmSignatories';
-export { WalletForm } from './WalletForm';
+export { WalletItem } from './WalletItem';
+export { MultisigCreationFees } from './MultisigCreationFees';

@@ -7,7 +7,7 @@ import { MainLayout } from '@widgets/Layout';
 import { Assets, ReceiveAsset, SendAsset } from './Assets';
 import { Onboarding } from './Onboarding';
 import { PageLoadingState } from './PageLoadingState';
-import { Currency, Matrix, Networks, ReferendumData, Overview as Settings } from './Settings';
+import { Currency, Networks, ReferendumData, Overview as Settings } from './Settings';
 
 // features with lower priority - can be loaded later
 
@@ -135,7 +135,6 @@ export const ROUTES_CONFIG: RouteObject[] = [
         element: <Settings />,
         children: [
           { path: Paths.NETWORK, element: <Networks /> },
-          { path: Paths.MATRIX, element: <Matrix /> },
           { path: Paths.CURRENCY, element: <Currency /> },
           { path: Paths.REFERENDUM_DATA, element: <ReferendumData /> },
         ],

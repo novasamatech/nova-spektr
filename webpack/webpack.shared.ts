@@ -1,5 +1,4 @@
 import { type Config as SwcConfig } from '@swc/core';
-import { default as CopyPlugin } from 'copy-webpack-plugin';
 import SimpleProgressWebpackPlugin from 'simple-progress-webpack-plugin';
 import { default as TsconfigPathsPlugin } from 'tsconfig-paths-webpack-plugin';
 import { type Configuration, default as webpack } from 'webpack';
@@ -127,10 +126,6 @@ export const sharedConfig: Configuration = {
 
   plugins: [
     new SimpleProgressWebpackPlugin({ format: 'minimal' }),
-
-    new CopyPlugin({
-      patterns: [{ from: 'node_modules/@matrix-org/olm/olm.wasm', to: '' }],
-    }),
 
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],
