@@ -4,7 +4,7 @@ import { createGate } from 'effector-react';
 import { attachToFeatureInput } from '@/shared/effector';
 import { nonNullable, nullable, toKeysRecord } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { collectiveDomain } from '@/domains/collectives';
 
 import { fellowshipModel } from './fellowship';
@@ -27,6 +27,7 @@ const $referendum = combine($referendums, $referendumId, (referendums, referendu
 const $currectMember = combine(votingFeatureStatus.input, $members, (featureInput, members) => {
   if (nullable(featureInput)) return null;
 
+  // TODO restore
   // return collectiveDomain.members.service.findMachingMember(featureInput.wallet, members, featureInput.chain);
   return members[0] ?? null;
 });
@@ -34,6 +35,7 @@ const $currectMember = combine(votingFeatureStatus.input, $members, (featureInpu
 const $votingAccount = combine(votingFeatureStatus.input, $currectMember, (input, member) => {
   if (nullable(member) || nullable(input)) return null;
 
+  // TODO restore
   // return collectiveDomain.members.service.findMachingAccount(input.wallet, member);
   return input.wallet.accounts[0] ?? null;
 });
@@ -70,8 +72,7 @@ sample({
       api,
       chainId,
       referendums: referendums.map(r => r.id),
-      // TODO use branded account id
-      accounts: wallet.accounts.map(a => a.accountId as AccountId),
+      accounts: wallet.accounts.map(a => pjsSchema.helpers.toAccountId(a.accountId)),
     };
   },
 

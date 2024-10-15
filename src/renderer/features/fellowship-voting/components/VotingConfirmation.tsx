@@ -18,7 +18,7 @@ type Props = {
   fee: BN;
 };
 
-export const VotingConfirm = ({ fee, account, wallets, chain, asset, vote, rank }: Props) => {
+export const VotingConfirmation = ({ fee, account, wallets, chain, asset, vote, rank }: Props) => {
   const { t } = useI18n();
 
   const votes = collectiveDomain.tracksService.getGeometricVoteWeight(rank);
@@ -36,9 +36,8 @@ export const VotingConfirm = ({ fee, account, wallets, chain, asset, vote, rank 
         </span>
       </Box>
       <TransactionDetails wallets={wallets} chain={chain} initiator={account}>
-        <DetailRow label="Vote">{vote}</DetailRow>
+        <DetailRow label="Vote">{t(`governance.referendum.${vote}`)}</DetailRow>
         <Separator className="border-filter-border" />
-        {/* eslint-disable-next-line i18next/no-literal-string */}
         <DetailRow label="Fee">{formatAsset(fee, asset)}</DetailRow>
       </TransactionDetails>
     </Box>

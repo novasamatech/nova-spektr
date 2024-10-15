@@ -125,7 +125,7 @@ const AnimatedResizableBlock = ({ children }: PropsWithChildren) => {
   });
 
   return (
-    <section className="relative w-full overflow-hidden transition-all duration-100 ease-in-out" style={{ height }}>
+    <section className="relative w-full overflow-hidden transition-all duration-200 ease-in-out" style={{ height }}>
       <div ref={setRef}>{children}</div>
     </section>
   );

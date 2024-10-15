@@ -14,7 +14,7 @@ import { votingFeatureStatus } from '../model/status';
 import { votingModel } from '../model/voting';
 import { votingStatusModel } from '../model/votingStatus';
 
-import { VotingConfirm } from './VotingConfirm';
+import { VotingConfirmation } from './VotingConfirmation';
 
 type Props = {
   isOpen: boolean;
@@ -59,7 +59,7 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
             <Carousel.Item id="confirm">
               <Box>
                 <Box padding={[4, 5]}>
-                  <VotingConfirm
+                  <VotingConfirmation
                     asset={input.asset}
                     chain={input.chain}
                     wallets={input.wallets}

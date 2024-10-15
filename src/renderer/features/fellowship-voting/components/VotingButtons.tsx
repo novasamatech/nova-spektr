@@ -31,6 +31,7 @@ export const VotingButtons = memo(({ referendumId }: Props) => {
     return null;
   }
 
+  // TODO restore
   // const buttonDiabled = !canVote || !hasRequiredRank;
   const buttonDiabled = false;
 
