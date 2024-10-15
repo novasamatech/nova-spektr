@@ -57,18 +57,12 @@ type PopulateBalanceParams = {
   activeTokens: AssetByChains[];
   balances: Balance[];
   accounts: Account[];
-  hideZeroBalances: boolean;
 };
 
 const populateTokensBalanceFx = createEffect(
-  ({ activeTokens, balances, accounts, hideZeroBalances }: PopulateBalanceParams): AssetByChains[] => {
+  ({ activeTokens, balances, accounts }: PopulateBalanceParams): AssetByChains[] => {
     return activeTokens.reduce<AssetByChains[]>((acc, token) => {
-      const [chainsWithBalance, totalBalance] = tokensService.getChainWithBalance(
-        balances,
-        token.chains,
-        hideZeroBalances,
-        accounts,
-      );
+      const [chainsWithBalance, totalBalance] = tokensService.getChainWithBalance(balances, token.chains, accounts);
 
       if (chainsWithBalance.length > 0) {
         acc.push({ ...token, chains: chainsWithBalance, totalBalance });
@@ -98,7 +92,7 @@ sample({
 });
 
 sample({
-  clock: [networkModel.$connections, $tokens, $hideZeroBalances],
+  clock: [networkModel.$connections, $tokens],
   source: {
     activeView: $activeView,
     activeWallet: walletModel.$activeWallet,
@@ -132,13 +126,12 @@ sample({
 });
 
 sample({
-  clock: [balanceModel.$balances, networkModel.$connections, $accounts, $tokens, $hideZeroBalances],
+  clock: [balanceModel.$balances, networkModel.$connections, $accounts, $tokens],
   source: {
     activeView: $activeView,
     activeTokens: $activeTokens,
     accounts: $accounts,
     balances: balanceModel.$balances,
-    hideZeroBalances: $hideZeroBalances,
   },
   filter: ({ activeView, balances }) => {
     return Boolean(activeView === AssetsListView.TOKEN_CENTRIC && balances.length > 0);
@@ -175,17 +168,20 @@ sample({
 });
 
 sample({
-  clock: [$activeTokensWithBalance, $filtredTokens],
+  clock: [$activeTokensWithBalance, $filtredTokens, $hideZeroBalances],
   source: {
     query: $query,
     activeTokensWithBalance: $activeTokensWithBalance,
+    $hideZeroBalances: $hideZeroBalances,
     filtredTokens: $filtredTokens,
     assetsPrices: priceProviderModel.$assetsPrices,
     fiatFlag: priceProviderModel.$fiatFlag,
     currency: currencyModel.$activeCurrency,
   },
-  fn: ({ query, activeTokensWithBalance, filtredTokens, assetsPrices, fiatFlag, currency }) => {
-    const tokenList = query ? filtredTokens : activeTokensWithBalance;
+  fn: ({ query, activeTokensWithBalance, filtredTokens, $hideZeroBalances, assetsPrices, fiatFlag, currency }) => {
+    const tokenList = query
+      ? filtredTokens
+      : tokensService.hideZeroBalances($hideZeroBalances, activeTokensWithBalance);
 
     return tokensService.sortTokensByBalance(tokenList, assetsPrices, fiatFlag ? currency?.coingeckoId : undefined);
   },
