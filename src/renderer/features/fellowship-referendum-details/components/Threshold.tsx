@@ -3,10 +3,10 @@ import { useStoreMap } from 'effector-react';
 import { memo } from 'react';
 
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { DetailRow } from '@shared/ui';
-import { Skeleton } from '@shared/ui-kit';
+import { DetailRow } from '@/shared/ui';
+import { Skeleton } from '@/shared/ui-kit';
 import { type Referendum } from '@/domains/collectives';
-import { thresholdsModel } from '@features/fellowship-referendum-details/model/thresholds';
+import { thresholdsModel } from '../model/thresholds';
 
 type Props = {
   referendum: Referendum | null;

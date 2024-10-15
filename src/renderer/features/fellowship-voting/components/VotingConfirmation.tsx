@@ -1,11 +1,11 @@
 import { type BN } from '@polkadot/util';
 
-import { useI18n } from '@/app/providers';
 import { type Account, type Asset, type Chain, type Wallet } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { formatAsset } from '@/shared/lib/utils';
 import { DetailRow, Icon, Separator } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { formatAsset } from '@shared/lib/utils';
 import { collectiveDomain } from '@/domains/collectives';
 
 type Props = {

@@ -1,15 +1,15 @@
 import { useGate, useUnit } from 'effector-react';
 import { useState } from 'react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Box, Carousel, Modal } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { walletUtils } from '@/entities/wallet';
+import { OperationSign } from '@/features/operations';
 import { basketUtils } from '@/features/operations/OperationsConfirm';
-import { OperationSign } from '@features/operations';
 import { votingFeatureStatus } from '../model/status';
 import { votingModel } from '../model/voting';
 import { votingStatusModel } from '../model/votingStatus';

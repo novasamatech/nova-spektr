@@ -5,12 +5,12 @@ import { type ReferendumId } from '@/shared/pallet/referenda';
 import { HeaderTitleText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Modal, Skeleton } from '@/shared/ui-kit';
 import { fellowshipVotingFeature } from '@/features/fellowship-voting';
-import { Threshold } from '@features/fellowship-referendum-details/components/Threshold';
 import { referendumDetailsModel } from '../model/details';
 import { referendumsDetailsFeatureStatus } from '../model/status';
 
 import { Card } from './Card';
 import { ProposerName } from './ProposerName';
+import { Threshold } from './Threshold';
 import { ReferendumVoteChart } from './shared/ReferendumVoteChart';
 import { ReferendumVotingStatusBadge } from './shared/ReferendumVotingStatusBadge';
 
