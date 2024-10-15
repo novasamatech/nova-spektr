@@ -119,7 +119,7 @@ const Item = ({ onSelect, icon, children }: ItemProps) => {
     <DropdownMenu.Item
       className={cnTw(
         'flex gap-2 rounded-md px-3 py-2 text-footnote text-text-secondary',
-        'bg-block-background-default: cursor-pointer hover:bg-block-background-hover',
+        'cursor-pointer bg-block-background-default hover:bg-block-background-hover',
       )}
       onSelect={onSelect}
     >
@@ -164,16 +164,7 @@ const CheckboxItem = ({ checked, onChange, onSelect, children }: CheckboxItemPro
   );
 };
 
-type DropdownShape = typeof Root & {
-  Trigger: typeof Trigger;
-  Content: typeof Content;
-  Item: typeof Item;
-  CheckboxItem: typeof CheckboxItem;
-  Group: typeof Group;
-  Separator: typeof Separator;
-};
-
-const Dropdown: DropdownShape = Object.assign(Root, {
+const Dropdown = Object.assign(Root, {
   Trigger,
   Content,
   Item,

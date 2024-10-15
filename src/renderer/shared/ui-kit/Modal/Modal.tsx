@@ -1,22 +1,33 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { type PropsWithChildren, type ReactNode } from 'react';
+import { isObject } from 'lodash';
+import { Children, type PropsWithChildren, type ReactNode } from 'react';
 
 import { HeaderTitleText, IconButton } from '@/shared/ui';
 import { cnTw, nonNullable } from '@shared/lib/utils';
 import { ScrollArea } from '../ScrollArea/ScrollArea';
 import { useTheme } from '../Theme/useTheme';
 
+import './Modal.css';
+
 type Props = {
-  isOpen: boolean;
+  isOpen?: boolean;
   size: 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'fit';
-  onToggle: (open: boolean) => void;
+  height?: 'full' | 'fit';
+  onToggle?: (open: boolean) => void;
 };
 
-const Root = ({ isOpen, size = 'md', children, onToggle }: PropsWithChildren<Props>) => {
+const Root = ({ isOpen, size = 'md', height = 'fit', children, onToggle }: PropsWithChildren<Props>) => {
   const { portalContainer } = useTheme();
+
+  const arrayChildren = Children.toArray(children);
+  const triggerNode = arrayChildren.find((child) => {
+    return nonNullable(child) && isObject(child) && 'type' in child && child.type === Trigger;
+  });
+  const modalNodes = triggerNode ? arrayChildren.filter((child) => child !== triggerNode) : arrayChildren;
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={onToggle}>
+      {triggerNode}
       <Dialog.Portal container={portalContainer}>
         <Dialog.Overlay
           className={cnTw(
@@ -26,8 +37,9 @@ const Root = ({ isOpen, size = 'md', children, onToggle }: PropsWithChildren<Pro
           )}
         >
           <Dialog.Content
+            aria-describedby={undefined}
             className={cnTw(
-              'flex max-h-[95%] min-w-32 max-w-[95%] transform flex-col rounded-lg bg-white text-left align-middle shadow-modal transition-all',
+              'ui-kit-modal-height flex min-w-32 max-w-full transform flex-col rounded-lg bg-white text-left align-middle text-body shadow-modal transition-all',
               'duration-200 animate-in fade-in zoom-in-95',
               {
                 'w-modal-sm': size === 'sm',
@@ -36,10 +48,12 @@ const Root = ({ isOpen, size = 'md', children, onToggle }: PropsWithChildren<Pro
                 'w-modal-xl': size === 'xl',
                 'w-full': size === 'full',
                 'w-fit': size === 'fit',
+                'h-fit': height === 'fit',
+                'h-full': height === 'full',
               },
             )}
           >
-            {children}
+            {modalNodes}
           </Dialog.Content>
         </Dialog.Overlay>
       </Dialog.Portal>
@@ -75,20 +89,19 @@ const Title = ({ action, close, children }: TitleProps) => {
 };
 
 const Content = ({ children }: PropsWithChildren) => {
-  return (
-    <Dialog.Description asChild>
-      <ScrollArea>
-        <section>{children}</section>
-      </ScrollArea>
-    </Dialog.Description>
-  );
+  return <ScrollArea>{children}</ScrollArea>;
+};
+
+const Trigger = ({ children }: PropsWithChildren) => {
+  return <Dialog.Trigger asChild>{children}</Dialog.Trigger>;
 };
 
 const Footer = ({ children }: PropsWithChildren) => {
-  return <footer className="flex h-fit items-end justify-end px-5 pb-4 pt-3">{children}</footer>;
+  return <footer className="flex h-fit items-end justify-end gap-2 px-5 pb-4 pt-3">{children}</footer>;
 };
 
 export const Modal = Object.assign(Root, {
+  Trigger,
   Title,
   Content,
   Footer,

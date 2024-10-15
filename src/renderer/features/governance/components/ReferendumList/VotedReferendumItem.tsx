@@ -16,11 +16,11 @@ import { ListItem } from './ListItem';
 type Props = {
   referendum: AggregatedReferendum;
   network: { api: ApiPromise; chain: Chain; asset: Asset };
-  vote: { value: BN; vote: string };
+  votes: { value: BN; vote: string }[];
   onSelect: (value: AggregatedReferendum) => void;
 };
 
-export const VotedReferendumItem = memo<Props>(({ referendum, network, vote, onSelect }) => {
+export const VotedReferendumItem = memo(({ referendum, network, votes, onSelect }: Props) => {
   const { t } = useI18n();
 
   const { referendumId, approvalThreshold } = referendum;
@@ -58,13 +58,16 @@ export const VotedReferendumItem = memo<Props>(({ referendum, network, vote, onS
         <FootnoteText className="text-tab-text-accent">
           {t('governance.addDelegation.summary.delegateVoted')}&nbsp;
         </FootnoteText>
-        <FootnoteText>
-          {vote.vote.toLocaleUpperCase()}&nbsp;
-          {t('governance.referendum.votes', {
-            votes: formatBalance(vote.value, network.asset.precision).formatted,
-            count: toNumberWithPrecision(+vote.value, network.asset.precision),
-          })}
-        </FootnoteText>
+        {votes.map((vote, index) => (
+          <FootnoteText key={vote.vote} className="mr-1">
+            {vote.vote.toLocaleUpperCase()}&nbsp;
+            {t('governance.referendum.votes', {
+              votes: formatBalance(vote.value, network.asset.precision).formatted,
+              count: toNumberWithPrecision(+vote.value, network.asset.precision),
+            })}
+            {index < votes.length - 1 && ','}
+          </FootnoteText>
+        ))}
       </div>
     </ListItem>
   );

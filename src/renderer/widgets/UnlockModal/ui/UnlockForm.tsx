@@ -3,15 +3,15 @@ import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
 import { useI18n } from '@app/providers';
+import { Address } from '@/shared/ui-entities';
 import { type MultisigAccount } from '@shared/core';
-import { formatBalance, toAddress, toShortAddress } from '@shared/lib/utils';
+import { formatBalance, toAddress } from '@shared/lib/utils';
 import { AmountInput, Button, Input, InputHint, MultiSelect } from '@shared/ui';
 import { AssetBalance } from '@entities/asset';
 import { SignatorySelector } from '@entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
-import { AccountAddress, ProxyWalletAlert, accountUtils } from '@entities/wallet';
+import { ProxyWalletAlert } from '@entities/wallet';
 import { networkSelectorModel } from '@features/governance/model/networkSelector';
-import { votingAssetModel } from '@features/governance/model/votingAsset';
 import { unlockFormAggregate } from '../aggregates/unlockForm';
 
 type Props = {
@@ -50,22 +50,22 @@ const ProxyFeeAlert = () => {
 
   const fee = useUnit(unlockFormAggregate.$fee);
   const balance = useUnit(unlockFormAggregate.$proxyBalance);
-  const asset = useUnit(votingAssetModel.$votingAsset);
+  const network = useUnit(networkSelectorModel.$network);
   const proxyWallet = useUnit(unlockFormAggregate.$proxyWallet);
 
-  if (!asset || !proxyWallet || !shards.hasError()) {
+  if (!network || !proxyWallet || !shards.hasError()) {
     return null;
   }
 
-  const formattedFee = formatBalance(fee, asset.precision).value;
-  const formattedBalance = formatBalance(balance, asset.precision).value;
+  const formattedFee = formatBalance(fee, network.asset.precision).value;
+  const formattedBalance = formatBalance(balance, network.asset.precision).value;
 
   return (
     <ProxyWalletAlert
       wallet={proxyWallet}
       fee={formattedFee}
       balance={formattedBalance}
-      symbol={asset.symbol}
+      symbol={network.asset.symbol}
       onClose={shards.resetErrors}
     />
   );
@@ -79,15 +79,14 @@ const AccountsSelector = () => {
   } = useForm(unlockFormAggregate.$unlockForm);
 
   const accounts = useUnit(unlockFormAggregate.$accounts);
-  const asset = useUnit(votingAssetModel.$votingAsset);
+  const network = useUnit(networkSelectorModel.$network);
   const chain = useUnit(networkSelectorModel.$governanceChain);
 
-  if (!asset || !chain || accounts.length <= 1) {
+  if (!network || !chain || accounts.length <= 1) {
     return null;
   }
 
   const options = accounts.map(({ account, balance }) => {
-    const isShard = accountUtils.isShardAccount(account);
     const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
 
     return {
@@ -95,14 +94,8 @@ const AccountsSelector = () => {
       value: account,
       element: (
         <div className="flex w-full justify-between" key={account.id}>
-          <AccountAddress
-            size={20}
-            type="short"
-            address={address}
-            name={isShard ? toShortAddress(address, 16) : account.name}
-            canCopy={false}
-          />
-          <AssetBalance value={balance} asset={asset} />
+          <Address address={address} variant="truncate" iconSize={20} canCopy={false} title={account.name} showIcon />
+          <AssetBalance value={balance} asset={network.asset} className="w-min" />
         </div>
       ),
     };
@@ -161,8 +154,8 @@ const Amount = () => {
     fields: { amount },
   } = useForm(unlockFormAggregate.$unlockForm);
 
-  const asset = useUnit(votingAssetModel.$votingAsset);
-  if (!asset) {
+  const network = useUnit(networkSelectorModel.$network);
+  if (!network) {
     return null;
   }
 
@@ -171,10 +164,10 @@ const Amount = () => {
       <AmountInput
         disabled
         invalid={amount.hasError()}
-        value={formatBalance(amount.value, asset.precision).value}
+        value={formatBalance(amount.value, network.asset.precision).value}
         balance={amount.value}
         placeholder={t('general.input.amountLabel')}
-        asset={asset}
+        asset={network.asset}
       />
       <InputHint active={amount.hasError()} variant="error">
         {t(amount.errorText())}

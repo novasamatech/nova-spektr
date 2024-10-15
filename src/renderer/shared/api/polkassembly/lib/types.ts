@@ -35,7 +35,7 @@ export type PolkassemblyListingPost = {
   description: string | null;
   end: string | null;
   hash: HexString;
-  method: string;
+  method?: string;
   post_id: number;
   post_reactions: {
     '👍': number;
@@ -44,12 +44,18 @@ export type PolkassemblyListingPost = {
   proposer: Address;
   status: PolkassemblyTrackStatus;
   title: string;
-  topic: {
+  topic?: {
     name: string;
     id: number;
   };
-  type: string;
-  user_id: number;
+  type: PolkassemblyProposalType;
+  user_id: number | null;
+};
+
+export type PolkassemblyFellowshipListingReferendum = Omit<PolkassemblyListingPost, 'post_id'> & {
+  id: number;
+  trackNumber: number;
+  content: string | null;
 };
 
 export type PolkassembyPostStatus = {

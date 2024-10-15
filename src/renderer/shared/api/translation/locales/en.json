@@ -270,6 +270,51 @@
     "omniLogoAlt": "Nova Spektr logo",
     "reloadButton": "Refresh"
   },
+  "fellowship": {
+    "errors": {
+      "disconnect": {
+        "action": "Open network settings",
+        "description": "Referendum information such as the description and voting statistics cannot be accessed and may be outdated.\nPlease check the connection in your network settings.",
+        "title": "You are not connected to this network"
+      }
+    },
+    "fellow_one": "{ count } Fellow",
+    "fellow_other": "{ count } Fellows",
+    "members": {
+      "cardTitle": "Members",
+      "emptyList": "There is no members",
+      "modalAccountTitle": "Account",
+      "modalTitle": "Fellowship members"
+    },
+    "noProfile": "Profile doesn’t exist",
+    "referendums": {
+      "tracks": {
+        "architects": "Architects",
+        "architectsAdept": "Architects Adept",
+        "fellows": "Fellows",
+        "grandArchitects": "Grand Architects",
+        "grandMasters": "Grand Masters",
+        "masters": "Masters",
+        "mastersConstant": "Masters Constant",
+        "members": "Members",
+        "proficientMembers": "Proficient Members",
+        "promoteToIDan": "Promote To I Dan",
+        "promoteToIiDan": "Promote To II Dan",
+        "promoteToIiiDan": "Promote To III Dan",
+        "promoteToIvDan": "Promote To IV Dan",
+        "promoteToVDan": "Promote To V Dan",
+        "promoteToViDan": "Promote To VI Dan",
+        "retainAtIDan": "Retain At I Dan",
+        "retainAtIiDan": "Retain At II Dan2",
+        "retainAtIiiDan": "Retain At III Dan",
+        "retainAtIvDan": "Retain At IV Dan",
+        "retainAtVDan": "Retain At V Dan",
+        "retainAtViDan": "Retain At VI Dan"
+      }
+    },
+    "title": "Fellowship",
+    "yourProfile": "Your profile"
+  },
   "general": {
     "actions": {
       "multiply": "{value} × {multiplier}"
@@ -299,6 +344,7 @@
       "availableLabel": "Available:",
       "descriptionLabel": "Description",
       "descriptionPlaceholder": "Choose an operation description",
+      "searchLabel": "Search",
       "searchPlaceholder": "Search",
       "signerLabel": "Select signer",
       "transferableLabel": "Transferable"
@@ -604,7 +650,9 @@
         "lockingPeriod": "Locking period",
         "networkFee": "Network fee",
         "tracks": "Tracks"
-      }
+      },
+      "noVoteForReferendum": "There're no existing votes for this referendum",
+      "timeoutReferendumError": "This referendum has already passed"
     },
     "voteHistory": {
       "listColumnAccount": "Account",
@@ -654,6 +702,7 @@
     "addressBookLabel": "Address Book",
     "balancesLabel": "Portfolio",
     "basketLabel": "Basket",
+    "fellowship": "Fellowship",
     "governance": "Governance",
     "historyLabel": "History",
     "mstOperationLabel": "Operations",
@@ -885,6 +934,7 @@
       "default": "Sign",
       "novaWallet": "Sign with Nova Wallet",
       "polkadotVault": "Sign with Polkadot Vault",
+      "title": "Sign { count } operations",
       "walletConnect": "Sign with WalletConnect"
     },
     "signatoriesTitle": "Signatories",
@@ -1195,6 +1245,33 @@
     "signer": "Signer:",
     "title": "Signing",
     "troubleshootingLink": "I have an error in Polkadot Vault"
+  },
+  "splashscreen": {
+    "multisig": {
+      "description": "Enhance the security of your assets with Multisig Wallets in Nova Spektr! Multisigs are super easy to use and allow you to further secure access to your Polkadot assets, requiring multiple signatures for transaction approval.",
+      "title": "Multisig operations"
+    },
+    "opengov": {
+      "description": "Decide the fate of the network! Nova Spektr supports Polkadot OpenGov, empowering you to vote, delegate and more! Nova Spektr makes it easier than ever before to observe, participate and delegate in OpenGov!",
+      "title": "OpenGov"
+    },
+    "oss": {
+      "description": "Don't trust, verify. Nova Spektr is fully open-source, meaning that anyone in the world can review its code and ensure transparency and security.",
+      "title": "Open Source & Trustless"
+    },
+    "proxy": {
+      "description": "Delegate Authority for certain operations to secondary accounts with Nova Spektr's Proxy feature! Manage frequent actions such as changing validator nominations from an easier to access account and more!",
+      "title": "Proxy Wallets"
+    },
+    "staking": {
+      "description": "Nova Spektr makes it easy to stake your assets and earn rewards while contributing to the network's security! Using Nova Spektr you can easily stake your DOT, KSM and more in seconds from your multisig accounts!",
+      "title": "Staking"
+    },
+    "title": "Feature",
+    "walletConnect": {
+      "description": "Nova Spektr supports WalletConnect v2! Seamlessly connect to Nova Spektr with any WalletConnect-compatible wallet for a smooth and secure experience.",
+      "title": "WalletConnect 2.0"
+    }
   },
   "staking": {
     "about": {

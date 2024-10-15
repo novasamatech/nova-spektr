@@ -16,16 +16,17 @@ type IconProps = XOR<{
 type Props = IconProps & {
   address: AddressType;
   title?: string;
+  replaceAddressWithTitle?: boolean;
   variant?: AddressVariant;
   testId?: string;
 };
 
-export const Address = memo<Props>(
-  ({ title, variant = 'full', canCopy = true, showIcon, iconSize = 16, address, testId = 'Address' }) => {
+export const Address = memo(
+  ({ title, variant = 'full', canCopy = true, showIcon, iconSize = 16, address, testId = 'Address' }: Props) => {
     const titleNode = title ? <span className="truncate text-text-primary">{title}</span> : null;
     const addressNode = (
       <span
-        className={cnTw('w-full text-left', {
+        className={cnTw('w-full', {
           'text-help-text text-text-tertiary': title,
         })}
       >
@@ -36,7 +37,7 @@ export const Address = memo<Props>(
     return (
       <span className="flex w-full items-center gap-2 overflow-hidden" data-testid={testId}>
         {showIcon && <Identicon address={address} size={iconSize} background={false} canCopy={canCopy} />}
-        <span className="flex w-full flex-col">
+        <span className="flex w-full flex-col overflow-hidden">
           {titleNode}
           {addressNode}
         </span>

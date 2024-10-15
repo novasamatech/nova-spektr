@@ -1,8 +1,8 @@
-import { type TFunction } from 'react-i18next';
+import { type TFunction } from 'i18next';
 
-import { type BasketTransaction, type Chain, type Transaction, TransactionType } from '@shared/core';
+import { type BasketTransaction, type Chain, TransactionType } from '@shared/core';
 import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
-import { XcmTypes, isWrappedInBatchAll } from '@entities/transaction';
+import { XcmTypes, findCoreBatchAll } from '@entities/transaction';
 import { type SelectedFilters } from '../common/types';
 
 import { TransferTypes, TxStatus, UNKNOWN_TYPE } from './constants';
@@ -160,9 +160,7 @@ export const getFilterableTxType = (tx: BasketTransaction): TransactionType | ty
   if (XcmTypes.includes(tx.coreTx.type)) return TransactionType.XCM_LIMITED_TRANSFER;
 
   if (tx.coreTx.type === TransactionType.BATCH_ALL) {
-    const txMatch = tx.coreTx.args?.transactions?.find((tx: Transaction) => {
-      return isWrappedInBatchAll(tx.type);
-    });
+    const txMatch = findCoreBatchAll(tx.coreTx);
 
     return txMatch?.type || UNKNOWN_TYPE;
   }

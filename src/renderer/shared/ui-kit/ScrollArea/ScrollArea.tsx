@@ -1,16 +1,22 @@
 import * as RadixScrollArea from '@radix-ui/react-scroll-area';
-import { type PropsWithChildren } from 'react';
+import { type ComponentProps, type PropsWithChildren } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
 
-type Props = PropsWithChildren<{
-  orientation?: 'vertical' | 'horizontal';
-}>;
+type NativeProps = Pick<ComponentProps<'div'>, 'onScroll'>;
 
-export const ScrollArea = ({ orientation = 'vertical', children }: Props) => (
+type Props = PropsWithChildren<
+  NativeProps & {
+    orientation?: 'vertical' | 'horizontal';
+  }
+>;
+
+export const ScrollArea = ({ onScroll, orientation = 'vertical', children }: Props) => (
   <RadixScrollArea.Root type="scroll" scrollHideDelay={500} className="flex h-full w-full flex-col overflow-hidden">
-    <RadixScrollArea.Viewport className="h-full w-full">{children}</RadixScrollArea.Viewport>
+    <RadixScrollArea.Viewport className="h-full w-full" onScroll={onScroll}>
+      {children}
+    </RadixScrollArea.Viewport>
     <RadixScrollArea.Scrollbar
       className={cnTw(
         'flex touch-none select-none border-transparent p-[1px] transition-all duration-300 animate-in fade-in hover:border-[--scrollbar-border] hover:bg-[--scrollbar-bg]',
