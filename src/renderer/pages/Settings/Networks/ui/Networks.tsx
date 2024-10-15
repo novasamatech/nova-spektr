@@ -2,10 +2,11 @@ import { useUnit } from 'effector-react';
 import { Trans } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
-import { useConfirmContext, useI18n } from '@/app/providers';
 import { type ChainId, type RpcNode } from '@/shared/core';
 import { ConnectionType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
+import { useConfirmContext } from '@/shared/providers';
 import { Paths } from '@/shared/routes';
 import { BaseModal, InfoLink } from '@/shared/ui';
 import { type ExtendedChain, networkModel, networkUtils } from '@/entities/network';

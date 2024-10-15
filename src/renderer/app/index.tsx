@@ -6,8 +6,8 @@ import { createRoot } from 'react-dom/client';
 import { ErrorBoundary } from 'react-error-boundary';
 import { HashRouter } from 'react-router-dom';
 
+import { I18Provider } from '@/shared/i18n';
 import { isElectron } from '@/shared/lib/utils';
-import { I18Provider } from '@/shared/providers';
 import { FallbackScreen } from '@/shared/ui';
 import { APP_CONFIG } from '../../../app.config';
 

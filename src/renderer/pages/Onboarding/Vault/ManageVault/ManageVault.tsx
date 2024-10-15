@@ -4,7 +4,7 @@ import { useUnit } from 'effector-react';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { useI18n, useStatusContext } from '@/app/providers';
+import { useStatusContext } from '@/app/providers';
 import { chainsService } from '@/shared/api/network';
 import {
   AccountType,
@@ -17,6 +17,7 @@ import {
   SigningType,
   WalletType,
 } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { useAltOrCtrlKeyPressed, useToggle } from '@/shared/lib/hooks';
 import { IS_MAC, copyToClipboard, dictionary, toAddress } from '@/shared/lib/utils';
 import {

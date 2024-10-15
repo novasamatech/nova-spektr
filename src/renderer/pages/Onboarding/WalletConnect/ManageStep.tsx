@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
-import { useI18n, useStatusContext } from '@/app/providers';
+import { useStatusContext } from '@/app/providers';
 import { chainsService } from '@/shared/api/network';
 import {
   type AccountId,
@@ -14,6 +14,7 @@ import {
   WalletType,
   type WcAccount,
 } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { toAccountId } from '@/shared/lib/utils';
 import { Button, HeaderTitleText, Icon, Input, InputHint, SmallTitleText } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';

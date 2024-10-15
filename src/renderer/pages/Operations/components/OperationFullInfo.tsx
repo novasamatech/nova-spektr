@@ -1,8 +1,9 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n, useMultisigChainContext } from '@/app/providers';
+import { useMultisigChainContext } from '@/app/providers';
 import { type MultisigTransactionDS } from '@/shared/api/storage';
 import { type CallData, type MultisigAccount } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { Button, Icon, InfoLink, SmallTitleText } from '@/shared/ui';
 import { useMultisigTx } from '@/entities/multisig';

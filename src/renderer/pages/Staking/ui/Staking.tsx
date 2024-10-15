@@ -2,8 +2,9 @@ import { useUnit } from 'effector-react';
 import uniqBy from 'lodash/uniqBy';
 import { useEffect, useMemo, useState } from 'react';
 
-import { useGraphql, useI18n } from '@/app/providers';
+import { useGraphql } from '@/app/providers';
 import { type Account, type Address, type Chain, type ChainId, type Stake, type Validator } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { getRelaychainAsset, toAddress } from '@/shared/lib/utils';
 import { Button, EmptyList, Header } from '@/shared/ui';

@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type ComponentProps, useEffect, useState } from 'react';
 
-import { useI18n, useMultisigChainContext } from '@/app/providers';
+import { useMultisigChainContext } from '@/app/providers';
 import {
   type Account,
   type HexString,
@@ -11,6 +11,7 @@ import {
   type Transaction,
 } from '@/shared/core';
 import { MultisigTxFinalStatus, TransactionType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { Button, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
