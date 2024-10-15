@@ -207,7 +207,7 @@ function parseXcmPalletExtrinsic(args: Omit<XcmPalletTransferArgs, 'feeAssetItem
   };
 
   const beneficiaryJunction = Object.keys(beneficiaryInterior)[0];
-  parsedPayload.destAccountId = get(beneficiaryInterior, `${beneficiaryJunction}.AccountId32.id`);
+  parsedPayload.destAccountId = get(beneficiaryInterior, `${beneficiaryJunction}.AccountId32.id`) as unknown as string;
 
   const destJunction = Object.keys(destInterior)[0];
   parsedPayload.destParachain = Number(xcmUtils.toRawString(get(destInterior, `${destJunction}.Parachain`)));
@@ -249,14 +249,14 @@ function parseXTokensExtrinsic(args: Omit<XTokenPalletTransferArgs, 'destWeight'
   parsedPayload.toRelayChain = destJunction === 'X1';
 
   if (parsedPayload.toRelayChain) {
-    parsedPayload.destAccountId = get(destInterior, 'X1.AccountId32.id');
+    parsedPayload.destAccountId = get(destInterior, 'X1.AccountId32.id') as unknown as string;
   } else {
     const cols = xcmUtils.getJunctionCols<{ Parachain?: number }>(destInterior, destJunction);
     if (cols.Parachain) {
       parsedPayload.destParachain = Number(xcmUtils.toRawString(cols.Parachain.toString()));
       parsedPayload.toRelayChain = false;
     }
-    parsedPayload.destAccountId = get(cols, 'AccountId32.id');
+    parsedPayload.destAccountId = get(cols, 'AccountId32.id') as unknown as string;
   }
 
   return parsedPayload;
