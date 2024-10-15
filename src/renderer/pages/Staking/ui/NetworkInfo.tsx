@@ -109,7 +109,7 @@ export const NetworkInfo = ({
               <Shimmering width={47} height={18} />
             </div>
           ) : (
-            <div key={title} className="text-left">
+            <div key={title} className="flex flex-col gap-y-0.5 text-left">
               <FootnoteText className="text-text-secondary">{title}</FootnoteText>
               <AssetBalance value={amount.toString()} asset={asset} className="font-manrope text-small-title" />
               <AssetFiatBalance amount={amount.toString()} asset={asset} />

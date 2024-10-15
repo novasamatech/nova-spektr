@@ -49,9 +49,9 @@ export const AssetBalance = ({
   }
 
   return (
-    <span className={cnTw('flex items-center gap-x-2', wrapperClassName)}>
+    <p className={cnTw('flex items-center gap-x-2', wrapperClassName)}>
       <AssetIcon src={icon} size={28} name={name} className={imgClassName} />
       {balance}
-    </span>
+    </p>
   );
 };
