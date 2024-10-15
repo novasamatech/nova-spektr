@@ -1,10 +1,10 @@
 import { BN_ZERO } from '@polkadot/util';
 import { useMemo } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type Account, type Asset, type Balance, type Chain } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { locksService } from '@/entities/governance';
 import { SignatorySelector } from '@/entities/operations';
-import { locksService } from '@entities/governance';
 
 type Props = {
   value: Account | null;

@@ -1,6 +1,6 @@
-import { useI18n } from '@app/providers';
-import { Paths } from '@shared/routes';
-import { Alert, ButtonLink, FootnoteText } from '@shared/ui';
+import { useI18n } from '@/shared/i18n';
+import { Paths } from '@/shared/routes';
+import { Alert, ButtonLink, FootnoteText } from '@/shared/ui';
 
 type Props = {
   active: boolean;

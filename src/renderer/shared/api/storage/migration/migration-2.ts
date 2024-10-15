@@ -1,6 +1,6 @@
 import { type Transaction } from 'dexie';
 
-import { AccountType, KeyType, SigningType, WalletType } from '@shared/core';
+import { AccountType, KeyType, SigningType, WalletType } from '@/shared/core';
 
 /**
  * Create missing wallets for SinglePS, WOW, Multisig Update Chain accounts

@@ -4,7 +4,7 @@ import { GraphQLClient } from 'graphql-request';
 import keyBy from 'lodash/keyBy';
 import { once, spread } from 'patronum';
 
-import { storageService } from '@shared/api/storage';
+import { storageService } from '@/shared/api/storage';
 import {
   type Account,
   type AccountId,
@@ -19,7 +19,7 @@ import {
   type ProxyGroup,
   type Wallet,
   type WalletsMap,
-} from '@shared/core';
+} from '@/shared/core';
 import {
   AccountType,
   ChainType,
@@ -29,13 +29,13 @@ import {
   ProxyVariant,
   SigningType,
   WalletType,
-} from '@shared/core';
-import { dictionary } from '@shared/lib/utils';
-import { balanceModel } from '@entities/balance';
-import { networkModel, networkUtils } from '@entities/network';
-import { notificationModel } from '@entities/notification';
-import { proxyModel, proxyUtils, pureProxiesService } from '@entities/proxy';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+} from '@/shared/core';
+import { dictionary } from '@/shared/lib/utils';
+import { balanceModel } from '@/entities/balance';
+import { networkModel, networkUtils } from '@/entities/network';
+import { notificationModel } from '@/entities/notification';
+import { proxyModel, proxyUtils, pureProxiesService } from '@/entities/proxy';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { proxiesUtils } from '../lib/proxies-utils';
 
 const workerStarted = createEvent();
@@ -50,7 +50,7 @@ const $endpoint = createStore<Endpoint<any> | null>(null);
 const $deposits = createStore<ProxyDeposits[]>([]);
 
 const startWorkerFx = createEffect(() => {
-  const worker = new Worker(new URL('@features/proxies/workers/proxy-worker', import.meta.url));
+  const worker = new Worker(new URL('@/features/proxies/workers/proxy-worker', import.meta.url));
 
   return createEndpoint(worker, {
     callable: ['initConnection', 'getProxies', 'disconnect'],

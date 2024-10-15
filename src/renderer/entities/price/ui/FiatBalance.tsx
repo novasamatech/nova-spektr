@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
-import { cnTw } from '@shared/lib/utils';
-import { FootnoteText, Shimmering } from '@shared/ui';
+import { cnTw } from '@/shared/lib/utils';
+import { Shimmering } from '@/shared/ui/Shimmering/Shimmering';
 import { currencyModel } from '../model/currency-model';
 
 import { Price } from './Price';
@@ -20,8 +20,8 @@ export const FiatBalance = ({ amount, className }: Props) => {
   }
 
   return (
-    <FootnoteText className={cnTw('text-text-tertiary', className)}>
+    <span className={cnTw('text-footnote text-text-tertiary', className)}>
       <Price amount={amount} symbol={currency?.symbol} code={currency?.code || ''} />
-    </FootnoteText>
+    </span>
   );
 };

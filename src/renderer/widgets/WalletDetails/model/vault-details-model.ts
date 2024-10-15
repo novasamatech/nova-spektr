@@ -1,7 +1,7 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 
-import { chainsService } from '@shared/api/network';
-import { storageService } from '@shared/api/storage';
+import { chainsService } from '@/shared/api/network';
+import { storageService } from '@/shared/api/storage';
 import {
   type Account,
   type AccountId,
@@ -12,9 +12,9 @@ import {
   type ID,
   type ShardAccount,
   type Wallet,
-} from '@shared/core';
-import { accountUtils, walletModel } from '@entities/wallet';
-import { proxiesModel } from '@features/proxies';
+} from '@/shared/core';
+import { accountUtils, walletModel } from '@/entities/wallet';
+import { proxiesModel } from '@/features/proxies';
 
 type AccountsCreatedParams = {
   walletId: ID;

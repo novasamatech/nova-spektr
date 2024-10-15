@@ -2,26 +2,27 @@ import { useUnit } from 'effector-react';
 import uniqBy from 'lodash/uniqBy';
 import { useEffect, useMemo, useState } from 'react';
 
-import { useGraphql, useI18n } from '@app/providers';
-import { type Account, type Address, type Chain, type ChainId, type Stake, type Validator } from '@shared/core';
-import { useToggle } from '@shared/lib/hooks';
-import { getRelaychainAsset, toAddress } from '@shared/lib/utils';
-import { Button, EmptyList, Header } from '@shared/ui';
-import { InactiveNetwork, networkUtils, useNetworkData } from '@entities/network';
-import { priceProviderModel } from '@entities/price';
+import { useGraphql } from '@/app/providers';
+import { type Account, type Address, type Chain, type ChainId, type Stake, type Validator } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { useToggle } from '@/shared/lib/hooks';
+import { getRelaychainAsset, toAddress } from '@/shared/lib/utils';
+import { Button, EmptyList, Header } from '@/shared/ui';
+import { InactiveNetwork, networkUtils, useNetworkData } from '@/entities/network';
+import { priceProviderModel } from '@/entities/price';
 import {
   type StakingMap,
   type ValidatorMap,
   ValidatorsModal,
+  eraService,
   useStakingData,
   useStakingRewards,
   validatorsService,
-} from '@entities/staking';
-import { eraService } from '@entities/staking/api';
-import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
+} from '@/entities/staking';
+import { accountUtils, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { EmptyAccountMessage } from '@/features/emptyList';
 import { walletSelectModel } from '@/features/wallets';
-import * as Operations from '@widgets/Staking';
+import * as Operations from '@/widgets/Staking';
 import { type NominatorInfo, Operations as StakeOperations } from '../lib/types';
 
 import { AboutStaking } from './AboutStaking';

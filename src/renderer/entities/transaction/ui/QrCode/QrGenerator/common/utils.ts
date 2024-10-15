@@ -4,8 +4,8 @@ import { str } from 'parity-scale-codec';
 import qrcode from 'qrcode-generator';
 import { type Encoder } from 'raptorq';
 
-import { type Address, type ChainId } from '@shared/core';
-import { CryptoType, CryptoTypeString, SigningType } from '@shared/core';
+import { type Address, type ChainId } from '@/shared/core';
+import { CryptoType, CryptoTypeString, SigningType } from '@/shared/core';
 import { DYNAMIC_DERIVATIONS_REQUEST } from '../../common/constants';
 import { type DynamicDerivationRequestInfo } from '../../common/types';
 

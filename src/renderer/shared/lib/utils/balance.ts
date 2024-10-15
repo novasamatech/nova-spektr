@@ -1,7 +1,7 @@
 import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
 import { default as BigNumber } from 'bignumber.js';
 
-import { type Asset, type AssetBalance, type Balance, LockTypes, type Unlocking } from '@shared/core';
+import { type Asset, type AssetBalance, type Balance, LockTypes, type Unlocking } from '@/shared/core';
 
 import { ZERO_BALANCE } from './constants';
 

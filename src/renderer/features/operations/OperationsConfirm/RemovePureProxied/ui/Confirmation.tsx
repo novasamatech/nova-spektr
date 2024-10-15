@@ -1,14 +1,14 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode, useState } from 'react';
 
-import { useI18n } from '@app/providers';
-import { ProxyType } from '@shared/core';
-import { toAddress } from '@shared/lib/utils';
-import { Button, DetailRow, FootnoteText, Icon } from '@shared/ui';
-import { SignButton } from '@entities/operations';
-import { proxyUtils } from '@entities/proxy';
-import { FeeWithLabel, MultisigDepositWithLabel } from '@entities/transaction';
-import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, accountUtils } from '@entities/wallet';
+import { ProxyType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { toAddress } from '@/shared/lib/utils';
+import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
+import { SignButton } from '@/entities/operations';
+import { proxyUtils } from '@/entities/proxy';
+import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
+import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, accountUtils } from '@/entities/wallet';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 

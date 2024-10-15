@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { FootnoteText } from '@shared/ui';
+import { FootnoteText } from '@/shared/ui';
 import { notificationListModel } from '../model/notification-list-model';
 
 import { NotificationRow } from './NotificationRow';

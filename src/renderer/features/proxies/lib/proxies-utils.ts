@@ -9,9 +9,9 @@ import {
   type ProxyAction,
   type Wallet,
   type WalletType,
-} from '@shared/core';
-import { proxyUtils } from '@entities/proxy';
-import { walletUtils } from '@entities/wallet';
+} from '@/shared/core';
+import { proxyUtils } from '@/entities/proxy';
+import { walletUtils } from '@/entities/wallet';
 
 export const proxiesUtils = {
   isRegularProxy,

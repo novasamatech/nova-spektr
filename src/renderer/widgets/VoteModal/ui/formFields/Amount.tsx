@@ -1,9 +1,9 @@
 import { type BN } from '@polkadot/util';
 
-import { useI18n } from '@app/providers';
-import { type Asset } from '@shared/core';
-import { fromPrecision, toPrecision } from '@shared/lib/utils';
-import { AmountInput, InputHint } from '@shared/ui';
+import { type Asset } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { fromPrecision, toPrecision } from '@/shared/lib/utils';
+import { AmountInput, InputHint } from '@/shared/ui';
 
 type Props = {
   value: BN | null;

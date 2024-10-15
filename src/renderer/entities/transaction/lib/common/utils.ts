@@ -2,8 +2,8 @@ import { type ApiPromise } from '@polkadot/api';
 import { type SpRuntimeDispatchError } from '@polkadot/types/lookup';
 import { type TFunction } from 'i18next';
 
-import { type DecodedTransaction, type MultisigTransaction, type Transaction, TransactionType } from '@shared/core';
-import { formatSectionAndMethod } from '@shared/lib/utils';
+import { type DecodedTransaction, type MultisigTransaction, type Transaction, TransactionType } from '@/shared/core';
+import { formatSectionAndMethod } from '@/shared/lib/utils';
 import { type VoteTransaction, voteTransactionService } from '../../../governance';
 
 import {

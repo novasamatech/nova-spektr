@@ -1,7 +1,7 @@
 import { allSettled, fork } from 'effector';
 
-import { toAddress } from '@shared/lib/utils';
-import { walletModel } from '@entities/wallet';
+import { toAddress } from '@/shared/lib/utils';
+import { walletModel } from '@/entities/wallet';
 import { signatoryModel } from '../signatory-model';
 
 import { initiatorWallet, signatoryWallet, signerWallet } from './mock';

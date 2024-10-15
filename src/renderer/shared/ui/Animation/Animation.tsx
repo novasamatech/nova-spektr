@@ -14,9 +14,9 @@ type Props = {
 
 const LazyAnimation = lazy(async () => {
   const [{ default: error }, { default: loading }, { default: success }] = await Promise.all([
-    import('@shared/assets/animations/alert.json'),
-    import('@shared/assets/animations/spinner.json'),
-    import('@shared/assets/animations/success.json'),
+    import('@/shared/assets/animations/alert.json'),
+    import('@/shared/assets/animations/spinner.json'),
+    import('@/shared/assets/animations/success.json'),
   ]);
 
   const images: Record<Props['variant'], unknown> = {

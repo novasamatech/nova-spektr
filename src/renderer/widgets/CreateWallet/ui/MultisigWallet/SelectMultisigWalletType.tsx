@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-import { useI18n } from '@app/providers';
-import { BaseModal, BodyText, Button, HeaderTitleText, RadioGroup } from '@shared/ui';
+import { useI18n } from '@/shared/i18n';
+import { BaseModal, BodyText, Button, HeaderTitleText, RadioGroup } from '@/shared/ui';
 
 import { MultisigWalletType } from './common/constants';
 

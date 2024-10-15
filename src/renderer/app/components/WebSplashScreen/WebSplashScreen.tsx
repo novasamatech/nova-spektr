@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
+import { useI18n } from '@/shared/i18n';
 import { Animation } from '@/shared/ui';
-import { useI18n } from '../../providers';
 
 import promo1 from './assets/promo-1.png';
 import promo2 from './assets/promo-2.png';

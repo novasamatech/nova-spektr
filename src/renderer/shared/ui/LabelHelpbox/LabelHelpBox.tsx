@@ -1,6 +1,6 @@
 import { type PropsWithChildren, forwardRef } from 'react';
 
-import { cnTw } from '@shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { Icon } from '../Icon/Icon';
 import { BodyText } from '../Typography';
 

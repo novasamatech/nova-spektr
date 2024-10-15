@@ -16,7 +16,7 @@ import {
   type Voting,
   type VotingMap,
 } from '@/shared/core';
-import { toKeysRecord } from '@shared/lib/utils';
+import { toKeysRecord } from '@/shared/lib/utils';
 
 enum ConvictionMultiplier {
   None = 0.1,

@@ -16,6 +16,7 @@ export { voteValidateModel } from './model/vote/voteValidateModel';
 export { votingAssetModel } from './model/votingAsset';
 export { lockPeriodsModel } from './model/lockPeriods';
 export { locksModel } from './model/locks';
+export { unlockModel } from './model/unlock/unlock';
 
 export { Locks } from './components/Locks';
 export { AccountsMultiSelector } from './components/AccountsMultiSelector/AccountsMultiSelector';

@@ -1,6 +1,6 @@
 import { type PropsWithChildren } from 'react';
 
-import { cnTw } from '@shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { CaptionText } from '../Typography';
 
 type Pallet = 'default' | 'success' | 'error';

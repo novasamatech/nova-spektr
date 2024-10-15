@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@app/providers';
-import { SearchInput } from '@shared/ui';
+import { useI18n } from '@/shared/i18n';
+import { SearchInput } from '@/shared/ui';
 import { assetsSearchModel } from '../model/assets-search-model';
 
 export const AssetsSearch = () => {

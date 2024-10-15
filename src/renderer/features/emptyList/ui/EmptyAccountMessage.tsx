@@ -1,5 +1,5 @@
-import { useI18n } from '@/app/providers';
 import { WalletType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 
 const Messages: Record<WalletType, string> = {
   [WalletType.POLKADOT_VAULT]: 'emptyState.createOrImportAccount',

@@ -17,7 +17,7 @@ import {
   type ProxyAccount,
   type ProxyGroup,
   type Wallet,
-} from '@shared/core';
+} from '@/shared/core';
 
 // =====================================================
 // ================ Storage interface ==================

@@ -1,12 +1,12 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@app/providers';
-import { useModalClose } from '@shared/lib/hooks';
-import { BaseModal, Button } from '@shared/ui';
-import { OperationTitle } from '@entities/chain';
-import { OperationResult } from '@entities/transaction';
-import { OperationSign, OperationSubmit } from '@features/operations';
-import { UnstakeConfirmation as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
+import { useI18n } from '@/shared/i18n';
+import { useModalClose } from '@/shared/lib/hooks';
+import { BaseModal, Button } from '@/shared/ui';
+import { OperationTitle } from '@/entities/chain';
+import { OperationResult } from '@/entities/transaction';
+import { OperationSign, OperationSubmit } from '@/features/operations';
+import { UnstakeConfirmation as Confirmation, basketUtils } from '@/features/operations/OperationsConfirm';
 import { Step } from '../lib/types';
 import { unstakeUtils } from '../lib/unstake-utils';
 import { unstakeModel } from '../model/unstake-model';

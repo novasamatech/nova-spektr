@@ -1,4 +1,4 @@
-import { useI18n } from '@app/providers';
+import { useI18n } from '@/shared/i18n';
 import { Button } from '../Buttons';
 import { Icon } from '../Icon/Icon';
 import { BodyText } from '../Typography';

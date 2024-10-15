@@ -9,8 +9,8 @@ import { votingService } from '@/entities/governance';
 import { delegateRegistryAggregate, networkSelectorModel, votingAggregate } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
 import { submitModel } from '@/features/operations/OperationSubmit';
-import { delegateModel } from '@/widgets/DelegateModal/model/delegate-model';
-import { SortProp, SortType } from '@/widgets/DelegationModal/common/constants';
+import { delegateModel } from '@/widgets/DelegateModal';
+import { SortProp, SortType } from '@/widgets/DelegationModal';
 
 const flowFinished = createEvent();
 const flowStarted = createEvent();

@@ -1,14 +1,14 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { chainsService } from '@shared/api/network';
-import { type Account, type Chain } from '@shared/core';
-import { isStringsMatchQuery } from '@shared/lib/utils';
-import { AssetsListView, EmptyAssetsState } from '@entities/asset';
-import { balanceModel } from '@entities/balance';
-import { networkModel, networkUtils } from '@entities/network';
-import { currencyModel, priceProviderModel } from '@entities/price';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { chainsService } from '@/shared/api/network';
+import { type Account, type Chain } from '@/shared/core';
+import { isStringsMatchQuery } from '@/shared/lib/utils';
+import { AssetsListView, EmptyAssetsState } from '@/entities/asset';
+import { balanceModel } from '@/entities/balance';
+import { networkModel, networkUtils } from '@/entities/network';
+import { currencyModel, priceProviderModel } from '@/entities/price';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 
 import { NetworkAssets } from './NetworkAssets/NetworkAssets';
 

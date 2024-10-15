@@ -1,4 +1,4 @@
-import { type Wallet, WalletType } from '@shared/core';
+import { type Wallet, WalletType } from '@/shared/core';
 import { signatoryUtils } from '../utils';
 
 describe('entities/signatory/lib/onChainUtils', () => {

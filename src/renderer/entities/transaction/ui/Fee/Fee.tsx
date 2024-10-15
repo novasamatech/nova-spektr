@@ -3,11 +3,10 @@ import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { memo, useEffect, useState } from 'react';
 
-import { type Asset, type Transaction } from '@shared/core';
-import { AssetBalance } from '@entities/asset';
-import { priceProviderModel } from '@entities/price';
-import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
-import { FeeLoader, transactionService } from '@entities/transaction';
+import { type Asset, type Transaction } from '@/shared/core';
+import { AssetBalance } from '@/entities/asset';
+import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
+import { FeeLoader, transactionService } from '@/entities/transaction';
 
 type Props = {
   api?: ApiPromise;

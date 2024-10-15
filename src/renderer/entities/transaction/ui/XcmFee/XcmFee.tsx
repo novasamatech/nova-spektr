@@ -3,13 +3,12 @@ import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { memo, useEffect, useState } from 'react';
 
-import { type XcmConfig, xcmService } from '@shared/api/xcm';
-import { type Asset, type DecodedTransaction, type Transaction } from '@shared/core';
-import { toLocalChainId } from '@shared/lib/utils';
-import { AssetBalance } from '@entities/asset';
-import { priceProviderModel } from '@entities/price';
-import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
-import { FeeLoader } from '@entities/transaction';
+import { type XcmConfig, xcmService } from '@/shared/api/xcm';
+import { type Asset, type DecodedTransaction, type Transaction } from '@/shared/core';
+import { toLocalChainId } from '@/shared/lib/utils';
+import { AssetBalance } from '@/entities/asset';
+import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
+import { FeeLoader } from '@/entities/transaction';
 
 type Props = {
   api: ApiPromise;

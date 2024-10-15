@@ -2,8 +2,8 @@ import { type ApiPromise } from '@polkadot/api';
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
+import { type Address, type Chain, type ChainId, type Identity, type Referendum } from '@/shared/core';
 import { AdditionalType } from '@/shared/core/types/chain';
-import { type Address, type Chain, type ChainId, type Identity, type Referendum } from '@shared/core';
 import { networkModel } from '@/entities/network';
 import { proposersService } from '../lib/proposersService';
 import { referendumService } from '../lib/referendumService';

@@ -1,7 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 
-import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import {
   type Account,
   type AccountId,
@@ -19,11 +18,12 @@ import {
   type Transaction,
   TransactionType,
   type Wallet,
-} from '@shared/core';
-import { toAddress } from '@shared/lib/utils';
+} from '@/shared/core';
+import { toAddress } from '@/shared/lib/utils';
+import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { type TransactionVote, votingService } from '@/entities/governance';
-import { isDelegateTransaction, isProxyTransaction, isUndelegateTransaction } from '@entities/transaction';
-import { accountUtils, walletUtils } from '@entities/wallet';
+import { isDelegateTransaction, isProxyTransaction, isUndelegateTransaction } from '@/entities/transaction';
+import { accountUtils, walletUtils } from '@/entities/wallet';
 
 export const getMultisigExtrinsicLink = (
   callHash?: HexString,

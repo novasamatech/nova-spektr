@@ -10,8 +10,8 @@ import {
   SigningType,
   type Wallet,
   WalletType,
-} from '@shared/core';
-import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@shared/lib/utils';
+} from '@/shared/core';
+import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@/shared/lib/utils';
 
 const accounts: Account[] = [
   {

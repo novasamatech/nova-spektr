@@ -1,7 +1,7 @@
-import { useI18n } from '@app/providers';
-import { type Account, type Chain } from '@shared/core';
-import { cnTw } from '@shared/lib/utils';
-import { BaseModal, Icon } from '@shared/ui';
+import { type Account, type Chain } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { cnTw } from '@/shared/lib/utils';
+import { BaseModal, Icon } from '@/shared/ui';
 import { accountUtils } from '../../lib/account-utils';
 import { AccountAddress } from '../AccountAddress/AccountAddress';
 

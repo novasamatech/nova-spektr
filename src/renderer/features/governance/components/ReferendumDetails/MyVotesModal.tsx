@@ -1,14 +1,14 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
-import { useI18n } from '@app/providers';
-import { type Asset, type Chain, type Referendum } from '@shared/core';
-import { useModalClose } from '@shared/lib/hooks';
-import { formatAsset, formatBalance, toAccountId } from '@shared/lib/utils';
-import { BaseModal, BodyText, FootnoteText } from '@shared/ui';
-import { votingService } from '@entities/governance';
-import { SignatoryCard } from '@entities/signatory';
-import { AddressWithName, walletModel, walletUtils } from '@entities/wallet';
+import { type Asset, type Chain, type Referendum } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { useModalClose } from '@/shared/lib/hooks';
+import { formatAsset, formatBalance, toAccountId } from '@/shared/lib/utils';
+import { BaseModal, BodyText, FootnoteText } from '@/shared/ui';
+import { votingService } from '@/entities/governance';
+import { SignatoryCard } from '@/entities/signatory';
+import { AddressWithName, walletModel, walletUtils } from '@/entities/wallet';
 import { detailsAggregate } from '../../aggregates/details';
 import { votingListService } from '../../lib/votingListService';
 

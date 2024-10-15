@@ -2,8 +2,8 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { isObject } from 'lodash';
 import { Children, type PropsWithChildren, type ReactNode } from 'react';
 
-import { HeaderTitleText, IconButton } from '@/shared/ui';
-import { cnTw, nonNullable } from '@shared/lib/utils';
+import { cnTw, nonNullable } from '@/shared/lib/utils';
+import { IconButton } from '@/shared/ui/Buttons/IconButton/IconButton';
 import { ScrollArea } from '../ScrollArea/ScrollArea';
 import { useTheme } from '../Theme/useTheme';
 
@@ -72,7 +72,7 @@ const Title = ({ action, close, children }: TitleProps) => {
   return (
     <Dialog.Title asChild hidden={!headerExist} className={!headerExist ? 'hidden' : ''}>
       <header className="flex w-full items-center justify-between py-3 pe-3 ps-5 contain-inline-size">
-        <HeaderTitleText className="truncate py-1 font-bold text-text-primary">{children}</HeaderTitleText>
+        <h1 className="truncate py-1 text-header-title font-bold text-text-primary">{children}</h1>
 
         <div className="z-20 flex h-7.5 items-center gap-x-4">
           {action}

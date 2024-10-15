@@ -2,11 +2,11 @@ import { combine, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { either, readonly } from 'patronum';
 
-import { nonNullable, nullable } from '@shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { referendumModel, votingModel } from '@/entities/governance';
 import { accountUtils, walletModel } from '@/entities/wallet';
+import { filterModel, listAggregate, listService, networkSelectorModel, votingAggregate } from '@/features/governance';
 import { locksModel } from '@/features/governance/model/locks';
-import { filterModel, listAggregate, listService, networkSelectorModel, votingAggregate } from '@features/governance';
 import { governancePageUtils } from '../lib/governancePageUtils';
 
 const flow = createGate();

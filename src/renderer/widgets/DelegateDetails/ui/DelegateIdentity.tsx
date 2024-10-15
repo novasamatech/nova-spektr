@@ -1,6 +1,6 @@
 import { useStoreMap, useUnit } from 'effector-react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { DetailRow, FootnoteText, InfoLink, Plate, SmallTitleText } from '@/shared/ui';
 import { proposerIdentityAggregate } from '@/features/governance';
 import { getIdentityList } from '../lib/utils';

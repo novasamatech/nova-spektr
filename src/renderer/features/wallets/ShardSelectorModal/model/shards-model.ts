@@ -1,9 +1,9 @@
 import { attach, combine, createApi, createEvent, createStore, sample } from 'effector';
 import cloneDeep from 'lodash/cloneDeep';
 
-import { type Account, type Wallet } from '@shared/core';
-import { networkModel } from '@entities/network';
-import { walletModel, walletUtils } from '@entities/wallet';
+import { type Account, type Wallet } from '@/shared/core';
+import { networkModel } from '@/entities/network';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { selectorUtils } from '../lib/selector-utils';
 import { shardsUtils } from '../lib/shards-utils';
 import {

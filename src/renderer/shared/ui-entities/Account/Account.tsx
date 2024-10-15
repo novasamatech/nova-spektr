@@ -1,8 +1,9 @@
 import { memo } from 'react';
 
 import { type Account as AccountType, type Chain } from '@/shared/core';
-import { toAddress } from '@shared/lib/utils';
-import { AccountExplorers, Address } from '@shared/ui-entities';
+import { toAddress } from '@/shared/lib/utils';
+import { AccountExplorers } from '../AccountExplorer/AccountExplorers';
+import { Address } from '../Address/Address';
 
 type Props = {
   account: AccountType;

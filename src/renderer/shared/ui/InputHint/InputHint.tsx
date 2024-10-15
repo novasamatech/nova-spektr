@@ -1,4 +1,4 @@
-import { cnTw } from '@shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText } from '../Typography';
 import { type TypographyProps } from '../Typography/common/types';
 

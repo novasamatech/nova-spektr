@@ -1,12 +1,12 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
-import { useI18n } from '@app/providers';
-import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@shared/ui';
-import { AssetBalance } from '@entities/asset';
-import { SignButton } from '@entities/operations';
-import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
-import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, accountUtils } from '@entities/wallet';
+import { useI18n } from '@/shared/i18n';
+import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@/shared/ui';
+import { AssetBalance } from '@/entities/asset';
+import { SignButton } from '@/entities/operations';
+import { AssetFiatBalance } from '@/entities/price';
+import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, accountUtils } from '@/entities/wallet';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 

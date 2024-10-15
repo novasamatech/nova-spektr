@@ -1,6 +1,6 @@
 import { type PropsWithChildren, type ReactNode } from 'react';
 
-import { Plate, SmallTitleText } from '@shared/ui';
+import { Plate, SmallTitleText } from '@/shared/ui';
 
 type Props = PropsWithChildren<{
   title?: ReactNode;

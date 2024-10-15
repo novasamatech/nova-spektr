@@ -1,10 +1,10 @@
 import { memo } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type ReferendumType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { OperationStatus } from '@/shared/ui';
-import { Skeleton } from '@shared/ui-kit';
+import { Skeleton } from '@/shared/ui-kit';
 import { type Referendum, collectiveDomain } from '@/domains/collectives';
 
 type Props = {

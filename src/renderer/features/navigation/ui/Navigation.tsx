@@ -1,12 +1,12 @@
 import { useUnit } from 'effector-react';
 
-import { MultisigTxInitStatus } from '@shared/core';
-import { Paths } from '@shared/routes';
-import { BodyText } from '@shared/ui';
-import { basketModel } from '@entities/basket';
-import { useMultisigTx } from '@entities/multisig';
-import { networkModel } from '@entities/network';
-import { walletModel, walletUtils } from '@entities/wallet';
+import { MultisigTxInitStatus } from '@/shared/core';
+import { Paths } from '@/shared/routes';
+import { BodyText } from '@/shared/ui';
+import { basketModel } from '@/entities/basket';
+import { useMultisigTx } from '@/entities/multisig';
+import { networkModel } from '@/entities/network';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { basketUtils } from '../../operations/OperationsConfirm';
 
 import { NavItem, type Props as NavItemProps } from './NavItem';

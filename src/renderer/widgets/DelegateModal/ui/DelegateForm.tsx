@@ -3,8 +3,8 @@ import { useForm } from 'effector-forms';
 import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
-import { useI18n } from '@app/providers';
-import { formatAmount, formatBalance } from '@shared/lib/utils';
+import { useI18n } from '@/shared/i18n';
+import { formatAmount, formatBalance } from '@/shared/lib/utils';
 import {
   AmountInput,
   BaseModal,
@@ -16,17 +16,16 @@ import {
   InputHint,
   SmallTitleText,
   Tooltip,
-} from '@shared/ui';
+} from '@/shared/ui';
+import { AssetBalance } from '@/entities/asset';
 import { OperationTitle } from '@/entities/chain';
 import { BalanceDiff, LockPeriodDiff, LockValueDiff } from '@/entities/governance';
-import { AssetBalance } from '@entities/asset';
-import { SignatorySelector } from '@entities/operations';
-import { priceProviderModel } from '@entities/price';
-import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
-import { FeeLoader } from '@entities/transaction';
-import { ProxyWalletAlert } from '@entities/wallet';
+import { SignatorySelector } from '@/entities/operations';
+import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
+import { FeeLoader } from '@/entities/transaction';
+import { ProxyWalletAlert } from '@/entities/wallet';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
-import { ConvictionSelect } from '@/widgets/VoteModal/ui/formFields/ConvictionSelect';
+import { ConvictionSelect } from '@/widgets/VoteModal';
 import { formModel } from '../model/form-model';
 
 type Props = {

@@ -2,7 +2,6 @@ import { type ApiPromise } from '@polkadot/api';
 import { useGate, useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@app/providers';
 import {
   type Account,
   type AccountVote,
@@ -12,6 +11,7 @@ import {
   type ReferendumId,
   type TrackId,
 } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { Step, isStep, nonNullable, nullable } from '@/shared/lib/utils';
 import { BaseModal, Button } from '@/shared/ui';
@@ -26,7 +26,7 @@ import {
   basketUtils,
   removeVoteConfirmModel,
 } from '@/features/operations/OperationsConfirm';
-import { SignatorySelectModal } from '@/pages/Operations/components/modals/SignatorySelectModal';
+import { SignatorySelectModal } from '@/pages/Operations';
 import { removeVotesModalAggregate } from '../aggregates/removeVotesModal';
 
 type Props = {

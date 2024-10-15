@@ -1,19 +1,19 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
+import { type ClaimChunkWithAddress, UnlockChunkType } from '@/shared/api/governance';
 import { type BasketTransaction, type Transaction } from '@/shared/core';
+import { Step, isStep, nonNullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
-import { type ClaimChunkWithAddress, UnlockChunkType } from '@shared/api/governance';
-import { Step, isStep, nonNullable } from '@shared/lib/utils';
 import { basketModel } from '@/entities/basket';
+import { networkSelectorModel } from '@/features/governance';
+import { locksModel } from '@/features/governance/model/locks';
+import { unlockModel } from '@/features/governance/model/unlock/unlock';
+import { type UnlockFormData } from '@/features/governance/types/structs';
 import { navigationModel } from '@/features/navigation';
-import { locksModel } from '@features/governance/model/locks';
-import { networkSelectorModel } from '@features/governance/model/networkSelector';
-import { unlockModel } from '@features/governance/model/unlock/unlock';
-import { type UnlockFormData } from '@features/governance/types/structs';
-import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@features/operations/OperationSubmit';
-import { submitUtils } from '@features/operations/OperationSubmit/lib/submit-utils';
+import { signModel } from '@/features/operations/OperationSign/model/sign-model';
+import { submitModel } from '@/features/operations/OperationSubmit';
+import { submitUtils } from '@/features/operations/OperationSubmit/lib/submit-utils';
 
 import { unlockConfirmAggregate } from './unlockConfirm';
 import { unlockFormAggregate } from './unlockForm';

@@ -1,10 +1,10 @@
 import { useGate, useStoreMap } from 'effector-react';
 import { memo } from 'react';
 
+import { type TrackId } from '@/shared/pallet/referenda';
+import { FootnoteText, Icon } from '@/shared/ui';
+import { type IconNames } from '@/shared/ui/Icon/data';
 import { Box } from '@/shared/ui-kit';
-import { type TrackId } from '@shared/pallet/referenda';
-import { FootnoteText, Icon } from '@shared/ui';
-import { type IconNames } from '@shared/ui/Icon/data';
 import { referendumsDetailsFeatureStatus } from '../../model/status';
 import { tracksModel } from '../../model/tracks';
 

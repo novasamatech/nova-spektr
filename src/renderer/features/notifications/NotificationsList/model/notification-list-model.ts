@@ -6,7 +6,7 @@ import { combine } from 'effector';
 import groupBy from 'lodash/groupBy';
 import orderBy from 'lodash/orderBy';
 
-import { notificationModel } from '@entities/notification';
+import { notificationModel } from '@/entities/notification';
 
 const $notificationGroups = combine(notificationModel.$notifications, (notifications) => {
   if (notifications.length === 0) return [];

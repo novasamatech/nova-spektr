@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
-import { SigningType } from '@shared/core';
-import { walletModel } from '@entities/wallet';
+import { SigningType } from '@/shared/core';
+import { walletModel } from '@/entities/wallet';
 import { type InnerSigningProps, type SigningProps } from '../lib/types';
 
 import { Vault } from './Vault';

@@ -1,9 +1,9 @@
 import { type ApiPromise } from '@polkadot/api';
 import { memo } from 'react';
 
-import { useI18n } from '@app/providers';
-import { useDeferredList } from '@shared/lib/hooks';
-import { Accordion, CaptionText, Shimmering } from '@shared/ui';
+import { useI18n } from '@/shared/i18n';
+import { useDeferredList } from '@/shared/lib/hooks';
+import { Accordion, CaptionText, Shimmering } from '@/shared/ui';
 import { type AggregatedReferendum } from '../../types/structs';
 
 import { ListItemPlaceholder } from './ListItemPlaceholder';

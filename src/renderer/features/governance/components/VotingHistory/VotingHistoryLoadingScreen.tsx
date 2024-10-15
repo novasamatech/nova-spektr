@@ -1,4 +1,4 @@
-import { Loader } from '@shared/ui';
+import { Loader } from '@/shared/ui';
 
 export const VotingHistoryLoadingScreen = () => {
   return (

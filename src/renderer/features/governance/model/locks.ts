@@ -3,10 +3,10 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
-import { type Address, type Chain, type ChainId, type TrackId } from '@shared/core';
-import { nonNullable, nullable } from '@shared/lib/utils';
+import { type Address, type Chain, type ChainId, type TrackId } from '@/shared/core';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createSubscriber, governanceService, governanceSubscribeService } from '@/entities/governance';
-import { accountUtils, walletModel } from '@entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 
 import { networkSelectorModel } from './networkSelector';
 

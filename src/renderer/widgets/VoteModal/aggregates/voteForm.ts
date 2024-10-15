@@ -9,13 +9,13 @@ import { balanceModel } from '@/entities/balance';
 import { locksService, voteTransactionService } from '@/entities/governance';
 import { type WrappedTransactions, transactionBuilder } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
+import { networkSelectorModel } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
-import { networkSelectorModel } from '@/features/governance/model/networkSelector';
+import { type BasicFormParams, createTransactionForm } from '@/features/governance/lib/createTransactionForm';
 import { voteValidateModel } from '@/features/governance/model/vote/voteValidateModel';
 import { votingAssetModel } from '@/features/governance/model/votingAsset';
 import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
 import { type VoteConfirm, voteConfirmModel } from '@/features/operations/OperationsConfirm';
-import { type BasicFormParams, createTransactionForm } from '@features/governance/lib/createTransactionForm';
 
 type Form = {
   amount: BN | null;

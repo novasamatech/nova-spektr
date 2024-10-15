@@ -2,10 +2,10 @@ import { useStoreMap } from 'effector-react';
 import { type ComponentProps } from 'react';
 
 import { type Chain } from '@/shared/core';
+import { cnTw, toAddress } from '@/shared/lib/utils';
 import { Identicon } from '@/shared/ui';
 import { AccountExplorers, Address } from '@/shared/ui-entities';
 import { Label } from '@/shared/ui-kit';
-import { cnTw, toAddress } from '@shared/lib/utils';
 import { type Member as MemberType } from '@/domains/collectives';
 import { identityModel } from '../model/identity';
 

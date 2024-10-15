@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 
 import { type ChainId, type MultisigTransaction, MultisigTxInitStatus, type Transaction } from '@/shared/core';
-import { getExtrinsic } from '@/entities/transaction/lib/extrinsicService';
+import { getExtrinsic } from '@/entities/transaction';
 
 export const operationsUtils = {
   isMultisigAlreadyExists,

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { IS_MAC } from '@shared/lib/utils';
+import { IS_MAC } from '@/shared/lib/utils';
 
 /**
  * Returns a boolean indicating whether the alt key (for macOS) or control key

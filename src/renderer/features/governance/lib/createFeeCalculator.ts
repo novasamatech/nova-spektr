@@ -3,9 +3,9 @@ import { type SignerOptions } from '@polkadot/api/types/submittable';
 import { BN, BN_ZERO } from '@polkadot/util';
 import { type Store, combine, createEffect, createStore, sample } from 'effector';
 
-import { type Transaction } from '@shared/core';
-import { nonNullable, nullable } from '@shared/lib/utils';
-import { transactionService } from '@entities/transaction';
+import { type Transaction } from '@/shared/core';
+import { nonNullable, nullable } from '@/shared/lib/utils';
+import { transactionService } from '@/entities/transaction';
 
 type Params = {
   $transaction: Store<Transaction | null>;

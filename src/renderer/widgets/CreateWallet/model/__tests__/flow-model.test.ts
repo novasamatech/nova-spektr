@@ -1,12 +1,12 @@
 import { allSettled, fork } from 'effector';
 
-import { type Account, type Chain, ConnectionStatus } from '@shared/core';
-import { toAddress } from '@shared/lib/utils';
-import { networkModel } from '@entities/network';
-import { walletModel } from '@entities/wallet';
+import { type Account, type Chain, ConnectionStatus } from '@/shared/core';
+import { toAddress } from '@/shared/lib/utils';
+import { networkModel } from '@/entities/network';
+import { walletModel } from '@/entities/wallet';
+import { signModel } from '@/features/operations/OperationSign/model/sign-model';
+import { submitModel } from '@/features/operations/OperationSubmit';
 import { ExtrinsicResult } from '@/features/operations/OperationSubmit/lib/types';
-import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@features/operations/OperationSubmit';
 import { Step } from '../../lib/types';
 import { confirmModel } from '../confirm-model';
 import { flowModel } from '../flow-model';
@@ -15,7 +15,7 @@ import { signatoryModel } from '../signatory-model';
 
 import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
 
-jest.mock('@entities/transaction/lib/extrinsicService', () => ({
+jest.mock('@/entities/transaction/lib/extrinsicService', () => ({
   wrapAsMulti: jest.fn().mockResolvedValue({
     chainId: '0x00',
     address: 'mockAddress',

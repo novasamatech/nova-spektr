@@ -1,14 +1,14 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@app/providers';
+import { useI18n } from '@/shared/i18n';
+import { useModalClose } from '@/shared/lib/hooks';
+import { Step, isStep } from '@/shared/lib/utils';
+import { Button, HeaderTitleText } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
-import { useModalClose } from '@shared/lib/hooks';
-import { Step, isStep } from '@shared/lib/utils';
-import { Button, HeaderTitleText } from '@shared/ui';
-import { OperationTitle } from '@entities/chain';
-import { OperationResult } from '@entities/transaction';
-import { networkSelectorModel } from '@features/governance/model/networkSelector';
-import { OperationSign, OperationSubmit } from '@features/operations';
+import { OperationTitle } from '@/entities/chain';
+import { OperationResult } from '@/entities/transaction';
+import { networkSelectorModel } from '@/features/governance/model/networkSelector';
+import { OperationSign, OperationSubmit } from '@/features/operations';
 import { unlockAggregate } from '../aggregates/unlock';
 
 import { UnlockConfirmation } from './UnlockConfirmation';

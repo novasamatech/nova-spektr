@@ -1,4 +1,4 @@
-import { TransactionType } from '@shared/core';
+import { TransactionType } from '@/shared/core';
 
 export const UNKNOWN_TYPE = 'UNKNOWN_TYPE';
 

@@ -4,8 +4,8 @@ import { type Type } from '@polkadot/types';
 import { type Call } from '@polkadot/types/interfaces';
 import { type HexString } from '@polkadot/util/types';
 
-import { xcmService } from '@shared/api/xcm';
-import { type Address, type CallData, type ChainId, type DecodedTransaction, TransactionType } from '@shared/core';
+import { xcmService } from '@/shared/api/xcm';
+import { type Address, type CallData, type ChainId, type DecodedTransaction, TransactionType } from '@/shared/core';
 
 import {
   BOND_WITH_CONTROLLER_ARGS_AMOUNT,

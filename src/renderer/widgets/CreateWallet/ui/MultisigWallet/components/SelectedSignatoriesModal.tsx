@@ -1,7 +1,7 @@
-import { useI18n } from '@app/providers';
 import { type Explorer } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { toAccountId } from '@/shared/lib/utils';
-import { BaseModal } from '@shared/ui';
+import { BaseModal } from '@/shared/ui';
 import { AddressWithExplorers } from '@/entities/wallet';
 import { type SignatoryInfo } from '@/widgets/CreateWallet/lib/types';
 

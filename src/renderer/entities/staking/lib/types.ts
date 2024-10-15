@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { type Address, type ChainId, type EraIndex, type Stake, type Unlocking, type Validator } from '@shared/core';
+import { type Address, type ChainId, type EraIndex, type Stake, type Unlocking, type Validator } from '@/shared/core';
 
 // =====================================================
 // ========== IStakingDataService interface ============

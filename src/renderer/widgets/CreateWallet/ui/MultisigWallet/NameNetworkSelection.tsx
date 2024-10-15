@@ -1,12 +1,12 @@
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@app/providers';
-import { type Chain } from '@shared/core';
-import { Button, FootnoteText, Input, InputHint, Select, SmallTitleText } from '@shared/ui';
-import { type DropdownOption } from '@shared/ui/types';
-import { ChainTitle } from '@entities/chain';
-import { networkModel, networkUtils } from '@entities/network';
+import { type Chain } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { Button, FootnoteText, Input, InputHint, Select, SmallTitleText } from '@/shared/ui';
+import { type DropdownOption } from '@/shared/ui/types';
+import { ChainTitle } from '@/entities/chain';
+import { networkModel, networkUtils } from '@/entities/network';
 import { MultisigCreationFees } from '@/widgets/CreateWallet/ui/MultisigWallet/components/';
 import { Step } from '../../lib/types';
 import { flowModel } from '../../model/flow-model';

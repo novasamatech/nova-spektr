@@ -1,5 +1,5 @@
-import { TransactionType } from '@shared/core';
-import { TEST_ADDRESS } from '@shared/lib/utils';
+import { TransactionType } from '@/shared/core';
+import { TEST_ADDRESS } from '@/shared/lib/utils';
 import { getIconName } from '../transactionIcon';
 
 describe('entities/transaction/lib/transactionIcon', () => {

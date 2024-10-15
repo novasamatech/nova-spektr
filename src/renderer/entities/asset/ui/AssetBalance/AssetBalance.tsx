@@ -1,9 +1,9 @@
 import { type BN } from '@polkadot/util';
 
-import { useI18n } from '@app/providers';
-import { type Asset, type AssetByChains } from '@shared/core';
-import { cnTw, formatBalance } from '@shared/lib/utils';
-import { AssetIcon } from '@entities/asset';
+import { type Asset, type AssetByChains } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { cnTw, formatBalance } from '@/shared/lib/utils';
+import { AssetIcon } from '../AssetIcon/AssetIcon';
 
 type Props = {
   value: BN | string;
@@ -49,9 +49,9 @@ export const AssetBalance = ({
   }
 
   return (
-    <span className={cnTw('flex items-center gap-x-2', wrapperClassName)}>
+    <p className={cnTw('flex items-center gap-x-2', wrapperClassName)}>
       <AssetIcon src={icon} size={28} name={name} className={imgClassName} />
       {balance}
-    </span>
+    </p>
   );
 };

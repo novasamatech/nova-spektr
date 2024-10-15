@@ -1,8 +1,8 @@
 import { combine, sample } from 'effector';
 import { or } from 'patronum';
 
-import { attachToFeatureInput } from '@shared/effector';
-import { nullable } from '@shared/lib/utils';
+import { attachToFeatureInput } from '@/shared/effector';
+import { nullable } from '@/shared/lib/utils';
 import { collectiveDomain } from '@/domains/collectives';
 import { identityDomain } from '@/domains/identity';
 

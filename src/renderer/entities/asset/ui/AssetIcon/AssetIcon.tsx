@@ -1,5 +1,5 @@
-import { useToggle } from '@shared/lib/hooks';
-import { cnTw } from '@shared/lib/utils';
+import { useToggle } from '@/shared/lib/hooks';
+import { cnTw } from '@/shared/lib/utils';
 
 type Props = {
   src?: string;

@@ -1,4 +1,4 @@
-import { type ObjectValues } from '@shared/core';
+import { type ObjectValues } from '@/shared/core';
 
 export const OperationError = {
   INVALID_FEE: 'staking.notEnoughBalanceForFeeError',

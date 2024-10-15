@@ -1,14 +1,14 @@
 import { BN_ZERO } from '@polkadot/util';
 import { useMemo } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type Account, type Asset, type Balance, type Chain } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { InputHint, Select } from '@/shared/ui';
 import { type DropdownOption } from '@/shared/ui/Dropdowns/common/types';
 import { Address } from '@/shared/ui-entities';
 import { AssetBalance } from '@/entities/asset';
-import { locksService } from '@entities/governance';
+import { locksService } from '@/entities/governance';
 
 type Props = {
   value: Account | null;

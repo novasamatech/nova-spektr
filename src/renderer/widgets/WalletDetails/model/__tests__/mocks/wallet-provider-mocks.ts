@@ -11,8 +11,8 @@ import {
   SigningType,
   type Wallet,
   WalletType,
-} from '@shared/core';
-import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
+} from '@/shared/core';
+import { TEST_ACCOUNTS, TEST_ADDRESS } from '@/shared/lib/utils';
 
 const wallets: Wallet[] = [
   {

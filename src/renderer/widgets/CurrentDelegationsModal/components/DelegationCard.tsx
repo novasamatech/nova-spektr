@@ -1,9 +1,9 @@
 import { type BN, BN_ZERO } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@/app/providers';
 import { type DelegateAccount } from '@/shared/api/governance';
 import { type Conviction } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { BodyText, Card, FootnoteText } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { votingService } from '@/entities/governance';

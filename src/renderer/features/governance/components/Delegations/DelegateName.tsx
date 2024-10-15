@@ -1,10 +1,10 @@
 import { type BN } from '@polkadot/util';
 
-import { useI18n } from '@/app/providers';
+import { type DelegateAccount } from '@/shared/api/governance';
 import { type Asset } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { formatBalance, toNumberWithPrecision } from '@/shared/lib/utils';
 import { BodyText } from '@/shared/ui';
-import { type DelegateAccount } from '@shared/api/governance';
 
 import { DelegateBadge } from './DelegateBadge';
 import { DelegateIcon } from './DelegateIcon';

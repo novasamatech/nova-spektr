@@ -3,7 +3,6 @@ import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { type PathType, Paths } from '@/shared/routes';
 import {
   type Account,
   type BasketTransaction,
@@ -12,16 +11,17 @@ import {
   type Transaction,
   type TxWrapper,
   WrapperKind,
-} from '@shared/core';
-import { getRelaychainAsset, nonNullable } from '@shared/lib/utils';
-import { basketModel } from '@entities/basket/model/basket-model';
-import { networkModel } from '@entities/network';
-import { transactionBuilder, transactionService } from '@entities/transaction';
-import { walletModel } from '@entities/wallet';
+} from '@/shared/core';
+import { getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
+import { type PathType, Paths } from '@/shared/routes';
+import { basketModel } from '@/entities/basket';
+import { networkModel } from '@/entities/network';
+import { transactionBuilder, transactionService } from '@/entities/transaction';
+import { walletModel } from '@/entities/wallet';
 import { navigationModel } from '@/features/navigation';
-import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel, submitUtils } from '@features/operations/OperationSubmit';
-import { payeeConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
+import { signModel } from '@/features/operations/OperationSign/model/sign-model';
+import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { payeeConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
 import { payeeUtils } from '../lib/payee-utils';
 import { type FeeData, type PayeeData, Step, type WalletData } from '../lib/types';
 

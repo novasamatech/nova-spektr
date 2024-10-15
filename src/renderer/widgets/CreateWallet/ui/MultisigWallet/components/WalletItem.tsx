@@ -1,9 +1,9 @@
 import { memo } from 'react';
 
-import { type WalletType } from '@shared/core';
-import { cnTw } from '@shared/lib/utils';
-import { BodyText } from '@shared/ui';
-import { WalletIcon } from '@entities/wallet';
+import { type WalletType } from '@/shared/core';
+import { cnTw } from '@/shared/lib/utils';
+import { BodyText } from '@/shared/ui';
+import { WalletIcon } from '@/entities/wallet';
 
 type Props = {
   name: string;

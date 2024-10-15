@@ -1,7 +1,7 @@
 import { type TFunction } from 'i18next';
 
-import { formatBalance, totalAmount } from '@shared/lib/utils';
-import { type AssetChain } from '@features/assets/AssetsPortfolioView';
+import { formatBalance, totalAmount } from '@/shared/lib/utils';
+import { type AssetChain } from '@/features/assets';
 
 import { Step } from './types';
 

@@ -2,8 +2,6 @@ import { useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { useI18n } from '@app/providers';
-import { Skeleton } from '@/shared/ui-kit';
 import {
   type Account,
   type Address,
@@ -12,17 +10,19 @@ import {
   type Transaction,
   type Validator,
   type Wallet,
-} from '@shared/core';
-import { useToggle } from '@shared/lib/hooks';
-import { cnTw, toAccountId } from '@shared/lib/utils';
-import { CaptionText, DetailRow, FootnoteText, Icon } from '@shared/ui';
+} from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { useToggle } from '@/shared/lib/hooks';
+import { cnTw, toAccountId } from '@/shared/lib/utils';
+import { CaptionText, DetailRow, FootnoteText, Icon } from '@/shared/ui';
+import { Skeleton } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
+import { ChainTitle } from '@/entities/chain';
 import { TracksDetails, voteTransactionService } from '@/entities/governance';
-import { ChainTitle } from '@entities/chain';
-import { getTransactionFromMultisigTx } from '@entities/multisig';
-import { type ExtendedChain, networkModel, networkUtils } from '@entities/network';
-import { proxyUtils } from '@entities/proxy';
-import { SelectedValidatorsModal, useValidatorsMap } from '@entities/staking';
+import { getTransactionFromMultisigTx } from '@/entities/multisig';
+import { type ExtendedChain, networkModel, networkUtils } from '@/entities/network';
+import { proxyUtils } from '@/entities/proxy';
+import { SelectedValidatorsModal, useValidatorsMap } from '@/entities/staking';
 import {
   isAddProxyTransaction,
   isManageProxyTransaction,
@@ -32,8 +32,8 @@ import {
   isTransferTransaction,
   isUndelegateTransaction,
   isXcmTransaction,
-} from '@entities/transaction';
-import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, walletModel } from '@entities/wallet';
+} from '@/entities/transaction';
+import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, walletModel } from '@/entities/wallet';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import {
   getDelegate,

@@ -3,10 +3,10 @@ import { combine, createEffect, createEvent, createStore, sample } from 'effecto
 import { produce } from 'immer';
 import { readonly } from 'patronum';
 
-import { type GovernanceApi, type ReferendumTimelineRecord } from '@shared/api/governance';
-import { type Chain, type ChainId, type Referendum, type ReferendumId } from '@shared/core';
-import { getCreatedDateFromApi, nonNullable } from '@shared/lib/utils';
-import { governanceModel, referendumService } from '@entities/governance';
+import { type GovernanceApi, type ReferendumTimelineRecord } from '@/shared/api/governance';
+import { type Chain, type ChainId, type Referendum, type ReferendumId } from '@/shared/core';
+import { getCreatedDateFromApi, nonNullable } from '@/shared/lib/utils';
+import { governanceModel, referendumService } from '@/entities/governance';
 
 import { networkSelectorModel } from './networkSelector';
 

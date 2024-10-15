@@ -12,11 +12,11 @@ import {
   type MultisigTransaction,
   type Transaction,
   TransactionType,
-} from '@shared/core';
-import { removeFromCollection } from '@shared/lib/utils';
-import { buildMultisigTx } from '@entities/multisig';
-import { networkModel } from '@entities/network';
-import { type ExtrinsicResultParams, transactionBuilder, transactionService } from '@entities/transaction';
+} from '@/shared/core';
+import { removeFromCollection } from '@/shared/lib/utils';
+import { buildMultisigTx } from '@/entities/multisig';
+import { networkModel } from '@/entities/network';
+import { type ExtrinsicResultParams, transactionBuilder, transactionService } from '@/entities/transaction';
 import { ExtrinsicResult, SubmitStep } from '../lib/types';
 
 type Input = {

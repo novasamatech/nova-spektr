@@ -1,8 +1,8 @@
 import { type ReactNode, useEffect, useRef } from 'react';
 
-import { useToggle } from '@shared/lib/hooks';
-import { Accordion, CaptionText, Counter } from '@shared/ui';
-import { type ExtendedChain } from '@entities/network';
+import { useToggle } from '@/shared/lib/hooks';
+import { Accordion, CaptionText, Counter } from '@/shared/ui';
+import { type ExtendedChain } from '@/entities/network';
 import { networksListUtils } from '../lib/networks-list-utils';
 
 type Props = {

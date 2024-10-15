@@ -13,7 +13,7 @@ import {
   ProxyType,
   type Transaction,
   TransactionType,
-} from '@shared/core';
+} from '@/shared/core';
 import {
   TEST_ACCOUNTS,
   ZERO_BALANCE,
@@ -23,15 +23,15 @@ import {
   toAddress,
   toShortAddress,
   transferableAmount,
-} from '@shared/lib/utils';
+} from '@/shared/lib/utils';
+import { balanceModel, balanceUtils } from '@/entities/balance';
+import { networkModel, networkUtils } from '@/entities/network';
 import { operationsModel, operationsUtils } from '@/entities/operations';
-import { balanceModel, balanceUtils } from '@entities/balance';
-import { networkModel, networkUtils } from '@entities/network';
-import { transactionService } from '@entities/transaction';
-import { accountUtils, permissionUtils, walletModel, walletUtils } from '@entities/wallet';
-import { AddPureProxiedRules } from '@features/operations/OperationsValidation';
-import { proxiesUtils } from '@features/proxies/lib/proxies-utils';
-import { walletSelectModel } from '@features/wallets';
+import { transactionService } from '@/entities/transaction';
+import { accountUtils, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { AddPureProxiedRules } from '@/features/operations/OperationsValidation';
+import { proxiesUtils } from '@/features/proxies';
+import { walletSelectModel } from '@/features/wallets';
 
 type FormParams = {
   chain: Chain;

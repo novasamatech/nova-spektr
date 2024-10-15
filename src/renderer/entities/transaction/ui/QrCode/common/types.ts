@@ -1,6 +1,6 @@
 import { type DecodeContinuouslyCallback } from '@zxing/browser/esm/common/DecodeContinuouslyCallback';
 
-import { type Address, type ChainId, type CryptoType, type CryptoTypeString } from '@shared/core';
+import { type Address, type ChainId, type CryptoType, type CryptoTypeString } from '@/shared/core';
 
 import { type VaultFeature } from './constants';
 

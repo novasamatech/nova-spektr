@@ -1,6 +1,6 @@
-import { WalletType } from '@shared/core';
-import { Icon } from '@shared/ui';
-import { type IconNames } from '@shared/ui/Icon/data';
+import { WalletType } from '@/shared/core';
+import { Icon } from '@/shared/ui';
+import { type IconNames } from '@/shared/ui/Icon/data';
 
 const WalletIconNames: Record<WalletType, IconNames> = {
   [WalletType.POLKADOT_VAULT]: 'vaultBackground',

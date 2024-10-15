@@ -1,13 +1,14 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n, useMultisigChainContext } from '@app/providers';
-import { type MultisigTransactionDS } from '@shared/api/storage';
-import { type CallData, type MultisigAccount } from '@shared/core';
-import { useToggle } from '@shared/lib/hooks';
-import { Button, Icon, InfoLink, SmallTitleText } from '@shared/ui';
-import { useMultisigTx } from '@entities/multisig';
-import { useNetworkData } from '@entities/network';
-import { permissionUtils, walletModel } from '@entities/wallet';
+import { useMultisigChainContext } from '@/app/providers';
+import { type MultisigTransactionDS } from '@/shared/api/storage';
+import { type CallData, type MultisigAccount } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { useToggle } from '@/shared/lib/hooks';
+import { Button, Icon, InfoLink, SmallTitleText } from '@/shared/ui';
+import { useMultisigTx } from '@/entities/multisig';
+import { useNetworkData } from '@/entities/network';
+import { permissionUtils, walletModel } from '@/entities/wallet';
 import { getMultisigExtrinsicLink } from '../common/utils';
 
 import { OperationCardDetails } from './OperationCardDetails';

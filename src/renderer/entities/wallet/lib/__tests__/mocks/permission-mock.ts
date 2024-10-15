@@ -11,7 +11,7 @@ import {
   type WalletConnectWallet,
   WalletType,
   type WatchOnlyWallet,
-} from '@shared/core';
+} from '@/shared/core';
 
 // Wallets
 

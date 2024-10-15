@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
-import { walletUtils } from '@entities/wallet';
-import { walletSelectModel } from '@features/wallets';
+import { walletUtils } from '@/entities/wallet';
+import { walletSelectModel } from '@/features/wallets';
 import { walletProviderModel } from '../../model/wallet-provider-model';
 import { MultishardWalletDetails } from '../wallets/MultishardWalletDetails';
 import { MultisigWalletDetails } from '../wallets/MultisigWalletDetails';

@@ -1,4 +1,4 @@
-import { type Identity } from '@shared/core/types/identity';
+import { type Identity } from '@/shared/core/types/identity';
 
 /**
  * Validate Polkadot Vault QR format

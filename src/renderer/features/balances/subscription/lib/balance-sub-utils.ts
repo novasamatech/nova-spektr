@@ -1,8 +1,8 @@
 import uniqBy from 'lodash/uniqBy';
 
-import { type Account, type Chain, type ChainId, type ID, type MultisigAccount, type Wallet } from '@shared/core';
-import { dictionary } from '@shared/lib/utils';
-import { accountUtils, walletUtils } from '@entities/wallet';
+import { type Account, type Chain, type ChainId, type ID, type MultisigAccount, type Wallet } from '@/shared/core';
+import { dictionary } from '@/shared/lib/utils';
+import { accountUtils, walletUtils } from '@/entities/wallet';
 
 import { type SubAccounts } from './types';
 

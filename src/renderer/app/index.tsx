@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client';
 import { ErrorBoundary } from 'react-error-boundary';
 import { HashRouter } from 'react-router-dom';
 
+import { I18Provider } from '@/shared/i18n';
 import { isElectron } from '@/shared/lib/utils';
 import { FallbackScreen } from '@/shared/ui';
 import { APP_CONFIG } from '../../../app.config';
@@ -13,7 +14,6 @@ import { APP_CONFIG } from '../../../app.config';
 import { LoadingDelay, controlledLazy, suspenseDelay } from './DelayedSuspense';
 import { ElectronSplashScreen } from './components/ElectronSplashScreen/ElectronSplashScreen';
 import { WebSplashScreen } from './components/WebSplashScreen/WebSplashScreen';
-import { I18Provider } from './providers/context/I18nContext';
 
 const CLEAR_LOADING_TIMEOUT = 700;
 const DIRTY_LOADING_TIMEOUT = 2000;

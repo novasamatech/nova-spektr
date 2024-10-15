@@ -10,10 +10,10 @@ import {
   type MultisigEvent,
   type MultisigTransaction,
   type Transaction,
-} from '@shared/core';
-import { MultisigTxInitStatus, TransactionType } from '@shared/core';
-import { getCreatedDate, toAccountId } from '@shared/lib/utils';
-import { type ExtrinsicResultParams, findCoreBatchAll } from '@entities/transaction';
+} from '@/shared/core';
+import { MultisigTxInitStatus, TransactionType } from '@/shared/core';
+import { getCreatedDate, toAccountId } from '@/shared/lib/utils';
+import { type ExtrinsicResultParams, findCoreBatchAll } from '@/entities/transaction';
 
 import { type PendingMultisigTransaction } from './types';
 

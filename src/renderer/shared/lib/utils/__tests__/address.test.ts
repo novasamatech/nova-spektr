@@ -1,4 +1,4 @@
-import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
+import { TEST_ACCOUNTS, TEST_ADDRESS } from '@/shared/lib/utils';
 import { toAddress, validateAddress } from '../address';
 
 describe('shared/lib/onChainUtils/address', () => {

@@ -1,8 +1,8 @@
 import { type MouseEvent } from 'react';
 
-import { type AccountId, type Address, type KeyType } from '@shared/core';
-import { cnTw, toAddress } from '@shared/lib/utils';
-import { BodyText, HelpText, Icon, IconButton, Identicon } from '@shared/ui';
+import { type AccountId, type Address, type KeyType } from '@/shared/core';
+import { cnTw, toAddress } from '@/shared/lib/utils';
+import { BodyText, HelpText, Icon, IconButton, Identicon } from '@/shared/ui';
 import { KeyIcon } from '../../lib/constants';
 
 type Props = {

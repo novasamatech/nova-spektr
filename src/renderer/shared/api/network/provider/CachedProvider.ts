@@ -1,6 +1,6 @@
 import { type ProviderInterface } from '@polkadot/rpc-provider/types';
 
-import { type HexString } from '@shared/core';
+import { type HexString } from '@/shared/core';
 import { GET_METADATA_METHOD } from '../lib/constants';
 import { type ProviderWithMetadata } from '../lib/types';
 

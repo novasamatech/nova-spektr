@@ -1,7 +1,7 @@
 import { type Meta, type StoryFn } from '@storybook/react';
 
-import { ProxyType } from '@shared/core';
-import { TEST_ACCOUNTS } from '@shared/lib/utils';
+import { ProxyType } from '@/shared/core';
+import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 
 import { ProxyAccount } from './ProxyAccount';
 

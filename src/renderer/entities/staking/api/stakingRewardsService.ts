@@ -1,6 +1,6 @@
 import { useQuery } from '@apollo/client';
 
-import { type Address } from '@shared/core';
+import { type Address } from '@/shared/core';
 import { GET_TOTAL_REWARDS } from '../graphql/queries/stakingRewards';
 import { type RewardsQuery } from '../graphql/types/stakingRewards';
 import { type IStakingRewardsService, type RewardsMap } from '../lib/types';

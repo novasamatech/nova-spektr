@@ -1,6 +1,6 @@
 import { allSettled, fork } from 'effector';
 
-import { storageService } from '@shared/api/storage';
+import { storageService } from '@/shared/api/storage';
 import {
   AccountType,
   type BaseAccount,
@@ -11,18 +11,18 @@ import {
   SigningType,
   type Wallet,
   WalletType,
-} from '@shared/core';
-import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@shared/lib/utils';
-import { proxyModel } from '@entities/proxy';
-import { walletModel } from '@entities/wallet';
+} from '@/shared/core';
+import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@/shared/lib/utils';
+import { proxyModel } from '@/entities/proxy';
+import { walletModel } from '@/entities/wallet';
 import { forgetWalletModel } from '../forget-wallet-model';
 
-jest.mock('@entities/multisig', () => ({
+jest.mock('@/entities/multisig', () => ({
   useForgetMultisig: () => ({ deleteMultisigTxs: jest.fn() }),
 }));
 
-jest.mock('@entities/balance', () => ({
-  ...jest.requireActual('@entities/balance'),
+jest.mock('@/entities/balance', () => ({
+  ...jest.requireActual('@/entities/balance'),
   useBalanceService: () => ({ deleteBalance: jest.fn() }),
 }));
 

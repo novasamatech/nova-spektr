@@ -1,11 +1,11 @@
 import { useUnit } from 'effector-react';
 import { type ComponentProps, useEffect } from 'react';
 
-import { useI18n } from '@app/providers';
-import { useTaskQueue } from '@shared/lib/hooks';
-import { Button } from '@shared/ui';
-import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
-import { OperationResult } from '@entities/transaction';
+import { useI18n } from '@/shared/i18n';
+import { useTaskQueue } from '@/shared/lib/hooks';
+import { Button } from '@/shared/ui';
+import { useMultisigEvent, useMultisigTx } from '@/entities/multisig';
+import { OperationResult } from '@/entities/transaction';
 import { submitUtils } from '../lib/submit-utils';
 import { type SubmitStep } from '../lib/types';
 import { submitModel } from '../model/submit-model';

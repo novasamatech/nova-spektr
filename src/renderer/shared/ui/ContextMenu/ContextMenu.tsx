@@ -1,7 +1,7 @@
 import { Popover, Transition } from '@headlessui/react';
 import { Fragment, type KeyboardEvent, type MouseEvent, type PropsWithChildren, type ReactNode, useRef } from 'react';
 
-import { KeyboardKey, cnTw } from '@shared/lib/utils';
+import { KeyboardKey, cnTw } from '@/shared/lib/utils';
 import { FootnoteText } from '../Typography';
 
 type Props = {

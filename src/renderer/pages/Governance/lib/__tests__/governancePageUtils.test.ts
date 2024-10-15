@@ -1,7 +1,7 @@
 import { BN_ZERO } from '@polkadot/util';
 
-import { type OngoingReferendum } from '@shared/core';
-import { type AggregatedReferendum, VoteStatus } from '@features/governance';
+import { type OngoingReferendum } from '@/shared/core';
+import { type AggregatedReferendum, VoteStatus } from '@/features/governance';
 import { governancePageUtils } from '../governancePageUtils';
 
 const someVote = {

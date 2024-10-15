@@ -11,10 +11,10 @@ import {
   type Voting,
   type VotingMap,
 } from '@/shared/core';
+import { toAddress } from '@/shared/lib/utils';
+import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
+import { referendaPallet } from '@/shared/pallet/referenda';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
-import { toAddress } from '@shared/lib/utils';
-import { convictionVotingPallet } from '@shared/pallet/convictionVoting';
-import { referendaPallet } from '@shared/pallet/referenda';
 
 import { governanceService } from './governanceService';
 

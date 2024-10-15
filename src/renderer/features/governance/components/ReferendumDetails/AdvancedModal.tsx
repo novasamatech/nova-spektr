@@ -1,11 +1,11 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 
-import { useI18n } from '@app/providers';
-import { type Asset, type OngoingReferendum } from '@shared/core';
-import { useModalClose } from '@shared/lib/hooks';
-import { copyToClipboard, formatAsset } from '@shared/lib/utils';
-import { BaseModal, DetailRow, IconButton, Separator, Truncate } from '@shared/ui';
-import { AddressWithName } from '@entities/wallet';
+import { type Asset, type OngoingReferendum } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { useModalClose } from '@/shared/lib/hooks';
+import { copyToClipboard, formatAsset } from '@/shared/lib/utils';
+import { BaseModal, DetailRow, IconButton, Separator, Truncate } from '@/shared/ui';
+import { AddressWithName } from '@/entities/wallet';
 import { type AggregatedReferendum } from '../../types/structs';
 
 type Props = {

@@ -1,4 +1,4 @@
-import { type BasketTransaction, type Transaction, TransactionType } from '@shared/core';
+import { type BasketTransaction, type Transaction, TransactionType } from '@/shared/core';
 import { findCoreBatchAll, isEditDelegationTransaction } from '@/entities/transaction';
 
 export const getCoreTx = (tx: BasketTransaction): Transaction => {

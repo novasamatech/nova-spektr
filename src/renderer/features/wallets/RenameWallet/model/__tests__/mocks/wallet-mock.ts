@@ -1,4 +1,4 @@
-import { SigningType, WalletType } from '@shared/core';
+import { SigningType, WalletType } from '@/shared/core';
 
 const wallet1 = {
   id: 1,

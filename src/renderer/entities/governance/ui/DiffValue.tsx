@@ -1,7 +1,7 @@
 import { type ReactNode } from 'react';
 
-import { cnTw } from '@shared/lib/utils';
-import { FootnoteText, Icon } from '@shared/ui';
+import { cnTw } from '@/shared/lib/utils';
+import { FootnoteText, Icon } from '@/shared/ui';
 
 type Props = {
   className?: string;

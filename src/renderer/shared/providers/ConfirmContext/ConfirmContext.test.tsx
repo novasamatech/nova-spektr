@@ -1,10 +1,10 @@
 import { act, render, renderHook, screen } from '@testing-library/react';
 
-import { useToggle } from '@shared/lib/hooks';
+import { useToggle } from '@/shared/lib/hooks';
 
 import { ConfirmDialogProvider, useConfirmContext } from './ConfirmContext';
 
-jest.mock('@shared/lib/hooks');
+jest.mock('@/shared/lib/hooks');
 
 describe('context/ConfirmContext', () => {
   afterEach(() => {

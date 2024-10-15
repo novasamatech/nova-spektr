@@ -1,14 +1,14 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { type Store } from 'effector';
 
-import { type Account } from '@shared/core';
+import { type Account } from '@/shared/core';
 import {
   type AmountFeeStore,
   type ShardsProxyFeeStore,
   type SignatoryFeeStore,
   balanceValidation,
   descriptionValidation,
-} from '@features/operations/OperationsValidation';
+} from '@/features/operations/OperationsValidation';
 
 export const UnlockRules = {
   shards: {

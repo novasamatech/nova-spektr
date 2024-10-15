@@ -1,8 +1,8 @@
 import { type PropsWithChildren } from 'react';
 
-import { BodyText, HelpText } from '@shared/ui';
-import { ChainIcon } from '@entities/chain';
-import { type ExtendedChain } from '@entities/network';
+import { BodyText, HelpText } from '@/shared/ui';
+import { ChainIcon } from '@/entities/chain';
+import { type ExtendedChain } from '@/entities/network';
 
 type Props = {
   networkItem: ExtendedChain;

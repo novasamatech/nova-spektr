@@ -41,11 +41,7 @@ const config: Config = {
   transformIgnorePatterns: ['node_modules/(?!(dexie)/)'],
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-    '^@main(.*)$': '<rootDir>../../src/main/$1',
-    '^@shared(.*)$': '<rootDir>../../src/renderer/shared/$1',
     '^@/(.*)$': '<rootDir>../../src/renderer/$1',
-    '^@renderer(.*)$': '<rootDir>../../src/renderer/$1',
-    '^@images(.*)$': '<rootDir>../../src/renderer/assets/images/$1',
     '^dexie$': '<rootDir>../../node_modules/dexie/dist/dexie.js',
   },
   runner: 'groups',

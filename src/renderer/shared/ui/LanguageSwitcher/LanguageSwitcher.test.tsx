@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { enGB } from 'date-fns/locale/en-GB';
 
-import { type LanguageItem } from '@shared/api/translation/lib/types';
+import { type LanguageItem } from '@/shared/api/translation/lib/types';
 
 import { LanguageSwitcher } from './LanguageSwitcher';
 

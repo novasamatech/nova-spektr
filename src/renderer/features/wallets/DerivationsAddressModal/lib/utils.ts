@@ -1,10 +1,10 @@
-import { type ChainAccount, type DraftAccount, type ShardAccount } from '@shared/core';
-import { toAccountId } from '@shared/lib/utils';
+import { type ChainAccount, type DraftAccount, type ShardAccount } from '@/shared/core';
+import { toAccountId } from '@/shared/lib/utils';
 import {
   type DdAddressInfoDecoded,
   type DynamicDerivationRequestInfo,
   cryptoTypeToMultisignerIndex,
-} from '@entities/transaction';
+} from '@/entities/transaction';
 
 export const derivationAddressUtils = {
   createDerivationsRequest,

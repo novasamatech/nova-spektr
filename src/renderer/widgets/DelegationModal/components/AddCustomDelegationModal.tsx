@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { Step, isStep, validateAddress } from '@/shared/lib/utils';
 import { BaseModal, Button, Icon, Identicon, Input, InputHint } from '@/shared/ui';

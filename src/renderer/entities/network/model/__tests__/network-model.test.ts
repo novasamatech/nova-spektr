@@ -1,7 +1,7 @@
 import { allSettled, fork } from 'effector';
 
-import { ProviderType, type ProviderWithMetadata, chainsService, networkService } from '@shared/api/network';
-import { storageService } from '@shared/api/storage';
+import { ProviderType, type ProviderWithMetadata, chainsService, networkService } from '@/shared/api/network';
+import { storageService } from '@/shared/api/storage';
 import {
   type Chain,
   type ChainId,
@@ -9,7 +9,7 @@ import {
   type Connection,
   ConnectionStatus,
   ConnectionType,
-} from '@shared/core';
+} from '@/shared/core';
 import { networkModel } from '../network-model';
 
 describe('entities/network/model/network-model', () => {

@@ -1,18 +1,18 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { spread } from 'patronum';
 
+import { type BasketTransaction, type Transaction } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
-import { type BasketTransaction, type Transaction } from '@shared/core';
-import { basketModel } from '@entities/basket';
-import { walletModel, walletUtils } from '@entities/wallet';
+import { basketModel } from '@/entities/basket';
+import { walletModel, walletUtils } from '@/entities/wallet';
+import { balanceSubModel } from '@/features/balances';
 import { navigationModel } from '@/features/navigation';
+import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
-import { balanceSubModel } from '@features/balances';
-import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { addProxyConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
-import { proxiesModel } from '@features/proxies';
-import { walletSelectModel } from '@features/wallets';
+import { addProxyConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
+import { proxiesModel } from '@/features/proxies';
+import { walletSelectModel } from '@/features/wallets';
 import { type AddProxyStore, Step } from '../lib/types';
 
 import { formModel } from './form-model';

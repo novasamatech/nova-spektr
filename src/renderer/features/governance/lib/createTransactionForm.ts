@@ -12,11 +12,11 @@ import {
   type Chain,
   type Transaction,
   type Wallet,
-} from '@shared/core';
-import { nullable, toAddress, transferableAmountBN } from '@shared/lib/utils';
-import { balanceUtils } from '@entities/balance';
-import { transactionService } from '@entities/transaction';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+} from '@/shared/core';
+import { nullable, toAddress, transferableAmountBN } from '@/shared/lib/utils';
+import { balanceUtils } from '@/entities/balance';
+import { transactionService } from '@/entities/transaction';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 
 import { createTxStore } from './createTxStore';
 

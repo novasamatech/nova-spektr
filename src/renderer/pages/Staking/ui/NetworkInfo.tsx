@@ -1,17 +1,17 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { type PropsWithChildren, useEffect, useState } from 'react';
 
-import { useI18n } from '@app/providers';
-import { chainsService } from '@shared/api/network';
-import { type Chain } from '@shared/core';
-import { useToggle } from '@shared/lib/hooks';
-import { getRelaychainAsset } from '@shared/lib/utils';
-import { FootnoteText, IconButton, Plate, Select, Shimmering } from '@shared/ui';
-import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
-import { AssetBalance } from '@entities/asset';
-import { ChainTitle } from '@entities/chain';
-import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
-import { settingsStorage } from '@entities/settings';
+import { chainsService } from '@/shared/api/network';
+import { type Chain } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { useToggle } from '@/shared/lib/hooks';
+import { getRelaychainAsset } from '@/shared/lib/utils';
+import { FootnoteText, IconButton, Plate, Select, Shimmering } from '@/shared/ui';
+import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
+import { AssetBalance } from '@/entities/asset';
+import { ChainTitle } from '@/entities/chain';
+import { AssetFiatBalance } from '@/entities/price';
+import { settingsStorage } from '@/entities/settings';
 
 const getTotal = (values: string[]): BN => {
   return values.reduce((acc, value) => acc.add(new BN(value || 0)), BN_ZERO);
@@ -109,7 +109,7 @@ export const NetworkInfo = ({
               <Shimmering width={47} height={18} />
             </div>
           ) : (
-            <div key={title} className="text-left">
+            <div key={title} className="flex flex-col gap-y-0.5 text-left">
               <FootnoteText className="text-text-secondary">{title}</FootnoteText>
               <AssetBalance value={amount.toString()} asset={asset} className="font-manrope text-small-title" />
               <AssetFiatBalance amount={amount.toString()} asset={asset} />

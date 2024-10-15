@@ -1,7 +1,7 @@
 import { useGate, useUnit } from 'effector-react';
 import { type PropsWithChildren, useDeferredValue, useMemo, useState } from 'react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { nonNullable, performSearch, toAddress } from '@/shared/lib/utils';
 import { FootnoteText, SearchInput } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';

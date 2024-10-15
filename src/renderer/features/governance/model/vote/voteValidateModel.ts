@@ -3,12 +3,12 @@ import { type SignerOptions } from '@polkadot/api/submittable/types';
 import { BN, BN_ZERO } from '@polkadot/util';
 import { createEffect, createEvent, sample } from 'effector';
 
-import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@shared/core';
-import { toAccountId, transferableAmount } from '@shared/lib/utils';
-import { balanceModel, balanceUtils } from '@entities/balance';
-import { governanceService, referendumService, votingService } from '@entities/governance';
-import { networkModel } from '@entities/network';
-import { transactionService } from '@entities/transaction';
+import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@/shared/core';
+import { toAccountId, transferableAmount } from '@/shared/lib/utils';
+import { balanceModel, balanceUtils } from '@/entities/balance';
+import { governanceService, referendumService, votingService } from '@/entities/governance';
+import { networkModel } from '@/entities/network';
+import { transactionService } from '@/entities/transaction';
 import {
   type AmountFeeStore,
   type Validation,

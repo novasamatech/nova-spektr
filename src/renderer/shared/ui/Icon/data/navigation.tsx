@@ -1,12 +1,14 @@
-import NetworkImg, { ReactComponent as NetworkSvg } from '@shared/assets/images/functionals/network.svg';
-import AddressBookImg, { ReactComponent as AddressBookSvg } from '@shared/assets/images/navigation/address-book.svg';
-import AssetImg, { ReactComponent as AssetSvg } from '@shared/assets/images/navigation/assets.svg';
-import FellowshipImg, { ReactComponent as FellowshipSvg } from '@shared/assets/images/navigation/fellowship.svg';
-import GovernanceImg, { ReactComponent as GovernanceSvg } from '@shared/assets/images/navigation/governance.svg';
-import NotificationImg, { ReactComponent as NotificationSvg } from '@shared/assets/images/navigation/notifications.svg';
-import OperationsImg, { ReactComponent as OperationsSvg } from '@shared/assets/images/navigation/operations.svg';
-import SettingsImg, { ReactComponent as SettingsSvg } from '@shared/assets/images/navigation/settings.svg';
-import StakingImg, { ReactComponent as StakingSvg } from '@shared/assets/images/navigation/staking.svg';
+import NetworkImg, { ReactComponent as NetworkSvg } from '@/shared/assets/images/functionals/network.svg';
+import AddressBookImg, { ReactComponent as AddressBookSvg } from '@/shared/assets/images/navigation/address-book.svg';
+import AssetImg, { ReactComponent as AssetSvg } from '@/shared/assets/images/navigation/assets.svg';
+import FellowshipImg, { ReactComponent as FellowshipSvg } from '@/shared/assets/images/navigation/fellowship.svg';
+import GovernanceImg, { ReactComponent as GovernanceSvg } from '@/shared/assets/images/navigation/governance.svg';
+import NotificationImg, {
+  ReactComponent as NotificationSvg,
+} from '@/shared/assets/images/navigation/notifications.svg';
+import OperationsImg, { ReactComponent as OperationsSvg } from '@/shared/assets/images/navigation/operations.svg';
+import SettingsImg, { ReactComponent as SettingsSvg } from '@/shared/assets/images/navigation/settings.svg';
+import StakingImg, { ReactComponent as StakingSvg } from '@/shared/assets/images/navigation/staking.svg';
 
 const NavigationImages = {
   asset: { svg: AssetSvg, img: AssetImg },

@@ -1,6 +1,6 @@
-import { useToggle } from '@shared/lib/hooks';
-import { cnTw } from '@shared/lib/utils';
-import { Shimmering } from '@shared/ui';
+import { useToggle } from '@/shared/lib/hooks';
+import { cnTw } from '@/shared/lib/utils';
+import { Shimmering } from '@/shared/ui';
 
 type Props = {
   src?: string;

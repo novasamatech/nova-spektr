@@ -4,8 +4,8 @@ import uniq from 'lodash/uniq';
 
 import { type DelegatingVoting, type DelegationBalanceMap, type DelegationTracksMap } from '@/shared/core';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
+import { votingService } from '@/entities/governance';
 import { permissionUtils, walletModel } from '@/entities/wallet';
-import { votingService } from '@entities/governance';
 import { networkSelectorModel } from '../model/networkSelector';
 
 import { votingAggregate } from './voting';

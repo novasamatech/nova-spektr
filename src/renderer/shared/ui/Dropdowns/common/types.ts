@@ -1,6 +1,6 @@
 import { type MouseEvent, type ReactNode } from 'react';
 
-import { type IconNames } from '@shared/ui/Icon/data';
+import { type IconNames } from '@/shared/ui/Icon/data';
 
 export type Position = 'up' | 'down' | 'auto';
 export type Theme = 'dark' | 'light';

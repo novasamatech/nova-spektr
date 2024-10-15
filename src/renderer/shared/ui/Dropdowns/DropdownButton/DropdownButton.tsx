@@ -2,7 +2,7 @@ import { Menu } from '@headlessui/react';
 import { type ComponentProps } from 'react';
 import { Link } from 'react-router-dom';
 
-import { cnTw } from '@shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { Button } from '../../Buttons';
 import { Icon } from '../../Icon/Icon';
 import { type IconNames } from '../../Icon/data';

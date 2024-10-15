@@ -16,14 +16,14 @@ import {
   type ProxiedAccount,
   type ProxyTxWrapper,
   type Transaction,
-} from '@shared/core';
-import { ZERO_BALANCE, getRelaychainAsset, redeemableAmount, toAddress, transferableAmount } from '@shared/lib/utils';
-import { balanceModel, balanceUtils } from '@entities/balance';
-import { networkModel, networkUtils } from '@entities/network';
-import { type StakingMap, eraService, useStakingData } from '@entities/staking';
-import { transactionBuilder, transactionService } from '@entities/transaction';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
-import { WithdrawRules } from '@features/operations/OperationsValidation';
+} from '@/shared/core';
+import { ZERO_BALANCE, getRelaychainAsset, redeemableAmount, toAddress, transferableAmount } from '@/shared/lib/utils';
+import { balanceModel, balanceUtils } from '@/entities/balance';
+import { networkModel, networkUtils } from '@/entities/network';
+import { type StakingMap, eraService, useStakingData } from '@/entities/staking';
+import { transactionBuilder, transactionService } from '@/entities/transaction';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { WithdrawRules } from '@/features/operations/OperationsValidation';
 import { type NetworkStore } from '../lib/types';
 
 type BalanceMap = { balance: string; withdraw: string };

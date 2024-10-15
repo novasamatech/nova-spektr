@@ -1,11 +1,11 @@
 import { type Scope, allSettled, fork } from 'effector';
 
-import { balanceService } from '@shared/api/balances';
-import { storageService } from '@shared/api/storage';
-import { type Balance, ConnectionStatus } from '@shared/core';
-import { balanceModel } from '@entities/balance';
-import { networkModel } from '@entities/network';
-import { walletModel } from '@entities/wallet';
+import { balanceService } from '@/shared/api/balances';
+import { storageService } from '@/shared/api/storage';
+import { type Balance, ConnectionStatus } from '@/shared/core';
+import { balanceModel } from '@/entities/balance';
+import { networkModel } from '@/entities/network';
+import { walletModel } from '@/entities/wallet';
 import { balanceSubModel } from '../balance-sub-model';
 
 import { balanceSubMock } from './mocks/balance-sub-mock';

@@ -1,4 +1,4 @@
-import { ConnectionStatus, ConnectionType } from '@shared/core';
+import { ConnectionStatus, ConnectionType } from '@/shared/core';
 
 const chains = [
   { name: 'Test chain 1', chainId: '0x01' },

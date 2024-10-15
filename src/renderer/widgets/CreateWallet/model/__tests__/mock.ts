@@ -10,7 +10,7 @@ import {
   SigningType,
   type Wallet,
   WalletType,
-} from '@shared/core';
+} from '@/shared/core';
 
 export const testApi = {
   key: 'test-api',

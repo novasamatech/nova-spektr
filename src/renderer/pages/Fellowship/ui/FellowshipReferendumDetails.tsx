@@ -1,9 +1,9 @@
 import { generatePath, useParams } from 'react-router-dom';
 
 import { referendaPallet } from '@/shared/pallet/referenda';
-import { Paths } from '@shared/routes';
-import { fellowshipReferendumDetailsFeature } from '@features/fellowship-referendum-details';
-import { navigationModel } from '@features/navigation';
+import { Paths } from '@/shared/routes';
+import { fellowshipReferendumDetailsFeature } from '@/features/fellowship-referendum-details';
+import { navigationModel } from '@/features/navigation';
 
 const { ReferendumDetailsModal } = fellowshipReferendumDetailsFeature.views;
 

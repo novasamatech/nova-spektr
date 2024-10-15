@@ -1,6 +1,6 @@
 import { type ComponentPropsWithoutRef, type PropsWithChildren, type ReactNode } from 'react';
 
-import { cnTw } from '@shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { Padding, SizeClass, ViewClass } from '../common/constants';
 import { type Pallet, type Variant } from '../common/types';
 

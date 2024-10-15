@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { type ReferendumStatus } from '@/shared/core';
 import { getTimeToBlock } from '@/shared/lib/utils';
-import { ReferendumTimer } from '@entities/governance';
+import { ReferendumTimer } from '@/entities/governance';
 
 type Props = {
   api: ApiPromise;

@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@app/providers';
-import { Button, Icon } from '@shared/ui';
+import { useI18n } from '@/shared/i18n';
+import { Button, Icon } from '@/shared/ui';
 import { signatoryModel } from '../../../model/signatory-model';
 
 import { Signatory } from './Signatory';

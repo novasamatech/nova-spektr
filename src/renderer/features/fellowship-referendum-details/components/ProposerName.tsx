@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { nullable, toAddress } from '@/shared/lib/utils';
 import { Identicon } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';

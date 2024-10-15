@@ -1,12 +1,12 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@app/providers';
-import { useModalClose } from '@shared/lib/hooks';
-import { BaseModal, Button } from '@shared/ui';
-import { OperationTitle } from '@entities/chain';
-import { OperationResult } from '@entities/transaction';
-import { OperationSign, OperationSubmit } from '@features/operations';
-import { RestakeConfirmation as Confirmation, basketUtils } from '@features/operations/OperationsConfirm';
+import { useI18n } from '@/shared/i18n';
+import { useModalClose } from '@/shared/lib/hooks';
+import { BaseModal, Button } from '@/shared/ui';
+import { OperationTitle } from '@/entities/chain';
+import { OperationResult } from '@/entities/transaction';
+import { OperationSign, OperationSubmit } from '@/features/operations';
+import { RestakeConfirmation as Confirmation, basketUtils } from '@/features/operations/OperationsConfirm';
 import { restakeUtils } from '../lib/restake-utils';
 import { Step } from '../lib/types';
 import { restakeModel } from '../model/restake-model';

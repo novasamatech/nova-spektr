@@ -5,8 +5,8 @@ import {
   type SubsquareSimpleReferendum,
   type SubsquareTimelineRecord,
   subsquareApiService,
-} from '@shared/api/subsquare';
-import { dictionary } from '@shared/lib/utils';
+} from '@/shared/api/subsquare';
+import { dictionary } from '@/shared/lib/utils';
 import { type SubsquareTimelineRecordStatus } from '../../../subsquare/lib/types';
 import { type GovernanceApi, type ReferendumTimelineRecord, type ReferendumTimelineRecordStatus } from '../lib/types';
 

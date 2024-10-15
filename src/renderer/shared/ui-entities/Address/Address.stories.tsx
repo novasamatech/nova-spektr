@@ -1,8 +1,8 @@
 import { type Meta, type StoryObj } from '@storybook/react';
 import { expect, within } from '@storybook/test';
 
+import { TEST_ADDRESS } from '@/shared/lib/utils';
 import { Box } from '@/shared/ui-kit';
-import { TEST_ADDRESS } from '@shared/lib/utils';
 
 import { Address } from './Address';
 

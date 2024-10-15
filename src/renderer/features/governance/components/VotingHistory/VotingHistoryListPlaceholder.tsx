@@ -1,4 +1,4 @@
-import { Shimmering } from '@shared/ui';
+import { Shimmering } from '@/shared/ui';
 
 export const VotingHistoryListPlaceholder = () => {
   return (

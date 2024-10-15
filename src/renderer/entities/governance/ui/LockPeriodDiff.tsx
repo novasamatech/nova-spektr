@@ -1,8 +1,8 @@
 import { formatDistanceStrict } from 'date-fns/formatDistanceStrict';
 import { memo } from 'react';
 
-import { useI18n } from '@app/providers';
-import { type Conviction } from '@shared/core';
+import { type Conviction } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 
 import { DiffValue } from './DiffValue';
 

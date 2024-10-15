@@ -10,7 +10,7 @@ import {
 } from 'effector';
 import { readonly } from 'patronum';
 
-import { nonNullable, nullable } from '@shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 
 type CallbackFn<V> = (value: IteratorResult<V, V | void>) => unknown;
 type UnsubscribeFn = (() => void) | Promise<() => void>;

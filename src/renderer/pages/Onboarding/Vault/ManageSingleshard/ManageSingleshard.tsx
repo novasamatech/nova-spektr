@@ -3,13 +3,21 @@ import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
-import { useI18n } from '@app/providers';
-import { type Chain } from '@shared/core';
-import { AccountType, ChainType, CryptoType, CryptoTypeString, ErrorType, SigningType, WalletType } from '@shared/core';
-import { Button, HeaderTitleText, IconButton, Input, InputHint, SmallTitleText } from '@shared/ui';
-import { networkModel, networkUtils } from '@entities/network';
-import { type SeedInfo } from '@entities/transaction';
-import { AccountsList, walletModel } from '@entities/wallet';
+import { type Chain } from '@/shared/core';
+import {
+  AccountType,
+  ChainType,
+  CryptoType,
+  CryptoTypeString,
+  ErrorType,
+  SigningType,
+  WalletType,
+} from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { Button, HeaderTitleText, IconButton, Input, InputHint, SmallTitleText } from '@/shared/ui';
+import { networkModel, networkUtils } from '@/entities/network';
+import { type SeedInfo } from '@/entities/transaction';
+import { AccountsList, walletModel } from '@/entities/wallet';
 
 type WalletForm = {
   walletName: string;

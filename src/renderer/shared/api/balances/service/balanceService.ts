@@ -6,9 +6,9 @@ import { BN, hexToU8a } from '@polkadot/util';
 import noop from 'lodash/noop';
 import uniq from 'lodash/uniq';
 
-import { type AccountId, type Address, type Asset, type Balance, type Chain, type OrmlExtras } from '@shared/core';
-import { AssetType } from '@shared/core';
-import { getAssetId, getRepeatedIndex, toAddress } from '@shared/lib/utils';
+import { type AccountId, type Address, type Asset, type Balance, type Chain, type OrmlExtras } from '@/shared/core';
+import { AssetType } from '@/shared/core';
+import { getAssetId, getRepeatedIndex, toAddress } from '@/shared/lib/utils';
 
 export const balanceService = {
   subscribeBalances,

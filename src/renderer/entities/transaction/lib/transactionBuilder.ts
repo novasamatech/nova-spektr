@@ -12,8 +12,8 @@ import {
   type TrackId,
   type Transaction,
   TransactionType,
-} from '@shared/core';
-import { TEST_ACCOUNTS, formatAmount, getAssetId, toAccountId, toAddress } from '@shared/lib/utils';
+} from '@/shared/core';
+import { TEST_ACCOUNTS, formatAmount, getAssetId, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type RevoteTransaction, type TransactionVote, type VoteTransaction } from '@/entities/governance';
 
 import { TransferType } from './common/constants';

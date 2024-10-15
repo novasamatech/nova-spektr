@@ -1,7 +1,7 @@
 import { useStoreMap } from 'effector-react';
 import { memo } from 'react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, HeadlineText } from '@/shared/ui';
 import { Box, Skeleton, Surface } from '@/shared/ui-kit';

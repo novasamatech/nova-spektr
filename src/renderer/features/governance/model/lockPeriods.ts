@@ -2,8 +2,8 @@ import { type ApiPromise } from '@polkadot/api';
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
-import { type Chain, type ChainId, type Conviction } from '@shared/core';
-import { locksService } from '@entities/governance';
+import { type Chain, type ChainId, type Conviction } from '@/shared/core';
+import { locksService } from '@/entities/governance';
 
 type Store = Record<ChainId, Record<Conviction, number>>;
 type RequestParams = { api: ApiPromise; chain: Chain };

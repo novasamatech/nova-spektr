@@ -1,4 +1,4 @@
-import { type BasketTransaction, TransactionType } from '@shared/core';
+import { type BasketTransaction, TransactionType } from '@/shared/core';
 import { isEditDelegationTransaction } from '@/entities/transaction';
 import { Step } from '../types/basket-page-types';
 

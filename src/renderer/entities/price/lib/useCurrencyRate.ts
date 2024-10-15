@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { currencyModel, priceProviderModel } from '@entities/price';
+import { currencyModel, priceProviderModel } from '@/entities/price';
 
 export const useCurrencyRate = (assetId?: string, showCurrency?: boolean): number | null => {
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);

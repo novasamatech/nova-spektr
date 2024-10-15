@@ -1,4 +1,4 @@
-import { Shimmering } from '@shared/ui';
+import { Shimmering } from '@/shared/ui';
 
 type Props = {
   fiatFlag?: boolean;

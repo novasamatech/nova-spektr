@@ -1,7 +1,7 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 
-import { storageService } from '@shared/api/storage';
-import { type BasketTransaction } from '@shared/core';
+import { storageService } from '@/shared/api/storage';
+import { type BasketTransaction } from '@/shared/core';
 
 const basketStarted = createEvent();
 const transactionsCreated = createEvent<BasketTransaction[]>();

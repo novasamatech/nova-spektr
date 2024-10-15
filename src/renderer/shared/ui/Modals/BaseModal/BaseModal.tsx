@@ -1,7 +1,7 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { type PropsWithChildren, type ReactNode } from 'react';
 
-import { cnTw } from '@shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { IconButton } from '../../Buttons';
 import { HeaderTitleText } from '../../Typography';
 

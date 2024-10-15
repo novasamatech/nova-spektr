@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@/app/providers';
 import { type DelegateAccount } from '@/shared/api/governance';
+import { useI18n } from '@/shared/i18n';
 import { BodyText, Card, FootnoteText } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { DelegateName, networkSelectorModel } from '@/features/governance';

@@ -2,7 +2,7 @@ import { type TFunction } from 'i18next';
 import groupBy from 'lodash/groupBy';
 import unionBy from 'lodash/unionBy';
 
-import { chainsService } from '@shared/api/network';
+import { chainsService } from '@/shared/api/network';
 import {
   type AccountId,
   AccountType,
@@ -15,9 +15,9 @@ import {
   type HexString,
   KeyType,
   type ShardAccount,
-} from '@shared/core';
-import { toAccountId } from '@shared/lib/utils';
-import { KEY_NAMES, SHARDED_KEY_NAMES } from '@entities/wallet';
+} from '@/shared/core';
+import { toAccountId } from '@/shared/lib/utils';
+import { KEY_NAMES, SHARDED_KEY_NAMES } from '@/entities/wallet';
 
 import { type ErrorDetails } from './derivation-import-error';
 import {

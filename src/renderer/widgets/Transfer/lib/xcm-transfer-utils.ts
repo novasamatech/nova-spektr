@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { XcmTransferType } from '@shared/api/xcm';
-import { TransactionType } from '@shared/core';
+import { XcmTransferType } from '@/shared/api/xcm';
+import { TransactionType } from '@/shared/core';
 
 export const xcmTransferUtils = {
   getXcmTransferType,
