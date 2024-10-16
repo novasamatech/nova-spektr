@@ -8,16 +8,16 @@ import { type ReferendumId, referendaPallet } from '@/shared/pallet/referenda';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type CollectivePalletsType, type CollectivesStruct } from '../../lib/types';
 
-import { mapReferendum } from './mapper';
+import { mapReferendums } from './mapper';
 import { type Referendum } from './types';
+
+const $list = createStore<CollectivesStruct<Referendum[]>>({});
 
 type ReferendumSubscriptionParams = {
   api: ApiPromise;
   palletType: CollectivePalletsType;
   chainId: ChainId;
 };
-
-const $list = createStore<CollectivesStruct<Referendum[]>>({});
 
 const { pending, subscribe, unsubscribe, received, fulfilled } = createDataSubscription<
   CollectivesStruct<Referendum[]>,
@@ -30,15 +30,7 @@ const { pending, subscribe, unsubscribe, received, fulfilled } = createDataSubsc
 
     const fetchPages = createPagesHandler({
       fn: () => referendaPallet.storage.referendumInfoForPaged(palletType, api, 200),
-      map: page => {
-        const value: Referendum[] = [];
-        for (const { id, info } of page) {
-          if (!info) continue;
-          value.push(mapReferendum(id, info));
-        }
-
-        return value;
-      },
+      map: mapReferendums,
     });
 
     fetchPages(currectAbortController, callback);
@@ -61,14 +53,49 @@ const { pending, subscribe, unsubscribe, received, fulfilled } = createDataSubsc
   },
   map: (store, { params, result }) => {
     const currentStore = pickNestedValue(store, params.palletType, params.chainId) ?? [];
-    const updatedField = merge(
-      currentStore,
-      result,
-      x => x.id,
-      (a, b) => b.id - a.id,
-    );
 
-    return setNestedValue(store, params.palletType, params.chainId, updatedField);
+    return setNestedValue(
+      store,
+      params.palletType,
+      params.chainId,
+      merge({
+        a: currentStore,
+        b: result,
+        mergeBy: x => x.id,
+        sort: (a, b) => b.id - a.id,
+      }),
+    );
+  },
+});
+
+type ReferendumRequestParams = {
+  api: ApiPromise;
+  palletType: CollectivePalletsType;
+  chainId: ChainId;
+  referendums: ReferendumId[];
+};
+
+const { request } = createDataSource<CollectivesStruct<Referendum[]>, ReferendumRequestParams, Referendum[]>({
+  initial: $list,
+  async fn({ api, palletType, referendums }) {
+    const response = await referendaPallet.storage.referendumInfoFor(palletType, api, referendums);
+
+    return mapReferendums(response);
+  },
+  map(store, { params, result }) {
+    const currentStore = pickNestedValue(store, params.palletType, params.chainId) ?? [];
+
+    return setNestedValue(
+      store,
+      params.palletType,
+      params.chainId,
+      merge({
+        a: currentStore,
+        b: result,
+        mergeBy: x => x.id,
+        sort: (a, b) => b.id - a.id,
+      }),
+    );
   },
 });
 

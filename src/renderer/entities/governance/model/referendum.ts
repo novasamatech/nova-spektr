@@ -10,12 +10,12 @@ import { governanceSubscribeService } from '../lib/governanceSubscribeService';
 import { createSubscriber } from '../utils/createSubscriber';
 
 const mergeReferendums = (a: Referendum[], b: Referendum[]) => {
-  return merge(
+  return merge({
     a,
     b,
-    (x) => x.referendumId,
-    (a, b) => parseInt(a.referendumId) - parseInt(b.referendumId),
-  );
+    mergeBy: (x) => x.referendumId,
+    sort: (a, b) => parseInt(a.referendumId) - parseInt(b.referendumId),
+  });
 };
 
 const {
