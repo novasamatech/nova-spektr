@@ -37,7 +37,7 @@ import {
   bondNominateConfirmModel,
   delegateConfirmModel,
   editDelegationConfirmModel,
-  fellowshipConfirmModel,
+  fellowshipVotingConfirmModel,
   nominateConfirmModel,
   payeeConfirmModel,
   removeProxyConfirmModel,
@@ -448,6 +448,32 @@ sample({
   target: revokeDelegationConfirmModel.events.formInitiated,
 });
 
+// revoke delegation (undelegate)
+
+sample({
+  clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.UNDELEGATE).length > 0;
+  },
+  fn: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.UNDELEGATE).map((tx) => tx.params) || [];
+  },
+  target: revokeDelegationConfirmModel.events.formInitiated,
+});
+
+// collectives voting
+
+sample({
+  clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.COLLECTIVE_VOTE).length > 0;
+  },
+  fn: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.COLLECTIVE_VOTE).map((tx) => tx.params) || [];
+  },
+  target: fellowshipVotingConfirmModel.events.fillConfirm,
+});
+
 sample({
   clock: flowFinished,
   fn: () => Step.NONE,
@@ -473,8 +499,8 @@ sample({
     revokeDelegationConfirmModel.output.formSubmitted,
     unlockConfirmAggregate.output.formSubmitted,
     voteConfirmModel.events.sign,
-    fellowshipConfirmModel.events.sign,
     removeVoteConfirmModel.events.sign,
+    fellowshipVotingConfirmModel.events.sign,
     txsConfirmed,
   ],
   source: {

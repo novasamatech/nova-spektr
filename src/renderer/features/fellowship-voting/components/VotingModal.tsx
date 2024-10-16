@@ -8,13 +8,16 @@ import { Box, Carousel, Modal } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { walletUtils } from '@/entities/wallet';
-import { OperationSign } from '@/features/operations';
+import { OperationSign, OperationSubmit } from '@/features/operations';
 import { basketUtils } from '@/features/operations/OperationsConfirm';
+import { OperationResult } from '../../../entities/transaction';
 import { votingFeatureStatus } from '../model/status';
 import { votingModel } from '../model/voting';
 import { votingStatusModel } from '../model/votingStatus';
 
 import { VotingConfirmation } from './VotingConfirmation';
+
+type Step = 'confirm' | 'sign' | 'submit' | 'basket';
 
 type Props = {
   isOpen: boolean;
@@ -26,7 +29,7 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
   useGate(votingModel.gate, { vote });
 
   const { t } = useI18n();
-  const [step, setStep] = useState('confirm');
+  const [step, setStep] = useState<Step>('confirm');
 
   const input = useUnit(votingFeatureStatus.input);
   const account = useUnit(votingStatusModel.$votingAccount);
@@ -47,6 +50,32 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
       onClose();
     }
   };
+
+  const handleSign = () => {
+    votingModel.sign();
+    setStep('sign');
+  };
+
+  const handleBasketSave = () => {
+    votingModel.saveToBasket();
+    setStep('basket');
+  };
+
+  if (step === 'submit') {
+    return <OperationSubmit isOpen={isOpen} onClose={onClose} />;
+  }
+
+  if (step === 'basket') {
+    return (
+      <OperationResult
+        isOpen={isOpen}
+        variant="success"
+        autoCloseTimeout={2000}
+        title={t('operation.addedToBasket')}
+        onClose={onClose}
+      />
+    );
+  }
 
   return (
     <Modal isOpen={isOpen} size="md" onToggle={handleToggle}>
@@ -71,19 +100,11 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
                 </Box>
                 <Modal.Footer>
                   {wallet && basketUtils.isBasketAvailable(wallet) && (
-                    <Button pallet="secondary" onClick={() => console.log('aaa')}>
+                    <Button pallet="secondary" onClick={handleBasketSave}>
                       {t('operation.addToBasket')}
                     </Button>
                   )}
-                  {nonNullable(wallet) && (
-                    <SignButton
-                      type={wallet.type}
-                      onClick={() => {
-                        votingModel.sign();
-                        setStep('sign');
-                      }}
-                    />
-                  )}
+                  {nonNullable(wallet) && <SignButton type={wallet.type} onClick={handleSign} />}
                 </Modal.Footer>
               </Box>
             </Carousel.Item>

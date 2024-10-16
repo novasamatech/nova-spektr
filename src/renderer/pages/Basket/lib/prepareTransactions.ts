@@ -26,9 +26,9 @@ import { balanceUtils } from '@/entities/balance';
 import { governanceService, votingService } from '@/entities/governance';
 import { networkUtils } from '@/entities/network';
 import { eraService, useStakingData, validatorsService } from '@/entities/staking';
-import { type WrappedTransactions, transactionService } from '@/entities/transaction';
+import { transactionService } from '@/entities/transaction';
 import { type UnlockFormData } from '@/features/governance/types/structs';
-import { type VoteConfirm } from '@/features/operations/OperationsConfirm';
+import { type CollectiveVoteConfirm, type VoteConfirm } from '@/features/operations/OperationsConfirm';
 import { type RemoveVoteConfirm } from '@/features/operations/OperationsConfirm/Referendum/RemoveVote/model/confirm-model';
 import { type FeeMap } from '@/features/operations/OperationsValidation';
 
@@ -706,24 +706,11 @@ async function prepareRemoveVoteTransaction({ transaction, wallets, chains, apis
   } satisfies RemoveVoteConfirm;
 }
 
-type CollectiveVoteInput = {
-  id: number;
-  api: ApiPromise;
-  chain: Chain;
-  asset: Asset;
-  account: Account;
-  pallet: 'fellowship' | 'ambassador';
-  proxiedAccount?: ProxiedAccount;
-  aye: boolean;
-  referendumId: string;
-  description: string;
-  wrappedTransactions: WrappedTransactions;
-};
-
+// TODO refactor this
 async function prepareCollectiveVoteTransaction({ transaction, wallets, chains, apis, feeMap }: DataParams) {
   const coreTx = getCoreTx(transaction);
 
-  const { chainId, chain, account } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
+  const { chainId, chain, account, fee } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
   const api = apis[chainId];
 
   return {
@@ -732,9 +719,12 @@ async function prepareCollectiveVoteTransaction({ transaction, wallets, chains, 
     chain,
     asset: chain.assets[0],
     account: account!,
-    pallet: coreTx.args.pallet as CollectiveVoteInput['pallet'],
+    pallet: coreTx.args.pallet as CollectiveVoteConfirm['pallet'],
     aye: coreTx.args.aye,
-    referendumId: coreTx.args.poll,
+    poll: coreTx.args.poll,
+    rank: coreTx.args.rank,
+    wallets,
+    fee: new BN(fee),
     wrappedTransactions: transactionService.getWrappedTransaction({
       api,
       addressPrefix: chain.addressPrefix,
@@ -742,5 +732,5 @@ async function prepareCollectiveVoteTransaction({ transaction, wallets, chains, 
       txWrappers: transaction.txWrappers,
     }),
     description: '',
-  } satisfies CollectiveVoteInput;
+  } satisfies CollectiveVoteConfirm;
 }

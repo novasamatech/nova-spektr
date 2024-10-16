@@ -6,6 +6,8 @@ import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createTxStore } from '@/shared/transactions';
 import { collectiveDomain } from '@/domains/collectives';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
+import { basketModel } from '../../../entities/basket';
+import { type BasketTransaction } from '../../../shared/core';
 
 import { votingFeatureStatus } from './status';
 import { votingStatusModel } from './votingStatus';
@@ -29,13 +31,17 @@ const $coreTx = combine(
     input: votingFeatureStatus.input,
     account: votingStatusModel.$votingAccount,
     referendum: votingStatusModel.$referendum,
+    member: votingStatusModel.$currectMember,
     vote: $vote,
   },
-  ({ input, referendum, account, vote }) => {
-    if (nullable(input) || nullable(referendum) || nullable(account) || nullable(vote)) return null;
+  ({ input, referendum, account, member, vote }) => {
+    if (nullable(input) || nullable(referendum) || nullable(member) || nullable(account) || nullable(vote)) {
+      return null;
+    }
 
     return collectiveDomain.votingService.createVoteTransaction({
       pallet: 'fellowship',
+      rank: member.rank,
       account,
       chain: input.chain,
       aye: vote === 'aye',
@@ -62,7 +68,9 @@ sample({
   clock: sign,
   source: { transactions: $wrappedTx, account: votingStatusModel.$votingAccount, chain: $chain },
   fn: ({ transactions, account, chain }) => {
-    if (nullable(transactions) || nullable(account) || nullable(chain)) return null;
+    if (nullable(transactions) || nullable(account) || nullable(chain)) {
+      return null;
+    }
 
     return {
       chain,
@@ -79,10 +87,46 @@ sample({
   target: signModel.events.formInitiated,
 });
 
+// Basket
+
+const saveToBasket = createEvent();
+const basketSaveRequestCreated = createEvent<BasketTransaction | null>();
+
+sample({
+  clock: saveToBasket,
+  source: {
+    transactions: $wrappedTx,
+    account: votingStatusModel.$votingAccount,
+    txWrappers: $txWrappers,
+  },
+  fn: ({ account, transactions, txWrappers }) => {
+    if (nullable(account) || nullable(transactions)) {
+      return null;
+    }
+
+    // @ts-expect-error TODO fix id field
+    const tx: BasketTransaction = {
+      initiatorWallet: account.walletId,
+      coreTx: transactions.coreTx,
+      txWrappers,
+    };
+
+    return tx;
+  },
+  target: basketSaveRequestCreated,
+});
+
+sample({
+  clock: basketSaveRequestCreated.filter({ fn: nonNullable }),
+  fn: tx => [tx],
+  target: basketModel.events.transactionsCreated,
+});
+
 export const votingModel = {
   gate,
   $fee,
   $wrappedTx,
   $txWrappers,
   sign,
+  saveToBasket,
 };

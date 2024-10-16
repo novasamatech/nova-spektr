@@ -9,12 +9,14 @@ type VoteTransactionParams = {
   pallet: CollectivePalletsType;
   account: Account;
   chain: Chain;
+  rank: number;
   referendumId: ReferendumId;
   aye: boolean;
 };
 
 const createVoteTransaction = ({
   pallet,
+  rank,
   account,
   chain,
   aye,
@@ -25,6 +27,7 @@ const createVoteTransaction = ({
     chainId: chain.chainId,
     type: TransactionType.COLLECTIVE_VOTE,
     args: {
+      rank,
       pallet,
       poll: referendumId.toString(),
       aye,

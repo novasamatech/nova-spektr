@@ -6,7 +6,6 @@ import { nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { SignButton } from '@/entities/operations';
 import { fellowshipVotingFeature } from '@/features/fellowship-voting';
-import { type Config } from '../../../OperationsValidation';
 import { confirmModel } from '../model/confirm-model';
 
 const { VotingConfirmation } = fellowshipVotingFeature.views;
@@ -15,12 +14,10 @@ type Props = {
   id?: number;
   secondaryActionButton?: ReactNode;
   hideSignButton?: boolean;
-  config?: Config;
-
   onGoBack?: () => void;
 };
 
-export const Confirmation = ({ id, secondaryActionButton, hideSignButton, config, onGoBack }: Props) => {
+export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBack }: Props) => {
   const { t } = useI18n();
 
   const confirm = useStoreMap({
@@ -41,6 +38,8 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, config
         chain={confirm.meta.chain}
         vote={confirm.meta.aye ? 'aye' : 'nay'}
         wallets={confirm.meta.wallets}
+        fee={confirm.meta.fee}
+        rank={confirm.meta.rank}
       />
 
       <div className="mt-3 flex w-full justify-between">

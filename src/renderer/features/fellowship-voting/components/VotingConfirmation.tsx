@@ -21,6 +21,7 @@ type Props = {
 export const VotingConfirmation = ({ fee, account, wallets, chain, asset, vote, rank }: Props) => {
   const { t } = useI18n();
 
+  // TODO it should be placed somewhere in config
   const votes = collectiveDomain.tracksService.getGeometricVoteWeight(rank);
 
   return (

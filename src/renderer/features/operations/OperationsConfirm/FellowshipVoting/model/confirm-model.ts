@@ -1,51 +1,32 @@
 import { type ApiPromise } from '@polkadot/api';
-import { createEvent, sample } from 'effector';
+import { type BN } from '@polkadot/util';
+import { createEvent } from 'effector';
 
 import { type Asset, type Wallet } from '@/shared/core';
-import { nullable } from '@/shared/lib/utils';
+import { type CollectivePalletsType } from '@/domains/collectives';
 import { networkModel } from '@/entities/network';
 import { operationsModel } from '@/entities/operations';
 import { walletModel } from '@/entities/wallet';
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { type ConfirmInfo, createTransactionConfirmStore } from '@/features/operations/OperationsConfirm';
-import { type SigningPayload, signModel } from '../../../OperationSign';
 
-export type VoteConfirm = ConfirmInfo & {
+export type CollectiveVoteConfirm = ConfirmInfo & {
   api: ApiPromise;
   asset: Asset;
   aye: true;
+  pallet: CollectivePalletsType;
   wallets: Wallet[];
   poll: string;
+  fee: BN;
+  rank: number;
 };
 
 const sign = createEvent();
-const signPayloadCreated = createEvent<SigningPayload | null>();
 
-const confirmStore = createTransactionConfirmStore<VoteConfirm>({
+const confirmStore = createTransactionConfirmStore<CollectiveVoteConfirm>({
   $wallets: walletModel.$wallets,
   $apis: networkModel.$apis,
   $multisigTransactions: operationsModel.$multisigTransactions,
-});
-
-sample({
-  clock: sign,
-  source: { transactions: confirmStore.$confirmMap, account: votingStatusModel.$votingAccount, chain: $chain },
-  fn: ({ transactions, account, chain }) => {
-    if (nullable(transactions) || nullable(account) || nullable(chain)) return null;
-
-    return {
-      chain,
-      account,
-      transaction: transactions.wrappedTx,
-    };
-  },
-  target: signPayloadCreated,
-});
-
-sample({
-  clock: signPayloadCreated.filter({ fn: nonNullable }),
-  fn: (payload) => ({ signingPayloads: [payload] }),
-  target: signModel.events.formInitiated,
 });
 
 export const confirmModel = {

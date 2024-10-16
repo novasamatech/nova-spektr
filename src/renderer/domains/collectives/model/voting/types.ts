@@ -10,6 +10,7 @@ export type Voting = XOR<{ aye: number }, { nay: number }> & {
 
 export type VotingTransaction = Transaction<{
   pallet: CollectivePalletsType;
+  rank: number;
   poll: string;
   aye: boolean;
 }>;
