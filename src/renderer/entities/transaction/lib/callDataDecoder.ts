@@ -410,13 +410,7 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
         balance: decoded.args[3].toString(),
       };
     },
-    [TransactionType.FELLOWSHIP_VOTE]: (decoded): Record<string, any> => {
-      return {
-        referendumId: decoded.args[0].toString(),
-        aye: decoded.args[1].toPrimitive(),
-      };
-    },
-    [TransactionType.AMBASSADOR_VOTE]: (decoded): Record<string, any> => {
+    [TransactionType.COLLECTIVE_VOTE]: (decoded): Record<string, any> => {
       return {
         referendumId: decoded.args[0].toString(),
         aye: decoded.args[1].toPrimitive(),

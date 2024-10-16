@@ -174,6 +174,8 @@ export const SignOperation = () => {
       [TransactionType.UNLOCK]: () => (
         <UnlockConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
       ),
+      // TODO implement
+      [TransactionType.COLLECTIVE_VOTE]: () => null,
     };
 
     // @ts-expect-error not all types are used

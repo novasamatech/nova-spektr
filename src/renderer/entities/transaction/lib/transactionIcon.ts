@@ -45,8 +45,7 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.UNDELEGATE]: 'undelegateMst',
   [TransactionType.EDIT_DELEGATION]: 'editDelegationMst',
   // Collectives
-  [TransactionType.FELLOWSHIP_VOTE]: 'voteMst',
-  [TransactionType.AMBASSADOR_VOTE]: 'voteMst',
+  [TransactionType.COLLECTIVE_VOTE]: 'voteMst',
 };
 
 export const getIconName = (transaction?: Transaction | DecodedTransaction): IconNames => {

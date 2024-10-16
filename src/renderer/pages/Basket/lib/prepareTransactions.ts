@@ -65,8 +65,7 @@ export const prepareTransaction = {
   prepareEditDelegationTransaction,
   prepareVoteTransaction,
   prepareRemoveVoteTransaction,
-  prepareFellowshipVoteTransaction,
-  prepareAmbassadorVoteTransaction,
+  prepareCollectiveVoteTransaction,
 };
 
 async function getTransactionData(
@@ -707,12 +706,13 @@ async function prepareRemoveVoteTransaction({ transaction, wallets, chains, apis
   } satisfies RemoveVoteConfirm;
 }
 
-type FellowshipVoteInput = {
+type CollectiveVoteInput = {
   id: number;
   api: ApiPromise;
   chain: Chain;
   asset: Asset;
   account: Account;
+  pallet: 'fellowship' | 'ambassador';
   proxiedAccount?: ProxiedAccount;
   aye: boolean;
   referendumId: string;
@@ -720,7 +720,7 @@ type FellowshipVoteInput = {
   wrappedTransactions: WrappedTransactions;
 };
 
-async function prepareFellowshipVoteTransaction({ transaction, wallets, chains, apis, feeMap }: DataParams) {
+async function prepareCollectiveVoteTransaction({ transaction, wallets, chains, apis, feeMap }: DataParams) {
   const coreTx = getCoreTx(transaction);
 
   const { chainId, chain, account } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
@@ -732,6 +732,7 @@ async function prepareFellowshipVoteTransaction({ transaction, wallets, chains, 
     chain,
     asset: chain.assets[0],
     account: account!,
+    pallet: coreTx.args.pallet as CollectiveVoteInput['pallet'],
     aye: coreTx.args.aye,
     referendumId: coreTx.args.poll,
     wrappedTransactions: transactionService.getWrappedTransaction({
@@ -741,42 +742,5 @@ async function prepareFellowshipVoteTransaction({ transaction, wallets, chains, 
       txWrappers: transaction.txWrappers,
     }),
     description: '',
-  } satisfies FellowshipVoteInput;
-}
-
-type AmbassadorVoteInput = {
-  id: number;
-  api: ApiPromise;
-  chain: Chain;
-  asset: Asset;
-  account: Account;
-  proxiedAccount?: ProxiedAccount;
-  aye: boolean;
-  referendumId: string;
-  description: string;
-  wrappedTransactions: WrappedTransactions;
-};
-
-async function prepareAmbassadorVoteTransaction({ transaction, wallets, chains, apis, feeMap }: DataParams) {
-  const coreTx = getCoreTx(transaction);
-
-  const { chainId, chain, account } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
-  const api = apis[chainId];
-
-  return {
-    id: transaction.id,
-    api,
-    chain,
-    asset: chain.assets[0],
-    account: account!,
-    aye: coreTx.args.aye,
-    referendumId: coreTx.args.poll,
-    wrappedTransactions: transactionService.getWrappedTransaction({
-      api,
-      addressPrefix: chain.addressPrefix,
-      transaction: transaction.coreTx,
-      txWrappers: transaction.txWrappers,
-    }),
-    description: '',
-  } satisfies AmbassadorVoteInput;
+  } satisfies CollectiveVoteInput;
 }

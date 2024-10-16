@@ -457,27 +457,15 @@ export const getUnsignedTransaction: Record<
     );
   },
 
-  [TransactionType.FELLOWSHIP_VOTE]: (transaction, info, options) => {
-    return defineMethod(
-      {
-        method: {
-          args: transaction.args,
-          name: 'vote',
-          pallet: 'fellowshipCollective',
-        },
-        ...info,
-      },
-      options,
-    );
-  },
+  [TransactionType.COLLECTIVE_VOTE]: (transaction, info, options) => {
+    const { pallet, poll, aye } = transaction.args;
 
-  [TransactionType.AMBASSADOR_VOTE]: (transaction, info, options) => {
     return defineMethod(
       {
         method: {
-          args: transaction.args,
+          args: { poll, aye },
           name: 'vote',
-          pallet: 'ambassadorCollective',
+          pallet: `${pallet}Collective`,
         },
         ...info,
       },
@@ -593,11 +581,8 @@ export const getExtrinsic: Record<
   [TransactionType.UNDELEGATE]: ({ track }, api) => {
     return api.tx.convictionVoting.undelegate(track);
   },
-  [TransactionType.FELLOWSHIP_VOTE]: ({ pool, aye }, api) => {
-    return api.tx.fellowshipCollective.vote(pool, aye);
-  },
-  [TransactionType.AMBASSADOR_VOTE]: ({ pool, aye }, api) => {
-    return api.tx.ambassadorCollective.vote(pool, aye);
+  [TransactionType.COLLECTIVE_VOTE]: ({ pallet, pool, aye }, api) => {
+    return api.tx[`${pallet}Collective`].vote(pool, aye);
   },
 };
 

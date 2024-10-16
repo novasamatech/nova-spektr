@@ -23,8 +23,9 @@ const createVoteTransaction = ({
   return {
     address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
     chainId: chain.chainId,
-    type: pallet === 'fellowship' ? TransactionType.FELLOWSHIP_VOTE : TransactionType.AMBASSADOR_VOTE,
+    type: TransactionType.COLLECTIVE_VOTE,
     args: {
+      pallet,
       poll: referendumId.toString(),
       aye,
     },
