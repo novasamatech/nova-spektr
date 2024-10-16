@@ -1,6 +1,6 @@
-import { useLocaleStorage } from '../localeStorage';
+import { useLocaleStorage } from '../lib/localeStorage';
 
-describe('service/locale/storage', () => {
+describe('useLocaleStorage', () => {
   test('should set and get current locale', () => {
     const { setLocale, getLocale } = useLocaleStorage();
     const locale = 'en';

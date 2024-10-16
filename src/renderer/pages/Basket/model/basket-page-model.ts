@@ -25,11 +25,10 @@ import {
   type ValidationStartedParams,
   addProxyValidateModel,
   addPureProxiedValidateModel,
-  ambassadorVoteValidateModel,
   bondExtraValidateModel,
   bondNominateValidateModel,
+  collectiveVoteValidateModel,
   delegateValidateModel,
-  fellowshipVoteValidateModel,
   nominateValidateModel,
   payeeValidateModel,
   removeProxyValidateModel,
@@ -161,8 +160,7 @@ const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
       [TransactionType.VOTE]: voteValidateModel.events.validationStarted,
       [TransactionType.REVOTE]: voteValidateModel.events.validationStarted,
       [TransactionType.REMOVE_VOTE]: removeVoteValidateModel.events.validationStarted,
-      [TransactionType.FELLOWSHIP_VOTE]: fellowshipVoteValidateModel.events.validationStarted,
-      [TransactionType.AMBASSADOR_VOTE]: ambassadorVoteValidateModel.events.validationStarted,
+      [TransactionType.COLLECTIVE_VOTE]: collectiveVoteValidateModel.events.validationStarted,
     };
 
     if (coreTx.type in TransactionValidatorsRecord) {

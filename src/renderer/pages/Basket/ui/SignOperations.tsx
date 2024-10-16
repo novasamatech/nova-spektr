@@ -123,6 +123,9 @@ export const SignOperations = () => {
       [TransactionType.REVOTE]: () => <VoteConfirmation id={transaction.id} hideSignButton />,
       [TransactionType.REMOVE_VOTE]: () => <RemoveVoteConfirmation id={transaction.id} hideSignButton />,
       [TransactionType.UNLOCK]: () => <UnlockConfirmation id={transaction.id} hideSignButton />,
+
+      // TODO implement
+      [TransactionType.COLLECTIVE_VOTE]: () => null,
     };
 
     // @ts-expect-error not all types are used

@@ -1,5 +1,5 @@
-import { DEFAULT_LOCALE, LOCALE_KEY, Locales } from './lib/constants';
-import { type ILocaleStorage, type SupportedLocale } from './lib/types';
+import { DEFAULT_LOCALE, LOCALE_KEY, Locales } from './constants';
+import { type ILocaleStorage, type SupportedLocale } from './types';
 
 export const useLocaleStorage = (): ILocaleStorage => ({
   setLocale: (locale: string) => {

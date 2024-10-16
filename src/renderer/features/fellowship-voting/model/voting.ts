@@ -1,4 +1,3 @@
-import { type SigningPayload, signModel } from '@features/operations/OperationSign';
 import { combine, createEvent, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { reshape } from 'patronum';
@@ -6,6 +5,7 @@ import { reshape } from 'patronum';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createTxStore } from '@/shared/transactions';
 import { collectiveDomain } from '@/domains/collectives';
+import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
 
 import { votingFeatureStatus } from './status';
 import { votingStatusModel } from './votingStatus';

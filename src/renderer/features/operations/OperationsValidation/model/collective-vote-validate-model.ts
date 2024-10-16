@@ -88,7 +88,7 @@ sample({
   target: validateFx,
 });
 
-export const ambassadorVoteValidateModel = {
+export const collectiveVoteValidateModel = {
   events: {
     validationStarted,
   },

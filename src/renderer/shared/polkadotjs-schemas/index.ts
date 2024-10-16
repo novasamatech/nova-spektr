@@ -1,4 +1,4 @@
-import { isValidAccountId } from '@walletconnect/utils';
+import { isCorrectAccountId } from '@/shared/lib/utils';
 
 import {
   type AccountId,
@@ -68,7 +68,7 @@ export const pjsSchema = {
 
   helpers: {
     toAccountId: (value: string) => {
-      if (isValidAccountId(value)) {
+      if (isCorrectAccountId(value as AccountId)) {
         return value as AccountId;
       }
 
