@@ -1,4 +1,8 @@
+import { isCorrectAccountId } from '@/shared/lib/utils';
+
 import {
+  type AccountId,
+  type BlockHeight,
   accountIdSchema,
   blockHeightSchema,
   boolSchema,
@@ -30,6 +34,8 @@ import {
   vecSchema,
 } from './structs';
 
+export type { AccountId, BlockHeight };
+
 export const pjsSchema = {
   perbill: perbillSchema,
   permill: permillSchema,
@@ -59,6 +65,21 @@ export const pjsSchema = {
   tupleMap: tupleMapSchema,
   complex: complexSchema,
   vec: vecSchema,
-};
 
-export type { AccountId, BlockHeight } from './primitives';
+  helpers: {
+    toAccountId: (value: string) => {
+      if (isCorrectAccountId(value as AccountId)) {
+        return value as AccountId;
+      }
+
+      throw new TypeError(`${value} is not account id`);
+    },
+    toBlockHeight: (value: number) => {
+      if (value > 0) {
+        return value as BlockHeight;
+      }
+
+      throw new TypeError(`${value} is not block height`);
+    },
+  },
+};
