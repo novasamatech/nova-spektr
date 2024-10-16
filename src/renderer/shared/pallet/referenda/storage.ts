@@ -1,12 +1,17 @@
 import { type ApiPromise } from '@polkadot/api';
 
 import { substrateRpcPool } from '@/shared/api/substrate-helpers';
-import { type ReferendumId } from '@/shared/core';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
 import { getPalletName } from './helpers';
-import { type TrackId, referendaReferendumInfoConvictionVotingTally, referendumId, trackId } from './schema';
+import {
+  type ReferendumId,
+  type TrackId,
+  referendaReferendumInfoConvictionVotingTally,
+  referendumId,
+  trackId,
+} from './schema';
 import { type PalletType } from './types';
 
 const getQuery = (type: PalletType, api: ApiPromise, name: string) => {
@@ -38,20 +43,20 @@ export const storage = {
    * Information concerning any given referendum.
    */
   async referendumInfoFor(type: PalletType, api: ApiPromise, ids?: ReferendumId[]) {
-    const schema = pjsSchema.vec(
-      pjsSchema.tupleMap(
-        ['id', pjsSchema.storageKey(referendumId).transform(keys => keys[0])],
-        ['info', pjsSchema.optional(referendaReferendumInfoConvictionVotingTally)],
-      ),
-    );
-
-    const schemaWithIds = pjsSchema
-      .vec(pjsSchema.optional(referendaReferendumInfoConvictionVotingTally))
-      .transform(items => items.map((item, index) => ({ info: item, id: ids![index] })));
-
     if (ids) {
+      const schemaWithIds = pjsSchema
+        .vec(pjsSchema.optional(referendaReferendumInfoConvictionVotingTally))
+        .transform(items => items.map((item, index) => ({ info: item, id: ids[index]! })));
+
       return substrateRpcPool.call(() => getQuery(type, api, 'referendumInfoFor').multi(ids)).then(schemaWithIds.parse);
     } else {
+      const schema = pjsSchema.vec(
+        pjsSchema.tupleMap(
+          ['id', pjsSchema.storageKey(referendumId).transform(keys => keys[0])],
+          ['info', pjsSchema.optional(referendaReferendumInfoConvictionVotingTally)],
+        ),
+      );
+
       return substrateRpcPool.call(() => getQuery(type, api, 'referendumInfoFor').entries()).then(schema.parse);
     }
   },
