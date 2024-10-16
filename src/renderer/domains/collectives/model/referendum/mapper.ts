@@ -44,3 +44,15 @@ export const mapReferendum = (id: ReferendumId, info: ReferendaReferendumInfoCon
       };
   }
 };
+
+export const mapReferendums = (
+  list: { id: ReferendumId; info: ReferendaReferendumInfoConvictionVotingTally | null }[],
+) => {
+  const value: Referendum[] = [];
+  for (const { id, info } of list) {
+    if (!info) continue;
+    value.push(mapReferendum(id, info));
+  }
+
+  return value;
+};

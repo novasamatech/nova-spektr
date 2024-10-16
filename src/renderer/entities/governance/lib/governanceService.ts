@@ -1,18 +1,12 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type BN } from '@polkadot/util';
 
-import {
-  type Address,
-  type Referendum,
-  type ReferendumId,
-  type TrackId,
-  type TrackInfo,
-  type VotingCurve,
-} from '@/shared/core';
+import { type Address, type Referendum, type TrackId, type TrackInfo, type VotingCurve } from '@/shared/core';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import {
   type ReferendaCurve,
   type ReferendaReferendumInfoConvictionVotingTally,
+  type ReferendumId,
   referendaPallet,
 } from '@/shared/pallet/referenda';
 

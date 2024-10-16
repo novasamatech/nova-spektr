@@ -22,6 +22,6 @@ export type {
   VotingThreshold,
 } from './model/tracks/types';
 
-export type { Voting } from './model/voting/types';
+export type { Voting, VotingTransaction } from './model/voting/types';
 
 export type { Member } from './model/members/types';
