@@ -6,11 +6,12 @@ import { type TFunction } from 'i18next';
 import { type FC, type PropsWithChildren, createContext, useContext } from 'react';
 import { initReactI18next, useTranslation } from 'react-i18next';
 
-import { LanguageOptions } from '@/shared/i18n/lib/constants';
-import { useTranslationService } from '@/shared/i18n/lib/translationService';
-import { type LanguageItem, type SupportedLocale } from '@/shared/i18n/lib/types';
 // TODO fix cycle
 import { LanguageSwitcher } from '@/shared/ui/LanguageSwitcher/LanguageSwitcher';
+
+import { LanguageOptions } from './lib/constants';
+import { useTranslationService } from './lib/translationService';
+import { type LanguageItem, type SupportedLocale } from './lib/types';
 
 const { getConfig } = useTranslationService();
 
