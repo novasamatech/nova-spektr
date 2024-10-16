@@ -1,6 +1,6 @@
 import { Listbox } from '@headlessui/react';
 
-import { type LanguageItem, type SupportedLocale } from '@/shared/api/translation/lib/types';
+import { type LanguageItem, type SupportedLocale } from '@/shared/i18n/lib/types';
 import { cnTw } from '@/shared/lib/utils';
 import { Icon } from '../Icon/Icon';
 
