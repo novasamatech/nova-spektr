@@ -6582,6 +6582,32 @@
       }
     ]
   },
+   {
+    "name": "Westend People - Novasama test net",
+    "specName": "westend",
+    "addressPrefix": 42,
+    "chainId": "0xa8681e461e97bf31910577c94bc2eb75439ad47a0d335b1ffff0a70e7e0126fa",
+    "parentId": "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_People.svg",
+    "options": [
+      "testnet"
+    ],
+    "nodes": [
+      {
+        "url": "wss://westend-collectives-a-parachain.novasama-tech.org",
+        "name": "Collectives node"
+      }
+    ],
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "WND",
+        "precision": 12,
+        "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Westend_(WND).svg",
+        "name": "Westend"
+      }
+    ]
+  },
   {
     "name": "Bittensor",
     "specName": "node-subtensor",
