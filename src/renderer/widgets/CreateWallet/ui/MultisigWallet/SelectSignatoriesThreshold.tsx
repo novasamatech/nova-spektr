@@ -109,6 +109,7 @@ export const SelectSignatoriesThreshold = () => {
             selectedId={threshold.value.toString()}
             options={thresholdOptions}
             invalid={threshold.hasError()}
+            position={thresholdOptions.length > 3 ? 'up' : 'down'}
             onChange={({ value }) => threshold.onChange(value)}
           />
           <InputHint className="flex-1" active>
