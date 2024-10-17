@@ -14,7 +14,7 @@ type Props = {
 // TODO: Rebuild with new components
 export const WalletItem = memo(({ name, type, className = '' }: Props) => {
   return (
-    <div className={cnTw('flex w-full items-center gap-x-2', className)}>
+    <div className={cnTw('flex w-full items-center justify-end gap-x-2', className)}>
       <WalletIcon type={type} />
 
       <div className="flex max-w-[348px] flex-col">
