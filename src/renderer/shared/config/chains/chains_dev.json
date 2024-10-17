@@ -6582,7 +6582,7 @@
       }
     ]
   },
-   {
+  {
     "name": "Westend People - Novasama test net",
     "specName": "westend",
     "addressPrefix": 42,
