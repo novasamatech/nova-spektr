@@ -24,6 +24,7 @@ import {
   BondNominateConfirmation,
   DelegateConfirmation,
   EditDelegationConfirmation,
+  FellowshipVotingConfirmation,
   NominateConfirmation,
   PayeeConfirmation,
   RemoveProxyConfirm,
@@ -173,6 +174,10 @@ export const SignOperation = () => {
       ),
       [TransactionType.UNLOCK]: () => (
         <UnlockConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
+      ),
+      // TODO discuss where we should implement generic collective voting confirmation
+      [TransactionType.COLLECTIVE_VOTE]: () => (
+        <FellowshipVotingConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
       ),
     };
 

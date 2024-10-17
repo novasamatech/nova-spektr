@@ -2,7 +2,7 @@ import { createStore, sample } from 'effector';
 
 import { attachToFeatureInput } from '@/shared/effector';
 import { toKeysRecord } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { type Voting, collectiveDomain } from '@/domains/collectives';
 
 import { fellowshipModel } from './fellowship';
@@ -23,7 +23,7 @@ sample({
       chainId,
       referendums: referendums.map(r => r.id),
       // TODO use branded account id
-      accounts: wallet.accounts.map(a => a.accountId as AccountId),
+      accounts: wallet.accounts.map(a => pjsSchema.helpers.toAccountId(a.accountId)),
     };
   },
 

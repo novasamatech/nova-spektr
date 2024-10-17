@@ -1,19 +1,20 @@
-import { BN_MILLION } from '@polkadot/util';
-import { useGate, useStoreMap, useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { DetailRow, HeaderTitleText, Markdown, SmallTitleText } from '@/shared/ui';
+import { HeaderTitleText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Modal, Skeleton } from '@/shared/ui-kit';
-import { collectiveDomain } from '@/domains/collectives';
+import { fellowshipVotingFeature } from '@/features/fellowship-voting';
 import { referendumDetailsModel } from '../model/details';
 import { referendumsDetailsFeatureStatus } from '../model/status';
-import { thresholdsModel } from '../model/thresholds';
 
 import { Card } from './Card';
 import { ProposerName } from './ProposerName';
+import { Threshold } from './Threshold';
 import { ReferendumVoteChart } from './shared/ReferendumVoteChart';
 import { ReferendumVotingStatusBadge } from './shared/ReferendumVotingStatusBadge';
+
+const { VotingButtons, WalletVotingInfo } = fellowshipVotingFeature.views;
 
 type Props = {
   isOpen: boolean;
@@ -32,14 +33,6 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
 
   const loadingState = pendingReferendum && nullable(referendum);
   const metaLoadingState = pendingReferendumMeta && nullable(referendumMeta);
-
-  const thresholds = useStoreMap({
-    store: thresholdsModel.$thresholds,
-    keys: [referendumId],
-    fn: (thresholds, [id]) => thresholds[id] ?? null,
-  });
-
-  const threshold = nonNullable(thresholds) ? thresholds.support.value.div(BN_MILLION).toNumber() / 10 : 0;
 
   return (
     <Modal size="xl" height="full" isOpen={isOpen} onToggle={onToggle}>
@@ -63,18 +56,14 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
               </Card>
             </Box>
             <Box width="350px" shrink={0} gap={4}>
+              <WalletVotingInfo referendumId={referendumId} />
               <Card>
                 <Box padding={6} gap={6}>
                   <SmallTitleText>{'Voting status'}</SmallTitleText>
-
                   <ReferendumVotingStatusBadge referendum={referendum} pending={loadingState} />
                   <ReferendumVoteChart referendum={referendum} pending={loadingState} descriptionPosition="bottom" />
-
-                  {nonNullable(referendum) && collectiveDomain.referendumService.isOngoing(referendum) ? (
-                    <DetailRow label="Threshold">{threshold}%</DetailRow>
-                  ) : null}
-
-                  {loadingState && <Skeleton height="1lh" />}
+                  <Threshold referendum={referendum} pending={loadingState} />
+                  <VotingButtons referendumId={referendumId} />
                 </Box>
               </Card>
             </Box>
