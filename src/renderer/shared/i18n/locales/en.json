@@ -162,6 +162,8 @@
     "noWalletsLabel": "The wallet list is empty",
     "notEnoughSignatories": "You need to select at least 2 signatories",
     "notEnoughSignatoriesTitle": "Not enough signatories",
+    "notEmptySignatoryTitle": "Empty signatory",
+    "notEmptySignatory": "No empty signatory allowed",
     "ownAccountSelection": "Your account",
     "searchContactPlaceholder": "Search",
     "selectSigner": "Select signer",
