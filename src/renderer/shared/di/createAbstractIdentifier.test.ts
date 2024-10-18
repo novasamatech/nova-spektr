@@ -31,7 +31,7 @@ describe('createAbstractIdentifier.', () => {
     });
 
     identifier.registerHandler({
-      fn: (input) => input.acc,
+      fn: (input) => input.acc + ' World',
     });
 
     const result = syncApplyImpl({
@@ -40,6 +40,35 @@ describe('createAbstractIdentifier.', () => {
       input: undefined,
     });
 
-    expect(result).toBe('Hello attached');
+    expect(result).toBe('Hello World attached');
+  });
+
+  it('should skip handler on error', () => {
+    const identifier = createAbstractIdentifier<void, number>({
+      name: 'test',
+      processHandler: (handler) => handler,
+    });
+
+    identifier.registerHandler({
+      fn: (input) => input.acc + 1,
+    });
+    identifier.registerHandler({
+      fn: (input) => {
+        throw new Error('fail');
+
+        return input.acc + 1;
+      },
+    });
+    identifier.registerHandler({
+      fn: (input) => input.acc + 1,
+    });
+
+    const result = syncApplyImpl({
+      identifier,
+      acc: 0,
+      input: undefined,
+    });
+
+    expect(result).toBe(2);
   });
 });

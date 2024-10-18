@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { type ReactNode, useMemo } from 'react';
+import { Fragment, type ReactNode, useMemo } from 'react';
 
 import { createAbstractIdentifier } from './createAbstractIdentifier';
 import { syncApplyImpl } from './syncApplyImpl';
@@ -21,14 +21,14 @@ type SlotIdentifier<Props> = Identifier<Props, ReactNode[], SlotHandler<Props>> 
   apply: (props: Props) => ReactNode;
 };
 
-export const createSlot = <Props,>(config?: { name: string }): SlotIdentifier<Props> => {
+export const createSlot = <Props extends SlotProps>(config?: { name: string }): SlotIdentifier<Props> => {
   const identifier = createAbstractIdentifier<Props, ReactNode[], SlotHandler<Props>>({
     name: config?.name ?? 'unknownSlot',
     processHandler(handler) {
       return {
-        fn: ({ acc, input: props }) => {
+        fn: ({ acc, input: props, index }) => {
           // TODO add suspense and error boundary
-          const reactNode = handler.fn(props);
+          const reactNode = <Fragment key={index}>{handler.fn(props)}</Fragment>;
           acc.push(reactNode);
 
           return acc;
