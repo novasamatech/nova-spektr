@@ -5,41 +5,32 @@ import './Checkbox.css';
 import { LabelText } from '@/shared/ui/Typography';
 
 type Props = {
-  position?: 'right' | 'left';
   checked?: boolean;
   semiChecked?: boolean;
   disabled?: boolean;
-  readOnly?: boolean;
-  className?: string;
+  checkboxPosition?: 'center' | 'top';
   onChange?: (event: ChangeEvent<HTMLInputElement>, semiChecked?: boolean) => void;
-  tabIndex?: number;
 };
 
 export const Checkbox = ({
   checked,
   semiChecked,
-  position = 'right',
   disabled,
-  readOnly,
-  className,
+  checkboxPosition = 'center',
   children,
   onChange,
-  tabIndex,
 }: PropsWithChildren<Props>) => (
   <LabelText
     className={cnTw(
-      'flex items-center gap-x-2',
+      'flex gap-x-2',
       !disabled && 'hover:cursor-pointer',
-      disabled ? 'text-text-tertiary' : 'text-text-primary',
-      className,
+      disabled ? 'text-text-tertiary' : 'text-inherit',
     )}
   >
-    {Boolean(children) && position === 'left' && children}
     <input
       type="checkbox"
       name="checkbox"
       disabled={disabled}
-      readOnly={readOnly}
       checked={checked}
       className={cnTw(
         'checkbox relative h-4 w-4 shrink-0 appearance-none text-white outline-offset-1',
@@ -49,10 +40,11 @@ export const Checkbox = ({
         'hover:shadow-card-shadow hover:checked:bg-icon-accent-default',
         'disabled:border disabled:border-filter-border disabled:bg-main-app-background disabled:text-filter-border disabled:checked:bg-main-app-background',
         !disabled && 'hover:cursor-pointer',
+        checkboxPosition === 'center' && 'self-center',
+        checkboxPosition === 'top' && 'self-top mt-1',
       )}
-      tabIndex={tabIndex}
       onChange={onChange}
     />
-    {Boolean(children) && position === 'right' && children}
+    {Boolean(children) && children}
   </LabelText>
 );

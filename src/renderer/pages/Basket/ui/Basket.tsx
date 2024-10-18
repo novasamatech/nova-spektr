@@ -48,16 +48,17 @@ export const Basket = () => {
         <>
           <div className="mt-4 flex w-full flex-col items-center gap-4">
             <div className="flex w-[736px] items-center justify-between">
-              <Checkbox
-                className="ml-3"
-                checked={basketTxs.length === selectedTxs.length}
-                semiChecked={selectedTxs.length > 0 && basketTxs.length !== selectedTxs.length}
-                onChange={() => basketPageModel.events.allSelected()}
-              >
-                <FootnoteText className="text-text-secondary">
-                  {t('basket.selectedStatus', { count: basketTxs.length, selected: selectedTxs.length })}
-                </FootnoteText>
-              </Checkbox>
+              <div className="ml-3">
+                <Checkbox
+                  checked={basketTxs.length === selectedTxs.length}
+                  semiChecked={selectedTxs.length > 0 && basketTxs.length !== selectedTxs.length}
+                  onChange={() => basketPageModel.events.allSelected()}
+                >
+                  <FootnoteText className="text-text-secondary">
+                    {t('basket.selectedStatus', { count: basketTxs.length, selected: selectedTxs.length })}
+                  </FootnoteText>
+                </Checkbox>
+              </div>
 
               <div className="flex items-center gap-4">
                 <Button variant="text" size="sm" onClick={() => basketPageModel.events.refreshValidationStarted()}>

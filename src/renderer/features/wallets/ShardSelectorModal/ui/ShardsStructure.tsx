@@ -63,18 +63,19 @@ export const ShardsStructure = () => {
               <li key={chainId}>
                 <Accordion isDefaultOpen className="ml-6 w-auto rounded">
                   <div className="flex hover:bg-action-background-hover">
-                    <Checkbox
-                      checked={selectorUtils.isChecked(selectedStructure[root.id][chainId])}
-                      semiChecked={selectorUtils.isSemiChecked(selectedStructure[root.id][chainId])}
-                      className="w-full p-2"
-                      onChange={(value) => toggleChain(root.id, chainId, value.target.checked)}
-                    >
-                      <ChainTitle chain={chains[chainId]} fontClass="text-text-primary" />
-                      <FootnoteText className="text-text-tertiary">
-                        {/* eslint-disable-next-line i18next/no-literal-string */}
-                        {selectedStructure[root.id][chainId].checked} / {selectedStructure[root.id][chainId].total}
-                      </FootnoteText>
-                    </Checkbox>
+                    <div className="w-full p-2">
+                      <Checkbox
+                        checked={selectorUtils.isChecked(selectedStructure[root.id][chainId])}
+                        semiChecked={selectorUtils.isSemiChecked(selectedStructure[root.id][chainId])}
+                        onChange={(value) => toggleChain(root.id, chainId, value.target.checked)}
+                      >
+                        <ChainTitle chain={chains[chainId]} fontClass="text-text-primary" />
+                        <FootnoteText className="text-text-tertiary">
+                          {/* eslint-disable-next-line i18next/no-literal-string */}
+                          {selectedStructure[root.id][chainId].checked} / {selectedStructure[root.id][chainId].total}
+                        </FootnoteText>
+                      </Checkbox>
+                    </div>
                     <Accordion.Button buttonClass="ml-auto w-auto p-2" />
                   </div>
                   <Accordion.Content as="ul">

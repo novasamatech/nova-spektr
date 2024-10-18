@@ -41,14 +41,15 @@ export const NominatorsItem = ({
   return (
     <Plate className="grid grid-cols-[1fr,104px,104px,20px] items-center gap-x-6">
       {activeWallet && !walletUtils.isWatchOnly(activeWallet) && nominatorsLength > 1 ? (
-        <Checkbox
-          className="w-full"
-          disabled={isStakingLoading}
-          checked={stake.isSelected}
-          onChange={(event) => onToggleNominator(stake.address, event.target?.checked)}
-        >
-          <div className="grid w-full max-w-[207px] grid-cols-[minmax(10px,1fr),auto]">{content}</div>
-        </Checkbox>
+        <div className="w-full">
+          <Checkbox
+            disabled={isStakingLoading}
+            checked={stake.isSelected}
+            onChange={(event) => onToggleNominator(stake.address, event.target?.checked)}
+          >
+            <div className="grid w-full max-w-[207px] grid-cols-[minmax(10px,1fr),auto]">{content}</div>
+          </Checkbox>
+        </div>
       ) : (
         <div className="grid max-w-[222px] grid-cols-[minmax(10px,1fr),auto] items-center gap-x-2">{content}</div>
       )}

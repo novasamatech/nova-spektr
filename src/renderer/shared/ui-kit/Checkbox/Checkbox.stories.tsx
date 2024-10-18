@@ -1,4 +1,7 @@
 import { type Meta, type StoryObj } from '@storybook/react';
+import { useState } from 'react';
+
+import { Box } from '../Box/Box';
 
 import { Checkbox } from './Checkbox';
 
@@ -12,14 +15,44 @@ export default meta;
 type Story = StoryObj<typeof Checkbox>;
 
 export const Default: Story = {
-  args: {
-    children: 'Checkbox',
+  render(args) {
+    const [checked, onToggle] = useState(false);
+
+    return (
+      <Checkbox {...args} checked={checked} onChange={() => onToggle(!checked)}>
+        Checkbox
+      </Checkbox>
+    );
   },
 };
 
-export const SemiChecked: Story = {
-  args: {
-    semiChecked: true,
-    children: 'Checkbox',
+export const Variants: Story = {
+  render() {
+    return (
+      <Box gap={2}>
+        <Checkbox checked={true}>Checked</Checkbox>
+        <Checkbox semiChecked={true}>Semi checked</Checkbox>
+        <Checkbox disabled={true}>Disabled</Checkbox>
+        <Checkbox disabled={true} checked={true}>
+          Disabled checked
+        </Checkbox>
+      </Box>
+    );
+  },
+};
+export const Position: Story = {
+  render() {
+    return (
+      <Box gap={2}>
+        <Checkbox checked={true} checkboxPosition="center">
+          Checked
+        </Checkbox>
+        <Checkbox checked={true} checkboxPosition="top">
+          Checkbox long text long text long text long text long text long text long text long text long text long text
+          long text long text long text long text long text long text long text long text long text long text long text
+          long text long text long text long text long text
+        </Checkbox>
+      </Box>
+    );
   },
 };

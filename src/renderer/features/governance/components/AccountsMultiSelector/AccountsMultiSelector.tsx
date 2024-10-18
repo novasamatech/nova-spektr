@@ -172,16 +172,15 @@ export const AccountsMultiSelector = ({
                   >
                     {({ selected }) => (
                       <div className="flex w-full justify-between gap-x-2">
-                        <Checkbox
-                          readOnly
-                          checked={selected}
+                        <div
                           className={cnTw(
                             'pointer-events-none w-full pl-4',
                             selected ? 'text-text-primary' : 'text-text-secondary',
                           )}
                         >
-                          {element}
-                        </Checkbox>
+                          <Checkbox checked={selected}>{element}</Checkbox>
+                        </div>
+
                         {additionalElement}
                       </div>
                     )}
@@ -243,18 +242,19 @@ const Group = ({ group, selectedIds, selectedOptions, theme, onChange }: PropsGr
           OptionStyleTheme[theme](false, isChecked),
         )}
       >
-        <Checkbox
-          className="w-full p-2 pl-6"
-          checked={isChecked}
-          semiChecked={list.some(({ id }) => selectedIds.includes(id))}
-          onChange={(event) => toggleGroup(event.target.checked)}
-        >
-          <div className="flex h-5 w-7.5 items-center justify-center rounded-2lg bg-input-background-disabled">
-            <CaptionText className="text-text-secondary">{list.length}</CaptionText>
-          </div>
-          <FootnoteText className="flex-1 text-text-tertiary">{groupName}</FootnoteText>
-          <FootnoteText className="text-text-secondary">{groupValue}</FootnoteText>
-        </Checkbox>
+        <div className="w-full p-2 pl-6">
+          <Checkbox
+            checked={isChecked}
+            semiChecked={list.some(({ id }) => selectedIds.includes(id))}
+            onChange={(event) => toggleGroup(event.target.checked)}
+          >
+            <div className="flex h-5 w-7.5 items-center justify-center rounded-2lg bg-input-background-disabled">
+              <CaptionText className="text-text-secondary">{list.length}</CaptionText>
+            </div>
+            <FootnoteText className="flex-1 text-text-tertiary">{groupName}</FootnoteText>
+            <FootnoteText className="text-text-secondary">{groupValue}</FootnoteText>
+          </Checkbox>
+        </div>
       </div>
       <ul>
         {list.map(({ id, value, additionalElement, element }) => (
@@ -265,16 +265,14 @@ const Group = ({ group, selectedIds, selectedOptions, theme, onChange }: PropsGr
           >
             {({ selected }) => (
               <div className="flex w-full items-center justify-between gap-x-4">
-                <Checkbox
-                  readOnly
-                  checked={selected}
+                <div
                   className={cnTw(
                     'pointer-events-none w-full pl-8',
                     selected ? 'text-text-primary' : 'text-text-secondary',
                   )}
                 >
-                  {element}
-                </Checkbox>
+                  <Checkbox checked={selected}>{element}</Checkbox>
+                </div>
                 {additionalElement}
               </div>
             )}
