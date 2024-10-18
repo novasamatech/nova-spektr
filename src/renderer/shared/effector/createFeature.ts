@@ -2,7 +2,7 @@ import { type Event, type Store, createDomain, createStore, sample } from 'effec
 import { createGate } from 'effector-react';
 import { readonly } from 'patronum';
 
-import { type AnyIdentifier, type InferHandlerFn } from '@/shared/di';
+import { type AnyIdentifier, type HandlerInput, type InferHandlerFn } from '@/shared/di';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 
 type Params<T> = {
@@ -154,7 +154,7 @@ export const createFeature = <T = null>({ name, filter, input = createStore(null
 
   const triggerIdentifiersFx = domain.createEffect((identifiers: AnyIdentifier[]) => {
     for (const identifier of identifiers) {
-      identifier.handlersChanged();
+      identifier.updateHandlers();
     }
   });
 
@@ -173,9 +173,9 @@ export const createFeature = <T = null>({ name, filter, input = createStore(null
 
   const inject = <T extends AnyIdentifier>(identifier: T, fn: InferHandlerFn<T>) => {
     identifier.registerHandler({
-      fn: (a: unknown) => {
+      fn: (v: HandlerInput<never, never>) => {
         // eslint-disable-next-line effector/no-getState
-        return isRunning.getState() ? fn(a) : a;
+        return isRunning.getState() ? fn(v) : v.acc;
       },
     });
   };

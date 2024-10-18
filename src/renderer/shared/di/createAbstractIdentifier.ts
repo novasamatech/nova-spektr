@@ -10,12 +10,18 @@ import {
   type RegisterHandlerParams,
 } from './types';
 
-type Params<Input, Output, HandlerFn> = {
+type EmptyHandlerFn = (...args: any[]) => unknown;
+
+type Params<Input, Output, HandlerFn extends EmptyHandlerFn> = {
   name: string;
   processHandler(handler: RegisterHandlerParams<HandlerFn>): RegisterHandlerParams<DefaultHandlerFn<Input, Output>>;
 };
 
-export const createAbstractIdentifier = <Input, Output, HandlerFn>({
+export const createAbstractIdentifier = <
+  Input,
+  Output,
+  HandlerFn extends EmptyHandlerFn = DefaultHandlerFn<Input, Output>,
+>({
   name,
   processHandler,
 }: Params<Input, Output, HandlerFn>) => {
@@ -43,8 +49,8 @@ export const createAbstractIdentifier = <Input, Output, HandlerFn>({
   const identifier: ResultIdentifier = {
     name,
     $handlers: readonly($handlers),
-    registerHandler: (handler) => registerHandler(processHandler(handler)),
-    handlersChanged: forceUpdate,
+    registerHandler: registerHandler.prepend(processHandler),
+    updateHandlers: forceUpdate,
   };
 
   return identifier;

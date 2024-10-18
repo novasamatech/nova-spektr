@@ -20,7 +20,7 @@ export type Identifier<Input, Output, HandlerFn = DefaultHandlerFn<Input, Output
   name: string;
   $handlers: Store<Handler<Input, Output>[]>;
   registerHandler(params: RegisterHandlerParams<HandlerFn>): void;
-  handlersChanged(): void;
+  updateHandlers(): void;
 };
 
 export type AnyIdentifier<Input = any, Output = any, HandlerFn = any> = Identifier<Input, Output, HandlerFn>;
