@@ -109,7 +109,6 @@ type SaveMultisigParams = {
   multisigAccount: MultisigAccount;
   params: ExtrinsicResultParams;
   hooks: Callbacks;
-  description?: string;
 };
 
 type SaveMultisigResult = {
@@ -117,17 +116,10 @@ type SaveMultisigResult = {
   events: MultisigEvent[];
 };
 const saveMultisigTxFx = createEffect(
-  ({
-    transactions,
-    multisigTxs,
-    multisigAccount,
-    params,
-    hooks,
-    description,
-  }: SaveMultisigParams): SaveMultisigResult => {
+  ({ transactions, multisigTxs, multisigAccount, params, hooks }: SaveMultisigParams): SaveMultisigResult => {
     const { txs, events } = transactions.reduce<{ txs: MultisigTransaction[]; events: MultisigEvent[] }>(
       (acc, transaction, index) => {
-        const multisigData = buildMultisigTx(transaction, multisigTxs[index], params, multisigAccount, description);
+        const multisigData = buildMultisigTx(transaction, multisigTxs[index], params, multisigAccount);
 
         hooks.addEventWithQueue(multisigData.event);
         hooks.addMultisigTx(multisigData.transaction);
@@ -225,7 +217,6 @@ sample({
     transactions: submitStore!.coreTxs,
     multisigTxs: submitStore!.multisigTxs,
     multisigAccount: submitStore!.account as MultisigAccount,
-    description: submitStore!.description,
   }),
   target: saveMultisigTxFx,
 });

@@ -39,7 +39,7 @@ const Operation = ({ tx, account }: Props) => {
             </FootnoteText>
           </div>
 
-          <TransactionTitle className="flex-1 overflow-hidden" tx={tx.transaction} description={tx.description} />
+          <TransactionTitle className="flex-1 overflow-hidden" tx={tx.transaction} />
 
           {asset && amount && (
             <div className="w-[160px]">

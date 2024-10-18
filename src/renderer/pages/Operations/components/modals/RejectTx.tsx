@@ -32,8 +32,6 @@ import { SigningSwitch } from '@/features/operations';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { Submit } from '../ActionSteps/Submit';
 
-import RejectReasonModal from './RejectReasonModal';
-
 type Props = {
   tx: MultisigTransactionDS;
   account: MultisigAccount;
@@ -56,7 +54,6 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const apis = useUnit(networkModel.$apis);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isRejectReasonModalOpen, toggleRejectReasonModal] = useToggle();
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
 
   const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
@@ -64,7 +61,6 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const [rejectTx, setRejectTx] = useState<Transaction>();
   const [txPayload, setTxPayload] = useState<Uint8Array>();
 
-  const [rejectReason, setRejectReason] = useState('');
   const [signature, setSignature] = useState<HexString>();
 
   const transactionTitle = getMultisigSignOperationTitle(
@@ -172,11 +168,10 @@ const RejectTx = ({ tx, account, connection }: Props) => {
     return null;
   }
 
-  const handleRejectReason = async (reason: string) => {
+  const handleConfirm = async () => {
     const isValid = await validateBalanceForFee(signAccount);
 
     if (isValid) {
-      setRejectReason(reason);
       setActiveStep(Step.SIGNING);
     } else {
       toggleFeeModal();
@@ -209,7 +204,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
             connection={connection}
             feeTx={rejectTx}
             signatory={signAccount}
-            onSign={toggleRejectReasonModal}
+            onSign={handleConfirm}
           />
         )}
         {activeStep === Step.SIGNING && rejectTx && connection.api && signAccount && (
@@ -229,12 +224,6 @@ const RejectTx = ({ tx, account, connection }: Props) => {
             onResult={onSignResult}
           />
         )}
-
-        <RejectReasonModal
-          isOpen={isRejectReasonModalOpen}
-          onClose={toggleRejectReasonModal}
-          onSubmit={handleRejectReason}
-        />
 
         <OperationResult
           isOpen={isFeeModalOpen}
@@ -256,7 +245,6 @@ const RejectTx = ({ tx, account, connection }: Props) => {
           account={signAccount}
           txPayload={txPayload}
           signature={signature}
-          rejectReason={rejectReason}
           onClose={handleClose}
         />
       )}

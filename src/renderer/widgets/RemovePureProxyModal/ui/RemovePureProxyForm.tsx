@@ -4,10 +4,9 @@ import { type FormEvent } from 'react';
 
 import { type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Alert, Button, Input, InputHint } from '@/shared/ui';
+import { Alert, Button } from '@/shared/ui';
 import { SignatorySelector } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
-import { DESCRIPTION_LENGTH } from '@/features/operations/OperationsValidation';
 import { formModel } from '../model/form-model';
 import { removePureProxyModel } from '../model/remove-pure-proxy-model';
 
@@ -26,7 +25,6 @@ export const RemovePureProxyForm = ({ onGoBack }: Props) => {
     <div className="px-5 pb-4">
       <form id="add-proxy-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitProxy}>
         <Signatories />
-        <DescriptionInput />
       </form>
       <div className="flex flex-col gap-y-6 pb-4 pt-6">
         <FeeSection />
@@ -62,38 +60,6 @@ const Signatories = () => {
       errorText={t(signatory.errorText())}
       onChange={signatory.onChange}
     />
-  );
-};
-
-const DescriptionInput = () => {
-  const { t } = useI18n();
-
-  const {
-    fields: { description },
-  } = useForm(formModel.$proxyForm);
-  const isMultisig = useUnit(formModel.$isMultisig);
-
-  if (!isMultisig) {
-    return null;
-  }
-
-  return (
-    <div className="flex flex-col gap-y-2">
-      <Input
-        spellCheck
-        label={t('general.input.descriptionLabel')}
-        className="w-full"
-        placeholder={t('general.input.descriptionPlaceholder')}
-        invalid={description.hasError()}
-        value={description.value}
-        onChange={description.onChange}
-      />
-      <InputHint variant="error" active={description.hasError()}>
-        {description.errorText({
-          maxLength: t('proxy.addProxy.maxLengthDescriptionError', { maxLength: DESCRIPTION_LENGTH }),
-        })}
-      </InputHint>
-    </div>
   );
 };
 

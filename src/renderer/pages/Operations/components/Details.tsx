@@ -34,7 +34,7 @@ import {
   isXcmTransaction,
 } from '@/entities/transaction';
 import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, walletModel } from '@/entities/wallet';
-import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
+import { AddressStyle, InteractionStyle } from '../common/constants';
 import {
   getDelegate,
   getDelegationTarget,
@@ -109,7 +109,6 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
 
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
-  const cancelDescription = tx.cancelDescription;
   const allValidators = Object.values(validatorsMap);
 
   const transaction = getTransactionFromMultisigTx(tx);
@@ -158,17 +157,6 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
 
   return (
     <dl className="flex w-full flex-col gap-y-4">
-      {cancelDescription && (
-        <div className={DescriptionBlockStyle}>
-          <FootnoteText as="dt" className="text-text-tertiary">
-            {t('operation.details.rejectReason')}
-          </FootnoteText>
-          <FootnoteText as="dd" className="break-words">
-            {cancelDescription}
-          </FootnoteText>
-        </div>
-      )}
-
       {proxied && (
         <>
           <DetailRow label={t('operation.details.senderProxiedWallet')}>

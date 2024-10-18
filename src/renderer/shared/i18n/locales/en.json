@@ -380,7 +380,6 @@
     "input": {
       "amountLabel": "Amount",
       "availableLabel": "Available:",
-      "descriptionLabel": "Description",
       "descriptionPlaceholder": "Choose an operation description",
       "searchLabel": "Search",
       "searchPlaceholder": "Search",
@@ -958,13 +957,6 @@
     "proxyFeeErrorTitle": "Not enough tokens to pay the fee",
     "rejectButton": "Reject",
     "rejectInProgress": "Submitting Rejection...",
-    "rejectReason": {
-      "continueButton": "Continue",
-      "errorMessage": "Reject reason is required",
-      "inputHint": "Visible only for you and signers",
-      "placeholder": "Reason...",
-      "title": "Enter reject reason"
-    },
     "selectAccount": "Select account",
     "selectAccountLabel": "Account",
     "selectSignatory": "Select signatory",
