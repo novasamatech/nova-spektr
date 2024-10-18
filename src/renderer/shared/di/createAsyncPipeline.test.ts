@@ -4,16 +4,16 @@ import { createAsyncPipeline } from './createAsyncPipeline';
 
 describe('createAsyncPipeline', () => {
   it('should handle simple case with array concat', async () => {
-    const pipeline = createAsyncPipeline<string[]>();
+    const asyncPipeline = createAsyncPipeline<string[]>();
 
-    pipeline.registerHandler({
+    asyncPipeline.registerHandler({
       fn: (v) => setTimeout(100).then(() => [...v, '1']),
     });
-    pipeline.registerHandler({
+    asyncPipeline.registerHandler({
       fn: (v) => [...v, '2'],
     });
 
-    const res = await pipeline.apply(['0']);
+    const res = await asyncPipeline.apply(['0']);
 
     expect(res).toEqual(['0', '1', '2']);
   });
