@@ -33,7 +33,7 @@ import {
   isXcmTransaction,
 } from '@/entities/transaction';
 import { AddressWithExplorers, ExplorersPopover, WalletCardSm, walletModel } from '@/entities/wallet';
-import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
+import { AddressStyle, InteractionStyle } from '../common/constants';
 import {
   getDelegate,
   getDelegationTarget,
@@ -104,7 +104,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const [isAdvancedShown, toggleAdvanced] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
-  const { indexCreated, blockCreated, deposit, depositor, callHash, callData, description, cancelDescription } = tx;
+  const { indexCreated, blockCreated, deposit, depositor, callHash, callData } = tx;
 
   const transaction = getTransactionFromMultisigTx(tx);
   const validatorsMap = useValidatorsMap(api, connection && networkUtils.isLightClientConnection(connection));
@@ -133,27 +133,6 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
 
   return (
     <dl className="flex w-full flex-col gap-y-1">
-      {description && (
-        <div className={DescriptionBlockStyle}>
-          <FootnoteText as="dt" className="text-text-tertiary">
-            {t('operation.details.description')}
-          </FootnoteText>
-          <FootnoteText as="dd" className={cnTw('break-words', valueClass)}>
-            {description}
-          </FootnoteText>
-        </div>
-      )}
-      {cancelDescription && (
-        <div className={DescriptionBlockStyle}>
-          <FootnoteText as="dt" className="text-text-tertiary">
-            {t('operation.details.rejectReason')}
-          </FootnoteText>
-          <FootnoteText as="dd" className={cnTw('break-words', valueClass)}>
-            {cancelDescription}
-          </FootnoteText>
-        </div>
-      )}
-
       {account && activeWallet && (
         <DetailRow label={t('operation.details.multisigWallet')} className={valueClass}>
           <div className="-mr-2">
