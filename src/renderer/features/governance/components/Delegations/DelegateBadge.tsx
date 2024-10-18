@@ -25,7 +25,7 @@ export const DelegateBadge = ({ delegate, className }: Props) => {
         className,
       )}
     >
-      {t('governance.addDelegation.card.' + (delegate.isOrganization ? 'organization' : 'individual'))}
+      {t(`governance.addDelegation.card.${delegate.isOrganization ? `organization` : `individual`}`)}
     </CaptionText>
   );
 };

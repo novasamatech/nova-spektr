@@ -1,5 +1,7 @@
 export { collectiveDomain } from './init';
 
+export type { CollectivePalletsType } from './lib/types';
+
 export type {
   ApprovedReferendum,
   OngoingReferendum,

@@ -37,6 +37,7 @@ import {
   bondNominateConfirmModel,
   delegateConfirmModel,
   editDelegationConfirmModel,
+  fellowshipVotingConfirmModel,
   nominateConfirmModel,
   payeeConfirmModel,
   removeProxyConfirmModel,
@@ -126,6 +127,7 @@ const startDataPreparationFx = createEffect(async ({ transactions, ...preparatio
       [TransactionType.VOTE]: prepareTransaction.prepareVoteTransaction,
       [TransactionType.REVOTE]: prepareTransaction.prepareVoteTransaction,
       [TransactionType.REMOVE_VOTE]: prepareTransaction.prepareRemoveVoteTransaction,
+      [TransactionType.COLLECTIVE_VOTE]: prepareTransaction.prepareCollectiveVoteTransaction,
     };
 
     if (coreTx.type in TransactionData) {
@@ -446,6 +448,32 @@ sample({
   target: revokeDelegationConfirmModel.events.formInitiated,
 });
 
+// revoke delegation (undelegate)
+
+sample({
+  clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.UNDELEGATE).length > 0;
+  },
+  fn: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.UNDELEGATE).map((tx) => tx.params) || [];
+  },
+  target: revokeDelegationConfirmModel.events.formInitiated,
+});
+
+// collectives voting
+
+sample({
+  clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.COLLECTIVE_VOTE).length > 0;
+  },
+  fn: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.COLLECTIVE_VOTE).map((tx) => tx.params) || [];
+  },
+  target: fellowshipVotingConfirmModel.events.fillConfirm,
+});
+
 sample({
   clock: flowFinished,
   fn: () => Step.NONE,
@@ -472,6 +500,7 @@ sample({
     unlockConfirmAggregate.output.formSubmitted,
     voteConfirmModel.events.sign,
     removeVoteConfirmModel.events.sign,
+    fellowshipVotingConfirmModel.events.sign,
     txsConfirmed,
   ],
   source: {
