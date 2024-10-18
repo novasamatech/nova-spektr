@@ -1,9 +1,18 @@
 import { useUnit } from 'effector-react';
-import { type FunctionComponent, type ReactNode, useMemo } from 'react';
+import { type ReactNode, useMemo } from 'react';
 
 import { createAbstractIdentifier } from './createAbstractIdentifier';
 import { syncApplyImpl } from './syncApplyImpl';
 import { type Identifier } from './types';
+
+// TODO maybe it should be used instead of plain render function in handler
+// export type SlotInjected<Props extends SlotProps> = {
+//   id: string;
+//   order?: number;
+//   fn: FunctionComponent<Props>;
+//   fallback?: FunctionComponent<Props>;
+//   error?: FunctionComponent<Props & { error: Error; retry: VoidFunction }>;
+// };
 
 type SlotHandler<Props> = (props: Props) => ReactNode;
 type SlotIdentifier<Props> = Identifier<Props, ReactNode[], SlotHandler<Props>> & {
@@ -34,14 +43,6 @@ export const createSlot = <Props,>(config?: { name: string }): SlotIdentifier<Pr
 
 type IsVoid<T> = [T] extends [void] ? true : false;
 
-export type SlotInjected<Props extends SlotProps> = {
-  id: string;
-  order?: number;
-  fn: FunctionComponent<Props>;
-  fallback?: FunctionComponent<Props>;
-  error?: FunctionComponent<Props & { error: Error; retry: VoidFunction }>;
-};
-
 export type SlotProps = Record<string, unknown> | void;
 
 type SlotOptions<Props extends SlotProps> = IsVoid<Props> extends true ? { props?: void } : { props: Props };
@@ -58,13 +59,4 @@ export const useSlot = <Props extends SlotProps>(...[slot, options]: UseSlotArgu
   return useMemo(() => {
     return slot.apply(props);
   }, [handlers]);
-};
-
-type SlotComponentProps<Props extends SlotProps> = { slot: SlotIdentifier<Props> } & SlotOptions<Props>;
-
-export const Slot = <Props extends SlotProps>({ slot, ...options }: SlotComponentProps<Props>) => {
-  const slots = useSlot<Props>(slot, options as SlotOptions<Props>);
-
-  // eslint-disable-next-line react/jsx-no-useless-fragment
-  return <>{slots}</>;
 };
