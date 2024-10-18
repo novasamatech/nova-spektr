@@ -166,7 +166,7 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
       section,
       chainId: genesisHash,
       args: {
-        additionalArgs,
+        ...additionalArgs,
         ...parser(decoded, genesisHash),
       },
       type: transactionType,

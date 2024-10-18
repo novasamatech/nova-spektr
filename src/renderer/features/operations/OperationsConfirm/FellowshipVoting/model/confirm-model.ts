@@ -8,7 +8,11 @@ import { networkModel } from '@/entities/network';
 import { operationsModel } from '@/entities/operations';
 import { walletModel } from '@/entities/wallet';
 import { submitModel } from '@/features/operations/OperationSubmit';
-import { type ConfirmInfo, createTransactionConfirmStore } from '@/features/operations/OperationsConfirm';
+// TODO fix cycle
+import {
+  type ConfirmInfo,
+  createTransactionConfirmStore,
+} from '@/features/operations/OperationsConfirm/lib/createTransactionConfirmStore';
 
 export type CollectiveVoteConfirm = ConfirmInfo & {
   api: ApiPromise;

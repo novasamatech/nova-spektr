@@ -5,10 +5,9 @@ import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { SignButton } from '@/entities/operations';
-import { fellowshipVotingFeature } from '@/features/fellowship-voting';
+// eslint-disable-next-line boundaries/entry-point
+import { VotingConfirmation } from '@/features/fellowship-voting/components/VotingConfirmation';
 import { confirmModel } from '../model/confirm-model';
-
-const { VotingConfirmation } = fellowshipVotingFeature.views;
 
 type Props = {
   id?: number;
