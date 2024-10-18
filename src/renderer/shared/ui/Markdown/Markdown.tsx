@@ -5,8 +5,8 @@ import remarkGfm from 'remark-gfm';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
+import { Checkbox } from '@/shared/ui-kit';
 import { Button } from '../Buttons';
-import { Checkbox } from '../Checkbox/Checkbox';
 import { Icon } from '../Icon/Icon';
 import { InfoLink } from '../InfoLink/InfoLink';
 import { BodyText } from '../Typography';

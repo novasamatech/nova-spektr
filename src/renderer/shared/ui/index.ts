@@ -28,7 +28,6 @@ export { Separator } from './Separator/Separator';
 export { InputHint } from './InputHint/InputHint';
 export { InfoLink } from './InfoLink/InfoLink';
 export { RadioGroup } from './RadioGroup/RadioGroup';
-export { Checkbox } from './Checkbox/Checkbox';
 export { Accordion } from './Accordion/Accordion';
 export { Alert } from './Alert/Alert';
 export { Identicon } from './Identicon/Identicon';
