@@ -2,7 +2,7 @@ import { Listbox, Transition } from '@headlessui/react';
 import { Fragment, useId } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
-import { Checkbox } from '../../Checkbox/Checkbox';
+import { Checkbox } from '@/shared/ui-kit';
 import { Icon } from '../../Icon/Icon';
 import { CommonInputStyles, CommonInputStylesTheme } from '../../Inputs/common/styles';
 import { CaptionText, FootnoteText, LabelText } from '../../Typography';

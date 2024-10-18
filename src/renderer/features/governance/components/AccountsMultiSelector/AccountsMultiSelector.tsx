@@ -3,7 +3,7 @@ import { Fragment, type ReactNode, useId } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { CaptionText, Checkbox, FootnoteText, Icon, LabelText } from '@/shared/ui';
+import { CaptionText, FootnoteText, Icon, LabelText } from '@/shared/ui';
 import {
   OptionStyle,
   OptionStyleTheme,
@@ -14,6 +14,7 @@ import {
 } from '@/shared/ui/Dropdowns/common/constants';
 import { type DropdownResult, type Position, type Theme } from '@/shared/ui/Dropdowns/common/types';
 import { CommonInputStyles, CommonInputStylesTheme } from '@/shared/ui/Inputs/common/styles';
+import { Checkbox } from '@/shared/ui-kit';
 
 type DropdownOption<T = any> = {
   id: string;

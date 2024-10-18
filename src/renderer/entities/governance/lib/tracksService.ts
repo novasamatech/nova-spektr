@@ -34,3 +34,15 @@ export const getGroupPallet = (
 
   return tracksGroupId.length !== 0 && tracksGroupId.every((t) => tracksIds.includes(t)) ? 'primary' : 'secondary';
 };
+
+export const getTrackTitles = (trackIds: string[], allTracks: Track[], t: TFunction): string => {
+  const titles = allTracks.reduce<string[]>((titles, { id, value }) => {
+    if (trackIds.includes(id)) {
+      titles.push(t(value));
+    }
+
+    return titles;
+  }, []);
+
+  return titles.join(', ');
+};
