@@ -13,7 +13,7 @@ export const syncApplyImpl = <Input, Output>({ identifier, acc, input }: Params<
 
   for (let index = 0; index < handlers.length; index++) {
     const handler = handlers[index];
-    if (!handlers) continue;
+    if (!handler) continue;
 
     try {
       result = handler.fn({
