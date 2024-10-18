@@ -46,7 +46,6 @@ export const createSlot = <Props,>(config?: { name: string }): SlotIdentifier<Pr
 type IsVoid<T> = T extends void ? true : false;
 
 type SlotProps = Record<string, unknown> | void;
-
 type SlotOptions<Props extends SlotProps> = IsVoid<Props> extends true ? { props?: void } : { props: Props };
 
 export type UseSlotArguments<Props extends SlotProps = void> =
