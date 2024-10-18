@@ -1,10 +1,9 @@
-import { type CSSProperties, memo, useRef, useState } from 'react';
+import { type CSSProperties, memo, useEffect, useRef, useState } from 'react';
 
 import { Skeleton, useResizeObserver } from '@/shared/ui-kit';
 
-type Props = {
-  text: string;
-  ellipsis?: string;
+const divWithPrecision = (a: number, b: number) => {
+  return (a * 100_000) / b / 100_000;
 };
 
 const containerStyle: CSSProperties = {
@@ -15,6 +14,11 @@ const containerStyle: CSSProperties = {
 
 const MIN_START_SYMBOLS = 5;
 const MIN_END_SYMBOLS = 5;
+
+type Props = {
+  text: string;
+  ellipsis?: string;
+};
 
 export const Truncate = memo(({ text, ellipsis = '...' }: Props) => {
   const [container, setContainer] = useState<HTMLElement | null>(null);
@@ -45,10 +49,11 @@ export const Truncate = memo(({ text, ellipsis = '...' }: Props) => {
       return ellipsis;
     }
 
-    const charWidth = textWidth / text.length;
-    const delta = Math.ceil(textWidth - containerWidth + ellipsisWidth);
+    const charWidth = divWithPrecision(textWidth, text.length);
+    const delta = Math.ceil(textWidth - containerWidth + ellipsisWidth + charWidth / 2);
 
-    const lettersToRemove = Math.ceil(delta / charWidth);
+    const lettersToRemove = Math.ceil(divWithPrecision(delta, charWidth));
+
     const center = Math.round(text.length / 2);
     const removeStart = center - Math.ceil(lettersToRemove / 2);
     const removeEnd = removeStart + lettersToRemove;
@@ -75,17 +80,18 @@ export const Truncate = memo(({ text, ellipsis = '...' }: Props) => {
     parseTextForTruncation(text);
   });
 
+  useEffect(() => {
+    parseTextForTruncation(text);
+  }, [text]);
+
   /**
    * Uppercase letter occupies more space, so fixedText is a little wider and
    * safer for calculation (reduces change to trim last char).
    */
   return (
     <span ref={setContainer} style={containerStyle} className="relative block w-full max-w-full">
-      <span ref={textRef} className="invisible">
-        {/* Uppercase letter occupies more space, so fixedText is a little wider and
-         * safer for calculation (reduces change to trim last char).
-         */}
-        {text.toUpperCase()}
+      <span ref={textRef} className="invisible block w-fit">
+        {text}
       </span>
       <span ref={ellipsisRef} className="invisible absolute">
         {ellipsis}

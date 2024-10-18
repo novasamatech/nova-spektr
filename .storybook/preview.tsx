@@ -1,7 +1,7 @@
 import '@/app/index.css';
 import '@/app/styles/theme/default.css';
 
-import { I18Provider } from '@/app/providers';
+import { I18Provider } from '@/shared/i18n';
 import { ThemeProvider } from '@/shared/ui-kit';
 
 import type { Preview } from '@storybook/react';
