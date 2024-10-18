@@ -12,7 +12,6 @@ import {
   DetailRow,
   FootnoteText,
   Icon,
-  Input,
   InputHint,
   SmallTitleText,
   Tooltip,
@@ -66,7 +65,6 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
           <Signatories />
           <Amount />
           <Conviction />
-          <Description />
         </form>
 
         <div className="flex flex-1 flex-col justify-end gap-y-6 pb-4 pt-6">
@@ -182,37 +180,6 @@ const Amount = () => {
       />
       <InputHint active={amount.hasError()} variant="error">
         {t(amount.errorText())}
-      </InputHint>
-    </div>
-  );
-};
-
-const Description = () => {
-  const { t } = useI18n();
-
-  const {
-    fields: { description },
-  } = useForm(formModel.$delegateForm);
-
-  const isMultisig = useUnit(formModel.$isMultisig);
-
-  if (!isMultisig) {
-    return null;
-  }
-
-  return (
-    <div className="flex flex-col gap-y-2">
-      <Input
-        spellCheck
-        className="w-full"
-        label={t('general.input.descriptionLabel')}
-        placeholder={t('general.input.descriptionPlaceholder')}
-        invalid={description.hasError()}
-        value={description.value}
-        onChange={description.onChange}
-      />
-      <InputHint active={description.hasError()} variant="error">
-        {t(description.errorText())}
       </InputHint>
     </div>
   );
