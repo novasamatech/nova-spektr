@@ -1,5 +1,4 @@
 import { render } from '@testing-library/react';
-import { Fragment } from 'react';
 
 import { createSlot } from './createSlot';
 
@@ -13,12 +12,21 @@ describe('createSlot', () => {
     const nodes = slot.apply({ data: 1 });
 
     // eslint-disable-next-line react/jsx-no-useless-fragment
-    const screen = render(<Fragment>{nodes}</Fragment>);
+    const screen = render(<>{nodes}</>);
 
-    const first = screen.getByTestId('first');
-    const second = screen.getByTestId('second');
-
-    expect(first).toHaveTextContent('1');
-    expect(second).toHaveTextContent('2');
+    expect(screen.container).toMatchInlineSnapshot(`
+<div>
+  <span
+    data-testid="first"
+  >
+    1
+  </span>
+  <span
+    data-testid="second"
+  >
+    2
+  </span>
+</div>
+`);
   });
 });
