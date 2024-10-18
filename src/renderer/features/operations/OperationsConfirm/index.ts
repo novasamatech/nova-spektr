@@ -20,6 +20,7 @@ export * from './EditDelegation';
 export * from './RevokeDelegation';
 export * from './Referendum/Vote';
 export * from './Referendum/RemoveVote';
+export * from './FellowshipVoting';
 
 export { type ConfirmInfo } from './lib/createTransactionConfirmStore';
 

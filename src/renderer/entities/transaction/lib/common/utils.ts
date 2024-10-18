@@ -249,6 +249,9 @@ const TransactionTitles: Record<TransactionType, string> = {
   [TransactionType.DELEGATE]: 'operations.titles.delegate',
   [TransactionType.UNDELEGATE]: 'operations.titles.undelegate',
   [TransactionType.EDIT_DELEGATION]: 'operations.titles.editDelegation',
+
+  // Collectives
+  [TransactionType.COLLECTIVE_VOTE]: 'operations.titles.vote',
 };
 
 const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => string> = {
@@ -299,6 +302,7 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.DELEGATE]: () => 'operations.modalTitles.delegateOn',
   [TransactionType.UNDELEGATE]: () => 'operations.modalTitles.undelegateOn',
   [TransactionType.EDIT_DELEGATION]: () => 'operations.modalTitles.editDelegationOn',
+  [TransactionType.COLLECTIVE_VOTE]: () => 'operations.modalTitles.vote',
 };
 
 export const getTransactionTitle = (t: TFunction, transaction?: Transaction | DecodedTransaction): string => {

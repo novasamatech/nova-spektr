@@ -456,6 +456,22 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
+
+  [TransactionType.COLLECTIVE_VOTE]: (transaction, info, options) => {
+    const { pallet, poll, aye } = transaction.args;
+
+    return defineMethod(
+      {
+        method: {
+          args: { poll, aye },
+          name: 'vote',
+          pallet: `${pallet}Collective`,
+        },
+        ...info,
+      },
+      options,
+    );
+  },
 };
 
 export const getExtrinsic: Record<
@@ -564,6 +580,9 @@ export const getExtrinsic: Record<
   },
   [TransactionType.UNDELEGATE]: ({ track }, api) => {
     return api.tx.convictionVoting.undelegate(track);
+  },
+  [TransactionType.COLLECTIVE_VOTE]: ({ pallet, pool, aye }, api) => {
+    return api.tx[`${pallet}Collective`].vote(pool, aye);
   },
 };
 

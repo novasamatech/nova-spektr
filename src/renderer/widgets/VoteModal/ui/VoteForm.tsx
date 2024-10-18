@@ -125,7 +125,7 @@ export const VoteForm = ({ chain, asset }: Props) => {
             )}
           </DetailRow>
         </div>
-        <Alert active={hasDelegatedTrack} title="Already delegating votes" variant="error">
+        <Alert active={hasDelegatedTrack} title={t('governance.vote.delegationErrorTitle')} variant="error">
           <FootnoteText className="text-text-secondary">{t('governance.vote.delegationError')}</FootnoteText>
         </Alert>
         <div className="flex shrink-0 gap-4">

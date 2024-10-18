@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { MultisigTxInitStatus } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { Paths } from '@/shared/routes';
 import { BodyText } from '@/shared/ui';
 import { basketModel } from '@/entities/basket';
@@ -12,6 +13,8 @@ import { basketUtils } from '../../operations/OperationsConfirm';
 import { NavItem, type Props as NavItemProps } from './NavItem';
 
 export const Navigation = () => {
+  const { t } = useI18n();
+
   const chains = useUnit(networkModel.$chains);
   const wallet = useUnit(walletModel.$activeWallet);
   const basket = useUnit(basketModel.$basket);
@@ -50,7 +53,7 @@ export const Navigation = () => {
             <li>
               <NavItem
                 icon="operations"
-                title="navigation.basketLabel"
+                title={t('navigation.basketLabel')}
                 link={Paths.BASKET}
                 badge={
                   <BodyText className="ml-auto text-text-tertiary">
@@ -61,10 +64,10 @@ export const Navigation = () => {
             </li>
           )}
           <li>
-            <NavItem icon="notification" title="navigation.notificationsLabel" link={Paths.NOTIFICATIONS} />
+            <NavItem icon="notification" title={t('navigation.notificationsLabel')} link={Paths.NOTIFICATIONS} />
           </li>
           <li>
-            <NavItem icon="settings" title="navigation.settingsLabel" link={Paths.SETTINGS} />
+            <NavItem icon="settings" title={t('navigation.settingsLabel')} link={Paths.SETTINGS} />
           </li>
         </div>
       </ul>

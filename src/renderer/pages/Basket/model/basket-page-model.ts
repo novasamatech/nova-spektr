@@ -27,6 +27,7 @@ import {
   addPureProxiedValidateModel,
   bondExtraValidateModel,
   bondNominateValidateModel,
+  collectiveVoteValidateModel,
   delegateValidateModel,
   nominateValidateModel,
   payeeValidateModel,
@@ -159,6 +160,7 @@ const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
       [TransactionType.VOTE]: voteValidateModel.events.validationStarted,
       [TransactionType.REVOTE]: voteValidateModel.events.validationStarted,
       [TransactionType.REMOVE_VOTE]: removeVoteValidateModel.events.validationStarted,
+      [TransactionType.COLLECTIVE_VOTE]: collectiveVoteValidateModel.events.validationStarted,
     };
 
     if (coreTx.type in TransactionValidatorsRecord) {

@@ -148,6 +148,13 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
       };
     }
 
+    const additionalArgs: Record<string, unknown> = {};
+
+    if (section.endsWith('Collective')) {
+      transactionType = TransactionType.COLLECTIVE_VOTE;
+      additionalArgs['pallet'] = section.replace('Collective', '');
+    }
+
     const parser = getCallDataParser[transactionType];
     if (!parser) {
       throw new Error(`Unknown call data parser for transaction type ${transactionType}`);
@@ -158,7 +165,10 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
       method,
       section,
       chainId: genesisHash,
-      args: parser(decoded, genesisHash),
+      args: {
+        ...additionalArgs,
+        ...parser(decoded, genesisHash),
+      },
       type: transactionType,
     };
   };
@@ -410,6 +420,12 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
         balance: decoded.args[3].toString(),
       };
     },
+    [TransactionType.COLLECTIVE_VOTE]: (decoded): Record<string, any> => {
+      return {
+        pool: decoded.args[0].toString(),
+        aye: decoded.args[1].toPrimitive(),
+      };
+    },
   };
 
   const isBatchExtrinsic = (method: string, section: string): boolean => {
@@ -427,8 +443,9 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
     const proxyType = getProxyTxType(method, section);
     const multisigType = getMultisigTxType(method, section);
     const governanceType = getGovernanceTxType(method, section);
+    const collectiveType = getCollectiveTxType(method, section);
 
-    return transferType || stakingType || xcmType || proxyType || multisigType || governanceType;
+    return transferType || stakingType || xcmType || proxyType || multisigType || governanceType || collectiveType;
   };
 
   const getTransferTxType = (method: string, section: string): TransactionType | undefined => {
@@ -514,6 +531,14 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
       revote: TransactionType.REVOTE,
       delegate: TransactionType.DELEGATE,
       undelegate: TransactionType.UNDELEGATE,
+    }[method];
+  };
+
+  const getCollectiveTxType = (method: string, section: string): TransactionType | undefined => {
+    if (!section.endsWith('Collective')) return;
+
+    return {
+      vote: TransactionType.COLLECTIVE_VOTE,
     }[method];
   };
 

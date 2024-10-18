@@ -9,6 +9,7 @@ import { referendumMetaModel } from './model/referendumMeta/model';
 import { tracksDomainModel } from './model/tracks/model';
 import { tracksService } from './model/tracks/service';
 import { votingDomainModel } from './model/voting/model';
+import { votingService } from './model/voting/service';
 
 const $store = combine(
   {
@@ -33,4 +34,5 @@ export const collectiveDomain = {
   tracksService,
   membersService,
   referendumService,
+  votingService,
 };

@@ -79,7 +79,7 @@ export const ROUTES_CONFIG: RouteObject[] = [
               {
                 path: Paths.FELLOWSHIP_REFERENDUM,
                 element: (
-                  <Suspense fallback={<PageLoadingState />}>
+                  <Suspense fallback={null}>
                     <FellowshipReferendumDetails />
                   </Suspense>
                 ),

@@ -1,7 +1,6 @@
 import { type Wallet } from '@/shared/core';
 import { walletUtils } from '@/entities/wallet';
 
-// @deprecated Moved to @/entities/basket
 export const basketUtils = {
   isBasketAvailable,
 };

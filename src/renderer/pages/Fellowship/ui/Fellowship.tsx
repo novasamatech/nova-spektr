@@ -57,6 +57,7 @@ export const Fellowship = () => {
                   <span>DEV MODE</span>
                 </BodyText>
                 <Select
+                  // eslint-disable-next-line i18next/no-literal-string
                   placeholder="Select network"
                   selectedId={selectedChain ?? undefined}
                   options={[

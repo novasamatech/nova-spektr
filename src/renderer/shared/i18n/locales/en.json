@@ -309,6 +309,21 @@
       "modalAccountTitle": "Account",
       "modalTitle": "Fellowship members"
     },
+    "voting": {
+      "voted": "Voted:",
+      "errors": {
+        "rankThreshold": "You cannot vote in this referendum because your rank is below the required level."
+      },
+      "votingStatus": "Voting status",
+      "title": "Vote on",
+      "hreshold": "Threshold",
+      "aye": "Aye",
+      "nay": "Nay",
+      "confirmation": {
+        "vote": "Vote",
+        "fee": "Fee"
+      }
+    },
     "noProfile": "Profile doesn’t exist",
     "referendums": {
       "tracks": {
@@ -659,6 +674,7 @@
     "vote": {
       "abstainConvictionWarningDescription": "When you cast abstain votes you can only vote with 0.1x conviction. You will vote with 1 vote.",
       "abstainConvictionWarningTitle": "Vote conviction will be set to 0.1x",
+      "delegationErrorTitle": "Already delegating votes",
       "delegationError": "You are delegating votes for selected referendum's track. Please either ask your delegatee to vote or remove delegation to be able to vote directly.",
       "errors": {
         "noAccountError": "Please select your account",
