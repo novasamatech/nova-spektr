@@ -17,9 +17,9 @@ export const Default: Story = {
   },
 };
 
-export const Left: Story = {
+export const SemiChecked: Story = {
   args: {
-    position: 'left',
+    semiChecked: true,
     children: 'Checkbox',
   },
 };
