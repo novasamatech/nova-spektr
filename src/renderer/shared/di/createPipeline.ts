@@ -1,14 +1,15 @@
 import { createAbstractIdentifier } from './createAbstractIdentifier';
 import { syncApplyImpl } from './syncApplyImpl';
 
+// Public interface
 type PipelineHandler<Value> = (value: Value) => Value;
 
 export const createPipeline = <Value>(config?: { name: string }) => {
   const identifier = createAbstractIdentifier<void, Value, PipelineHandler<Value>>({
     name: config?.name ?? 'unknownPipeline',
-    processHandler(params) {
+    processHandler(handler) {
       return {
-        fn: ({ acc }) => params.fn(acc),
+        fn: ({ acc }) => handler.fn(acc),
       };
     },
   });

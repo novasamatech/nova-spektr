@@ -1,4 +1,5 @@
 import { createEvent, createStore, sample } from 'effector';
+import { readonly } from 'patronum';
 
 import {
   type DefaultHandlerFn,
@@ -11,7 +12,7 @@ import {
 
 type Params<Input, Output, HandlerFn> = {
   name: string;
-  processHandler(params: RegisterHandlerParams<HandlerFn>): RegisterHandlerParams<DefaultHandlerFn<Input, Output>>;
+  processHandler(handler: RegisterHandlerParams<HandlerFn>): RegisterHandlerParams<DefaultHandlerFn<Input, Output>>;
 };
 
 export const createAbstractIdentifier = <Input, Output, HandlerFn>({
@@ -41,7 +42,7 @@ export const createAbstractIdentifier = <Input, Output, HandlerFn>({
 
   const identifier: ResultIdentifier = {
     name,
-    $handlers,
+    $handlers: readonly($handlers),
     registerHandler: (handler) => registerHandler(processHandler(handler)),
     handlersChanged: forceUpdate,
   };

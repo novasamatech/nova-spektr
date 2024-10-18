@@ -14,7 +14,9 @@ import { type Identifier } from './types';
 //   error?: FunctionComponent<Props & { error: Error; retry: VoidFunction }>;
 // };
 
+// Public interface
 type SlotHandler<Props> = (props: Props) => ReactNode;
+
 type SlotIdentifier<Props> = Identifier<Props, ReactNode[], SlotHandler<Props>> & {
   apply: (props: Props) => ReactNode;
 };
@@ -22,12 +24,12 @@ type SlotIdentifier<Props> = Identifier<Props, ReactNode[], SlotHandler<Props>> 
 export const createSlot = <Props,>(config?: { name: string }): SlotIdentifier<Props> => {
   const identifier = createAbstractIdentifier<Props, ReactNode[], SlotHandler<Props>>({
     name: config?.name ?? 'unknownSlot',
-    processHandler(params) {
+    processHandler(handler) {
       return {
-        fn: ({ acc, input }) => {
+        fn: ({ acc, input: props }) => {
           // TODO add suspense and error boundary
-          const c = params.fn(input);
-          acc.push(c);
+          const reactNode = handler.fn(props);
+          acc.push(reactNode);
 
           return acc;
         },
@@ -41,7 +43,7 @@ export const createSlot = <Props,>(config?: { name: string }): SlotIdentifier<Pr
   };
 };
 
-type IsVoid<T> = [T] extends [void] ? true : false;
+type IsVoid<T> = T extends void ? true : false;
 
 export type SlotProps = Record<string, unknown> | void;
 
