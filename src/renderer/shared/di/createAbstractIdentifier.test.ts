@@ -37,6 +37,7 @@ describe('createAbstractIdentifier.', () => {
     const result = syncApplyImpl({
       identifier,
       acc: 'Hello',
+      input: undefined,
     });
 
     expect(result).toBe('Hello attached');
