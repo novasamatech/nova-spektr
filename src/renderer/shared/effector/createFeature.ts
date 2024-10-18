@@ -2,6 +2,7 @@ import { type Event, type Store, createDomain, createStore, sample } from 'effec
 import { createGate } from 'effector-react';
 import { readonly } from 'patronum';
 
+import { type AnyIdentifier, type InferHandlerFn } from '@/shared/di';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 
 type Params<T> = {
@@ -146,6 +147,41 @@ export const createFeature = <T = null>({ name, filter, input = createStore(null
     target: stop,
   });
 
+  // DI integration
+
+  const registerIdentifier = domain.createEvent<AnyIdentifier>();
+  const $identifiers = domain.createStore<AnyIdentifier[]>([]);
+
+  const triggerIdentifiersFx = domain.createEffect((identifiers: AnyIdentifier[]) => {
+    for (const identifier of identifiers) {
+      identifier.handlersChanged();
+    }
+  });
+
+  sample({
+    clock: registerIdentifier,
+    source: $identifiers,
+    fn: (list, item) => list.concat(item),
+    target: $identifiers,
+  });
+
+  sample({
+    clock: $status,
+    source: $identifiers,
+    target: triggerIdentifiersFx,
+  });
+
+  const inject = <T extends AnyIdentifier>(identifier: T, fn: InferHandlerFn<T>) => {
+    identifier.registerHandler({
+      fn: (a: unknown) => {
+        // eslint-disable-next-line effector/no-getState
+        return isRunning.getState() ? fn(a) : a;
+      },
+    });
+  };
+
+  // Return
+
   return {
     status: readonly($status),
     state: readonly($state),
@@ -165,5 +201,7 @@ export const createFeature = <T = null>({ name, filter, input = createStore(null
     stop,
     fail,
     restore,
+
+    inject,
   };
 };
