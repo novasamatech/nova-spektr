@@ -1,14 +1,15 @@
 import { createAbstractIdentifier } from './createAbstractIdentifier';
 import { syncApplyImpl } from './syncApplyImpl';
 
-type AsyncPipelineHandler<Value> = (value: Value) => Promise<Value>;
+// Public interface
+type AsyncPipelineHandler<Value> = (value: Value) => Value | Promise<Value>;
 
 export const createAsyncPipeline = <Value>(config?: { name: string }) => {
   const identifier = createAbstractIdentifier<void, Promise<Value>, AsyncPipelineHandler<Value>>({
     name: config?.name ?? 'unknownPipeline',
-    processHandler(params) {
+    processHandler(handler) {
       return {
-        fn: ({ acc }) => acc.then(params.fn),
+        fn: ({ acc }) => acc.then(handler.fn),
       };
     },
   });
