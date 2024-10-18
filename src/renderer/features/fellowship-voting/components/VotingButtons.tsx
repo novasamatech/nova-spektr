@@ -1,6 +1,7 @@
 import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { memo, useState } from 'react';
 
+import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { ButtonCard, FootnoteText } from '@/shared/ui';
@@ -16,59 +17,62 @@ type Props = {
 };
 
 export const VotingButtons = memo(({ referendumId }: Props) => {
-  const [decision, setDecision] = useState<'aye' | 'nay' | null>(null);
-
   useGate(votingFeatureStatus.gate);
   useGate(votingStatusModel.gate, { referendumId });
 
-  const chain = useStoreMap(votingFeatureStatus.input, input => input?.chain ?? null);
+  const { t } = useI18n();
 
+  const chain = useStoreMap(votingFeatureStatus.input, input => input?.chain ?? null);
   const referendum = useUnit(votingStatusModel.$referendum);
   const canVote = useUnit(votingStatusModel.$canVote);
   const hasRequiredRank = useUnit(votingStatusModel.$hasRequiredRank);
+  const voting = useUnit(votingStatusModel.$referendumVoting);
+
+  const [decision, setDecision] = useState<'aye' | 'nay' | null>(null);
 
   if (nullable(chain) || nullable(referendum) || collectiveDomain.referendumService.isCompleted(referendum)) {
     return null;
   }
 
-  // TODO restore
-  // const buttonDiabled = !canVote || !hasRequiredRank;
-  const buttonDiabled = false;
+  const buttonDiabled = !canVote || !hasRequiredRank;
+
+  const renderAyeButton = nullable(voting) || !voting.aye;
+  const renderNayButton = nullable(voting) || !voting.nay;
 
   return (
-    <Box gap={4}>
-      <Box direction="row" gap={4}>
-        <VotingModal isOpen={nonNullable(decision)} vote={decision} onClose={() => setDecision(null)} />
+    <>
+      <VotingModal isOpen={nonNullable(decision)} vote={decision} onClose={() => setDecision(null)} />
+      <Box gap={4}>
+        <Box direction="row" gap={4}>
+          {renderAyeButton ? (
+            <ButtonCard
+              pallet="positive"
+              icon="thumbUp"
+              disabled={buttonDiabled}
+              fullWidth
+              onClick={() => setDecision('aye')}
+            >
+              {t('fellowship.voting.aye')}
+            </ButtonCard>
+          ) : null}
 
-        {/* eslint-disable-next-line i18next/no-literal-string */}
-        <ButtonCard
-          pallet="positive"
-          icon="thumbUp"
-          disabled={buttonDiabled}
-          fullWidth
-          onClick={() => setDecision('aye')}
-        >
-          Aye
-        </ButtonCard>
+          {renderNayButton ? (
+            <ButtonCard
+              pallet="negative"
+              icon="thumbDown"
+              disabled={buttonDiabled}
+              fullWidth
+              onClick={() => setDecision('nay')}
+            >
+              {t('fellowship.voting.nay')}
+            </ButtonCard>
+          ) : null}
+        </Box>
 
-        {/* eslint-disable-next-line i18next/no-literal-string */}
-        <ButtonCard
-          pallet="negative"
-          icon="thumbDown"
-          disabled={buttonDiabled}
-          fullWidth
-          onClick={() => setDecision('nay')}
-        >
-          Nay
-        </ButtonCard>
+        {canVote && !hasRequiredRank ? (
+          <FootnoteText className="text-center">{t('fellowship.voting.errors.rankThreshold')}</FootnoteText>
+        ) : null}
       </Box>
-
-      {canVote && !hasRequiredRank ? (
-        // eslint-disable-next-line i18next/no-literal-string
-        <FootnoteText className="text-center">
-          You cannot vote in this referendum because your rank is below the required level.
-        </FootnoteText>
-      ) : null}
-    </Box>
+    </>
   );
 });

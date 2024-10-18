@@ -231,7 +231,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
         <div className="h-[470px] overflow-y-auto pl-3 pr-3.5">
           <div className="flex w-full items-center justify-between gap-2 pb-4">
             <ContextMenu button={<RootAccountLg name={walletName} accountId={publicKey} />}>
-              <ContextMenu.Group title="Public key">
+              <ContextMenu.Group title={t('general.explorers.publicKeyTitle')}>
                 <div className="flex items-center gap-x-2">
                   <HelpText className="break-all text-text-secondary">{publicKeyAddress}</HelpText>
                   <IconButton

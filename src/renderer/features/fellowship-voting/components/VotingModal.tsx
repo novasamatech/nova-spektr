@@ -80,7 +80,7 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
   return (
     <Modal isOpen={isOpen} size="md" onToggle={handleToggle}>
       <Modal.Title close>
-        <OperationTitle title={t('governance.voting.voteTitle')} chainId={input.chainId} />
+        <OperationTitle title={t('fellowship.voting.title')} chainId={input.chainId} />
       </Modal.Title>
       <Modal.Content>
         {nonNullable(account) ? (

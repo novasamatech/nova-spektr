@@ -104,14 +104,13 @@ module.exports = {
         'i18next/no-literal-string': [
           'error',
           {
-            mode: 'jsx-text-only',
-            'should-validate-template': true,
+            mode: 'jsx-only',
+            'should-validate-template': false,
             'jsx-attributes': {
               include: ['alt', 'aria-label', 'title', 'placeholder', 'label', 'description'],
-              exclude: ['data-testid', 'className'],
             },
             callees: {
-              exclude: ['Error', 'log', 'warn'],
+              exclude: ['Error', 'log', 'warn', 'includes', 'formatDate'],
             },
             words: {
               exclude: ['[0-9!-/:-@[-`{-~]+', '[A-Z_-]+'],

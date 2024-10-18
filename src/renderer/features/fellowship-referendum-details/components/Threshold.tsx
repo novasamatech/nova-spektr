@@ -2,6 +2,7 @@ import { BN_MILLION } from '@polkadot/util';
 import { useStoreMap } from 'effector-react';
 import { memo } from 'react';
 
+import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { DetailRow } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
@@ -14,6 +15,8 @@ type Props = {
 };
 
 export const Threshold = memo(({ referendum, pending }: Props) => {
+  const { t } = useI18n();
+
   const thresholds = useStoreMap({
     store: thresholdsModel.$thresholds,
     keys: [referendum?.id],
@@ -24,7 +27,7 @@ export const Threshold = memo(({ referendum, pending }: Props) => {
 
   return (
     <Skeleton active={pending && nullable(referendum)} fullWidth>
-      <DetailRow label="Threshold">{threshold}%</DetailRow>
+      <DetailRow label={t('fellowship.voting.hreshold')}>{threshold}%</DetailRow>
     </Skeleton>
   );
 });

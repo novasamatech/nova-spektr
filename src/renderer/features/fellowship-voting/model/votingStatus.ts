@@ -27,17 +27,13 @@ const $referendum = combine($referendums, $referendumId, (referendums, referendu
 const $currectMember = combine(votingFeatureStatus.input, $members, (featureInput, members) => {
   if (nullable(featureInput)) return null;
 
-  // TODO restore
-  // return collectiveDomain.members.service.findMachingMember(featureInput.wallet, members, featureInput.chain);
-  return members[0] ?? null;
+  return collectiveDomain.membersService.findMachingMember(featureInput.wallet, members, featureInput.chain);
 });
 
 const $votingAccount = combine(votingFeatureStatus.input, $currectMember, (input, member) => {
   if (nullable(member) || nullable(input)) return null;
 
-  // TODO restore
-  // return collectiveDomain.members.service.findMachingAccount(input.wallet, member);
-  return input.wallet.accounts[0] ?? null;
+  return collectiveDomain.membersService.findMachingAccount(input.wallet, member);
 });
 
 const $hasRequiredRank = combine($currectMember, $referendum, $maxRank, (member, referendum, maxRank) => {

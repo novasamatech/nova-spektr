@@ -1,6 +1,8 @@
 import { useGate, useUnit } from 'effector-react';
 import { memo } from 'react';
 
+import { useI18n } from '@/shared/i18n';
+import { nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { Icon } from '@/shared/ui';
 import { Box, Surface } from '@/shared/ui-kit';
@@ -13,9 +15,10 @@ type Props = {
 export const WalletVotingInfo = memo(({ referendumId }: Props) => {
   useGate(votingStatusModel.gate, { referendumId });
 
+  const { t } = useI18n();
   const voting = useUnit(votingStatusModel.$referendumVoting);
 
-  if (!voting) {
+  if (nullable(voting)) {
     return null;
   }
 
@@ -26,8 +29,7 @@ export const WalletVotingInfo = memo(({ referendumId }: Props) => {
     <Surface>
       <Box padding={6} gap={1}>
         <Icon name="voted" size={16} className="text-icon-accent" />
-        {/* eslint-disable-next-line i18next/no-literal-string */}
-        <span className="text-footnote text-tab-text-accent">Voted:</span>
+        <span className="text-footnote text-tab-text-accent">{t('fellowship.voting.voted')}</span>
         <span className="text-footnote">
           {ayeVotes} {nayVotes}
         </span>
