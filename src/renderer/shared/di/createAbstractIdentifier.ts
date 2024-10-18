@@ -10,7 +10,7 @@ import {
   type RegisterHandlerParams,
 } from './types';
 
-type EmptyHandlerFn = (...args: any[]) => unknown;
+type EmptyHandlerFn = (...args: never[]) => any;
 
 type Params<Input, Output, HandlerFn extends EmptyHandlerFn> = {
   name: string;

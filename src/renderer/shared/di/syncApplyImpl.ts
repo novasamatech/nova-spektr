@@ -1,16 +1,10 @@
 import { type AnyIdentifier } from './types';
 
-type Params<Input, Output> = Input extends void | undefined
-  ? {
-      identifier: AnyIdentifier<Input, Output>;
-      acc: Output;
-      input?: undefined;
-    }
-  : {
-      identifier: AnyIdentifier<Input, Output>;
-      acc: Output;
-      input: Input;
-    };
+type Params<Input, Output> = {
+  identifier: AnyIdentifier<Input, Output>;
+  acc: Output;
+  input: Input;
+};
 
 export const syncApplyImpl = <Input, Output>({ identifier, acc, input }: Params<Input, Output>): Output => {
   // eslint-disable-next-line effector/no-getState
@@ -24,7 +18,7 @@ export const syncApplyImpl = <Input, Output>({ identifier, acc, input }: Params<
     try {
       result = handler.fn({
         acc: result,
-        input: input as Input,
+        input,
         index,
       });
     } catch (error) {
