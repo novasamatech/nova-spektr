@@ -25,7 +25,7 @@ export const syncApplyImpl = <Input, Output>({ identifier, acc, input }: Params<
       // TODO handle error
       console.error(error);
 
-      // Simply skipping this handler and moving to next
+      // Skip handler and move to next
       continue;
     }
   }

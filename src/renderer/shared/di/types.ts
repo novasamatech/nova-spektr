@@ -19,7 +19,7 @@ export type Handler<Input, Output> = {
 export type Identifier<Input, Output, HandlerFn = DefaultHandlerFn<Input, Output>> = {
   name: string;
   $handlers: Store<Handler<Input, Output>[]>;
-  registerHandler(params: RegisterHandlerParams<HandlerFn>): void;
+  registerHandler: EventCallable<RegisterHandlerParams<HandlerFn>>;
   updateHandlers: EventCallable<void>;
 };
 
