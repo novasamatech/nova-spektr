@@ -33,13 +33,6 @@ export const createAbstractIdentifier = <
   const forceUpdate = createEvent();
 
   sample({
-    clock: forceUpdate,
-    source: $handlers,
-    fn: (handlers) => [...handlers],
-    target: $handlers,
-  });
-
-  sample({
     clock: registerHandler,
     source: $handlers,
     fn: (handlers, handler) => handlers.concat(handler),

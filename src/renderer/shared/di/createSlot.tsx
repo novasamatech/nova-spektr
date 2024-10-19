@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { Fragment, type ReactNode, useMemo } from 'react';
+import { Fragment, type ReactNode, useEffect, useMemo, useState } from 'react';
 
 import { createAbstractIdentifier } from './createAbstractIdentifier';
 import { syncApplyImpl } from './syncApplyImpl';
@@ -53,11 +53,19 @@ export type UseSlotArguments<Props extends SlotProps = void> =
     ? [slot: SlotIdentifier<Props>, options?: SlotOptions<Props>]
     : [slot: SlotIdentifier<Props>, options: SlotOptions<Props>];
 
+const useForceUpdate = () => {
+  const [index, setState] = useState(0);
+
+  return [index, () => setState((x) => (x >= Number.MAX_SAFE_INTEGER ? 0 : x + 1))] as const;
+};
+
 export const useSlot = <Props extends SlotProps>(...[slot, options]: UseSlotArguments<Props>) => {
+  const [index, update] = useForceUpdate();
   const handlers = useUnit(slot.$handlers);
   const props = (options?.props ?? {}) as Exclude<Props, void>;
 
-  return useMemo(() => {
-    return slot.apply(props);
-  }, [handlers]);
+  // eslint-disable-next-line effector/no-watch
+  useEffect(() => slot.updateHandlers.watch(update), []);
+
+  return useMemo(() => slot.apply(props), [handlers, index, props]);
 };
