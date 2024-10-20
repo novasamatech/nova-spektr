@@ -6,7 +6,7 @@ type AsyncPipelineHandler<Value> = (value: Value) => Value | Promise<Value>;
 
 export const createAsyncPipeline = <Value>(config?: { name: string }) => {
   const identifier = createAbstractIdentifier<void, Promise<Value>, AsyncPipelineHandler<Value>>({
-    name: config?.name ?? 'unknownPipeline',
+    name: config?.name ?? 'unknownAsyncPipeline',
     processHandler: (handler) => ({
       fn: ({ acc }) => acc.then(handler.fn),
     }),
