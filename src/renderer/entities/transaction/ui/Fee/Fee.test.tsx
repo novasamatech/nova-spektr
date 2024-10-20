@@ -1,5 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
-import { act, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import { act } from 'react-dom/test-utils';
 
 import { type Asset, type Transaction } from '@/shared/core';
 
@@ -11,11 +12,14 @@ jest.mock('@/shared/i18n', () => ({
   }),
 }));
 
-jest.mock('@/entities/transaction', () => ({
+jest.mock('../FeeLoader/FeeLoader', () => ({
+  FeeLoader: ({ fiatFlag }: any) => <div>{fiatFlag ? 'fiat' : 'crypto'}</div>,
+}));
+
+jest.mock('../../lib', () => ({
   transactionService: {
     getTransactionFee: jest.fn().mockResolvedValue('12'),
   },
-  FeeLoader: ({ fiatFlag }: any) => <div>{fiatFlag ? 'fiat' : 'crypto'}</div>,
 }));
 
 jest.mock('@/entities/asset', () => ({
