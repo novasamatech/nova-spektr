@@ -9,12 +9,8 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
-import {
-  type AmountFeeStore,
-  type Validation,
-  type ValidationStartedParams,
-  validationUtils,
-} from '@/features/operations/OperationsValidation';
+import { validationUtils } from '../lib/validation-utils';
+import { type AmountFeeStore, type Validation, type ValidationStartedParams } from '../types/types';
 
 const validationStarted = createEvent<ValidationStartedParams>();
 

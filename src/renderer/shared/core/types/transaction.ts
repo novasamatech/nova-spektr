@@ -1,16 +1,7 @@
-import {
-  type Account,
-  type AccountId,
-  type Address,
-  type CallData,
-  type CallHash,
-  type ChainId,
-  type HexString,
-  type MultisigAccount,
-  type PartialBy,
-  type ProxiedAccount,
-  type Signatory,
-} from '@/shared/core';
+import { type Account, type MultisigAccount, type ProxiedAccount } from './account';
+import { type AccountId, type Address, type CallData, type CallHash, type ChainId, type HexString } from './general';
+import { type Signatory } from './signatory';
+import { type PartialBy } from './utility';
 
 export const enum TransactionType {
   TRANSFER = 'transfer',

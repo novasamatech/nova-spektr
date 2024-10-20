@@ -15,6 +15,7 @@ module.exports = {
   root: true,
   env: {
     browser: true,
+    es6: true,
   },
   extends: [
     'eslint:recommended',
@@ -147,7 +148,7 @@ module.exports = {
     },
     {
       files: ['*.ts', '*.tsx'],
-      plugins: ['@typescript-eslint', 'effector', 'boundaries'],
+      plugins: ['@typescript-eslint', 'effector', 'boundaries', 'local-rules'],
       extends: [
         'plugin:import-x/typescript',
         'plugin:effector/recommended',
@@ -155,6 +156,7 @@ module.exports = {
         'plugin:@typescript-eslint/eslint-recommended',
         'plugin:@typescript-eslint/recommended',
         'plugin:boundaries/recommended',
+        'plugin:local-rules/all',
       ],
       parser: '@typescript-eslint/parser',
       parserOptions: {
@@ -164,6 +166,15 @@ module.exports = {
         createDefaultProgram: true,
       },
       rules: {
+        'local-rules/no-self-import': [
+          'error',
+          {
+            root: './src/renderer',
+            exclude: ['widgets', 'pages', 'features/operations', 'shared/lib', 'shared/api', 'shared/pallet'],
+          },
+        ],
+        'local-rules/no-relative-import-from-root': ['error', { root: './src/renderer' }],
+
         // TODO enable
         // 'no-console': ['error', { allow: ['warn', 'error', 'info'] }],
 
@@ -187,7 +198,7 @@ module.exports = {
         'import-x/max-dependencies': [
           'warn',
           {
-            max: 15,
+            max: 20,
             ignoreTypeImports: true,
           },
         ],

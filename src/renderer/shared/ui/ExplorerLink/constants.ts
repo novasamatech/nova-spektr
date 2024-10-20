@@ -1,4 +1,4 @@
-import { type Explorer } from '@/shared/ui/Icon/data/explorer';
+import { type Explorer } from '../Icon/data/explorer';
 
 export const DefaultExplorer = 'default';
 
