@@ -109,7 +109,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
 
     const accountId = event.data[0].toHex();
 
-    await addEventWithQueue(
+    addEventWithQueue(
       {
         txAccountId: account.accountId,
         txChainId: chainId,
