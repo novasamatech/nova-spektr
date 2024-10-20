@@ -80,12 +80,13 @@ module.exports = {
           return;
         }
 
-        // Resolving and early exit on excluded paths
+        // Resolving request
         const resolvedDestination = resolveImportCached(requestPath);
         if (!resolvedDestination || resolvedDestination.includes('node_modules')) {
           return;
         }
 
+        // Comparing packages
         const sourcePath = path.relative(root, context.filename);
         const sourcePackage = sourcePath.split(path.sep, 2).join(path.sep);
         const destinationPath = path.relative(root, resolvedDestination);
@@ -95,6 +96,7 @@ module.exports = {
           return;
         }
 
+        // Finding index file
         const potentialIndexPath = path.resolve(root, sourcePackage) + path.sep + 'index';
 
         if (resolvedDestination.startsWith(potentialIndexPath)) {
