@@ -26,21 +26,7 @@ module.exports = {
   },
   create(context) {
     const { root } = context.options[0] || { root: '' };
-    const forbiddenCache = new Set();
-
-    const isForbidden = (path) => {
-      if (forbiddenCache.has(path)) {
-        return true;
-      }
-
-      if (path.split('/').length <= 1) {
-        forbiddenCache.add(path);
-
-        return true;
-      }
-
-      return false;
-    };
+    const absoluteRoot = path.resolve(root);
 
     return {
       ImportDeclaration(node) {
@@ -55,10 +41,10 @@ module.exports = {
           return;
         }
 
-        const absolute = path.resolve(path.dirname(context.filename), requestPath);
-        const relativeFromRoot = path.relative(root, absolute);
+        const upDir = requestPath.replace(/[A-z-]+.+/, '');
+        const possibleRoot = path.resolve(path.dirname(context.filename), upDir);
 
-        if (isForbidden(relativeFromRoot)) {
+        if (possibleRoot === absoluteRoot) {
           context.report({
             node,
             message: `Relative import through root is forbidden.`,

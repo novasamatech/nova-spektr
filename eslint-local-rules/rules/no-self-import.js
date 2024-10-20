@@ -2,6 +2,8 @@ const path = require('node:path');
 
 const { default: importResolve } = require('eslint-module-utils/resolve');
 
+const { getPackageName } = require('../utils');
+
 /**
  * @type {import('eslint').Rule.RuleModule}
  */
@@ -87,17 +89,15 @@ module.exports = {
         }
 
         // Comparing packages
-        const sourcePath = path.relative(root, context.filename);
-        const sourcePackage = sourcePath.split(path.sep, 2).join(path.sep);
-        const destinationPath = path.relative(root, resolvedDestination);
-        const destinationPackage = destinationPath.split(path.sep, 2).join(path.sep);
+        const sourcePackage = getPackageName(root, context.filename);
+        const destinationPackage = getPackageName(root, resolvedDestination);
 
         if (sourcePackage !== destinationPackage) {
           return;
         }
 
         // Finding index file
-        const potentialIndexPath = path.resolve(root, sourcePackage) + path.sep + 'index';
+        const potentialIndexPath = path.resolve(root, sourcePackage, 'index');
 
         if (resolvedDestination.startsWith(potentialIndexPath)) {
           context.report({
@@ -112,6 +112,9 @@ module.exports = {
         if (requestPath.startsWith(`../`)) {
           return;
         }
+
+        const sourcePath = path.relative(root, context.filename);
+        const destinationPath = path.relative(root, resolvedDestination);
 
         context.report({
           node,
