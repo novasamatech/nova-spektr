@@ -1,7 +1,8 @@
 import { useUnit } from 'effector-react';
-import { Fragment, type ReactNode, useEffect, useMemo, useState } from 'react';
+import { type ComponentType, type ReactNode, memo, useEffect, useMemo, useState } from 'react';
 
 import { createAbstractIdentifier } from './createAbstractIdentifier';
+import { shallowEqual } from './lib/shallowEqual';
 import { syncApplyImpl } from './syncApplyImpl';
 import { type Identifier } from './types';
 
@@ -15,10 +16,10 @@ import { type Identifier } from './types';
 // };
 
 // Public interface
-type SlotHandler<Props> = (props: Props) => ReactNode;
+type SlotHandler<Props> = ComponentType<Props>;
 
 type SlotIdentifier<Props> = Identifier<Props, ReactNode[], SlotHandler<Props>> & {
-  apply: (props: Props) => ReactNode;
+  render: (props: Props) => ReactNode;
 };
 
 export const createSlot = <Props extends SlotProps>(config?: { name: string }): SlotIdentifier<Props> => {
@@ -27,9 +28,7 @@ export const createSlot = <Props extends SlotProps>(config?: { name: string }): 
     processHandler(handler) {
       return {
         fn: ({ acc, input: props, index }) => {
-          // TODO add suspense and error boundary
-          const reactNode = <Fragment key={index}>{handler.fn(props)}</Fragment>;
-          acc.push(reactNode);
+          acc.push(<SlotWrapper key={index} component={handler.fn} props={props} />);
 
           return acc;
         },
@@ -39,7 +38,9 @@ export const createSlot = <Props extends SlotProps>(config?: { name: string }): 
 
   return {
     ...identifier,
-    apply: (props: Props) => syncApplyImpl({ identifier, input: props, acc: [] }),
+    render(props: Props) {
+      return syncApplyImpl({ identifier, input: props, acc: [] });
+    },
   };
 };
 
@@ -67,5 +68,13 @@ export const useSlot = <Props extends SlotProps>(...[slot, options]: UseSlotArgu
   // eslint-disable-next-line effector/no-watch
   useEffect(() => slot.updateHandlers.watch(update), []);
 
-  return useMemo(() => slot.apply(props), [handlers, index, props]);
+  return useMemo(() => slot.render(props), [handlers, index, props]);
 };
+
+const SlotWrapper = memo<{ props: any; component: ComponentType<any> }>(
+  ({ props, component: Component }) => {
+    // TODO add suspense and error boundary
+    return <Component {...props} />;
+  },
+  (a, b) => shallowEqual(a.props, b.props) && a.component === b.component,
+);

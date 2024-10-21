@@ -2,18 +2,29 @@ import { createAbstractIdentifier } from './createAbstractIdentifier';
 import { syncApplyImpl } from './syncApplyImpl';
 
 // Public interface
-type AsyncPipelineHandler<Value> = (value: Value) => Value | Promise<Value>;
+type AsyncPipelineHandler<Value, Meta> = (value: Value, meta: Meta) => Value | Promise<Value>;
 
-export const createAsyncPipeline = <Value>(config?: { name: string }) => {
-  const identifier = createAbstractIdentifier<void, Promise<Value>, AsyncPipelineHandler<Value>>({
+export const createAsyncPipeline = <Value, Meta = void>(config?: {
+  name?: string;
+  postprocess?: AsyncPipelineHandler<Value, Meta>;
+}) => {
+  const identifier = createAbstractIdentifier<Meta, Promise<Value>, AsyncPipelineHandler<Value, Meta>>({
     name: config?.name ?? 'unknownAsyncPipeline',
     processHandler: (handler) => ({
-      fn: ({ acc }) => acc.then(handler.fn),
+      fn: ({ acc, input }) => acc.then((value) => handler.fn(value, input)),
     }),
   });
 
   return {
     ...identifier,
-    apply: (value: Value) => syncApplyImpl({ identifier, input: undefined, acc: Promise.resolve(value) }),
+    apply(value: Value, meta: Meta) {
+      return syncApplyImpl({ identifier, input: meta, acc: Promise.resolve(value) }).then((v) => {
+        if (config?.postprocess) {
+          return config.postprocess(v, meta);
+        } else {
+          return v;
+        }
+      });
+    },
   };
 };

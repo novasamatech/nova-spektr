@@ -1,3 +1,4 @@
+import { skipAction } from './constants';
 import { type AnyIdentifier } from './types';
 
 type Params<Input, Output> = {
@@ -16,16 +17,15 @@ export const syncApplyImpl = <Input, Output>({ identifier, acc, input }: Params<
     if (!handler) continue;
 
     try {
-      result = handler.fn({
-        acc: result,
-        input,
-        index,
-      });
+      const value = handler.fn({ acc: result, input, index });
+      if (value === skipAction) continue;
+
+      result = value;
     } catch (error) {
       // TODO handle error
       console.error(error);
 
-      // Skip handler and move to next
+      // Skip handler and move on
       continue;
     }
   }

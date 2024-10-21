@@ -9,7 +9,7 @@ describe('createSlot', () => {
     slot.registerHandler({ fn: ({ data }) => <span data-testid="first">{data}</span> });
     slot.registerHandler({ fn: ({ data }) => <span data-testid="second">{data + 1}</span> });
 
-    const nodes = slot.apply({ data: 1 });
+    const nodes = slot.render({ data: 1 });
 
     // eslint-disable-next-line react/jsx-no-useless-fragment
     const screen = render(<>{nodes}</>);

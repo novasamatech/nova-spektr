@@ -10,18 +10,12 @@ import {
   type RegisterHandlerParams,
 } from './types';
 
-type EmptyHandlerFn = (...args: never[]) => any;
-
-type Params<Input, Output, HandlerFn extends EmptyHandlerFn> = {
+type Params<Input, Output, HandlerFn> = {
   name: string;
   processHandler(handler: RegisterHandlerParams<HandlerFn>): RegisterHandlerParams<DefaultHandlerFn<Input, Output>>;
 };
 
-export const createAbstractIdentifier = <
-  Input,
-  Output,
-  HandlerFn extends EmptyHandlerFn = DefaultHandlerFn<Input, Output>,
->({
+export const createAbstractIdentifier = <Input, Output, HandlerFn = DefaultHandlerFn<Input, Output>>({
   name,
   processHandler,
 }: Params<Input, Output, HandlerFn>) => {

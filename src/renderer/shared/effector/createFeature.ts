@@ -1,14 +1,15 @@
-import { type Event, type Store, createDomain, createStore, sample } from 'effector';
+import { type Event, type Scope, type Store, createDomain, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { readonly } from 'patronum';
 
-import { type AnyIdentifier, type HandlerInput, type InferHandlerFn } from '@/shared/di';
+import { type AnyIdentifier, type InferHandlerFn, skipAction } from '@/shared/di';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 
 type Params<T> = {
   name: string;
   input?: Store<T | null>;
   filter?: (input: T) => IdleState | Omit<FailedState<T>, 'data'> | null;
+  scope?: Scope;
 };
 
 type ErrorType = 'fatal' | 'error' | 'warning';
@@ -45,7 +46,7 @@ const calculateState = <T>(data: T | null, filter: Params<T>['filter']): State<T
   return { status: 'running', data };
 };
 
-export const createFeature = <T = null>({ name, filter, input = createStore(null) }: Params<T>) => {
+export const createFeature = <T = null>({ name, filter, input = createStore(null), scope }: Params<T>) => {
   const domain = createDomain(name);
 
   const $input = domain.createStore<T | null>(null);
@@ -173,14 +174,17 @@ export const createFeature = <T = null>({ name, filter, input = createStore(null
 
   const inject = <T extends AnyIdentifier>(identifier: T, fn: InferHandlerFn<T>) => {
     identifier.registerHandler({
-      fn: (v: HandlerInput<never, never>) => {
+      fn: (v: never) => {
+        // TODO create correct feature toggle using effector tools
         // eslint-disable-next-line effector/no-getState
-        return isRunning.getState() ? fn(v) : v.acc;
+        const isActive = scope ? scope.getState(isRunning) : isRunning.getState();
+
+        return isActive ? fn(v) : skipAction;
       },
     });
   };
 
-  // Return
+  // Combine
 
   return {
     status: readonly($status),
