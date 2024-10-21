@@ -72,7 +72,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts }: Props)
   const filteredAccountMap = getFilteredAccountsMap(filteredWalletsMap);
   const events = getLiveTxEvents(tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated);
 
-  const { transaction, description, status } = tx;
+  const { transaction, status } = tx;
   const approvals = events.filter((e) => e.status === 'SIGNED');
 
   const asset =
@@ -111,7 +111,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts }: Props)
       onClose={onClose}
     >
       <div className="flex items-center justify-between gap-2 px-4 py-3">
-        <TransactionTitle className="overflow-hidden" tx={transaction} description={description}>
+        <TransactionTitle className="overflow-hidden" tx={transaction}>
           {asset && amount && <AssetBalance value={amount} asset={asset} className="truncate" />}
         </TransactionTitle>
 

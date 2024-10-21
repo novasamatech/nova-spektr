@@ -116,8 +116,6 @@ export type MultisigTransaction = {
   signatories: Signatory[];
   deposit?: string;
   depositor?: AccountId;
-  description?: string;
-  cancelDescription?: string;
   blockCreated: number;
   indexCreated: number;
   dateCreated?: number;

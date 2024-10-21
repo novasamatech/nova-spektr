@@ -155,7 +155,6 @@ export const buildMultisigTx = (
   multisigTx: Transaction,
   params: ExtrinsicResultParams,
   account: MultisigAccount,
-  description?: string,
 ): MultisigTxResult => {
   const transaction: MultisigTransaction = {
     transaction: tx,
@@ -168,7 +167,6 @@ export const buildMultisigTx = (
     blockCreated: params.timepoint.height,
     indexCreated: params.timepoint.index,
     dateCreated: Date.now(),
-    description,
   };
 
   const event: MultisigEvent = {
