@@ -1,6 +1,5 @@
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
-import { useEffect } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
@@ -25,7 +24,7 @@ type Props = {
   onComplete: () => void;
 };
 
-export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
+export const MultisigWallet = ({ isOpen, onComplete }: Props) => {
   const { t } = useI18n();
 
   const [isModalOpen, closeModal] = useModalClose(isOpen, flowModel.output.flowFinished);
@@ -34,24 +33,15 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
   } = useForm(formModel.$createMultisigForm);
   const activeStep = useUnit(flowModel.$step);
 
-  useEffect(() => {
-    if (!isOpen && isModalOpen) {
-      closeModal();
-    }
-  }, [isOpen]);
-
   const handleClose = (open: boolean) => {
     if (!open) {
-      onClose();
+      setTimeout(onComplete, DEFAULT_TRANSITION);
+      closeModal();
     }
-  };
-
-  const handleComplete = () => {
-    setTimeout(onComplete, DEFAULT_TRANSITION);
   };
 
   if (isStep(activeStep, Step.SUBMIT)) {
-    return <OperationSubmit isOpen={isModalOpen} onClose={handleComplete} />;
+    return <OperationSubmit isOpen={isModalOpen} onClose={() => handleClose(false)} />;
   }
 
   const modalTitle = (
