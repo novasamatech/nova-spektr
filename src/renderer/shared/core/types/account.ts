@@ -1,5 +1,3 @@
-import { type Asset } from '@/shared/core';
-
 import {
   type AccountId,
   type ChainId,
@@ -52,8 +50,6 @@ export type MultisigAccount = GenericAccount & {
   cryptoType: CryptoType;
   creatorAccountId: AccountId;
 };
-
-export type A = Asset;
 
 export type WcAccount = GenericAccount & {
   type: AccountType.WALLET_CONNECT;

@@ -1,4 +1,4 @@
-import Dexie from 'dexie';
+import { default as Dexie } from 'dexie';
 
 import {
   type DataStorage,

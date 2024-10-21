@@ -1,13 +1,6 @@
-import {
-  type AccountId,
-  type CallHash,
-  type ChainId,
-  type ID,
-  type ProxyType,
-  type ProxyVariant,
-  type Timepoint,
-  type WalletType,
-} from '@/shared/core';
+import { type AccountId, type CallHash, type ChainId, type ID, type Timepoint } from './general';
+import { type ProxyType, type ProxyVariant } from './proxy';
+import { type WalletType } from './wallet';
 
 export const enum NotificationType {
   MULTISIG_CREATED = 'MultisigCreatedNotification',

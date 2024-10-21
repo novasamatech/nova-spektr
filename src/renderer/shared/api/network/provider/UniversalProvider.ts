@@ -104,7 +104,7 @@ export class UniversalProvider implements ProviderInterface {
     return unsubscribe;
   }
 
-  public send<T = any>(method: string, params: unknown[], isCacheable?: boolean): Promise<T> {
+  public send<T>(method: string, params: unknown[], isCacheable?: boolean): Promise<T> {
     return this.provider.send(method, params, isCacheable);
   }
 

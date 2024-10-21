@@ -1,5 +1,4 @@
 import type * as CSS from 'csstype';
-import { type Property } from 'csstype';
 import { type PropsWithChildren, forwardRef, useMemo } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
@@ -76,8 +75,8 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(
     const calculatedPadding = useMemo(
       () =>
         Array.isArray(padding)
-          ? padding.map(getBoxSize<Property.Padding>).join(' ')
-          : getBoxSize<Property.Padding>(padding),
+          ? padding.map(getBoxSize<CSS.Property.Padding>).join(' ')
+          : getBoxSize<CSS.Property.Padding>(padding),
       Array.isArray(padding) ? padding : [padding],
     );
 
@@ -91,7 +90,7 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(
         alignItems: isHorizontal ? verticalAlign : horizontalAlign,
         justifyContent: isHorizontal ? horizontalAlign : verticalAlign,
         flexShrink: shrink,
-        gap: getBoxSize<Property.Gap>(gap),
+        gap: getBoxSize<CSS.Property.Gap>(gap),
         flexGrow: grow,
       }),
       [isHorizontal, calculatedPadding, width, height, verticalAlign, horizontalAlign, gap],

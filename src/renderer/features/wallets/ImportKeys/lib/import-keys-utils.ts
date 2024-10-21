@@ -46,8 +46,9 @@ export const importKeysUtils = {
   getErrorsText,
 };
 
-function isFileStructureValid(result: any): result is ParsedImportFile {
-  const isVersionValid = 'version' in result && result.version === IMPORT_FILE_VERSION;
+function isFileStructureValid(result: unknown): result is ParsedImportFile {
+  const isVersionValid =
+    result && typeof result === 'object' && 'version' in result && result.version === IMPORT_FILE_VERSION;
   if (!isVersionValid) return false;
 
   const hasPublicKey = Object.keys(result).every(

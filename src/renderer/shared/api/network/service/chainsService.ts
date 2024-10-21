@@ -9,16 +9,16 @@ import { type PriceObject } from '@/shared/api/price-provider';
 import chainsProd from '@/shared/config/chains/chains.json';
 import chainsDev from '@/shared/config/chains/chains_dev.json';
 import { type Balance, type Chain, type ChainId } from '@/shared/core';
-import { ZERO_BALANCE, getRelaychainAsset, nonNullable, totalAmount } from '@/shared/lib/utils';
+import { ZERO_BALANCE, getRelaychainAsset, nonNullable, nullable, totalAmount } from '@/shared/lib/utils';
 import { isKusama, isNameStartsWithNumber, isPolkadot, isTestnet } from '../lib/utils';
 
 type ChainWithFiatBalance = Chain & {
   fiatBalance: string;
 };
 
-const CHAINS: Record<string, any> = {
-  chains: chainsProd,
-  'chains-dev': chainsDev,
+const CHAINS: Record<string, Chain[]> = {
+  chains: chainsProd as Chain[],
+  'chains-dev': chainsDev as Chain[],
 };
 
 export const chainsService = {
@@ -33,6 +33,10 @@ export const chainsService = {
 
 function getChainsData(params = { sort: false }): Chain[] {
   const chains = CHAINS[process.env.CHAINS_FILE || 'chains'];
+
+  if (nullable(chains)) {
+    throw new Error(`Chains config named "${process.env.CHAINS_FILE}" not found`);
+  }
 
   return params.sort ? sortChains(chains) : chains;
 }

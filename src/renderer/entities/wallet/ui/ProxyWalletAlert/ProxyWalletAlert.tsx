@@ -3,7 +3,7 @@ import { Trans } from 'react-i18next';
 import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Alert, FootnoteText } from '@/shared/ui';
-import { WalletIcon } from '../../index';
+import { WalletIcon } from '../WalletIcon/WalletIcon';
 
 type Props = {
   wallet: Wallet;

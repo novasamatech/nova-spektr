@@ -1,8 +1,8 @@
 import { allSettled, fork } from 'effector';
 
-import { importKeysModelMock } from '@/features/wallets/ImportKeys/lib/mocks/import-keys-model.mock';
-import { DerivationValidationError, ValidationError } from '@/features/wallets/ImportKeys/lib/types';
 import { importKeysModel } from '../../model/import-keys-model';
+import { importKeysModelMock } from '../mocks/import-keys-model.mock';
+import { DerivationValidationError, ValidationError } from '../types';
 
 describe('features/ImportKeys/lib/import-keys-model', () => {
   test('should check import file structure', async () => {

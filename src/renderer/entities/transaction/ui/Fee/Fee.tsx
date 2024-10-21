@@ -6,7 +6,8 @@ import { memo, useEffect, useState } from 'react';
 import { type Asset, type Transaction } from '@/shared/core';
 import { AssetBalance } from '@/entities/asset';
 import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
-import { FeeLoader, transactionService } from '@/entities/transaction';
+import { transactionService } from '../../lib';
+import { FeeLoader } from '../FeeLoader/FeeLoader';
 
 type Props = {
   api?: ApiPromise;

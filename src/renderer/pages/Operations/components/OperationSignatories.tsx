@@ -19,7 +19,7 @@ import { useMultisigEvent } from '@/entities/multisig';
 import { type ExtendedChain } from '@/entities/network';
 import { SignatoryCard, signatoryUtils } from '@/entities/signatory';
 import { AddressWithName, WalletIcon, walletModel } from '@/entities/wallet';
-import { getSignatoryName } from '@/pages/Operations/common/utils';
+import { getSignatoryName } from '../common/utils';
 
 import LogModal from './LogModal';
 

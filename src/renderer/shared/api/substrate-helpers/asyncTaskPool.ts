@@ -7,7 +7,7 @@ type Params = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Task<T = any> = {
+type Task<T = unknown> = {
   fn: () => T | Promise<T>;
   retry: number;
   resolve: (value: T | PromiseLike<T>) => void;
@@ -32,7 +32,7 @@ class AsyncTaskPool {
       throw new Error("Can't create resolvable promise");
     }
 
-    const task: Task<T> = {
+    const task: Task = {
       fn,
       retry: 0,
       resolve: externalResolve,
