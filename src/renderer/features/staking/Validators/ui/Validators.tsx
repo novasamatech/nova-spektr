@@ -4,7 +4,8 @@ import { memo } from 'react';
 import { type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { BodyText, Button, Checkbox, Icon, Loader, SearchInput, Shimmering, SmallTitleText } from '@/shared/ui';
+import { BodyText, Button, Icon, Loader, SearchInput, Shimmering, SmallTitleText } from '@/shared/ui';
+import { Checkbox } from '@/shared/ui-kit';
 import { ValidatorsTable } from '@/entities/staking';
 import { validatorsModel } from '../model/validators-model';
 

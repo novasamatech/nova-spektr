@@ -30,6 +30,7 @@ export {
   getGroupPallet,
   getTrackIds,
   getTreasuryTrackDescription,
+  getTrackTitles,
 } from './lib/tracksService';
 
 export { createSubscriber } from './utils/createSubscriber';
@@ -43,6 +44,7 @@ export type {
   TransactionStandardVote,
 } from './types/voteTransaction';
 export type { Track } from './types/tracks';
+export type { VotesToRemove } from './types/tracks';
 export type { VoteHistoryRecord } from './model/voteHistory';
 
 export {
