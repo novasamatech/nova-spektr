@@ -228,9 +228,10 @@ sample({
     threshold: formModel.$createMultisigForm.fields.threshold.$value,
     signatories: signatoryModel.$signatories,
     chain: formModel.$createMultisigForm.fields.chain.$value,
+    step: $step,
   },
-  filter: (_, results) => {
-    return submitUtils.isSuccessResult(results[0].result);
+  filter: ({ step }, results) => {
+    return submitUtils.isSuccessResult(results[0].result) && isStep(Step.SUBMIT, step);
   },
   fn: ({ signatories, chain, name, threshold }) => {
     const sortedSignatories = sortBy(
@@ -250,17 +251,14 @@ sample({
 });
 
 sample({
-  clock: submitModel.output.formSubmitted,
-  filter: (results) => {
-    return submitUtils.isSuccessResult(results[0].result);
-  },
-  target: walletProviderModel.events.completed,
-});
-
-sample({
   clock: createWalletFx.failData,
   fn: (error) => error.message,
   target: $error,
+});
+
+sample({
+  clock: createWalletFx.doneData,
+  target: walletProviderModel.events.completed,
 });
 
 // Submit
