@@ -4,7 +4,8 @@ import { type FormEvent, useEffect, useMemo, useRef } from 'react';
 
 import { KeyType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Button, Checkbox, FootnoteText, Input, InputHint, Select } from '@/shared/ui';
+import { Button, FootnoteText, Input, InputHint, Select } from '@/shared/ui';
+import { Checkbox } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { constructorModel } from '../model/constructor-model';
@@ -112,7 +113,7 @@ export const KeyForm = () => {
           <Checkbox
             disabled={!isKeyTypeSharded}
             checked={isSharded?.value}
-            onChange={({ target }) => isSharded?.onChange(target.checked)}
+            onChange={(checked) => isSharded?.onChange(checked)}
           >
             {t('dynamicDerivations.constructor.shardedLabel')}
           </Checkbox>
