@@ -45,7 +45,6 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
   const { adminTracks, governanceTracks, treasuryTracks, fellowshipTracks } = tracksGroup;
 
   if (!network) return null;
-  console.log(tracks, votedTracks);
 
   return (
     <Modal isOpen={isOpen} size="fit" onToggle={(isOpen) => !isOpen && onClose()}>

@@ -1,25 +1,3 @@
-.checkbox:checked::before {
-  display: block;
-  width: 100%;
-  content: '✓';
-  color: inherit;
-  font-weight: bold;
-  font-size: 14px;
-  line-height: 16px;
-  text-align: center;
-}
-
-input.checkbox.semi-checked::before {
-  display: block;
-  width: 100%;
-  content: '-';
-  color: inherit;
-  font-weight: bold;
-  font-size: 14px;
-  line-height: 16px;
-  text-align: center;
-}
-
 .checkbox::-webkit-outer-spin-button,
 .checkbox::-webkit-inner-spin-button {
   appearance: none;

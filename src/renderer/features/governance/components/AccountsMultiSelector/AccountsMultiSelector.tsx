@@ -148,7 +148,7 @@ export const AccountsMultiSelector = ({
                 <Checkbox
                   checked={optionsFlat.every((option) => selectedIds.includes(option.id))}
                   semiChecked={optionsFlat.some((option) => selectedIds.includes(option.id))}
-                  onChange={(event) => toggleAll(event.target.checked)}
+                  onChange={(checked) => toggleAll(checked)}
                 >
                   <FootnoteText className="text-body text-text-secondary">{t('balances.allAccounts')}</FootnoteText>
                 </Checkbox>
@@ -246,7 +246,7 @@ const Group = ({ group, selectedIds, selectedOptions, theme, onChange }: PropsGr
           <Checkbox
             checked={isChecked}
             semiChecked={list.some(({ id }) => selectedIds.includes(id))}
-            onChange={(event) => toggleGroup(event.target.checked)}
+            onChange={(checked) => toggleGroup(checked)}
           >
             <div className="flex h-5 w-7.5 items-center justify-center rounded-2lg bg-input-background-disabled">
               <CaptionText className="text-text-secondary">{list.length}</CaptionText>

@@ -39,7 +39,7 @@ export const ShardsStructure = () => {
           <Checkbox
             checked={isAllChecked}
             semiChecked={isAllSemiChecked}
-            onChange={(event) => shardsModel.events.allToggled(event.target.checked)}
+            onChange={(checked) => shardsModel.events.allToggled(checked)}
           >
             {t('balances.allAccounts')}
           </Checkbox>
@@ -67,7 +67,7 @@ export const ShardsStructure = () => {
                       <Checkbox
                         checked={selectorUtils.isChecked(selectedStructure[root.id][chainId])}
                         semiChecked={selectorUtils.isSemiChecked(selectedStructure[root.id][chainId])}
-                        onChange={(value) => toggleChain(root.id, chainId, value.target.checked)}
+                        onChange={(checked) => toggleChain(root.id, chainId, checked)}
                       >
                         <ChainTitle chain={chains[chainId]} fontClass="text-text-primary" />
                         <FootnoteText className="text-text-tertiary">

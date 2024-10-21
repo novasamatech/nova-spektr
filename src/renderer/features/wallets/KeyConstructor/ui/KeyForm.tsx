@@ -113,7 +113,7 @@ export const KeyForm = () => {
           <Checkbox
             disabled={!isKeyTypeSharded}
             checked={isSharded?.value}
-            onChange={({ target }) => isSharded?.onChange(target.checked)}
+            onChange={(checked) => isSharded?.onChange(checked)}
           >
             {t('dynamicDerivations.constructor.shardedLabel')}
           </Checkbox>

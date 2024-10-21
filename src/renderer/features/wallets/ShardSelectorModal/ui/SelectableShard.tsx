@@ -61,7 +61,7 @@ export const SelectableShard = ({
         'focus-within:bg-action-background-hover hover:bg-action-background-hover',
       )}
     >
-      <Checkbox checked={checked} semiChecked={semiChecked} onChange={(event) => onChange(event.target.checked)} />
+      <Checkbox checked={checked} semiChecked={semiChecked} onChange={(checked) => onChange(checked)} />
       <ExplorersPopover
         button={content}
         address={account.accountId}

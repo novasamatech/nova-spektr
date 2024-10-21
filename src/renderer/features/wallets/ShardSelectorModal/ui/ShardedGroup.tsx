@@ -1,5 +1,4 @@
 import { useUnit } from 'effector-react';
-import { type ChangeEvent } from 'react';
 
 import { type Chain, type ID, type ShardAccount } from '@/shared/core';
 import { Accordion, CaptionText, FootnoteText } from '@/shared/ui';
@@ -19,12 +18,12 @@ export const ShardedGroup = ({ rootId, accounts, chain }: Props) => {
 
   const shardedGroup = selectedStructure[rootId][chain.chainId].sharded[accounts[0].groupId];
 
-  const toggleSharded = (event: ChangeEvent<HTMLInputElement>) => {
+  const toggleSharded = (checked: boolean) => {
     shardsModel.events.shardedToggled({
       root: rootId,
       chainId: chain.chainId,
       groupId: accounts[0].groupId,
-      value: event.target.checked,
+      value: checked,
     });
   };
 

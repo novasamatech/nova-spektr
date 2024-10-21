@@ -1,7 +1,9 @@
-import { type ChangeEvent, type PropsWithChildren } from 'react';
+import * as CheckboxItem from '@radix-ui/react-checkbox';
+import { type PropsWithChildren } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import './Checkbox.css';
+import { Icon } from '@/shared/ui/Icon/Icon';
 import { LabelText } from '@/shared/ui/Typography';
 
 type Props = {
@@ -9,7 +11,7 @@ type Props = {
   semiChecked?: boolean;
   disabled?: boolean;
   checkboxPosition?: 'center' | 'top';
-  onChange?: (event: ChangeEvent<HTMLInputElement>, semiChecked?: boolean) => void;
+  onChange?: (checked: boolean, semiChecked?: boolean) => void;
 };
 
 export const Checkbox = ({
@@ -19,32 +21,40 @@ export const Checkbox = ({
   checkboxPosition = 'center',
   children,
   onChange,
-}: PropsWithChildren<Props>) => (
-  <LabelText
-    className={cnTw(
-      'flex gap-x-2',
-      !disabled && 'hover:cursor-pointer',
-      disabled ? 'text-text-tertiary' : 'text-inherit',
-    )}
-  >
-    <input
-      type="checkbox"
-      name="checkbox"
-      disabled={disabled}
-      checked={checked}
-      className={cnTw(
-        'checkbox relative h-4 w-4 shrink-0 appearance-none text-white outline-offset-1',
-        'rounded border border-filter-border bg-button-text',
-        'checked:border-0 checked:border-icon-accent-default checked:bg-icon-accent checked:active:border',
-        !checked && semiChecked && 'semi-checked border-0 border-icon-accent-default bg-icon-accent focus:border',
-        'hover:shadow-card-shadow hover:checked:bg-icon-accent-default',
-        'disabled:border disabled:border-filter-border disabled:bg-main-app-background disabled:text-filter-border disabled:checked:bg-main-app-background',
-        !disabled && 'hover:cursor-pointer',
-        checkboxPosition === 'center' && 'self-center',
-        checkboxPosition === 'top' && 'self-top mt-1',
-      )}
-      onChange={onChange}
-    />
-    {Boolean(children) && children}
-  </LabelText>
-);
+}: PropsWithChildren<Props>) => {
+  const checkedState = checked ? true : semiChecked ? 'indeterminate' : false;
+  const iconColor = disabled ? 'text-filter-border' : 'text-white';
+
+  const handleChange = (checked: boolean | 'indeterminate') => {
+    if (!onChange) return;
+    const semiChecked = checked === 'indeterminate';
+
+    onChange(!semiChecked && checked, semiChecked);
+  };
+
+  return (
+    <LabelText className={cnTw('flex gap-x-2', disabled ? 'text-text-tertiary' : 'text-inherit hover:cursor-pointer')}>
+      <CheckboxItem.Root
+        checked={checkedState}
+        className={cnTw(
+          'relative flex h-4 w-4 shrink-0',
+          'checkbox items-center justify-center rounded border border-filter-border bg-button-text',
+          (checked || semiChecked) && 'border-0 border-icon-accent-default bg-icon-accent',
+          'hover:shadow-card-shadow hover:checked:bg-icon-accent-default',
+          'disabled:border disabled:border-filter-border disabled:bg-main-app-background disabled:checked:bg-main-app-background',
+          !disabled && 'hover:cursor-pointer',
+          checkboxPosition === 'center' && 'self-center',
+          checkboxPosition === 'top' && 'self-top mt-1',
+        )}
+        disabled={disabled}
+        onCheckedChange={handleChange}
+      >
+        <CheckboxItem.Indicator>
+          {checked && <Icon name="checked" size={16} className={iconColor} />}
+          {!checked && semiChecked && <Icon name="semiChecked" size={16} className={iconColor} />}
+        </CheckboxItem.Indicator>
+      </CheckboxItem.Root>
+      {Boolean(children) && children}
+    </LabelText>
+  );
+};

@@ -19,7 +19,7 @@ export const Default: Story = {
     const [checked, onToggle] = useState(false);
 
     return (
-      <Checkbox {...args} checked={checked} onChange={() => onToggle(!checked)}>
+      <Checkbox {...args} checked={checked} onChange={(checked) => onToggle(checked)}>
         Checkbox
       </Checkbox>
     );
@@ -45,12 +45,18 @@ export const Position: Story = {
     return (
       <Box gap={2}>
         <Checkbox checked={true} checkboxPosition="center">
-          Checked
+          Checkbox long text long text long text long text long text long text long text long text long text long text
+          long text long text long text long text long text long text long text long text long text long text long text
+          long text long text long text long text long textlong text long text long text long text long text long text
+          long text long text long text long text long text long text long text long text long text long text long text
+          long text long text long text long text long text long text long text long text long text
         </Checkbox>
         <Checkbox checked={true} checkboxPosition="top">
           Checkbox long text long text long text long text long text long text long text long text long text long text
           long text long text long text long text long text long text long text long text long text long text long text
-          long text long text long text long text long text
+          long text long text long text long text long textlong text long text long text long text long text long text
+          long text long text long text long text long text long text long text long text long text long text long text
+          long text long text long text long text long text long text long text long text long text
         </Checkbox>
       </Box>
     );

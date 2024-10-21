@@ -45,7 +45,7 @@ export const NominatorsItem = ({
           <Checkbox
             disabled={isStakingLoading}
             checked={stake.isSelected}
-            onChange={(event) => onToggleNominator(stake.address, event.target?.checked)}
+            onChange={(checked) => onToggleNominator(stake.address, checked)}
           >
             <div className="grid w-full max-w-[207px] grid-cols-[minmax(10px,1fr),auto]">{content}</div>
           </Checkbox>

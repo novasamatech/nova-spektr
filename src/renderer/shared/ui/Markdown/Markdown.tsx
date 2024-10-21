@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { type ChangeEvent, useState } from 'react';
 import ReactMarkdown, { type Components, type Options } from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
@@ -67,7 +67,26 @@ const components: Components = {
     <BodyText as="p" className={cnTw('overflow-hidden overflow-ellipsis text-balance', className)} {...props} />
   ),
   hr: () => <hr className="bg-current" />,
-  input: ({ node: _, type, ...props }) => (type === 'checkbox' ? <Checkbox {...props} /> : <input {...props} />),
+  input: ({ node: _, type, ...props }) =>
+    type === 'checkbox' ? (
+      <Checkbox
+        {...props}
+        onChange={(newCheckedState: boolean) => {
+          if (typeof props.onChange === 'function') {
+            // Simulate a ChangeEvent for props.onChange to fit types
+            const event = {
+              target: {
+                checked: newCheckedState,
+              },
+            } as ChangeEvent<HTMLInputElement>;
+
+            props.onChange(event);
+          }
+        }}
+      />
+    ) : (
+      <input {...props} />
+    ),
   img: ({ node: _, className, ...props }) => {
     const { t } = useI18n();
     const [showError, setShowError] = useState(false);

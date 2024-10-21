@@ -44,28 +44,28 @@ export const Warning = ({ onGoBack }: Props) => {
           <Trans t={t} i18nKey="pureProxyRemove.warning.inputHint" />
         </FootnoteText>
         <div>
-          <Checkbox checked={isCorrectProxy.value} onChange={({ target }) => isCorrectProxy.onChange(target.checked)}>
+          <Checkbox checked={isCorrectProxy.value} onChange={(checked) => isCorrectProxy.onChange(checked)}>
             <FootnoteText>
               <Trans t={t} i18nKey="pureProxyRemove.warning.isCorrectProxyCheckbox" />
             </FootnoteText>
           </Checkbox>
         </div>
         <div>
-          <Checkbox checked={isIrreversible.value} onChange={({ target }) => isIrreversible.onChange(target.checked)}>
+          <Checkbox checked={isIrreversible.value} onChange={(checked) => isIrreversible.onChange(checked)}>
             <FootnoteText>
               <Trans t={t} i18nKey="pureProxyRemove.warning.isIrreversibleCheckbox" />
             </FootnoteText>
           </Checkbox>
         </div>
         <div>
-          <Checkbox checked={isInaccessible.value} onChange={({ target }) => isInaccessible.onChange(target.checked)}>
+          <Checkbox checked={isInaccessible.value} onChange={(checked) => isInaccessible.onChange(checked)}>
             <FootnoteText>
               <Trans t={t} i18nKey="pureProxyRemove.warning.isInaccessibleCheckbox" />
             </FootnoteText>
           </Checkbox>
         </div>
         <div>
-          <Checkbox checked={lossOfFunds.value} onChange={({ target }) => lossOfFunds.onChange(target.checked)}>
+          <Checkbox checked={lossOfFunds.value} onChange={(checked) => lossOfFunds.onChange(checked)}>
             <FootnoteText>
               <Trans t={t} i18nKey="pureProxyRemove.warning.lossOfFundsCheckbox" />
             </FootnoteText>
