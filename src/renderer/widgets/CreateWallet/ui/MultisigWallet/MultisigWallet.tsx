@@ -1,11 +1,11 @@
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
-import { useEffect } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { DEFAULT_TRANSITION, isStep } from '@/shared/lib/utils';
-import { BaseModal, HeaderTitleText } from '@/shared/ui';
+import { HeaderTitleText } from '@/shared/ui';
+import { Modal } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { createMultisigUtils } from '../../lib/create-multisig-utils';
@@ -24,7 +24,7 @@ type Props = {
   onComplete: () => void;
 };
 
-export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
+export const MultisigWallet = ({ isOpen, onComplete }: Props) => {
   const { t } = useI18n();
 
   const [isModalOpen, closeModal] = useModalClose(isOpen, flowModel.output.flowFinished);
@@ -33,19 +33,15 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
   } = useForm(formModel.$createMultisigForm);
   const activeStep = useUnit(flowModel.$step);
 
-  useEffect(() => {
-    if (!isOpen && isModalOpen) {
+  const handleClose = (open: boolean) => {
+    if (!open) {
+      setTimeout(onComplete, DEFAULT_TRANSITION);
       closeModal();
     }
-  }, [isOpen]);
-
-  const handleClose = (params?: { complete: boolean }) => {
-    closeModal();
-    setTimeout(params?.complete ? onComplete : onClose, DEFAULT_TRANSITION);
   };
 
   if (isStep(activeStep, Step.SUBMIT)) {
-    return <OperationSubmit isOpen={isModalOpen} onClose={() => handleClose({ complete: true })} />;
+    return <OperationSubmit isOpen={isModalOpen} onClose={() => handleClose(false)} />;
   }
 
   const modalTitle = (
@@ -68,24 +64,21 @@ export const MultisigWallet = ({ isOpen, onClose, onComplete }: Props) => {
     </div>
   );
 
+  const modalSize =
+    isStep(activeStep, Step.SIGN) || isStep(activeStep, Step.CONFIRM) || isStep(activeStep, Step.SIGNER_SELECTION)
+      ? 'md'
+      : 'lg';
+
   return (
-    <BaseModal
-      closeButton
-      title={modalTitle}
-      isOpen={isModalOpen}
-      contentClass="flex"
-      panelClass={
-        isStep(activeStep, Step.SIGN) || isStep(activeStep, Step.CONFIRM) || isStep(activeStep, Step.SIGNER_SELECTION)
-          ? 'w-[440px]'
-          : 'w-[784px]'
-      }
-      onClose={handleClose}
-    >
-      {isStep(activeStep, Step.NAME_NETWORK) && <NameNetworkSelection />}
-      {isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold />}
-      {isStep(activeStep, Step.SIGNER_SELECTION) && <SignerSelection />}
-      {isStep(activeStep, Step.CONFIRM) && <ConfirmationStep />}
-      {isStep(activeStep, Step.SIGN) && <OperationSign onGoBack={() => flowModel.events.stepChanged(Step.CONFIRM)} />}
-    </BaseModal>
+    <Modal size={modalSize} height="fit" isOpen={isModalOpen} onToggle={handleClose}>
+      <Modal.Title close>{modalTitle}</Modal.Title>
+      <Modal.Content>
+        {isStep(activeStep, Step.NAME_NETWORK) && <NameNetworkSelection />}
+        {isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold />}
+        {isStep(activeStep, Step.SIGNER_SELECTION) && <SignerSelection />}
+        {isStep(activeStep, Step.CONFIRM) && <ConfirmationStep />}
+        {isStep(activeStep, Step.SIGN) && <OperationSign onGoBack={() => flowModel.events.stepChanged(Step.CONFIRM)} />}
+      </Modal.Content>
+    </Modal>
   );
 };

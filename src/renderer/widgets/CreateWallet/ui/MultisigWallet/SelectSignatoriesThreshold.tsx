@@ -13,6 +13,7 @@ import { signatoryModel } from '../../model/signatory-model';
 
 import { SelectSignatories } from './components/SelectSignatories';
 
+const MIN_THRESHOLD = 2;
 const getThresholdOptions = (optionsAmount: number): DropdownOption<number>[] => {
   if (optionsAmount === 0) return [];
 
@@ -44,9 +45,11 @@ export const SelectSignatoriesThreshold = () => {
   const thresholdOptions = getThresholdOptions(signatories.length - 1);
 
   const hasOwnedSignatory = !!ownedSignatoriesWallets && ownedSignatoriesWallets?.length > 0;
-  const hasEnoughSignatories = signatories.length >= 2;
+  const hasEnoughSignatories = signatories.length >= MIN_THRESHOLD;
   const hasEmptySignatory = signatories.map(({ address }) => address).includes('');
-  const canSubmit = hasOwnedSignatory && hasEnoughSignatories && !multisigAlreadyExists && !hasEmptySignatory;
+  const isThresholdValid = threshold.value >= MIN_THRESHOLD && threshold.value <= signatories.length;
+  const canSubmit =
+    hasOwnedSignatory && hasEnoughSignatories && !multisigAlreadyExists && !hasEmptySignatory && isThresholdValid;
 
   const api = useUnit(flowModel.$api);
 
@@ -109,7 +112,7 @@ export const SelectSignatoriesThreshold = () => {
             selectedId={threshold.value.toString()}
             options={thresholdOptions}
             invalid={threshold.hasError()}
-            position={thresholdOptions.length > 3 ? 'up' : 'down'}
+            position={thresholdOptions.length > 2 ? 'up' : 'down'}
             onChange={({ value }) => threshold.onChange(value)}
           />
           <InputHint className="flex-1" active>
@@ -123,6 +126,15 @@ export const SelectSignatoriesThreshold = () => {
             variant="error"
           >
             <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
+          </Alert>
+          <Alert
+            active={!isThresholdValid && hasClickedNext}
+            title={t('createMultisigAccount.thresholdErrorTitle')}
+            variant="error"
+          >
+            <Alert.Item withDot={false}>
+              {t('createMultisigAccount.thresholdErrorDescription', { minThreshold: MIN_THRESHOLD })}
+            </Alert.Item>
           </Alert>
         </div>
         <div className="mt-auto flex items-center justify-between">
