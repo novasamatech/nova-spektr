@@ -1,6 +1,6 @@
 import { type Meta, type StoryFn } from '@storybook/react';
 
-import { Icon } from '@/shared/ui';
+import { Icon } from '../../Icon/Icon';
 
 import { Input } from './Input';
 

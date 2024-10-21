@@ -2,7 +2,7 @@ import { type TFunction } from 'i18next';
 
 import { type Asset } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
-import { treasurySpendsDescription } from '@/entities/governance';
+import { treasurySpendsDescription } from '../constants/tracks';
 import { type Track } from '../types/tracks';
 
 export const getTreasuryTrackDescription = (asset: Asset | null, description: string, t: TFunction) => {

@@ -1,4 +1,4 @@
-import BN from 'bignumber.js';
+import { default as BigNumber } from 'bignumber.js';
 import { useUnit } from 'effector-react';
 
 import { type Asset, type AssetByChains } from '@/shared/core';
@@ -12,7 +12,7 @@ import { FiatBalance } from './FiatBalance';
 
 type Props = {
   asset: Asset | AssetByChains;
-  amount?: BN | string;
+  amount?: BigNumber | string;
   className?: string;
 };
 
@@ -31,7 +31,7 @@ export const AssetFiatBalance = ({ asset, amount, className }: Props) => {
     return <FiatBalance amount={ZERO_BALANCE} className={className} />;
   }
 
-  const amountBn = BN.isBigNumber(amount) ? amount : new BN(amount);
+  const amountBn = BigNumber.isBigNumber(amount) ? amount : new BigNumber(amount);
 
   const price =
     currency && prices && asset.priceId && prices[asset.priceId] && prices[asset.priceId][currency.coingeckoId];
@@ -40,7 +40,7 @@ export const AssetFiatBalance = ({ asset, amount, className }: Props) => {
     return <Shimmering width={56} height={18} />;
   }
 
-  const priceToShow = new BN(price.price).multipliedBy(amountBn);
+  const priceToShow = new BigNumber(price.price).multipliedBy(amountBn);
 
   const { value: formattedValue, suffix, decimalPlaces } = formatFiatBalance(priceToShow.toString(), asset.precision);
 

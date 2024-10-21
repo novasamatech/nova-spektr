@@ -3,7 +3,8 @@ import { BN } from '@polkadot/util';
 
 import { type AccountId, type Balance, type ChainId, type PartialBy, type Transaction } from '@/shared/core';
 import { ValidationErrors, toAccountId, transferableAmount } from '@/shared/lib/utils';
-import { OperationError, type OperationErrorType } from '@/entities/transaction';
+
+import { OperationError, type OperationErrorType } from './common/errors';
 
 type Props = {
   api: ApiPromise;

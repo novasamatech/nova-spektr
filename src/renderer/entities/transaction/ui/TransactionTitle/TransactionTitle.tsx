@@ -4,8 +4,7 @@ import { type DecodedTransaction, type Transaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { BodyText, Icon } from '@/shared/ui';
-import { getIconName } from '@/entities/transaction/lib/transactionIcon';
-import { getTransactionTitle } from '../../lib';
+import { getIconName, getTransactionTitle } from '../../lib';
 
 type Props = {
   tx?: Transaction | DecodedTransaction;

@@ -1,7 +1,7 @@
 import { type Validator } from '@/shared/core/types/validator';
 import { useI18n } from '@/shared/i18n';
 import { BaseModal } from '@/shared/ui';
-import { ValidatorsTable } from '@/entities/staking/ui';
+import { ValidatorsTable } from '../ValidatorsTable/ValidatorsTable';
 
 type Props = {
   isOpen: boolean;
