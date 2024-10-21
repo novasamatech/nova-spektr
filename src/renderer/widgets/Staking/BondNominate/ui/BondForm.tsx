@@ -13,7 +13,6 @@ import {
   FootnoteText,
   Icon,
   Identicon,
-  Input,
   InputHint,
   MultiSelect,
   RadioGroup,
@@ -47,7 +46,6 @@ export const BondForm = ({ onGoBack }: Props) => {
         <Signatories />
         <Amount />
         <Destination />
-        <Description />
       </form>
       <div className="flex flex-col gap-y-6 pb-4 pt-6">
         <FeeSection />
@@ -292,37 +290,6 @@ const Destination = () => {
         </div>
       </RadioGroup.Option>
     </RadioGroup>
-  );
-};
-
-const Description = () => {
-  const { t } = useI18n();
-
-  const {
-    fields: { description },
-  } = useForm(formModel.$bondForm);
-
-  const isMultisig = useUnit(formModel.$isMultisig);
-
-  if (!isMultisig) {
-    return null;
-  }
-
-  return (
-    <div className="flex flex-col gap-y-2">
-      <Input
-        spellCheck
-        className="w-full"
-        label={t('general.input.descriptionLabel')}
-        placeholder={t('general.input.descriptionPlaceholder')}
-        invalid={description.hasError()}
-        value={description.value}
-        onChange={description.onChange}
-      />
-      <InputHint active={description.hasError()} variant="error">
-        {t(description.errorText())}
-      </InputHint>
-    </div>
   );
 };
 

@@ -3,16 +3,15 @@ import { type PropsWithChildren } from 'react';
 import { type DecodedTransaction, type Transaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { BodyText, FootnoteText, Icon } from '@/shared/ui';
+import { BodyText, Icon } from '@/shared/ui';
 import { getIconName, getTransactionTitle } from '../../lib';
 
 type Props = {
   tx?: Transaction | DecodedTransaction;
-  description?: string;
   className?: string;
 };
 
-export const TransactionTitle = ({ tx, description, className, children }: PropsWithChildren<Props>) => {
+export const TransactionTitle = ({ tx, className, children }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
 
   const title = getTransactionTitle(t, tx);
@@ -27,7 +26,6 @@ export const TransactionTitle = ({ tx, description, className, children }: Props
           <BodyText className={cnTw('whitespace-nowrap', !children && 'truncate')}>{t(title)}</BodyText>
           {children}
         </div>
-        {description && <FootnoteText className="truncate text-text-tertiary">{description} </FootnoteText>}
       </div>
     </div>
   );

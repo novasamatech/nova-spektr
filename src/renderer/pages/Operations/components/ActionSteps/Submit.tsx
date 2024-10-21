@@ -27,22 +27,11 @@ type Props = {
   multisigTx?: MultisigTransaction;
   txPayload: Uint8Array;
   signature: HexString;
-  rejectReason?: string;
   isReject?: boolean;
   onClose: () => void;
 };
 
-export const Submit = ({
-  api,
-  tx,
-  multisigTx,
-  account,
-  txPayload,
-  signature,
-  rejectReason,
-  isReject,
-  onClose,
-}: Props) => {
+export const Submit = ({ api, tx, multisigTx, account, txPayload, signature, isReject, onClose }: Props) => {
   const { t } = useI18n();
 
   const { addTask } = useMultisigChainContext();
@@ -73,7 +62,6 @@ export const Submit = ({
 
           if (isReject) {
             updatedTx.status = MultisigTxFinalStatus.CANCELLED;
-            updatedTx.cancelDescription = rejectReason;
           }
 
           await updateMultisigTx(updatedTx);
