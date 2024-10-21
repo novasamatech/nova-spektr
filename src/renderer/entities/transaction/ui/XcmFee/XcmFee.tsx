@@ -8,7 +8,7 @@ import { type Asset, type DecodedTransaction, type Transaction } from '@/shared/
 import { toLocalChainId } from '@/shared/lib/utils';
 import { AssetBalance } from '@/entities/asset';
 import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
-import { FeeLoader } from '@/entities/transaction';
+import { FeeLoader } from '../FeeLoader/FeeLoader';
 
 type Props = {
   api: ApiPromise;

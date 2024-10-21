@@ -22,7 +22,7 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
   const confirm = useStoreMap({
     store: confirmModel.$confirmMap,
     keys: [id],
-    fn: (value, [id]) => (id ? value[id] : (null ?? null)),
+    fn: (value, [id]) => (id ? value[id] : null) ?? null,
   });
 
   if (nullable(confirm)) {

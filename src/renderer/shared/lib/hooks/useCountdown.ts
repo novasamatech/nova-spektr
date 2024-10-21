@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_THOUSAND } from '@polkadot/util';
 import { useCallback, useEffect, useState } from 'react';
 
-import { DEFAULT_QR_LIFETIME, getExpectedBlockTime } from '@/shared/lib/utils';
+import { DEFAULT_QR_LIFETIME, getExpectedBlockTime } from '../utils';
 
 /**
  * Start countdown based on Expected block time

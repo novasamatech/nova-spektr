@@ -2,12 +2,12 @@ import { combine, createEvent, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { reshape } from 'patronum';
 
+import { type BasketTransaction } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createTxStore } from '@/shared/transactions';
 import { collectiveDomain } from '@/domains/collectives';
+import { basketModel } from '@/entities/basket';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
-import { basketModel } from '../../../entities/basket';
-import { type BasketTransaction } from '../../../shared/core';
 
 import { votingFeatureStatus } from './status';
 import { votingStatusModel } from './votingStatus';

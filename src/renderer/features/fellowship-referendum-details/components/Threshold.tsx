@@ -20,7 +20,7 @@ export const Threshold = memo(({ referendum, pending }: Props) => {
   const thresholds = useStoreMap({
     store: thresholdsModel.$thresholds,
     keys: [referendum?.id],
-    fn: (thresholds, [id]) => (id ? thresholds[id] : (null ?? null)),
+    fn: (thresholds, [id]) => (id ? thresholds[id] : null) ?? null,
   });
 
   const threshold = nonNullable(thresholds) ? thresholds.support.value.div(BN_MILLION).toNumber() / 10 : 0;
