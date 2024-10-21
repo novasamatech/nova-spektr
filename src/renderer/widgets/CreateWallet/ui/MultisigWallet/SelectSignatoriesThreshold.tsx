@@ -13,6 +13,7 @@ import { signatoryModel } from '../../model/signatory-model';
 
 import { SelectSignatories } from './components/SelectSignatories';
 
+const MIN_THRESHOLD = 2;
 const getThresholdOptions = (optionsAmount: number): DropdownOption<number>[] => {
   if (optionsAmount === 0) return [];
 
@@ -44,9 +45,9 @@ export const SelectSignatoriesThreshold = () => {
   const thresholdOptions = getThresholdOptions(signatories.length - 1);
 
   const hasOwnedSignatory = !!ownedSignatoriesWallets && ownedSignatoriesWallets?.length > 0;
-  const hasEnoughSignatories = signatories.length >= 2;
+  const hasEnoughSignatories = signatories.length >= MIN_THRESHOLD;
   const hasEmptySignatory = signatories.map(({ address }) => address).includes('');
-  const isThresholdValid = threshold.value >= 2 && threshold.value <= signatories.length;
+  const isThresholdValid = threshold.value >= MIN_THRESHOLD && threshold.value <= signatories.length;
   const canSubmit =
     hasOwnedSignatory && hasEnoughSignatories && !multisigAlreadyExists && !hasEmptySignatory && isThresholdValid;
 
@@ -131,7 +132,9 @@ export const SelectSignatoriesThreshold = () => {
             title={t('createMultisigAccount.thresholdErrorTitle')}
             variant="error"
           >
-            <Alert.Item withDot={false}>{t('createMultisigAccount.thresholdErrorDescription')}</Alert.Item>
+            <Alert.Item withDot={false}>
+              {t('createMultisigAccount.thresholdErrorDescription', { minThreshold: MIN_THRESHOLD })}
+            </Alert.Item>
           </Alert>
         </div>
         <div className="mt-auto flex items-center justify-between">
