@@ -21,7 +21,7 @@ export const SelectSignatories = () => {
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="flex max-h-96 flex-col gap-2 overflow-y-auto overflow-x-hidden">
+      <div className="flex flex-col gap-2">
         {Array.from(signatories.entries()).map(([key, value]) => (
           <Signatory
             key={key}
