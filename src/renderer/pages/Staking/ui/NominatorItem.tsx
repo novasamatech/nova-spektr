@@ -4,7 +4,8 @@ import { type ReactNode } from 'react';
 import { type Account, type Address, type Asset, type Explorer } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { Checkbox, FootnoteText, Icon, IconButton, Plate, Shimmering } from '@/shared/ui';
+import { FootnoteText, Icon, IconButton, Plate, Shimmering } from '@/shared/ui';
+import { Checkbox } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { AssetFiatBalance } from '@/entities/price';
 import { ExplorersPopover, walletModel, walletUtils } from '@/entities/wallet';
@@ -40,14 +41,15 @@ export const NominatorsItem = ({
   return (
     <Plate className="grid grid-cols-[1fr,104px,104px,20px] items-center gap-x-6">
       {activeWallet && !walletUtils.isWatchOnly(activeWallet) && nominatorsLength > 1 ? (
-        <Checkbox
-          className="w-full"
-          disabled={isStakingLoading}
-          checked={stake.isSelected}
-          onChange={(event) => onToggleNominator(stake.address, event.target?.checked)}
-        >
-          <div className="grid w-full max-w-[207px] grid-cols-[minmax(10px,1fr),auto]">{content}</div>
-        </Checkbox>
+        <div className="w-full">
+          <Checkbox
+            disabled={isStakingLoading}
+            checked={stake.isSelected}
+            onChange={(checked) => onToggleNominator(stake.address, checked)}
+          >
+            <div className="grid w-full max-w-[207px] grid-cols-[minmax(10px,1fr),auto]">{content}</div>
+          </Checkbox>
+        </div>
       ) : (
         <div className="grid max-w-[222px] grid-cols-[minmax(10px,1fr),auto] items-center gap-x-2">{content}</div>
       )}
