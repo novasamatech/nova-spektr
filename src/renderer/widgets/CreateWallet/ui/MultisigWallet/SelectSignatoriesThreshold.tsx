@@ -40,13 +40,18 @@ export const SelectSignatoriesThreshold = () => {
   } = useForm(formModel.$createMultisigForm);
   const multisigAlreadyExists = useUnit(formModel.$multisigAlreadyExists);
   const ownedSignatoriesWallets = useUnit(signatoryModel.$ownedSignatoriesWallets);
-
+  const hasDuplicateSignatories = useUnit(signatoryModel.$hasDuplicateSignatories);
   const thresholdOptions = getThresholdOptions(signatories.length - 1);
 
   const hasOwnedSignatory = !!ownedSignatoriesWallets && ownedSignatoriesWallets?.length > 0;
   const hasEnoughSignatories = signatories.length >= 2;
   const hasEmptySignatory = signatories.map(({ address }) => address).includes('');
-  const canSubmit = hasOwnedSignatory && hasEnoughSignatories && !multisigAlreadyExists && !hasEmptySignatory;
+  const canSubmit =
+    hasOwnedSignatory &&
+    hasEnoughSignatories &&
+    !multisigAlreadyExists &&
+    !hasEmptySignatory &&
+    !hasDuplicateSignatories;
 
   const api = useUnit(flowModel.$api);
 
@@ -115,6 +120,15 @@ export const SelectSignatoriesThreshold = () => {
           <InputHint className="flex-1" active>
             {t('createMultisigAccount.thresholdHint')}
           </InputHint>
+        </div>
+        <div className="flex items-end gap-x-4">
+          <Alert
+            active={Boolean(hasDuplicateSignatories)}
+            title={t('createMultisigAccount.duplicateSignatoryErrorTitle')}
+            variant="error"
+          >
+            <Alert.Item withDot={false}>{t('createMultisigAccount.duplicateSignatoryErrorText')}</Alert.Item>
+          </Alert>
         </div>
         <div className="flex items-end gap-x-4">
           <Alert

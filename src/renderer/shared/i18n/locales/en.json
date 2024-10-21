@@ -135,6 +135,8 @@
       "unsupportedType": "This type of wallet is not supported for the Multisig wallet creation"
     },
     "disabledLabel": "Not supported",
+    "duplicateSignatoryErrorTitle": "Duplicate signatory",
+    "duplicateSignatoryErrorText": "The list must consist of unique signatories",
     "errorMessage": "Something went wrong",
     "multiChain": {
       "description": "Creation is free, the wallet works on all networks",
