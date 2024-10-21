@@ -1,4 +1,4 @@
-import { combine } from 'effector';
+import { combine, sample } from 'effector';
 import { createForm } from 'effector-forms';
 
 import chains from '@/shared/config/chains/chains.json';
@@ -91,6 +91,11 @@ const $availableAccounts = combine(
     return [...filteredAccounts, ...baseAccounts];
   },
 );
+
+sample({
+  clock: signatoryModel.events.signatoryDeleted,
+  target: $createMultisigForm.fields.threshold.reset,
+});
 
 export const formModel = {
   $createMultisigForm,

@@ -187,6 +187,8 @@
     },
     "successMessage": "Wallet added",
     "thresholdDescription": "Set the threshold of signatories required to execute a transaction",
+    "thresholdErrorTitle": "Invalid threshold",
+    "thresholdErrorDescription": "Threshold must be set and superior or equal to { minThreshold }",
     "thresholdHint": "Threshold of signatories required to execute a transaction",
     "thresholdName": "Threshold",
     "thresholdOutOf": "{ threshold } out of { signatoriesLength }",
