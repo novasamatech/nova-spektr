@@ -8,6 +8,7 @@ const signatoriesChanged = createEvent<SignatoryInfo>();
 const signatoryDeleted = createEvent<number>();
 
 const $signatories = createStore<Map<number, Omit<SignatoryInfo, 'index'>>>(new Map([[0, { name: '', address: '' }]]));
+const $hasDuplicateSignatories = createStore(false);
 
 const $ownedSignatoriesWallets = combine(
   { wallets: walletModel.$wallets, signatories: $signatories },
@@ -32,6 +33,16 @@ sample({
 });
 
 sample({
+  clock: $signatories,
+  fn: (signatories) => {
+    const signatoriesArray = Array.from(signatories.values()).map(({ address }) => toAccountId(address));
+
+    return new Set(signatoriesArray).size !== signatoriesArray.length;
+  },
+  target: $hasDuplicateSignatories,
+});
+
+sample({
   clock: signatoryDeleted,
   source: $signatories,
   filter: (signatories, index) => signatories.has(index),
@@ -48,6 +59,7 @@ sample({
 export const signatoryModel = {
   $signatories,
   $ownedSignatoriesWallets,
+  $hasDuplicateSignatories,
   events: {
     signatoriesChanged,
     signatoryDeleted,
