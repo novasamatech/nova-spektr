@@ -46,7 +46,9 @@ export const SelectSignatoriesThreshold = () => {
   const hasOwnedSignatory = !!ownedSignatoriesWallets && ownedSignatoriesWallets?.length > 0;
   const hasEnoughSignatories = signatories.length >= 2;
   const hasEmptySignatory = signatories.map(({ address }) => address).includes('');
-  const canSubmit = hasOwnedSignatory && hasEnoughSignatories && !multisigAlreadyExists && !hasEmptySignatory;
+  const isThresholdValid = threshold.value >= 2 && threshold.value <= signatories.length;
+  const canSubmit =
+    hasOwnedSignatory && hasEnoughSignatories && !multisigAlreadyExists && !hasEmptySignatory && isThresholdValid;
 
   const api = useUnit(flowModel.$api);
 
@@ -123,6 +125,13 @@ export const SelectSignatoriesThreshold = () => {
             variant="error"
           >
             <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
+          </Alert>
+          <Alert
+            active={!isThresholdValid && hasClickedNext}
+            title={t('createMultisigAccount.thresholdErrorTitle')}
+            variant="error"
+          >
+            <Alert.Item withDot={false}>{t('createMultisigAccount.thresholdErrorDescription')}</Alert.Item>
           </Alert>
         </div>
         <div className="mt-auto flex items-center justify-between">
