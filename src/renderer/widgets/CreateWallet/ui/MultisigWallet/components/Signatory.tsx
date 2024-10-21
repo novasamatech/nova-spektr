@@ -182,24 +182,22 @@ export const Signatory = ({
           onChange={onNameChange}
         />
       </div>
-      <div className="flex max-h-full overflow-hidden">
-        <Combobox
-          className="flex-1"
-          label={accountInputLabel}
-          placeholder={t('createMultisigAccount.signatorySelection')}
-          options={options}
-          query={query}
-          value={address}
-          prefixElement={prefixElement}
-          onChange={({ value }) => {
-            onAddressChange(value);
-          }}
-          onInput={handleQueryChange}
-        />
-        {!isOwnAccount && onDelete && (
-          <IconButton className="ml-2 mt-4" name="delete" size={20} onClick={() => onDelete(signtoryIndex)} />
-        )}
-      </div>
+      <Combobox
+        className="flex-1"
+        label={accountInputLabel}
+        placeholder={t('createMultisigAccount.signatorySelection')}
+        options={options}
+        query={query}
+        value={address}
+        prefixElement={prefixElement}
+        onChange={({ value }) => {
+          onAddressChange(value);
+        }}
+        onInput={handleQueryChange}
+      />
+      {!isOwnAccount && onDelete && (
+        <IconButton className="ml-2 mt-4" name="delete" size={20} onClick={() => onDelete(signtoryIndex)} />
+      )}
     </div>
   );
 };
