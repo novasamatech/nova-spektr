@@ -49,7 +49,6 @@ export const SelectSignatoriesThreshold = () => {
   const hasEmptySignatory = signatories.map(({ address }) => address).includes('');
   const isThresholdValid = threshold.value >= MIN_THRESHOLD && threshold.value <= signatories.length;
   const canSubmit =
-      const canSubmit =
     hasOwnedSignatory &&
     hasEnoughSignatories &&
     !multisigAlreadyExists &&
