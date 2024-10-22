@@ -203,9 +203,6 @@ importers:
       tailwind-merge:
         specifier: 2.5.2
         version: 2.5.2
-      tsc-files:
-        specifier: 1.1.4
-        version: 1.1.4(typescript@5.6.3)
       units-css:
         specifier: 0.4.0
         version: 0.4.0
@@ -237,6 +234,9 @@ importers:
       '@jest/types':
         specifier: ^29.6.3
         version: 29.6.3
+      '@jonasgeiler/tsc-files':
+        specifier: 2.3.1
+        version: 2.3.1
       '@playwright/test':
         specifier: ^1.44.1
         version: 1.44.1
@@ -1677,6 +1677,11 @@ packages:
   '@jest/types@29.6.3':
     resolution: {integrity: sha512-u3UPsIilWKOM3F9CXtrG8LEJmNxwoCQC/XVj4IKYXvvpx7QIi/Kg1LI5uDmDpKlac62NUtX7eLjRh+jVZcLOzw==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
+
+  '@jonasgeiler/tsc-files@2.3.1':
+    resolution: {integrity: sha512-uQL3XQIZ0ii0pc2wn1NcRWpXfSpkwYpgw11bNvx1qmHHIU2fGhm7ZJd28bLpJedbsACDx/VkgvwOdH2rPX+V7Q==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   '@jridgewell/gen-mapping@0.3.5':
     resolution: {integrity: sha512-IzL8ZoEDIBRWEzlCcRhOaCupYyN5gdIK+Q6fbFdPDg6HqX6jpkItn7DFIpW9LQzXG6Df9sA7+OKnq0qlz/GaQg==}
@@ -9709,12 +9714,6 @@ packages:
       '@swc/wasm':
         optional: true
 
-  tsc-files@1.1.4:
-    resolution: {integrity: sha512-RePsRsOLru3BPpnf237y1Xe1oCGta8rmSYzM76kYo5tLGsv5R2r3s64yapYorGTPuuLyfS9NVbh9ydzmvNie2w==}
-    hasBin: true
-    peerDependencies:
-      typescript: '>=3'
-
   tsconfig-paths-webpack-plugin@4.1.0:
     resolution: {integrity: sha512-xWFISjviPydmtmgeUAuXp4N1fky+VCtfhOkDUFIv5ea7p4wuTomI4QTrXvFBX2S4jZsmyTSrStQl+E+4w+RzxA==}
     engines: {node: '>=10.13.0'}
@@ -11915,6 +11914,8 @@ snapshots:
       '@types/node': 18.19.55
       '@types/yargs': 17.0.32
       chalk: 4.1.2
+
+  '@jonasgeiler/tsc-files@2.3.1': {}
 
   '@jridgewell/gen-mapping@0.3.5':
     dependencies:
@@ -22060,10 +22061,6 @@ snapshots:
       yn: 3.1.1
     optionalDependencies:
       '@swc/core': 1.7.35(@swc/helpers@0.5.13)
-
-  tsc-files@1.1.4(typescript@5.6.3):
-    dependencies:
-      typescript: 5.6.3
 
   tsconfig-paths-webpack-plugin@4.1.0:
     dependencies:
