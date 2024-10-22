@@ -25,6 +25,7 @@ const config: Config = {
   testEnvironment: 'jsdom',
   coverageReporters: ['json-summary', 'text', 'text-summary'],
   setupFilesAfterEnv: ['@testing-library/jest-dom'],
+  prettierPath: null,
   coverageThreshold: {
     global: {
       branches: 25,

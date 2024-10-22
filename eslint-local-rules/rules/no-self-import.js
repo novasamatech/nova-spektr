@@ -17,6 +17,9 @@ module.exports = {
       recommended: true,
     },
 
+    hasSuggestions: true,
+    fixable: 'code',
+
     schema: [
       {
         type: 'object',
@@ -72,9 +75,10 @@ module.exports = {
         }
 
         const { source } = node;
-        if (!source.value) {
+        if (source.type !== 'Literal') {
           return;
         }
+
         const requestPath = source.value.toString();
 
         // Child import
@@ -116,9 +120,23 @@ module.exports = {
         const sourcePath = path.relative(root, context.filename);
         const destinationPath = path.relative(root, resolvedDestination);
 
+        const relative = path.relative(path.dirname(context.filename), resolvedDestination);
+        const parsed = path.parse(relative);
+        const replacedPath = path.join(parsed.dir, parsed.name);
+
         context.report({
           node,
           message: `Self import through alias is forbidden.\n${sourcePath}\n${destinationPath}`,
+          suggest: [
+            {
+              desc: `Replace with relative path ${replacedPath}`,
+              fix(fixer) {
+                const stringQ = source.raw.charAt(0);
+
+                return fixer.replaceText(source, `${stringQ}${replacedPath}${stringQ}`);
+              },
+            },
+          ],
         });
       },
     };
