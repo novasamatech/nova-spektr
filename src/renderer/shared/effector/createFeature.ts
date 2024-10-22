@@ -1,12 +1,13 @@
 import { type Event, type Scope, type Store, createDomain, createStore, sample } from 'effector';
-import { createGate } from 'effector-react';
+import { createGate, useGate } from 'effector-react';
 import { readonly } from 'patronum';
 
-import { type AnyIdentifier, type InferHandlerFn, skipAction } from '@/shared/di';
+import { type AnyIdentifier, type InferHandlerFn } from '@/shared/di';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 
 type Params<T> = {
   name: string;
+  enable?: Store<boolean>;
   input?: Store<T | null>;
   filter?: (input: T) => IdleState | Omit<FailedState<T>, 'data'> | null;
   scope?: Scope;
@@ -46,7 +47,13 @@ const calculateState = <T>(data: T | null, filter: Params<T>['filter']): State<T
   return { status: 'running', data };
 };
 
-export const createFeature = <T = null>({ name, filter, input = createStore(null), scope }: Params<T>) => {
+export const createFeature = <T = null>({
+  name,
+  filter,
+  input = createStore(null),
+  enable = createStore(true),
+  scope,
+}: Params<T>) => {
   const domain = createDomain(name);
 
   const $input = domain.createStore<T | null>(null);
@@ -72,8 +79,8 @@ export const createFeature = <T = null>({ name, filter, input = createStore(null
 
   sample({
     clock: start,
-    source: { data: input, status: $status },
-    filter: ({ status }) => status !== 'starting' && status !== 'running',
+    source: { data: input, status: $status, enable },
+    filter: ({ status, enable }) => enable && status !== 'starting' && status !== 'running',
     fn: ({ data }) => calculateState(data, filter),
     target: $state,
   });
@@ -173,15 +180,34 @@ export const createFeature = <T = null>({ name, filter, input = createStore(null
   });
 
   const inject = <T extends AnyIdentifier>(identifier: T, fn: InferHandlerFn<T>) => {
-    identifier.registerHandler({
-      fn: (v: never) => {
+    if (identifier.type === 'slot') {
+      // special wrapper for views - we trying to start feature on render
+      const handler = (props: never) => {
+        useGate(gate);
+
+        return fn(props);
+      };
+
+      identifier.registerHandler({
         // TODO create correct feature toggle using effector tools
         // eslint-disable-next-line effector/no-getState
-        const isActive = scope ? scope.getState(isRunning) : isRunning.getState();
+        available: () => (scope ? scope.getState(enable) : enable.getState()),
+        fn: handler,
+      });
+    } else {
+      identifier.registerHandler({
+        available: () => {
+          // TODO create correct feature toggle using effector tools
+          // eslint-disable-next-line effector/no-getState
+          const isFeatureEnabled = scope ? scope.getState(enable) : enable.getState();
+          // eslint-disable-next-line effector/no-getState
+          const isFeatureRunning = scope ? scope.getState(isRunning) : isRunning.getState();
 
-        return isActive ? fn(v) : skipAction;
-      },
-    });
+          return isFeatureEnabled && isFeatureRunning;
+        },
+        fn,
+      });
+    }
   };
 
   // Combine

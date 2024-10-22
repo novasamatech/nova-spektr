@@ -1,5 +1,6 @@
-import { render } from '@testing-library/react';
+import { cleanup, render } from '@testing-library/react';
 import { allSettled, createStore, fork } from 'effector';
+import { Provider as ScopeProvider } from 'effector-react';
 
 import { createPipeline, createSlot } from '@/shared/di';
 
@@ -49,17 +50,14 @@ describe('createFeature', () => {
   it('should integrate with pipeline', async () => {
     const scope = fork();
 
-    const pipeline = createPipeline<string[]>();
+    const pipeline = createPipeline<string[], string>();
     const $input = createStore<{ ready: true }>({ ready: true });
     const featureStatus = createFeature({ name: 'test', input: $input, scope });
-
-    featureStatus.inject(pipeline, (list) => list.concat('1'));
-
-    expect(pipeline.apply(['0'])).toEqual(['0']);
-
     await allSettled(featureStatus.start, { scope });
 
-    expect(pipeline.apply(['0'])).toEqual(['0', '1']);
+    featureStatus.inject(pipeline, (list, meta) => list.concat('1', meta));
+
+    expect(pipeline.apply(['0'], 'meta')).toEqual(['0', '1', 'meta']);
   });
 
   it('should integrate with slot', async () => {
@@ -72,17 +70,43 @@ describe('createFeature', () => {
     featureStatus.inject(slot, () => <span>feature</span>);
 
     const screenIdle = render(<>{slot.render()}</>);
-    expect(screenIdle.container).toMatchInlineSnapshot(`<div />`);
-
-    await allSettled(featureStatus.start, { scope });
-
-    const screenStarted = render(<>{slot.render()}</>);
-    expect(screenStarted.container).toMatchInlineSnapshot(`
+    expect(screenIdle.container).toMatchInlineSnapshot(`
 <div>
   <span>
     feature
   </span>
 </div>
 `);
+  });
+
+  it('should start feature when slot is rendered', async () => {
+    const scope = fork();
+
+    const slot = createSlot();
+    const $input = createStore<{ ready: true }>({ ready: true });
+    const featureStatus = createFeature({ name: 'test', input: $input, scope });
+
+    featureStatus.inject(slot, () => <span>feature</span>);
+
+    render(<>{slot.render()}</>, {
+      wrapper: ({ children }) => <ScopeProvider value={scope}>{children}</ScopeProvider>,
+    });
+    expect(scope.getState(featureStatus.status)).toEqual('running');
+
+    cleanup();
+    expect(scope.getState(featureStatus.status)).toEqual('idle');
+  });
+
+  it('should skip slot when feature disabled', async () => {
+    const scope = fork();
+
+    const slot = createSlot();
+    const $input = createStore<{ ready: true }>({ ready: true });
+    const featureStatus = createFeature({ name: 'test', input: $input, enable: createStore(false), scope });
+
+    featureStatus.inject(slot, () => <span>feature</span>);
+
+    const screenIdle = render(<>{slot.render()}</>);
+    expect(screenIdle.container).toMatchInlineSnapshot(`<div />`);
   });
 });

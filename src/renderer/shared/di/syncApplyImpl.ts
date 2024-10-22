@@ -17,10 +17,12 @@ export const syncApplyImpl = <Input, Output>({ identifier, acc, input }: Params<
     if (!handler) continue;
 
     try {
-      const value = handler.fn({ acc: result, input, index });
-      if (value === skipAction) continue;
+      if (handler.available()) {
+        const value = handler.fn({ acc: result, input, index });
+        if (value === skipAction) continue;
 
-      result = value;
+        result = value;
+      }
     } catch (error) {
       // TODO handle error
       console.error(error);

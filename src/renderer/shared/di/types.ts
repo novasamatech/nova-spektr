@@ -9,14 +9,17 @@ export type HandlerInput<Input, Output> = {
 export type DefaultHandlerFn<Input, Output> = (handlerInput: HandlerInput<Input, Output>) => Output;
 
 export type RegisterHandlerParams<HandlerFn> = {
+  available(): boolean;
   fn: HandlerFn;
 };
 
 export type Handler<Input, Output> = {
+  available(): boolean;
   fn: DefaultHandlerFn<Input, Output>;
 };
 
 export type Identifier<Input, Output, HandlerFn = DefaultHandlerFn<Input, Output>> = {
+  type: string;
   name: string;
   $handlers: Store<Handler<Input, Output>[]>;
   registerHandler: EventCallable<RegisterHandlerParams<HandlerFn>>;

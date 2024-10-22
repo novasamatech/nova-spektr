@@ -9,8 +9,10 @@ export const createAsyncPipeline = <Value, Meta = void>(config?: {
   postprocess?: AsyncPipelineHandler<Value, Meta>;
 }) => {
   const identifier = createAbstractIdentifier<Meta, Promise<Value>, AsyncPipelineHandler<Value, Meta>>({
+    type: 'asyncPipeline',
     name: config?.name ?? 'unknownAsyncPipeline',
     processHandler: (handler) => ({
+      available: handler.available,
       fn: ({ acc, input }) => acc.then((value) => handler.fn(value, input)),
     }),
   });

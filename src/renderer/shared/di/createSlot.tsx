@@ -1,5 +1,4 @@
-import { useUnit } from 'effector-react';
-import { type ComponentType, type ReactNode, memo, useEffect, useMemo, useState } from 'react';
+import { type ComponentType, type ReactNode, memo } from 'react';
 
 import { createAbstractIdentifier } from './createAbstractIdentifier';
 import { shallowEqual } from './lib/shallowEqual';
@@ -18,15 +17,19 @@ import { type Identifier } from './types';
 // Public interface
 type SlotHandler<Props> = ComponentType<Props>;
 
-type SlotIdentifier<Props> = Identifier<Props, ReactNode[], SlotHandler<Props>> & {
+export type SlotIdentifier<Props> = Identifier<Props, ReactNode[], SlotHandler<Props>> & {
   render: (props: Props) => ReactNode;
 };
 
+export type SlotProps = Record<string, unknown> | void;
+
 export const createSlot = <Props extends SlotProps>(config?: { name: string }): SlotIdentifier<Props> => {
   const identifier = createAbstractIdentifier<Props, ReactNode[], SlotHandler<Props>>({
+    type: 'slot',
     name: config?.name ?? 'unknownSlot',
     processHandler(handler) {
       return {
+        available: handler.available,
         fn: ({ acc, input: props, index }) => {
           acc.push(<SlotWrapper key={index} component={handler.fn} props={props} />);
 
@@ -44,34 +47,7 @@ export const createSlot = <Props extends SlotProps>(config?: { name: string }): 
   };
 };
 
-type IsVoid<T> = T extends void ? true : false;
-
-type SlotProps = Record<string, unknown> | void;
-type SlotOptions<Props extends SlotProps> = IsVoid<Props> extends true ? { props?: void } : { props: Props };
-
-export type UseSlotArguments<Props extends SlotProps = void> =
-  IsVoid<Props> extends true
-    ? [slot: SlotIdentifier<Props>, options?: SlotOptions<Props>]
-    : [slot: SlotIdentifier<Props>, options: SlotOptions<Props>];
-
-const useForceUpdate = () => {
-  const [index, setState] = useState(0);
-
-  return [index, () => setState((x) => (x >= Number.MAX_SAFE_INTEGER ? 0 : x + 1))] as const;
-};
-
-export const useSlot = <Props extends SlotProps>(...[slot, options]: UseSlotArguments<Props>) => {
-  const [index, update] = useForceUpdate();
-  const handlers = useUnit(slot.$handlers);
-  const props = (options?.props ?? {}) as Exclude<Props, void>;
-
-  // eslint-disable-next-line effector/no-watch
-  useEffect(() => slot.updateHandlers.watch(update), []);
-
-  return useMemo(() => slot.render(props), [handlers, index, props]);
-};
-
-const SlotWrapper = memo<{ props: any; component: ComponentType<any> }>(
+const SlotWrapper = memo<{ props: SlotProps; component: ComponentType<any> }>(
   ({ props, component: Component }) => {
     // TODO add suspense and error boundary
     return <Component {...props} />;
