@@ -3,7 +3,7 @@ import { type Meta, type StoryFn } from '@storybook/react';
 import { InfoLink } from './InfoLink';
 
 export default {
-  title: 'Info Link',
+  title: 'v1/ui/Info Link',
   component: InfoLink,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof InfoLink>;

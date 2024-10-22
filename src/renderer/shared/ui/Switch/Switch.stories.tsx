@@ -3,7 +3,7 @@ import { type Meta, type StoryFn } from '@storybook/react';
 import { Switch } from './Switch';
 
 export default {
-  title: 'Switch',
+  title: 'v1/ui/Switch',
   component: Switch,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [

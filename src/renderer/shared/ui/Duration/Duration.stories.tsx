@@ -3,7 +3,7 @@ import { type Meta, type StoryFn } from '@storybook/react';
 import { Duration } from './Duration';
 
 export default {
-  title: 'Duration',
+  title: 'v1/ui/Duration',
   component: Duration,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof Duration>;

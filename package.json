@@ -54,7 +54,7 @@
     "lint:webpack": "pnpm lint:generic ./webpack",
     "lint:fix": "pnpm lint --fix",
     "storybook": "storybook dev -p 6006",
-    "build:storybook": "storybook build",
+    "storybook:build": "storybook build -o ./release/storybook",
     "update:chains-file": "node scripts/buildChainsJson.js",
     "update:tokens-file": "node scripts/buildTokensJson.js",
     "githook:pre-commit": "lint-staged --relative",

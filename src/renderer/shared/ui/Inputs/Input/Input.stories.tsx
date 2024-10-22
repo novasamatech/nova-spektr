@@ -5,7 +5,7 @@ import { Icon } from '../../Icon/Icon';
 import { Input } from './Input';
 
 export default {
-  title: 'Input',
+  title: 'v1/ui/Input',
   component: Input,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof Input>;

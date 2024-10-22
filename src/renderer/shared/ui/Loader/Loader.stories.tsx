@@ -3,7 +3,7 @@ import { type Meta, type StoryFn } from '@storybook/react';
 import { Loader } from './Loader';
 
 export default {
-  title: 'Loader ',
+  title: 'v1/ui/Loader',
   component: Loader,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [
