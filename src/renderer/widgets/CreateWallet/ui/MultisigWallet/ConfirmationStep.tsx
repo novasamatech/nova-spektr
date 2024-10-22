@@ -4,7 +4,6 @@ import { useUnit } from 'effector-react';
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { RootExplorers } from '@/shared/lib/utils';
 import { Button, Counter, DetailRow, Icon, IconButton, Separator } from '@/shared/ui';
 import { SignButton } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
@@ -29,7 +28,6 @@ export const ConfirmationStep = () => {
   const api = useUnit(flowModel.$api);
   const fakeTx = useUnit(flowModel.$fakeTx);
   const [isSignatoriesModalOpen, toggleSignatoriesModalOpen] = useToggle();
-  const explorers = chain.value ? chain.value.explorers : RootExplorers;
   const ownedSignatories = useUnit(signatoryModel.$ownedSignatoriesWallets);
 
   return (
@@ -105,7 +103,6 @@ export const ConfirmationStep = () => {
       <SelectedSignatoriesModal
         isOpen={isSignatoriesModalOpen}
         signatories={signatories}
-        explorers={explorers}
         addressPrefix={chain.value.addressPrefix}
         onClose={toggleSignatoriesModalOpen}
       />
