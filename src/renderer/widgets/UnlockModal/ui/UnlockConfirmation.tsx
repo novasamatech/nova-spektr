@@ -84,10 +84,6 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
             />
             <AssetFiatBalance asset={asset} amount={amount} className="text-headline" />
           </div>
-
-          <FootnoteText className="ml-3 rounded bg-block-background px-3 py-2 text-text-secondary">
-            {confirmStore.description}
-          </FootnoteText>
         </div>
 
         <MultisigExistsAlert active={isMultisigExists} />

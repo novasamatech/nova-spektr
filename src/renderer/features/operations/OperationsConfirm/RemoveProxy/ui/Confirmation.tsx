@@ -63,10 +63,6 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
     <div className="flex flex-col items-center gap-y-4 px-5 pb-4 pt-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon name="proxyConfirm" size={60} />
-
-        <FootnoteText className="ml-3 rounded bg-block-background px-3 py-2 text-text-secondary">
-          {confirmStore.description}
-        </FootnoteText>
       </div>
 
       <MultisigExistsAlert active={isMultisigExists} />
