@@ -2,7 +2,7 @@ import { Suspense, lazy } from 'react';
 import { Navigate, type RouteObject } from 'react-router-dom';
 
 import { Paths } from '@/shared/routes';
-import { MainLayout } from '@/widgets/Layout';
+import { AppShell } from '@/features/app-shell';
 
 import { Assets, ReceiveAsset, SendAsset } from './Assets';
 import { Onboarding } from './Onboarding';
@@ -40,7 +40,7 @@ export const ROUTES_CONFIG: RouteObject[] = [
   { path: Paths.ONBOARDING, element: <Onboarding /> },
   {
     path: Paths.ROOT,
-    element: <MainLayout />,
+    element: <AppShell />,
     children: [
       { index: true, element: <Navigate to={Paths.ASSETS} replace /> },
       {

@@ -54,6 +54,8 @@ export { BlockExplorer } from './BlockExplorer/BlockExplorer';
 export { EmptyList } from './EmptyList/EmptyList';
 export { Animation } from './Animation/Animation';
 
+export { type IconNames } from './Icon/data';
+
 // FIXME: Animation component exported separately.
 // Adding them to this file causes to crash all tests which use anything from that file
 // similar issue on stackoverflow: https://stackoverflow.com/questions/49156356/why-does-jest-try-to-resolve-every-component-in-my-index-ts

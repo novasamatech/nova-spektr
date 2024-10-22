@@ -30,12 +30,17 @@ export const useSlot = <Props extends SlotProps>(...[slot, options]: UseSlotArgu
   return useMemo(() => slot.render(props), [handlers, index, props]);
 };
 
-export const usePipeline = <Value, Meta>(pipeline: PipelineIdentifier<Value, Meta>, value: Value, meta: Meta) => {
-  const [index, update] = useForceUpdate();
-  const handlers = useUnit(pipeline.$handlers);
+export type UsePipelineArguments<Value, Meta> =
+  IsVoid<Meta> extends true
+    ? [pipeline: PipelineIdentifier<Value, Meta>, value: Value, meta?: Meta]
+    : [pipeline: PipelineIdentifier<Value, Meta>, value: Value, meta: Meta];
+
+export const usePipeline = <Value, Meta>(...[pipeline, value, meta]: UsePipelineArguments<Value, Meta>) => {
+  const [_, update] = useForceUpdate();
+  const fixedMeta = (meta ?? undefined) as Exclude<Meta, void>;
 
   // eslint-disable-next-line effector/no-watch
   useEffect(() => pipeline.updateHandlers.watch(update), []);
 
-  return useMemo(() => pipeline.apply(value, meta), [handlers, index, value, meta]);
+  return pipeline.apply(value, fixedMeta);
 };
