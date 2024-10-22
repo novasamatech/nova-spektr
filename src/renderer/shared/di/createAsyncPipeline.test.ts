@@ -8,9 +8,11 @@ describe('createAsyncPipeline', () => {
 
     asyncPipeline.registerHandler({
       fn: (v) => setTimeout(100).then(() => [...v, '1']),
+      available: () => true,
     });
     asyncPipeline.registerHandler({
       fn: (v) => [...v, '2'],
+      available: () => true,
     });
 
     const res = await asyncPipeline.apply(['0']);
@@ -21,8 +23,8 @@ describe('createAsyncPipeline', () => {
   it('should pass meta', async () => {
     const asyncPipeline = createAsyncPipeline<string[], { meta: string }>();
 
-    asyncPipeline.registerHandler({ fn: (v, { meta }) => [...v, `${meta}1`] });
-    asyncPipeline.registerHandler({ fn: (v, { meta }) => [...v, `${meta}2`] });
+    asyncPipeline.registerHandler({ fn: (v, { meta }) => [...v, `${meta}1`], available: () => true });
+    asyncPipeline.registerHandler({ fn: (v, { meta }) => [...v, `${meta}2`], available: () => true });
 
     const res = await asyncPipeline.apply(['0'], { meta: '0' });
 
