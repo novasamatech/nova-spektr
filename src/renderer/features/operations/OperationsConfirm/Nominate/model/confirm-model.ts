@@ -23,7 +23,6 @@ type Input = {
   validators: Validator[];
   proxiedAccount?: ProxiedAccount;
   signatory?: Account;
-  description: string;
 
   fee: string;
   totalFee: string;

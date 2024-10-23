@@ -14,14 +14,12 @@ import {
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
-import { BondExtraRules } from '@/features/operations/OperationsValidation';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {
   shards: Account[];
   signatory: Account;
   amount: string;
-  description: string;
 };
 
 const formInitiated = createEvent<WalletData>();
@@ -167,10 +165,6 @@ const $bondForm = createForm<FormParams>({
           },
         },
       ],
-    },
-    description: {
-      init: '',
-      rules: [BondExtraRules.description.maxLength],
     },
   },
   validateOn: ['submit'],
@@ -378,13 +372,10 @@ sample({
   clock: $bondForm.$values.updates,
   source: $networkStore,
   filter: (networkStore) => Boolean(networkStore),
-  fn: (networkStore, formData) => {
+  fn: (_, formData) => {
     const signatory = formData.signatory.accountId ? formData.signatory : undefined;
-    // TODO: update after i18n effector integration
-    const defaultText = `Stake more ${formData.amount} ${networkStore!.asset.symbol}`;
-    const description = signatory ? formData.description || defaultText : '';
 
-    return { ...formData, signatory, description };
+    return { ...formData, signatory };
   },
   target: formChanged,
 });

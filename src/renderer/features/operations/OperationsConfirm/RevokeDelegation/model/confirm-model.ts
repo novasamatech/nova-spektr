@@ -33,7 +33,6 @@ export type Input = {
 
   proxiedAccount?: ProxiedAccount;
   signatory?: Account;
-  description: string;
 
   fee: string;
   totalFee: string;

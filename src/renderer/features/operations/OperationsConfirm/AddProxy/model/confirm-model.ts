@@ -23,7 +23,6 @@ type Input = {
   signatory?: Account;
   proxyType: ProxyType;
   delegate: Address;
-  description: string;
   transaction: Transaction;
   proxiedAccount?: ProxiedAccount;
 

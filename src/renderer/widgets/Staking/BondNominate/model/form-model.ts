@@ -17,7 +17,6 @@ import {
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { BondNominateRules } from '@/features/operations/OperationsValidation';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {
@@ -25,7 +24,6 @@ type FormParams = {
   signatory: Account;
   amount: string;
   destination: Address;
-  description: string;
 };
 
 const formInitiated = createEvent<WalletData>();
@@ -195,10 +193,6 @@ const $bondForm = createForm<FormParams>({
           },
         },
       ],
-    },
-    description: {
-      init: '',
-      rules: [BondNominateRules.description.maxLength],
     },
   },
   validateOn: ['submit'],
@@ -429,13 +423,10 @@ sample({
   clock: $bondForm.$values.updates,
   source: $networkStore,
   filter: (networkStore) => Boolean(networkStore),
-  fn: (networkStore, formData) => {
+  fn: (_, formData) => {
     const signatory = formData.signatory.accountId ? formData.signatory : undefined;
-    // TODO: update after i18n effector integration
-    const defaultText = `Bond ${formData.amount} ${networkStore!.asset.symbol}`;
-    const description = signatory ? formData.description || defaultText : '';
 
-    return { ...formData, signatory, description };
+    return { ...formData, signatory };
   },
   target: formChanged,
 });

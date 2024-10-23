@@ -14,7 +14,6 @@ export type DelegateData = {
   target: Address;
   conviction: Conviction;
   balance: string;
-  description: string;
   locks: Record<string, BN>;
 };
 

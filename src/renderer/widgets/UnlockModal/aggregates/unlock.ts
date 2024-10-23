@@ -154,7 +154,6 @@ sample({
         chain: unlockData.chain!,
         account: unlockData.unlockData!.shards[0],
         signatory: unlockData.unlockData!.signatory,
-        description: unlockData.unlockData!.description,
         coreTxs: unlockData.coreTxs!,
         wrappedTxs: unlockData.wrappedTxs!,
         multisigTxs: unlockData.multisigTxs || [],

@@ -23,7 +23,6 @@ type Input = {
   chain: Chain;
   account: Account;
   signatory?: Account;
-  description: string;
   coreTxs: Transaction[];
   wrappedTxs: Transaction[];
   multisigTxs: Transaction[];
