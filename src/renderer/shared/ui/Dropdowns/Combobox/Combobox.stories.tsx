@@ -6,7 +6,7 @@ import { Identicon } from '../../Identicon/Identicon';
 import { Combobox } from './Combobox';
 
 export default {
-  title: 'Combobox',
+  title: 'v1/ui/Combobox',
   component: Combobox,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [

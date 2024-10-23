@@ -5,7 +5,7 @@ import { type ButtonDropdownOption } from '../common/types';
 import { DropdownButton } from './DropdownButton';
 
 export default {
-  title: 'Dropdown Button',
+  title: 'v1/ui/Dropdown Button',
   component: DropdownButton,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [
@@ -26,13 +26,13 @@ const options: ButtonDropdownOption[] = [
 
 export const Primary = Template.bind({});
 Primary.args = {
-  title: 'Action Dropdown',
+  title: 'v1/ui/Action Dropdown',
   options,
 };
 
 export const Disabled = Template.bind({});
 Disabled.args = {
-  title: 'Action Dropdown',
+  title: 'v1/ui/Action Dropdown',
   options,
   disabled: true,
 };

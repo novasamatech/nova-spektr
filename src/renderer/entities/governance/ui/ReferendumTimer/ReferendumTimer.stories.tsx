@@ -3,7 +3,7 @@ import { type Meta, type StoryFn } from '@storybook/react';
 import { ReferendumTimer } from './ReferendumTimer';
 
 export default {
-  title: 'ReferendumTimer',
+  title: 'v1/entities/ReferendumTimer',
   component: ReferendumTimer,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof ReferendumTimer>;

@@ -5,7 +5,7 @@ import { TEST_ADDRESS } from '@/shared/lib/utils';
 import { SignatoryCard } from './SignatoryCard';
 
 export default {
-  title: 'Signatory',
+  title: 'v1/entities/Signatory',
   component: SignatoryCard,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof SignatoryCard>;

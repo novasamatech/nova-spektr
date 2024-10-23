@@ -3,7 +3,7 @@ import { type Meta, type StoryFn } from '@storybook/react';
 import { Shimmering } from './Shimmering';
 
 export default {
-  title: 'Shimmering',
+  title: 'v1/ui/Shimmering',
   component: Shimmering,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof Shimmering>;

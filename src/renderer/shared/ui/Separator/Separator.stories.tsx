@@ -3,7 +3,7 @@ import { type Meta, type StoryFn } from '@storybook/react';
 import { Separator } from './Separator';
 
 export default {
-  title: 'Separator',
+  title: 'v1/ui/Separator',
   component: Separator,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof Separator>;

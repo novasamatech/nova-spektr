@@ -5,7 +5,7 @@ import { Icon } from '../../Icon/Icon';
 import { Button } from './Button';
 
 export default {
-  title: 'Button',
+  title: 'v1/ui/Button',
   component: Button,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof Button>;

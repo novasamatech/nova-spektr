@@ -5,7 +5,7 @@ import { TEST_ADDRESS } from '@/shared/lib/utils';
 import { Identicon } from './Identicon';
 
 export default {
-  title: 'Identicon',
+  title: 'v1/ui/Identicon',
   component: Identicon,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof Identicon>;

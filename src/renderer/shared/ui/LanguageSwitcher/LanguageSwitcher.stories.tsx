@@ -15,7 +15,7 @@ const languages: LanguageItem[] = [
 ];
 
 export default {
-  title: 'LanguageSwitcher',
+  title: 'v1/ui/LanguageSwitcher',
   component: LanguageSwitcher,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof LanguageSwitcher>;
