@@ -1,8 +1,7 @@
-import { type Explorer } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { toAccountId } from '@/shared/lib/utils';
+import { toAddress } from '@/shared/lib/utils';
 import { BaseModal } from '@/shared/ui';
-import { AddressWithExplorers } from '@/entities/wallet';
+import { AccountAddress } from '@/entities/wallet';
 import { type SignatoryInfo } from '@/widgets/CreateWallet/lib/types';
 
 type Props = {
@@ -10,10 +9,9 @@ type Props = {
   isOpen: boolean;
   signatories: Omit<SignatoryInfo, 'index'>[];
   onClose: () => void;
-  explorers?: Explorer[];
 };
 
-export const SelectedSignatoriesModal = ({ isOpen, signatories, onClose, explorers, addressPrefix }: Props) => {
+export const SelectedSignatoriesModal = ({ isOpen, signatories, onClose, addressPrefix }: Props) => {
   const { t } = useI18n();
 
   return (
@@ -27,17 +25,17 @@ export const SelectedSignatoriesModal = ({ isOpen, signatories, onClose, explore
     >
       <section>
         <ul className="flex flex-col [overflow-y:overlay]">
-          {signatories.map(({ address }) => (
+          {signatories.map(({ address, name }) => (
             <li
               key={address}
               className="group grid h-10 shrink-0 grid-cols-[1fr,40px] items-center pl-5 pr-2 hover:bg-hover"
             >
-              <AddressWithExplorers
-                type="adaptive"
-                className="w-[160px]"
-                accountId={toAccountId(address)}
-                addressPrefix={addressPrefix}
-                explorers={explorers}
+              <AccountAddress
+                size={20}
+                type="short"
+                address={toAddress(address, { prefix: addressPrefix })}
+                name={name}
+                canCopy={true}
               />
             </li>
           ))}

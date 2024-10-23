@@ -5,7 +5,7 @@ import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
 const config: StorybookConfig = {
   framework: '@storybook/react-webpack5',
 
-  stories: ['../src/**/*.mdx', '../src/renderer/**/*.stories.@(ts|tsx)'],
+  stories: ['./intro/*.mdx', '../src/**/*.mdx', '../src/renderer/**/*.stories.@(ts|tsx)'],
 
   addons: [
     '@storybook/addon-links',

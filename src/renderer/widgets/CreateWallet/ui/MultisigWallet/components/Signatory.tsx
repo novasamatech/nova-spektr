@@ -48,7 +48,8 @@ export const Signatory = ({
       accountFn: (a) => toAccountId(address) === a.accountId,
     })?.[0]?.name || '';
 
-  const contactAccountName = contacts.filter((contact) => contact.address === address)?.[0]?.name || '';
+  const contactAccountName =
+    contacts.filter((contact) => toAccountId(contact.address) === toAccountId(address))?.[0]?.name || '';
 
   useEffect(() => {
     if (!isOwnAccount || wallets.length === 0) return;
@@ -116,11 +117,15 @@ export const Signatory = ({
   useEffect(() => {
     if (isOwnAccount || contacts.length === 0) return;
     setOptions(
-      contactsFiltered.map(({ name, address }) => ({
-        id: signtoryIndex.toString(),
-        element: <AddressWithName name={name} address={address} />,
-        value: address,
-      })),
+      contactsFiltered.map(({ name, address }) => {
+        const displayAddress = toAddress(address, { prefix: chain.value.addressPrefix });
+
+        return {
+          id: signtoryIndex.toString(),
+          element: <AddressWithName name={name} address={displayAddress} />,
+          value: displayAddress,
+        };
+      }),
     );
   }, [query, isOwnAccount, contacts, contactsFiltered]);
 
@@ -167,6 +172,9 @@ export const Signatory = ({
     ? t('createMultisigAccount.ownAccountSelection')
     : t('createMultisigAccount.signatoryAddress');
 
+  const hasDuplicateName = !!ownAccountName && !!contactAccountName;
+  const displayName = hasDuplicateName && isOwnAccount ? ownAccountName : contactAccountName;
+
   return (
     <div className="flex gap-x-2">
       <div className="flex-1">
@@ -177,7 +185,7 @@ export const Signatory = ({
           label={t('addressBook.createContact.nameLabel')}
           placeholder={t('addressBook.createContact.namePlaceholder')}
           invalid={false}
-          value={!!ownAccountName || !!contactAccountName ? ownAccountName || contactAccountName : name}
+          value={!!ownAccountName || !!contactAccountName ? displayName : name}
           disabled={!!ownAccountName || !!contactAccountName}
           onChange={onNameChange}
         />
@@ -188,7 +196,7 @@ export const Signatory = ({
         placeholder={t('createMultisigAccount.signatorySelection')}
         options={options}
         query={query}
-        value={address}
+        value={toAddress(address, { prefix: chain.value.addressPrefix })}
         prefixElement={prefixElement}
         onChange={({ value }) => {
           onAddressChange(value);

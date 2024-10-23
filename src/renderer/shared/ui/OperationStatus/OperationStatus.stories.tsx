@@ -3,7 +3,7 @@ import { type Meta, type StoryFn } from '@storybook/react';
 import { OperationStatus } from './OperationStatus';
 
 export default {
-  title: 'OperationStatus',
+  title: 'v1/ui/OperationStatus',
   component: OperationStatus,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof OperationStatus>;

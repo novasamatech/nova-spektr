@@ -3,7 +3,7 @@ import { type Meta, type StoryFn } from '@storybook/react';
 import { LabelHelpBox } from './LabelHelpBox';
 
 export default {
-  title: 'LabelHelpBox',
+  title: 'v1/ui/LabelHelpBox',
   component: LabelHelpBox,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof LabelHelpBox>;
