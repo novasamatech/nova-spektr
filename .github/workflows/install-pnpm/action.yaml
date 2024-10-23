@@ -1,18 +1,18 @@
 runs:
   using: 'composite'
   steps:
+    - name: 🥸 Install pnpm
+      uses: pnpm/action-setup@v4
+      id: pnpm-install
+      with:
+        version: 9
+        run_install: false
+
     - name: 🤞 Install Node.js
       uses: actions/setup-node@v4
       with:
         cache: pnpm
         node-version: 18
-
-    - uses: pnpm/action-setup@v4
-      name: 🥸 Install pnpm
-      id: pnpm-install
-      with:
-        version: 9
-        run_install: false
 
     - name: ⚙️ Install dependencies
       run: pnpm install
