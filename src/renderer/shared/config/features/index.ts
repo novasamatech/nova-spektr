@@ -6,7 +6,7 @@ export const $features = readonly(
     assets: true,
     staking: true,
     governance: true,
-    fellowship: true,
+    fellowship: false,
     operations: true,
     contacts: true,
     notifications: true,
