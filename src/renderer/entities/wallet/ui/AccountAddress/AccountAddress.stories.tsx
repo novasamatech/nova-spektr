@@ -5,7 +5,7 @@ import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 import { AccountAddress } from './AccountAddress';
 
 export default {
-  title: 'Address',
+  title: 'v1/entities/Address',
   component: AccountAddress,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof AccountAddress>;

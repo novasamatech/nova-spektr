@@ -3,7 +3,7 @@ import { type Meta, type StoryFn } from '@storybook/react';
 import { InputArea } from './InputArea';
 
 export default {
-  title: 'InputArea',
+  title: 'v1/ui/InputArea',
   component: InputArea,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof InputArea>;

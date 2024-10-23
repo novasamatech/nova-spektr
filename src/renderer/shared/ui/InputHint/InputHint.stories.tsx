@@ -3,7 +3,7 @@ import { type Meta, type StoryFn } from '@storybook/react';
 import { InputHint } from './InputHint';
 
 export default {
-  title: 'Input Hint',
+  title: 'v1/ui/Input Hint',
   component: InputHint,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof InputHint>;
