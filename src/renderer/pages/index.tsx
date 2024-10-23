@@ -15,6 +15,13 @@ const Notifications = lazy(() => import('./Notifications/Notifications').then((m
 const Operations = lazy(() => import('./Operations/Operations').then((m) => ({ default: m.Operations })));
 const Basket = lazy(() => import('./Basket').then((m) => ({ default: m.Basket })));
 const Governance = lazy(() => import('./Governance').then((m) => ({ default: m.Governance })));
+const GovernanceReferendumDetails = lazy(() =>
+  import('./Governance/ui/GovernanceReferendumDetails').then((m) => ({ default: m.GovernanceReferendumDetails })),
+);
+const GovernanceReferendumList = lazy(() =>
+  import('./Governance/ui/GovernanceReferendumList').then((m) => ({ default: m.GovernanceReferendumList })),
+);
+
 const Staking = lazy(() => import('./Staking').then((m) => ({ default: m.Staking })));
 const Contacts = lazy(() => import('./AddressBook').then((m) => ({ default: m.Contacts })));
 const CreateContact = lazy(() => import('./AddressBook').then((m) => ({ default: m.CreateContact })));
@@ -59,6 +66,26 @@ export const ROUTES_CONFIG: RouteObject[] = [
             <Governance />
           </Suspense>
         ),
+        children: [
+          {
+            path: Paths.GOVERNANCE_LIST,
+            element: (
+              <Suspense fallback={<PageLoadingState />}>
+                <GovernanceReferendumList />
+              </Suspense>
+            ),
+            children: [
+              {
+                path: Paths.GOVERNANCE_REFERENDUM,
+                element: (
+                  <Suspense fallback={null}>
+                    <GovernanceReferendumDetails />
+                  </Suspense>
+                ),
+              },
+            ],
+          },
+        ],
       },
       {
         path: Paths.FELLOWSHIP,
