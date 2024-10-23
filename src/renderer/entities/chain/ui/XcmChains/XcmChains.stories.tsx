@@ -3,7 +3,7 @@ import { type Meta, type StoryFn } from '@storybook/react';
 import { XcmChains } from './XcmChains';
 
 export default {
-  title: 'ui/XcmChains',
+  title: 'v1/entities/XcmChains',
   component: XcmChains,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof XcmChains>;

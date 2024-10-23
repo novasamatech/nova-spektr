@@ -3,7 +3,7 @@ import { type Meta, type StoryFn } from '@storybook/react';
 import { BaseModal } from './BaseModal';
 
 export default {
-  title: 'Base Modal',
+  title: 'v1/ui/Base Modal',
   component: BaseModal,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof BaseModal>;

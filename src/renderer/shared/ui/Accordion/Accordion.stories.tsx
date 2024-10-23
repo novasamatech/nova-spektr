@@ -3,7 +3,7 @@ import { type Meta, type StoryFn } from '@storybook/react';
 import { Accordion } from './Accordion';
 
 export default {
-  title: 'Accordion',
+  title: 'v1/ui/Accordion',
   component: Accordion,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof Accordion>;

@@ -3,7 +3,7 @@ import { type Meta, type StoryFn } from '@storybook/react';
 import { ConfirmModal } from './ConfirmModal';
 
 export default {
-  title: 'ConfirmModal',
+  title: 'v1/ui/ConfirmModal',
   component: ConfirmModal,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof ConfirmModal>;
