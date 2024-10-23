@@ -221,7 +221,6 @@ sample({
       proxiedAccount: account!,
       spawner: toAddress(proxy.accountId, { prefix: chain.addressPrefix }),
       proxyType: proxy.proxyType,
-      description: '',
     };
   },
   target: $removeProxyStore,
@@ -421,7 +420,6 @@ sample({
       chain: proxyData.removeProxyStore!.chain,
       account: proxyData.removeProxyStore!.account,
       signatory: proxyData.removeProxyStore!.signatory,
-      description: proxyData.removeProxyStore!.description,
       wrappedTxs: [proxyData.wrappedTx!],
       coreTxs: [proxyData.coreTx!],
       multisigTxs: proxyData.multisigTx ? [proxyData.multisigTx] : [],

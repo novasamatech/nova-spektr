@@ -11,7 +11,6 @@ export type RevokeDelegationData = {
   target: Address;
   account: Account;
   signatory?: Account;
-  description: string;
   tracks: number[];
   locks: Record<string, BN>;
 };

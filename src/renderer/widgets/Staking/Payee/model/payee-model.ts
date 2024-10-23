@@ -311,7 +311,6 @@ sample({
       chain: payeeFlowData.walletData!.chain,
       account: payeeFlowData.payeeData!.shards[0],
       signatory: payeeFlowData.payeeData!.signatory,
-      description: payeeFlowData.payeeData!.description,
       coreTxs: payeeFlowData.transactions!.map((tx) => tx.coreTx),
       wrappedTxs: payeeFlowData.transactions!.map((tx) => tx.wrappedTx),
       multisigTxs: payeeFlowData.transactions!.map((tx) => tx.multisigTx).filter(nonNullable),

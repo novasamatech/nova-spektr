@@ -19,7 +19,6 @@ export type ConfirmInfo = {
   id?: number;
   account: Account;
   signatory?: Account;
-  description: string;
   chain: Chain;
   wrappedTransactions: WrappedTransactions;
 };

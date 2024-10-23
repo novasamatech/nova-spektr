@@ -12,7 +12,6 @@ type Input = {
   account: Account;
   proxiedAccount?: ProxiedAccount;
   signatory?: Account;
-  description: string;
 
   proxyDeposit: string;
   fee: string;

@@ -146,7 +146,6 @@ sample({
       signatory: formParams.signatory,
       balance: formParams.amount,
       conviction: formParams.conviction,
-      description: formParams.description,
       locks: formParams.locks,
     };
   },
@@ -404,7 +403,6 @@ sample({
       chain: delegateFlowData.walletData.chain!,
       account: delegateFlowData.accounts[0],
       signatory: delegateFlowData.delegateData!.signatory,
-      description: delegateFlowData.delegateData!.description,
       coreTxs: delegateFlowData.transactions!.map((tx) => tx.coreTx),
       wrappedTxs: delegateFlowData.transactions!.map((tx) => tx.wrappedTx),
       multisigTxs: delegateFlowData.transactions!.map((tx) => tx.multisigTx).filter(nonNullable),

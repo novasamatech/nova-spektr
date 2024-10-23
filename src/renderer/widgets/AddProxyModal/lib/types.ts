@@ -15,6 +15,5 @@ export type AddProxyStore = {
   signatory?: Account;
   delegate: Address;
   proxyType: ProxyType;
-  description: string;
   proxyDeposit: string;
 };

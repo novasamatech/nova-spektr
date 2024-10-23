@@ -35,7 +35,6 @@ type Input = {
   signatory?: Account;
   amount: string;
   destination: Address;
-  description: string;
 
   fee: string;
   xcmFee: string;

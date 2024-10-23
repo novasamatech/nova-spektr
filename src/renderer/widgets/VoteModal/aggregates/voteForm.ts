@@ -20,7 +20,6 @@ import { type VoteConfirm, voteConfirmModel } from '@/features/operations/Operat
 type Form = {
   amount: BN | null;
   conviction: Conviction;
-  description: string;
   decision: 'aye' | 'nay' | 'abstain' | null;
 };
 
@@ -107,7 +106,6 @@ const transactionForm = createTransactionForm<Form>({
       },
       conviction: { init: 'Locked1x' },
       decision: { init: null },
-      description: { init: '' },
     },
   },
 });
@@ -190,14 +188,13 @@ sample({
   filter: ({ network, wrappedTransactions }, { account, decision }) => {
     return nonNullable(network) && nonNullable(account) && nonNullable(decision) && nonNullable(wrappedTransactions);
   },
-  fn: ({ existingVote, network, wrappedTransactions }, { account, signatory, description }): VoteConfirm => {
+  fn: ({ existingVote, network, wrappedTransactions }, { account, signatory }): VoteConfirm => {
     return {
       api: network!.api,
       chain: network!.chain,
       asset: network!.asset,
       account: account!,
       signatory: signatory ?? undefined,
-      description: description,
       existingVote,
       wrappedTransactions: wrappedTransactions!,
     };

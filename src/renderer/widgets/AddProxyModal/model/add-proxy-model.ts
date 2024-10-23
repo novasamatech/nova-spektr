@@ -144,7 +144,6 @@ sample({
       chain: proxyData.addProxyStore!.chain,
       account: proxyData.addProxyStore!.account,
       signatory: proxyData.addProxyStore!.signatory,
-      description: proxyData.addProxyStore!.description,
       coreTxs: [proxyData.coreTx!],
       wrappedTxs: [proxyData.wrappedTx!],
       multisigTxs: proxyData.multisigTx ? [proxyData.multisigTx] : [],
