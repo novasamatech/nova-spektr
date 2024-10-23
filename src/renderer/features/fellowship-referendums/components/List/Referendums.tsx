@@ -20,18 +20,18 @@ type Props = {
 export const Referendums = memo<Props>(({ onSelect }) => {
   useGate(referendumsFeatureStatus.gate);
 
-  const isSerching = false;
+  const isSearching = false;
   const isTitlesLoading = false;
 
   const featureState = useUnit(referendumsFeatureStatus.state);
   const referendums = useUnit(referendumListModel.$filteredReferendum);
-  const fulfulled = useUnit(referendumListModel.$fulfulled);
+  const fulfilled = useUnit(referendumListModel.$fulfilled);
 
   const hasNetworkError = featureState.status === 'failed' && featureState.error.message === ERROR.networkDisabled;
 
   const shouldShowNetworkDisabledError = hasNetworkError && referendums.length === 0;
   const shouldShowNetworkDisabledWarning = hasNetworkError && referendums.length > 0;
-  const shouldShowLoadingState = (!fulfulled || (isSerching && isTitlesLoading)) && !shouldShowNetworkDisabledWarning;
+  const shouldShowLoadingState = (!fulfilled || (isSearching && isTitlesLoading)) && !shouldShowNetworkDisabledWarning;
   const shouldRenderEmptyState = !shouldShowLoadingState && !hasNetworkError && referendums.length === 0;
   const shouldRenderList = shouldShowLoadingState || (!shouldRenderEmptyState && !shouldShowNetworkDisabledError);
 

@@ -28,6 +28,8 @@ export const Paths = {
 
   // Governance
   GOVERNANCE: '/governance',
+  GOVERNANCE_LIST: '/governance/:chainId',
+  GOVERNANCE_REFERENDUM: '/governance/:chainId/referendum/:referendumId',
 
   // Fellowship
   FELLOWSHIP: '/fellowship',

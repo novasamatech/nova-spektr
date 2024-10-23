@@ -95,7 +95,7 @@ export const governancePageAggregate = {
   $all: $displayedCurrentReferendums,
   $ongoing: readonly($ongoing),
   $completed: readonly($completed),
-  $isSerching: filterModel.$query.map((x) => x.length > 0),
+  $isSearching: filterModel.$query.map((x) => x.length > 0),
   $isLoading: listAggregate.$isLoading,
   $isTitlesLoading: listAggregate.$isTitlesLoading,
 

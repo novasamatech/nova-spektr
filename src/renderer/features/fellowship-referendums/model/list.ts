@@ -97,5 +97,5 @@ export const referendumListModel = {
   $completed,
   $meta,
   $pending: or(collectiveDomain.referendum.pending, referendumsFeatureStatus.isStarting),
-  $fulfulled: and(collectiveDomain.referendum.fulfilled, referendumsFeatureStatus.isRunning),
+  $fulfilled: and(collectiveDomain.referendum.fulfilled, referendumsFeatureStatus.isRunning),
 };
