@@ -23,6 +23,7 @@ jobs:
       - name: ⚙️ Install s3cmd
         uses: ./.github/workflows/setup-s3cmd
         with:
+          s3_region: nl-ams
           s3_access_key: ${{ secrets.S3_ACCESS_KEY }}
           s3_secret_key: ${{ secrets.S3_SECRET_KEY }}
 
