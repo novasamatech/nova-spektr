@@ -11,7 +11,7 @@ const preview: Preview = {
     options: {
       storySort: {
         method: 'alphabetical',
-        order: ['Design System', ['kit', 'entities'], 'v1', ['ui', 'entities']],
+        order: ['Design System', ['kit', 'entities'], 'v1', ['ui', 'entities'], '*'],
       },
     },
   },
