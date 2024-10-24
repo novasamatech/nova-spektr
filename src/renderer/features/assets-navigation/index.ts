@@ -12,5 +12,10 @@ export const assetsNavigationFeature = createFeature({
 });
 
 assetsNavigationFeature.inject(navigationTopLinks, (items) => {
-  return items.concat({ order: 0, icon: 'asset', title: 'navigation.balancesLabel', link: Paths.ASSETS });
+  return items.concat({
+    order: 0,
+    icon: 'asset',
+    title: 'navigation.balancesLabel',
+    link: Paths.ASSETS,
+  });
 });

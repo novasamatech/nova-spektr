@@ -1,7 +1,7 @@
 import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/effector';
 import { Paths } from '@/shared/routes';
-import { navigationTopLinks } from '../app-shell';
+import { navigationTopLinks } from '@/features/app-shell';
 
 export const contactsNavigationFeature = createFeature({
   name: 'Contacts navigation',
