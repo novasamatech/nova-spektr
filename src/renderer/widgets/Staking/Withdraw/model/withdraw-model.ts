@@ -150,7 +150,6 @@ sample({
       chain: withdrawData.networkStore!.chain,
       account: withdrawData.withdrawData!.shards[0],
       signatory: withdrawData.withdrawData!.signatory,
-      description: withdrawData.withdrawData!.description,
       coreTxs: withdrawData.coreTxs!,
       wrappedTxs: withdrawData.wrappedTxs!,
       multisigTxs: withdrawData.multisigTxs || [],

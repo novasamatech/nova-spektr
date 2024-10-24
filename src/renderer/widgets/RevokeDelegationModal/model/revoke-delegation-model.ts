@@ -138,7 +138,6 @@ sample({
     return accounts.map((account) => ({
       account,
       signatory: undefined,
-      description: '',
       target: delegate,
       tracks: Object.keys(
         activeTracks[delegate][toAddress(account.accountId, { prefix: walletData.chain?.addressPrefix })],
@@ -360,7 +359,6 @@ sample({
       chain: walletData.chain!,
       account: revokeDelegationData[0]!.account,
       signatory: revokeDelegationData[0]!.signatory,
-      description: revokeDelegationData[0]!.description,
       coreTxs: transactions!.map((tx) => tx.coreTx),
       wrappedTxs: transactions!.map((tx) => tx.wrappedTx),
       multisigTxs: transactions!.map((tx) => tx.multisigTx).filter(nonNullable),

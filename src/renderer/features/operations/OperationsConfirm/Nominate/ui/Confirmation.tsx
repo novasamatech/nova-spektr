@@ -60,10 +60,6 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
       <div className="flex w-modal flex-col items-center gap-y-4 px-5 pb-4 pt-4">
         <div className="mb-2 flex flex-col items-center gap-y-3">
           <Icon className="text-icon-default" name="changeValidatorsConfirm" size={60} />
-
-          <FootnoteText className="ml-3 rounded bg-block-background px-3 py-2 text-text-secondary">
-            {confirmStore.description}
-          </FootnoteText>
         </div>
 
         <MultisigExistsAlert active={isMultisigExists} />

@@ -10,21 +10,18 @@ import {
   isStringsMatchQuery,
   stakeableAmount,
   toAddress,
-  toShortAddress,
   transferableAmount,
   validateAddress,
 } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { PayeeRules } from '@/features/operations/OperationsValidation';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {
   shards: Account[];
   signatory: Account;
   destination: Address;
-  description: string;
 };
 
 const formInitiated = createEvent<WalletData>();
@@ -141,10 +138,6 @@ const $payeeForm = createForm<FormParams>({
           },
         },
       ],
-    },
-    description: {
-      init: '',
-      rules: [PayeeRules.description.maxLength],
     },
   },
   validateOn: ['submit'],
@@ -367,17 +360,12 @@ sample({
   filter: (networkStore) => Boolean(networkStore),
   fn: (networkStore, formData) => {
     const signatory = formData.signatory.accountId ? formData.signatory : undefined;
-    // TODO: update after i18n effector integration
     const destinationAddress = toAddress(formData.destination, { prefix: networkStore!.chain.addressPrefix });
-    const shortAddress = toShortAddress(destinationAddress);
-    const defaultText = `Change reward destination to ${shortAddress || 'restake'}`;
-    const description = signatory ? formData.description || defaultText : '';
 
     return {
       ...formData,
       destination: destinationAddress,
       signatory,
-      description,
     };
   },
   target: formChanged,

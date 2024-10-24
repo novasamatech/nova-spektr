@@ -28,7 +28,6 @@ type Input = {
   signatory?: Account;
   amount: string;
   destination: string;
-  description: string;
 
   fee: string;
   totalFee: string;

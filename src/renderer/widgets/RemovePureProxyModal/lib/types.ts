@@ -23,5 +23,4 @@ export type RemoveProxyStore = {
   signatory?: Account;
   spawner: Address;
   proxyType: ProxyType;
-  description: string;
 };

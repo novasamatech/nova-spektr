@@ -22,7 +22,6 @@ type Input = {
   proxiedAccount?: ProxiedAccount;
   signatory?: Account;
   destination?: string;
-  description: string;
 
   fee: string;
   totalFee: string;
