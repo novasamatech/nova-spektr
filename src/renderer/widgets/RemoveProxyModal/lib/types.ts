@@ -22,5 +22,4 @@ export type RemoveProxyStore = {
   delegate: Address;
   proxyType: ProxyType;
   delay: number;
-  description: string;
 };

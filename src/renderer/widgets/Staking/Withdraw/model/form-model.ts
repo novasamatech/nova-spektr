@@ -23,7 +23,6 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { type StakingMap, eraService, useStakingData } from '@/entities/staking';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { WithdrawRules } from '@/features/operations/OperationsValidation';
 import { type NetworkStore } from '../lib/types';
 
 type BalanceMap = { balance: string; withdraw: string };
@@ -32,7 +31,6 @@ type FormParams = {
   shards: Account[];
   signatory: Account;
   amount: string;
-  description: string;
 };
 
 type FormSubmitEvent = {
@@ -162,10 +160,6 @@ const $withdrawForm = createForm<FormParams>({
           },
         },
       ],
-    },
-    description: {
-      init: '',
-      rules: [WithdrawRules.description.maxLength],
     },
   },
   validateOn: ['submit'],
@@ -566,13 +560,10 @@ sample({
   filter: ({ network, transactions }) => {
     return Boolean(network) && Boolean(transactions);
   },
-  fn: ({ amount, realAccounts, network, transactions, isProxy, ...fee }, formData) => {
+  fn: ({ amount, realAccounts, transactions, isProxy, ...fee }, formData) => {
     const { shards, ...rest } = formData;
 
     const signatory = formData.signatory.accountId ? formData.signatory : undefined;
-    // TODO: update after i18n effector integration
-    const defaultText = `Redeem ${formData.amount} ${network!.asset.symbol}`;
-    const description = signatory ? formData.description || defaultText : '';
 
     return {
       transactions: transactions!.map((tx) => ({
@@ -586,7 +577,6 @@ sample({
         shards: realAccounts,
         amount,
         signatory,
-        description,
         ...(isProxy && { proxiedAccount: shards[0] as ProxiedAccount }),
       },
     };

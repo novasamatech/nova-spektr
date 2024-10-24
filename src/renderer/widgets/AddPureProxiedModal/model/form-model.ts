@@ -21,7 +21,6 @@ import {
   getProxyTypes,
   isStringsMatchQuery,
   toAddress,
-  toShortAddress,
   transferableAmount,
 } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -29,7 +28,6 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { operationsModel, operationsUtils } from '@/entities/operations';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { AddPureProxiedRules } from '@/features/operations/OperationsValidation';
 import { proxiesUtils } from '@/features/proxies';
 import { walletSelectModel } from '@/features/wallets';
 
@@ -37,7 +35,6 @@ type FormParams = {
   chain: Chain;
   account: Account;
   signatory: Account;
-  description: string;
 };
 
 type FormSubmitEvent = {
@@ -137,10 +134,6 @@ const $proxyForm = createForm<FormParams>({
           },
         },
       ],
-    },
-    description: {
-      init: '',
-      rules: [AddPureProxiedRules.description.maxLength],
     },
   },
   validateOn: ['submit'],
@@ -511,11 +504,6 @@ sample({
   filter: ({ transaction }) => Boolean(transaction),
   fn: ({ proxyDeposit, multisigDeposit, realAccount, transaction, isProxy, fee }, formData) => {
     const signatory = formData.signatory.accountId ? formData.signatory : undefined;
-    const proxiedAddress = toAddress(formData.account.accountId, {
-      prefix: formData.chain.addressPrefix,
-    });
-    const multisigDescription = `Create pure proxy for ${toShortAddress(proxiedAddress)}`; // TODO: update after i18n effector integration
-    const description = signatory ? formData.description || multisigDescription : '';
 
     return {
       transactions: {
@@ -528,7 +516,6 @@ sample({
         fee,
         account: realAccount,
         signatory,
-        description,
         proxyDeposit,
         multisigDeposit,
         ...(isProxy && { proxiedAccount: formData.account as ProxiedAccount }),

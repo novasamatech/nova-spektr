@@ -366,7 +366,6 @@ sample({
       chain: nominateFlowData.walletData!.chain,
       account: nominateFlowData.nominateData!.shards[0],
       signatory: nominateFlowData.nominateData!.signatory,
-      description: nominateFlowData.nominateData!.description,
       coreTxs: nominateFlowData.transactions!.map((tx) => tx.coreTx),
       wrappedTxs: nominateFlowData.transactions!.map((tx) => tx.wrappedTx),
       multisigTxs: nominateFlowData.transactions!.map((tx) => tx.multisigTx).filter(nonNullable),

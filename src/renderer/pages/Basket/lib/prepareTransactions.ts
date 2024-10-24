@@ -484,7 +484,6 @@ async function prepareUnlockTransaction({ transaction, wallets, chains, apis, fe
     id: transaction.id,
     shards: [account!],
     amount: coreTx.args.value,
-    description: '',
     chain,
     asset: chain.assets[0],
 
@@ -679,7 +678,6 @@ async function prepareVoteTransaction({ transaction, wallets, chains, apis, feeM
       transaction: transaction.coreTx,
       txWrappers: transaction.txWrappers,
     }),
-    description: '',
   } satisfies VoteConfirm;
 }
 
@@ -702,7 +700,6 @@ async function prepareRemoveVoteTransaction({ transaction, wallets, chains, apis
     api,
     asset: chain.assets[0],
     votes: coreTxs.map((t: Transaction) => t.args),
-    description: '',
   } satisfies RemoveVoteConfirm;
 }
 
@@ -731,6 +728,5 @@ async function prepareCollectiveVoteTransaction({ transaction, wallets, chains, 
       transaction: transaction.coreTx,
       txWrappers: transaction.txWrappers,
     }),
-    description: '',
   } satisfies CollectiveVoteConfirm;
 }

@@ -94,10 +94,6 @@ export const Confirmation = ({
             />
             <AssetFiatBalance asset={confirmStore.asset} amount={amountValue} className="text-headline" />
           </div>
-
-          <FootnoteText className="ml-3 rounded bg-block-background px-3 py-2 text-text-secondary">
-            {confirmStore.description}
-          </FootnoteText>
         </div>
 
         <MultisigExistsAlert active={isMultisigExists} />

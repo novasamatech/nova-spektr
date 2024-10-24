@@ -23,7 +23,6 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { type StakingMap, useStakingData } from '@/entities/staking';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { UnstakeRules } from '@/features/operations/OperationsValidation';
 import { type NetworkStore } from '../lib/types';
 
 type BalanceMap = { balance: string; stake: string };
@@ -32,7 +31,6 @@ type FormParams = {
   shards: Account[];
   signatory: Account;
   amount: string;
-  description: string;
 };
 
 type FormSubmitEvent = {
@@ -189,10 +187,6 @@ const $unstakeForm = createForm<FormParams>({
           },
         },
       ],
-    },
-    description: {
-      init: '',
-      rules: [UnstakeRules.description.maxLength],
     },
   },
   validateOn: ['submit'],
@@ -610,9 +604,7 @@ sample({
     const { shards, ...rest } = formData;
 
     const signatory = formData.signatory.accountId ? formData.signatory : undefined;
-    // TODO: update after i18n effector integration
-    const defaultText = `Unstake ${formData.amount} ${network!.asset.symbol}`;
-    const description = signatory ? formData.description || defaultText : '';
+
     const amount = formatAmount(rest.amount, network!.asset.precision);
 
     return {
@@ -627,7 +619,6 @@ sample({
         shards: realAccounts,
         amount,
         signatory,
-        description,
         ...(isProxy && { proxiedAccount: shards[0] as ProxiedAccount }),
       },
     };

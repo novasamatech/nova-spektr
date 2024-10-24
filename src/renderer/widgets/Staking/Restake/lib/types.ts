@@ -19,7 +19,6 @@ export type RestakeStore = {
   proxiedAccount?: ProxiedAccount;
   signatory?: Account;
   amount: string;
-  description: string;
 
   fee: string;
   totalFee: string;

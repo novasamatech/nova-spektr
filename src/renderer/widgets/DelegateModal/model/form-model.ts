@@ -18,7 +18,6 @@ import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
-import { BondNominateRules } from '@/features/operations/OperationsValidation';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {
@@ -26,7 +25,6 @@ type FormParams = {
   signatory: Account;
   amount: string;
   conviction: Conviction;
-  description: string;
   locks: Record<string, BN>;
 };
 
@@ -216,10 +214,6 @@ const $delegateForm = createForm<FormParams>({
       init: 'Locked1x',
       rules: [],
     },
-    description: {
-      init: '',
-      rules: [BondNominateRules.description.maxLength],
-    },
     locks: {
       init: {},
       rules: [],
@@ -395,14 +389,11 @@ sample({
   clock: $delegateForm.$values.updates,
   source: { networkStore: $networkStore, accounts: $accounts },
   filter: (networkStore) => Boolean(networkStore),
-  fn: ({ networkStore, accounts }, formData) => {
+  fn: ({ accounts }, formData) => {
     const signatory = formData.signatory.accountId ? formData.signatory : undefined;
     const locks = accounts.reduce((acc, val) => ({ ...acc, [val.account.accountId]: val.lock }), {});
-    // TODO: update after i18n effector integration
-    const defaultText = `Delegate ${formData.amount} ${networkStore!.asset.symbol}`;
-    const description = signatory ? formData.description || defaultText : '';
 
-    return { ...formData, signatory, description, locks };
+    return { ...formData, signatory, locks };
   },
   target: formChanged,
 });

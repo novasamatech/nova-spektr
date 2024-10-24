@@ -19,7 +19,6 @@ import { TEST_ACCOUNTS, getProxyTypes, isStringsMatchQuery, toAddress, transfera
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { RemovePureProxiedRules } from '@/features/operations/OperationsValidation';
 import { proxiesUtils } from '@/features/proxies';
 import { walletSelectModel } from '@/features/wallets';
 
@@ -33,7 +32,6 @@ type ProxyAccounts = {
 
 type FormParams = {
   signatory: Account;
-  description: string;
 };
 
 type FormSubmitEvent = PartialBy<FormParams, 'signatory'>;
@@ -104,10 +102,6 @@ const $proxyForm = createForm<FormParams>({
           },
         },
       ],
-    },
-    description: {
-      init: '',
-      rules: [RemovePureProxiedRules.description.maxLength],
     },
   },
   validateOn: ['submit'],
@@ -295,7 +289,6 @@ sample({
     return {
       ...formStore,
       signatory: undefined,
-      description: '',
     };
   },
   target: formSubmitted,
@@ -338,18 +331,12 @@ sample({
     account: $account,
   },
   filter: ({ chain, account }) => Boolean(chain) && Boolean(account),
-  fn: ({ chain, account }, formData) => {
+  fn: (_, formData) => {
     const signatory = Object.keys(formData.signatory).length > 0 ? formData.signatory : undefined;
-    const proxied = toAddress(account!.accountId, {
-      prefix: chain!.addressPrefix,
-    });
-    const multisigDescription = `Remove pure proxy for ${proxied}`; // TODO: update after i18n effector integration
-    const description = signatory ? formData.description || multisigDescription : '';
 
     return {
       ...formData,
       signatory,
-      description,
     };
   },
   target: formSubmitted,

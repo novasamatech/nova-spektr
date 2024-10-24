@@ -38,7 +38,6 @@ describe('widgets/AddPureProxyModal/model/submit-model', () => {
       wrappedTxs: [{}] as Transaction[],
       txPayloads: [{}] as Uint8Array[],
       signatures: ['0x00'],
-      description: '',
     };
 
     await allSettled(submitModel.events.formInitiated, { scope, params: store });

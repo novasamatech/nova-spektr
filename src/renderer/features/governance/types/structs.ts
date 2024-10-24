@@ -52,7 +52,6 @@ export type UnlockFormData = {
   id?: number;
   shards: AccountWithClaim[];
   amount: string;
-  description: string;
   proxiedAccount?: ProxiedAccount & ClaimData;
   signatory?: Account;
   chain: Chain;

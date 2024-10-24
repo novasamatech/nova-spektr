@@ -149,7 +149,6 @@ sample({
       chain: transferData.networkStore!.chain,
       account: transferData.restakeStore!.shards[0],
       signatory: transferData.restakeStore!.signatory,
-      description: transferData.restakeStore!.description,
       wrappedTxs: transferData.wrappedTxs!,
       coreTxs: transferData.coreTxs!,
       multisigTxs: transferData.multisigTxs || [],

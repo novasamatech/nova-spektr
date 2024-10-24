@@ -219,7 +219,6 @@ sample({
   fn: (stores, signParams) => {
     const store = stores[0];
     const { meta } = store;
-    const defaultText = `Vote for referendum #${meta.wrappedTransactions.coreTx.args.referendum}`;
 
     return {
       signatures: signParams.signatures,
@@ -228,7 +227,6 @@ sample({
       chain: meta.chain,
       account: meta.account,
       signatory: meta.signatory,
-      description: meta.description || defaultText,
       wrappedTxs: [meta.wrappedTransactions.wrappedTx],
       coreTxs: [meta.wrappedTransactions.coreTx],
       multisigTxs: meta.wrappedTransactions.multisigTx ? [meta.wrappedTransactions.multisigTx] : [],

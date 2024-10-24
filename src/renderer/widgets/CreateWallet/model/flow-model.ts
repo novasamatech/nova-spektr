@@ -368,7 +368,6 @@ sample({
       coreTxs: [coreTx!],
       wrappedTxs: [wrappedTx!],
       multisigTxs: multisigTx ? [multisigTx] : [],
-      description: '',
     },
     step: Step.SUBMIT,
   }),

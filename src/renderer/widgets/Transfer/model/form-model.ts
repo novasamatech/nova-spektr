@@ -14,15 +14,7 @@ import {
   type ProxyTxWrapper,
   type Transaction,
 } from '@/shared/core';
-import {
-  ZERO_BALANCE,
-  formatAmount,
-  getAssetId,
-  toAccountId,
-  toAddress,
-  toShortAddress,
-  transferableAmount,
-} from '@/shared/lib/utils';
+import { ZERO_BALANCE, formatAmount, getAssetId, toAccountId, toAddress, transferableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
@@ -40,7 +32,6 @@ type FormParams = {
   signatory: Account;
   destination: Address;
   amount: string;
-  description: string;
 };
 
 type FormSubmitEvent = {
@@ -145,10 +136,6 @@ const $transferForm = createForm<FormParams>({
           }),
         ),
       ],
-    },
-    description: {
-      init: '',
-      rules: [TransferRules.description.maxLength],
     },
   },
   validateOn: ['submit'],
@@ -607,10 +594,7 @@ sample({
   },
   fn: ({ realAccount, network, transaction, isProxy, ...fee }, formData) => {
     const signatory = formData.signatory.accountId ? formData.signatory : undefined;
-    // TODO: update after i18n effector integration
-    const shortAddress = toShortAddress(formData.destination);
-    const defaultText = `Transfer ${formData.amount} ${network!.asset.symbol} to ${shortAddress}`;
-    const description = signatory ? formData.description || defaultText : '';
+
     const amount = formatAmount(formData.amount, network!.asset.precision);
 
     return {
@@ -625,7 +609,6 @@ sample({
         account: realAccount,
         amount,
         signatory,
-        description,
         ...(isProxy && { proxiedAccount: formData.account as ProxiedAccount }),
       },
     };
