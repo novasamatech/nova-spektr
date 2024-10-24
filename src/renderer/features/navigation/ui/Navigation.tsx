@@ -8,7 +8,7 @@ import { basketModel } from '@/entities/basket';
 import { useMultisigTx } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
-import { basketUtils } from '../../operations/OperationsConfirm';
+import { basketUtils } from '@/features/operations/OperationsConfirm';
 
 import { NavItem, type Props as NavItemProps } from './NavItem';
 

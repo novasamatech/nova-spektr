@@ -6,7 +6,7 @@ import {
   defineMethod,
 } from '@substrate/txwrapper-polkadot';
 
-import { type TransactionVote } from '../../../governance';
+import { type TransactionVote } from '@/entities/governance';
 
 interface UnlockArgs extends Args {
   /**

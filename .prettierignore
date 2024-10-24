@@ -1,5 +1,9 @@
-src/renderer/shared/i18n/locales
-node_modules/
+src/renderer/shared/i18n/locales/*.json
+node_modules
 package.json
-coverage/
-*.md
+pnpm-lock.yaml
+coverage
+release
+.swc
+.github
+.husky

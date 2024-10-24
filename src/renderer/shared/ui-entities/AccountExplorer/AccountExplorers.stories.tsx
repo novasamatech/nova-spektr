@@ -1,7 +1,7 @@
 import { type Meta, type StoryObj } from '@storybook/react';
 
 import { type Chain } from '@/shared/core';
-import { FootnoteText } from '../../ui';
+import { FootnoteText } from '@/shared/ui';
 
 import { AccountExplorers } from './AccountExplorers';
 
