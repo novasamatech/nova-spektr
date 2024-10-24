@@ -17,7 +17,7 @@ export const Navigation = memo(() => {
 
   return (
     <nav className="h-full overflow-y-auto">
-      <ul className="flex h-full flex-col gap-2">
+      <div className="flex h-full flex-col gap-2">
         {upperItems.map(({ icon, title, link, badge }) => (
           <NavItem key={link} icon={icon} title={title} link={link} badge={badge} />
         ))}
@@ -27,7 +27,7 @@ export const Navigation = memo(() => {
             <NavItem key={link} icon={icon} title={title} link={link} badge={badge} />
           ))}
         </div>
-      </ul>
+      </div>
     </nav>
   );
 });
