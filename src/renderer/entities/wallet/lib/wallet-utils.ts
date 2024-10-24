@@ -142,8 +142,8 @@ function getWalletFilteredAccounts(
     walletFn?: (wallet: Wallet) => boolean;
     accountFn?: (account: Account, wallet: Wallet) => boolean;
   },
-): Wallet | undefined {
-  if (!predicates.walletFn && !predicates.accountFn) return undefined;
+): Wallet | null {
+  if (!predicates.walletFn && !predicates.accountFn) return null;
 
   for (const wallet of wallets) {
     if (predicates.walletFn && !predicates.walletFn(wallet)) continue;
@@ -155,7 +155,7 @@ function getWalletFilteredAccounts(
     if (accounts.length > 0) return { ...wallet, accounts };
   }
 
-  return undefined;
+  return null;
 }
 
 function getWalletsFilteredAccounts(

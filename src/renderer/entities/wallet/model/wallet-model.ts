@@ -243,20 +243,25 @@ sample({
 
 sample({
   clock: walletHidden,
-  fn: (wallet) => wallet,
   target: hideWalletFx,
 });
 
 sample({
   clock: hideWalletFx.doneData,
-  source: { wallets: $wallets, hiddenWallets: $hiddenWallets },
+  source: {
+    wallets: $wallets,
+    hiddenWallets: $hiddenWallets,
+  },
   fn: ({ wallets, hiddenWallets }, walletToRemove) => {
     return {
       wallets: wallets.filter((wallet) => wallet.id !== walletToRemove.id),
       hiddenWallets: hiddenWallets.concat(walletToRemove),
     };
   },
-  target: spread({ wallets: $wallets, hiddenWallets: $hiddenWallets }),
+  target: spread({
+    wallets: $wallets,
+    hiddenWallets: $hiddenWallets,
+  }),
 });
 
 sample({
@@ -271,14 +276,20 @@ sample({
 
 sample({
   clock: restoreWalletFx.doneData,
-  source: { wallets: $wallets, hiddenWallets: $hiddenWallets },
+  source: {
+    wallets: $wallets,
+    hiddenWallets: $hiddenWallets,
+  },
   fn: ({ wallets, hiddenWallets }, walletToRestore) => {
     return {
       wallets: wallets.concat(walletToRestore),
       hiddenWallets: hiddenWallets.filter((wallet) => wallet.id !== walletToRestore.id),
     };
   },
-  target: spread({ wallets: $wallets, hiddenWallets: $hiddenWallets }),
+  target: spread({
+    wallets: $wallets,
+    hiddenWallets: $hiddenWallets,
+  }),
 });
 
 export const walletModel = {

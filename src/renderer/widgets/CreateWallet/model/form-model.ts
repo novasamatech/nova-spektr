@@ -70,7 +70,6 @@ const $multisigAlreadyExists = combine(
         return isSameAccountId && isSameChainId;
       },
     }),
-  { skipVoid: false },
 );
 
 const $hiddenMultisig = combine(
@@ -89,7 +88,7 @@ const $hiddenMultisig = combine(
 
         return isSameAccountId && isSameChainId;
       },
-    }) || null,
+    }),
 );
 
 const $availableAccounts = combine(

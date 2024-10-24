@@ -56,7 +56,6 @@ export const SelectSignatoriesThreshold = () => {
     !multisigAlreadyExists &&
     !hasEmptySignatory &&
     isThresholdValid &&
-    !hiddenMultisig &&
     !hasDuplicateSignatories;
 
   const api = useUnit(flowModel.$api);

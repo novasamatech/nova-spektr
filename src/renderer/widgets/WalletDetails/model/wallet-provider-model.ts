@@ -176,15 +176,14 @@ const $proxyWallet = combine(
     wallet: walletSelectModel.$walletForDetails,
     wallets: walletModel.$wallets,
   },
-  ({ wallet, wallets }): Wallet | undefined => {
-    if (!wallet || !walletUtils.isProxied(wallet)) return;
+  ({ wallet, wallets }): Wallet | null => {
+    if (!wallet || !walletUtils.isProxied(wallet)) return null;
 
     return walletUtils.getWalletFilteredAccounts(wallets, {
       walletFn: (w) => !walletUtils.isWatchOnly(w),
       accountFn: (a) => a.accountId === wallet.accounts[0].proxyAccountId,
     });
   },
-  { skipVoid: false },
 );
 
 const $hasProxies = combine($chainsProxies, (chainsProxies) => {

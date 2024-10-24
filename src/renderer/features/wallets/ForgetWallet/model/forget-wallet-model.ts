@@ -134,7 +134,6 @@ sample({
 
 sample({
   clock: forgetMultisigWallet,
-  fn: (wallet) => wallet,
   target: walletModel.events.walletHidden,
 });
 
