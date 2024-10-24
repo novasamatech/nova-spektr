@@ -1,6 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 
-import { TEST_CHAIN_ICON } from '@shared/lib/utils';
+import { TEST_CHAIN_ICON } from '@/shared/lib/utils';
 
 import { AssetIcon } from './AssetIcon';
 

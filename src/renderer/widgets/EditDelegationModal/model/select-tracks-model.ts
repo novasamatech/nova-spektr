@@ -4,24 +4,24 @@ import { combine, createEffect, createEvent, createStore, sample } from 'effecto
 import { spread } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
-import {
-  type Account,
-  type Address,
-  type Chain,
-  type ReferendumId,
-  type TrackId,
-  TransactionType,
-  type Wallet,
-} from '@/shared/core';
+import { type Account, type Chain, TransactionType, type Wallet } from '@/shared/core';
 import {
   addUniqueItems,
   formatAmount,
   removeItemsFromCollection,
+  toAccountId,
   toAddress,
   transferableAmount,
 } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { adminTracks, fellowshipTracks, governanceTracks, treasuryTracks, votingService } from '@/entities/governance';
+import {
+  type VotesToRemove,
+  adminTracks,
+  fellowshipTracks,
+  governanceTracks,
+  treasuryTracks,
+  votingService,
+} from '@/entities/governance';
 import { transactionBuilder } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { delegationAggregate, networkSelectorModel, tracksAggregate, votingAggregate } from '@/features/governance';
@@ -33,6 +33,10 @@ const tracksSelected = createEvent<number[]>();
 const accountsChanged = createEvent<Account[]>();
 
 const $tracks = createStore<number[]>([]).reset(formInitiated);
+const $delegatedTracks = createStore<string[]>([]).reset(formInitiated);
+const $votedTracks = createStore<string[]>([]).reset(formInitiated);
+const $votesToRemove = createStore<VotesToRemove[]>([]).reset(formInitiated);
+
 const $accounts = createStore<Account[]>([]);
 const $availableAccounts = createStore<Account[]>([]);
 const $delegate = createStore<DelegateAccount | null>(null);
@@ -47,60 +51,6 @@ const $addresses = combine({ accounts: $accounts, network: delegationAggregate.$
 
   return accounts.map((a) => toAddress(a.accountId, { prefix: network.chain.addressPrefix }));
 });
-
-const $votedTracks = combine(
-  {
-    delegate: $delegate,
-    votes: votingAggregate.$activeWalletVotes,
-    addresses: $addresses,
-  },
-  ({ votes, addresses, delegate }) => {
-    const activeTracks = new Set<string>();
-
-    for (const [address, voteList] of Object.entries(votes)) {
-      if (!addresses.includes(address)) continue;
-
-      for (const [track, vote] of Object.entries(voteList)) {
-        if (
-          (votingService.isCasting(vote) && !votingService.isUnlockingDelegation(vote)) ||
-          (votingService.isDelegating(vote) && delegate?.accountId !== vote.target)
-        ) {
-          activeTracks.add(track);
-        }
-      }
-    }
-
-    return [...activeTracks];
-  },
-);
-
-const $votesToRemove = combine(
-  {
-    votes: votingAggregate.$activeWalletVotes,
-    addresses: $addresses,
-  },
-  ({ votes, addresses }) => {
-    const activeVotes: { referendum: ReferendumId; track: TrackId; voter: Address }[] = [];
-
-    for (const [address, voteList] of Object.entries(votes)) {
-      if (!addresses.includes(address)) continue;
-
-      for (const [track, vote] of Object.entries(voteList)) {
-        if (votingService.isCasting(vote) && !votingService.isUnlockingDelegation(vote)) {
-          activeVotes.push(
-            ...Object.keys(vote.votes).map((referendum) => ({
-              voter: address,
-              track,
-              referendum,
-            })),
-          );
-        }
-      }
-    }
-
-    return activeVotes;
-  },
-);
 
 const $accountsBalances = combine(
   {
@@ -165,6 +115,53 @@ sample({
   target: spread({
     delegate: $delegate,
     accounts: $availableAccounts,
+  }),
+});
+
+sample({
+  clock: [votingAggregate.$activeWalletVotes, $addresses],
+  source: {
+    votes: votingAggregate.$activeWalletVotes,
+    addresses: $addresses,
+    delegate: $delegate,
+  },
+  fn: ({ addresses, votes, delegate }) => {
+    const activeTracks = new Set<string>();
+    const delegatedTracks = new Set<string>();
+    const votesToRemove = [];
+
+    for (const [address, voteList] of Object.entries(votes)) {
+      if (!addresses.includes(address)) continue;
+      for (const [track, vote] of Object.entries(voteList)) {
+        const isNotCurrentDelegate =
+          votingService.isDelegating(vote) && delegate && toAccountId(delegate.accountId) !== toAccountId(vote.target);
+
+        if ((votingService.isCasting(vote) && !votingService.isUnlockingDelegation(vote)) || isNotCurrentDelegate) {
+          activeTracks.add(track);
+        }
+
+        if (isNotCurrentDelegate) {
+          delegatedTracks.add(track);
+        }
+
+        if (votingService.isCasting(vote) && !votingService.isUnlockingDelegation(vote)) {
+          for (const referendum of Object.keys(vote.votes)) {
+            votesToRemove.push({ voter: address, track, referendum });
+          }
+        }
+      }
+    }
+
+    return {
+      votedTracks: [...activeTracks],
+      delegatedTracks: [...delegatedTracks],
+      votesToRemove: [...votesToRemove],
+    };
+  },
+  target: spread({
+    votedTracks: $votedTracks,
+    delegatedTracks: $delegatedTracks,
+    votesToRemove: $votesToRemove,
   }),
 });
 
@@ -241,8 +238,8 @@ sample({
 
 export const selectTracksModel = {
   $tracks,
-  $availableTracks,
   $votedTracks,
+  $delegatedTracks,
   $votesToRemove,
   $tracksGroup,
   $allTracks: $tracksGroup.map(({ adminTracks, governanceTracks, treasuryTracks, fellowshipTracks }) => {

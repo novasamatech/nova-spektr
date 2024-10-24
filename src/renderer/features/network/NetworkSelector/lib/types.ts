@@ -1,4 +1,4 @@
-import { type ConnectionType, type RpcNode } from '@shared/core';
+import { type ConnectionType, type RpcNode } from '@/shared/core';
 
 export type SelectorPayload = {
   type: ConnectionType;

@@ -1,4 +1,6 @@
-import { type RefObject, useEffect, useRef } from 'react';
+import { type RefObject, useEffect } from 'react';
+
+import { useLooseRef } from '@/shared/lib/hooks';
 
 type Callbacks = Map<Element, Set<ResizeObserverCallback>>;
 
@@ -88,7 +90,7 @@ export const useResizeObserver = <T extends Element>(
   callback: ResizeObserverCallback,
 ): void => {
   const observer = getResizeObserver();
-  const cb = useRef(callback);
+  const cb = useLooseRef(callback);
 
   useEffect(() => {
     let subscribed = true;
@@ -98,7 +100,7 @@ export const useResizeObserver = <T extends Element>(
 
     const handler: ResizeObserverCallback = (...args) => {
       if (subscribed) {
-        cb.current.apply(null, args);
+        cb()(...args);
       }
     };
 

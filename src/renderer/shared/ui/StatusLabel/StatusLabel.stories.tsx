@@ -3,7 +3,7 @@ import { type Meta, type StoryFn } from '@storybook/react';
 import { StatusLabel } from './StatusLabel';
 
 export default {
-  title: 'StatusLabel',
+  title: 'v1/ui/StatusLabel',
   component: StatusLabel,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof StatusLabel>;

@@ -94,19 +94,26 @@ export const toKeysRecord = <T extends string[]>(array: T): Record<T[number], tr
   return res as Record<T[number], true>;
 };
 
-export const merge = <T>(list1: T[], list2: T[], mergeBy: (value: T) => PropertyKey, sort?: (a: T, b: T) => number) => {
-  if (list1.length === 0) {
-    return list2;
+type MergeParams<T> = {
+  a: T[];
+  b: T[];
+  mergeBy: (value: T) => PropertyKey;
+  sort?: (a: T, b: T) => number;
+};
+
+export const merge = <T>({ a, b, mergeBy, sort }: MergeParams<T>) => {
+  if (a.length === 0) {
+    return b;
   }
 
-  if (list2.length === 0) {
-    return list1;
+  if (b.length === 0) {
+    return a;
   }
 
   const map: Record<PropertyKey, T> = {};
 
-  for (let i = 0; i < list1.length; i++) {
-    const item = list1[i];
+  for (let i = 0; i < a.length; i++) {
+    const item = a[i];
     if (!item) {
       continue;
     }
@@ -114,8 +121,8 @@ export const merge = <T>(list1: T[], list2: T[], mergeBy: (value: T) => Property
     map[mergeBy(item)] = item;
   }
 
-  for (let i = 0; i < list2.length; i++) {
-    const item = list2[i];
+  for (let i = 0; i < b.length; i++) {
+    const item = b[i];
     if (!item) {
       continue;
     }

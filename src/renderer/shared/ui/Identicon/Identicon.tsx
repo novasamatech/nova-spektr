@@ -1,9 +1,8 @@
-import { Identicon as PolkadotIdenticon } from '@polkadot/react-identicon';
 import { type IconTheme } from '@polkadot/react-identicon/types';
-import { type SyntheticEvent, useLayoutEffect, useRef } from 'react';
+import { Suspense, type SyntheticEvent, lazy, useLayoutEffect, useRef } from 'react';
 
-import { type AccountId, type Address } from '@shared/core';
-import { cnTw, copyToClipboard, isEthereumAccountId } from '@shared/lib/utils';
+import { type AccountId, type Address } from '@/shared/core';
+import { cnTw, copyToClipboard, isEthereumAccountId } from '@/shared/lib/utils';
 import { Icon } from '../Icon/Icon';
 
 type Props = {
@@ -16,6 +15,8 @@ type Props = {
   buttonClassName?: string;
   testId?: string;
 };
+
+const PolkadotIdenticon = lazy(() => import('@polkadot/react-identicon').then((m) => ({ default: m.Identicon })));
 
 export const Identicon = ({
   theme,
@@ -42,12 +43,14 @@ export const Identicon = ({
   };
 
   const icon = address ? (
-    <PolkadotIdenticon
-      theme={theme || defaultTheme}
-      value={address}
-      size={background ? size * 0.75 : size}
-      className="pointer-events-none overflow-hidden rounded-full"
-    />
+    <Suspense fallback={<Icon name="emptyIdenticon" size={size} />}>
+      <PolkadotIdenticon
+        theme={theme || defaultTheme}
+        value={address}
+        size={background ? size * 0.75 : size}
+        className="pointer-events-none overflow-hidden rounded-full"
+      />
+    </Suspense>
   ) : (
     <Icon name="emptyIdenticon" size={size} />
   );

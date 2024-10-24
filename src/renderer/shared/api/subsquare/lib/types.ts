@@ -1,4 +1,4 @@
-import { type Address, type HexString, type ReferendumId } from '@shared/core';
+import { type Address, type HexString, type ReferendumId } from '@/shared/core';
 
 export type SubsquareTimelineRecordStatus =
   | 'All'

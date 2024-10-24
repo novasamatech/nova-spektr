@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { type Address, type ChainId, type EraIndex, type Unlocking } from '@shared/core';
-import { ZERO_BALANCE, redeemableAmount } from '@shared/lib/utils';
+import { type Address, type ChainId, type EraIndex, type Unlocking } from '@/shared/core';
+import { ZERO_BALANCE, redeemableAmount } from '@/shared/lib/utils';
 import { type IStakingDataService, type StakingMap } from '../lib/types';
 
 export const useStakingData = (): IStakingDataService => {

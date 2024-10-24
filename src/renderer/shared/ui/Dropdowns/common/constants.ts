@@ -1,4 +1,4 @@
-import { cnTw } from '@shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 
 import { type Position, type Theme } from './types';
 

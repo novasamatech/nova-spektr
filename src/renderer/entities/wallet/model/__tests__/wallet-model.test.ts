@@ -1,6 +1,6 @@
 import { allSettled, fork } from 'effector';
 
-import { storageService } from '@shared/api/storage';
+import { storageService } from '@/shared/api/storage';
 import { walletModel } from '../wallet-model';
 
 import { walletMock } from './mocks/wallet-mock';

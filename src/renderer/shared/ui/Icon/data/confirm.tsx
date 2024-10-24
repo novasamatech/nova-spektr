@@ -1,29 +1,34 @@
-import AddDelegationImg, { ReactComponent as AddDelegationSvg } from '@shared/assets/images/confirm/add-delegation.svg';
+import AddDelegationImg, {
+  ReactComponent as AddDelegationSvg,
+} from '@/shared/assets/images/confirm/add-delegation.svg';
 import DestinationImg, {
   ReactComponent as DestinationSvg,
-} from '@shared/assets/images/confirm/change-rewards-dest.svg';
+} from '@/shared/assets/images/confirm/change-rewards-dest.svg';
 import ChangeValidatorsImg, {
   ReactComponent as ChangeValidatorsSvg,
-} from '@shared/assets/images/confirm/change-validators.svg';
-import CrossChainImg, { ReactComponent as CrossChainSvg } from '@shared/assets/images/confirm/crosschain.svg';
+} from '@/shared/assets/images/confirm/change-validators.svg';
+import CrossChainImg, { ReactComponent as CrossChainSvg } from '@/shared/assets/images/confirm/crosschain.svg';
 import DelegatedAuthoritiesImg, {
   ReactComponent as DelegatedAuthoritiesSvg,
-} from '@shared/assets/images/confirm/delegated-authorities.svg';
+} from '@/shared/assets/images/confirm/delegated-authorities.svg';
 import EditDelegationImg, {
   ReactComponent as EditDelegationSvg,
-} from '@shared/assets/images/confirm/edit-delegation.svg';
+} from '@/shared/assets/images/confirm/edit-delegation.svg';
+import MultisigCreationImg, {
+  ReactComponent as MultisigCreationSvg,
+} from '@/shared/assets/images/confirm/multisig-creation.svg';
 import ReturnToStakeImg, {
   ReactComponent as ReturnToStakeSvg,
-} from '@shared/assets/images/confirm/return-to-stake.svg';
+} from '@/shared/assets/images/confirm/return-to-stake.svg';
 import RevokeDelegationImg, {
   ReactComponent as RevokeDelegationSvg,
-} from '@shared/assets/images/confirm/revoke-delegation.svg';
-import StakeMoreImg, { ReactComponent as StakeMoreSvg } from '@shared/assets/images/confirm/stake-more.svg';
-import StartStakingImg, { ReactComponent as StartStakingSvg } from '@shared/assets/images/confirm/start-staking.svg';
-import TransferImg, { ReactComponent as TransferSvg } from '@shared/assets/images/confirm/transfer.svg';
-import UnknownImg, { ReactComponent as UnknownSvg } from '@shared/assets/images/confirm/unknown-operation.svg';
-import UnstakeImg, { ReactComponent as UnstakeSvg } from '@shared/assets/images/confirm/unstake.svg';
-import RedeemImg, { ReactComponent as RedeemSvg } from '@shared/assets/images/confirm/withdraw-unstake.svg';
+} from '@/shared/assets/images/confirm/revoke-delegation.svg';
+import StakeMoreImg, { ReactComponent as StakeMoreSvg } from '@/shared/assets/images/confirm/stake-more.svg';
+import StartStakingImg, { ReactComponent as StartStakingSvg } from '@/shared/assets/images/confirm/start-staking.svg';
+import TransferImg, { ReactComponent as TransferSvg } from '@/shared/assets/images/confirm/transfer.svg';
+import UnknownImg, { ReactComponent as UnknownSvg } from '@/shared/assets/images/confirm/unknown-operation.svg';
+import UnstakeImg, { ReactComponent as UnstakeSvg } from '@/shared/assets/images/confirm/unstake.svg';
+import RedeemImg, { ReactComponent as RedeemSvg } from '@/shared/assets/images/confirm/withdraw-unstake.svg';
 
 const ConfirmImages = {
   transferConfirm: { svg: TransferSvg, img: TransferImg },
@@ -40,6 +45,7 @@ const ConfirmImages = {
   addDelegationConfirm: { svg: AddDelegationSvg, img: AddDelegationImg },
   editDelegationConfirm: { svg: EditDelegationSvg, img: EditDelegationImg },
   revokeDelegationConfirm: { svg: RevokeDelegationSvg, img: RevokeDelegationImg },
+  multisigCreationConfirm: { svg: MultisigCreationSvg, img: MultisigCreationImg },
 } as const;
 
 export type Confirm = keyof typeof ConfirmImages;

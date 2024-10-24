@@ -72,12 +72,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: internal-version
-      
+
       - name: Read internal-build version
         id: internal-version
         run: |
@@ -92,7 +92,7 @@ jobs:
         env:
           CERTIFICATE_OSX_APPLICATION: ${{ secrets.CERTIFICATE_OSX_APPLICATION }}
           CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
-        
+
       - name: Update package.json
         run: |
           jq '.version = "${{ steps.internal-version.outputs.version }}"' package.json > temp.json && mv temp.json package.json
@@ -128,7 +128,7 @@ jobs:
         with:
           pattern: build-artifacts-*
           merge-multiple: true
-  
+
       - name: Debug
         run: ls -la
 
@@ -142,10 +142,11 @@ jobs:
               fi
             fi
           done
-        
+
       - name: ⚙️ Install dependencies
         uses: ./.github/workflows/setup-s3cmd
         with:
+          s3_region: pl-waw
           s3_access_key: ${{ secrets.S3_ACCESS_KEY }}
           s3_secret_key: ${{ secrets.S3_SECRET_KEY }}
 
@@ -170,7 +171,7 @@ jobs:
           to: ${{ secrets.TELEGRAM_TO_DEV }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           format: html
-          message: | 
+          message: |
             👨‍💻 Stage build was created successfully, URLs to download:
               - Windows: ${{ steps.interact_with_storage.outputs.windows_app }}
               - Linux: ${{ steps.interact_with_storage.outputs.linux_app }}

@@ -1,11 +1,12 @@
 import { useMemo } from 'react';
 
-import { useI18n } from '@app/providers';
-import { type BaseAccount, type Chain, type ChainAccount, type ChainId } from '@shared/core';
-import { RootExplorers, cnTw } from '@shared/lib/utils';
-import { Accordion, FootnoteText, HelpText } from '@shared/ui';
-import { ChainTitle } from '@entities/chain';
-import { ContactItem, ExplorersPopover } from '@entities/wallet';
+import { type BaseAccount, type Chain, type ChainAccount, type ChainId } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { RootExplorers, cnTw } from '@/shared/lib/utils';
+import { Accordion, FootnoteText, HelpText } from '@/shared/ui';
+import { ChainTitle } from '@/entities/chain';
+import { ContactItem } from '../ContactItem/ContactItem';
+import { ExplorersPopover } from '../ExplorersPopover/ExplorersPopover';
 
 type Props = {
   chains: Chain[];

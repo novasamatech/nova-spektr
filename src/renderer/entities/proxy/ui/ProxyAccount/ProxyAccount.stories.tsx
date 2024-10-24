@@ -1,12 +1,12 @@
 import { type Meta, type StoryFn } from '@storybook/react';
 
-import { ProxyType } from '@shared/core';
-import { TEST_ACCOUNTS } from '@shared/lib/utils';
+import { ProxyType } from '@/shared/core';
+import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 
 import { ProxyAccount } from './ProxyAccount';
 
 export default {
-  title: 'ProxyAccount',
+  title: 'v1/entities/ProxyAccount',
   component: ProxyAccount,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof ProxyAccount>;

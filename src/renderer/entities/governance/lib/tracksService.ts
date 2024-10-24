@@ -1,8 +1,8 @@
 import { type TFunction } from 'i18next';
 
 import { type Asset } from '@/shared/core';
-import { nonNullable } from '@shared/lib/utils';
-import { treasurySpendsDescription } from '@/entities/governance';
+import { nonNullable } from '@/shared/lib/utils';
+import { treasurySpendsDescription } from '../constants/tracks';
 import { type Track } from '../types/tracks';
 
 export const getTreasuryTrackDescription = (asset: Asset | null, description: string, t: TFunction) => {
@@ -33,4 +33,16 @@ export const getGroupPallet = (
   const tracksGroupId = getTrackIds(trackGroup, votedTracks);
 
   return tracksGroupId.length !== 0 && tracksGroupId.every((t) => tracksIds.includes(t)) ? 'primary' : 'secondary';
+};
+
+export const getTrackTitles = (trackIds: string[], allTracks: Track[], t: TFunction): string => {
+  const titles = allTracks.reduce<string[]>((titles, { id, value }) => {
+    if (trackIds.includes(id)) {
+      titles.push(t(value));
+    }
+
+    return titles;
+  }, []);
+
+  return titles.join(', ');
 };

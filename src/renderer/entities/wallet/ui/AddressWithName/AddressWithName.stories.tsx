@@ -1,11 +1,11 @@
 import { type Meta, type StoryFn } from '@storybook/react';
 
-import { TEST_ACCOUNTS } from '@shared/lib/utils';
+import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 
 import { AddressWithName } from './AddressWithName';
 
 export default {
-  title: 'AddressWithName',
+  title: 'v1/entities/AddressWithName',
   component: AddressWithName,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof AddressWithName>;

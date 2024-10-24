@@ -25,6 +25,7 @@ const config: Config = {
   testEnvironment: 'jsdom',
   coverageReporters: ['json-summary', 'text', 'text-summary'],
   setupFilesAfterEnv: ['@testing-library/jest-dom'],
+  prettierPath: null,
   coverageThreshold: {
     global: {
       branches: 25,
@@ -43,14 +44,6 @@ const config: Config = {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '^raptorq$': '<rootDir>/node_modules/raptorq/raptorq.js',
     '^@/(.*)$': '<rootDir>/src/renderer/$1',
-    '^@renderer(.*)$': '<rootDir>/src/renderer/$1',
-    '^@app(.*)$': '<rootDir>/src/renderer/app/$1',
-    '^@pages(.*)$': '<rootDir>/src/renderer/pages/$1',
-    '^@processes(.*)$': '<rootDir>/src/renderer/processes/$1',
-    '^@widgets(.*)$': '<rootDir>/src/renderer/widgets/$1',
-    '^@features(.*)$': '<rootDir>/src/renderer/features/$1',
-    '^@entities(.*)$': '<rootDir>/src/renderer/entities/$1',
-    '^@shared(.*)$': '<rootDir>/src/renderer/shared/$1',
     '^dexie$': '<rootDir>/node_modules/dexie/dist/dexie.js',
     '^lottie': 'lottie-react',
   },

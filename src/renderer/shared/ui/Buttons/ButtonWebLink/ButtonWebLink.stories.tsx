@@ -6,7 +6,7 @@ import { Icon } from '../../Icon/Icon';
 import { ButtonWebLink } from './ButtonWebLink';
 
 export default {
-  title: 'ButtonWebLink',
+  title: 'v1/ui/ButtonWebLink',
   component: ButtonWebLink,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [

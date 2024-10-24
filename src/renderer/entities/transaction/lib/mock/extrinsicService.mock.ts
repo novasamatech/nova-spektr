@@ -1,5 +1,5 @@
-import { type Serializable, type StandardVote, TransactionType } from '@shared/core';
-import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
+import { type Serializable, type StandardVote, TransactionType } from '@/shared/core';
+import { TEST_ACCOUNTS, TEST_ADDRESS } from '@/shared/lib/utils';
 
 export const extrinsicTests = [
   {

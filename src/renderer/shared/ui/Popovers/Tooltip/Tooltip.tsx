@@ -1,6 +1,6 @@
 import { type ComponentProps } from 'react';
 
-import { cnTw } from '@shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { Popover } from '../Popover/Popover';
 import { type Horizontal } from '../common/types';
 import './Tooltip.css';
@@ -10,6 +10,9 @@ type PopoverProps = ComponentProps<typeof Popover> & {
   pointer?: 'up' | 'down';
 };
 
+/**
+ * @deprecated Use `import { Tooltip } from '@/shared/ui-kit'` instead.
+ */
 export const Tooltip = ({
   offsetPx = 8,
   content,

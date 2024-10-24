@@ -1,9 +1,9 @@
 import { allSettled, fork } from 'effector';
 
-import { storageService } from '@shared/api/storage';
-import { type Chain, type ChainAccount, type DraftAccount, type ShardAccount } from '@shared/core';
-import { TEST_ACCOUNTS } from '@shared/lib/utils';
-import { walletModel } from '@entities/wallet';
+import { storageService } from '@/shared/api/storage';
+import { type Chain, type ChainAccount, type DraftAccount, type ShardAccount } from '@/shared/core';
+import { TEST_ACCOUNTS } from '@/shared/lib/utils';
+import { walletModel } from '@/entities/wallet';
 import { vaultDetailsModel } from '../vault-details-model';
 
 describe('widgets/WalletDetails/model/vault-details-model', () => {

@@ -1,20 +1,18 @@
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { render, screen, waitFor } from '@testing-library/react';
 
 import { FallbackScreen } from './FallbackScreen';
 
-jest.mock('@app/providers', () => ({
+jest.mock('@/shared/i18n', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
 
 describe('ui/FallbackScreen', () => {
-  test('should render component', () => {
-    render(<FallbackScreen />, { wrapper: MemoryRouter });
+  test('should render component', async () => {
+    render(<FallbackScreen />);
 
-    const logo = screen.getByTestId('computer-img');
-    expect(logo).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId('computer-img')).toBeInTheDocument());
 
     const message = screen.getByText('fallbackScreen.message');
     expect(message).toBeInTheDocument();

@@ -1,6 +1,9 @@
-import { cnTw } from '@shared/lib/utils';
+import { Suspense, lazy, memo } from 'react';
 
-import AllIcons, { type IconNames } from './data';
+import { cnTw } from '@/shared/lib/utils';
+import { Shimmering } from '../Shimmering/Shimmering';
+
+import { type IconNames } from './data';
 
 type Props = {
   as?: 'img' | 'svg';
@@ -10,51 +13,69 @@ type Props = {
   alt?: string;
 };
 
-export const Icon = ({ as = 'svg', name, size = 24, className, alt = '' }: Props) => {
+const LazyIcon = lazy(async () => {
+  const icons = await import('./data').then((x) => x.default);
+
+  const InternalIcon = ({ as = 'svg', name, size = 24, className, alt = '' }: Props) => {
+    if (!name) {
+      return null;
+    }
+
+    let iconType = as;
+    let IconComponent = icons[name][as];
+
+    if (!IconComponent) {
+      console.warn(`Icon "${name}" doesn't have "${as}" type`);
+
+      iconType = as === 'svg' ? 'img' : 'svg';
+      IconComponent = icons[name][iconType];
+
+      if (!IconComponent) {
+        console.warn(`Icon "${name}" doesn't exist`);
+
+        return <div style={{ width: size, height: size, borderRadius: 10, backgroundColor: 'lightgrey' }} />;
+      }
+    }
+
+    if (iconType === 'svg') {
+      return (
+        <IconComponent
+          className={cnTw('pointer-events-none select-none text-icon-default', className)}
+          width={size}
+          height={size}
+          role="img"
+          data-testid={`${name}-svg`}
+        />
+      );
+    }
+
+    if (iconType === 'img') {
+      return (
+        <img
+          className={cnTw('pointer-events-none select-none', className)}
+          src={IconComponent as string}
+          alt={alt}
+          width={size}
+          height={size}
+          data-testid={`${name}-img`}
+        />
+      );
+    }
+
+    return null;
+  };
+
+  return { default: InternalIcon };
+});
+
+export const Icon = memo<Props>(({ name, size = 24, ...props }) => {
   if (!name) {
     return null;
   }
 
-  let iconType = as;
-  let IconComponent = AllIcons[name][as];
-
-  if (!IconComponent) {
-    console.warn(`Icon "${name}" doesn't have "${as}" type`);
-
-    iconType = as === 'svg' ? 'img' : 'svg';
-    IconComponent = AllIcons[name][iconType];
-
-    if (!IconComponent) {
-      console.warn(`Icon "${name}" doesn't exist`);
-
-      return <div style={{ width: size, height: size, borderRadius: 10, backgroundColor: 'lightgrey' }} />;
-    }
-  }
-
-  if (iconType === 'svg') {
-    return (
-      <IconComponent
-        className={cnTw('text-icon-default', className)}
-        width={size}
-        height={size}
-        role="img"
-        data-testid={`${name}-svg`}
-      />
-    );
-  }
-
-  if (iconType === 'img') {
-    return (
-      <img
-        className={className}
-        src={IconComponent as string}
-        alt={alt}
-        width={size}
-        height={size}
-        data-testid={`${name}-img`}
-      />
-    );
-  }
-
-  return null;
-};
+  return (
+    <Suspense fallback={<Shimmering circle width={size} height={size} />}>
+      <LazyIcon name={name} size={size} {...props} />
+    </Suspense>
+  );
+});

@@ -1,8 +1,9 @@
 import { Listbox, Transition } from '@headlessui/react';
 import { Fragment, type ReactNode, useId } from 'react';
 
-import { useI18n } from '@/app/providers';
-import { CaptionText, Checkbox, FootnoteText, Icon, LabelText } from '@/shared/ui';
+import { useI18n } from '@/shared/i18n';
+import { cnTw } from '@/shared/lib/utils';
+import { CaptionText, FootnoteText, Icon, LabelText } from '@/shared/ui';
 import {
   OptionStyle,
   OptionStyleTheme,
@@ -13,7 +14,7 @@ import {
 } from '@/shared/ui/Dropdowns/common/constants';
 import { type DropdownResult, type Position, type Theme } from '@/shared/ui/Dropdowns/common/types';
 import { CommonInputStyles, CommonInputStylesTheme } from '@/shared/ui/Inputs/common/styles';
-import { cnTw } from '@shared/lib/utils';
+import { Checkbox } from '@/shared/ui-kit';
 
 type DropdownOption<T = any> = {
   id: string;
@@ -147,7 +148,7 @@ export const AccountsMultiSelector = ({
                 <Checkbox
                   checked={optionsFlat.every((option) => selectedIds.includes(option.id))}
                   semiChecked={optionsFlat.some((option) => selectedIds.includes(option.id))}
-                  onChange={(event) => toggleAll(event.target.checked)}
+                  onChange={(checked) => toggleAll(checked)}
                 >
                   <FootnoteText className="text-body text-text-secondary">{t('balances.allAccounts')}</FootnoteText>
                 </Checkbox>
@@ -171,16 +172,15 @@ export const AccountsMultiSelector = ({
                   >
                     {({ selected }) => (
                       <div className="flex w-full justify-between gap-x-2">
-                        <Checkbox
-                          readOnly
-                          checked={selected}
+                        <div
                           className={cnTw(
                             'pointer-events-none w-full pl-4',
                             selected ? 'text-text-primary' : 'text-text-secondary',
                           )}
                         >
-                          {element}
-                        </Checkbox>
+                          <Checkbox checked={selected}>{element}</Checkbox>
+                        </div>
+
                         {additionalElement}
                       </div>
                     )}
@@ -242,18 +242,19 @@ const Group = ({ group, selectedIds, selectedOptions, theme, onChange }: PropsGr
           OptionStyleTheme[theme](false, isChecked),
         )}
       >
-        <Checkbox
-          className="w-full p-2 pl-6"
-          checked={isChecked}
-          semiChecked={list.some(({ id }) => selectedIds.includes(id))}
-          onChange={(event) => toggleGroup(event.target.checked)}
-        >
-          <div className="flex h-5 w-7.5 items-center justify-center rounded-2lg bg-input-background-disabled">
-            <CaptionText className="text-text-secondary">{list.length}</CaptionText>
-          </div>
-          <FootnoteText className="flex-1 text-text-tertiary">{groupName}</FootnoteText>
-          <FootnoteText className="text-text-secondary">{groupValue}</FootnoteText>
-        </Checkbox>
+        <div className="w-full p-2 pl-6">
+          <Checkbox
+            checked={isChecked}
+            semiChecked={list.some(({ id }) => selectedIds.includes(id))}
+            onChange={(checked) => toggleGroup(checked)}
+          >
+            <div className="flex h-5 w-7.5 items-center justify-center rounded-2lg bg-input-background-disabled">
+              <CaptionText className="text-text-secondary">{list.length}</CaptionText>
+            </div>
+            <FootnoteText className="flex-1 text-text-tertiary">{groupName}</FootnoteText>
+            <FootnoteText className="text-text-secondary">{groupValue}</FootnoteText>
+          </Checkbox>
+        </div>
       </div>
       <ul>
         {list.map(({ id, value, additionalElement, element }) => (
@@ -264,16 +265,14 @@ const Group = ({ group, selectedIds, selectedOptions, theme, onChange }: PropsGr
           >
             {({ selected }) => (
               <div className="flex w-full items-center justify-between gap-x-4">
-                <Checkbox
-                  readOnly
-                  checked={selected}
+                <div
                   className={cnTw(
                     'pointer-events-none w-full pl-8',
                     selected ? 'text-text-primary' : 'text-text-secondary',
                   )}
                 >
-                  {element}
-                </Checkbox>
+                  <Checkbox checked={selected}>{element}</Checkbox>
+                </div>
                 {additionalElement}
               </div>
             )}

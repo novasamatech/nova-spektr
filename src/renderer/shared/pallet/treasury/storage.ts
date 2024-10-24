@@ -52,7 +52,7 @@ export const storage = {
    * Proposals that have been made.
    */
   proposals(type: PalletType, api: ApiPromise, tracks: TrackId[]) {
-    const schema = pjsSchema.tuppleMap(
+    const schema = pjsSchema.tupleMap(
       ['track', pjsSchema.storageKey(pjsSchema.u32).transform(x => x[0])],
       ['proposals', pjsSchema.vec(pjsSchema.optional(treasuryProposal))],
     );
@@ -64,7 +64,7 @@ export const storage = {
    * The count of spends that have been made.
    */
   spendCount(type: PalletType, api: ApiPromise) {
-    const schema = pjsSchema.tuppleMap(['key', pjsSchema.storageKey(z.undefined())], ['spendCount', pjsSchema.u32]);
+    const schema = pjsSchema.tupleMap(['key', pjsSchema.storageKey(z.undefined())], ['spendCount', pjsSchema.u32]);
 
     return substrateRpcPool.call(() => getQuery(type, api, 'spendCount').entries()).then(schema.parse);
   },
@@ -73,7 +73,7 @@ export const storage = {
    * Spends that have been approved and being processed.
    */
   spends(type: PalletType, api: ApiPromise) {
-    const schema = pjsSchema.tuppleMap(
+    const schema = pjsSchema.tupleMap(
       // TODO what is this?
       ['key', pjsSchema.storageKey(pjsSchema.u32)],
       ['spendCount', pjsSchema.optional(treasurySpendStatus)],

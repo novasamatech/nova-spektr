@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 
-import { cnTw } from '@shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { IconButton } from '../../Buttons';
 import { Icon } from '../../Icon/Icon';
 import { Input, type Props as InputProps } from '../Input/Input';

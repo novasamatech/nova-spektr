@@ -1,7 +1,7 @@
 /* eslint-disable i18next/no-literal-string */
 import { type ElementType } from 'react';
 
-import { useI18n } from '@app/providers';
+import { useI18n } from '@/shared/i18n';
 
 import { DurationFormat } from './common/types';
 import { timeUtils } from './common/utils';

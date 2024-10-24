@@ -12,17 +12,17 @@ import {
   type Chain,
   type ReferendumId,
   type TrackId,
-} from '@shared/core';
-import { Step, nonNullable, nullable, toAddress } from '@shared/lib/utils';
-import { basketModel } from '@entities/basket';
-import { transactionBuilder } from '@entities/transaction';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+} from '@/shared/core';
+import { Step, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
+import { basketModel } from '@/entities/basket';
+import { transactionBuilder } from '@/entities/transaction';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { lockPeriodsModel, locksModel, votingAggregate } from '@/features/governance';
 import { createMultipleTxStore } from '@/features/governance/lib/createMultipleTxStore';
-import { type SigningPayload, signModel } from '@features/operations/OperationSign';
-import { submitModel } from '@features/operations/OperationSubmit';
-import { removeVoteConfirmModel } from '@features/operations/OperationsConfirm';
-import { type RemoveVoteConfirm } from '@features/operations/OperationsConfirm/Referendum/RemoveVote/model/confirm-model';
+import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
+import { submitModel } from '@/features/operations/OperationSubmit';
+import { removeVoteConfirmModel } from '@/features/operations/OperationsConfirm';
+import { type RemoveVoteConfirm } from '@/features/operations/OperationsConfirm/Referendum/RemoveVote/model/confirm-model';
 
 const flow = createGate<{
   votes: {

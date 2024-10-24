@@ -1,8 +1,7 @@
 import '@/app/index.css';
 import '@/app/styles/theme/default.css';
-import '@/app/i18n';
 
-import { I18Provider } from '@/app/providers';
+import { I18Provider } from '@/shared/i18n';
 import { ThemeProvider } from '@/shared/ui-kit';
 
 import type { Preview } from '@storybook/react';
@@ -12,7 +11,7 @@ const preview: Preview = {
     options: {
       storySort: {
         method: 'alphabetical',
-        order: ['Design System', ['kit', 'entities'], '*'],
+        order: ['Design System', ['kit', 'entities'], 'v1', ['ui', 'entities'], '*'],
       },
     },
   },

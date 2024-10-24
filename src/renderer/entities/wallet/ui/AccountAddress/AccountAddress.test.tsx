@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
+import { TEST_ACCOUNTS, TEST_ADDRESS } from '@/shared/lib/utils';
 
 import { AccountAddress } from './AccountAddress';
 

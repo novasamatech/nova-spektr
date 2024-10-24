@@ -7,7 +7,7 @@ import {
   type ShardAccount,
   SigningType,
   WalletType,
-} from '@shared/core';
+} from '@/shared/core';
 
 const vaultAccounts = [
   {

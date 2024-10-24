@@ -11,12 +11,12 @@ import {
   type Connection,
   TransactionType,
   type Wallet,
-} from '@shared/core';
-import { type ChainError } from '@shared/core/types/basket';
-import { toAccountId } from '@shared/lib/utils';
+} from '@/shared/core';
+import { type ChainError } from '@/shared/core/types/basket';
+import { toAccountId } from '@/shared/lib/utils';
 import { balanceModel } from '@/entities/balance';
-import { basketModel } from '@entities/basket';
-import { networkModel } from '@entities/network';
+import { basketModel } from '@/entities/basket';
+import { networkModel } from '@/entities/network';
 import {
   type MultisigTransactionTypes,
   type TransferTransactionTypes,
@@ -25,12 +25,11 @@ import {
   type XcmTransactionTypes,
   XcmTypes,
   isEditDelegationTransaction,
-} from '@entities/transaction';
-import { walletModel, walletUtils } from '@entities/wallet';
-import { type FeeMap } from '@/features/operations/OperationsValidation';
-import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@features/operations/OperationSubmit';
-import { ExtrinsicResult } from '@features/operations/OperationSubmit/lib/types';
+} from '@/entities/transaction';
+import { walletModel, walletUtils } from '@/entities/wallet';
+import { signModel } from '@/features/operations/OperationSign/model/sign-model';
+import { submitModel } from '@/features/operations/OperationSubmit';
+import { ExtrinsicResult } from '@/features/operations/OperationSubmit/lib/types';
 import {
   addProxyConfirmModel,
   addPureProxiedConfirmModel,
@@ -38,6 +37,7 @@ import {
   bondNominateConfirmModel,
   delegateConfirmModel,
   editDelegationConfirmModel,
+  fellowshipVotingConfirmModel,
   nominateConfirmModel,
   payeeConfirmModel,
   removeProxyConfirmModel,
@@ -49,8 +49,9 @@ import {
   unstakeConfirmModel,
   voteConfirmModel,
   withdrawConfirmModel,
-} from '@features/operations/OperationsConfirm';
-import { unlockConfirmAggregate } from '@/widgets/UnlockModal/aggregates/unlockConfirm';
+} from '@/features/operations/OperationsConfirm';
+import { type FeeMap } from '@/features/operations/OperationsValidation';
+import { unlockConfirmAggregate } from '@/widgets/UnlockModal';
 import { type DataParams, prepareTransaction } from '../lib/prepareTransactions';
 import { getCoreTx } from '../lib/utils';
 import { Step } from '../types';
@@ -99,7 +100,11 @@ const startDataPreparationFx = createEffect(async ({ transactions, ...preparatio
     const TransactionData: Record<
       Exclude<
         TransactionType,
-        TransferTransactionTypes | XcmTransactionTypes | MultisigTransactionTypes | UtilityTransactionTypes
+        | TransferTransactionTypes
+        | XcmTransactionTypes
+        | MultisigTransactionTypes
+        | UtilityTransactionTypes
+        | TransactionType.REMARK
       >,
       (dataParams: DataParams) => Promise<unknown>
     > = {
@@ -122,6 +127,7 @@ const startDataPreparationFx = createEffect(async ({ transactions, ...preparatio
       [TransactionType.VOTE]: prepareTransaction.prepareVoteTransaction,
       [TransactionType.REVOTE]: prepareTransaction.prepareVoteTransaction,
       [TransactionType.REMOVE_VOTE]: prepareTransaction.prepareRemoveVoteTransaction,
+      [TransactionType.COLLECTIVE_VOTE]: prepareTransaction.prepareCollectiveVoteTransaction,
     };
 
     if (coreTx.type in TransactionData) {
@@ -442,6 +448,32 @@ sample({
   target: revokeDelegationConfirmModel.events.formInitiated,
 });
 
+// revoke delegation (undelegate)
+
+sample({
+  clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.UNDELEGATE).length > 0;
+  },
+  fn: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.UNDELEGATE).map((tx) => tx.params) || [];
+  },
+  target: revokeDelegationConfirmModel.events.formInitiated,
+});
+
+// collectives voting
+
+sample({
+  clock: startDataPreparationFx.doneData,
+  filter: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.COLLECTIVE_VOTE).length > 0;
+  },
+  fn: (dataParams) => {
+    return dataParams?.filter((tx) => tx.type === TransactionType.COLLECTIVE_VOTE).map((tx) => tx.params) || [];
+  },
+  target: fellowshipVotingConfirmModel.events.fillConfirm,
+});
+
 sample({
   clock: flowFinished,
   fn: () => Step.NONE,
@@ -468,6 +500,7 @@ sample({
     unlockConfirmAggregate.output.formSubmitted,
     voteConfirmModel.events.sign,
     removeVoteConfirmModel.events.sign,
+    fellowshipVotingConfirmModel.events.sign,
     txsConfirmed,
   ],
   source: {

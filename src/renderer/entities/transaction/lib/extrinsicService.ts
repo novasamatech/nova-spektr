@@ -10,12 +10,12 @@ import {
 } from '@substrate/txwrapper-polkadot';
 import sortBy from 'lodash/sortBy';
 
-import { type MultisigTxWrapper, type ProxyTxWrapper, type Transaction, TransactionType } from '@shared/core';
-import { toAddress } from '@shared/lib/utils';
-import { DEFAULT_FEE_ASSET_ITEM } from '@entities/transaction';
-import * as xcmMethods from '@entities/transaction/lib/common/xcmMethods';
+import { type MultisigTxWrapper, type ProxyTxWrapper, type Transaction, TransactionType } from '@/shared/core';
+import { toAddress } from '@/shared/lib/utils';
 
+import { DEFAULT_FEE_ASSET_ITEM } from './common/constants';
 import { getMaxWeight, hasDestWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
+import * as xcmMethods from './common/xcmMethods';
 import { convictionVotingMethods } from './wrappers/convictionVoting';
 
 type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
@@ -370,6 +370,17 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
+
+  [TransactionType.REMARK]: (transaction, info, options) => {
+    return methods.system.remark(
+      {
+        remark: transaction.args.remark,
+      },
+      info,
+      options,
+    );
+  },
+
   [TransactionType.UNLOCK]: (transaction, info, options) => {
     return convictionVotingMethods.unlock(
       {
@@ -442,6 +453,22 @@ export const getUnsignedTransaction: Record<
         class: transaction.args.track,
       },
       info,
+      options,
+    );
+  },
+
+  [TransactionType.COLLECTIVE_VOTE]: (transaction, info, options) => {
+    const { pallet, poll, aye } = transaction.args;
+
+    return defineMethod(
+      {
+        method: {
+          args: { poll, aye },
+          name: 'vote',
+          pallet: `${pallet}Collective`,
+        },
+        ...info,
+      },
       options,
     );
   },
@@ -532,6 +559,7 @@ export const getExtrinsic: Record<
   [TransactionType.CREATE_PURE_PROXY]: ({ proxyType, delay, index }, api) => {
     return api.tx.proxy.createPure(proxyType, delay, index);
   },
+  [TransactionType.REMARK]: ({ remark }, api) => api.tx.system.remark(remark),
   [TransactionType.UNLOCK]: ({ target, trackId }, api) => {
     return api.tx.convictionVoting.unlock(trackId, target);
   },
@@ -552,6 +580,9 @@ export const getExtrinsic: Record<
   },
   [TransactionType.UNDELEGATE]: ({ track }, api) => {
     return api.tx.convictionVoting.undelegate(track);
+  },
+  [TransactionType.COLLECTIVE_VOTE]: ({ pallet, pool, aye }, api) => {
+    return api.tx[`${pallet}Collective`].vote(pool, aye);
   },
 };
 

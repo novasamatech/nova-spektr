@@ -2,12 +2,12 @@ import { type ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { useI18n } from '@app/providers';
-import { type Asset, type EraIndex, type Validator } from '@shared/core';
-import { Duration, FootnoteText, Shimmering } from '@shared/ui';
-import { AssetBalance } from '@entities/asset';
-import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
-import { useStakingData } from '@entities/staking';
+import { type Asset, type EraIndex, type Validator } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { Duration, FootnoteText, Shimmering } from '@/shared/ui';
+import { AssetBalance } from '@/entities/asset';
+import { AssetFiatBalance } from '@/entities/price';
+import { useStakingData } from '@/entities/staking';
 
 type Props = {
   api?: ApiPromise;

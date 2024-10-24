@@ -2,8 +2,7 @@ import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@app/providers';
-import { type MultisigTransactionDS } from '@shared/api/storage';
+import { type MultisigTransactionDS } from '@/shared/api/storage';
 import {
   type Account,
   type Address,
@@ -11,28 +10,27 @@ import {
   type MultisigAccount,
   type Timepoint,
   type Transaction,
-} from '@shared/core';
-import { TransactionType } from '@shared/core';
-import { useToggle } from '@shared/lib/hooks';
-import { getAssetById, toAddress, transferableAmount } from '@shared/lib/utils';
-import { BaseModal, Button } from '@shared/ui';
-import { balanceModel, balanceUtils } from '@entities/balance';
-import { OperationTitle } from '@entities/chain';
-import { type ExtendedChain, networkModel } from '@entities/network';
-import { priceProviderModel } from '@entities/price';
+} from '@/shared/core';
+import { TransactionType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { useToggle } from '@/shared/lib/hooks';
+import { getAssetById, toAddress, transferableAmount } from '@/shared/lib/utils';
+import { BaseModal, Button } from '@/shared/ui';
+import { balanceModel, balanceUtils } from '@/entities/balance';
+import { OperationTitle } from '@/entities/chain';
+import { type ExtendedChain, networkModel } from '@/entities/network';
+import { priceProviderModel } from '@/entities/price';
 import {
   OperationResult,
   getMultisigSignOperationTitle,
   isXcmTransaction,
   transactionService,
   validateBalance,
-} from '@entities/transaction';
-import { walletModel, walletUtils } from '@entities/wallet';
-import { SigningSwitch } from '@features/operations';
+} from '@/entities/transaction';
+import { walletModel, walletUtils } from '@/entities/wallet';
+import { SigningSwitch } from '@/features/operations';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { Submit } from '../ActionSteps/Submit';
-
-import RejectReasonModal from './RejectReasonModal';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -56,7 +54,6 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const apis = useUnit(networkModel.$apis);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isRejectReasonModalOpen, toggleRejectReasonModal] = useToggle();
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
 
   const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
@@ -64,7 +61,6 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const [rejectTx, setRejectTx] = useState<Transaction>();
   const [txPayload, setTxPayload] = useState<Uint8Array>();
 
-  const [rejectReason, setRejectReason] = useState('');
   const [signature, setSignature] = useState<HexString>();
 
   const transactionTitle = getMultisigSignOperationTitle(
@@ -172,11 +168,10 @@ const RejectTx = ({ tx, account, connection }: Props) => {
     return null;
   }
 
-  const handleRejectReason = async (reason: string) => {
+  const handleConfirm = async () => {
     const isValid = await validateBalanceForFee(signAccount);
 
     if (isValid) {
-      setRejectReason(reason);
       setActiveStep(Step.SIGNING);
     } else {
       toggleFeeModal();
@@ -209,7 +204,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
             connection={connection}
             feeTx={rejectTx}
             signatory={signAccount}
-            onSign={toggleRejectReasonModal}
+            onSign={handleConfirm}
           />
         )}
         {activeStep === Step.SIGNING && rejectTx && connection.api && signAccount && (
@@ -230,12 +225,6 @@ const RejectTx = ({ tx, account, connection }: Props) => {
           />
         )}
 
-        <RejectReasonModal
-          isOpen={isRejectReasonModalOpen}
-          onClose={toggleRejectReasonModal}
-          onSubmit={handleRejectReason}
-        />
-
         <OperationResult
           isOpen={isFeeModalOpen}
           variant="error"
@@ -254,10 +243,8 @@ const RejectTx = ({ tx, account, connection }: Props) => {
           api={connection.api}
           multisigTx={tx}
           account={signAccount}
-          matrixRoomId={account.matrixRoomId}
           txPayload={txPayload}
           signature={signature}
-          rejectReason={rejectReason}
           onClose={handleClose}
         />
       )}

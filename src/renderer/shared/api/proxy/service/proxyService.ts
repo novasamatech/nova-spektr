@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 
-import { type Address, type ProxyType } from '@shared/core';
+import { type Address, type ProxyType } from '@/shared/core';
 
 export const proxyService = {
   getMaxProxies,

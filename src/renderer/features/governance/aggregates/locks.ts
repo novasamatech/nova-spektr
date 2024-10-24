@@ -3,9 +3,9 @@ import { combine, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type Chain } from '@/shared/core';
-import { nonNullable } from '@shared/lib/utils';
+import { nonNullable } from '@/shared/lib/utils';
+import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel } from '@/entities/wallet';
-import { networkModel } from '@entities/network';
 import { locksModel } from '../model/locks';
 import { networkSelectorModel } from '../model/networkSelector';
 

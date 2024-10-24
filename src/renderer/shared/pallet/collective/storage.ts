@@ -1,10 +1,10 @@
 import { type ApiPromise } from '@polkadot/api';
+import { type z } from 'zod';
 
 import { substrateRpcPool } from '@/shared/api/substrate-helpers';
-import { type AccountId } from '@/shared/core';
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { referendaPallet } from '@/shared/pallet/referenda';
-import { pjsSchema } from '@/shared/polkadotjs-schemas';
+import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
+import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 
 import { getPalletName } from './helpers';
 import { type CollectiveRank, collectiveMemberRecord, collectiveRank, collectiveVoteRecord } from './schemas';
@@ -25,6 +25,8 @@ const getQuery = (type: PalletType, api: ApiPromise, name: string) => {
   return query;
 };
 
+const votingResponseSchema = pjsSchema.vec(pjsSchema.optional(collectiveVoteRecord));
+
 export const storage = {
   /**
    * The index of each ranks's member into the group of members who have at
@@ -32,7 +34,7 @@ export const storage = {
    */
   idToIndex(type: PalletType, api: ApiPromise) {
     const schema = pjsSchema.vec(
-      pjsSchema.tuppleMap(
+      pjsSchema.tupleMap(
         ['key', pjsSchema.storageKey(pjsSchema.u16, pjsSchema.accountId)],
         ['index', pjsSchema.optional(pjsSchema.u32)],
       ),
@@ -48,7 +50,7 @@ export const storage = {
    */
   indexToId(type: PalletType, api: ApiPromise) {
     const schema = pjsSchema.vec(
-      pjsSchema.tuppleMap(
+      pjsSchema.tupleMap(
         ['key', pjsSchema.storageKey(collectiveRank, pjsSchema.u32)],
         ['index', pjsSchema.optional(pjsSchema.accountId)],
       ),
@@ -63,10 +65,7 @@ export const storage = {
    */
   memberCount(type: PalletType, api: ApiPromise, ranks: CollectiveRank[]) {
     const schema = pjsSchema.vec(
-      pjsSchema.tuppleMap(
-        ['rank', pjsSchema.storageKey(collectiveRank).transform(x => x[0])],
-        ['count', pjsSchema.u32],
-      ),
+      pjsSchema.tupleMap(['rank', pjsSchema.storageKey(collectiveRank).transform(x => x[0])], ['count', pjsSchema.u32]),
     );
 
     return substrateRpcPool.call(() => getQuery(type, api, 'memberCount').entries(ranks)).then(schema.parse);
@@ -77,7 +76,7 @@ export const storage = {
    */
   members(type: PalletType, api: ApiPromise) {
     const schema = pjsSchema.vec(
-      pjsSchema.tuppleMap(
+      pjsSchema.tupleMap(
         ['account', pjsSchema.storageKey(pjsSchema.accountId).transform(x => x[0])],
         ['member', pjsSchema.optional(collectiveMemberRecord)],
       ),
@@ -87,19 +86,42 @@ export const storage = {
   },
 
   /**
-   * Votes on a given proposal, if it is ongoing.
+   * The current members of the collective.
    */
-  voting(type: PalletType, api: ApiPromise, keys: [referendum: ReferendumId, account: AccountId][]) {
-    const keySchema = pjsSchema
-      .storageKey(referendaPallet.schema.referendumId, pjsSchema.accountId)
-      .transform(([referendum, account]) => ({
-        referendum,
-        account,
-      }));
+  async *membersPaged(type: PalletType, api: ApiPromise, pageSize: number) {
     const schema = pjsSchema.vec(
-      pjsSchema.tuppleMap(['key', keySchema], ['vote', pjsSchema.optional(collectiveVoteRecord)]),
+      pjsSchema.tupleMap(
+        ['accountId', pjsSchema.storageKey(pjsSchema.accountId).transform(x => x[0])],
+        ['member', pjsSchema.optional(collectiveMemberRecord)],
+      ),
     );
 
-    return substrateRpcPool.call(() => getQuery(type, api, 'voting').multi(keys)).then(schema.parse);
+    for await (const result of polkadotjsHelpers.createPagedRequest({
+      query: getQuery(type, api, 'members'),
+      pageSize,
+    })) {
+      yield schema.parse(result);
+    }
+  },
+
+  /**
+   * Votes on a given proposal, if it is ongoing.
+   */
+  voting(type: PalletType, api: ApiPromise, keys: (readonly [referendum: ReferendumId, account: AccountId])[]) {
+    return substrateRpcPool.call(() => getQuery(type, api, 'voting').multi(keys)).then(votingResponseSchema.parse);
+  },
+
+  /**
+   * Votes on a given proposal, if it is ongoing.
+   */
+  subscribeVoting(
+    type: PalletType,
+    api: ApiPromise,
+    keys: (readonly [referendum: ReferendumId, account: AccountId])[],
+    callback: (value: z.infer<typeof votingResponseSchema>) => unknown,
+  ) {
+    return getQuery(type, api, 'voting').multi(keys, response => {
+      callback(votingResponseSchema.parse(response));
+    });
   },
 };

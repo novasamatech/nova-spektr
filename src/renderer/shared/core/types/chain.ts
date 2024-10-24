@@ -2,6 +2,7 @@ import { type Asset } from './asset';
 import { type ChainId, type HexString } from './general';
 
 export type Chain = {
+  // Also known as "genesis hash"
   chainId: ChainId;
   parentId?: HexString;
   specName: string;
@@ -52,7 +53,6 @@ export const enum ExternalType {
   STAKING = 'staking',
   CROWDLOANS = 'crowdloans',
   PROXY = 'proxy',
-  MULTISIG = 'multisig',
   DELEGATIONS = 'governance-delegations',
 }
 type HistoryType = 'subquery' | 'github';

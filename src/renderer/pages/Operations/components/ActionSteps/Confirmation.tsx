@@ -1,19 +1,25 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@app/providers';
-import { type Account, type MultisigAccount, type MultisigTransaction, type Transaction } from '@shared/core';
-import { getAssetById } from '@shared/lib/utils';
-import { DetailRow, FootnoteText, Icon } from '@shared/ui';
-import { getTransactionFromMultisigTx } from '@entities/multisig';
-import { type ExtendedChain } from '@entities/network';
-import { SignButton } from '@entities/operations';
-import { priceProviderModel } from '@entities/price';
-import { Fee, FeeLoader, MultisigDepositWithLabel, XcmFee, isXcmTransaction } from '@entities/transaction';
-import { getIconName } from '@entities/transaction/lib/transactionConfirmIcon';
-import { walletModel } from '@entities/wallet';
-import { xcmTransferModel } from '@widgets/Transfer';
-import { TransactionAmount } from '@pages/Operations/components/TransactionAmount';
+import { type Account, type MultisigAccount, type MultisigTransaction, type Transaction } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { getAssetById } from '@/shared/lib/utils';
+import { DetailRow, Icon } from '@/shared/ui';
+import { getTransactionFromMultisigTx } from '@/entities/multisig';
+import { type ExtendedChain } from '@/entities/network';
+import { SignButton } from '@/entities/operations';
+import { priceProviderModel } from '@/entities/price';
+import {
+  Fee,
+  FeeLoader,
+  MultisigDepositWithLabel,
+  XcmFee,
+  getIconName,
+  isXcmTransaction,
+} from '@/entities/transaction';
+import { walletModel } from '@/entities/wallet';
+import { xcmTransferModel } from '@/widgets/Transfer';
+import { TransactionAmount } from '@/pages/Operations/components/TransactionAmount';
 import { Details } from '../Details';
 
 type Props = {
@@ -47,12 +53,6 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
         <Icon className="text-icon-default" name={getIconName(tx.transaction)} size={60} />
 
         {tx.transaction && <TransactionAmount tx={tx.transaction} />}
-
-        {tx.description && (
-          <FootnoteText className="ml-3 rounded bg-block-background px-3 py-2 text-text-secondary">
-            {tx.description}
-          </FootnoteText>
-        )}
       </div>
 
       <Details tx={tx} account={account} extendedChain={connection} signatory={signatory} />

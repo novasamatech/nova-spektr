@@ -1,8 +1,8 @@
+import { type TFunction } from 'i18next';
 import groupBy from 'lodash/groupBy';
 import unionBy from 'lodash/unionBy';
-import { type TFunction } from 'react-i18next';
 
-import { chainsService } from '@shared/api/network';
+import { chainsService } from '@/shared/api/network';
 import {
   type AccountId,
   AccountType,
@@ -15,9 +15,9 @@ import {
   type HexString,
   KeyType,
   type ShardAccount,
-} from '@shared/core';
-import { toAccountId } from '@shared/lib/utils';
-import { KEY_NAMES, SHARDED_KEY_NAMES } from '@entities/wallet';
+} from '@/shared/core';
+import { toAccountId } from '@/shared/lib/utils';
+import { KEY_NAMES, SHARDED_KEY_NAMES } from '@/entities/wallet';
 
 import { type ErrorDetails } from './derivation-import-error';
 import {
@@ -46,8 +46,9 @@ export const importKeysUtils = {
   getErrorsText,
 };
 
-function isFileStructureValid(result: any): result is ParsedImportFile {
-  const isVersionValid = 'version' in result && result.version === IMPORT_FILE_VERSION;
+function isFileStructureValid(result: unknown): result is ParsedImportFile {
+  const isVersionValid =
+    result && typeof result === 'object' && 'version' in result && result.version === IMPORT_FILE_VERSION;
   if (!isVersionValid) return false;
 
   const hasPublicKey = Object.keys(result).every(

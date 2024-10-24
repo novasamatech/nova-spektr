@@ -1,5 +1,5 @@
-import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
 import { toAddress, validateAddress } from '../address';
+import { TEST_ACCOUNTS, TEST_ADDRESS } from '../constants';
 
 describe('shared/lib/onChainUtils/address', () => {
   test('should convert address to Polkadot', () => {

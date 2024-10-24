@@ -1,8 +1,8 @@
 import { type Meta, type StoryObj } from '@storybook/react';
 import { expect, within } from '@storybook/test';
 
+import { TEST_ADDRESS } from '@/shared/lib/utils';
 import { Box } from '@/shared/ui-kit';
-import { TEST_ADDRESS } from '@shared/lib/utils';
 
 import { Address } from './Address';
 
@@ -65,7 +65,7 @@ export const Truncate: Story = {
     const canvas = within(canvasElement);
     const address = await canvas.findByTestId('Address');
     await new Promise((resolve) => setTimeout(resolve, 500));
-    expect(address.innerText).toBe('1ChFWeNRLar...eWz7jX7iTVZ');
+    expect(address.innerText).toBe('1ChFWeNRLarA...ueWz7jX7iTVZ');
   },
 };
 

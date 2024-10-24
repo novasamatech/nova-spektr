@@ -1,13 +1,13 @@
-import { useI18n } from '@app/providers';
-import { chainsService } from '@shared/api/network';
-import { type MultisigTransactionDS } from '@shared/api/storage';
-import { type MultisigAccount } from '@shared/core';
-import { getAssetById } from '@shared/lib/utils';
-import { Accordion, FootnoteText } from '@shared/ui';
-import { AssetBalance } from '@entities/asset';
-import { ChainTitle, XcmChains } from '@entities/chain';
-import { useMultisigEvent } from '@entities/multisig';
-import { TransactionTitle, getTransactionAmount, isXcmTransaction } from '@entities/transaction';
+import { chainsService } from '@/shared/api/network';
+import { type MultisigTransactionDS } from '@/shared/api/storage';
+import { type MultisigAccount } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { getAssetById } from '@/shared/lib/utils';
+import { Accordion, FootnoteText } from '@/shared/ui';
+import { AssetBalance } from '@/entities/asset';
+import { ChainTitle, XcmChains } from '@/entities/chain';
+import { useMultisigEvent } from '@/entities/multisig';
+import { TransactionTitle, getTransactionAmount, isXcmTransaction } from '@/entities/transaction';
 
 import { OperationFullInfo } from './OperationFullInfo';
 import { Status } from './Status';
@@ -39,7 +39,7 @@ const Operation = ({ tx, account }: Props) => {
             </FootnoteText>
           </div>
 
-          <TransactionTitle className="flex-1 overflow-hidden" tx={tx.transaction} description={tx.description} />
+          <TransactionTitle className="flex-1 overflow-hidden" tx={tx.transaction} />
 
           {asset && amount && (
             <div className="w-[160px]">

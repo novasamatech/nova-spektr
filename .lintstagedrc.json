@@ -1,6 +1,4 @@
 {
-  "src/**/*.{ts,tsx}": [
-    "pnpm exec tsc-files -p tsconfig.json --noEmit",
-    "pnpm lint:generic"
-  ]
+  "*.{ts,tsx}": "pnpm types:files globals.d.ts src/main/shared/bridge.ts",
+  "*.{js,ts,tsx}": "pnpm lint:generic"
 }

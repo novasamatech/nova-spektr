@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@/app/providers';
 import { type DelegateAccount } from '@/shared/api/governance';
+import { useI18n } from '@/shared/i18n';
 import { Button, Loader, SearchInput, Select } from '@/shared/ui';
 import { SortType } from '../common/constants';
 import { delegationModel } from '../model/delegation-model';

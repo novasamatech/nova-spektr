@@ -48,11 +48,6 @@ export const adminTracks = [
     value: 'governance.addDelegation.tracks.staking',
     description: 'governance.addDelegation.tracks.stakingDescription',
   },
-  {
-    id: '15',
-    value: 'governance.addDelegation.tracks.crowdloans',
-    description: 'governance.addDelegation.tracks.crowdloansDescription',
-  },
 ];
 
 export const governanceTracks = [
@@ -60,6 +55,11 @@ export const governanceTracks = [
     id: '12',
     value: 'governance.addDelegation.tracks.governanceLease',
     description: 'governance.addDelegation.tracks.governanceLeaseDescription',
+  },
+  {
+    id: '15',
+    value: 'governance.addDelegation.tracks.crowdloans',
+    description: 'governance.addDelegation.tracks.crowdloansDescription',
   },
   {
     id: '14',

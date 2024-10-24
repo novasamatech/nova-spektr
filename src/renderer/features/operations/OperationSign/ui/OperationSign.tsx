@@ -1,18 +1,19 @@
 import { useUnit } from 'effector-react';
 
+import { type HexString } from '@/shared/core';
 import { Loader } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
-import { type HexString } from '@shared/core';
 import { walletUtils } from '@/entities/wallet';
 import { signModel } from '../model/sign-model';
 
 import { SigningSwitch } from './SigningSwitch';
 
 type Props = {
-  onGoBack: () => void;
+  onSuccess?: VoidFunction;
+  onGoBack: VoidFunction;
 };
 
-export const OperationSign = ({ onGoBack }: Props) => {
+export const OperationSign = ({ onSuccess, onGoBack }: Props) => {
   const apis = useUnit(signModel.$apis);
   const signStore = useUnit(signModel.$signStore);
   const signerWallet = useUnit(signModel.$signerWallet);
@@ -29,6 +30,7 @@ export const OperationSign = ({ onGoBack }: Props) => {
 
   const onSignResult = (signatures: HexString[], txPayloads: Uint8Array[]) => {
     signModel.events.dataReceived({ signatures, txPayloads });
+    onSuccess?.();
   };
 
   return (

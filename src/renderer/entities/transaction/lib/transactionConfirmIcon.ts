@@ -1,5 +1,5 @@
-import { type DecodedTransaction, type Transaction, TransactionType } from '@shared/core';
-import { type IconNames } from '@shared/ui/Icon/data';
+import { type DecodedTransaction, type Transaction, TransactionType } from '@/shared/core';
+import { type IconNames } from '@/shared/ui/Icon/data';
 
 import { isEditDelegationTransaction } from './common/utils';
 
@@ -34,6 +34,8 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.REMOVE_PROXY]: 'proxyConfirm',
   [TransactionType.REMOVE_PURE_PROXY]: 'proxyConfirm',
   [TransactionType.PROXY]: 'unknownConfirm',
+  // Remark
+  [TransactionType.REMARK]: 'unknownConfirm',
   // Governance
   [TransactionType.UNLOCK]: 'unlockMst',
   [TransactionType.VOTE]: 'voteMst',
@@ -42,6 +44,9 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.DELEGATE]: 'addDelegationConfirm',
   [TransactionType.UNDELEGATE]: 'revokeDelegationConfirm',
   [TransactionType.EDIT_DELEGATION]: 'editDelegationConfirm',
+
+  // Collectives
+  [TransactionType.COLLECTIVE_VOTE]: 'voteMst',
 };
 
 export const getIconName = (transaction?: Transaction | DecodedTransaction): IconNames => {

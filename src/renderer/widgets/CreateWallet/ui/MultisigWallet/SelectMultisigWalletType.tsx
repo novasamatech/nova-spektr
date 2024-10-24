@@ -1,8 +1,7 @@
 import { useState } from 'react';
 
-import { useI18n } from '@app/providers';
-import { BaseModal, BodyText, Button, HeaderTitleText, RadioGroup } from '@shared/ui';
-import { MatrixAutoLogin, MatrixLogin } from '@features/matrix';
+import { useI18n } from '@/shared/i18n';
+import { BaseModal, BodyText, Button, HeaderTitleText, RadioGroup } from '@/shared/ui';
 
 import { MultisigWalletType } from './common/constants';
 
@@ -87,9 +86,6 @@ export const SelectMultisigWalletType = ({ isOpen, onClose, onContinue }: Props)
           {t('signing.continueButton')}
         </Button>
       </div>
-
-      <MatrixAutoLogin />
-      <MatrixLogin zIndex="z-60" redirectStep="multisig_wallet" onClose={onClose} />
     </BaseModal>
   );
 };

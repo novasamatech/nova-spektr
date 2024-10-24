@@ -1,8 +1,9 @@
-import { useI18n } from '@app/providers';
-import { type BaseAccount, type ChainAccount, type Explorer, type ShardAccount, type Wallet } from '@shared/core';
-import { cnTw, toAddress } from '@shared/lib/utils';
-import { BodyText, Checkbox, HelpText, IconButton, Identicon, Truncate } from '@shared/ui';
-import { ExplorersPopover, accountUtils, walletUtils } from '@entities/wallet';
+import { type BaseAccount, type ChainAccount, type Explorer, type ShardAccount, type Wallet } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { cnTw, toAddress } from '@/shared/lib/utils';
+import { BodyText, HelpText, IconButton, Identicon, Truncate } from '@/shared/ui';
+import { Checkbox } from '@/shared/ui-kit';
+import { ExplorersPopover, accountUtils, walletUtils } from '@/entities/wallet';
 
 type Props = {
   wallet?: Wallet;
@@ -60,7 +61,7 @@ export const SelectableShard = ({
         'focus-within:bg-action-background-hover hover:bg-action-background-hover',
       )}
     >
-      <Checkbox checked={checked} semiChecked={semiChecked} onChange={(event) => onChange(event.target.checked)} />
+      <Checkbox checked={checked} semiChecked={semiChecked} onChange={(checked) => onChange(checked)} />
       <ExplorersPopover
         button={content}
         address={account.accountId}

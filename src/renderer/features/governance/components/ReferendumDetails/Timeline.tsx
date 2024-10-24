@@ -1,7 +1,7 @@
 import { useStoreMap, useUnit } from 'effector-react';
 
-import { type ReferendumId } from '@shared/core';
-import { Shimmering } from '@shared/ui';
+import { type ReferendumId } from '@/shared/core';
+import { Shimmering } from '@/shared/ui';
 import { detailsAggregate } from '../../aggregates/details';
 
 import { TimelineItem } from './TimelineItem';

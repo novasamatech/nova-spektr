@@ -1,16 +1,16 @@
 import { Listbox, Transition } from '@headlessui/react';
+import { type TFunction } from 'i18next';
 import { Fragment } from 'react';
-import { type TFunction } from 'react-i18next';
 
-import { useI18n } from '@app/providers';
-import { type RpcNode } from '@shared/core';
-import { ConnectionType } from '@shared/core';
-import { useScrollTo } from '@shared/lib/hooks';
-import { cnTw } from '@shared/lib/utils';
-import { Button, FootnoteText, HelpText, Icon, IconButton } from '@shared/ui';
-import { OptionStyle, SelectButtonStyle } from '@shared/ui/Dropdowns/common/constants';
-import { CommonInputStyles, CommonInputStylesTheme } from '@shared/ui/Inputs/common/styles';
-import { type Theme } from '@shared/ui/types';
+import { type RpcNode } from '@/shared/core';
+import { ConnectionType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { useScrollTo } from '@/shared/lib/hooks';
+import { cnTw } from '@/shared/lib/utils';
+import { Button, FootnoteText, HelpText, Icon, IconButton } from '@/shared/ui';
+import { OptionStyle, SelectButtonStyle } from '@/shared/ui/Dropdowns/common/constants';
+import { CommonInputStyles, CommonInputStylesTheme } from '@/shared/ui/Inputs/common/styles';
+import { type Theme } from '@/shared/ui/types';
 import { type ConnectionItem, type SelectorPayload } from '../lib/types';
 
 const TRANSITION_DURATION = 100;

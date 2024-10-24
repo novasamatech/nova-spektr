@@ -1,11 +1,11 @@
 import throttle from 'lodash/throttle';
 import { useLayoutEffect, useRef, useState } from 'react';
 
-import { useI18n } from '@app/providers';
-import { WalletType } from '@shared/core';
-import { cnTw } from '@shared/lib/utils';
-import { Icon, TitleText } from '@shared/ui';
-import { walletPairingModel } from '@features/wallets';
+import { WalletType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { cnTw } from '@/shared/lib/utils';
+import { Icon, TitleText } from '@/shared/ui';
+import { walletPairingModel } from '@/features/wallets';
 
 import PrivacyPolicy from './PrivacyPolicy';
 import { WelcomeCard } from './WelcomeCard';
@@ -35,7 +35,7 @@ export const Welcome = () => {
   }, []);
 
   return (
-    <div className="flex h-screen w-screen">
+    <div className="flex h-screen w-full animate-in fade-in">
       <div className="flex h-full w-[512px] flex-col p-10">
         <TitleText className="mb-8">{t('onboarding.welcome.title')}</TitleText>
 

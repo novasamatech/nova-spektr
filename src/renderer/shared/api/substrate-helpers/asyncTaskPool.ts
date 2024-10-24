@@ -1,18 +1,20 @@
+import { isNumber } from 'lodash';
+
 type Params = {
   poolSize: number;
   retryCount: number;
-  retryDelay: (attempt: number) => number;
+  retryDelay: ((attempt: number) => number) | number;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Task<T = any> = {
+type Task<T = unknown> = {
   fn: () => T | Promise<T>;
   retry: number;
   resolve: (value: T | PromiseLike<T>) => void;
   reject: (error: unknown) => void;
 };
 
-export class AsyncTaskPool {
+class AsyncTaskPool {
   private queue: Task[] = [];
   private activeTasks: Task[] = [];
 
@@ -30,7 +32,7 @@ export class AsyncTaskPool {
       throw new Error("Can't create resolvable promise");
     }
 
-    const task: Task<T> = {
+    const task: Task = {
       fn,
       retry: 0,
       resolve: externalResolve,
@@ -62,10 +64,14 @@ export class AsyncTaskPool {
       if (task.retry >= this.config.retryCount) {
         task.reject(error);
       } else {
+        const retryDelay = isNumber(this.config.retryDelay)
+          ? this.config.retryDelay
+          : this.config.retryDelay(task.retry);
+
         setTimeout(() => {
           this.queue.push(task);
           this.processQueue();
-        }, this.config.retryDelay(task.retry));
+        }, retryDelay);
         task.retry++;
       }
     } finally {
@@ -74,3 +80,5 @@ export class AsyncTaskPool {
     }
   }
 }
+
+export const createAsyncTaskPool = (params: Params) => new AsyncTaskPool(params);

@@ -2,17 +2,16 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
-import { useI18n } from '@app/providers';
-import { type MultisigAccount } from '@shared/core';
-import { toAddress, toShortAddress } from '@shared/lib/utils';
-import { Alert, Button, Input, InputHint, Select } from '@shared/ui';
-import { AssetBalance } from '@entities/asset';
-import { ChainTitle } from '@entities/chain';
-import { SignatorySelector } from '@entities/operations';
-import { PureProxyPopover } from '@entities/proxy';
-import { FeeWithLabel, MultisigDepositWithLabel, ProxyDepositWithLabel } from '@entities/transaction';
-import { AccountAddress, accountUtils } from '@entities/wallet';
-import { DESCRIPTION_LENGTH } from '@features/operations/OperationsValidation';
+import { type MultisigAccount } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { toAddress, toShortAddress } from '@/shared/lib/utils';
+import { Alert, Button, InputHint, Select } from '@/shared/ui';
+import { AssetBalance } from '@/entities/asset';
+import { ChainTitle } from '@/entities/chain';
+import { SignatorySelector } from '@/entities/operations';
+import { PureProxyPopover } from '@/entities/proxy';
+import { FeeWithLabel, MultisigDepositWithLabel, ProxyDepositWithLabel } from '@/entities/transaction';
+import { AccountAddress, accountUtils } from '@/entities/wallet';
 import { formModel } from '../model/form-model';
 
 type Props = {
@@ -35,7 +34,6 @@ export const AddPureProxiedForm = ({ onGoBack }: Props) => {
         <NetworkSelector />
         <AccountSelector />
         <Signatories />
-        <DescriptionInput />
       </form>
       <div className="flex flex-col gap-y-6 pb-4 pt-6">
         <FeeSection />
@@ -158,38 +156,6 @@ const Signatories = () => {
       errorText={t(signatory.errorText())}
       onChange={signatory.onChange}
     />
-  );
-};
-
-const DescriptionInput = () => {
-  const { t } = useI18n();
-
-  const {
-    fields: { description },
-  } = useForm(formModel.$proxyForm);
-  const isMultisig = useUnit(formModel.$isMultisig);
-
-  if (!isMultisig) {
-    return null;
-  }
-
-  return (
-    <div className="flex flex-col gap-y-2">
-      <Input
-        spellCheck
-        label={t('general.input.descriptionLabel')}
-        className="w-full"
-        placeholder={t('general.input.descriptionPlaceholder')}
-        invalid={description.hasError()}
-        value={description.value}
-        onChange={description.onChange}
-      />
-      <InputHint variant="error" active={description.hasError()}>
-        {description.errorText({
-          maxLength: t('proxy.addProxy.maxLengthDescriptionError', { maxLength: DESCRIPTION_LENGTH }),
-        })}
-      </InputHint>
-    </div>
   );
 };
 

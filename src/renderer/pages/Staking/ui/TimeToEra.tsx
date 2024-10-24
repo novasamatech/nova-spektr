@@ -1,8 +1,8 @@
 import { type ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
-import { Duration, Shimmering } from '@shared/ui';
-import { eraService } from '@entities/staking/api';
+import { Duration, Shimmering } from '@/shared/ui';
+import { eraService } from '@/entities/staking';
 
 type Props = {
   api?: ApiPromise;

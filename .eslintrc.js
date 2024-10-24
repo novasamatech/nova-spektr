@@ -8,12 +8,14 @@ const boundaryTypes = ['app', 'shared', 'domains', 'entities', 'processes', 'fea
 const boundaries = boundaryTypes.map((type) => ({
   type,
   pattern: `src/renderer/${type}/*`,
+  capture: ['package'],
 }));
 
 module.exports = {
   root: true,
   env: {
     browser: true,
+    es6: true,
   },
   extends: [
     'eslint:recommended',
@@ -29,6 +31,8 @@ module.exports = {
   },
   rules: {
     'sort-imports': ['error', { ignoreDeclarationSort: true }],
+    // For debugging purpose, too slow for every day usage
+    // 'import-x/no-cycle': ['error', { maxDepth: Number.Infinity }],
     'import-x/no-unresolved': 'off',
     'import-x/named': 'off',
     'import-x/namespace': 'off',
@@ -41,7 +45,7 @@ module.exports = {
         groups: ['builtin', 'external', 'parent', ['sibling', 'index']],
         pathGroups: boundaryTypes.map((type) => ({
           group: 'parent',
-          pattern: `@{/${type},${type}}/**`,
+          pattern: `@/${type}/**`,
           position: 'before',
         })),
         'newlines-between': 'always',
@@ -101,14 +105,13 @@ module.exports = {
         'i18next/no-literal-string': [
           'error',
           {
-            mode: 'jsx-text-only',
-            'should-validate-template': true,
+            mode: 'jsx-only',
+            'should-validate-template': false,
             'jsx-attributes': {
               include: ['alt', 'aria-label', 'title', 'placeholder', 'label', 'description'],
-              exclude: ['data-testid', 'className'],
             },
             callees: {
-              exclude: ['Error', 'log', 'warn'],
+              exclude: ['Error', 'log', 'warn', 'includes', 'formatDate'],
             },
             words: {
               exclude: ['[0-9!-/:-@[-`{-~]+', '[A-Z_-]+'],
@@ -145,7 +148,7 @@ module.exports = {
     },
     {
       files: ['*.ts', '*.tsx'],
-      plugins: ['@typescript-eslint', 'effector', 'boundaries'],
+      plugins: ['@typescript-eslint', 'effector', 'boundaries', 'local-rules'],
       extends: [
         'plugin:import-x/typescript',
         'plugin:effector/recommended',
@@ -153,15 +156,25 @@ module.exports = {
         'plugin:@typescript-eslint/eslint-recommended',
         'plugin:@typescript-eslint/recommended',
         'plugin:boundaries/recommended',
+        'plugin:local-rules/all',
       ],
       parser: '@typescript-eslint/parser',
       parserOptions: {
         sourceType: 'module',
-        project: './tsconfig.json',
+        projectService: true,
         tsconfigRootDir: __dirname,
         createDefaultProgram: true,
       },
       rules: {
+        'local-rules/no-self-import': [
+          'error',
+          {
+            root: './src/renderer',
+            exclude: ['widgets', 'pages', 'features/operations', 'shared/lib', 'shared/api', 'shared/pallet'],
+          },
+        ],
+        'local-rules/no-relative-import-from-root': ['error', { root: './src/renderer' }],
+
         // TODO enable
         // 'no-console': ['error', { allow: ['warn', 'error', 'info'] }],
 
@@ -180,6 +193,13 @@ module.exports = {
           {
             name: 'classnames',
             message: 'Use cnTw instead.',
+          },
+        ],
+        'import-x/max-dependencies': [
+          'warn',
+          {
+            max: 20,
+            ignoreTypeImports: true,
           },
         ],
 
@@ -206,6 +226,58 @@ module.exports = {
         'effector/enforce-store-naming-convention': 'off',
 
         // Boundaries setup
+        'boundaries/entry-point': [
+          'error',
+          {
+            default: 'disallow',
+            rules: [
+              {
+                target: boundaryTypes,
+                allow: ['index.ts', 'index.tsx'],
+              },
+              {
+                target: ['shared'],
+                allow: ['**/*'],
+              },
+              {
+                target: ['pages'],
+                allow: ['**/*'],
+              },
+              // TODO fix this packages
+              {
+                target: [
+                  ['features', { package: 'operations' }],
+                  ['features', { package: 'governance' }],
+                  ['features', { package: 'wallets' }],
+                ],
+                allow: ['**/*.ts', '**/*.tsx'],
+              },
+            ],
+          },
+        ],
+
+        'boundaries/external': [
+          'error',
+          {
+            default: 'allow',
+            rules: [
+              {
+                from: ['domains'],
+                disallow: ['react', 'effector-react'],
+                message: 'Domain should contain only logic, not views.',
+              },
+              {
+                from: [
+                  ['shared', { package: 'ui-kit' }],
+                  ['shared', { package: 'ui-entities' }],
+                ],
+                disallow: ['effector', 'effector-react'],
+                message: 'Data bindings are forbidden in ui library components.',
+              },
+            ],
+          },
+        ],
+
         'boundaries/element-types': [
           'error',
           {
@@ -213,7 +285,7 @@ module.exports = {
             rules: [
               {
                 from: 'app',
-                allow: [/* TODO fix */ 'shared', /* TODO fix */ 'entities', /* TODO fix */ 'features'],
+                allow: ['app', /* TODO fix */ 'shared', /* TODO fix */ 'entities', /* TODO fix */ 'features'],
               },
               {
                 from: 'shared',
@@ -225,7 +297,7 @@ module.exports = {
               },
               {
                 from: 'domains',
-                allow: ['shared', 'domains'],
+                allow: ['shared', 'domains', /* TODO fix */ 'entities'],
               },
               {
                 from: 'processes',
@@ -233,11 +305,11 @@ module.exports = {
               },
               {
                 from: 'features',
-                allow: ['app', 'shared', 'entities', /* TODO fix */ 'widgets', /* TODO fix */ 'features'],
+                allow: ['app', 'shared', 'entities', /* TODO fix */ 'widgets', /* TODO fix */ 'features', 'domains'],
               },
               {
                 from: 'pages',
-                allow: ['app', 'shared', 'entities', 'features', 'widgets'],
+                allow: ['app', 'shared', 'entities', 'features', 'widgets', 'domains'],
               },
               {
                 from: 'widgets',
@@ -288,7 +360,7 @@ module.exports = {
           // effector effect naming convention
           {
             message: 'Use effector naming convention for effects.',
-            selector: 'VariableDeclarator[init.callee.name="createEffect"][id.name!=/.*?Fx$/]',
+            selector: 'VariableDeclarator[init.callee.name="createEffect"][id.name!=/^(.*?Fx|fx)$/]',
           },
           // for..in ban
           {

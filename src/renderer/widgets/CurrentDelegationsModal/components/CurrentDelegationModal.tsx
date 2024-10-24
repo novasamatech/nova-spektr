@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { BaseModal, Button, Loader, SearchInput } from '@/shared/ui';
 import { OperationTitle } from '@/entities/chain';
 import { delegationAggregate, networkSelectorModel } from '@/features/governance';

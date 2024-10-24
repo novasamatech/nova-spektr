@@ -5,7 +5,7 @@ import { Identicon } from '../../Identicon/Identicon';
 import { Select } from './Select';
 
 export default {
-  title: 'Select',
+  title: 'v1/ui/Select',
   component: Select,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [

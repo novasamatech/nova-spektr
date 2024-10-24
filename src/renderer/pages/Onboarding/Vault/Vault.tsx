@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 
-import { useToggle } from '@shared/lib/hooks';
-import { DEFAULT_TRANSITION } from '@shared/lib/utils';
-import { BaseModal } from '@shared/ui';
-import { type SeedInfo, VaultFeatures } from '@entities/transaction';
+import { useToggle } from '@/shared/lib/hooks';
+import { DEFAULT_TRANSITION } from '@/shared/lib/utils';
+import { BaseModal } from '@/shared/ui';
+import { type SeedInfo, VaultFeatures } from '@/entities/transaction';
 
 import { ManageMultishard } from './ManageMultishard/ManageMultishard';
 import { ManageSingleshard } from './ManageSingleshard/ManageSingleshard';
@@ -104,7 +104,7 @@ export const Vault = ({ isOpen, onClose, onComplete }: Props) => {
     <BaseModal
       isOpen={isModalOpen}
       contentClass="flex h-full"
-      panelClass="w-modal-xl h-modal"
+      panelClass="w-modal-xl h-modal overflow-hidden"
       onClose={closeVaultModal}
     >
       {activeStep === Step.SCAN && <ScanStep onBack={closeVaultModal} onNextStep={onReceiveQr} />}

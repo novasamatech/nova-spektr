@@ -2,17 +2,18 @@ import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useState } from 'react';
 
-import { useI18n } from '@/app/providers';
 import { type Account, type Chain } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
-import { Alert, Button, Checkbox, FootnoteText, Icon, IconButton, SmallTitleText, Tooltip } from '@/shared/ui';
-import { Modal } from '@/shared/ui-kit';
+import { Alert, Button, FootnoteText, Icon, IconButton, SmallTitleText, Tooltip } from '@/shared/ui';
+import { Checkbox, Modal } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { OperationTitle } from '@/entities/chain';
 import {
   getGovernanceTrackDescription,
   getGroupPallet,
   getTrackIds,
+  getTrackTitles,
   getTreasuryTrackDescription,
 } from '@/entities/governance';
 import { AccountAddress, AddressWithName, ExplorersPopover, accountUtils } from '@/entities/wallet';
@@ -33,6 +34,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
   const tracks = useUnit(selectTracksModel.$tracks);
   const accounts = useUnit(selectTracksModel.$accounts);
   const votedTracks = useUnit(selectTracksModel.$votedTracks);
+  const delegatedTracks = useUnit(selectTracksModel.$delegatedTracks);
   const tracksGroup = useUnit(selectTracksModel.$tracksGroup);
   const allTracks = useUnit(selectTracksModel.$allTracks);
   const isMaxWeightReached = useUnit(selectTracksModel.$isMaxWeightReached);
@@ -69,14 +71,6 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
               </Button>
               <Button
                 disabled={accounts.length === 0}
-                pallet={getGroupPallet(adminTracks, votedTracks, tracks)}
-                variant="chip"
-                onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(adminTracks, votedTracks))}
-              >
-                {t('governance.addDelegation.group.admin')}
-              </Button>
-              <Button
-                disabled={accounts.length === 0}
                 pallet={getGroupPallet(governanceTracks, votedTracks, tracks)}
                 variant="chip"
                 onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(governanceTracks, votedTracks))}
@@ -105,7 +99,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
                 {adminTracks.map((track) => (
                   <Checkbox
                     key={track.id}
-                    checked={tracks.includes(Number(track.id))}
+                    checked={tracks.includes(Number(track.id)) || votedTracks.includes(track.id)}
                     disabled={votedTracks.includes(track.id) || accounts.length === 0}
                     onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
                   >
@@ -122,7 +116,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
                 {governanceTracks.map((track) => (
                   <Checkbox
                     key={track.id}
-                    checked={tracks.includes(Number(track.id))}
+                    checked={tracks.includes(Number(track.id)) || votedTracks.includes(track.id)}
                     disabled={votedTracks.includes(track.id) || accounts.length === 0}
                     onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
                   >
@@ -142,7 +136,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
                 {treasuryTracks.map((track) => (
                   <Checkbox
                     key={track.id}
-                    checked={tracks.includes(Number(track.id))}
+                    checked={tracks.includes(Number(track.id)) || votedTracks.includes(track.id)}
                     disabled={votedTracks.includes(track.id) || accounts.length === 0}
                     onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
                   >
@@ -162,7 +156,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
                 {fellowshipTracks.map((track) => (
                   <Checkbox
                     key={track.id}
-                    checked={tracks.includes(Number(track.id))}
+                    checked={tracks.includes(Number(track.id)) || votedTracks.includes(track.id)}
                     disabled={votedTracks.includes(track.id) || accounts.length === 0}
                     onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
                   >
@@ -177,26 +171,42 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
               </div>
             </div>
           </div>
-          <div className="px-5">
+          <div className="flex flex-col gap-2 px-5">
             <Alert variant="error" active={isMaxWeightReached} title={t('governance.addDelegation.maxWeightError')}>
               <Alert.Item withDot={false}>{t('governance.addDelegation.maxWeightErrorDescription')} </Alert.Item>
             </Alert>
 
             <Alert
               variant="info"
-              active={
-                // TODO: Add support multishard wallet
-                accounts.length > 0 && votesToRemove.length > 0
-              }
+              active={accounts.length > 0 && delegatedTracks?.length > 0}
+              title={t('governance.addDelegation.delegatedTracksTitle')}
+            >
+              <Alert.Item withDot={false}>
+                {t('governance.addDelegation.delegatedTracksDescription', {
+                  tracks: getTrackTitles(delegatedTracks, allTracks, t),
+                })}
+              </Alert.Item>
+            </Alert>
+
+            <Alert
+              variant="info"
+              active={accounts.length > 0 && votesToRemove.length > 0}
               title={t('governance.addDelegation.votedTracksTitle')}
             >
-              <Alert.Item withDot={false}>{t('governance.addDelegation.votedTracksDescription')} </Alert.Item>
+              <Alert.Item withDot={false}>
+                {t('governance.addDelegation.votedTracksDescription', {
+                  tracks: getTrackTitles(
+                    votesToRemove.map(({ track }) => track),
+                    allTracks,
+                    t,
+                  ),
+                })}
+              </Alert.Item>
               <Alert.Item withDot={false}>
                 <Button variant="text" size="sm" className="p-0" onClick={() => setShowRemoveVoteModal(true)}>
                   {t('governance.addDelegation.removeVotesButton')}
                 </Button>
               </Alert.Item>
-
               {showRemoveVoteModal && votesToRemove.length > 0 && (
                 <RemoveVotesModal
                   votes={votesToRemove}

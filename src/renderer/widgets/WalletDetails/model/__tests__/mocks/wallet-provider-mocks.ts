@@ -11,8 +11,8 @@ import {
   SigningType,
   type Wallet,
   WalletType,
-} from '@shared/core';
-import { TEST_ACCOUNTS, TEST_ADDRESS } from '@shared/lib/utils';
+} from '@/shared/core';
+import { TEST_ACCOUNTS, TEST_ADDRESS } from '@/shared/lib/utils';
 
 const wallets: Wallet[] = [
   {
@@ -145,7 +145,6 @@ const multisiigWallet: MultisigWallet = {
       cryptoType: 0,
       chainType: 0,
       threshold: 2,
-      matrixRoomId: '0',
       creatorAccountId: TEST_ACCOUNTS[1],
       signatories: [
         {

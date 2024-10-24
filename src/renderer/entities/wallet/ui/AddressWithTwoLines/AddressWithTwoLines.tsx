@@ -1,9 +1,9 @@
 import { type IconTheme } from '@polkadot/react-identicon/types';
 import { type ReactNode } from 'react';
 
-import { type AccountId, type Address } from '@shared/core';
-import { cnTw } from '@shared/lib/utils';
-import { Identicon } from '@shared/ui';
+import { type AccountId, type Address } from '@/shared/core';
+import { cnTw } from '@/shared/lib/utils';
+import { Identicon } from '@/shared/ui';
 import { getAddress } from '../AccountAddress/AccountAddress';
 
 type WithAccountId = {

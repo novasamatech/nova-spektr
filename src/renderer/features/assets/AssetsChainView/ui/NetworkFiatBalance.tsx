@@ -1,12 +1,11 @@
-import BN from 'bignumber.js';
+import { default as BigNumber } from 'bignumber.js';
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@app/providers';
-import { type Asset, type Balance } from '@shared/core';
-import { formatFiatBalance, getRoundedValue, totalAmount } from '@shared/lib/utils';
-import { currencyModel, priceProviderModel } from '@entities/price';
-import { FiatBalance } from '@entities/price/ui/FiatBalance';
+import { type Asset, type Balance } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { formatFiatBalance, getRoundedValue, totalAmount } from '@/shared/lib/utils';
+import { FiatBalance, currencyModel, priceProviderModel } from '@/entities/price';
 
 type Props = {
   assets: Asset[];
@@ -16,7 +15,7 @@ type Props = {
 
 export const NetworkFiatBalance = ({ assets, balances, className }: Props) => {
   const { t } = useI18n();
-  const [fiatAmount, setFiatAmount] = useState<BN>(new BN(0));
+  const [fiatAmount, setFiatAmount] = useState<BigNumber>(new BigNumber(0));
 
   const currency = useUnit(currencyModel.$activeCurrency);
   const prices = useUnit(priceProviderModel.$assetsPrices);
@@ -24,7 +23,7 @@ export const NetworkFiatBalance = ({ assets, balances, className }: Props) => {
 
   useEffect(() => {
     // TODO: Move logic to model https://app.clickup.com/t/8692tr8x0
-    const totalFiatAmount = assets.reduce<BN>((acc, asset) => {
+    const totalFiatAmount = assets.reduce<BigNumber>((acc, asset) => {
       if (!prices || !asset.priceId || !currency || !currency?.coingeckoId || !prices[asset.priceId]) {
         return acc;
       }
@@ -39,7 +38,7 @@ export const NetworkFiatBalance = ({ assets, balances, className }: Props) => {
       }
 
       return acc;
-    }, new BN(0));
+    }, new BigNumber(0));
 
     setFiatAmount(totalFiatAmount);
   }, [assets.length, prices, currency, balances]);

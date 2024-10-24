@@ -1,4 +1,4 @@
-import { type Wallet } from '@shared/core';
+import { type Wallet } from '@/shared/core';
 
 import { accountUtils } from './account-utils';
 import { walletUtils } from './wallet-utils';

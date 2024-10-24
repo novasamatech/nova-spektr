@@ -1,14 +1,14 @@
 import noop from 'lodash/noop';
 import { type ComponentProps, type PropsWithChildren, type ReactNode, forwardRef } from 'react';
 
-import { cnTw } from '@shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { Loader } from '../../Loader/Loader';
 import { Padding, SizeClass, ViewClass } from '../common/constants';
 import { type Pallet, type Variant } from '../common/types';
 
 type HTMLButtonProps = Pick<
   ComponentProps<'button'>,
-  'onClick' | 'onMouseDown' | 'onPointerDown' | 'disabled' | 'tabIndex' | 'type'
+  'onClick' | 'onMouseDown' | 'onPointerDown' | 'onPointerMove' | 'onPointerLeave' | 'disabled' | 'tabIndex' | 'type'
 >;
 type Props = HTMLButtonProps & {
   className?: string;
@@ -40,6 +40,8 @@ export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
       onClick = noop,
       onMouseDown = noop,
       onPointerDown = noop,
+      onPointerMove,
+      onPointerLeave,
       testId = 'Button',
     },
     ref,
@@ -62,6 +64,8 @@ export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
       onClick={(e) => !isLoading && onClick(e)}
       onMouseDown={(e) => !isLoading && onMouseDown(e)}
       onPointerDown={(e) => !isLoading && onPointerDown(e)}
+      onPointerMove={onPointerMove}
+      onPointerLeave={onPointerLeave}
     >
       {isLoading && <Loader color="white" />}
       {prefixElement && <div data-testid="prefix">{prefixElement}</div>}

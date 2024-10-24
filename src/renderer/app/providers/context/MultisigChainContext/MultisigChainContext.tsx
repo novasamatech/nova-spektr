@@ -3,15 +3,15 @@ import { type Event } from '@polkadot/types/interfaces';
 import { useGate, useUnit } from 'effector-react';
 import { type PropsWithChildren, createContext, useContext, useEffect } from 'react';
 
-import { type ChainId, type MultisigAccount, MultisigTxFinalStatus, type SigningStatus } from '@shared/core';
-import { useDebounce, useTaskQueue } from '@shared/lib/hooks';
-import { type Task } from '@shared/lib/hooks/useTaskQueue';
-import { getCreatedDateFromApi, toAddress } from '@shared/lib/utils';
+import { type ChainId, type MultisigAccount, MultisigTxFinalStatus, type SigningStatus } from '@/shared/core';
+import { useDebounce, useTaskQueue } from '@/shared/lib/hooks';
+import { type Task } from '@/shared/lib/hooks/useTaskQueue';
+import { getCreatedDateFromApi, toAddress } from '@/shared/lib/utils';
+import { subscriptionService } from '@/entities/chain';
+import { useMultisigEvent, useMultisigTx } from '@/entities/multisig';
+import { networkModel, networkUtils } from '@/entities/network';
 import { operationsModel } from '@/entities/operations';
-import { subscriptionService } from '@entities/chain';
-import { useMultisigEvent, useMultisigTx } from '@entities/multisig';
-import { networkModel, networkUtils } from '@entities/network';
-import { accountUtils, walletModel } from '@entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 
 type MultisigChainContextProps = {
   addTask: (task: Task) => void;
@@ -109,7 +109,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
 
     const accountId = event.data[0].toHex();
 
-    await addEventWithQueue(
+    addEventWithQueue(
       {
         txAccountId: account.accountId,
         txChainId: chainId,

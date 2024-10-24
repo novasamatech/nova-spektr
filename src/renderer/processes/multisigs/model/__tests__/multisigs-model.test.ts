@@ -6,12 +6,13 @@ import {
   ChainType,
   ConnectionType,
   CryptoType,
+  ExternalType,
   SigningType,
   WalletType,
-} from '@shared/core';
-import { multisigService } from '@entities/multisig';
-import { networkModel } from '@entities/network';
-import { walletModel } from '@entities/wallet';
+} from '@/shared/core';
+import { multisigService } from '@/entities/multisig';
+import { networkModel } from '@/entities/network';
+import { walletModel } from '@/entities/wallet';
 import { multisigsModel } from '../multisigs-model';
 
 const signatories = [
@@ -76,7 +77,7 @@ describe('features/multisigs/model/multisigs-model', () => {
             chainId: '0x01',
             name: 'Westend',
             options: [ChainOptions.MULTISIG],
-            externalApi: { multisig: [{ url: 'http://mock-url' }] },
+            externalApi: { [ExternalType.PROXY]: [{ url: 'http://mock-url' }] },
           },
         }),
     });

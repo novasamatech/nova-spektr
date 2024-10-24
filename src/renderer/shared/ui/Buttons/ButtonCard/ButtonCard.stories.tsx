@@ -3,7 +3,7 @@ import { type Meta, type StoryFn } from '@storybook/react';
 import { ButtonCard } from './ButtonCard';
 
 export default {
-  title: 'ButtonCard',
+  title: 'v1/ui/ButtonCard',
   component: ButtonCard,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof ButtonCard>;

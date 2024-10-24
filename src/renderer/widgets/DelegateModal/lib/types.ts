@@ -1,6 +1,6 @@
 import { type BN } from '@polkadot/util';
 
-import { type Account, type Address, type Chain, type Conviction, type Wallet } from '@shared/core';
+import { type Account, type Address, type Chain, type Conviction, type Wallet } from '@/shared/core';
 
 export type WalletData = {
   wallet: Wallet;

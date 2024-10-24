@@ -18,9 +18,9 @@ import {
   useState,
 } from 'react';
 
-import { chainsService } from '@shared/api/network';
-import { type ChainId, ExternalType } from '@shared/core';
-import { settingsStorage } from '@entities/settings';
+import { chainsService } from '@/shared/api/network';
+import { type ChainId, ExternalType } from '@/shared/core';
+import { settingsStorage } from '@/entities/settings';
 
 type GraphqlContextProps = {
   changeClient: (chainId: ChainId) => void;

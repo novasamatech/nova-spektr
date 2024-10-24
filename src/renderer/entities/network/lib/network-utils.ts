@@ -6,8 +6,8 @@ import {
   type Connection,
   ConnectionStatus,
   ConnectionType,
-} from '@shared/core';
-import { RelayChains } from '@shared/lib/utils';
+} from '@/shared/core';
+import { RelayChains } from '@/shared/lib/utils';
 
 export const networkUtils = {
   isConnectedStatus,
