@@ -4,16 +4,16 @@ import { createPipeline, usePipeline } from '@/shared/di';
 
 import { NavItem, type Props as NavItemProps } from './NavItem';
 
-export const navigationTopLinks = createPipeline<NavItemProps[]>({
+export const navigationTopLinksPipeline = createPipeline<NavItemProps[]>({
   postprocess: (items) => {
     return items.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   },
 });
-export const navigationBottomLinks = createPipeline<NavItemProps[]>();
+export const navigationBottomLinksPipeline = createPipeline<NavItemProps[]>();
 
 export const Navigation = memo(() => {
-  const upperItems = usePipeline(navigationTopLinks, []);
-  const lowerItems = usePipeline(navigationBottomLinks, []);
+  const upperItems = usePipeline(navigationTopLinksPipeline, []);
+  const lowerItems = usePipeline(navigationBottomLinksPipeline, []);
 
   return (
     <nav className="h-full overflow-y-auto">

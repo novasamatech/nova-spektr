@@ -8,14 +8,14 @@ import { BodyText } from '@/shared/ui';
 import { useMultisigTx } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
-import { navigationTopLinks } from '@/features/app-shell';
+import { navigationTopLinksPipeline } from '@/features/app-shell';
 
 export const operationsNavigationFeature = createFeature({
   name: 'Operations navigation',
   enable: $features.map(({ operations }) => operations),
 });
 
-operationsNavigationFeature.inject(navigationTopLinks, (items) => {
+operationsNavigationFeature.inject(navigationTopLinksPipeline, (items) => {
   const wallet = useUnit(walletModel.$activeWallet);
   const chains = useUnit(networkModel.$chains);
   const { getLiveAccountMultisigTxs } = useMultisigTx({});

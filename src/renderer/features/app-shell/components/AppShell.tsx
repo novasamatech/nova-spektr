@@ -5,10 +5,10 @@ import { createSlot, useSlot } from '@/shared/di';
 
 import { Navigation } from './Navigation';
 
-export const navigationHeader = createSlot();
+export const navigationHeaderSlot = createSlot();
 
 export const AppShell = memo(() => {
-  const headerNodes = useSlot(navigationHeader);
+  const headerNodes = useSlot(navigationHeaderSlot);
 
   return (
     <div className="flex h-screen animate-in fade-in">

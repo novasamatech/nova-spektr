@@ -1,16 +1,16 @@
 import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/effector';
 import { Paths } from '@/shared/routes';
-import { navigationBottomLinks } from '@/features/app-shell';
+import { navigationBottomLinksPipeline } from '@/features/app-shell';
 
 export const settingsNavigationFeature = createFeature({
   name: 'Settings navigation',
   enable: $features.map(({ settings }) => settings),
 });
 
-settingsNavigationFeature.inject(navigationBottomLinks, (items) => {
+settingsNavigationFeature.inject(navigationBottomLinksPipeline, (items) => {
   return items.concat({
-    order: 4,
+    order: 1,
     icon: 'settings',
     title: 'navigation.settingsLabel',
     link: Paths.SETTINGS,

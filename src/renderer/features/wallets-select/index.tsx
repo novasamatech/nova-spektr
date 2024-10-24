@@ -1,7 +1,7 @@
 import { createStore } from 'effector';
 
 import { createFeature } from '@/shared/effector';
-import { navigationHeader } from '@/features/app-shell';
+import { navigationHeaderSlot } from '@/features/app-shell';
 import { SelectWalletPairing, WalletSelect } from '@/features/wallets';
 
 export const walletsSelectFeature = createFeature({
@@ -9,6 +9,6 @@ export const walletsSelectFeature = createFeature({
   enable: createStore(true),
 });
 
-walletsSelectFeature.inject(navigationHeader, () => {
+walletsSelectFeature.inject(navigationHeaderSlot, () => {
   return <WalletSelect action={<SelectWalletPairing />} />;
 });
