@@ -422,7 +422,7 @@ sample({
 });
 
 sample({
-  clock: delay(walletModel.events.walletRestoredSuccess, 2000),
+  clock: walletModel.events.walletRestoredSuccess,
   target: flowFinished,
 });
 
