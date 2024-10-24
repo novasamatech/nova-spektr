@@ -66,10 +66,10 @@ const getMultisigsFx = createEffect(({ chains, wallets }: GetMultisigsParams) =>
     multisigService
       .filterMultisigsAccounts(client, accountIds)
       .then((indexedMultisigs) => {
-        const multisigsToSave = indexedMultisigs.filter((multisigrResult) => {
+        const multisigsToSave = indexedMultisigs.filter((multisigResult) => {
           // we filter out the multisigs that we already have
           const existingWallet = walletUtils.getWalletFilteredAccounts(wallets, {
-            accountFn: (account) => account.accountId === multisigrResult.accountId,
+            accountFn: (account) => account.accountId === multisigResult.accountId,
           });
 
           return !existingWallet;
@@ -114,16 +114,17 @@ sample({
   source: {
     chains: $multisigChains,
     wallets: walletModel.$wallets,
+    hiddenWallets: walletModel.$hiddenWallets,
     connections: networkModel.$connections,
   },
-  fn: ({ chains, wallets, connections }) => {
+  fn: ({ chains, wallets, hiddenWallets, connections }) => {
     const filteredChains = chains.filter(
       (chain) => connections[chain.chainId] && !networkUtils.isDisabledConnection(connections[chain.chainId]),
     );
 
     return {
       chains: filteredChains,
-      wallets,
+      wallets: wallets.concat(hiddenWallets),
     };
   },
   target: getMultisigsFx,

@@ -421,6 +421,16 @@ sample({
 });
 
 sample({
+  clock: walletModel.events.walletRestoredSuccess,
+  target: walletProviderModel.events.completed,
+});
+
+sample({
+  clock: delay(walletModel.events.walletRestoredSuccess, 2000),
+  target: flowFinished,
+});
+
+sample({
   clock: delay(flowFinished, 2000),
   fn: () => Step.NAME_NETWORK,
   target: stepChanged,

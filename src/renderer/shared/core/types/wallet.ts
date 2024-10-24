@@ -16,6 +16,7 @@ export interface Wallet {
   accounts: Account[];
   isActive: boolean;
   signingType: SigningType;
+  isHidden?: boolean;
 }
 
 export interface PolkadotVaultWallet extends Wallet {

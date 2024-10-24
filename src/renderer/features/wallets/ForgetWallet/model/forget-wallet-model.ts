@@ -133,13 +133,19 @@ sample({
 });
 
 sample({
-  clock: forgetWallet,
+  clock: forgetMultisigWallet,
+  fn: (wallet) => wallet,
+  target: walletModel.events.walletHidden,
+});
+
+sample({
+  clock: forgetSimpleWallet,
   fn: (wallet) => wallet.id,
   target: walletModel.events.walletRemoved,
 });
 
 sample({
-  clock: walletModel.events.walletRemovedSuccess,
+  clock: [walletModel.events.walletRemovedSuccess, walletModel.events.walletHiddenSuccess],
   target: attach({
     source: $callbacks,
     effect: (state) => state?.onDeleteFinished(),
