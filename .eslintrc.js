@@ -180,6 +180,7 @@ module.exports = {
             exclude: ['../../app.config', '../../tw-config-consts/colors', '../../tw-config-consts/font-sizes'],
           },
         ],
+        'local-rules/enforce-di-naming-convention': ['error'],
 
         // TODO enable
         // 'no-console': ['error', { allow: ['warn', 'error', 'info'] }],

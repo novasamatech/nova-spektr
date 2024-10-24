@@ -1,5 +1,6 @@
 const path = require('node:path');
 
+const { isLiteral } = require('../astHelpers');
 const { getPackageName } = require('../utils');
 
 /**
@@ -35,7 +36,7 @@ module.exports = {
     return {
       ImportDeclaration(node) {
         const { source } = node;
-        if (source.type !== 'Literal') {
+        if (!isLiteral(source.type)) {
           return;
         }
 
