@@ -2,7 +2,7 @@ import { type Meta, type StoryObj } from '@storybook/react';
 import { expect, userEvent, within } from '@storybook/test';
 import { useState } from 'react';
 
-import { Button, Switch } from '../../ui';
+import { Button, Switch } from '@/shared/ui';
 import { Box } from '../Box/Box';
 
 import { Popover } from './Popover';

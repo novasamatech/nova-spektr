@@ -1,6 +1,6 @@
 import { BN } from '@polkadot/util';
 
-import { type Serializable } from '../../core';
+import { type Serializable } from '@/shared/core';
 
 export const pickNestedValue = <T extends string, V>(
   map: Record<string, Record<T, V>>,

@@ -1,8 +1,8 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_TWO } from '@polkadot/util';
 
-import { XcmTransferType } from '../../../api/xcm';
-import { XcmPallets } from '../../../core';
+import { XcmTransferType } from '@/shared/api/xcm';
+import { XcmPallets } from '@/shared/core';
 import { DEFAULT_TIME, THRESHOLD } from '../constants';
 import { getExpectedBlockTime, getPalletAndCallByXcmTransferType } from '../substrate';
 
