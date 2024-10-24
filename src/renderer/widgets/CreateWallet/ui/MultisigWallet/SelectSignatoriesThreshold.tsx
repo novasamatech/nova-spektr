@@ -5,6 +5,7 @@ import { type FormEvent, useState } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { Alert, Button, InputHint, Select, SmallTitleText } from '@/shared/ui';
 import { type DropdownOption } from '@/shared/ui/types';
+import { walletModel } from '@/entities/wallet';
 import { MultisigCreationFees } from '@/widgets/CreateWallet/ui/MultisigWallet/components';
 import { Step } from '../../lib/types';
 import { flowModel } from '../../model/flow-model';
@@ -40,6 +41,7 @@ export const SelectSignatoriesThreshold = () => {
     submit,
   } = useForm(formModel.$createMultisigForm);
   const multisigAlreadyExists = useUnit(formModel.$multisigAlreadyExists);
+  const hiddenMultisig = useUnit(formModel.$hiddenMultisig);
   const ownedSignatoriesWallets = useUnit(signatoryModel.$ownedSignatoriesWallets);
   const hasDuplicateSignatories = useUnit(signatoryModel.$hasDuplicateSignatories);
   const thresholdOptions = getThresholdOptions(signatories.length - 1);
@@ -94,6 +96,7 @@ export const SelectSignatoriesThreshold = () => {
           >
             <Alert.Item withDot={false}>{t('createMultisigAccount.noOwnSignatory')}</Alert.Item>
           </Alert>
+
           <Alert
             active={hasClickedNext && hasOwnedSignatory && !hasEnoughSignatories}
             title={t('createMultisigAccount.notEnoughSignatoriesTitle')}
@@ -101,6 +104,7 @@ export const SelectSignatoriesThreshold = () => {
           >
             <Alert.Item withDot={false}>{t('createMultisigAccount.notEnoughSignatories')}</Alert.Item>
           </Alert>
+
           <Alert
             active={hasClickedNext && hasEmptySignatory}
             title={t('createMultisigAccount.notEmptySignatoryTitle')}
@@ -141,6 +145,7 @@ export const SelectSignatoriesThreshold = () => {
           >
             <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
           </Alert>
+
           <Alert
             active={!isThresholdValid && hasClickedNext}
             title={t('createMultisigAccount.thresholdErrorTitle')}
@@ -148,6 +153,20 @@ export const SelectSignatoriesThreshold = () => {
           >
             <Alert.Item withDot={false}>
               {t('createMultisigAccount.thresholdErrorDescription', { minThreshold: MIN_THRESHOLD })}
+            </Alert.Item>
+          </Alert>
+
+          <Alert active={Boolean(hiddenMultisig)} title={t('createMultisigAccount.multisigExistTitle')} variant="info">
+            <Alert.Item withDot={false}>{t('createMultisigAccount.multisigHiddenExistText')}</Alert.Item>
+            <Alert.Item withDot={false}>
+              <Button
+                variant="text"
+                size="sm"
+                className="p-0"
+                onClick={() => walletModel.events.walletRestored(hiddenMultisig!)}
+              >
+                {t('createMultisigAccount.restoreButton')}
+              </Button>
             </Alert.Item>
           </Alert>
         </div>
