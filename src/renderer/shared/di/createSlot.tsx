@@ -23,7 +23,7 @@ export type SlotIdentifier<Props> = Identifier<Props, ReactNode[], SlotHandler<P
 
 export type SlotProps = Record<string, unknown> | void;
 
-export const createSlot = <Props extends SlotProps>(config?: { name: string }): SlotIdentifier<Props> => {
+export const createSlot = <Props extends SlotProps = void>(config?: { name: string }): SlotIdentifier<Props> => {
   const identifier = createAbstractIdentifier<Props, ReactNode[], SlotHandler<Props>>({
     type: 'slot',
     name: config?.name ?? 'unknownSlot',
