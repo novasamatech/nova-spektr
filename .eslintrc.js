@@ -193,6 +193,8 @@ module.exports = {
         'import-x/export': 'off',
         // Restricted by our code style
         'import-x/default': 'off',
+        // Too heavy
+        'import-x/no-rename-default': 'off',
         'import-x/no-useless-path-segments': 'error',
         'no-restricted-imports': [
           'error',
