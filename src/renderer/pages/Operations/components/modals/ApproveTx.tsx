@@ -3,8 +3,7 @@ import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@app/providers';
-import { type MultisigTransactionDS } from '@shared/api/storage';
+import { type MultisigTransactionDS } from '@/shared/api/storage';
 import {
   type Account,
   type Address,
@@ -12,16 +11,17 @@ import {
   type MultisigAccount,
   type Timepoint,
   type Transaction,
-} from '@shared/core';
-import { TransactionType } from '@shared/core';
-import { useToggle } from '@shared/lib/hooks';
-import { TEST_ADDRESS, getAssetById, toAddress, transferableAmount } from '@shared/lib/utils';
-import { BaseModal, Button } from '@shared/ui';
-import { balanceModel, balanceUtils } from '@entities/balance';
-import { OperationTitle } from '@entities/chain';
-import { useMultisigEvent } from '@entities/multisig';
-import { type ExtendedChain, networkModel } from '@entities/network';
-import { priceProviderModel } from '@entities/price';
+} from '@/shared/core';
+import { TransactionType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { useToggle } from '@/shared/lib/hooks';
+import { TEST_ADDRESS, getAssetById, toAddress, transferableAmount } from '@/shared/lib/utils';
+import { BaseModal, Button } from '@/shared/ui';
+import { balanceModel, balanceUtils } from '@/entities/balance';
+import { OperationTitle } from '@/entities/chain';
+import { useMultisigEvent } from '@/entities/multisig';
+import { type ExtendedChain, networkModel } from '@/entities/network';
+import { priceProviderModel } from '@/entities/price';
 import {
   MAX_WEIGHT,
   OperationResult,
@@ -30,9 +30,9 @@ import {
   transactionService,
   useCallDataDecoder,
   validateBalance,
-} from '@entities/transaction';
-import { permissionUtils, walletModel } from '@entities/wallet';
-import { SigningSwitch } from '@features/operations';
+} from '@/entities/transaction';
+import { permissionUtils, walletModel } from '@/entities/wallet';
+import { SigningSwitch } from '@/features/operations';
 import { getSignatoryAccounts } from '../../common/utils';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { Submit } from '../ActionSteps/Submit';
@@ -308,7 +308,6 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
           api={connection.api}
           multisigTx={tx}
           account={signAccount}
-          matrixRoomId={account.matrixRoomId}
           txPayload={txPayload}
           signature={signature}
           onClose={handleClose}

@@ -5,7 +5,7 @@ import {
   type ChainId,
   type ID,
   type ShardAccount,
-} from '@shared/core';
+} from '@/shared/core';
 
 export type RootTuple = [BaseAccount, ChainTuple[]];
 export type ChainTuple = [ChainId, (ChainAccount | ShardAccount[])[]];

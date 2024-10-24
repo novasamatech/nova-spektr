@@ -2,11 +2,11 @@ import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { attach, combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 
-import { type XcmConfig, XcmTransferType, xcmService } from '@shared/api/xcm';
-import { type AccountId, type Asset, type Chain, type ChainId } from '@shared/core';
-import { getParachainId, toLocalChainId } from '@shared/lib/utils';
-import { networkModel } from '@entities/network';
-import { xcmModel } from '@entities/xcm';
+import { type XcmConfig, XcmTransferType, xcmService } from '@/shared/api/xcm';
+import { type AccountId, type Asset, type Chain, type ChainId } from '@/shared/core';
+import { getParachainId, toLocalChainId } from '@/shared/lib/utils';
+import { networkModel } from '@/entities/network';
+import { xcmModel } from '@/entities/xcm';
 import { xcmTransferUtils } from '../lib/xcm-transfer-utils';
 
 const xcmStarted = createEvent<{ chain: Chain; asset: Asset }>();

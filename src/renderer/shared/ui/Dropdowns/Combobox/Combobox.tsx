@@ -1,7 +1,7 @@
 import { Combobox as HeadlessCombobox, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 
-import { cnTw } from '@shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { Input, type Props as InputProps } from '../../Inputs/Input/Input';
 import { FootnoteText } from '../../Typography';
 import {
@@ -74,6 +74,7 @@ export const Combobox = ({
                 key={option.id}
                 value={option}
                 className={({ active, selected }) => cnTw(OptionStyle, OptionStyleTheme[theme](active, selected))}
+                disabled={!!option.disabled}
               >
                 {typeof option.element === 'string' ? <FootnoteText>{option.element}</FootnoteText> : option.element}
               </HeadlessCombobox.Option>

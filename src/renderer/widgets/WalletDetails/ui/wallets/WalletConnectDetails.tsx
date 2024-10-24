@@ -1,10 +1,10 @@
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
-import { useI18n } from '@app/providers';
-import { chainsService } from '@shared/api/network';
-import { type WalletConnectGroup } from '@shared/core';
-import { useModalClose, useToggle } from '@shared/lib/hooks';
+import { chainsService } from '@/shared/api/network';
+import { type WalletConnectGroup } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import {
   BaseModal,
   Button,
@@ -14,16 +14,16 @@ import {
   SmallTitleText,
   StatusModal,
   Tabs,
-} from '@shared/ui';
-import { Animation } from '@shared/ui/Animation/Animation';
-import { type IconNames } from '@shared/ui/Icon/data';
-import { type TabItem } from '@shared/ui/types';
-import { WalletCardLg, permissionUtils } from '@entities/wallet';
-import { walletConnectUtils } from '@entities/walletConnect';
-import { forgetWalletModel } from '@features/wallets/ForgetWallet';
-import { RenameWalletModal } from '@features/wallets/RenameWallet';
-import { AddProxy, addProxyModel } from '@widgets/AddProxyModal';
-import { AddPureProxied, addPureProxiedModel } from '@widgets/AddPureProxiedModal';
+} from '@/shared/ui';
+import { Animation } from '@/shared/ui/Animation/Animation';
+import { type IconNames } from '@/shared/ui/Icon/data';
+import { type TabItem } from '@/shared/ui/types';
+import { WalletCardLg, permissionUtils } from '@/entities/wallet';
+import { walletConnectUtils } from '@/entities/walletConnect';
+import { forgetWalletModel } from '@/features/wallets/ForgetWallet';
+import { RenameWalletModal } from '@/features/wallets/RenameWallet';
+import { AddProxy, addProxyModel } from '@/widgets/AddProxyModal';
+import { AddPureProxied, addPureProxiedModel } from '@/widgets/AddPureProxiedModal';
 import { ForgetStep } from '../../lib/constants';
 import { walletDetailsUtils, wcDetailsUtils } from '../../lib/utils';
 import { walletProviderModel } from '../../model/wallet-provider-model';

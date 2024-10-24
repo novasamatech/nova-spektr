@@ -2,29 +2,28 @@ import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { useI18n } from '@app/providers';
-import { Skeleton } from '@/shared/ui-kit';
-import { chainsService } from '@shared/api/network';
+import { chainsService } from '@/shared/api/network';
 import {
   type Address,
   type MultisigAccount,
   type MultisigTransaction,
   type Transaction,
   type Validator,
-} from '@shared/core';
-import { TransactionType } from '@shared/core';
-import { useToggle } from '@shared/lib/hooks';
-import { cnTw, copyToClipboard, getAssetById, truncate } from '@shared/lib/utils';
-import { Button, DetailRow, FootnoteText, Icon } from '@shared/ui';
+} from '@/shared/core';
+import { TransactionType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { useToggle } from '@/shared/lib/hooks';
+import { cnTw, copyToClipboard, getAssetById, truncate } from '@/shared/lib/utils';
+import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
+import { Skeleton } from '@/shared/ui-kit';
+import { AssetBalance } from '@/entities/asset';
+import { ChainTitle } from '@/entities/chain';
 import { TracksDetails, voteTransactionService } from '@/entities/governance';
-import { AssetBalance } from '@entities/asset';
-import { ChainTitle } from '@entities/chain';
-import { matrixModel } from '@entities/matrix';
-import { getTransactionFromMultisigTx } from '@entities/multisig';
-import { type ExtendedChain, networkModel, networkUtils } from '@entities/network';
-import { proxyUtils } from '@entities/proxy';
-import { signatoryUtils } from '@entities/signatory';
-import { ValidatorsModal, useValidatorsMap } from '@entities/staking';
+import { getTransactionFromMultisigTx } from '@/entities/multisig';
+import { type ExtendedChain, networkModel, networkUtils } from '@/entities/network';
+import { proxyUtils } from '@/entities/proxy';
+import { signatoryUtils } from '@/entities/signatory';
+import { ValidatorsModal, useValidatorsMap } from '@/entities/staking';
 import {
   isAddProxyTransaction,
   isManageProxyTransaction,
@@ -32,9 +31,9 @@ import {
   isRemovePureProxyTransaction,
   isUndelegateTransaction,
   isXcmTransaction,
-} from '@entities/transaction';
-import { AddressWithExplorers, ExplorersPopover, WalletCardSm, walletModel } from '@entities/wallet';
-import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
+} from '@/entities/transaction';
+import { AddressWithExplorers, ExplorersPopover, WalletCardSm, walletModel } from '@/entities/wallet';
+import { AddressStyle, InteractionStyle } from '../common/constants';
 import {
   getDelegate,
   getDelegationTarget,
@@ -63,7 +62,6 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);
   const chains = useUnit(networkModel.$chains);
-  const matrix = useUnit(matrixModel.$matrix);
 
   const payee = getPayee(tx);
   const sender = getSender(tx);
@@ -106,7 +104,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const [isAdvancedShown, toggleAdvanced] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
-  const { indexCreated, blockCreated, deposit, depositor, callHash, callData, description, cancelDescription } = tx;
+  const { indexCreated, blockCreated, deposit, depositor, callHash, callData } = tx;
 
   const transaction = getTransactionFromMultisigTx(tx);
   const validatorsMap = useValidatorsMap(api, connection && networkUtils.isLightClientConnection(connection));
@@ -135,27 +133,6 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
 
   return (
     <dl className="flex w-full flex-col gap-y-1">
-      {description && (
-        <div className={DescriptionBlockStyle}>
-          <FootnoteText as="dt" className="text-text-tertiary">
-            {t('operation.details.description')}
-          </FootnoteText>
-          <FootnoteText as="dd" className={cnTw('break-words', valueClass)}>
-            {description}
-          </FootnoteText>
-        </div>
-      )}
-      {cancelDescription && (
-        <div className={DescriptionBlockStyle}>
-          <FootnoteText as="dt" className="text-text-tertiary">
-            {t('operation.details.rejectReason')}
-          </FootnoteText>
-          <FootnoteText as="dd" className={cnTw('break-words', valueClass)}>
-            {cancelDescription}
-          </FootnoteText>
-        </div>
-      )}
-
       {account && activeWallet && (
         <DetailRow label={t('operation.details.multisigWallet')} className={valueClass}>
           <div className="-mr-2">
@@ -457,7 +434,6 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
                     name={depositorSignatory.name}
                     addressFont={AddressStyle}
                     addressPrefix={addressPrefix}
-                    matrixId={matrix.userId}
                     wrapperClassName="-mr-2 min-w-min"
                     type="short"
                   />

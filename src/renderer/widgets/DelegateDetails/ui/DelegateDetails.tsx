@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@/app/providers';
+import { useI18n } from '@/shared/i18n';
 import { BaseModal, Plate } from '@/shared/ui';
 import { EditDelegation } from '@/widgets/EditDelegationModal';
 import { RevokeDelegation } from '@/widgets/RevokeDelegationModal';

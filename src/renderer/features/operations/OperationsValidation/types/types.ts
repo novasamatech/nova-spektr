@@ -8,7 +8,7 @@ import {
   type ID,
   type Transaction,
   type TransactionType,
-} from '@shared/core';
+} from '@/shared/core';
 
 export type BalanceMap = Record<'balance' | 'native', string>;
 

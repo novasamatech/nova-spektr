@@ -8,7 +8,7 @@ import {
   referendumService,
   supportThresholdModel,
   votingService,
-} from '@entities/governance';
+} from '@/entities/governance';
 import { networkSelectorModel } from '../model/networkSelector';
 import { titleModel } from '../model/title';
 import { type AggregatedReferendum } from '../types/structs';

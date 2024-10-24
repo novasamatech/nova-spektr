@@ -1,9 +1,9 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SpRuntimeDispatchError } from '@polkadot/types/lookup';
-import { type TFunction } from 'react-i18next';
+import { type TFunction } from 'i18next';
 
-import { type DecodedTransaction, type MultisigTransaction, type Transaction, TransactionType } from '@shared/core';
-import { formatSectionAndMethod } from '@shared/lib/utils';
+import { type DecodedTransaction, type MultisigTransaction, type Transaction, TransactionType } from '@/shared/core';
+import { formatSectionAndMethod } from '@/shared/lib/utils';
 import { type VoteTransaction, voteTransactionService } from '../../../governance';
 
 import {
@@ -239,6 +239,8 @@ const TransactionTitles: Record<TransactionType, string> = {
   [TransactionType.REMOVE_PROXY]: 'operations.titles.removeProxy',
   [TransactionType.REMOVE_PURE_PROXY]: 'operations.titles.removePureProxy',
   [TransactionType.PROXY]: 'operations.titles.proxy',
+  // Remark
+  [TransactionType.REMARK]: 'operations.titles.remark',
   // Governance
   [TransactionType.UNLOCK]: 'operations.titles.unlock',
   [TransactionType.VOTE]: 'operations.titles.vote',
@@ -247,6 +249,9 @@ const TransactionTitles: Record<TransactionType, string> = {
   [TransactionType.DELEGATE]: 'operations.titles.delegate',
   [TransactionType.UNDELEGATE]: 'operations.titles.undelegate',
   [TransactionType.EDIT_DELEGATION]: 'operations.titles.editDelegation',
+
+  // Collectives
+  [TransactionType.COLLECTIVE_VOTE]: 'operations.titles.vote',
 };
 
 const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => string> = {
@@ -287,6 +292,9 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.REMOVE_PROXY]: () => 'operations.modalTitles.removeProxy',
   [TransactionType.REMOVE_PURE_PROXY]: () => 'operations.modalTitles.removePureProxy',
   [TransactionType.PROXY]: () => 'operations.modalTitles.proxy',
+  // Remark
+  [TransactionType.REMARK]: () => 'operations.modalTitles.remark',
+  // Governance
   [TransactionType.UNLOCK]: () => 'operations.modalTitles.unlockOn',
   [TransactionType.VOTE]: () => 'operations.modalTitles.vote',
   [TransactionType.REVOTE]: () => 'operations.modalTitles.revote',
@@ -294,6 +302,7 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.DELEGATE]: () => 'operations.modalTitles.delegateOn',
   [TransactionType.UNDELEGATE]: () => 'operations.modalTitles.undelegateOn',
   [TransactionType.EDIT_DELEGATION]: () => 'operations.modalTitles.editDelegationOn',
+  [TransactionType.COLLECTIVE_VOTE]: () => 'operations.modalTitles.vote',
 };
 
 export const getTransactionTitle = (t: TFunction, transaction?: Transaction | DecodedTransaction): string => {

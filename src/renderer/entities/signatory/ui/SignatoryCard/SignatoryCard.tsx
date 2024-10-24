@@ -1,10 +1,9 @@
 import { type PropsWithChildren } from 'react';
 
-import { useI18n } from '@app/providers';
-import { type AccountId, type Explorer, type SigningStatus } from '@shared/core';
-import { cnTw } from '@shared/lib/utils';
-import { HelpText, Icon } from '@shared/ui';
-import { ExplorersPopover } from '@entities/wallet';
+import { type AccountId, type Explorer, type SigningStatus } from '@/shared/core';
+import { cnTw } from '@/shared/lib/utils';
+import { Icon } from '@/shared/ui';
+import { ExplorersPopover } from '@/entities/wallet';
 
 const IconProps = {
   SIGNED: { className: 'group-hover:hidden text-text-positive', name: 'checkmarkOutline' },
@@ -17,7 +16,6 @@ type Props = {
   explorers?: Explorer[];
   addressPrefix?: number;
   status?: SigningStatus;
-  matrixId?: string;
 };
 
 export const SignatoryCard = ({
@@ -26,11 +24,8 @@ export const SignatoryCard = ({
   explorers,
   addressPrefix,
   status,
-  matrixId,
   children,
 }: PropsWithChildren<Props>) => {
-  const { t } = useI18n();
-
   const button = (
     <div
       className={cnTw(
@@ -45,11 +40,5 @@ export const SignatoryCard = ({
     </div>
   );
 
-  return (
-    <ExplorersPopover button={button} address={accountId} explorers={explorers} addressPrefix={addressPrefix}>
-      <ExplorersPopover.Group active={Boolean(matrixId)} title={t('general.explorers.matrixIdTitle')}>
-        <HelpText className="break-all text-text-secondary">{matrixId}</HelpText>
-      </ExplorersPopover.Group>
-    </ExplorersPopover>
-  );
+  return <ExplorersPopover button={button} address={accountId} explorers={explorers} addressPrefix={addressPrefix} />;
 };

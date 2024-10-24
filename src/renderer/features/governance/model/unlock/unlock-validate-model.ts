@@ -4,12 +4,12 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { type Store, createEffect, createEvent, sample } from 'effector';
 import { combineEvents } from 'patronum';
 
-import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@shared/core';
-import { toAccountId, transferableAmount } from '@shared/lib/utils';
+import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@/shared/core';
+import { toAccountId, transferableAmount } from '@/shared/lib/utils';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { governanceService } from '@/entities/governance';
-import { balanceModel, balanceUtils } from '@entities/balance';
-import { networkModel } from '@entities/network';
-import { transactionService } from '@entities/transaction';
+import { networkModel } from '@/entities/network';
+import { transactionService } from '@/entities/transaction';
 // TODO: fix it after DDD refactoring
 import {
   type AmountFeeStore,

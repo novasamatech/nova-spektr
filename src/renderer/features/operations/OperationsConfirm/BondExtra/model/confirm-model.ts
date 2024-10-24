@@ -1,10 +1,17 @@
 import { combine, createEvent, restore } from 'effector';
 
+import {
+  type Account,
+  type Asset,
+  type Chain,
+  type ProxiedAccount,
+  type Transaction,
+  type Wallet,
+} from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
-import { type Account, type Asset, type Chain, type ProxiedAccount, type Transaction, type Wallet } from '@shared/core';
 import { networkModel } from '@/entities/network';
 import { operationsModel, operationsUtils } from '@/entities/operations';
-import { walletModel, walletUtils } from '@entities/wallet';
+import { walletModel, walletUtils } from '@/entities/wallet';
 
 type Input = {
   id?: number;

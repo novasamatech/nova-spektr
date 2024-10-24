@@ -1,9 +1,9 @@
 import { createStore, sample } from 'effector';
 
-import { type GovernanceApi } from '@shared/api/governance';
-import { type Chain, type ChainId, type ReferendumId } from '@shared/core';
-import { nonNullable } from '@shared/lib/utils';
-import { governanceModel } from '@entities/governance';
+import { type GovernanceApi } from '@/shared/api/governance';
+import { type Chain, type ChainId, type ReferendumId } from '@/shared/core';
+import { nonNullable } from '@/shared/lib/utils';
+import { governanceModel } from '@/entities/governance';
 import { createChunksEffect } from '../utils/createChunksEffect';
 
 import { networkSelectorModel } from './networkSelector';
@@ -26,7 +26,11 @@ const {
   $pending: $isTitlesLoading,
   done: requestReferendumTitlesDone,
 } = createChunksEffect<TitlesRequestParams, TitlesResponse>(({ chain, service }, fn) => {
-  return service.getReferendumList(chain, fn);
+  return service.getReferendumList(chain, (res) => {
+    if (!res.done) {
+      fn(res.value);
+    }
+  });
 });
 
 sample({

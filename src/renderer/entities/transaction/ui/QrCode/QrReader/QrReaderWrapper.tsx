@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@app/providers';
-import { type HexString } from '@shared/core';
-import { ValidationErrors, cnTw } from '@shared/lib/utils';
-import { Button, CaptionText, Countdown, FootnoteText, Select, Shimmering, SmallTitleText } from '@shared/ui';
-import { type DropdownOption, type DropdownResult } from '@shared/ui/types';
+import { type HexString } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { ValidationErrors, cnTw } from '@/shared/lib/utils';
+import { Button, CaptionText, Countdown, FootnoteText, Select, Shimmering, SmallTitleText } from '@/shared/ui';
+import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
 import { CameraAccessErrors, CameraError, WhiteTextButtonStyle } from '../common/constants';
 import { type ErrorObject, type Progress, QrError, type VideoInput } from '../common/types';
 

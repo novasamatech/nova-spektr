@@ -1,6 +1,6 @@
-import { type ReferendumId, type Voting } from '@shared/core';
-import { votingService } from '@entities/governance';
-import { type VoteHistoryRecord } from '@entities/governance/model/voteHistory';
+import { type ReferendumId, type Voting } from '@/shared/core';
+import { votingService } from '@/entities/governance';
+import { type VoteHistoryRecord } from '@/entities/governance';
 import { type DecoupledVote } from '../types/structs';
 
 const getDecoupledVotesFromVote = (referendumId: ReferendumId, voting: Voting) => {

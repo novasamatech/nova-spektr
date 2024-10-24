@@ -1,7 +1,7 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 
-import { type Conviction, type Transaction, TransactionType } from '@shared/core';
-import { toSerializable } from '@shared/lib/utils';
+import { type Conviction, type Transaction, TransactionType } from '@/shared/core';
+import { toSerializable } from '@/shared/lib/utils';
 import {
   type RemoveVoteTransaction,
   type RevoteTransaction,

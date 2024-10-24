@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { type ChangeEvent, useState } from 'react';
 import ReactMarkdown, { type Components, type Options } from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
 
-import { useI18n } from '@app/providers';
-import { cnTw } from '@shared/lib/utils';
+import { useI18n } from '@/shared/i18n';
+import { cnTw } from '@/shared/lib/utils';
+import { Checkbox } from '@/shared/ui-kit';
 import { Button } from '../Buttons';
-import { Checkbox } from '../Checkbox/Checkbox';
 import { Icon } from '../Icon/Icon';
 import { InfoLink } from '../InfoLink/InfoLink';
 import { BodyText } from '../Typography';
@@ -67,7 +67,26 @@ const components: Components = {
     <BodyText as="p" className={cnTw('overflow-hidden overflow-ellipsis text-balance', className)} {...props} />
   ),
   hr: () => <hr className="bg-current" />,
-  input: ({ node: _, type, ...props }) => (type === 'checkbox' ? <Checkbox {...props} /> : <input {...props} />),
+  input: ({ node: _, type, ...props }) =>
+    type === 'checkbox' ? (
+      <Checkbox
+        {...props}
+        onChange={(newCheckedState: boolean) => {
+          if (typeof props.onChange === 'function') {
+            // Simulate a ChangeEvent for props.onChange to fit types
+            const event = {
+              target: {
+                checked: newCheckedState,
+              },
+            } as ChangeEvent<HTMLInputElement>;
+
+            props.onChange(event);
+          }
+        }}
+      />
+    ) : (
+      <input {...props} />
+    ),
   img: ({ node: _, className, ...props }) => {
     const { t } = useI18n();
     const [showError, setShowError] = useState(false);
@@ -110,6 +129,10 @@ const components: Components = {
 };
 
 export const Markdown = ({ children }: { children: string }) => {
+  if (!children) {
+    return null;
+  }
+
   return (
     <ReactMarkdown
       className="flex flex-col gap-3 overflow-hidden whitespace-pre-line text-body"

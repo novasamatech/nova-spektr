@@ -1,7 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { combine, createEvent, restore } from 'effector';
 
-import { nonNullable } from '@/shared/lib/utils';
 import {
   type Account,
   type Address,
@@ -11,10 +10,11 @@ import {
   type ProxyType,
   type Transaction,
   type Wallet,
-} from '@shared/core';
+} from '@/shared/core';
+import { nonNullable } from '@/shared/lib/utils';
+import { networkModel } from '@/entities/network';
 import { operationsModel, operationsUtils } from '@/entities/operations';
-import { networkModel } from '@entities/network';
-import { walletModel, walletUtils } from '@entities/wallet';
+import { walletModel, walletUtils } from '@/entities/wallet';
 
 type Input = {
   id?: number;

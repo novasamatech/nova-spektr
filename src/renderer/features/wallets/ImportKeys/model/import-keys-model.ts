@@ -3,8 +3,8 @@ import groupBy from 'lodash/groupBy';
 import { reset } from 'patronum';
 import { parse } from 'yaml';
 
-import { type AccountId, type ChainAccount, type ChainId, type DraftAccount, type ShardAccount } from '@shared/core';
-import { toAccountId } from '@shared/lib/utils';
+import { type AccountId, type ChainAccount, type ChainId, type DraftAccount, type ShardAccount } from '@/shared/core';
+import { toAccountId } from '@/shared/lib/utils';
 import { PATH_ERRORS } from '../lib/constants';
 import { DerivationImportError, type ErrorDetails } from '../lib/derivation-import-error';
 import { importKeysUtils } from '../lib/import-keys-utils';

@@ -1,11 +1,11 @@
 import { default as BigNumber } from 'bignumber.js';
 import { concat, orderBy, sortBy } from 'lodash';
 
-import { isKusama, isNameStartsWithNumber, isPolkadot } from '@shared/api/network/lib/utils';
-import { sumValues } from '@shared/api/network/service/chainsService';
-import { type PriceObject } from '@shared/api/price-provider';
-import tokensProd from '@shared/config/tokens/tokens.json';
-import tokensDev from '@shared/config/tokens/tokens_dev.json';
+import { isKusama, isNameStartsWithNumber, isPolkadot } from '@/shared/api/network/lib/utils';
+import { sumValues } from '@/shared/api/network/service/chainsService';
+import { type PriceObject } from '@/shared/api/price-provider';
+import tokensProd from '@/shared/config/tokens/tokens.json';
+import tokensDev from '@/shared/config/tokens/tokens_dev.json';
 import {
   type Account,
   type AccountId,
@@ -13,10 +13,10 @@ import {
   type AssetByChains,
   type Balance,
   type ChainId,
-} from '@shared/core';
-import { ZERO_BALANCE, getBalanceBn, totalAmount } from '@shared/lib/utils';
-import { balanceUtils } from '@entities/balance';
-import { accountUtils } from '@entities/wallet';
+} from '@/shared/core';
+import { ZERO_BALANCE, getBalanceBn, totalAmount } from '@/shared/lib/utils';
+import { balanceUtils } from '@/entities/balance';
+import { accountUtils } from '@/entities/wallet';
 
 import { type AssetByChainsWithBalance, type AssetByChainsWithFiatBalance, type AssetChain } from './types';
 
@@ -30,6 +30,7 @@ export const tokensService = {
   getChainWithBalance,
   sumTokenBalances,
   sortTokensByBalance,
+  hideZeroBalances,
 };
 
 function getTokensData(): AssetByChains[] {
@@ -61,7 +62,6 @@ function getSelectedAccountIds(accounts: Account[], chainId: ChainId): AccountId
 function getChainWithBalance(
   balances: Balance[],
   chains: AssetChain[],
-  hideZeroBalances: boolean,
   accounts: Account[],
 ): [AssetChain[], AssetBalance] {
   let totalBalance = {} as AssetBalance;
@@ -82,7 +82,7 @@ function getChainWithBalance(
 
     totalBalance = sumTokenBalances(assetBalance, totalBalance);
 
-    if (!hideZeroBalances || assetBalance.verified === false || totalAmount(assetBalance) !== ZERO_BALANCE) {
+    if (assetBalance.verified !== false) {
       acc.push({ ...chain, balance: assetBalance });
     }
 
@@ -90,6 +90,12 @@ function getChainWithBalance(
   }, [] as AssetChain[]);
 
   return [chainsWithBalance, totalBalance];
+}
+
+function hideZeroBalances(hideZeroBalance: boolean, activeTokensWithBalance: AssetByChains[]): AssetByChains[] {
+  return activeTokensWithBalance.filter((token) => {
+    return hideZeroBalance && totalAmount(token.totalBalance) === ZERO_BALANCE ? false : true;
+  });
 }
 
 function sortTokensByBalance(

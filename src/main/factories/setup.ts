@@ -1,4 +1,4 @@
-import { BrowserWindow, app } from 'electron';
+import { BrowserWindow, app, session } from 'electron';
 import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 
 import { ENVIRONMENT } from '../shared/constants/environment';
@@ -20,6 +20,11 @@ export async function setupApplication(window: BrowserWindow): Promise<void> {
   app.on('window-all-closed', () => !PLATFORM.IS_MAC && app.quit());
 
   if (ENVIRONMENT.IS_DEV) {
-    await installExtension(REACT_DEVELOPER_TOOLS, { forceDownload: false });
+    await installExtension(REACT_DEVELOPER_TOOLS);
+
+    // Reloading extensions for correct initialization in dev tools
+    session.defaultSession.getAllExtensions().map((e) => {
+      session.defaultSession.loadExtension(e.path);
+    });
   }
 }

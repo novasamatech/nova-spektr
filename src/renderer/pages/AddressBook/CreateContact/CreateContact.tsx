@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 
-import { Paths } from '@shared/routes';
-import { CreateContactModal } from '@widgets/ManageContactModal';
+import { Paths } from '@/shared/routes';
+import { CreateContactModal } from '@/widgets/ManageContactModal';
 
 export const CreateContact = () => {
   const navigate = useNavigate();

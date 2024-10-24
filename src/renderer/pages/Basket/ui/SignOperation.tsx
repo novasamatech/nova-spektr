@@ -1,12 +1,12 @@
 import { useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
-import { useI18n } from '@app/providers';
-import { type BasketTransaction, TransactionType } from '@shared/core';
-import { useModalClose } from '@shared/lib/hooks';
-import { BaseModal } from '@shared/ui';
-import { OperationTitle } from '@entities/chain';
-import { networkModel } from '@entities/network';
+import { type BasketTransaction, TransactionType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { useModalClose } from '@/shared/lib/hooks';
+import { BaseModal } from '@/shared/ui';
+import { OperationTitle } from '@/entities/chain';
+import { networkModel } from '@/entities/network';
 import {
   type MultisigTransactionTypes,
   type TransferTransactionTypes,
@@ -15,8 +15,8 @@ import {
   type XcmTransactionTypes,
   XcmTypes,
   isEditDelegationTransaction,
-} from '@entities/transaction';
-import { OperationSign, OperationSubmit } from '@features/operations';
+} from '@/entities/transaction';
+import { OperationSign, OperationSubmit } from '@/features/operations';
 import {
   AddProxyConfirm,
   AddPureProxiedConfirm,
@@ -24,6 +24,7 @@ import {
   BondNominateConfirmation,
   DelegateConfirmation,
   EditDelegationConfirmation,
+  FellowshipVotingConfirmation,
   NominateConfirmation,
   PayeeConfirmation,
   RemoveProxyConfirm,
@@ -35,8 +36,8 @@ import {
   UnstakeConfirmation,
   VoteConfirmation,
   WithdrawConfirmation,
-} from '@features/operations/OperationsConfirm';
-import { UnlockConfirmation } from '@/widgets/UnlockModal/ui/UnlockConfirmation';
+} from '@/features/operations/OperationsConfirm';
+import { UnlockConfirmation } from '@/widgets/UnlockModal';
 import { getOperationTitle } from '../lib/operation-title';
 import { signOperationsUtils } from '../lib/sign-operations-utils';
 import { getCoreTx } from '../lib/utils';
@@ -90,7 +91,11 @@ export const SignOperation = () => {
     const Components: Record<
       Exclude<
         TransactionType,
-        TransferTransactionTypes | XcmTransactionTypes | MultisigTransactionTypes | UtilityTransactionTypes
+        | TransferTransactionTypes
+        | XcmTransactionTypes
+        | MultisigTransactionTypes
+        | UtilityTransactionTypes
+        | TransactionType.REMARK
       >,
       () => ReactNode
     > = {
@@ -169,6 +174,10 @@ export const SignOperation = () => {
       ),
       [TransactionType.UNLOCK]: () => (
         <UnlockConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
+      ),
+      // TODO discuss where we should implement generic collective voting confirmation
+      [TransactionType.COLLECTIVE_VOTE]: () => (
+        <FellowshipVotingConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
       ),
     };
 

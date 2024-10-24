@@ -1,18 +1,18 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@app/providers';
+import { useI18n } from '@/shared/i18n';
+import { useModalClose } from '@/shared/lib/hooks';
 import { Step, isStep } from '@/shared/lib/utils';
-import { useModalClose } from '@shared/lib/hooks';
-import { BaseModal, Button } from '@shared/ui';
+import { BaseModal, Button } from '@/shared/ui';
+import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
-import { OperationTitle } from '@entities/chain';
-import { OperationResult } from '@entities/transaction';
-import { OperationSign, OperationSubmit } from '@features/operations';
+import { OperationResult } from '@/entities/transaction';
+import { OperationSign, OperationSubmit } from '@/features/operations';
 import {
   ConfirmSlider,
   DelegateConfirmation as Confirmation,
   basketUtils,
-} from '@features/operations/OperationsConfirm';
+} from '@/features/operations/OperationsConfirm';
 import { delegateModel } from '../model/delegate-model';
 
 import { DelegateForm } from './DelegateForm';
@@ -70,13 +70,18 @@ export const Delegate = () => {
     return null;
   }
 
+  const title =
+    transactions.length > 1
+      ? t('operation.sign.title', { count: transactions.length })
+      : t('governance.addDelegation.title');
+
   return (
     <BaseModal
       closeButton
       contentClass="overflow-y-auto flex-1"
       panelClass="max-h-[736px] w-fit flex flex-col"
       isOpen={isModalOpen}
-      title={<OperationTitle title={t('governance.addDelegation.title')} chainId={walletData.chain!.chainId} />}
+      title={<OperationTitle title={t(title)} chainId={walletData.chain!.chainId} />}
       onClose={closeModal}
     >
       {isStep(step, Step.CONFIRM) && transactions.length === 1 && (

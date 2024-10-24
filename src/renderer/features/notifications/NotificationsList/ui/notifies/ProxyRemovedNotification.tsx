@@ -1,13 +1,13 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap } from 'effector-react';
 import { Trans } from 'react-i18next';
 
-import { useI18n } from '@app/providers';
-import { type ProxyAction, WalletType } from '@shared/core';
-import { toAddress } from '@shared/lib/utils';
-import { BodyText, Identicon } from '@shared/ui';
-import { ChainTitle } from '@entities/chain';
-import { networkModel } from '@entities/network';
-import { WalletIcon } from '@entities/wallet';
+import { type ProxyAction, WalletType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { toAddress } from '@/shared/lib/utils';
+import { BodyText, Identicon } from '@/shared/ui';
+import { ChainTitle } from '@/entities/chain';
+import { networkModel } from '@/entities/network';
+import { WalletIcon } from '@/entities/wallet';
 import { ProxyTypeOperation } from '../../lib/constants';
 
 type Props = {
@@ -17,9 +17,13 @@ type Props = {
 export const ProxyRemovedNotification = ({ notification }: Props) => {
   const { t } = useI18n();
 
-  const chains = useUnit(networkModel.$chains);
+  const chain = useStoreMap({
+    store: networkModel.$chains,
+    keys: [notification.chainId],
+    fn: (chains, [id]) => chains[id] ?? null,
+  });
 
-  const address = toAddress(notification.proxyAccountId, { prefix: chains[notification.chainId].addressPrefix });
+  const address = toAddress(notification.proxyAccountId, { prefix: chain?.addressPrefix });
 
   return (
     <div className="flex gap-x-2">

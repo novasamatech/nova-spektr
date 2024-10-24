@@ -1,4 +1,4 @@
-import { AssetType, TransactionType } from '@shared/core';
+import { AssetType, TransactionType } from '@/shared/core';
 
 export const MAX_WEIGHT = {
   refTime: '0',

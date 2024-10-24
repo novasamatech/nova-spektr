@@ -1,9 +1,15 @@
+import { isCorrectAccountId } from '@/shared/lib/utils';
+
 import {
+  type AccountId,
+  type BlockHeight,
   accountIdSchema,
-  addressSchema,
+  blockHeightSchema,
   boolSchema,
   bytesHexSchema,
   bytesSchema,
+  bytesString,
+  dataStringSchema,
   i64Schema,
   nullSchema,
   perbillSchema,
@@ -24,9 +30,11 @@ import {
   enumValueSchema,
   objectSchema,
   optionalSchema,
-  tuppleMapSchema,
+  tupleMapSchema,
   vecSchema,
 } from './structs';
+
+export type { AccountId, BlockHeight };
 
 export const pjsSchema = {
   perbill: perbillSchema,
@@ -40,20 +48,38 @@ export const pjsSchema = {
   text: textSchema,
   null: nullSchema,
   bytes: bytesSchema,
+  bytesString: bytesString,
   bytesHex: bytesHexSchema,
   accountId: accountIdSchema,
-  address: addressSchema,
   storageKey: storageKeySchema,
   bool: boolSchema,
-  blockHeight: u32Schema,
+  blockHeight: blockHeightSchema,
   structHex: structHexSchema,
+  dataString: dataStringSchema,
 
   object: objectSchema,
   optional: optionalSchema,
   enumType: enumTypeSchema,
   enumValue: enumValueSchema,
   enumValueLoose: enumValueLooseSchema,
-  tuppleMap: tuppleMapSchema,
+  tupleMap: tupleMapSchema,
   complex: complexSchema,
   vec: vecSchema,
+
+  helpers: {
+    toAccountId: (value: string) => {
+      if (isCorrectAccountId(value as AccountId)) {
+        return value as AccountId;
+      }
+
+      throw new TypeError(`${value} is not account id`);
+    },
+    toBlockHeight: (value: number) => {
+      if (value > 0) {
+        return value as BlockHeight;
+      }
+
+      throw new TypeError(`${value} is not block height`);
+    },
+  },
 };

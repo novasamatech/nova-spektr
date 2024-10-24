@@ -1,14 +1,14 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n, useMultisigChainContext } from '@app/providers';
-import { type MultisigTransactionDS } from '@shared/api/storage';
-import { type CallData, type MultisigAccount } from '@shared/core';
-import { useToggle } from '@shared/lib/hooks';
-import { Button, Icon, InfoLink, SmallTitleText } from '@shared/ui';
-import { matrixModel } from '@entities/matrix';
-import { useMultisigTx } from '@entities/multisig';
-import { useNetworkData } from '@entities/network';
-import { permissionUtils, walletModel } from '@entities/wallet';
+import { useMultisigChainContext } from '@/app/providers';
+import { type MultisigTransactionDS } from '@/shared/api/storage';
+import { type CallData, type MultisigAccount } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { useToggle } from '@/shared/lib/hooks';
+import { Button, Icon, InfoLink, SmallTitleText } from '@/shared/ui';
+import { useMultisigTx } from '@/entities/multisig';
+import { useNetworkData } from '@/entities/network';
+import { permissionUtils, walletModel } from '@/entities/wallet';
 import { getMultisigExtrinsicLink } from '../common/utils';
 
 import { OperationCardDetails } from './OperationCardDetails';
@@ -26,7 +26,6 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
   const { t } = useI18n();
   const { api, chain, connection, extendedChain } = useNetworkData(tx.chainId);
 
-  const matrix = useUnit(matrixModel.$matrix);
   const wallets = useUnit(walletModel.$wallets);
 
   const { addTask } = useMultisigChainContext();
@@ -40,19 +39,6 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
     if (!api || !tx) return;
 
     updateCallData(api, tx, callData as CallData);
-
-    if (!account?.matrixRoomId) return;
-
-    matrix.sendUpdate(account?.matrixRoomId, {
-      senderAccountId: tx.depositor || '0x00',
-      chainId: tx.chainId,
-      callHash: tx.callHash,
-      callData,
-      callTimepoint: {
-        index: tx.indexCreated || 0,
-        height: tx.blockCreated || 0,
-      },
-    });
   };
 
   const isRejectAvailable = wallets.some((wallet) => {

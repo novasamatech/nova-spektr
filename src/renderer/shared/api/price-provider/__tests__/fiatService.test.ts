@@ -1,4 +1,4 @@
-import { localStorageService } from '@shared/api/local-storage';
+import { localStorageService } from '@/shared/api/local-storage';
 import { ASSETS_PRICES_KEY, CURRENCY_CODE_KEY, FIAT_FLAG_KEY, PRICE_PROVIDER_KEY } from '../lib/constants';
 import { fiatService } from '../service/fiatService';
 

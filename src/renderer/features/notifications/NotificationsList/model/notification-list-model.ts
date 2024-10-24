@@ -1,12 +1,12 @@
 // eslint-disable-next-line import-x/no-duplicates
-import { format } from 'date-fns';
+import { format } from 'date-fns/format';
 // eslint-disable-next-line import-x/no-duplicates
-import { enGB } from 'date-fns/locale';
+import { enGB } from 'date-fns/locale/en-GB';
 import { combine } from 'effector';
 import groupBy from 'lodash/groupBy';
 import orderBy from 'lodash/orderBy';
 
-import { notificationModel } from '@entities/notification';
+import { notificationModel } from '@/entities/notification';
 
 const $notificationGroups = combine(notificationModel.$notifications, (notifications) => {
   if (notifications.length === 0) return [];

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { DEFAULT_TRANSITION } from '@shared/lib/utils';
+import { DEFAULT_TRANSITION } from '../utils';
 
 import { useLooseRef } from './useLooseRef';
 

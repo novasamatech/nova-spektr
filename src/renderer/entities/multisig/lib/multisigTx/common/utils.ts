@@ -10,10 +10,10 @@ import {
   type MultisigEvent,
   type MultisigTransaction,
   type Transaction,
-} from '@shared/core';
-import { MultisigTxInitStatus, TransactionType } from '@shared/core';
-import { getCreatedDate, toAccountId } from '@shared/lib/utils';
-import { type ExtrinsicResultParams, findCoreBatchAll } from '@entities/transaction';
+} from '@/shared/core';
+import { MultisigTxInitStatus, TransactionType } from '@/shared/core';
+import { getCreatedDate, toAccountId } from '@/shared/lib/utils';
+import { type ExtrinsicResultParams, findCoreBatchAll } from '@/entities/transaction';
 
 import { type PendingMultisigTransaction } from './types';
 
@@ -155,7 +155,6 @@ export const buildMultisigTx = (
   multisigTx: Transaction,
   params: ExtrinsicResultParams,
   account: MultisigAccount,
-  description?: string,
 ): MultisigTxResult => {
   const transaction: MultisigTransaction = {
     transaction: tx,
@@ -168,7 +167,6 @@ export const buildMultisigTx = (
     blockCreated: params.timepoint.height,
     indexCreated: params.timepoint.index,
     dateCreated: Date.now(),
-    description,
   };
 
   const event: MultisigEvent = {

@@ -2,7 +2,6 @@ import { type ApiPromise } from '@polkadot/api';
 import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
-import { useI18n } from '@app/providers';
 import {
   type Account,
   type Address,
@@ -10,11 +9,12 @@ import {
   type BaseAccount,
   type Explorer,
   type ShardAccount,
-} from '@shared/core';
-import { cnTw } from '@shared/lib/utils';
-import { FootnoteText, HelpText, Icon, Tooltip } from '@shared/ui';
-import { useStakingData } from '@entities/staking';
-import { AccountAddress, AddressWithName, accountUtils } from '@entities/wallet';
+} from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { cnTw } from '@/shared/lib/utils';
+import { FootnoteText, HelpText, Icon, Tooltip } from '@/shared/ui';
+import { Address as AddressComponent } from '@/shared/ui-entities';
+import { useStakingData } from '@/entities/staking';
 import { type NominatorInfo } from '../lib/types';
 
 import { NominatorsItem } from './NominatorItem';
@@ -78,17 +78,7 @@ export const NominatorsList = ({
 
   const getContent = (stake: NominatorInfo<Account>): ReactNode => (
     <>
-      {accountUtils.isShardAccount(stake.account) ? (
-        <AccountAddress addressFont="text-body" address={stake.address} />
-      ) : (
-        <AddressWithName
-          name={stake.account.name}
-          address={stake.address}
-          size={20}
-          nameFont="text-text-secondary text-body"
-          type="adaptive"
-        />
-      )}
+      <AddressComponent title={stake.account.name} variant="truncate" address={stake.address} showIcon iconSize={20} />
       <div className="ml-auto">{getUnstakeBadge(stake) || getRedeemBadge(stake)}</div>
     </>
   );

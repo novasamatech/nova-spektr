@@ -28,7 +28,6 @@ export { Separator } from './Separator/Separator';
 export { InputHint } from './InputHint/InputHint';
 export { InfoLink } from './InfoLink/InfoLink';
 export { RadioGroup } from './RadioGroup/RadioGroup';
-export { Checkbox } from './Checkbox/Checkbox';
 export { Accordion } from './Accordion/Accordion';
 export { Alert } from './Alert/Alert';
 export { Identicon } from './Identicon/Identicon';
@@ -53,6 +52,7 @@ export { Tabs } from './Tabs/Tabs';
 export { Markdown } from './Markdown/Markdown';
 export { BlockExplorer } from './BlockExplorer/BlockExplorer';
 export { EmptyList } from './EmptyList/EmptyList';
+export { Animation } from './Animation/Animation';
 
 // FIXME: Animation component exported separately.
 // Adding them to this file causes to crash all tests which use anything from that file

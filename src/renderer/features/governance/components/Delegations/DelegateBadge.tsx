@@ -1,5 +1,5 @@
-import { useI18n } from '@/app/providers';
 import { type DelegateAccount } from '@/shared/api/governance';
+import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { CaptionText } from '@/shared/ui';
 
@@ -25,7 +25,7 @@ export const DelegateBadge = ({ delegate, className }: Props) => {
         className,
       )}
     >
-      {t('governance.addDelegation.card.' + (delegate.isOrganization ? 'organization' : 'individual'))}
+      {t(`governance.addDelegation.card.${delegate.isOrganization ? `organization` : `individual`}`)}
     </CaptionText>
   );
 };

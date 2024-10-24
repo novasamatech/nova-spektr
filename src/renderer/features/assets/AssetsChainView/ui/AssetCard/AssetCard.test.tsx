@@ -1,17 +1,17 @@
 import { act, render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { userEvent } from '@testing-library/user-event';
 import { fork } from 'effector';
 import { Provider } from 'effector-react';
 import { BrowserRouter } from 'react-router-dom';
 
-import chains from '@shared/config/chains/chains.json';
-import { type Asset, type Balance, type Chain, WalletType } from '@shared/core';
-import { TEST_ACCOUNTS } from '@shared/lib/utils';
-import { walletModel } from '@entities/wallet';
+import chains from '@/shared/config/chains/chains.json';
+import { type Asset, type Balance, type Chain, WalletType } from '@/shared/core';
+import { TEST_ACCOUNTS } from '@/shared/lib/utils';
+import { walletModel } from '@/entities/wallet';
 
 import { AssetCard } from './AssetCard';
 
-jest.mock('@app/providers', () => ({
+jest.mock('@/shared/i18n', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

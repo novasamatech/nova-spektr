@@ -24,11 +24,17 @@ export const Paths = {
   SETTINGS: '/settings',
   NETWORK: '/settings/network',
   CURRENCY: '/settings/currency',
-  MATRIX: '/settings/matrix',
   REFERENDUM_DATA: '/settings/referendum',
 
   // Governance
   GOVERNANCE: '/governance',
+  GOVERNANCE_LIST: '/governance/:chainId',
+  GOVERNANCE_REFERENDUM: '/governance/:chainId/referendum/:referendumId',
+
+  // Fellowship
+  FELLOWSHIP: '/fellowship',
+  FELLOWSHIP_LIST: '/fellowship/:chainId',
+  FELLOWSHIP_REFERENDUM: '/fellowship/:chainId/referendum/:referendumId',
 
   // Staking
   STAKING: '/staking',
@@ -37,4 +43,10 @@ export const Paths = {
   BASKET: '/basket',
 } as const;
 
-export type PathType = ObjectValues<typeof Paths>;
+type ReplaceDynamicParts<T extends string> = T extends `${infer Start}/:${string}/${infer End}`
+  ? `${Start}/${string}/${End}`
+  : T extends `${infer Start}/:${string}`
+    ? `${Start}/${string}`
+    : T;
+
+export type PathType = ReplaceDynamicParts<ObjectValues<typeof Paths>>;

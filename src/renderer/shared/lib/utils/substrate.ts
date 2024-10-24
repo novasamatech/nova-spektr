@@ -18,7 +18,7 @@ import {
   type HexString,
   type ProxyType,
   XcmPallets,
-} from '@shared/core';
+} from '@/shared/core';
 import { XcmTransferType } from '../../api/xcm';
 
 import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './constants';
@@ -90,7 +90,7 @@ export const validateCallData = <T extends string = CallData, K extends string =
   return isHex(callData) && callHash === blake2AsHex(hexToU8a(callData));
 };
 
-export const getCurrentBlockNumber = async (api: ApiPromise): Promise<number> => {
+export const getCurrentBlockNumber = async (api: ApiPromise): Promise<BlockHeight> => {
   const { block } = await api.rpc.chain.getBlock();
 
   return block.header.number.toNumber();

@@ -1,12 +1,16 @@
 {
   "extends": "./tsconfig.paths.json",
   "ts-node": {
-    "swc": true
+    "swc": true,
+    "compilerOptions": {
+      "module": "CommonJS"
+    }
   },
   "compilerOptions": {
     "strict": true,
     "target": "es2022",
-    "lib": ["es2022", "dom", "dom.iterable"],
+    "module": "es2022",
+    "lib": ["es2022"],
     "jsx": "react-jsx",
     "pretty": true,
     "importHelpers": true,
@@ -26,6 +30,6 @@
     "noEmit": true,
     "types": ["@testing-library/jest-dom"]
   },
-  "include": ["src", "webpack", "tests", "globals.d.ts", "./*.config*.ts"],
+  "include": ["src", "webpack", ".storybook", "tests", "globals.d.ts", "./*.config*.ts"],
   "exclude": ["node_modules"]
 }

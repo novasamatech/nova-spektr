@@ -1,8 +1,8 @@
 import { createEffect, createStore, sample } from 'effector';
 
-import { storageService } from '@shared/api/storage';
-import { type Contact, kernelModel } from '@shared/core';
-import { splice } from '@shared/lib/utils';
+import { storageService } from '@/shared/api/storage';
+import { type Contact, kernelModel } from '@/shared/core';
+import { splice } from '@/shared/lib/utils';
 
 const $contacts = createStore<Contact[]>([]);
 
@@ -12,6 +12,10 @@ const populateContactsFx = createEffect((): Promise<Contact[]> => {
 
 const createContactFx = createEffect(async (contact: Omit<Contact, 'id'>): Promise<Contact | undefined> => {
   return storageService.contacts.create(contact);
+});
+
+const createContactsFx = createEffect((contacts: Omit<Contact, 'id'>[]): Promise<Contact | undefined>[] => {
+  return contacts.map(async (contact) => storageService.contacts.create(contact));
 });
 
 const updateContactFx = createEffect(async ({ id, ...rest }: Contact): Promise<Contact> => {
@@ -51,6 +55,7 @@ export const contactModel = {
   $contacts,
   effects: {
     createContactFx,
+    createContactsFx,
     deleteContactFx,
     updateContactFx,
   },

@@ -2,15 +2,14 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
-import { useI18n } from '@app/providers';
-import { formatBalance, toAddress, toShortAddress } from '@shared/lib/utils';
-import { Button, DetailRow, FootnoteText, Icon, Input, InputHint, MultiSelect, Tooltip } from '@shared/ui';
-import { AssetBalance } from '@entities/asset';
-import { SignatorySelector } from '@entities/operations';
-import { priceProviderModel } from '@entities/price';
-import { AssetFiatBalance } from '@entities/price/ui/AssetFiatBalance';
-import { FeeLoader } from '@entities/transaction';
-import { AccountAddress, ProxyWalletAlert, accountUtils } from '@entities/wallet';
+import { useI18n } from '@/shared/i18n';
+import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
+import { Button, DetailRow, FootnoteText, Icon, InputHint, MultiSelect, Tooltip } from '@/shared/ui';
+import { AssetBalance } from '@/entities/asset';
+import { SignatorySelector } from '@/entities/operations';
+import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
+import { FeeLoader } from '@/entities/transaction';
+import { AccountAddress, ProxyWalletAlert, accountUtils } from '@/entities/wallet';
 import { formModel } from '../model/form-model';
 
 type Props = {
@@ -31,7 +30,6 @@ export const NominateForm = ({ onGoBack }: Props) => {
         <ProxyFeeAlert />
         <AccountsSelector />
         <Signatories />
-        <Description />
       </form>
       <div className="flex flex-col gap-y-6 pb-4 pt-6">
         <FeeSection />
@@ -148,37 +146,6 @@ const Signatories = () => {
       errorText={t(signatory.errorText())}
       onChange={signatory.onChange}
     />
-  );
-};
-
-const Description = () => {
-  const { t } = useI18n();
-
-  const {
-    fields: { description },
-  } = useForm(formModel.$nominateForm);
-
-  const isMultisig = useUnit(formModel.$isMultisig);
-
-  if (!isMultisig) {
-    return null;
-  }
-
-  return (
-    <div className="flex flex-col gap-y-2">
-      <Input
-        spellCheck
-        className="w-full"
-        label={t('general.input.descriptionLabel')}
-        placeholder={t('general.input.descriptionPlaceholder')}
-        invalid={description.hasError()}
-        value={description.value}
-        onChange={description.onChange}
-      />
-      <InputHint active={description.hasError()} variant="error">
-        {t(description.errorText())}
-      </InputHint>
-    </div>
   );
 };
 

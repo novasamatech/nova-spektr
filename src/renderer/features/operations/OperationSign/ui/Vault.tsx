@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 
-import { useI18n } from '@/app/providers';
+import { type Address, type HexString } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { useCountdown } from '@/shared/lib/hooks';
+import { ValidationErrors, toAddress } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
-import { type Address, type HexString } from '@shared/core';
-import { useCountdown } from '@shared/lib/hooks';
-import { ValidationErrors, toAddress } from '@shared/lib/utils';
-import { QrReaderWrapper, ScanMultiframeQr, ScanSingleframeQr, transactionService } from '@entities/transaction';
-import { WalletIcon, accountUtils, walletUtils } from '@entities/wallet';
+import { QrReaderWrapper, ScanMultiframeQr, ScanSingleframeQr, transactionService } from '@/entities/transaction';
+import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
 import { operationSignUtils } from '../lib/operation-sign-utils';
 import { type InnerSigningProps } from '../lib/types';
 

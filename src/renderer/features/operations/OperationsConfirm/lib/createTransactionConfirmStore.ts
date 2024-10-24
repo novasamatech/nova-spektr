@@ -9,11 +9,11 @@ import {
   type MultisigTransaction,
   type ProxiedAccount,
   type Wallet,
-} from '@shared/core';
-import { toAddress } from '@shared/lib/utils';
+} from '@/shared/core';
+import { toAddress } from '@/shared/lib/utils';
 import { operationsUtils } from '@/entities/operations';
-import { type WrappedTransactions, isProxyTransaction } from '@entities/transaction';
-import { walletUtils } from '@entities/wallet';
+import { type WrappedTransactions, isProxyTransaction } from '@/entities/transaction';
+import { walletUtils } from '@/entities/wallet';
 
 export type ConfirmInfo = {
   id?: number;

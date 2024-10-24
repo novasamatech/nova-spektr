@@ -1,12 +1,13 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@app/providers';
-import { type AccountId, type ChainId, type ID } from '@shared/core';
-import { RootExplorers } from '@shared/lib/utils';
-import { Accordion, Checkbox, FootnoteText } from '@shared/ui';
-import { ChainTitle } from '@entities/chain';
-import { networkModel } from '@entities/network';
-import { accountUtils, walletModel, walletUtils } from '@entities/wallet';
+import { type AccountId, type ChainId, type ID } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { RootExplorers } from '@/shared/lib/utils';
+import { Accordion, FootnoteText } from '@/shared/ui';
+import { Checkbox } from '@/shared/ui-kit';
+import { ChainTitle } from '@/entities/chain';
+import { networkModel } from '@/entities/network';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { selectorUtils } from '../lib/selector-utils';
 import { shardsModel } from '../model/shards-model';
 
@@ -38,7 +39,7 @@ export const ShardsStructure = () => {
           <Checkbox
             checked={isAllChecked}
             semiChecked={isAllSemiChecked}
-            onChange={(event) => shardsModel.events.allToggled(event.target.checked)}
+            onChange={(checked) => shardsModel.events.allToggled(checked)}
           >
             {t('balances.allAccounts')}
           </Checkbox>
@@ -62,18 +63,19 @@ export const ShardsStructure = () => {
               <li key={chainId}>
                 <Accordion isDefaultOpen className="ml-6 w-auto rounded">
                   <div className="flex hover:bg-action-background-hover">
-                    <Checkbox
-                      checked={selectorUtils.isChecked(selectedStructure[root.id][chainId])}
-                      semiChecked={selectorUtils.isSemiChecked(selectedStructure[root.id][chainId])}
-                      className="w-full p-2"
-                      onChange={(value) => toggleChain(root.id, chainId, value.target.checked)}
-                    >
-                      <ChainTitle chain={chains[chainId]} fontClass="text-text-primary" />
-                      <FootnoteText className="text-text-tertiary">
-                        {/* eslint-disable-next-line i18next/no-literal-string */}
-                        {selectedStructure[root.id][chainId].checked} / {selectedStructure[root.id][chainId].total}
-                      </FootnoteText>
-                    </Checkbox>
+                    <div className="w-full p-2">
+                      <Checkbox
+                        checked={selectorUtils.isChecked(selectedStructure[root.id][chainId])}
+                        semiChecked={selectorUtils.isSemiChecked(selectedStructure[root.id][chainId])}
+                        onChange={(checked) => toggleChain(root.id, chainId, checked)}
+                      >
+                        <ChainTitle chain={chains[chainId]} fontClass="text-text-primary" />
+                        <FootnoteText className="text-text-tertiary">
+                          {/* eslint-disable-next-line i18next/no-literal-string */}
+                          {selectedStructure[root.id][chainId].checked} / {selectedStructure[root.id][chainId].total}
+                        </FootnoteText>
+                      </Checkbox>
+                    </div>
                     <Accordion.Button buttonClass="ml-auto w-auto p-2" />
                   </div>
                   <Accordion.Content as="ul">

@@ -15,7 +15,7 @@ export const convictionVotingConviction = pjsSchema.enumType(
 );
 
 export type ConvictionVotingVotePriorLock = z.infer<typeof convictionVotingVotePriorLock>;
-export const convictionVotingVotePriorLock = pjsSchema.tuppleMap(
+export const convictionVotingVotePriorLock = pjsSchema.tupleMap(
   ['unlockAt', pjsSchema.u32],
   ['amount', pjsSchema.u128],
 );
@@ -52,7 +52,7 @@ export const convictionVotingDelegations = pjsSchema.object({
 
 export type ConvictionVotingVoteCasting = z.infer<typeof convictionVotingVoteCasting>;
 export const convictionVotingVoteCasting = pjsSchema.object({
-  votes: pjsSchema.vec(pjsSchema.tuppleMap(['referendum', pjsSchema.u32], ['vote', convictionVotingVoteAccountVote])),
+  votes: pjsSchema.vec(pjsSchema.tupleMap(['referendum', pjsSchema.u32], ['vote', convictionVotingVoteAccountVote])),
   delegations: convictionVotingDelegations,
   prior: convictionVotingVotePriorLock,
 });
@@ -73,7 +73,7 @@ export const convictionVotingVoteVoting = pjsSchema.enumValue({
 });
 
 export type ConvictionVotingClassLock = z.infer<typeof convictionVotingClassLock>;
-export const convictionVotingClassLock = pjsSchema.tuppleMap(['track', pjsSchema.u16], ['amount', pjsSchema.u128]);
+export const convictionVotingClassLock = pjsSchema.tupleMap(['track', pjsSchema.u16], ['amount', pjsSchema.u128]);
 
 export type ConvictionVotingTally = z.infer<typeof convictionVotingTally>;
 export const convictionVotingTally = pjsSchema.object({

@@ -3,7 +3,6 @@ import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { type PathType, Paths } from '@/shared/routes';
 import {
   type Account,
   type BasketTransaction,
@@ -12,18 +11,19 @@ import {
   type Transaction,
   type TxWrapper,
   WrapperKind,
-} from '@shared/core';
-import { TEST_ADDRESS, getRelaychainAsset, nonNullable } from '@shared/lib/utils';
-import { basketModel } from '@entities/basket/model/basket-model';
-import { networkModel } from '@entities/network';
-import { validatorsService } from '@entities/staking';
-import { transactionBuilder, transactionService } from '@entities/transaction';
-import { walletModel } from '@entities/wallet';
+} from '@/shared/core';
+import { TEST_ADDRESS, getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
+import { type PathType, Paths } from '@/shared/routes';
+import { basketModel } from '@/entities/basket';
+import { networkModel } from '@/entities/network';
+import { validatorsService } from '@/entities/staking';
+import { transactionBuilder, transactionService } from '@/entities/transaction';
+import { walletModel } from '@/entities/wallet';
 import { navigationModel } from '@/features/navigation';
-import { signModel } from '@features/operations/OperationSign/model/sign-model';
-import { submitModel, submitUtils } from '@features/operations/OperationSubmit';
-import { nominateConfirmModel as confirmModel } from '@features/operations/OperationsConfirm';
-import { validatorsModel } from '@features/staking';
+import { signModel } from '@/features/operations/OperationSign/model/sign-model';
+import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { nominateConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
+import { validatorsModel } from '@/features/staking';
 import { nominateUtils } from '../lib/nominate-utils';
 import { type FeeData, type NominateData, Step, type WalletData } from '../lib/types';
 

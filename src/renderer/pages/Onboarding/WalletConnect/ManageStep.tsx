@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
-import { useI18n, useStatusContext } from '@app/providers';
-import { chainsService } from '@shared/api/network';
+import { useStatusContext } from '@/app/providers';
+import { chainsService } from '@/shared/api/network';
 import {
   type AccountId,
   AccountType,
@@ -13,11 +13,12 @@ import {
   SigningType,
   WalletType,
   type WcAccount,
-} from '@shared/core';
-import { toAccountId } from '@shared/lib/utils';
-import { Button, HeaderTitleText, Icon, Input, InputHint, SmallTitleText } from '@shared/ui';
-import { type IconNames } from '@shared/ui/Icon/data';
-import { MultiAccountsList, walletModel } from '@entities/wallet';
+} from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { toAccountId } from '@/shared/lib/utils';
+import { Button, HeaderTitleText, Icon, Input, InputHint, SmallTitleText } from '@/shared/ui';
+import { type IconNames } from '@/shared/ui/Icon/data';
+import { MultiAccountsList, walletModel } from '@/entities/wallet';
 
 const WalletLogo: Record<WalletTypeName, IconNames> = {
   [WalletType.WALLET_CONNECT]: 'walletConnectOnboarding',

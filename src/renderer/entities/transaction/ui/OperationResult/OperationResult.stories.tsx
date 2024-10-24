@@ -3,7 +3,7 @@ import { type Meta, type StoryFn } from '@storybook/react';
 import { OperationResult } from './OperationResult';
 
 export default {
-  title: 'Operation Result',
+  title: 'v1/entities/Operation Result',
   component: OperationResult,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof OperationResult>;

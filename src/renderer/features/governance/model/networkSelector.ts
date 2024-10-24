@@ -1,9 +1,9 @@
 import { combine, createEvent, restore, sample } from 'effector';
 
-import { type Chain, type ConnectionStatus } from '@shared/core';
-import { nonNullable } from '@shared/lib/utils';
+import { type Chain, type ConnectionStatus } from '@/shared/core';
+import { nonNullable } from '@/shared/lib/utils';
+import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel } from '@/entities/wallet';
-import { networkModel, networkUtils } from '@entities/network';
 
 const selectNetwork = createEvent<Chain>();
 const resetNetwork = createEvent();

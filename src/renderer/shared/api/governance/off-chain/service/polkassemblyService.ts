@@ -5,8 +5,8 @@ import {
   type PolkassemblyPostVote,
   type PolkassembyPostStatus,
   polkassemblyApiService,
-} from '@shared/api/polkassembly';
-import { dictionary } from '@shared/lib/utils';
+} from '@/shared/api/polkassembly';
+import { dictionary } from '@/shared/lib/utils';
 import { type GovernanceApi, type ReferendumTimelineRecord } from '../lib/types';
 
 const getReferendumList: GovernanceApi['getReferendumList'] = async (chain, callback) => {
@@ -14,35 +14,35 @@ const getReferendumList: GovernanceApi['getReferendumList'] = async (chain, call
     return dictionary(data, 'post_id', (item) => item.title);
   }
 
-  return polkassemblyApiService
-    .fetchPostsList(
-      {
-        network: chain.specName,
-        proposalType: 'referendums_v2',
-        limit: 50,
-        sortBy: 'newest',
-      },
-      (data, done) => {
-        callback(mapListingPost(data), done);
-      },
-    )
-    .then(mapListingPost);
+  const pages = polkassemblyApiService.fetchPostsList({
+    network: chain.specName,
+    proposalType: 'referendums_v2',
+    limit: 100,
+    sortBy: 'newest',
+  });
+
+  for await (const page of pages) {
+    callback({
+      done: false,
+      value: mapListingPost(page),
+    });
+  }
+
+  callback({
+    done: true,
+    value: undefined,
+  });
 };
 
-const getReferendumVotes: GovernanceApi['getReferendumVotes'] = (chain, referendumId, callback) => {
+const getReferendumVotes: GovernanceApi['getReferendumVotes'] = (chain, referendumId) => {
   const mapVote = (votes: PolkassemblyPostVote[]) => votes.map((vote) => vote.voter);
 
   return polkassemblyApiService
-    .fetchPostVotes(
-      {
-        network: chain.specName,
-        postId: referendumId,
-        voteType: 'ReferendumV2',
-      },
-      (data, done) => {
-        callback(mapVote(data), done);
-      },
-    )
+    .fetchPostVotes({
+      network: chain.specName,
+      postId: referendumId,
+      voteType: 'ReferendumV2',
+    })
     .then(mapVote);
 };
 

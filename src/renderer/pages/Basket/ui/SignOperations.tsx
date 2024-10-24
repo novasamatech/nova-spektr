@@ -1,13 +1,13 @@
 import { useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
-import { useI18n } from '@app/providers';
-import { type BasketTransaction, TransactionType, WalletType } from '@shared/core';
-import { useModalClose } from '@shared/lib/hooks';
-import { BaseModal, HeaderTitleText } from '@shared/ui';
-import { OperationTitle } from '@entities/chain';
-import { networkModel } from '@entities/network';
-import { SignButton } from '@entities/operations';
+import { type BasketTransaction, TransactionType, WalletType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { useModalClose } from '@/shared/lib/hooks';
+import { BaseModal, HeaderTitleText } from '@/shared/ui';
+import { OperationTitle } from '@/entities/chain';
+import { networkModel } from '@/entities/network';
+import { SignButton } from '@/entities/operations';
 import {
   type MultisigTransactionTypes,
   type TransferTransactionTypes,
@@ -16,8 +16,8 @@ import {
   type XcmTransactionTypes,
   XcmTypes,
   isEditDelegationTransaction,
-} from '@entities/transaction';
-import { OperationSign, OperationSubmit } from '@features/operations';
+} from '@/entities/transaction';
+import { OperationSign, OperationSubmit } from '@/features/operations';
 import {
   AddProxyConfirm,
   AddPureProxiedConfirm,
@@ -26,6 +26,7 @@ import {
   ConfirmSlider,
   DelegateConfirmation,
   EditDelegationConfirmation,
+  FellowshipVotingConfirmation,
   NominateConfirmation,
   PayeeConfirmation,
   RemoveProxyConfirm,
@@ -37,8 +38,8 @@ import {
   UnstakeConfirmation,
   VoteConfirmation,
   WithdrawConfirmation,
-} from '@features/operations/OperationsConfirm';
-import { UnlockConfirmation } from '@/widgets/UnlockModal/ui/UnlockConfirmation';
+} from '@/features/operations/OperationsConfirm';
+import { UnlockConfirmation } from '@/widgets/UnlockModal';
 import { getOperationTitle } from '../lib/operation-title';
 import { signOperationsUtils } from '../lib/sign-operations-utils';
 import { getCoreTx } from '../lib/utils';
@@ -91,7 +92,11 @@ export const SignOperations = () => {
     const Components: Record<
       Exclude<
         TransactionType,
-        TransferTransactionTypes | XcmTransactionTypes | MultisigTransactionTypes | UtilityTransactionTypes
+        | TransferTransactionTypes
+        | XcmTransactionTypes
+        | MultisigTransactionTypes
+        | UtilityTransactionTypes
+        | TransactionType.REMARK
       >,
       () => ReactNode
     > = {
@@ -119,6 +124,9 @@ export const SignOperations = () => {
       [TransactionType.REVOTE]: () => <VoteConfirmation id={transaction.id} hideSignButton />,
       [TransactionType.REMOVE_VOTE]: () => <RemoveVoteConfirmation id={transaction.id} hideSignButton />,
       [TransactionType.UNLOCK]: () => <UnlockConfirmation id={transaction.id} hideSignButton />,
+
+      // TODO discuss where we should implement generic collective voting confirmation
+      [TransactionType.COLLECTIVE_VOTE]: () => <FellowshipVotingConfirmation id={transaction.id} hideSignButton />,
     };
 
     // @ts-expect-error not all types are used

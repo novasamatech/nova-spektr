@@ -12,7 +12,7 @@ import {
   type HexString,
   type Timepoint,
   type Transaction,
-} from '@shared/core';
+} from '@/shared/core';
 
 // =====================================================
 // =========== ITransactionService interface ===========

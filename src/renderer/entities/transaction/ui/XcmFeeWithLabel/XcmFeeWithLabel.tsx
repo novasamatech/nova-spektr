@@ -1,8 +1,8 @@
 import { type ComponentProps } from 'react';
 
-import { useI18n } from '@app/providers';
-import { cnTw } from '@shared/lib/utils';
-import { DetailRow, FootnoteText } from '@shared/ui';
+import { useI18n } from '@/shared/i18n';
+import { cnTw } from '@/shared/lib/utils';
+import { DetailRow, FootnoteText } from '@/shared/ui';
 import { XcmFee } from '../XcmFee/XcmFee';
 
 type Props = ComponentProps<typeof XcmFee> & {

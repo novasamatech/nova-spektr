@@ -1,6 +1,6 @@
 import { type ClipboardEvent, type ComponentPropsWithoutRef, type ReactNode, forwardRef, useId } from 'react';
 
-import { cnTw } from '@shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { type Theme } from '../../Dropdowns/common/types';
 import { LabelText } from '../../Typography';
 import { CommonInputStyles, CommonInputStylesTheme } from '../common/styles';
@@ -34,6 +34,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(
       disabled,
       spellCheck = false,
       theme = 'light',
+      autoFocus,
       ...props
     },
     ref,
@@ -64,6 +65,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(
           )}
           ref={ref}
           type={type}
+          autoFocus={autoFocus}
           disabled={disabled}
           spellCheck={spellCheck}
           onChange={(event) => onChange?.(event.target.value)}

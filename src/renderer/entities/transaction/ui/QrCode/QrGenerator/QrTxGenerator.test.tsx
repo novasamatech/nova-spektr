@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react';
 
-import { SigningType } from '@shared/core';
+import { SigningType } from '@/shared/core';
 
 import { QrTxGenerator } from './QrTxGenerator';
 

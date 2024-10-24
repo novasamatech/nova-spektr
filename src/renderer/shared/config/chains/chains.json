@@ -287,7 +287,9 @@
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Kusama_Asset_Hub.svg",
     "options": [
-      "multisig"
+      "multisig",
+      "regular_proxy",
+      "pure_proxy"
     ],
     "nodes": [
       {
@@ -403,6 +405,12 @@
         {
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-statemine"
+        }
+      ],
+      "proxy": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-proxy-kusama-ah-prod.novasama-tech.org"
         }
       ]
     }
@@ -2688,7 +2696,9 @@
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polkadot_Asset_Hub.svg",
     "options": [
-      "multisig"
+      "multisig",
+      "regular_proxy",
+      "pure_proxy"
     ],
     "nodes": [
       {
@@ -2871,6 +2881,12 @@
         {
           "type": "subquery",
           "url": "https://gateway.subquery.network/query/0x35"
+        }
+      ],
+      "proxy": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-proxy-polkadot-ah-prod.novasama-tech.org"
         }
       ]
     }
@@ -4350,7 +4366,9 @@
     "chainId": "0x70255b4d28de0fc4e1a193d7e175ad1ccef431598211c55538f1018651a0344e",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/AlephZero.svg",
     "options": [
-      "multisig"
+      "multisig",
+      "regular_proxy",
+      "pure_proxy"
     ],
     "nodes": [
       {
@@ -4387,6 +4405,12 @@
         {
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-aleph-zero"
+        }
+      ],
+      "proxy": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-proxy-aleph-zero-prod.novasama-tech.org"
         }
       ]
     }
@@ -6007,7 +6031,9 @@
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Kusama_People.svg",
     "options": [
-      "multisig"
+      "multisig",
+      "regular_proxy",
+      "pure_proxy"
     ],
     "nodes": [
       {
@@ -6044,7 +6070,15 @@
         "account": "https://people-kusama.subscan.io/account/{address}",
         "multisig": "https://people-kusama.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       }
-    ]
+    ],
+    "externalApi": {
+      "proxy": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-proxy-kusama-people-prod.novasama-tech.org"
+        }
+      ]
+    }
   },
   {
     "name": "Polimec",
@@ -6111,7 +6145,9 @@
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polkadot_People.svg",
     "options": [
-      "multisig"
+      "multisig",
+      "regular_proxy",
+      "pure_proxy"
     ],
     "nodes": [
       {
@@ -6152,7 +6188,15 @@
         "account": "https://people-polkadot.subscan.io/account/{address}",
         "multisig": "https://people-polkadot.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       }
-    ]
+    ],
+    "externalApi": {
+      "proxy": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-proxy-polkadot-people-prod.novasama-tech.org"
+        }
+      ]
+    }
   },
   {
     "name": "Bittensor",

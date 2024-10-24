@@ -1,16 +1,7 @@
-import {
-  type Account,
-  type AccountId,
-  type Address,
-  type CallData,
-  type CallHash,
-  type ChainId,
-  type HexString,
-  type MultisigAccount,
-  type PartialBy,
-  type ProxiedAccount,
-  type Signatory,
-} from '@shared/core';
+import { type Account, type MultisigAccount, type ProxiedAccount } from './account';
+import { type AccountId, type Address, type CallData, type CallHash, type ChainId, type HexString } from './general';
+import { type Signatory } from './signatory';
+import { type PartialBy } from './utility';
 
 export const enum TransactionType {
   TRANSFER = 'transfer',
@@ -43,6 +34,8 @@ export const enum TransactionType {
   CREATE_PURE_PROXY = 'create_pure_proxy',
   REMOVE_PURE_PROXY = 'kill_pure_proxy',
 
+  REMARK = 'remark',
+
   UNLOCK = 'unlock',
   VOTE = 'vote',
   REVOTE = 'revote',
@@ -50,6 +43,8 @@ export const enum TransactionType {
   DELEGATE = 'delegate',
   UNDELEGATE = 'undelegate',
   EDIT_DELEGATION = 'edit_delegation',
+
+  COLLECTIVE_VOTE = 'collective_vote',
 }
 
 export type SigningStatus =
@@ -112,8 +107,6 @@ export type MultisigTransaction = {
   signatories: Signatory[];
   deposit?: string;
   depositor?: AccountId;
-  description?: string;
-  cancelDescription?: string;
   blockCreated: number;
   indexCreated: number;
   dateCreated?: number;

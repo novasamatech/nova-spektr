@@ -1,4 +1,4 @@
-import BN from 'bignumber.js';
+import { default as BigNumber } from 'bignumber.js';
 import capitalize from 'lodash/capitalize';
 
 import { type Delegation } from '@/shared/api/governance/off-chain/lib/types';
@@ -37,7 +37,7 @@ export const getDelegationsList = (delegations: Delegation[]) => {
   for (const delegation of delegations) {
     const delegator = map.get(delegation.delegator);
     const multiplier = votingService.getConvictionMultiplier(delegation.delegation.conviction);
-    const multipliedAmount = new BN(delegation.delegation.amount).multipliedBy(new BN(multiplier));
+    const multipliedAmount = new BigNumber(delegation.delegation.amount).multipliedBy(new BigNumber(multiplier));
 
     map.set(delegation.delegator, {
       tracks: delegator ? [...delegator.tracks, delegation.trackId] : [delegation.trackId],

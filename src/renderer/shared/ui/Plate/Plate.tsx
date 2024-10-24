@@ -1,6 +1,6 @@
 import { type ElementType, type PropsWithChildren } from 'react';
 
-import { cnTw } from '@shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 
 type Props = {
   as?: ElementType;

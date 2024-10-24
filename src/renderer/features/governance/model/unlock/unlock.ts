@@ -2,11 +2,11 @@ import { type ApiPromise } from '@polkadot/api';
 import { type BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createStore, sample } from 'effector';
 
-import { type ClaimTimeAt, type UnlockChunk, UnlockChunkType } from '@shared/api/governance';
-import { type Address, type Referendum, type TrackId, type TrackInfo, type VotingMap } from '@shared/core';
-import { getCreatedDateFromApi, getCurrentBlockNumber, nonNullable, nullable } from '@shared/lib/utils';
-import { claimScheduleService, referendumModel, tracksModel, votingModel } from '@entities/governance';
-import { walletModel } from '@entities/wallet';
+import { type ClaimTimeAt, type UnlockChunk, UnlockChunkType } from '@/shared/api/governance';
+import { type Address, type Referendum, type TrackId, type TrackInfo, type VotingMap } from '@/shared/core';
+import { getCreatedDateFromApi, getCurrentBlockNumber, nonNullable, nullable } from '@/shared/lib/utils';
+import { claimScheduleService, referendumModel, tracksModel, votingModel } from '@/entities/governance';
+import { walletModel } from '@/entities/wallet';
 import { unlockService } from '../../lib/unlockService';
 import { locksModel } from '../locks';
 import { networkSelectorModel } from '../networkSelector';
