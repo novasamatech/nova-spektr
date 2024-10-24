@@ -1,6 +1,7 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { partition } from 'lodash';
 import groupBy from 'lodash/groupBy';
-import { combineEvents } from 'patronum';
+import { combineEvents, spread } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import {
@@ -30,10 +31,13 @@ const singleshardCreated = createEvent<CreateParams<BaseAccount>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const walletConnectCreated = createEvent<CreateParams<WcAccount>>();
 
+const walletRestored = createEvent<Wallet>();
+const walletHidden = createEvent<Wallet>();
 const walletRemoved = createEvent<ID>();
 const walletsRemoved = createEvent<ID[]>();
 
 const $wallets = createStore<Wallet[]>([]);
+const $hiddenWallets = createStore<Wallet[]>([]);
 
 // TODO: ideally it should be a feature
 const $activeWallet = combine(
@@ -143,6 +147,18 @@ const removeWalletsFx = createEffect(async (wallets: Wallet[]): Promise<ID[]> =>
   return walletIds;
 });
 
+const hideWalletFx = createEffect(async (wallet: Wallet): Promise<Wallet> => {
+  await storageService.wallets.update(wallet.id, { isHidden: true });
+
+  return wallet;
+});
+
+const restoreWalletFx = createEffect(async (wallet: Wallet): Promise<Wallet> => {
+  await storageService.wallets.update(wallet.id, { isHidden: false });
+
+  return wallet;
+});
+
 sample({
   clock: walletStarted,
   target: [fetchAllAccountsFx, fetchAllWalletsFx],
@@ -150,12 +166,17 @@ sample({
 
 sample({
   clock: combineEvents([fetchAllAccountsFx.doneData, fetchAllWalletsFx.doneData]),
-  fn: ([accounts, wallets]) => {
+  fn: ([accounts, allWallets]) => {
     const accountsMap = groupBy(accounts, 'walletId');
+    const walletWithAccounts = allWallets.map((wallet) => ({ ...wallet, accounts: accountsMap[wallet.id] }));
+    const [hiddenWallets, wallets] = partition(walletWithAccounts, 'isHidden');
 
-    return wallets.map((wallet) => ({ ...wallet, accounts: accountsMap[wallet.id] }) as Wallet);
+    return { hiddenWallets, wallets };
   },
-  target: $wallets,
+  target: spread({
+    wallets: $wallets,
+    hiddenWallets: $hiddenWallets,
+  }),
 });
 
 sample({
@@ -220,8 +241,60 @@ sample({
   target: $wallets,
 });
 
+sample({
+  clock: walletHidden,
+  target: hideWalletFx,
+});
+
+sample({
+  clock: hideWalletFx.doneData,
+  source: {
+    wallets: $wallets,
+    hiddenWallets: $hiddenWallets,
+  },
+  fn: ({ wallets, hiddenWallets }, walletToRemove) => {
+    return {
+      wallets: wallets.filter((wallet) => wallet.id !== walletToRemove.id),
+      hiddenWallets: hiddenWallets.concat(walletToRemove),
+    };
+  },
+  target: spread({
+    wallets: $wallets,
+    hiddenWallets: $hiddenWallets,
+  }),
+});
+
+sample({
+  clock: walletRestored,
+  source: $hiddenWallets,
+  filter: (hiddenWallets, walletToRestore) => {
+    return hiddenWallets.some((wallet) => wallet.id === walletToRestore.id);
+  },
+  fn: (_, walletToRestore) => walletToRestore,
+  target: restoreWalletFx,
+});
+
+sample({
+  clock: restoreWalletFx.doneData,
+  source: {
+    wallets: $wallets,
+    hiddenWallets: $hiddenWallets,
+  },
+  fn: ({ wallets, hiddenWallets }, walletToRestore) => {
+    return {
+      wallets: wallets.concat(walletToRestore),
+      hiddenWallets: hiddenWallets.filter((wallet) => wallet.id !== walletToRestore.id),
+    };
+  },
+  target: spread({
+    wallets: $wallets,
+    hiddenWallets: $hiddenWallets,
+  }),
+});
+
 export const walletModel = {
   $wallets,
+  $hiddenWallets,
   $activeWallet,
   $isLoadingWallets: fetchAllWalletsFx.pending,
 
@@ -233,7 +306,11 @@ export const walletModel = {
     multisigCreated,
     walletConnectCreated,
     walletRemoved,
+    walletHidden,
+    walletHiddenSuccess: hideWalletFx.done,
     walletRemovedSuccess: removeWalletFx.done,
     walletsRemoved,
+    walletRestored,
+    walletRestoredSuccess: restoreWalletFx.done,
   },
 };

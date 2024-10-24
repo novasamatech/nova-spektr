@@ -56,18 +56,14 @@ const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $addMultisigStore = createStore<AddMultisigStore | null>(null).reset(flowFinished);
 const $signer = createStore<Account | null>(null).reset(flowFinished);
 
-const $signerWallet = combine(
-  { signer: $signer, wallets: walletModel.$wallets },
-  ({ signer, wallets }) => {
-    const res = walletUtils.getWalletFilteredAccounts(wallets, {
-      accountFn: (a) => a.accountId === signer?.accountId,
-      walletFn: (w) => walletUtils.isValidSignatory(w),
-    });
+const $signerWallet = combine({ signer: $signer, wallets: walletModel.$wallets }, ({ signer, wallets }) => {
+  const res = walletUtils.getWalletFilteredAccounts(wallets, {
+    accountFn: (a) => a.accountId === signer?.accountId,
+    walletFn: (w) => walletUtils.isValidSignatory(w),
+  });
 
-    return res;
-  },
-  { skipVoid: false },
-);
+  return res;
+});
 
 // Miscellaneous
 
@@ -417,6 +413,16 @@ sample({
     return signerAccount;
   },
   target: $signer,
+});
+
+sample({
+  clock: walletModel.events.walletRestoredSuccess,
+  target: walletProviderModel.events.completed,
+});
+
+sample({
+  clock: walletModel.events.walletRestoredSuccess,
+  target: flowFinished,
 });
 
 sample({
