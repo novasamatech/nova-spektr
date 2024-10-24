@@ -89,8 +89,7 @@ const $hiddenMultisig = combine(
 
         return isSameAccountId && isSameChainId;
       },
-    }),
-  { skipVoid: false },
+    }) || null,
 );
 
 const $availableAccounts = combine(
