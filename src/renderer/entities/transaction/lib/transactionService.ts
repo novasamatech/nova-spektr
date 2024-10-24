@@ -24,7 +24,7 @@ import {
   WrapperKind,
 } from '@/shared/core';
 import { type TxMetadata, createTxMetadata, dictionary, toAccountId } from '@/shared/lib/utils';
-import { walletUtils } from '../../wallet';
+import { walletUtils } from '@/entities/wallet';
 
 import { LEAVE_SOME_SPACE_MULTIPLIER } from './common/constants';
 import { decodeDispatchError } from './common/utils';

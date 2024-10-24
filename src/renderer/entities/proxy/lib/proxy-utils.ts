@@ -10,7 +10,7 @@ import {
 } from '@/shared/core';
 import { ProxyType, ProxyVariant } from '@/shared/core';
 import { splitCamelCaseString, toAddress } from '@/shared/lib/utils';
-import { accountUtils } from '../../wallet';
+import { accountUtils } from '@/entities/wallet';
 
 import { ProxyTypeName } from './constants';
 

@@ -9,8 +9,8 @@ import {
   createWcWallet,
   polkadotChain,
 } from '@/shared/mocks';
+import { DetailRow } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
-import { DetailRow } from '../../ui';
 
 import { TransactionDetails } from './TransactionDetails';
 

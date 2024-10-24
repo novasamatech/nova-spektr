@@ -1,7 +1,7 @@
 import { type StorageEntryBaseAt } from '@polkadot/api/types';
 
-import { substrateRpcPool } from '../api/substrate-helpers';
-import { nullable } from '../lib/utils';
+import { substrateRpcPool } from '@/shared/api/substrate-helpers';
+import { nullable } from '@/shared/lib/utils';
 
 type Params = {
   query: StorageEntryBaseAt<'promise', VoidFunction>;

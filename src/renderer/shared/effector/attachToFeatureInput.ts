@@ -1,7 +1,7 @@
 import { type Event, type Store, createEvent, createStore, is, sample } from 'effector';
 import { previous, readonly } from 'patronum';
 
-import { shallowEqual } from '../lib/utils';
+import { shallowEqual } from '@/shared/lib/utils';
 
 import { type createFeature } from './createFeature';
 

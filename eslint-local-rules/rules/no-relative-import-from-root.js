@@ -1,5 +1,7 @@
 const path = require('node:path');
 
+const { getPackageName } = require('../utils');
+
 /**
  * @type {import('eslint').Rule.RuleModule}
  */
@@ -20,13 +22,15 @@ module.exports = {
         required: ['root'],
         properties: {
           root: { type: 'string' },
+          exclude: { type: 'array', items: { type: 'string' } },
         },
       },
     ],
   },
   create(context) {
-    const { root } = context.options[0] || { root: '' };
+    const { root, exclude = [] } = context.options[0] || { root: '' };
     const absoluteRoot = path.resolve(root);
+    const absoluteExcluded = new Set(exclude.map((x) => path.resolve(absoluteRoot, x)));
 
     return {
       ImportDeclaration(node) {
@@ -45,9 +49,25 @@ module.exports = {
         const possibleRoot = path.resolve(path.dirname(context.filename), upDir);
 
         if (possibleRoot === absoluteRoot) {
-          context.report({
+          return context.report({
             node,
             message: `Relative import through root is forbidden.`,
+          });
+        }
+
+        const requestedResource = path.resolve(path.dirname(context.filename), requestPath);
+
+        if (absoluteExcluded.has(requestedResource)) {
+          return;
+        }
+
+        const sourcePackage = getPackageName(absoluteRoot, context.filename);
+        const requestedPackage = getPackageName(absoluteRoot, requestedResource);
+
+        if (sourcePackage !== requestedPackage) {
+          return context.report({
+            node,
+            message: `Relative to another package is forbidden.\n${sourcePackage}\n${requestedPackage}`,
           });
         }
       },

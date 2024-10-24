@@ -10,6 +10,7 @@ import {
   getRegistry,
 } from '@substrate/txwrapper-polkadot';
 
+import { XcmTransferType } from '@/shared/api/xcm';
 import {
   type Address,
   type BlockHeight,
@@ -19,7 +20,6 @@ import {
   type ProxyType,
   XcmPallets,
 } from '@/shared/core';
-import { XcmTransferType } from '../../api/xcm';
 
 import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './constants';
 

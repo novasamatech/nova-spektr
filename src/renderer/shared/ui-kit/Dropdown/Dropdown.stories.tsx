@@ -1,7 +1,7 @@
 import { type Meta, type StoryObj } from '@storybook/react';
 import { useState } from 'react';
 
-import { Button, Icon, Switch } from '../../ui';
+import { Button, Icon, Switch } from '@/shared/ui';
 import { Box } from '../Box/Box';
 
 import { Dropdown } from './Dropdown';

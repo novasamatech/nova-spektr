@@ -1,5 +1,5 @@
 import { useI18n } from '@/shared/i18n';
-import { cnTw } from '../../lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { Icon } from '../Icon/Icon';
 import { FootnoteText } from '../Typography';
 
