@@ -2,7 +2,7 @@ import { type Scope, allSettled, fork } from 'effector';
 
 import { balanceService } from '@/shared/api/balances';
 import { storageService } from '@/shared/api/storage';
-import { type Balance, ConnectionStatus } from '@/shared/core';
+import { type ChainId, ConnectionStatus } from '@/shared/core';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
@@ -247,10 +247,10 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
     };
 
     const newBalances = [
-      { id: 1, chainId: '0x01', accountId: accounts[2].accountId },
-      { id: 2, chainId: '0x02', accountId: accounts[3].accountId },
-      { id: 3, chainId: '0x02', accountId: accounts[0].accountId },
-    ] as unknown as Balance[];
+      { id: 1, chainId: '0x01' as ChainId, accountId: accounts[2].accountId, assetId: '1' },
+      { id: 2, chainId: '0x02' as ChainId, accountId: accounts[3].accountId, assetId: '1' },
+      { id: 3, chainId: '0x02' as ChainId, accountId: accounts[0].accountId, assetId: '1' },
+    ];
 
     jest.spyOn(storageService.balances, 'readAll').mockResolvedValue(newBalances);
 

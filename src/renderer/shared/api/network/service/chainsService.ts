@@ -1,4 +1,4 @@
-import { BN } from '@polkadot/util';
+import { type BN, BN_ZERO } from '@polkadot/util';
 import { default as BigNumber } from 'bignumber.js';
 import concat from 'lodash/concat';
 import keyBy from 'lodash/keyBy';
@@ -8,7 +8,7 @@ import sortBy from 'lodash/sortBy';
 import { type PriceObject } from '@/shared/api/price-provider';
 import chainsProd from '@/shared/config/chains/chains.json';
 import chainsDev from '@/shared/config/chains/chains_dev.json';
-import { type Balance, type Chain, type ChainId } from '@/shared/core';
+import { type AssetBalance, type Balance, type Chain, type ChainId } from '@/shared/core';
 import { ZERO_BALANCE, getRelaychainAsset, nonNullable, nullable, totalAmount } from '@/shared/lib/utils';
 import { isKusama, isNameStartsWithNumber, isPolkadot, isTestnet } from '../lib/utils';
 
@@ -103,12 +103,11 @@ function sortChainsByBalance(
   const numberchains = { withBalance: [], noBalance: [] };
   const testnets = { withBalance: [], noBalance: [] };
 
-  const balancesMap = balances.reduce<Record<string, Balance>>((acc, balance) => {
+  const balancesMap: Record<string, AssetBalance> = {};
+  for (const balance of balances) {
     const key = `${balance.chainId}_${balance.assetId}`;
-    acc[key] = acc[key] ? sumBalances(acc[key], balance) : balance;
-
-    return acc;
-  }, {});
+    balancesMap[key] = sumBalances(balance, balancesMap[key]);
+  }
 
   for (const chain of chains) {
     const fiatBalance = chain.assets.reduce((acc, a) => {
@@ -167,15 +166,15 @@ function sortChainsByBalance(
   );
 }
 
-export const sumValues = (firstValue?: string, secondValue?: string): string => {
+export const sumValues = (firstValue?: BN, secondValue?: BN): BN => {
   if (firstValue && secondValue) {
-    return new BN(firstValue).add(new BN(secondValue)).toString();
+    return firstValue.add(secondValue);
   }
 
-  return firstValue || '0';
+  return firstValue || BN_ZERO;
 };
 
-export const sumBalances = (firstBalance: Balance, secondBalance?: Balance): Balance => {
+export const sumBalances = <T extends AssetBalance>(firstBalance: T, secondBalance?: T): T => {
   if (!secondBalance) return firstBalance;
 
   return {

@@ -4,7 +4,7 @@ import mapValues from 'lodash/mapValues';
 import { combineEvents, once, previous, spread } from 'patronum';
 
 import { balanceService } from '@/shared/api/balances';
-import { storageService } from '@/shared/api/storage';
+import { balanceMapper, storageService } from '@/shared/api/storage';
 import {
   type AccountId,
   type Balance,
@@ -36,7 +36,7 @@ const populateBalancesFx = createEffect(async (accountIds: Set<AccountId>): Prom
 
   const balances = await storageService.balances.readAll();
 
-  return balances.filter((balance) => accountIds.has(balance.accountId));
+  return balances.filter((balance) => accountIds.has(balance.accountId)).map(balanceMapper.fromDB);
 });
 
 type UnsubWalletParams = {
@@ -108,8 +108,12 @@ const pureSubscribeChainsFx = createEffect(
           if (walletId && Number(id) !== walletId) continue;
 
           const unsubPromises = [
-            ...balanceService.subscribeBalances(apis[chain.chainId], chain, accountIds, boundUpdate),
-            ...balanceService.subscribeLockBalances(apis[chain.chainId], chain, accountIds, boundUpdate),
+            ...balanceService.subscribeBalances(apis[chain.chainId], chain, accountIds, (balance) =>
+              boundUpdate(balance as Balance[]),
+            ),
+            ...balanceService.subscribeLockBalances(apis[chain.chainId], chain, accountIds, (balance) =>
+              boundUpdate(balance as Balance[]),
+            ),
           ];
 
           if (acc[chain.chainId]) {
