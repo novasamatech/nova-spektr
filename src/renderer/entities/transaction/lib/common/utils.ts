@@ -4,7 +4,7 @@ import { type TFunction } from 'i18next';
 
 import { type DecodedTransaction, type MultisigTransaction, type Transaction, TransactionType } from '@/shared/core';
 import { formatSectionAndMethod } from '@/shared/lib/utils';
-import { type VoteTransaction, voteTransactionService } from '../../../governance';
+import { type VoteTransaction, voteTransactionService } from '@/entities/governance';
 
 import {
   CONTROLLER_ARG_NAME,

@@ -173,7 +173,14 @@ module.exports = {
             exclude: ['widgets', 'pages', 'features/operations', 'shared/lib', 'shared/api', 'shared/pallet'],
           },
         ],
-        'local-rules/no-relative-import-from-root': ['error', { root: './src/renderer' }],
+        'local-rules/no-relative-import-from-root': [
+          'error',
+          {
+            root: './src/renderer',
+            exclude: ['../../app.config', '../../tw-config-consts/colors', '../../tw-config-consts/font-sizes'],
+          },
+        ],
+        'local-rules/enforce-di-naming-convention': ['error'],
 
         // TODO enable
         // 'no-console': ['error', { allow: ['warn', 'error', 'info'] }],
@@ -187,6 +194,8 @@ module.exports = {
         'import-x/export': 'off',
         // Restricted by our code style
         'import-x/default': 'off',
+        // Too heavy
+        'import-x/no-rename-default': 'off',
         'import-x/no-useless-path-segments': 'error',
         'no-restricted-imports': [
           'error',

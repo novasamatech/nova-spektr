@@ -4,7 +4,7 @@ import { Tabs } from './Tabs';
 import { type TabItem } from './common/types';
 
 export default {
-  title: 'Tabs',
+  title: 'v1/ui/Tabs',
   component: Tabs,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof Tabs>;

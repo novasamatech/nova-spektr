@@ -3,7 +3,7 @@ import { type Meta, type StoryFn } from '@storybook/react';
 import { Counter } from './Counter';
 
 export default {
-  title: 'Counter',
+  title: 'v1/ui/Counter',
   component: Counter,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof Counter>;

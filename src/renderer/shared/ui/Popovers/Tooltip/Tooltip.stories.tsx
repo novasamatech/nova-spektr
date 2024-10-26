@@ -3,7 +3,7 @@ import { type Meta, type StoryFn } from '@storybook/react';
 import { Tooltip } from './Tooltip';
 
 export default {
-  title: 'Tooltip ',
+  title: 'v1/ui/Tooltip ',
   component: Tooltip,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [

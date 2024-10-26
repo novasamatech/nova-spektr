@@ -3,7 +3,7 @@ import { type Meta, type StoryFn } from '@storybook/react';
 import { IconButton } from './IconButton';
 
 export default {
-  title: 'Icon Button',
+  title: 'v1/ui/Icon Button',
   component: IconButton,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof IconButton>;

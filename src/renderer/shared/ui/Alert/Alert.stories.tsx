@@ -3,7 +3,7 @@ import { type Meta, type StoryFn } from '@storybook/react';
 import { Alert } from './Alert';
 
 export default {
-  title: 'Alert',
+  title: 'v1/ui/Alert',
   component: Alert,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof Alert>;

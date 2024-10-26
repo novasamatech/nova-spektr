@@ -125,10 +125,6 @@ export const Confirmation = ({
             />
           </HeadlineText>
         </div>
-
-        <FootnoteText className="ml-3 rounded bg-block-background px-3 py-2 text-text-secondary">
-          {confirmStore.description}
-        </FootnoteText>
       </div>
 
       <MultisigExistsAlert active={isMultisigExists} />

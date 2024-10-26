@@ -2,6 +2,7 @@ const path = require('node:path');
 
 const { default: importResolve } = require('eslint-module-utils/resolve');
 
+const { isLiteral } = require('../astHelpers');
 const { getPackageName } = require('../utils');
 
 /**
@@ -16,6 +17,9 @@ module.exports = {
       category: 'Quality',
       recommended: true,
     },
+
+    hasSuggestions: true,
+    fixable: 'code',
 
     schema: [
       {
@@ -72,9 +76,10 @@ module.exports = {
         }
 
         const { source } = node;
-        if (!source.value) {
+        if (!isLiteral(source.type)) {
           return;
         }
+
         const requestPath = source.value.toString();
 
         // Child import
@@ -116,9 +121,23 @@ module.exports = {
         const sourcePath = path.relative(root, context.filename);
         const destinationPath = path.relative(root, resolvedDestination);
 
+        const relative = path.relative(path.dirname(context.filename), resolvedDestination);
+        const parsed = path.parse(relative);
+        const replacedPath = path.join(parsed.dir, parsed.name);
+
         context.report({
           node,
           message: `Self import through alias is forbidden.\n${sourcePath}\n${destinationPath}`,
+          suggest: [
+            {
+              desc: `Replace with relative path ${replacedPath}`,
+              fix(fixer) {
+                const stringQ = source.raw.charAt(0);
+
+                return fixer.replaceText(source, `${stringQ}${replacedPath}${stringQ}`);
+              },
+            },
+          ],
         });
       },
     };

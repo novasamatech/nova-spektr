@@ -1,4 +1,4 @@
-import { type ObjectValues } from '../core';
+import { type ObjectValues } from '@/shared/core';
 
 export const Paths = {
   ROOT: '/',
@@ -28,6 +28,8 @@ export const Paths = {
 
   // Governance
   GOVERNANCE: '/governance',
+  GOVERNANCE_LIST: '/governance/:chainId',
+  GOVERNANCE_REFERENDUM: '/governance/:chainId/referendum/:referendumId',
 
   // Fellowship
   FELLOWSHIP: '/fellowship',

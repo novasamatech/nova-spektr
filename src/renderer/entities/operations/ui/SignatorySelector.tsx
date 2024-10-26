@@ -6,8 +6,8 @@ import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { InputHint, Select } from '@/shared/ui';
 import { type DropdownOption } from '@/shared/ui/types';
-import { AssetBalance } from '../../asset';
-import { AccountAddress, accountUtils } from '../../wallet';
+import { AssetBalance } from '@/entities/asset';
+import { AccountAddress, accountUtils } from '@/entities/wallet';
 
 type Props = {
   signatory?: Account | null;

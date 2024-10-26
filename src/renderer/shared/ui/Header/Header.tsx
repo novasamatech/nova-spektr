@@ -1,6 +1,6 @@
 import { type PropsWithChildren } from 'react';
 
-import { cnTw } from '../../lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { TitleText } from '../Typography';
 
 type Props = {

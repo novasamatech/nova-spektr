@@ -14,13 +14,12 @@ import {
   type ProxyTxWrapper,
   type Transaction,
 } from '@/shared/core';
-import { ZERO_BALANCE, formatBalance, nonNullable, toAddress, transferableAmount } from '@/shared/lib/utils';
+import { ZERO_BALANCE, nonNullable, toAddress, transferableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { networkSelectorModel } from '@/features/governance';
-import { UnlockRules } from '@/features/governance/lib/unlock-rules';
 import { locksModel } from '@/features/governance/model/locks';
 import { unlockModel } from '@/features/governance/model/unlock/unlock';
 import { type AccountWithClaim } from '@/features/governance/types/structs';
@@ -34,7 +33,6 @@ type FormParams = {
   shards: AccountWithClaim[];
   signatory: Account;
   amount: string;
-  description: string;
 };
 
 type FormSubmitEvent = {
@@ -164,10 +162,6 @@ const $unlockForm = createForm<FormParams>({
           },
         },
       ],
-    },
-    description: {
-      init: '',
-      rules: [UnlockRules.description.maxLength],
     },
   },
   validateOn: ['submit'],
@@ -510,8 +504,6 @@ sample({
     const { shards, ...rest } = formData;
 
     const signatory = formData.signatory.accountId ? formData.signatory : undefined;
-    const defaultText = `Unlock ${formatBalance(formData.amount, network!.asset.precision).formatted} ${network!.asset.symbol}`;
-    const description = signatory ? formData.description || defaultText : '';
 
     return {
       transactions: transactions!.map((tx) => ({
@@ -525,7 +517,6 @@ sample({
         shards: realAccounts,
         amount: formData.amount,
         signatory,
-        description,
         chain: network!.chain,
         asset: network!.asset,
         totalLock,

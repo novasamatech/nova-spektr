@@ -19,7 +19,6 @@ export type PayeeData = {
   shards: Account[];
   signatory?: Account;
   destination: Address;
-  description: string;
 };
 
 export type FeeData = {

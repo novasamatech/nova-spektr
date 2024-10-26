@@ -21,7 +21,6 @@ export type TransferStore = {
   signatory?: Account;
   amount: string;
   destination: Address;
-  description: string;
 
   fee: string;
   xcmFee: string;

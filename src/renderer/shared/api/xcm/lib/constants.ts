@@ -1,4 +1,4 @@
-import { TEST_ACCOUNTS } from '../../../lib/utils';
+import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 
 import { Action } from './types';
 

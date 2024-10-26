@@ -2,7 +2,7 @@ import { Suspense, lazy } from 'react';
 import { Navigate, type RouteObject } from 'react-router-dom';
 
 import { Paths } from '@/shared/routes';
-import { MainLayout } from '@/widgets/Layout';
+import { AppShell } from '@/features/app-shell';
 
 import { Assets, ReceiveAsset, SendAsset } from './Assets';
 import { Onboarding } from './Onboarding';
@@ -15,6 +15,13 @@ const Notifications = lazy(() => import('./Notifications/Notifications').then((m
 const Operations = lazy(() => import('./Operations/Operations').then((m) => ({ default: m.Operations })));
 const Basket = lazy(() => import('./Basket').then((m) => ({ default: m.Basket })));
 const Governance = lazy(() => import('./Governance').then((m) => ({ default: m.Governance })));
+const GovernanceReferendumDetails = lazy(() =>
+  import('./Governance/ui/GovernanceReferendumDetails').then((m) => ({ default: m.GovernanceReferendumDetails })),
+);
+const GovernanceReferendumList = lazy(() =>
+  import('./Governance/ui/GovernanceReferendumList').then((m) => ({ default: m.GovernanceReferendumList })),
+);
+
 const Staking = lazy(() => import('./Staking').then((m) => ({ default: m.Staking })));
 const Contacts = lazy(() => import('./AddressBook').then((m) => ({ default: m.Contacts })));
 const CreateContact = lazy(() => import('./AddressBook').then((m) => ({ default: m.CreateContact })));
@@ -33,7 +40,7 @@ export const ROUTES_CONFIG: RouteObject[] = [
   { path: Paths.ONBOARDING, element: <Onboarding /> },
   {
     path: Paths.ROOT,
-    element: <MainLayout />,
+    element: <AppShell />,
     children: [
       { index: true, element: <Navigate to={Paths.ASSETS} replace /> },
       {
@@ -59,6 +66,26 @@ export const ROUTES_CONFIG: RouteObject[] = [
             <Governance />
           </Suspense>
         ),
+        children: [
+          {
+            path: Paths.GOVERNANCE_LIST,
+            element: (
+              <Suspense fallback={<PageLoadingState />}>
+                <GovernanceReferendumList />
+              </Suspense>
+            ),
+            children: [
+              {
+                path: Paths.GOVERNANCE_REFERENDUM,
+                element: (
+                  <Suspense fallback={null}>
+                    <GovernanceReferendumDetails />
+                  </Suspense>
+                ),
+              },
+            ],
+          },
+        ],
       },
       {
         path: Paths.FELLOWSHIP,

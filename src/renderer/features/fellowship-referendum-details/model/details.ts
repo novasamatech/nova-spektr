@@ -63,5 +63,5 @@ export const referendumDetailsModel = {
   $pendingProposer: identityDomain.identity.pending,
   $pendingMeta: or($pendingReferendumMeta, referendumsDetailsFeatureStatus.isStarting),
   $pending: or($pendingReferendum, referendumsDetailsFeatureStatus.isStarting),
-  $fulfulled: and(collectiveDomain.referendum.fulfilled, referendumsDetailsFeatureStatus.isRunning),
+  $fulfilled: and(collectiveDomain.referendum.fulfilled, referendumsDetailsFeatureStatus.isRunning),
 };

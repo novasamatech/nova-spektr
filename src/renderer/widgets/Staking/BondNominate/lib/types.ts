@@ -22,7 +22,6 @@ export type BondNominateData = {
   amount: string;
   destination: Address;
   validators: Validator[];
-  description: string;
 };
 
 export type FeeData = {

@@ -7,6 +7,9 @@ inputs:
   s3_secret_key:
     description: 'Secret key for s3'
     required: true
+  s3_region:
+    description: 'Region for s3'
+    required: true
 
 runs:
   using: 'composite'
@@ -15,6 +18,6 @@ runs:
       uses: s3-actions/s3cmd@v1.6.1
       with:
         provider: scaleway
-        region: pl-waw
+        region: ${{ inputs.s3_region }}
         secret_key: ${{ inputs.s3_secret_key }}
         access_key: ${{ inputs.s3_access_key }}

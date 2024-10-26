@@ -3,7 +3,7 @@ import { type Meta, type StoryFn } from '@storybook/react';
 import { RadioGroup } from './RadioGroup';
 
 export default {
-  title: 'RadioGroup',
+  title: 'v1/ui/RadioGroup',
   component: RadioGroup,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof RadioGroup>;

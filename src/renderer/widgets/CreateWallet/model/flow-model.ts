@@ -56,18 +56,14 @@ const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $addMultisigStore = createStore<AddMultisigStore | null>(null).reset(flowFinished);
 const $signer = createStore<Account | null>(null).reset(flowFinished);
 
-const $signerWallet = combine(
-  { signer: $signer, wallets: walletModel.$wallets },
-  ({ signer, wallets }) => {
-    const res = walletUtils.getWalletFilteredAccounts(wallets, {
-      accountFn: (a) => a.accountId === signer?.accountId,
-      walletFn: (w) => walletUtils.isValidSignatory(w),
-    });
+const $signerWallet = combine({ signer: $signer, wallets: walletModel.$wallets }, ({ signer, wallets }) => {
+  const res = walletUtils.getWalletFilteredAccounts(wallets, {
+    accountFn: (a) => a.accountId === signer?.accountId,
+    walletFn: (w) => walletUtils.isValidSignatory(w),
+  });
 
-    return res;
-  },
-  { skipVoid: false },
-);
+  return res;
+});
 
 // Miscellaneous
 
@@ -228,9 +224,10 @@ sample({
     threshold: formModel.$createMultisigForm.fields.threshold.$value,
     signatories: signatoryModel.$signatories,
     chain: formModel.$createMultisigForm.fields.chain.$value,
+    step: $step,
   },
-  filter: (_, results) => {
-    return submitUtils.isSuccessResult(results[0].result);
+  filter: ({ step }, results) => {
+    return submitUtils.isSuccessResult(results[0].result) && isStep(Step.SUBMIT, step);
   },
   fn: ({ signatories, chain, name, threshold }) => {
     const sortedSignatories = sortBy(
@@ -250,17 +247,14 @@ sample({
 });
 
 sample({
-  clock: submitModel.output.formSubmitted,
-  filter: (results) => {
-    return submitUtils.isSuccessResult(results[0].result);
-  },
-  target: walletProviderModel.events.completed,
-});
-
-sample({
   clock: createWalletFx.failData,
   fn: (error) => error.message,
   target: $error,
+});
+
+sample({
+  clock: createWalletFx.doneData,
+  target: walletProviderModel.events.completed,
 });
 
 // Submit
@@ -370,7 +364,6 @@ sample({
       coreTxs: [coreTx!],
       wrappedTxs: [wrappedTx!],
       multisigTxs: multisigTx ? [multisigTx] : [],
-      description: '',
     },
     step: Step.SUBMIT,
   }),
@@ -420,6 +413,16 @@ sample({
     return signerAccount;
   },
   target: $signer,
+});
+
+sample({
+  clock: walletModel.events.walletRestoredSuccess,
+  target: walletProviderModel.events.completed,
+});
+
+sample({
+  clock: walletModel.events.walletRestoredSuccess,
+  target: flowFinished,
 });
 
 sample({
