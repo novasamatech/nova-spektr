@@ -1,4 +1,6 @@
-export const rpc = {
+import { type DefinitionRpc, type DefinitionRpcSub } from '@polkadot/types/types/definitions';
+
+export const rpc: Record<string, Record<string, DefinitionRpc | DefinitionRpcSub>> = {
   kate: {
     blockLength: {
       description: 'Get Block Length',

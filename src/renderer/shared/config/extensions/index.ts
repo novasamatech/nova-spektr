@@ -3,14 +3,22 @@ import { type DefinitionRpc, type DefinitionRpcSub, type RegistryTypes } from '@
 
 import { type ChainId } from '../../core';
 
-import { AVAIL } from './avail';
+import { AVAIL_PROVIDER, AVAIL_TXWRAPPER } from './avail';
 
 type Extension = {
-  rpc?: Record<string, Record<string, DefinitionRpc | DefinitionRpcSub>>;
-  signedExtensions?: ExtDef;
-  types?: RegistryTypes;
+  rpc: Record<string, Record<string, DefinitionRpc | DefinitionRpcSub>>;
+  types: RegistryTypes;
+  signedExtensions: ExtDef;
 };
 
-export const EXTENSIONS: Record<ChainId, Extension> = {
-  '0xb91746b45e0346cc2f815a520b9c6cb4d5c0902af848db0a80f85932d2e8276a': AVAIL,
+type TxWrapper = {
+  additionalTypes: RegistryTypes;
+  userExtensions: ExtDef;
+};
+
+export const EXTENSIONS: Record<ChainId, { provider: Extension; txwrapper: TxWrapper }> = {
+  '0xb91746b45e0346cc2f815a520b9c6cb4d5c0902af848db0a80f85932d2e8276a': {
+    provider: AVAIL_PROVIDER,
+    txwrapper: AVAIL_TXWRAPPER,
+  },
 };

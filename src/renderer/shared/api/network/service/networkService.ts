@@ -19,7 +19,7 @@ function createApi(chainId: ChainId, provider: ProviderInterface): Promise<ApiPr
     noInitWarn: true,
     throwOnConnect: true,
     throwOnUnknown: true,
-    ...EXTENSIONS[chainId],
+    ...EXTENSIONS[chainId].provider,
   });
 
   return api.isReady;

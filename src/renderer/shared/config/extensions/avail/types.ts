@@ -1,4 +1,6 @@
-export const types = {
+import { type RegistryTypes } from '@polkadot/types/types';
+
+export const types: RegistryTypes = {
   AppId: 'Compact<u32>',
   DataLookupItem: {
     appId: 'AppId',
@@ -20,8 +22,8 @@ export const types = {
   },
   HeaderExtension: {
     _enum: {
-      V1: null,
-      V2: null,
+      V1: 'V3HeaderExtension',
+      V2: 'V3HeaderExtension',
       V3: 'V3HeaderExtension',
     },
   },
@@ -77,7 +79,6 @@ export const types = {
     to: 'H256',
     originDomain: 'u32',
     destinationDomain: 'u32',
-    data: 'Vec<u8>',
     id: 'u64',
   },
   Message: {
@@ -96,7 +97,7 @@ export const types = {
   BoundedData: 'Vec<u8>',
   ArbitraryMessage: 'BoundedData',
   Cell: {
-    row: 'u32',
-    col: 'u32',
+    row: 'BlockLengthRows',
+    col: 'BlockLengthColumns',
   },
 };
