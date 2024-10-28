@@ -47,7 +47,7 @@ jobs:
           echo "IMAGE_LABEL=${{ github.ref_name }}" >> "$GITHUB_ENV"
       - name: Set full name of the Docker image
         run: |
-          echo "FULL_IMAGE_NAME=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_LABEL }}-node-js-${{ matrix.node-js-image-version }}" >> "$GITHUB_ENV"
+          echo "FULL_IMAGE_NAME=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_LABEL }}-nodejs-${{ matrix.node-js-image-version }}" >> "$GITHUB_ENV"
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
