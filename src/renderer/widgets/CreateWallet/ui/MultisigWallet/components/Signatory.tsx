@@ -50,6 +50,8 @@ export const Signatory = ({
 
   const contactAccountName =
     contacts.filter((contact) => toAccountId(contact.address) === toAccountId(address))?.[0]?.name || '';
+  const displayName = isOwnAccount ? ownAccountName : contactAccountName;
+  const nameValue = !!ownAccountName || !!contactAccountName ? displayName : name;
 
   useEffect(() => {
     if (!isOwnAccount || wallets.length === 0) return;
@@ -138,6 +140,12 @@ export const Signatory = ({
     });
   };
 
+  useEffect(() => {
+    if (nameValue !== name) {
+      onNameChange(nameValue);
+    }
+  }, [nameValue]);
+
   const onAddressChange = (newAddress: string) => {
     if (!validateAddress(newAddress)) {
       setAddress('');
@@ -172,8 +180,6 @@ export const Signatory = ({
     ? t('createMultisigAccount.ownAccountSelection')
     : t('createMultisigAccount.signatoryAddress');
 
-  const displayName = isOwnAccount ? ownAccountName : contactAccountName;
-
   return (
     <div className="flex gap-x-2">
       <div className="flex-1">
@@ -184,7 +190,7 @@ export const Signatory = ({
           label={t('createMultisigAccount.signatoryNameLabel')}
           placeholder={t('addressBook.createContact.namePlaceholder')}
           invalid={false}
-          value={!!ownAccountName || !!contactAccountName ? displayName : name}
+          value={nameValue}
           disabled={!!ownAccountName || !!contactAccountName}
           onChange={onNameChange}
         />
