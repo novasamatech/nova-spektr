@@ -62,7 +62,7 @@ export const MultisigCreationFees = memo(
     }, []);
 
     if (isLoading) {
-      return <FeeLoader fiatFlag={Boolean(fiatFlag)} />;
+      return <FeeLoader className="mr-4" fiatFlag={Boolean(fiatFlag)} />;
     }
 
     return (

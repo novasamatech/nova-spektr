@@ -172,8 +172,7 @@ export const Signatory = ({
     ? t('createMultisigAccount.ownAccountSelection')
     : t('createMultisigAccount.signatoryAddress');
 
-  const hasDuplicateName = !!ownAccountName && !!contactAccountName;
-  const displayName = hasDuplicateName && isOwnAccount ? ownAccountName : contactAccountName;
+  const displayName = isOwnAccount ? ownAccountName : contactAccountName;
 
   return (
     <div className="flex gap-x-2">
@@ -182,7 +181,7 @@ export const Signatory = ({
           name={t('createMultisigAccount.signatoryNameLabel')}
           className=""
           wrapperClass="h-[36px]"
-          label={t('addressBook.createContact.nameLabel')}
+          label={t('createMultisigAccount.signatoryNameLabel')}
           placeholder={t('addressBook.createContact.namePlaceholder')}
           invalid={false}
           value={!!ownAccountName || !!contactAccountName ? displayName : name}
@@ -204,7 +203,7 @@ export const Signatory = ({
         onInput={handleQueryChange}
       />
       {!isOwnAccount && onDelete && (
-        <IconButton className="ml-2 mt-4" name="delete" size={20} onClick={() => onDelete(signtoryIndex)} />
+        <IconButton className="ml-2 mt-6" name="delete" size={16} onClick={() => onDelete(signtoryIndex)} />
       )}
     </div>
   );
