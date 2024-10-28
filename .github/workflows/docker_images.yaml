@@ -1,0 +1,60 @@
+name: Build and push Docker images
+
+on:
+  push:
+    branches:
+      - dev
+      - stage
+    tags:
+      - 'v*'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+jobs:
+  build-docker-images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        node-js-image-version: [20]
+    steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Log in to Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      - name: Set image label for the dev branch
+        if: ${{ github.ref_type == 'branch' && github.ref_name == 'dev' }}
+        run: |
+          echo "IMAGE_LABEL=latest" >> "$GITHUB_ENV"
+      - name: Set image label for a tag or other branches
+        if: ${{ github.ref_type == 'tag' || (github.ref_type == 'branch' && github.ref_name != 'dev') }}
+        run: |
+          echo "IMAGE_LABEL=${{ github.ref_name }}" >> "$GITHUB_ENV"
+      - name: Set full name of the Docker image
+        run: |
+          echo "FULL_IMAGE_NAME=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_LABEL }}-nodejs-${{ matrix.node-js-image-version }}" >> "$GITHUB_ENV"
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          file: docker/Dockerfile.release
+          push: true
+          load: true
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            NODE_JS_IMAGE_VERSION=${{ matrix.node-js-image-version }}-alpine
+          tags: ${{ env.FULL_IMAGE_NAME }}
