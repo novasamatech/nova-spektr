@@ -1,7 +1,7 @@
 import { type ExtDef } from '@polkadot/types/extrinsic/signedExtensions/types';
 import { type DefinitionRpc, type DefinitionRpcSub, type RegistryTypes } from '@polkadot/types/types';
 
-import { type ChainId } from '../../core';
+import { type ChainId } from '@/shared/core';
 
 import { AVAIL_PROVIDER, AVAIL_TXWRAPPER } from './avail';
 

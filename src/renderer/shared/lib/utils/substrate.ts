@@ -11,6 +11,7 @@ import {
 } from '@substrate/txwrapper-polkadot';
 
 import { XcmTransferType } from '@/shared/api/xcm';
+import { EXTENSIONS } from '@/shared/config/extensions';
 import {
   type Address,
   type BlockHeight,
@@ -21,7 +22,6 @@ import {
   type ProxyType,
   XcmPallets,
 } from '@/shared/core';
-import { EXTENSIONS } from '../../config/extensions';
 
 import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './constants';
 
