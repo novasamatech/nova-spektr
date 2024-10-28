@@ -27,7 +27,7 @@ export const Threshold = memo(({ referendum, pending }: Props) => {
 
   return (
     <Skeleton active={pending && nullable(referendum)} fullWidth>
-      <DetailRow label={t('fellowship.voting.hreshold')}>{threshold}%</DetailRow>
+      <DetailRow label={t('fellowship.voting.threshold')}>{threshold}%</DetailRow>
     </Skeleton>
   );
 });

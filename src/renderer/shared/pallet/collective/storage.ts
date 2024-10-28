@@ -124,4 +124,18 @@ export const storage = {
       callback(votingResponseSchema.parse(response));
     });
   },
+
+  /**
+   * All votes on a given proposal.
+   */
+  votingEntries(type: PalletType, api: ApiPromise, referendum: ReferendumId) {
+    const schema = pjsSchema.vec(
+      pjsSchema.tupleMap(
+        ['key', pjsSchema.storageKey(pjsSchema.u32, pjsSchema.accountId)],
+        ['vote', pjsSchema.optional(collectiveVoteRecord)],
+      ),
+    );
+
+    return substrateRpcPool.call(() => getQuery(type, api, 'voting').entries(referendum)).then(schema.parse);
+  },
 };

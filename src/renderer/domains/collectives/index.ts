@@ -27,3 +27,7 @@ export type {
 export type { Voting, VotingTransaction } from './model/voting/types';
 
 export type { Member } from './model/members/types';
+
+export type { Vote } from './model/votes/types';
+
+export { votesService } from './model/votes/service';

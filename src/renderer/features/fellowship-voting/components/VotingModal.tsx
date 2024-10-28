@@ -33,7 +33,7 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
 
   const input = useUnit(votingFeatureStatus.input);
   const account = useUnit(votingStatusModel.$votingAccount);
-  const member = useUnit(votingStatusModel.$currectMember);
+  const member = useUnit(votingStatusModel.$currentMember);
   const fee = useUnit(votingModel.$fee);
 
   if (nullable(input) || nullable(member) || nullable(account) || nullable(vote)) {
