@@ -80,10 +80,8 @@ export const SelectSignatoriesThreshold = () => {
 
   return (
     <section className="flex h-full flex-1 flex-col">
-      <SmallTitleText className="px-5 text-text-secondary">
-        {t('createMultisigAccount.multisigStep', { step: 2 })}
-      </SmallTitleText>
-      <SmallTitleText className="mb-6 border-b border-container-border px-5 pb-6 font-medium text-text-tertiary">
+      <SmallTitleText className="mb-4 border-b border-container-border px-5 pb-4 text-text-primary">
+        {t('createMultisigAccount.multisigStep', { step: 2 })}{' '}
         {t('createMultisigAccount.signatoryThresholdDescription')}
       </SmallTitleText>
       <div className="flex flex-col gap-y-4 px-5 py-4">
