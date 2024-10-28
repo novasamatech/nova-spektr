@@ -34,7 +34,7 @@ export const Signatory = ({
   const [query, setQuery] = useState('');
   const [options, setOptions] = useState<ComboboxOption[]>([]);
 
-  const [contacts] = useUnit([contactModel.$contacts]);
+  const contacts = useUnit(contactModel.$contacts);
   const [address, setAddress] = useState(signatoryAddress);
   const [name, setName] = useState(signatoryName);
   const wallets = useUnit(walletModel.$wallets);
@@ -46,12 +46,6 @@ export const Signatory = ({
       performSearch({
         query,
         records: contacts,
-        getMeta: ({ id, name, address, accountId }) => ({
-          address,
-          id,
-          name,
-          accountId,
-        }),
         weights: {
           name: 1,
           address: 0.5,
@@ -59,19 +53,6 @@ export const Signatory = ({
       }),
     [query, contacts],
   );
-
-  // performSearch({
-  //   query: deferredQuery,
-  //   records: members,
-  //   getMeta: member => ({
-  //     address: toAddress(member.accountId, { prefix: chain?.addressPrefix }),
-  //     name: identities[member.accountId]?.name ?? '',
-  //   }),
-  //   weights: {
-  //     name: 1,
-  //     address: 0.5,
-  //   },
-  // });
 
   const ownAccountName =
     walletUtils.getWalletsFilteredAccounts(wallets, {
