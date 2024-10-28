@@ -55,7 +55,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           file: docker/Dockerfile_release
-          context: docker
           push: true
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
