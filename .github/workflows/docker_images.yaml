@@ -23,8 +23,8 @@ jobs:
       matrix:
         node-js-image-version: [20]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      # - name: Checkout repository
+      #   uses: actions/checkout@v4
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -56,6 +56,7 @@ jobs:
         with:
           file: docker/Dockerfile_release
           push: true
+          load: true
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             NODE_JS_IMAGE_VERSION=${{ matrix.node-js-image-version }}-alpine
