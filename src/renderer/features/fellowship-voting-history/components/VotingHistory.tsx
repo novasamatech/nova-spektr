@@ -11,7 +11,7 @@ import { votesModel } from '../model/votes';
 import { VotesModal } from './VotesModal';
 
 type Props = {
-  referendumId: ReferendumId | null;
+  referendumId: ReferendumId;
 };
 
 export const VotingHistory = ({ referendumId }: Props) => {
@@ -23,13 +23,13 @@ export const VotingHistory = ({ referendumId }: Props) => {
   const pending = useUnit(votesModel.$pending);
   const isNetworkDisabled = featureState.status === 'failed' && featureState.error.message === ERROR.networkDisabled;
 
+  if (pending || isNetworkDisabled) return <Skeleton width={20} height={5}></Skeleton>;
+
   return (
     <VotesModal>
-      <Skeleton active={pending || isNetworkDisabled}>
-        <Button size="sm" variant="text" className="p-0">
-          {t('fellowship.votingHistory.showHistoryButton')}
-        </Button>
-      </Skeleton>
+      <Button size="sm" variant="text" className="p-0">
+        {t('fellowship.votingHistory.showHistoryButton')}
+      </Button>
     </VotesModal>
   );
 };
