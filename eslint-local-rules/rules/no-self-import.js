@@ -76,7 +76,7 @@ module.exports = {
         }
 
         const { source } = node;
-        if (!isLiteral(source.type)) {
+        if (!isLiteral(source)) {
           return;
         }
 

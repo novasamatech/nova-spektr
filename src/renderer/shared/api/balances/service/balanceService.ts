@@ -1,55 +1,141 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type UnsubscribePromise } from '@polkadot/api/types';
-import { type BalanceLock } from '@polkadot/types/interfaces';
+import { type Vec } from '@polkadot/types';
+import { type AccountData, type Balance as ChainBalance } from '@polkadot/types/interfaces';
+import { type PalletBalancesBalanceLock } from '@polkadot/types/lookup';
 import { type Codec } from '@polkadot/types/types';
-import { BN, hexToU8a } from '@polkadot/util';
+import { type BN, BN_ZERO, hexToU8a } from '@polkadot/util';
 import noop from 'lodash/noop';
 import uniq from 'lodash/uniq';
 
-import { type AccountId, type Address, type Asset, type Balance, type Chain, type OrmlExtras } from '@/shared/core';
-import { AssetType } from '@/shared/core';
+import {
+  type AccountId,
+  type Address,
+  type Asset,
+  AssetType,
+  type Balance,
+  type Chain,
+  type LockTypes,
+  type OrmlExtras,
+} from '@/shared/core';
 import { getAssetId, getRepeatedIndex, toAddress } from '@/shared/lib/utils';
+
+type NoIdBalance = Omit<Balance, 'id'>;
 
 export const balanceService = {
   subscribeBalances,
   subscribeLockBalances,
 };
 
-function subscribeBalancesChange(
+/**
+ * Subscribe to balances with Native/ORML/Statemine calls
+ *
+ * @param api Instance of ApiPromise
+ * @param chain Chain to subscribe
+ * @param accountIds All accounts to subscribe
+ * @param callback Incoming balances callback
+ *
+ * @returns {Promise[]}
+ */
+function subscribeBalances(
+  api: ApiPromise,
+  chain: Chain,
+  accountIds: AccountId[],
+  callback: (newBalances: NoIdBalance[]) => void,
+): UnsubscribePromise[] {
+  const uniqueAccountIds = uniq(accountIds);
+
+  const { nativeAsset, statemineAssets, ormlAssets } = chain.assets.reduce<{
+    nativeAsset?: Asset;
+    statemineAssets: Asset[];
+    ormlAssets: Asset[];
+  }>(
+    (acc, asset) => {
+      if (!asset.type) acc.nativeAsset = asset;
+      if (asset.type === AssetType.STATEMINE) acc.statemineAssets.push(asset);
+      if (asset.type === AssetType.ORML) acc.ormlAssets.push(asset);
+
+      return acc;
+    },
+    { nativeAsset: undefined, statemineAssets: [], ormlAssets: [] },
+  );
+
+  return [
+    subscribeNativeAssetsChange(api, chain, nativeAsset?.assetId, uniqueAccountIds, callback),
+    subscribeStatemineAssetsChange(api, chain, statemineAssets, uniqueAccountIds, callback),
+    subscribeOrmlAssetsChange(api, chain, ormlAssets, uniqueAccountIds, callback),
+  ];
+}
+
+/**
+ * Subscribe to locks balances with Native/Statemine calls
+ *
+ * @param api Instance of ApiPromise
+ * @param chain Chain to subscribe
+ * @param accountIds All accounts to subscribe
+ * @param callback Incoming balances callback
+ *
+ * @returns {Promise[]}
+ */
+function subscribeLockBalances(
+  api: ApiPromise,
+  chain: Chain,
+  accountIds: AccountId[],
+  callback: (newLocks: NoIdBalance[]) => void,
+): UnsubscribePromise[] {
+  const { nativeAsset, ormlAssets } = chain.assets.reduce<{ nativeAsset?: Asset; ormlAssets: Asset[] }>(
+    (acc, asset) => {
+      if (!asset.type) acc.nativeAsset = asset;
+      if (asset.type === AssetType.ORML) acc.ormlAssets.push(asset);
+
+      return acc;
+    },
+    { nativeAsset: undefined, ormlAssets: [] },
+  );
+
+  return [
+    subscribeLockNativeAssetChange(api, chain, nativeAsset?.assetId, accountIds, callback),
+    subscribeLockOrmlAssetChange(api, chain, ormlAssets, accountIds, callback),
+  ];
+}
+
+function subscribeNativeAssetsChange(
   api: ApiPromise,
   chain: Chain,
   assetId: number | undefined,
   accountIds: AccountId[],
-  callback: (newBalances: Balance[]) => void,
+  callback: (newBalances: NoIdBalance[]) => void,
 ): UnsubscribePromise {
   if (assetId === undefined) return Promise.resolve(noop);
 
   const addresses = accountIds.map((accountId) => toAddress(accountId, { prefix: chain.addressPrefix }));
 
-  return api.query.system.account.multi(addresses, (data: any[]) => {
-    const newBalances = data.reduce((acc, accountInfo, index) => {
-      let frozen: string;
+  return api.query.system.account.multi(addresses, (data) => {
+    const newBalances: NoIdBalance[] = [];
 
-      if (accountInfo.data.miscFrozen || accountInfo.data.feeFrozen) {
-        const miscFrozen = new BN(accountInfo.data.miscFrozen);
-        const feeFrozen = new BN(accountInfo.data.feeFrozen);
-        frozen = miscFrozen.gt(feeFrozen) ? miscFrozen.toString() : feeFrozen.toString();
+    for (const [index, systemAccountInfo] of data.entries()) {
+      let frozen: BN;
+
+      // Some chains still use "feeFrozen" or "miscFrozen" (HKO, PARA, XRT, ZTG, SUB)
+      const accountData = systemAccountInfo.data as unknown as AccountData;
+      if (accountData.miscFrozen || accountData.feeFrozen) {
+        const miscFrozen = accountData.miscFrozen.toBn();
+        const feeFrozen = accountData.feeFrozen.toBn();
+        frozen = miscFrozen.gt(feeFrozen) ? miscFrozen : feeFrozen;
       } else {
-        frozen = new BN(accountInfo.data.frozen).toString();
+        frozen = systemAccountInfo.data.frozen.toBn();
       }
 
-      acc.push({
+      newBalances.push({
         accountId: accountIds[index],
         chainId: chain.chainId,
         assetId: assetId.toString(),
         verified: true,
-        free: accountInfo.data.free.toString(),
-        reserved: accountInfo.data.reserved.toString(),
+        free: systemAccountInfo.data.free.toBn(),
+        reserved: systemAccountInfo.data.reserved.toBn(),
         frozen,
       });
-
-      return acc;
-    }, []);
+    }
 
     callback(newBalances);
   });
@@ -60,7 +146,7 @@ function subscribeStatemineAssetsChange(
   chain: Chain,
   assets: Asset[],
   accountIds: AccountId[],
-  callback: (newBalances: Balance[]) => void,
+  callback: (newBalances: NoIdBalance[]) => void,
 ): UnsubscribePromise {
   if (!api || !assets.length || !accountIds.length || !api.query.assets) return Promise.resolve(noop);
 
@@ -72,24 +158,24 @@ function subscribeStatemineAssetsChange(
     return acc;
   }, []);
 
-  return api.query.assets.account.multi(assetsTuples, (data: any[]) => {
-    const newBalances = data.reduce((acc, accountInfo, index) => {
-      const free = accountInfo.isNone ? '0' : accountInfo.unwrap().balance.toString();
+  return api.query.assets.account.multi(assetsTuples, (data) => {
+    const newBalances: NoIdBalance[] = [];
+
+    for (const [index, accountInfo] of data.entries()) {
+      const free = accountInfo.isNone ? BN_ZERO : accountInfo.unwrap().balance.toBn();
       const accountIndex = index % accountIds.length;
       const assetIndex = getRepeatedIndex(index, accountIds.length);
 
-      acc.push({
+      newBalances.push({
         accountId: accountIds[accountIndex],
         chainId: chain.chainId,
         assetId: assets[assetIndex].assetId.toString(),
         verified: true,
-        frozen: (0).toString(),
-        reserved: (0).toString(),
+        frozen: BN_ZERO,
+        reserved: BN_ZERO,
         free,
       });
-
-      return acc;
-    }, []);
+    }
 
     callback(newBalances);
   });
@@ -114,12 +200,18 @@ function getOrmlAssetTuples(
   }, []);
 }
 
+type OrmlAccountData = {
+  free: ChainBalance;
+  reserved: ChainBalance;
+  frozen: ChainBalance;
+};
+
 function subscribeOrmlAssetsChange(
   api: ApiPromise,
   chain: Chain,
   assets: Asset[],
   accountIds: AccountId[],
-  callback: (newBalances: Balance[]) => void,
+  callback: (newBalances: NoIdBalance[]) => void,
 ): UnsubscribePromise {
   if (!api || !assets.length) return Promise.resolve(noop);
 
@@ -127,85 +219,55 @@ function subscribeOrmlAssetsChange(
 
   const assetsTuples = getOrmlAssetTuples(api, assets, chain.addressPrefix, accountIds);
 
-  return method.multi(assetsTuples, (data: any[]) => {
-    const newBalances = data.reduce((acc, accountInfo, index) => {
+  return method.multi(assetsTuples, (data) => {
+    const newBalances: NoIdBalance[] = [];
+
+    for (const [index, accountInfo] of (data as unknown as OrmlAccountData[]).entries()) {
       const accountIndex = index % accountIds.length;
       const assetIndex = getRepeatedIndex(index, accountIds.length);
 
-      acc.push({
+      newBalances.push({
         accountId: accountIds[accountIndex],
         chainId: chain.chainId,
         assetId: assets[assetIndex].assetId.toString(),
         verified: true,
-        free: accountInfo.free.toString(),
-        frozen: accountInfo.frozen.toString(),
-        reserved: accountInfo.reserved.toString(),
+        free: accountInfo.free.toBn(),
+        frozen: accountInfo.frozen.toBn(),
+        reserved: accountInfo.reserved.toBn(),
       });
-
-      return acc;
-    }, []);
+    }
 
     callback(newBalances);
   });
 }
 
-function subscribeBalances(
-  api: ApiPromise,
-  chain: Chain,
-  accountIds: AccountId[],
-  callback: (newBalances: Balance[]) => void,
-): UnsubscribePromise[] {
-  const uniqueAccountIds = uniq(accountIds);
-
-  const { nativeAsset, statemineAssets, ormlAssets } = chain.assets.reduce<{
-    nativeAsset?: Asset;
-    statemineAssets: Asset[];
-    ormlAssets: Asset[];
-  }>(
-    (acc, asset) => {
-      if (!asset.type) acc.nativeAsset = asset;
-      if (asset.type === AssetType.STATEMINE) acc.statemineAssets.push(asset);
-      if (asset.type === AssetType.ORML) acc.ormlAssets.push(asset);
-
-      return acc;
-    },
-    { nativeAsset: undefined, statemineAssets: [], ormlAssets: [] },
-  );
-
-  return [
-    subscribeBalancesChange(api, chain, nativeAsset?.assetId, uniqueAccountIds, callback),
-    subscribeStatemineAssetsChange(api, chain, statemineAssets, uniqueAccountIds, callback),
-    subscribeOrmlAssetsChange(api, chain, ormlAssets, uniqueAccountIds, callback),
-  ];
-}
-
-function subscribeLockBalanceChange(
+function subscribeLockNativeAssetChange(
   api: ApiPromise,
   chain: Chain,
   assetId: number | undefined,
   accountIds: AccountId[],
-  callback: (newLocks: Balance[]) => void,
+  callback: (newLocks: NoIdBalance[]) => void,
 ): UnsubscribePromise {
   if (!api || assetId === undefined) return Promise.resolve(noop);
 
   const addresses = accountIds.map((accountId) => toAddress(accountId, { prefix: chain.addressPrefix }));
 
-  return api.query.balances.locks.multi(addresses, (data: any[]) => {
-    const newLocks = data.reduce((acc, balanceLock, index) => {
-      const locked = balanceLock.map((lock: BalanceLock) => ({
-        type: lock.id.toString(),
-        amount: lock.amount.toString(),
+  return api.query.balances.locks.multi(addresses, (data) => {
+    const newLocks: NoIdBalance[] = [];
+
+    for (const [index, balanceLocks] of data.entries()) {
+      const locked = balanceLocks.map((lock) => ({
+        type: lock.id.toString() as LockTypes,
+        amount: lock.amount.toBn(),
       }));
 
-      acc.push({
+      newLocks.push({
         accountId: accountIds[index],
         chainId: chain.chainId,
         assetId: assetId.toString(),
         locked,
       });
-
-      return acc;
-    }, []);
+    }
 
     callback(newLocks);
   });
@@ -216,55 +278,33 @@ function subscribeLockOrmlAssetChange(
   chain: Chain,
   assets: Asset[],
   accountIds: AccountId[],
-  callback: (newLocks: Balance[]) => void,
+  callback: (newLocks: NoIdBalance[]) => void,
 ): UnsubscribePromise {
   if (!api || !assets.length) return Promise.resolve(noop);
 
   const method = api.query.tokens ? api.query.tokens.locks : api.query.currencies.locks;
   const assetsTuples = getOrmlAssetTuples(api, assets, chain.addressPrefix, accountIds);
 
-  return method.multi(assetsTuples, (data: any[]) => {
-    const newLocks = data.reduce((acc, balanceLock, index) => {
+  return method.multi(assetsTuples, (data: Vec<PalletBalancesBalanceLock>[]) => {
+    const newLocks: NoIdBalance[] = [];
+
+    for (const [index, balanceLocks] of data.entries()) {
       const accountIndex = index % accountIds.length;
       const assetIndex = getRepeatedIndex(index, accountIds.length);
 
-      const locked = balanceLock.map((lock: BalanceLock) => ({
-        type: lock.id.toString(),
-        amount: lock.amount.toString(),
+      const locked = balanceLocks.map((lock) => ({
+        type: lock.id.toString() as LockTypes,
+        amount: lock.amount.toBn(),
       }));
 
-      acc.push({
+      newLocks.push({
         accountId: accountIds[accountIndex],
         chainId: chain.chainId,
         assetId: assets[assetIndex].assetId.toString(),
         locked,
       });
-
-      return acc;
-    }, []);
+    }
 
     callback(newLocks);
   });
-}
-
-function subscribeLockBalances(
-  api: ApiPromise,
-  chain: Chain,
-  accountIds: AccountId[],
-  callback: (newLocks: Balance[]) => void,
-): UnsubscribePromise[] {
-  const { nativeAsset, ormlAssets } = chain.assets.reduce<{ nativeAsset?: Asset; ormlAssets: Asset[] }>(
-    (acc, asset) => {
-      if (!asset.type) acc.nativeAsset = asset;
-      if (asset.type === AssetType.ORML) acc.ormlAssets.push(asset);
-
-      return acc;
-    },
-    { nativeAsset: undefined, ormlAssets: [] },
-  );
-
-  return [
-    subscribeLockBalanceChange(api, chain, nativeAsset?.assetId, accountIds, callback),
-    subscribeLockOrmlAssetChange(api, chain, ormlAssets, accountIds, callback),
-  ];
 }

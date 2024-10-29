@@ -1,13 +1,15 @@
+import { type BN } from '@polkadot/util';
+import { BigNumber } from 'bignumber.js';
+
 import { type Asset } from '@/shared/core';
-import { Shimmering } from '@/shared/ui/Shimmering/Shimmering';
-import { HelpText } from '@/shared/ui/Typography/index';
+import { HelpText, Shimmering } from '@/shared/ui';
 import { AssetFiatBalance } from '@/entities/price';
 import { AssetBalance } from '../AssetBalance/AssetBalance';
 
 type Props = {
   asset: Asset;
   label: string;
-  value?: string;
+  value?: BN;
 };
 
 export const AssetDetails = ({ asset, value, label }: Props) => {
@@ -17,7 +19,13 @@ export const AssetDetails = ({ asset, value, label }: Props) => {
         {label}
       </HelpText>
       <dd>{value ? <AssetBalance value={value} asset={asset} /> : <Shimmering width={150} height={20} />}</dd>
-      <dd>{value ? <AssetFiatBalance amount={value} asset={asset} /> : <Shimmering width={56} height={18} />}</dd>
+      <dd>
+        {value ? (
+          <AssetFiatBalance amount={new BigNumber(value.toString())} asset={asset} />
+        ) : (
+          <Shimmering width={56} height={18} />
+        )}
+      </dd>
     </div>
   );
 };

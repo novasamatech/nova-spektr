@@ -1,6 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 import { MockProvider } from '@polkadot/rpc-provider/mock';
-import { TypeRegistry } from '@polkadot/types';
+import { TypeRegistry } from '@polkadot/types/create';
 
 import { TEST_ADDRESS } from '@/shared/lib/utils';
 import { useCallDataDecoder } from '../callDataDecoder';
@@ -15,6 +15,8 @@ describe('entities/transaction/lib/callDataDecoder', () => {
   let api: ApiPromise;
 
   beforeEach(async (): Promise<void> => {
+    // @ts-expect-error In polkadot.js tests the also use TypeRegistry
+    // https://github.com/polkadot-js/api/blob/master/packages/rpc-core/src/index.spec.ts
     provider = new MockProvider(registry);
     const genesisHash = registry.createType('Hash', await provider.send('chain_getBlockHash', [])).toHex();
 
