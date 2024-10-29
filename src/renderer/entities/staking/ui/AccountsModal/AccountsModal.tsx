@@ -3,8 +3,8 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw, stakeableAmount, toAddress } from '@/shared/lib/utils';
 import { BaseModal, BodyText, HelpText, Identicon } from '@/shared/ui';
 import { Hash } from '@/shared/ui-entities';
-import { AssetBalance } from '../../../asset';
-import { useAssetBalances } from '../../../balance';
+import { AssetBalance } from '@/entities/asset';
+import { useAssetBalances } from '@/entities/balance';
 
 type Props = {
   isOpen: boolean;

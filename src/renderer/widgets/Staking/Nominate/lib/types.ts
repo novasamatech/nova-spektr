@@ -20,7 +20,6 @@ export type NominateData = {
   shards: Account[];
   signatory?: Account;
   validators: Validator[];
-  description: string;
 };
 
 export type FeeData = {

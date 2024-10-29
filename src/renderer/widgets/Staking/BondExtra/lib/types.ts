@@ -19,7 +19,6 @@ export type BondExtraData = {
   shards: Account[];
   signatory?: Account;
   amount: string;
-  description: string;
 };
 
 export type FeeData = {

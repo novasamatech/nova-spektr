@@ -7,8 +7,8 @@ import { type Address, type BaseAccount, type ChainId, type ShardAccount, type W
 import { useI18n } from '@/shared/i18n';
 import { type TxMetadata, createTxMetadata, toAddress, upgradeNonce } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
+import { accountUtils, walletUtils } from '@/entities/wallet';
 import { type SigningPayload } from '@/features/operations/OperationSign';
-import { accountUtils, walletUtils } from '../../../wallet';
 import { transactionService } from '../../lib';
 import { QrMultiframeGenerator } from '../QrCode/QrGenerator/QrMultiframeTxGenerator';
 import { createMultipleSignPayload, createSubstrateSignPayload } from '../QrCode/QrGenerator/common/utils';

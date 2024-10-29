@@ -24,7 +24,7 @@ import {
   WrapperKind,
 } from '@/shared/core';
 import { type TxMetadata, createTxMetadata, dictionary, toAccountId } from '@/shared/lib/utils';
-import { walletUtils } from '../../wallet';
+import { walletUtils } from '@/entities/wallet';
 
 import { LEAVE_SOME_SPACE_MULTIPLIER } from './common/constants';
 import { decodeDispatchError } from './common/utils';
@@ -164,6 +164,7 @@ type TxWrappersParams = {
   account: Account;
   signatories?: Account[];
 };
+
 /**
  * Get array of transaction wrappers (proxy/multisig) Every wrapper recursively
  * calls getTxWrappers until it finds regular account
@@ -260,6 +261,7 @@ export type WrappedTransactions = {
   coreTx: Transaction;
   multisigTx?: Transaction;
 };
+
 function getWrappedTransaction({ api, addressPrefix, transaction, txWrappers }: WrapperParams): WrappedTransactions {
   return txWrappers.reduce<WrappedTransactions>(
     (acc, txWrapper) => {

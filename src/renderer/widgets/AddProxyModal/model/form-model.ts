@@ -25,7 +25,6 @@ import {
   getProxyTypes,
   isStringsMatchQuery,
   toAddress,
-  toShortAddress,
   transferableAmount,
   validateAddress,
 } from '@/shared/lib/utils';
@@ -34,7 +33,6 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { operationsModel, operationsUtils } from '@/entities/operations';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { AddProxyRules } from '@/features/operations/OperationsValidation';
 import { proxiesUtils } from '@/features/proxies';
 import { walletSelectModel } from '@/features/wallets';
 
@@ -52,7 +50,6 @@ type FormParams = {
   signatory: Account;
   delegate: Address;
   proxyType: ProxyType;
-  description: string;
 };
 
 type FormSubmitEvent = {
@@ -198,10 +195,6 @@ const $proxyForm = createForm<FormParams>({
     },
     proxyType: {
       init: '' as ProxyType,
-    },
-    description: {
-      init: '',
-      rules: [AddProxyRules.description.maxLength],
     },
   },
   validateOn: ['submit'],
@@ -663,11 +656,6 @@ sample({
   },
   fn: ({ proxyDeposit, multisigDeposit, proxies, realAccount, transaction, isProxy, fee }, formData) => {
     const signatory = formData.signatory.accountId ? formData.signatory : undefined;
-    const proxiedAddress = toAddress(formData.account.accountId, {
-      prefix: formData.chain.addressPrefix,
-    });
-    const multisigDescription = `Add proxy for ${toShortAddress(proxiedAddress)}`; // TODO: update after i18n effector integration
-    const description = signatory ? formData.description || multisigDescription : '';
 
     return {
       transactions: {
@@ -680,7 +668,6 @@ sample({
         fee,
         account: realAccount,
         signatory,
-        description,
         proxyDeposit,
         multisigDeposit,
         proxyNumber: proxies.length,

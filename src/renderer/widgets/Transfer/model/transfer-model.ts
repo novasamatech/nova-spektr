@@ -157,7 +157,6 @@ sample({
       chain: transferData.networkStore!.chain,
       account: transferData.transferStore!.account,
       signatory: transferData.transferStore!.signatory,
-      description: transferData.transferStore!.description,
       wrappedTxs: [transferData.wrappedTx!],
       coreTxs: [transferData.coreTx!],
       multisigTxs: transferData.multisigTx ? [transferData.multisigTx] : [],

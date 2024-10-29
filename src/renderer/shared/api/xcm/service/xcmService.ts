@@ -2,9 +2,9 @@ import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import get from 'lodash/get';
 
+import { type AccountId, type Chain, type ChainId, type HexString } from '@/shared/core';
+import { getAssetId, getTypeName, getTypeVersion, toLocalChainId } from '@/shared/lib/utils';
 import { type XTokenPalletTransferArgs, type XcmPalletTransferArgs } from '@/entities/transaction';
-import { type AccountId, type Chain, type ChainId, type HexString } from '../../../core';
-import { getAssetId, getTypeName, getTypeVersion, toLocalChainId } from '../../../lib/utils';
 import { localStorageService } from '../../local-storage';
 import { chainsService } from '../../network';
 import { XCM_KEY, XCM_URL } from '../lib/constants';

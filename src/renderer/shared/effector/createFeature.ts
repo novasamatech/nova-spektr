@@ -47,10 +47,11 @@ const calculateState = <T>(data: T | null, filter: Params<T>['filter']): State<T
   return { status: 'running', data };
 };
 
-export const createFeature = <T = null>({
+export const createFeature = <T = object>({
   name,
   filter,
-  input = createStore(null),
+  // @ts-expect-error dynamic value
+  input = createStore({}),
   enable = createStore(true),
   scope,
 }: Params<T>) => {
@@ -180,8 +181,8 @@ export const createFeature = <T = null>({
   });
 
   const inject = <T extends AnyIdentifier>(identifier: T, fn: InferHandlerFn<T>) => {
+    // special wrapper for views - we trying to start feature on render
     if (identifier.type === 'slot') {
-      // special wrapper for views - we trying to start feature on render
       const handler = (props: never) => {
         useGate(gate);
 

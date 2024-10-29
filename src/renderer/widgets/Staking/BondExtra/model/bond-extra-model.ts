@@ -318,7 +318,6 @@ sample({
       chain: bondFlowData.walletData!.chain,
       account: bondFlowData.bondData!.shards[0],
       signatory: bondFlowData.bondData!.signatory,
-      description: bondFlowData.bondData!.description,
       coreTxs: bondFlowData.transactions!.map((tx) => tx.coreTx),
       wrappedTxs: bondFlowData.transactions!.map((tx) => tx.wrappedTx),
       multisigTxs: bondFlowData.transactions!.map((tx) => tx.multisigTx).filter(nonNullable),
