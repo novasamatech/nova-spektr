@@ -33,6 +33,8 @@ export const MultisigCreationFees = memo(
     const [deposit, setDeposit] = useState<BN>(BN_ZERO);
     const [networkFee, setNeworkFee] = useState<BN>(BN_ZERO);
     const fee = useMemo(() => deposit.add(networkFee), [deposit, networkFee]);
+    console.log('isNetworkFeeLoading', isNetworkFeeLoading);
+    console.log('isDepositLoading', isDepositLoading);
     const isLoading = useMemo(() => isNetworkFeeLoading || isDepositLoading, [isNetworkFeeLoading, isDepositLoading]);
     useEffect(() => {
       if (!api) {
@@ -62,7 +64,11 @@ export const MultisigCreationFees = memo(
     }, []);
 
     if (isLoading) {
-      return <FeeLoader className="mr-4" fiatFlag={Boolean(fiatFlag)} />;
+      return (
+        <div className="mr-4">
+          <FeeLoader fiatFlag={Boolean(fiatFlag)} />
+        </div>
+      );
     }
 
     return (
