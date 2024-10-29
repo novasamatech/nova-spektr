@@ -18,7 +18,7 @@ type RequestVotesParams = {
 };
 
 const {
-  $: $votesMap,
+  $: $votes,
   fulfilled,
   pending,
   request,
@@ -40,7 +40,7 @@ const {
 });
 
 export const votesDomainModel = {
-  $votesMap,
+  $votes,
 
   fulfilled,
   pending,
