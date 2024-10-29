@@ -3,8 +3,9 @@ import { type ComponentProps, type PropsWithChildren } from 'react';
 import { type AccountId, type Chain } from '@/shared/core';
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { Identicon } from '@/shared/ui';
-import { AccountExplorers, Address } from '@/shared/ui-entities';
 import { Label } from '@/shared/ui-kit';
+import { AccountExplorers } from '../AccountExplorer/AccountExplorers';
+import { Address } from '../Address/Address';
 
 type Props = {
   name?: string;
