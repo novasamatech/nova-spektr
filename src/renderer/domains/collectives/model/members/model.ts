@@ -43,9 +43,9 @@ const {
       for (const collectiveMember of collectiveMembers) {
         if (nullable(collectiveMember.member)) continue;
 
-        const coreMember = coreMembers.find(x => x.account === collectiveMember.account);
+        const coreMember = coreMembers.find(member => member.account === collectiveMember.account);
 
-        if (nonNullable(coreMember) && nonNullable(coreMember.status)) {
+        if (nonNullable(coreMember?.status)) {
           result.push({
             accountId: collectiveMember.account,
             rank: collectiveMember.member.rank,

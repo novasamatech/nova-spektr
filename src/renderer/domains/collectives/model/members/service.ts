@@ -19,8 +19,12 @@ const findMachingAccount = (wallet: Wallet, member: Member) => {
   });
 };
 
-const isCoreMember = (member: Member | CoreMember) => {
-  return 'isActive' in member && 'lastPromotion' in member && 'lastProof' in member;
+const isCoreMember = (member: Member | CoreMember): member is CoreMember => {
+  const hasActive = 'isActive' in member;
+  const hasPromotion = 'lastPromotion' in member;
+  const hasProof = 'lastProof' in member;
+
+  return hasActive && hasPromotion && hasProof;
 };
 
 export const membersService = {

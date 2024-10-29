@@ -27,7 +27,7 @@ const {
   fn: async ({ api, palletType, referendumId }) => {
     const votes = await collectivePallet.storage.voting(palletType, api, referendumId);
 
-    return votes.map(mapVote).filter(vote => nonNullable(vote));
+    return votes.map(mapVote).filter(nonNullable);
   },
   map: (store, { params, result }) => {
     const currentValue = pickNestedValue(store, params.palletType, params.chainId);

@@ -123,23 +123,23 @@ export const storage = {
     api: ApiPromise,
     keys: (readonly [referendum: ReferendumId, account: AccountId])[] | ReferendumId,
   ) {
-    if (Array.isArray(keys)) {
-      const schema = votingResponseSchema.transform(votes =>
-        votes.map((vote, index) => ({
-          key: {
-            referendumId: keys[index]![0],
-            accountId: keys[index]![1],
-          },
-          vote,
-        })),
-      );
-
-      return substrateRpcPool.call(() => getQuery(type, api, 'voting').multi(keys)).then(schema.parse);
-    } else {
+    if (!Array.isArray(keys)) {
       return substrateRpcPool
         .call(() => getQuery(type, api, 'voting').entries(keys))
         .then(votingWithKeyResponseSchema.parse);
     }
+
+    const schema = votingResponseSchema.transform(votes =>
+      votes.map((vote, index) => ({
+        key: {
+          referendumId: keys[index]![0],
+          accountId: keys[index]![1],
+        },
+        vote,
+      })),
+    );
+
+    return substrateRpcPool.call(() => getQuery(type, api, 'voting').multi(keys)).then(schema.parse);
   },
 
   /**
