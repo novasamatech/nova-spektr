@@ -23,7 +23,7 @@ import { type SubAccounts, type Subscriptions } from '../lib/types';
 
 const walletToUnsubSet = createEvent<Wallet>();
 const walletToSubSet = createEvent<Wallet>();
-const balancesUpdated = createEvent<Balance[]>();
+const balancesUpdated = createEvent<Omit<Balance, 'id'>[]>();
 
 const $subscriptions = createStore<Subscriptions>({});
 const $subAccounts = createStore<SubAccounts>({});
@@ -108,12 +108,8 @@ const pureSubscribeChainsFx = createEffect(
           if (walletId && Number(id) !== walletId) continue;
 
           const unsubPromises = [
-            ...balanceService.subscribeBalances(apis[chain.chainId], chain, accountIds, (balance) =>
-              boundUpdate(balance as Balance[]),
-            ),
-            ...balanceService.subscribeLockBalances(apis[chain.chainId], chain, accountIds, (balance) =>
-              boundUpdate(balance as Balance[]),
-            ),
+            ...balanceService.subscribeBalances(apis[chain.chainId], chain, accountIds, boundUpdate),
+            ...balanceService.subscribeLockBalances(apis[chain.chainId], chain, accountIds, boundUpdate),
           ];
 
           if (acc[chain.chainId]) {
@@ -194,7 +190,7 @@ sample({
     isPending: populateBalancesFx.pending,
   },
   fn: ({ balancesBucket, isPending }, newBalances) => {
-    const updatedBalances = balanceUtils.getMergeBalances(balancesBucket, newBalances);
+    const updatedBalances = balanceUtils.getMergeBalances(balancesBucket, newBalances as Balance[]);
 
     return {
       bucket: isPending ? updatedBalances : [],

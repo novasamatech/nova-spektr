@@ -1,7 +1,7 @@
 import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
 import { default as BigNumber } from 'bignumber.js';
 
-import { type Asset, type AssetBalance, type Balance, type Unlocking } from '@/shared/core';
+import { type Asset, type AssetBalance, type Balance, LockTypes, type Unlocking } from '@/shared/core';
 
 import { ZERO_BALANCE } from './constants';
 
@@ -215,7 +215,7 @@ export const transferableAmount = <T extends AssetBalance>(balance?: T): string 
 export const stakedAmount = (balance: Balance): string => {
   if (!balance.locked) return ZERO_BALANCE;
 
-  const bnLocks = balance.locked.find((lock) => lock.type === '0x7374616b696e6720');
+  const bnLocks = balance.locked.find((lock) => lock.type === LockTypes.STAKING);
 
   return bnLocks?.amount.toString() || ZERO_BALANCE;
 };
