@@ -18,26 +18,7 @@ import { getMaxWeight, hasDestWeight, isControllerMissing, isOldMultisigPallet }
 import * as xcmMethods from './common/xcmMethods';
 import { convictionVotingMethods } from './wrappers/convictionVoting';
 
-type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
 type BondWithoutContollerArgs = Omit<Parameters<typeof methods.staking.bond>[0], 'controller'>;
-
-// TODO: change to substrate txwrapper method when it'll update
-const transferKeepAlive = (
-  args: BalancesTransferArgs,
-  info: BaseTxInfo,
-  options: OptionsWithMeta,
-): UnsignedTransaction =>
-  defineMethod(
-    {
-      method: {
-        args,
-        name: 'transferKeepAlive',
-        pallet: 'balances',
-      },
-      ...info,
-    },
-    options,
-  );
 
 const bondWithoutController = (
   args: BondWithoutContollerArgs,
@@ -63,7 +44,7 @@ export const getUnsignedTransaction: Record<
   [TransactionType.TRANSFER]: (transaction, info, options, api) => {
     // @ts-expect-error TODO fix
     return api.tx.balances.transferKeepAlive
-      ? transferKeepAlive(
+      ? methods.balances.transferKeepAlive(
           {
             dest: transaction.args.dest,
             value: transaction.args.value,

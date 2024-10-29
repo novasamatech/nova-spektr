@@ -1,10 +1,10 @@
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { type ChainAccount, type WalletFamily } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
+import { performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
 import { CaptionText, Combobox, Icon, IconButton, Identicon, Input } from '@/shared/ui';
 import { type ComboboxOption } from '@/shared/ui/types';
 import { contactModel } from '@/entities/contact';
@@ -34,13 +34,25 @@ export const Signatory = ({
   const [query, setQuery] = useState('');
   const [options, setOptions] = useState<ComboboxOption[]>([]);
 
-  const [contacts, contactsFiltered] = useUnit([contactModel.$contacts, filterModel.$contactsFiltered]);
+  const contacts = useUnit(contactModel.$contacts);
   const [address, setAddress] = useState(signatoryAddress);
   const [name, setName] = useState(signatoryName);
   const wallets = useUnit(walletModel.$wallets);
   const {
     fields: { chain },
   } = useForm(formModel.$createMultisigForm);
+  const contactsFiltered = useMemo(
+    () =>
+      performSearch({
+        query,
+        records: contacts,
+        weights: {
+          name: 1,
+          address: 0.5,
+        },
+      }),
+    [query, contacts],
+  );
 
   const ownAccountName =
     walletUtils.getWalletsFilteredAccounts(wallets, {
@@ -50,6 +62,8 @@ export const Signatory = ({
 
   const contactAccountName =
     contacts.filter((contact) => toAccountId(contact.address) === toAccountId(address))?.[0]?.name || '';
+  const displayName = isOwnAccount ? ownAccountName : contactAccountName;
+  const nameValue = !!ownAccountName || !!contactAccountName ? displayName : name;
 
   useEffect(() => {
     if (!isOwnAccount || wallets.length === 0) return;
@@ -138,6 +152,12 @@ export const Signatory = ({
     });
   };
 
+  useEffect(() => {
+    if (nameValue !== name) {
+      onNameChange(nameValue);
+    }
+  }, [nameValue]);
+
   const onAddressChange = (newAddress: string) => {
     if (!validateAddress(newAddress)) {
       setAddress('');
@@ -155,7 +175,6 @@ export const Signatory = ({
 
   const handleQueryChange = (newQuery: string) => {
     setQuery(newQuery);
-    filterModel.events.queryChanged(newQuery);
   };
 
   const prefixElement = (
@@ -172,9 +191,6 @@ export const Signatory = ({
     ? t('createMultisigAccount.ownAccountSelection')
     : t('createMultisigAccount.signatoryAddress');
 
-  const hasDuplicateName = !!ownAccountName && !!contactAccountName;
-  const displayName = hasDuplicateName && isOwnAccount ? ownAccountName : contactAccountName;
-
   return (
     <div className="flex gap-x-2">
       <div className="flex-1">
@@ -182,10 +198,10 @@ export const Signatory = ({
           name={t('createMultisigAccount.signatoryNameLabel')}
           className=""
           wrapperClass="h-[36px]"
-          label={t('addressBook.createContact.nameLabel')}
+          label={t('createMultisigAccount.signatoryNameLabel')}
           placeholder={t('addressBook.createContact.namePlaceholder')}
           invalid={false}
-          value={!!ownAccountName || !!contactAccountName ? displayName : name}
+          value={nameValue}
           disabled={!!ownAccountName || !!contactAccountName}
           onChange={onNameChange}
         />
@@ -204,7 +220,7 @@ export const Signatory = ({
         onInput={handleQueryChange}
       />
       {!isOwnAccount && onDelete && (
-        <IconButton className="ml-2 mt-4" name="delete" size={20} onClick={() => onDelete(signtoryIndex)} />
+        <IconButton className="ml-2 mt-6" name="delete" size={16} onClick={() => onDelete(signtoryIndex)} />
       )}
     </div>
   );

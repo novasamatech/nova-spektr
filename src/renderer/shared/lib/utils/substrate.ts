@@ -11,11 +11,13 @@ import {
 } from '@substrate/txwrapper-polkadot';
 
 import { XcmTransferType } from '@/shared/api/xcm';
+import { EXTENSIONS } from '@/shared/config/extensions';
 import {
   type Address,
   type BlockHeight,
   type CallData,
   type CallHash,
+  type ChainId,
   type HexString,
   type ProxyType,
   XcmPallets,
@@ -38,6 +40,8 @@ const UNUSED_LABEL = 'unused';
  * @substrate/txwrapper-polkadot signing
  */
 export const createTxMetadata = async (address: Address, api: ApiPromise): Promise<TxMetadata> => {
+  const chainId = api.genesisHash.toString() as ChainId;
+
   const [{ block }, blockHash, metadataRpc, nonce, { specVersion, transactionVersion, specName }] = await Promise.all([
     api.rpc.chain.getBlock(),
     api.rpc.chain.getBlockHash(),
@@ -47,17 +51,18 @@ export const createTxMetadata = async (address: Address, api: ApiPromise): Promi
   ]);
 
   const registry = getRegistry({
-    chainName: specName.toString() as GetRegistryOpts['specName'],
+    chainName: specName.toString() as GetRegistryOpts['chainName'],
     specName: specName.toString() as GetRegistryOpts['specName'],
     specVersion: specVersion.toNumber(),
     metadataRpc: metadataRpc.toHex(),
+    ...EXTENSIONS[chainId].txwrapper,
   });
 
   const info: BaseTxInfo = {
     address,
     blockHash: blockHash.toString(),
     blockNumber: block.header.number.toNumber(),
-    genesisHash: api.genesisHash.toString(),
+    genesisHash: chainId,
     metadataRpc: metadataRpc.toHex(),
     nonce: nonce.toNumber(),
     specVersion: specVersion.toNumber(),
@@ -67,9 +72,10 @@ export const createTxMetadata = async (address: Address, api: ApiPromise): Promi
   };
 
   const options: OptionsWithMeta = {
-    metadataRpc: metadataRpc.toHex(),
     registry,
+    metadataRpc: metadataRpc.toHex(),
     signedExtensions: registry.signedExtensions,
+    userExtensions: EXTENSIONS[chainId].txwrapper.userExtensions,
   };
 
   return { options, info, registry };
@@ -238,7 +244,7 @@ export const upgradeNonce = (metadata: TxMetadata, index: number): TxMetadata =>
   };
 };
 
-export const getSecondsDuratonToBlock = (timeToBlock: number): number => {
+export const getSecondsDurationToBlock = (timeToBlock: number): number => {
   const currentTime = Date.now();
   const time = timeToBlock - currentTime;
 

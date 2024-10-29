@@ -188,11 +188,10 @@ export const totalAmount = <T extends AssetBalance>(balance?: T): string => {
   return bnFree.add(bnReserved).toString();
 };
 
-export const lockedAmountBN = ({ locked = [] }: Balance) => {
-  const bnLocks = locked.map((lock) => new BN(lock.amount));
-  const bnFrozen = bnLocks.reduce((acc, bnLock) => acc.add(bnLock), new BN(0));
+export const lockedAmountBN = (balance: Balance): BN => {
+  if (!balance.locked) return BN_ZERO;
 
-  return bnFrozen;
+  return balance.locked.reduce((acc, lock) => acc.add(lock.amount), BN_ZERO);
 };
 
 export const lockedAmount = (balance: Balance): string => {
@@ -200,22 +199,25 @@ export const lockedAmount = (balance: Balance): string => {
 };
 
 export const transferableAmountBN = <T extends AssetBalance>(balance?: T): BN => {
-  if (!balance) return BN_ZERO;
+  if (!balance?.free || !balance?.frozen || !balance?.reserved) return BN_ZERO;
 
-  const bnFree = new BN(balance.free || ZERO_BALANCE);
-  const bnFrozen = new BN(balance.frozen || ZERO_BALANCE);
+  const { free, frozen, reserved } = balance;
 
-  return bnFree.gt(bnFrozen) ? bnFree.sub(bnFrozen) : BN_ZERO;
+  const freeCannotDropBelow = frozen.gt(reserved) ? frozen.sub(reserved) : BN_ZERO;
+
+  return free.gt(freeCannotDropBelow) ? free.sub(freeCannotDropBelow) : BN_ZERO;
 };
 
 export const transferableAmount = <T extends AssetBalance>(balance?: T): string => {
   return transferableAmountBN(balance).toString();
 };
 
-export const stakedAmount = ({ locked = [] }: Balance): string => {
-  const bnLocks = locked.find((lock) => lock.type === LockTypes.STAKING);
+export const stakedAmount = (balance: Balance): string => {
+  if (!balance.locked) return ZERO_BALANCE;
 
-  return bnLocks?.amount ?? ZERO_BALANCE;
+  const bnLocks = balance.locked.find((lock) => lock.type === LockTypes.STAKING);
+
+  return bnLocks?.amount.toString() || ZERO_BALANCE;
 };
 
 export const stakeableAmount = (balance?: Balance): string => {

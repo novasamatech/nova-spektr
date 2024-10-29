@@ -38,7 +38,7 @@ export const SelectSignatories = () => {
           size="sm"
           variant="text"
           className="mt-4 h-8.5 justify-center"
-          suffixElement={<Icon name="add" size={16} />}
+          suffixElement={<Icon className="text-icon-primary" name="add" size={16} />}
           onClick={onAddSignatoryClick}
         >
           {t('createMultisigAccount.addNewSignatory')}

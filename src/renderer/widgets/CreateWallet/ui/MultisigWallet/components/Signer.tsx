@@ -2,7 +2,7 @@ import { BN_ZERO } from '@polkadot/util';
 import { type FormEvent } from 'react';
 
 import { type AccountId, type Chain, type WalletType } from '@/shared/core';
-import { transferableAmount } from '@/shared/lib/utils';
+import { toAddress, transferableAmount } from '@/shared/lib/utils';
 import { BodyText, Icon } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { useBalance } from '@/entities/balance';
@@ -30,7 +30,10 @@ export const Signer = ({ accountId, walletName, walletType, onSubmit, chain }: P
       onClick={(e) => onSubmit(e, accountId)}
     >
       <WalletIcon type={walletType} />
-      <BodyText className="text-inherit">{walletName}</BodyText>
+      <div className="flex flex-col text-text-secondary">
+        {walletName && <BodyText className="text-inherit">{walletName}</BodyText>}
+        <BodyText className="text-inherit">{toAddress(accountId, { prefix: chain.addressPrefix, chunk: 6 })}</BodyText>
+      </div>
       {chain.assets[0] && (
         <AssetBalance
           value={transferableAmount(balance) || BN_ZERO}

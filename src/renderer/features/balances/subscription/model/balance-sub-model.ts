@@ -4,7 +4,7 @@ import mapValues from 'lodash/mapValues';
 import { combineEvents, once, previous, spread } from 'patronum';
 
 import { balanceService } from '@/shared/api/balances';
-import { storageService } from '@/shared/api/storage';
+import { balanceMapper, storageService } from '@/shared/api/storage';
 import {
   type AccountId,
   type Balance,
@@ -23,7 +23,7 @@ import { type SubAccounts, type Subscriptions } from '../lib/types';
 
 const walletToUnsubSet = createEvent<Wallet>();
 const walletToSubSet = createEvent<Wallet>();
-const balancesUpdated = createEvent<Balance[]>();
+const balancesUpdated = createEvent<Omit<Balance, 'id'>[]>();
 
 const $subscriptions = createStore<Subscriptions>({});
 const $subAccounts = createStore<SubAccounts>({});
@@ -36,7 +36,7 @@ const populateBalancesFx = createEffect(async (accountIds: Set<AccountId>): Prom
 
   const balances = await storageService.balances.readAll();
 
-  return balances.filter((balance) => accountIds.has(balance.accountId));
+  return balances.filter((balance) => accountIds.has(balance.accountId)).map(balanceMapper.fromDB);
 });
 
 type UnsubWalletParams = {
@@ -190,7 +190,7 @@ sample({
     isPending: populateBalancesFx.pending,
   },
   fn: ({ balancesBucket, isPending }, newBalances) => {
-    const updatedBalances = balanceUtils.getMergeBalances(balancesBucket, newBalances);
+    const updatedBalances = balanceUtils.getMergeBalances(balancesBucket, newBalances as Balance[]);
 
     return {
       bucket: isPending ? updatedBalances : [],
