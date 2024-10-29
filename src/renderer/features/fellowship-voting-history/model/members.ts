@@ -5,22 +5,22 @@ import { dictionary } from '@/shared/lib/utils';
 import { collectiveDomain } from '@/domains/collectives';
 
 import { fellowshipModel } from './fellowship';
-import { votesFeatureStatus } from './status';
+import { votingHistoryFeatureStatus } from './status';
 
-const $members = fellowshipModel.$store.map(x => dictionary(x?.members ?? [], 'accountId'));
+const $members = fellowshipModel.$store.map(store => dictionary(store?.members ?? [], 'accountId'));
 
 sample({
-  clock: votesFeatureStatus.running,
+  clock: votingHistoryFeatureStatus.running,
   target: collectiveDomain.members.subscribe,
 });
 
 sample({
-  clock: votesFeatureStatus.stopped,
+  clock: votingHistoryFeatureStatus.stopped,
   target: collectiveDomain.members.unsubscribe,
 });
 
 export const membersModel = {
   $members,
-  $pending: or(collectiveDomain.members.pending, votesFeatureStatus.isStarting),
+  $pending: or(collectiveDomain.members.pending, votingHistoryFeatureStatus.isStarting),
   $fulfilled: collectiveDomain.members.fulfilled,
 };

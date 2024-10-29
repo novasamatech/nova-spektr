@@ -5,3 +5,4 @@ export { Account } from './Account/Account';
 export { AccountSelectModal } from './AccountSelectModal/AccountSelectModal';
 export { AccountExplorers } from './AccountExplorer/AccountExplorers';
 export { TransactionDetails } from './TransactionDetails/TransactionDetails';
+export { RankedAccount } from './RankedAccount/RankedAccount';

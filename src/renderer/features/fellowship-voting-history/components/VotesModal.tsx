@@ -1,31 +1,40 @@
 import { useGate, useUnit } from 'effector-react';
-import { type PropsWithChildren, useMemo, useState } from 'react';
+import orderBy from 'lodash/orderBy';
+import { type PropsWithChildren, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, Icon, Tabs } from '@/shared/ui';
 import { type TabItem } from '@/shared/ui/types';
 import { Box, Modal } from '@/shared/ui-kit';
-import { votesService } from '@/domains/collectives';
-import { votesFeatureStatus } from '../model/status';
+import { votingHistoryFeatureStatus } from '../model/status';
 import { votesModel } from '../model/votes';
 
 import { VotingHistoryList } from './VotingHistoryList';
 
 export const VotesModal = ({ children }: PropsWithChildren) => {
-  useGate(votesFeatureStatus.gate);
+  useGate(votingHistoryFeatureStatus.gate);
 
   const { t } = useI18n();
   const [selectedTab, setSelectedTab] = useState(0);
 
   const votes = useUnit(votesModel.$votesList);
-  const input = useUnit(votesFeatureStatus.input);
+  const input = useUnit(votingHistoryFeatureStatus.input);
   const isLoading = useUnit(votesModel.$pending);
 
   const chain = input?.chain ?? null;
 
-  const ayes = useMemo(() => votes.filter(vote => vote.decision === 'Aye').sort(votesService.sortVotes), [votes]);
-  const nays = useMemo(() => votes.filter(vote => vote.decision === 'Nay').sort(votesService.sortVotes), [votes]);
+  const ayes = orderBy(
+    votes.filter(vote => vote.decision === 'Aye'),
+    'votes',
+    'desc',
+  );
+
+  const nays = orderBy(
+    votes.filter(vote => vote.decision === 'Nay'),
+    'votes',
+    'desc',
+  );
 
   const tabs: TabItem[] = [
     {

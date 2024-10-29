@@ -5,8 +5,8 @@ import { nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { HeaderTitleText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Modal, Skeleton } from '@/shared/ui-kit';
-import { fellowshipVotesFeature } from '@/features/fellowship-votes';
 import { fellowshipVotingFeature } from '@/features/fellowship-voting';
+import { fellowshipVotingHistoryFeature } from '@/features/fellowship-voting-history';
 import { referendumDetailsModel } from '../model/details';
 import { referendumsDetailsFeatureStatus } from '../model/status';
 
@@ -17,7 +17,7 @@ import { ReferendumVoteChart } from './shared/ReferendumVoteChart';
 import { ReferendumVotingStatusBadge } from './shared/ReferendumVotingStatusBadge';
 
 const { VotingButtons, WalletVotingInfo } = fellowshipVotingFeature.views;
-const { VotingHistory } = fellowshipVotesFeature.views;
+const { VotingHistory, VotingSummary } = fellowshipVotingHistoryFeature.views;
 
 type Props = {
   isOpen: boolean;
@@ -72,10 +72,14 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
                 </Box>
               </Card>
               <Card>
-                <Box padding={6} gap={6} direction="row" verticalAlign="center" horizontalAlign="space-between">
-                  <SmallTitleText>{t('fellowship.voting.summary')}</SmallTitleText>
+                <Box padding={6} gap={4}>
+                  <Box direction="row" verticalAlign="center" horizontalAlign="space-between">
+                    <SmallTitleText>{t('fellowship.voting.summary')}</SmallTitleText>
 
-                  <VotingHistory referendumId={referendumId} />
+                    <VotingHistory referendumId={referendumId} />
+                  </Box>
+
+                  <VotingSummary />
                 </Box>
               </Card>
             </Box>

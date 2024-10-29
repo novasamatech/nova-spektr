@@ -8,7 +8,7 @@ import { type ReferendumId } from '@/shared/pallet/referenda';
 import { collectiveDomain } from '@/domains/collectives';
 
 import { fellowshipModel } from './fellowship';
-import { votesFeatureStatus } from './status';
+import { votingHistoryFeatureStatus } from './status';
 
 const gate = createGate<{ referendumId: ReferendumId | null }>({ defaultState: { referendumId: null } });
 
@@ -20,7 +20,7 @@ const $votesList = combine($votes, gate.state, (votes, { referendumId }) => {
   return votes[referendumId] ?? [];
 });
 
-const votesUpdate = attachToFeatureInput(votesFeatureStatus, gate.state);
+const votesUpdate = attachToFeatureInput(votingHistoryFeatureStatus, gate.state);
 
 sample({
   clock: votesUpdate,
@@ -31,7 +31,7 @@ sample({
 
 export const votesModel = {
   $votesList,
-  $pending: or(collectiveDomain.votes.pending, votesFeatureStatus.isStarting),
+  $pending: or(collectiveDomain.votes.pending, votingHistoryFeatureStatus.isStarting),
   $fulfilled: collectiveDomain.votes.fulfilled,
 
   gate,

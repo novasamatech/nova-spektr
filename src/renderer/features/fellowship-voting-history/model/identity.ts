@@ -3,12 +3,12 @@ import { combine, sample } from 'effector';
 import { attachToFeatureInput } from '@/shared/effector';
 import { identityDomain } from '@/domains/identity';
 
-import { votesFeatureStatus } from './status';
+import { votingHistoryFeatureStatus } from './status';
 import { votesModel } from './votes';
 
-const votesUpdate = attachToFeatureInput(votesFeatureStatus, votesModel.$votesList);
+const votesUpdate = attachToFeatureInput(votingHistoryFeatureStatus, votesModel.$votesList);
 
-const $identity = combine(identityDomain.identity.$list, votesFeatureStatus.state, (list, state) => {
+const $identity = combine(identityDomain.identity.$list, votingHistoryFeatureStatus.state, (list, state) => {
   if (state.status !== 'running') return {};
 
   return list[state.data.chainId] ?? {};

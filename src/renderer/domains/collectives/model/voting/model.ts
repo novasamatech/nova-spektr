@@ -47,19 +47,19 @@ const {
 
       if (nullable(accountId) || nullable(referendumId)) continue;
 
-      switch (vote.type) {
+      switch (vote.vote?.type) {
         case 'Aye':
           result.push({
             accountId,
             referendumId,
-            aye: vote.data,
+            aye: vote.vote.data,
           });
           break;
         case 'Nay':
           result.push({
             accountId,
             referendumId,
-            nay: vote.data,
+            nay: vote.vote.data,
           });
           break;
       }

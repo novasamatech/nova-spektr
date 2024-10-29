@@ -7,6 +7,7 @@ import { collectivePallet } from '@/shared/pallet/collective';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { type CollectivePalletsType, type CollectivesStruct } from '../../lib/types';
 
+import { mapVote } from './mapper';
 import { type Vote } from './types';
 
 type RequestVotesParams = {
@@ -24,19 +25,9 @@ const {
 } = createDataSource<CollectivesStruct<Record<ReferendumId, Vote[]>>, RequestVotesParams, Vote[]>({
   initial: {},
   fn: async ({ api, palletType, referendumId }) => {
-    const votes = await collectivePallet.storage.votingEntries(palletType, api, referendumId);
+    const votes = await collectivePallet.storage.voting(palletType, api, referendumId);
 
-    return votes
-      .map(vote => {
-        if (!vote.vote) return;
-
-        return {
-          accountId: vote.key[1],
-          votes: vote.vote.data,
-          decision: vote.vote.type,
-        };
-      })
-      .filter(vote => nonNullable(vote));
+    return votes.map(mapVote).filter(vote => nonNullable(vote));
   },
   map: (store, { params, result }) => {
     const currentValue = pickNestedValue(store, params.palletType, params.chainId);

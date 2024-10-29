@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { memo, useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import { type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -18,31 +18,29 @@ type Props = {
   loading?: boolean;
 };
 
-export const VotingHistoryList = memo(({ items, chain, loading }: Props) => {
+export const VotingHistoryList = ({ items, chain, loading }: Props) => {
   const { t } = useI18n();
   const [query, setQuery] = useState<string>('');
 
   const identity = useUnit(identityModel.$identity);
 
-  const extendedItems = useMemo(() => {
-    return items.map(item => ({
-      ...item,
-      address: toAddress(item.accountId, { prefix: chain?.addressPrefix }),
-      name: identity[item.accountId].name ?? null,
-    }));
-  }, [items, identity]);
+  const extendedItems = items.map(item => ({
+    ...item,
+    address: toAddress(item.accountId, { prefix: chain?.addressPrefix }),
+    name: identity[item.accountId].name ?? null,
+  }));
 
-  const filteredItems = useMemo(
-    () => performSearch({ records: extendedItems, query, weights: { address: 0.5, name: 1 } }),
-    [items, query],
-  );
-  const { list: deferredItems, isLoading } = useDeferredList({ list: filteredItems, isLoading: !!loading });
+  const filteredItems = performSearch({ records: extendedItems, query, weights: { address: 0.5, name: 1 } });
+
+  const { list: deferredItems, isLoading: shouldRenderLoader } = useDeferredList({
+    list: filteredItems,
+    isLoading: !!loading,
+  });
 
   if (!chain) {
     return null;
   }
 
-  const shouldRenderLoader = isLoading;
   const shouldRenderEmptyState = !shouldRenderLoader && deferredItems.length === 0;
   const shouldRenderList = !shouldRenderLoader && deferredItems.length > 0;
 
@@ -66,4 +64,4 @@ export const VotingHistoryList = memo(({ items, chain, loading }: Props) => {
       </div>
     </div>
   );
-});
+};

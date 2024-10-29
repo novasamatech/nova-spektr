@@ -4,22 +4,22 @@ import { createFeature } from '@/shared/effector';
 import { fellowshipNetworkFeature } from '@/features/fellowship-network';
 import { ERROR } from '../constants';
 
-export const votesFeatureStatus = createFeature({
-  name: 'votes',
+export const votingHistoryFeatureStatus = createFeature({
+  name: 'votingHistory',
   input: fellowshipNetworkFeature.model.network.$network,
   filter: input => {
-    return input.api.isConnected
-      ? null
-      : {
-          status: 'failed',
-          type: 'warning',
-          error: new Error(ERROR.networkDisabled),
-        };
+    if (input.api.isConnected) return null;
+
+    return {
+      status: 'failed',
+      type: 'warning',
+      error: new Error(ERROR.networkDisabled),
+    };
   },
 });
 
 sample({
   clock: fellowshipNetworkFeature.model.network.$isActive,
   filter: fellowshipNetworkFeature.model.network.$isActive,
-  target: votesFeatureStatus.restore,
+  target: votingHistoryFeatureStatus.restore,
 });
