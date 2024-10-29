@@ -1,10 +1,10 @@
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { type ChainAccount, type WalletFamily } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
+import { performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
 import { CaptionText, Combobox, Icon, IconButton, Identicon, Input } from '@/shared/ui';
 import { type ComboboxOption } from '@/shared/ui/types';
 import { contactModel } from '@/entities/contact';
@@ -34,13 +34,25 @@ export const Signatory = ({
   const [query, setQuery] = useState('');
   const [options, setOptions] = useState<ComboboxOption[]>([]);
 
-  const [contacts, contactsFiltered] = useUnit([contactModel.$contacts, filterModel.$contactsFiltered]);
+  const contacts = useUnit(contactModel.$contacts);
   const [address, setAddress] = useState(signatoryAddress);
   const [name, setName] = useState(signatoryName);
   const wallets = useUnit(walletModel.$wallets);
   const {
     fields: { chain },
   } = useForm(formModel.$createMultisigForm);
+  const contactsFiltered = useMemo(
+    () =>
+      performSearch({
+        query,
+        records: contacts,
+        weights: {
+          name: 1,
+          address: 0.5,
+        },
+      }),
+    [query, contacts],
+  );
 
   const ownAccountName =
     walletUtils.getWalletsFilteredAccounts(wallets, {
@@ -155,7 +167,6 @@ export const Signatory = ({
 
   const handleQueryChange = (newQuery: string) => {
     setQuery(newQuery);
-    filterModel.events.queryChanged(newQuery);
   };
 
   const prefixElement = (
