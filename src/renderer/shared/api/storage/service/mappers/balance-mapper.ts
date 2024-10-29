@@ -1,7 +1,7 @@
 import { BN } from '@polkadot/util';
 
-import { type Balance } from '../../../../core';
-import { ZERO_BALANCE } from '../../../../lib/utils';
+import { type Balance } from '@/shared/core';
+import { ZERO_BALANCE } from '@/shared/lib/utils';
 import { type BnToString } from '../../lib/types';
 
 export const balanceMapper = {
