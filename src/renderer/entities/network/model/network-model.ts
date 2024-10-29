@@ -178,9 +178,9 @@ const createApiFx = createEffect(async ({ chainId, providers, apis }: CreateApiP
     await api.connect();
 
     return api;
-  } else {
-    return networkService.createApi(providers[chainId]);
   }
+
+  return networkService.createApi(chainId, providers[chainId]);
 });
 
 const disconnectApiFx = createEffect(async (api: ApiPromise): Promise<ChainId> => {

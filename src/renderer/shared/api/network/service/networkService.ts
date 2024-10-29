@@ -2,6 +2,7 @@ import { ApiPromise, ScProvider, WsProvider } from '@polkadot/api';
 import { type ProviderInterface } from '@polkadot/rpc-provider/types';
 import * as Sc from '@substrate/connect';
 
+import { EXTENSIONS } from '@/shared/config/extensions';
 import { type ChainId, type HexString } from '@/shared/core';
 import { getKnownChain } from '@/shared/lib/utils';
 import { ProviderType, type ProviderWithMetadata } from '../lib/types';
@@ -12,8 +13,16 @@ export const networkService = {
   createApi,
 };
 
-function createApi(provider: ProviderInterface): Promise<ApiPromise> {
-  return ApiPromise.create({ provider, throwOnConnect: true, noInitWarn: true, throwOnUnknown: true });
+function createApi(chainId: ChainId, provider: ProviderInterface): Promise<ApiPromise> {
+  const api = new ApiPromise({
+    provider,
+    noInitWarn: true,
+    throwOnConnect: true,
+    throwOnUnknown: true,
+    ...EXTENSIONS[chainId].provider,
+  });
+
+  return api.isReady;
 }
 
 type ProviderParams = {
