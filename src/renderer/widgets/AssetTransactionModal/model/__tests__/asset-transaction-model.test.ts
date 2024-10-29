@@ -1,3 +1,4 @@
+import { BN_ZERO } from '@polkadot/util';
 import { allSettled, fork } from 'effector';
 
 import { type AssetByChains } from '@/shared/core';
@@ -18,17 +19,17 @@ const mockAsset = {
       assetId: 0,
       assetSymbol: 'DOT',
       balance: {
-        free: '0',
-        reserved: '0',
-        frozen: '0',
+        free: BN_ZERO,
+        reserved: BN_ZERO,
+        frozen: BN_ZERO,
         locked: [],
       },
     },
   ],
   totalBalance: {
-    free: '0',
-    reserved: '0',
-    frozen: '0',
+    free: BN_ZERO,
+    reserved: BN_ZERO,
+    frozen: BN_ZERO,
     locked: [],
   },
 } as AssetByChains;

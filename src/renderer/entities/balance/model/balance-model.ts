@@ -1,7 +1,7 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { throttle } from 'patronum';
 
-import { storageService } from '@/shared/api/storage';
+import { balanceMapper, storageService } from '@/shared/api/storage';
 import { type Balance, type ID } from '@/shared/core';
 import { balanceUtils } from '../lib/balance-utils';
 import { BUFFER_DELAY, SAVE_TIMEOUT } from '../lib/constants';
@@ -14,7 +14,9 @@ const $balances = createStore<Balance[]>([]);
 const $balancesBuffer = createStore<Balance[]>([]);
 
 const insertBalancesFx = createEffect(async (balances: Balance[]): Promise<void> => {
-  await storageService.balances.insertAll(balances);
+  const dbBalances = balances.map(balanceMapper.toDB);
+
+  await storageService.balances.insertAll(dbBalances);
 });
 
 const removeBalancesFx = createEffect(async (ids: ID[]): Promise<void> => {

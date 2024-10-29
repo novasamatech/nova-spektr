@@ -1,3 +1,4 @@
+import { type BN } from '@polkadot/util';
 import { type Table } from 'dexie';
 
 import {
@@ -76,7 +77,7 @@ export type MultisigEventDS = WithID<MultisigEvent>;
 export type TWallet = Table<Omit<Wallet, 'accounts'>, Wallet['id']>;
 export type TContact = Table<Contact, Contact['id']>;
 export type TAccount = Table<Account, Account['id']>;
-export type TBalance = Table<Balance, Balance['id']>;
+export type TBalance = Table<BnToString<Balance>, Balance['id']>;
 export type TConnection = Table<Connection, Connection['id']>;
 export type TProxy = Table<ProxyAccount, ProxyAccount['id']>;
 export type TProxyGroup = Table<ProxyGroup, ProxyGroup['id']>;
@@ -85,3 +86,20 @@ export type TMultisigEvent = Table<MultisigEvent, ID>;
 export type TNotification = Table<Notification, Notification['id']>;
 export type TMetadata = Table<ChainMetadata, ChainMetadata['id']>;
 export type TBasketTransaction = Table<BasketTransaction, BasketTransaction['id']>;
+
+// =====================================================
+// ===================== Utility =======================
+// =====================================================
+
+/**
+ * Convert any BN | undefined to string | undefined
+ */
+export type BnToString<T> = {
+  [K in keyof T]: T[K] extends BN | undefined
+    ? string
+    : T[K] extends (infer U)[] | undefined
+      ? BnToString<U>[] | undefined
+      : T[K] extends object
+        ? BnToString<T[K]>
+        : T[K];
+};

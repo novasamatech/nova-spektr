@@ -4,7 +4,7 @@ import { type KeyboardEvent } from 'react';
 import { type Asset, type Balance, type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { KeyboardKey, cnTw, totalAmount, transferableAmount } from '@/shared/lib/utils';
+import { KeyboardKey, cnTw, totalAmount, transferableAmountBN } from '@/shared/lib/utils';
 import { BodyText, Shimmering } from '@/shared/ui';
 import { AssetBalance, AssetDetails, AssetIcon, AssetLinks } from '@/entities/asset';
 import { AssetFiatBalance, TokenPrice, priceProviderModel } from '@/entities/price';
@@ -30,7 +30,7 @@ export const AssetCard = ({ chainId, asset, balance }: Props) => {
     }
   };
 
-  const transferableBalance = balance?.free ? transferableAmount(balance) : undefined;
+  const transferableBalance = balance ? transferableAmountBN(balance) : undefined;
 
   // TODO: move <li> in parent beneath <ul>
   return (
