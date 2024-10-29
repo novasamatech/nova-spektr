@@ -62,8 +62,15 @@ export const Signatory = ({
 
   const contactAccountName =
     contacts.filter((contact) => toAccountId(contact.address) === toAccountId(address))?.[0]?.name || '';
-  const displayName = isOwnAccount ? ownAccountName : contactAccountName;
-  const nameValue = !!ownAccountName || !!contactAccountName ? displayName : name;
+  const displayName = useMemo(() => {
+    const hasDuplicateName = !!ownAccountName && !!contactAccountName;
+    const shouldForceOwnAccountName = hasDuplicateName && isOwnAccount;
+    if (shouldForceOwnAccountName) return ownAccountName;
+
+    if (hasDuplicateName && !isOwnAccount) return contactAccountName;
+
+    return ownAccountName || contactAccountName || name;
+  }, [isOwnAccount, ownAccountName, contactAccountName, name]);
 
   useEffect(() => {
     if (!isOwnAccount || wallets.length === 0) return;
@@ -153,10 +160,10 @@ export const Signatory = ({
   };
 
   useEffect(() => {
-    if (nameValue !== name) {
-      onNameChange(nameValue);
+    if (displayName !== name) {
+      onNameChange(displayName);
     }
-  }, [nameValue]);
+  }, [displayName]);
 
   const onAddressChange = (newAddress: string) => {
     if (!validateAddress(newAddress)) {
@@ -193,7 +200,7 @@ export const Signatory = ({
 
   return (
     <div className="flex gap-x-2">
-      <div className="flex-1">
+      <div className="w-[300px]">
         <Input
           name={t('createMultisigAccount.signatoryNameLabel')}
           className=""
@@ -201,7 +208,7 @@ export const Signatory = ({
           label={t('createMultisigAccount.signatoryNameLabel')}
           placeholder={t('addressBook.createContact.namePlaceholder')}
           invalid={false}
-          value={nameValue}
+          value={displayName}
           disabled={!!ownAccountName || !!contactAccountName}
           onChange={onNameChange}
         />
