@@ -20,7 +20,7 @@ const $store = combine(
     tracks: tracksDomainModel.$list,
     maxRank: tracksDomainModel.$maxRank,
     voting: votingDomainModel.$list,
-    votes: votesDomainModel.$votesMap,
+    votesMap: votesDomainModel.$votesMap,
   },
   combineStores,
 );

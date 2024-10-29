@@ -12,7 +12,7 @@ import { votingHistoryFeatureStatus } from './status';
 
 const gate = createGate<{ referendumId: ReferendumId }>();
 
-const $votesMap = fellowshipModel.$store.map(store => store?.votes ?? []);
+const $votesMap = fellowshipModel.$store.map(store => store?.votesMap ?? []);
 const $votesList = combine($votesMap, gate.state, (votes, { referendumId }) => {
   if (nullable(referendumId)) return [];
 
