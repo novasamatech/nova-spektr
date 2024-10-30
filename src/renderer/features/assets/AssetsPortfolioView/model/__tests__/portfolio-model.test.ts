@@ -1,10 +1,11 @@
+import { BN_ZERO } from '@polkadot/util';
 import { allSettled, fork } from 'effector';
 
 import { type AssetByChains } from '@/shared/core';
 import { AssetsListView } from '@/entities/asset';
 import { portfolioModel } from '../portfolio-model';
 
-const mockTokens = [
+const mockTokens: AssetByChains[] = [
   {
     name: 'Polkadot',
     precision: 10,
@@ -18,17 +19,17 @@ const mockTokens = [
         assetId: 0,
         assetSymbol: 'DOT',
         balance: {
-          free: '0',
-          reserved: '0',
-          frozen: '0',
+          free: BN_ZERO,
+          reserved: BN_ZERO,
+          frozen: BN_ZERO,
           locked: [],
         },
       },
     ],
     totalBalance: {
-      free: '0',
-      reserved: '0',
-      frozen: '0',
+      free: BN_ZERO,
+      reserved: BN_ZERO,
+      frozen: BN_ZERO,
       locked: [],
     },
   },
@@ -45,21 +46,21 @@ const mockTokens = [
         assetId: 0,
         assetSymbol: 'KSM',
         balance: {
-          free: '0',
-          reserved: '0',
-          frozen: '0',
+          free: BN_ZERO,
+          reserved: BN_ZERO,
+          frozen: BN_ZERO,
           locked: [],
         },
       },
     ],
     totalBalance: {
-      free: '0',
-      reserved: '0',
-      frozen: '0',
+      free: BN_ZERO,
+      reserved: BN_ZERO,
+      frozen: BN_ZERO,
       locked: [],
     },
   },
-] as AssetByChains[];
+];
 
 describe('features/assets/AssetsPortfolioView/model/portfolio-model', () => {
   test('should handle activeViewChanged event', async () => {

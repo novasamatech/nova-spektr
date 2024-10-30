@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type z } from 'zod';
 
 import { substrateRpcPool } from '@/shared/api/substrate-helpers';
-import { type ReferendumId } from '@/shared/pallet/referenda';
+import { type ReferendumId, referendaPallet } from '@/shared/pallet/referenda';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 
@@ -26,6 +26,17 @@ const getQuery = (type: PalletType, api: ApiPromise, name: string) => {
 };
 
 const votingResponseSchema = pjsSchema.vec(pjsSchema.optional(collectiveVoteRecord));
+const votingWithKeyResponseSchema = pjsSchema.vec(
+  pjsSchema.tupleMap(
+    [
+      'key',
+      pjsSchema
+        .storageKey(referendaPallet.schema.referendumId, pjsSchema.accountId)
+        .transform(([referendumId, accountId]) => ({ referendumId, accountId })),
+    ],
+    ['vote', pjsSchema.optional(collectiveVoteRecord)],
+  ),
+);
 
 export const storage = {
   /**
@@ -107,8 +118,28 @@ export const storage = {
   /**
    * Votes on a given proposal, if it is ongoing.
    */
-  voting(type: PalletType, api: ApiPromise, keys: (readonly [referendum: ReferendumId, account: AccountId])[]) {
-    return substrateRpcPool.call(() => getQuery(type, api, 'voting').multi(keys)).then(votingResponseSchema.parse);
+  voting(
+    type: PalletType,
+    api: ApiPromise,
+    keys: (readonly [referendum: ReferendumId, account: AccountId])[] | ReferendumId,
+  ) {
+    if (!Array.isArray(keys)) {
+      return substrateRpcPool
+        .call(() => getQuery(type, api, 'voting').entries(keys))
+        .then(votingWithKeyResponseSchema.parse);
+    }
+
+    const schema = votingResponseSchema.transform(votes =>
+      votes.map((vote, index) => ({
+        key: {
+          referendumId: keys[index]![0],
+          accountId: keys[index]![1],
+        },
+        vote,
+      })),
+    );
+
+    return substrateRpcPool.call(() => getQuery(type, api, 'voting').multi(keys)).then(schema.parse);
   },
 
   /**
@@ -118,10 +149,20 @@ export const storage = {
     type: PalletType,
     api: ApiPromise,
     keys: (readonly [referendum: ReferendumId, account: AccountId])[],
-    callback: (value: z.infer<typeof votingResponseSchema>) => unknown,
+    callback: (value: z.infer<typeof votingWithKeyResponseSchema>) => unknown,
   ) {
+    const schema = votingResponseSchema.transform(votes =>
+      votes.map((vote, index) => ({
+        key: {
+          referendumId: keys[index]![0],
+          accountId: keys[index]![1],
+        },
+        vote,
+      })),
+    );
+
     return getQuery(type, api, 'voting').multi(keys, response => {
-      callback(votingResponseSchema.parse(response));
+      callback(schema.parse(response));
     });
   },
 };

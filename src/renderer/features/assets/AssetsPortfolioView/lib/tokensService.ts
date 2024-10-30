@@ -94,7 +94,7 @@ function getChainWithBalance(
 
 function hideZeroBalances(hideZeroBalance: boolean, activeTokensWithBalance: AssetByChains[]): AssetByChains[] {
   return activeTokensWithBalance.filter((token) => {
-    return hideZeroBalance && totalAmount(token.totalBalance) === ZERO_BALANCE ? false : true;
+    return !hideZeroBalance || totalAmount(token.totalBalance) !== ZERO_BALANCE;
   });
 }
 

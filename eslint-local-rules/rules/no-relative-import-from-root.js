@@ -36,7 +36,7 @@ module.exports = {
     return {
       ImportDeclaration(node) {
         const { source } = node;
-        if (!isLiteral(source.type)) {
+        if (!isLiteral(source)) {
           return;
         }
 

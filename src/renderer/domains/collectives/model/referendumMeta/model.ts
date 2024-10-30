@@ -64,11 +64,11 @@ const {
     return response;
   },
   map: (store, { params, result }) => {
-    const currectValue = pickNestedValue(store, params.palletType, params.chainId);
+    const currentValue = pickNestedValue(store, params.palletType, params.chainId);
     const resultMap = dictionary(result, 'referendumId');
 
     return setNestedValue(store, params.palletType, params.chainId, {
-      ...(currectValue ?? {}),
+      ...(currentValue ?? {}),
       ...resultMap,
     });
   },

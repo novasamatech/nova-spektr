@@ -36,15 +36,13 @@ export const NameNetworkSelection = () => {
 
   return (
     <section className="flex h-full flex-1 flex-col">
-      <SmallTitleText className="mt-2 px-5 text-text-secondary">
-        {t('createMultisigAccount.multisigStep', { step: 1 })}
-      </SmallTitleText>
-      <SmallTitleText className="mb-6 border-b border-container-border px-5 pb-6 font-medium text-text-tertiary">
-        {t('createMultisigAccount.nameNetworkDescription')}
+      <SmallTitleText className="mb-4 border-b border-container-border px-5 pb-4 text-text-primary">
+        {t('createMultisigAccount.multisigStep', { step: 1 })} {t('createMultisigAccount.nameNetworkDescription')}
       </SmallTitleText>
       <form id="multisigForm" className="flex h-full flex-col gap-y-4 px-5 pb-6">
         <div className="flex items-end gap-x-4">
           <Input
+            autoFocus
             className="w-[360px]"
             placeholder={t('createMultisigAccount.namePlaceholder')}
             label={t('createMultisigAccount.walletNameLabel')}

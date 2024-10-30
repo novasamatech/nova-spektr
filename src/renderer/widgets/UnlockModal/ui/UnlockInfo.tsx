@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { type PendingChunkWithAddress, UnlockChunkType } from '@/shared/api/governance';
 import { useI18n } from '@/shared/i18n';
-import { getSecondsDuratonToBlock } from '@/shared/lib/utils';
+import { getSecondsDurationToBlock } from '@/shared/lib/utils';
 import { Button, Duration, FootnoteText, Icon, Shimmering } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { AssetFiatBalance } from '@/entities/price';
@@ -73,7 +73,7 @@ const ActionsSection = () => {
 const UnlockCountdown = ({ lock }: { lock: PendingChunkWithAddress }) => {
   const { t } = useI18n();
 
-  const [countdown, setCountdown] = useState(getSecondsDuratonToBlock(lock.timeToBlock || 0));
+  const [countdown, setCountdown] = useState(getSecondsDurationToBlock(lock.timeToBlock || 0));
 
   useEffect(() => {
     if (countdown === 0) return;
