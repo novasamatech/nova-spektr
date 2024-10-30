@@ -209,7 +209,7 @@ sample({
 
 sample({
   clock: walletsRemoved,
-  source: $wallets,
+  source: $allWallets,
   filter: (wallets, walletIds) => {
     return wallets.some((wallet) => walletIds.includes(wallet.id));
   },
@@ -292,6 +292,8 @@ export const walletModel = {
   $hiddenWallets,
   $activeWallet,
   $isLoadingWallets: fetchAllWalletsFx.pending,
+  // for tests
+  $allWallets,
 
   events: {
     walletStarted,

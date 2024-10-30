@@ -58,6 +58,15 @@ const accounts: Account[] = [
     keyType: KeyType.PUBLIC,
     derivationPath: '//test/path_2',
   } as ChainAccount,
+  {
+    id: 5,
+    walletId: 3,
+    name: 'My base account',
+    type: AccountType.BASE,
+    accountId: TEST_ACCOUNTS[0],
+    chainType: ChainType.SUBSTRATE,
+    cryptoType: CryptoType.SR25519,
+  } as BaseAccount,
 ];
 
 function getWallets(activeId: ID): Wallet[] {
@@ -78,11 +87,20 @@ function getWallets(activeId: ID): Wallet[] {
       signingType: SigningType.WATCH_ONLY,
       accounts: [accounts[2], accounts[3]],
     },
+    {
+      id: 3,
+      name: 'My third wallet',
+      isActive: false,
+      isHidden: true,
+      type: WalletType.MULTISIG,
+      signingType: SigningType.MULTISIG,
+      accounts: [accounts[4]],
+    },
   ].map((wallet) => ({ ...wallet, isActive: wallet.id === activeId }));
 }
 
 const newWallet = {
-  id: 3,
+  id: 4,
   name: 'My new wallet',
   type: WalletType.SINGLE_PARITY_SIGNER,
   signingType: SigningType.PARITY_SIGNER,
