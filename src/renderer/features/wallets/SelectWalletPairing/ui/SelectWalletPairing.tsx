@@ -2,12 +2,11 @@ import { type TFunction } from 'i18next';
 
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { DropdownButton } from '@/shared/ui';
-import { type ButtonDropdownOption } from '@/shared/ui/types';
+import { DropdownButton } from '@/shared/ui-kit';
 import { WalletIcon } from '@/entities/wallet';
 import { walletPairingModel } from '../model/wallet-pairing-model';
 
-const getDropdownOptions = (t: TFunction): ButtonDropdownOption[] => {
+const getDropdownOptions = (t: TFunction) => {
   return [
     {
       id: 'vault',
@@ -45,11 +44,5 @@ const getDropdownOptions = (t: TFunction): ButtonDropdownOption[] => {
 export const SelectWalletPairing = () => {
   const { t } = useI18n();
 
-  return (
-    <DropdownButton
-      options={getDropdownOptions(t)}
-      className="h-8.5 w-[140px] py-2"
-      title={t('wallets.addButtonTitle')}
-    />
-  );
+  return <DropdownButton title={t('wallets.addButtonTitle')} options={getDropdownOptions(t)} />;
 };

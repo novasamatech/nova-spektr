@@ -5,8 +5,8 @@ import { type Address, type Stake } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { toAccountId } from '@/shared/lib/utils';
-import { BaseModal, Button, DropdownButton, Icon, SmallTitleText } from '@/shared/ui';
-import { type ButtonDropdownOption } from '@/shared/ui/types';
+import { BaseModal, Button, Icon, SmallTitleText } from '@/shared/ui';
+import { DropdownButton } from '@/shared/ui-kit';
 import { ControllerOperations, OperationOptions, StashOperations } from '../lib/constants';
 import { ControllerTypes, type Operations } from '../lib/types';
 
@@ -122,27 +122,26 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
     }
   };
 
-  const getAvailableButtonOptions = (): ButtonDropdownOption[] => {
+  const getAvailableButtonOptions = () => {
     if (noStakes || wrongOverlaps) {
       return [];
     }
 
-    return Object.entries(operationsSummary).reduce<ButtonDropdownOption[]>((acc, [key, value]) => {
-      if (stakes.length === value) {
-        const typedKey = key as Operations;
-        const option = OperationOptions[typedKey];
+    const options = [];
+    for (const [key, value] of Object.entries(operationsSummary)) {
+      if (stakes.length !== value) continue;
 
-        acc.push({
-          id: key,
-          icon: option.icon,
-          //eslint-disable-next-line i18next/no-literal-string
-          title: t(`staking.actions.${option.icon}Label`),
-          onClick: () => onClickAction(typedKey, option.path),
-        });
-      }
+      const typedKey = key as Operations;
+      const option = OperationOptions[typedKey];
+      options.push({
+        id: key,
+        icon: <Icon name={option.icon} size={20} className="text-icon-accent" />,
+        title: t(`staking.actions.${option.icon}Label`),
+        onClick: () => onClickAction(typedKey, option.path),
+      });
+    }
 
-      return acc;
-    }, []);
+    return options;
   };
 
   const getActionButtonText = (): string => {
@@ -160,12 +159,13 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
     <>
       <div className="flex items-center justify-between">
         <SmallTitleText>{t('staking.overview.actionsTitle')}</SmallTitleText>
-        <DropdownButton
-          className="h-8.5 min-w-[228px]"
-          title={getActionButtonText()}
-          disabled={isStakingLoading || noStakes || wrongOverlaps}
-          options={getAvailableButtonOptions()}
-        />
+        <div className="min-w-[228px]">
+          <DropdownButton
+            title={getActionButtonText()}
+            disabled={isStakingLoading || noStakes || wrongOverlaps}
+            options={getAvailableButtonOptions()}
+          />
+        </div>
       </div>
 
       <BaseModal

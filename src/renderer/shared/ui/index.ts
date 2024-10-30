@@ -45,7 +45,6 @@ export { Header } from './Header/Header';
 export { ExplorerLink } from './ExplorerLink/ExplorerLink';
 export { ContextMenu } from './ContextMenu/ContextMenu';
 export { LabelHelpBox } from './LabelHelpbox/LabelHelpBox';
-export { MainLayout } from './Layouts/MainLayout/MainLayout';
 export { Truncate } from './Truncate/Truncate';
 export { Countdown } from './Countdown/Countdown';
 export { Tabs } from './Tabs/Tabs';

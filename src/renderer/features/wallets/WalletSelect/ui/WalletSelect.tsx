@@ -1,8 +1,7 @@
-import { Popover, Transition } from '@headlessui/react';
 import { useUnit } from 'effector-react';
-import { type ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 
-import { Shimmering } from '@/shared/ui';
+import { Popover, Skeleton } from '@/shared/ui-kit';
 import { walletModel } from '@/entities/wallet';
 import { walletSelectModel } from '../model/wallet-select-model';
 
@@ -16,7 +15,7 @@ export const WalletSelect = ({ action }: Props) => {
   const activeWallet = useUnit(walletModel.$activeWallet);
 
   if (!activeWallet) {
-    return <Shimmering width={208} height={56} />;
+    return <Skeleton width={208} height={56} />;
   }
 
   const hideWalletPanel = (close: () => void) => {
@@ -27,21 +26,12 @@ export const WalletSelect = ({ action }: Props) => {
   };
 
   return (
-    <Popover className="relative">
+    <Popover>
       {({ close }) => (
-        <>
+        <Fragment>
           <WalletButton wallet={activeWallet} />
-          <Transition
-            enter="transition ease-out duration-200"
-            enterFrom="opacity-0 translate-y-1"
-            enterTo="opacity-100 translate-y-0"
-            leave="transition ease-in duration-150"
-            leaveFrom="opacity-100 translate-y-0"
-            leaveTo="opacity-0 translate-y-1"
-          >
-            <WalletPanel action={action} onClose={hideWalletPanel(close)} />
-          </Transition>
-        </>
+          <WalletPanel action={action} onClose={hideWalletPanel(close)} />
+        </Fragment>
       )}
     </Popover>
   );

@@ -1,8 +1,9 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { type PropsWithChildren, type ReactNode, createContext, useContext, useMemo } from 'react';
+import { type PropsWithChildren, type ReactNode, createContext, useCallback, useContext, useMemo } from 'react';
 
 import { type XOR } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
+import { useToggle } from '../../lib/hooks';
 import { Checkbox } from '../Checkbox/Checkbox';
 import { ScrollArea } from '../ScrollArea/ScrollArea';
 import { Surface } from '../Surface/Surface';
@@ -10,6 +11,7 @@ import { useTheme } from '../Theme/useTheme';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
 
 type ContextProps = {
+  isOpen?: boolean;
   preventClosing?: boolean;
   side?: 'top' | 'right' | 'bottom' | 'left';
   sideOffset?: number;
@@ -38,27 +40,47 @@ const Root = ({
   testId = 'Dropdown',
   children,
 }: RootProps) => {
+  const [isOpen, toggleIsOpen] = useToggle(open);
+
   const ctx = useMemo(
-    () => ({ preventClosing, side, sideOffset, align, alignOffset, testId }),
-    [preventClosing, side, sideOffset, align, alignOffset, testId],
+    () => ({ isOpen, preventClosing, side, sideOffset, align, alignOffset, testId }),
+    [isOpen, preventClosing, side, sideOffset, align, alignOffset, testId],
+  );
+
+  const openChange = useCallback(
+    (isOpen: boolean) => {
+      onToggle?.(isOpen);
+      toggleIsOpen();
+    },
+    [onToggle],
   );
 
   return (
     <Context.Provider value={ctx}>
-      <DropdownMenu.Root open={open} modal onOpenChange={onToggle}>
+      <DropdownMenu.Root modal open={open} onOpenChange={openChange}>
         {children}
       </DropdownMenu.Root>
     </Context.Provider>
   );
 };
 
-const Trigger = ({ children }: PropsWithChildren) => <DropdownMenu.Trigger asChild>{children}</DropdownMenu.Trigger>;
+const Trigger = ({ children }: { children: ((open: boolean) => ReactNode) | ReactNode }) => {
+  const { isOpen } = useContext(Context);
 
-const Separator = () => (
-  <DropdownMenu.Separator className="h-[1px] w-full px-2">
-    <div className="h-full w-full bg-divider" />
-  </DropdownMenu.Separator>
-);
+  return (
+    <DropdownMenu.Trigger asChild>
+      {typeof children === 'function' ? children(Boolean(isOpen)) : children}
+    </DropdownMenu.Trigger>
+  );
+};
+
+const Separator = () => {
+  return (
+    <DropdownMenu.Separator className="h-[1px] w-full px-2">
+      <div className="h-full w-full bg-divider" />
+    </DropdownMenu.Separator>
+  );
+};
 
 const Content = ({ children }: PropsWithChildren) => {
   const { portalContainer } = useTheme();
@@ -68,6 +90,7 @@ const Content = ({ children }: PropsWithChildren) => {
     <DropdownMenu.Portal container={portalContainer}>
       <DropdownMenu.Content
         loop
+        asChild
         avoidCollisions={false}
         side={side}
         align={align}
@@ -75,18 +98,17 @@ const Content = ({ children }: PropsWithChildren) => {
         alignOffset={alignOffset && gridSpaceConverter(alignOffset)}
         sideOffset={sideOffset && gridSpaceConverter(sideOffset)}
         data-testid={testId}
-        asChild
       >
         <Surface
           elevation={1}
           className={cnTw(
-            'min-w-20 overflow-hidden duration-100 animate-in fade-in zoom-in-95',
-            'h-max max-h-[--radix-popper-available-height] max-w-60',
             'flex flex-col',
+            'h-max max-h-[--radix-popper-available-height] max-w-60',
+            'min-w-20 overflow-hidden duration-100 animate-in fade-in zoom-in-95',
           )}
         >
           <ScrollArea>
-            <div className="flex flex-col gap-1 p-1">{children}</div>
+            <div className="flex flex-col gap-y-1 p-1">{children}</div>
           </ScrollArea>
         </Surface>
       </DropdownMenu.Content>
@@ -110,20 +132,15 @@ const Group = ({ label, children }: GroupProps) => {
 };
 
 type ItemProps = PropsWithChildren<{
-  icon?: ReactNode;
   onSelect?: VoidFunction;
 }>;
 
-const Item = ({ onSelect, icon, children }: ItemProps) => {
+const Item = ({ children, onSelect }: ItemProps) => {
   return (
     <DropdownMenu.Item
-      className={cnTw(
-        'flex gap-2 rounded-md px-3 py-2 text-footnote text-text-secondary',
-        'cursor-pointer bg-block-background-default hover:bg-block-background-hover',
-      )}
+      className="cursor-pointer rounded bg-block-background-default hover:bg-block-background-hover focus:bg-block-background-hover"
       onSelect={onSelect}
     >
-      {icon ? <div className="text-icon-accent">{icon}</div> : null}
       {children}
     </DropdownMenu.Item>
   );
@@ -137,6 +154,7 @@ type CheckboxItemProps = PropsWithChildren<{
 
 const CheckboxItem = ({ checked, onChange, onSelect, children }: CheckboxItemProps) => {
   const { preventClosing } = useContext(Context);
+
   const handleSelect = (event: Event) => {
     if (preventClosing) {
       event.preventDefault();
@@ -164,7 +182,7 @@ const CheckboxItem = ({ checked, onChange, onSelect, children }: CheckboxItemPro
   );
 };
 
-const Dropdown = Object.assign(Root, {
+export const Dropdown = Object.assign(Root, {
   Trigger,
   Content,
   Item,
@@ -172,5 +190,3 @@ const Dropdown = Object.assign(Root, {
   Group,
   Separator,
 });
-
-export { Dropdown };

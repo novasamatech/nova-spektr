@@ -1,8 +1,10 @@
 export { useResizeObserver } from './hooks/useResizeObserver';
 export { useTheme } from './Theme/useTheme';
 
+export { DropdownButton } from './Buttons/DropdownButton';
 export { ThemeProvider } from './Theme/ThemeProvider';
 export { ScrollArea } from './ScrollArea/ScrollArea';
+export { Checkbox } from './Checkbox/Checkbox';
 export { Dropdown } from './Dropdown/Dropdown';
 export { Skeleton } from './Skeleton/Skeleton';
 export { Carousel } from './Carousel/Carousel';
@@ -13,4 +15,3 @@ export { Slider } from './Slider/Slider';
 export { Label } from './Label/Label';
 export { Modal } from './Modal/Modal';
 export { Box } from './Box/Box';
-export { Checkbox } from './Checkbox/Checkbox';
