@@ -2,7 +2,7 @@ import { type Chain, type Wallet } from '@/shared/core';
 import { dictionary } from '@/shared/lib/utils';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 
-import { type Member } from './types';
+import { type CoreMember, type Member } from './types';
 
 const findMachingMember = (wallet: Wallet, members: Member[], chain: Chain) => {
   const walletAccounts = wallet.accounts.filter(account => {
@@ -19,7 +19,16 @@ const findMachingAccount = (wallet: Wallet, member: Member) => {
   });
 };
 
+const isCoreMember = (member: Member | CoreMember): member is CoreMember => {
+  const hasActive = 'isActive' in member;
+  const hasPromotion = 'lastPromotion' in member;
+  const hasProof = 'lastProof' in member;
+
+  return hasActive && hasPromotion && hasProof;
+};
+
 export const membersService = {
   findMachingMember,
   findMachingAccount,
+  isCoreMember,
 };
