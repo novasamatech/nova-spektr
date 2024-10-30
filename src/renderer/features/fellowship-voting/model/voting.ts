@@ -31,7 +31,7 @@ const $coreTx = combine(
     input: votingFeatureStatus.input,
     account: votingStatusModel.$votingAccount,
     referendum: votingStatusModel.$referendum,
-    member: votingStatusModel.$currectMember,
+    member: votingStatusModel.$currentMember,
     vote: $vote,
   },
   ({ input, referendum, account, member, vote }) => {

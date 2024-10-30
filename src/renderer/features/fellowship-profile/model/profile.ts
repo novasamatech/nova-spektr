@@ -16,19 +16,19 @@ const $identities = combine(profileFeatureStatus.input, identityDomain.identity.
   return list[featureInput.chainId] ?? {};
 });
 
-const $currectMember = combine(profileFeatureStatus.input, $members, (featureInput, members) => {
+const $currentMember = combine(profileFeatureStatus.input, $members, (featureInput, members) => {
   if (nullable(featureInput) || members.length === 0) return null;
 
   return collectiveDomain.membersService.findMachingMember(featureInput.wallet, members, featureInput.chain);
 });
 
-const $identity = combine($currectMember, $identities, (member, identities) => {
+const $identity = combine($currentMember, $identities, (member, identities) => {
   if (nullable(member)) return null;
 
   return identities[member.accountId] ?? null;
 });
 
-const accountUpdate = attachToFeatureInput(profileFeatureStatus, $currectMember);
+const accountUpdate = attachToFeatureInput(profileFeatureStatus, $currentMember);
 
 sample({
   clock: profileFeatureStatus.running,
@@ -50,7 +50,7 @@ sample({
 });
 
 export const profileModel = {
-  $currectMember,
+  $currentMember,
   $identity,
   $pending: or(collectiveDomain.members.pending, identityDomain.identity.pending, profileFeatureStatus.isStarting),
   $fulfilled: collectiveDomain.members.fulfilled,
