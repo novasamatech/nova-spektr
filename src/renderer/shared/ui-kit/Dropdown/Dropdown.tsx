@@ -1,8 +1,7 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { type PropsWithChildren, type ReactNode, createContext, useCallback, useContext, useMemo } from 'react';
+import { type PropsWithChildren, type ReactNode, createContext, useContext, useMemo } from 'react';
 
 import { type XOR } from '@/shared/core';
-import { useToggle } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
 import { Checkbox } from '../Checkbox/Checkbox';
 import { ScrollArea } from '../ScrollArea/ScrollArea';
@@ -11,7 +10,6 @@ import { useTheme } from '../Theme/useTheme';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
 
 type ContextProps = {
-  isOpen?: boolean;
   preventClosing?: boolean;
   side?: 'top' | 'right' | 'bottom' | 'left';
   sideOffset?: number;
@@ -40,38 +38,22 @@ const Root = ({
   testId = 'Dropdown',
   children,
 }: RootProps) => {
-  const [isOpen, toggleIsOpen] = useToggle(open);
-
   const ctx = useMemo(
-    () => ({ isOpen, preventClosing, side, sideOffset, align, alignOffset, testId }),
-    [isOpen, preventClosing, side, sideOffset, align, alignOffset, testId],
-  );
-
-  const openChange = useCallback(
-    (isOpen: boolean) => {
-      onToggle?.(isOpen);
-      toggleIsOpen();
-    },
-    [onToggle],
+    () => ({ preventClosing, side, sideOffset, align, alignOffset, testId }),
+    [preventClosing, side, sideOffset, align, alignOffset, testId],
   );
 
   return (
     <Context.Provider value={ctx}>
-      <DropdownMenu.Root modal open={open} onOpenChange={openChange}>
+      <DropdownMenu.Root modal open={open} onOpenChange={onToggle}>
         {children}
       </DropdownMenu.Root>
     </Context.Provider>
   );
 };
 
-const Trigger = ({ children }: { children: ((open: boolean) => ReactNode) | ReactNode }) => {
-  const { isOpen } = useContext(Context);
-
-  return (
-    <DropdownMenu.Trigger asChild>
-      {typeof children === 'function' ? children(Boolean(isOpen)) : children}
-    </DropdownMenu.Trigger>
-  );
+const Trigger = ({ children }: PropsWithChildren) => {
+  return <DropdownMenu.Trigger asChild>{children}</DropdownMenu.Trigger>;
 };
 
 const Separator = () => {
@@ -135,10 +117,10 @@ type ItemProps = PropsWithChildren<{
   onSelect?: VoidFunction;
 }>;
 
-const Item = ({ children, onSelect }: ItemProps) => {
+const Item = ({ onSelect, children }: ItemProps) => {
   return (
     <DropdownMenu.Item
-      className="cursor-pointer rounded bg-block-background-default hover:bg-block-background-hover focus:bg-block-background-hover"
+      className="cursor-pointer rounded bg-block-background-default hover:bg-block-background-hover"
       onSelect={onSelect}
     >
       {children}

@@ -18,21 +18,10 @@ export const WalletSelect = ({ action }: Props) => {
     return <Skeleton width={208} height={56} />;
   }
 
-  const hideWalletPanel = (close: () => void) => {
-    return () => {
-      close();
-      walletSelectModel.events.clearData();
-    };
-  };
-
   return (
     <Popover>
-      {({ close }) => (
-        <>
-          <WalletButton wallet={activeWallet} />
-          <WalletPanel action={action} onClose={hideWalletPanel(close)} />
-        </>
-      )}
+      <WalletButton wallet={activeWallet} />
+      <WalletPanel action={action} onClose={walletSelectModel.events.clearData} />
     </Popover>
   );
 };

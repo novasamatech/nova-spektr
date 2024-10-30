@@ -5,8 +5,8 @@ import { type Address, type Stake } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { toAccountId } from '@/shared/lib/utils';
-import { BaseModal, Button, Icon, SmallTitleText } from '@/shared/ui';
-import { DropdownButton } from '@/shared/ui-kit';
+import { BaseModal, Button, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
+import { Dropdown } from '@/shared/ui-kit';
 import { ControllerOperations, OperationOptions, StashOperations } from '../lib/constants';
 import { ControllerTypes, type Operations } from '../lib/types';
 
@@ -20,6 +20,7 @@ type Props = {
 export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: Props) => {
   const { t } = useI18n();
   const [isDialogOpen, toggleIsDialogOpen] = useToggle();
+  const [isActionsOpen, toggleIsActionsOpen] = useToggle();
 
   const [operation, setOperation] = useState<Operations>();
   const [warningMessage, setWarningMessage] = useState('');
@@ -122,28 +123,6 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
     }
   };
 
-  const getAvailableButtonOptions = () => {
-    if (noStakes || wrongOverlaps) {
-      return [];
-    }
-
-    const options = [];
-    for (const [key, value] of Object.entries(operationsSummary)) {
-      if (stakes.length !== value) continue;
-
-      const typedKey = key as Operations;
-      const option = OperationOptions[typedKey];
-      options.push({
-        id: key,
-        icon: <Icon name={option.icon} size={20} className="text-icon-accent" />,
-        title: t(`staking.actions.${option.icon}Label`),
-        onClick: () => onClickAction(typedKey, option.path),
-      });
-    }
-
-    return options;
-  };
-
   const getActionButtonText = (): string => {
     if (noStakes) {
       return t('staking.actions.selectAccPlaceholder');
@@ -160,11 +139,34 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
       <div className="flex items-center justify-between">
         <SmallTitleText>{t('staking.overview.actionsTitle')}</SmallTitleText>
         <div className="min-w-[228px]">
-          <DropdownButton
-            title={getActionButtonText()}
-            disabled={isStakingLoading || noStakes || wrongOverlaps}
-            options={getAvailableButtonOptions()}
-          />
+          <Dropdown open={isActionsOpen} onToggle={toggleIsActionsOpen}>
+            <Dropdown.Trigger>
+              <Button
+                disabled={isStakingLoading || noStakes || wrongOverlaps}
+                className="h-8.5 w-full justify-center py-2"
+                suffixElement={<Icon name={isActionsOpen ? 'up' : 'down'} size={16} className="text-inherit" />}
+              >
+                {getActionButtonText()}
+              </Button>
+            </Dropdown.Trigger>
+            <Dropdown.Content>
+              {Object.entries(operationsSummary).map(([key, value]) => {
+                if (stakes.length !== value) return null;
+
+                const typedKey = key as Operations;
+                const option = OperationOptions[typedKey];
+
+                return (
+                  <Dropdown.Item key={key} onSelect={() => onClickAction(typedKey, option.path)}>
+                    <div className="flex w-full items-center gap-x-1.5 p-2">
+                      <Icon name={option.icon} size={20} className="shrink-0 text-icon-accent" />
+                      <FootnoteText className="text-text-secondary">{t(option.title)}</FootnoteText>
+                    </div>
+                  </Dropdown.Item>
+                );
+              })}
+            </Dropdown.Content>
+          </Dropdown>
         </div>
       </div>
 

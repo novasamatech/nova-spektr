@@ -1,34 +1,32 @@
 import * as RadixPopover from '@radix-ui/react-popover';
-import { noop } from 'lodash';
-import { type PropsWithChildren, type ReactNode, createContext, useCallback, useContext, useMemo } from 'react';
+import { type PropsWithChildren, createContext, useContext, useMemo } from 'react';
 
 import { type XOR } from '@/shared/core';
-import { useToggle } from '@/shared/lib/hooks';
 import { useTheme } from '../Theme/useTheme';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
 
 type ContextProps = {
-  isOpen?: boolean;
   side?: 'top' | 'right' | 'bottom' | 'left';
   sideOffset?: number;
   align?: 'start' | 'center' | 'end';
   alignOffset?: number;
   testId?: string;
-  close?: VoidFunction;
 };
 
-const Context = createContext<ContextProps>({ close: noop });
+const Context = createContext<ContextProps>({});
 
 type ControlledPopoverProps = XOR<{
   open: boolean;
   onToggle: (value: boolean) => void;
 }>;
 
-type RootProps = ControlledPopoverProps &
-  ContextProps & {
-    dialog?: boolean;
-    children: ((params: { open: boolean; close: VoidFunction }) => ReactNode) | ReactNode;
-  };
+type RootProps = PropsWithChildren<
+  ControlledPopoverProps &
+    ContextProps & {
+      dialog?: boolean;
+    }
+>;
+
 const Root = ({
   dialog,
   open,
@@ -40,25 +38,15 @@ const Root = ({
   testId = 'Popover',
   children,
 }: RootProps) => {
-  const [isOpen, toggleIsOpen] = useToggle(open);
-
   const ctx = useMemo(
-    () => ({ isOpen, side, sideOffset, align, alignOffset, testId, close }),
-    [isOpen, side, sideOffset, align, alignOffset, testId, close],
-  );
-
-  const openChange = useCallback(
-    (isOpen: boolean) => {
-      onToggle?.(isOpen);
-      toggleIsOpen();
-    },
-    [onToggle],
+    () => ({ side, sideOffset, align, alignOffset, testId }),
+    [side, sideOffset, align, alignOffset, testId],
   );
 
   return (
     <Context.Provider value={ctx}>
-      <RadixPopover.Root modal={!dialog} open={isOpen} onOpenChange={openChange}>
-        {typeof children === 'function' ? children({ open: Boolean(isOpen), close: toggleIsOpen }) : children}
+      <RadixPopover.Root modal={!dialog} open={open} onOpenChange={onToggle}>
+        {children}
       </RadixPopover.Root>
     </Context.Provider>
   );
@@ -89,7 +77,7 @@ const Content = ({ children }: PropsWithChildren) => {
         data-testid={testId}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="rounded-md border border-token-container-border bg-block-background-default shadow-shadow-2 duration-100 animate-in fade-in zoom-in-95">
+        <div className="rounded-md border border-token-container-border bg-block-background-default text-body shadow-shadow-2 duration-100 animate-in fade-in zoom-in-95">
           {children}
         </div>
       </RadixPopover.Content>
