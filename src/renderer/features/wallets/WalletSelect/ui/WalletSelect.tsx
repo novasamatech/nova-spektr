@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { Fragment, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
 import { Popover, Skeleton } from '@/shared/ui-kit';
 import { walletModel } from '@/entities/wallet';
@@ -28,10 +28,10 @@ export const WalletSelect = ({ action }: Props) => {
   return (
     <Popover>
       {({ close }) => (
-        <Fragment>
+        <>
           <WalletButton wallet={activeWallet} />
           <WalletPanel action={action} onClose={hideWalletPanel(close)} />
-        </Fragment>
+        </>
       )}
     </Popover>
   );

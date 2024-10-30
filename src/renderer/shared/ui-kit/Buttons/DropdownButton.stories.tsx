@@ -1,7 +1,7 @@
 import { type Meta, type StoryObj } from '@storybook/react';
 import { noop } from 'lodash';
 
-import { Icon } from '../../ui';
+import { Icon } from '@/shared/ui';
 
 import { DropdownButton } from './DropdownButton';
 

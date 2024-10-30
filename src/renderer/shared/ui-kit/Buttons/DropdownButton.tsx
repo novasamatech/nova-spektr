@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react';
 
-import { Button, FootnoteText, Icon } from '../../ui';
+import { Button, FootnoteText, Icon } from '@/shared/ui';
 import { Dropdown } from '../Dropdown/Dropdown';
 
 type Props = {
