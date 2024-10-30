@@ -76,7 +76,12 @@ const $isAddAvailable = combine(
   ({ canDelegate, activeAccounts, activeWallet, chain }) => {
     if (!chain || !activeWallet) return false;
 
-    const accounts = activeWallet?.accounts.filter((account) => accountUtils.isChainAndCryptoMatch(account, chain));
+    const accounts = activeWallet?.accounts.filter((account) => {
+      const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(account, chain);
+      const isNonBaseVaultAccount = accountUtils.isNonBaseVaultAccount(account, activeWallet);
+
+      return isChainAndCryptoMatch && isNonBaseVaultAccount;
+    });
 
     const freeAccounts = accounts.filter(
       (account) => !activeAccounts.includes(toAddress(account.accountId, { prefix: chain.addressPrefix })),
