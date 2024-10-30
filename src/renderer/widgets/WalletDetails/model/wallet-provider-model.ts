@@ -13,6 +13,7 @@ import {
   type Wallet,
 } from '@/shared/core';
 import { dictionary } from '@/shared/lib/utils';
+import { contactModel } from '@/entities/contact';
 import { networkModel } from '@/entities/network';
 import { proxyModel, proxyUtils } from '@/entities/proxy';
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -62,16 +63,26 @@ const $signatoryContacts = combine(
   {
     wallet: walletSelectModel.$walletForDetails,
     wallets: walletModel.$wallets,
+    contacts: contactModel.$contacts,
   },
-  ({ wallet, wallets }): Signatory[] => {
+  ({ wallet, wallets, contacts }): Signatory[] => {
     if (!wallet || !walletUtils.isMultisig(wallet)) return [];
 
     const signatoriesMap = dictionary(wallet.accounts[0].signatories, 'accountId');
     const allSignatories = walletUtils.getAccountsBy(wallets, ({ accountId }) => signatoriesMap[accountId]);
     const uniqueSignatories = uniqBy(allSignatories, 'accountId');
 
-    return wallet.accounts[0].signatories.filter((signatory) => {
+    const contactSignatories = wallet.accounts[0].signatories.filter((signatory) => {
       return uniqueSignatories.every((s) => s.accountId !== signatory.accountId);
+    });
+
+    return contactSignatories.map((signatory) => {
+      const contact = contacts.find((contact) => contact.accountId === signatory.accountId);
+
+      return {
+        ...signatory,
+        name: contact?.name,
+      };
     });
   },
 );
@@ -108,9 +119,14 @@ const $signatoryAccounts = combine(
     const allSignatories = walletUtils.getAccountsBy(wallets, ({ accountId }) => signatoriesMap[accountId]);
     const uniqueSignatories = uniqBy(allSignatories, 'accountId');
 
-    return wallet.accounts[0].signatories.filter((signatory) => {
-      return uniqueSignatories.some((s) => s.accountId === signatory.accountId);
-    });
+    return wallet.accounts[0].signatories.reduce<Signatory[]>((acc, signatory) => {
+      const matchingSignatory = uniqueSignatories.find((s) => s.accountId === signatory.accountId);
+      if (matchingSignatory) {
+        acc.push({ ...signatory, name: matchingSignatory.name });
+      }
+
+      return acc;
+    }, []);
   },
 );
 
