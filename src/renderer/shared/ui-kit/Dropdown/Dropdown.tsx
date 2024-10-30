@@ -2,8 +2,8 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { type PropsWithChildren, type ReactNode, createContext, useCallback, useContext, useMemo } from 'react';
 
 import { type XOR } from '@/shared/core';
+import { useToggle } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
-import { useToggle } from '../../lib/hooks';
 import { Checkbox } from '../Checkbox/Checkbox';
 import { ScrollArea } from '../ScrollArea/ScrollArea';
 import { Surface } from '../Surface/Surface';

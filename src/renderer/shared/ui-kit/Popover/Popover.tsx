@@ -3,7 +3,7 @@ import { noop } from 'lodash';
 import { type PropsWithChildren, type ReactNode, createContext, useCallback, useContext, useMemo } from 'react';
 
 import { type XOR } from '@/shared/core';
-import { useToggle } from '../../lib/hooks';
+import { useToggle } from '@/shared/lib/hooks';
 import { useTheme } from '../Theme/useTheme';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
 
