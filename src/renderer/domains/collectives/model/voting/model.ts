@@ -38,28 +38,24 @@ const {
     });
   },
 
-  map: (store, { params: { accounts, referendums, chainId, palletType }, result: response }) => {
+  map: (store, { params: { chainId, palletType }, result: response }) => {
     const result: Voting[] = [];
-    for (const [index, vote] of response.entries()) {
+    for (const vote of response.values()) {
       if (nullable(vote)) continue;
-      const accountId = accounts.at(index);
-      const referendumId = referendums.at(index);
 
-      if (nullable(accountId) || nullable(referendumId)) continue;
-
-      switch (vote.type) {
+      switch (vote.vote?.type) {
         case 'Aye':
           result.push({
-            accountId,
-            referendumId,
-            aye: vote.data,
+            accountId: vote.key.accountId,
+            referendumId: vote.key.referendumId,
+            aye: vote.vote.data,
           });
           break;
         case 'Nay':
           result.push({
-            accountId,
-            referendumId,
-            nay: vote.data,
+            accountId: vote.key.accountId,
+            referendumId: vote.key.referendumId,
+            nay: vote.vote.data,
           });
           break;
       }

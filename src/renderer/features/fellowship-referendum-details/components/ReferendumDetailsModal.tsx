@@ -6,6 +6,7 @@ import { type ReferendumId } from '@/shared/pallet/referenda';
 import { HeaderTitleText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Modal, Skeleton } from '@/shared/ui-kit';
 import { fellowshipVotingFeature } from '@/features/fellowship-voting';
+import { fellowshipVotingHistoryFeature } from '@/features/fellowship-voting-history';
 import { referendumDetailsModel } from '../model/details';
 import { referendumsDetailsFeatureStatus } from '../model/status';
 
@@ -16,6 +17,7 @@ import { ReferendumVoteChart } from './shared/ReferendumVoteChart';
 import { ReferendumVotingStatusBadge } from './shared/ReferendumVotingStatusBadge';
 
 const { VotingButtons, WalletVotingInfo } = fellowshipVotingFeature.views;
+const { VotingHistory, VotingSummary } = fellowshipVotingHistoryFeature.views;
 
 type Props = {
   isOpen: boolean;
@@ -67,6 +69,17 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
                   <ReferendumVoteChart referendum={referendum} pending={loadingState} descriptionPosition="bottom" />
                   <Threshold referendum={referendum} pending={loadingState} />
                   <VotingButtons referendumId={referendumId} />
+                </Box>
+              </Card>
+              <Card>
+                <Box padding={6} gap={4}>
+                  <Box direction="row" verticalAlign="center" horizontalAlign="space-between">
+                    <SmallTitleText>{t('fellowship.voting.summary')}</SmallTitleText>
+
+                    <VotingHistory referendumId={referendumId} />
+                  </Box>
+
+                  <VotingSummary />
                 </Box>
               </Card>
             </Box>

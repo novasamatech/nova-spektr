@@ -321,8 +321,9 @@
         "rankThreshold": "You cannot vote in this referendum because your rank is below the required level."
       },
       "votingStatus": "Voting status",
+      "summary": "Summary",
       "title": "Vote on",
-      "hreshold": "Threshold",
+      "threshold": "Threshold",
       "aye": "Aye",
       "nay": "Nay",
       "confirmation": {
@@ -357,7 +358,14 @@
       }
     },
     "title": "Fellowship",
-    "yourProfile": "Your profile"
+    "yourProfile": "Your profile",
+    "votingHistory": {
+      "modalTitle": "Vote history",
+      "votes_one": "{count} vote",
+      "votes_other": "{count} votes",
+      "showHistoryButton": "View vote history",
+      "emptyList": "There is no vote history"
+    }
   },
   "general": {
     "actions": {

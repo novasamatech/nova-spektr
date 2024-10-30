@@ -16,7 +16,7 @@ export const ProfileCard = memo(() => {
   const { t } = useI18n();
   const featureState = useUnit(profileFeatureStatus.state);
   const featureInput = useUnit(profileFeatureStatus.input);
-  const member = useUnit(profileModel.$currectMember);
+  const member = useUnit(profileModel.$currentMember);
   const identity = useUnit(profileModel.$identity);
   const fulfilled = useUnit(profileModel.$fulfilled);
 

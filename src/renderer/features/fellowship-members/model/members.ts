@@ -6,7 +6,9 @@ import { collectiveDomain } from '@/domains/collectives';
 import { fellowshipModel } from './fellowship';
 import { membersFeatureStatus } from './status';
 
-const $list = fellowshipModel.$store.map(x => x?.members ?? []);
+const $list = fellowshipModel.$store.map(
+  store => store?.members?.filter(collectiveDomain.membersService.isCoreMember) ?? [],
+);
 
 sample({
   clock: membersFeatureStatus.running,

@@ -24,19 +24,19 @@ const $referendum = combine($referendums, $referendumId, (referendums, referendu
   return referendums.find(referendum => referendum.id === referendumId) ?? null;
 });
 
-const $currectMember = combine(votingFeatureStatus.input, $members, (featureInput, members) => {
+const $currentMember = combine(votingFeatureStatus.input, $members, (featureInput, members) => {
   if (nullable(featureInput)) return null;
 
   return collectiveDomain.membersService.findMachingMember(featureInput.wallet, members, featureInput.chain);
 });
 
-const $votingAccount = combine(votingFeatureStatus.input, $currectMember, (input, member) => {
+const $votingAccount = combine(votingFeatureStatus.input, $currentMember, (input, member) => {
   if (nullable(member) || nullable(input)) return null;
 
   return collectiveDomain.membersService.findMachingAccount(input.wallet, member);
 });
 
-const $hasRequiredRank = combine($currectMember, $referendum, $maxRank, (member, referendum, maxRank) => {
+const $hasRequiredRank = combine($currentMember, $referendum, $maxRank, (member, referendum, maxRank) => {
   if (nullable(member) || nullable(referendum) || collectiveDomain.referendumService.isCompleted(referendum)) {
     return false;
   }
@@ -44,7 +44,7 @@ const $hasRequiredRank = combine($currectMember, $referendum, $maxRank, (member,
   return collectiveDomain.tracksService.rankSatisfiesVotingThreshold(member.rank, maxRank, referendum.track);
 });
 
-const $canVote = $currectMember.map(nonNullable);
+const $canVote = $currentMember.map(nonNullable);
 
 const $walletVoting = restore(
   attachToFeatureInput(votingFeatureStatus, $voting).map(({ input: { wallet }, data: voting }) => {
@@ -79,7 +79,7 @@ export const votingStatusModel = {
   $referendumVoting,
   $hasRequiredRank,
   $votingAccount,
-  $currectMember,
+  $currentMember,
   $canVote,
   $referendum,
   gate,
