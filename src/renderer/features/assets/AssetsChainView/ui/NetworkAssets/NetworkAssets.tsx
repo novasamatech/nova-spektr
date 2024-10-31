@@ -50,15 +50,18 @@ export const NetworkAssets = ({ chain, accounts, query, hideZeroBalances, search
   useEffect(() => {
     const chainBalances = balances.filter((b) => b.chainId === chain.chainId && accountIds.includes(b.accountId));
 
+    const newBalancesObject: Record<string, Balance> = {};
     const groupedBalances = Object.values(groupBy(chainBalances, 'assetId'));
 
-    const newBalancesObject = groupedBalances.reduce<Record<string, Balance>>((acc, accountBalances) => {
-      acc[accountBalances[0].assetId] = accountBalances.reduce<Balance>((balancesAcc, balance) => {
-        return sumBalances(balance, balancesAcc);
-      }, {} as Balance);
+    for (const accountBalances of groupedBalances) {
+      let total = {} as Balance;
 
-      return acc;
-    }, {});
+      for (const balance of accountBalances) {
+        total = sumBalances(balance, total);
+      }
+
+      newBalancesObject[accountBalances[0].assetId] = total;
+    }
 
     setBalancesObject(newBalancesObject);
   }, [balances, accountIds.join('')]);

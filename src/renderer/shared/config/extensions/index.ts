@@ -16,7 +16,9 @@ type TxWrapper = {
   userExtensions: ExtDef;
 };
 
-export const EXTENSIONS: Record<ChainId, { provider: Extension; txwrapper: TxWrapper }> = {
+export const EXTENSIONS: {
+  [chainId: ChainId]: { provider: Extension; txwrapper: TxWrapper } | undefined;
+} = {
   '0xb91746b45e0346cc2f815a520b9c6cb4d5c0902af848db0a80f85932d2e8276a': {
     provider: AVAIL_PROVIDER,
     txwrapper: AVAIL_TXWRAPPER,

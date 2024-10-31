@@ -2,13 +2,13 @@ import { type ApiPromise } from '@polkadot/api';
 
 import { type ChainId } from '@/shared/core';
 import { createDataSubscription } from '@/shared/effector';
-import { nullable, setNestedValue } from '@/shared/lib/utils';
+import { nonNullable, nullable, setNestedValue } from '@/shared/lib/utils';
 import { collectivePallet } from '@/shared/pallet/collective';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type CollectivePalletsType, type CollectivesStruct } from '../../lib/types';
 
-import { type Member } from './types';
+import { type CoreMember, type Member } from './types';
 
 export type RequestParams = {
   palletType: CollectivePalletsType;
@@ -23,7 +23,7 @@ const {
   unsubscribe,
   fulfilled,
   received,
-} = createDataSubscription<CollectivesStruct<Member[]>, RequestParams, Member[]>({
+} = createDataSubscription<CollectivesStruct<(Member | CoreMember)[]>, RequestParams, (Member | CoreMember)[]>({
   initial: {},
   fn: ({ api, palletType }, callback) => {
     let currentAbortController = new AbortController();
@@ -43,16 +43,22 @@ const {
       for (const collectiveMember of collectiveMembers) {
         if (nullable(collectiveMember.member)) continue;
 
-        const coreMember = coreMembers.find(x => x.account === collectiveMember.account);
-        if (nullable(coreMember) || nullable(coreMember.status)) continue;
+        const coreMember = coreMembers.find(member => member.account === collectiveMember.account);
 
-        result.push({
-          accountId: collectiveMember.account,
-          rank: collectiveMember.member.rank,
-          isActive: coreMember.status.isActive,
-          lastPromotion: coreMember.status.lastPromotion,
-          lastProof: coreMember.status.lastProof,
-        });
+        if (nonNullable(coreMember?.status)) {
+          result.push({
+            accountId: collectiveMember.account,
+            rank: collectiveMember.member.rank,
+            isActive: coreMember.status.isActive,
+            lastPromotion: coreMember.status.lastPromotion,
+            lastProof: coreMember.status.lastProof,
+          } as CoreMember);
+        } else {
+          result.push({
+            accountId: collectiveMember.account,
+            rank: collectiveMember.member.rank,
+          });
+        }
       }
 
       callback({

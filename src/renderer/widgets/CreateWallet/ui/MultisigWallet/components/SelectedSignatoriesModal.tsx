@@ -1,7 +1,7 @@
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { BaseModal } from '@/shared/ui';
-import { AccountAddress } from '@/entities/wallet';
+import { Address } from '@/shared/ui-entities';
 import { type SignatoryInfo } from '@/widgets/CreateWallet/lib/types';
 
 type Props = {
@@ -26,16 +26,13 @@ export const SelectedSignatoriesModal = ({ isOpen, signatories, onClose, address
       <section>
         <ul className="flex flex-col [overflow-y:overlay]">
           {signatories.map(({ address, name }) => (
-            <li
-              key={address}
-              className="group grid h-10 shrink-0 grid-cols-[1fr,40px] items-center pl-5 pr-2 hover:bg-hover"
-            >
-              <AccountAddress
-                size={20}
-                type="short"
+            <li key={address} className="mb-2 ml-5 mr-2">
+              <Address
+                showIcon
+                iconSize={24}
+                variant="truncate"
+                title={name}
                 address={toAddress(address, { prefix: addressPrefix })}
-                name={name}
-                canCopy={true}
               />
             </li>
           ))}

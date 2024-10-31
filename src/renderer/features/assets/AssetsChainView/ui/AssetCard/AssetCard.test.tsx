@@ -1,3 +1,4 @@
+import { BN_TEN, BN_TWO } from '@polkadot/util';
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { fork } from 'effector';
@@ -28,8 +29,8 @@ const defaultProps = {
     assetId: testAsset.assetId.toString(),
     chainId: testChain.chainId,
     accountId: TEST_ACCOUNTS[0],
-    free: '10',
-    frozen: '2',
+    free: BN_TEN,
+    frozen: BN_TWO,
   } as Balance,
 };
 
