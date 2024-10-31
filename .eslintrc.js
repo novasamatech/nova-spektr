@@ -67,6 +67,14 @@ module.exports = {
     'no-irregular-whitespace': 'off',
     'newline-before-return': 'error',
     'prettier/prettier': 'error',
+
+    'no-restricted-properties': [
+      'error',
+      {
+        property: '_test',
+        message: "It's a hidden API for unit testing",
+      },
+    ],
   },
   overrides: [
     {
@@ -92,6 +100,9 @@ module.exports = {
       files: ['*.test.ts', '*.test.tsx', 'jest*.js'],
       plugins: ['jest-dom'],
       extends: ['plugin:jest-dom/recommended'],
+      rules: {
+        'no-restricted-properties': 'off',
+      },
       env: {
         jest: true,
       },
