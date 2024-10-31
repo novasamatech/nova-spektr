@@ -3,9 +3,9 @@ import { type EngineTypes } from '@walletconnect/types';
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { combineEvents } from 'patronum';
 
-import { chainsService } from '@/shared/api/network';
-import { type HexString, type WcAccount } from '@/shared/core';
+import { AccountType, type ChainId, type HexString, type WcAccount } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
+import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type InitReconnectParams, walletConnectModel } from '@/entities/walletConnect';
 import { operationSignUtils } from '../lib/operation-sign-utils';
@@ -124,25 +124,28 @@ sample({
     signer: operationSignModel.$signer,
     wallets: walletModel.$wallets,
     newAccounts: walletConnectModel.$accounts,
+    chains: networkModel.$chains,
   },
   filter: ({ signer }) => Boolean(signer?.walletId),
-  fn: ({ signer, wallets, newAccounts }) => {
-    const { id: _, ...oldAccountParams } = walletUtils.getAccountsBy(
-      wallets,
-      (a) => a.walletId === signer?.walletId,
-    )[0];
+  fn: ({ signer, wallets, newAccounts, chains }) => {
+    const oldAccount = walletUtils.getAccountBy(wallets, (a) => a.walletId === signer?.walletId);
 
-    const updatedAccounts = newAccounts.map((account) => {
+    const updatedAccounts: WcAccount[] = [];
+
+    for (const account of newAccounts) {
       const [_, chainId, address] = account.split(':');
-      const chain = chainsService.searchChain(chainId);
       const accountId = toAccountId(address);
+      const chain = chains[chainId as ChainId];
 
-      return {
-        ...oldAccountParams,
-        chainId: chain?.chainId,
+      if (!chain || !oldAccount) continue;
+
+      updatedAccounts.push({
+        ...oldAccount,
+        chainId: chain.chainId,
+        type: AccountType.WALLET_CONNECT,
         accountId,
-      } as WcAccount;
-    });
+      });
+    }
 
     return { walletId: signer!.walletId, accounts: updatedAccounts };
   },
