@@ -17,19 +17,21 @@ const getChainOptions = (chains: Chain[]): DropdownOption<Chain>[] => {
     .filter((c) => networkUtils.isMultisigSupported(c.options))
     .map((chain) => ({
       id: chain.chainId.toString(),
-      element: <ChainTitle chain={chain} />,
       value: chain,
+      element: <ChainTitle chain={chain} fontClass="text-text-primary" />,
     }));
 };
 
 export const NameNetworkSelection = () => {
   const { t } = useI18n();
+
+  const api = useUnit(flowModel.$api);
   const fakeTx = useUnit(flowModel.$fakeTx);
   const chains = useUnit(networkModel.$chains);
+
   const {
     fields: { name, chain, threshold },
   } = useForm(formModel.$createMultisigForm);
-  const api = useUnit(flowModel.$api);
 
   const chainOptions = getChainOptions(Object.values(chains));
   const isNameError = name.isTouched && !name.value;
