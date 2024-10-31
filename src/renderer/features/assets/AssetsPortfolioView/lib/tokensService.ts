@@ -93,9 +93,17 @@ function getChainWithBalance(
 }
 
 function hideZeroBalances(hideZeroBalance: boolean, activeTokensWithBalance: AssetByChains[]): AssetByChains[] {
-  return activeTokensWithBalance.filter((token) => {
-    return !hideZeroBalance || totalAmount(token.totalBalance) !== ZERO_BALANCE;
-  });
+  if (!hideZeroBalance) return activeTokensWithBalance;
+
+  return activeTokensWithBalance.reduce<AssetByChains[]>((acc, token) => {
+    if (totalAmount(token.totalBalance) === ZERO_BALANCE) return acc;
+
+    const chains = token.chains.filter((chain) => {
+      return totalAmount(chain.balance) !== ZERO_BALANCE;
+    });
+
+    return [...acc, { ...token, chains }];
+  }, []);
 }
 
 function sortTokensByBalance(
