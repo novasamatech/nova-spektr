@@ -120,7 +120,10 @@ type ItemProps = PropsWithChildren<{
 const Item = ({ onSelect, children }: ItemProps) => {
   return (
     <DropdownMenu.Item
-      className="cursor-pointer rounded bg-block-background-default hover:bg-block-background-hover"
+      className={cnTw(
+        'flex rounded p-2 text-footnote text-text-secondary',
+        'cursor-pointer bg-block-background-default hover:bg-block-background-hover',
+      )}
       onSelect={onSelect}
     >
       {children}

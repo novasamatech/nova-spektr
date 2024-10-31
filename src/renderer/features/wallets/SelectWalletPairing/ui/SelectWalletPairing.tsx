@@ -3,7 +3,7 @@ import { type TFunction } from 'i18next';
 import { type WalletFamily, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { Button, FootnoteText, Icon } from '@/shared/ui';
+import { Button, Icon } from '@/shared/ui';
 import { Dropdown } from '@/shared/ui-kit';
 import { WalletIcon } from '@/entities/wallet';
 import { walletPairingModel } from '../model/wallet-pairing-model';
@@ -36,9 +36,9 @@ export const SelectWalletPairing = () => {
       <Dropdown.Content>
         {getDropdownOptions(t).map(({ title, walletType }) => (
           <Dropdown.Item key={title} onSelect={() => walletPairingModel.events.walletTypeSet(walletType)}>
-            <div className="flex items-center gap-x-1.5 p-2">
+            <div className="flex items-center gap-x-1.5">
               <WalletIcon type={walletType} />
-              <FootnoteText className="text-text-secondary">{title}</FootnoteText>
+              {title}
             </div>
           </Dropdown.Item>
         ))}

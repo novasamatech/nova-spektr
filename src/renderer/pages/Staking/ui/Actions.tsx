@@ -5,7 +5,7 @@ import { type Address, type Stake } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { toAccountId } from '@/shared/lib/utils';
-import { BaseModal, Button, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
+import { BaseModal, Button, Icon, SmallTitleText } from '@/shared/ui';
 import { Dropdown } from '@/shared/ui-kit';
 import { ControllerOperations, OperationOptions, StashOperations } from '../lib/constants';
 import { ControllerTypes, type Operations } from '../lib/types';
@@ -158,9 +158,9 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
 
                 return (
                   <Dropdown.Item key={key} onSelect={() => onClickAction(typedKey, option.path)}>
-                    <div className="flex w-full items-center gap-x-1.5 p-2">
+                    <div className="flex w-full items-center gap-x-1.5">
                       <Icon name={option.icon} size={20} className="shrink-0 text-icon-accent" />
-                      <FootnoteText className="text-text-secondary">{t(option.title)}</FootnoteText>
+                      {t(option.title)}
                     </div>
                   </Dropdown.Item>
                 );
