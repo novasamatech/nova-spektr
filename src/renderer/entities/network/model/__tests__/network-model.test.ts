@@ -97,7 +97,7 @@ describe('entities/network/model/network-model', () => {
       { metadata: mockMetadata.metadata, nodes: ['http://localhost:8080'] },
       { onConnected: expect.any(Function), onDisconnected: expect.any(Function), onError: expect.any(Function) },
     );
-    expect(scope.getState(networkModel._$providers)).toEqual({
+    expect(scope.getState(networkModel._test.$providers)).toEqual({
       '0x01': { isConnected: true },
     });
   });
@@ -131,7 +131,7 @@ describe('entities/network/model/network-model', () => {
       { metadata: mockMetadata.metadata, nodes: [''] },
       { onConnected: expect.any(Function), onDisconnected: expect.any(Function), onError: expect.any(Function) },
     );
-    expect(scope.getState(networkModel._$providers)).toEqual({
+    expect(scope.getState(networkModel._test.$providers)).toEqual({
       '0x01': { connect: connectMock, isConnected: true },
     });
   });

@@ -49,7 +49,7 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
     const scope = fork();
     await setupInitialState(scope);
 
-    expect(scope.getState(balanceSubModel.__$subAccounts)).toEqual({
+    expect(scope.getState(balanceSubModel._test.$subAccounts)).toEqual({
       '0x01': { [wallets[0].id]: [accounts[0].accountId] },
       '0x02': { [wallets[0].id]: [accounts[0].accountId, accounts[1].accountId] },
     });
@@ -62,7 +62,7 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
     };
 
     const scope = fork({
-      values: new Map().set(balanceSubModel.__$subAccounts, subAccounts),
+      values: new Map().set(balanceSubModel._test.$subAccounts, subAccounts),
     });
 
     const action = allSettled(balanceSubModel.events.walletToUnsubSet, { scope, params: wallets[0] });
@@ -70,7 +70,7 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
     await jest.runAllTimersAsync();
     await action;
 
-    expect(scope.getState(balanceSubModel.__$subAccounts)).toEqual({
+    expect(scope.getState(balanceSubModel._test.$subAccounts)).toEqual({
       '0x01': { [wallets[1].id]: [] },
       '0x02': { [wallets[1].id]: [] },
     });
@@ -85,7 +85,7 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
     await jest.runAllTimersAsync();
     await action;
 
-    expect(scope.getState(balanceSubModel.__$subAccounts)).toEqual({
+    expect(scope.getState(balanceSubModel._test.$subAccounts)).toEqual({
       '0x01': { [wallets[1].id]: [accounts[2].accountId] },
       '0x02': { [wallets[1].id]: [accounts[2].accountId, accounts[3].accountId] },
     });
@@ -95,7 +95,7 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
     const scope = fork();
     await setupInitialState(scope);
 
-    expect(scope.getState(balanceSubModel.__$subAccounts)).toEqual({
+    expect(scope.getState(balanceSubModel._test.$subAccounts)).toEqual({
       '0x01': { [wallets[0].id]: [accounts[0].accountId] },
       '0x02': { [wallets[0].id]: [accounts[0].accountId, accounts[1].accountId] },
     });
@@ -105,7 +105,7 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
     await jest.runAllTimersAsync();
     await action;
 
-    expect(scope.getState(balanceSubModel.__$subAccounts)).toEqual({
+    expect(scope.getState(balanceSubModel._test.$subAccounts)).toEqual({
       '0x01': { [wallets[0].id]: [accounts[0].accountId], [wallets[1].id]: [accounts[2].accountId] },
       '0x02': {
         [wallets[0].id]: [accounts[0].accountId, accounts[1].accountId],
@@ -123,7 +123,7 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
     });
     await setupInitialState(scope_1);
 
-    expect(scope_1.getState(balanceSubModel.__$subscriptions)).toEqual({
+    expect(scope_1.getState(balanceSubModel._test.$subscriptions)).toEqual({
       '0x01': undefined,
       '0x02': { [wallets[0].id]: [balanceSpyPromise, lockSpyPromise] },
     });
@@ -135,7 +135,7 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
 
     expect(balanceSpy).not.toHaveBeenCalled();
     expect(lockSpy).not.toHaveBeenCalled();
-    expect(scope_1.getState(balanceSubModel.__$subscriptions)).toEqual({
+    expect(scope_1.getState(balanceSubModel._test.$subscriptions)).toEqual({
       '0x01': undefined,
       '0x02': {
         [wallets[0].id]: [balanceSpyPromise, lockSpyPromise],
@@ -155,7 +155,7 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
 
     expect(balanceSpy).not.toHaveBeenCalled();
     expect(lockSpy).not.toHaveBeenCalled();
-    expect(scope.getState(balanceSubModel.__$subscriptions)).toEqual({
+    expect(scope.getState(balanceSubModel._test.$subscriptions)).toEqual({
       '0x01': { [wallets[0].id]: [balanceSpyPromise, lockSpyPromise] },
       '0x02': undefined,
     });
@@ -167,7 +167,7 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
 
     expect(balanceSpy).toHaveBeenCalledTimes(1);
     expect(lockSpy).toHaveBeenCalledTimes(1);
-    expect(scope.getState(balanceSubModel.__$subscriptions)).toEqual({
+    expect(scope.getState(balanceSubModel._test.$subscriptions)).toEqual({
       '0x01': { [wallets[1].id]: [balanceSpyPromise, lockSpyPromise] },
       '0x02': undefined,
     });
@@ -182,7 +182,7 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
     });
     await setupInitialState(scope);
 
-    expect(scope.getState(balanceSubModel.__$subscriptions)).toEqual({
+    expect(scope.getState(balanceSubModel._test.$subscriptions)).toEqual({
       '0x01': { [wallets[0].id]: [balanceSpyPromise, lockSpyPromise] },
       '0x02': { [wallets[0].id]: [balanceSpyPromise, lockSpyPromise] },
     });
@@ -194,12 +194,12 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
 
     expect(balanceSpy).toHaveBeenCalledTimes(2);
     expect(lockSpy).toHaveBeenCalledTimes(2);
-    expect(scope.getState(balanceSubModel.__$subscriptions)).toEqual({ '0x01': undefined, '0x02': undefined });
+    expect(scope.getState(balanceSubModel._test.$subscriptions)).toEqual({ '0x01': undefined, '0x02': undefined });
   });
 
   test('should update $subscriptions on disconnected connectionStatusChanged', async () => {
     const scope = fork({
-      values: new Map().set(balanceSubModel.__$subscriptions, {
+      values: new Map().set(balanceSubModel._test.$subscriptions, {
         '0x01': { [wallets[0].id]: [balanceSpyPromise, lockSpyPromise] },
         '0x02': { [wallets[0].id]: [balanceSpyPromise, lockSpyPromise] },
       }),
@@ -215,7 +215,7 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
 
     expect(balanceSpy).toHaveBeenCalledTimes(1);
     expect(lockSpy).toHaveBeenCalledTimes(1);
-    expect(scope.getState(balanceSubModel.__$subscriptions)).toEqual({
+    expect(scope.getState(balanceSubModel._test.$subscriptions)).toEqual({
       '0x01': undefined,
       '0x02': { [wallets[0].id]: [balanceSpyPromise, lockSpyPromise] },
     });
@@ -225,7 +225,7 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
     const scope = fork();
     await setupInitialState(scope);
 
-    expect(scope.getState(balanceSubModel.__$subscriptions)).toEqual({});
+    expect(scope.getState(balanceSubModel._test.$subscriptions)).toEqual({});
 
     const action = allSettled(networkModel.output.connectionStatusChanged, {
       scope,
@@ -235,7 +235,7 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
     await jest.runAllTimersAsync();
     await action;
 
-    expect(scope.getState(balanceSubModel.__$subscriptions)).toEqual({
+    expect(scope.getState(balanceSubModel._test.$subscriptions)).toEqual({
       '0x02': { [wallets[0].id]: [balanceSpyPromise, lockSpyPromise] },
     });
   });
@@ -256,7 +256,7 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
 
     const scope = fork();
 
-    const action = allSettled(balanceSubModel.__$subAccounts, { scope, params: subAccounts });
+    const action = allSettled(balanceSubModel._test.$subAccounts, { scope, params: subAccounts });
 
     await jest.runAllTimersAsync();
     await action;
