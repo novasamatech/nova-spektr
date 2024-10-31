@@ -95,15 +95,19 @@ function getChainWithBalance(
 function hideZeroBalances(hideZeroBalance: boolean, activeTokensWithBalance: AssetByChains[]): AssetByChains[] {
   if (!hideZeroBalance) return activeTokensWithBalance;
 
-  return activeTokensWithBalance.reduce<AssetByChains[]>((acc, token) => {
-    if (totalAmount(token.totalBalance) === ZERO_BALANCE) return acc;
+  const result: AssetByChains[] = [];
 
-    const chains = token.chains.filter((chain) => {
+  for (const token of activeTokensWithBalance) {
+    if (totalAmount(token.totalBalance) === ZERO_BALANCE) continue;
+
+    const filteredChains = token.chains.filter((chain) => {
       return totalAmount(chain.balance) !== ZERO_BALANCE;
     });
 
-    return [...acc, { ...token, chains }];
-  }, []);
+    result.push({ ...token, chains: filteredChains });
+  }
+
+  return result;
 }
 
 function sortTokensByBalance(
