@@ -149,7 +149,13 @@ const updateWcAccountsFx = createEffect(
     const oldAccountIds = wallet.accounts.map((account) => account.id);
 
     await storageService.accounts.deleteAll(oldAccountIds);
-    const newAccounts = await storageService.accounts.createAll(accounts);
+    const newAccounts = await storageService.accounts.createAll(
+      accounts.map((account) => {
+        const { id: _, ...newAccount } = account;
+
+        return newAccount;
+      }),
+    );
 
     return newAccounts as WcAccount[];
   },
@@ -410,10 +416,13 @@ sample({
 });
 
 sample({
-  clock: $client,
-  source: walletModel.$wallets,
-  filter: (_, client) => Boolean(client),
-  fn: (wallets, client) => {
+  clock: [$client, walletModel.events.walletCreatedDone],
+  source: {
+    wallets: walletModel.$wallets,
+    client: $client,
+  },
+  filter: ({ client }) => Boolean(client),
+  fn: ({ wallets, client }) => {
     return wallets.map((wallet) => {
       if (walletUtils.isWalletConnectGroup(wallet)) {
         wallet.isConnected = walletConnectUtils.isConnectedByAccounts(client!, wallet);

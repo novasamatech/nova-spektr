@@ -1,10 +1,10 @@
 import { createEvent, createStore, sample } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
-import { chainsService } from '@/shared/api/network';
-import { type Wallet, type WcAccount } from '@/shared/core';
+import { AccountType, type ChainId, type Wallet, type WcAccount } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import { balanceModel } from '@/entities/balance';
+import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type InitConnectParams, walletConnectModel } from '@/entities/walletConnect';
 import { walletSelectModel } from '@/features/wallets';
@@ -72,19 +72,25 @@ sample({
   source: {
     wallet: walletSelectModel.$walletForDetails,
     newAccounts: walletConnectModel.$accounts,
+    chains: networkModel.$chains,
   },
   filter: ({ wallet }) => Boolean(wallet),
-  fn: ({ wallet, newAccounts }) => {
-    const updatedAccounts = newAccounts.map((account) => {
-      const [_, chainId, address] = account.split(':');
-      const chain = chainsService.searchChain(chainId);
+  fn: ({ wallet, newAccounts, chains }) => {
+    const updatedAccounts: WcAccount[] = [];
 
-      return {
+    for (const newAccount of newAccounts) {
+      const [_, chainId, address] = newAccount.split(':');
+      const chain = chains[chainId as ChainId];
+
+      if (!chain) continue;
+
+      updatedAccounts.push({
         ...wallet!.accounts[0],
-        chainId: chain?.chainId,
+        type: AccountType.WALLET_CONNECT,
+        chainId: chain.chainId,
         accountId: toAccountId(address),
-      } as WcAccount;
-    });
+      });
+    }
 
     return { walletId: wallet!.id, accounts: updatedAccounts };
   },

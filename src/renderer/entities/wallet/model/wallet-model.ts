@@ -305,6 +305,7 @@ export const walletModel = {
     singleshardCreated,
     multisigCreated,
     walletConnectCreated,
+    walletCreatedDone: walletCreatedFx.done,
     walletRemoved,
     walletHidden,
     walletHiddenSuccess: hideWalletFx.done,
