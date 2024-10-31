@@ -387,10 +387,13 @@ sample({
     step: $step,
     hiddenMultisig: formModel.$hiddenMultisig,
   },
-  filter: ({ step }, results) =>
-    isStep(step, Step.SUBMIT) &&
-    nonNullable(formModel.$hiddenMultisig) &&
-    results[0]?.result === ExtrinsicResult.SUCCESS,
+  filter: ({ step }, results) => {
+    const isSubmitStep = isStep(step, Step.SUBMIT);
+    const isNonNullable = nonNullable(formModel.$hiddenMultisig);
+    const isSuccessResult = results[0]?.result === ExtrinsicResult.SUCCESS;
+
+    return isSubmitStep && isNonNullable && isSuccessResult;
+  },
   fn: ({ hiddenMultisig }) => hiddenMultisig!.id,
   target: walletModel.events.walletRemoved,
 });

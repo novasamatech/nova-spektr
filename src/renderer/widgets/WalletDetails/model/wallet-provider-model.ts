@@ -68,22 +68,14 @@ const $signatoryContacts = combine(
   ({ wallet, wallets, contacts }): Signatory[] => {
     if (!wallet || !walletUtils.isMultisig(wallet)) return [];
 
+    const contactsMap = dictionary(contacts, 'accountId');
     const signatoriesMap = dictionary(wallet.accounts[0].signatories, 'accountId');
     const allSignatories = walletUtils.getAccountsBy(wallets, ({ accountId }) => signatoriesMap[accountId]);
-    const uniqueSignatories = uniqBy(allSignatories, 'accountId');
+    const signatoriesSet = new Set(allSignatories.map((signatory) => signatory.accountId));
 
-    const contactSignatories = wallet.accounts[0].signatories.filter((signatory) => {
-      return uniqueSignatories.every((s) => s.accountId !== signatory.accountId);
-    });
-
-    return contactSignatories.map((signatory) => {
-      const contact = contacts.find((contact) => contact.accountId === signatory.accountId);
-
-      return {
-        ...signatory,
-        name: contact?.name,
-      };
-    });
+    return wallet.accounts[0].signatories
+      .filter((signatory) => !signatoriesSet.has(signatory.accountId))
+      .map((signatory) => ({ ...signatory, name: contactsMap[signatory.accountId]?.name }));
   },
 );
 
@@ -118,15 +110,11 @@ const $signatoryAccounts = combine(
     const signatoriesMap = dictionary(wallet.accounts[0].signatories, 'accountId');
     const allSignatories = walletUtils.getAccountsBy(wallets, ({ accountId }) => signatoriesMap[accountId]);
     const uniqueSignatories = uniqBy(allSignatories, 'accountId');
+    const uniqueSignatoriesMap = dictionary(uniqueSignatories, 'accountId');
 
-    return wallet.accounts[0].signatories.reduce<Signatory[]>((acc, signatory) => {
-      const matchingSignatory = uniqueSignatories.find((s) => s.accountId === signatory.accountId);
-      if (matchingSignatory) {
-        acc.push({ ...signatory, name: matchingSignatory.name });
-      }
-
-      return acc;
-    }, []);
+    return wallet.accounts[0].signatories
+      .filter((signatory) => uniqueSignatoriesMap[signatory.accountId])
+      .map((signatory) => ({ ...signatory, name: uniqueSignatoriesMap[signatory.accountId]?.name }));
   },
 );
 

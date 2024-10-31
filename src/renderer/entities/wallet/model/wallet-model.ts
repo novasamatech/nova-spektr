@@ -292,8 +292,10 @@ export const walletModel = {
   $hiddenWallets,
   $activeWallet,
   $isLoadingWallets: fetchAllWalletsFx.pending,
-  // for tests
-  $allWallets,
+
+  _test: {
+    $allWallets,
+  },
 
   events: {
     walletStarted,
