@@ -18,13 +18,21 @@ import {
   WalletType,
   WrapperKind,
 } from '@/shared/core';
-import { SS58_DEFAULT_PREFIX, TEST_ACCOUNTS, ZERO_BALANCE, isStep, toAccountId, toAddress } from '@/shared/lib/utils';
+import {
+  SS58_DEFAULT_PREFIX,
+  TEST_ACCOUNTS,
+  ZERO_BALANCE,
+  isStep,
+  nonNullable,
+  toAccountId,
+  toAddress,
+} from '@/shared/lib/utils';
 import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
-import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { ExtrinsicResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { type AddMultisigStore, type FormSubmitEvent, Step } from '../lib/types';
 
 import { confirmModel } from './confirm-model';
@@ -374,6 +382,23 @@ sample({
 });
 
 sample({
+  clock: submitModel.output.formSubmitted,
+  source: {
+    step: $step,
+    hiddenMultisig: formModel.$hiddenMultisig,
+  },
+  filter: ({ step }, results) => {
+    const isSubmitStep = isStep(step, Step.SUBMIT);
+    const isNonNullable = nonNullable(formModel.$hiddenMultisig);
+    const isSuccessResult = results[0]?.result === ExtrinsicResult.SUCCESS;
+
+    return isSubmitStep && isNonNullable && isSuccessResult;
+  },
+  fn: ({ hiddenMultisig }) => hiddenMultisig!.id,
+  target: walletModel.events.walletRemoved,
+});
+
+sample({
   clock: delay(submitModel.output.formSubmitted, 2000),
   source: $step,
   filter: (step) => isStep(step, Step.SUBMIT),
@@ -426,6 +451,11 @@ sample({
 });
 
 sample({
+  clock: flowFinished,
+  target: formModel.$createMultisigForm.reset,
+});
+
+sample({
   clock: delay(flowFinished, 2000),
   fn: () => Step.NAME_NETWORK,
   target: stepChanged,
@@ -434,11 +464,6 @@ sample({
 sample({
   clock: delay(flowFinished, 2000),
   target: signatoryModel.$signatories.reinit,
-});
-
-sample({
-  clock: delay(flowFinished, 2000),
-  target: formModel.$createMultisigForm.reset,
 });
 
 export const flowModel = {

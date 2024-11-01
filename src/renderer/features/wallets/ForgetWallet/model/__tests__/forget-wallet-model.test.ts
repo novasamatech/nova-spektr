@@ -97,7 +97,7 @@ describe('features/wallets/ForgetModel', () => {
     storageService.accounts.deleteAll = jest.fn();
 
     const scope = fork({
-      values: new Map().set(walletModel.$wallets, [wallet]),
+      values: new Map().set(walletModel._test.$allWallets, [wallet]),
     });
 
     await allSettled(forgetWalletModel.events.callbacksChanged, { scope, params: { onDeleteFinished: spyCallback } });
@@ -114,14 +114,14 @@ describe('features/wallets/ForgetModel', () => {
     storageService.accounts.deleteAll = spyDeleteAccounts;
 
     const scope = fork({
-      values: new Map().set(walletModel.$wallets, [wallet]),
+      values: new Map().set(walletModel._test.$allWallets, [wallet]),
     });
 
     await allSettled(forgetWalletModel.events.callbacksChanged, { scope, params: { onDeleteFinished: () => {} } });
     await allSettled(forgetWalletModel.events.forgetWallet, { scope, params: wallet });
 
-    expect(spyDeleteWallet).toBeCalledWith(1);
-    expect(spyDeleteAccounts).toBeCalledWith([1, 2]);
+    expect(spyDeleteWallet).toHaveBeenCalledWith(1);
+    expect(spyDeleteAccounts).toHaveBeenCalledWith([1, 2]);
   });
 
   test('should delete proxied accounts, wallets and proxyGroups', async () => {
@@ -158,6 +158,6 @@ describe('features/wallets/ForgetModel', () => {
 
     expect(scope.getState(proxyModel.$proxyGroups)).toEqual([]);
     expect(scope.getState(proxyModel.$proxies)).toEqual({});
-    expect(scope.getState(walletModel.$wallets)).toEqual([]);
+    expect(scope.getState(walletModel._test.$allWallets)).toEqual([]);
   });
 });

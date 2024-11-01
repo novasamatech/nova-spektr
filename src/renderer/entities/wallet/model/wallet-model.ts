@@ -38,6 +38,7 @@ const walletsRemoved = createEvent<ID[]>();
 
 const $wallets = createStore<Wallet[]>([]);
 const $hiddenWallets = createStore<Wallet[]>([]);
+const $allWallets = createStore<Wallet[]>([]);
 
 // TODO: ideally it should be a feature
 const $activeWallet = combine(
@@ -168,15 +169,10 @@ sample({
   clock: combineEvents([fetchAllAccountsFx.doneData, fetchAllWalletsFx.doneData]),
   fn: ([accounts, allWallets]) => {
     const accountsMap = groupBy(accounts, 'walletId');
-    const walletWithAccounts = allWallets.map((wallet) => ({ ...wallet, accounts: accountsMap[wallet.id] }));
-    const [hiddenWallets, wallets] = partition(walletWithAccounts, 'isHidden');
 
-    return { hiddenWallets, wallets };
+    return allWallets.map((wallet) => ({ ...wallet, accounts: accountsMap[wallet.id] }));
   },
-  target: spread({
-    wallets: $wallets,
-    hiddenWallets: $hiddenWallets,
-  }),
+  target: $allWallets,
 });
 
 sample({
@@ -191,17 +187,17 @@ sample({
 
 sample({
   clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData],
-  source: $wallets,
+  source: $allWallets,
   filter: (_, data) => Boolean(data),
   fn: (wallets, data) => {
     return wallets.concat({ ...data!.wallet, accounts: data!.accounts });
   },
-  target: $wallets,
+  target: $allWallets,
 });
 
 sample({
   clock: walletRemoved,
-  source: $wallets,
+  source: $allWallets,
   filter: (wallets, walletId) => {
     return wallets.some((wallet) => wallet.id === walletId);
   },
@@ -213,7 +209,7 @@ sample({
 
 sample({
   clock: walletsRemoved,
-  source: $wallets,
+  source: $allWallets,
   filter: (wallets, walletIds) => {
     return wallets.some((wallet) => walletIds.includes(wallet.id));
   },
@@ -225,20 +221,20 @@ sample({
 
 sample({
   clock: removeWalletFx.doneData,
-  source: $wallets,
+  source: $allWallets,
   fn: (wallets, walletId) => {
     return wallets.filter((wallet) => wallet.id !== walletId);
   },
-  target: $wallets,
+  target: $allWallets,
 });
 
 sample({
   clock: removeWalletsFx.doneData,
-  source: $wallets,
+  source: $allWallets,
   fn: (wallets, walletIds) => {
     return wallets.filter((wallet) => !walletIds.includes(wallet.id));
   },
-  target: $wallets,
+  target: $allWallets,
 });
 
 sample({
@@ -248,20 +244,13 @@ sample({
 
 sample({
   clock: hideWalletFx.doneData,
-  source: {
-    wallets: $wallets,
-    hiddenWallets: $hiddenWallets,
+  source: $allWallets,
+  fn: (wallets, walletToHide) => {
+    return wallets.map((wallet) => {
+      return wallet.id === walletToHide.id ? { ...wallet, isHidden: true } : wallet;
+    });
   },
-  fn: ({ wallets, hiddenWallets }, walletToRemove) => {
-    return {
-      wallets: wallets.filter((wallet) => wallet.id !== walletToRemove.id),
-      hiddenWallets: hiddenWallets.concat(walletToRemove),
-    };
-  },
-  target: spread({
-    wallets: $wallets,
-    hiddenWallets: $hiddenWallets,
-  }),
+  target: $allWallets,
 });
 
 sample({
@@ -276,15 +265,21 @@ sample({
 
 sample({
   clock: restoreWalletFx.doneData,
-  source: {
-    wallets: $wallets,
-    hiddenWallets: $hiddenWallets,
+  source: $allWallets,
+  fn: (wallets, walletToRestore) => {
+    return wallets.map((wallet) => {
+      return wallet.id === walletToRestore.id ? { ...wallet, isHidden: false } : wallet;
+    });
   },
-  fn: ({ wallets, hiddenWallets }, walletToRestore) => {
-    return {
-      wallets: wallets.concat(walletToRestore),
-      hiddenWallets: hiddenWallets.filter((wallet) => wallet.id !== walletToRestore.id),
-    };
+  target: $allWallets,
+});
+
+sample({
+  clock: $allWallets,
+  fn: (allWallets) => {
+    const [hiddenWallets, wallets] = partition(allWallets, 'isHidden');
+
+    return { hiddenWallets, wallets };
   },
   target: spread({
     wallets: $wallets,
@@ -297,6 +292,10 @@ export const walletModel = {
   $hiddenWallets,
   $activeWallet,
   $isLoadingWallets: fetchAllWalletsFx.pending,
+
+  _test: {
+    $allWallets,
+  },
 
   events: {
     walletStarted,

@@ -13,6 +13,7 @@ import {
   type Wallet,
 } from '@/shared/core';
 import { dictionary } from '@/shared/lib/utils';
+import { contactModel } from '@/entities/contact';
 import { networkModel } from '@/entities/network';
 import { proxyModel, proxyUtils } from '@/entities/proxy';
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -62,17 +63,19 @@ const $signatoryContacts = combine(
   {
     wallet: walletSelectModel.$walletForDetails,
     wallets: walletModel.$wallets,
+    contacts: contactModel.$contacts,
   },
-  ({ wallet, wallets }): Signatory[] => {
+  ({ wallet, wallets, contacts }): Signatory[] => {
     if (!wallet || !walletUtils.isMultisig(wallet)) return [];
 
+    const contactsMap = dictionary(contacts, 'accountId');
     const signatoriesMap = dictionary(wallet.accounts[0].signatories, 'accountId');
     const allSignatories = walletUtils.getAccountsBy(wallets, ({ accountId }) => signatoriesMap[accountId]);
-    const uniqueSignatories = uniqBy(allSignatories, 'accountId');
+    const signatoriesSet = new Set(allSignatories.map((signatory) => signatory.accountId));
 
-    return wallet.accounts[0].signatories.filter((signatory) => {
-      return uniqueSignatories.every((s) => s.accountId !== signatory.accountId);
-    });
+    return wallet.accounts[0].signatories
+      .filter((signatory) => !signatoriesSet.has(signatory.accountId))
+      .map((signatory) => ({ ...signatory, name: contactsMap[signatory.accountId]?.name }));
   },
 );
 
@@ -107,10 +110,11 @@ const $signatoryAccounts = combine(
     const signatoriesMap = dictionary(wallet.accounts[0].signatories, 'accountId');
     const allSignatories = walletUtils.getAccountsBy(wallets, ({ accountId }) => signatoriesMap[accountId]);
     const uniqueSignatories = uniqBy(allSignatories, 'accountId');
+    const uniqueSignatoriesMap = dictionary(uniqueSignatories, 'accountId');
 
-    return wallet.accounts[0].signatories.filter((signatory) => {
-      return uniqueSignatories.some((s) => s.accountId === signatory.accountId);
-    });
+    return wallet.accounts[0].signatories
+      .filter((signatory) => uniqueSignatoriesMap[signatory.accountId])
+      .map((signatory) => ({ ...signatory, name: uniqueSignatoriesMap[signatory.accountId]?.name }));
   },
 );
 
