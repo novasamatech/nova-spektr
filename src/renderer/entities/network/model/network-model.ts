@@ -460,6 +460,7 @@ export const networkModel = {
     connectionStatusChanged,
   },
 
-  /* Internal API (tests only) */
-  _$providers: $providers,
+  _test: {
+    $providers,
+  },
 };

@@ -310,7 +310,8 @@ export const balanceSubModel = {
     walletToUnsubSet,
   },
 
-  /* Internal API (tests only) */
-  __$subscriptions: $subscriptions,
-  __$subAccounts: $subAccounts,
+  _test: {
+    $subscriptions,
+    $subAccounts,
+  },
 };

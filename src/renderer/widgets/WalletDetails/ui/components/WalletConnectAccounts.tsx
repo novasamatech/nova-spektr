@@ -61,8 +61,8 @@ export const WalletConnectAccounts = ({ wallet }: Props) => {
       )}
 
       {wcDetailsUtils.isReconnecting(reconnectStep) && (
-        <div className="flex h-[419px] flex-col items-center justify-center">
-          <video className="h-[420px] object-contain" autoPlay loop>
+        <div className="flex h-[400px] flex-col items-center justify-center">
+          <video className="h-[400px] object-contain" autoPlay loop>
             <source src={wallet_connect_reconnect_webm} type="video/webm" />
             <source src={wallet_connect_reconnect} type="video/mp4" />
           </video>

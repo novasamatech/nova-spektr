@@ -111,18 +111,18 @@ export const SelectSignatoriesThreshold = () => {
             <Alert.Item withDot={false}>{t('createMultisigAccount.notEmptySignatory')}</Alert.Item>
           </Alert>
         </div>
-        <div className="flex items-end gap-x-4">
+        <div className="flex items-center gap-x-4">
           <Select
             placeholder={t('createMultisigAccount.thresholdPlaceholder')}
             label={t('createMultisigAccount.thresholdName')}
-            className="w-[368px]"
+            className="w-[300px]"
             selectedId={threshold.value.toString()}
             options={thresholdOptions}
             invalid={threshold.hasError()}
             position={thresholdOptions.length > 2 ? 'up' : 'down'}
             onChange={({ value }) => threshold.onChange(value)}
           />
-          <InputHint className="flex-1" active>
+          <InputHint className="flex-1 pt-5" active>
             {t('createMultisigAccount.thresholdHint')}
           </InputHint>
         </div>

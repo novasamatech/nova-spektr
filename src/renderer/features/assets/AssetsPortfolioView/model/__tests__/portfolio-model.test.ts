@@ -72,39 +72,39 @@ describe('features/assets/AssetsPortfolioView/model/portfolio-model', () => {
     expect(scope.getState(portfolioModel.$activeView)).toEqual(AssetsListView.TOKEN_CENTRIC);
   });
 
-  test('should update $filtredTokens and $query stores on queryChanged event', async () => {
+  test('should update $filteredTokens and $query stores on queryChanged event', async () => {
     const scope = fork({
       values: new Map()
-        .set(portfolioModel._$activeTokensWithBalance, mockTokens)
-        .set(portfolioModel._$query, '')
-        .set(portfolioModel._$filtredTokens, []),
+        .set(portfolioModel._test.$activeTokensWithBalance, mockTokens)
+        .set(portfolioModel._test.$query, '')
+        .set(portfolioModel._test.$filteredTokens, []),
     });
 
     await allSettled(portfolioModel.events.queryChanged, { scope, params: 'DOT' });
 
-    expect(scope.getState(portfolioModel._$query)).toEqual('DOT');
-    expect(scope.getState(portfolioModel._$filtredTokens)).toEqual([mockTokens[0]]);
+    expect(scope.getState(portfolioModel._test.$query)).toEqual('DOT');
+    expect(scope.getState(portfolioModel._test.$filteredTokens)).toEqual([mockTokens[0]]);
   });
 
   test('should update $sortedTokens store on changes in $activeTokens', async () => {
     const scope = fork({
-      values: new Map().set(portfolioModel._$activeTokensWithBalance, []),
+      values: new Map().set(portfolioModel._test.$activeTokensWithBalance, []),
     });
 
-    await allSettled(portfolioModel._$activeTokensWithBalance, { scope, params: mockTokens });
+    await allSettled(portfolioModel._test.$activeTokensWithBalance, { scope, params: mockTokens });
 
     expect(scope.getState(portfolioModel.$sortedTokens)).toEqual(mockTokens);
   });
 
-  test('should update $sortedTokens store on changes in $filtredTokens', async () => {
+  test('should update $sortedTokens store on changes in $filteredTokens', async () => {
     const scope = fork({
       values: [
-        [portfolioModel._$filtredTokens, []],
-        [portfolioModel._$query, 'DOT'],
+        [portfolioModel._test.$filteredTokens, []],
+        [portfolioModel._test.$query, 'DOT'],
       ],
     });
 
-    await allSettled(portfolioModel._$filtredTokens, { scope, params: mockTokens });
+    await allSettled(portfolioModel._test.$filteredTokens, { scope, params: mockTokens });
 
     expect(scope.getState(portfolioModel.$sortedTokens)).toEqual(mockTokens);
   });

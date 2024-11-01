@@ -1,5 +1,6 @@
 import { resolve } from 'path';
 
+import { default as CopyWebpackPlugin } from 'copy-webpack-plugin';
 import { default as CssMinimizerPlugin } from 'css-minimizer-webpack-plugin';
 import { default as HtmlWebpackPlugin } from 'html-webpack-plugin';
 import { default as MiniCssExtractPlugin } from 'mini-css-extract-plugin';
@@ -74,16 +75,14 @@ export const sharedRendererConfig = (mode: 'development' | 'production') =>
     },
 
     plugins: [
+      new CopyWebpackPlugin({
+        patterns: [{ from: 'public' }],
+      }),
+
       new webpack.EnvironmentPlugin({
         NODE_ENV: mode,
         DEBUG_PROD: false,
       }),
-
-      mode === 'production'
-        ? new MiniCssExtractPlugin({
-            filename: '[name].[contenthash].css',
-          })
-        : null,
 
       new HtmlWebpackPlugin({
         template: resolve(FOLDERS.INDEX_HTML),
@@ -94,5 +93,7 @@ export const sharedRendererConfig = (mode: 'development' | 'production') =>
         isBrowser: false,
         isDevelopment: mode === 'development',
       }),
-    ].filter((x) => x !== null),
+
+      mode === 'production' ? new MiniCssExtractPlugin({ filename: '[name].[contenthash].css' }) : null,
+    ].filter((plugin) => plugin !== null),
   });

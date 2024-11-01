@@ -24,7 +24,7 @@ const $query = restore<string>(queryChanged, '');
 const $tokens = createStore<AssetByChains[]>([]);
 const $activeTokens = createStore<AssetByChains[]>([]);
 const $activeTokensWithBalance = createStore<AssetByChains[]>([]);
-const $filtredTokens = createStore<AssetByChains[]>([]);
+const $filteredTokens = createStore<AssetByChains[]>([]);
 const $sortedTokens = createStore<AssetByChains[]>([]);
 
 type UpdateTokenParams = {
@@ -164,23 +164,23 @@ sample({
       return acc;
     }, []);
   },
-  target: $filtredTokens,
+  target: $filteredTokens,
 });
 
 sample({
-  clock: [$activeTokensWithBalance, $filtredTokens, $hideZeroBalances],
+  clock: [$activeTokensWithBalance, $filteredTokens, $hideZeroBalances],
   source: {
     query: $query,
     activeTokensWithBalance: $activeTokensWithBalance,
     $hideZeroBalances: $hideZeroBalances,
-    filtredTokens: $filtredTokens,
+    filteredTokens: $filteredTokens,
     assetsPrices: priceProviderModel.$assetsPrices,
     fiatFlag: priceProviderModel.$fiatFlag,
     currency: currencyModel.$activeCurrency,
   },
-  fn: ({ query, activeTokensWithBalance, filtredTokens, $hideZeroBalances, assetsPrices, fiatFlag, currency }) => {
+  fn: ({ query, activeTokensWithBalance, filteredTokens, $hideZeroBalances, assetsPrices, fiatFlag, currency }) => {
     const tokenList = query
-      ? filtredTokens
+      ? filteredTokens
       : tokensService.hideZeroBalances($hideZeroBalances, activeTokensWithBalance);
 
     return tokensService.sortTokensByBalance(tokenList, assetsPrices, fiatFlag ? currency?.coingeckoId : undefined);
@@ -200,8 +200,10 @@ export const portfolioModel = {
     transferStarted,
     receiveStarted,
   },
-  /* Internal API (tests only) */
-  _$activeTokensWithBalance: $activeTokensWithBalance,
-  _$filtredTokens: $filtredTokens,
-  _$query: $query,
+
+  _test: {
+    $activeTokensWithBalance,
+    $filteredTokens,
+    $query,
+  },
 };

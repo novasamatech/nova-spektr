@@ -17,19 +17,25 @@ const getChainOptions = (chains: Chain[]): DropdownOption<Chain>[] => {
     .filter((c) => networkUtils.isMultisigSupported(c.options))
     .map((chain) => ({
       id: chain.chainId.toString(),
-      element: <ChainTitle chain={chain} />,
       value: chain,
+      element: <ChainTitle chain={chain} fontClass="text-text-primary" />,
     }));
 };
 
-export const NameNetworkSelection = () => {
+interface Props {
+  onGoBack: () => void;
+}
+
+export const NameNetworkSelection = ({ onGoBack }: Props) => {
   const { t } = useI18n();
+
+  const api = useUnit(flowModel.$api);
   const fakeTx = useUnit(flowModel.$fakeTx);
   const chains = useUnit(networkModel.$chains);
+
   const {
     fields: { name, chain, threshold },
   } = useForm(formModel.$createMultisigForm);
-  const api = useUnit(flowModel.$api);
 
   const chainOptions = getChainOptions(Object.values(chains));
   const isNameError = name.isTouched && !name.value;
@@ -67,20 +73,25 @@ export const NameNetworkSelection = () => {
             {t('createMultisigAccount.networkDescription')}
           </FootnoteText>
         </div>
-        <div className="mt-auto flex items-center justify-end">
-          <MultisigCreationFees
-            api={api}
-            asset={chain.value.assets[0]}
-            threshold={threshold.value}
-            transaction={fakeTx}
-          />
-          <Button
-            key="create"
-            disabled={isNameError || !name.isTouched}
-            onClick={() => flowModel.events.stepChanged(Step.SIGNATORIES_THRESHOLD)}
-          >
-            {t('createMultisigAccount.continueButton')}
+        <div className="mt-auto flex items-center justify-between">
+          <Button variant="text" onClick={onGoBack}>
+            {t('createMultisigAccount.backButton')}
           </Button>
+          <div className="mt-auto flex items-center justify-end">
+            <MultisigCreationFees
+              api={api}
+              asset={chain.value.assets[0]}
+              threshold={threshold.value}
+              transaction={fakeTx}
+            />
+            <Button
+              key="create"
+              disabled={isNameError || !name.isTouched}
+              onClick={() => flowModel.events.stepChanged(Step.SIGNATORIES_THRESHOLD)}
+            >
+              {t('createMultisigAccount.continueButton')}
+            </Button>
+          </div>
         </div>
       </form>
     </section>

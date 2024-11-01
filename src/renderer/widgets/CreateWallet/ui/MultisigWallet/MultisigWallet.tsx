@@ -73,7 +73,7 @@ export const MultisigWallet = ({ isOpen, onComplete }: Props) => {
     <Modal size={modalSize} height="fit" isOpen={isModalOpen} onToggle={handleClose}>
       <Modal.Title close>{modalTitle}</Modal.Title>
       <Modal.Content>
-        {isStep(activeStep, Step.NAME_NETWORK) && <NameNetworkSelection />}
+        {isStep(activeStep, Step.NAME_NETWORK) && <NameNetworkSelection onGoBack={() => handleClose(false)} />}
         {isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold />}
         {isStep(activeStep, Step.SIGNER_SELECTION) && <SignerSelection />}
         {isStep(activeStep, Step.CONFIRM) && <ConfirmationStep />}
