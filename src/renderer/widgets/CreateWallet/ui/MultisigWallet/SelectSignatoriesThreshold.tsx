@@ -169,12 +169,7 @@ export const SelectSignatoriesThreshold = () => {
           </Alert>
         </div>
         <div className="mt-auto flex items-center justify-between">
-          <Button
-            variant="text"
-            onClick={() => {
-              flowModel.events.stepChanged(Step.NAME_NETWORK);
-            }}
-          >
+          <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.NAME_NETWORK)}>
             {t('createMultisigAccount.backButton')}
           </Button>
           <div className="mt-auto flex items-center justify-end">

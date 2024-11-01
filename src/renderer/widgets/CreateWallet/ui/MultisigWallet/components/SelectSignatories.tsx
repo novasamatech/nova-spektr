@@ -4,18 +4,18 @@ import { useI18n } from '@/shared/i18n';
 import { Button, Icon } from '@/shared/ui';
 import { signatoryModel } from '../../../model/signatory-model';
 
-import { Signatory } from './Signatory';
+import { NewSignatoryRow } from './NewSignatoryRow';
 
 export const SelectSignatories = () => {
   const { t } = useI18n();
 
   const signatories = useUnit(signatoryModel.$signatories);
 
-  const onAddSignatoryClick = () => {
+  const addSignatory = () => {
     signatoryModel.events.signatoriesChanged({ index: signatories.size, name: '', address: '' });
   };
 
-  const onDeleteSignatoryClick = (index: number) => {
+  const deleteSignatory = (index: number) => {
     signatoryModel.events.signatoryDeleted(index);
   };
 
@@ -23,13 +23,13 @@ export const SelectSignatories = () => {
     <div className="flex flex-1 flex-col">
       <div className="flex flex-col gap-2">
         {Array.from(signatories.entries()).map(([key, value]) => (
-          <Signatory
+          <NewSignatoryRow
             key={key}
-            signtoryIndex={key}
+            signatoryIndex={key}
             isOwnAccount={key === 0}
             signatoryName={value.name}
             signatoryAddress={value.address}
-            onDelete={() => onDeleteSignatoryClick(key)}
+            onDelete={() => deleteSignatory(key)}
           />
         ))}
       </div>
@@ -39,7 +39,7 @@ export const SelectSignatories = () => {
           variant="text"
           className="mt-4 h-8.5 justify-center"
           suffixElement={<Icon className="text-icon-primary" name="add" size={16} />}
-          onClick={onAddSignatoryClick}
+          onClick={addSignatory}
         >
           {t('createMultisigAccount.addNewSignatory')}
         </Button>

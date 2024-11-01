@@ -18,41 +18,36 @@ import { signatoryModel } from '../../../model/signatory-model';
 interface Props {
   signatoryName?: string;
   signatoryAddress?: string;
-  signtoryIndex: number;
+  signatoryIndex: number;
   isOwnAccount?: boolean;
   onDelete?: (index: number) => void;
 }
 
-export const Signatory = ({
-  signtoryIndex,
+export const NewSignatoryRow = ({
+  signatoryIndex,
   onDelete,
-  isOwnAccount = false,
+  isOwnAccount,
   signatoryName = '',
   signatoryAddress = '',
 }: Props) => {
   const { t } = useI18n();
-  const [query, setQuery] = useState('');
-  const [options, setOptions] = useState<ComboboxOption[]>([]);
 
   const contacts = useUnit(contactModel.$contacts);
-  const [address, setAddress] = useState(signatoryAddress);
-  const [name, setName] = useState(signatoryName);
   const wallets = useUnit(walletModel.$wallets);
   const {
     fields: { chain },
   } = useForm(formModel.$createMultisigForm);
-  const contactsFiltered = useMemo(
-    () =>
-      performSearch({
-        query,
-        records: contacts,
-        weights: {
-          name: 1,
-          address: 0.5,
-        },
-      }),
-    [query, contacts],
-  );
+
+  const [query, setQuery] = useState('');
+  const [name, setName] = useState(signatoryName);
+  const [address, setAddress] = useState(signatoryAddress);
+  const [options, setOptions] = useState<ComboboxOption[]>([]);
+
+  const contactsFiltered = performSearch({
+    query,
+    records: contacts,
+    weights: { name: 1, address: 0.5 },
+  });
 
   const ownAccountName =
     walletUtils.getWalletsFilteredAccounts(wallets, {
@@ -62,11 +57,12 @@ export const Signatory = ({
 
   const contactAccountName =
     contacts.filter((contact) => toAccountId(contact.address) === toAccountId(address))?.[0]?.name || '';
-  const displayName = useMemo(() => {
-    const hasDuplicateName = !!ownAccountName && !!contactAccountName;
-    const shouldForceOwnAccountName = hasDuplicateName && isOwnAccount;
-    if (shouldForceOwnAccountName) return ownAccountName;
 
+  const displayName = useMemo(() => {
+    const hasDuplicateName = Boolean(ownAccountName) && Boolean(contactAccountName);
+    const shouldForceOwnAccountName = hasDuplicateName && isOwnAccount;
+
+    if (shouldForceOwnAccountName) return ownAccountName;
     if (hasDuplicateName && !isOwnAccount) return contactAccountName;
 
     return ownAccountName || contactAccountName || name;
@@ -76,93 +72,94 @@ export const Signatory = ({
     if (!isOwnAccount || wallets.length === 0) return;
 
     const walletByGroup = walletSelectUtils.getWalletByGroups(wallets, query);
-    const opts = Object.entries(walletByGroup).reduce((acc, [walletType, wallets], index) => {
-      if (wallets.length === 0) {
-        return acc;
+
+    const options: ComboboxOption[] = [];
+    for (const [index, [walletType, wallets]] of Object.entries(walletByGroup).entries()) {
+      if (wallets.length === 0) continue;
+
+      const accountOptions: ComboboxOption[] = [];
+      for (const wallet of wallets) {
+        if (!wallet.accounts.length || !walletUtils.isValidSignatory(wallet)) continue;
+
+        const accounts = wallet.accounts
+          .filter((account) => {
+            return (
+              (account as ChainAccount).chainId === undefined ||
+              (account as ChainAccount).chainId === chain.value.chainId
+            );
+          })
+          .map((account) => {
+            const address = toAddress(account.accountId, { prefix: chain.value.addressPrefix });
+
+            return {
+              id: account.accountId,
+              value: address,
+              element: <AddressWithName name={account.name} address={address} />,
+            };
+          });
+
+        accountOptions.push(...accounts);
       }
+      if (accountOptions.length === 0) continue;
 
-      const accountOptions = wallets.reduce((acc, wallet) => {
-        if (!wallet.accounts.length || !walletUtils.isValidSignatory(wallet)) return acc;
+      options.push({
+        id: index.toString(),
+        value: undefined,
+        disabled: true,
+        element: (
+          <div className="flex items-center gap-x-2" key={walletType}>
+            <WalletIcon type={walletType as WalletFamily} />
+            <CaptionText className="font-semibold uppercase text-text-secondary">
+              {t(GroupLabels[walletType as WalletFamily])}
+            </CaptionText>
+          </div>
+        ),
+      });
 
-        return acc.concat(
-          wallet.accounts
-            .filter(
-              (account) =>
-                (account as ChainAccount).chainId === undefined ||
-                (account as ChainAccount).chainId === chain.value.chainId,
-            )
-            .map((account) => {
-              const address = toAddress(account.accountId, { prefix: chain.value.addressPrefix });
+      options.push(...accountOptions);
+    }
 
-              return {
-                value: address,
-                element: <AddressWithName name={account.name} address={address} />,
-                id: account.accountId,
-              };
-            }),
-        );
-      }, [] as ComboboxOption[]);
-
-      if (accountOptions.length === 0) {
-        return acc;
-      }
-
-      return acc.concat([
-        {
-          id: index.toString(),
-          element: (
-            <div className="flex items-center gap-x-2" key={walletType}>
-              <WalletIcon type={walletType as WalletFamily} />
-              <CaptionText className="font-semibold uppercase text-text-secondary">
-                {t(GroupLabels[walletType as WalletFamily])}
-              </CaptionText>
-            </div>
-          ),
-          value: undefined,
-          disabled: true,
-        },
-        ...accountOptions,
-      ]);
-    }, [] as ComboboxOption[]);
-
-    setOptions(opts);
+    setOptions(options);
   }, [query, wallets, isOwnAccount, t]);
 
   // initiate the query form in case of not own account
   useEffect(() => {
     if (isOwnAccount || contacts.length === 0) return;
+
     filterModel.events.formInitiated();
   }, [isOwnAccount, filterModel, contacts]);
 
   // list of contacts in case of not own account
   useEffect(() => {
     if (isOwnAccount || contacts.length === 0) return;
-    setOptions(
-      contactsFiltered.map(({ name, address }) => {
-        const displayAddress = toAddress(address, { prefix: chain.value.addressPrefix });
 
-        return {
-          id: signtoryIndex.toString(),
-          element: <AddressWithName name={name} address={displayAddress} />,
-          value: displayAddress,
-        };
-      }),
-    );
+    const options = contactsFiltered.map(({ name, address }) => {
+      const displayAddress = toAddress(address, { prefix: chain.value.addressPrefix });
+
+      return {
+        id: signatoryIndex.toString(),
+        element: <AddressWithName name={name} address={displayAddress} />,
+        value: displayAddress,
+      };
+    });
+
+    setOptions(options);
   }, [query, isOwnAccount, contacts, contactsFiltered]);
 
   const onNameChange = (newName: string) => {
     setName(newName);
+
     signatoryModel.events.signatoriesChanged({
-      index: signtoryIndex,
+      index: signatoryIndex,
       name: newName,
       address,
     });
   };
 
   useEffect(() => {
-    if (displayName !== name) {
-      onNameChange(displayName);
-    }
+    if (displayName === name) return;
+
+    onNameChange(displayName);
   }, [displayName]);
 
   const onAddressChange = (newAddress: string) => {
@@ -174,19 +171,15 @@ export const Signatory = ({
 
     setAddress(newAddress);
     signatoryModel.events.signatoriesChanged({
-      index: signtoryIndex,
+      index: signatoryIndex,
       name,
       address: newAddress,
     });
   };
 
-  const handleQueryChange = (newQuery: string) => {
-    setQuery(newQuery);
-  };
-
   const prefixElement = (
     <div className="flex h-auto items-center">
-      {!!address && validateAddress(address) ? (
+      {Boolean(address) && validateAddress(address) ? (
         <Identicon className="mr-1" address={address} size={20} background={false} canCopy={false} />
       ) : (
         <Icon className="mr-2" size={20} name="emptyIdenticon" />
@@ -202,14 +195,13 @@ export const Signatory = ({
     <div className="flex gap-x-2">
       <div className="w-[300px]">
         <Input
-          name={t('createMultisigAccount.signatoryNameLabel')}
-          className=""
           wrapperClass="h-[36px]"
+          name={t('createMultisigAccount.signatoryNameLabel')}
           label={t('createMultisigAccount.signatoryNameLabel')}
           placeholder={t('addressBook.createContact.namePlaceholder')}
           invalid={false}
           value={displayName}
-          disabled={!!ownAccountName || !!contactAccountName}
+          disabled={Boolean(ownAccountName) || Boolean(contactAccountName)}
           onChange={onNameChange}
         />
       </div>
@@ -221,13 +213,11 @@ export const Signatory = ({
         query={query}
         value={toAddress(address, { prefix: chain.value.addressPrefix })}
         prefixElement={prefixElement}
-        onChange={({ value }) => {
-          onAddressChange(value);
-        }}
-        onInput={handleQueryChange}
+        onChange={({ value }) => onAddressChange(value)}
+        onInput={setQuery}
       />
       {!isOwnAccount && onDelete && (
-        <IconButton className="ml-2 mt-6" name="delete" size={16} onClick={() => onDelete(signtoryIndex)} />
+        <IconButton className="ml-2 mt-6" name="delete" size={16} onClick={() => onDelete(signatoryIndex)} />
       )}
     </div>
   );
