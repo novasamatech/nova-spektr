@@ -1,10 +1,10 @@
-import { Popover } from '@headlessui/react';
 import { useUnit } from 'effector-react';
 import { type ReactNode, useEffect } from 'react';
 
 import { type WalletFamily } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { SearchInput, SmallTitleText } from '@/shared/ui';
+import { Popover } from '@/shared/ui-kit';
 import { type Callbacks, walletSelectModel } from '../model/wallet-select-model';
 
 import { WalletGroup } from './WalletGroup';
@@ -22,11 +22,11 @@ export const WalletPanel = ({ action, onClose }: Props) => {
   }, [onClose]);
 
   return (
-    <Popover.Panel className="absolute z-10 mt-2 overflow-hidden rounded-md border border-token-container-border bg-token-container-background shadow-card-shadow">
+    <Popover.Content>
       <section className="relative flex max-h-[700px] w-[300px] flex-col bg-card-background">
         <header className="flex items-center justify-between border-b border-divider px-5 py-3">
           <SmallTitleText>{t('wallets.title')}</SmallTitleText>
-          {action}
+          <div className="min-w-[140px]">{action}</div>
         </header>
 
         <div className="border-b border-divider p-2">
@@ -43,6 +43,6 @@ export const WalletPanel = ({ action, onClose }: Props) => {
           })}
         </div>
       </section>
-    </Popover.Panel>
+    </Popover.Content>
   );
 };

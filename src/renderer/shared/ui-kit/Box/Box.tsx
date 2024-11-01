@@ -73,10 +73,11 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(
     ref,
   ) => {
     const calculatedPadding = useMemo(
-      () =>
-        Array.isArray(padding)
+      () => {
+        return Array.isArray(padding)
           ? padding.map(getBoxSize<CSS.Property.Padding>).join(' ')
-          : getBoxSize<CSS.Property.Padding>(padding),
+          : getBoxSize<CSS.Property.Padding>(padding);
+      },
       Array.isArray(padding) ? padding : [padding],
     );
 

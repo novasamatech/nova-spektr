@@ -67,6 +67,7 @@ const Content = ({ children }: PropsWithChildren) => {
   return (
     <RadixPopover.Portal container={portalContainer}>
       <RadixPopover.Content
+        asChild
         hideWhenDetached
         side={side}
         align={align}
@@ -74,10 +75,9 @@ const Content = ({ children }: PropsWithChildren) => {
         alignOffset={alignOffset && gridSpaceConverter(alignOffset)}
         sideOffset={sideOffset && gridSpaceConverter(sideOffset)}
         data-testid={testId}
-        asChild
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative z-50 rounded-md border border-token-container-border bg-block-background-default text-body shadow-shadow-2 duration-100 animate-in fade-in zoom-in-95">
+        <div className="rounded-md border border-token-container-border bg-block-background-default text-body shadow-shadow-2 duration-100 animate-in fade-in zoom-in-95">
           {children}
         </div>
       </RadixPopover.Content>
