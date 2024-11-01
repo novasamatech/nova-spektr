@@ -22,7 +22,11 @@ const getChainOptions = (chains: Chain[]): DropdownOption<Chain>[] => {
     }));
 };
 
-export const NameNetworkSelection = () => {
+interface Props {
+  onGoBack: () => void;
+}
+
+export const NameNetworkSelection = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const api = useUnit(flowModel.$api);
@@ -69,20 +73,25 @@ export const NameNetworkSelection = () => {
             {t('createMultisigAccount.networkDescription')}
           </FootnoteText>
         </div>
-        <div className="mt-auto flex items-center justify-end">
-          <MultisigCreationFees
-            api={api}
-            asset={chain.value.assets[0]}
-            threshold={threshold.value}
-            transaction={fakeTx}
-          />
-          <Button
-            key="create"
-            disabled={isNameError || !name.isTouched}
-            onClick={() => flowModel.events.stepChanged(Step.SIGNATORIES_THRESHOLD)}
-          >
-            {t('createMultisigAccount.continueButton')}
+        <div className="mt-auto flex items-center justify-between">
+          <Button variant="text" onClick={onGoBack}>
+            {t('createMultisigAccount.backButton')}
           </Button>
+          <div className="mt-auto flex items-center justify-end">
+            <MultisigCreationFees
+              api={api}
+              asset={chain.value.assets[0]}
+              threshold={threshold.value}
+              transaction={fakeTx}
+            />
+            <Button
+              key="create"
+              disabled={isNameError || !name.isTouched}
+              onClick={() => flowModel.events.stepChanged(Step.SIGNATORIES_THRESHOLD)}
+            >
+              {t('createMultisigAccount.continueButton')}
+            </Button>
+          </div>
         </div>
       </form>
     </section>
