@@ -4,6 +4,7 @@ import { type ReactNode } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { formatAsset, formatBalance, toAddress, toNumberWithPrecision } from '@/shared/lib/utils';
 import { DetailRow, HeadlineText, Icon, Loader } from '@/shared/ui';
+import { TransactionDetails } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import {
   LockPeriodDiff,
@@ -14,10 +15,10 @@ import {
 } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
 import { Fee } from '@/entities/transaction';
+import { walletModel } from '@/entities/wallet';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
-import { ConfirmDetails } from '../../../common/ConfirmDetails';
 import { MultisigExistsAlert } from '../../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 
@@ -32,6 +33,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
   const { t } = useI18n();
 
   const trackLocks = useUnit(locksAggregate.$trackLocks);
+  const wallets = useUnit(walletModel.$wallets);
 
   const confirm = useStoreMap({
     store: confirmModel.$confirmMap,
@@ -99,9 +101,12 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
 
       <MultisigExistsAlert active={isMultisigExists} />
 
-      <ConfirmDetails confirm={confirm}>
-        <hr className="w-full border-filter-border pr-2" />
-
+      <TransactionDetails
+        chain={confirm.meta.chain}
+        wallets={wallets}
+        initiator={[confirm.accounts.initiator]}
+        signatory={confirm.accounts.signer || undefined}
+      >
         {votingPower && amount && conviction ? (
           <>
             <DetailRow label={t('governance.vote.field.governanceLock')} wrapperClassName="items-start">
@@ -122,7 +127,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
         <DetailRow label={t('governance.vote.field.networkFee')}>
           <Fee api={api} asset={asset} transaction={wrappedTransactions.wrappedTx} />
         </DetailRow>
-      </ConfirmDetails>
+      </TransactionDetails>
 
       <div className="mt-3 flex w-full justify-end">
         <div className="flex gap-4">
