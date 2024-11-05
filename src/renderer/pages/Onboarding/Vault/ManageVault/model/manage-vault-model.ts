@@ -15,7 +15,7 @@ import { dictionary } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
 import { KEY_NAMES, accountUtils, walletModel } from '@/entities/wallet';
-import { walletSelectModel } from '@/features/wallets';
+import { walletSelectFeature } from '@/features/wallet-select';
 
 const WALLET_NAME_MAX_LENGTH = 256;
 
@@ -163,7 +163,7 @@ sample({
   clock: createVaultFx.doneData,
   filter: (data: Wallet | undefined): data is Wallet => Boolean(data),
   fn: (data) => data.id,
-  target: walletSelectModel.events.walletSelected,
+  target: walletSelectFeature.selectModel.events.walletSelected,
 });
 
 sample({
