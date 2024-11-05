@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { type ChangeEvent, forwardRef } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { IconButton } from '../../Buttons';
@@ -18,7 +18,7 @@ export const SearchInput = forwardRef<HTMLInputElement, Props>(({ className, wra
         name="close"
         ariaLabel="clear search"
         className={cnTw('ml-2 p-[1px]', !props.value && 'hidden')}
-        onClick={() => props.onChange?.('')}
+        onClick={() => props.onChange?.({ target: { value: '' } } as ChangeEvent<HTMLInputElement>)}
       />
     }
     {...props}

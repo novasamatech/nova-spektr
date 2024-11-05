@@ -276,7 +276,7 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
                     wrapperClass="flex w-[214px] items-center p-3 mr-[23px]"
                     placeholder={t('onboarding.paritySigner.accountNamePlaceholder')}
                     value={accountNames[getAccountId(index)] || ''}
-                    onChange={(name) => updateAccountName(name, index)}
+                    onChange={(e) => updateAccountName(e.target.value, index)}
                   />
                 </div>
               </div>
@@ -318,7 +318,7 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
                               wrapperClass="flex w-[214px] items-center p-3"
                               placeholder={t('onboarding.paritySigner.accountNamePlaceholder')}
                               value={accountNames[getAccountId(index, chainId, derivedKeyIndex)] || ''}
-                              onChange={(name) => updateAccountName(name, index, chainId, derivedKeyIndex)}
+                              onChange={(e) => updateAccountName(e.target.value, index, chainId, derivedKeyIndex)}
                             />
                             <IconButton
                               name={

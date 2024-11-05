@@ -45,7 +45,7 @@ export const RenameWalletModal = ({ wallet, isOpen, onClose }: Props) => {
             label={t('walletDetails.common.renameLabel')}
             invalid={name?.hasError()}
             value={name?.value}
-            onChange={name?.onChange}
+            onChange={(e) => name?.onChange(e.target.value)}
           />
           <InputHint variant="error" active={name?.hasError()}>
             {t(name.errorText())}

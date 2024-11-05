@@ -1,4 +1,11 @@
-import { type ClipboardEvent, type ComponentPropsWithoutRef, type ReactNode, forwardRef, useId } from 'react';
+import {
+  type ChangeEvent,
+  type ClipboardEvent,
+  type ComponentPropsWithoutRef,
+  type ReactNode,
+  forwardRef,
+  useId,
+} from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { type Theme } from '../../Dropdowns/common/types';
@@ -13,7 +20,7 @@ type NewType = {
   prefixElement?: ReactNode;
   suffixElement?: ReactNode;
   theme?: Theme;
-  onChange?: (value: string) => void;
+  onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
   onPaste?: (event: ClipboardEvent) => void;
 };
 
@@ -44,7 +51,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(
     const inputElement = (
       <div
         className={cnTw(
-          'relative flex object-contain',
+          'relative flex items-center object-contain',
           CommonInputStyles,
           CommonInputStylesTheme[theme],
           !disabled && 'hover:shadow-card-shadow',
@@ -68,8 +75,8 @@ export const Input = forwardRef<HTMLInputElement, Props>(
           autoFocus={autoFocus}
           disabled={disabled}
           spellCheck={spellCheck}
-          onChange={(event) => onChange?.(event.target.value)}
-          onPaste={(event) => onPaste?.(event)}
+          onChange={onChange}
+          onPaste={onPaste}
           {...props}
         />
         {suffixElement}

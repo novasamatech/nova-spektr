@@ -127,7 +127,7 @@ export const KeyForm = () => {
             invalid={shards?.hasError()}
             disabled={!isKeyTypeSharded || !isSharded?.value}
             value={shards?.value}
-            onChange={shards?.onChange}
+            onChange={(e) => shards?.onChange(e.target.value)}
           />
           <InputHint variant="error" active={shards?.hasError()}>
             {t(shards?.errorText())}
@@ -142,7 +142,7 @@ export const KeyForm = () => {
             placeholder={t('dynamicDerivations.constructor.keyNamePlaceholder')}
             invalid={keyName?.hasError()}
             value={keyName?.value}
-            onChange={keyName?.onChange}
+            onChange={(e) => keyName?.onChange(e.target.value)}
           />
           <InputHint variant="error" active={keyName?.hasError()}>
             {t(keyName?.errorText())}
@@ -156,7 +156,7 @@ export const KeyForm = () => {
             invalid={derivationPath?.hasError()}
             value={derivationPath?.value}
             disabled={!derivationEnabled}
-            onChange={derivationPath?.onChange}
+            onChange={(e) => derivationPath?.onChange(e.target.value)}
           />
           <InputHint variant="error" active={derivationPath?.hasError()}>
             {t(derivationPath?.errorText())}

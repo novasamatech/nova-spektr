@@ -47,7 +47,7 @@ export const EditContactForm = ({ contactToEdit, onSubmit }: Props) => {
           placeholder={t('addressBook.editContact.namePlaceholder')}
           invalid={name?.hasError()}
           value={name?.value}
-          onChange={name?.onChange}
+          onChange={(e) => name?.onChange(e.target.value)}
         />
         <InputHint variant="error" active={name?.hasError()}>
           {t(name.errorText())}
@@ -70,7 +70,7 @@ export const EditContactForm = ({ contactToEdit, onSubmit }: Props) => {
               <Icon name="emptyIdenticon" />
             )
           }
-          onChange={address?.onChange}
+          onChange={(e) => address?.onChange(e.target.value)}
         />
         <InputHint variant="hint" active>
           {t('addressBook.editContact.editWarning')}

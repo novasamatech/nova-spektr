@@ -54,7 +54,7 @@ export const DelegationList = ({ onClick, onAddCustomClick }: Props) => {
               wrapperClass="flex-1"
               value={query}
               placeholder={t('general.input.searchPlaceholder')}
-              onChange={delegationModel.events.queryChanged}
+              onChange={(e) => delegationModel.events.queryChanged(e.target.value)}
             />
 
             <Button pallet="primary" variant="text" onClick={onAddCustomClick}>

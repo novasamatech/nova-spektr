@@ -25,7 +25,7 @@ export const SelectSignatories = () => {
         {Array.from(signatories.entries()).map(([key, value]) => (
           <Signatory
             key={key}
-            signtoryIndex={key}
+            signatoryIndex={key}
             isOwnAccount={key === 0}
             signatoryName={value.name}
             signatoryAddress={value.address}

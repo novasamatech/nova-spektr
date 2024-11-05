@@ -277,7 +277,7 @@ const Destination = () => {
             options={destinationOptions}
             invalid={destination.hasError()}
             prefixElement={prefixElement}
-            onInput={formModel.events.destinationQueryChanged}
+            onInput={(e) => formModel.events.destinationQueryChanged(e.target.value)}
             onChange={({ value }) => {
               setPayout(value);
               destination.onChange(value);

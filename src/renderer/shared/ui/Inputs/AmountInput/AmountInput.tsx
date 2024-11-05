@@ -192,7 +192,7 @@ export const AmountInput = ({
       prefixElement={currencyMode ? currencyIcon : prefixElement}
       suffixElement={suffixElement}
       disabled={disabled}
-      onChange={handleChange}
+      onChange={(e) => handleChange(e.target.value)}
     />
   );
 };

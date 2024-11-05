@@ -23,7 +23,7 @@ export const NetworksFilter = ({ className }: Props) => {
       wrapperClass={className}
       placeholder={t('settings.networks.searchPlaceholder')}
       value={filterQuery}
-      onChange={networksFilterModel.events.queryChanged}
+      onChange={(e) => networksFilterModel.events.queryChanged(e.target.value)}
     />
   );
 };

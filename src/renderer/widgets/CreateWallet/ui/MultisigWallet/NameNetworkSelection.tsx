@@ -54,7 +54,7 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
             label={t('createMultisigAccount.walletNameLabel')}
             invalid={isNameError}
             value={name.value}
-            onChange={name.onChange}
+            onChange={(e) => name.onChange(e.target.value)}
           />
           <InputHint variant="error" active={isNameError}>
             {t('createMultisigAccount.disabledError.emptyName')}

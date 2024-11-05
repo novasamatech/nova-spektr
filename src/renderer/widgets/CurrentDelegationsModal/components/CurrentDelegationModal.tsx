@@ -43,7 +43,7 @@ export const CurrentDelegationModal = () => {
                 wrapperClass="flex-1"
                 value={query}
                 placeholder={t('general.input.searchPlaceholder')}
-                onChange={currentDelegationModel.events.queryChanged}
+                onChange={(e) => currentDelegationModel.events.queryChanged(e.target.value)}
               />
             </div>
 

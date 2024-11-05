@@ -65,7 +65,7 @@ export const AssetTransactionModal = () => {
         value={query}
         placeholder={t('balances.searchPlaceholder')}
         className="w-full"
-        onChange={assetTransactionModel.events.queryChanged}
+        onChange={(e) => assetTransactionModel.events.queryChanged(e.target.value)}
       />
       <FootnoteText className="pb-2 pt-4 text-text-tertiary">{t('portfolilo.selectNetworkLabel')}</FootnoteText>
       <ul>

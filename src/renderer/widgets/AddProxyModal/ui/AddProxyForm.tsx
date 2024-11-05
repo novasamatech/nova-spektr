@@ -212,7 +212,7 @@ const ProxyInput = () => {
         value={delegate.value}
         invalid={delegate.hasError()}
         prefixElement={prefixElement}
-        onInput={formModel.events.proxyQueryChanged}
+        onInput={(e) => formModel.events.proxyQueryChanged(e.target.value)}
         onChange={({ value }) => delegate.onChange(value)}
       />
       <InputHint variant="error" active={delegate.hasError()}>

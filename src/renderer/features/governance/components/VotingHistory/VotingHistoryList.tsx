@@ -38,7 +38,11 @@ export const VotingHistoryList = memo(({ items, asset, chain, loading }: Props) 
 
   return (
     <div className="flex flex-col gap-6 pb-4 pt-6">
-      <SearchInput placeholder={t('governance.searchPlaceholder')} value={query} onChange={setQuery} />
+      <SearchInput
+        placeholder={t('governance.searchPlaceholder')}
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+      />
       <div className="min-h-0">
         <div className="flex flex-col gap-2">
           <div className="flex justify-between px-2">

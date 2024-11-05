@@ -44,7 +44,7 @@ export const CreateContactForm = ({ onSubmit }: Props) => {
           placeholder={t('addressBook.createContact.namePlaceholder')}
           invalid={name.hasError()}
           value={name.value}
-          onChange={name.onChange}
+          onChange={(e) => name.onChange(e.target.value)}
         />
         <InputHint variant="error" active={name.hasError()}>
           {t(name.errorText())}
@@ -63,7 +63,7 @@ export const CreateContactForm = ({ onSubmit }: Props) => {
           prefixElement={
             canShowIdenticon ? <Identicon address={address.value} background={false} /> : <Icon name="emptyIdenticon" />
           }
-          onChange={address.onChange}
+          onChange={(e) => address.onChange(e.target.value)}
         />
         <InputHint variant="error" active={address.hasError()}>
           {t(address.errorText())}

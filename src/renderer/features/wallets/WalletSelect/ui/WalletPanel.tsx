@@ -30,7 +30,10 @@ export const WalletPanel = ({ action, onClose }: Props) => {
         </header>
 
         <div className="border-b border-divider p-2">
-          <SearchInput placeholder={t('wallets.searchPlaceholder')} onChange={walletSelectModel.events.queryChanged} />
+          <SearchInput
+            placeholder={t('wallets.searchPlaceholder')}
+            onChange={(e) => walletSelectModel.events.queryChanged(e.target.value)}
+          />
         </div>
 
         <div className="flex max-h-[530px] flex-col divide-y divide-divider overflow-y-auto px-1">

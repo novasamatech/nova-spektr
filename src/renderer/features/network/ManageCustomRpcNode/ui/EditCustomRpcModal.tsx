@@ -66,7 +66,7 @@ const NameInput = () => {
         invalid={name.hasError()}
         disabled={isLoading}
         value={name.value}
-        onChange={name.onChange}
+        onChange={(e) => name.onChange(e.target.value)}
       />
       <InputHint variant="error" active={name.hasError()}>
         {t(name.errorText())}
@@ -92,7 +92,7 @@ const UrlInput = () => {
         value={url.value}
         invalid={url.hasError()}
         disabled={isLoading}
-        onChange={url.onChange}
+        onChange={(e) => url.onChange(e.target.value)}
       />
       <InputHint variant="error" active={url.hasError()}>
         {t(url.errorText())}

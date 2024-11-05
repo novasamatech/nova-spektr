@@ -14,7 +14,7 @@ export const ShardSearch = () => {
       value={query}
       placeholder={t('balances.searchPlaceholder')}
       wrapperClass="mb-4 ml-2 mr-5"
-      onChange={shardsModel.events.queryChanged}
+      onChange={(e) => shardsModel.events.queryChanged(e.target.value)}
     />
   );
 };

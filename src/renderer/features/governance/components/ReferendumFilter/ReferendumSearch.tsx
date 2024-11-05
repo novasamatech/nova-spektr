@@ -13,7 +13,7 @@ export const ReferendumSearch = () => {
       value={query}
       placeholder={t('governance.searchPlaceholder')}
       wrapperClass="w-[230px]"
-      onChange={filterModel.events.queryChanged}
+      onChange={(e) => filterModel.events.queryChanged(e.target.value)}
     />
   );
 };

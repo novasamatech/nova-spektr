@@ -18,41 +18,38 @@ import { signatoryModel } from '../../../model/signatory-model';
 interface Props {
   signatoryName?: string;
   signatoryAddress?: string;
-  signtoryIndex: number;
+  signatoryIndex: number;
   isOwnAccount?: boolean;
   onDelete?: (index: number) => void;
 }
 
 export const Signatory = ({
-  signtoryIndex,
+  signatoryIndex,
   onDelete,
   isOwnAccount = false,
   signatoryName = '',
   signatoryAddress = '',
 }: Props) => {
   const { t } = useI18n();
-  const [query, setQuery] = useState('');
-  const [options, setOptions] = useState<ComboboxOption[]>([]);
 
   const contacts = useUnit(contactModel.$contacts);
-  const [address, setAddress] = useState(signatoryAddress);
-  const [name, setName] = useState(signatoryName);
   const wallets = useUnit(walletModel.$wallets);
   const {
     fields: { chain },
   } = useForm(formModel.$createMultisigForm);
-  const contactsFiltered = useMemo(
-    () =>
-      performSearch({
-        query,
-        records: contacts,
-        weights: {
-          name: 1,
-          address: 0.5,
-        },
-      }),
-    [query, contacts],
-  );
+
+  const [query, setQuery] = useState('');
+  const [name, setName] = useState(signatoryName);
+  const [options, setOptions] = useState<ComboboxOption[]>([]);
+  const [address, setAddress] = useState(signatoryAddress);
+
+  const contactsFiltered = useMemo(() => {
+    return performSearch({
+      query,
+      records: contacts,
+      weights: { name: 1, address: 0.5 },
+    });
+  }, [query, contacts]);
 
   const ownAccountName =
     walletUtils.getWalletsFilteredAccounts(wallets, {
@@ -142,7 +139,7 @@ export const Signatory = ({
         const displayAddress = toAddress(address, { prefix: chain.value.addressPrefix });
 
         return {
-          id: signtoryIndex.toString(),
+          id: signatoryIndex.toString(),
           element: <AddressWithName name={name} address={displayAddress} />,
           value: displayAddress,
         };
@@ -153,7 +150,7 @@ export const Signatory = ({
   const onNameChange = (newName: string) => {
     setName(newName);
     signatoryModel.events.signatoriesChanged({
-      index: signtoryIndex,
+      index: signatoryIndex,
       name: newName,
       address,
     });
@@ -174,7 +171,7 @@ export const Signatory = ({
 
     setAddress(newAddress);
     signatoryModel.events.signatoriesChanged({
-      index: signtoryIndex,
+      index: signatoryIndex,
       name,
       address: newAddress,
     });
@@ -210,7 +207,7 @@ export const Signatory = ({
           invalid={false}
           value={displayName}
           disabled={!!ownAccountName || !!contactAccountName}
-          onChange={onNameChange}
+          onChange={(e) => onNameChange(e.target.value)}
         />
       </div>
       <Combobox
@@ -221,13 +218,11 @@ export const Signatory = ({
         query={query}
         value={toAddress(address, { prefix: chain.value.addressPrefix })}
         prefixElement={prefixElement}
-        onChange={({ value }) => {
-          onAddressChange(value);
-        }}
-        onInput={handleQueryChange}
+        onChange={({ value }) => onAddressChange(value)}
+        onInput={(e) => handleQueryChange(e.target.value)}
       />
       {!isOwnAccount && onDelete && (
-        <IconButton className="ml-2 mt-6" name="delete" size={16} onClick={() => onDelete(signtoryIndex)} />
+        <IconButton className="ml-2 mt-6" name="delete" size={16} onClick={() => onDelete(signatoryIndex)} />
       )}
     </div>
   );

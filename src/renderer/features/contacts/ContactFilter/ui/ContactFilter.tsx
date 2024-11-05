@@ -15,7 +15,7 @@ export const ContactFilter = () => {
     <SearchInput
       className="w-[230px]"
       placeholder={t('addressBook.searchPlaceholder')}
-      onChange={filterModel.events.queryChanged}
+      onChange={(e) => filterModel.events.queryChanged(e.target.value)}
     />
   );
 };

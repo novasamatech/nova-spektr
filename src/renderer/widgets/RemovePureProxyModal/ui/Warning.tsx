@@ -37,7 +37,7 @@ export const Warning = ({ onGoBack }: Props) => {
           placeholder={t('general.input.descriptionPlaceholder')}
           invalid={passphrase.isTouched && passphrase.hasError()}
           value={passphrase.value}
-          onChange={passphrase.onChange}
+          onChange={(e) => passphrase.onChange(e.target.value)}
           onPaste={handlePaste}
         />
         <FootnoteText as="p" className="text-text-tertiary">

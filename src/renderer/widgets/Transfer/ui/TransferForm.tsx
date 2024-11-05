@@ -228,7 +228,7 @@ const Destination = () => {
         value={destination.value}
         prefixElement={prefixElement}
         suffixElement={isMyselfXcmEnabled && suffixElement}
-        onChange={destination.onChange}
+        onChange={(e) => destination.onChange(e.target.value)}
       />
       <InputHint active={destination.hasError()} variant="error">
         {t(destination.errorText())}

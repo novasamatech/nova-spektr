@@ -14,7 +14,7 @@ export const AssetsSearch = () => {
       value={query}
       placeholder={t('balances.searchPlaceholder')}
       className="w-[230px]"
-      onChange={assetsSearchModel.events.queryChanged}
+      onChange={(e) => assetsSearchModel.events.queryChanged(e.target.value)}
     />
   );
 };

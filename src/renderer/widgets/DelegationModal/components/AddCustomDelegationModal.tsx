@@ -54,7 +54,7 @@ export const AddCustomDelegationModel = () => {
           invalid={!!customDelegate && !!error}
           value={customDelegate}
           prefixElement={prefixElement}
-          onChange={delegationModel.events.customDelegateChanged}
+          onChange={(e) => delegationModel.events.customDelegateChanged(e.target.value)}
         />
 
         <InputHint variant="error" active={!!customDelegate && !!error}>
