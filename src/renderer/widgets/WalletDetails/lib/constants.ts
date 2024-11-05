@@ -2,6 +2,7 @@ export const enum ReconnectStep {
   NOT_STARTED,
   CONFIRMATION,
   RECONNECTING,
+  FAILED,
   REJECTED,
 }
 

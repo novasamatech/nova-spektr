@@ -1679,7 +1679,9 @@
       "reconnectConfirmTitle": "Is a proper wallet selected?",
       "refreshButton": "Refresh",
       "rejectDescription": "The operation was successfully canceled",
-      "rejectTitle": "Rejected"
+      "rejectTitle": "Rejected",
+      "failedDescription": "Something went wrong",
+      "failedTitle": "Failed"
     }
   },
   "wallets": {

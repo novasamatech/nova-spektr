@@ -92,6 +92,8 @@ sample({
       });
     }
 
+    console.log('xcm', 1.99, wallet, updatedAccounts);
+
     return { walletId: wallet!.id, accounts: updatedAccounts };
   },
   target: walletConnectModel.events.accountsUpdated,
@@ -102,6 +104,14 @@ sample({
   source: $reconnectStep,
   filter: (step) => step === ReconnectStep.RECONNECTING,
   fn: () => ReconnectStep.REJECTED,
+  target: $reconnectStep,
+});
+
+sample({
+  clock: walletConnectModel.events.initConnectFailed,
+  source: $reconnectStep,
+  filter: (step) => step === ReconnectStep.RECONNECTING,
+  fn: () => ReconnectStep.FAILED,
   target: $reconnectStep,
 });
 
