@@ -47,7 +47,7 @@ const Header = () => {
         wrapperClass="w-[220px] ml-auto"
         placeholder={t('staking.validators.searchPlaceholder')}
         value={query}
-        onChange={validatorsModel.events.queryChanged}
+        onChange={(e) => validatorsModel.events.queryChanged(e.target.value)}
       />
     </div>
   );

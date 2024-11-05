@@ -14,11 +14,11 @@ describe('ui/Inputs/Input', () => {
   test('should call onChange', async () => {
     const user = userEvent.setup();
     const spyChange = jest.fn();
-    render(<Input onChange={spyChange} />);
+    render(<Input onChange={(e) => spyChange(e.target.value)} />);
 
     const input = screen.getByRole('textbox');
     await user.type(input, 'x');
 
-    expect(spyChange).toBeCalledWith('x');
+    expect(spyChange).toHaveBeenCalledWith('x');
   });
 });
