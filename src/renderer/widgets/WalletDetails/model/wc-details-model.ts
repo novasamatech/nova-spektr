@@ -92,8 +92,6 @@ sample({
       });
     }
 
-    console.log('xcm', 1.99, wallet, updatedAccounts);
-
     return { walletId: wallet!.id, accounts: updatedAccounts };
   },
   target: walletConnectModel.events.accountsUpdated,

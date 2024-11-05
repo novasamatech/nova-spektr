@@ -155,8 +155,6 @@ type UpdateParams = {
 };
 const updateWcAccountsFx = createEffect(
   async ({ wallet, accounts }: UpdateParams): Promise<WcAccount[] | undefined> => {
-    console.log('xcm', 3, wallet, accounts);
-
     const oldAccountIds = wallet.accounts.map((account) => account.id);
     const newAccountsWithoutId = accounts.map((account) => {
       const { id: _, ...newAccount } = account;
@@ -239,11 +237,7 @@ const removeSessionFx = createEffect(async ({ client, session }: { client: Clien
 sample({
   clock: accountsUpdated,
   source: walletModel.$wallets,
-  filter: (_, { accounts }) => {
-    console.log('xcm', 2, accounts);
-
-    return Boolean(accounts?.length);
-  },
+  filter: (_, { accounts }) => accounts?.length > 0,
   fn: (wallets, { accounts, walletId }) => {
     const wallet = wallets.find((wallet) => wallet.id === walletId)!;
 
