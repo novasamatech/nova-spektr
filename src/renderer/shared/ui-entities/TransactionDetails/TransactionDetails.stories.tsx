@@ -40,14 +40,14 @@ type Story = StoryObj<typeof TransactionDetails>;
 export const Default: Story = {
   args: {
     wallets: [createPolkadotWallet(1, [initiatorAccount]), createProxiedWallet(1, [proxyAccount])],
-    initiator: initiatorAccount,
+    initiator: [initiatorAccount],
   },
 };
 
 export const Proxied: Story = {
   args: {
     wallets: [createPolkadotWallet(1, [initiatorAccount]), createProxiedWallet(2, [proxyAccount])],
-    initiator: initiatorAccount,
+    initiator: [initiatorAccount],
     proxied: proxyAccount,
   },
 };
@@ -55,7 +55,7 @@ export const Proxied: Story = {
 export const Signatory: Story = {
   args: {
     wallets: [createPolkadotWallet(1, [initiatorAccount]), createWcWallet(2, [signatoryAccount])],
-    initiator: initiatorAccount,
+    initiator: [initiatorAccount],
     signatory: signatoryAccount,
   },
 };
@@ -67,7 +67,7 @@ export const ProxiedAndSignatory: Story = {
       createProxiedWallet(2, [proxyAccount]),
       createWcWallet(2, [signatoryAccount]),
     ],
-    initiator: initiatorAccount,
+    initiator: [initiatorAccount],
     signatory: signatoryAccount,
     proxied: proxyAccount,
   },
@@ -80,7 +80,7 @@ export const AdditionalContent: Story = {
       createWcWallet(3, [signatoryAccount]),
       createProxiedWallet(2, [proxyAccount]),
     ],
-    initiator: initiatorAccount,
+    initiator: [initiatorAccount],
     signatory: signatoryAccount,
     proxied: proxyAccount,
     children: (
