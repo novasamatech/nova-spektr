@@ -40,7 +40,7 @@ export const RemovePureProxy = ({ wallet }: Props) => {
     removePureProxyModel.output.flowFinished,
   );
 
-  const getModalTitle = (step: Step, chain?: Chain) => {
+  const getModalTitle = (step: Step, chain: Chain | null) => {
     if (removePureProxyUtils.isInitStep(step) || !chain) {
       return t(shouldRemovePureProxy ? 'operations.modalTitles.removePureProxy' : 'operations.modalTitles.removeProxy');
     }

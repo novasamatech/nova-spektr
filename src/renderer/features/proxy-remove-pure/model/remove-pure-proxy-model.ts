@@ -4,7 +4,6 @@ import { spread } from 'patronum';
 import {
   type Account,
   type BasketTransaction,
-  type Chain,
   type ChainId,
   type MultisigTxWrapper,
   type ProxiedAccount,
@@ -62,8 +61,8 @@ const $isProxy = createStore<boolean>(false);
 const $isMultisig = createStore<boolean>(false);
 const $selectedSignatories = createStore<Account[]>([]);
 
-const $chain = $removeProxyStore.map((store) => store?.chain, { skipVoid: false });
-const $account = $removeProxyStore.map((store) => store?.account, { skipVoid: false });
+const $chain = $removeProxyStore.map((store) => store?.chain ?? null);
+const $account = $removeProxyStore.map((store) => store?.account ?? null);
 
 const $chainProxies = combine(
   {
@@ -117,12 +116,11 @@ const $realAccount = combine(
     if (txWrappers.length === 0) return account;
 
     if (transactionService.hasMultisig([txWrappers[0]])) {
-      return (txWrappers[0] as MultisigTxWrapper).multisigAccount;
+      return (txWrappers[0] as MultisigTxWrapper)?.multisigAccount ?? null;
     }
 
-    return (txWrappers[0] as ProxyTxWrapper).proxyAccount;
+    return (txWrappers[0] as ProxyTxWrapper)?.proxyAccount ?? null;
   },
-  { skipVoid: false },
 );
 
 const $signatories = combine(
@@ -161,9 +159,8 @@ const $initiatorWallet = combine(
   ({ store, wallets }) => {
     if (!store) return undefined;
 
-    return walletUtils.getWalletById(wallets, store.account.walletId);
+    return walletUtils.getWalletById(wallets, store.account.walletId) ?? null;
   },
-  { skipVoid: false },
 );
 
 sample({
@@ -292,10 +289,10 @@ sample({
     return Boolean(account) && Boolean(realAccount) && Boolean(chain);
   },
   fn: ({ realAccount, signatories, account, chain }) => ({
-    account: realAccount,
+    account: realAccount ?? undefined,
     proxiedAccount: account as ProxiedAccount,
     signatories: signatories[0] || [],
-    chain,
+    chain: chain ?? undefined,
   }),
   target: formModel.events.formInitiated,
 });
@@ -367,8 +364,8 @@ sample({
     event: [
       {
         ...formData,
-        chain: chain as Chain,
-        account: realAccount,
+        chain: chain ?? undefined,
+        account: realAccount ?? undefined,
         proxiedAccount: account as ProxiedAccount,
         transaction: wrappedTx as Transaction,
         spawner: (account as ProxiedAccount).proxyAccountId,

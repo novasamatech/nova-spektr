@@ -491,6 +491,11 @@ sample({
 
 sample({
   clock: flowFinished,
+  target: $proxyForRemoval.reinit,
+});
+
+sample({
+  clock: flowFinished,
   fn: () => Step.NONE,
   target: stepChanged,
 });
