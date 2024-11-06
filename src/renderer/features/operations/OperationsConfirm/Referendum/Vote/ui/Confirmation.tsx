@@ -5,14 +5,15 @@ import { type ReactNode } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { formatAsset, formatBalance, toAddress, toNumberWithPrecision } from '@/shared/lib/utils';
 import { Button, DetailRow, HeadlineText, Icon, Loader } from '@/shared/ui';
+import { TransactionDetails } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { LockPeriodDiff, LockValueDiff, voteTransactionService, votingService } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
 import { Fee } from '@/entities/transaction';
+import { walletModel } from '@/entities/wallet';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
-import { ConfirmDetails } from '@/features/operations/OperationsConfirm/common/ConfirmDetails';
 import { MultisigExistsAlert } from '@/features/operations/OperationsConfirm/common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 
@@ -27,6 +28,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const { t } = useI18n();
 
   const trackLocks = useUnit(locksAggregate.$trackLocks);
+  const wallets = useUnit(walletModel.$wallets);
+
   const confirm = useStoreMap({
     store: confirmModel.$confirmMap,
     keys: [id],
@@ -102,8 +105,13 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
       <MultisigExistsAlert active={isMultisigExists} />
 
-      <ConfirmDetails confirm={confirm}>
-        <hr className="w-full border-filter-border pr-2" />
+      <TransactionDetails
+        chain={confirm.meta.chain}
+        wallets={wallets}
+        initiator={[confirm.accounts.initiator]}
+        signatory={confirm.accounts.signer || undefined}
+        proxied={confirm.accounts.proxy || undefined}
+      >
         <DetailRow label={t('governance.vote.field.decision')}>{t(`governance.referendum.${decision}`)}</DetailRow>
         <DetailRow label={t('governance.vote.field.governanceLock')} wrapperClassName="items-start">
           <LockValueDiff from={locksForAddress} to={amount} asset={asset} />
@@ -115,7 +123,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         <DetailRow label={t('governance.vote.field.networkFee')}>
           <Fee api={api} asset={asset} transaction={wrappedTransactions.wrappedTx} />
         </DetailRow>
-      </ConfirmDetails>
+      </TransactionDetails>
 
       <div className="mt-3 flex w-full justify-between">
         {onGoBack && (
