@@ -20,13 +20,9 @@ import { useTheme } from '../Theme/useTheme';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
 
 type ContextProps = {
-  isOpen?: boolean;
-  setIsOpen?: (open: boolean) => void;
-  side?: 'top' | 'right' | 'bottom' | 'left';
-  sideOffset?: number;
-  align?: 'start' | 'center' | 'end';
-  alignOffset?: number;
   testId?: string;
+  isOpen?: boolean;
+  onOpenChange?: (value: boolean) => void;
   comboboxRef?: RefObject<HTMLInputElement>;
   listboxRef?: RefObject<HTMLDivElement>;
 };
@@ -40,32 +36,20 @@ type ControlledPopoverProps = {
 
 type RootProps = PropsWithChildren<ControlledPopoverProps & ContextProps>;
 
-const Root = ({
-  side = 'bottom',
-  sideOffset = 3,
-  align = 'center',
-  alignOffset = 0,
-  testId = 'Combobox',
-  selected,
-  onChange,
-  children,
-}: RootProps) => {
+const Root = ({ testId = 'Combobox', selected, onChange, children }: RootProps) => {
   const comboboxRef = useRef<HTMLInputElement>(null);
   const listboxRef = useRef<HTMLDivElement>(null);
 
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, onOpenChange] = useState(false);
 
-  const ctx = useMemo(
-    () => ({ isOpen, setIsOpen, side, sideOffset, align, alignOffset, testId, comboboxRef, listboxRef }),
-    [isOpen, side, sideOffset, align, alignOffset, testId],
-  );
+  const ctx = useMemo(() => ({ isOpen, onOpenChange, testId, comboboxRef, listboxRef }), [isOpen, testId]);
 
   return (
     <Context.Provider value={ctx}>
-      <RadixPopover.Root modal open={isOpen} onOpenChange={setIsOpen}>
+      <RadixPopover.Root modal open={isOpen} onOpenChange={onOpenChange}>
         <Ariakit.ComboboxProvider
           open={isOpen}
-          setOpen={setIsOpen}
+          setOpen={onOpenChange}
           defaultValue={selected}
           defaultSelectedValue={selected}
           setSelectedValue={onChange}
@@ -82,7 +66,7 @@ type TriggerProps = {
   placeholder?: string;
 };
 const Trigger = ({ placeholder }: TriggerProps) => {
-  const { setIsOpen, comboboxRef } = useContext(Context);
+  const { onOpenChange, comboboxRef } = useContext(Context);
 
   return (
     <RadixPopover.Anchor asChild>
@@ -92,8 +76,8 @@ const Trigger = ({ placeholder }: TriggerProps) => {
         ref={comboboxRef}
         placeholder={placeholder}
         render={(props) => <Input {...props} />}
-        onFocus={() => setIsOpen?.(true)}
-        onBlur={() => setIsOpen?.(false)}
+        onFocus={() => onOpenChange?.(true)}
+        onBlur={() => onOpenChange?.(false)}
       />
     </RadixPopover.Anchor>
   );
@@ -122,7 +106,7 @@ const INPUT_PADDING = gridSpaceConverter(3 * 2);
 
 const Content = ({ children }: PropsWithChildren) => {
   const { portalContainer } = useTheme();
-  const { align, alignOffset, side, sideOffset, testId, comboboxRef, listboxRef } = useContext(Context);
+  const { testId, comboboxRef, listboxRef } = useContext(Context);
 
   if (Children.count(children) === 0) return null;
 
@@ -131,12 +115,8 @@ const Content = ({ children }: PropsWithChildren) => {
       <RadixPopover.Content
         asChild
         hideWhenDetached
-        side={side}
-        align={align}
         style={{ width: `calc(var(--radix-popover-trigger-width) + ${INPUT_PADDING}px)` }}
         collisionPadding={gridSpaceConverter(2)}
-        alignOffset={alignOffset && gridSpaceConverter(alignOffset)}
-        sideOffset={sideOffset && gridSpaceConverter(sideOffset)}
         data-testid={testId}
         onOpenAutoFocus={(e) => e.preventDefault()}
         onInteractOutside={(event) => {
