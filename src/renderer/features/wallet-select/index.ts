@@ -5,7 +5,9 @@ import { walletSelectService } from './service/walletSelectService';
 
 export const walletSelectFeature = {
   feature: walletsSelectFeatureStatus,
-  walletSelectService,
+  services: {
+    walletSelect: walletSelectService,
+  },
   selectModel: walletSelectModel,
   constants: {
     GROUP_LABELS,

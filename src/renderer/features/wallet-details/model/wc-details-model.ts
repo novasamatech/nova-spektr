@@ -161,11 +161,6 @@ sample({
   target: $forgetStep,
 });
 
-// sample({
-//   clock: forgetModalClosed,
-//   target: walletSelectModel.events.walletIdCleared,
-// });
-
 export const wcDetailsModel = {
   $reconnectStep,
   $forgetStep,

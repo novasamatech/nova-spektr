@@ -23,7 +23,6 @@ const callbacksApi = createApi($callbacks, {
   callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
 });
 
-const $walletId = createStore<ID | null>(null);
 const $filterQuery = createStore<string>('');
 
 const $isWalletsRemoved = combine(
@@ -182,7 +181,6 @@ export const walletSelectModel = {
     walletSelected,
     queryChanged,
     clearData: $filterQuery.reinit,
-    walletIdCleared: $walletId.reinit,
     callbacksChanged: callbacksApi.callbacksChanged,
   },
 };

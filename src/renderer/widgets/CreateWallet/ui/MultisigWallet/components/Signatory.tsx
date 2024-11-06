@@ -74,7 +74,7 @@ export const Signatory = ({
   useEffect(() => {
     if (!isOwnAccount || wallets.length === 0) return;
 
-    const walletByGroup = walletSelectFeature.walletSelectService.getWalletByGroups(wallets, query);
+    const walletByGroup = walletSelectFeature.services.walletSelect.getWalletByGroups(wallets, query);
     const opts = Object.entries(walletByGroup).reduce((acc, [walletType, wallets], index) => {
       if (wallets.length === 0) {
         return acc;

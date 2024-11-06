@@ -4,7 +4,7 @@ import { useUnit } from 'effector-react';
 import { type ID } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatFiatBalance } from '@/shared/lib/utils';
-import { Shimmering } from '@/shared/ui';
+import { Skeleton } from '@/shared/ui-kit';
 import { FiatBalance, priceProviderModel } from '@/entities/price';
 import { walletModel } from '@/entities/wallet';
 import { walletFiatBalanceModel } from '../model/fiatBalance';
@@ -30,7 +30,7 @@ export const WalletFiatBalance = ({ walletId, className }: Props) => {
   }
 
   if (!walletBalances) {
-    return <Shimmering width={56} height={18} />;
+    return <Skeleton width={14} height={4.5} />;
   }
 
   const { value: formattedValue, suffix } = formatFiatBalance(walletBalances.toString());
