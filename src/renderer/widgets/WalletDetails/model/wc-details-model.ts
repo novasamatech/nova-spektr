@@ -106,6 +106,14 @@ sample({
 });
 
 sample({
+  clock: walletConnectModel.events.initConnectFailed,
+  source: $reconnectStep,
+  filter: (step) => step === ReconnectStep.RECONNECTING,
+  fn: () => ReconnectStep.FAILED,
+  target: $reconnectStep,
+});
+
+sample({
   clock: [walletConnectModel.events.accountsUpdateDone, reconnectAborted],
   fn: () => ReconnectStep.NOT_STARTED,
   target: $reconnectStep,

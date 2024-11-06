@@ -20,6 +20,7 @@ export const wcDetailsUtils = {
   isRejected,
   isReadyToReconnect,
   isConfirmation,
+  isFailed,
 };
 
 export const walletDetailsUtils = {
@@ -45,6 +46,10 @@ function isReconnecting(step: ReconnectStep): boolean {
 
 function isRejected(step: ReconnectStep): boolean {
   return step === ReconnectStep.REJECTED;
+}
+
+function isFailed(step: ReconnectStep): boolean {
+  return step === ReconnectStep.FAILED;
 }
 
 function isReadyToReconnect(step: ReconnectStep, connected: boolean): boolean {

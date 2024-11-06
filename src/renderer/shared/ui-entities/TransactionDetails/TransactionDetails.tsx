@@ -2,10 +2,13 @@ import { type PropsWithChildren, memo, useMemo } from 'react';
 
 import { type Account, type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { useToggle } from '@/shared/lib/hooks';
 import { DetailRow } from '@/shared/ui/DetailRow/DetailRow';
+import { Icon } from '@/shared/ui/Icon/Icon';
 import { Separator } from '@/shared/ui/Separator/Separator';
-import { FootnoteText } from '@/shared/ui/Typography/index';
+import { CaptionText, FootnoteText } from '@/shared/ui/Typography/index';
 import { Box } from '@/shared/ui-kit';
+import { AccountsModal } from '@/entities/staking';
 import { WalletIcon, walletUtils } from '@/entities/wallet';
 import { Account as AccountComponent } from '../Account/Account';
 import { AccountExplorers } from '../AccountExplorer/AccountExplorers';
@@ -13,7 +16,7 @@ import { AccountExplorers } from '../AccountExplorer/AccountExplorers';
 type Props = PropsWithChildren<{
   wallets: Wallet[];
   chain: Chain;
-  initiator: Account;
+  initiator: Account[];
   signatory?: Account;
   proxied?: Account;
 }>;
@@ -21,27 +24,27 @@ type Props = PropsWithChildren<{
 export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, signatory, children }: Props) => {
   const { t } = useI18n();
 
+  const [isAccountsOpen, toggleAccounts] = useToggle();
+
   const initiatorWallet = useMemo(() => {
-    return (
-      walletUtils.getWalletFilteredAccounts(wallets, {
-        accountFn: (a) => a.accountId === initiator.accountId,
-      }) ?? null
-    );
+    return walletUtils.getWalletFilteredAccounts(wallets, {
+      accountFn: (a) => a.accountId === initiator[0]?.accountId,
+    });
   }, [wallets, initiator]);
 
   const signatoryWallet = useMemo(() => {
     return signatory
-      ? (walletUtils.getWalletFilteredAccounts(wallets, {
+      ? walletUtils.getWalletFilteredAccounts(wallets, {
           accountFn: (a) => a.accountId === signatory.accountId,
-        }) ?? null)
+        })
       : null;
   }, [wallets, signatory]);
 
   const proxiedWallet = useMemo(() => {
     return proxied
-      ? (walletUtils.getWalletFilteredAccounts(wallets, {
+      ? walletUtils.getWalletFilteredAccounts(wallets, {
           accountFn: (a) => a.accountId === proxied.accountId,
-        }) ?? null)
+        })
       : null;
   }, [wallets, proxied]);
 
@@ -59,7 +62,24 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
           </DetailRow>
 
           <DetailRow label={t('proxy.details.account')}>
-            <AccountComponent account={initiator} chain={chain} />
+            {initiator.length === 0 && (
+              <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
+                <CaptionText className="text-white">{initiator.length}</CaptionText>
+              </div>
+            )}
+            {initiator.length === 1 && <AccountComponent account={initiator[0]!} chain={chain} />}
+            {initiator.length > 1 && (
+              <button
+                type="button"
+                className="group flex items-center gap-x-1 rounded px-2 py-1 hover:bg-action-background-hover"
+                onClick={toggleAccounts}
+              >
+                <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
+                  <CaptionText className="text-white">{initiator.length}</CaptionText>
+                </div>
+                <Icon className="group-hover:text-icon-hover" name="info" size={16} />
+              </button>
+            )}
           </DetailRow>
         </>
       )}
@@ -85,7 +105,20 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
           </DetailRow>
 
           <DetailRow label={t('transfer.signingAccount')}>
-            <AccountComponent account={initiator} chain={chain} />
+            {initiator.length === 1 ? (
+              <AccountComponent account={initiator[0]!} chain={chain} />
+            ) : (
+              <button
+                type="button"
+                className="group flex items-center gap-x-1 rounded px-2 py-1 hover:bg-action-background-hover"
+                onClick={toggleAccounts}
+              >
+                <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
+                  <CaptionText className="text-white">{initiator.length}</CaptionText>
+                </div>
+                <Icon className="group-hover:text-icon-hover" name="info" size={16} />
+              </button>
+            )}
           </DetailRow>
         </>
       )}
@@ -103,6 +136,15 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
       {children ? <Separator className="border-filter-border" /> : null}
 
       {children}
+
+      <AccountsModal
+        isOpen={isAccountsOpen}
+        accounts={initiator}
+        chainId={chain.chainId}
+        asset={chain.assets[0]!}
+        addressPrefix={chain.addressPrefix}
+        onClose={toggleAccounts}
+      />
     </dl>
   );
 });
