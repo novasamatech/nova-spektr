@@ -8,7 +8,7 @@ import { Button, FootnoteText, Input, InputHint, Select, SmallTitleText } from '
 import { type DropdownOption } from '@/shared/ui/types';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel, networkUtils } from '@/entities/network';
-import { flexibleMultisigModel } from '../model/flexible-multisig';
+import { flexibleMultisigModel } from '../model/flexible-multisig-create';
 import { formModel } from '../model/form-model';
 
 import { MultisigFees } from './MultisigFees';

@@ -7,7 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { DetailRow, FootnoteText, Icon, Tooltip } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { FeeLoader } from '@/entities/transaction';
-import { flexibleMultisigModel } from '../model/flexible-multisig';
+import { flexibleMultisigModel } from '../model/flexible-multisig-create';
 
 type Props = {
   asset: Asset;

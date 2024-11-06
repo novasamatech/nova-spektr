@@ -1,6 +1,6 @@
 import { combine, createEvent, restore, sample } from 'effector';
 
-import { flexibleMultisigModel } from '@/features/flexible-multisig';
+import { flexibleMultisigModel } from '@/features/flexible-multisig-create';
 import { MultisigWalletType } from '../ui/MultisigWallet/common/constants';
 
 import { flowModel } from './flow-model';

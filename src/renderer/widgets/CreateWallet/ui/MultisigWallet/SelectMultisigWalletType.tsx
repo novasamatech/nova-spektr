@@ -7,7 +7,7 @@ import { useModalClose } from '@/shared/lib/hooks';
 import { Step, isStep } from '@/shared/lib/utils';
 import { BodyText, Button, HeaderTitleText, Icon, RadioGroup } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
-import { FlexibleMultisigWallet, flexibleMultisigModel } from '@/features/flexible-multisig';
+import { FlexibleMultisigWallet, flexibleMultisigModel } from '@/features/flexible-multisig-create';
 import { OperationSubmit } from '@/features/operations';
 import { flowModel } from '../../model/flow-model';
 import { selectMultisigModel } from '../../model/select-multisig-model';

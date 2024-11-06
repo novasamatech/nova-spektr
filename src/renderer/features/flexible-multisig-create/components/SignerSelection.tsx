@@ -6,7 +6,7 @@ import { type AccountId, AccountType, type ChainAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Step } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
-import { flexibleMultisigModel } from '../model/flexible-multisig';
+import { flexibleMultisigModel } from '../model/flexible-multisig-create';
 import { formModel } from '../model/form-model';
 import { signatoryModel } from '../model/signatory-model';
 

@@ -7,7 +7,7 @@ import { Step } from '@/shared/lib/utils';
 import { Alert, Button, InputHint, Select, SmallTitleText } from '@/shared/ui';
 import { type DropdownOption } from '@/shared/ui/types';
 import { walletModel } from '@/entities/wallet';
-import { flexibleMultisigModel } from '../../model/flexible-multisig';
+import { flexibleMultisigModel } from '../../model/flexible-multisig-create';
 import { formModel } from '../../model/form-model';
 import { signatoryModel } from '../../model/signatory-model';
 import { MultisigFees } from '../MultisigFees';

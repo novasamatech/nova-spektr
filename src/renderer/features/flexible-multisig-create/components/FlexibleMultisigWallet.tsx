@@ -7,7 +7,7 @@ import { HeaderTitleText } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { OperationSign } from '@/features/operations';
-import { flexibleMultisigModel } from '../model/flexible-multisig';
+import { flexibleMultisigModel } from '../model/flexible-multisig-create';
 import { formModel } from '../model/form-model';
 
 import { ConfirmationStep } from './ConfirmationStep';

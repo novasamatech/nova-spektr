@@ -9,7 +9,7 @@ import { SignButton } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel, ProxyDepositWithLabel } from '@/entities/transaction';
 import { WalletIcon } from '@/entities/wallet';
 import { confirmModel } from '../model/confirm-model';
-import { flexibleMultisigModel } from '../model/flexible-multisig';
+import { flexibleMultisigModel } from '../model/flexible-multisig-create';
 import { formModel } from '../model/form-model';
 import { signatoryModel } from '../model/signatory-model';
 

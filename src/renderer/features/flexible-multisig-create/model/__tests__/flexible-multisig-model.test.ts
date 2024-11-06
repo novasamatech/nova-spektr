@@ -8,7 +8,7 @@ import { signModel } from '@/features/operations/OperationSign/model/sign-model'
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { ExtrinsicResult } from '@/features/operations/OperationSubmit/lib/types';
 import { confirmModel } from '../confirm-model';
-import { flexibleMultisigModel } from '../flexible-multisig';
+import { flexibleMultisigModel } from '../flexible-multisig-create';
 import { formModel } from '../form-model';
 import { signatoryModel } from '../signatory-model';
 
