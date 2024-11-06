@@ -172,27 +172,20 @@ const updateWcAccountsFx = createEffect(
 );
 
 type InitConnectResult = {
-  uri: string | undefined;
+  uri?: string;
   approval: () => Promise<SessionTypes.Struct>;
 };
-const initConnectFx = createEffect(
-  async ({ client, chains, pairing }: InitConnectParams): Promise<InitConnectResult | undefined> => {
-    const optionalNamespaces = {
-      polkadot: {
-        methods: [DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION],
-        chains,
-        events: [DEFAULT_POLKADOT_EVENTS.CHAIN_CHANGED, DEFAULT_POLKADOT_EVENTS.ACCOUNTS_CHANGED],
-      },
-    };
+const initConnectFx = createEffect(({ client, chains, pairing }: InitConnectParams): Promise<InitConnectResult> => {
+  const optionalNamespaces = {
+    polkadot: {
+      chains,
+      methods: [DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION],
+      events: [DEFAULT_POLKADOT_EVENTS.CHAIN_CHANGED, DEFAULT_POLKADOT_EVENTS.ACCOUNTS_CHANGED],
+    },
+  };
 
-    const { uri, approval } = await client.connect({
-      pairingTopic: pairing?.topic,
-      optionalNamespaces,
-    });
-
-    return { uri, approval };
-  },
-);
+  return client.connect({ pairingTopic: pairing?.topic, optionalNamespaces });
+});
 
 type ConnectParams = {
   client: Client;
