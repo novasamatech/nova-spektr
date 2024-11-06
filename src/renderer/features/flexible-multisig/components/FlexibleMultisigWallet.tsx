@@ -7,18 +7,18 @@ import { HeaderTitleText } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { OperationSign } from '@/features/operations';
-import { flowModel } from '../../model/flow-model';
-import { formModel } from '../../model/form-model';
+import { flexibleMultisigModel } from '../model/flexible-multisig';
+import { formModel } from '../model/form-model';
 
 import { ConfirmationStep } from './ConfirmationStep';
 import { NameNetworkSelection } from './NameNetworkSelection';
-import { SelectSignatoriesThreshold } from './SelectSignatoriesThreshold';
-import { SignerSelection } from './components/SignerSelection';
+import { SelectSignatoriesThreshold } from './SelectThreshold/SelectSignatoriesThreshold';
+import { SignerSelection } from './SignerSelection';
 
-export const MultisigWallet = () => {
+export const FlexibleMultisigWallet = () => {
   const { t } = useI18n();
 
-  const activeStep = useUnit(flowModel.$step);
+  const activeStep = useUnit(flexibleMultisigModel.$step);
   const {
     fields: { chain },
   } = useForm(formModel.$createMultisigForm);
@@ -30,7 +30,7 @@ export const MultisigWallet = () => {
       <HeaderTitleText className="flex py-[3px]">
         {isStep(activeStep, Step.SIGNER_SELECTION)
           ? t('createMultisigAccount.selectSigner')
-          : t('createMultisigAccount.title')}
+          : t('createMultisigAccount.flexibleMultisig.title')}
         {!isStep(activeStep, Step.NAME_NETWORK) && !isStep(activeStep, Step.SIGNER_SELECTION) && (
           <>
             <span className="mx-1">{t('createMultisigAccount.titleOn')}</span>
@@ -49,13 +49,13 @@ export const MultisigWallet = () => {
     <>
       <Modal.Title close>{modalTitle}</Modal.Title>
       <Modal.Content>
-        {isStep(activeStep, Step.NAME_NETWORK) && (
-          <NameNetworkSelection onGoBack={() => flowModel.events.stepChanged(Step.SELECT_MULTISIG)} />
-        )}
+        {isStep(activeStep, Step.NAME_NETWORK) && <NameNetworkSelection />}
         {isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold />}
         {isStep(activeStep, Step.SIGNER_SELECTION) && <SignerSelection />}
         {isStep(activeStep, Step.CONFIRM) && <ConfirmationStep />}
-        {isStep(activeStep, Step.SIGN) && <OperationSign onGoBack={() => flowModel.events.stepChanged(Step.CONFIRM)} />}
+        {isStep(activeStep, Step.SIGN) && (
+          <OperationSign onGoBack={() => flexibleMultisigModel.events.stepChanged(Step.CONFIRM)} />
+        )}
       </Modal.Content>
     </>
   );

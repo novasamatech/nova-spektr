@@ -7,12 +7,12 @@ import { Step } from '@/shared/lib/utils';
 import { Alert, Button, InputHint, Select, SmallTitleText } from '@/shared/ui';
 import { type DropdownOption } from '@/shared/ui/types';
 import { walletModel } from '@/entities/wallet';
-import { MultisigCreationFees } from '@/widgets/CreateWallet/ui/MultisigWallet/components';
-import { flowModel } from '../../model/flow-model';
+import { flexibleMultisigModel } from '../../model/flexible-multisig';
 import { formModel } from '../../model/form-model';
 import { signatoryModel } from '../../model/signatory-model';
+import { MultisigFees } from '../MultisigFees';
 
-import { SelectSignatories } from './components/SelectSignatories';
+import { SelectSignatories } from './SelectSignatories';
 
 const MIN_THRESHOLD = 2;
 const getThresholdOptions = (optionsAmount: number): DropdownOption<number>[] => {
@@ -33,19 +33,19 @@ export const SelectSignatoriesThreshold = () => {
   const { t } = useI18n();
 
   const [hasClickedNext, setHasClickedNext] = useState(false);
-  const signatoriesMap = useUnit(signatoryModel.$signatories);
-  const signatories = Array.from(signatoriesMap.values());
-  const fakeTx = useUnit(flowModel.$fakeTx);
+
   const {
     fields: { threshold, chain },
     submit,
   } = useForm(formModel.$createMultisigForm);
+  const signatoriesMap = useUnit(signatoryModel.$signatories);
   const multisigAlreadyExists = useUnit(formModel.$multisigAlreadyExists);
   const hiddenMultisig = useUnit(formModel.$hiddenMultisig);
   const ownedSignatoriesWallets = useUnit(signatoryModel.$ownedSignatoriesWallets);
   const hasDuplicateSignatories = useUnit(signatoryModel.$hasDuplicateSignatories);
-  const thresholdOptions = getThresholdOptions(signatories.length - 1);
 
+  const signatories = Array.from(signatoriesMap.values());
+  const thresholdOptions = getThresholdOptions(signatories.length - 1);
   const hasOwnedSignatory = !!ownedSignatoriesWallets && ownedSignatoriesWallets?.length > 0;
   const hasEnoughSignatories = signatories.length >= MIN_THRESHOLD;
   const hasEmptySignatory = signatories.map(({ address }) => address).includes('');
@@ -58,8 +58,6 @@ export const SelectSignatoriesThreshold = () => {
     isThresholdValid &&
     !hasDuplicateSignatories;
 
-  const api = useUnit(flowModel.$api);
-
   const onSubmit = (event: FormEvent) => {
     if (!hasClickedNext) {
       setHasClickedNext(true);
@@ -67,12 +65,13 @@ export const SelectSignatoriesThreshold = () => {
 
     if (!canSubmit) return;
 
-    if ((ownedSignatoriesWallets || []).length > 1) {
-      flowModel.events.stepChanged(Step.SIGNER_SELECTION);
+    if (ownedSignatoriesWallets.length > 1) {
+      flexibleMultisigModel.events.stepChanged(Step.SIGNER_SELECTION);
+      signatoryModel.events.getSignatoriesBalance(ownedSignatoriesWallets);
 
       return;
     } else {
-      flowModel.events.signerSelected(ownedSignatoriesWallets[0].accounts[0].accountId);
+      flexibleMultisigModel.events.signerSelected(ownedSignatoriesWallets[0].accounts[0].accountId);
       event.preventDefault();
       submit();
     }
@@ -82,7 +81,7 @@ export const SelectSignatoriesThreshold = () => {
     <section className="flex h-full flex-1 flex-col">
       <SmallTitleText className="mb-4 border-b border-container-border px-5 pb-4 text-text-primary">
         {t('createMultisigAccount.multisigStep', { step: 2 })}{' '}
-        {t('createMultisigAccount.signatoryThresholdDescription')}
+        {t('createMultisigAccount.flexibleMultisig.signatoryThresholdDescription')}
       </SmallTitleText>
       <div className="flex flex-col gap-y-4 px-5 py-4">
         <SelectSignatories />
@@ -168,22 +167,18 @@ export const SelectSignatoriesThreshold = () => {
             </Alert.Item>
           </Alert>
         </div>
+
         <div className="mt-auto flex items-center justify-between">
           <Button
             variant="text"
             onClick={() => {
-              flowModel.events.stepChanged(Step.NAME_NETWORK);
+              flexibleMultisigModel.events.stepChanged(Step.NAME_NETWORK);
             }}
           >
             {t('createMultisigAccount.backButton')}
           </Button>
           <div className="mt-auto flex items-center justify-end">
-            <MultisigCreationFees
-              api={api}
-              asset={chain.value.assets[0]}
-              threshold={threshold.value}
-              transaction={fakeTx}
-            />
+            <MultisigFees asset={chain.value.assets[0]} />
             <Button key="create" type="submit" disabled={hasClickedNext && !canSubmit} onClick={onSubmit}>
               {t('createMultisigAccount.continueButton')}
             </Button>

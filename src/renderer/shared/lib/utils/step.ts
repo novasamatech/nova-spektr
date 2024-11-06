@@ -6,9 +6,15 @@ export const enum Step {
   SIGN,
   SUBMIT,
   BASKET,
+  // Delegation
   LIST,
   SELECT_TRACK,
+  // Multisig
+  SELECT_MULTISIG,
   CUSTOM_DELEGATION,
+  NAME_NETWORK,
+  SIGNATORIES_THRESHOLD,
+  SIGNER_SELECTION,
 }
 
 /**
