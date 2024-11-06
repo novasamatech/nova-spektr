@@ -113,13 +113,22 @@ const logClientIdFx = createEffect(async (client: Client) => {
 });
 
 const sessionTopicUpdatedFx = createEffect(
-  async ({ accounts, topic }: SessionTopicParams): Promise<Account[] | undefined> => {
+  async ({ accounts, topic, client }: SessionTopicParams & { client: Client }): Promise<Account[] | undefined> => {
+    const oldSessionTopic = accounts[0]?.signingExtras?.sessionTopic;
+
+    const oldSession = client.session.get(oldSessionTopic);
+
     const updatedAccounts = accounts.map(({ signingExtras, ...rest }) => {
       const newSigningExtras = { ...signingExtras, sessionTopic: topic };
 
       return { ...rest, signingExtras: newSigningExtras };
     });
+
     const updated = await storageService.accounts.updateAll(updatedAccounts);
+
+    if (oldSession) {
+      await disconnectFx({ client, session: oldSession });
+    }
 
     return updated && updatedAccounts;
   },
@@ -147,46 +156,36 @@ type UpdateParams = {
 const updateWcAccountsFx = createEffect(
   async ({ wallet, accounts }: UpdateParams): Promise<WcAccount[] | undefined> => {
     const oldAccountIds = wallet.accounts.map((account) => account.id);
+    const newAccountsWithoutId = accounts.map((account) => {
+      const { id: _, ...newAccount } = account;
 
-    await storageService.accounts.deleteAll(oldAccountIds);
-    const newAccounts = await storageService.accounts.createAll(
-      accounts.map((account) => {
-        const { id: _, ...newAccount } = account;
+      return newAccount;
+    });
 
-        return newAccount;
-      }),
-    );
+    const [_, newAccounts] = await Promise.all([
+      storageService.accounts.deleteAll(oldAccountIds),
+      storageService.accounts.createAll(newAccountsWithoutId),
+    ]);
 
     return newAccounts as WcAccount[];
   },
 );
 
 type InitConnectResult = {
-  uri: string | undefined;
+  uri?: string;
   approval: () => Promise<SessionTypes.Struct>;
 };
-const initConnectFx = createEffect(
-  async ({ client, chains, pairing }: InitConnectParams): Promise<InitConnectResult | undefined> => {
-    try {
-      const optionalNamespaces = {
-        polkadot: {
-          methods: [DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION],
-          chains,
-          events: [DEFAULT_POLKADOT_EVENTS.CHAIN_CHANGED, DEFAULT_POLKADOT_EVENTS.ACCOUNTS_CHANGED],
-        },
-      };
+const initConnectFx = createEffect(({ client, chains, pairing }: InitConnectParams): Promise<InitConnectResult> => {
+  const optionalNamespaces = {
+    polkadot: {
+      chains,
+      methods: [DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION],
+      events: [DEFAULT_POLKADOT_EVENTS.CHAIN_CHANGED, DEFAULT_POLKADOT_EVENTS.ACCOUNTS_CHANGED],
+    },
+  };
 
-      const { uri, approval } = await client.connect({
-        pairingTopic: pairing?.topic,
-        optionalNamespaces,
-      });
-
-      return { uri, approval };
-    } catch (e) {
-      console.error(`Failed to init connection`, e);
-    }
-  },
-);
+  return client.connect({ pairingTopic: pairing?.topic, optionalNamespaces });
+});
 
 type ConnectParams = {
   client: Client;
@@ -222,9 +221,16 @@ const disconnectFx = createEffect(async ({ client, session }: DisconnectParams) 
   });
 });
 
+const removeSessionFx = createEffect(async ({ client, session }: { client: Client; session: SessionTypes.Struct }) => {
+  const reason = getSdkError('USER_DISCONNECTED');
+
+  await client.session.delete(session.topic, reason);
+});
+
 sample({
   clock: accountsUpdated,
   source: walletModel.$wallets,
+  filter: (_, { accounts }) => accounts?.length > 0,
   fn: (wallets, { accounts, walletId }) => {
     const wallet = wallets.find((wallet) => wallet.id === walletId)!;
 
@@ -360,22 +366,27 @@ sample({
 
 sample({
   clock: disconnectFx.done,
-  target: reset,
+  fn: ({ params }) => params,
+  target: removeSessionFx,
 });
 
 sample({
   clock: currentSessionTopicUpdated,
-  source: walletModel.$activeWallet,
-  filter: (wallet: Wallet | undefined): wallet is Wallet => Boolean(wallet),
-  fn: (wallet, topic) => ({
-    accounts: wallet.accounts,
+  source: { activeWallet: walletModel.$activeWallet, client: $client },
+  filter: ({ activeWallet, client }) => !!activeWallet && !!client,
+  fn: ({ activeWallet, client }, topic) => ({
+    accounts: activeWallet!.accounts,
     topic,
+    client: client!,
   }),
   target: sessionTopicUpdatedFx,
 });
 
 sample({
   clock: sessionTopicUpdated,
+  source: $client,
+  filter: (client) => Boolean(client),
+  fn: (client, params) => ({ client: client!, ...params }),
   target: sessionTopicUpdatedFx,
 });
 
@@ -442,6 +453,7 @@ export const walletConnectModel = {
   $pairings,
   events: {
     connect,
+    initConnectFailed: initConnectFx.fail,
     disconnectCurrentSessionStarted,
     disconnectStarted,
     sessionUpdated,
