@@ -1,20 +1,24 @@
-import { combine, createEffect, createEvent, sample, scopeBind } from 'effector';
+import { combine, createEffect, createEvent, sample } from 'effector';
 import { GraphQLClient } from 'graphql-request';
-import { interval, once } from 'patronum';
+import { interval } from 'patronum';
 
 import {
+  type Account,
   type Chain,
-  ExternalType,
   type MultisigAccount,
   type MultisigCreated,
+  type MultisigWallet,
   type NoID,
   NotificationType,
-  type Wallet,
+  SigningType,
+  WalletType,
 } from '@/shared/core';
-import { type MultisigResult, multisigService } from '@/entities/multisig';
+import { series } from '@/shared/effector';
+import { nonNullable, nullable, toAddress, toKeysRecord } from '@/shared/lib/utils';
+import { multisigService } from '@/entities/multisig';
 import { networkModel, networkUtils } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
-import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { multisigUtils } from '../lib/mulitisigs-utils';
 
 type SaveMultisigParams = {
@@ -26,83 +30,96 @@ type SaveMultisigParams = {
 const MULTISIG_DISCOVERY_TIMEOUT = 30000;
 
 const multisigsDiscoveryStarted = createEvent();
-const multisigSaved = createEvent<GetMultisigsResult>();
 
-const $multisigChains = combine(networkModel.$chains, (chains) => {
-  return Object.values(chains).filter((chain) => {
-    const isMultisigSupported = multisigUtils.isMultisigSupported(chain);
-    const hasIndexerUrl =
-      networkUtils.isMultisigSupported(chain.options) && chain.externalApi?.[ExternalType.PROXY]?.[0]?.url;
+const $multisigChains = combine(
+  { chains: networkModel.$chains, connections: networkModel.$connections },
+  ({ chains, connections }) => {
+    const possibleChains = Object.values(chains).filter((chain) =>
+      nonNullable(networkUtils.getProxyExternalApi(chain)),
+    );
+    const connectedChains = possibleChains.filter(
+      (chain) => connections[chain.chainId] && !networkUtils.isDisabledConnection(connections[chain.chainId]),
+    );
 
-    return isMultisigSupported && hasIndexerUrl;
-  });
-});
+    return connectedChains;
+  },
+);
 
 type GetMultisigsParams = {
   chains: Chain[];
-  wallets: Wallet[];
+  accounts: Account[];
 };
 
-type GetMultisigsResult = {
+type GetMultisigResponse = {
+  account: CreatedMultisigAccount;
   chain: Chain;
-  indexedMultisigs: MultisigResult[];
 };
 
-const getMultisigsFx = createEffect(({ chains, wallets }: GetMultisigsParams) => {
-  for (const chain of chains) {
-    const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
-      walletFn: (w) => !walletUtils.isMultisig(w) && !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w),
-    });
-    const accounts = walletUtils.getAccountsBy(filteredWallets || [], (a) =>
-      accountUtils.isChainIdMatch(a, chain.chainId),
-    );
-    const multisigIndexerUrl = chain.externalApi?.[ExternalType.PROXY]?.[0]?.url;
-    const boundMultisigSaved = scopeBind(multisigSaved, { safe: true });
+type PopulatedMultisig = {
+  wallet: NoID<Omit<MultisigWallet, 'accounts' | 'isActive'>>;
+  account: CreatedMultisigAccount;
+};
 
-    if (!multisigIndexerUrl || !accounts.length) continue;
+type CreatedMultisigAccount = NoID<Omit<MultisigAccount, 'walletId'>>;
 
-    const client = new GraphQLClient(multisigIndexerUrl);
+const getMultisigsFx = createEffect(({ chains, accounts }: GetMultisigsParams): Promise<GetMultisigResponse[]> => {
+  const requests = chains.map(async (chain) => {
+    const multisigIndexer = networkUtils.getProxyExternalApi(chain);
+
+    if (nullable(multisigIndexer) || accounts.length === 0) return [];
+
+    const client = new GraphQLClient(multisigIndexer.url);
     const accountIds = accounts.map((account) => account.accountId);
+    const accountsMap = toKeysRecord(accountIds);
 
-    multisigService
-      .filterMultisigsAccounts(client, accountIds)
-      .then((indexedMultisigs) => {
-        const multisigsToSave = indexedMultisigs.filter((multisigResult) => {
-          // we filter out the multisigs that we already have
-          const existingWallet = walletUtils.getWalletFilteredAccounts(wallets, {
-            accountFn: (account) => account.accountId === multisigResult.accountId,
-          });
+    const indexedMultisigs = await multisigService.filterMultisigsAccounts(client, accountIds);
 
-          return !existingWallet;
-        });
+    return (
+      indexedMultisigs
+        // filter out multisigs that already exists
+        .filter((multisigResult) => !(multisigResult.accountId in accountsMap))
+        .map(({ threshold, accountId, signatories }) => ({
+          account: multisigUtils.buildMultisigAccount({ threshold, accountId, signatories, chain }),
+          chain,
+        }))
+    );
+  });
 
-        if (multisigsToSave.length > 0) {
-          boundMultisigSaved({ indexedMultisigs: multisigsToSave, chain });
-        }
-      })
-      .catch(console.error);
-  }
+  return Promise.all(requests).then((accounts) => accounts.flat());
 });
 
-const saveMultisigFx = createEffect((multisigsToSave: SaveMultisigParams[]) => {
-  for (const multisig of multisigsToSave) {
-    walletModel.events.multisigCreated(multisig);
+const populateMultisigWalletFx = createEffect(({ account, chain }: GetMultisigResponse): PopulatedMultisig => {
+  const wallet: NoID<Omit<MultisigWallet, 'accounts' | 'isActive'>> = {
+    name: toAddress(account.accountId, { chunk: 5, prefix: chain.addressPrefix }),
+    type: WalletType.MULTISIG,
+    signingType: SigningType.MULTISIG,
+  };
 
-    const signatories = multisig.accounts[0].signatories.map((signatory) => signatory.accountId);
-    notificationModel.events.notificationsAdded([
-      {
-        read: false,
-        type: NotificationType.MULTISIG_CREATED,
-        dateCreated: Date.now(),
-        multisigAccountId: multisig.accounts[0].accountId,
-        multisigAccountName: multisig.wallet.name,
-        chainId: multisig.accounts[0].chainId,
-        signatories,
-        threshold: multisig.accounts[0].threshold,
-        originatorAccountId: '' as string,
-      } as NoID<MultisigCreated>,
-    ]);
-  }
+  return {
+    wallet,
+    account,
+  };
+});
+
+const saveMultisigFx = createEffect(({ wallet, account }: PopulatedMultisig) => {
+  walletModel.events.multisigCreated({
+    wallet,
+    accounts: [account],
+  });
+
+  const signatories = account.signatories.map((signatory) => signatory.accountId);
+  const event: NoID<MultisigCreated> = {
+    read: false,
+    type: NotificationType.MULTISIG_CREATED,
+    dateCreated: Date.now(),
+    multisigAccountId: account.accountId,
+    multisigAccountName: wallet.name,
+    chainId: account.chainId,
+    signatories,
+    threshold: account.threshold,
+  };
+
+  notificationModel.events.notificationsAdded([event]);
 });
 
 const { tick: multisigsDiscoveryTriggered } = interval({
@@ -110,8 +127,8 @@ const { tick: multisigsDiscoveryTriggered } = interval({
   timeout: MULTISIG_DISCOVERY_TIMEOUT,
 });
 
-sample({
-  clock: [multisigsDiscoveryTriggered, once(networkModel.$connections)],
+const accountsUpdated = sample({
+  clock: [multisigsDiscoveryTriggered, walletModel.$wallets, walletModel.$hiddenWallets],
   source: {
     chains: $multisigChains,
     wallets: walletModel.$allWallets,
@@ -127,20 +144,25 @@ sample({
       wallets: wallets,
     };
   },
+});
+
+sample({
+  clock: accountsUpdated,
+  source: $multisigChains,
+  fn: (chains, accounts) => ({
+    chains,
+    accounts,
+  }),
   target: getMultisigsFx,
 });
 
 sample({
-  clock: multisigSaved,
-  fn: ({ indexedMultisigs, chain }) => {
-    return indexedMultisigs.map(
-      ({ threshold, accountId, signatories }) =>
-        ({
-          ...multisigUtils.buildMultisig({ threshold, accountId, signatories, chain }),
-          external: true,
-        }) as SaveMultisigParams,
-    );
-  },
+  clock: getMultisigsFx.doneData,
+  target: series(populateMultisigWalletFx),
+});
+
+sample({
+  source: populateMultisigWalletFx.doneData,
   target: saveMultisigFx,
 });
 
