@@ -27,26 +27,24 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
   const [isAccountsOpen, toggleAccounts] = useToggle();
 
   const initiatorWallet = useMemo(() => {
-    return (
-      walletUtils.getWalletFilteredAccounts(wallets, {
-        accountFn: (a) => a.accountId === initiator[0]?.accountId,
-      }) ?? null
-    );
+    return walletUtils.getWalletFilteredAccounts(wallets, {
+      accountFn: (a) => a.accountId === initiator[0]?.accountId,
+    });
   }, [wallets, initiator]);
 
   const signatoryWallet = useMemo(() => {
     return signatory
-      ? (walletUtils.getWalletFilteredAccounts(wallets, {
+      ? walletUtils.getWalletFilteredAccounts(wallets, {
           accountFn: (a) => a.accountId === signatory.accountId,
-        }) ?? null)
+        })
       : null;
   }, [wallets, signatory]);
 
   const proxiedWallet = useMemo(() => {
     return proxied
-      ? (walletUtils.getWalletFilteredAccounts(wallets, {
+      ? walletUtils.getWalletFilteredAccounts(wallets, {
           accountFn: (a) => a.accountId === proxied.accountId,
-        }) ?? null)
+        })
       : null;
   }, [wallets, proxied]);
 
@@ -64,9 +62,13 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
           </DetailRow>
 
           <DetailRow label={t('proxy.details.account')}>
-            {initiator.length === 1 ? (
-              <AccountComponent account={initiator[0]!} chain={chain} />
-            ) : (
+            {initiator.length === 0 && (
+              <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
+                <CaptionText className="text-white">{initiator.length}</CaptionText>
+              </div>
+            )}
+            {initiator.length === 1 && <AccountComponent account={initiator[0]!} chain={chain} />}
+            {initiator.length > 1 && (
               <button
                 type="button"
                 className="group flex items-center gap-x-1 rounded px-2 py-1 hover:bg-action-background-hover"

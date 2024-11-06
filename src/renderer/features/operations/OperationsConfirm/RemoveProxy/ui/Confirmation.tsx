@@ -51,7 +51,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
 
   const [isFeeLoading, setIsFeeLoading] = useState(true);
 
-  if (!confirmStore || !initiatorWallet || !confirmStore?.chain?.chainId) {
+  if (!confirmStore || !initiatorWallet || !confirmStore.account || !confirmStore.chain?.chainId) {
     return null;
   }
 
@@ -66,7 +66,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
       <TransactionDetails
         chain={confirmStore.chain}
         wallets={wallets}
-        initiator={[confirmStore.account!]}
+        initiator={[confirmStore.account]}
         signatory={confirmStore.signatory}
         proxied={confirmStore.proxiedAccount}
       >
