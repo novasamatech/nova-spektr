@@ -46,9 +46,8 @@ export type MultisigAccount = GenericAccount & {
   type: AccountType.MULTISIG;
   signatories: Signatory[];
   threshold: MultisigThreshold;
-  chainId?: ChainId;
+  chainId: ChainId;
   cryptoType: CryptoType;
-  creatorAccountId: AccountId;
 };
 
 export type WcAccount = GenericAccount & {

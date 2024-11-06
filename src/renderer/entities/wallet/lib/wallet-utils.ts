@@ -33,6 +33,7 @@ export const walletUtils = {
 
   getAccountBy,
   getAccountsBy,
+  getAllAccounts,
   getWalletFilteredAccounts,
   getWalletsFilteredAccounts,
 };
@@ -109,6 +110,10 @@ function getAccountsBy(wallets: Wallet[], accountFn: (account: Account, wallet: 
 
     return acc;
   }, []);
+}
+
+function getAllAccounts(wallets: Wallet[]): Account[] {
+  return wallets.reduce<Account[]>((acc, wallet) => acc.concat(wallet.accounts), []);
 }
 
 function getAccountBy(wallets: Wallet[], accountFn: (account: Account, wallet: Wallet) => boolean): Account | null {
