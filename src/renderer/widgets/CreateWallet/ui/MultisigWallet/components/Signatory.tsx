@@ -10,8 +10,7 @@ import { type ComboboxOption } from '@/shared/ui/types';
 import { contactModel } from '@/entities/contact';
 import { AddressWithName, WalletIcon, walletModel, walletUtils } from '@/entities/wallet';
 import { filterModel } from '@/features/contacts';
-import { walletSelectUtils } from '@/features/wallets/WalletSelect/lib/wallet-select-utils';
-import { GroupLabels } from '@/features/wallets/WalletSelect/ui/WalletGroup';
+import { walletSelectFeature } from '@/features/wallet-select';
 import { formModel } from '@/widgets/CreateWallet/model/form-model';
 import { signatoryModel } from '../../../model/signatory-model';
 
@@ -75,7 +74,7 @@ export const Signatory = ({
   useEffect(() => {
     if (!isOwnAccount || wallets.length === 0) return;
 
-    const walletByGroup = walletSelectUtils.getWalletByGroups(wallets, query);
+    const walletByGroup = walletSelectFeature.services.walletSelect.getWalletByGroups(wallets, query);
     const opts = Object.entries(walletByGroup).reduce((acc, [walletType, wallets], index) => {
       if (wallets.length === 0) {
         return acc;
@@ -114,7 +113,7 @@ export const Signatory = ({
             <div className="flex items-center gap-x-2" key={walletType}>
               <WalletIcon type={walletType as WalletFamily} />
               <CaptionText className="font-semibold uppercase text-text-secondary">
-                {t(GroupLabels[walletType as WalletFamily])}
+                {t(walletSelectFeature.constants.GROUP_LABELS[walletType as WalletFamily])}
               </CaptionText>
             </div>
           ),
