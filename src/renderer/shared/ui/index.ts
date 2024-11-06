@@ -2,7 +2,7 @@ export { Button, ButtonCard, ButtonLink, ButtonWebLink, IconButton } from './But
 
 export { BaseModal, ConfirmModal, StatusModal } from './Modals';
 
-export { Select, Combobox, MultiSelect, DropdownButton, DropdownIconButton } from './Dropdowns';
+export { Select, Combobox, MultiSelect, DropdownIconButton } from './Dropdowns';
 
 export { Popover, Tooltip, MenuPopover, useParentScrollLock } from './Popovers';
 
@@ -45,7 +45,6 @@ export { Header } from './Header/Header';
 export { ExplorerLink } from './ExplorerLink/ExplorerLink';
 export { ContextMenu } from './ContextMenu/ContextMenu';
 export { LabelHelpBox } from './LabelHelpbox/LabelHelpBox';
-export { MainLayout } from './Layouts/MainLayout/MainLayout';
 export { Truncate } from './Truncate/Truncate';
 export { Countdown } from './Countdown/Countdown';
 export { Tabs } from './Tabs/Tabs';

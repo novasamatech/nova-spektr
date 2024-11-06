@@ -25,12 +25,20 @@ export const Skeleton = ({ width, height, circle, fullWidth, minWidth, active, c
   const formattedWidth = isNumber(width) ? `${gridSpaceConverter(width)}px` : width;
   const formattedHeight = isNumber(height) ? `${gridSpaceConverter(height)}px` : height;
 
-  if (children) {
-    if (!active) {
-      // eslint-disable-next-line react/jsx-no-useless-fragment
-      return <>{children}</>;
-    }
+  if (!children) {
+    return (
+      <span
+        className={cnTw('spektr-shimmer block h-full w-full', circle ? 'rounded-full' : 'rounded-2lg')}
+        style={{
+          width: formattedWidth,
+          height: circle ? formattedWidth : formattedHeight,
+          minWidth: formattedMinWidth,
+        }}
+      />
+    );
+  }
 
+  if (active) {
     return (
       <span
         className={cnTw('spektr-shimmer block h-fit rounded-2lg [&>*]:invisible', {
@@ -39,18 +47,11 @@ export const Skeleton = ({ width, height, circle, fullWidth, minWidth, active, c
         })}
         style={{ minWidth: formattedMinWidth }}
       >
-        {Children.map(children, (child) => {
-          return isString(child) ? <span>{child}</span> : child;
-        })}
+        {Children.map(children, (child) => (isString(child) ? <span>{child}</span> : child))}
       </span>
     );
   }
 
-  return (
-    <span
-      className={cnTw('spektr-shimmer block h-full w-full', circle ? 'rounded-full' : 'rounded-2lg')}
-      style={{ width: formattedWidth, height: circle ? formattedWidth : formattedHeight, minWidth: formattedMinWidth }}
-      data-testid="shimmer"
-    />
-  );
+  // eslint-disable-next-line react/jsx-no-useless-fragment
+  return <>{children}</>;
 };

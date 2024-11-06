@@ -43,6 +43,7 @@ export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
       onPointerMove,
       onPointerLeave,
       testId = 'Button',
+      ...rest
     },
     ref,
   ) => (
@@ -66,6 +67,7 @@ export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
       onPointerDown={(e) => !isLoading && onPointerDown(e)}
       onPointerMove={onPointerMove}
       onPointerLeave={onPointerLeave}
+      {...rest}
     >
       {isLoading && <Loader color="white" />}
       {prefixElement && <div data-testid="prefix">{prefixElement}</div>}

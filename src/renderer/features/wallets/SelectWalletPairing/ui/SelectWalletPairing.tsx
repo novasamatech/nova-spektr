@@ -1,55 +1,48 @@
 import { type TFunction } from 'i18next';
 
-import { WalletType } from '@/shared/core';
+import { type WalletFamily, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { DropdownButton } from '@/shared/ui';
-import { type ButtonDropdownOption } from '@/shared/ui/types';
+import { useToggle } from '@/shared/lib/hooks';
+import { Button, Icon } from '@/shared/ui';
+import { Dropdown } from '@/shared/ui-kit';
 import { WalletIcon } from '@/entities/wallet';
 import { walletPairingModel } from '../model/wallet-pairing-model';
 
-const getDropdownOptions = (t: TFunction): ButtonDropdownOption[] => {
+const getDropdownOptions = (t: TFunction): { title: string; walletType: WalletFamily }[] => {
   return [
-    {
-      id: 'vault',
-      title: t('wallets.addPolkadotVault'),
-      icon: <WalletIcon type={WalletType.POLKADOT_VAULT} />,
-      onClick: () => walletPairingModel.events.walletTypeSet(WalletType.POLKADOT_VAULT),
-    },
-    {
-      id: 'multi',
-      title: t('wallets.addMultisig'),
-      icon: <WalletIcon type={WalletType.MULTISIG} />,
-      onClick: () => walletPairingModel.events.walletTypeSet(WalletType.MULTISIG),
-    },
-    {
-      id: 'novaWallet',
-      title: t('wallets.addNovaWallet'),
-      icon: <WalletIcon type={WalletType.NOVA_WALLET} />,
-      onClick: () => walletPairingModel.events.walletTypeSet(WalletType.NOVA_WALLET),
-    },
-    {
-      id: 'walletConnect',
-      title: t('wallets.addWalletConnect'),
-      icon: <WalletIcon type={WalletType.WALLET_CONNECT} />,
-      onClick: () => walletPairingModel.events.walletTypeSet(WalletType.WALLET_CONNECT),
-    },
-    {
-      id: 'watch-only',
-      title: t('wallets.addWatchOnly'),
-      icon: <WalletIcon type={WalletType.WATCH_ONLY} />,
-      onClick: () => walletPairingModel.events.walletTypeSet(WalletType.WATCH_ONLY),
-    },
+    { title: t('wallets.addPolkadotVault'), walletType: WalletType.POLKADOT_VAULT },
+    { title: t('wallets.addMultisig'), walletType: WalletType.MULTISIG },
+    { title: t('wallets.addNovaWallet'), walletType: WalletType.NOVA_WALLET },
+    { title: t('wallets.addWalletConnect'), walletType: WalletType.WALLET_CONNECT },
+    { title: t('wallets.addWatchOnly'), walletType: WalletType.WATCH_ONLY },
   ];
 };
 
 export const SelectWalletPairing = () => {
   const { t } = useI18n();
 
+  const [isOpen, toggleIsOpen] = useToggle();
+
   return (
-    <DropdownButton
-      options={getDropdownOptions(t)}
-      className="h-8.5 w-[140px] py-2"
-      title={t('wallets.addButtonTitle')}
-    />
+    <Dropdown open={isOpen} onToggle={toggleIsOpen}>
+      <Dropdown.Trigger>
+        <Button
+          className="h-8.5 w-full justify-center py-2"
+          suffixElement={<Icon name={isOpen ? 'up' : 'down'} size={16} className="text-inherit" />}
+        >
+          {t('wallets.addButtonTitle')}
+        </Button>
+      </Dropdown.Trigger>
+      <Dropdown.Content>
+        {getDropdownOptions(t).map(({ title, walletType }) => (
+          <Dropdown.Item key={title} onSelect={() => walletPairingModel.events.walletTypeSet(walletType)}>
+            <div className="flex items-center gap-x-1.5">
+              <WalletIcon type={walletType} />
+              {title}
+            </div>
+          </Dropdown.Item>
+        ))}
+      </Dropdown.Content>
+    </Dropdown>
   );
 };
