@@ -66,6 +66,7 @@ export const SelectSignatoriesThreshold = () => {
     }
 
     if (!canSubmit) return;
+    signatoryModel.events.getSignatoriesBalance(ownedSignatoriesWallets);
 
     if ((ownedSignatoriesWallets || []).length > 1) {
       flowModel.events.stepChanged(Step.SIGNER_SELECTION);
