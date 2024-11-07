@@ -41,7 +41,7 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
   const isNameError = name.isTouched && !name.value;
 
   return (
-    <section className="flex h-full flex-1 flex-col">
+    <section className="flex h-full w-modal-lg flex-1 flex-col">
       <SmallTitleText className="mb-4 border-b border-container-border px-5 pb-4 text-text-primary">
         {t('createMultisigAccount.multisigStep', { step: 1 })} {t('createMultisigAccount.nameNetworkDescription')}
       </SmallTitleText>

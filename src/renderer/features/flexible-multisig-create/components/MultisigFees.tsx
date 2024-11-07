@@ -4,7 +4,8 @@ import { memo } from 'react';
 
 import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { DetailRow, FootnoteText, Icon, Tooltip } from '@/shared/ui';
+import { DetailRow, FootnoteText, IconButton } from '@/shared/ui';
+import { Tooltip } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { FeeLoader } from '@/entities/transaction';
 import { flexibleMultisigModel } from '../model/flexible-multisig-create';
@@ -38,8 +39,11 @@ export const MultisigFees = memo(({ asset }: Props) => {
           <FootnoteText className="text-text-tertiary">
             {t('createMultisigAccount.multisigCreationFeeLabel')}
           </FootnoteText>
-          <Tooltip
-            content={
+          <Tooltip>
+            <Tooltip.Trigger>
+              <IconButton name="info" size={16} />
+            </Tooltip.Trigger>
+            <Tooltip.Content>
               <div className="text-text-tertiary">
                 <div>
                   {t('createMultisigAccount.flexibleMultisig.proxyDeposit')}
@@ -54,10 +58,7 @@ export const MultisigFees = memo(({ asset }: Props) => {
                   <AssetBalance value={fee} asset={asset} className="ml-1 text-text-tertiary" />
                 </div>
               </div>
-            }
-            offsetPx={-70}
-          >
-            <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+            </Tooltip.Content>
           </Tooltip>
         </>
       }

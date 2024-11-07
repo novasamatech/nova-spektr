@@ -58,7 +58,7 @@ const walletCreated = createEvent<{
   name: string;
   threshold: number;
 }>();
-const $step = restore(stepChanged, Step.SELECT_MULTISIG).reset(flowFinished);
+const $step = restore(stepChanged, Step.NAME_NETWORK).reset(flowFinished);
 const $fee = restore(feeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
@@ -495,7 +495,7 @@ sample({
 
 sample({
   clock: delay(flowFinished, 2000),
-  fn: () => Step.SELECT_MULTISIG,
+  fn: () => Step.NAME_NETWORK,
   target: stepChanged,
 });
 

@@ -77,7 +77,7 @@ const walletCreated = createEvent<{
   threshold: number;
 }>();
 
-const $step = restore(stepChanged, Step.SELECT_MULTISIG).reset(flowFinished);
+const $step = restore(stepChanged, Step.NAME_NETWORK).reset(flowFinished);
 
 const $proxyDeposit = createStore(ZERO_BALANCE).reset(flowFinished);
 const $error = createStore('').reset(flowFinished);
@@ -544,7 +544,7 @@ sample({
 
 sample({
   clock: delay(flowFinished, 2000),
-  fn: () => Step.SELECT_MULTISIG,
+  fn: () => Step.NAME_NETWORK,
   target: stepChanged,
 });
 

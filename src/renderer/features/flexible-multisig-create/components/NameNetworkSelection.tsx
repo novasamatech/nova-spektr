@@ -23,7 +23,11 @@ const getChainOptions = (chains: Chain[]): DropdownOption<Chain>[] => {
     }));
 };
 
-export const NameNetworkSelection = () => {
+interface Props {
+  onGoBack: () => void;
+}
+
+export const NameNetworkSelection = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
@@ -36,7 +40,7 @@ export const NameNetworkSelection = () => {
   const isNameError = name.isTouched && !name.value;
 
   return (
-    <section className="flex h-full flex-1 flex-col">
+    <section className="flex h-full max-h-[594px] w-modal-lg flex-1 flex-col">
       <SmallTitleText className="mb-4 border-b border-container-border px-5 pb-4 text-text-primary">
         {t('createMultisigAccount.multisigStep', { step: 1 })} {t('createMultisigAccount.nameNetworkDescription')}
       </SmallTitleText>
@@ -69,7 +73,7 @@ export const NameNetworkSelection = () => {
           </FootnoteText>
         </div>
         <div className="mt-auto flex items-center justify-between">
-          <Button variant="text" onClick={() => flexibleMultisigModel.events.stepChanged(Step.SELECT_MULTISIG)}>
+          <Button variant="text" onClick={onGoBack}>
             {t('createMultisigAccount.backButton')}
           </Button>
           <div className="mt-auto flex items-center justify-end">

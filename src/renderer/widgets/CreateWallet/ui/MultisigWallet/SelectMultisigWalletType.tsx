@@ -1,57 +1,46 @@
-import { useUnit } from 'effector-react';
 import { useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
-import { useModalClose } from '@/shared/lib/hooks';
-import { Step, isStep } from '@/shared/lib/utils';
-import { BodyText, Button, HeaderTitleText, Icon, RadioGroup } from '@/shared/ui';
+import { nullable } from '@/shared/lib/utils';
+import { BodyText, Button, Icon, RadioGroup } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { FlexibleMultisigWallet, flexibleMultisigModel } from '@/features/flexible-multisig-create';
-import { OperationSubmit } from '@/features/operations';
 import { flowModel } from '../../model/flow-model';
-import { selectMultisigModel } from '../../model/select-multisig-model';
 
 import { MultisigWallet } from './MultisigWallet';
 import { MultisigWalletType, descriptionMultisig } from './common/constants';
 
-const getModalSize = (step: Step) => {
-  switch (step) {
-    case Step.SELECT_MULTISIG:
-      return 'fit';
-    case Step.SIGN:
-    case Step.CONFIRM:
-    case Step.SIGNER_SELECTION:
-      return 'md';
-    default:
-      return 'lg';
-  }
-};
-
 type Props = {
   isOpen: boolean;
-  onClose: () => void;
 };
 
 export const SelectMultisigWalletType = ({ isOpen }: Props) => {
-  const [isModalOpen, closeModal] = useModalClose(isOpen, selectMultisigModel.events.flowFinished);
-  const step = useUnit(selectMultisigModel.$step);
+  const [selectedFlow, setSelectedFlow] = useState<MultisigWalletType | null>(null);
 
-  if (isStep(step, Step.SUBMIT)) {
-    return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
-  }
+  const handleClose = () => {
+    flowModel.output.flowFinished();
+    flexibleMultisigModel.output.flowFinished();
+  };
 
   return (
-    <Modal size={getModalSize(step)} isOpen={isModalOpen} onToggle={closeModal}>
-      {isStep(step, Step.SELECT_MULTISIG) && <SelectMultisig />}
-
-      <MultisigWallet />
-      <FlexibleMultisigWallet />
+    <Modal size="fit" height="fit" isOpen={isOpen} onToggle={handleClose}>
+      {nullable(selectedFlow) && <SelectMultisig onContinue={setSelectedFlow} />}
+      {selectedFlow === MultisigWalletType.REGULAR && (
+        <MultisigWallet isOpen onClose={handleClose} onGoBack={() => setSelectedFlow(null)} />
+      )}
+      {selectedFlow === MultisigWalletType.FLEXIBLE && (
+        <FlexibleMultisigWallet isOpen onClose={handleClose} onGoBack={() => setSelectedFlow(null)} />
+      )}
     </Modal>
   );
 };
 
-const SelectMultisig = () => {
+type SelectProps = {
+  onContinue: (walletType: MultisigWalletType) => void;
+};
+
+const SelectMultisig = ({ onContinue }: SelectProps) => {
   const { t } = useI18n();
 
   const [walletType, setWalletType] = useState<MultisigWalletType>();
@@ -70,22 +59,9 @@ const SelectMultisig = () => {
     description: t('createMultisigAccount.selectMultisigDescription.regularDescription'),
   };
 
-  const handleContinue = () => {
-    selectMultisigModel.events.selectMultisigType(walletType!);
-
-    if (walletType === MultisigWalletType.FLEXIBLE) {
-      flexibleMultisigModel.events.stepChanged(Step.NAME_NETWORK);
-
-      return;
-    }
-    flowModel.events.stepChanged(Step.NAME_NETWORK);
-  };
-
   return (
     <>
-      <Modal.Title close>
-        <HeaderTitleText>{t('createMultisigAccount.createMultisigWallet')}</HeaderTitleText>
-      </Modal.Title>
+      <Modal.Title close>{t('createMultisigAccount.createMultisigWallet')}</Modal.Title>
       <Modal.Content>
         <RadioGroup
           className="mx-5 my-4 flex gap-x-6"
@@ -130,7 +106,7 @@ const SelectMultisig = () => {
         </RadioGroup>
 
         <Modal.Footer>
-          <Button disabled={!walletType} onClick={handleContinue}>
+          <Button disabled={!walletType} onClick={() => onContinue(walletType!)}>
             {t('signing.continueButton')}
           </Button>
         </Modal.Footer>

@@ -53,7 +53,7 @@ describe('widgets/CreateWallet/model/form-model', () => {
     });
     await allSettled(flowModel.events.signerSelected, { scope, params: signerWallet.accounts[0].accountId });
 
-    expect(scope.getState(flowModel.$step)).toEqual(Step.SELECT_MULTISIG);
+    expect(scope.getState(flowModel.$step)).toEqual(Step.NAME_NETWORK);
     await allSettled(formModel.$createMultisigForm.fields.chain.onChange, { scope, params: testChain });
     await allSettled(formModel.$createMultisigForm.fields.name.onChange, { scope, params: 'some name' });
     await allSettled(formModel.$createMultisigForm.fields.threshold.onChange, { scope, params: 2 });

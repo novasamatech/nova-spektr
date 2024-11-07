@@ -34,7 +34,7 @@ export const ConfirmationStep = () => {
   const walletName = signer?.name || (signerWallet?.type === WalletType.POLKADOT_VAULT && signerWallet?.name) || '';
 
   return (
-    <section className="relative flex h-full flex-1 flex-col px-5 py-4">
+    <section className="relative flex h-full w-modal flex-1 flex-col px-5 py-4">
       <div className="flex max-h-full flex-1 flex-col">
         <div className="mb-6 flex flex-col items-center">
           <Icon className="text-icon-default" name="multisigCreationConfirm" size={60} />

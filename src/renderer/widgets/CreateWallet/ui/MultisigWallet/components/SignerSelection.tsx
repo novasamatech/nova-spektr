@@ -27,7 +27,7 @@ export const SignerSelection = () => {
   };
 
   return (
-    <section className="max-h-[660px] w-full overflow-x-hidden px-5 pb-4">
+    <section className="max-h-[660px] w-modal overflow-x-hidden px-5 pb-4">
       <ul className="my-4 flex flex-col [overflow-y:overlay]">
         {ownedSignatoriesWallets.map(({ accounts, type, name }) => {
           const { accountId } =
