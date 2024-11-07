@@ -18,13 +18,13 @@ export const kitchensinkRuntimeProxyType = pjsSchema.enumType(
 export type ProxyProxyDefinition = z.infer<typeof proxyProxyDefinition>;
 export const proxyProxyDefinition = pjsSchema.object({
   delegate: pjsSchema.accountId,
-  delay: pjsSchema.u32,
+  delay: pjsSchema.blockHeight,
   proxyType: kitchensinkRuntimeProxyType,
 });
 
 export type ProxyAnnouncement = z.infer<typeof proxyAnnouncement>;
 export const proxyAnnouncement = pjsSchema.object({
   real: pjsSchema.accountId,
-  callHash: pjsSchema.dataString,
+  callHash: pjsSchema.hex,
   height: pjsSchema.blockHeight,
 });
