@@ -64,10 +64,10 @@ export const SelectSignatoriesThreshold = () => {
     }
 
     if (!canSubmit) return;
+    signatoryModel.events.getSignatoriesBalance(ownedSignatoriesWallets);
 
     if (ownedSignatoriesWallets.length > 1) {
       flexibleMultisigModel.events.stepChanged(Step.SIGNER_SELECTION);
-      signatoryModel.events.getSignatoriesBalance(ownedSignatoriesWallets);
 
       return;
     } else {

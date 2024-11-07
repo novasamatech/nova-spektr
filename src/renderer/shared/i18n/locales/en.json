@@ -141,6 +141,7 @@
     "errorMessage": "Something went wrong",
     "flexibleMultisig": {
       "flexible": "Flexible multisig",
+      "notEnoughMultisigTokens": "Not enough tokens for paying multisig deposit, proxy deposit and network fee on a selected account",
       "proxyDeposit": "Proxy deposit:",
       "signatoryThresholdDescription": "Assign the signatories and set the signatory threshold for your flexible multisig.",
       "title": "Create flexible multisig"

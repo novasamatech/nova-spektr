@@ -1,4 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
+import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import sortBy from 'lodash/sortBy';
 import { delay, or, spread } from 'patronum';
@@ -31,8 +32,10 @@ import {
   nonNullable,
   toAccountId,
   toAddress,
+  transferableAmount,
 } from '@/shared/lib/utils';
 import { createDepositCalculator, createFeeCalculator } from '@/shared/transactions';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
 import { getExtrinsic, transactionService } from '@/entities/transaction';
@@ -234,6 +237,32 @@ sample({
   clock: getProxyDepositFx.doneData,
   target: $proxyDeposit,
 });
+
+const $isEnoughBalance = combine(
+  {
+    signer: $signer,
+    fee: $fee,
+    multisigDeposit: $multisigDeposit,
+    proxyDeposit: $proxyDeposit,
+    balances: balanceModel.$balances,
+    chain: formModel.$createMultisigForm.fields.chain.$value,
+  },
+  ({ signer, fee, multisigDeposit, balances, proxyDeposit, chain }) => {
+    if (!signer || !fee || !chain) return false;
+
+    const balance = balanceUtils.getBalance(
+      balances,
+      signer.accountId,
+      chain.chainId,
+      chain.assets[0].assetId.toString(),
+    );
+
+    return fee
+      .add(multisigDeposit)
+      .add(new BN(proxyDeposit))
+      .lte(new BN(transferableAmount(balance)));
+  },
+);
 
 sample({
   clock: signerSelected,
@@ -536,6 +565,7 @@ export const flexibleMultisigModel = {
   $proxyDeposit,
   $multisigDeposit,
   $isLoading: or($pendingFee, $pendingDeposit, getProxyDepositFx.pending),
+  $isEnoughBalance,
 
   events: {
     signerSelected,
