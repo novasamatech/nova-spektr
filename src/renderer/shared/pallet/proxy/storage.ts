@@ -38,16 +38,16 @@ export const storage = {
         .call(() => getQuery(api, 'announcements').multi(accounts))
         .then(schema.parse)
         .then(result => zipWith(accounts, result, (account, value) => ({ account, value })));
-    } else {
-      const schema = pjsSchema.vec(
-        pjsSchema.tupleMap(
-          ['account', pjsSchema.storageKey(pjsSchema.accountId).transform(([account]) => account)],
-          ['value', recordSchema],
-        ),
-      );
-
-      return substrateRpcPool.call(() => getQuery(api, 'announcements').entries()).then(schema.parse);
     }
+
+    const schema = pjsSchema.vec(
+      pjsSchema.tupleMap(
+        ['account', pjsSchema.storageKey(pjsSchema.accountId).transform(([account]) => account)],
+        ['value', recordSchema],
+      ),
+    );
+
+    return substrateRpcPool.call(() => getQuery(api, 'announcements').entries()).then(schema.parse);
   },
 
   /**
