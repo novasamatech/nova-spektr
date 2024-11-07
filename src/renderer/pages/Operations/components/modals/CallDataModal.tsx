@@ -4,7 +4,8 @@ import { type MultisigTransactionDS } from '@/shared/api/storage';
 import { type CallData } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { validateCallData } from '@/shared/lib/utils';
-import { BaseModal, Button, InputArea, InputHint } from '@/shared/ui';
+import { BaseModal, Button, InputHint } from '@/shared/ui';
+import { InputArea } from '@/shared/ui-kit';
 
 type CallDataForm = {
   callData: string;

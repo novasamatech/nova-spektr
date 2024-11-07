@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { type ReactNode, useCallback, useEffect, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 
 import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -11,15 +11,14 @@ import {
   formatFiatBalance,
   formatGroups,
   getRoundedValue,
+  nonNullable,
   toFixedNotation,
   validatePrecision,
   validateSymbols,
 } from '@/shared/lib/utils';
+import { FootnoteText, HelpText, IconButton, TitleText } from '@/shared/ui';
 import { AssetBalance, AssetIcon } from '@/entities/asset';
 import { currencyModel, useCurrencyRate } from '@/entities/price';
-import { IconButton } from '../../Buttons';
-import { FootnoteText, HelpText, TitleText } from '../../Typography';
-import { Input } from '../Input/Input';
 
 type Props = {
   name?: string;
@@ -47,11 +46,14 @@ export const AmountInput = ({
   onChange,
 }: Props) => {
   const { t } = useI18n();
+
   const rate = useCurrencyRate(asset.priceId, showCurrency);
   const activeCurrency = useUnit(currencyModel.$activeCurrency);
-  const [currencyMode, toggleCurrencyMode] = useToggle();
+
   const [inputValue, setInputValue] = useState(value);
   const [assetValue, setAssetValue] = useState(value);
+
+  const [currencyMode, toggleCurrencyMode] = useToggle();
 
   const handleChange = (amount: string) => {
     const cleanedAmount = cleanAmount(amount);
@@ -77,25 +79,25 @@ export const AmountInput = ({
   const currencyValue = rate ? toFixedNotation(Number(value ?? 0) * rate) : undefined;
 
   useEffect(() => {
-    if (value) {
-      if (currencyMode) {
-        setInputValue(getRoundedValue(currencyValue, 1, 0));
-      } else {
-        handleChange(getRoundedValue(value || undefined, 1, 0, 1));
-      }
+    if (!value) return;
+
+    if (currencyMode) {
+      setInputValue(getRoundedValue(currencyValue, 1, 0));
+    } else {
+      handleChange(getRoundedValue(value || undefined, 1, 0, 1));
     }
   }, [currencyMode]);
 
+  // handle value change from parent component
   useEffect(() => {
-    // handle value change from parent component
-    if (value !== assetValue) {
-      if (currencyMode) {
-        setInputValue(getRoundedValue(currencyValue, 1, 0));
-        setAssetValue(value);
-      } else {
-        setInputValue(value);
-        setAssetValue(value);
-      }
+    if (value === assetValue) return;
+
+    if (currencyMode) {
+      setInputValue(getRoundedValue(currencyValue, 1, 0));
+      setAssetValue(value);
+    } else {
+      setInputValue(value);
+      setAssetValue(value);
     }
   }, [value]);
 
@@ -111,6 +113,7 @@ export const AmountInput = ({
         </span>
       );
     }
+
     if (typeof balance === 'string') {
       return (
         <AssetBalance
@@ -165,8 +168,8 @@ export const AmountInput = ({
     ? formatBalance(value || undefined)
     : formatFiatBalance(currencyValue);
 
-  const suffixElement = showCurrency && rate && (
-    <div className="absolute bottom-3 right-3 flex items-center gap-x-2">
+  const suffixElement = showCurrency && nonNullable(activeCurrency) && (
+    <div className="flex items-center gap-x-2">
       <IconButton
         name="swapArrow"
         alt={t(currencyMode ? 'transfer.swapToCryptoModeAlt' : 'transfer.swapToCurrencyModeAlt')}
@@ -183,8 +186,6 @@ export const AmountInput = ({
   return (
     <Input
       name={name}
-      className={cnTw('text-right font-manrope text-title', activeCurrency && rate && 'mb-7')}
-      wrapperClass="py-3 items-start"
       label={label}
       value={formatGroups(inputValue)}
       placeholder={t('transfer.amountPlaceholder')}
@@ -194,5 +195,73 @@ export const AmountInput = ({
       disabled={disabled}
       onChange={handleChange}
     />
+  );
+};
+
+const DEFAULT_LEFT_PADDING = 11;
+const EXTENDED_LEFT_PADDING = 19;
+
+type InputProps = {
+  name?: string;
+  value: string;
+  placeholder: string;
+  label: ReactNode;
+  invalid?: boolean;
+  disabled?: boolean;
+  prefixElement: ReactNode;
+  suffixElement?: ReactNode;
+  onChange: (value: string) => void;
+};
+export const Input = ({ label, invalid, disabled, prefixElement, suffixElement, onChange, ...props }: InputProps) => {
+  const id = useId();
+
+  const prefixRef = useRef<HTMLDivElement>(null);
+
+  const [paddingLeft, setPaddingLeft] = useState(DEFAULT_LEFT_PADDING);
+
+  useLayoutEffect(() => {
+    if (!prefixRef.current) return;
+
+    setPaddingLeft(EXTENDED_LEFT_PADDING + prefixRef.current.getBoundingClientRect().width);
+  }, [prefixElement]);
+
+  return (
+    <div className="flex flex-col gap-y-2">
+      <label htmlFor={id} className="text-footnote font-medium text-text-tertiary">
+        {label}
+      </label>
+      <div className="relative w-full">
+        <div
+          ref={prefixRef}
+          className={cnTw('absolute left-3 flex', {
+            'top-3': suffixElement,
+            'top-1/2 -translate-y-1/2': !suffixElement,
+          })}
+        >
+          {prefixElement}
+        </div>
+        <input
+          className={cnTw(
+            'w-full rounded px-3 py-3',
+            'border border-filter-border bg-input-background',
+            'placeholder:text-text-secondary focus:outline-none',
+            'text-right font-manrope text-title text-text-primary outline-offset-1',
+            {
+              'pb-9.5': suffixElement,
+              'border-filter-border-negative': invalid,
+              'focus-within:border-active-container-border': !invalid,
+              'hover:shadow-card-shadow': !disabled,
+              'bg-transparent text-text-tertiary placeholder:text-text-tertiary': disabled,
+            },
+          )}
+          style={{ paddingLeft }}
+          id={id}
+          type="text"
+          onChange={(event) => onChange?.(event.target.value)}
+          {...props}
+        />
+        <div className={cnTw(!suffixElement && 'hidden', 'absolute bottom-3 right-3')}>{suffixElement}</div>
+      </div>
+    </div>
   );
 };

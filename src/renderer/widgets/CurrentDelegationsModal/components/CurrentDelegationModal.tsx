@@ -1,7 +1,8 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
-import { BaseModal, Button, Loader, SearchInput } from '@/shared/ui';
+import { BaseModal, Button, Loader } from '@/shared/ui';
+import { SearchInput } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
 import { delegationAggregate, networkSelectorModel } from '@/features/governance';
 import { delegateDetailsModel } from '@/widgets/DelegateDetails';
@@ -38,9 +39,8 @@ export const CurrentDelegationModal = () => {
           </div>
         ) : (
           <>
-            <div className="mx-5 mb-4 flex items-center gap-4">
+            <div className="mx-5 mb-4">
               <SearchInput
-                wrapperClass="flex-1"
                 value={query}
                 placeholder={t('general.input.searchPlaceholder')}
                 onChange={currentDelegationModel.events.queryChanged}
