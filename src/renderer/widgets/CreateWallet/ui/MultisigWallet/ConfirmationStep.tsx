@@ -4,7 +4,7 @@ import { useUnit } from 'effector-react';
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { Button, Counter, DetailRow, Icon, IconButton, Separator } from '@/shared/ui';
+import { Alert, Button, Counter, DetailRow, Icon, IconButton, Separator } from '@/shared/ui';
 import { SignButton } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
 import { Step } from '../../lib/types';
@@ -27,6 +27,7 @@ export const ConfirmationStep = () => {
   } = useForm(formModel.$createMultisigForm);
   const api = useUnit(flowModel.$api);
   const fakeTx = useUnit(flowModel.$fakeTx);
+  const isEnoughBalance = useUnit(flowModel.$isEnoughBalance);
   const [isSignatoriesModalOpen, toggleSignatoriesModalOpen] = useToggle();
   const ownedSignatories = useUnit(signatoryModel.$ownedSignatoriesWallets);
 
@@ -36,10 +37,8 @@ export const ConfirmationStep = () => {
         <div className="mb-6 flex flex-col items-center">
           <Icon className="text-icon-default" name="multisigCreationConfirm" size={60} />
         </div>
-        <DetailRow wrapperClassName="mb-8" label={t('createMultisigAccount.walletName')}>
-          {name.value}
-        </DetailRow>
-        <DetailRow wrapperClassName="mb-8" label={t('createMultisigAccount.signatoriesLabel')}>
+        <DetailRow label={t('createMultisigAccount.walletName')}>{name.value}</DetailRow>
+        <DetailRow wrapperClassName="my-4" label={t('createMultisigAccount.signatoriesLabel')}>
           <>
             <Counter className="mr-2" variant="neutral">
               {signatories.length}
@@ -52,21 +51,21 @@ export const ConfirmationStep = () => {
             />
           </>
         </DetailRow>
-        <DetailRow wrapperClassName="mb-8" label={t('createMultisigAccount.thresholdName')}>
+        <DetailRow label={t('createMultisigAccount.thresholdName')}>
           {t('createMultisigAccount.thresholdOutOf', {
             threshold: threshold.value,
             signatoriesLength: signatories.length,
           })}
         </DetailRow>
-        <Separator className="border-filter-border" />
-        <DetailRow wrapperClassName="my-4" label={t('createMultisigAccount.signingWallet')}>
+        <Separator className="my-4 border-filter-border" />
+        <DetailRow label={t('createMultisigAccount.signingWallet')}>
           <WalletItem
             name={signer?.name || (signerWallet?.type === WalletType.POLKADOT_VAULT && signerWallet?.name) || ''}
             type={signerWallet?.type || WalletType.POLKADOT_VAULT}
           />
         </DetailRow>
-        <Separator className="border-filter-border" />
-        <div className="my-2 mb-8 flex flex-1 flex-col gap-y-2">
+        <Separator className="my-4 border-filter-border" />
+        <div className="mb-4 flex flex-1 flex-col gap-y-4">
           <MultisigDepositWithLabel
             api={api}
             asset={chain.value.assets[0]}
@@ -80,8 +79,11 @@ export const ConfirmationStep = () => {
             onFeeChange={flowModel.events.feeChanged}
             onFeeLoading={flowModel.events.isFeeLoadingChanged}
           />
+          <Alert variant="error" title={t('createMultisigAccount.notEnoughTokensTitle')} active={!isEnoughBalance}>
+            <Alert.Item withDot={false}>{t('createMultisigAccount.notEnoughMultisigTokens')}</Alert.Item>
+          </Alert>
         </div>
-        <div className="mt-auto flex items-center justify-between">
+        <div className="mt-3 flex items-center justify-between">
           <Button
             variant="text"
             onClick={() => {
@@ -95,6 +97,7 @@ export const ConfirmationStep = () => {
             {t('createMultisigAccount.backButton')}
           </Button>
           <SignButton
+            disabled={!isEnoughBalance}
             type={signerWallet?.type || WalletType.POLKADOT_VAULT}
             onClick={confirmModel.output.formSubmitted}
           />
