@@ -1,12 +1,11 @@
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
-import { type FormEvent, useEffect } from 'react';
+import { type FormEvent } from 'react';
 
 import { type AccountId, AccountType, type ChainAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Step } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
-import { balanceSubModel } from '@/features/balances';
 import { flowModel } from '@/widgets/CreateWallet/model/flow-model';
 import { formModel } from '@/widgets/CreateWallet/model/form-model';
 import { signatoryModel } from '@/widgets/CreateWallet/model/signatory-model';
@@ -20,12 +19,6 @@ export const SignerSelection = () => {
     fields: { chain },
     submit,
   } = useForm(formModel.$createMultisigForm);
-
-  useEffect(() => {
-    for (const ownedSignatoriesWallet of ownedSignatoriesWallets) {
-      balanceSubModel.events.walletToSubSet(ownedSignatoriesWallet);
-    }
-  }, [ownedSignatoriesWallets]);
 
   const onSubmit = (event: FormEvent, accountId: AccountId) => {
     flowModel.events.signerSelected(accountId);

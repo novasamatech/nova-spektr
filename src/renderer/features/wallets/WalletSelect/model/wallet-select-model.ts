@@ -164,7 +164,10 @@ sample({
   clock: $isWalletsAdded,
   source: walletModel.$wallets,
   filter: (wallets, isWalletsAdded) => {
-    return isWalletsAdded && !walletUtils.isProxied(wallets[wallets.length - 1]);
+    const wallet = wallets.at(-1);
+    if (!wallet) return false;
+
+    return isWalletsAdded && !walletUtils.isProxied(wallet) && !walletUtils.isMultisig(wallet);
   },
   fn: (wallets) => wallets[wallets.length - 1].id,
   target: walletSelectedFx,

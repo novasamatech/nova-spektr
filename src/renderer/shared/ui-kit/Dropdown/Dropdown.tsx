@@ -84,7 +84,7 @@ const Content = ({ children }: PropsWithChildren) => {
         <Surface
           elevation={1}
           className={cnTw(
-            'flex flex-col',
+            'z-50 flex flex-col',
             'h-max max-h-[--radix-popper-available-height] max-w-60',
             'min-w-20 overflow-hidden duration-100 animate-in fade-in zoom-in-95',
           )}

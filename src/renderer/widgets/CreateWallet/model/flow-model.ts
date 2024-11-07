@@ -1,3 +1,4 @@
+import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import sortBy from 'lodash/sortBy';
 import { delay, spread } from 'patronum';
@@ -27,7 +28,9 @@ import {
   nonNullable,
   toAccountId,
   toAddress,
+  transferableAmount,
 } from '@/shared/lib/utils';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
@@ -163,6 +166,28 @@ const $api = combine(
     return chain ? apis[chain.chainId] : undefined;
   },
   { skipVoid: false },
+);
+
+const $isEnoughBalance = combine(
+  {
+    signer: $signer,
+    fee: $fee,
+    multisigDeposit: $multisigDeposit,
+    balances: balanceModel.$balances,
+    chain: formModel.$createMultisigForm.fields.chain.$value,
+  },
+  ({ signer, fee, multisigDeposit, balances, chain }) => {
+    if (!signer || !fee || !multisigDeposit || !chain) return false;
+
+    const balance = balanceUtils.getBalance(
+      balances,
+      signer.accountId,
+      chain.chainId,
+      chain.assets[0].assetId.toString(),
+    );
+
+    return new BN(fee).add(new BN(multisigDeposit)).lte(new BN(transferableAmount(balance)));
+  },
 );
 
 type CreateWalletParams = {
@@ -488,6 +513,7 @@ export const flowModel = {
   $isFeeLoading,
   $signer,
   $signerWallet,
+  $isEnoughBalance,
   events: {
     signerSelected,
     walletCreated,

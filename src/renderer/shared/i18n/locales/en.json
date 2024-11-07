@@ -163,6 +163,8 @@
     "noOwnSignatoryTitle": "No owned account",
     "noWallets": "Looks like you don't have any non-watch only wallets",
     "noWalletsLabel": "The wallet list is empty",
+    "notEnoughTokensTitle": "Not enough tokens",
+    "notEnoughMultisigTokens": "Not enough tokens for paying multisig deposit and network fee on a selected account",
     "notEnoughSignatories": "You need to select at least 2 signatories",
     "notEnoughSignatoriesTitle": "Not enough signatories",
     "notEmptySignatoryTitle": "Empty signatory",
