@@ -68,15 +68,15 @@ export const storage = {
         .call(() => getQuery(api, 'proxies').entries())
         .then(schema.parse)
         .then(result => zipWith(accounts, result, (account, value) => ({ account, value })));
-    } else {
-      const schema = pjsSchema.vec(
-        pjsSchema.tupleMap(
-          ['account', pjsSchema.storageKey(pjsSchema.accountId).transform(([accountId]) => accountId)],
-          ['value', recordSchema],
-        ),
-      );
-
-      return substrateRpcPool.call(() => getQuery(api, 'proxies').entries()).then(schema.parse);
     }
+
+    const schema = pjsSchema.vec(
+      pjsSchema.tupleMap(
+        ['account', pjsSchema.storageKey(pjsSchema.accountId).transform(([accountId]) => accountId)],
+        ['value', recordSchema],
+      ),
+    );
+
+    return substrateRpcPool.call(() => getQuery(api, 'proxies').entries()).then(schema.parse);
   },
 };
