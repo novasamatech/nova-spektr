@@ -16,8 +16,8 @@ export const ContactFilter = () => {
 
   return (
     <SearchInput
-      placeholder={t('addressBook.searchPlaceholder')}
       value={filterQuery}
+      placeholder={t('addressBook.searchPlaceholder')}
       onChange={filterModel.events.queryChanged}
     />
   );

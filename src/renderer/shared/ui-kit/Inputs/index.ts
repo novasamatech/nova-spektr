@@ -1,4 +1,4 @@
 export { Input } from './Input/Input';
-export { InputArea } from './InputArea/InputArea';
+export { TextArea } from './TextArea/TextArea';
 export { InputFile } from './InputFile/InputFile';
 export { SearchInput } from './SearchInput/SearchInput';
