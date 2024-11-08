@@ -250,7 +250,7 @@ sample({
       return { ...wallet, accounts: params.accounts };
     });
   },
-  target: walletModel.$wallets,
+  target: walletModel.$allWallets,
 });
 
 sample({
@@ -405,7 +405,7 @@ sample({
       return { ...wallet, accounts } as Wallet;
     });
   },
-  target: walletModel.$wallets,
+  target: walletModel.$allWallets,
 });
 
 sample({
@@ -442,7 +442,7 @@ sample({
       return wallet;
     }, []);
   },
-  target: walletModel.$wallets,
+  target: walletModel.$allWallets,
 });
 
 export const walletConnectModel = {
