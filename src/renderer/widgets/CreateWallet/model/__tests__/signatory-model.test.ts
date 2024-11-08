@@ -13,44 +13,44 @@ describe('widgets/CreateWallet/model/signatory-model', () => {
 
   test('should correctly add signatories', async () => {
     const scope = fork({
-      values: new Map().set(signatoryModel.$signatories, new Map([])),
+      values: new Map().set(signatoryModel.$signatories, []),
     });
 
-    expect(scope.getState(signatoryModel.$signatories).size).toEqual(0);
+    expect(scope.getState(signatoryModel.$signatories).length).toEqual(0);
 
-    await allSettled(signatoryModel.events.signatoriesChanged, {
+    await allSettled(signatoryModel.events.addSignatory, {
       scope,
-      params: { index: 1, name: 'Alice', address: toAddress(signerWallet.accounts[0].accountId) },
+      params: { name: 'Alice', address: toAddress(signerWallet.accounts[0].accountId) },
     });
 
-    await allSettled(signatoryModel.events.signatoriesChanged, {
+    await allSettled(signatoryModel.events.addSignatory, {
       scope,
-      params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0].accountId) },
+      params: { name: 'test', address: toAddress(signerWallet.accounts[0].accountId) },
     });
 
-    expect(scope.getState(signatoryModel.$signatories).size).toEqual(2);
+    expect(scope.getState(signatoryModel.$signatories).length).toEqual(2);
   });
 
   test('should correctly delete signatories', async () => {
     const scope = fork({
-      values: new Map().set(signatoryModel.$signatories, new Map([])),
+      values: new Map().set(signatoryModel.$signatories, []),
     });
 
-    expect(scope.getState(signatoryModel.$signatories).size).toEqual(0);
+    expect(scope.getState(signatoryModel.$signatories).length).toEqual(0);
 
-    await allSettled(signatoryModel.events.signatoriesChanged, {
+    await allSettled(signatoryModel.events.changeSignatory, {
       scope,
       params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0].accountId) },
     });
 
-    expect(scope.getState(signatoryModel.$signatories).size).toEqual(1);
+    expect(scope.getState(signatoryModel.$signatories).length).toEqual(1);
 
-    await allSettled(signatoryModel.events.signatoryDeleted, {
+    await allSettled(signatoryModel.events.deleteSignatory, {
       scope,
       params: 0,
     });
 
-    expect(scope.getState(signatoryModel.$signatories).size).toEqual(0);
+    expect(scope.getState(signatoryModel.$signatories).length).toEqual(0);
   });
 
   test('should have correct value for $ownSignatoryWallets', async () => {
@@ -58,14 +58,14 @@ describe('widgets/CreateWallet/model/signatory-model', () => {
       values: new Map().set(walletModel.$allWallets, [initiatorWallet, signerWallet]),
     });
 
-    await allSettled(signatoryModel.events.signatoriesChanged, {
+    await allSettled(signatoryModel.events.changeSignatory, {
       scope,
       params: { index: 1, name: 'Alice', address: toAddress(signatoryWallet.accounts[0].accountId) },
     });
 
     expect(scope.getState(signatoryModel.$ownedSignatoriesWallets)?.length).toEqual(0);
 
-    await allSettled(signatoryModel.events.signatoriesChanged, {
+    await allSettled(signatoryModel.events.changeSignatory, {
       scope,
       params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0].accountId) },
     });
