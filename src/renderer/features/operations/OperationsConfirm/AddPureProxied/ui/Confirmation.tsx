@@ -3,10 +3,11 @@ import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@/shared/ui';
+import { TransactionDetails } from '@/shared/ui-entities';
 import { AssetBalance } from '@/entities/asset';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
-import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, accountUtils } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 
@@ -19,6 +20,7 @@ type Props = {
 
 export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, onGoBack }: Props) => {
   const { t } = useI18n();
+  const wallets = useUnit(walletModel.$wallets);
 
   const confirmStore = useStoreMap({
     store: confirmModel.$confirmStore,
@@ -38,12 +40,6 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     fn: (value, [id]) => value?.[id],
   });
 
-  const proxiedWallet = useStoreMap({
-    store: confirmModel.$proxiedWallets,
-    keys: [id],
-    fn: (value, [id]) => value?.[id],
-  });
-
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
   if (!confirmStore || !initiatorWallet) {
@@ -58,78 +54,13 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
       <MultisigExistsAlert active={isMultisigExists} />
 
-      <dl className="flex w-full flex-col gap-y-4">
-        {proxiedWallet && confirmStore.proxiedAccount && (
-          <>
-            <DetailRow label={t('transfer.senderProxiedWallet')} className="flex gap-x-2">
-              <WalletIcon type={proxiedWallet.type} size={16} />
-              <FootnoteText className="pr-2">{proxiedWallet.name}</FootnoteText>
-            </DetailRow>
-
-            <DetailRow label={t('transfer.senderProxiedAccount')}>
-              <AddressWithExplorers
-                type="short"
-                explorers={confirmStore.chain.explorers}
-                addressFont="text-footnote text-inherit"
-                accountId={confirmStore.proxiedAccount.accountId}
-                addressPrefix={confirmStore.chain.addressPrefix}
-                wrapperClassName="text-text-secondary"
-              />
-            </DetailRow>
-
-            <hr className="w-full border-filter-border pr-2" />
-
-            <DetailRow label={t('transfer.signingWallet')} className="flex gap-x-2">
-              <WalletIcon type={initiatorWallet.type} size={16} />
-              <FootnoteText className="pr-2">{initiatorWallet.name}</FootnoteText>
-            </DetailRow>
-
-            <DetailRow label={t('transfer.signingAccount')}>
-              <AddressWithExplorers
-                type="short"
-                explorers={confirmStore.chain.explorers}
-                addressFont="text-footnote text-inherit"
-                accountId={confirmStore.proxiedAccount.proxyAccountId}
-                addressPrefix={confirmStore.chain.addressPrefix}
-                wrapperClassName="text-text-secondary"
-              />
-            </DetailRow>
-          </>
-        )}
-
-        {!proxiedWallet && (
-          <>
-            <DetailRow label={t('proxy.details.wallet')} className="flex gap-x-2">
-              <WalletIcon type={initiatorWallet.type} size={16} />
-              <FootnoteText className="pr-2">{initiatorWallet.name}</FootnoteText>
-            </DetailRow>
-
-            <DetailRow label={t('proxy.details.account')}>
-              <AddressWithExplorers
-                type="short"
-                explorers={confirmStore.chain.explorers}
-                addressFont="text-footnote text-inherit"
-                accountId={confirmStore.account.accountId}
-                addressPrefix={confirmStore.chain.addressPrefix}
-                wrapperClassName="text-text-secondary"
-              />
-            </DetailRow>
-          </>
-        )}
-
-        {signerWallet && confirmStore.signatory && (
-          <DetailRow label={t('proxy.details.signatory')}>
-            <ExplorersPopover
-              button={<WalletCardSm wallet={signerWallet} />}
-              address={confirmStore.signatory.accountId}
-              explorers={confirmStore.chain.explorers}
-              addressPrefix={confirmStore.chain.addressPrefix}
-            />
-          </DetailRow>
-        )}
-
-        <hr className="w-full border-filter-border pr-2" />
-
+      <TransactionDetails
+        chain={confirmStore.chain}
+        wallets={wallets}
+        initiator={[confirmStore.account]}
+        signatory={confirmStore.signatory}
+        proxied={confirmStore.proxiedAccount}
+      >
         <DetailRow
           className="text-text-primary"
           label={
@@ -177,7 +108,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
             <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.fee} />
           </div>
         </DetailRow>
-      </dl>
+      </TransactionDetails>
 
       <div className="mt-3 flex w-full justify-between">
         {onGoBack && (

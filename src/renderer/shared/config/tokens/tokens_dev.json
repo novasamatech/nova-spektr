@@ -11,7 +11,8 @@
         "chainId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
         "name": "Polkadot",
         "assetId": 0,
-        "assetSymbol": "DOT"
+        "assetSymbol": "DOT",
+        "type": "native"
       },
       {
         "chainId": "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
@@ -40,13 +41,25 @@
         }
       },
       {
+        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
+        "name": "Moonbeam",
+        "assetId": 1,
+        "assetSymbol": "xcDOT",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "42259045809535163221576417993425387648",
+          "isSufficient": true
+        }
+      },
+      {
         "chainId": "0x9eb76c5184c4ab8679d2d5d819fdf90b9c001403e9e17da2e14b6d8aec4029c6",
         "name": "Astar",
         "assetId": 1,
         "assetSymbol": "DOT",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "340282366920938463463374607431768211455"
+          "assetId": "340282366920938463463374607431768211455",
+          "isSufficient": true
         }
       },
       {
@@ -56,7 +69,8 @@
         "assetSymbol": "DOT",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "101"
+          "assetId": "101",
+          "isSufficient": true
         }
       },
       {
@@ -66,14 +80,16 @@
         "assetSymbol": "sDOT",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "1001"
+          "assetId": "1001",
+          "isSufficient": true
         }
       },
       {
         "chainId": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
         "name": "Polkadot Asset Hub",
         "assetId": 0,
-        "assetSymbol": "DOT"
+        "assetSymbol": "DOT",
+        "type": "native"
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
@@ -131,29 +147,22 @@
         "chainId": "0xdcf691b5a3fbe24adc99ddc959c0561b973e329b1aef4c4b22e7bb2ddecb4464",
         "name": "Polkadot Bridge Hub",
         "assetId": 0,
-        "assetSymbol": "DOT"
+        "assetSymbol": "DOT",
+        "type": "native"
       },
       {
         "chainId": "0x46ee89aa2eedd13e988962630ec9fb7565964cf5023bb351f2b6b25c1b68b0b2",
         "name": "Polkadot Collectives",
         "assetId": 0,
-        "assetSymbol": "DOT"
-      },
-      {
-        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-        "name": "Moonbeam",
-        "assetId": 1,
-        "assetSymbol": "xcDOT",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "42259045809535163221576417993425387648"
-        }
+        "assetSymbol": "DOT",
+        "type": "native"
       },
       {
         "chainId": "0x67fa177a097bfa18f77ea95ab56e9bcdfeb0e5b8a40e46298bb93e16b6fc5008",
         "name": "Polkadot People",
         "assetId": 0,
-        "assetSymbol": "DOT"
+        "assetSymbol": "DOT",
+        "type": "native"
       }
     ]
   },
@@ -169,13 +178,15 @@
         "chainId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
         "name": "Kusama",
         "assetId": 0,
-        "assetSymbol": "KSM"
+        "assetSymbol": "KSM",
+        "type": "native"
       },
       {
         "chainId": "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
         "name": "Kusama Asset Hub",
         "assetId": 0,
-        "assetSymbol": "KSM"
+        "assetSymbol": "KSM",
+        "type": "native"
       },
       {
         "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
@@ -191,13 +202,25 @@
         }
       },
       {
+        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
+        "name": "Moonriver",
+        "assetId": 2,
+        "assetSymbol": "xcKSM",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "42259045809535163221576417993425387648",
+          "isSufficient": true
+        }
+      },
+      {
         "chainId": "0xf1cf9022c7ebb34b162d5b5e34e705a5a740b2d0ecc1009fb89023e62a488108",
         "name": "Shiden",
         "assetId": 6,
         "assetSymbol": "KSM",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "340282366920938463463374607431768211455"
+          "assetId": "340282366920938463463374607431768211455",
+          "isSufficient": true
         }
       },
       {
@@ -233,7 +256,8 @@
         "assetSymbol": "KSM",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "100"
+          "assetId": "100",
+          "isSufficient": true
         }
       },
       {
@@ -256,7 +280,8 @@
         "assetSymbol": "KSM",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "0"
+          "assetId": "0",
+          "isSufficient": true
         }
       },
       {
@@ -266,7 +291,8 @@
         "assetSymbol": "KSM",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "4294967295"
+          "assetId": "4294967295",
+          "isSufficient": true
         }
       },
       {
@@ -325,23 +351,15 @@
         "chainId": "0x00dcb981df86429de8bbacf9803401f09485366c44efbf53af9ecfab03adc7e5",
         "name": "Kusama Bridge Hub",
         "assetId": 0,
-        "assetSymbol": "KSM"
-      },
-      {
-        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
-        "name": "Moonriver",
-        "assetId": 2,
-        "assetSymbol": "xcKSM",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "42259045809535163221576417993425387648"
-        }
+        "assetSymbol": "KSM",
+        "type": "native"
       },
       {
         "chainId": "0xc1af4cb4eb3918e5db15086c0cc5ec17fb334f728b7c65dd44bfe1e174ff8b3f",
         "name": "Kusama People",
         "assetId": 0,
-        "assetSymbol": "KSM"
+        "assetSymbol": "KSM",
+        "type": "native"
       }
     ]
   },
@@ -356,31 +374,36 @@
         "chainId": "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
         "name": "Westend",
         "assetId": 0,
-        "assetSymbol": "WND"
+        "assetSymbol": "WND",
+        "type": "native"
       },
       {
         "chainId": "0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9",
         "name": "Westmint",
         "assetId": 0,
-        "assetSymbol": "WND"
+        "assetSymbol": "WND",
+        "type": "native"
       },
       {
         "chainId": "0x0441383e31d1266a92b4cb2ddd4c2e3661ac476996db7e5844c52433b81fe782",
         "name": "Westend Bridge Hub",
         "assetId": 0,
-        "assetSymbol": "WND"
+        "assetSymbol": "WND",
+        "type": "native"
       },
       {
         "chainId": "0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42",
         "name": "Novasama Testnet - Governance",
         "assetId": 0,
-        "assetSymbol": "WND"
+        "assetSymbol": "WND",
+        "type": "native"
       },
       {
         "chainId": "0x1eb6fb0ba5187434de017a70cb84d4f47142df1d571d0ef9e7e1407f2b80b93c",
         "name": "Westend People",
         "assetId": 0,
-        "assetSymbol": "WND"
+        "assetSymbol": "WND",
+        "type": "native"
       }
     ]
   },
@@ -417,7 +440,8 @@
         "assetSymbol": "JOE",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "8"
+          "assetId": "8",
+          "isSufficient": true
         }
       }
     ]
@@ -437,7 +461,8 @@
         "assetSymbol": "RMRK",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "8"
+          "assetId": "8",
+          "isSufficient": true
         }
       },
       {
@@ -451,6 +476,17 @@
           "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000",
           "transfersEnabled": true
+        }
+      },
+      {
+        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
+        "name": "Moonriver",
+        "assetId": 1,
+        "assetSymbol": "xcRMRK",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "182365888117048807484804376330534607370",
+          "isSufficient": true
         }
       },
       {
@@ -477,16 +513,6 @@
           "currencyIdType": "u32",
           "existentialDeposit": "0",
           "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
-        "name": "Moonriver",
-        "assetId": 1,
-        "assetSymbol": "xcRMRK",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "182365888117048807484804376330534607370"
         }
       }
     ]
@@ -582,7 +608,8 @@
         "assetSymbol": "USDT",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "1984"
+          "assetId": "1984",
+          "isSufficient": true
         }
       },
       {
@@ -599,13 +626,25 @@
         }
       },
       {
+        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
+        "name": "Moonriver",
+        "assetId": 7,
+        "assetSymbol": "xcUSDT",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "311091173110107856861649819128533077277",
+          "isSufficient": true
+        }
+      },
+      {
         "chainId": "0xf1cf9022c7ebb34b162d5b5e34e705a5a740b2d0ecc1009fb89023e62a488108",
         "name": "Shiden",
         "assetId": 10,
         "assetSymbol": "USDT",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "4294969280"
+          "assetId": "4294969280",
+          "isSufficient": true
         }
       },
       {
@@ -641,7 +680,8 @@
         "assetSymbol": "USDT",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "102"
+          "assetId": "102",
+          "isSufficient": true
         }
       },
       {
@@ -671,13 +711,25 @@
         }
       },
       {
+        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
+        "name": "Moonbeam",
+        "assetId": 10,
+        "assetSymbol": "xcUSDT",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "311091173110107856861649819128533077277",
+          "isSufficient": true
+        }
+      },
+      {
         "chainId": "0x9eb76c5184c4ab8679d2d5d819fdf90b9c001403e9e17da2e14b6d8aec4029c6",
         "name": "Astar",
         "assetId": 9,
         "assetSymbol": "USDT",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "4294969280"
+          "assetId": "4294969280",
+          "isSufficient": true
         }
       },
       {
@@ -687,7 +739,8 @@
         "assetSymbol": "USDT",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "102"
+          "assetId": "102",
+          "isSufficient": true
         }
       },
       {
@@ -697,7 +750,8 @@
         "assetSymbol": "USDT",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "1984"
+          "assetId": "1984",
+          "isSufficient": true
         }
       },
       {
@@ -777,26 +831,6 @@
           "existentialDeposit": "1000",
           "transfersEnabled": true
         }
-      },
-      {
-        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
-        "name": "Moonriver",
-        "assetId": 7,
-        "assetSymbol": "xcUSDT",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "311091173110107856861649819128533077277"
-        }
-      },
-      {
-        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-        "name": "Moonbeam",
-        "assetId": 10,
-        "assetSymbol": "xcUSDT",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "311091173110107856861649819128533077277"
-        }
       }
     ]
   },
@@ -812,7 +846,19 @@
         "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
         "name": "Karura",
         "assetId": 0,
-        "assetSymbol": "KAR"
+        "assetSymbol": "KAR",
+        "type": "native"
+      },
+      {
+        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
+        "name": "Moonriver",
+        "assetId": 4,
+        "assetSymbol": "xcKAR",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "10810581592933651521121702237638664357",
+          "isSufficient": true
+        }
       },
       {
         "chainId": "0xf1cf9022c7ebb34b162d5b5e34e705a5a740b2d0ecc1009fb89023e62a488108",
@@ -821,7 +867,8 @@
         "assetSymbol": "KAR",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "18446744073709551618"
+          "assetId": "18446744073709551618",
+          "isSufficient": true
         }
       },
       {
@@ -844,7 +891,8 @@
         "assetSymbol": "KAR",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "107"
+          "assetId": "107",
+          "isSufficient": true
         }
       },
       {
@@ -854,7 +902,8 @@
         "assetSymbol": "KAR",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "1"
+          "assetId": "1",
+          "isSufficient": true
         }
       },
       {
@@ -868,16 +917,6 @@
           "currencyIdType": "u32",
           "existentialDeposit": "100000000000",
           "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
-        "name": "Moonriver",
-        "assetId": 4,
-        "assetSymbol": "xcKAR",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "10810581592933651521121702237638664357"
         }
       }
     ]
@@ -904,13 +943,25 @@
         }
       },
       {
+        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
+        "name": "Moonriver",
+        "assetId": 8,
+        "assetSymbol": "xcaSEEDk",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "214920334981412447805621250067209749032",
+          "isSufficient": true
+        }
+      },
+      {
         "chainId": "0xf1cf9022c7ebb34b162d5b5e34e705a5a740b2d0ecc1009fb89023e62a488108",
         "name": "Shiden",
         "assetId": 7,
         "assetSymbol": "aSEEDk",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "18446744073709551616"
+          "assetId": "18446744073709551616",
+          "isSufficient": true
         }
       },
       {
@@ -946,7 +997,8 @@
         "assetSymbol": "aSEEDk",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "103"
+          "assetId": "103",
+          "isSufficient": true
         }
       },
       {
@@ -969,7 +1021,8 @@
         "assetSymbol": "aSEEDk",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "4"
+          "assetId": "4",
+          "isSufficient": true
         }
       },
       {
@@ -983,16 +1036,6 @@
           "currencyIdType": "u32",
           "existentialDeposit": "10000000000",
           "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
-        "name": "Moonriver",
-        "assetId": 8,
-        "assetSymbol": "xcaSEEDk",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "214920334981412447805621250067209749032"
         }
       }
     ]
@@ -1019,20 +1062,33 @@
         }
       },
       {
+        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
+        "name": "Moonriver",
+        "assetId": 5,
+        "assetSymbol": "xcBNC",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "319623561105283008236062145480775032445",
+          "isSufficient": true
+        }
+      },
+      {
         "chainId": "0xf1cf9022c7ebb34b162d5b5e34e705a5a740b2d0ecc1009fb89023e62a488108",
         "name": "Shiden",
         "assetId": 12,
         "assetSymbol": "BNC",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "18446744073709551627"
+          "assetId": "18446744073709551627",
+          "isSufficient": true
         }
       },
       {
         "chainId": "0x9f28c6a68e0fc9646eff64935684f6eeeece527e37bbe1f213d22caa1d9d6bed",
         "name": "Bifrost Kusama",
         "assetId": 0,
-        "assetSymbol": "BNC"
+        "assetSymbol": "BNC",
+        "type": "native"
       },
       {
         "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
@@ -1041,7 +1097,19 @@
         "assetSymbol": "BNC",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "2"
+          "assetId": "2",
+          "isSufficient": true
+        }
+      },
+      {
+        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
+        "name": "Moonbeam",
+        "assetId": 12,
+        "assetSymbol": "xcBNC",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "165823357460190568952172802245839421906",
+          "isSufficient": true
         }
       },
       {
@@ -1051,7 +1119,8 @@
         "assetSymbol": "BNC",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "18446744073709551623"
+          "assetId": "18446744073709551623",
+          "isSufficient": true
         }
       },
       {
@@ -1084,7 +1153,8 @@
         "chainId": "0x262e1b2ad728475fd6fe88e62d34c200abe6fd693931ddad144059b1eb884e5b",
         "name": "Bifrost Polkadot",
         "assetId": 0,
-        "assetSymbol": "BNC"
+        "assetSymbol": "BNC",
+        "type": "native"
       },
       {
         "chainId": "0xd611f22d291c5b7b69f1e105cca03352984c344c4421977efaa4cbdd1834e2aa",
@@ -1097,26 +1167,6 @@
           "currencyIdType": "u32",
           "existentialDeposit": "0",
           "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
-        "name": "Moonriver",
-        "assetId": 5,
-        "assetSymbol": "xcBNC",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "319623561105283008236062145480775032445"
-        }
-      },
-      {
-        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-        "name": "Moonbeam",
-        "assetId": 12,
-        "assetSymbol": "xcBNC",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "165823357460190568952172802245839421906"
         }
       }
     ]
@@ -1149,7 +1199,8 @@
         "assetSymbol": "LKSM",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "18446744073709551619"
+          "assetId": "18446744073709551619",
+          "isSufficient": true
         }
       },
       {
@@ -1172,7 +1223,8 @@
         "assetSymbol": "LKSM",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "109"
+          "assetId": "109",
+          "isSufficient": true
         }
       },
       {
@@ -1212,13 +1264,25 @@
         }
       },
       {
+        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
+        "name": "Moonriver",
+        "assetId": 10,
+        "assetSymbol": "xcPHA",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "189307976387032586987344677431204943363",
+          "isSufficient": true
+        }
+      },
+      {
         "chainId": "0xf1cf9022c7ebb34b162d5b5e34e705a5a740b2d0ecc1009fb89023e62a488108",
         "name": "Shiden",
         "assetId": 1,
         "assetSymbol": "PHA",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "18446744073709551623"
+          "assetId": "18446744073709551623",
+          "isSufficient": true
         }
       },
       {
@@ -1241,14 +1305,27 @@
         "assetSymbol": "PHA",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "115"
+          "assetId": "115",
+          "isSufficient": true
         }
       },
       {
         "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
         "name": "Khala",
         "assetId": 0,
-        "assetSymbol": "PHA"
+        "assetSymbol": "PHA",
+        "type": "native"
+      },
+      {
+        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
+        "name": "Moonbeam",
+        "assetId": 9,
+        "assetSymbol": "xcPHA",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "132685552157663328694213725410064821485",
+          "isSufficient": true
+        }
       },
       {
         "chainId": "0x9eb76c5184c4ab8679d2d5d819fdf90b9c001403e9e17da2e14b6d8aec4029c6",
@@ -1257,7 +1334,8 @@
         "assetSymbol": "PHA",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "18446744073709551622"
+          "assetId": "18446744073709551622",
+          "isSufficient": true
         }
       },
       {
@@ -1267,7 +1345,8 @@
         "assetSymbol": "PHA",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "115"
+          "assetId": "115",
+          "isSufficient": true
         }
       },
       {
@@ -1287,7 +1366,8 @@
         "chainId": "0x1bb969d85965e4bb5a651abbedf21a54b6b31a21f66b5401cc3f1e286268d736",
         "name": "Phala",
         "assetId": 0,
-        "assetSymbol": "PHA"
+        "assetSymbol": "PHA",
+        "type": "native"
       },
       {
         "chainId": "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
@@ -1300,26 +1380,6 @@
           "currencyIdType": "u32",
           "existentialDeposit": "10000000000",
           "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
-        "name": "Moonriver",
-        "assetId": 10,
-        "assetSymbol": "xcPHA",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "189307976387032586987344677431204943363"
-        }
-      },
-      {
-        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-        "name": "Moonbeam",
-        "assetId": 9,
-        "assetSymbol": "xcPHA",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "132685552157663328694213725410064821485"
         }
       }
     ]
@@ -1346,13 +1406,25 @@
         }
       },
       {
+        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
+        "name": "Moonriver",
+        "assetId": 3,
+        "assetSymbol": "xcKINT",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "175400718394635817552109270754364440562",
+          "isSufficient": true
+        }
+      },
+      {
         "chainId": "0xf1cf9022c7ebb34b162d5b5e34e705a5a740b2d0ecc1009fb89023e62a488108",
         "name": "Shiden",
         "assetId": 5,
         "assetSymbol": "KINT",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "18446744073709551622"
+          "assetId": "18446744073709551622",
+          "isSufficient": true
         }
       },
       {
@@ -1375,7 +1447,8 @@
         "assetSymbol": "KINT",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "119"
+          "assetId": "119",
+          "isSufficient": true
         }
       },
       {
@@ -1389,16 +1462,6 @@
           "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
-        "name": "Moonriver",
-        "assetId": 3,
-        "assetSymbol": "xcKINT",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "175400718394635817552109270754364440562"
         }
       }
     ]
@@ -1425,13 +1488,25 @@
         }
       },
       {
+        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
+        "name": "Moonriver",
+        "assetId": 6,
+        "assetSymbol": "xckBTC",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "328179947973504579459046439826496046832",
+          "isSufficient": true
+        }
+      },
+      {
         "chainId": "0xf1cf9022c7ebb34b162d5b5e34e705a5a740b2d0ecc1009fb89023e62a488108",
         "name": "Shiden",
         "assetId": 4,
         "assetSymbol": "kBTC",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "18446744073709551621"
+          "assetId": "18446744073709551621",
+          "isSufficient": true
         }
       },
       {
@@ -1480,7 +1555,8 @@
         "assetSymbol": "kBTC",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "121"
+          "assetId": "121",
+          "isSufficient": true
         }
       },
       {
@@ -1494,16 +1570,6 @@
           "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
-        "name": "Moonriver",
-        "assetId": 6,
-        "assetSymbol": "xckBTC",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "328179947973504579459046439826496046832"
         }
       }
     ]
@@ -1625,7 +1691,8 @@
         "chainId": "0xcd4d732201ebe5d6b014edda071c4203e16867305332301dc8d092044b28e554",
         "name": "QUARTZ",
         "assetId": 0,
-        "assetSymbol": "QTZ"
+        "assetSymbol": "QTZ",
+        "type": "native"
       }
     ]
   },
@@ -1651,13 +1718,21 @@
         }
       },
       {
+        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
+        "name": "Moonriver",
+        "assetId": 0,
+        "assetSymbol": "MOVR",
+        "type": "native"
+      },
+      {
         "chainId": "0xf1cf9022c7ebb34b162d5b5e34e705a5a740b2d0ecc1009fb89023e62a488108",
         "name": "Shiden",
         "assetId": 3,
         "assetSymbol": "MOVR",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "18446744073709551620"
+          "assetId": "18446744073709551620",
+          "isSufficient": true
         }
       },
       {
@@ -1680,7 +1755,8 @@
         "assetSymbol": "MOVR",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "113"
+          "assetId": "113",
+          "isSufficient": true
         }
       },
       {
@@ -1690,14 +1766,9 @@
         "assetSymbol": "MOVR",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "6"
+          "assetId": "6",
+          "isSufficient": true
         }
-      },
-      {
-        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
-        "name": "Moonriver",
-        "assetId": 0,
-        "assetSymbol": "MOVR"
       }
     ]
   },
@@ -1722,10 +1793,22 @@
         }
       },
       {
+        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
+        "name": "Moonriver",
+        "assetId": 11,
+        "assetSymbol": "xcHKO",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "76100021443485661246318545281171740067",
+          "isSufficient": true
+        }
+      },
+      {
         "chainId": "0x64a1c658a48b2e70a7fb1ad4c39eea35022568c20fc44a6e2e3d0a57aee6053b",
         "name": "Parallel Heiko",
         "assetId": 0,
-        "assetSymbol": "HKO"
+        "assetSymbol": "HKO",
+        "type": "native"
       },
       {
         "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
@@ -1734,7 +1817,8 @@
         "assetSymbol": "HKO",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "7"
+          "assetId": "7",
+          "isSufficient": true
         }
       },
       {
@@ -1748,16 +1832,6 @@
           "currencyIdType": "u32",
           "existentialDeposit": "500000000000",
           "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
-        "name": "Moonriver",
-        "assetId": 11,
-        "assetSymbol": "xcHKO",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "76100021443485661246318545281171740067"
         }
       }
     ]
@@ -1784,23 +1858,25 @@
         }
       },
       {
-        "chainId": "0xf1cf9022c7ebb34b162d5b5e34e705a5a740b2d0ecc1009fb89023e62a488108",
-        "name": "Shiden",
-        "assetId": 8,
-        "assetSymbol": "CSM",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "18446744073709551624"
-        }
-      },
-      {
         "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
         "name": "Moonriver",
         "assetId": 9,
         "assetSymbol": "xcCSM",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "108457044225666871745333730479173774551"
+          "assetId": "108457044225666871745333730479173774551",
+          "isSufficient": true
+        }
+      },
+      {
+        "chainId": "0xf1cf9022c7ebb34b162d5b5e34e705a5a740b2d0ecc1009fb89023e62a488108",
+        "name": "Shiden",
+        "assetId": 8,
+        "assetSymbol": "CSM",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "18446744073709551624",
+          "isSufficient": true
         }
       }
     ]
@@ -1827,23 +1903,25 @@
         }
       },
       {
-        "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
-        "name": "Khala",
-        "assetId": 9,
-        "assetSymbol": "KMA",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "8"
-        }
-      },
-      {
         "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
         "name": "Moonriver",
         "assetId": 12,
         "assetSymbol": "xcKMA",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "213357169630950964874127107356898319277"
+          "assetId": "213357169630950964874127107356898319277",
+          "isSufficient": true
+        }
+      },
+      {
+        "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
+        "name": "Khala",
+        "assetId": 9,
+        "assetSymbol": "KMA",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "8",
+          "isSufficient": true
         }
       }
     ]
@@ -1870,20 +1948,22 @@
         }
       },
       {
-        "chainId": "0xcdedc8eadbfa209d3f207bba541e57c3c58a667b05a2e1d1e86353c9000758da",
-        "name": "Integritee Parachain",
-        "assetId": 0,
-        "assetSymbol": "TEER"
-      },
-      {
         "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
         "name": "Moonriver",
         "assetId": 14,
         "assetSymbol": "xcTEER",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "105075627293246237499203909093923548958"
+          "assetId": "105075627293246237499203909093923548958",
+          "isSufficient": true
         }
+      },
+      {
+        "chainId": "0xcdedc8eadbfa209d3f207bba541e57c3c58a667b05a2e1d1e86353c9000758da",
+        "name": "Integritee Parachain",
+        "assetId": 0,
+        "assetSymbol": "TEER",
+        "type": "native"
       }
     ]
   },
@@ -1937,7 +2017,8 @@
         "assetSymbol": "NEER",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "13"
+          "assetId": "13",
+          "isSufficient": true
         }
       }
     ]
@@ -1967,7 +2048,8 @@
         "chainId": "0xa85cfb9b9fd4d622a5b28289a02347af987d8f73fa3108450e2b4a11c1ce5755",
         "name": "Basilisk",
         "assetId": 0,
-        "assetSymbol": "BSX"
+        "assetSymbol": "BSX",
+        "type": "native"
       },
       {
         "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
@@ -1976,7 +2058,8 @@
         "assetSymbol": "BSX",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "9"
+          "assetId": "9",
+          "isSufficient": true
         }
       }
     ]
@@ -2006,7 +2089,8 @@
         "chainId": "0xaa3876c1dc8a1afcc2e9a685a49ff7704cfd36ad8c90bf2702b9d1b00cc40011",
         "name": "Altair",
         "assetId": 0,
-        "assetSymbol": "AIR"
+        "assetSymbol": "AIR",
+        "type": "native"
       }
     ]
   },
@@ -2065,23 +2149,25 @@
         }
       },
       {
-        "chainId": "0x9eb76c5184c4ab8679d2d5d819fdf90b9c001403e9e17da2e14b6d8aec4029c6",
-        "name": "Astar",
-        "assetId": 13,
-        "assetSymbol": "EQD",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "18446744073709551629"
-        }
-      },
-      {
         "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
         "name": "Moonbeam",
         "assetId": 14,
         "assetSymbol": "xcEQD",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "187224307232923873519830480073807488153"
+          "assetId": "187224307232923873519830480073807488153",
+          "isSufficient": true
+        }
+      },
+      {
+        "chainId": "0x9eb76c5184c4ab8679d2d5d819fdf90b9c001403e9e17da2e14b6d8aec4029c6",
+        "name": "Astar",
+        "assetId": 13,
+        "assetSymbol": "EQD",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "18446744073709551629",
+          "isSufficient": true
         }
       }
     ]
@@ -2114,8 +2200,37 @@
         "assetSymbol": "xcCRAB",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "173481220575862801646329923366065693029"
+          "assetId": "173481220575862801646329923366065693029",
+          "isSufficient": true
         }
+      }
+    ]
+  },
+  {
+    "name": "Litentry",
+    "precision": 12,
+    "priceId": "litentry",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Litentry_(LIT).svg",
+    "symbol": "xcLIT",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
+        "name": "Moonriver",
+        "assetId": 15,
+        "assetSymbol": "xcLIT",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "65216491554813189869575508812319036608",
+          "isSufficient": true
+        }
+      },
+      {
+        "chainId": "0x2fc8bb6ed7c0051bdcf4866c322ed32b6276572713607e3297ccf411b8f14aa9",
+        "name": "Litentry",
+        "assetId": 0,
+        "assetSymbol": "LIT",
+        "type": "native"
       }
     ]
   },
@@ -2124,14 +2239,26 @@
     "precision": 18,
     "priceId": "shiden",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Shiden_(SDN).svg",
-    "symbol": "SDN",
+    "symbol": "xcSDN",
     "isTestToken": false,
     "chains": [
+      {
+        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
+        "name": "Moonriver",
+        "assetId": 16,
+        "assetSymbol": "xcSDN",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "16797826370226091782818345603793389938",
+          "isSufficient": true
+        }
+      },
       {
         "chainId": "0xf1cf9022c7ebb34b162d5b5e34e705a5a740b2d0ecc1009fb89023e62a488108",
         "name": "Shiden",
         "assetId": 0,
-        "assetSymbol": "SDN"
+        "assetSymbol": "SDN",
+        "type": "native"
       },
       {
         "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
@@ -2140,18 +2267,50 @@
         "assetSymbol": "SDN",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "12"
+          "assetId": "12",
+          "isSufficient": true
         }
-      },
+      }
+    ]
+  },
+  {
+    "name": "Robonomics",
+    "precision": 9,
+    "priceId": "robonomics-network",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Robonomics_(XRT).svg",
+    "symbol": "xcXRT",
+    "isTestToken": false,
+    "chains": [
       {
         "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
         "name": "Moonriver",
-        "assetId": 16,
-        "assetSymbol": "xcSDN",
+        "assetId": 17,
+        "assetSymbol": "xcXRT",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "16797826370226091782818345603793389938"
+          "assetId": "108036400430056508975016746969135344601",
+          "isSufficient": true
         }
+      },
+      {
+        "chainId": "0xa85cfb9b9fd4d622a5b28289a02347af987d8f73fa3108450e2b4a11c1ce5755",
+        "name": "Basilisk",
+        "assetId": 5,
+        "assetSymbol": "XRT",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x10000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "1683502",
+          "transfersEnabled": true
+        }
+      },
+      {
+        "chainId": "0x631ccc82a078481584041656af292834e1ae6daab61d2875b4dd0c14bb9b17bc",
+        "name": "Robonomics",
+        "assetId": 0,
+        "assetSymbol": "XRT",
+        "type": "native"
       }
     ]
   },
@@ -2160,9 +2319,20 @@
     "precision": 12,
     "priceId": "voucher-ksm",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vKSM.svg",
-    "symbol": "vKSM",
+    "symbol": "xcvKSM",
     "isTestToken": false,
     "chains": [
+      {
+        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
+        "name": "Moonriver",
+        "assetId": 18,
+        "assetSymbol": "xcvKSM",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "264344629840762281112027368930249420542",
+          "isSufficient": true
+        }
+      },
       {
         "chainId": "0xf1cf9022c7ebb34b162d5b5e34e705a5a740b2d0ecc1009fb89023e62a488108",
         "name": "Shiden",
@@ -2170,7 +2340,8 @@
         "assetSymbol": "vKSM",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "18446744073709551628"
+          "assetId": "18446744073709551628",
+          "isSufficient": true
         }
       },
       {
@@ -2198,16 +2369,201 @@
           "existentialDeposit": "0",
           "transfersEnabled": true
         }
-      },
+      }
+    ]
+  },
+  {
+    "name": "vBNC",
+    "precision": 12,
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vBNC.svg",
+    "symbol": "xcvBNC",
+    "isTestToken": false,
+    "chains": [
       {
         "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
         "name": "Moonriver",
-        "assetId": 18,
-        "assetSymbol": "xcvKSM",
+        "assetId": 19,
+        "assetSymbol": "xcvBNC",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "264344629840762281112027368930249420542"
+          "assetId": "72145018963825376852137222787619937732",
+          "isSufficient": true
         }
+      },
+      {
+        "chainId": "0x9f28c6a68e0fc9646eff64935684f6eeeece527e37bbe1f213d22caa1d9d6bed",
+        "name": "Bifrost Kusama",
+        "assetId": 12,
+        "assetSymbol": "vBNC",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x0101",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "10000000000",
+          "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
+    "name": "vMOVR",
+    "precision": 18,
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vMOVR.svg",
+    "symbol": "xcvMOVR",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
+        "name": "Moonriver",
+        "assetId": 20,
+        "assetSymbol": "xcvMOVR",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "203223821023327994093278529517083736593",
+          "isSufficient": true
+        }
+      },
+      {
+        "chainId": "0x9f28c6a68e0fc9646eff64935684f6eeeece527e37bbe1f213d22caa1d9d6bed",
+        "name": "Bifrost Kusama",
+        "assetId": 13,
+        "assetSymbol": "vMOVR",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x010a",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "1000000000000",
+          "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
+    "name": "Mangata X",
+    "precision": 18,
+    "priceId": "mangata-x",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Mangata_X_(MGX).svg",
+    "symbol": "xcMGX",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
+        "name": "Moonriver",
+        "assetId": 21,
+        "assetSymbol": "xcMGX",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "118095707745084482624853002839493125353",
+          "isSufficient": true
+        }
+      },
+      {
+        "chainId": "0xd611f22d291c5b7b69f1e105cca03352984c344c4421977efaa4cbdd1834e2aa",
+        "name": "Mangata X",
+        "assetId": 0,
+        "assetSymbol": "MGX",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x00000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "0",
+          "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
+    "name": "Turing",
+    "precision": 10,
+    "priceId": "turing-network",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Turing_(TUR).svg",
+    "symbol": "xcTUR",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
+        "name": "Moonriver",
+        "assetId": 22,
+        "assetSymbol": "xcTUR",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "133300872918374599700079037156071917454",
+          "isSufficient": true
+        }
+      },
+      {
+        "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
+        "name": "Khala",
+        "assetId": 10,
+        "assetSymbol": "TUR",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "10",
+          "isSufficient": true
+        }
+      },
+      {
+        "chainId": "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
+        "name": "Turing",
+        "assetId": 0,
+        "assetSymbol": "TUR",
+        "type": "native"
+      },
+      {
+        "chainId": "0xd611f22d291c5b7b69f1e105cca03352984c344c4421977efaa4cbdd1834e2aa",
+        "name": "Mangata X",
+        "assetId": 3,
+        "assetSymbol": "TUR",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x07000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "0",
+          "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
+    "name": "Test token",
+    "precision": 18,
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
+    "symbol": "DEV",
+    "isTestToken": true,
+    "chains": [
+      {
+        "chainId": "0x91bc6e169807aaa54802737e1c504b2577d4fafedd5a02c10293b1cd60e39527",
+        "name": "Moonbase Alpha",
+        "assetId": 0,
+        "assetSymbol": "DEV",
+        "type": "native"
+      }
+    ]
+  },
+  {
+    "name": "Test token",
+    "precision": 12,
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
+    "symbol": "xcUNIT",
+    "isTestToken": true,
+    "chains": [
+      {
+        "chainId": "0x91bc6e169807aaa54802737e1c504b2577d4fafedd5a02c10293b1cd60e39527",
+        "name": "Moonbase Alpha",
+        "assetId": 1,
+        "assetSymbol": "xcUNIT",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "42259045809535163221576417993425387648",
+          "isSufficient": true
+        }
+      },
+      {
+        "chainId": "0xe1ea3ab1d46ba8f4898b6b4b9c54ffc05282d299f89e84bd0fd08067758c9443",
+        "name": "Moonbase Relay Testnet",
+        "assetId": 0,
+        "assetSymbol": "UNIT",
+        "type": "native"
       }
     ]
   },
@@ -2239,7 +2595,8 @@
         "assetSymbol": "ZLK",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "3"
+          "assetId": "3",
+          "isSufficient": true
         }
       },
       {
@@ -2253,70 +2610,6 @@
           "currencyIdType": "u32",
           "existentialDeposit": "0",
           "transfersEnabled": true
-        }
-      }
-    ]
-  },
-  {
-    "name": "vBNC",
-    "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vBNC.svg",
-    "symbol": "vBNC",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0x9f28c6a68e0fc9646eff64935684f6eeeece527e37bbe1f213d22caa1d9d6bed",
-        "name": "Bifrost Kusama",
-        "assetId": 12,
-        "assetSymbol": "vBNC",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0101",
-          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
-          "existentialDeposit": "10000000000",
-          "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
-        "name": "Moonriver",
-        "assetId": 19,
-        "assetSymbol": "xcvBNC",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "72145018963825376852137222787619937732"
-        }
-      }
-    ]
-  },
-  {
-    "name": "vMOVR",
-    "precision": 18,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vMOVR.svg",
-    "symbol": "vMOVR",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0x9f28c6a68e0fc9646eff64935684f6eeeece527e37bbe1f213d22caa1d9d6bed",
-        "name": "Bifrost Kusama",
-        "assetId": 13,
-        "assetSymbol": "vMOVR",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x010a",
-          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
-          "existentialDeposit": "1000000000000",
-          "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
-        "name": "Moonriver",
-        "assetId": 20,
-        "assetSymbol": "xcvMOVR",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "203223821023327994093278529517083736593"
         }
       }
     ]
@@ -2392,7 +2685,8 @@
         "assetSymbol": "sKSM",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "1000"
+          "assetId": "1000",
+          "isSufficient": true
         }
       },
       {
@@ -2434,95 +2728,8 @@
         "chainId": "0xd42e9606a995dfe433dc7955dc2a70f495f350f373daa200098ae84437816ad2",
         "name": "Tinkernet",
         "assetId": 0,
-        "assetSymbol": "TNKR"
-      }
-    ]
-  },
-  {
-    "name": "Robonomics",
-    "precision": 9,
-    "priceId": "robonomics-network",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Robonomics_(XRT).svg",
-    "symbol": "XRT",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0xa85cfb9b9fd4d622a5b28289a02347af987d8f73fa3108450e2b4a11c1ce5755",
-        "name": "Basilisk",
-        "assetId": 5,
-        "assetSymbol": "XRT",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x10000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "1683502",
-          "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0x631ccc82a078481584041656af292834e1ae6daab61d2875b4dd0c14bb9b17bc",
-        "name": "Robonomics",
-        "assetId": 0,
-        "assetSymbol": "XRT"
-      },
-      {
-        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
-        "name": "Moonriver",
-        "assetId": 17,
-        "assetSymbol": "xcXRT",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "108036400430056508975016746969135344601"
-        }
-      }
-    ]
-  },
-  {
-    "name": "Turing",
-    "precision": 10,
-    "priceId": "turing-network",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Turing_(TUR).svg",
-    "symbol": "TUR",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
-        "name": "Khala",
-        "assetId": 10,
-        "assetSymbol": "TUR",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "10"
-        }
-      },
-      {
-        "chainId": "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
-        "name": "Turing",
-        "assetId": 0,
-        "assetSymbol": "TUR"
-      },
-      {
-        "chainId": "0xd611f22d291c5b7b69f1e105cca03352984c344c4421977efaa4cbdd1834e2aa",
-        "name": "Mangata X",
-        "assetId": 3,
-        "assetSymbol": "TUR",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x07000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "0",
-          "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
-        "name": "Moonriver",
-        "assetId": 22,
-        "assetSymbol": "xcTUR",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "133300872918374599700079037156071917454"
-        }
+        "assetSymbol": "TNKR",
+        "type": "native"
       }
     ]
   },
@@ -2541,7 +2748,8 @@
         "assetSymbol": "CRAB",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "11"
+          "assetId": "11",
+          "isSufficient": true
         }
       }
     ]
@@ -2560,7 +2768,8 @@
         "assetSymbol": "BIT",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "14"
+          "assetId": "14",
+          "isSufficient": true
         }
       }
     ]
@@ -2580,7 +2789,8 @@
         "assetSymbol": "PICA",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "15"
+          "assetId": "15",
+          "isSufficient": true
         }
       }
     ]
@@ -2597,7 +2807,8 @@
         "chainId": "0x411f057b9107718c9624d6aa4a3f23c1653898297f3d4d529d9bb6511a39dd21",
         "name": "KILT",
         "assetId": 0,
-        "assetSymbol": "KILT"
+        "assetSymbol": "KILT",
+        "type": "native"
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
@@ -2626,7 +2837,19 @@
         "chainId": "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
         "name": "Acala",
         "assetId": 0,
-        "assetSymbol": "ACA"
+        "assetSymbol": "ACA",
+        "type": "native"
+      },
+      {
+        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
+        "name": "Moonbeam",
+        "assetId": 3,
+        "assetSymbol": "xcACA",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "224821240862170613278369189818311486111",
+          "isSufficient": true
+        }
       },
       {
         "chainId": "0x9eb76c5184c4ab8679d2d5d819fdf90b9c001403e9e17da2e14b6d8aec4029c6",
@@ -2635,7 +2858,8 @@
         "assetSymbol": "ACA",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "18446744073709551616"
+          "assetId": "18446744073709551616",
+          "isSufficient": true
         }
       },
       {
@@ -2645,17 +2869,8 @@
         "assetSymbol": "ACA",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "108"
-        }
-      },
-      {
-        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-        "name": "Moonbeam",
-        "assetId": 3,
-        "assetSymbol": "xcACA",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "224821240862170613278369189818311486111"
+          "assetId": "108",
+          "isSufficient": true
         }
       }
     ]
@@ -2688,7 +2903,8 @@
         "assetSymbol": "LDOT",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "18446744073709551618"
+          "assetId": "18446744073709551618",
+          "isSufficient": true
         }
       },
       {
@@ -2698,7 +2914,8 @@
         "assetSymbol": "LDOT",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "110"
+          "assetId": "110",
+          "isSufficient": true
         }
       },
       {
@@ -2738,13 +2955,25 @@
         }
       },
       {
+        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
+        "name": "Moonbeam",
+        "assetId": 2,
+        "assetSymbol": "xcaSEEDp",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "110021739665376159354538090254163045594",
+          "isSufficient": true
+        }
+      },
+      {
         "chainId": "0x9eb76c5184c4ab8679d2d5d819fdf90b9c001403e9e17da2e14b6d8aec4029c6",
         "name": "Astar",
         "assetId": 8,
         "assetSymbol": "aSEEDp",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "18446744073709551617"
+          "assetId": "18446744073709551617",
+          "isSufficient": true
         }
       },
       {
@@ -2754,17 +2983,8 @@
         "assetSymbol": "aSEEDp",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "104"
-        }
-      },
-      {
-        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-        "name": "Moonbeam",
-        "assetId": 2,
-        "assetSymbol": "xcaSEEDp",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "110021739665376159354538090254163045594"
+          "assetId": "104",
+          "isSufficient": true
         }
       }
     ]
@@ -2791,13 +3011,21 @@
         }
       },
       {
+        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
+        "name": "Moonbeam",
+        "assetId": 0,
+        "assetSymbol": "GLMR",
+        "type": "native"
+      },
+      {
         "chainId": "0x9eb76c5184c4ab8679d2d5d819fdf90b9c001403e9e17da2e14b6d8aec4029c6",
         "name": "Astar",
         "assetId": 2,
         "assetSymbol": "GLMR",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "18446744073709551619"
+          "assetId": "18446744073709551619",
+          "isSufficient": true
         }
       },
       {
@@ -2807,7 +3035,8 @@
         "assetSymbol": "GLMR",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "114"
+          "assetId": "114",
+          "isSufficient": true
         }
       },
       {
@@ -2848,12 +3077,6 @@
           "existentialDeposit": "1000",
           "transfersEnabled": true
         }
-      },
-      {
-        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-        "name": "Moonbeam",
-        "assetId": 0,
-        "assetSymbol": "GLMR"
       }
     ]
   },
@@ -2878,20 +3101,22 @@
         }
       },
       {
-        "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
-        "name": "Parallel",
-        "assetId": 0,
-        "assetSymbol": "PARA"
-      },
-      {
         "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
         "name": "Moonbeam",
         "assetId": 4,
         "assetSymbol": "xcPARA",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "32615670524745285411807346420584982855"
+          "assetId": "32615670524745285411807346420584982855",
+          "isSufficient": true
         }
+      },
+      {
+        "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
+        "name": "Parallel",
+        "assetId": 0,
+        "assetSymbol": "PARA",
+        "type": "native"
       }
     ]
   },
@@ -2961,13 +3186,25 @@
         }
       },
       {
+        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
+        "name": "Moonbeam",
+        "assetId": 5,
+        "assetSymbol": "xcINTR",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "101170542313601871197860408087030232491",
+          "isSufficient": true
+        }
+      },
+      {
         "chainId": "0x9eb76c5184c4ab8679d2d5d819fdf90b9c001403e9e17da2e14b6d8aec4029c6",
         "name": "Astar",
         "assetId": 4,
         "assetSymbol": "INTR",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "18446744073709551621"
+          "assetId": "18446744073709551621",
+          "isSufficient": true
         }
       },
       {
@@ -2977,7 +3214,8 @@
         "assetSymbol": "INTR",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "120"
+          "assetId": "120",
+          "isSufficient": true
         }
       },
       {
@@ -3005,16 +3243,6 @@
           "existentialDeposit": "0",
           "transfersEnabled": true
         }
-      },
-      {
-        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-        "name": "Moonbeam",
-        "assetId": 5,
-        "assetSymbol": "xcINTR",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "101170542313601871197860408087030232491"
-        }
       }
     ]
   },
@@ -3040,10 +3268,22 @@
         }
       },
       {
+        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
+        "name": "Moonbeam",
+        "assetId": 8,
+        "assetSymbol": "xcASTR",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "224077081838586484055667086558292981199",
+          "isSufficient": true
+        }
+      },
+      {
         "chainId": "0x9eb76c5184c4ab8679d2d5d819fdf90b9c001403e9e17da2e14b6d8aec4029c6",
         "name": "Astar",
         "assetId": 0,
-        "assetSymbol": "ASTR"
+        "assetSymbol": "ASTR",
+        "type": "native"
       },
       {
         "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
@@ -3052,7 +3292,8 @@
         "assetSymbol": "ASTR",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "112"
+          "assetId": "112",
+          "isSufficient": true
         }
       },
       {
@@ -3079,16 +3320,6 @@
           "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "10000000000000000",
           "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-        "name": "Moonbeam",
-        "assetId": 8,
-        "assetSymbol": "xcASTR",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "224077081838586484055667086558292981199"
         }
       }
     ]
@@ -3121,7 +3352,8 @@
         "assetSymbol": "xcEQ",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "190590555344745888270686124937537713878"
+          "assetId": "190590555344745888270686124937537713878",
+          "isSufficient": true
         }
       }
     ]
@@ -3148,13 +3380,25 @@
         }
       },
       {
+        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
+        "name": "Moonbeam",
+        "assetId": 6,
+        "assetSymbol": "xciBTC",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "120637696315203257380661607956669368914",
+          "isSufficient": true
+        }
+      },
+      {
         "chainId": "0x9eb76c5184c4ab8679d2d5d819fdf90b9c001403e9e17da2e14b6d8aec4029c6",
         "name": "Astar",
         "assetId": 3,
         "assetSymbol": "iBTC",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "18446744073709551620"
+          "assetId": "18446744073709551620",
+          "isSufficient": true
         }
       },
       {
@@ -3164,7 +3408,8 @@
         "assetSymbol": "iBTC",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "122"
+          "assetId": "122",
+          "isSufficient": true
         }
       },
       {
@@ -3204,16 +3449,6 @@
           "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": false
-        }
-      },
-      {
-        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-        "name": "Moonbeam",
-        "assetId": 6,
-        "assetSymbol": "xciBTC",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "120637696315203257380661607956669368914"
         }
       }
     ]
@@ -3326,34 +3561,158 @@
     ]
   },
   {
-    "name": "UNIQUE",
+    "name": "Centrifuge",
     "precision": 18,
-    "priceId": "unique-network",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Unique_(UNQ).svg",
-    "symbol": "UNQ",
+    "priceId": "centrifuge",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Centrifuge_(CFG).svg",
+    "symbol": "xcCFG",
     "isTestToken": false,
     "chains": [
       {
-        "chainId": "0x9eb76c5184c4ab8679d2d5d819fdf90b9c001403e9e17da2e14b6d8aec4029c6",
-        "name": "Astar",
+        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
+        "name": "Moonbeam",
         "assetId": 11,
-        "assetSymbol": "UNQ",
+        "assetSymbol": "xcCFG",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "18446744073709551631"
+          "assetId": "91372035960551235635465443179559840483",
+          "isSufficient": true
+        }
+      },
+      {
+        "chainId": "0xb3db41421702df9a7fcac62b53ffeac85f7853cc4e689e0b93aeb3db18c09d82",
+        "name": "Centrifuge Parachain",
+        "assetId": 0,
+        "assetSymbol": "CFG",
+        "type": "native"
+      },
+      {
+        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
+        "name": "Hydration",
+        "assetId": 10,
+        "assetSymbol": "CFG",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x0d000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "32467532467532500",
+          "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
+    "name": "HydraDX",
+    "precision": 12,
+    "priceId": "hydradx",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/HydraDX_(HDX).svg",
+    "symbol": "xcHDX",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
+        "name": "Moonbeam",
+        "assetId": 15,
+        "assetSymbol": "xcHDX",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "69606720909260275826784788104880799692",
+          "isSufficient": true
         }
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
         "name": "Hydration",
-        "assetId": 25,
-        "assetSymbol": "UNQ",
+        "assetId": 0,
+        "assetSymbol": "HDX",
+        "type": "native"
+      },
+      {
+        "chainId": "0x5d3c298622d5634ed019bf61ea4b71655030015bde9beb0d6a24743714462c86",
+        "name": "Pendulum",
+        "assetId": 13,
+        "assetSymbol": "HDX",
         "type": "orml",
         "typeExtras": {
-          "currencyIdScale": "0x19000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "1224384348939740000",
+          "currencyIdScale": "0x0108",
+          "currencyIdType": "SpacewalkPrimitivesCurrencyId",
+          "existentialDeposit": "1000",
           "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
+    "name": "Nodle",
+    "precision": 11,
+    "priceId": "nodle-network",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Nodle_(NODL).svg",
+    "symbol": "xcNODL",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
+        "name": "Moonbeam",
+        "assetId": 16,
+        "assetSymbol": "xcNODL",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "309163521958167876851250718453738106865",
+          "isSufficient": true
+        }
+      },
+      {
+        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
+        "name": "Hydration",
+        "assetId": 26,
+        "assetSymbol": "NODL",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x1a000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "109890109890",
+          "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
+    "name": "Darwinia",
+    "precision": 18,
+    "priceId": "darwinia-network-native-token",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Darwinia_(RING).svg",
+    "symbol": "xcRING",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
+        "name": "Moonbeam",
+        "assetId": 17,
+        "assetSymbol": "xcRING",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "125699734534028342599692732320197985871",
+          "isSufficient": true
+        }
+      }
+    ]
+  },
+  {
+    "name": "OriginTrail",
+    "precision": 12,
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/OriginTrail_(OTP).svg",
+    "symbol": "xcOTP",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
+        "name": "Moonbeam",
+        "assetId": 18,
+        "assetSymbol": "xcOTP",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "238111524681612888331172110363070489924",
+          "isSufficient": true
         }
       }
     ]
@@ -3363,9 +3722,20 @@
     "precision": 10,
     "priceId": "voucher-dot",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vDOT.svg",
-    "symbol": "vDOT",
+    "symbol": "xcvDOT",
     "isTestToken": false,
     "chains": [
+      {
+        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
+        "name": "Moonbeam",
+        "assetId": 19,
+        "assetSymbol": "xcvDOT",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "29085784439601774464560083082574142143",
+          "isSufficient": true
+        }
+      },
       {
         "chainId": "0x9eb76c5184c4ab8679d2d5d819fdf90b9c001403e9e17da2e14b6d8aec4029c6",
         "name": "Astar",
@@ -3373,7 +3743,8 @@
         "assetSymbol": "vDOT",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "18446744073709551624"
+          "assetId": "18446744073709551624",
+          "isSufficient": true
         }
       },
       {
@@ -3401,34 +3772,106 @@
           "existentialDeposit": "1000000",
           "transfersEnabled": true
         }
-      },
+      }
+    ]
+  },
+  {
+    "name": "vFIL",
+    "precision": 18,
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vFIL.svg",
+    "symbol": "xcvFIL",
+    "isTestToken": false,
+    "chains": [
       {
         "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
         "name": "Moonbeam",
-        "assetId": 19,
-        "assetSymbol": "xcvDOT",
+        "assetId": 20,
+        "assetSymbol": "xcvFIL",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "29085784439601774464560083082574142143"
+          "assetId": "272547899416482196831721420898811311297",
+          "isSufficient": true
+        }
+      },
+      {
+        "chainId": "0x262e1b2ad728475fd6fe88e62d34c200abe6fd693931ddad144059b1eb884e5b",
+        "name": "Bifrost Polkadot",
+        "assetId": 7,
+        "assetSymbol": "vFIL",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x0904",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "1000000000000",
+          "transfersEnabled": true
         }
       }
     ]
   },
   {
-    "name": "Clover Finance",
+    "name": "vGLMR",
     "precision": 18,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/CLV_(CLV).svg",
-    "symbol": "CLV",
+    "priceId": "voucher-glmr",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vGLMR.svg",
+    "symbol": "xcvGLMR",
     "isTestToken": false,
     "chains": [
       {
-        "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
-        "name": "Parallel",
-        "assetId": 15,
-        "assetSymbol": "CLV",
+        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
+        "name": "Moonbeam",
+        "assetId": 21,
+        "assetSymbol": "xcvGLMR",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "130"
+          "assetId": "204507659831918931608354793288110796652",
+          "isSufficient": true
+        }
+      },
+      {
+        "chainId": "0x262e1b2ad728475fd6fe88e62d34c200abe6fd693931ddad144059b1eb884e5b",
+        "name": "Bifrost Polkadot",
+        "assetId": 6,
+        "assetSymbol": "vGLMR",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x0901",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "1000000000000",
+          "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
+    "name": "Manta token",
+    "precision": 18,
+    "priceId": "manta-network",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Manta_(MANTA).svg",
+    "symbol": "xcMANTA",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
+        "name": "Moonbeam",
+        "assetId": 22,
+        "assetSymbol": "xcMANTA",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "166446646689194205559791995948102903873",
+          "isSufficient": true
+        }
+      },
+      {
+        "chainId": "0x262e1b2ad728475fd6fe88e62d34c200abe6fd693931ddad144059b1eb884e5b",
+        "name": "Bifrost Polkadot",
+        "assetId": 10,
+        "assetSymbol": "MANTA",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x0808",
+          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "10000000000000",
+          "transfersEnabled": true
         }
       }
     ]
@@ -3438,9 +3881,20 @@
     "precision": 6,
     "priceId": "usd-coin",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDC.svg",
-    "symbol": "USDC",
+    "symbol": "xcUSDC",
     "isTestToken": false,
     "chains": [
+      {
+        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
+        "name": "Moonbeam",
+        "assetId": 23,
+        "assetSymbol": "xcUSDC",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "166377000701797186346254371275954761085",
+          "isSufficient": true
+        }
+      },
       {
         "chainId": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
         "name": "Polkadot Asset Hub",
@@ -3448,7 +3902,8 @@
         "assetSymbol": "USDC",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "1337"
+          "assetId": "1337",
+          "isSufficient": true
         }
       },
       {
@@ -3489,15 +3944,59 @@
           "existentialDeposit": "1000",
           "transfersEnabled": true
         }
-      },
+      }
+    ]
+  },
+  {
+    "name": "UNIQUE",
+    "precision": 18,
+    "priceId": "unique-network",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Unique_(UNQ).svg",
+    "symbol": "UNQ",
+    "isTestToken": false,
+    "chains": [
       {
-        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-        "name": "Moonbeam",
-        "assetId": 23,
-        "assetSymbol": "xcUSDC",
+        "chainId": "0x9eb76c5184c4ab8679d2d5d819fdf90b9c001403e9e17da2e14b6d8aec4029c6",
+        "name": "Astar",
+        "assetId": 11,
+        "assetSymbol": "UNQ",
         "type": "statemine",
         "typeExtras": {
-          "assetId": "166377000701797186346254371275954761085"
+          "assetId": "18446744073709551631",
+          "isSufficient": true
+        }
+      },
+      {
+        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
+        "name": "Hydration",
+        "assetId": 25,
+        "assetSymbol": "UNQ",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x19000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "1224384348939740000",
+          "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
+    "name": "Clover Finance",
+    "precision": 18,
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/CLV_(CLV).svg",
+    "symbol": "CLV",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
+        "name": "Parallel",
+        "assetId": 15,
+        "assetSymbol": "CLV",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "130",
+          "isSufficient": true
         }
       }
     ]
@@ -3803,7 +4302,8 @@
         "chainId": "0x1bf2a2ecb4a868de66ea8610f2ce7c8c43706561b6476031315f6640fe38e060",
         "name": "Zeitgeist",
         "assetId": 0,
-        "assetSymbol": "ZTG"
+        "assetSymbol": "ZTG",
+        "type": "native"
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
@@ -3832,7 +4332,8 @@
         "chainId": "0x4a12be580bb959937a1c7a61d5cf24428ed67fa571974b4007645d1886e7c89f",
         "name": "Subsocial",
         "assetId": 0,
-        "assetSymbol": "SUB"
+        "assetSymbol": "SUB",
+        "type": "native"
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
@@ -3845,84 +4346,6 @@
           "currencyIdType": "u32",
           "existentialDeposit": "20000000",
           "transfersEnabled": true
-        }
-      }
-    ]
-  },
-  {
-    "name": "Centrifuge",
-    "precision": 18,
-    "priceId": "centrifuge",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Centrifuge_(CFG).svg",
-    "symbol": "CFG",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0xb3db41421702df9a7fcac62b53ffeac85f7853cc4e689e0b93aeb3db18c09d82",
-        "name": "Centrifuge Parachain",
-        "assetId": 0,
-        "assetSymbol": "CFG"
-      },
-      {
-        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "Hydration",
-        "assetId": 10,
-        "assetSymbol": "CFG",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0d000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "32467532467532500",
-          "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-        "name": "Moonbeam",
-        "assetId": 11,
-        "assetSymbol": "xcCFG",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "91372035960551235635465443179559840483"
-        }
-      }
-    ]
-  },
-  {
-    "name": "HydraDX",
-    "precision": 12,
-    "priceId": "hydradx",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/HydraDX_(HDX).svg",
-    "symbol": "HDX",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "Hydration",
-        "assetId": 0,
-        "assetSymbol": "HDX"
-      },
-      {
-        "chainId": "0x5d3c298622d5634ed019bf61ea4b71655030015bde9beb0d6a24743714462c86",
-        "name": "Pendulum",
-        "assetId": 13,
-        "assetSymbol": "HDX",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0108",
-          "currencyIdType": "SpacewalkPrimitivesCurrencyId",
-          "existentialDeposit": "1000",
-          "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-        "name": "Moonbeam",
-        "assetId": 15,
-        "assetSymbol": "xcHDX",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "69606720909260275826784788104880799692"
         }
       }
     ]
@@ -4017,39 +4440,6 @@
           "currencyIdType": "u32",
           "existentialDeposit": "34",
           "transfersEnabled": true
-        }
-      }
-    ]
-  },
-  {
-    "name": "Nodle",
-    "precision": 11,
-    "priceId": "nodle-network",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Nodle_(NODL).svg",
-    "symbol": "NODL",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "Hydration",
-        "assetId": 26,
-        "assetSymbol": "NODL",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x1a000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "109890109890",
-          "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-        "name": "Moonbeam",
-        "assetId": 16,
-        "assetSymbol": "xcNODL",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "309163521958167876851250718453738106865"
         }
       }
     ]
@@ -4169,72 +4559,8 @@
         "chainId": "0x70255b4d28de0fc4e1a193d7e175ad1ccef431598211c55538f1018651a0344e",
         "name": "Aleph Zero",
         "assetId": 0,
-        "assetSymbol": "AZERO"
-      }
-    ]
-  },
-  {
-    "name": "vGLMR",
-    "precision": 18,
-    "priceId": "voucher-glmr",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vGLMR.svg",
-    "symbol": "vGLMR",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0x262e1b2ad728475fd6fe88e62d34c200abe6fd693931ddad144059b1eb884e5b",
-        "name": "Bifrost Polkadot",
-        "assetId": 6,
-        "assetSymbol": "vGLMR",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0901",
-          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
-          "existentialDeposit": "1000000000000",
-          "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-        "name": "Moonbeam",
-        "assetId": 21,
-        "assetSymbol": "xcvGLMR",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "204507659831918931608354793288110796652"
-        }
-      }
-    ]
-  },
-  {
-    "name": "vFIL",
-    "precision": 18,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vFIL.svg",
-    "symbol": "vFIL",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0x262e1b2ad728475fd6fe88e62d34c200abe6fd693931ddad144059b1eb884e5b",
-        "name": "Bifrost Polkadot",
-        "assetId": 7,
-        "assetSymbol": "vFIL",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0904",
-          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
-          "existentialDeposit": "1000000000000",
-          "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-        "name": "Moonbeam",
-        "assetId": 20,
-        "assetSymbol": "xcvFIL",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "272547899416482196831721420898811311297"
-        }
+        "assetSymbol": "AZERO",
+        "type": "native"
       }
     ]
   },
@@ -4261,39 +4587,6 @@
     ]
   },
   {
-    "name": "Manta token",
-    "precision": 18,
-    "priceId": "manta-network",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Manta_(MANTA).svg",
-    "symbol": "MANTA",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0x262e1b2ad728475fd6fe88e62d34c200abe6fd693931ddad144059b1eb884e5b",
-        "name": "Bifrost Polkadot",
-        "assetId": 10,
-        "assetSymbol": "MANTA",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0808",
-          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
-          "existentialDeposit": "10000000000000",
-          "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-        "name": "Moonbeam",
-        "assetId": 22,
-        "assetSymbol": "xcMANTA",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "166446646689194205559791995948102903873"
-        }
-      }
-    ]
-  },
-  {
     "name": "vMANTA",
     "precision": 18,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vMANTA.svg",
@@ -4311,65 +4604,6 @@
           "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "10000000000000",
           "transfersEnabled": true
-        }
-      }
-    ]
-  },
-  {
-    "name": "Litentry",
-    "precision": 18,
-    "priceId": "litentry",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Litentry_(LIT).svg",
-    "symbol": "LIT",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0x2fc8bb6ed7c0051bdcf4866c322ed32b6276572713607e3297ccf411b8f14aa9",
-        "name": "Litentry",
-        "assetId": 0,
-        "assetSymbol": "LIT"
-      },
-      {
-        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
-        "name": "Moonriver",
-        "assetId": 15,
-        "assetSymbol": "xcLIT",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "65216491554813189869575508812319036608"
-        }
-      }
-    ]
-  },
-  {
-    "name": "Mangata X",
-    "precision": 18,
-    "priceId": "mangata-x",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Mangata_X_(MGX).svg",
-    "symbol": "MGX",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0xd611f22d291c5b7b69f1e105cca03352984c344c4421977efaa4cbdd1834e2aa",
-        "name": "Mangata X",
-        "assetId": 0,
-        "assetSymbol": "MGX",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x00000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "0",
-          "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
-        "name": "Moonriver",
-        "assetId": 21,
-        "assetSymbol": "xcMGX",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "118095707745084482624853002839493125353"
         }
       }
     ]
@@ -4398,31 +4632,6 @@
     ]
   },
   {
-    "name": "Test token",
-    "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
-    "symbol": "UNIT",
-    "isTestToken": true,
-    "chains": [
-      {
-        "chainId": "0xe1ea3ab1d46ba8f4898b6b4b9c54ffc05282d299f89e84bd0fd08067758c9443",
-        "name": "Moonbase Relay Testnet",
-        "assetId": 0,
-        "assetSymbol": "UNIT"
-      },
-      {
-        "chainId": "0x91bc6e169807aaa54802737e1c504b2577d4fafedd5a02c10293b1cd60e39527",
-        "name": "Moonbase Alpha",
-        "assetId": 1,
-        "assetSymbol": "xcUNIT",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "42259045809535163221576417993425387648"
-        }
-      }
-    ]
-  },
-  {
     "name": "Imbue",
     "precision": 12,
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Imbue_(IMBU).svg",
@@ -4433,7 +4642,8 @@
         "chainId": "0xca93a37c913a25fa8fdb33c7f738afc39379cb71d37874a16d4c091a5aef9f89",
         "name": "Imbue",
         "assetId": 0,
-        "assetSymbol": "IMBU"
+        "assetSymbol": "IMBU",
+        "type": "native"
       }
     ]
   },
@@ -4448,13 +4658,8 @@
         "chainId": "0x6408de7737c59c238890533af25896a2c20608d8b380bb01029acb392781063e",
         "name": "Rococo Testnet",
         "assetId": 0,
-        "assetSymbol": "ROC"
-      },
-      {
-        "chainId": "0x7c34d42fc815d392057c78b49f2755c753440ccd38bcb0405b3bcfb601d08734",
-        "name": "Rococo Asset Hub",
-        "assetId": 0,
-        "assetSymbol": "ROC"
+        "assetSymbol": "ROC",
+        "type": "native"
       }
     ]
   },
@@ -4469,7 +4674,8 @@
         "chainId": "0xcceae7f3b9947cdb67369c026ef78efa5f34a08fe5808d373c04421ecf4f1aaf",
         "name": "Amplitude",
         "assetId": 0,
-        "assetSymbol": "AMPE"
+        "assetSymbol": "AMPE",
+        "type": "native"
       }
     ]
   },
@@ -4485,93 +4691,8 @@
         "chainId": "0x5d3c298622d5634ed019bf61ea4b71655030015bde9beb0d6a24743714462c86",
         "name": "Pendulum",
         "assetId": 0,
-        "assetSymbol": "PEN"
-      }
-    ]
-  },
-  {
-    "name": "Vara",
-    "precision": 12,
-    "priceId": "vara-network",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Vara.svg",
-    "symbol": "VARA",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0xfe1b4c55fd4d668101126434206571a7838a8b6b93a6d1b95d607e78e6c53763",
-        "name": "Vara",
-        "assetId": 0,
-        "assetSymbol": "VARA"
-      }
-    ]
-  },
-  {
-    "name": "Test token",
-    "precision": 18,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
-    "symbol": "DEV",
-    "isTestToken": true,
-    "chains": [
-      {
-        "chainId": "0x91bc6e169807aaa54802737e1c504b2577d4fafedd5a02c10293b1cd60e39527",
-        "name": "Moonbase Alpha",
-        "assetId": 0,
-        "assetSymbol": "DEV"
-      }
-    ]
-  },
-  {
-    "name": "Darwinia",
-    "precision": 18,
-    "priceId": "darwinia-network-native-token",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Darwinia_(RING).svg",
-    "symbol": "xcRING",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-        "name": "Moonbeam",
-        "assetId": 17,
-        "assetSymbol": "xcRING",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "125699734534028342599692732320197985871"
-        }
-      }
-    ]
-  },
-  {
-    "name": "OriginTrail",
-    "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/OriginTrail_(OTP).svg",
-    "symbol": "xcOTP",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-        "name": "Moonbeam",
-        "assetId": 18,
-        "assetSymbol": "xcOTP",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "238111524681612888331172110363070489924"
-        }
-      }
-    ]
-  },
-  {
-    "name": "Polimec token",
-    "precision": 10,
-    "priceId": "polimec",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/PLMC.svg",
-    "symbol": "PLMC",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0x7eb9354488318e7549c722669dcbdcdc526f1fef1420e7944667212f3601fdbd",
-        "name": "Polimec",
-        "assetId": 0,
-        "assetSymbol": "PLMC"
+        "assetSymbol": "PEN",
+        "type": "native"
       }
     ]
   },
@@ -4587,7 +4708,42 @@
         "chainId": "0x2f0555cc76fc2840a25a6ea3b9637146806f1f44b090c175ffde2a7e5ab36c03",
         "name": "Bittensor",
         "assetId": 0,
-        "assetSymbol": "TAO"
+        "assetSymbol": "TAO",
+        "type": "native"
+      }
+    ]
+  },
+  {
+    "name": "Vara",
+    "precision": 12,
+    "priceId": "vara-network",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Vara.svg",
+    "symbol": "VARA",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0xfe1b4c55fd4d668101126434206571a7838a8b6b93a6d1b95d607e78e6c53763",
+        "name": "Vara",
+        "assetId": 0,
+        "assetSymbol": "VARA",
+        "type": "native"
+      }
+    ]
+  },
+  {
+    "name": "Polimec token",
+    "precision": 10,
+    "priceId": "polimec",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/PLMC.svg",
+    "symbol": "PLMC",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0x7eb9354488318e7549c722669dcbdcdc526f1fef1420e7944667212f3601fdbd",
+        "name": "Polimec",
+        "assetId": 0,
+        "assetSymbol": "PLMC",
+        "type": "native"
       }
     ]
   },
@@ -4603,7 +4759,8 @@
         "chainId": "0xb91746b45e0346cc2f815a520b9c6cb4d5c0902af848db0a80f85932d2e8276a",
         "name": "Avail",
         "assetId": 0,
-        "assetSymbol": "AVAIL"
+        "assetSymbol": "AVAIL",
+        "type": "native"
       }
     ]
   }

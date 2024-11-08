@@ -13,7 +13,7 @@ import {
 } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
-import { Input } from '@/shared/ui';
+import { Input } from '../Inputs';
 import { ScrollArea } from '../ScrollArea/ScrollArea';
 import { Surface } from '../Surface/Surface';
 import { useTheme } from '../Theme/useTheme';
@@ -75,7 +75,7 @@ const Trigger = ({ placeholder }: TriggerProps) => {
         autoComplete="both"
         ref={comboboxRef}
         placeholder={placeholder}
-        render={(props) => <Input {...props} />}
+        render={({ onChange, ...props }) => <Input {...props} onChangeEvent={onChange} />}
         onFocus={() => onOpenChange?.(true)}
         onBlur={() => onOpenChange?.(false)}
       />

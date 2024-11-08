@@ -1,11 +1,14 @@
-import { combine, createEvent, createStore, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 
+import { type Wallet } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import { walletModel, walletUtils } from '@/entities/wallet';
+import { balanceSubModel } from '@/features/balances';
 import { type SignatoryInfo } from '../lib/types';
 
 const signatoriesChanged = createEvent<SignatoryInfo>();
 const signatoryDeleted = createEvent<number>();
+const getSignatoriesBalance = createEvent<Wallet[]>();
 
 const $signatories = createStore<Map<number, Omit<SignatoryInfo, 'index'>>>(new Map([[0, { name: '', address: '' }]]));
 const $hasDuplicateSignatories = combine($signatories, (signatories) => {
@@ -22,6 +25,17 @@ const $ownedSignatoriesWallets = combine(
       accountFn: (a) => Array.from(signatories.values()).some((s) => toAccountId(s.address) === a.accountId),
     }) || [],
 );
+
+const populateBalanceFx = createEffect((wallets: Wallet[]) => {
+  for (const wallet of wallets) {
+    balanceSubModel.events.walletToSubSet(wallet);
+  }
+});
+
+sample({
+  clock: getSignatoriesBalance,
+  target: populateBalanceFx,
+});
 
 sample({
   clock: signatoriesChanged,
@@ -57,5 +71,6 @@ export const signatoryModel = {
   events: {
     signatoriesChanged,
     signatoryDeleted,
+    getSignatoriesBalance,
   },
 };

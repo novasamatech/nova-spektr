@@ -1,8 +1,8 @@
 import { Combobox as HeadlessCombobox, Transition } from '@headlessui/react';
-import { type ChangeEvent, Fragment } from 'react';
+import { type ChangeEvent, type ComponentProps, Fragment } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
-import { Input, type Props as InputProps } from '../../Inputs/Input/Input';
+import { Input } from '@/shared/ui-kit';
 import { FootnoteText } from '../../Typography';
 import {
   OptionStyle,
@@ -13,19 +13,18 @@ import {
 } from '../common/constants';
 import { type ComboboxOption, type Position, type Theme } from '../common/types';
 
-type Props = Omit<InputProps, 'onChange' | 'value'> & {
+type Props = Omit<ComponentProps<typeof Input>, 'onChange' | 'value'> & {
   query?: string;
   value?: ComboboxOption['value'];
   options: ComboboxOption[];
   position?: Position;
   tabIndex?: number;
   theme?: Theme;
-  onInput: (event: ChangeEvent<HTMLInputElement>) => void;
+  onInput: (value: string) => void;
   onChange: (data: ComboboxOption) => void;
 };
 
 export const Combobox = ({
-  className,
   query = '',
   value,
   options,
@@ -43,11 +42,11 @@ export const Combobox = ({
 
   return (
     <HeadlessCombobox value={selectedOption || defaultValue} disabled={disabled} onChange={onChange}>
-      <div className={cnTw('relative', className)}>
+      <div className="relative">
         <HeadlessCombobox.Input
           as={Input}
           displayValue={(option: ComboboxOption) => option.value}
-          onChange={onInput}
+          onChangeEvent={(e: ChangeEvent<HTMLInputElement>) => onInput(e.target.value)}
           {...inputProps}
         />
 

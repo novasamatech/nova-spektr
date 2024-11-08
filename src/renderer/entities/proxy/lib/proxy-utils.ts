@@ -1,6 +1,10 @@
 import sortBy from 'lodash/sortBy';
+import uniqBy from 'lodash/uniqBy';
 
 import {
+  type Account,
+  type AccountId,
+  type ChainId,
   type NoID,
   type PartialProxiedAccount,
   type ProxyAccount,
@@ -22,6 +26,7 @@ export const proxyUtils = {
   getProxyGroups,
   createProxyGroups,
   getProxyTypeName,
+  getProxyAccountsOnChain,
 };
 
 function isSameProxy(oldProxy: ProxyAccount, newProxy: ProxyAccount): boolean {
@@ -127,4 +132,31 @@ function createProxyGroups(wallets: Wallet[], groups: ProxyGroup[], deposits: Pr
 
 function getProxyTypeName(proxyType: ProxyType | string): string {
   return ProxyTypeName[proxyType as ProxyType] || splitCamelCaseString(proxyType as string);
+}
+
+function getProxyAccountsOnChain(accounts: Account[], chains: ChainId[], proxies: Record<AccountId, ProxyAccount[]>) {
+  if (accounts.length === 0) return {};
+
+  const proxiesForAccounts = uniqBy(accounts, 'accountId').reduce<ProxyAccount[]>((acc, account) => {
+    if (proxies[account.accountId]) {
+      acc.push(...proxies[account.accountId]);
+    }
+
+    return acc;
+  }, []);
+
+  const sortedProxiesAccount = sortAccountsByProxyType(proxiesForAccounts);
+  const chainsMap: Record<ChainId, ProxyAccount[]> = {};
+
+  return sortedProxiesAccount.reduce((acc, proxy) => {
+    if (chains.includes(proxy.chainId)) {
+      if (proxy.chainId in acc) {
+        acc[proxy.chainId].push(proxy);
+      } else {
+        acc[proxy.chainId] = [proxy];
+      }
+    }
+
+    return acc;
+  }, chainsMap);
 }

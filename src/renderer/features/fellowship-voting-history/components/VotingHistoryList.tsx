@@ -5,7 +5,8 @@ import { type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { performSearch, toAddress } from '@/shared/lib/utils';
-import { FootnoteText, SearchInput } from '@/shared/ui';
+import { FootnoteText } from '@/shared/ui';
+import { SearchInput } from '@/shared/ui-kit';
 import { type Vote as VoteType } from '@/domains/collectives';
 import { identityModel } from '../model/identity';
 
@@ -46,11 +47,7 @@ export const VotingHistoryList = ({ items, chain, loading }: Props) => {
 
   return (
     <div className="flex flex-col gap-6 pb-4 pt-6">
-      <SearchInput
-        placeholder={t('governance.searchPlaceholder')}
-        value={query}
-        onChange={e => setQuery(e.target.value)}
-      />
+      <SearchInput placeholder={t('governance.searchPlaceholder')} value={query} onChange={setQuery} />
 
       <div className="min-h-0">
         <div className="flex flex-col gap-2">

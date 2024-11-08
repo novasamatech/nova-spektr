@@ -10,6 +10,7 @@ import {
   bytesSchema,
   bytesString,
   dataStringSchema,
+  hexSchema,
   i64Schema,
   nullSchema,
   perbillSchema,
@@ -56,6 +57,7 @@ export const pjsSchema = {
   blockHeight: blockHeightSchema,
   structHex: structHexSchema,
   dataString: dataStringSchema,
+  hex: hexSchema,
 
   object: objectSchema,
   optional: optionalSchema,

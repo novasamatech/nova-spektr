@@ -4,7 +4,8 @@ import { type FormEvent } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { Alert, BaseModal, Button, Input, InputHint } from '@/shared/ui';
+import { Alert, BaseModal, Button, InputHint } from '@/shared/ui';
+import { Input } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
 import { customRpcUtils } from '../lib/custom-rpc-utils';
 import { addCustomRpcModel } from '../model/add-custom-rpc-model';
@@ -66,7 +67,7 @@ const NameInput = () => {
         invalid={name.hasError()}
         disabled={isLoading}
         value={name.value}
-        onChange={(e) => name.onChange(e.target.value)}
+        onChange={name.onChange}
       />
       <InputHint variant="error" active={name?.hasError()}>
         {t(name.errorText())}
@@ -92,7 +93,7 @@ const UrlInput = () => {
         value={url.value}
         invalid={url.hasError()}
         disabled={isLoading}
-        onChange={(e) => url.onChange(e.target.value)}
+        onChange={url.onChange}
       />
       <InputHint variant="error" active={url.hasError()}>
         {t(url.errorText())}

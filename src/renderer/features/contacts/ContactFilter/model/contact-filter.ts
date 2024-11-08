@@ -1,12 +1,12 @@
-import { combine, createEvent, createStore, sample } from 'effector';
+import { combine, createEvent, restore, sample } from 'effector';
 
 import { includes } from '@/shared/lib/utils';
 import { contactModel } from '@/entities/contact';
 
 const formInitiated = createEvent();
-
-const $filterQuery = createStore<string>('');
 const queryChanged = createEvent<string>();
+
+const $filterQuery = restore(queryChanged, '');
 
 sample({
   clock: formInitiated,
@@ -36,6 +36,7 @@ const $contactsFiltered = combine(
 );
 
 export const filterModel = {
+  $filterQuery,
   $contactsFiltered,
 
   events: {

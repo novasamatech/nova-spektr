@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
-import { SearchInput } from '@/shared/ui';
+import { SearchInput } from '@/shared/ui-kit';
 import { assetsSearchModel } from '../model/assets-search-model';
 
 export const AssetsSearch = () => {
@@ -13,8 +13,7 @@ export const AssetsSearch = () => {
     <SearchInput
       value={query}
       placeholder={t('balances.searchPlaceholder')}
-      className="w-[230px]"
-      onChange={(e) => assetsSearchModel.events.queryChanged(e.target.value)}
+      onChange={assetsSearchModel.events.queryChanged}
     />
   );
 };

@@ -31,7 +31,9 @@ export const ShardSelectorModal = ({ onConfirm }: Callbacks) => {
       headerClass="px-5 py-4"
       onClose={shardsModel.events.shardsConfirmed}
     >
-      <ShardSearch />
+      <div className="mb-4 ml-2 mr-5">
+        <ShardSearch />
+      </div>
       <ShardsStructure />
 
       <Button className="ml-auto mr-5 mt-7" onClick={() => shardsModel.events.shardsConfirmed()}>

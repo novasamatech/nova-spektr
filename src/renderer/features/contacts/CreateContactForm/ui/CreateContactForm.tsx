@@ -3,7 +3,8 @@ import { useUnit } from 'effector-react';
 import { type FormEvent, useEffect } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { Button, Icon, Identicon, Input, InputHint } from '@/shared/ui';
+import { Button, Icon, Identicon, InputHint } from '@/shared/ui';
+import { Input } from '@/shared/ui-kit';
 import { type Callbacks, createFormModel } from '../model/contact-form';
 
 type Props = Callbacks;
@@ -38,13 +39,11 @@ export const CreateContactForm = ({ onSubmit }: Props) => {
       <div className="flex flex-col gap-y-2">
         <Input
           name="name"
-          className="w-full"
-          wrapperClass="h-[42px]"
           label={t('addressBook.createContact.nameLabel')}
           placeholder={t('addressBook.createContact.namePlaceholder')}
           invalid={name.hasError()}
           value={name.value}
-          onChange={(e) => name.onChange(e.target.value)}
+          onChange={name.onChange}
         />
         <InputHint variant="error" active={name.hasError()}>
           {t(name.errorText())}
@@ -54,8 +53,6 @@ export const CreateContactForm = ({ onSubmit }: Props) => {
       <div className="flex flex-col gap-y-2">
         <Input
           name="address"
-          wrapperClass="h-[42px]"
-          className="ml-2 w-full"
           label={t('addressBook.createContact.accountIdLabel')}
           placeholder={t('addressBook.createContact.accountIdPlaceholder')}
           invalid={address.hasError()}
@@ -63,7 +60,7 @@ export const CreateContactForm = ({ onSubmit }: Props) => {
           prefixElement={
             canShowIdenticon ? <Identicon address={address.value} background={false} /> : <Icon name="emptyIdenticon" />
           }
-          onChange={(e) => address.onChange(e.target.value)}
+          onChange={address.onChange}
         />
         <InputHint variant="error" active={address.hasError()}>
           {t(address.errorText())}

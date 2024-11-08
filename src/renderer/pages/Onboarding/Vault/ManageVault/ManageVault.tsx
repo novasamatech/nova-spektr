@@ -29,11 +29,11 @@ import {
   HelpText,
   Icon,
   IconButton,
-  Input,
   InputHint,
   SmallTitleText,
 } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
+import { Input } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { type SeedInfo } from '@/entities/transaction';
 import { DerivedAccount, RootAccountLg, accountUtils } from '@/entities/wallet';
@@ -180,12 +180,11 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
         <form className="flex h-full flex-col" onSubmit={submitForm}>
           <div className="flex flex-col gap-y-2">
             <Input
-              wrapperClass="flex items-center"
               label={t('onboarding.walletNameLabel')}
               placeholder={t('onboarding.walletNamePlaceholder')}
               invalid={name?.hasError()}
               value={name?.value}
-              onChange={(e) => name?.onChange(e.target.value)}
+              onChange={name?.onChange}
             />
             <InputHint variant="error" active={name?.hasError()}>
               {t(name.errorText())}

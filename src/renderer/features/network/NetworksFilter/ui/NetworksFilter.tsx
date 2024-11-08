@@ -2,14 +2,10 @@ import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { SearchInput } from '@/shared/ui';
+import { SearchInput } from '@/shared/ui-kit';
 import { networksFilterModel } from '../model/networks-filter-model';
 
-type Props = {
-  className?: string;
-};
-
-export const NetworksFilter = ({ className }: Props) => {
+export const NetworksFilter = () => {
   const { t } = useI18n();
 
   const filterQuery = useUnit(networksFilterModel.$filterQuery);
@@ -20,10 +16,9 @@ export const NetworksFilter = ({ className }: Props) => {
 
   return (
     <SearchInput
-      wrapperClass={className}
-      placeholder={t('settings.networks.searchPlaceholder')}
       value={filterQuery}
-      onChange={(e) => networksFilterModel.events.queryChanged(e.target.value)}
+      placeholder={t('settings.networks.searchPlaceholder')}
+      onChange={networksFilterModel.events.queryChanged}
     />
   );
 };

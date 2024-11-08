@@ -214,9 +214,9 @@ const Destination = () => {
   const prefixElement = (
     <div className="flex h-auto items-center">
       {validateAddress(payout) ? (
-        <Identicon className="mr-1" address={payout} size={20} background={false} canCopy={false} />
+        <Identicon address={payout} size={20} background={false} canCopy={false} />
       ) : (
-        <Icon className="mr-2" size={20} name="emptyIdenticon" />
+        <Icon size={20} name="emptyIdenticon" />
       )}
     </div>
   );
@@ -243,7 +243,7 @@ const Destination = () => {
             options={destinationOptions}
             invalid={destination.hasError()}
             prefixElement={prefixElement}
-            onInput={(e) => formModel.events.destinationQueryChanged(e.target.value)}
+            onInput={formModel.events.destinationQueryChanged}
             onChange={({ value }) => {
               setPayout(value);
               destination.onChange(value);

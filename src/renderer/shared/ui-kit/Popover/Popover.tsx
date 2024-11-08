@@ -77,7 +77,7 @@ const Content = ({ children }: PropsWithChildren) => {
         data-testid={testId}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="rounded-md border border-token-container-border bg-block-background-default text-body shadow-shadow-2 duration-100 animate-in fade-in zoom-in-95">
+        <div className="z-50 rounded-md border border-token-container-border bg-block-background-default text-body shadow-shadow-2 duration-100 animate-in fade-in zoom-in-95">
           {children}
         </div>
       </RadixPopover.Content>

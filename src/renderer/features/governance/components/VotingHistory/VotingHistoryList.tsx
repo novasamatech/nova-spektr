@@ -4,8 +4,9 @@ import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { formatAsset, formatBalance, performSearch, toAccountId } from '@/shared/lib/utils';
-import { BodyText, FootnoteText, SearchInput } from '@/shared/ui';
+import { BodyText, FootnoteText } from '@/shared/ui';
 import { AccountExplorers, Address } from '@/shared/ui-entities';
+import { SearchInput } from '@/shared/ui-kit';
 import { type AggregatedVoteHistory } from '../../types/structs';
 
 import { VotingHistoryListEmptyState } from './VotingHistoryListEmptyState';
@@ -38,11 +39,7 @@ export const VotingHistoryList = memo(({ items, asset, chain, loading }: Props) 
 
   return (
     <div className="flex flex-col gap-6 pb-4 pt-6">
-      <SearchInput
-        placeholder={t('governance.searchPlaceholder')}
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-      />
+      <SearchInput placeholder={t('governance.searchPlaceholder')} value={query} onChange={setQuery} />
       <div className="min-h-0">
         <div className="flex flex-col gap-2">
           <div className="flex justify-between px-2">
