@@ -1,5 +1,7 @@
 import { type Meta, type StoryFn } from '@storybook/react';
 
+import { AssetType } from '@/shared/core';
+
 import { AssetBalance } from './AssetBalance';
 
 export default {
@@ -13,6 +15,7 @@ const assetDot = {
   symbol: 'DOT',
   precision: 10,
   priceId: 'polkadot',
+  type: AssetType.NATIVE,
   icon: 'https://raw.githubusercontent.com/novasamatech/nova-utils/master/icons/chains/white/Polkadot.svg',
   name: 'Polkadot',
 };
