@@ -11,6 +11,7 @@ import { confirmModel } from '../confirm-model';
 import { flexibleMultisigModel } from '../flexible-multisig-create';
 import { formModel } from '../form-model';
 import { signatoryModel } from '../signatory-model';
+import { flexibleMultisigFeature } from '../status';
 
 import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
 
@@ -42,6 +43,9 @@ describe('features/flexible-multisig/model/flexible-multisig', () => {
         .set(networkModel.$connectionStatuses, { '0x00': ConnectionStatus.CONNECTED })
         .set(walletModel.$wallets, [initiatorWallet, signerWallet]),
     });
+    await allSettled(flexibleMultisigFeature.start, { scope });
+
+    expect(scope.getState(flexibleMultisigModel.$step)).toEqual(Step.NAME_NETWORK);
 
     await allSettled(signatoryModel.events.signatoriesChanged, {
       scope,
@@ -73,7 +77,6 @@ describe('features/flexible-multisig/model/flexible-multisig', () => {
     };
 
     await allSettled(confirmModel.events.formInitiated, { scope, params: store });
-
     expect(scope.getState(flexibleMultisigModel.$step)).toEqual(Step.CONFIRM);
 
     await allSettled(confirmModel.output.formSubmitted, { scope });

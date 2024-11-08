@@ -9,9 +9,8 @@ export const enum Step {
   // Delegation
   LIST,
   SELECT_TRACK,
-  // Multisig
-  SELECT_MULTISIG,
   CUSTOM_DELEGATION,
+  // Multisig
   NAME_NETWORK,
   SIGNATORIES_THRESHOLD,
   SIGNER_SELECTION,
