@@ -48,6 +48,7 @@ import { walletPairingModel } from '@/features/wallets';
 import { confirmModel } from './confirm-model';
 import { formModel } from './form-model';
 import { signatoryModel } from './signatory-model';
+import { flexibleMultisigFeature } from './status';
 import { walletProviderModel } from './wallet-provider-model';
 
 type FormSubmitEvent = {
@@ -127,15 +128,11 @@ const $proxyTransactionTx = combine(
   },
 );
 
-const $api = combine(
-  {
-    apis: networkModel.$apis,
-    chain: formModel.$createMultisigForm.fields.chain.$value,
-  },
-  ({ apis, chain }) => {
-    return chain ? (apis[chain.chainId] ?? null) : null;
-  },
-);
+const $api = combine(flexibleMultisigFeature.state, (state) => {
+  if (state.status !== 'running') return null;
+
+  return state.data.api;
+});
 
 const $transaction = combine(
   {
@@ -533,7 +530,7 @@ sample({
 });
 
 sample({
-  clock: flowFinished,
+  clock: flexibleMultisigFeature.stopped,
   target: formModel.$createMultisigForm.reset,
 });
 
@@ -549,7 +546,7 @@ sample({
 });
 
 sample({
-  clock: delay(flowFinished, 2000),
+  clock: flexibleMultisigFeature.stopped,
   target: signatoryModel.$signatories.reinit,
 });
 

@@ -1,5 +1,5 @@
 import { useForm } from 'effector-forms';
-import { useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { Step, isStep } from '@/shared/lib/utils';
@@ -8,6 +8,7 @@ import { ChainTitle } from '@/entities/chain';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { flexibleMultisigModel } from '../model/flexible-multisig-create';
 import { formModel } from '../model/form-model';
+import { flexibleMultisigFeature } from '../model/status';
 
 import { ConfirmationStep } from './ConfirmationStep';
 import { NameNetworkSelection } from './NameNetworkSelection';
@@ -22,6 +23,7 @@ type Props = {
 
 export const FlexibleMultisigWallet = ({ isOpen, onClose, onGoBack }: Props) => {
   const { t } = useI18n();
+  useGate(flexibleMultisigFeature.gate);
 
   const activeStep = useUnit(flexibleMultisigModel.$step);
   const {
