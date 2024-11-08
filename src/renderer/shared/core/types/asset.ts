@@ -9,7 +9,7 @@ export type Asset = {
   precision: number;
   priceId?: string;
   icon: string;
-  type?: AssetType;
+  type: AssetType;
   typeExtras?: StatemineExtras | OrmlExtras;
 };
 
