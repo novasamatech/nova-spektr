@@ -242,12 +242,12 @@ export const Input = ({ label, invalid, disabled, prefixElement, suffixElement, 
         </div>
         <input
           className={cnTw(
-            'w-full rounded px-3 py-3',
+            'w-full rounded p-[11px]',
             'border border-filter-border bg-input-background',
             'placeholder:text-text-secondary focus:outline-none',
             'text-right font-manrope text-title text-text-primary outline-offset-1',
             {
-              'pb-9.5': suffixElement,
+              'pb-[37px]': suffixElement,
               'border-filter-border-negative': invalid,
               'focus-within:border-active-container-border': !invalid,
               'hover:shadow-card-shadow': !disabled,
