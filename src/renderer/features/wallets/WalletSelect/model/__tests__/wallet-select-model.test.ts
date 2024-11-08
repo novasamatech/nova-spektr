@@ -49,7 +49,7 @@ describe('features/wallets/WalletSelect/model/wallet-select-model', () => {
     };
 
     const scope = fork({
-      values: new Map().set(walletModel.$wallets, wallets),
+      values: new Map().set(walletModel.$allWallets, wallets),
     });
 
     expect(scope.getState(walletSelectModel.$filteredWalletGroups)).toEqual({
@@ -66,7 +66,7 @@ describe('features/wallets/WalletSelect/model/wallet-select-model', () => {
 
   test('should set $walletForDetails on walletIdSet', async () => {
     const scope = fork({
-      values: new Map().set(walletModel.$wallets, wallets),
+      values: new Map().set(walletModel.$allWallets, wallets),
     });
 
     expect(scope.getState(walletSelectModel.$walletForDetails)).toEqual(undefined);
@@ -80,7 +80,7 @@ describe('features/wallets/WalletSelect/model/wallet-select-model', () => {
     jest.spyOn(storageService.wallets, 'update').mockResolvedValue(2);
 
     const scope = fork({
-      values: new Map().set(walletModel.$wallets, wallets),
+      values: new Map().set(walletModel.$allWallets, wallets),
     });
 
     expect(scope.getState(walletModel.$activeWallet)).toEqual(wallets[0]);
@@ -124,7 +124,7 @@ describe('features/wallets/WalletSelect/model/wallet-select-model', () => {
     jest.spyOn(storageService.wallets, 'update').mockResolvedValue(newWallet.id);
 
     const scope = fork({
-      values: new Map().set(walletModel.$wallets, wallets),
+      values: new Map().set(walletModel.$allWallets, wallets),
     });
 
     expect(scope.getState(walletModel.$activeWallet)).toEqual(wallets[0]);
@@ -140,7 +140,7 @@ describe('features/wallets/WalletSelect/model/wallet-select-model', () => {
     jest.spyOn(storageService.wallets, 'update').mockResolvedValue(newWallet.id);
 
     const scope = fork({
-      values: new Map().set(walletModel.$wallets, extendedWallets),
+      values: new Map().set(walletModel.$allWallets, extendedWallets),
     });
 
     expect(scope.getState(walletModel.$activeWallet)).toEqual(extendedWallets[0]);

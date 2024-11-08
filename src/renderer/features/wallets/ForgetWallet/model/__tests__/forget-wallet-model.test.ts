@@ -130,7 +130,7 @@ describe('features/wallets/ForgetModel', () => {
 
     const scope = fork({
       values: new Map()
-        .set(walletModel.$wallets, [wallet, proxiedWallet])
+        .set(walletModel.$allWallets, [wallet, proxiedWallet])
         .set(proxyModel.$proxies, {
           '0x01': [
             {
