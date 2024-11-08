@@ -64,14 +64,14 @@ describe('widgets/CreateWallet/model/form-model', () => {
         .set(networkModel.$chains, { '0x00': testChain })
         .set(networkModel.$connectionStatuses, { '0x00': ConnectionStatus.CONNECTED })
         .set(walletModel.$allWallets, [initiatorWallet, signerWallet, multisigWallet])
-        .set(signatoryModel.$signatories, new Map([])),
+        .set(signatoryModel.$signatories, []),
     });
 
-    await allSettled(signatoryModel.events.signatoriesChanged, {
+    await allSettled(signatoryModel.events.changeSignatory, {
       scope,
       params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0].accountId) },
     });
-    await allSettled(signatoryModel.events.signatoriesChanged, {
+    await allSettled(signatoryModel.events.changeSignatory, {
       scope,
       params: { index: 1, name: 'Alice', address: toAddress(signatoryWallet.accounts[0].accountId) },
     });
@@ -106,15 +106,15 @@ describe('widgets/CreateWallet/model/form-model', () => {
         .set(networkModel.$chains, { '0x00': testChain })
         .set(networkModel.$connectionStatuses, { '0x00': ConnectionStatus.CONNECTED })
         .set(walletModel.$allWallets, [initiatorWallet, signerWallet, multisigWallet])
-        .set(signatoryModel.$signatories, new Map([])),
+        .set(signatoryModel.$signatories, []),
     });
 
     await allSettled(formModel.$createMultisigForm.fields.chain.onChange, { scope, params: testChain });
-    await allSettled(signatoryModel.events.signatoriesChanged, {
+    await allSettled(signatoryModel.events.changeSignatory, {
       scope,
       params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0].accountId) },
     });
-    await allSettled(signatoryModel.events.signatoriesChanged, {
+    await allSettled(signatoryModel.events.changeSignatory, {
       scope,
       params: { index: 1, name: 'Alice', address: toAddress(signatoryWallet.accounts[0].accountId) },
     });

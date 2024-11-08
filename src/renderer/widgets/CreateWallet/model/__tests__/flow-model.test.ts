@@ -44,11 +44,11 @@ describe('widgets/CreateWallet/model/form-model', () => {
         .set(walletModel.$allWallets, [initiatorWallet, signerWallet]),
     });
 
-    await allSettled(signatoryModel.events.signatoriesChanged, {
+    await allSettled(signatoryModel.events.changeSignatory, {
       scope,
       params: { index: 0, name: signerWallet.name, address: toAddress(signerWallet.accounts[0].accountId) },
     });
-    await allSettled(signatoryModel.events.signatoriesChanged, {
+    await allSettled(signatoryModel.events.changeSignatory, {
       scope,
       params: { index: 1, name: 'Alice', address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' },
     });
