@@ -88,8 +88,6 @@ sample({
   fn: (signatories, index) => {
     return produce(signatories, (draft) => {
       draft.splice(index, 1);
-
-      return draft;
     });
   },
   target: $signatories,
