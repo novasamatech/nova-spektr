@@ -50,7 +50,7 @@ type GetMultisigsResult = {
 const getMultisigsFx = createEffect(({ chains, wallets }: GetMultisigsParams) => {
   for (const chain of chains) {
     const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
-      walletFn: (w) => !walletUtils.isMultisig(w) && !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w),
+      walletFn: (w) => !walletUtils.isMultisig(w) && !walletUtils.isProxied(w),
     });
     const accounts = walletUtils.getAccountsBy(filteredWallets || [], (a) =>
       accountUtils.isChainIdMatch(a, chain.chainId),

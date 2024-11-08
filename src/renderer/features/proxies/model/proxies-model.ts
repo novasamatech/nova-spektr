@@ -324,7 +324,7 @@ sample({
 
 sample({
   source: walletsAdded,
-  target: walletModel.$wallets,
+  target: walletModel.$allWallets,
 });
 
 sample({

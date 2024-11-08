@@ -55,7 +55,7 @@ describe('widgets/CreateWallet/model/signatory-model', () => {
 
   test('should have correct value for $ownSignatoryWallets', async () => {
     const scope = fork({
-      values: new Map().set(walletModel.$wallets, [initiatorWallet, signerWallet]),
+      values: new Map().set(walletModel.$allWallets, [initiatorWallet, signerWallet]),
     });
 
     await allSettled(signatoryModel.events.signatoriesChanged, {
