@@ -9,7 +9,7 @@ export type Asset = {
   precision: number;
   priceId?: string;
   icon: string;
-  type?: AssetType;
+  type: AssetType;
   typeExtras?: StatemineExtras | OrmlExtras;
 };
 
@@ -19,6 +19,7 @@ export const enum StakingType {
 }
 
 export const enum AssetType {
+  NATIVE = 'native',
   ORML = 'orml',
   STATEMINE = 'statemine',
 }
