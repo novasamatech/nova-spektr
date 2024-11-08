@@ -13,6 +13,7 @@ export const CONTROLLER_ARG_NAME = 'controller';
 export const DEST_WEIGHT_ARG_NAME = 'destWeight';
 
 export const TransferType: Record<AssetType, TransactionType> = {
+  [AssetType.NATIVE]: TransactionType.TRANSFER,
   [AssetType.ORML]: TransactionType.ORML_TRANSFER,
   [AssetType.STATEMINE]: TransactionType.ASSET_TRANSFER,
 };

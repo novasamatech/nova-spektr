@@ -19,6 +19,7 @@ export const enum StakingType {
 }
 
 export const enum AssetType {
+  NATIVE = 'native',
   ORML = 'orml',
   STATEMINE = 'statemine',
 }
