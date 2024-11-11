@@ -51,7 +51,7 @@ const $endpoint = createStore<Endpoint<any> | null>(null);
 const $deposits = createStore<ProxyDeposits[]>([]);
 
 const startWorkerFx = createEffect(() => {
-  const worker = new Worker(new URL('@/features/proxies/workers/proxy-worker', import.meta.url));
+  const worker = new Worker(new URL('../workers/proxy-worker', import.meta.url));
 
   return createEndpoint(worker, {
     callable: ['initConnection', 'getProxies', 'disconnect'],

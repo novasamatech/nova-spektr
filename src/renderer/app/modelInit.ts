@@ -39,5 +39,5 @@ export const initModel = () => {
   assetsSettingsModel.events.assetsStarted();
   notificationModel.events.notificationsStarted();
   basketModel.events.basketStarted();
-  multisigsModel.events.multisigsDiscoveryStarted();
+  multisigsModel.events.subscribe();
 };

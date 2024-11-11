@@ -7,6 +7,7 @@ import {
   type Account,
   type BaseAccount,
   type ChainAccount,
+  type FlexibleMultisigAccount,
   type ID,
   type MultisigAccount,
   type NoID,
@@ -33,6 +34,7 @@ const watchOnlyCreated = createEvent<CreateParams<BaseAccount>>();
 const multishardCreated = createEvent<CreateParams<BaseAccount | ChainAccount | ShardAccount>>();
 const singleshardCreated = createEvent<CreateParams<BaseAccount>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
+const flexibleMultisigCreated = createEvent<CreateParams<FlexibleMultisigAccount>>();
 const proxiedCreated = createEvent<CreateParams<ProxiedAccount>>();
 const walletConnectCreated = createEvent<CreateParams<WcAccount>>();
 
@@ -229,7 +231,7 @@ const walletCreationFail = sample({
 }).filter({ fn: nonNullable });
 
 sample({
-  clock: [walletConnectCreated, watchOnlyCreated, multisigCreated, singleshardCreated, proxiedCreated],
+  clock: [walletConnectCreated, watchOnlyCreated, multisigCreated, flexibleMultisigCreated, singleshardCreated, proxiedCreated],
   target: walletCreatedFx,
 });
 
@@ -375,6 +377,7 @@ export const walletModel = {
     multishardCreated,
     singleshardCreated,
     multisigCreated,
+    flexibleMultisigCreated,
     walletConnectCreated,
     proxiedCreated,
     walletCreatedDone,

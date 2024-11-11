@@ -29,7 +29,26 @@ type SaveMultisigParams = {
 
 const MULTISIG_DISCOVERY_TIMEOUT = 30000;
 
-const multisigsDiscoveryStarted = createEvent();
+const subscribe = createEvent();
+const request = createEvent<Account[]>();
+
+const { tick: pollingRequest } = interval({
+  start: subscribe,
+  timeout: MULTISIG_DISCOVERY_TIMEOUT,
+});
+
+const updateRequested = sample({
+  clock: [pollingRequest, networkModel.events.connectionsPopulated, walletModel.$allWallets.updates],
+  source: walletModel.$allWallets,
+  fn: (wallets) => {
+    const filteredWallets =
+      walletUtils.getWalletsFilteredAccounts(wallets, {
+        walletFn: (w) => !walletUtils.isMultisig(w) && !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w),
+      }) ?? [];
+
+    return walletUtils.getAllAccounts(filteredWallets);
+  },
+});
 
 const $multisigChains = combine(
   { chains: networkModel.$chains, connections: networkModel.$connections },
@@ -50,17 +69,12 @@ type GetMultisigsParams = {
   accounts: Account[];
 };
 
+type CreatedMultisigAccount = NoID<Omit<MultisigAccount, 'walletId'>>;
+
 type GetMultisigResponse = {
   account: CreatedMultisigAccount;
   chain: Chain;
 };
-
-type PopulatedMultisig = {
-  wallet: NoID<Omit<MultisigWallet, 'accounts' | 'isActive'>>;
-  account: CreatedMultisigAccount;
-};
-
-type CreatedMultisigAccount = NoID<Omit<MultisigAccount, 'walletId'>>;
 
 const getMultisigsFx = createEffect(({ chains, accounts }: GetMultisigsParams): Promise<GetMultisigResponse[]> => {
   const requests = chains.map(async (chain) => {
@@ -88,7 +102,7 @@ const getMultisigsFx = createEffect(({ chains, accounts }: GetMultisigsParams): 
   return Promise.all(requests).then((accounts) => accounts.flat());
 });
 
-const populateMultisigWalletFx = createEffect(({ account, chain }: GetMultisigResponse): PopulatedMultisig => {
+const populateMultisigWalletFx = createEffect(({ account, chain }: GetMultisigResponse) => {
   const wallet: NoID<Omit<MultisigWallet, 'accounts' | 'isActive'>> = {
     name: toAddress(account.accountId, { chunk: 5, prefix: chain.addressPrefix }),
     type: WalletType.MULTISIG,
@@ -101,58 +115,10 @@ const populateMultisigWalletFx = createEffect(({ account, chain }: GetMultisigRe
   };
 });
 
-const saveMultisigFx = createEffect(({ wallet, account }: PopulatedMultisig) => {
-  walletModel.events.multisigCreated({
-    wallet,
-    accounts: [account],
-  });
-
-  const signatories = account.signatories.map((signatory) => signatory.accountId);
-  const event: NoID<MultisigCreated> = {
-    read: false,
-    type: NotificationType.MULTISIG_CREATED,
-    dateCreated: Date.now(),
-    multisigAccountId: account.accountId,
-    multisigAccountName: wallet.name,
-    chainId: account.chainId,
-    signatories,
-    threshold: account.threshold,
-  };
-
-  notificationModel.events.notificationsAdded([event]);
-});
-
-const { tick: multisigsDiscoveryTriggered } = interval({
-  start: multisigsDiscoveryStarted,
-  timeout: MULTISIG_DISCOVERY_TIMEOUT,
-});
-
-const accountsUpdated = sample({
-  clock: [multisigsDiscoveryTriggered, walletModel.$wallets, walletModel.$hiddenWallets],
-  source: {
-    chains: $multisigChains,
-    wallets: walletModel.$allWallets,
-    connections: networkModel.$connections,
-  },
-  fn: ({ chains, wallets, connections }) => {
-    const filteredChains = chains.filter(
-      (chain) => connections[chain.chainId] && !networkUtils.isDisabledConnection(connections[chain.chainId]),
-    );
-
-    return {
-      chains: filteredChains,
-      wallets: wallets,
-    };
-  },
-});
-
 sample({
-  clock: accountsUpdated,
+  clock: [updateRequested, request],
   source: $multisigChains,
-  fn: (chains, accounts) => ({
-    chains,
-    accounts,
-  }),
+  fn: (chains, accounts) => ({ chains, accounts }),
   target: getMultisigsFx,
 });
 
@@ -163,11 +129,36 @@ sample({
 
 sample({
   source: populateMultisigWalletFx.doneData,
-  target: saveMultisigFx,
+  fn: ({ wallet, account }) => ({
+    wallet,
+    accounts: [account],
+  }),
+  target: walletModel.events.multisigCreated,
+});
+
+sample({
+  clock: populateMultisigWalletFx.doneData,
+  fn: ({ wallet, account }) => {
+    const signatories = account.signatories.map((signatory) => signatory.accountId);
+    const event: NoID<MultisigCreated> = {
+      read: false,
+      type: NotificationType.MULTISIG_CREATED,
+      dateCreated: Date.now(),
+      multisigAccountId: account.accountId,
+      multisigAccountName: wallet.name,
+      chainId: account.chainId,
+      signatories,
+      threshold: account.threshold,
+    };
+
+    return event;
+  },
+  target: notificationModel.events.notificationAdded,
 });
 
 export const multisigsModel = {
   events: {
-    multisigsDiscoveryStarted,
+    subscribe,
+    request,
   },
 };

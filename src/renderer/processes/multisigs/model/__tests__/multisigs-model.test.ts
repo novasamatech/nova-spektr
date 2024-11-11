@@ -47,7 +47,7 @@ describe('features/multisigs/model/multisigs-model', () => {
         },
       },
     });
-    allSettled(multisigsModel.events.multisigsDiscoveryStarted, { scope });
+    allSettled(multisigsModel.events.subscribe, { scope });
 
     expect(multisigCreation).not.toHaveBeenCalled();
   });

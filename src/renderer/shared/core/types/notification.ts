@@ -30,6 +30,14 @@ export type MultisigCreated = MultisigBaseNotification & {
   chainId: ChainId;
 };
 
+export type FlexibleMultisigCreated = MultisigBaseNotification & {
+  signatories: AccountId[];
+  threshold: number;
+  proxyAccountId: AccountId;
+  multisigAccountName: string;
+  chainId: ChainId;
+};
+
 export type MultisigOperation = MultisigBaseNotification & {
   callHash: CallHash;
   callTimepoint: Timepoint;
