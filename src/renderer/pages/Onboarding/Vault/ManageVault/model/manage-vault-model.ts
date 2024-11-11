@@ -153,10 +153,10 @@ sample({ clock: vaultCreated, target: createVaultFx });
 // TODO: should use factory
 sample({
   clock: createVaultFx.doneData,
-  source: walletModel.$wallets,
+  source: walletModel.$allWallets,
   filter: (_, data) => Boolean(data),
   fn: (wallets, data) => wallets.concat(data!),
-  target: walletModel.$wallets,
+  target: walletModel.$allWallets,
 });
 
 sample({

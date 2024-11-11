@@ -1,6 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 
 import { type ClaimAction } from '@/shared/api/governance';
+import { type MultisigTransactionDS } from '@/shared/api/storage';
 import {
   type AccountId,
   type Address,
@@ -36,6 +37,7 @@ export const transactionBuilder = {
   buildRevote,
   buildRemoveVote,
   buildRemoveVotes,
+  buildRejectMultisigTx,
 
   buildBatchAll,
   splitBatchAll,
@@ -477,4 +479,28 @@ function buildRemoveVotes({ chain, accountId, votes }: RemoveVotesParams): Trans
   }
 
   return buildBatchAll({ chain, accountId, transactions });
+}
+
+type RejectTxParams = {
+  chain: Chain;
+  signerAddress: Address;
+  threshold: number;
+  otherSignatories: Address[];
+  tx: MultisigTransactionDS;
+};
+function buildRejectMultisigTx({ chain, signerAddress, threshold, otherSignatories, tx }: RejectTxParams): Transaction {
+  return {
+    chainId: chain.chainId,
+    address: signerAddress,
+    type: TransactionType.MULTISIG_CANCEL_AS_MULTI,
+    args: {
+      threshold: threshold,
+      otherSignatories,
+      callHash: tx.callHash,
+      maybeTimepoint: {
+        height: tx.blockCreated,
+        index: tx.indexCreated,
+      },
+    },
+  };
 }

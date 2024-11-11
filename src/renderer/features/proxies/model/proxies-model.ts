@@ -310,7 +310,7 @@ sample({
 
 sample({
   clock: createProxiedWalletsFx.doneData,
-  source: walletModel.$wallets,
+  source: walletModel.$allWallets,
   filter: (_, data) => Boolean(data && data.wallets.length && data.accounts.length),
   fn: (wallets, data) => {
     const accountsMap = dictionary(data.accounts, 'walletId');
@@ -324,7 +324,7 @@ sample({
 
 sample({
   source: walletsAdded,
-  target: walletModel.$wallets,
+  target: walletModel.$allWallets,
 });
 
 sample({

@@ -126,7 +126,7 @@ const $transaction = combine(
   ({ apis, chain, remarkTx, signatories, signer, threshold, multisigAccountId }) => {
     if (!chain || !remarkTx || !signer) return undefined;
 
-    const signatoriesWrapped = Array.from(signatories.values()).map((s) => ({
+    const signatoriesWrapped = signatories.map((s) => ({
       accountId: toAccountId(s.address),
       adress: s.address,
     }));
@@ -412,9 +412,9 @@ sample({
     step: $step,
     hiddenMultisig: formModel.$hiddenMultisig,
   },
-  filter: ({ step }, results) => {
+  filter: ({ step, hiddenMultisig }, results) => {
     const isSubmitStep = isStep(step, Step.SUBMIT);
-    const isNonNullable = nonNullable(formModel.$hiddenMultisig);
+    const isNonNullable = nonNullable(hiddenMultisig);
     const isSuccessResult = results[0]?.result === ExtrinsicResult.SUCCESS;
 
     return isSubmitStep && isNonNullable && isSuccessResult;

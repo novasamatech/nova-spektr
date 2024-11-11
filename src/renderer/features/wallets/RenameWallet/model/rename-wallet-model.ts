@@ -84,13 +84,13 @@ sample({
 
 sample({
   clock: renameWalletFx.doneData,
-  source: walletModel.$wallets,
+  source: walletModel.$allWallets,
   fn: (wallets, updatedWallet) => {
     const updatedWalletIndex = wallets.findIndex((w) => w.id === updatedWallet.id);
 
     return splice(wallets, updatedWallet, updatedWalletIndex);
   },
-  target: walletModel.$wallets,
+  target: walletModel.$allWallets,
 });
 
 sample({
