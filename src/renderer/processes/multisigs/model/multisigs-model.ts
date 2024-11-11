@@ -5,11 +5,13 @@ import { interval } from 'patronum';
 import {
   type Account,
   type Chain,
+  type ChainId,
   type MultisigAccount,
   type MultisigCreated,
   type MultisigWallet,
   type NoID,
   NotificationType,
+  type ProxyAccount,
   SigningType,
   WalletType,
 } from '@/shared/core';
@@ -20,12 +22,6 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { multisigUtils } from '../lib/mulitisigs-utils';
-
-type SaveMultisigParams = {
-  wallet: Omit<NoID<Wallet>, 'isActive' | 'accounts'>;
-  accounts: Omit<NoID<MultisigAccount>, 'walletId'>[];
-  external: boolean;
-};
 
 const MULTISIG_DISCOVERY_TIMEOUT = 30000;
 
@@ -67,40 +63,53 @@ const $multisigChains = combine(
 type GetMultisigsParams = {
   chains: Chain[];
   accounts: Account[];
+  proxies: Record<ChainId, ProxyAccount[]>;
 };
 
 type CreatedMultisigAccount = NoID<Omit<MultisigAccount, 'walletId'>>;
 
 type GetMultisigResponse = {
+  type: 'multisig' | 'flexibleMultisig';
   account: CreatedMultisigAccount;
   chain: Chain;
 };
 
-const getMultisigsFx = createEffect(({ chains, accounts }: GetMultisigsParams): Promise<GetMultisigResponse[]> => {
-  const requests = chains.map(async (chain) => {
-    const multisigIndexer = networkUtils.getProxyExternalApi(chain);
+const getMultisigsFx = createEffect(
+  ({ chains, accounts, proxies }: GetMultisigsParams): Promise<GetMultisigResponse[]> => {
+    const requests = chains.map(async (chain) => {
+      const multisigIndexer = networkUtils.getProxyExternalApi(chain);
 
-    if (nullable(multisigIndexer) || accounts.length === 0) return [];
+      if (nullable(multisigIndexer) || accounts.length === 0) return [];
 
-    const client = new GraphQLClient(multisigIndexer.url);
-    const accountIds = accounts.map((account) => account.accountId);
-    const accountsMap = toKeysRecord(accountIds);
+      const client = new GraphQLClient(multisigIndexer.url);
+      const accountIds = accounts.map((account) => account.accountId);
+      const accountsMap = toKeysRecord(accountIds);
 
-    const indexedMultisigs = await multisigService.filterMultisigsAccounts(client, accountIds);
+      const indexedMultisigs = await multisigService.filterMultisigsAccounts(client, accountIds);
 
-    return (
-      indexedMultisigs
-        // filter out multisigs that already exists
-        .filter((multisigResult) => !(multisigResult.accountId in accountsMap))
-        .map(({ threshold, accountId, signatories }) => ({
-          account: multisigUtils.buildMultisigAccount({ threshold, accountId, signatories, chain }),
-          chain,
-        }))
-    );
-  });
+      return (
+        indexedMultisigs
+          // filter out multisigs that already exists
+          .filter((multisigResult) => !(multisigResult.accountId in accountsMap))
+          .map(({ threshold, accountId, signatories }) => {
+            const proxiesList = proxies[accountId];
 
-  return Promise.all(requests).then((accounts) => accounts.flat());
-});
+            if (nullable(proxiesList) || proxiesList.length === 0) {
+              return {
+                type: 'multisig',
+                account: multisigUtils.buildMultisigAccount({ threshold, accountId, signatories, chain }),
+                chain,
+              };
+            }
+
+            const proxy = proxiesList.find((p) => p.chainId === chain.chainId);
+          })
+      );
+    });
+
+    return Promise.all(requests).then((res) => res.flat());
+  },
+);
 
 const populateMultisigWalletFx = createEffect(({ account, chain }: GetMultisigResponse) => {
   const wallet: NoID<Omit<MultisigWallet, 'accounts' | 'isActive'>> = {
@@ -117,8 +126,8 @@ const populateMultisigWalletFx = createEffect(({ account, chain }: GetMultisigRe
 
 sample({
   clock: [updateRequested, request],
-  source: $multisigChains,
-  fn: (chains, accounts) => ({ chains, accounts }),
+  source: { chains: $multisigChains, proxies: proxyModel.$proxies },
+  fn: ({ chains, proxies }, accounts) => ({ chains, accounts, proxies }),
   target: getMultisigsFx,
 });
 

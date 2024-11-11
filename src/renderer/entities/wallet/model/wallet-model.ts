@@ -37,6 +37,7 @@ const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const flexibleMultisigCreated = createEvent<CreateParams<FlexibleMultisigAccount>>();
 const proxiedCreated = createEvent<CreateParams<ProxiedAccount>>();
 const walletConnectCreated = createEvent<CreateParams<WcAccount>>();
+const proxiedCreated = createEvent<CreateParams<ProxiedAccount>>();
 
 const walletRestored = createEvent<Wallet>();
 const walletHidden = createEvent<Wallet>();
@@ -231,7 +232,14 @@ const walletCreationFail = sample({
 }).filter({ fn: nonNullable });
 
 sample({
-  clock: [walletConnectCreated, watchOnlyCreated, multisigCreated, flexibleMultisigCreated, singleshardCreated, proxiedCreated],
+  clock: [
+    walletConnectCreated,
+    watchOnlyCreated,
+    multisigCreated,
+    flexibleMultisigCreated,
+    singleshardCreated,
+    proxiedCreated,
+  ],
   target: walletCreatedFx,
 });
 
