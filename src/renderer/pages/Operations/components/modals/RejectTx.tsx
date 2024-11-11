@@ -3,19 +3,13 @@ import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
 import { type MultisigTransactionDS } from '@/shared/api/storage';
-import {
-  type Account,
-  type Address,
-  type HexString,
-  type MultisigAccount,
-  type Timepoint,
-  type Transaction,
-} from '@/shared/core';
+import { type Account, type Address, type HexString, type MultisigAccount, type Transaction } from '@/shared/core';
 import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { getAssetById, toAddress, transferableAmount } from '@/shared/lib/utils';
-import { BaseModal, Button } from '@/shared/ui';
+import { Button } from '@/shared/ui';
+import { Modal } from '@/shared/ui-kit';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
 import { type ExtendedChain, networkModel } from '@/entities/network';
@@ -24,6 +18,7 @@ import {
   OperationResult,
   getMultisigSignOperationTitle,
   isXcmTransaction,
+  transactionBuilder,
   transactionService,
   validateBalance,
 } from '@/entities/transaction';
@@ -53,7 +48,6 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const balances = useUnit(balanceModel.$balances);
   const apis = useUnit(networkModel.$apis);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
 
   const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
@@ -74,7 +68,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);
 
   const signAccount = walletUtils.getWalletFilteredAccounts(wallets, {
-    walletFn: (wallet) => !walletUtils.isWatchOnly(wallet),
+    walletFn: (wallet) => !walletUtils.isWatchOnly(wallet) && !walletUtils.isProxied(wallet),
     accountFn: (account) => account.accountId === tx.depositor,
   })?.accounts[0];
 
@@ -105,12 +99,10 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const onSignResult = (signature: HexString[], payload: Uint8Array[]) => {
     setTxPayload(payload[0]);
     setSignature(signature[0]);
-    setIsModalOpen(false);
     setActiveStep(Step.SUBMIT);
   };
 
   const handleClose = () => {
-    setIsModalOpen(false);
     setActiveStep(Step.CONFIRMATION);
   };
 
@@ -127,20 +119,13 @@ const RejectTx = ({ tx, account, connection }: Props) => {
       return acc;
     }, []);
 
-    return {
-      chainId: tx.chainId,
-      address: signerAddress,
-      type: TransactionType.MULTISIG_CANCEL_AS_MULTI,
-      args: {
-        threshold: account.threshold,
-        otherSignatories: otherSignatories.sort(),
-        callHash: tx.callHash,
-        maybeTimepoint: {
-          height: tx.blockCreated,
-          index: tx.indexCreated,
-        } as Timepoint,
-      },
-    };
+    return transactionBuilder.buildRejectMultisigTx({
+      chain: connection,
+      signerAddress,
+      threshold: account.threshold,
+      otherSignatories,
+      tx,
+    });
   };
 
   const validateBalanceForFee = async (signAccount: Account): Promise<boolean> => {
@@ -180,30 +165,41 @@ const RejectTx = ({ tx, account, connection }: Props) => {
 
   const isSubmitStep = activeStep === Step.SUBMIT && rejectTx && signAccount && signature && txPayload;
 
-  return (
-    <>
-      <div className="flex justify-between">
-        <Button pallet="error" variant="fill" onClick={() => setIsModalOpen(true)}>
-          {t('operation.rejectButton')}
-        </Button>
-      </div>
-
-      <BaseModal
-        closeButton
-        isOpen={activeStep !== Step.SUBMIT && isModalOpen}
-        title={<OperationTitle title={t(transactionTitle, { asset: asset?.symbol })} chainId={tx.chainId} />}
-        panelClass="w-[440px]"
-        headerClass="py-3 pl-5 pr-3"
-        contentClass={activeStep === Step.SIGNING ? '' : undefined}
+  if (isSubmitStep && connection.api) {
+    return (
+      <Submit
+        isReject
+        tx={rejectTx}
+        api={connection.api}
+        multisigTx={tx}
+        account={signAccount}
+        txPayload={txPayload}
+        signature={signature}
         onClose={handleClose}
-      >
+      />
+    );
+  }
+
+  return (
+    <Modal size="md" onToggle={handleClose}>
+      <Modal.Trigger>
+        <div className="flex justify-between">
+          <Button pallet="error" variant="fill">
+            {t('operation.rejectButton')}
+          </Button>
+        </div>
+      </Modal.Trigger>
+      <Modal.Title close>
+        <OperationTitle title={t(transactionTitle, { asset: asset?.symbol })} chainId={tx.chainId} />
+      </Modal.Title>
+      <Modal.Content>
         {activeStep === Step.CONFIRMATION && (
           <Confirmation
             tx={tx}
             account={account}
-            connection={connection}
+            chainConnection={connection}
             feeTx={rejectTx}
-            signatory={signAccount}
+            signAccount={signAccount}
             onSign={handleConfirm}
           />
         )}
@@ -234,21 +230,8 @@ const RejectTx = ({ tx, account, connection }: Props) => {
         >
           <Button onClick={toggleFeeModal}>{t('operation.submitErrorButton')}</Button>
         </OperationResult>
-      </BaseModal>
-
-      {isSubmitStep && connection.api && (
-        <Submit
-          isReject
-          tx={rejectTx}
-          api={connection.api}
-          multisigTx={tx}
-          account={signAccount}
-          txPayload={txPayload}
-          signature={signature}
-          onClose={handleClose}
-        />
-      )}
-    </>
+      </Modal.Content>
+    </Modal>
   );
 };
 

@@ -16,7 +16,8 @@ import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { TEST_ADDRESS, getAssetById, toAddress, transferableAmount } from '@/shared/lib/utils';
-import { BaseModal, Button } from '@/shared/ui';
+import { Button } from '@/shared/ui';
+import { Modal } from '@/shared/ui-kit';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
 import { useMultisigEvent } from '@/entities/multisig';
@@ -63,7 +64,6 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const { getLiveTxEvents } = useMultisigEvent({});
   const events = getLiveTxEvents(tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSelectAccountModalOpen, toggleSelectAccountModal] = useToggle();
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
 
@@ -134,12 +134,10 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const onSignResult = (signature: HexString[], payload: Uint8Array[]) => {
     setSignature(signature[0]);
     setTxPayload(payload[0]);
-    setIsModalOpen(false);
     setActiveStep(Step.SUBMIT);
   };
 
   const handleClose = () => {
-    setIsModalOpen(false);
     setActiveStep(Step.CONFIRMATION);
   };
 
@@ -237,29 +235,36 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   }
 
   const isSubmitStep = activeStep === Step.SUBMIT && approveTx && signAccount && signature && txPayload;
+  if (isSubmitStep && connection.api) {
+    return (
+      <Submit
+        tx={approveTx}
+        api={connection.api}
+        multisigTx={tx}
+        account={signAccount}
+        txPayload={txPayload}
+        signature={signature}
+        onClose={handleClose}
+      />
+    );
+  }
 
   return (
-    <>
-      <Button className="ml-auto" onClick={() => setIsModalOpen(true)}>
-        {t('operation.approveButton')}
-      </Button>
-
-      <BaseModal
-        closeButton
-        isOpen={activeStep !== Step.SUBMIT && isModalOpen}
-        title={<OperationTitle title={t(transactionTitle, { asset: asset?.symbol })} chainId={tx.chainId} />}
-        contentClass={activeStep === Step.SIGNING ? '' : undefined}
-        headerClass="py-3 pl-5 pr-3"
-        panelClass="w-[440px]"
-        onClose={handleClose}
-      >
+    <Modal size="md" onToggle={handleClose}>
+      <Modal.Trigger>
+        <Button className="ml-auto">{t('operation.approveButton')}</Button>
+      </Modal.Trigger>
+      <Modal.Title close>
+        <OperationTitle title={t(transactionTitle, { asset: asset?.symbol })} chainId={tx.chainId} />
+      </Modal.Title>
+      <Modal.Content>
         {activeStep === Step.CONFIRMATION && (
           <Confirmation
             tx={tx}
             account={account}
-            connection={connection}
+            chainConnection={connection}
             feeTx={feeTx}
-            signatory={unsignedAccounts.length === 1 ? unsignedAccounts[0] : undefined}
+            signAccount={unsignedAccounts.length === 1 ? unsignedAccounts[0] : undefined}
             onSign={trySetSignerAccount}
           />
         )}
@@ -300,20 +305,8 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
         >
           <Button onClick={toggleFeeModal}>{t('operation.submitErrorButton')}</Button>
         </OperationResult>
-      </BaseModal>
-
-      {isSubmitStep && connection.api && (
-        <Submit
-          tx={approveTx}
-          api={connection.api}
-          multisigTx={tx}
-          account={signAccount}
-          txPayload={txPayload}
-          signature={signature}
-          onClose={handleClose}
-        />
-      )}
-    </>
+      </Modal.Content>
+    </Modal>
   );
 };
 
