@@ -30,7 +30,7 @@ jest.mock('@/entities/transaction/lib/extrinsicService', () => ({
   }),
 }));
 
-describe('features/flexible-multisig/model/flexible-multisig', () => {
+describe('Create flexible multisig wallet flexible-multisig', () => {
   beforeAll(() => {
     jest.useFakeTimers();
   });

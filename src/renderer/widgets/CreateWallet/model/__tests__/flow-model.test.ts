@@ -29,7 +29,7 @@ jest.mock('@/entities/transaction/lib/extrinsicService', () => ({
   }),
 }));
 
-describe('widgets/CreateWallet/model/form-model', () => {
+describe('Create multisig wallet flow-model', () => {
   beforeAll(() => {
     jest.useFakeTimers();
   });

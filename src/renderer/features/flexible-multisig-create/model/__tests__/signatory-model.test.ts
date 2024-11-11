@@ -6,7 +6,7 @@ import { signatoryModel } from '../signatory-model';
 
 import { initiatorWallet, signatoryWallet, signerWallet } from './mock';
 
-describe('features/flexible-multisig/model/signatory-model', () => {
+describe('Create flexible multisig wallet signatory-model', () => {
   beforeEach(() => {
     jest.restoreAllMocks();
   });
