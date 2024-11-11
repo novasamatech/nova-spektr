@@ -190,6 +190,18 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
       };
     }
 
+    if (operationSignUtils.isFailedStep(reconnectStep)) {
+      return {
+        title: t('operation.walletConnect.failedTitle'),
+        description: t('operation.walletConnect.failedDescription'),
+        content: <Animation variant="error" />,
+        onClose: () => {
+          signWcModel.events.reconnectAborted();
+          onGoBack();
+        },
+      };
+    }
+
     if (isSigningRejected) {
       return {
         title: t('operation.walletConnect.rejected'),

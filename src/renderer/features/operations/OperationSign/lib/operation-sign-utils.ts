@@ -9,6 +9,7 @@ export const operationSignUtils = {
   isReconnectingStep,
   isConnectedStep,
   isRejectedStep,
+  isFailedStep,
   isReadyToReconnectStep,
   isTopicExist,
   transformEcdsaSignature,
@@ -28,6 +29,10 @@ function isRejectedStep(step: ReconnectStep): boolean {
 
 function isReadyToReconnectStep(step: ReconnectStep): boolean {
   return step === ReconnectStep.READY_TO_RECONNECT;
+}
+
+function isFailedStep(step: ReconnectStep): boolean {
+  return step === ReconnectStep.FAILED;
 }
 
 function isTopicExist(session?: SessionTypes.Struct | null): boolean {
