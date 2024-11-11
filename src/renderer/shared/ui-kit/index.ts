@@ -10,6 +10,7 @@ export { Carousel } from './Carousel/Carousel';
 export { Tooltip } from './Tooltip/Tooltip';
 export { Popover } from './Popover/Popover';
 export { Surface } from './Surface/Surface';
+export { Select } from './Select/Select';
 export { Slider } from './Slider/Slider';
 export { Label } from './Label/Label';
 export { Modal } from './Modal/Modal';
