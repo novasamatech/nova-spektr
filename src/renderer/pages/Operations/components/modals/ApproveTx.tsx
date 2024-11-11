@@ -44,6 +44,7 @@ type Props = {
   tx: MultisigTransactionDS;
   account: MultisigAccount;
   connection: ExtendedChain;
+  children: React.ReactNode;
 };
 
 const enum Step {
@@ -54,7 +55,7 @@ const enum Step {
 
 const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 
-const ApproveTx = ({ tx, account, connection }: Props) => {
+const ApproveTxModal = ({ tx, account, connection, children }: Props) => {
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
   const balances = useUnit(balanceModel.$balances);
@@ -251,9 +252,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
   return (
     <Modal size="md" onToggle={handleClose}>
-      <Modal.Trigger>
-        <Button className="ml-auto">{t('operation.approveButton')}</Button>
-      </Modal.Trigger>
+      <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>
         <OperationTitle title={t(transactionTitle, { asset: asset?.symbol })} chainId={tx.chainId} />
       </Modal.Title>
@@ -310,4 +309,4 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   );
 };
 
-export default ApproveTx;
+export default ApproveTxModal;

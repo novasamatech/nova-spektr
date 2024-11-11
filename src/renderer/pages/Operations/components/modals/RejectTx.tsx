@@ -31,6 +31,7 @@ type Props = {
   tx: MultisigTransactionDS;
   account: MultisigAccount;
   connection: ExtendedChain;
+  children: React.ReactNode;
 };
 
 const enum Step {
@@ -41,7 +42,7 @@ const enum Step {
 
 const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 
-const RejectTx = ({ tx, account, connection }: Props) => {
+const RejectTxModal = ({ tx, account, connection, children }: Props) => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
@@ -182,13 +183,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
 
   return (
     <Modal size="md" onToggle={handleClose}>
-      <Modal.Trigger>
-        <div className="flex justify-between">
-          <Button pallet="error" variant="fill">
-            {t('operation.rejectButton')}
-          </Button>
-        </div>
-      </Modal.Trigger>
+      <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>
         <OperationTitle title={t(transactionTitle, { asset: asset?.symbol })} chainId={tx.chainId} />
       </Modal.Title>
@@ -235,4 +230,4 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   );
 };
 
-export default RejectTx;
+export default RejectTxModal;

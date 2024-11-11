@@ -13,9 +13,9 @@ import { getMultisigExtrinsicLink } from '../common/utils';
 
 import { OperationCardDetails } from './OperationCardDetails';
 import { OperationSignatories } from './OperationSignatories';
-import ApproveTx from './modals/ApproveTx';
+import ApproveTxModal from './modals/ApproveTx';
 import CallDataModal from './modals/CallDataModal';
-import RejectTx from './modals/RejectTx';
+import RejectTxModal from './modals/RejectTx';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -74,9 +74,17 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
 
         <div className="mt-3 flex items-center">
           {connection && isRejectAvailable && account && (
-            <RejectTx tx={tx} account={account} connection={extendedChain} />
+            <RejectTxModal tx={tx} account={account} connection={extendedChain}>
+              <Button pallet="error" variant="fill">
+                {t('operation.rejectButton')}
+              </Button>
+            </RejectTxModal>
           )}
-          {account && connection && <ApproveTx tx={tx} account={account} connection={extendedChain} />}
+          {account && connection && (
+            <ApproveTxModal tx={tx} account={account} connection={extendedChain}>
+              <Button className="ml-auto">{t('operation.approveButton')}</Button>
+            </ApproveTxModal>
+          )}
         </div>
       </div>
 
