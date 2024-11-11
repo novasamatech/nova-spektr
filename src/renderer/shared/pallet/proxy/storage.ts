@@ -1,5 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { zipWith } from 'lodash';
+import { z } from 'zod';
 
 import { substrateRpcPool } from '@/shared/api/substrate-helpers';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
@@ -28,7 +29,7 @@ export const storage = {
   announcements(api: ApiPromise, accounts?: AccountId[]) {
     const recordSchema = pjsSchema.tupleMap(
       ['announcements', pjsSchema.vec(proxyAnnouncement)],
-      ['deposit', pjsSchema.u128],
+      ['deposit', pjsSchema.u64],
     );
 
     if (accounts && accounts.length > 0) {
@@ -58,7 +59,7 @@ export const storage = {
   proxies(api: ApiPromise, accounts?: AccountId[]) {
     const recordSchema = pjsSchema.tupleMap(
       ['accounts', pjsSchema.vec(proxyProxyDefinition)],
-      ['deposit', pjsSchema.u128],
+      ['deposit', z.union([pjsSchema.u128, pjsSchema.u64])],
     );
 
     if (accounts && accounts.length > 0) {

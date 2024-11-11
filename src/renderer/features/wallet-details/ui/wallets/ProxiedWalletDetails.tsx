@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import noop from 'lodash/noop';
 
-import { type ProxiedWallet, ProxyType, type Wallet } from '@/shared/core';
+import { type ProxiedWallet, type ProxyType, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { BaseModal, DropdownIconButton, FootnoteText, Icon, Tabs } from '@/shared/ui';
@@ -26,14 +26,14 @@ const {
 } = proxyAddPureFeature;
 
 const ProxyTypeOperation: Record<ProxyType, string> = {
-  [ProxyType.ANY]: 'proxy.operations.any',
-  [ProxyType.NON_TRANSFER]: 'proxy.operations.nonTransfer',
-  [ProxyType.STAKING]: 'proxy.operations.staking',
-  [ProxyType.AUCTION]: 'proxy.operations.auction',
-  [ProxyType.CANCEL_PROXY]: 'proxy.operations.cancelProxy',
-  [ProxyType.GOVERNANCE]: 'proxy.operations.governance',
-  [ProxyType.IDENTITY_JUDGEMENT]: 'proxy.operations.identityJudgement',
-  [ProxyType.NOMINATION_POOLS]: 'proxy.operations.nominationPools',
+  Any: 'proxy.operations.any',
+  NonTransfer: 'proxy.operations.nonTransfer',
+  Staking: 'proxy.operations.staking',
+  Auction: 'proxy.operations.auction',
+  CancelProxy: 'proxy.operations.cancelProxy',
+  Governance: 'proxy.operations.governance',
+  IdentityJudgement: 'proxy.operations.identityJudgement',
+  NominationPools: 'proxy.operations.nominationPools',
 };
 
 type Props = {
