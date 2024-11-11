@@ -495,7 +495,7 @@ function buildRejectMultisigTx({ chain, signerAddress, threshold, otherSignatori
     type: TransactionType.MULTISIG_CANCEL_AS_MULTI,
     args: {
       threshold: threshold,
-      otherSignatories: otherSignatories.sort(),
+      otherSignatories,
       callHash: tx.callHash,
       maybeTimepoint: {
         height: tx.blockCreated,

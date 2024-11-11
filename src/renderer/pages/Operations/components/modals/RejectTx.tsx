@@ -1,5 +1,6 @@
 import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
+import { sortBy } from 'lodash';
 import { useEffect, useState } from 'react';
 
 import { type MultisigTransactionDS } from '@/shared/api/storage';
@@ -124,7 +125,7 @@ const RejectTxModal = ({ tx, account, connection, children }: Props) => {
       chain: connection,
       signerAddress,
       threshold: account.threshold,
-      otherSignatories,
+      otherSignatories: sortBy(otherSignatories),
       tx,
     });
   };
