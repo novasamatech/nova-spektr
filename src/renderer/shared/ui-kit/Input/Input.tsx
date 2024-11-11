@@ -10,8 +10,9 @@ import {
 } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
-import { gridSpaceConverter } from '../../_helpers/gridSpaceConverter';
-import { type HTMLInputProps } from '../common/types';
+import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
+
+import { type HTMLInputProps } from './types';
 
 type ComponentProps = {
   label?: ReactNode;

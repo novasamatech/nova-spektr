@@ -13,7 +13,7 @@ import { SignatorySelector } from '@/entities/operations';
 import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 import { FeeLoader } from '@/entities/transaction';
 import { ProxyWalletAlert } from '@/entities/wallet';
-import { AmountInput } from '@/features/balances';
+import { AmountInput } from '@/features/assets-balances';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { ConvictionSelect } from '@/widgets/VoteModal';
 import { formModel } from '../model/form-model';

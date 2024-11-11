@@ -8,7 +8,7 @@ import { filterModel } from '../model/contact-filter';
 export const ContactFilter = () => {
   const { t } = useI18n();
 
-  const filterQuery = useUnit(filterModel.$filterQuery);
+  const query = useUnit(filterModel.$query);
 
   useEffect(() => {
     filterModel.events.formInitiated();
@@ -16,7 +16,7 @@ export const ContactFilter = () => {
 
   return (
     <SearchInput
-      value={filterQuery}
+      value={query}
       placeholder={t('addressBook.searchPlaceholder')}
       onChange={filterModel.events.queryChanged}
     />

@@ -12,7 +12,7 @@ import { ChainTitle } from '@/entities/chain';
 import { SignatorySelector } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel, XcmFeeWithLabel } from '@/entities/transaction';
 import { AccountAddress, AccountSelectModal, ProxyWalletAlert, accountUtils } from '@/entities/wallet';
-import { AmountInput } from '@/features/balances';
+import { AmountInput } from '@/features/assets-balances';
 import { formModel } from '../model/form-model';
 
 type Props = {

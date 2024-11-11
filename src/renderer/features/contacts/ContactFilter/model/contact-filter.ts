@@ -6,22 +6,22 @@ import { contactModel } from '@/entities/contact';
 const formInitiated = createEvent();
 const queryChanged = createEvent<string>();
 
-const $filterQuery = restore(queryChanged, '');
+const $query = restore(queryChanged, '');
 
 sample({
   clock: formInitiated,
-  target: $filterQuery.reinit,
+  target: $query.reinit,
 });
 
 sample({
   clock: queryChanged,
-  target: $filterQuery,
+  target: $query,
 });
 
 const $contactsFiltered = combine(
   {
     contacts: contactModel.$contacts,
-    query: $filterQuery,
+    query: $query,
   },
   ({ contacts, query }) => {
     return contacts
@@ -36,7 +36,7 @@ const $contactsFiltered = combine(
 );
 
 export const filterModel = {
-  $filterQuery,
+  $query,
   $contactsFiltered,
 
   events: {

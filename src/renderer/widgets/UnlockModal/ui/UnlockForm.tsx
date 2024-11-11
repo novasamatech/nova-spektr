@@ -11,7 +11,7 @@ import { AssetBalance } from '@/entities/asset';
 import { SignatorySelector } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
 import { ProxyWalletAlert } from '@/entities/wallet';
-import { AmountInput } from '@/features/balances';
+import { AmountInput } from '@/features/assets-balances';
 import { networkSelectorModel } from '@/features/governance';
 import { unlockFormAggregate } from '../aggregates/unlockForm';
 
