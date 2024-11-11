@@ -8,6 +8,7 @@ export const enum ReconnectStep {
   READY_TO_RECONNECT,
   RECONNECTING,
   REJECTED,
+  FAILED,
   SUCCESS,
 }
 

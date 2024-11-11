@@ -50,6 +50,51 @@ const $uri = createStore<string>('').reset(disconnectCurrentSessionStarted);
 const $accounts = createStore<string[]>([]).reset(reset);
 const $pairings = createStore<PairingTypes.Struct[]>([]).reset(reset);
 
+const createClientFx = createEffect(async (): Promise<Client | undefined> => {
+  return Client.init({
+    logger: DEFAULT_LOGGER,
+    relayUrl: DEFAULT_RELAY_URL,
+    projectId: DEFAULT_PROJECT_ID,
+    metadata: DEFAULT_APP_METADATA,
+  });
+});
+
+type InitConnectResult = {
+  uri?: string;
+  approval: () => Promise<SessionTypes.Struct>;
+};
+const initConnectFx = createEffect(({ client, chains, pairing }: InitConnectParams): Promise<InitConnectResult> => {
+  const optionalNamespaces = {
+    polkadot: {
+      chains,
+      methods: [DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION],
+      events: [DEFAULT_POLKADOT_EVENTS.CHAIN_CHANGED, DEFAULT_POLKADOT_EVENTS.ACCOUNTS_CHANGED],
+    },
+  };
+
+  return client.connect({ pairingTopic: pairing?.topic, optionalNamespaces });
+});
+
+type ConnectParams = {
+  client: Client;
+  approval: () => Promise<unknown>;
+  onConnect?: () => void;
+};
+type ConnectResult = {
+  pairings: PairingTypes.Struct[];
+  session: SessionTypes.Struct;
+};
+const connectFx = createEffect(async ({ client, approval }: ConnectParams): Promise<ConnectResult | undefined> => {
+  const session = await approval();
+
+  console.log('Established session:', session);
+
+  return {
+    pairings: client.pairing.getAll({ active: true }),
+    session: session as SessionTypes.Struct,
+  };
+});
+
 const extendSessionsFx = createEffect((client: Client) => {
   const sessions = client.session.getAll();
 
@@ -134,15 +179,6 @@ const sessionTopicUpdatedFx = createEffect(
   },
 );
 
-const createClientFx = createEffect(async (): Promise<Client | undefined> => {
-  return Client.init({
-    logger: DEFAULT_LOGGER,
-    relayUrl: DEFAULT_RELAY_URL,
-    projectId: DEFAULT_PROJECT_ID,
-    metadata: DEFAULT_APP_METADATA,
-  });
-});
-
 const removePairingFx = createEffect(async ({ client, topic }: { client: Client; topic: string }): Promise<void> => {
   const reason = getSdkError('USER_DISCONNECTED');
 
@@ -170,42 +206,6 @@ const updateWcAccountsFx = createEffect(
     return newAccounts as WcAccount[];
   },
 );
-
-type InitConnectResult = {
-  uri?: string;
-  approval: () => Promise<SessionTypes.Struct>;
-};
-const initConnectFx = createEffect(({ client, chains, pairing }: InitConnectParams): Promise<InitConnectResult> => {
-  const optionalNamespaces = {
-    polkadot: {
-      chains,
-      methods: [DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION],
-      events: [DEFAULT_POLKADOT_EVENTS.CHAIN_CHANGED, DEFAULT_POLKADOT_EVENTS.ACCOUNTS_CHANGED],
-    },
-  };
-
-  return client.connect({ pairingTopic: pairing?.topic, optionalNamespaces });
-});
-
-type ConnectParams = {
-  client: Client;
-  approval: () => Promise<unknown>;
-  onConnect?: () => void;
-};
-type ConnectResult = {
-  pairings: PairingTypes.Struct[];
-  session: SessionTypes.Struct;
-};
-const connectFx = createEffect(async ({ client, approval }: ConnectParams): Promise<ConnectResult | undefined> => {
-  const session = await approval();
-
-  console.log('Established session:', session);
-
-  return {
-    pairings: client.pairing.getAll({ active: true }),
-    session: session as SessionTypes.Struct,
-  };
-});
 
 type DisconnectParams = {
   client: Client;
@@ -241,7 +241,7 @@ sample({
 
 sample({
   clock: updateWcAccountsFx.done,
-  source: walletModel.$wallets,
+  source: walletModel.$allWallets,
   filter: (_, { result: accounts }) => Boolean(accounts?.length),
   fn: (wallets, { params }) => {
     return wallets.map<Wallet>((wallet) => {
@@ -348,15 +348,15 @@ sample({
 sample({
   clock: disconnectCurrentSessionStarted,
   source: $session,
-  filter: (session: SessionTypes.Struct | null): session is SessionTypes.Struct => session !== null,
-  fn: (session) => session.topic,
+  filter: (session) => nonNullable(session),
+  fn: (session) => session!.topic,
   target: disconnectStarted,
 });
 
 sample({
   clock: disconnectStarted,
   source: $client,
-  filter: (client, sessionTopic) => Boolean(client?.session.get(sessionTopic)),
+  filter: (client, sessionTopic) => nonNullable(client?.session.get(sessionTopic)),
   fn: (client, sessionTopic) => ({
     client: client!,
     session: client!.session.get(sessionTopic)!,
@@ -392,7 +392,7 @@ sample({
 
 sample({
   clock: sessionTopicUpdatedFx.doneData,
-  source: walletModel.$wallets,
+  source: walletModel.$allWallets,
   filter: (_, accounts) => Boolean(accounts?.length),
   fn: (wallets, accounts) => {
     const walletId = accounts![0].walletId;
@@ -429,7 +429,7 @@ sample({
 sample({
   clock: [$client, walletModel.events.walletCreatedDone],
   source: {
-    wallets: walletModel.$wallets,
+    wallets: walletModel.$allWallets,
     client: $client,
   },
   filter: ({ client }) => Boolean(client),
@@ -461,6 +461,7 @@ export const walletConnectModel = {
     connectionRejected,
     currentSessionTopicUpdated,
     sessionTopicUpdated,
+    sessionTopicUpdateFailed: sessionTopicUpdatedFx.fail,
     sessionTopicUpdateDone: sessionTopicUpdatedFx.doneData,
     accountsUpdated,
     accountsUpdateDone: updateWcAccountsFx.doneData,

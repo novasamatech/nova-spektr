@@ -84,7 +84,7 @@ sample({
 
 sample({
   clock: renameWalletFx.doneData,
-  source: walletModel.$wallets,
+  source: walletModel.$allWallets,
   fn: (wallets, updatedWallet) => {
     const updatedWalletIndex = wallets.findIndex((w) => w.id === updatedWallet.id);
 
