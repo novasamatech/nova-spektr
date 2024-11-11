@@ -113,18 +113,17 @@ sample({
   clock: [multisigsDiscoveryTriggered, once(networkModel.$connections)],
   source: {
     chains: $multisigChains,
-    wallets: walletModel.$wallets,
-    hiddenWallets: walletModel.$hiddenWallets,
+    wallets: walletModel.$allWallets,
     connections: networkModel.$connections,
   },
-  fn: ({ chains, wallets, hiddenWallets, connections }) => {
+  fn: ({ chains, wallets, connections }) => {
     const filteredChains = chains.filter(
       (chain) => connections[chain.chainId] && !networkUtils.isDisabledConnection(connections[chain.chainId]),
     );
 
     return {
       chains: filteredChains,
-      wallets: wallets.concat(hiddenWallets),
+      wallets: wallets,
     };
   },
   target: getMultisigsFx,

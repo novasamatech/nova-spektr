@@ -185,7 +185,7 @@ sample({
 
 sample({
   clock: walletSelectedFx.doneData,
-  source: walletModel.$wallets,
+  source: walletModel.$allWallets,
   filter: (_, nextId) => Boolean(nextId),
   fn: (wallets, nextId) => {
     return wallets.map((wallet) => ({ ...wallet, isActive: wallet.id === nextId }));

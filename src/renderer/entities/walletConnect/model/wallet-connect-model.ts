@@ -241,7 +241,7 @@ sample({
 
 sample({
   clock: updateWcAccountsFx.done,
-  source: walletModel.$wallets,
+  source: walletModel.$allWallets,
   filter: (_, { result: accounts }) => Boolean(accounts?.length),
   fn: (wallets, { params }) => {
     return wallets.map<Wallet>((wallet) => {
@@ -392,7 +392,7 @@ sample({
 
 sample({
   clock: sessionTopicUpdatedFx.doneData,
-  source: walletModel.$wallets,
+  source: walletModel.$allWallets,
   filter: (_, accounts) => Boolean(accounts?.length),
   fn: (wallets, accounts) => {
     const walletId = accounts![0].walletId;
@@ -429,7 +429,7 @@ sample({
 sample({
   clock: [$client, walletModel.events.walletCreatedDone],
   source: {
-    wallets: walletModel.$wallets,
+    wallets: walletModel.$allWallets,
     client: $client,
   },
   filter: ({ client }) => Boolean(client),
