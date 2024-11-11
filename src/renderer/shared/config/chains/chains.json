@@ -1579,7 +1579,7 @@
       "proxy": [
         {
           "type": "subquery",
-          "url": "subquery-proxy-moonriver-prod.novasama-tech.org"
+          "url": "https://subquery-proxy-moonriver-prod.novasama-tech.org"
         }
       ]
     }
