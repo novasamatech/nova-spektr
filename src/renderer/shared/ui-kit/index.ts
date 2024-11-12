@@ -13,4 +13,5 @@ export { Surface } from './Surface/Surface';
 export { Slider } from './Slider/Slider';
 export { Label } from './Label/Label';
 export { Modal } from './Modal/Modal';
+export { Field } from './Field/Field';
 export { Box } from './Box/Box';
