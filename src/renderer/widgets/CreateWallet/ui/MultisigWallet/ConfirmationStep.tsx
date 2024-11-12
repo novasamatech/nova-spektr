@@ -13,22 +13,26 @@ import { flowModel } from '../../model/flow-model';
 import { formModel } from '../../model/form-model';
 import { signatoryModel } from '../../model/signatory-model';
 
-import { SelectedSignatoriesModal } from './components/SelectedSignatoriesModal';
-import { WalletItem } from './components/WalletItem';
+import { SelectedSignatoriesModal, WalletItem } from './components';
 
 export const ConfirmationStep = () => {
   const { t } = useI18n();
-  const signatories = useUnit(signatoryModel.$signatories);
+
   const signerWallet = useUnit(flowModel.$signerWallet);
   const signer = useUnit(flowModel.$signer);
-  const {
-    fields: { name, threshold, chain },
-  } = useForm(formModel.$createMultisigForm);
   const api = useUnit(flowModel.$api);
   const fakeTx = useUnit(flowModel.$fakeTx);
   const isEnoughBalance = useUnit(flowModel.$isEnoughBalance);
-  const [isSignatoriesModalOpen, toggleSignatoriesModalOpen] = useToggle();
+
+  const chain = useUnit(formModel.$chain);
+  const signatories = useUnit(signatoryModel.$signatories);
   const ownedSignatories = useUnit(signatoryModel.$ownedSignatoriesWallets);
+
+  const {
+    fields: { name, threshold },
+  } = useForm(formModel.$createMultisigForm);
+
+  const [isSignatoriesModalOpen, toggleSignatoriesModalOpen] = useToggle();
 
   return (
     <section className="relative flex h-full flex-1 flex-col px-5 py-4">
@@ -67,13 +71,13 @@ export const ConfirmationStep = () => {
         <div className="mb-4 flex flex-1 flex-col gap-y-4">
           <MultisigDepositWithLabel
             api={api}
-            asset={chain.value.assets[0]}
+            asset={chain!.assets[0]}
             threshold={threshold.value}
             onDepositChange={flowModel.events.multisigDepositChanged}
           />
           <FeeWithLabel
             api={api}
-            asset={chain.value.assets[0]}
+            asset={chain!.assets[0]}
             transaction={fakeTx}
             onFeeChange={flowModel.events.feeChanged}
             onFeeLoading={flowModel.events.isFeeLoadingChanged}
@@ -105,7 +109,7 @@ export const ConfirmationStep = () => {
       <SelectedSignatoriesModal
         isOpen={isSignatoriesModalOpen}
         signatories={signatories}
-        addressPrefix={chain.value.addressPrefix}
+        addressPrefix={chain?.addressPrefix}
         onClose={toggleSignatoriesModalOpen}
       />
     </section>

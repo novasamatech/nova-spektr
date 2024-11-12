@@ -68,25 +68,21 @@ const $addMultisigStore = createStore<AddMultisigStore | null>(null).reset(flowF
 const $signer = createStore<Account | null>(null).reset(flowFinished);
 
 const $signerWallet = combine({ signer: $signer, wallets: walletModel.$wallets }, ({ signer, wallets }) => {
-  const res = walletUtils.getWalletFilteredAccounts(wallets, {
+  return walletUtils.getWalletFilteredAccounts(wallets, {
     accountFn: (a) => a.accountId === signer?.accountId,
     walletFn: (w) => walletUtils.isValidSignatory(w),
   });
-
-  return res;
 });
 
 // Miscellaneous
 
 const $isChainConnected = combine(
   {
-    chain: formModel.$createMultisigForm.fields.chain.$value,
+    chainId: formModel.$createMultisigForm.fields.chainId.$value,
     statuses: networkModel.$connectionStatuses,
   },
-  ({ chain, statuses }) => {
-    if (!chain) return false;
-
-    return networkUtils.isConnectedStatus(statuses[chain.chainId]);
+  ({ chainId, statuses }) => {
+    return networkUtils.isConnectedStatus(statuses[chainId]);
   },
 );
 
@@ -98,11 +94,11 @@ const $remarkTx = combine(
     isConnected: $isChainConnected,
   },
   ({ chains, form, account, isConnected }): Transaction | undefined => {
-    if (!isConnected || !account || !form.chain.chainId || !form.threshold) return undefined;
+    if (!isConnected || !account || !form.threshold) return undefined;
 
     return {
-      chainId: form.chain.chainId,
-      address: toAddress(account.accountId, { prefix: chains[form.chain.chainId].addressPrefix }),
+      chainId: form.chainId,
+      address: toAddress(account.accountId, { prefix: chains[form.chainId].addressPrefix }),
       type: TransactionType.REMARK,
       args: {
         remark: 'Multisig created with Nova Spektr',
@@ -116,7 +112,7 @@ const $transaction = combine(
   {
     apis: networkModel.$apis,
     chains: networkModel.$chains,
-    chain: formModel.$createMultisigForm.fields.chain.$value,
+    chain: formModel.$chain,
     remarkTx: $remarkTx,
     signatories: signatoryModel.$signatories,
     signer: $signer,
@@ -128,7 +124,7 @@ const $transaction = combine(
 
     const signatoriesWrapped = signatories.map((s) => ({
       accountId: toAccountId(s.address),
-      adress: s.address,
+      address: s.address,
     }));
 
     return transactionService.getWrappedTransaction({
@@ -157,10 +153,10 @@ const $transaction = combine(
 const $api = combine(
   {
     apis: networkModel.$apis,
-    chain: formModel.$createMultisigForm.fields.chain.$value,
+    chainId: formModel.$createMultisigForm.fields.chainId.$value,
   },
-  ({ apis, chain }) => {
-    return chain ? apis[chain.chainId] : undefined;
+  ({ apis, chainId }) => {
+    return apis[chainId] ?? undefined;
   },
   { skipVoid: false },
 );
@@ -171,7 +167,7 @@ const $isEnoughBalance = combine(
     fee: $fee,
     multisigDeposit: $multisigDeposit,
     balances: balanceModel.$balances,
-    chain: formModel.$createMultisigForm.fields.chain.$value,
+    chain: formModel.$chain,
   },
   ({ signer, fee, multisigDeposit, balances, chain }) => {
     if (!signer || !fee || !multisigDeposit || !chain) return false;
@@ -226,14 +222,14 @@ const createWalletFx = createEffect(
 
 const $fakeTx = combine(
   {
-    chain: formModel.$createMultisigForm.fields.chain.$value,
+    chainId: formModel.$createMultisigForm.fields.chainId.$value,
     isConnected: $isChainConnected,
   },
-  ({ isConnected, chain }): Transaction | undefined => {
-    if (!chain || !isConnected) return undefined;
+  ({ isConnected, chainId }): Transaction | undefined => {
+    if (!isConnected) return undefined;
 
     return {
-      chainId: chain.chainId,
+      chainId,
       address: toAddress(TEST_ACCOUNTS[0], { prefix: SS58_DEFAULT_PREFIX }),
       type: TransactionType.MULTISIG_AS_MULTI,
       args: {
@@ -256,11 +252,11 @@ sample({
     name: formModel.$createMultisigForm.fields.name.$value,
     threshold: formModel.$createMultisigForm.fields.threshold.$value,
     signatories: signatoryModel.$signatories,
-    chain: formModel.$createMultisigForm.fields.chain.$value,
+    chain: formModel.$chain,
     step: $step,
   },
-  filter: ({ step }, results) => {
-    return submitUtils.isSuccessResult(results[0].result) && isStep(Step.SUBMIT, step);
+  filter: ({ step, chain }, results) => {
+    return submitUtils.isSuccessResult(results[0].result) && isStep(Step.SUBMIT, step) && nonNullable(chain);
   },
   fn: ({ signatories, chain, name, threshold }) => {
     const sortedSignatories = sortBy(
@@ -271,9 +267,9 @@ sample({
     return {
       name,
       threshold,
-      chainId: chain.chainId,
+      chainId: chain!.chainId,
       signatories: sortedSignatories,
-      isEthereumChain: networkUtils.isEthereumBased(chain.options),
+      isEthereumChain: networkUtils.isEthereumBased(chain!.options),
     };
   },
   target: createWalletFx,
@@ -353,17 +349,16 @@ sample({
 sample({
   clock: confirmModel.output.formSubmitted,
   source: {
-    addMultisigStore: $addMultisigStore,
+    chain: formModel.$chain,
     wrappedTx: $wrappedTx,
     signer: $signer,
   },
-  filter: ({ addMultisigStore, wrappedTx, signer }) =>
-    Boolean(addMultisigStore) && Boolean(wrappedTx) && Boolean(signer),
-  fn: ({ addMultisigStore, wrappedTx, signer }) => ({
+  filter: ({ chain, wrappedTx, signer }) => nonNullable(chain) && nonNullable(wrappedTx) && nonNullable(signer),
+  fn: ({ chain, wrappedTx, signer }) => ({
     event: {
       signingPayloads: [
         {
-          chain: addMultisigStore!.chain,
+          chain: chain!,
           account: signer!,
           transaction: wrappedTx!,
         },
@@ -380,19 +375,19 @@ sample({
 sample({
   clock: signModel.output.formSubmitted,
   source: {
-    addMultisigStore: $addMultisigStore,
+    chain: formModel.$chain,
     coreTx: $coreTx,
     wrappedTx: $wrappedTx,
     multisigTx: $multisigTx,
     signer: $signer,
   },
-  filter: ({ addMultisigStore, coreTx, wrappedTx, signer }) => {
-    return Boolean(addMultisigStore) && Boolean(wrappedTx) && Boolean(coreTx) && Boolean(signer);
+  filter: ({ chain, coreTx, wrappedTx, signer }) => {
+    return nonNullable(chain) && nonNullable(wrappedTx) && nonNullable(coreTx) && nonNullable(signer);
   },
-  fn: ({ addMultisigStore, coreTx, wrappedTx, multisigTx, signer }, signParams) => ({
+  fn: ({ chain, coreTx, wrappedTx, multisigTx, signer }, signParams) => ({
     event: {
       ...signParams,
-      chain: addMultisigStore!.chain,
+      chain: chain!,
       account: signer!,
       coreTxs: [coreTx!],
       wrappedTxs: [wrappedTx!],
@@ -412,9 +407,9 @@ sample({
     step: $step,
     hiddenMultisig: formModel.$hiddenMultisig,
   },
-  filter: ({ step, hiddenMultisig }, results) => {
+  filter: ({ step }, results) => {
     const isSubmitStep = isStep(step, Step.SUBMIT);
-    const isNonNullable = nonNullable(hiddenMultisig);
+    const isNonNullable = nonNullable(formModel.$hiddenMultisig);
     const isSuccessResult = results[0]?.result === ExtrinsicResult.SUCCESS;
 
     return isSubmitStep && isNonNullable && isSuccessResult;
@@ -437,7 +432,7 @@ sample({
     contacts: contactModel.$contacts,
   },
   fn: ({ signatories, contacts }) => {
-    const contactsToSave = Array.from(signatories.values())
+    return signatories
       .slice(1)
       .filter((signatory) => !contacts.some((contact) => contact.accountId === toAccountId(signatory.address)))
       .map(
@@ -448,8 +443,6 @@ sample({
             accountId: toAccountId(address),
           }) as Contact,
       );
-
-    return contactsToSave;
   },
   target: contactModel.effects.createContactsFx,
 });
@@ -458,9 +451,7 @@ sample({
   clock: signerSelected,
   source: { wallets: walletModel.$wallets },
   fn: ({ wallets }, accountId) => {
-    const signerAccount = walletUtils.getAccountBy(wallets, (a) => a.accountId === accountId);
-
-    return signerAccount;
+    return walletUtils.getAccountBy(wallets, (a) => a.accountId === accountId);
   },
   target: $signer,
 });

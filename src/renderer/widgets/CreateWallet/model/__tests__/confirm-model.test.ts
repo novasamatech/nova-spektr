@@ -1,6 +1,6 @@
 import { allSettled, fork } from 'effector';
 
-import { type Account, type Chain } from '@/shared/core';
+import { type Account, type ChainId } from '@/shared/core';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { confirmModel } from '../confirm-model';
@@ -20,7 +20,7 @@ describe('widgets/CreateWallet/model/confirm-model', () => {
     });
 
     const store = {
-      chain: { chainId: '0x00' } as unknown as Chain,
+      chainId: '0x00' as ChainId,
       account: { walletId: signerWallet.id } as unknown as Account,
       signer: { walletId: signerWallet.id } as unknown as Account,
       threshold: 2,

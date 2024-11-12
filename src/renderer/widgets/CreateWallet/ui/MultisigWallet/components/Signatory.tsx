@@ -1,10 +1,9 @@
-import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { type ChainAccount, type WalletFamily } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
+import { nullable, performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
 import { CaptionText, Combobox, IconButton, Identicon, Input } from '@/shared/ui';
 import { type ComboboxOption } from '@/shared/ui/types';
 import { contactModel } from '@/entities/contact';
@@ -31,26 +30,21 @@ export const Signatory = ({
   signatoryAddress,
 }: Props) => {
   const { t } = useI18n();
+
   const [query, setQuery] = useState('');
   const [options, setOptions] = useState<ComboboxOption[]>([]);
 
+  const chain = useUnit(formModel.$chain);
   const contacts = useUnit(contactModel.$contacts);
   const wallets = useUnit(walletModel.$wallets);
-  const {
-    fields: { chain },
-  } = useForm(formModel.$createMultisigForm);
-  const contactsFiltered = useMemo(
-    () =>
-      performSearch({
-        query,
-        records: contacts,
-        weights: {
-          name: 1,
-          address: 0.5,
-        },
-      }),
-    [query, contacts],
-  );
+
+  const contactsFiltered = useMemo(() => {
+    return performSearch({
+      query,
+      records: contacts,
+      weights: { name: 1, address: 0.5 },
+    });
+  }, [query, contacts]);
 
   const ownAccountName =
     walletUtils.getWalletsFilteredAccounts(wallets, {
@@ -86,11 +80,10 @@ export const Signatory = ({
           wallet.accounts
             .filter(
               (account) =>
-                (account as ChainAccount).chainId === undefined ||
-                (account as ChainAccount).chainId === chain.value.chainId,
+                nullable((account as ChainAccount).chainId) || (account as ChainAccount).chainId === chain?.chainId,
             )
             .map((account) => {
-              const address = toAddress(account.accountId, { prefix: chain.value.addressPrefix });
+              const address = toAddress(account.accountId, { prefix: chain?.addressPrefix });
 
               return {
                 value: address,
@@ -137,7 +130,7 @@ export const Signatory = ({
     if (isOwnAccount || contacts.length === 0) return;
     setOptions(
       contactsFiltered.map(({ name, address }) => {
-        const displayAddress = toAddress(address, { prefix: chain.value.addressPrefix });
+        const displayAddress = toAddress(address, { prefix: chain?.addressPrefix });
 
         return {
           id: signatoryIndex.toString(),
@@ -164,7 +157,7 @@ export const Signatory = ({
 
   const onAddressChange = (newAddress: string) => {
     const validatedAddress = validateAddress(newAddress) ? newAddress : '';
-    const fixedAddress = toAddress(validatedAddress, { prefix: chain.value.addressPrefix });
+    const fixedAddress = toAddress(validatedAddress, { prefix: chain?.addressPrefix });
 
     signatoryModel.events.changeSignatory({
       index: signatoryIndex,
@@ -208,7 +201,7 @@ export const Signatory = ({
         placeholder={t('createMultisigAccount.signatorySelection')}
         options={options}
         query={query}
-        value={toAddress(signatoryAddress, { prefix: chain.value.addressPrefix })}
+        value={toAddress(signatoryAddress, { prefix: chain?.addressPrefix })}
         prefixElement={prefixElement}
         onChange={({ value }) => {
           onAddressChange(value);

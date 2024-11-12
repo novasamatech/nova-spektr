@@ -1,4 +1,4 @@
-import { type Account, type Chain, type Transaction } from '@/shared/core';
+import { type Account, type ChainId, type Transaction } from '@/shared/core';
 
 export const enum Step {
   NAME_NETWORK,
@@ -11,7 +11,7 @@ export const enum Step {
 
 export type FormParams = {
   threshold: number;
-  chain: Chain;
+  chainId: ChainId;
   name: string;
 };
 
