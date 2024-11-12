@@ -4,7 +4,7 @@ import { not } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import { type Wallet } from '@/shared/core';
-import { nonNullable, splice } from '@/shared/lib/utils';
+import { nonNullable } from '@/shared/lib/utils';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { walletConnectModel } from '@/entities/walletConnect';
 
@@ -43,10 +43,10 @@ const $walletForm = createForm({
   validateOn: ['submit'],
 });
 
-const renameWalletFx = createEffect(async ({ id, ...rest }: Wallet): Promise<Wallet> => {
+const renameWalletFx = createEffect(async ({ id, accounts, ...rest }: Wallet): Promise<Wallet> => {
   await storageService.wallets.update(id, rest);
 
-  return { id, ...rest };
+  return { id, accounts, ...rest };
 });
 
 sample({
@@ -104,13 +104,13 @@ sample({
 
 sample({
   clock: renameWalletFx.doneData,
-  source: walletModel.$allWallets,
-  fn: (wallets, updatedWallet) => {
-    const updatedWalletIndex = wallets.findIndex((w) => w.id === updatedWallet.id);
-
-    return splice(wallets, updatedWallet, updatedWalletIndex);
+  fn: (updatedWallet) => {
+    return {
+      walletId: updatedWallet.id,
+      data: updatedWallet,
+    };
   },
-  target: walletModel.$allWallets,
+  target: walletModel.events.updateWallet,
 });
 
 sample({

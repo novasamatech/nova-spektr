@@ -37,7 +37,7 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
         .set(networkModel.$apis, { '0x00': testApi })
         .set(networkModel.$chains, { '0x00': testChain })
         .set(networkModel.$connectionStatuses, { '0x00': ConnectionStatus.CONNECTED })
-        .set(walletModel.$allWallets, [initiatorWallet, signerWallet]),
+        .set(walletModel._test.$allWallets, [initiatorWallet, signerWallet]),
     });
 
     await allSettled(addProxyModel.events.flowStarted, { scope });
