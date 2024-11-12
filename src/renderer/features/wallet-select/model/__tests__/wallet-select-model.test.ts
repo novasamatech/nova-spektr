@@ -42,6 +42,7 @@ describe('wallet-select-model', () => {
     const emptyGroups: Record<WalletFamily, Wallet[]> = {
       [WalletType.POLKADOT_VAULT]: [],
       [WalletType.MULTISIG]: [],
+      [WalletType.FLEXIBLE_MULTISIG]: [],
       [WalletType.NOVA_WALLET]: [],
       [WalletType.WALLET_CONNECT]: [],
       [WalletType.WATCH_ONLY]: [],

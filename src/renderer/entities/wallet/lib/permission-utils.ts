@@ -44,6 +44,7 @@ function canStake(wallet: Wallet): boolean {
 function canCreateMultisigTx(wallet: Wallet): boolean {
   if (walletUtils.isWatchOnly(wallet)) return false;
   if (walletUtils.isMultisig(wallet)) return false;
+  if (walletUtils.isFlexibleMultisig(wallet)) return false;
   if (walletUtils.isProxied(wallet)) {
     const isAnyProxy = accountUtils.isAnyProxyType(wallet.accounts[0]);
     const isNonTransfer = accountUtils.isNonTransferProxyType(wallet.accounts[0]);
@@ -56,6 +57,7 @@ function canCreateMultisigTx(wallet: Wallet): boolean {
 function canApproveMultisigTx(wallet: Wallet): boolean {
   if (walletUtils.isWatchOnly(wallet)) return false;
   if (walletUtils.isMultisig(wallet)) return false;
+  if (walletUtils.isFlexibleMultisig(wallet)) return false;
 
   if (walletUtils.isProxied(wallet)) {
     return false;
@@ -72,6 +74,7 @@ function canApproveMultisigTx(wallet: Wallet): boolean {
 function canRejectMultisigTx(wallet: Wallet): boolean {
   if (walletUtils.isWatchOnly(wallet)) return false;
   if (walletUtils.isMultisig(wallet)) return false;
+  if (walletUtils.isFlexibleMultisig(wallet)) return false;
   if (walletUtils.isProxied(wallet)) {
     return false;
 

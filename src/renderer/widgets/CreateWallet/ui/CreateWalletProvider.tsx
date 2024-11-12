@@ -25,6 +25,7 @@ const WalletModals: Record<WalletFamily, (props: ModalProps) => JSX.Element | nu
   [WalletType.MULTISIG]: (props) => <SelectMultisigWalletType isOpen {...props} />,
   [WalletType.WALLET_CONNECT]: (props) => <WalletConnect isOpen {...props} />,
   [WalletType.NOVA_WALLET]: (props) => <NovaWallet isOpen {...props} />,
+  [WalletType.FLEXIBLE_MULTISIG]: () => null,
   [WalletType.PROXIED]: () => null,
 };
 

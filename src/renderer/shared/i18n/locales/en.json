@@ -298,6 +298,7 @@
     "addNewAccountButton": "Add new account",
     "createAccount": "Create a new account",
     "createMultisig": "Create a new multisig wallet",
+    "createFlexibleMultisig": "Create a new flexible multisig wallet",
     "createOrImportAccount": "Create a new account or import an existing one"
   },
   "fallbackScreen": {
@@ -1157,7 +1158,8 @@
       "identityJudgement": "Judgement operations",
       "nominationPools": "Nominations operations",
       "nonTransfer": "All, except transfer operations",
-      "staking": "Staking operations"
+      "staking": "Staking operations",
+      "unknown": "Unknown operations"
     },
     "operations": {
       "any": "all operations",
@@ -1703,6 +1705,7 @@
     "disconnectedLabel": "Disconnected",
     "multishardLabel": "Multishard",
     "multisigLabel": "Multisig",
+    "flexibleMultisigLabel": "Flexible Multisig",
     "novaWalletLabel": "Nova Wallet",
     "paritySignerLabel": "Polkadot Vault",
     "proxiedLabel": "Delegated to you (Proxied)",
