@@ -88,7 +88,7 @@ describe('features/proxies/model/proxies-model', () => {
 
     const scope = fork({
       values: new Map()
-        .set(walletModel.$allWallets, [
+        .set(walletModel._test.$allWallets, [
           { id: 1, accounts: [{ walletId: 1, accountId: '0x01', type: AccountType.CHAIN, chainId: '0x01' }] },
         ])
         .set(networkModel.$chains, {

@@ -23,7 +23,7 @@ describe('entities/wallet/model/wallet-model', () => {
   test('should validate non-unique wallet name', async () => {
     const wallets = [walletMock.wallet1, walletMock.wallet2];
     const scope = fork({
-      values: new Map().set(walletModel.$allWallets, wallets),
+      values: new Map().set(walletModel._test.$allWallets, wallets),
     });
 
     await allSettled(renameWalletModel.events.formInitiated, { scope, params: walletMock.wallet1 });
@@ -46,7 +46,7 @@ describe('entities/wallet/model/wallet-model', () => {
     jest.spyOn(storageService.accounts, 'createAll').mockResolvedValue(updatedWallet.accounts);
 
     const scope = fork({
-      values: new Map().set(walletModel.$allWallets, [walletMock.wallet1]),
+      values: new Map().set(walletModel._test.$allWallets, [walletMock.wallet1]),
     });
 
     await allSettled(renameWalletModel.events.formInitiated, { scope, params: walletMock.wallet1 });
