@@ -55,7 +55,7 @@ describe('Create flexible multisig wallet signatory-model', () => {
 
   test('should have correct value for $ownSignatoryWallets', async () => {
     const scope = fork({
-      values: new Map().set(walletModel.$allWallets, [initiatorWallet, signerWallet]),
+      values: new Map().set(walletModel._test.$allWallets, [initiatorWallet, signerWallet]),
     });
 
     await allSettled(signatoryModel.events.changeSignatory, {

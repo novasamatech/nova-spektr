@@ -10,6 +10,7 @@ function getWalletByGroups(wallets: Wallet[], query = ''): Record<WalletFamily, 
   const accumulator: Record<WalletFamily, Wallet[]> = {
     [WalletType.POLKADOT_VAULT]: [],
     [WalletType.MULTISIG]: [],
+    [WalletType.FLEXIBLE_MULTISIG]: [],
     [WalletType.NOVA_WALLET]: [],
     [WalletType.WALLET_CONNECT]: [],
     [WalletType.WATCH_ONLY]: [],
@@ -21,6 +22,7 @@ function getWalletByGroups(wallets: Wallet[], query = ''): Record<WalletFamily, 
 
     if (walletUtils.isPolkadotVaultGroup(wallet)) groupIndex = WalletType.POLKADOT_VAULT;
     if (walletUtils.isMultisig(wallet)) groupIndex = WalletType.MULTISIG;
+    if (walletUtils.isFlexibleMultisig(wallet)) groupIndex = WalletType.FLEXIBLE_MULTISIG;
     if (walletUtils.isWatchOnly(wallet)) groupIndex = WalletType.WATCH_ONLY;
     if (walletUtils.isWalletConnect(wallet)) groupIndex = WalletType.WALLET_CONNECT;
     if (walletUtils.isNovaWallet(wallet)) groupIndex = WalletType.NOVA_WALLET;
