@@ -6,7 +6,6 @@ import {
   type PolkadotVaultWallet,
   type ProxiedAccount,
   type ProxiedWallet,
-  ProxyType,
   type SingleShardWallet,
   type WalletConnectWallet,
   WalletType,
@@ -59,42 +58,42 @@ const proxiedWallet = {
 
 const anyProxyAccount = {
   type: AccountType.PROXIED,
-  proxyType: ProxyType.ANY,
+  proxyType: 'Any',
 } as ProxiedAccount;
 
 const nonTransferProxyAccount = {
   type: AccountType.PROXIED,
-  proxyType: ProxyType.NON_TRANSFER,
+  proxyType: 'NonTransfer',
 } as ProxiedAccount;
 
 const stakingProxyAccount = {
   type: AccountType.PROXIED,
-  proxyType: ProxyType.STAKING,
+  proxyType: 'Staking',
 } as ProxiedAccount;
 
 const auctionProxyAccount = {
   type: AccountType.PROXIED,
-  proxyType: ProxyType.AUCTION,
+  proxyType: 'Auction',
 } as ProxiedAccount;
 
 const cancelProxyAccount = {
   type: AccountType.PROXIED,
-  proxyType: ProxyType.CANCEL_PROXY,
+  proxyType: 'CancelProxy',
 } as ProxiedAccount;
 
 const governanceProxyAccount = {
   type: AccountType.PROXIED,
-  proxyType: ProxyType.GOVERNANCE,
+  proxyType: 'Governance',
 } as ProxiedAccount;
 
 const identityJudgementProxyAccount = {
   type: AccountType.PROXIED,
-  proxyType: ProxyType.IDENTITY_JUDGEMENT,
+  proxyType: 'IdentityJudgement',
 } as ProxiedAccount;
 
 const nominationPoolsProxyAccount = {
   type: AccountType.PROXIED,
-  proxyType: ProxyType.NOMINATION_POOLS,
+  proxyType: 'NominationPools',
 } as ProxiedAccount;
 
 export const permissionMocks = {

@@ -128,7 +128,7 @@ const $transaction = combine(
 
     const signatoriesWrapped = Array.from(signatories.values()).map((s) => ({
       accountId: toAccountId(s.address),
-      adress: s.address,
+      address: s.address,
     }));
 
     return transactionService.getWrappedTransaction({

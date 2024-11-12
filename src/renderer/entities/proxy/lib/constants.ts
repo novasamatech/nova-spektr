@@ -1,12 +1,12 @@
-import { ProxyType } from '@/shared/core';
+import { type ProxyType } from '@/shared/core';
 
 export const ProxyTypeName: Record<ProxyType, string> = {
-  [ProxyType.ANY]: 'proxy.names.any',
-  [ProxyType.NON_TRANSFER]: 'proxy.names.nonTransfer',
-  [ProxyType.STAKING]: 'proxy.names.staking',
-  [ProxyType.AUCTION]: 'proxy.names.auction',
-  [ProxyType.CANCEL_PROXY]: 'proxy.names.cancelProxy',
-  [ProxyType.GOVERNANCE]: 'proxy.names.governance',
-  [ProxyType.IDENTITY_JUDGEMENT]: 'proxy.names.identityJudgement',
-  [ProxyType.NOMINATION_POOLS]: 'proxy.names.nominationPools',
+  Any: 'proxy.names.any',
+  NonTransfer: 'proxy.names.nonTransfer',
+  Staking: 'proxy.names.staking',
+  Auction: 'proxy.names.auction',
+  CancelProxy: 'proxy.names.cancelProxy',
+  Governance: 'proxy.names.governance',
+  IdentityJudgement: 'proxy.names.identityJudgement',
+  NominationPools: 'proxy.names.nominationPools',
 };

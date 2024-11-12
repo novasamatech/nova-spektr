@@ -90,7 +90,7 @@ sample({
 
     return splice(wallets, updatedWallet, updatedWalletIndex);
   },
-  target: walletModel.$wallets,
+  target: walletModel.$allWallets,
 });
 
 sample({

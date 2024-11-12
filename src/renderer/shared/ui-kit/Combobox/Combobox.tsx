@@ -2,6 +2,7 @@ import * as Ariakit from '@ariakit/react';
 import * as RadixPopover from '@radix-ui/react-popover';
 import {
   Children,
+  type ComponentProps,
   type PropsWithChildren,
   type RefObject,
   createContext,
@@ -13,7 +14,7 @@ import {
 } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
-import { Input } from '../Inputs';
+import { Input } from '../Input/Input';
 import { ScrollArea } from '../ScrollArea/ScrollArea';
 import { Surface } from '../Surface/Surface';
 import { useTheme } from '../Theme/useTheme';
@@ -21,40 +22,46 @@ import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
 
 type ContextProps = {
   testId?: string;
-  isOpen?: boolean;
+  open?: boolean;
   onOpenChange?: (value: boolean) => void;
+};
+
+type ExpandedContextProps = {
   comboboxRef?: RefObject<HTMLInputElement>;
   listboxRef?: RefObject<HTMLDivElement>;
 };
 
-const Context = createContext<ContextProps>({});
+const Context = createContext<ContextProps & ExpandedContextProps>({});
+
+type InputProps = Pick<ComponentProps<typeof Input>, 'disabled' | 'invalid' | 'placeholder' | 'height'>;
 
 type ControlledPopoverProps = {
-  selected: string;
+  value: string;
   onChange: (value: string) => void;
 };
 
-type RootProps = PropsWithChildren<ControlledPopoverProps & ContextProps>;
+type RootProps = PropsWithChildren<ControlledPopoverProps & ContextProps & InputProps>;
 
-const Root = ({ testId = 'Combobox', selected, onChange, children }: RootProps) => {
+const Root = ({ testId = 'Combobox', value, onChange, children, ...inputProps }: RootProps) => {
   const comboboxRef = useRef<HTMLInputElement>(null);
   const listboxRef = useRef<HTMLDivElement>(null);
 
-  const [isOpen, onOpenChange] = useState(false);
+  const [open, onOpenChange] = useState(false);
 
-  const ctx = useMemo(() => ({ isOpen, onOpenChange, testId, comboboxRef, listboxRef }), [isOpen, testId]);
+  const ctx = useMemo(() => ({ open, onOpenChange, testId, comboboxRef, listboxRef }), [open, testId]);
 
   return (
     <Context.Provider value={ctx}>
-      <RadixPopover.Root modal open={isOpen} onOpenChange={onOpenChange}>
+      <RadixPopover.Root modal open={open} onOpenChange={onOpenChange}>
         <Ariakit.ComboboxProvider
-          open={isOpen}
+          open={open}
           setOpen={onOpenChange}
-          defaultValue={selected}
-          defaultSelectedValue={selected}
+          defaultValue={value}
+          defaultSelectedValue={value}
           setSelectedValue={onChange}
           setValue={(value) => startTransition(() => onChange(value))}
         >
+          <Trigger {...inputProps} />
           {children}
         </Ariakit.ComboboxProvider>
       </RadixPopover.Root>
@@ -62,10 +69,7 @@ const Root = ({ testId = 'Combobox', selected, onChange, children }: RootProps) 
   );
 };
 
-type TriggerProps = {
-  placeholder?: string;
-};
-const Trigger = ({ placeholder }: TriggerProps) => {
+const Trigger = ({ placeholder, ...inputProps }: InputProps) => {
   const { onOpenChange, comboboxRef } = useContext(Context);
 
   return (
@@ -75,34 +79,13 @@ const Trigger = ({ placeholder }: TriggerProps) => {
         autoComplete="both"
         ref={comboboxRef}
         placeholder={placeholder}
-        render={({ onChange, ...props }) => <Input {...props} onChangeEvent={onChange} />}
+        render={({ onChange, ...props }) => <Input {...props} {...inputProps} onChangeEvent={onChange} />}
         onFocus={() => onOpenChange?.(true)}
         onBlur={() => onOpenChange?.(false)}
       />
     </RadixPopover.Anchor>
   );
 };
-
-type ItemProps = {
-  value: string;
-};
-const Item = ({ value, children }: PropsWithChildren<ItemProps>) => {
-  return (
-    <Ariakit.ComboboxItem
-      focusOnHover
-      value={value}
-      className={cnTw(
-        'flex cursor-pointer rounded p-2 text-footnote text-text-secondary',
-        'bg-block-background-default hover:bg-block-background-hover data-[active-item]:bg-block-background-hover',
-      )}
-    >
-      {children}
-    </Ariakit.ComboboxItem>
-  );
-};
-
-// var(--radix-popover-trigger-width) takes into account <input/> and not the wrapper that has px-3
-const INPUT_PADDING = gridSpaceConverter(3 * 2);
 
 const Content = ({ children }: PropsWithChildren) => {
   const { portalContainer } = useTheme();
@@ -115,8 +98,9 @@ const Content = ({ children }: PropsWithChildren) => {
       <RadixPopover.Content
         asChild
         hideWhenDetached
-        style={{ width: `calc(var(--radix-popover-trigger-width) + ${INPUT_PADDING}px)` }}
+        style={{ width: 'var(--radix-popover-trigger-width)' }}
         collisionPadding={gridSpaceConverter(2)}
+        sideOffset={gridSpaceConverter(2)}
         data-testid={testId}
         onOpenAutoFocus={(e) => e.preventDefault()}
         onInteractOutside={(event) => {
@@ -146,8 +130,25 @@ const Content = ({ children }: PropsWithChildren) => {
   );
 };
 
+type ItemProps = {
+  value: string;
+};
+const Item = ({ value, children }: PropsWithChildren<ItemProps>) => {
+  return (
+    <Ariakit.ComboboxItem
+      focusOnHover
+      value={value}
+      className={cnTw(
+        'flex cursor-pointer rounded p-2 text-footnote text-text-secondary',
+        'bg-block-background-default data-[active-item]:bg-block-background-hover',
+      )}
+    >
+      {children}
+    </Ariakit.ComboboxItem>
+  );
+};
+
 export const Combobox = Object.assign(Root, {
-  Trigger,
   Content,
   Item,
 });

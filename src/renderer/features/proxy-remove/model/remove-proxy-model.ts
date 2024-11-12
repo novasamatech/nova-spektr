@@ -10,7 +10,6 @@ import {
   type ProxiedAccount,
   type ProxyAccount,
   type ProxyTxWrapper,
-  ProxyType,
   ProxyVariant,
   type Transaction,
   TransactionType,
@@ -25,7 +24,7 @@ import { networkModel } from '@/entities/network';
 import { proxyModel, proxyUtils } from '@/entities/proxy';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { balanceSubModel } from '@/features/balances';
+import { balanceSubModel } from '@/features/assets-balances';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
@@ -121,7 +120,7 @@ const $shouldRemovePureProxy = combine(
     if (!chain || !account) return true;
 
     const chainProxies = proxies[chain.chainId] || [];
-    const anyProxies = chainProxies.filter((proxy) => proxy.proxyType === ProxyType.ANY);
+    const anyProxies = chainProxies.filter((proxy) => proxy.proxyType === 'Any');
     const isPureProxy = (account as ProxiedAccount).proxyVariant === ProxyVariant.PURE;
 
     return isPureProxy && anyProxies.length === 1;

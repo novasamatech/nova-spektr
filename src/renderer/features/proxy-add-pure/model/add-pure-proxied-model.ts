@@ -10,7 +10,6 @@ import {
   type NoID,
   type PartialProxiedAccount,
   type ProxyGroup,
-  ProxyType,
   ProxyVariant,
   type Timepoint,
   type Transaction,
@@ -23,7 +22,7 @@ import { networkModel } from '@/entities/network';
 import { proxyModel, proxyUtils } from '@/entities/proxy';
 import { type ExtrinsicResultParams, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { balanceSubModel } from '@/features/balances';
+import { balanceSubModel } from '@/features/assets-balances';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
@@ -271,7 +270,7 @@ sample({
       accountId: addPureProxiedStore.account.accountId,
       proxiedAccountId: accountId,
       chainId: addPureProxiedStore.chain.chainId,
-      proxyType: ProxyType.ANY,
+      proxyType: 'Any' as const,
       delay: 0,
     },
   ],
@@ -290,7 +289,7 @@ sample({
       chainId: chain.chainId,
       proxyAccountId: account.accountId,
       delay: 0,
-      proxyType: ProxyType.ANY,
+      proxyType: 'Any',
       proxyVariant: ProxyVariant.PURE,
       blockNumber,
       extrinsicIndex,

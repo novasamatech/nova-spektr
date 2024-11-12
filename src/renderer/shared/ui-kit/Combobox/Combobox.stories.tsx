@@ -9,10 +9,9 @@ const meta: Meta<typeof Combobox> = {
   parameters: {
     layout: 'centered',
   },
-  render: () => {
+  render: (params) => {
     return (
-      <Combobox selected="" onChange={noop}>
-        <Combobox.Trigger placeholder="Type something ..." />
+      <Combobox {...params} placeholder="Type something ..." value="" onChange={noop}>
         <Combobox.Content>
           {[
             { text: '🍎 Apple', value: 'Apple' },
@@ -36,3 +35,21 @@ export default meta;
 type Story = StoryObj<typeof Combobox>;
 
 export const Default: Story = {};
+
+export const Small: Story = {
+  args: {
+    height: 'sm',
+  },
+};
+
+export const Disabled: Story = {
+  args: {
+    disabled: true,
+  },
+};
+
+export const Invalid: Story = {
+  args: {
+    invalid: true,
+  },
+};

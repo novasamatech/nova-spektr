@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { type ChainAccount, type WalletFamily } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
-import { CaptionText, Combobox, Icon, IconButton, Identicon } from '@/shared/ui';
+import { CaptionText, Combobox, IconButton, Identicon } from '@/shared/ui';
 import { type ComboboxOption } from '@/shared/ui/types';
 import { Box, Input } from '@/shared/ui-kit';
 import { contactModel } from '@/entities/contact';
@@ -16,8 +16,8 @@ import { formModel } from '@/widgets/CreateWallet/model/form-model';
 import { signatoryModel } from '../../../model/signatory-model';
 
 interface Props {
-  signatoryName?: string;
-  signatoryAddress?: string;
+  signatoryName: string;
+  signatoryAddress: string;
   signatoryIndex: number;
   isOwnAccount?: boolean;
   onDelete?: (index: number) => void;
@@ -27,8 +27,8 @@ export const Signatory = ({
   signatoryIndex,
   onDelete,
   isOwnAccount = false,
-  signatoryName = '',
-  signatoryAddress = '',
+  signatoryName,
+  signatoryAddress,
 }: Props) => {
   const { t } = useI18n();
 
@@ -39,9 +39,7 @@ export const Signatory = ({
   } = useForm(formModel.$createMultisigForm);
 
   const [query, setQuery] = useState('');
-  const [name, setName] = useState(signatoryName);
   const [options, setOptions] = useState<ComboboxOption[]>([]);
-  const [address, setAddress] = useState(signatoryAddress);
 
   const contactsFiltered = useMemo(() => {
     return performSearch({
@@ -54,11 +52,11 @@ export const Signatory = ({
   const ownAccountName =
     walletUtils.getWalletsFilteredAccounts(wallets, {
       walletFn: (w) => !walletUtils.isWatchOnly(w) && !walletUtils.isMultisig(w),
-      accountFn: (a) => toAccountId(address) === a.accountId,
+      accountFn: (a) => toAccountId(signatoryAddress) === a.accountId,
     })?.[0]?.name || '';
 
   const contactAccountName =
-    contacts.filter((contact) => toAccountId(contact.address) === toAccountId(address))?.[0]?.name || '';
+    contacts.filter((contact) => toAccountId(contact.address) === toAccountId(signatoryAddress))?.[0]?.name || '';
   const displayName = useMemo(() => {
     const hasDuplicateName = !!ownAccountName && !!contactAccountName;
     const shouldForceOwnAccountName = hasDuplicateName && isOwnAccount;
@@ -148,48 +146,33 @@ export const Signatory = ({
   }, [query, isOwnAccount, contacts, contactsFiltered]);
 
   const onNameChange = (newName: string) => {
-    setName(newName);
-    signatoryModel.events.signatoriesChanged({
+    signatoryModel.events.changeSignatory({
       index: signatoryIndex,
       name: newName,
-      address,
+      address: signatoryAddress,
     });
   };
 
   useEffect(() => {
-    if (displayName !== name) {
+    if (displayName && displayName !== signatoryName) {
       onNameChange(displayName);
     }
   }, [displayName]);
 
   const onAddressChange = (newAddress: string) => {
-    if (!validateAddress(newAddress)) {
-      setAddress('');
+    const validatedAddress = validateAddress(newAddress) ? newAddress : '';
+    const fixedAddress = toAddress(validatedAddress, { prefix: chain.value.addressPrefix });
 
-      return;
-    }
-
-    setAddress(newAddress);
-    signatoryModel.events.signatoriesChanged({
+    signatoryModel.events.changeSignatory({
       index: signatoryIndex,
-      name,
-      address: newAddress,
+      name: signatoryName,
+      address: fixedAddress,
     });
   };
 
   const handleQueryChange = (newQuery: string) => {
     setQuery(newQuery);
   };
-
-  const prefixElement = (
-    <div className="flex h-auto items-center">
-      {!!address && validateAddress(address) ? (
-        <Identicon address={address} size={20} background={false} canCopy={false} />
-      ) : (
-        <Icon size={20} name="emptyIdenticon" />
-      )}
-    </div>
-  );
 
   const accountInputLabel = isOwnAccount
     ? t('createMultisigAccount.ownAccountSelection')
@@ -202,7 +185,7 @@ export const Signatory = ({
         label={t('createMultisigAccount.signatoryNameLabel')}
         placeholder={t('addressBook.createContact.namePlaceholder')}
         invalid={false}
-        value={displayName}
+        value={signatoryName}
         disabled={!!ownAccountName || !!contactAccountName}
         onChange={onNameChange}
       />
@@ -213,8 +196,8 @@ export const Signatory = ({
             placeholder={t('createMultisigAccount.signatorySelection')}
             options={options}
             query={query}
-            value={toAddress(address, { prefix: chain.value.addressPrefix })}
-            prefixElement={prefixElement}
+            value={toAddress(signatoryAddress, { prefix: chain.value.addressPrefix })}
+            prefixElement={<Identicon address={signatoryAddress} size={20} background={false} canCopy={false} />}
             onChange={({ value }) => onAddressChange(value)}
             onInput={handleQueryChange}
           />

@@ -3,6 +3,7 @@ import { createTestKeyring } from '@polkadot/keyring';
 import {
   AccountType,
   type Asset,
+  AssetType,
   type BaseAccount,
   type Chain,
   type ChainAccount,
@@ -12,7 +13,6 @@ import {
   type PolkadotVaultWallet,
   type ProxiedAccount,
   type ProxiedWallet,
-  ProxyType,
   ProxyVariant,
   type ShardAccount,
   SigningType,
@@ -30,6 +30,7 @@ export const dotAsset: Asset = {
   assetId: 0,
   symbol: 'DOT',
   precision: 10,
+  type: AssetType.NATIVE,
   icon: 'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg',
   name: 'Polkadot',
 };
@@ -88,7 +89,7 @@ export const createProxiedAccount = (id: number = Math.round(Math.random() * 10)
   accountId: createAccountId(`Proxied account ${id}`),
   proxyAccountId: createAccountId(`Random account ${id}`),
   delay: 0,
-  proxyType: ProxyType.ANY,
+  proxyType: 'Any',
   proxyVariant: ProxyVariant.REGULAR,
   chainId: polkadotChainId,
   cryptoType: CryptoType.SR25519,

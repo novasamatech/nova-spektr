@@ -1,4 +1,4 @@
-import { isCorrectAccountId } from '@/shared/lib/utils';
+import { isCorrectAccountId, isEthereumAccountId } from '@/shared/lib/utils';
 
 import {
   type AccountId,
@@ -70,7 +70,7 @@ export const pjsSchema = {
 
   helpers: {
     toAccountId: (value: string) => {
-      if (isCorrectAccountId(value as AccountId)) {
+      if (isCorrectAccountId(value as AccountId) || isEthereumAccountId(value as AccountId)) {
         return value as AccountId;
       }
 

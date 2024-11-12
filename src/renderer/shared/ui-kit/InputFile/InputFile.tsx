@@ -2,7 +2,8 @@ import { type ChangeEvent, type ComponentPropsWithoutRef, forwardRef, useState }
 
 import { cnTw } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
-import { type HTMLInputFileProps } from '../common/types';
+
+import { type HTMLInputFileProps } from './type';
 
 interface Props extends Pick<ComponentPropsWithoutRef<'input'>, HTMLInputFileProps> {
   invalid?: boolean;

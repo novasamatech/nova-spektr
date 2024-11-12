@@ -179,7 +179,7 @@ sample({
   fn: (wallets, nextId) => {
     return wallets.map((wallet) => ({ ...wallet, isActive: wallet.id === nextId }));
   },
-  target: walletModel.$wallets,
+  target: walletModel.$allWallets,
 });
 
 export const walletSelectModel = {

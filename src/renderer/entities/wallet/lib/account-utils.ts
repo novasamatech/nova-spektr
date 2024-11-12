@@ -18,7 +18,7 @@ import {
   type Wallet,
   type WcAccount,
 } from '@/shared/core';
-import { AccountType, ChainType, CryptoType, ProxyType, ProxyVariant } from '@/shared/core';
+import { AccountType, ChainType, CryptoType, ProxyVariant } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import { networkUtils } from '@/entities/network';
 
@@ -184,19 +184,19 @@ function getDerivationPath(data: DerivationPathLike | DerivationPathLike[]): str
 // Proxied accounts
 
 function isAnyProxyType(account: ProxiedAccount): boolean {
-  return account.proxyType === ProxyType.ANY;
+  return account.proxyType === 'Any';
 }
 
 function isNonTransferProxyType(account: ProxiedAccount): boolean {
-  return account.proxyType === ProxyType.NON_TRANSFER;
+  return account.proxyType === 'NonTransfer';
 }
 
 function isStakingProxyType(account: ProxiedAccount): boolean {
-  return account.proxyType === ProxyType.STAKING;
+  return account.proxyType === 'Staking';
 }
 
 function isGovernanceProxyType(account: ProxiedAccount): boolean {
-  return account.proxyType === ProxyType.GOVERNANCE;
+  return account.proxyType === 'Governance';
 }
 
 function isNonBaseVaultAccount(account: Account, wallet: Wallet): boolean {

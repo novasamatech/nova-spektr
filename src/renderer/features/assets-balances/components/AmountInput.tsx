@@ -140,7 +140,7 @@ export const AmountInput = ({
     </div>
   );
 
-  const currencyIcon = showCurrency && activeCurrency && (
+  const currencyIcon = showCurrency && nonNullable(rate) && nonNullable(activeCurrency) && (
     <div className="flex min-w-fit items-center gap-x-1">
       <div className="relative flex h-8 w-8 items-center justify-center rounded-full border border-token-border bg-token-background p-[1px]">
         {activeCurrency.symbol ? (
@@ -168,7 +168,7 @@ export const AmountInput = ({
     ? formatBalance(value || undefined)
     : formatFiatBalance(currencyValue);
 
-  const suffixElement = showCurrency && nonNullable(activeCurrency) && (
+  const suffixElement = showCurrency && nonNullable(rate) && nonNullable(activeCurrency) && (
     <div className="flex items-center gap-x-2">
       <IconButton
         name="swapArrow"

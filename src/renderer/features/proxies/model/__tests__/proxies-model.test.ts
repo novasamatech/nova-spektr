@@ -8,7 +8,6 @@ import {
   ConnectionType,
   type HexString,
   type ProxyAccount,
-  ProxyType,
 } from '@/shared/core';
 import { networkModel } from '@/entities/network';
 import { proxyModel } from '@/entities/proxy';
@@ -77,7 +76,7 @@ describe('features/proxies/model/proxies-model', () => {
       chainId: '0x01' as HexString,
       accountId: '0x02' as AccountId,
       proxiedAccountId: '0x01' as AccountId,
-      proxyType: ProxyType.GOVERNANCE,
+      proxyType: 'Governance',
       delay: 0,
     } as ProxyAccount;
 
@@ -88,7 +87,7 @@ describe('features/proxies/model/proxies-model', () => {
 
     const scope = fork({
       values: new Map()
-        .set(walletModel.$wallets, [
+        .set(walletModel.$allWallets, [
           { id: 1, accounts: [{ walletId: 1, accountId: '0x01', type: AccountType.CHAIN, chainId: '0x01' }] },
         ])
         .set(networkModel.$chains, {
