@@ -51,7 +51,7 @@ describe('widgets/WalletDetails/model/vault-details-model', () => {
     jest.spyOn(storageService.accounts, 'deleteAll').mockResolvedValue([1]);
 
     const scope = fork({
-      values: new Map().set(walletModel.$allWallets, [wallet]),
+      values: new Map().set(walletModel._test.$allWallets, [wallet]),
     });
 
     await allSettled(vaultDetailsModel.events.keysRemoved, { scope, params: [wallet.accounts[0]] });
@@ -72,7 +72,7 @@ describe('widgets/WalletDetails/model/vault-details-model', () => {
     jest.spyOn(storageService.accounts, 'createAll').mockResolvedValue([newAccount]);
 
     const scope = fork({
-      values: new Map().set(walletModel.$allWallets, [wallet]),
+      values: new Map().set(walletModel._test.$allWallets, [wallet]),
     });
 
     await allSettled(vaultDetailsModel.events.accountsCreated, { scope, params });

@@ -115,7 +115,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
     toggleIsAddressModalOpen();
   };
 
-  const handleCreateVault = (accounts: DraftAccount<ChainAccount | ShardAccount>[]) => {
+  const handleCreateVault = (accounts: Omit<ChainAccount | ShardAccount, 'id' | 'walletId'>[]) => {
     manageVaultModel.events.vaultCreated({
       wallet: {
         name: walletName.trim(),

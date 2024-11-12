@@ -64,6 +64,7 @@ sample({
     return step === ReconnectStep.RECONNECTING && nonNullable(wallet) && nonNullable(session?.topic);
   },
   fn: ({ wallet, session }) => ({
+    walletId: wallet!.id,
     accounts: wallet!.accounts,
     topic: session!.topic,
   }),

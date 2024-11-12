@@ -73,7 +73,7 @@ export const SelectSignatoriesThreshold = () => {
 
       return;
     } else {
-      flowModel.events.signerSelected(ownedSignatoriesWallets[0].accounts[0].accountId);
+      flowModel.events.signerSelected(ownedSignatoriesWallets[0].accounts[0]);
       event.preventDefault();
       submit();
     }

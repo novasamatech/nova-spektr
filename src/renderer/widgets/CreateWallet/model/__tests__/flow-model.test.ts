@@ -40,7 +40,7 @@ describe('Create multisig wallet flow-model', () => {
         .set(networkModel.$apis, { '0x00': testApi })
         .set(networkModel.$chains, { '0x00': testChain })
         .set(networkModel.$connectionStatuses, { '0x00': ConnectionStatus.CONNECTED })
-        .set(walletModel.$allWallets, [initiatorWallet, signerWallet]),
+        .set(walletModel._test.$allWallets, [initiatorWallet, signerWallet]),
     });
 
     await allSettled(signatoryModel.events.changeSignatory, {
@@ -51,7 +51,7 @@ describe('Create multisig wallet flow-model', () => {
       scope,
       params: { index: 1, name: 'Alice', address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' },
     });
-    await allSettled(flowModel.events.signerSelected, { scope, params: signerWallet.accounts[0].accountId });
+    await allSettled(flowModel.events.signerSelected, { scope, params: signerWallet.accounts[0] });
 
     expect(scope.getState(flowModel.$step)).toEqual(Step.NAME_NETWORK);
     await allSettled(formModel.$createMultisigForm.fields.chain.onChange, { scope, params: testChain });

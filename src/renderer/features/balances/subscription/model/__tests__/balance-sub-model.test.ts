@@ -18,7 +18,7 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
 
     const actions = Promise.all([
       allSettled(networkModel.$chains, { scope, params: chains }),
-      allSettled(walletModel.$allWallets, { scope, params: wallets }),
+      allSettled(walletModel._test.$allWallets, { scope, params: wallets }),
     ]);
 
     await jest.runAllTimersAsync();
@@ -80,7 +80,7 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
     const scope = fork();
     await setupInitialState(scope);
 
-    const action = allSettled(walletModel.$allWallets, { scope, params: newWallets });
+    const action = allSettled(walletModel._test.$allWallets, { scope, params: newWallets });
 
     await jest.runAllTimersAsync();
     await action;
@@ -160,7 +160,7 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
       '0x02': undefined,
     });
 
-    const action = allSettled(walletModel.$allWallets, { scope, params: newWallets });
+    const action = allSettled(walletModel._test.$allWallets, { scope, params: newWallets });
 
     await jest.runAllTimersAsync();
     await action;
