@@ -4,8 +4,9 @@ import { not } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import { type Wallet } from '@/shared/core';
-import { splice } from '@/shared/lib/utils';
-import { walletModel } from '@/entities/wallet';
+import { nonNullable, splice } from '@/shared/lib/utils';
+import { walletModel, walletUtils } from '@/entities/wallet';
+import { walletConnectModel } from '@/entities/walletConnect';
 
 export type Callbacks = {
   onSubmit: () => void;
@@ -77,9 +78,28 @@ function validateNameExist(value: string, _: unknown, params: SourceParams): boo
 sample({
   clock: $walletForm.formValidated,
   source: $walletToEdit,
-  filter: (walletToEdit) => walletToEdit !== null,
-  fn: (walletToEdit, form) => ({ ...walletToEdit!, name: form.name }),
+  filter: (walletToEdit) => nonNullable(walletToEdit),
+  fn: (walletToEdit, form) => ({
+    ...walletToEdit!,
+    name: form.name,
+    accounts:
+      walletUtils.isPolkadotVault(walletToEdit!) || walletUtils.isMultiShard(walletToEdit!)
+        ? walletToEdit!.accounts
+        : walletToEdit!.accounts?.map((acc) => ({ ...acc, name: form.name })),
+  }),
   target: renameWalletFx,
+});
+
+sample({
+  clock: renameWalletFx.doneData,
+  filter: (updatedWallet) => {
+    return !walletUtils.isPolkadotVault(updatedWallet) && !walletUtils.isMultiShard(updatedWallet);
+  },
+  fn: (updatedWallet) => ({
+    walletId: updatedWallet.id,
+    accounts: updatedWallet.accounts,
+  }),
+  target: walletConnectModel.events.accountsUpdated,
 });
 
 sample({
