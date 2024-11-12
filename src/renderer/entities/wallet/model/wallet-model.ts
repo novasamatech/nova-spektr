@@ -1,6 +1,6 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import groupBy from 'lodash/groupBy';
-import { combineEvents, once, readonly } from 'patronum';
+import { combineEvents, readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import {
@@ -327,13 +327,6 @@ sample({
     return wallets.map((wallet) => ({ ...wallet, isActive: wallet.id === nextId }));
   },
   target: $allWallets,
-});
-
-sample({
-  clock: once($wallets),
-  filter: (wallets) => wallets.length > 0 && wallets.every((wallet) => !wallet.isActive),
-  fn: (wallets) => wallets[0]?.id,
-  target: walletSelectedFx,
 });
 
 sample({

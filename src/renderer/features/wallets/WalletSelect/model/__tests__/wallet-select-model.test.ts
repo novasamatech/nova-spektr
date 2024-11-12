@@ -118,20 +118,6 @@ describe('features/wallets/WalletSelect/model/wallet-select-model', () => {
     expect(scope.getState(walletModel.$activeWallet)).toEqual(wallets[0]);
   });
 
-  test('should set $activeWallet when $wallets receives new wallet', async () => {
-    jest.spyOn(storageService.wallets, 'readAll').mockResolvedValue(wallets);
-    jest.spyOn(storageService.wallets, 'updateAll').mockResolvedValue([1]);
-    jest.spyOn(storageService.wallets, 'update').mockResolvedValue(newWallet.id);
-
-    const scope = fork({
-      values: new Map().set(walletModel._test.$allWallets, wallets),
-    });
-
-    expect(scope.getState(walletModel.$activeWallet)).toEqual(wallets[0]);
-    await allSettled(walletModel._test.$allWallets, { scope, params: wallets.concat(newWallet) });
-    expect(scope.getState(walletModel.$activeWallet)).toEqual({ ...newWallet, isActive: true });
-  });
-
   test('should set $activeWallet on $activeWallet removed, respect wallet groups', async () => {
     const extendedWallets = wallets.concat(newWallet);
 

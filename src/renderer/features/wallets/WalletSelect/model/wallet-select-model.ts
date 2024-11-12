@@ -1,6 +1,6 @@
 import { default as BigNumber } from 'bignumber.js';
 import { attach, combine, createApi, createEvent, createStore, sample } from 'effector';
-import { previous } from 'patronum';
+import { once, previous } from 'patronum';
 
 import { type Account, type ID, type Wallet } from '@/shared/core';
 import { dictionary, getRoundedValue, totalAmount } from '@/shared/lib/utils';
@@ -137,6 +137,17 @@ sample({
     source: $callbacks,
     effect: (state) => state?.onClose(),
   }),
+});
+
+sample({
+  clock: once(walletModel.$wallets),
+  filter: (wallets) => wallets.length > 0 && wallets.every((wallet) => !wallet.isActive),
+  fn: (wallets) => {
+    const groups = walletSelectUtils.getWalletByGroups(wallets);
+
+    return Object.values(groups).flat()[0].id;
+  },
+  target: walletModel.events.selectWallet,
 });
 
 export const walletSelectModel = {
