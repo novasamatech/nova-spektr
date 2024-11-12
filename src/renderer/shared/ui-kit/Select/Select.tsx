@@ -19,6 +19,7 @@ type ContextProps = {
 const Context = createContext<ContextProps>({});
 
 type ControlledSelectProps = {
+  placeholder: string;
   value: string;
   onChange: (value: string) => void;
 } & XOR<{
@@ -35,6 +36,7 @@ const Root = ({
   testId = 'Select',
   open,
   onToggle,
+  placeholder,
   value,
   onChange,
   children,
@@ -44,6 +46,7 @@ const Root = ({
   return (
     <Context.Provider value={ctx}>
       <RadixSelect.Root open={open} disabled={disabled} value={value} onOpenChange={onToggle} onValueChange={onChange}>
+        <Button placeholder={placeholder} />
         {children}
       </RadixSelect.Root>
     </Context.Provider>
@@ -143,7 +146,6 @@ const Item = ({ value, children }: PropsWithChildren<ItemProps>) => {
 };
 
 export const Select = Object.assign(Root, {
-  Button,
   Content,
   Item,
 });

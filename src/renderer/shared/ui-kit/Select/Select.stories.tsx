@@ -16,8 +16,7 @@ const meta: Meta<typeof Select> = {
 
     return (
       <Box width="200px">
-        <Select {...params} value={value} onChange={onChange}>
-          <Select.Button placeholder="Select a fruit" />
+        <Select {...params} placeholder="Select a fruit" value={value} onChange={onChange}>
           <Select.Content>
             <Select.Item value="item_1">Apple</Select.Item>
             <Select.Item value="item_2">Orange</Select.Item>
@@ -36,14 +35,16 @@ type Story = StoryObj<typeof Select>;
 
 export const Default: Story = {};
 
-export const Controlled: Story = {
-  decorators: [
-    (Story, { args }) => {
-      const [open, onToggle] = useState(false);
+export const Invalid: Story = {
+  args: {
+    invalid: true,
+  },
+};
 
-      return <Story args={{ ...args, open, onToggle }} />;
-    },
-  ],
+export const Disabled: Story = {
+  args: {
+    disabled: true,
+  },
 };
 
 export const Dark: Story = {
