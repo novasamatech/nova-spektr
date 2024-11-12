@@ -6,7 +6,7 @@ import keyBy from 'lodash/keyBy';
 
 import { localStorageService } from '@/shared/api/local-storage';
 import { storageService } from '@/shared/api/storage';
-import { type Account, type ID, type Wallet, type WcAccount, kernelModel } from '@/shared/core';
+import { type Account, type ID, type Wallet, kernelModel } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import {
@@ -29,7 +29,7 @@ type SessionTopicParams = {
 
 type UpdateAccountsParams = {
   walletId: ID;
-  accounts: WcAccount[];
+  accounts: Account[];
 };
 
 const connect = createEvent<Omit<InitConnectParams, 'client'>>();
@@ -187,25 +187,23 @@ const removePairingFx = createEffect(async ({ client, topic }: { client: Client;
 
 type UpdateParams = {
   wallet: Wallet;
-  accounts: WcAccount[];
+  accounts: Account[];
 };
-const updateWcAccountsFx = createEffect(
-  async ({ wallet, accounts }: UpdateParams): Promise<WcAccount[] | undefined> => {
-    const oldAccountIds = wallet.accounts.map((account) => account.id);
-    const newAccountsWithoutId = accounts.map((account) => {
-      const { id: _, ...newAccount } = account;
+const updateWcAccountsFx = createEffect(async ({ wallet, accounts }: UpdateParams): Promise<Account[] | undefined> => {
+  const oldAccountIds = wallet.accounts.map((account) => account.id);
+  const newAccountsWithoutId = accounts.map((account) => {
+    const { id: _, ...newAccount } = account;
 
-      return newAccount;
-    });
+    return newAccount;
+  });
 
-    const [_, newAccounts] = await Promise.all([
-      storageService.accounts.deleteAll(oldAccountIds),
-      storageService.accounts.createAll(newAccountsWithoutId),
-    ]);
+  const [_, newAccounts] = await Promise.all([
+    storageService.accounts.deleteAll(oldAccountIds),
+    storageService.accounts.createAll(newAccountsWithoutId),
+  ]);
 
-    return newAccounts as WcAccount[];
-  },
-);
+  return newAccounts;
+});
 
 type DisconnectParams = {
   client: Client;
