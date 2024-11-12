@@ -41,17 +41,17 @@ describe('Create flexible multisig wallet flexible-multisig', () => {
         .set(networkModel.$apis, { '0x00': testApi })
         .set(networkModel.$chains, { '0x00': testChain })
         .set(networkModel.$connectionStatuses, { '0x00': ConnectionStatus.CONNECTED })
-        .set(walletModel.$wallets, [initiatorWallet, signerWallet]),
+        .set(walletModel.$allWallets, [initiatorWallet, signerWallet]),
     });
     await allSettled(flexibleMultisigFeature.start, { scope });
 
     expect(scope.getState(flexibleMultisigModel.$step)).toEqual(Step.NAME_NETWORK);
 
-    await allSettled(signatoryModel.events.signatoriesChanged, {
+    await allSettled(signatoryModel.events.changeSignatory, {
       scope,
       params: { index: 0, name: signerWallet.name, address: toAddress(signerWallet.accounts[0].accountId) },
     });
-    await allSettled(signatoryModel.events.signatoriesChanged, {
+    await allSettled(signatoryModel.events.changeSignatory, {
       scope,
       params: { index: 1, name: 'Alice', address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' },
     });

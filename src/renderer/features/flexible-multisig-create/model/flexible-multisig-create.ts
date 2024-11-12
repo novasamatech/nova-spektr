@@ -15,7 +15,6 @@ import {
   type Contact,
   CryptoType,
   type MultisigAccount,
-  ProxyType,
   type Signatory,
   SigningType,
   type Transaction,
@@ -123,7 +122,7 @@ const $proxyTransactionTx = combine(
       chainId: form.chain.chainId,
       address: toAddress(account.accountId, { prefix: chains[form.chain.chainId].addressPrefix }),
       type: TransactionType.CREATE_PURE_PROXY,
-      args: { proxyType: ProxyType.ANY, delay: 0, index: 0 },
+      args: { proxyType: 'Any', delay: 0, index: 0 },
     };
   },
 );
@@ -147,10 +146,7 @@ const $transaction = combine(
   ({ api, chain, proxyTransactionTx, signatories, signer, threshold, multisigAccountId }) => {
     if (!chain || !api || !proxyTransactionTx || !signer) return null;
 
-    const signatoriesWrapped = Array.from(signatories.values()).map((s) => ({
-      accountId: toAccountId(s.address),
-      address: s.address,
-    }));
+    const signatoriesWrapped = signatories.map((s) => ({ accountId: toAccountId(s.address), address: s.address }));
 
     return transactionService.getWrappedTransaction({
       api: api,
@@ -189,7 +185,7 @@ const $fakeTx = combine(
       chainId: chain.chainId,
       address: toAddress(TEST_ACCOUNTS[0], { prefix: SS58_DEFAULT_PREFIX }),
       type: TransactionType.CREATE_PURE_PROXY,
-      args: { proxyType: ProxyType.ANY, delay: 0, index: 0 },
+      args: { proxyType: 'Any', delay: 0, index: 0 },
     };
 
     const extrinsic = getExtrinsic[proxyTransaction.type](proxyTransaction.args, api);
@@ -263,8 +259,8 @@ const $isEnoughBalance = combine(
 
 sample({
   clock: signerSelected,
-  source: { wallets: walletModel.$wallets },
-  fn: ({ wallets }, accountId) => {
+  source: walletModel.$wallets,
+  fn: (wallets, accountId) => {
     const signerAccount = walletUtils.getAccountBy(wallets, (a) => a.accountId === accountId);
 
     return signerAccount;
@@ -283,6 +279,8 @@ sample({
     multisigDeposit: $multisigDeposit,
   },
   filter: ({ transaction, signer }) => {
+    console.log(transaction, signer);
+
     return Boolean(transaction) && Boolean(signer);
   },
   fn: ({ multisigDeposit, signer, transaction, fee }, formData) => {

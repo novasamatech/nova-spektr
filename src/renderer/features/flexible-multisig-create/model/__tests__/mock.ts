@@ -20,6 +20,7 @@ export const testChain = {
   name: 'test-chain',
   chainId: '0x00',
   options: [ChainOptions.MULTISIG],
+  assets: [{ assetId: 0 }],
   type: ChainType.SUBSTRATE,
 } as unknown as Chain;
 

@@ -51,6 +51,7 @@ export const FlexibleMultisigWallet = ({ isOpen, onClose, onGoBack }: Props) => 
       )}
     </div>
   );
+  console.log(activeStep);
 
   return (
     <>

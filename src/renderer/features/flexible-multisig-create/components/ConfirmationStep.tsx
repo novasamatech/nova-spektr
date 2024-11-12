@@ -24,8 +24,7 @@ export const ConfirmationStep = () => {
   const transaction = useUnit(flexibleMultisigModel.$transaction);
   const isEnoughBalance = useUnit(flexibleMultisigModel.$isEnoughBalance);
 
-  const signatoriesMap = useUnit(signatoryModel.$signatories);
-  const signatories = Array.from(signatoriesMap.values());
+  const signatories = useUnit(signatoryModel.$signatories);
   const ownedSignatories = useUnit(signatoryModel.$ownedSignatoriesWallets);
   const {
     fields: { name, threshold, chain },

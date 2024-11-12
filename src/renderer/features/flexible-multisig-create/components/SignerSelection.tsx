@@ -24,6 +24,7 @@ export const SignerSelection = () => {
   const onSubmit = (event: FormEvent, accountId: AccountId) => {
     flexibleMultisigModel.events.signerSelected(accountId);
     event.preventDefault();
+    console.log(accountId);
     submit();
   };
 
@@ -41,7 +42,7 @@ export const SignerSelection = () => {
 
           return (
             <Signer
-              key={accountId}
+              key={`${accountId}-${type}`}
               accountId={accountId}
               walletName={name}
               walletType={type}

@@ -1,6 +1,6 @@
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { Step } from '@/shared/lib/utils';
@@ -38,23 +38,23 @@ export const SelectSignatoriesThreshold = () => {
     fields: { threshold, chain },
     submit,
   } = useForm(formModel.$createMultisigForm);
-  const signatoriesMap = useUnit(signatoryModel.$signatories);
+  const signatories = useUnit(signatoryModel.$signatories);
   const multisigAlreadyExists = useUnit(formModel.$multisigAlreadyExists);
   const hiddenMultisig = useUnit(formModel.$hiddenMultisig);
   const ownedSignatoriesWallets = useUnit(signatoryModel.$ownedSignatoriesWallets);
   const hasDuplicateSignatories = useUnit(signatoryModel.$hasDuplicateSignatories);
+  const hasEmptySignatories = useUnit(signatoryModel.$hasEmptySignatories);
 
-  const signatories = Array.from(signatoriesMap.values());
-  const thresholdOptions = getThresholdOptions(signatories.length - 1);
+  const thresholdOptions = useMemo(() => getThresholdOptions(signatories.length - 1), [signatories.length]);
   const hasOwnedSignatory = !!ownedSignatoriesWallets && ownedSignatoriesWallets?.length > 0;
   const hasEnoughSignatories = signatories.length >= MIN_THRESHOLD;
-  const hasEmptySignatory = signatories.map(({ address }) => address).includes('');
+
   const isThresholdValid = threshold.value >= MIN_THRESHOLD && threshold.value <= signatories.length;
   const canSubmit =
     hasOwnedSignatory &&
     hasEnoughSignatories &&
     !multisigAlreadyExists &&
-    !hasEmptySignatory &&
+    !hasEmptySignatories &&
     isThresholdValid &&
     !hasDuplicateSignatories;
 
@@ -103,7 +103,7 @@ export const SelectSignatoriesThreshold = () => {
           </Alert>
 
           <Alert
-            active={hasClickedNext && hasEmptySignatory}
+            active={hasClickedNext && hasEmptySignatories}
             title={t('createMultisigAccount.notEmptySignatoryTitle')}
             variant="error"
           >
@@ -117,6 +117,7 @@ export const SelectSignatoriesThreshold = () => {
             className="w-[300px]"
             selectedId={threshold.value.toString()}
             options={thresholdOptions}
+            disabled={thresholdOptions.length === 0}
             invalid={threshold.hasError()}
             position={thresholdOptions.length > 2 ? 'up' : 'down'}
             onChange={({ value }) => threshold.onChange(value)}
