@@ -62,8 +62,6 @@ class StorageService<T extends { id: K }, K extends IndexableType> {
   }
 
   readAll(): Promise<T[]> {
-    console.trace(this.dexieTable.name);
-
     try {
       return this.dexieTable.toArray();
     } catch (error) {
