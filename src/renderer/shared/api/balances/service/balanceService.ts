@@ -51,7 +51,7 @@ function subscribeBalances(
     ormlAssets: Asset[];
   }>(
     (acc, asset) => {
-      if (!asset.type) acc.nativeAsset = asset;
+      if (asset.type === AssetType.NATIVE) acc.nativeAsset = asset;
       if (asset.type === AssetType.STATEMINE) acc.statemineAssets.push(asset);
       if (asset.type === AssetType.ORML) acc.ormlAssets.push(asset);
 

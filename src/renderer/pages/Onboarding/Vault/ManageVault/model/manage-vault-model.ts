@@ -156,7 +156,7 @@ sample({
   source: walletModel.$wallets,
   filter: (_, data) => Boolean(data),
   fn: (wallets, data) => wallets.concat(data!),
-  target: walletModel.$wallets,
+  target: walletModel.$allWallets,
 });
 
 sample({

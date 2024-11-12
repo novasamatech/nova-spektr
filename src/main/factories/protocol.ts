@@ -12,9 +12,7 @@ export function registerDeepLinkProtocol() {
   }
 }
 
-export function processUrl(url: string, mainWindow?: BrowserWindow) {
-  if (!mainWindow) return;
-
+export function processUrl(url: string, mainWindow: BrowserWindow) {
   const parsed = new URL(url);
   if (parsed.protocol !== `${APP_CONFIG.ELECTRON_PROTOCOL}:`) return;
 

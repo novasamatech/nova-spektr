@@ -15,7 +15,8 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { cnTw, toAccountId } from '@/shared/lib/utils';
 import { CaptionText, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { Skeleton } from '@/shared/ui-kit';
+import { AccountExplorers } from '@/shared/ui-entities';
+import { Box, Skeleton } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { TracksDetails, voteTransactionService } from '@/entities/governance';
@@ -33,7 +34,7 @@ import {
   isUndelegateTransaction,
   isXcmTransaction,
 } from '@/entities/transaction';
-import { AddressWithExplorers, ExplorersPopover, WalletCardSm, WalletIcon, walletModel } from '@/entities/wallet';
+import { AddressWithExplorers, WalletIcon, walletModel } from '@/entities/wallet';
 import { AddressStyle, InteractionStyle } from '../common/constants';
 import {
   getDelegate,
@@ -192,12 +193,11 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
 
       {signatory && signatoryWallet && (
         <DetailRow label={t('transfer.signatoryLabel')} className="-mr-2 text-text-secondary">
-          <ExplorersPopover
-            button={<WalletCardSm wallet={signatoryWallet} />}
-            address={signatory.accountId}
-            explorers={explorers}
-            addressPrefix={addressPrefix}
-          />
+          <Box direction="row" gap={2}>
+            <WalletIcon type={signatoryWallet.type} size={16} />
+            <span>{signatoryWallet.name}</span>
+            {extendedChain ? <AccountExplorers accountId={signatory.accountId} chain={extendedChain} /> : null}
+          </Box>
         </DetailRow>
       )}
 

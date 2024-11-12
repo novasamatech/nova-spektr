@@ -6,13 +6,29 @@ export type KitchensinkRuntimeProxyType = z.infer<typeof kitchensinkRuntimeProxy
 export const kitchensinkRuntimeProxyType = pjsSchema.enumType(
   'Any',
   'NonTransfer',
+  'NonCritical',
+  'NonFungibile',
   'Governance',
   'Staking',
-  // All types below can be absent, need some research
+  'Identity',
+  'IdentityJudgement',
+  'Society',
+  'Senate',
+  'Triumvirate',
+  'Transfer',
+  'Assets',
+  'AssetOwner',
+  'AssetManager',
+  'Collator',
+  'Nomination',
+  'NominationPools',
   'Auction',
   'CancelProxy',
-  'IdentityJudgement',
-  'NominationPools',
+  'Registration',
+  'SudoBalances',
+  'Balances',
+  'AuthorMapping',
+  'Spokesperson',
 );
 
 export type ProxyProxyDefinition = z.infer<typeof proxyProxyDefinition>;

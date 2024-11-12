@@ -63,8 +63,9 @@ export type {
   PartialProxiedAccount,
   ProxyDeposits,
   ProxyGroup,
+  ProxyType,
 } from './types/proxy';
-export { ProxyType, ProxyVariant } from './types/proxy';
+export { ProxyVariant } from './types/proxy';
 
 export type { Notification, MultisigCreated, MultisigOperation, ProxyAction } from './types/notification';
 export { NotificationType } from './types/notification';

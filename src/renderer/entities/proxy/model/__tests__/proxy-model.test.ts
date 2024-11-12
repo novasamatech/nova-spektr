@@ -2,7 +2,6 @@ import { allSettled, fork } from 'effector';
 
 import { storageService } from '@/shared/api/storage';
 import { type AccountId, type HexString, type ProxyAccount, type ProxyGroup } from '@/shared/core';
-import { ProxyType } from '@/shared/core';
 import { proxyModel } from '../proxy-model';
 
 const proxyMock = {
@@ -10,7 +9,7 @@ const proxyMock = {
   chainId: '0x00' as HexString,
   accountId: '0x00' as AccountId,
   proxiedAccountId: '0x01' as AccountId,
-  proxyType: ProxyType.ANY,
+  proxyType: 'Any',
   delay: 0,
 } as ProxyAccount;
 
@@ -19,7 +18,7 @@ const newProxyMock = {
   chainId: '0x11' as HexString,
   accountId: '0x11' as AccountId,
   proxiedAccountId: '0x01' as AccountId,
-  proxyType: ProxyType.STAKING,
+  proxyType: 'Staking',
   delay: 0,
 } as ProxyAccount;
 

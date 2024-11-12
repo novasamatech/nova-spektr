@@ -10,9 +10,10 @@ import {
   type ProxyAccount,
   type ProxyDeposits,
   type ProxyGroup,
+  type ProxyType,
+  ProxyVariant,
   type Wallet,
 } from '@/shared/core';
-import { ProxyType, ProxyVariant } from '@/shared/core';
 import { splitCamelCaseString, toAddress } from '@/shared/lib/utils';
 import { accountUtils } from '@/entities/wallet';
 
@@ -40,14 +41,14 @@ function isSameProxy(oldProxy: ProxyAccount, newProxy: ProxyAccount): boolean {
 }
 function sortAccountsByProxyType(accounts: ProxyAccount[]): ProxyAccount[] {
   const typeOrder = [
-    ProxyType.ANY,
-    ProxyType.NON_TRANSFER,
-    ProxyType.STAKING,
-    ProxyType.AUCTION,
-    ProxyType.CANCEL_PROXY,
-    ProxyType.GOVERNANCE,
-    ProxyType.IDENTITY_JUDGEMENT,
-    ProxyType.NOMINATION_POOLS,
+    'Any',
+    'NonTransfer',
+    'Staking',
+    'Auction',
+    'CancelProxy',
+    'Governance',
+    'IdentityJudgement',
+    'NominationPools',
   ];
 
   return sortBy(accounts, (account) => typeOrder.indexOf(account.proxyType));

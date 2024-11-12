@@ -39,7 +39,7 @@ export const WalletSelect = ({ action }: Props) => {
   }, []);
 
   if (!activeWallet) {
-    return <Skeleton width={208} height={56} />;
+    return <Skeleton width={52} height={14} />;
   }
 
   return (

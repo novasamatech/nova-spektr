@@ -10,7 +10,6 @@ import {
   type ProxiedAccount,
   type ProxyAccount,
   type ProxyTxWrapper,
-  ProxyType,
   ProxyVariant,
   type Transaction,
   TransactionType,
@@ -121,7 +120,7 @@ const $shouldRemovePureProxy = combine(
     if (!chain || !account) return true;
 
     const chainProxies = proxies[chain.chainId] || [];
-    const anyProxies = chainProxies.filter((proxy) => proxy.proxyType === ProxyType.ANY);
+    const anyProxies = chainProxies.filter((proxy) => proxy.proxyType === 'Any');
     const isPureProxy = (account as ProxiedAccount).proxyVariant === ProxyVariant.PURE;
 
     return isPureProxy && anyProxies.length === 1;
