@@ -96,7 +96,7 @@ sample({
       return { ...wallet, accounts: remainingAccounts } as Wallet;
     });
   },
-  target: walletModel.$wallets,
+  target: walletModel.$allWallets,
 });
 
 sample({
@@ -117,7 +117,7 @@ sample({
       return { ...wallet, accounts: [...wallet.accounts, ...result!] } as Wallet;
     });
   },
-  target: walletModel.$wallets,
+  target: walletModel.$allWallets,
 });
 
 sample({

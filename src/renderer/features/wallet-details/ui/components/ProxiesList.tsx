@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { type ProxiedAccount, type ProxyAccount, ProxyType, ProxyVariant, type Wallet } from '@/shared/core';
+import { type ProxiedAccount, type ProxyAccount, ProxyVariant, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
@@ -44,7 +44,7 @@ export const ProxiesList = ({ className, wallet, canCreateProxy = true }: Props)
 
   const handleDeleteProxy = (proxyAccount: ProxyAccount) => {
     const chainProxies = chainsProxies[proxyAccount.chainId] || [];
-    const anyProxies = chainProxies.filter((proxy) => proxy.proxyType === ProxyType.ANY);
+    const anyProxies = chainProxies.filter((proxy) => proxy.proxyType === 'Any');
     const isPureProxy = (wallet?.accounts[0] as ProxiedAccount).proxyVariant === ProxyVariant.PURE;
 
     const shouldRemovePureProxy = isPureProxy && anyProxies.length === 1;

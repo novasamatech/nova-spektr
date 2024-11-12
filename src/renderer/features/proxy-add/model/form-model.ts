@@ -15,7 +15,7 @@ import {
   type PartialBy,
   type ProxiedAccount,
   type ProxyTxWrapper,
-  ProxyType,
+  type ProxyType,
   type Transaction,
   TransactionType,
   type Wallet,
@@ -384,10 +384,11 @@ const $proxyTypes = combine(
   },
   ({ apis, statuses, chain }) => {
     if (!chain.chainId) return [];
+    if (networkUtils.isConnectedStatus(statuses[chain.chainId])) {
+      return getProxyTypes(apis[chain.chainId]);
+    }
 
-    return networkUtils.isConnectedStatus(statuses[chain.chainId])
-      ? getProxyTypes(apis[chain.chainId])
-      : [ProxyType.ANY];
+    return ['Any'] as const;
   },
 );
 
@@ -473,7 +474,7 @@ const $fakeTx = combine(
       type: TransactionType.ADD_PROXY,
       args: {
         delegate: toAddress(TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
-        proxyType: ProxyType.ANY,
+        proxyType: 'Any',
         delay: 0,
       },
     };

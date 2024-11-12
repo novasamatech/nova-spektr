@@ -12,7 +12,7 @@ import {
   type Chain,
   type PartialBy,
   type ProxiedAccount,
-  ProxyType,
+  type ProxyType,
   type Transaction,
   TransactionType,
   type Wallet,
@@ -179,9 +179,7 @@ const $proxyTypes = combine(
   ({ apis, statuses, chain }) => {
     if (!chain) return [];
 
-    return networkUtils.isConnectedStatus(statuses[chain.chainId])
-      ? getProxyTypes(apis[chain.chainId])
-      : [ProxyType.ANY];
+    return networkUtils.isConnectedStatus(statuses[chain.chainId]) ? getProxyTypes(apis[chain.chainId]) : ['Any'];
   },
 );
 
@@ -224,7 +222,7 @@ const $fakeTx = combine(
       type: TransactionType.REMOVE_PURE_PROXY,
       args: {
         spawner: toAddress(TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
-        proxyType: ProxyType.ANY,
+        proxyType: 'Any',
         index: 0,
         blockNumber: 1,
         extrinsicIndex: 1,

@@ -11,7 +11,6 @@ import {
   type PartialBy,
   type ProxiedAccount,
   type ProxyTxWrapper,
-  ProxyType,
   type Transaction,
   TransactionType,
   type Wallet,
@@ -324,9 +323,7 @@ const $proxyTypes = combine(
   ({ apis, statuses, chain }) => {
     if (!chain.chainId) return [];
 
-    return networkUtils.isConnectedStatus(statuses[chain.chainId])
-      ? getProxyTypes(apis[chain.chainId])
-      : [ProxyType.ANY];
+    return networkUtils.isConnectedStatus(statuses[chain.chainId]) ? getProxyTypes(apis[chain.chainId]) : ['Any'];
   },
 );
 
@@ -368,7 +365,7 @@ const $pureTx = combine(
       chainId: form.chain.chainId,
       address: toAddress(account.accountId, { prefix: form.chain.addressPrefix }),
       type: TransactionType.CREATE_PURE_PROXY,
-      args: { proxyType: ProxyType.ANY, delay: 0, index: 0 },
+      args: { proxyType: 'Any', delay: 0, index: 0 },
     };
   },
   { skipVoid: false },
@@ -406,7 +403,7 @@ const $fakeTx = combine(
       chainId: chain.chainId,
       address: toAddress(TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
       type: TransactionType.CREATE_PURE_PROXY,
-      args: { proxyType: ProxyType.ANY, delay: 0, index: 0 },
+      args: { proxyType: 'Any', delay: 0, index: 0 },
     };
   },
   { skipVoid: false },

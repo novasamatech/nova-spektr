@@ -18,8 +18,7 @@ import { WalletItem } from './components/WalletItem';
 
 export const ConfirmationStep = () => {
   const { t } = useI18n();
-  const signatoriesMap = useUnit(signatoryModel.$signatories);
-  const signatories = Array.from(signatoriesMap.values());
+  const signatories = useUnit(signatoryModel.$signatories);
   const signerWallet = useUnit(flowModel.$signerWallet);
   const signer = useUnit(flowModel.$signer);
   const {

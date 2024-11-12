@@ -9,7 +9,6 @@ import {
   type ProxiedAccount,
   type ProxyAccount,
   type ProxyTxWrapper,
-  ProxyType,
   ProxyVariant,
   type Transaction,
   TransactionType,
@@ -157,7 +156,7 @@ const $initiatorWallet = combine(
     wallets: walletModel.$wallets,
   },
   ({ store, wallets }) => {
-    if (!store) return undefined;
+    if (!store) return null;
 
     return walletUtils.getWalletById(wallets, store.account.walletId) ?? null;
   },
@@ -195,7 +194,7 @@ const $shouldRemovePureProxy = combine(
     if (!chain || !account) return true;
 
     const chainProxies = proxies[chain.chainId] || [];
-    const anyProxies = chainProxies.filter((proxy) => proxy.proxyType === ProxyType.ANY);
+    const anyProxies = chainProxies.filter((proxy) => proxy.proxyType === 'Any');
     const isPureProxy = (account as ProxiedAccount).proxyVariant === ProxyVariant.PURE;
 
     return isPureProxy && anyProxies.length === 1;
@@ -369,7 +368,7 @@ sample({
         proxiedAccount: account as ProxiedAccount,
         transaction: wrappedTx as Transaction,
         spawner: (account as ProxiedAccount).proxyAccountId,
-        proxyType: ProxyType.ANY,
+        proxyType: 'Any' as const,
         coreTx,
       },
     ],
