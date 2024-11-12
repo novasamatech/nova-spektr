@@ -50,7 +50,7 @@ const $multisigAccountId = combine(
     const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
 
     return accountUtils.getMultisigAccountId(
-      Array.from(signatories.values()).map((s) => toAccountId(s.address)),
+      signatories.map((s) => toAccountId(s.address)),
       threshold,
       cryptoType,
     );
@@ -113,7 +113,7 @@ const $availableAccounts = combine(
 );
 
 sample({
-  clock: signatoryModel.events.signatoryDeleted,
+  clock: signatoryModel.events.deleteSignatory,
   target: $createMultisigForm.fields.threshold.reset,
 });
 

@@ -69,7 +69,7 @@ describe('features/multisigs/model/multisigs-model', () => {
     };
     const scope = fork({
       values: new Map()
-        .set(walletModel.$wallets, [
+        .set(walletModel.$allWallets, [
           { id: 1111, accounts: [{ walletId: 1111, accountId: '0x11', type: AccountType.CHAIN, chainId: '0x01' }] },
         ])
         .set(networkModel.$chains, {
@@ -103,7 +103,7 @@ describe('features/multisigs/model/multisigs-model', () => {
 
     const scope = fork({
       values: new Map()
-        .set(walletModel.$wallets, [
+        .set(walletModel.$allWallets, [
           { id: 1111, accounts: [{ walletId: 1111, accountId: '0x00', type: AccountType.CHAIN, chainId: '0x01' }] },
         ])
         .set(networkModel.$chains, {

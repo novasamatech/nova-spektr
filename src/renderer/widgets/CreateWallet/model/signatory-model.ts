@@ -1,20 +1,38 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { produce } from 'immer';
 
-import { type Wallet } from '@/shared/core';
+import { type Address, type Wallet } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { balanceSubModel } from '@/features/balances';
 import { type SignatoryInfo } from '../lib/types';
 
-const signatoriesChanged = createEvent<SignatoryInfo>();
-const signatoryDeleted = createEvent<number>();
+const addSignatory = createEvent<Omit<SignatoryInfo, 'index'>>();
+const changeSignatory = createEvent<SignatoryInfo>();
+const deleteSignatory = createEvent<number>();
 const getSignatoriesBalance = createEvent<Wallet[]>();
 
-const $signatories = createStore<Map<number, Omit<SignatoryInfo, 'index'>>>(new Map([[0, { name: '', address: '' }]]));
+const $signatories = createStore<Omit<SignatoryInfo, 'index'>[]>([{ name: '', address: '' }]);
 const $hasDuplicateSignatories = combine($signatories, (signatories) => {
-  const signatoriesArray = Array.from(signatories.values()).map(({ address }) => toAccountId(address));
+  const existingKeys: Set<Address> = new Set();
 
-  return new Set(signatoriesArray).size !== signatoriesArray.length;
+  for (const signatory of signatories) {
+    if (signatory.address.length === 0) {
+      continue;
+    }
+
+    if (existingKeys.has(signatory.address)) {
+      return true;
+    }
+
+    existingKeys.add(signatory.address);
+  }
+
+  return false;
+});
+
+const $hasEmptySignatories = combine($signatories, (signatories) => {
+  return signatories.map(({ address }) => address).includes('');
 });
 
 const $ownedSignatoriesWallets = combine(
@@ -22,7 +40,7 @@ const $ownedSignatoriesWallets = combine(
   ({ wallets, signatories }) =>
     walletUtils.getWalletsFilteredAccounts(wallets, {
       walletFn: (w) => !walletUtils.isWatchOnly(w) && !walletUtils.isMultisig(w),
-      accountFn: (a) => Array.from(signatories.values()).some((s) => toAccountId(s.address) === a.accountId),
+      accountFn: (a) => signatories.some((s) => toAccountId(s.address) === a.accountId),
     }) || [],
 );
 
@@ -38,28 +56,39 @@ sample({
 });
 
 sample({
-  clock: signatoriesChanged,
+  clock: addSignatory,
   source: $signatories,
-  fn: (signatories, { index, name, address }) => {
-    // we need to return new Map to trigger re-render
-    const newMap = new Map(signatories);
-    newMap.set(index, { name, address });
-
-    return newMap;
+  fn: (signatories, { name, address }) => {
+    return produce(signatories, (draft) => {
+      draft.push({ name, address });
+    });
   },
   target: $signatories,
 });
 
 sample({
-  clock: signatoryDeleted,
+  clock: changeSignatory,
   source: $signatories,
-  filter: (signatories, index) => signatories.has(index),
-  fn: (signatories, index) => {
-    // we need to return new Map to trigger re-render
-    const newMap = new Map(signatories);
-    newMap.delete(index);
+  fn: (signatories, { index, name, address }) => {
+    return produce(signatories, (draft) => {
+      if (index >= draft.length) {
+        draft.push({ name, address });
+      } else {
+        draft[index] = { name, address };
+      }
+    });
+  },
+  target: $signatories,
+});
 
-    return newMap;
+sample({
+  clock: deleteSignatory,
+  source: $signatories,
+  filter: (signatories, index) => signatories.length > index,
+  fn: (signatories, index) => {
+    return produce(signatories, (draft) => {
+      draft.splice(index, 1);
+    });
   },
   target: $signatories,
 });
@@ -68,9 +97,11 @@ export const signatoryModel = {
   $signatories,
   $ownedSignatoriesWallets,
   $hasDuplicateSignatories,
+  $hasEmptySignatories,
   events: {
-    signatoriesChanged,
-    signatoryDeleted,
+    addSignatory,
+    changeSignatory,
+    deleteSignatory,
     getSignatoriesBalance,
   },
 };

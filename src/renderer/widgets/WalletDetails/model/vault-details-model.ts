@@ -85,7 +85,7 @@ sample({
 
 sample({
   clock: removeKeysFx.doneData,
-  source: walletModel.$wallets,
+  source: walletModel.$allWallets,
   filter: (_, ids) => Boolean(ids),
   fn: (wallets, ids) => {
     const removeMap = ids!.reduce<Record<ID, boolean>>((acc, id) => ({ ...acc, [id]: true }), {});
@@ -96,7 +96,7 @@ sample({
       return { ...wallet, accounts: remainingAccounts } as Wallet;
     });
   },
-  target: walletModel.$wallets,
+  target: walletModel.$allWallets,
 });
 
 sample({
@@ -108,7 +108,7 @@ sample({ clock: accountsCreated, target: createAccountsFx });
 
 sample({
   clock: createAccountsFx.done,
-  source: walletModel.$wallets,
+  source: walletModel.$allWallets,
   filter: (_, { result }) => Boolean(result),
   fn: (wallets, { params, result }) => {
     return wallets.map((wallet) => {
@@ -117,7 +117,7 @@ sample({
       return { ...wallet, accounts: [...wallet.accounts, ...result!] } as Wallet;
     });
   },
-  target: walletModel.$wallets,
+  target: walletModel.$allWallets,
 });
 
 sample({

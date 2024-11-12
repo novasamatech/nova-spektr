@@ -12,24 +12,20 @@ export const SelectSignatories = () => {
   const signatories = useUnit(signatoryModel.$signatories);
 
   const onAddSignatoryClick = () => {
-    signatoryModel.events.signatoriesChanged({ index: signatories.size, name: '', address: '' });
-  };
-
-  const onDeleteSignatoryClick = (index: number) => {
-    signatoryModel.events.signatoryDeleted(index);
+    signatoryModel.events.addSignatory({ name: '', address: '' });
   };
 
   return (
     <div className="flex flex-1 flex-col">
       <div className="flex flex-col gap-2">
-        {Array.from(signatories.entries()).map(([key, value]) => (
+        {signatories.map((value, index) => (
           <Signatory
-            key={key}
-            signtoryIndex={key}
-            isOwnAccount={key === 0}
+            key={index}
+            signatoryIndex={index}
+            isOwnAccount={index === 0}
             signatoryName={value.name}
             signatoryAddress={value.address}
-            onDelete={() => onDeleteSignatoryClick(key)}
+            onDelete={signatoryModel.events.deleteSignatory}
           />
         ))}
       </div>

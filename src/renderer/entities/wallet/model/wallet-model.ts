@@ -1,7 +1,6 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
-import { partition } from 'lodash';
 import groupBy from 'lodash/groupBy';
-import { combineEvents, spread } from 'patronum';
+import { combineEvents } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import {
@@ -36,9 +35,9 @@ const walletHidden = createEvent<Wallet>();
 const walletRemoved = createEvent<ID>();
 const walletsRemoved = createEvent<ID[]>();
 
-const $wallets = createStore<Wallet[]>([]);
-const $hiddenWallets = createStore<Wallet[]>([]);
 const $allWallets = createStore<Wallet[]>([]);
+const $wallets = $allWallets.map((wallets) => wallets.filter((x) => !x.isHidden));
+const $hiddenWallets = $allWallets.map((wallets) => wallets.filter((x) => x.isHidden));
 
 // TODO: ideally it should be a feature
 const $activeWallet = combine(
@@ -274,28 +273,12 @@ sample({
   target: $allWallets,
 });
 
-sample({
-  clock: $allWallets,
-  fn: (allWallets) => {
-    const [hiddenWallets, wallets] = partition(allWallets, 'isHidden');
-
-    return { hiddenWallets, wallets };
-  },
-  target: spread({
-    wallets: $wallets,
-    hiddenWallets: $hiddenWallets,
-  }),
-});
-
 export const walletModel = {
   $wallets,
+  $allWallets,
   $hiddenWallets,
   $activeWallet,
   $isLoadingWallets: fetchAllWalletsFx.pending,
-
-  _test: {
-    $allWallets,
-  },
 
   events: {
     walletStarted,

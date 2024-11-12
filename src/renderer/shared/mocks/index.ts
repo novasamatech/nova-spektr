@@ -3,6 +3,7 @@ import { createTestKeyring } from '@polkadot/keyring';
 import {
   AccountType,
   type Asset,
+  AssetType,
   type BaseAccount,
   type Chain,
   type ChainAccount,
@@ -30,6 +31,7 @@ export const dotAsset: Asset = {
   assetId: 0,
   symbol: 'DOT',
   precision: 10,
+  type: AssetType.NATIVE,
   icon: 'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg',
   name: 'Polkadot',
 };
