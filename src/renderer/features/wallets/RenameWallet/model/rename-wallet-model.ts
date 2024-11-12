@@ -92,7 +92,9 @@ sample({
 
 sample({
   clock: renameWalletFx.doneData,
-  filter: (updatedWallet) => !walletUtils.isPolkadotVault(updatedWallet) && !walletUtils.isMultiShard(updatedWallet),
+  filter: (updatedWallet) => {
+    return !walletUtils.isPolkadotVault(updatedWallet) && !walletUtils.isMultiShard(updatedWallet);
+  },
   fn: (updatedWallet) => ({
     walletId: updatedWallet.id,
     accounts: updatedWallet.accounts,
