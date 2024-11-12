@@ -43,6 +43,7 @@ const $isStatusShown = combine(
       operationSignUtils.isReconnectingStep(reconnectStep) ||
       operationSignUtils.isConnectedStep(reconnectStep) ||
       operationSignUtils.isRejectedStep(reconnectStep) ||
+      operationSignUtils.isFailedStep(reconnectStep) ||
       isSigningRejected
     );
   },
@@ -96,6 +97,14 @@ sample({
 });
 
 sample({
+  clock: [walletConnectModel.events.initConnectFailed, walletConnectModel.events.sessionTopicUpdateFailed],
+  source: $reconnectStep,
+  filter: (step) => step === ReconnectStep.RECONNECTING,
+  fn: () => ReconnectStep.FAILED,
+  target: $reconnectStep,
+});
+
+sample({
   clock: walletConnectModel.events.connected,
   source: {
     signer: operationSignModel.$signer,
@@ -118,7 +127,8 @@ sample({
 
 sample({
   clock: combineEvents({
-    events: [reconnectStarted, walletConnectModel.events.sessionTopicUpdateDone, walletConnectModel.events.connected],
+    events: [walletConnectModel.events.sessionTopicUpdateDone],
+    reset: reconnectStarted,
   }),
   source: {
     signer: operationSignModel.$signer,

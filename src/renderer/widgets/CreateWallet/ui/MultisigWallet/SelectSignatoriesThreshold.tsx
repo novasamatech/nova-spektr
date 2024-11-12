@@ -138,11 +138,7 @@ export const SelectSignatoriesThreshold = () => {
           </Alert>
         </div>
         <div className="flex items-end gap-x-4">
-          <Alert
-            active={Boolean(multisigAlreadyExists)}
-            title={t('createMultisigAccount.multisigExistTitle')}
-            variant="error"
-          >
+          <Alert active={multisigAlreadyExists} title={t('createMultisigAccount.multisigExistTitle')} variant="error">
             <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
           </Alert>
 
@@ -156,7 +152,11 @@ export const SelectSignatoriesThreshold = () => {
             </Alert.Item>
           </Alert>
 
-          <Alert active={Boolean(hiddenMultisig)} title={t('createMultisigAccount.multisigExistTitle')} variant="info">
+          <Alert
+            active={!multisigAlreadyExists && Boolean(hiddenMultisig)}
+            title={t('createMultisigAccount.multisigExistTitle')}
+            variant="info"
+          >
             <Alert.Item withDot={false}>{t('createMultisigAccount.multisigHiddenExistText')}</Alert.Item>
             <Alert.Item withDot={false}>
               <Button

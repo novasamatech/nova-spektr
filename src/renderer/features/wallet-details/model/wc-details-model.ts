@@ -60,8 +60,9 @@ sample({
     wallet: $wallet,
     session: walletConnectModel.$session,
   },
-  filter: ({ step, wallet, session }) =>
-    step === ReconnectStep.RECONNECTING && nonNullable(wallet) && nonNullable(session?.topic),
+  filter: ({ step, wallet, session }) => {
+    return step === ReconnectStep.RECONNECTING && nonNullable(wallet) && nonNullable(session?.topic);
+  },
   fn: ({ wallet, session }) => ({
     accounts: wallet!.accounts,
     topic: session!.topic,
@@ -71,7 +72,8 @@ sample({
 
 sample({
   clock: combineEvents({
-    events: [reconnectStarted, walletConnectModel.events.sessionTopicUpdateDone, walletConnectModel.events.connected],
+    events: [walletConnectModel.events.sessionTopicUpdateDone],
+    reset: reconnectStarted,
   }),
   source: {
     wallet: $wallet,
@@ -81,10 +83,13 @@ sample({
   filter: ({ wallet }) => nonNullable(wallet),
   fn: ({ wallet, newAccounts, chains }) => {
     const updatedAccounts: WcAccount[] = [];
+    const chainIds = Object.keys(chains);
 
     for (const newAccount of newAccounts) {
       const [_, chainId, address] = newAccount.split(':');
-      const chain = chains[chainId as ChainId];
+
+      const fullChainId = chainIds.find((chain) => chain.includes(chainId));
+      const chain = fullChainId && chains[fullChainId as ChainId];
 
       if (!chain) continue;
 
@@ -110,7 +115,7 @@ sample({
 });
 
 sample({
-  clock: walletConnectModel.events.initConnectFailed,
+  clock: [walletConnectModel.events.initConnectFailed, walletConnectModel.events.sessionTopicUpdateFailed],
   source: $reconnectStep,
   filter: (step) => step === ReconnectStep.RECONNECTING,
   fn: () => ReconnectStep.FAILED,
