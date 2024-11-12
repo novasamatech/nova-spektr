@@ -2,7 +2,7 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
-import { type AccountId, AccountType, type ChainAccount } from '@/shared/core';
+import { type Account, AccountType, type ChainAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
 import { Step } from '@/widgets/CreateWallet/lib/types';
@@ -20,8 +20,8 @@ export const SignerSelection = () => {
     submit,
   } = useForm(formModel.$createMultisigForm);
 
-  const onSubmit = (event: FormEvent, accountId: AccountId) => {
-    flowModel.events.signerSelected(accountId);
+  const onSubmit = (event: FormEvent, account: Account) => {
+    flowModel.events.signerSelected(account);
     event.preventDefault();
     submit();
   };
@@ -30,18 +30,18 @@ export const SignerSelection = () => {
     <section className="max-h-[660px] w-full overflow-x-hidden px-5 pb-4">
       <ul className="my-4 flex flex-col [overflow-y:overlay]">
         {ownedSignatoriesWallets.map(({ accounts, type, name }) => {
-          const { accountId } =
+          const account =
             accounts[0].type === AccountType.BASE
               ? accounts[0]
-              : accounts.find((account) => (account as ChainAccount).chainId === chain.value.chainId) || {};
-          if (!accountId) {
+              : accounts.find((account) => (account as ChainAccount).chainId === chain.value.chainId);
+          if (!account) {
             return null;
           }
 
           return (
             <Signer
-              key={accountId}
-              accountId={accountId}
+              key={account.accountId}
+              account={account}
               walletName={name}
               walletType={type}
               chain={chain.value}
