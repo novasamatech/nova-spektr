@@ -8,9 +8,10 @@ import { signModel } from '@/features/operations/OperationSign/model/sign-model'
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { ExtrinsicResult } from '@/features/operations/OperationSubmit/lib/types';
 import { confirmModel } from '../confirm-model';
-import { flowModel } from '../flow-model';
+import { flexibleMultisigModel } from '../flexible-multisig-create';
 import { formModel } from '../form-model';
 import { signatoryModel } from '../signatory-model';
+import { flexibleMultisigFeature } from '../status';
 
 import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
 
@@ -29,7 +30,7 @@ jest.mock('@/entities/transaction/lib/extrinsicService', () => ({
   }),
 }));
 
-describe('Create multisig wallet flow-model', () => {
+describe('Create flexible multisig wallet flexible-multisig', () => {
   beforeAll(() => {
     jest.useFakeTimers();
   });
@@ -42,6 +43,9 @@ describe('Create multisig wallet flow-model', () => {
         .set(networkModel.$connectionStatuses, { '0x00': ConnectionStatus.CONNECTED })
         .set(walletModel.$allWallets, [initiatorWallet, signerWallet]),
     });
+    await allSettled(flexibleMultisigFeature.start, { scope });
+
+    expect(scope.getState(flexibleMultisigModel.$step)).toEqual(Step.NAME_NETWORK);
 
     await allSettled(signatoryModel.events.changeSignatory, {
       scope,
@@ -51,9 +55,11 @@ describe('Create multisig wallet flow-model', () => {
       scope,
       params: { index: 1, name: 'Alice', address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' },
     });
-    await allSettled(flowModel.events.signerSelected, { scope, params: signerWallet.accounts[0].accountId });
+    await allSettled(flexibleMultisigModel.events.signerSelected, {
+      scope,
+      params: signerWallet.accounts[0].accountId,
+    });
 
-    expect(scope.getState(flowModel.$step)).toEqual(Step.NAME_NETWORK);
     await allSettled(formModel.$createMultisigForm.fields.chain.onChange, { scope, params: testChain });
     await allSettled(formModel.$createMultisigForm.fields.name.onChange, { scope, params: 'some name' });
     await allSettled(formModel.$createMultisigForm.fields.threshold.onChange, { scope, params: 2 });
@@ -71,12 +77,11 @@ describe('Create multisig wallet flow-model', () => {
     };
 
     await allSettled(confirmModel.events.formInitiated, { scope, params: store });
-
-    expect(scope.getState(flowModel.$step)).toEqual(Step.CONFIRM);
+    expect(scope.getState(flexibleMultisigModel.$step)).toEqual(Step.CONFIRM);
 
     await allSettled(confirmModel.output.formSubmitted, { scope });
 
-    expect(scope.getState(flowModel.$step)).toEqual(Step.SIGN);
+    expect(scope.getState(flexibleMultisigModel.$step)).toEqual(Step.SIGN);
 
     await allSettled(signModel.output.formSubmitted, {
       scope,
@@ -86,7 +91,7 @@ describe('Create multisig wallet flow-model', () => {
       },
     });
 
-    expect(scope.getState(flowModel.$step)).toEqual(Step.SUBMIT);
+    expect(scope.getState(flexibleMultisigModel.$step)).toEqual(Step.SUBMIT);
 
     const action = allSettled(submitModel.output.formSubmitted, {
       scope,

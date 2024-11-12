@@ -2,7 +2,7 @@ import { RadioGroup as HeadlessRadioGroup } from '@headlessui/react';
 import { Fragment, type PropsWithChildren } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
-import { BodyText, TitleText } from '../Typography';
+import { BodyText, HeaderTitleText } from '../Typography';
 
 import { type RadioOption } from './common/types';
 import './RadioGroup.css';
@@ -21,15 +21,15 @@ export const RadioCard = ({ option, children }: PropsWithChildren<Props>) => {
       {({ checked }) => (
         <div
           className={cnTw(
-            'flex-1 cursor-pointer rounded border border-filter-border p-6',
+            'max-w-[300px] flex-1 cursor-pointer rounded border border-filter-border p-6',
             'transition hover:bg-hover',
             checked && 'border-active-container-border',
           )}
         >
           <div className="flex items-center justify-between">
-            <TitleText as="p" className="text-tab-text-accent">
+            <HeaderTitleText as="p" className="mb-2 text-tab-text-accent">
               {title}
-            </TitleText>
+            </HeaderTitleText>
 
             <span
               className={cnTw(

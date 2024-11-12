@@ -1,12 +1,15 @@
+import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import sortBy from 'lodash/sortBy';
-import { delay, spread } from 'patronum';
+import { delay, or, spread } from 'patronum';
 
+import { proxyService } from '@/shared/api/proxy';
 import {
   type Account,
   type AccountId,
   AccountType,
+  type Chain,
   type ChainId,
   ChainType,
   type Contact,
@@ -30,39 +33,53 @@ import {
   toAddress,
   transferableAmount,
 } from '@/shared/lib/utils';
+import { createDepositCalculator, createFeeCalculator } from '@/shared/transactions';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
-import { transactionService } from '@/entities/transaction';
+import { getExtrinsic, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { ExtrinsicResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { proxiesModel } from '@/features/proxies';
 import { walletPairingModel } from '@/features/wallets';
-import { type AddMultisigStore, type FormSubmitEvent } from '../lib/types';
 
 import { confirmModel } from './confirm-model';
 import { formModel } from './form-model';
 import { signatoryModel } from './signatory-model';
+import { flexibleMultisigFeature } from './status';
 import { walletProviderModel } from './wallet-provider-model';
 
+type FormSubmitEvent = {
+  transactions: {
+    wrappedTx: Transaction;
+    multisigTx?: Transaction;
+    coreTx: Transaction;
+  };
+  formData: {
+    signer: Account;
+    fee: string;
+    multisigDeposit: string;
+    threshold: number;
+    chain: Chain;
+    name: string;
+  };
+};
+
+export type AddMultisigStore = FormSubmitEvent['formData'];
+
 const stepChanged = createEvent<Step>();
-const feeChanged = createEvent<string>();
-const multisigDepositChanged = createEvent<string>();
-const isFeeLoadingChanged = createEvent<boolean>();
 const formSubmitted = createEvent<FormSubmitEvent>();
 const flowFinished = createEvent();
 const signerSelected = createEvent<AccountId>();
-
 const walletCreated = createEvent<{
   name: string;
   threshold: number;
 }>();
-const $step = restore(stepChanged, Step.NAME_NETWORK).reset(flowFinished);
-const $fee = restore(feeChanged, ZERO_BALANCE);
-const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
-const $isFeeLoading = restore(isFeeLoadingChanged, true);
 
+const $step = restore(stepChanged, Step.NAME_NETWORK).reset(flowFinished);
+
+const $proxyDeposit = createStore(ZERO_BALANCE).reset(flowFinished);
 const $error = createStore('').reset(flowFinished);
 const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
@@ -79,8 +96,6 @@ const $signerWallet = combine({ signer: $signer, wallets: walletModel.$wallets }
   return res;
 });
 
-// Miscellaneous
-
 const $isChainConnected = combine(
   {
     chain: formModel.$createMultisigForm.fields.chain.$value,
@@ -93,51 +108,50 @@ const $isChainConnected = combine(
   },
 );
 
-const $remarkTx = combine(
+const $proxyTransactionTx = combine(
   {
     chains: networkModel.$chains,
     form: formModel.$createMultisigForm.$values,
     account: $signer,
     isConnected: $isChainConnected,
   },
-  ({ chains, form, account, isConnected }): Transaction | undefined => {
-    if (!isConnected || !account || !form.chain.chainId || !form.threshold) return undefined;
+  ({ chains, form, account, isConnected }): Transaction | null => {
+    if (!isConnected || !account || !form.chain.chainId || !form.threshold) return null;
 
     return {
       chainId: form.chain.chainId,
       address: toAddress(account.accountId, { prefix: chains[form.chain.chainId].addressPrefix }),
-      type: TransactionType.REMARK,
-      args: {
-        remark: 'Multisig created with Nova Spektr',
-      },
+      type: TransactionType.CREATE_PURE_PROXY,
+      args: { proxyType: 'Any', delay: 0, index: 0 },
     };
   },
-  { skipVoid: false },
 );
+
+const $api = combine(flexibleMultisigFeature.state, (state) => {
+  if (state.status !== 'running') return null;
+
+  return state.data.api;
+});
 
 const $transaction = combine(
   {
-    apis: networkModel.$apis,
-    chains: networkModel.$chains,
+    api: $api,
     chain: formModel.$createMultisigForm.fields.chain.$value,
-    remarkTx: $remarkTx,
+    proxyTransactionTx: $proxyTransactionTx,
     signatories: signatoryModel.$signatories,
     signer: $signer,
     threshold: formModel.$createMultisigForm.fields.threshold.$value,
     multisigAccountId: formModel.$multisigAccountId,
   },
-  ({ apis, chain, remarkTx, signatories, signer, threshold, multisigAccountId }) => {
-    if (!chain || !remarkTx || !signer) return undefined;
+  ({ api, chain, proxyTransactionTx, signatories, signer, threshold, multisigAccountId }) => {
+    if (!chain || !api || !proxyTransactionTx || !signer) return null;
 
-    const signatoriesWrapped = signatories.map((s) => ({
-      accountId: toAccountId(s.address),
-      adress: s.address,
-    }));
+    const signatoriesWrapped = signatories.map((s) => ({ accountId: toAccountId(s.address), address: s.address }));
 
     return transactionService.getWrappedTransaction({
-      api: apis[chain.chainId],
+      api: api,
       addressPrefix: chain.addressPrefix,
-      transaction: remarkTx,
+      transaction: proxyTransactionTx,
       txWrappers: [
         {
           kind: WrapperKind.MULTISIG,
@@ -145,82 +159,11 @@ const $transaction = combine(
             accountId: multisigAccountId,
             signatories: signatoriesWrapped,
             threshold,
-          } as unknown as MultisigAccount,
+          } as MultisigAccount,
           signatories: Array.from(signatories.values()).map((s) => ({
             accountId: toAccountId(s.address),
           })) as Account[],
           signer,
-        },
-      ],
-    });
-  },
-  { skipVoid: false },
-);
-
-const $api = combine(
-  {
-    apis: networkModel.$apis,
-    chain: formModel.$createMultisigForm.fields.chain.$value,
-  },
-  ({ apis, chain }) => {
-    return chain ? apis[chain.chainId] : undefined;
-  },
-  { skipVoid: false },
-);
-
-const $isEnoughBalance = combine(
-  {
-    signer: $signer,
-    fee: $fee,
-    multisigDeposit: $multisigDeposit,
-    balances: balanceModel.$balances,
-    chain: formModel.$createMultisigForm.fields.chain.$value,
-  },
-  ({ signer, fee, multisigDeposit, balances, chain }) => {
-    if (!signer || !fee || !multisigDeposit || !chain) return false;
-
-    const balance = balanceUtils.getBalance(
-      balances,
-      signer.accountId,
-      chain.chainId,
-      chain.assets[0].assetId.toString(),
-    );
-
-    return new BN(fee).add(new BN(multisigDeposit)).lte(new BN(transferableAmount(balance)));
-  },
-);
-
-type CreateWalletParams = {
-  name: string;
-  threshold: number;
-  signatories: Signatory[];
-  chainId: ChainId | null;
-  isEthereumChain: boolean;
-};
-
-const createWalletFx = createEffect(
-  async ({ name, threshold, signatories, chainId, isEthereumChain }: CreateWalletParams) => {
-    const cryptoType = isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519;
-    const accountIds = signatories.map((s) => s.accountId);
-    const accountId = accountUtils.getMultisigAccountId(accountIds, threshold, cryptoType);
-
-    walletModel.events.multisigCreated({
-      wallet: {
-        name,
-        type: WalletType.MULTISIG,
-        signingType: SigningType.MULTISIG,
-      },
-      accounts: [
-        {
-          signatories,
-          chainId: chainId || undefined,
-          name: name.trim(),
-          accountId: accountId,
-          threshold: threshold,
-          creatorAccountId: accountId,
-          cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
-          chainType: isEthereumChain ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
-          type: AccountType.MULTISIG,
         },
       ],
     });
@@ -231,71 +174,98 @@ const $fakeTx = combine(
   {
     chain: formModel.$createMultisigForm.fields.chain.$value,
     isConnected: $isChainConnected,
+    api: $api,
+    transaction: $transaction,
   },
-  ({ isConnected, chain }): Transaction | undefined => {
-    if (!chain || !isConnected) return undefined;
+  ({ isConnected, chain, api, transaction }): Transaction | null => {
+    if (!chain || !isConnected || !api) return null;
+    if (transaction) return transaction.wrappedTx;
+
+    const proxyTransaction = {
+      chainId: chain.chainId,
+      address: toAddress(TEST_ACCOUNTS[0], { prefix: SS58_DEFAULT_PREFIX }),
+      type: TransactionType.CREATE_PURE_PROXY,
+      args: { proxyType: 'Any', delay: 0, index: 0 },
+    };
+
+    const extrinsic = getExtrinsic[proxyTransaction.type](proxyTransaction.args, api);
+    const callData = extrinsic.method.toHex();
+    const callHash = extrinsic.method.hash.toHex();
 
     return {
       chainId: chain.chainId,
       address: toAddress(TEST_ACCOUNTS[0], { prefix: SS58_DEFAULT_PREFIX }),
       type: TransactionType.MULTISIG_AS_MULTI,
       args: {
-        remark: 'Multisig created with Nova Spektr',
+        threshold: 2,
+        otherSignatories: [],
+        callData,
+        callHash,
       },
     };
   },
-  { skipVoid: false },
+);
+
+const { $: $fee, $pending: $pendingFee } = createFeeCalculator({
+  $api: $api,
+  $transaction: $fakeTx,
+});
+
+const { $deposit: $multisigDeposit, $pending: $pendingDeposit } = createDepositCalculator({
+  $api: $api,
+  $threshold: formModel.$createMultisigForm.fields.threshold.$value,
+});
+
+const getProxyDepositFx = createEffect((api: ApiPromise): string => {
+  return proxyService.getProxyDeposit(api, '0', 1);
+});
+
+sample({
+  clock: $api,
+  filter: nonNullable,
+  target: getProxyDepositFx,
+});
+
+sample({
+  clock: getProxyDepositFx.doneData,
+  target: $proxyDeposit,
+});
+
+const $isEnoughBalance = combine(
+  {
+    signer: $signer,
+    fee: $fee,
+    multisigDeposit: $multisigDeposit,
+    proxyDeposit: $proxyDeposit,
+    balances: balanceModel.$balances,
+    chain: formModel.$createMultisigForm.fields.chain.$value,
+  },
+  ({ signer, fee, multisigDeposit, balances, proxyDeposit, chain }) => {
+    if (!signer || !fee || !chain) return false;
+
+    const balance = balanceUtils.getBalance(
+      balances,
+      signer.accountId,
+      chain.chainId,
+      chain.assets[0].assetId.toString(),
+    );
+
+    return fee
+      .add(multisigDeposit)
+      .add(new BN(proxyDeposit))
+      .lte(new BN(transferableAmount(balance)));
+  },
 );
 
 sample({
-  clock: formModel.output.formSubmitted,
-  fn: () => Step.CONFIRM,
-  target: stepChanged,
-});
+  clock: signerSelected,
+  source: walletModel.$wallets,
+  fn: (wallets, accountId) => {
+    const signerAccount = walletUtils.getAccountBy(wallets, (a) => a.accountId === accountId);
 
-sample({
-  clock: submitModel.output.formSubmitted,
-  source: {
-    name: formModel.$createMultisigForm.fields.name.$value,
-    threshold: formModel.$createMultisigForm.fields.threshold.$value,
-    signatories: signatoryModel.$signatories,
-    chain: formModel.$createMultisigForm.fields.chain.$value,
-    step: $step,
+    return signerAccount;
   },
-  filter: ({ step }, results) => {
-    return submitUtils.isSuccessResult(results[0].result) && isStep(Step.SUBMIT, step);
-  },
-  fn: ({ signatories, chain, name, threshold }) => {
-    const sortedSignatories = sortBy(
-      Array.from(signatories.values()).map((a) => ({ address: a.address, accountId: toAccountId(a.address) })),
-      'accountId',
-    );
-
-    return {
-      name,
-      threshold,
-      chainId: chain.chainId,
-      signatories: sortedSignatories,
-      isEthereumChain: networkUtils.isEthereumBased(chain.options),
-    };
-  },
-  target: createWalletFx,
-});
-
-sample({
-  clock: createWalletFx.failData,
-  fn: (error) => error.message,
-  target: $error,
-});
-
-sample({
-  clock: createWalletFx.doneData,
-  target: proxiesModel.events.workerStarted,
-});
-
-sample({
-  clock: createWalletFx.doneData,
-  target: walletProviderModel.events.completed,
+  target: $signer,
 });
 
 // Submit
@@ -309,6 +279,8 @@ sample({
     multisigDeposit: $multisigDeposit,
   },
   filter: ({ transaction, signer }) => {
+    console.log(transaction, signer);
+
     return Boolean(transaction) && Boolean(signer);
   },
   fn: ({ multisigDeposit, signer, transaction, fee }, formData) => {
@@ -321,9 +293,9 @@ sample({
       formData: {
         ...formData,
         signer: signer!,
-        fee,
+        fee: fee.toString(),
         account: signer,
-        multisigDeposit,
+        multisigDeposit: multisigDeposit.toString(),
       },
     };
   },
@@ -415,30 +387,6 @@ sample({
 });
 
 sample({
-  clock: submitModel.output.formSubmitted,
-  source: {
-    step: $step,
-    hiddenMultisig: formModel.$hiddenMultisig,
-  },
-  filter: ({ step, hiddenMultisig }, results) => {
-    const isSubmitStep = isStep(step, Step.SUBMIT);
-    const isNonNullable = nonNullable(hiddenMultisig);
-    const isSuccessResult = results[0]?.result === ExtrinsicResult.SUCCESS;
-
-    return isSubmitStep && isNonNullable && isSuccessResult;
-  },
-  fn: ({ hiddenMultisig }) => hiddenMultisig!.id,
-  target: walletModel.events.walletRemoved,
-});
-
-sample({
-  clock: delay(submitModel.output.formSubmitted, 2000),
-  source: $step,
-  filter: (step) => isStep(step, Step.SUBMIT),
-  target: flowFinished,
-});
-
-sample({
   clock: signModel.output.formSubmitted,
   source: {
     signatories: signatoryModel.$signatories,
@@ -462,15 +410,111 @@ sample({
   target: contactModel.effects.createContactsFx,
 });
 
-sample({
-  clock: signerSelected,
-  source: { wallets: walletModel.$wallets },
-  fn: ({ wallets }, accountId) => {
-    const signerAccount = walletUtils.getAccountBy(wallets, (a) => a.accountId === accountId);
+// Create wallet
+type CreateWalletParams = {
+  name: string;
+  threshold: number;
+  signatories: Signatory[];
+  chainId: ChainId | null;
+  isEthereumChain: boolean;
+};
 
-    return signerAccount;
+const createWalletFx = createEffect(
+  async ({ name, threshold, signatories, chainId, isEthereumChain }: CreateWalletParams) => {
+    const cryptoType = isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519;
+    const accountIds = signatories.map((s) => s.accountId);
+    const accountId = accountUtils.getMultisigAccountId(accountIds, threshold, cryptoType);
+
+    walletModel.events.multisigCreated({
+      wallet: {
+        name,
+        type: WalletType.MULTISIG,
+        signingType: SigningType.MULTISIG,
+      },
+      accounts: [
+        {
+          signatories,
+          chainId: chainId || undefined,
+          name: name.trim(),
+          accountId: accountId,
+          threshold: threshold,
+          creatorAccountId: accountId,
+          cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
+          chainType: isEthereumChain ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
+          type: AccountType.MULTISIG,
+        },
+      ],
+    });
   },
-  target: $signer,
+);
+
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: {
+    name: formModel.$createMultisigForm.fields.name.$value,
+    threshold: formModel.$createMultisigForm.fields.threshold.$value,
+    signatories: signatoryModel.$signatories,
+    chain: formModel.$createMultisigForm.fields.chain.$value,
+    step: $step,
+  },
+  filter: ({ step }, results) => {
+    return submitUtils.isSuccessResult(results[0].result) && isStep(Step.SUBMIT, step);
+  },
+  fn: ({ signatories, chain, name, threshold }) => {
+    const sortedSignatories = sortBy(
+      Array.from(signatories.values()).map((a) => ({ address: a.address, accountId: toAccountId(a.address) })),
+      'accountId',
+    );
+
+    return {
+      name,
+      threshold,
+      chainId: chain.chainId,
+      signatories: sortedSignatories,
+      isEthereumChain: networkUtils.isEthereumBased(chain.options),
+    };
+  },
+  target: createWalletFx,
+});
+
+sample({
+  clock: createWalletFx.failData,
+  fn: (error) => error.message,
+  target: $error,
+});
+
+sample({
+  clock: createWalletFx.doneData,
+  target: proxiesModel.events.workerStarted,
+});
+
+sample({
+  clock: createWalletFx.doneData,
+  target: walletProviderModel.events.completed,
+});
+
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: {
+    step: $step,
+    hiddenMultisig: formModel.$hiddenMultisig,
+  },
+  filter: ({ step }, results) => {
+    const isSubmitStep = isStep(step, Step.SUBMIT);
+    const isNonNullable = nonNullable(formModel.$hiddenMultisig);
+    const isSuccessResult = results[0]?.result === ExtrinsicResult.SUCCESS;
+
+    return isSubmitStep && isNonNullable && isSuccessResult;
+  },
+  fn: ({ hiddenMultisig }) => hiddenMultisig!.id,
+  target: walletModel.events.walletRemoved,
+});
+
+sample({
+  clock: delay(submitModel.output.formSubmitted, 2000),
+  source: $step,
+  filter: (step) => isStep(step, Step.SUBMIT),
+  target: flowFinished,
 });
 
 sample({
@@ -484,13 +528,13 @@ sample({
 });
 
 sample({
-  clock: flowFinished,
-  target: walletPairingModel.events.walletTypeCleared,
+  clock: flexibleMultisigFeature.stopped,
+  target: formModel.$createMultisigForm.reset,
 });
 
 sample({
   clock: flowFinished,
-  target: formModel.$createMultisigForm.reset,
+  target: walletPairingModel.events.walletTypeCleared,
 });
 
 sample({
@@ -500,29 +544,32 @@ sample({
 });
 
 sample({
-  clock: delay(flowFinished, 2000),
+  clock: flexibleMultisigFeature.stopped,
   target: signatoryModel.$signatories.reinit,
 });
 
-export const flowModel = {
+export const flexibleMultisigModel = {
   $error,
   $step,
-  $fee,
-  $fakeTx,
   $api,
-  $isFeeLoading,
   $signer,
   $signerWallet,
+  $transaction,
+
+  $fee,
+  $proxyDeposit,
+  $multisigDeposit,
+  $isLoading: or($pendingFee, $pendingDeposit, getProxyDepositFx.pending),
   $isEnoughBalance,
+
   events: {
     signerSelected,
     walletCreated,
     stepChanged,
-    feeChanged,
-    multisigDepositChanged,
-    isFeeLoadingChanged,
-    //for tests
-    formSubmitted,
+
+    _test: {
+      formSubmitted,
+    },
   },
   output: {
     flowFinished,

@@ -8,9 +8,10 @@ import { Button, FootnoteText, Input, InputHint, Select, SmallTitleText } from '
 import { type DropdownOption } from '@/shared/ui/types';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel, networkUtils } from '@/entities/network';
-import { MultisigCreationFees } from '@/widgets/CreateWallet/ui/MultisigWallet/components/';
-import { flowModel } from '../../model/flow-model';
-import { formModel } from '../../model/form-model';
+import { flexibleMultisigModel } from '../model/flexible-multisig-create';
+import { formModel } from '../model/form-model';
+
+import { MultisigFees } from './MultisigFees';
 
 const getChainOptions = (chains: Chain[]): DropdownOption<Chain>[] => {
   return chains
@@ -29,19 +30,17 @@ interface Props {
 export const NameNetworkSelection = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
-  const api = useUnit(flowModel.$api);
-  const fakeTx = useUnit(flowModel.$fakeTx);
   const chains = useUnit(networkModel.$chains);
 
   const {
-    fields: { name, chain, threshold },
+    fields: { name, chain },
   } = useForm(formModel.$createMultisigForm);
 
   const chainOptions = getChainOptions(Object.values(chains));
   const isNameError = name.isTouched && !name.value;
 
   return (
-    <section className="flex h-full w-modal-lg flex-1 flex-col">
+    <section className="flex h-full max-h-[594px] w-modal-lg flex-1 flex-col">
       <SmallTitleText className="mb-4 border-b border-container-border px-5 pb-4 text-text-primary">
         {t('createMultisigAccount.multisigStep', { step: 1 })} {t('createMultisigAccount.nameNetworkDescription')}
       </SmallTitleText>
@@ -78,16 +77,11 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
             {t('createMultisigAccount.backButton')}
           </Button>
           <div className="mt-auto flex items-center justify-end">
-            <MultisigCreationFees
-              api={api}
-              asset={chain.value.assets[0]}
-              threshold={threshold.value}
-              transaction={fakeTx}
-            />
+            <MultisigFees asset={chain.value.assets[0]} />
             <Button
               key="create"
               disabled={isNameError || !name.isTouched}
-              onClick={() => flowModel.events.stepChanged(Step.SIGNATORIES_THRESHOLD)}
+              onClick={() => flexibleMultisigModel.events.stepChanged(Step.SIGNATORIES_THRESHOLD)}
             >
               {t('createMultisigAccount.continueButton')}
             </Button>

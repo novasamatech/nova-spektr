@@ -6,23 +6,25 @@ import { type AccountId, AccountType, type ChainAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Step } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
-import { flowModel } from '@/widgets/CreateWallet/model/flow-model';
-import { formModel } from '@/widgets/CreateWallet/model/form-model';
-import { signatoryModel } from '@/widgets/CreateWallet/model/signatory-model';
+import { flexibleMultisigModel } from '../model/flexible-multisig-create';
+import { formModel } from '../model/form-model';
+import { signatoryModel } from '../model/signatory-model';
 
 import { Signer } from './Signer';
 
 export const SignerSelection = () => {
   const { t } = useI18n();
-  const ownedSignatoriesWallets = useUnit(signatoryModel.$ownedSignatoriesWallets) || [];
+
+  const ownedSignatoriesWallets = useUnit(signatoryModel.$ownedSignatoriesWallets);
   const {
     fields: { chain },
     submit,
   } = useForm(formModel.$createMultisigForm);
 
   const onSubmit = (event: FormEvent, accountId: AccountId) => {
-    flowModel.events.signerSelected(accountId);
+    flexibleMultisigModel.events.signerSelected(accountId);
     event.preventDefault();
+    console.log(accountId);
     submit();
   };
 
@@ -40,7 +42,7 @@ export const SignerSelection = () => {
 
           return (
             <Signer
-              key={accountId}
+              key={`${accountId}-${type}`}
               accountId={accountId}
               walletName={name}
               walletType={type}
@@ -54,7 +56,7 @@ export const SignerSelection = () => {
         <Button
           variant="text"
           onClick={() => {
-            flowModel.events.stepChanged(Step.SIGNATORIES_THRESHOLD);
+            flexibleMultisigModel.events.stepChanged(Step.SIGNATORIES_THRESHOLD);
           }}
         >
           {t('createMultisigAccount.backButton')}

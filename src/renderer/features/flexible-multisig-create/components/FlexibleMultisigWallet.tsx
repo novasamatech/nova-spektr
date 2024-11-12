@@ -1,18 +1,19 @@
 import { useForm } from 'effector-forms';
-import { useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { Step, isStep } from '@/shared/lib/utils';
 import { Modal } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { OperationSign, OperationSubmit } from '@/features/operations';
-import { flowModel } from '../../model/flow-model';
-import { formModel } from '../../model/form-model';
+import { flexibleMultisigModel } from '../model/flexible-multisig-create';
+import { formModel } from '../model/form-model';
+import { flexibleMultisigFeature } from '../model/status';
 
 import { ConfirmationStep } from './ConfirmationStep';
 import { NameNetworkSelection } from './NameNetworkSelection';
-import { SelectSignatoriesThreshold } from './SelectSignatoriesThreshold';
-import { SignerSelection } from './components/SignerSelection';
+import { SelectSignatoriesThreshold } from './SelectThreshold/SelectSignatoriesThreshold';
+import { SignerSelection } from './SignerSelection';
 
 type Props = {
   isOpen: boolean;
@@ -20,10 +21,11 @@ type Props = {
   onGoBack: () => void;
 };
 
-export const MultisigWallet = ({ isOpen, onClose, onGoBack }: Props) => {
+export const FlexibleMultisigWallet = ({ isOpen, onClose, onGoBack }: Props) => {
   const { t } = useI18n();
+  useGate(flexibleMultisigFeature.gate);
 
-  const activeStep = useUnit(flowModel.$step);
+  const activeStep = useUnit(flexibleMultisigModel.$step);
   const {
     fields: { chain },
   } = useForm(formModel.$createMultisigForm);
@@ -36,7 +38,7 @@ export const MultisigWallet = ({ isOpen, onClose, onGoBack }: Props) => {
     <div className="flex items-center justify-between">
       {isStep(activeStep, Step.SIGNER_SELECTION)
         ? t('createMultisigAccount.selectSigner')
-        : t('createMultisigAccount.title')}
+        : t('createMultisigAccount.flexibleMultisig.title')}
       {!isStep(activeStep, Step.NAME_NETWORK) && !isStep(activeStep, Step.SIGNER_SELECTION) && (
         <>
           <span className="mx-1">{t('createMultisigAccount.titleOn')}</span>
@@ -49,6 +51,7 @@ export const MultisigWallet = ({ isOpen, onClose, onGoBack }: Props) => {
       )}
     </div>
   );
+  console.log(activeStep);
 
   return (
     <>
@@ -58,7 +61,9 @@ export const MultisigWallet = ({ isOpen, onClose, onGoBack }: Props) => {
         {isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold />}
         {isStep(activeStep, Step.SIGNER_SELECTION) && <SignerSelection />}
         {isStep(activeStep, Step.CONFIRM) && <ConfirmationStep />}
-        {isStep(activeStep, Step.SIGN) && <OperationSign onGoBack={() => flowModel.events.stepChanged(Step.CONFIRM)} />}
+        {isStep(activeStep, Step.SIGN) && (
+          <OperationSign onGoBack={() => flexibleMultisigModel.events.stepChanged(Step.CONFIRM)} />
+        )}
       </Modal.Content>
     </>
   );
