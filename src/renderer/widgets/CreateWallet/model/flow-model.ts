@@ -5,7 +5,6 @@ import { delay, spread } from 'patronum';
 
 import {
   type Account,
-  type AccountId,
   AccountType,
   type ChainId,
   ChainType,
@@ -49,7 +48,7 @@ const multisigDepositChanged = createEvent<string>();
 const isFeeLoadingChanged = createEvent<boolean>();
 const formSubmitted = createEvent<FormSubmitEvent>();
 const flowFinished = createEvent();
-const signerSelected = createEvent<AccountId>();
+const signerSelected = createEvent<Account>();
 
 const walletCreated = createEvent<{
   name: string;
@@ -65,7 +64,7 @@ const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $addMultisigStore = createStore<AddMultisigStore | null>(null).reset(flowFinished);
-const $signer = createStore<Account | null>(null).reset(flowFinished);
+const $signer = restore<Account | null>(signerSelected, null).reset(flowFinished);
 
 const $signerWallet = combine({ signer: $signer, wallets: walletModel.$wallets }, ({ signer, wallets }) => {
   const res = walletUtils.getWalletFilteredAccounts(wallets, {
@@ -452,17 +451,6 @@ sample({
     return contactsToSave;
   },
   target: contactModel.effects.createContactsFx,
-});
-
-sample({
-  clock: signerSelected,
-  source: { wallets: walletModel.$wallets },
-  fn: ({ wallets }, accountId) => {
-    const signerAccount = walletUtils.getAccountBy(wallets, (a) => a.accountId === accountId);
-
-    return signerAccount;
-  },
-  target: $signer,
 });
 
 sample({
