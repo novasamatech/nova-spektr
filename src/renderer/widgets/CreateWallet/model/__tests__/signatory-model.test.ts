@@ -20,12 +20,12 @@ describe('widgets/CreateWallet/model/signatory-model', () => {
 
     await allSettled(signatoryModel.events.addSignatory, {
       scope,
-      params: { name: 'Alice', address: toAddress(signerWallet.accounts[0].accountId) },
+      params: { name: 'Alice', address: toAddress(signerWallet.accounts[0].accountId), walletId: '1' },
     });
 
     await allSettled(signatoryModel.events.addSignatory, {
       scope,
-      params: { name: 'test', address: toAddress(signerWallet.accounts[0].accountId) },
+      params: { name: 'test', address: toAddress(signerWallet.accounts[0].accountId), walletId: '1' },
     });
 
     expect(scope.getState(signatoryModel.$signatories).length).toEqual(2);
@@ -40,7 +40,7 @@ describe('widgets/CreateWallet/model/signatory-model', () => {
 
     await allSettled(signatoryModel.events.changeSignatory, {
       scope,
-      params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0].accountId) },
+      params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0].accountId), walletId: '1' },
     });
 
     expect(scope.getState(signatoryModel.$signatories).length).toEqual(1);
@@ -60,14 +60,14 @@ describe('widgets/CreateWallet/model/signatory-model', () => {
 
     await allSettled(signatoryModel.events.changeSignatory, {
       scope,
-      params: { index: 1, name: 'Alice', address: toAddress(signatoryWallet.accounts[0].accountId) },
+      params: { index: 1, name: 'Alice', address: toAddress(signatoryWallet.accounts[0].accountId), walletId: '1' },
     });
 
     expect(scope.getState(signatoryModel.$ownedSignatoriesWallets)?.length).toEqual(0);
 
     await allSettled(signatoryModel.events.changeSignatory, {
       scope,
-      params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0].accountId) },
+      params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0].accountId), walletId: '1' },
     });
     expect(scope.getState(signatoryModel.$ownedSignatoriesWallets)?.length).toEqual(1);
   });

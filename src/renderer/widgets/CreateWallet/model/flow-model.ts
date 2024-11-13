@@ -69,7 +69,7 @@ const $signer = restore<Account | null>(signerSelected, null).reset(flowFinished
 const $signerWallet = combine({ signer: $signer, wallets: walletModel.$wallets }, ({ signer, wallets }) => {
   const res = walletUtils.getWalletFilteredAccounts(wallets, {
     accountFn: (a) => a.accountId === signer?.accountId,
-    walletFn: (w) => walletUtils.isValidSignatory(w),
+    walletFn: (w) => walletUtils.isValidSignatory(w) && w.id === signer?.walletId,
   });
 
   return res;

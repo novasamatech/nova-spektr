@@ -69,11 +69,11 @@ describe('widgets/CreateWallet/model/form-model', () => {
 
     await allSettled(signatoryModel.events.changeSignatory, {
       scope,
-      params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0].accountId) },
+      params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0].accountId), walletId: '1' },
     });
     await allSettled(signatoryModel.events.changeSignatory, {
       scope,
-      params: { index: 1, name: 'Alice', address: toAddress(signatoryWallet.accounts[0].accountId) },
+      params: { index: 1, name: 'Alice', address: toAddress(signatoryWallet.accounts[0].accountId), walletId: '1' },
     });
 
     await allSettled(formModel.$createMultisigForm.fields.threshold.onChange, { scope, params: 2 });
@@ -112,11 +112,11 @@ describe('widgets/CreateWallet/model/form-model', () => {
     await allSettled(formModel.$createMultisigForm.fields.chain.onChange, { scope, params: testChain });
     await allSettled(signatoryModel.events.changeSignatory, {
       scope,
-      params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0].accountId) },
+      params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0].accountId), walletId: '1' },
     });
     await allSettled(signatoryModel.events.changeSignatory, {
       scope,
-      params: { index: 1, name: 'Alice', address: toAddress(signatoryWallet.accounts[0].accountId) },
+      params: { index: 1, name: 'Alice', address: toAddress(signatoryWallet.accounts[0].accountId), walletId: '1' },
     });
     await allSettled(formModel.$createMultisigForm.fields.threshold.onChange, { scope, params: 2 });
 

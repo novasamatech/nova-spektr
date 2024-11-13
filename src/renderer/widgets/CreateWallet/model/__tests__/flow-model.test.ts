@@ -46,11 +46,16 @@ describe('widgets/CreateWallet/model/form-model', () => {
 
     await allSettled(signatoryModel.events.changeSignatory, {
       scope,
-      params: { index: 0, name: signerWallet.name, address: toAddress(signerWallet.accounts[0].accountId) },
+      params: {
+        index: 0,
+        name: signerWallet.name,
+        address: toAddress(signerWallet.accounts[0].accountId),
+        walletId: '1',
+      },
     });
     await allSettled(signatoryModel.events.changeSignatory, {
       scope,
-      params: { index: 1, name: 'Alice', address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' },
+      params: { index: 1, name: 'Alice', address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY', walletId: '1' },
     });
     await allSettled(flowModel.events.signerSelected, { scope, params: signerWallet.accounts[0] });
 
