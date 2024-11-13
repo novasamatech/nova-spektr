@@ -182,8 +182,8 @@ export const fromPrecision = (balance: string | BN, precision: number): string =
 export const totalAmountBN = <T extends AssetBalance>(balance: T) => {
   if (!balance) return BN_ZERO;
 
-  const bnFree = balance.free ?? BN_ZERO;
-  const bnReserved = balance.reserved ?? BN_ZERO;
+  const bnFree = balance.free ? new BN(balance.free) : BN_ZERO;
+  const bnReserved = balance.reserved ? new BN(balance.reserved) : BN_ZERO;
 
   return bnFree.add(bnReserved);
 };
