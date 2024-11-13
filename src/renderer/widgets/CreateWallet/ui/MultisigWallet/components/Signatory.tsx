@@ -7,13 +7,17 @@ import { useI18n } from '@/shared/i18n';
 import { performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
 import { CaptionText, Combobox, IconButton, Identicon, Input } from '@/shared/ui';
 import { type ComboboxOption } from '@/shared/ui/types';
+import { Address } from '@/shared/ui-entities';
+import { Box } from '@/shared/ui-kit';
 import { contactModel } from '@/entities/contact';
-import { AddressWithName, WalletIcon, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { WalletIcon, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { filterModel } from '@/features/contacts';
 import { walletSelectUtils } from '@/features/wallets/WalletSelect/lib/wallet-select-utils';
 import { GroupLabels } from '@/features/wallets/WalletSelect/ui/WalletGroup';
 import { formModel } from '@/widgets/CreateWallet/model/form-model';
 import { signatoryModel } from '../../../model/signatory-model';
+
+import { AccountBalance } from './AccountBalance';
 
 interface Props {
   signatoryName: string;
@@ -101,7 +105,12 @@ export const Signatory = ({
 
               return {
                 value: address,
-                element: <AddressWithName name={account.name} address={address} />,
+                element: (
+                  <Box direction="row" verticalAlign="center" horizontalAlign="space-between" fitContainer>
+                    <Address showIcon title={account.name} address={address} />
+                    <AccountBalance accountId={account.accountId} chain={chain.value} />
+                  </Box>
+                ),
                 id: account.walletId.toString(),
               };
             }),
@@ -148,7 +157,7 @@ export const Signatory = ({
 
         return {
           id: signatoryIndex.toString(),
-          element: <AddressWithName name={name} address={displayAddress} />,
+          element: <Address title={name} address={displayAddress} />,
           value: displayAddress,
         };
       }),
