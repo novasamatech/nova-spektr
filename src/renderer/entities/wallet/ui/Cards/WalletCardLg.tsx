@@ -20,7 +20,7 @@ export const WalletCardLg = ({ wallet, description, full, className }: Props) =>
   const isWalletConnect = walletUtils.isWalletConnectGroup(wallet);
 
   return (
-    <div className={cnTw('flex h-8 w-full items-center gap-x-2', className)}>
+    <div className={cnTw('flex h-8 w-full min-w-0 items-center gap-x-2', className)}>
       <div className="relative">
         <WalletIcon type={wallet.type} size={32} />
         {isWalletConnect && !full && (
