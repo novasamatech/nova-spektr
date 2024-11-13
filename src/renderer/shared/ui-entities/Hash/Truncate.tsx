@@ -50,7 +50,7 @@ export const Truncate = memo(({ text, ellipsis = '...' }: Props) => {
     }
 
     const charWidth = divWithPrecision(textWidth, text.length);
-    const delta = Math.ceil(textWidth - containerWidth + ellipsisWidth);
+    const delta = Math.ceil(textWidth - containerWidth + ellipsisWidth + charWidth / 2);
 
     const lettersToRemove = Math.ceil(divWithPrecision(delta, charWidth));
 
