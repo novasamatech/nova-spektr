@@ -13,6 +13,7 @@ import {
   ProxyVariant,
   type Timepoint,
   type Transaction,
+  type Wallet,
   WalletType,
 } from '@/shared/core';
 import { nonNullable, toAddress } from '@/shared/lib/utils';

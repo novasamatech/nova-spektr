@@ -8,6 +8,8 @@ export const enum NotificationType {
   MULTISIG_EXECUTED = 'MultisigExecutedNotification',
   MULTISIG_CANCELLED = 'MultisigCancelledNotification',
 
+  FLEXIBLE_MULTISIG_CREATED = 'FlexibleMultisigCreatedNotification',
+
   PROXY_CREATED = 'ProxyCreatedNotification',
   PROXY_REMOVED = 'ProxyRemovedNotification',
 }
