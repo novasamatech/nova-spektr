@@ -8,7 +8,7 @@ import { performSearch, toAccountId, toAddress, validateAddress } from '@/shared
 import { CaptionText, Combobox, IconButton, Identicon, Input } from '@/shared/ui';
 import { type ComboboxOption } from '@/shared/ui/types';
 import { contactModel } from '@/entities/contact';
-import { AddressWithName, WalletIcon, walletModel, walletUtils } from '@/entities/wallet';
+import { AddressWithName, WalletIcon, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { filterModel } from '@/features/contacts';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { formModel } from '@/widgets/CreateWallet/model/form-model';
@@ -18,6 +18,7 @@ interface Props {
   signatoryName: string;
   signatoryAddress: string;
   signatoryIndex: number;
+  selectedWallet: string;
   isOwnAccount?: boolean;
   onDelete?: (index: number) => void;
 }
@@ -28,6 +29,7 @@ export const Signatory = ({
   isOwnAccount = false,
   signatoryName,
   signatoryAddress,
+  selectedWallet,
 }: Props) => {
   const { t } = useI18n();
   const [query, setQuery] = useState('');
@@ -53,12 +55,17 @@ export const Signatory = ({
 
   const ownAccountName =
     walletUtils.getWalletsFilteredAccounts(wallets, {
-      walletFn: (w) => !walletUtils.isWatchOnly(w) && !walletUtils.isMultisig(w),
-      accountFn: (a) => toAccountId(signatoryAddress) === a.accountId,
+      walletFn: (w) =>
+        !walletUtils.isWatchOnly(w) &&
+        !walletUtils.isMultisig(w) &&
+        (!selectedWallet || w.id.toString() === selectedWallet),
+      accountFn: (a) =>
+        toAccountId(signatoryAddress) === a.accountId && accountUtils.isChainIdMatch(a, chain.value.chainId),
     })?.[0]?.name || '';
 
   const contactAccountName =
     contacts.filter((contact) => toAccountId(contact.address) === toAccountId(signatoryAddress))?.[0]?.name || '';
+
   const displayName = useMemo(() => {
     const hasDuplicateName = !!ownAccountName && !!contactAccountName;
     const shouldForceOwnAccountName = hasDuplicateName && isOwnAccount;
@@ -94,7 +101,7 @@ export const Signatory = ({
               return {
                 value: address,
                 element: <AddressWithName name={account.name} address={address} />,
-                id: account.accountId,
+                id: account.walletId.toString(),
               };
             }),
         );
@@ -152,6 +159,7 @@ export const Signatory = ({
       index: signatoryIndex,
       name: newName,
       address: signatoryAddress,
+      walletId: selectedWallet,
     });
   };
 
@@ -161,12 +169,13 @@ export const Signatory = ({
     }
   }, [displayName]);
 
-  const onAddressChange = (newAddress: string) => {
-    const validatedAddress = validateAddress(newAddress) ? newAddress : '';
+  const onAddressChange = (data: ComboboxOption) => {
+    const validatedAddress = validateAddress(data.value) ? data.value : '';
     const fixedAddress = toAddress(validatedAddress, { prefix: chain.value.addressPrefix });
 
     signatoryModel.events.changeSignatory({
       index: signatoryIndex,
+      walletId: data.id,
       name: signatoryName,
       address: fixedAddress,
     });
@@ -209,8 +218,8 @@ export const Signatory = ({
         query={query}
         value={toAddress(signatoryAddress, { prefix: chain.value.addressPrefix })}
         prefixElement={prefixElement}
-        onChange={({ value }) => {
-          onAddressChange(value);
+        onChange={(data) => {
+          onAddressChange(data);
         }}
         onInput={handleQueryChange}
       />

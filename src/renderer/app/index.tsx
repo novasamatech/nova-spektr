@@ -62,7 +62,6 @@ if (!container) {
 }
 
 document.body.style.minWidth = `${APP_CONFIG.MAIN.WINDOW.WIDTH}px`;
-document.body.style.minHeight = `${APP_CONFIG.MAIN.WINDOW.HEIGHT}px`;
 
 createRoot(container).render(<Root />);
 

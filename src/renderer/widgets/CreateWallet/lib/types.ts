@@ -25,4 +25,5 @@ export interface SignatoryInfo {
   index: number;
   name: string;
   address: string;
+  walletId: string;
 }
