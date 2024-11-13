@@ -66,3 +66,14 @@ export const TruncateWithoutBoundaries: Story = {
     expect(Hash.innerText).toBe(TEST_HASH);
   },
 };
+
+export const Short: Story = {
+  args: {
+    variant: 'short',
+  },
+  async play({ canvasElement }) {
+    const canvas = within(canvasElement);
+    const Hash = await canvas.findByTestId('Hash');
+    expect(Hash.innerText).toBe('0x91b171...70ce90c3');
+  },
+};

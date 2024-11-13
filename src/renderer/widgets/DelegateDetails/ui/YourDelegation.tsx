@@ -2,11 +2,13 @@ import { useUnit } from 'effector-react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
-import { toAddress } from '@/shared/lib/utils';
-import { Button, DetailRow, FootnoteText, Icon, SmallTitleText, Tooltip } from '@/shared/ui';
+import { nullable, toAddress } from '@/shared/lib/utils';
+import { Button, DetailRow, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
+import { Account } from '@/shared/ui-entities';
+import { Tooltip } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { allTracks, votingService } from '@/entities/governance';
-import { AddressWithExplorers, accountUtils, walletModel } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { delegationModel } from '@/widgets/DelegationModal';
 import { editDelegationModel } from '@/widgets/EditDelegationModal';
 import { revokeDelegationModel } from '@/widgets/RevokeDelegationModal';
@@ -27,12 +29,17 @@ export const YourDelegation = () => {
   const isRevokeAvailable = useUnit(delegateDetailsModel.$isRevokeAvailable);
   const delegate = useUnit(delegateDetailsModel.$delegate);
 
-  const accounts = wallet?.accounts.filter(
-    (account) =>
-      chain &&
-      accountUtils.isChainAndCryptoMatch(account, chain) &&
-      activeAccounts.includes(toAddress(account.accountId, { prefix: chain.addressPrefix })),
-  );
+  const accounts =
+    wallet?.accounts.filter(
+      (account) =>
+        chain &&
+        accountUtils.isChainAndCryptoMatch(account, chain) &&
+        activeAccounts.includes(toAddress(account.accountId, { prefix: chain.addressPrefix })),
+    ) ?? [];
+
+  if (nullable(chain)) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -41,25 +48,29 @@ export const YourDelegation = () => {
       {activeAccounts.length > 0 && (
         <div className="flex flex-col gap-4">
           <DetailRow label={t('governance.addDelegation.accountsLabel', { count: activeAccounts.length })}>
-            {activeAccounts.length === 1 ? (
-              <AddressWithExplorers type="short" address={activeAccounts[0]} explorers={chain?.explorers} />
+            {accounts.length === 1 ? (
+              <div className="overflow-hidden text-text-secondary">
+                <Account account={accounts[0]} chain={chain} variant="short" />
+              </div>
             ) : (
-              <FootnoteText className="text-text-secondary">{activeAccounts.length}</FootnoteText>
+              <FootnoteText className="text-text-secondary">{accounts.length}</FootnoteText>
             )}
           </DetailRow>
 
           <DetailRow label={t('governance.addDelegation.tracksLabel')}>
-            <Tooltip
-              content={uniqueTracks
-                .map((trackId) => t(allTracks.find((track) => track.id === trackId)?.value || ''))
-                .join(', ')}
-              pointer="up"
-            >
-              <div className="flex gap-1">
-                <FootnoteText>{uniqueTracks.length}</FootnoteText>
+            <Tooltip side="bottom">
+              <Tooltip.Trigger>
+                <div className="flex gap-1">
+                  <FootnoteText>{uniqueTracks.length}</FootnoteText>
 
-                <Icon className="group-hover:text-icon-hover" name="info" size={16} />
-              </div>
+                  <Icon className="group-hover:text-icon-hover" name="info" size={16} />
+                </div>
+              </Tooltip.Trigger>
+              <Tooltip.Content>
+                {uniqueTracks
+                  .map((trackId) => t(allTracks.find((track) => track.id === trackId)?.value || ''))
+                  .join(', ')}
+              </Tooltip.Content>
             </Tooltip>
           </DetailRow>
 
@@ -95,7 +106,7 @@ export const YourDelegation = () => {
           </Button>
         )}
 
-        {isEditAvailable && accounts?.length === 1 && (
+        {isEditAvailable && accounts.length === 1 && (
           <Button
             onClick={() => {
               if (delegate) {
@@ -107,7 +118,7 @@ export const YourDelegation = () => {
           </Button>
         )}
 
-        {isRevokeAvailable && accounts?.length === 1 && (
+        {isRevokeAvailable && accounts.length === 1 && (
           <Button
             pallet="secondary"
             onClick={() => {

@@ -4,14 +4,30 @@ import { Truncate } from './Truncate';
 
 type Props = {
   value: string;
-  variant: 'full' | 'truncate';
+  variant: 'full' | 'truncate' | 'short';
   testId?: string;
 };
 
 export const Hash = memo(({ value, variant, testId = 'Hash' }: Props) => {
   return (
     <span className="w-full text-inherit transition-colors" data-testid={testId}>
-      {variant === 'truncate' ? <Truncate text={value} /> : <span className="break-all">{value}</span>}
+      {getVariant(variant, value)}
     </span>
   );
 });
+
+const getVariant = (variant: Props['variant'], value: string) => {
+  if (variant === 'full') {
+    return <span className="break-all">{value}</span>;
+  }
+
+  if (variant === 'truncate') {
+    return <Truncate text={value} />;
+  }
+
+  if (variant === 'short') {
+    return value.slice(0, 8) + '...' + value.slice(-8);
+  }
+
+  return null;
+};
