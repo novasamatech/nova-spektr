@@ -14,11 +14,9 @@ export const WalletDetailsProvider = () => {
   const wallet = useUnit(walletSelectModel.$walletForDetails);
 
   const multiShardAccounts = useUnit(walletProviderModel.$multiShardAccounts);
-  const contacts = useUnit(walletProviderModel.$signatoryContacts);
   const vaultAccounts = useUnit(walletProviderModel.$vaultAccounts);
-  const signatoryWallets = useUnit(walletProviderModel.$signatoryWallets);
-  const signatoryAccounts = useUnit(walletProviderModel.$signatoryAccounts);
   const proxyWallet = useUnit(walletProviderModel.$proxyWallet);
+  const signatories = useUnit(walletProviderModel.$signatories);
 
   if (!wallet) {
     return null;
@@ -42,9 +40,9 @@ export const WalletDetailsProvider = () => {
     return (
       <MultisigWalletDetails
         wallet={wallet}
-        signatoryWallets={signatoryWallets}
-        signatoryAccounts={signatoryAccounts}
-        signatoryContacts={contacts}
+        signatoryWallets={signatories.wallets}
+        signatoryContacts={signatories.contacts}
+        signatoryPeople={signatories.people}
         onClose={walletSelectModel.events.walletIdCleared}
       />
     );

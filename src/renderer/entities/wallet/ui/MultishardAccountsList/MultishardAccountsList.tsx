@@ -31,7 +31,7 @@ export const MultishardAccountsList = ({ chains, accounts, className }: Props) =
             button={
               <ContactItem
                 className="bg-white py-4 pr-2"
-                size={28}
+                iconSize={28}
                 name={baseAccount.name}
                 address={baseAccount.accountId}
               />

@@ -36,39 +36,6 @@ describe('widgets/WalletDetails/model/wallet-provider-model', () => {
     });
   });
 
-  test('should set $signatoryContacts for multisig wallet', async () => {
-    const { multisiigWallet, proxies, chains } = walletProviderMocks;
-
-    const scope = fork({
-      values: new Map()
-        .set(walletModel.$allWallets, [multisiigWallet])
-        .set(proxyModel.$proxies, proxies)
-        .set(networkModel.$chains, chains),
-    });
-
-    await allSettled(walletSelectModel.events.walletIdSet, { scope, params: multisiigWallet.id });
-
-    expect(scope.getState(walletProviderModel.$signatoryContacts)).toEqual(multisiigWallet.accounts[0].signatories);
-  });
-
-  test('should set $signatoryWallets for multisig wallet', async () => {
-    const { multisiigWallet, signatoriesWallets, proxies, chains } = walletProviderMocks;
-
-    const scope = fork({
-      values: new Map()
-        .set(walletModel.$allWallets, [multisiigWallet, ...signatoriesWallets])
-        .set(proxyModel.$proxies, proxies)
-        .set(networkModel.$chains, chains),
-    });
-
-    await allSettled(walletSelectModel.events.walletIdSet, { scope, params: multisiigWallet.id });
-
-    expect(scope.getState(walletProviderModel.$signatoryWallets)).toEqual([
-      ['0x01', signatoriesWallets[0]],
-      ['0x02', signatoriesWallets[1]],
-    ]);
-  });
-
   test('should set $proxyWallet', async () => {
     const { wallets } = walletProviderMocks;
 

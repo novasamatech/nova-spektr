@@ -1657,10 +1657,14 @@
       "walletRemoved": "Wallet removed"
     },
     "multisig": {
+      "accountGroup": "Account",
+      "accountTab": "Account and signatories",
       "accountsGroup": "Your accounts",
       "contactsGroup": "Contacts",
       "networksTab": "Networks",
+      "signatoriesGroup": "Signatories { amount }",
       "signatoriesTab": "Signatories",
+      "singleChainTitle": "on <chain /> with threshold { threshold } out of { signatories } signatories",
       "thresholdLabel": "Threshold { min } out of { max }",
       "walletsGroup": "Your wallets"
     },

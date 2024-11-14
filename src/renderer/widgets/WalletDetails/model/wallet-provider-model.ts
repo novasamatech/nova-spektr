@@ -7,9 +7,9 @@ import {
   type AccountId,
   type BaseAccount,
   type ChainId,
+  type Contact,
   type ProxyAccount,
   type ProxyGroup,
-  type Signatory,
   type Wallet,
 } from '@/shared/core';
 import { dictionary } from '@/shared/lib/utils';
@@ -59,62 +59,44 @@ const $vaultAccounts = combine(
   { skipVoid: false },
 );
 
-const $signatoryContacts = combine(
+const $signatories = combine(
   {
     wallet: walletSelectModel.$walletForDetails,
     wallets: walletModel.$wallets,
     contacts: contactModel.$contacts,
   },
-  ({ wallet, wallets, contacts }): Signatory[] => {
-    if (!wallet || !walletUtils.isMultisig(wallet)) return [];
+  ({ wallet, wallets, contacts }): { wallets: [Wallet, AccountId][]; contacts: Contact[]; people: AccountId[] } => {
+    if (!wallet || !walletUtils.isMultisig(wallet)) {
+      return { wallets: [], contacts: [], people: [] };
+    }
 
-    const contactsMap = dictionary(contacts, 'accountId');
-    const signatoriesMap = dictionary(wallet.accounts[0].signatories, 'accountId');
-    const allSignatories = walletUtils.getAccountsBy(wallets, ({ accountId }) => signatoriesMap[accountId]);
-    const signatoriesSet = new Set(allSignatories.map((signatory) => signatory.accountId));
+    const signatoriesMap = dictionary(wallet.accounts[0].signatories, 'accountId', true);
 
-    return wallet.accounts[0].signatories
-      .filter((signatory) => !signatoriesSet.has(signatory.accountId))
-      .map((signatory) => ({ ...signatory, name: contactsMap[signatory.accountId]?.name }));
-  },
-);
+    const walletSignatories: [Wallet, AccountId][] = [];
+    for (const wallet of wallets) {
+      if (walletUtils.isWatchOnly(wallet)) continue;
 
-const $signatoryWallets = combine(
-  {
-    wallet: walletSelectModel.$walletForDetails,
-    wallets: walletModel.$wallets,
-  },
-  ({ wallet, wallets }): [AccountId, Wallet][] => {
-    if (!wallet || !walletUtils.isMultisig(wallet)) return [];
+      for (const account of wallet.accounts) {
+        if (!signatoriesMap[account.accountId]) continue;
 
-    const signatoriesMap = dictionary(wallet.accounts[0].signatories, 'accountId', () => true);
+        delete signatoriesMap[account.accountId];
+        walletSignatories.push([wallet, account.accountId]);
+      }
+    }
 
-    const walletsAndAccounts = walletUtils.getWalletsFilteredAccounts(wallets, {
-      accountFn: (a) => signatoriesMap[a.accountId],
-    });
+    const contactSignatories: Contact[] = [];
+    for (const contact of contacts) {
+      if (!signatoriesMap[contact.accountId]) continue;
 
-    if (!walletsAndAccounts) return [];
+      contactSignatories.push(contact);
+      delete signatoriesMap[contact.accountId];
+    }
 
-    return walletsAndAccounts.map((wallet) => [wallet.accounts[0].accountId, wallet]);
-  },
-);
-
-const $signatoryAccounts = combine(
-  {
-    wallet: walletSelectModel.$walletForDetails,
-    wallets: walletModel.$wallets,
-  },
-  ({ wallet, wallets }): Signatory[] => {
-    if (!wallet || !walletUtils.isMultisig(wallet)) return [];
-
-    const signatoriesMap = dictionary(wallet.accounts[0].signatories, 'accountId');
-    const allSignatories = walletUtils.getAccountsBy(wallets, ({ accountId }) => signatoriesMap[accountId]);
-    const uniqueSignatories = uniqBy(allSignatories, 'accountId');
-    const uniqueSignatoriesMap = dictionary(uniqueSignatories, 'accountId');
-
-    return wallet.accounts[0].signatories
-      .filter((signatory) => uniqueSignatoriesMap[signatory.accountId])
-      .map((signatory) => ({ ...signatory, name: uniqueSignatoriesMap[signatory.accountId]?.name }));
+    return {
+      wallets: walletSignatories,
+      contacts: contactSignatories,
+      people: Object.keys(signatoriesMap) as AccountId[],
+    };
   },
 );
 
@@ -202,9 +184,7 @@ sample({
 export const walletProviderModel = {
   $vaultAccounts,
   $multiShardAccounts,
-  $signatoryContacts,
-  $signatoryWallets,
-  $signatoryAccounts,
+  $signatories,
 
   $chainsProxies,
   $walletProxyGroups,

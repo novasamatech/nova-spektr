@@ -1,18 +1,20 @@
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
+import { Trans } from 'react-i18next';
 
-import { type AccountId, type MultisigWallet, type Signatory, type Wallet } from '@/shared/core';
+import { type AccountId, type Contact, type MultisigWallet, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
-import { RootExplorers } from '@/shared/lib/utils';
-import { BaseModal, DropdownIconButton, FootnoteText, Tabs } from '@/shared/ui';
+import { toAddress } from '@/shared/lib/utils';
+import { BaseModal, DropdownIconButton, FootnoteText, Icon, Tabs } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { type TabItem } from '@/shared/ui/types';
+import { AccountExplorers, Address } from '@/shared/ui-entities';
+import { ChainTitle } from '@/entities/chain';
 import { networkModel, networkUtils } from '@/entities/network';
 import {
   AccountsList,
   ContactItem,
-  ExplorersPopover,
   WalletCardLg,
   WalletCardMd,
   accountUtils,
@@ -20,25 +22,23 @@ import {
 } from '@/entities/wallet';
 import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
 import { RenameWalletModal } from '@/features/wallets/RenameWallet';
-import { WalletFiatBalance } from '@/features/wallets/WalletSelect/ui/WalletFiatBalance';
 import { AddProxy, addProxyModel } from '@/widgets/AddProxyModal';
 import { AddPureProxied, addPureProxiedModel } from '@/widgets/AddPureProxiedModal';
 import { walletProviderModel } from '../../model/wallet-provider-model';
-import { NoProxiesAction } from '../components/NoProxiesAction';
-import { ProxiesList } from '../components/ProxiesList';
+import { NoProxiesAction, ProxiesList } from '../components';
 
 type Props = {
   wallet: MultisigWallet;
-  signatoryWallets: [AccountId, Wallet][];
-  signatoryContacts: Signatory[];
-  signatoryAccounts: Signatory[];
+  signatoryWallets: [Wallet, AccountId][];
+  signatoryContacts: Contact[];
+  signatoryPeople: AccountId[];
   onClose: () => void;
 };
 export const MultisigWalletDetails = ({
   wallet,
   signatoryWallets = [],
   signatoryContacts = [],
-  signatoryAccounts = [],
+  signatoryPeople = [],
   onClose,
 }: Props) => {
   const { t } = useI18n();
@@ -52,7 +52,6 @@ export const MultisigWalletDetails = ({
 
   const multisigAccount = wallet.accounts[0];
   const singleChain = multisigAccount.chainId && chains[multisigAccount.chainId];
-  const explorers = singleChain?.explorers || RootExplorers;
 
   const multisigChains = useMemo(() => {
     return Object.values(chains).filter((chain) => {
@@ -124,117 +123,152 @@ export const MultisigWalletDetails = ({
     </DropdownIconButton>
   );
 
-  const TabAccountList = {
-    id: 1,
-    title: t('walletDetails.multisig.networksTab'),
-    panel: <AccountsList accountId={multisigAccount.accountId} chains={multisigChains} className="h-[345px]" />,
-  };
+  const TabItems: TabItem[] = [];
 
-  const TabSignatories = {
-    id: 2,
-    title: t('walletDetails.multisig.signatoriesTab'),
-    panel: (
-      <div className="flex flex-col">
-        <FootnoteText className="px-5 text-text-tertiary">
-          {t('walletDetails.multisig.thresholdLabel', {
-            min: multisigAccount.threshold,
-            max: multisigAccount.signatories.length,
-          })}
-        </FootnoteText>
+  if (singleChain) {
+    const TabAccount = {
+      id: 1,
+      title: t('walletDetails.multisig.accountTab'),
+      panel: (
+        <div className="h-[337px] overflow-y-auto">
+          <div className="flex flex-col gap-y-3 px-5">
+            <FootnoteText className="text-text-tertiary">{t('walletDetails.multisig.accountGroup')}</FootnoteText>
 
-        <div className="mt-4 h-[337px] overflow-y-auto">
-          {!singleChain && signatoryWallets.length > 0 && (
-            <div className="flex flex-col gap-y-2">
-              <FootnoteText className="px-5 text-text-tertiary">
-                {t('walletDetails.multisig.walletsGroup')} {signatoryWallets.length}
-              </FootnoteText>
-
-              <ul className="flex flex-col gap-y-2 px-3">
-                {signatoryWallets.map(([accountId, wallet]) => (
-                  <li key={wallet.id} className="flex items-center gap-x-2 py-1.5">
-                    <ExplorersPopover
-                      address={accountId}
-                      explorers={explorers}
-                      button={
-                        <WalletCardMd
-                          wallet={wallet}
-                          description={<WalletFiatBalance walletId={wallet.id} className="truncate" />}
-                        />
-                      }
-                    />
-                  </li>
-                ))}
-              </ul>
+            <div className="-mx-2">
+              <ContactItem address={multisigAccount.accountId} addressPrefix={singleChain.addressPrefix}>
+                <AccountExplorers accountId={multisigAccount.accountId} chain={singleChain} />
+              </ContactItem>
             </div>
-          )}
+          </div>
 
-          {singleChain && signatoryAccounts?.length && (
-            <div className="flex flex-col gap-y-2 px-5">
-              <FootnoteText className="text-text-tertiary">
-                {t('walletDetails.multisig.accountsGroup')} {signatoryAccounts.length}
-              </FootnoteText>
+          <div className="mt-6 flex flex-col gap-y-2 px-5">
+            <FootnoteText className="text-text-tertiary">
+              {t('walletDetails.multisig.signatoriesGroup', { amount: multisigAccount.signatories.length })}
+            </FootnoteText>
 
-              <ul className="flex flex-col gap-y-2">
-                {signatoryAccounts.map((signatory) => (
-                  <li key={signatory.accountId} className="flex items-center gap-x-2 py-1.5">
-                    <ExplorersPopover
-                      address={signatory.accountId}
-                      explorers={RootExplorers}
-                      button={
-                        <ContactItem
-                          name={signatory.name}
-                          address={signatory.accountId}
-                          addressPrefix={singleChain.addressPrefix}
-                        />
-                      }
-                    />
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {signatoryContacts.length > 0 && (
-            <div className="mt-4 flex flex-col gap-y-2 px-5">
-              <FootnoteText className="text-text-tertiary">
-                {t('walletDetails.multisig.contactsGroup')} {signatoryContacts.length}
-              </FootnoteText>
-
-              <ul className="flex flex-col gap-y-2">
-                {signatoryContacts.map((signatory) => (
-                  <li key={signatory.accountId} className="flex items-center gap-x-2 py-1.5">
-                    <ExplorersPopover
-                      address={signatory.accountId}
-                      explorers={explorers}
-                      button={<ContactItem name={signatory.name} address={signatory.accountId} />}
-                    />
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+            <ul className="flex flex-col gap-y-2">
+              {signatoryWallets.map(([wallet, accountId]) => (
+                <li key={accountId} className="-mx-2">
+                  <WalletCardMd
+                    wallet={wallet}
+                    description={
+                      <div className="text-help-text text-text-tertiary">
+                        <Address address={toAddress(accountId, { prefix: singleChain.addressPrefix })} />
+                      </div>
+                    }
+                  >
+                    <AccountExplorers accountId={accountId} chain={singleChain} />
+                  </WalletCardMd>
+                </li>
+              ))}
+              {signatoryContacts.map((signatory) => (
+                <li key={signatory.accountId} className="-mx-2">
+                  <ContactItem name={signatory.name} address={signatory.accountId}>
+                    <AccountExplorers accountId={signatory.accountId} chain={singleChain} />
+                  </ContactItem>
+                </li>
+              ))}
+              {signatoryPeople.map((accountId) => (
+                <li key={accountId} className="-mx-2">
+                  <ContactItem address={accountId}>
+                    <AccountExplorers accountId={accountId} chain={singleChain} />
+                  </ContactItem>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
-      </div>
-    ),
-  };
+      ),
+    };
+    TabItems.push(TabAccount);
+  }
 
-  const TabProxy = {
-    id: 3,
-    title: t('walletDetails.common.proxiesTabTitle'),
-    panel: hasProxies ? (
-      <ProxiesList className="h-[371px]" canCreateProxy={canCreateProxy} />
-    ) : (
-      <NoProxiesAction
-        className="h-[371px]"
-        canCreateProxy={canCreateProxy}
-        onAddProxy={addProxyModel.events.flowStarted}
-      />
-    ),
-  };
+  if (!singleChain) {
+    const TabAccountList = {
+      id: 1,
+      title: t('walletDetails.multisig.networksTab'),
+      panel: <AccountsList accountId={multisigAccount.accountId} chains={multisigChains} className="h-[345px]" />,
+    };
 
-  const TabItems: TabItem[] = [TabAccountList, TabSignatories];
+    const TabSignatories = {
+      id: 2,
+      title: t('walletDetails.multisig.signatoriesTab'),
+      panel: (
+        <div className="flex flex-col">
+          <FootnoteText className="px-5 text-text-tertiary">
+            {t('walletDetails.multisig.thresholdLabel', {
+              min: multisigAccount.threshold,
+              max: multisigAccount.signatories.length,
+            })}
+          </FootnoteText>
+
+          <div className="mt-4 h-[337px] overflow-y-auto">
+            {signatoryWallets.length > 0 && (
+              <div className="flex flex-col gap-y-2">
+                <FootnoteText className="px-5 text-text-tertiary">
+                  {t('walletDetails.multisig.walletsGroup')} {signatoryWallets.length}
+                </FootnoteText>
+
+                <ul className="flex flex-col gap-y-2 px-5">
+                  {signatoryWallets.map(([wallet, accountId]) => (
+                    <li key={accountId} className="-mx-2">
+                      <WalletCardMd
+                        wallet={wallet}
+                        description={
+                          <div className="text-help-text text-text-tertiary">
+                            <Address address={toAddress(accountId)} />
+                          </div>
+                        }
+                      >
+                        <AccountExplorers accountId={accountId} />
+                      </WalletCardMd>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {signatoryContacts.length > 0 && (
+              <div className="mt-4 flex flex-col gap-y-2 px-5">
+                <FootnoteText className="text-text-tertiary">
+                  {t('walletDetails.multisig.contactsGroup')} {signatoryContacts.length}
+                </FootnoteText>
+
+                <ul className="flex flex-col gap-y-2">
+                  {signatoryContacts.map((signatory) => (
+                    <li key={signatory.accountId} className="-mx-2">
+                      <ContactItem name={signatory.name} address={signatory.accountId}>
+                        <AccountExplorers accountId={signatory.accountId} />
+                      </ContactItem>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      ),
+    };
+
+    TabItems.push(TabAccountList);
+    TabItems.push(TabSignatories);
+  }
 
   if (canCreateProxy) {
+    const TabProxy = {
+      id: 3,
+      title: t('walletDetails.common.proxiesTabTitle'),
+      panel: hasProxies ? (
+        <ProxiesList className="h-[371px]" canCreateProxy={canCreateProxy} />
+      ) : (
+        <NoProxiesAction
+          className="h-[371px]"
+          canCreateProxy={canCreateProxy}
+          onAddProxy={addProxyModel.events.flowStarted}
+        />
+      ),
+    };
+
     TabItems.push(TabProxy);
   }
 
@@ -249,9 +283,34 @@ export const MultisigWalletDetails = ({
       onClose={closeModal}
     >
       <div className="flex w-full flex-col gap-y-4">
-        <div className="border-b border-divider px-5 py-6">
-          <WalletCardLg wallet={wallet} />
-        </div>
+        {singleChain ? (
+          <div className="flex flex-col gap-y-2.5 border-b border-divider px-5 py-6">
+            <WalletCardLg wallet={wallet} />
+            <div className="flex items-center">
+              <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
+              <div className="flex items-center text-footnote">
+                <Trans
+                  t={t}
+                  i18nKey="walletDetails.multisig.singleChainTitle"
+                  components={{
+                    chain: (
+                      <ChainTitle
+                        className="mx-1 gap-x-1"
+                        fontClass="text-text-primary"
+                        chainId={singleChain.chainId}
+                      />
+                    ),
+                  }}
+                  values={{ threshold: multisigAccount.threshold, signatories: multisigAccount.signatories.length }}
+                />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="border-b border-divider px-5 py-6">
+            <WalletCardLg wallet={wallet} />
+          </div>
+        )}
 
         <Tabs unmount={false} tabClassName="whitespace-nowrap" tabsClassName="mx-4" items={TabItems} />
       </div>

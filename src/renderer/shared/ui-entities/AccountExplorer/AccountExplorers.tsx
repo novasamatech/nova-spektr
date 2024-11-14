@@ -2,20 +2,23 @@ import { type PropsWithChildren, memo } from 'react';
 
 import { type AccountId, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { copyToClipboard, getAccountExplorer, toAddress } from '@/shared/lib/utils';
+import { RootExplorers, SS58_DEFAULT_PREFIX, copyToClipboard, getAccountExplorer, toAddress } from '@/shared/lib/utils';
 import { ExplorerLink, FootnoteText, HelpText, IconButton, Separator } from '@/shared/ui';
 import { Box, Popover } from '@/shared/ui-kit';
 import { Hash } from '../Hash/Hash';
 
 type Props = PropsWithChildren<{
   accountId: AccountId;
-  chain: Chain;
+  chain?: Chain;
 }>;
 
 export const AccountExplorers = memo(({ accountId, chain, children }: Props) => {
   const { t } = useI18n();
-  const { explorers } = chain;
-  const address = toAddress(accountId, { prefix: chain.addressPrefix });
+
+  const explorers = chain?.explorers || RootExplorers;
+  const addressPrefix = chain?.addressPrefix || SS58_DEFAULT_PREFIX;
+
+  const address = toAddress(accountId, { prefix: addressPrefix });
 
   return (
     <Popover align="end" dialog testId="AccountExplorers">

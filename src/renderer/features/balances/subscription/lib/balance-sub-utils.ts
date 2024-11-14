@@ -13,7 +13,7 @@ export const balanceSubUtils = {
 
 function getSiblingAccounts(wallet: Wallet, wallets: Wallet[], chains: Record<ChainId, Chain>): Account[] {
   if (walletUtils.isMultisig(wallet)) {
-    const signatoriesMap = dictionary(wallet.accounts[0].signatories, 'accountId');
+    const signatoriesMap = dictionary(wallet.accounts[0].signatories, 'accountId', true);
     const signatories = walletUtils.getAccountsBy(wallets, (account) => signatoriesMap[account.accountId]);
 
     return wallet.accounts.concat(uniqBy(signatories, 'accountId') as MultisigAccount[]);
