@@ -1,5 +1,7 @@
 import { memo } from 'react';
 
+import { truncate } from '@/shared/lib/utils';
+
 import { Truncate } from './Truncate';
 
 type Props = {
@@ -26,7 +28,7 @@ const getVariant = (variant: Props['variant'], value: string) => {
   }
 
   if (variant === 'short') {
-    return value.slice(0, 8) + '...' + value.slice(-8);
+    return truncate(value, 8, 8);
   }
 
   return null;
