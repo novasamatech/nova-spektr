@@ -80,7 +80,7 @@ const $signatoryContacts = combine(
   },
 );
 
-// signatoryWallets is used to display details for muti chain multisig
+// signatoryWallets is used to display details for multi chain multisig
 const $signatoryWallets = combine(
   {
     wallet: walletSelectModel.$walletForDetails,
