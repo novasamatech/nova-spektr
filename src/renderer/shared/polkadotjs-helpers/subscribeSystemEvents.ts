@@ -19,15 +19,6 @@ export const subscribeSystemEvents = (
     }
     const isCorrectMethod = methods.includes(event.method.toString());
 
-    console.log(
-      'xcm',
-      'checkEvent',
-      event.method.toString(),
-      event.section.toString(),
-      isCorrectSection,
-      isCorrectMethod,
-    );
-
     return isCorrectSection && isCorrectMethod;
   };
 
