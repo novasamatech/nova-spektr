@@ -74,7 +74,7 @@ export const ShardedList = ({
             <Checkbox
               checked={shardsStats.selected === shardsStake.length}
               semiChecked={shardsStats.selected > 0 && shardsStats.selected < shardsStake.length}
-              onChange={(checked) => selectAllShards(checked)}
+              onChange={selectAllShards}
             >
               <div className="grid grid-cols-[174px,104px,104px] items-center gap-x-6">
                 <div className="flex items-center gap-x-2">

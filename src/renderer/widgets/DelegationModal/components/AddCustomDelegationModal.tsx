@@ -3,7 +3,8 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { Step, isStep, validateAddress } from '@/shared/lib/utils';
-import { BaseModal, Button, Icon, Identicon, Input, InputHint } from '@/shared/ui';
+import { BaseModal, Button, Icon, Identicon, InputHint } from '@/shared/ui';
+import { Input } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
 import { networkSelectorModel } from '@/features/governance';
 import { DelegationErrorMessages } from '../common/constants';
@@ -27,9 +28,9 @@ export const AddCustomDelegationModel = () => {
   const prefixElement = (
     <div className="flex h-auto items-center">
       {isValidAddress ? (
-        <Identicon className="mr-2" size={20} address={customDelegate} background={false} />
+        <Identicon size={20} address={customDelegate} background={false} />
       ) : (
-        <Icon className="mr-2" size={20} name="emptyIdenticon" />
+        <Icon size={20} name="emptyIdenticon" />
       )}
     </div>
   );
@@ -48,7 +49,6 @@ export const AddCustomDelegationModel = () => {
     >
       <div className="px-5 pb-4">
         <Input
-          wrapperClass="w-full h-10.5"
           label={t('governance.addDelegation.customDelegationLabel')}
           placeholder={t('governance.addDelegation.customDelegationPlaceholder')}
           invalid={!!customDelegate && !!error}

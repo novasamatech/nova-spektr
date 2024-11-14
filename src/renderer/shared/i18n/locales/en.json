@@ -407,11 +407,6 @@
       "signerLabel": "Select signer",
       "transferableLabel": "Transferable"
     },
-    "passwordInput": {
-      "passwordLabel": "Password",
-      "passwordPlaceholder": "Enter password",
-      "passwordVisibilityButton": "Show password"
-    },
     "title": {
       "appName": "Nova Spektr",
       "inactiveNetwork": "Network is inactive, please check the connection in network settings"

@@ -5,8 +5,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { type ChainAccount, type WalletFamily } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
-import { CaptionText, Combobox, IconButton, Identicon, Input } from '@/shared/ui';
+import { CaptionText, Combobox, IconButton, Identicon } from '@/shared/ui';
 import { type ComboboxOption } from '@/shared/ui/types';
+import { Box, Input } from '@/shared/ui-kit';
 import { contactModel } from '@/entities/contact';
 import { AddressWithName, WalletIcon, walletModel, walletUtils } from '@/entities/wallet';
 import { filterModel } from '@/features/contacts';
@@ -178,47 +179,38 @@ export const Signatory = ({
     setQuery(newQuery);
   };
 
-  const prefixElement = (
-    <div className="flex h-auto items-center">
-      <Identicon className="mr-1" address={signatoryAddress} size={20} background={false} canCopy={false} />
-    </div>
-  );
-
   const accountInputLabel = isOwnAccount
     ? t('createMultisigAccount.ownAccountSelection')
     : t('createMultisigAccount.signatoryAddress');
 
   return (
-    <div className="flex gap-x-2">
-      <div className="w-[300px]">
-        <Input
-          name={t('createMultisigAccount.signatoryNameLabel')}
-          className=""
-          wrapperClass="h-[36px]"
-          label={t('createMultisigAccount.signatoryNameLabel')}
-          placeholder={t('addressBook.createContact.namePlaceholder')}
-          invalid={false}
-          value={signatoryName}
-          disabled={!!ownAccountName || !!contactAccountName}
-          onChange={onNameChange}
-        />
-      </div>
-      <Combobox
-        className="flex-1"
-        label={accountInputLabel}
-        placeholder={t('createMultisigAccount.signatorySelection')}
-        options={options}
-        query={query}
-        value={toAddress(signatoryAddress, { prefix: chain.value.addressPrefix })}
-        prefixElement={prefixElement}
-        onChange={({ value }) => {
-          onAddressChange(value);
-        }}
-        onInput={handleQueryChange}
+    <div className="grid grid-cols-[300px,1fr] gap-x-2">
+      <Input
+        name={t('createMultisigAccount.signatoryNameLabel')}
+        label={t('createMultisigAccount.signatoryNameLabel')}
+        placeholder={t('addressBook.createContact.namePlaceholder')}
+        invalid={false}
+        value={signatoryName}
+        disabled={!!ownAccountName || !!contactAccountName}
+        onChange={onNameChange}
       />
-      {!isOwnAccount && onDelete && (
-        <IconButton className="ml-2 mt-6" name="delete" size={16} onClick={() => onDelete(signatoryIndex)} />
-      )}
+      <div className="flex items-end gap-x-2">
+        <Box width="100%">
+          <Combobox
+            label={accountInputLabel}
+            placeholder={t('createMultisigAccount.signatorySelection')}
+            options={options}
+            query={query}
+            value={toAddress(signatoryAddress, { prefix: chain.value.addressPrefix })}
+            prefixElement={<Identicon address={signatoryAddress} size={20} background={false} canCopy={false} />}
+            onChange={({ value }) => onAddressChange(value)}
+            onInput={handleQueryChange}
+          />
+        </Box>
+        {!isOwnAccount && onDelete && (
+          <IconButton className="ml-2 mt-6" name="delete" size={16} onClick={() => onDelete(signatoryIndex)} />
+        )}
+      </div>
     </div>
   );
 };

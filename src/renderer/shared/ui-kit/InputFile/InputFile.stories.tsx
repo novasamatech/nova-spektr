@@ -3,7 +3,7 @@ import { type Meta, type StoryFn } from '@storybook/react';
 import { InputFile } from './InputFile';
 
 export default {
-  title: 'v1/ui/InputFile',
+  title: 'Design System/kit/InputFile',
   component: InputFile,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof InputFile>;

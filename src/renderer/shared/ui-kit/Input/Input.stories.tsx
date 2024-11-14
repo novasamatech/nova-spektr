@@ -1,11 +1,11 @@
 import { type Meta, type StoryFn } from '@storybook/react';
 
-import { Icon } from '../../Icon/Icon';
+import { Icon } from '@/shared/ui';
 
 import { Input } from './Input';
 
 export default {
-  title: 'v1/ui/Input',
+  title: 'Design System/kit/Input',
   component: Input,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof Input>;
@@ -42,9 +42,16 @@ Disabled.args = {
   disabled: true,
 };
 
+export const Prefix = Template.bind({});
+Prefix.args = {
+  label: 'With prefix element',
+  value: 'This is value',
+  prefixElement: <Icon name="search" className="text-text-secondary" size={16} />,
+};
+
 export const Suffix = Template.bind({});
 Suffix.args = {
   label: 'With suffix element',
   value: 'This is value',
-  suffixElement: <Icon name="warnCutout" className="absolute right-2 top-[9px] text-alert" size={16} />,
+  suffixElement: <Icon name="warnCutout" className="text-alert" size={16} />,
 };

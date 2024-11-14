@@ -9,7 +9,6 @@ import { useScrollTo } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
 import { Button, FootnoteText, HelpText, Icon, IconButton } from '@/shared/ui';
 import { OptionStyle, SelectButtonStyle } from '@/shared/ui/Dropdowns/common/constants';
-import { CommonInputStyles, CommonInputStylesTheme } from '@/shared/ui/Inputs/common/styles';
 import { type Theme } from '@/shared/ui/types';
 import { type ConnectionItem, type SelectorPayload } from '../lib/types';
 
@@ -52,8 +51,8 @@ export const NetworkSelector = ({
             className={cnTw(
               open && SelectButtonStyle[theme].open,
               SelectButtonStyle[theme].disabled,
-              CommonInputStyles,
-              CommonInputStylesTheme[theme],
+              'bg-input-background text-text-primary',
+              'rounded border px-3 py-[7px] text-footnote outline-offset-1',
               'flex w-[248px] items-center justify-between gap-x-2',
             )}
             onClick={scroll}
