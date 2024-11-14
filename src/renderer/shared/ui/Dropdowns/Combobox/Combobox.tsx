@@ -1,5 +1,5 @@
 import { Combobox as HeadlessCombobox, Transition } from '@headlessui/react';
-import { type ComponentProps, Fragment } from 'react';
+import { type ChangeEvent, type ComponentProps, Fragment } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { Input } from '@/shared/ui-kit';
@@ -46,8 +46,7 @@ export const Combobox = ({
         <HeadlessCombobox.Input
           as={Input}
           displayValue={(option: ComboboxOption) => option.value}
-          // @ts-expect-error onChange doesn't respect custom <Input /> onChange type
-          onChange={onInput}
+          onChangeEvent={(e: ChangeEvent<HTMLInputElement>) => onInput(e.target.value)}
           {...inputProps}
         />
 

@@ -36,26 +36,23 @@ export const Signatory = ({
   selectedWallet,
 }: Props) => {
   const { t } = useI18n();
-  const [query, setQuery] = useState('');
-  const [options, setOptions] = useState<ComboboxOption[]>([]);
 
   const contacts = useUnit(contactModel.$contacts);
   const wallets = useUnit(walletModel.$wallets);
   const {
     fields: { chain },
   } = useForm(formModel.$createMultisigForm);
-  const contactsFiltered = useMemo(
-    () =>
-      performSearch({
-        query,
-        records: contacts,
-        weights: {
-          name: 1,
-          address: 0.5,
-        },
-      }),
-    [query, contacts],
-  );
+
+  const [query, setQuery] = useState('');
+  const [options, setOptions] = useState<ComboboxOption[]>([]);
+
+  const contactsFiltered = useMemo(() => {
+    return performSearch({
+      query,
+      records: contacts,
+      weights: { name: 1, address: 0.5 },
+    });
+  }, [query, contacts]);
 
   const ownAccountName =
     walletUtils.getWalletsFilteredAccounts(wallets, {
@@ -218,9 +215,7 @@ export const Signatory = ({
             query={query}
             value={toAddress(signatoryAddress, { prefix: chain.value.addressPrefix })}
             prefixElement={<Identicon address={signatoryAddress} size={20} background={false} canCopy={false} />}
-            onChange={(data) => {
-              onAddressChange(data);
-            }}
+            onChange={onAddressChange}
             onInput={handleQueryChange}
           />
         </Box>

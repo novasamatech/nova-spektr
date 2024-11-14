@@ -1,4 +1,5 @@
 import {
+  type ChangeEvent,
   type ClipboardEvent,
   type ComponentPropsWithoutRef,
   type ReactNode,
@@ -21,6 +22,7 @@ type ComponentProps = {
   prefixElement?: ReactNode;
   suffixElement?: ReactNode;
   onChange?: (value: string) => void;
+  onChangeEvent?: (event: ChangeEvent<HTMLInputElement>) => void;
   onPaste?: (event: ClipboardEvent) => void;
 };
 
@@ -42,6 +44,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       prefixElement,
       suffixElement,
       onChange,
+      onChangeEvent,
       onPaste,
       ...props
     },
@@ -96,7 +99,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           autoFocus={autoFocus}
           disabled={disabled}
           spellCheck={spellCheck}
-          onChange={(event) => onChange?.(event.target.value)}
+          onChange={(event) => {
+            onChange?.(event.target.value);
+            onChangeEvent?.(event);
+          }}
           onPaste={(event) => onPaste?.(event)}
           {...props}
         />

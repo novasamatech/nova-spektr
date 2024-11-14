@@ -47,7 +47,7 @@ export const MembersModal = ({ children }: PropsWithChildren) => {
       <Modal.Content>
         <Box padding={[4, 5]} gap={6} fillContainer>
           {members.length !== 0 ? (
-            <SearchInput autoFocus placeholder={t('general.input.searchLabel')} value={query} onChange={setQuery} />
+            <SearchInput autoFocus value={query} placeholder={t('general.input.searchLabel')} onChange={setQuery} />
           ) : null}
 
           {filteredMembers.length === 0 ? (

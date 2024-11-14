@@ -6,6 +6,7 @@ export { ThemeProvider } from './Theme/ThemeProvider';
 export { ScrollArea } from './ScrollArea/ScrollArea';
 export { InputFile } from './InputFile/InputFile';
 export { Checkbox } from './Checkbox/Checkbox';
+export { Combobox } from './Combobox/Combobox';
 export { Dropdown } from './Dropdown/Dropdown';
 export { Skeleton } from './Skeleton/Skeleton';
 export { Carousel } from './Carousel/Carousel';

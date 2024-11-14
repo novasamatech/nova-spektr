@@ -277,7 +277,7 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
                     disabled={inactiveAccounts[getAccountId(index)]}
                     placeholder={t('onboarding.paritySigner.accountNamePlaceholder')}
                     value={accountNames[getAccountId(index)] || ''}
-                    onChange={(name) => updateAccountName(name, index)}
+                    onChange={(value) => updateAccountName(value, index)}
                   />
                 </div>
                 <ul className="flex flex-col gap-2.5">
@@ -317,7 +317,7 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
                                 disabled={inactiveAccounts[getAccountId(index, chainId, derivedKeyIndex)]}
                                 placeholder={t('onboarding.paritySigner.accountNamePlaceholder')}
                                 value={accountNames[getAccountId(index, chainId, derivedKeyIndex)] || ''}
-                                onChange={(name) => updateAccountName(name, index, chainId, derivedKeyIndex)}
+                                onChange={(value) => updateAccountName(value, index, chainId, derivedKeyIndex)}
                               />
                               <IconButton
                                 name={
