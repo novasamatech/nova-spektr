@@ -4,7 +4,7 @@ import { produce } from 'immer';
 import { type Address, type Wallet } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import { walletModel, walletUtils } from '@/entities/wallet';
-import { balanceSubModel } from '@/features/balances';
+import { balanceSubModel } from '@/features/assets-balances';
 
 interface SignatoryInfo {
   index: number;

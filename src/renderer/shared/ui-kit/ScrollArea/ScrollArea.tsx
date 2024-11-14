@@ -12,7 +12,7 @@ type Props = PropsWithChildren<
   }
 >;
 
-export const ScrollArea = ({ onScroll, orientation = 'vertical', children }: Props) => (
+export const ScrollArea = ({ orientation = 'vertical', children, onScroll }: Props) => (
   <RadixScrollArea.Root type="scroll" scrollHideDelay={500} className="flex h-full w-full flex-col overflow-hidden">
     <RadixScrollArea.Viewport className="h-full w-full" onScroll={onScroll}>
       {children}

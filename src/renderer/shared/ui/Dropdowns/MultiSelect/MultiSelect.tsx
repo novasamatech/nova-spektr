@@ -4,7 +4,6 @@ import { Fragment, useId } from 'react';
 import { cnTw } from '@/shared/lib/utils';
 import { Checkbox } from '@/shared/ui-kit';
 import { Icon } from '../../Icon/Icon';
-import { CommonInputStyles, CommonInputStylesTheme } from '../../Inputs/common/styles';
 import { CaptionText, FootnoteText, LabelText } from '../../Typography';
 import {
   OptionStyle,
@@ -90,9 +89,9 @@ export const MultiSelect = ({
               !open && !invalid && SelectButtonStyle[theme].closed,
               invalid && SelectButtonStyle[theme].invalid,
               SelectButtonStyle[theme].disabled,
-              CommonInputStyles,
-              CommonInputStylesTheme[theme],
               'inline-flex w-full items-center justify-between gap-x-2 py-2 pr-2 text-start',
+              'rounded border bg-input-background px-3 py-[7px]',
+              'text-footnote text-text-primary outline-offset-1',
             )}
             tabIndex={tabIndex}
           >

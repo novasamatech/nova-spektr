@@ -5,12 +5,14 @@ import { type FormEvent } from 'react';
 import { type Chain, type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, toAddress, toShortAddress, validateAddress } from '@/shared/lib/utils';
-import { AmountInput, Button, HelpText, Icon, Identicon, Input, InputHint, Select } from '@/shared/ui';
+import { Button, HelpText, Icon, Identicon, InputHint, Select } from '@/shared/ui';
+import { Input } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { SignatorySelector } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel, XcmFeeWithLabel } from '@/entities/transaction';
 import { AccountAddress, AccountSelectModal, ProxyWalletAlert, accountUtils } from '@/entities/wallet';
+import { AmountInput } from '@/features/assets-balances';
 import { formModel } from '../model/form-model';
 
 type Props = {
@@ -205,9 +207,9 @@ const Destination = () => {
   const prefixElement = (
     <div className="flex h-auto items-center">
       {validateAddress(destination.value) ? (
-        <Identicon className="mr-2" size={20} address={destination.value} background={false} />
+        <Identicon size={20} address={destination.value} background={false} />
       ) : (
-        <Icon className="mr-2" size={20} name="emptyIdenticon" />
+        <Icon size={20} name="emptyIdenticon" />
       )}
     </div>
   );
@@ -221,7 +223,6 @@ const Destination = () => {
   return (
     <div className="flex flex-col gap-y-2">
       <Input
-        wrapperClass="w-full h-10.5"
         label={t('transfer.recipientLabel')}
         placeholder={t('transfer.recipientPlaceholder')}
         invalid={destination.hasError()}

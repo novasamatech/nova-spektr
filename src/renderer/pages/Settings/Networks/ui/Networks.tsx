@@ -186,7 +186,9 @@ export const Networks = () => {
       title={t('settings.networks.title')}
       onClose={closeModal}
     >
-      <NetworksFilter className="mx-5" />
+      <div className="mx-5">
+        <NetworksFilter />
+      </div>
 
       <div className="mt-5 flex h-[454px] flex-col gap-y-4 overflow-y-auto px-3 pb-4 pt-1">
         <NetworkList

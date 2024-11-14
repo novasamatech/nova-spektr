@@ -3,8 +3,8 @@ import { type ReactNode, useEffect, useState } from 'react';
 
 import { type Wallet, type WalletFamily } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Icon, SearchInput, SmallTitleText } from '@/shared/ui';
-import { Box, Popover, Skeleton } from '@/shared/ui-kit';
+import { Icon, SmallTitleText } from '@/shared/ui';
+import { Box, Popover, SearchInput, Skeleton } from '@/shared/ui-kit';
 import { WalletCardLg, walletModel } from '@/entities/wallet';
 import { walletDetailsFeature } from '@/features/wallet-details';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
@@ -28,12 +28,13 @@ export const WalletSelect = ({ action }: Props) => {
   const { t } = useI18n();
 
   const activeWallet = useUnit(walletModel.$activeWallet);
-  const [selectedWallet, setSelectedWallet] = useState<Wallet | null>(null);
-
+  const filterQuery = useUnit(walletSelectModel.$filterQuery);
   const filteredWalletGroups = useUnit(walletSelectModel.$filteredWalletGroups);
 
+  const [selectedWallet, setSelectedWallet] = useState<Wallet | null>(null);
+
   useEffect(() => {
-    // TODO WTF
+    // TODO: WTF
     walletSelectModel.events.callbacksChanged({ onClose: walletSelectModel.events.clearData });
   }, []);
 
@@ -68,6 +69,7 @@ export const WalletSelect = ({ action }: Props) => {
 
             <div className="border-b border-divider p-2">
               <SearchInput
+                value={filterQuery}
                 placeholder={t('wallets.searchPlaceholder')}
                 onChange={walletSelectModel.events.queryChanged}
               />

@@ -4,7 +4,8 @@ import { type FormEvent, useEffect } from 'react';
 
 import { type Contact } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Button, Icon, Identicon, Input, InputHint } from '@/shared/ui';
+import { Button, Icon, Identicon, InputHint } from '@/shared/ui';
+import { Input } from '@/shared/ui-kit';
 import { type Callbacks, editFormModel } from '../model/contact-form';
 
 type Props = Callbacks & {
@@ -41,8 +42,6 @@ export const EditContactForm = ({ contactToEdit, onSubmit }: Props) => {
       <div className="flex flex-col gap-y-2">
         <Input
           name="name"
-          className="w-full"
-          wrapperClass="h-[42px]"
           label={t('addressBook.editContact.nameLabel')}
           placeholder={t('addressBook.editContact.namePlaceholder')}
           invalid={name?.hasError()}
@@ -57,8 +56,6 @@ export const EditContactForm = ({ contactToEdit, onSubmit }: Props) => {
       <div className="flex flex-col gap-y-2">
         <Input
           name="address"
-          wrapperClass="h-[42px]"
-          className="ml-2 w-full"
           label={t('addressBook.editContact.accountIdLabel')}
           placeholder={t('addressBook.editContact.accountIdPlaceholder')}
           invalid={address?.hasError()}

@@ -4,8 +4,8 @@ import { type ClipboardEvent, type FormEvent } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
-import { Button, FootnoteText, Input } from '@/shared/ui';
-import { Checkbox } from '@/shared/ui-kit';
+import { Button, FootnoteText } from '@/shared/ui';
+import { Checkbox, Input } from '@/shared/ui-kit';
 import { warningModel } from '../model/warning-model';
 
 type Props = {
@@ -33,7 +33,6 @@ export const Warning = ({ onGoBack }: Props) => {
       <form id="remove-pure-proxy-warning-form" className="mt-4 flex flex-col gap-y-4" onSubmit={revokeAuthority}>
         <FootnoteText as="p"> {t('pureProxyRemove.warning.warningMessage')}</FootnoteText>
         <Input
-          className="w-full"
           placeholder={t('general.input.descriptionPlaceholder')}
           invalid={passphrase.isTouched && passphrase.hasError()}
           value={passphrase.value}
