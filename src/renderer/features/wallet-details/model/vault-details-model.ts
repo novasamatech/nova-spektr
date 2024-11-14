@@ -11,8 +11,9 @@ import {
   type DraftAccount,
   type ID,
   type ShardAccount,
-  type Wallet,
 } from '@/shared/core';
+import { series } from '@/shared/effector';
+import { nonNullable } from '@/shared/lib/utils';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { proxiesModel } from '@/features/proxies';
 
@@ -85,18 +86,19 @@ sample({
 
 sample({
   clock: removeKeysFx.doneData,
-  source: walletModel.$wallets,
-  filter: (_, ids) => Boolean(ids),
+  source: walletModel.$allWallets,
+  filter: (_, ids) => nonNullable(ids),
   fn: (wallets, ids) => {
     const removeMap = ids!.reduce<Record<ID, boolean>>((acc, id) => ({ ...acc, [id]: true }), {});
 
     return wallets.map((wallet) => {
-      const remainingAccounts = wallet.accounts.filter(({ id }) => !removeMap[id]);
-
-      return { ...wallet, accounts: remainingAccounts } as Wallet;
+      return {
+        walletId: wallet.id,
+        accounts: wallet.accounts.filter(({ id }) => !removeMap[id]),
+      };
     });
   },
-  target: walletModel.$allWallets,
+  target: series(walletModel.events.updateAccounts),
 });
 
 sample({
@@ -108,16 +110,17 @@ sample({ clock: accountsCreated, target: createAccountsFx });
 
 sample({
   clock: createAccountsFx.done,
-  source: walletModel.$wallets,
-  filter: (_, { result }) => Boolean(result),
+  source: walletModel.$allWallets,
+  filter: (_, { result }) => nonNullable(result),
   fn: (wallets, { params, result }) => {
-    return wallets.map((wallet) => {
-      if (wallet.id !== params.walletId) return wallet;
+    const wallet = wallets.find((w) => w.id === params.walletId);
 
-      return { ...wallet, accounts: [...wallet.accounts, ...result!] } as Wallet;
-    });
+    return {
+      walletId: params.walletId,
+      accounts: wallet ? [...wallet.accounts, ...result!] : result!,
+    };
   },
-  target: walletModel.$allWallets,
+  target: walletModel.events.updateAccounts,
 });
 
 sample({

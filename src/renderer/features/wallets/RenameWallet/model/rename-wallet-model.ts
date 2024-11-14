@@ -4,8 +4,9 @@ import { not } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import { type Wallet } from '@/shared/core';
-import { splice } from '@/shared/lib/utils';
-import { walletModel } from '@/entities/wallet';
+import { nonNullable } from '@/shared/lib/utils';
+import { walletModel, walletUtils } from '@/entities/wallet';
+import { walletConnectModel } from '@/entities/walletConnect';
 
 export type Callbacks = {
   onSubmit: () => void;
@@ -42,10 +43,10 @@ const $walletForm = createForm({
   validateOn: ['submit'],
 });
 
-const renameWalletFx = createEffect(async ({ id, ...rest }: Wallet): Promise<Wallet> => {
+const renameWalletFx = createEffect(async ({ id, accounts, ...rest }: Wallet): Promise<Wallet> => {
   await storageService.wallets.update(id, rest);
 
-  return { id, ...rest };
+  return { id, accounts, ...rest };
 });
 
 sample({
@@ -77,20 +78,39 @@ function validateNameExist(value: string, _: unknown, params: SourceParams): boo
 sample({
   clock: $walletForm.formValidated,
   source: $walletToEdit,
-  filter: (walletToEdit) => walletToEdit !== null,
-  fn: (walletToEdit, form) => ({ ...walletToEdit!, name: form.name }),
+  filter: (walletToEdit) => nonNullable(walletToEdit),
+  fn: (walletToEdit, form) => ({
+    ...walletToEdit!,
+    name: form.name,
+    accounts:
+      walletUtils.isPolkadotVault(walletToEdit!) || walletUtils.isMultiShard(walletToEdit!)
+        ? walletToEdit!.accounts
+        : walletToEdit!.accounts?.map((acc) => ({ ...acc, name: form.name })),
+  }),
   target: renameWalletFx,
 });
 
 sample({
   clock: renameWalletFx.doneData,
-  source: walletModel.$wallets,
-  fn: (wallets, updatedWallet) => {
-    const updatedWalletIndex = wallets.findIndex((w) => w.id === updatedWallet.id);
-
-    return splice(wallets, updatedWallet, updatedWalletIndex);
+  filter: (updatedWallet) => {
+    return !walletUtils.isPolkadotVault(updatedWallet) && !walletUtils.isMultiShard(updatedWallet);
   },
-  target: walletModel.$allWallets,
+  fn: (updatedWallet) => ({
+    walletId: updatedWallet.id,
+    accounts: updatedWallet.accounts,
+  }),
+  target: walletConnectModel.events.accountsUpdated,
+});
+
+sample({
+  clock: renameWalletFx.doneData,
+  fn: (updatedWallet) => {
+    return {
+      walletId: updatedWallet.id,
+      data: updatedWallet,
+    };
+  },
+  target: walletModel.events.updateWallet,
 });
 
 sample({

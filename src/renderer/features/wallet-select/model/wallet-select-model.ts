@@ -1,9 +1,8 @@
 import { default as BigNumber } from 'bignumber.js';
-import { attach, combine, createApi, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { attach, combine, createApi, createEvent, createStore, restore, sample } from 'effector';
 import { once, previous } from 'patronum';
 
-import { storageService } from '@/shared/api/storage';
-import { type Account, type ID } from '@/shared/core';
+import { type Account } from '@/shared/core';
 import { dictionary, getRoundedValue, totalAmount } from '@/shared/lib/utils';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -16,7 +15,6 @@ export type Callbacks = {
 };
 
 const queryChanged = createEvent<string>();
-const walletSelected = createEvent<ID>();
 
 const $callbacks = createStore<Callbacks | null>(null);
 const callbacksApi = createApi($callbacks, {
@@ -34,20 +32,6 @@ const $isWalletsRemoved = combine(
     if (!prevWallets) return false;
 
     return prevWallets.length > wallets.length;
-  },
-);
-
-const $isWalletsAdded = combine(
-  {
-    prevWallets: previous(walletModel.$wallets),
-    wallets: walletModel.$wallets,
-  },
-  ({ prevWallets, wallets }) => {
-    if (!prevWallets) return false;
-
-    if (prevWallets.length > 0) return wallets.length > prevWallets.length;
-
-    return wallets.length === 1 && !wallets[0].isActive;
   },
 );
 
@@ -97,40 +81,9 @@ const $walletBalance = combine(
   },
 );
 
-const walletSelectedFx = createEffect(async (nextId: ID): Promise<ID | undefined> => {
-  const wallets = await storageService.wallets.readAll();
-  const inactiveWallets = wallets.filter((wallet) => wallet.isActive).map((wallet) => ({ ...wallet, isActive: false }));
-
-  const [, nextWallet] = await Promise.all([
-    storageService.wallets.updateAll(inactiveWallets),
-    storageService.wallets.update(nextId, { isActive: true }),
-  ]);
-
-  return nextWallet;
-});
-
 sample({
   clock: queryChanged,
   target: $filterQuery,
-});
-
-sample({
-  clock: once(walletModel.$wallets),
-  filter: (wallets) => wallets.every((wallet) => !wallet.isActive),
-  fn: (wallets) => {
-    const match = wallets.find((wallet) => wallet.isActive);
-    if (match) return match.id;
-
-    const groups = walletSelectService.getWalletByGroups(wallets);
-
-    return Object.values(groups).flat()[0].id;
-  },
-  target: walletSelectedFx,
-});
-
-sample({
-  clock: walletSelected,
-  target: walletSelectedFx,
 });
 
 sample({
@@ -146,24 +99,24 @@ sample({
 
     return Object.values(groups).flat()[0].id;
   },
-  target: walletSelectedFx,
+  target: walletModel.events.selectWallet,
 });
 
 sample({
-  clock: $isWalletsAdded,
+  clock: walletModel.events.walletCreatedDone,
   source: walletModel.$wallets,
-  filter: (wallets, isWalletsAdded) => {
-    const wallet = wallets.at(-1);
-    if (!wallet) return false;
+  filter: (wallets, { wallet }) => {
+    const foundWallet = wallets.find((w) => w.id === wallet.id);
+    if (!foundWallet) return false;
 
-    return isWalletsAdded && !walletUtils.isProxied(wallet) && !walletUtils.isMultisig(wallet);
+    return !walletUtils.isProxied(foundWallet) && !walletUtils.isMultisig(foundWallet);
   },
-  fn: (wallets) => wallets[wallets.length - 1].id,
-  target: walletSelectedFx,
+  fn: (_, { wallet }) => wallet.id,
+  target: walletModel.events.selectWallet,
 });
 
 sample({
-  clock: walletSelected,
+  clock: walletModel.events.selectWallet,
   source: walletModel.$activeWallet,
   filter: (wallet, walletId) => walletId !== wallet?.id,
   target: attach({
@@ -173,13 +126,14 @@ sample({
 });
 
 sample({
-  clock: walletSelectedFx.doneData,
-  source: walletModel.$wallets,
-  filter: (_, nextId) => Boolean(nextId),
-  fn: (wallets, nextId) => {
-    return wallets.map((wallet) => ({ ...wallet, isActive: wallet.id === nextId }));
+  clock: once(walletModel.$wallets),
+  filter: (wallets) => wallets.length > 0 && wallets.every((wallet) => !wallet.isActive),
+  fn: (wallets) => {
+    const groups = walletSelectService.getWalletByGroups(wallets);
+
+    return Object.values(groups).flat()[0].id;
   },
-  target: walletModel.$allWallets,
+  target: walletModel.events.selectWallet,
 });
 
 export const walletSelectModel = {
@@ -188,7 +142,7 @@ export const walletSelectModel = {
   $walletBalance,
 
   events: {
-    walletSelected,
+    walletSelected: walletModel.events.selectWallet,
     queryChanged,
     clearData: $filterQuery.reinit,
     callbacksChanged: callbacksApi.callbacksChanged,

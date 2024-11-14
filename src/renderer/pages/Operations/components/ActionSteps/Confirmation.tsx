@@ -17,7 +17,7 @@ import {
   getIconName,
   isXcmTransaction,
 } from '@/entities/transaction';
-import { walletModel } from '@/entities/wallet';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { xcmTransferModel } from '@/widgets/Transfer';
 import { TransactionAmount } from '@/pages/Operations/components/TransactionAmount';
 import { Details } from '../Details';
@@ -25,21 +25,24 @@ import { Details } from '../Details';
 type Props = {
   tx: MultisigTransaction;
   account: MultisigAccount;
-  signatory?: Account;
-  connection: ExtendedChain;
+  signAccount?: Account;
+  chainConnection: ExtendedChain;
   feeTx?: Transaction;
   onSign: () => void;
 };
-export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign }: Props) => {
+export const Confirmation = ({ tx, account, chainConnection, signAccount, feeTx, onSign }: Props) => {
   const { t } = useI18n();
   const [isFeeLoaded, setIsFeeLoaded] = useState(false);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
   const wallets = useUnit(walletModel.$wallets);
-  const wallet = wallets.find((w) => w.id === signatory?.walletId);
+  const signerWallet = walletUtils.getWalletFilteredAccounts(wallets, {
+    walletFn: walletUtils.isValidSignSignatory,
+    accountFn: (acc) => signAccount?.accountId === acc.accountId,
+  });
 
   const xcmConfig = useUnit(xcmTransferModel.$config);
-  const asset = getAssetById(tx.transaction?.args.assetId, connection.assets) || connection.assets[0];
+  const asset = getAssetById(tx.transaction?.args.assetId, chainConnection.assets) || chainConnection.assets[0];
 
   const transaction = getTransactionFromMultisigTx(tx);
 
@@ -48,30 +51,29 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
   }, []);
 
   return (
-    <div className="flex flex-col items-center gap-y-3">
+    <div className="flex flex-col items-center gap-y-3 px-5 pb-4">
       <div className="mb-6 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name={getIconName(tx.transaction)} size={60} />
 
         {tx.transaction && <TransactionAmount tx={tx.transaction} />}
       </div>
 
-      <Details tx={tx} account={account} extendedChain={connection} signatory={signatory} />
-
-      {signatory && connection?.api && (
+      <Details tx={tx} account={account} extendedChain={chainConnection} signatory={signAccount} />
+      {signAccount && chainConnection?.api && (
         <MultisigDepositWithLabel
-          api={connection.api}
-          asset={connection.assets[0]}
+          api={chainConnection.api}
+          asset={chainConnection.assets[0]}
           className="text-footnote"
           threshold={(account as MultisigAccount).threshold}
         />
       )}
 
       <DetailRow label={t('operation.networkFee')} className="text-text-primary">
-        {connection?.api && feeTx ? (
+        {chainConnection?.api && feeTx ? (
           <Fee
             className="text-footnote"
-            api={connection.api}
-            asset={connection.assets[0]}
+            api={chainConnection.api}
+            asset={chainConnection.assets[0]}
             transaction={feeTx}
             onFeeChange={(fee) => setIsFeeLoaded(Boolean(fee))}
           />
@@ -80,13 +82,13 @@ export const Confirmation = ({ tx, account, connection, signatory, feeTx, onSign
         )}
       </DetailRow>
 
-      {isXcmTransaction(transaction) && xcmConfig && connection.api && (
+      {isXcmTransaction(transaction) && xcmConfig && chainConnection.api && (
         <DetailRow label={t('operation.xcmFee')} className="text-text-primary">
-          <XcmFee api={connection.api} transaction={transaction} asset={asset} config={xcmConfig} />
+          <XcmFee api={chainConnection.api} transaction={transaction} asset={asset} config={xcmConfig} />
         </DetailRow>
       )}
 
-      <SignButton disabled={!isFeeLoaded} className="ml-auto mt-3" type={wallet?.type} onClick={onSign} />
+      <SignButton disabled={!isFeeLoaded} className="ml-auto mt-3" type={signerWallet?.type} onClick={onSign} />
     </div>
   );
 };

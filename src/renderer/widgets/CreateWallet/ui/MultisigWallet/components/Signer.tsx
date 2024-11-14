@@ -1,7 +1,7 @@
 import { BN_ZERO } from '@polkadot/util';
 import { type FormEvent } from 'react';
 
-import { type AccountId, type Chain, type WalletType } from '@/shared/core';
+import { type Account, type Chain, type WalletType } from '@/shared/core';
 import { toAddress, transferableAmount } from '@/shared/lib/utils';
 import { BodyText, Icon } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
@@ -9,16 +9,16 @@ import { useBalance } from '@/entities/balance';
 import { WalletIcon } from '@/entities/wallet';
 
 interface Props {
-  onSubmit: (event: FormEvent, accountId: AccountId) => void;
-  accountId: AccountId;
+  onSubmit: (event: FormEvent, account: Account) => void;
+  account: Account;
   walletType: WalletType;
   walletName?: string;
   chain: Chain;
 }
 
-export const Signer = ({ accountId, walletName, walletType, onSubmit, chain }: Props) => {
+export const Signer = ({ account, walletName, walletType, onSubmit, chain }: Props) => {
   const balance = useBalance({
-    accountId,
+    accountId: account.accountId,
     chainId: chain.chainId,
     assetId: chain.assets[0].assetId.toString(),
   });
@@ -26,13 +26,14 @@ export const Signer = ({ accountId, walletName, walletType, onSubmit, chain }: P
   return (
     <li
       className="grid cursor-pointer grid-flow-col grid-cols-[30px,1fr,100px,30px] items-center truncate py-4 pl-2 pr-2 hover:bg-hover"
-      key={accountId}
-      onClick={(e) => onSubmit(e, accountId)}
+      onClick={(e) => onSubmit(e, account)}
     >
       <WalletIcon type={walletType} />
       <div className="flex flex-col text-text-secondary">
         {walletName && <BodyText className="text-inherit">{walletName}</BodyText>}
-        <BodyText className="text-inherit">{toAddress(accountId, { prefix: chain.addressPrefix, chunk: 6 })}</BodyText>
+        <BodyText className="text-inherit">
+          {toAddress(account.accountId, { prefix: chain.addressPrefix, chunk: 6 })}
+        </BodyText>
       </div>
       {chain.assets[0] && (
         <AssetBalance

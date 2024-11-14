@@ -4,7 +4,7 @@ import { combine, createEffect, createEvent, createStore, sample } from 'effecto
 import { combineEvents } from 'patronum';
 
 import { AccountType, type ChainId, type HexString, type WcAccount } from '@/shared/core';
-import { toAccountId } from '@/shared/lib/utils';
+import { nonNullable, toAccountId } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type InitReconnectParams, walletConnectModel } from '@/entities/walletConnect';
@@ -43,6 +43,7 @@ const $isStatusShown = combine(
       operationSignUtils.isReconnectingStep(reconnectStep) ||
       operationSignUtils.isConnectedStep(reconnectStep) ||
       operationSignUtils.isRejectedStep(reconnectStep) ||
+      operationSignUtils.isFailedStep(reconnectStep) ||
       isSigningRejected
     );
   },
@@ -96,6 +97,14 @@ sample({
 });
 
 sample({
+  clock: [walletConnectModel.events.initConnectFailed, walletConnectModel.events.sessionTopicUpdateFailed],
+  source: $reconnectStep,
+  filter: (step) => step === ReconnectStep.RECONNECTING,
+  fn: () => ReconnectStep.FAILED,
+  target: $reconnectStep,
+});
+
+sample({
   clock: walletConnectModel.events.connected,
   source: {
     signer: operationSignModel.$signer,
@@ -103,13 +112,15 @@ sample({
     step: $reconnectStep,
     session: walletConnectModel.$session,
   },
-  filter: ({ step, session }) => {
+  filter: ({ step, session, signer }) => {
     return (
       (operationSignUtils.isReconnectingStep(step) || operationSignUtils.isConnectedStep(step)) &&
-      operationSignUtils.isTopicExist(session)
+      operationSignUtils.isTopicExist(session) &&
+      nonNullable(signer)
     );
   },
   fn: ({ wallets, signer, session }) => ({
+    walletId: signer!.walletId,
     accounts: walletUtils.getAccountsBy(wallets, (a) => a.walletId === signer?.walletId),
     topic: session!.topic,
   }),
@@ -118,7 +129,8 @@ sample({
 
 sample({
   clock: combineEvents({
-    events: [reconnectStarted, walletConnectModel.events.sessionTopicUpdateDone, walletConnectModel.events.connected],
+    events: [walletConnectModel.events.sessionTopicUpdateDone],
+    reset: reconnectStarted,
   }),
   source: {
     signer: operationSignModel.$signer,
