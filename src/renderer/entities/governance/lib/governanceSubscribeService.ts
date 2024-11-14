@@ -134,7 +134,7 @@ function subscribeVotingFor(
 }
 
 function subscribeReferendums(api: ApiPromise, callback: (referendums: IteratorResult<Referendum[], void>) => unknown) {
-  let currectAbortController = new AbortController();
+  let currentAbortController = new AbortController();
 
   const fetchPages = async (abort: AbortController) => {
     for await (const page of referendaPallet.storage.referendumInfoForPaged('governance', api, 500)) {
@@ -153,12 +153,12 @@ function subscribeReferendums(api: ApiPromise, callback: (referendums: IteratorR
     callback({ done: true, value: undefined });
   };
 
-  fetchPages(currectAbortController);
+  fetchPages(currentAbortController);
 
   const fn = () => {
-    currectAbortController.abort();
-    currectAbortController = new AbortController();
-    fetchPages(currectAbortController);
+    currentAbortController.abort();
+    currentAbortController = new AbortController();
+    fetchPages(currentAbortController);
   };
 
   const unsubscribeSystemReferenda = polkadotjsHelpers.subscribeSystemEvents({ api, section: 'referenda' }, fn);
@@ -174,7 +174,7 @@ function subscribeReferendums(api: ApiPromise, callback: (referendums: IteratorR
 
   return Promise.all([unsubscribeSystemReferenda, unsubscribeSystemConvictionVoting, unsubscribeExtrinsics]).then(
     (fns) => () => {
-      currectAbortController.abort();
+      currentAbortController.abort();
       for (const fn of fns) {
         fn();
       }
