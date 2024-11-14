@@ -5,7 +5,8 @@ import { type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { performSearch, toAddress } from '@/shared/lib/utils';
-import { FootnoteText, SearchInput } from '@/shared/ui';
+import { FootnoteText } from '@/shared/ui';
+import { SearchInput } from '@/shared/ui-kit';
 import { type Vote as VoteType } from '@/domains/collectives';
 import { identityModel } from '../model/identity';
 

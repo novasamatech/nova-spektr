@@ -16,8 +16,9 @@ import {
 } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAccountId } from '@/shared/lib/utils';
-import { Button, HeaderTitleText, Icon, Input, InputHint, SmallTitleText } from '@/shared/ui';
+import { Button, HeaderTitleText, Icon, InputHint, SmallTitleText } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
+import { Input } from '@/shared/ui-kit';
 import { MultiAccountsList, walletModel } from '@/entities/wallet';
 
 const WalletLogo: Record<WalletTypeName, IconNames> = {
@@ -154,7 +155,6 @@ export const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack,
             render={({ field: { onChange, value } }) => (
               <div>
                 <Input
-                  wrapperClass="flex items-center"
                   label={t('onboarding.walletNameLabel')}
                   placeholder={t('onboarding.walletNamePlaceholder')}
                   invalid={Boolean(errors.walletName)}

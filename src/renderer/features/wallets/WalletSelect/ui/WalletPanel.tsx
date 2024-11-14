@@ -3,8 +3,8 @@ import { type ReactNode, useEffect } from 'react';
 
 import { type WalletFamily } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { SearchInput, SmallTitleText } from '@/shared/ui';
-import { Popover } from '@/shared/ui-kit';
+import { SmallTitleText } from '@/shared/ui';
+import { Popover, SearchInput } from '@/shared/ui-kit';
 import { type Callbacks, walletSelectModel } from '../model/wallet-select-model';
 
 import { WalletGroup } from './WalletGroup';
@@ -15,6 +15,7 @@ type Props = Callbacks & {
 export const WalletPanel = ({ action, onClose }: Props) => {
   const { t } = useI18n();
 
+  const filterQuery = useUnit(walletSelectModel.$filterQuery);
   const filteredWalletGroups = useUnit(walletSelectModel.$filteredWalletGroups);
 
   useEffect(() => {
@@ -30,7 +31,11 @@ export const WalletPanel = ({ action, onClose }: Props) => {
         </header>
 
         <div className="border-b border-divider p-2">
-          <SearchInput placeholder={t('wallets.searchPlaceholder')} onChange={walletSelectModel.events.queryChanged} />
+          <SearchInput
+            value={filterQuery}
+            placeholder={t('wallets.searchPlaceholder')}
+            onChange={walletSelectModel.events.queryChanged}
+          />
         </div>
 
         <div className="flex max-h-[530px] flex-col divide-y divide-divider overflow-y-auto px-1">

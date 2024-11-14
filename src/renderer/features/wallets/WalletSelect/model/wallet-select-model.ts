@@ -1,5 +1,5 @@
 import { default as BigNumber } from 'bignumber.js';
-import { attach, combine, createApi, createEvent, createStore, sample } from 'effector';
+import { attach, combine, createApi, createEvent, createStore, restore, sample } from 'effector';
 import { once, previous } from 'patronum';
 
 import { type Account, type ID, type Wallet } from '@/shared/core';
@@ -23,7 +23,7 @@ const callbacksApi = createApi($callbacks, {
 });
 
 const $walletId = createStore<ID | null>(null);
-const $filterQuery = createStore<string>('');
+const $filterQuery = restore(queryChanged, '');
 
 const $isWalletsRemoved = combine(
   {
@@ -96,7 +96,10 @@ const $walletBalance = combine(
   },
 );
 
-sample({ clock: queryChanged, target: $filterQuery });
+sample({
+  clock: queryChanged,
+  target: $filterQuery,
+});
 
 sample({ clock: walletIdSet, target: $walletId });
 
@@ -151,6 +154,7 @@ sample({
 });
 
 export const walletSelectModel = {
+  $filterQuery,
   $filteredWalletGroups,
   $walletBalance,
   $walletForDetails,

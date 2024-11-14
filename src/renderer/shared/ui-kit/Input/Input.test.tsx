@@ -19,6 +19,6 @@ describe('ui/Inputs/Input', () => {
     const input = screen.getByRole('textbox');
     await user.type(input, 'x');
 
-    expect(spyChange).toBeCalledWith('x');
+    expect(spyChange).toHaveBeenCalledWith('x');
   });
 });

@@ -14,10 +14,10 @@ import {
   Icon,
   IconButton,
   Identicon,
-  Input,
   InputHint,
   SmallTitleText,
 } from '@/shared/ui';
+import { Input } from '@/shared/ui-kit';
 import { networkModel, networkUtils } from '@/entities/network';
 import { AccountsList, walletModel } from '@/entities/wallet';
 
@@ -119,7 +119,6 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
             render={({ field: { onChange, value } }) => (
               <div>
                 <Input
-                  wrapperClass="flex items-center"
                   label={t('onboarding.walletNameLabel')}
                   placeholder={t('onboarding.walletNamePlaceholder')}
                   invalid={Boolean(errors.walletName)}
@@ -143,15 +142,12 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
             render={({ field: { onChange, value } }) => (
               <div>
                 <Input
-                  wrapperClass="flex items-center"
                   invalid={Boolean(errors.address)}
                   label={t('onboarding.accountAddressLabel')}
                   placeholder={t('onboarding.watchOnly.accountAddressPlaceholder')}
                   value={value}
                   prefixElement={
-                    <div className="mr-2">
-                      {isValid ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />}
-                    </div>
+                    isValid ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />
                   }
                   onChange={onChange}
                 />

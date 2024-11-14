@@ -6,7 +6,7 @@ import { nonNullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { basketModel } from '@/entities/basket';
 import { walletModel, walletUtils } from '@/entities/wallet';
-import { balanceSubModel } from '@/features/balances';
+import { balanceSubModel } from '@/features/assets-balances';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
