@@ -6,6 +6,7 @@ const CURRENT_YEAR = new Date().getFullYear();
 
 /**
  * @type {import('electron-builder').Configuration}
+ *
  * @see https://www.electron.build/configuration/configuration
  */
 module.exports = {
@@ -36,7 +37,6 @@ module.exports = {
       arch: ['x64', 'arm64'],
     },
   },
-  afterSign: 'scripts/notarize.js',
 
   dmg: {
     icon: false,

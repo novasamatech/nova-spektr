@@ -56,9 +56,11 @@ export const MultisigWalletDetails = ({
 
   const multisigChains = useMemo(() => {
     return Object.values(chains).filter((chain) => {
-      return (
-        networkUtils.isMultisigSupported(chain.options) && accountUtils.isChainAndCryptoMatch(multisigAccount, chain)
-      );
+      const isAccountChain = multisigAccount.chainId === chain.chainId;
+      const isMultisigSupported = networkUtils.isMultisigSupported(chain.options);
+      const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(multisigAccount, chain);
+
+      return isAccountChain || (isMultisigSupported && isChainAndCryptoMatch);
     });
   }, [chains]);
 

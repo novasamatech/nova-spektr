@@ -23,7 +23,7 @@ describe('widgets/WalletDetails/model/wallet-provider-model', () => {
 
     const scope = fork({
       values: new Map()
-        .set(walletModel.$allWallets, wallets)
+        .set(walletModel._test.$allWallets, wallets)
         .set(networkModel.$chains, chains)
         .set(proxyModel.$proxies, proxies),
     });
@@ -41,7 +41,7 @@ describe('widgets/WalletDetails/model/wallet-provider-model', () => {
 
     const scope = fork({
       values: new Map()
-        .set(walletModel.$allWallets, [multisiigWallet])
+        .set(walletModel._test.$allWallets, [multisiigWallet])
         .set(proxyModel.$proxies, proxies)
         .set(networkModel.$chains, chains),
     });
@@ -56,7 +56,7 @@ describe('widgets/WalletDetails/model/wallet-provider-model', () => {
 
     const scope = fork({
       values: new Map()
-        .set(walletModel.$allWallets, [multisiigWallet, ...signatoriesWallets])
+        .set(walletModel._test.$allWallets, [multisiigWallet, ...signatoriesWallets])
         .set(proxyModel.$proxies, proxies)
         .set(networkModel.$chains, chains),
     });
@@ -73,7 +73,7 @@ describe('widgets/WalletDetails/model/wallet-provider-model', () => {
     const { wallets } = walletProviderMocks;
 
     const scope = fork({
-      values: new Map().set(walletModel.$allWallets, wallets),
+      values: new Map().set(walletModel._test.$allWallets, wallets),
     });
 
     await allSettled(walletSelectModel.events.walletIdSet, { scope, params: wallets[1].id });
