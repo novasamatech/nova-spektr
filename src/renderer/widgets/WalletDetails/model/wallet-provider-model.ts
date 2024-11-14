@@ -95,7 +95,7 @@ const $signatoryWallets = combine(
       walletFn: (w) =>
         !walletUtils.isWatchOnly(w) &&
         !walletUtils.isProxied(w) &&
-        wallet.accounts[0].signatories.some((s) => s?.id === w.id),
+        wallet.accounts[0].signatories.some((s) => !s?.id || s.id === w.id),
       accountFn: (a) => signatoriesMap[a.accountId],
     });
 
