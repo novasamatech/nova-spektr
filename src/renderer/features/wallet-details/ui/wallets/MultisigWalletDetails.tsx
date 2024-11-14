@@ -9,7 +9,7 @@ import { toAddress } from '@/shared/lib/utils';
 import { BaseModal, DropdownIconButton, FootnoteText, Icon, Tabs } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { type TabItem } from '@/shared/ui/types';
-import { AccountExplorers, Address } from '@/shared/ui-entities';
+import { AccountExplorers, Address, RootExplorers } from '@/shared/ui-entities';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel, networkUtils } from '@/entities/network';
 import {
@@ -61,7 +61,7 @@ export const MultisigWalletDetails = ({
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
   const multisigAccount = wallet.accounts[0];
-  const singleChain = multisigAccount.chainId && chains[multisigAccount.chainId];
+  const singleChain = multisigAccount.chainId ? chains[multisigAccount.chainId] : undefined;
 
   const multisigChains = useMemo(() => {
     return Object.values(chains).filter((chain) => {
@@ -236,7 +236,7 @@ export const MultisigWalletDetails = ({
                           </div>
                         }
                       >
-                        <AccountExplorers accountId={accountId} />
+                        <RootExplorers accountId={accountId} />
                       </WalletCardMd>
                     </li>
                   ))}
@@ -254,7 +254,7 @@ export const MultisigWalletDetails = ({
                   {signatoryContacts.map((signatory) => (
                     <li key={signatory.accountId} className="-mx-2">
                       <ContactItem name={signatory.name} address={signatory.accountId}>
-                        <AccountExplorers accountId={signatory.accountId} />
+                        <RootExplorers accountId={signatory.accountId} />
                       </ContactItem>
                     </li>
                   ))}
