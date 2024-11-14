@@ -12,7 +12,7 @@ export const subscribeSystemEvents = (
   fn: (event: Event) => unknown,
 ) => {
   const isValidEvent = (event: Event) => {
-    const isCorrectSection = event.section === section;
+    const isCorrectSection = event.section.toString() === section;
 
     if (!methods || methods.length === 0) {
       return isCorrectSection;

@@ -88,6 +88,7 @@ const { subscribe, unsubscribe } = createDataSubscription<
             {
               api,
               section: `multisig`,
+              // TODO: add NewMultisig event
               methods: ['MultisigApproval', 'MultisigExecuted', 'MultisigCancelled'],
             },
             event => {
