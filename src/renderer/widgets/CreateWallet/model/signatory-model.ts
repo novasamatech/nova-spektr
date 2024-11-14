@@ -12,7 +12,7 @@ const changeSignatory = createEvent<SignatoryInfo>();
 const deleteSignatory = createEvent<number>();
 const getSignatoriesBalance = createEvent<Wallet[]>();
 
-const $signatories = createStore<Omit<SignatoryInfo, 'index'>[]>([{ name: '', address: '' }]);
+const $signatories = createStore<Omit<SignatoryInfo, 'index'>[]>([{ name: '', address: '', walletId: '' }]);
 const $hasDuplicateSignatories = combine($signatories, (signatories) => {
   const existingKeys: Set<Address> = new Set();
 
@@ -58,9 +58,9 @@ sample({
 sample({
   clock: addSignatory,
   source: $signatories,
-  fn: (signatories, { name, address }) => {
+  fn: (signatories, { name, address, walletId }) => {
     return produce(signatories, (draft) => {
-      draft.push({ name, address });
+      draft.push({ name, address, walletId });
     });
   },
   target: $signatories,
@@ -69,12 +69,12 @@ sample({
 sample({
   clock: changeSignatory,
   source: $signatories,
-  fn: (signatories, { index, name, address }) => {
+  fn: (signatories, { index, name, address, walletId }) => {
     return produce(signatories, (draft) => {
       if (index >= draft.length) {
-        draft.push({ name, address });
+        draft.push({ name, address, walletId });
       } else {
-        draft[index] = { name, address };
+        draft[index] = { name, address, walletId };
       }
     });
   },

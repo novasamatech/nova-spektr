@@ -192,7 +192,7 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
       )}
 
       {signatory && signatoryWallet && (
-        <DetailRow label={t('transfer.signatoryLabel')} className="-mr-2 text-text-secondary">
+        <DetailRow label={t('transfer.signatoryLabel')} className="text-text-secondary">
           <Box direction="row" gap={2}>
             <WalletIcon type={signatoryWallet.type} size={16} />
             <span>{signatoryWallet.name}</span>

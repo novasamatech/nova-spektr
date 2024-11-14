@@ -5,7 +5,6 @@ import { delay, spread } from 'patronum';
 
 import {
   type Account,
-  type AccountId,
   AccountType,
   type ChainId,
   ChainType,
@@ -21,6 +20,7 @@ import {
 } from '@/shared/core';
 import {
   SS58_DEFAULT_PREFIX,
+  Step,
   TEST_ACCOUNTS,
   ZERO_BALANCE,
   isStep,
@@ -36,7 +36,9 @@ import { transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { ExtrinsicResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
-import { type AddMultisigStore, type FormSubmitEvent, Step } from '../lib/types';
+import { proxiesModel } from '@/features/proxies';
+import { walletPairingModel } from '@/features/wallets';
+import { type AddMultisigStore, type FormSubmitEvent } from '../lib/types';
 
 import { confirmModel } from './confirm-model';
 import { formModel } from './form-model';
@@ -49,7 +51,7 @@ const multisigDepositChanged = createEvent<string>();
 const isFeeLoadingChanged = createEvent<boolean>();
 const formSubmitted = createEvent<FormSubmitEvent>();
 const flowFinished = createEvent();
-const signerSelected = createEvent<AccountId>();
+const signerSelected = createEvent<Account>();
 
 const walletCreated = createEvent<{
   name: string;
@@ -65,12 +67,12 @@ const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $addMultisigStore = createStore<AddMultisigStore | null>(null).reset(flowFinished);
-const $signer = createStore<Account | null>(null).reset(flowFinished);
+const $signer = restore<Account | null>(signerSelected, null).reset(flowFinished);
 
 const $signerWallet = combine({ signer: $signer, wallets: walletModel.$wallets }, ({ signer, wallets }) => {
   const res = walletUtils.getWalletFilteredAccounts(wallets, {
     accountFn: (a) => a.accountId === signer?.accountId,
-    walletFn: (w) => walletUtils.isValidSignatory(w),
+    walletFn: (w) => walletUtils.isValidSignatory(w) && w.id === signer?.walletId,
   });
 
   return res;
@@ -191,7 +193,7 @@ type CreateWalletParams = {
   name: string;
   threshold: number;
   signatories: Signatory[];
-  chainId: ChainId | null;
+  chainId: ChainId;
   isEthereumChain: boolean;
 };
 
@@ -210,11 +212,10 @@ const createWalletFx = createEffect(
       accounts: [
         {
           signatories,
-          chainId: chainId || undefined,
+          chainId,
           name: name.trim(),
           accountId: accountId,
           threshold: threshold,
-          creatorAccountId: accountId,
           cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
           chainType: isEthereumChain ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
           type: AccountType.MULTISIG,
@@ -283,6 +284,11 @@ sample({
   clock: createWalletFx.failData,
   fn: (error) => error.message,
   target: $error,
+});
+
+sample({
+  clock: createWalletFx.doneData,
+  target: proxiesModel.events.workerStarted,
 });
 
 sample({
@@ -455,17 +461,6 @@ sample({
 });
 
 sample({
-  clock: signerSelected,
-  source: { wallets: walletModel.$wallets },
-  fn: ({ wallets }, accountId) => {
-    const signerAccount = walletUtils.getAccountBy(wallets, (a) => a.accountId === accountId);
-
-    return signerAccount;
-  },
-  target: $signer,
-});
-
-sample({
   clock: walletModel.events.walletRestoredSuccess,
   target: walletProviderModel.events.completed,
 });
@@ -473,6 +468,11 @@ sample({
 sample({
   clock: walletModel.events.walletRestoredSuccess,
   target: flowFinished,
+});
+
+sample({
+  clock: flowFinished,
+  target: walletPairingModel.events.walletTypeCleared,
 });
 
 sample({

@@ -3,11 +3,11 @@ import { useUnit } from 'effector-react';
 import { type FormEvent, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
+import { Step } from '@/shared/lib/utils';
 import { Alert, Button, InputHint, Select, SmallTitleText } from '@/shared/ui';
 import { type DropdownOption } from '@/shared/ui/types';
 import { walletModel } from '@/entities/wallet';
 import { MultisigCreationFees } from '@/widgets/CreateWallet/ui/MultisigWallet/components';
-import { Step } from '../../lib/types';
 import { flowModel } from '../../model/flow-model';
 import { formModel } from '../../model/form-model';
 import { signatoryModel } from '../../model/signatory-model';
@@ -73,14 +73,14 @@ export const SelectSignatoriesThreshold = () => {
 
       return;
     } else {
-      flowModel.events.signerSelected(ownedSignatoriesWallets[0].accounts[0].accountId);
+      flowModel.events.signerSelected(ownedSignatoriesWallets[0].accounts[0]);
       event.preventDefault();
       submit();
     }
   };
 
   return (
-    <section className="flex h-full flex-1 flex-col">
+    <section className="flex h-fit max-h-[594px] w-modal-lg flex-1 flex-col">
       <SmallTitleText className="mb-4 border-b border-container-border px-5 pb-4 text-text-primary">
         {t('createMultisigAccount.multisigStep', { step: 2 })}{' '}
         {t('createMultisigAccount.signatoryThresholdDescription')}
@@ -138,11 +138,7 @@ export const SelectSignatoriesThreshold = () => {
           </Alert>
         </div>
         <div className="flex items-end gap-x-4">
-          <Alert
-            active={Boolean(multisigAlreadyExists)}
-            title={t('createMultisigAccount.multisigExistTitle')}
-            variant="error"
-          >
+          <Alert active={multisigAlreadyExists} title={t('createMultisigAccount.multisigExistTitle')} variant="error">
             <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
           </Alert>
 
@@ -156,7 +152,11 @@ export const SelectSignatoriesThreshold = () => {
             </Alert.Item>
           </Alert>
 
-          <Alert active={Boolean(hiddenMultisig)} title={t('createMultisigAccount.multisigExistTitle')} variant="info">
+          <Alert
+            active={!multisigAlreadyExists && Boolean(hiddenMultisig)}
+            title={t('createMultisigAccount.multisigExistTitle')}
+            variant="info"
+          >
             <Alert.Item withDot={false}>{t('createMultisigAccount.multisigHiddenExistText')}</Alert.Item>
             <Alert.Item withDot={false}>
               <Button

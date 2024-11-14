@@ -28,7 +28,9 @@ const initiatorWallet = {
 describe('widgets/AddPureProxyModal/model/submit-model', () => {
   test('should submit extrinsic', async () => {
     const scope = fork({
-      values: new Map().set(networkModel.$apis, { '0x00': testApi }).set(walletModel.$allWallets, [initiatorWallet]),
+      values: new Map()
+        .set(networkModel.$apis, { '0x00': testApi })
+        .set(walletModel._test.$allWallets, [initiatorWallet]),
     });
 
     const store = {
