@@ -56,7 +56,7 @@ export const ReferendumVoteChart = memo<Props>(({ referendum, pending, descripti
 
   if (descriptionPosition === 'tooltip') {
     return (
-      <Tooltip side="top" disableHoverableContent>
+      <Tooltip side="top">
         <Tooltip.Trigger>
           <div>{chartNode}</div>
         </Tooltip.Trigger>

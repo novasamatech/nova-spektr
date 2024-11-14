@@ -69,6 +69,17 @@ export const Truncate: Story = {
   },
 };
 
+export const Short: Story = {
+  args: {
+    variant: 'short',
+  },
+  async play({ canvasElement }) {
+    const canvas = within(canvasElement);
+    const address = await canvas.findByTestId('Address');
+    expect(address.innerText).toBe('1ChFWeNR...7jX7iTVZ');
+  },
+};
+
 export const WithTitle: Story = {
   args: {
     title: 'John Doe',

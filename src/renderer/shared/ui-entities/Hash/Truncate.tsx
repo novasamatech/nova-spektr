@@ -84,10 +84,6 @@ export const Truncate = memo(({ text, ellipsis = '...' }: Props) => {
     parseTextForTruncation(text);
   }, [text]);
 
-  /**
-   * Uppercase letter occupies more space, so fixedText is a little wider and
-   * safer for calculation (reduces change to trim last char).
-   */
   return (
     <span ref={setContainer} style={containerStyle} className="relative block w-full max-w-full">
       <span ref={textRef} className="invisible block w-fit">

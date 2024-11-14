@@ -5,8 +5,6 @@ import { cnTw } from '@/shared/lib/utils';
 import { Identicon } from '@/shared/ui/Identicon/Identicon';
 import { Hash } from '../Hash/Hash';
 
-type AddressVariant = 'full' | 'truncate';
-
 type IconProps = XOR<{
   showIcon: boolean;
   iconSize?: number;
@@ -17,7 +15,7 @@ type Props = IconProps & {
   address: AddressType;
   title?: string;
   replaceAddressWithTitle?: boolean;
-  variant?: AddressVariant;
+  variant?: 'full' | 'truncate' | 'short';
   testId?: string;
 };
 
