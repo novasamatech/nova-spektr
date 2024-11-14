@@ -434,7 +434,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
                     name={depositorSignatory.name}
                     addressFont={AddressStyle}
                     addressPrefix={addressPrefix}
-                    wrapperClassName="-mr-2 min-w-min"
+                    wrapperClassName="min-w-min"
                     type="short"
                   />
                 )}

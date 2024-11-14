@@ -9,14 +9,15 @@ type Props = {
   account: AccountType;
   title?: string;
   chain: Chain;
+  variant?: 'truncate' | 'short';
 };
 
-export const Account = memo(({ account, title, chain }: Props) => {
+export const Account = memo(({ account, title, variant = 'truncate', chain }: Props) => {
   return (
     <div className="flex w-max min-w-0 max-w-full items-center gap-2">
       <Address
         showIcon
-        variant="truncate"
+        variant={variant}
         title={title}
         address={toAddress(account.accountId, { prefix: chain.addressPrefix })}
       />
