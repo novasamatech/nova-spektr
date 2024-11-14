@@ -19,7 +19,7 @@ type Props = {
   isOpen: boolean;
   rootAccountId: AccountId;
   keys: DraftAccount<ShardAccount | ChainAccount>[];
-  onComplete: (accounts: DraftAccount<ChainAccount | ShardAccount>[]) => void;
+  onComplete: (accounts: Omit<ChainAccount | ShardAccount, 'id' | 'walletId'>[]) => void;
   onClose: () => void;
 };
 export const DerivationsAddressModal = ({ isOpen, rootAccountId, keys, onClose, onComplete }: Props) => {

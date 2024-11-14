@@ -1,4 +1,4 @@
-import { type BaseAccount, type ChainAccount } from '@/shared/core';
+import { type BaseAccount, type ChainAccount, type ShardAccount } from '@/shared/core';
 
 import { accountUtils } from './account-utils';
 
@@ -9,9 +9,10 @@ export const modelUtils = {
 type AccountsGroup = {
   base: BaseAccount[];
   chains: ChainAccount[][];
+  shards: ShardAccount[][];
 };
-function groupAccounts(accounts: Omit<BaseAccount | ChainAccount, 'id' | 'walletId'>[]): AccountsGroup {
-  return accounts.reduce<{ base: BaseAccount[]; chains: ChainAccount[][] }>(
+function groupAccounts(accounts: Omit<BaseAccount | ChainAccount | ShardAccount, 'id' | 'walletId'>[]) {
+  return accounts.reduce<AccountsGroup>(
     (acc, account) => {
       const lastBaseIndex = acc.base.length - 1;
 
@@ -24,9 +25,15 @@ function groupAccounts(accounts: Omit<BaseAccount | ChainAccount, 'id' | 'wallet
         }
         acc.chains[lastBaseIndex].push(account);
       }
+      if (accountUtils.isShardAccount(account)) {
+        if (!acc.shards[lastBaseIndex]) {
+          acc.shards[lastBaseIndex] = [];
+        }
+        acc.shards[lastBaseIndex].push(account);
+      }
 
       return acc;
     },
-    { base: [], chains: [] },
+    { base: [], chains: [], shards: [] },
   );
 }

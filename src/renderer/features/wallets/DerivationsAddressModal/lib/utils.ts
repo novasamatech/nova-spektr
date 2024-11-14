@@ -1,4 +1,4 @@
-import { type ChainAccount, type DraftAccount, type ShardAccount } from '@/shared/core';
+import { type AccountId, type ChainAccount, type DraftAccount, type ShardAccount } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import {
   type DdAddressInfoDecoded,
@@ -21,10 +21,10 @@ function createDerivationsRequest(
   }));
 }
 
-function createDerivedAccounts(
+function createDerivedAccounts<T extends ShardAccount | ChainAccount>(
   derivedKeys: Record<string, DdAddressInfoDecoded>,
-  accounts: DraftAccount<ShardAccount | ChainAccount>[],
-): DraftAccount<ChainAccount | ShardAccount>[] {
+  accounts: DraftAccount<T>[],
+): (DraftAccount<T> & { accountId: AccountId })[] {
   return accounts.map((account) => {
     const derivationPath = `${account.derivationPath}${cryptoTypeToMultisignerIndex(account.cryptoType)}`;
 
