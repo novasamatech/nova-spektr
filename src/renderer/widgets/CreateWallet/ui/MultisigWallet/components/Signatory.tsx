@@ -2,14 +2,21 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 
-import { type ChainAccount, type WalletFamily } from '@/shared/core';
+import { type WalletFamily } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
+import {
+  performSearch,
+  toAccountId,
+  toAddress,
+  validateEthereumAddress,
+  validateSubstrateAddress,
+} from '@/shared/lib/utils';
 import { CaptionText, Combobox, IconButton, Identicon, Input } from '@/shared/ui';
 import { type ComboboxOption } from '@/shared/ui/types';
 import { Address } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { contactModel } from '@/entities/contact';
+import { networkUtils } from '@/entities/network';
 import { WalletIcon, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { filterModel } from '@/features/contacts';
 import { walletSelectUtils } from '@/features/wallets/WalletSelect/lib/wallet-select-utils';
@@ -95,11 +102,7 @@ export const Signatory = ({
 
         return acc.concat(
           wallet.accounts
-            .filter(
-              (account) =>
-                (account as ChainAccount).chainId === undefined ||
-                (account as ChainAccount).chainId === chain.value.chainId,
-            )
+            .filter((account) => accountUtils.isChainAndCryptoMatch(account, chain.value))
             .map((account) => {
               const address = toAddress(account.accountId, { prefix: chain.value.addressPrefix });
 
@@ -151,6 +154,7 @@ export const Signatory = ({
   // list of contacts in case of not own account
   useEffect(() => {
     if (isOwnAccount || contacts.length === 0) return;
+
     setOptions(
       contactsFiltered.map(({ name, address }) => {
         const displayAddress = toAddress(address, { prefix: chain.value.addressPrefix });
@@ -180,7 +184,10 @@ export const Signatory = ({
   }, [displayName]);
 
   const onAddressChange = (data: ComboboxOption) => {
-    const validatedAddress = validateAddress(data.value) ? data.value : '';
+    const isEthereumChain = networkUtils.isEthereumBased(chain.value.options);
+    const validateFn = isEthereumChain ? validateEthereumAddress : validateSubstrateAddress;
+
+    const validatedAddress = validateFn(data.value) ? data.value : '';
     const fixedAddress = toAddress(validatedAddress, { prefix: chain.value.addressPrefix });
 
     signatoryModel.events.changeSignatory({
