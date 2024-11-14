@@ -61,8 +61,7 @@ if (!container) {
   throw new Error('Root container is missing in index.html');
 }
 
-container.style.minWidth = `${APP_CONFIG.MAIN.WINDOW.WIDTH}px`;
-container.style.minHeight = `${APP_CONFIG.MAIN.WINDOW.HEIGHT}px`;
+document.body.style.minWidth = `${APP_CONFIG.MAIN.WINDOW.WIDTH}px`;
 
 createRoot(container).render(<Root />);
 

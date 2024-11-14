@@ -37,7 +37,7 @@ describe('widgets/AddPureProxyModal/model/add-pure-proxied-model', () => {
         .set(networkModel.$apis, { '0x00': testApi })
         .set(networkModel.$chains, { '0x00': testChain })
         .set(networkModel.$connectionStatuses, { '0x00': ConnectionStatus.CONNECTED })
-        .set(walletModel.$allWallets, [initiatorWallet, signerWallet]),
+        .set(walletModel._test.$allWallets, [initiatorWallet, signerWallet]),
     });
 
     await allSettled(addPureProxiedModel.events.flowStarted, { scope });

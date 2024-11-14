@@ -36,7 +36,10 @@ export const WalletCardMd = ({ wallet, description, prefix, hideIcon, className,
         className,
       )}
     >
-      <button className="flex w-full items-center gap-x-2 rounded px-2 py-1.5" onClick={handleClick(onClick)}>
+      <button
+        className={cnTw('flex w-full items-center gap-x-2 rounded px-2 py-1.5', { 'pe-6': onInfoClick })}
+        onClick={handleClick(onClick)}
+      >
         {prefix}
 
         {!hideIcon && <WalletIcon type={wallet.type} size={20} />}

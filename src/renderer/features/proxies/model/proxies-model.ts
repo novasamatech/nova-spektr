@@ -14,6 +14,7 @@ import {
   type NoID,
   type PartialProxiedAccount,
   type ProxiedAccount,
+  type ProxiedWallet,
   type ProxyAccount,
   type ProxyDeposits,
   type ProxyGroup,
@@ -30,6 +31,7 @@ import {
   SigningType,
   WalletType,
 } from '@/shared/core';
+import { series } from '@/shared/effector';
 import { dictionary } from '@/shared/lib/utils';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -153,7 +155,7 @@ type ProxiedWalletsParams = {
   chains: Record<ChainId, Chain>;
 };
 type ProxiedWalletsResult = {
-  wallets: Wallet[];
+  wallets: ProxiedWallet[];
   accounts: ProxiedAccount[];
 };
 const createProxiedWalletsFx = createEffect(
@@ -201,12 +203,12 @@ const createProxiedWalletsFx = createEffect(
         if (!proxiedCreatedResult) return acc;
 
         acc.accounts.push(...proxiedCreatedResult.accounts);
-        acc.wallets.push(proxiedCreatedResult.wallet as Wallet);
+        acc.wallets.push(proxiedCreatedResult.wallet as ProxiedWallet);
 
         return acc;
       },
       {
-        wallets: [] as Wallet[],
+        wallets: [] as ProxiedWallet[],
         accounts: [] as ProxiedAccount[],
       },
     );
@@ -310,21 +312,22 @@ sample({
 
 sample({
   clock: createProxiedWalletsFx.doneData,
-  source: walletModel.$allWallets,
-  filter: (_, data) => Boolean(data && data.wallets.length && data.accounts.length),
-  fn: (wallets, data) => {
+  filter: ({ wallets, accounts }) => wallets.length > 0 && accounts.length > 0,
+  fn: (data) => {
     const accountsMap = dictionary(data.accounts, 'walletId');
 
-    const newWallets = data.wallets.map((wallet) => ({ ...wallet, accounts: [accountsMap[wallet.id]] }) as Wallet);
+    const newWallets = data.wallets.map((wallet) => {
+      const account = accountsMap[wallet.id];
 
-    return wallets.concat(newWallets);
+      return {
+        wallet,
+        accounts: account ? [account] : [],
+      };
+    });
+
+    return newWallets;
   },
-  target: walletsAdded,
-});
-
-sample({
-  source: walletsAdded,
-  target: walletModel.$allWallets,
+  target: series(walletModel.events.proxiedCreated),
 });
 
 sample({

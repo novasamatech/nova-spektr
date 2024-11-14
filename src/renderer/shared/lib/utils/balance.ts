@@ -179,13 +179,17 @@ export const fromPrecision = (balance: string | BN, precision: number): string =
   return new BNWithConfig(bnBalance).decimalPlaces(decimalPlaces).toFormat();
 };
 
+export const totalAmountBN = <T extends AssetBalance>(balance: T) => {
+  if (!balance) return BN_ZERO;
+
+  const bnFree = balance.free ? new BN(balance.free) : BN_ZERO;
+  const bnReserved = balance.reserved ? new BN(balance.reserved) : BN_ZERO;
+
+  return bnFree.add(bnReserved);
+};
+
 export const totalAmount = <T extends AssetBalance>(balance?: T): string => {
-  if (!balance) return ZERO_BALANCE;
-
-  const bnFree = new BN(balance.free || ZERO_BALANCE);
-  const bnReserved = new BN(balance.reserved || ZERO_BALANCE);
-
-  return bnFree.add(bnReserved).toString();
+  return balance ? totalAmountBN(balance).toString() : ZERO_BALANCE;
 };
 
 export const lockedAmountBN = (balance: Balance): BN => {
