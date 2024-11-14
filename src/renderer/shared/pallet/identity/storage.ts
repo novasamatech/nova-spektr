@@ -1,4 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
+import { zipWith } from 'lodash';
 import { z } from 'zod';
 
 import { substrateRpcPool } from '@/shared/api/substrate-helpers';
@@ -56,14 +57,10 @@ export const storage = {
 
     return substrateRpcPool
       .call(() => getQuery(api, 'identityOf').multi(accounts))
-      .then(response => {
-        const data = schema.parse(response);
-
-        return accounts.map((account, index) => ({ account, identity: data[index] ?? null }));
-      });
+      .then(schema.parse)
+      .then(response => zipWith(accounts, response, (account, identity) => ({ account, identity })));
   },
 
-  // TODO implement
   /**
    * Usernames that an authority has granted, but that the account controller
    * has not confirmed that they want it. Used primarily in cases where the

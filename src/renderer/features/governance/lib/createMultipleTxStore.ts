@@ -3,10 +3,9 @@ import { type Store, combine, createStore } from 'effector';
 
 import { type Account, type Chain, type Transaction, type Wallet } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
+import { createFeeCalculator } from '@/shared/transactions';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
-
-import { createFeeCalculator } from './createFeeCalculator';
 
 type Params = {
   $api: Store<ApiPromise | null>;

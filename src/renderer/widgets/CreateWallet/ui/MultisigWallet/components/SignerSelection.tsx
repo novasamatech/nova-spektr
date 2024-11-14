@@ -4,8 +4,8 @@ import { type FormEvent } from 'react';
 
 import { type Account, AccountType, type ChainAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { Step } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
-import { Step } from '@/widgets/CreateWallet/lib/types';
 import { flowModel } from '@/widgets/CreateWallet/model/flow-model';
 import { formModel } from '@/widgets/CreateWallet/model/form-model';
 import { signatoryModel } from '@/widgets/CreateWallet/model/signatory-model';
@@ -27,7 +27,7 @@ export const SignerSelection = () => {
   };
 
   return (
-    <section className="max-h-[660px] w-full overflow-x-hidden px-5 pb-4">
+    <section className="max-h-[660px] w-modal overflow-x-hidden px-5 pb-4">
       <ul className="my-4 flex flex-col [overflow-y:overlay]">
         {ownedSignatoriesWallets.map(({ accounts, type, name }) => {
           const account =

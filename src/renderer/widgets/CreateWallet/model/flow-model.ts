@@ -20,6 +20,7 @@ import {
 } from '@/shared/core';
 import {
   SS58_DEFAULT_PREFIX,
+  Step,
   TEST_ACCOUNTS,
   ZERO_BALANCE,
   isStep,
@@ -35,7 +36,9 @@ import { transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { ExtrinsicResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
-import { type AddMultisigStore, type FormSubmitEvent, Step } from '../lib/types';
+import { proxiesModel } from '@/features/proxies';
+import { walletPairingModel } from '@/features/wallets';
+import { type AddMultisigStore, type FormSubmitEvent } from '../lib/types';
 
 import { confirmModel } from './confirm-model';
 import { formModel } from './form-model';
@@ -190,7 +193,7 @@ type CreateWalletParams = {
   name: string;
   threshold: number;
   signatories: Signatory[];
-  chainId: ChainId | null;
+  chainId: ChainId;
   isEthereumChain: boolean;
 };
 
@@ -209,11 +212,10 @@ const createWalletFx = createEffect(
       accounts: [
         {
           signatories,
-          chainId: chainId || undefined,
+          chainId,
           name: name.trim(),
           accountId: accountId,
           threshold: threshold,
-          creatorAccountId: accountId,
           cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
           chainType: isEthereumChain ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
           type: AccountType.MULTISIG,
@@ -282,6 +284,11 @@ sample({
   clock: createWalletFx.failData,
   fn: (error) => error.message,
   target: $error,
+});
+
+sample({
+  clock: createWalletFx.doneData,
+  target: proxiesModel.events.workerStarted,
 });
 
 sample({
@@ -461,6 +468,11 @@ sample({
 sample({
   clock: walletModel.events.walletRestoredSuccess,
   target: flowFinished,
+});
+
+sample({
+  clock: flowFinished,
+  target: walletPairingModel.events.walletTypeCleared,
 });
 
 sample({

@@ -3,12 +3,12 @@ import { useUnit } from 'effector-react';
 
 import { type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { Step } from '@/shared/lib/utils';
 import { Button, FootnoteText, Input, InputHint, Select, SmallTitleText } from '@/shared/ui';
 import { type DropdownOption } from '@/shared/ui/types';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel, networkUtils } from '@/entities/network';
 import { MultisigCreationFees } from '@/widgets/CreateWallet/ui/MultisigWallet/components/';
-import { Step } from '../../lib/types';
 import { flowModel } from '../../model/flow-model';
 import { formModel } from '../../model/form-model';
 
@@ -41,7 +41,7 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
   const isNameError = name.isTouched && !name.value;
 
   return (
-    <section className="flex h-full flex-1 flex-col">
+    <section className="flex h-full w-modal-lg flex-1 flex-col">
       <SmallTitleText className="mb-4 border-b border-container-border px-5 pb-4 text-text-primary">
         {t('createMultisigAccount.multisigStep', { step: 1 })} {t('createMultisigAccount.nameNetworkDescription')}
       </SmallTitleText>

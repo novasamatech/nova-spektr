@@ -16,7 +16,7 @@ import { operationsNavigationFeature } from '@/features/operations-navigation';
 import { proxiesModel } from '@/features/proxies';
 import { settingsNavigationFeature } from '@/features/settings-navigation';
 import { stakingNavigationFeature } from '@/features/staking-navigation';
-import { walletsSelectFeature } from '@/features/wallets-select';
+import { walletSelectFeature } from '@/features/wallet-select';
 
 export const initModel = () => {
   assetsNavigationFeature.start();
@@ -28,7 +28,7 @@ export const initModel = () => {
   notificationsNavigationFeature.start();
   settingsNavigationFeature.start();
 
-  walletsSelectFeature.start();
+  walletSelectFeature.feature.start();
 
   kernelModel.events.appStarted();
   governanceModel.events.governanceStarted();
