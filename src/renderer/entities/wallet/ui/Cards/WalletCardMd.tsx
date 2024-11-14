@@ -1,7 +1,7 @@
 import { type MouseEvent, type PropsWithChildren, type ReactNode } from 'react';
 
 import { type Wallet } from '@/shared/core';
-import { cnTw, nullable } from '@/shared/lib/utils';
+import { cnTw, nonNullable, nullable } from '@/shared/lib/utils';
 import { BodyText, FootnoteText } from '@/shared/ui';
 import { walletUtils } from '../../lib/wallet-utils';
 import { WalletIcon } from '../WalletIcon/WalletIcon';
@@ -43,6 +43,7 @@ export const WalletCardMd = ({
       <button
         className={cnTw('flex w-full items-center gap-x-2 rounded px-2 py-1.5', {
           'pointer-events-none': nullable(onClick),
+          'pr-6': nonNullable(children),
         })}
         onClick={handleClick(onClick)}
       >

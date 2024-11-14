@@ -165,14 +165,18 @@ export const MultisigWalletDetails = ({
               ))}
               {signatoryContacts.map((signatory) => (
                 <li key={signatory.accountId} className="-mx-2">
-                  <ContactItem name={signatory.name} address={signatory.accountId}>
+                  <ContactItem
+                    name={signatory.name}
+                    address={signatory.accountId}
+                    addressPrefix={singleChain.addressPrefix}
+                  >
                     <AccountExplorers accountId={signatory.accountId} chain={singleChain} />
                   </ContactItem>
                 </li>
               ))}
               {signatoryPeople.map((accountId) => (
                 <li key={accountId} className="-mx-2">
-                  <ContactItem address={accountId}>
+                  <ContactItem address={accountId} addressPrefix={singleChain.addressPrefix}>
                     <AccountExplorers accountId={accountId} chain={singleChain} />
                   </ContactItem>
                 </li>
