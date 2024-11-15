@@ -1,11 +1,10 @@
 import { type ComponentProps } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText } from '@/shared/ui';
 import { Fee } from '../Fee/Fee';
-
-import { TEST_IDS } from 'tests/testIds';
 
 type Props = ComponentProps<typeof Fee> & {
   label?: string;

@@ -1,11 +1,10 @@
 import { useUnit } from 'effector-react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, IconButton, MenuPopover, Select, Switch } from '@/shared/ui';
 import { AssetsListView } from '@/entities/asset';
 import { assetsSettingsModel } from '../model/assets-settings-modal';
-
-import { TEST_IDS } from 'tests/testIds';
 
 export const AssetsSettings = () => {
   const { t } = useI18n();

@@ -1,4 +1,4 @@
-import { TEST_IDS } from '../../../testIds';
+import { TEST_IDS } from '@/shared/constants';
 
 import { type BasePageElements } from './BasePageElements';
 

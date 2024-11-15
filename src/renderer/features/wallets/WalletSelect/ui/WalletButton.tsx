@@ -1,11 +1,10 @@
+import { TEST_IDS } from '@/shared/constants';
 import { type Wallet } from '@/shared/core';
 import { Icon } from '@/shared/ui';
 import { Box, Popover } from '@/shared/ui-kit';
 import { WalletCardLg } from '@/entities/wallet';
 
 import { WalletFiatBalance } from './WalletFiatBalance';
-
-import { TEST_IDS } from 'tests/testIds';
 
 type Props = {
   wallet: Wallet;

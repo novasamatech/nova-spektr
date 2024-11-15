@@ -1,6 +1,7 @@
 import throttle from 'lodash/throttle';
 import { useLayoutEffect, useRef, useState } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
@@ -9,8 +10,6 @@ import { walletPairingModel } from '@/features/wallets';
 
 import PrivacyPolicy from './PrivacyPolicy';
 import { WelcomeCard } from './WelcomeCard';
-
-import { TEST_IDS } from 'tests/testIds';
 
 const LOGO_WIDTH = 232;
 const RIGHT_PADDING = 225;

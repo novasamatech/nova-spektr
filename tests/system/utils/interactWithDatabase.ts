@@ -17,10 +17,9 @@ export interface IndexedDBData {
  *   successfully injected.
  */
 export async function injectDataInDatabase(page: Page, data: IndexedDBData): Promise<void> {
-  await page.evaluate(async (data) => {
+  await page.evaluate(async (data: IndexedDBData) => {
     const { database, table, injectingData } = data;
-    // @ts-expect-error linter can't resolve missing window
-    const dbPromise = window.indexedDB.open(database);
+    const dbPromise = indexedDB.open(database);
 
     while (dbPromise.readyState == 'pending') {
       await new Promise((resolve) => {

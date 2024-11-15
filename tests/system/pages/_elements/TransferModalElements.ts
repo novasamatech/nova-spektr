@@ -1,4 +1,4 @@
-import { TEST_IDS } from '../../../testIds';
+import { TEST_IDS } from '@/shared/constants';
 
 export class TransferModalElements {
   static addButton = 'Add';

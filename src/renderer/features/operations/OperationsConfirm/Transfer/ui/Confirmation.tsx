@@ -1,6 +1,7 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
 import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
@@ -11,8 +12,6 @@ import { AssetFiatBalance } from '@/entities/price';
 import { AddressWithExplorers, accountUtils, walletModel } from '@/entities/wallet';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
-
-import { TEST_IDS } from 'tests/testIds';
 
 type Props = {
   id?: number;
