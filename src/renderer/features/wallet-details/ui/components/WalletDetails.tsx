@@ -21,10 +21,8 @@ export const WalletDetails = ({ isOpen, wallet, onClose }: Props) => {
   useGate(walletDetailsModel.flow, { wallet });
 
   const multiShardAccounts = useUnit(walletDetailsModel.$multiShardAccounts);
-  const contacts = useUnit(walletDetailsModel.$signatoryContacts);
   const vaultAccounts = useUnit(walletDetailsModel.$vaultAccounts);
-  const signatoryWallets = useUnit(walletDetailsModel.$signatoryWallets);
-  const signatoryAccounts = useUnit(walletDetailsModel.$signatoryAccounts);
+  const signatories = useUnit(walletDetailsModel.$signatories);
   const proxyWallet = useUnit(walletDetailsModel.$proxyWallet);
 
   if (!isOpen || nullable(wallet)) {
@@ -43,9 +41,9 @@ export const WalletDetails = ({ isOpen, wallet, onClose }: Props) => {
     return (
       <MultisigWalletDetails
         wallet={wallet}
-        signatoryWallets={signatoryWallets}
-        signatoryAccounts={signatoryAccounts}
-        signatoryContacts={contacts}
+        signatoryWallets={signatories.wallets}
+        signatoryContacts={signatories.contacts}
+        signatoryPeople={signatories.people}
         onClose={onClose}
       />
     );

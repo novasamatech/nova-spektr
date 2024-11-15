@@ -1,6 +1,6 @@
 import { type Wallet, type WalletFamily, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Accordion, CaptionText, Icon } from '@/shared/ui';
+import { Accordion, CaptionText, Icon, IconButton } from '@/shared/ui';
 import { WalletCardMd, WalletIcon, walletUtils } from '@/entities/wallet';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
 import { walletSelectModel } from '../model/wallet-select-model';
@@ -60,8 +60,9 @@ export const WalletGroup = ({ type, wallets, onInfoClick }: Props) => {
                   )
                 }
                 onClick={() => walletSelectModel.events.walletSelected(wallet.id)}
-                onInfoClick={() => onInfoClick(wallet)}
-              />
+              >
+                <IconButton name="details" onClick={() => onInfoClick(wallet)} />
+              </WalletCardMd>
             </li>
           ))}
         </ul>

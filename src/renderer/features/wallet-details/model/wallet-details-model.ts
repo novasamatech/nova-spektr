@@ -1,14 +1,13 @@
 import { combine } from 'effector';
 import { createGate } from 'effector-react';
 import { isEmpty } from 'lodash';
-import uniqBy from 'lodash/uniqBy';
 
 import {
   type AccountId,
   type ChainId,
+  type Contact,
   type ProxyAccount,
   type ProxyGroup,
-  type Signatory,
   type Wallet,
 } from '@/shared/core';
 import { dictionary, nullable } from '@/shared/lib/utils';
@@ -54,62 +53,44 @@ const $multisigAccount = $wallet.map((wallet) => {
   return wallet.accounts.at(0) ?? null;
 });
 
-const $signatoryContacts = combine(
+const $signatories = combine(
   {
     account: $multisigAccount,
     wallets: walletModel.$wallets,
     contacts: contactModel.$contacts,
   },
-  ({ account, wallets, contacts }): Signatory[] => {
-    if (nullable(account)) return [];
+  ({ account, wallets, contacts }): { wallets: [Wallet, AccountId][]; contacts: Contact[]; people: AccountId[] } => {
+    if (!account) {
+      return { wallets: [], contacts: [], people: [] };
+    }
 
-    const contactsMap = dictionary(contacts, 'accountId');
-    const signatoriesMap = dictionary(account.signatories, 'accountId');
-    const allSignatories = walletUtils.getAccountsBy(wallets, ({ accountId }) => signatoriesMap[accountId]);
-    const signatoriesSet = new Set(allSignatories.map((signatory) => signatory.accountId));
+    const signatoriesMap = dictionary(account.signatories, 'accountId', true);
 
-    return account.signatories
-      .filter((signatory) => !signatoriesSet.has(signatory.accountId))
-      .map((signatory) => ({ ...signatory, name: contactsMap[signatory.accountId]?.name }));
-  },
-);
+    const walletSignatories: [Wallet, AccountId][] = [];
+    for (const wallet of wallets) {
+      if (walletUtils.isWatchOnly(wallet)) continue;
 
-const $signatoryWallets = combine(
-  {
-    account: $multisigAccount,
-    wallets: walletModel.$wallets,
-  },
-  ({ account, wallets }): [AccountId, Wallet][] => {
-    if (nullable(account)) return [];
+      for (const account of wallet.accounts) {
+        if (!signatoriesMap[account.accountId]) continue;
 
-    const signatoriesMap = dictionary(account.signatories, 'accountId', () => true);
+        delete signatoriesMap[account.accountId];
+        walletSignatories.push([wallet, account.accountId]);
+      }
+    }
 
-    const walletsAndAccounts = walletUtils.getWalletsFilteredAccounts(wallets, {
-      accountFn: (a) => signatoriesMap[a.accountId],
-    });
+    const contactSignatories: Contact[] = [];
+    for (const contact of contacts) {
+      if (!signatoriesMap[contact.accountId]) continue;
 
-    if (!walletsAndAccounts) return [];
+      contactSignatories.push(contact);
+      delete signatoriesMap[contact.accountId];
+    }
 
-    return walletsAndAccounts.map((wallet) => [wallet.accounts[0].accountId, wallet]);
-  },
-);
-
-const $signatoryAccounts = combine(
-  {
-    account: $multisigAccount,
-    wallets: walletModel.$wallets,
-  },
-  ({ account, wallets }): Signatory[] => {
-    if (nullable(account)) return [];
-
-    const signatoriesMap = dictionary(account.signatories, 'accountId');
-    const allSignatories = walletUtils.getAccountsBy(wallets, ({ accountId }) => signatoriesMap[accountId]);
-    const uniqueSignatories = uniqBy(allSignatories, 'accountId');
-    const uniqueSignatoriesMap = dictionary(uniqueSignatories, 'accountId');
-
-    return account.signatories
-      .filter((signatory) => uniqueSignatoriesMap[signatory.accountId])
-      .map((signatory) => ({ ...signatory, name: uniqueSignatoriesMap[signatory.accountId]?.name }));
+    return {
+      wallets: walletSignatories,
+      contacts: contactSignatories,
+      people: Object.keys(signatoriesMap) as AccountId[],
+    };
   },
 );
 
@@ -178,9 +159,7 @@ export const walletDetailsModel = {
 
   $vaultAccounts,
   $multiShardAccounts,
-  $signatoryContacts,
-  $signatoryWallets,
-  $signatoryAccounts,
+  $signatories,
 
   $chainsProxies,
   $walletProxyGroups,

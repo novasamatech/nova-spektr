@@ -3,7 +3,7 @@ import { type ReactNode } from 'react';
 import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { FootnoteText, StatusLabel } from '@/shared/ui';
+import { BodyText, FootnoteText, StatusLabel } from '@/shared/ui';
 import { walletUtils } from '../../lib/wallet-utils';
 import { WalletIcon } from '../WalletIcon/WalletIcon';
 
@@ -33,7 +33,7 @@ export const WalletCardLg = ({ wallet, description, full, className }: Props) =>
         )}
       </div>
       <div className="flex min-w-0 flex-col">
-        <FootnoteText className="truncate text-text-primary">{wallet.name}</FootnoteText>
+        <BodyText className="truncate text-text-primary">{wallet.name}</BodyText>
         {typeof description === 'string' ? (
           <FootnoteText className="text-text-tertiary">{description}</FootnoteText>
         ) : (

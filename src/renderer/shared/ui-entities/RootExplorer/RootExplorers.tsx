@@ -1,22 +1,25 @@
 import { type PropsWithChildren, memo } from 'react';
 
-import { type AccountId, type Chain } from '@/shared/core';
+import { type AccountId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { copyToClipboard, getAccountExplorer, toAddress } from '@/shared/lib/utils';
+import { SS58_DEFAULT_PREFIX, copyToClipboard, getAccountExplorer, toAddress } from '@/shared/lib/utils';
 import { ExplorerLink, FootnoteText, HelpText, IconButton, Separator } from '@/shared/ui';
 import { Box, Popover } from '@/shared/ui-kit';
 import { Hash } from '../Hash/Hash';
 
+export const EXPLORERS = [
+  { name: 'Subscan', account: 'https://subscan.io/account/{address}' },
+  { name: 'Sub.ID', account: 'https://sub.id/{address}' },
+];
+
 type Props = PropsWithChildren<{
   accountId: AccountId;
-  chain: Chain;
 }>;
 
-export const AccountExplorers = memo(({ accountId, chain, children }: Props) => {
+export const RootExplorers = memo(({ accountId, children }: Props) => {
   const { t } = useI18n();
 
-  const { explorers, addressPrefix } = chain;
-  const address = toAddress(accountId, { prefix: addressPrefix });
+  const address = toAddress(accountId, { prefix: SS58_DEFAULT_PREFIX });
 
   return (
     <Popover align="end" dialog testId="AccountExplorers">
@@ -42,20 +45,12 @@ export const AccountExplorers = memo(({ accountId, chain, children }: Props) => 
             </>
           ) : null}
 
-          {explorers && explorers.length > 0 ? (
-            <>
-              <Separator />
-              <div className="relative -mx-1.5 flex flex-col gap-2">
-                {explorers.map((explorer) => (
-                  <ExplorerLink
-                    key={explorer.name}
-                    name={explorer.name}
-                    href={getAccountExplorer(explorer, { address })}
-                  />
-                ))}
-              </div>
-            </>
-          ) : null}
+          <Separator />
+          <div className="relative -mx-1.5 flex flex-col gap-2">
+            {EXPLORERS.map((explorer) => (
+              <ExplorerLink key={explorer.name} name={explorer.name} href={getAccountExplorer(explorer, { address })} />
+            ))}
+          </div>
         </Box>
       </Popover.Content>
     </Popover>
