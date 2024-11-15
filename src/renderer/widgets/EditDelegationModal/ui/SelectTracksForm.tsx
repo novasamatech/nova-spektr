@@ -5,8 +5,8 @@ import { useState } from 'react';
 import { type Account, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
-import { Alert, Button, FootnoteText, Icon, IconButton, SmallTitleText, Tooltip } from '@/shared/ui';
-import { Checkbox, Modal } from '@/shared/ui-kit';
+import { Alert, Button, FootnoteText, Icon, IconButton, SmallTitleText } from '@/shared/ui';
+import { Checkbox, Modal, Tooltip } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { OperationTitle } from '@/entities/chain';
 import {
@@ -105,8 +105,13 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
                   >
                     <div className="flex w-full items-center justify-between">
                       {t(track.value)}
-                      <Tooltip content={t(track.description)} pointer="up">
-                        <Icon size={16} name="info" />
+                      <Tooltip side="bottom">
+                        <Tooltip.Trigger>
+                          <div>
+                            <Icon size={16} name="info" />
+                          </div>
+                        </Tooltip.Trigger>
+                        <Tooltip.Content>{t(track.description)}</Tooltip.Content>
                       </Tooltip>
                     </div>
                   </Checkbox>
@@ -122,11 +127,15 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
                   >
                     <div className="flex w-full items-center justify-between">
                       {t(track.value)}
-                      <Tooltip
-                        content={getGovernanceTrackDescription(network.asset, track.description, t)}
-                        pointer="up"
-                      >
-                        <Icon size={16} name="info" />
+                      <Tooltip side="bottom">
+                        <Tooltip.Trigger>
+                          <div>
+                            <Icon size={16} name="info" />
+                          </div>
+                        </Tooltip.Trigger>
+                        <Tooltip.Content>
+                          {getGovernanceTrackDescription(network.asset, track.description, t)}
+                        </Tooltip.Content>
                       </Tooltip>
                     </div>
                   </Checkbox>
@@ -142,11 +151,15 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
                   >
                     <div className="flex w-full items-center justify-between">
                       {t(track.value)}
-                      <Tooltip
-                        content={getTreasuryTrackDescription(network.asset, track.description, t)}
-                        offsetPx={-80}
-                      >
-                        <Icon size={16} name="info" />
+                      <Tooltip side="bottom">
+                        <Tooltip.Trigger>
+                          <div>
+                            <Icon size={16} name="info" />
+                          </div>
+                        </Tooltip.Trigger>
+                        <Tooltip.Content>
+                          {getTreasuryTrackDescription(network.asset, track.description, t)}
+                        </Tooltip.Content>
                       </Tooltip>
                     </div>
                   </Checkbox>
@@ -162,8 +175,13 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
                   >
                     <div className="flex w-full items-center justify-between">
                       {t(track.value)}
-                      <Tooltip content={t(track.description)} offsetPx={-60}>
-                        <Icon size={16} name="info" />
+                      <Tooltip side="bottom">
+                        <Tooltip.Trigger>
+                          <div>
+                            <Icon size={16} name="info" />
+                          </div>
+                        </Tooltip.Trigger>
+                        <Tooltip.Content>{t(track.description)}</Tooltip.Content>
                       </Tooltip>
                     </div>
                   </Checkbox>

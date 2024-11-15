@@ -70,7 +70,7 @@ const RejectTxModal = ({ tx, account, connection, children }: Props) => {
   const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);
 
   const signAccount = walletUtils.getWalletFilteredAccounts(wallets, {
-    walletFn: (wallet) => !walletUtils.isWatchOnly(wallet) && !walletUtils.isProxied(wallet),
+    walletFn: walletUtils.isValidSignatory,
     accountFn: (account) => account.accountId === tx.depositor,
   })?.accounts[0];
 

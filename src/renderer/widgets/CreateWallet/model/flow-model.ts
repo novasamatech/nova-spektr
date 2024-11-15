@@ -1,17 +1,16 @@
 import { BN } from '@polkadot/util';
-import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
 import sortBy from 'lodash/sortBy';
 import { delay, spread } from 'patronum';
 
 import {
   type Account,
   AccountType,
-  type ChainId,
   ChainType,
   type Contact,
   CryptoType,
   type MultisigAccount,
-  type Signatory,
+  type NoID,
   SigningType,
   type Transaction,
   TransactionType,
@@ -189,42 +188,6 @@ const $isEnoughBalance = combine(
   },
 );
 
-type CreateWalletParams = {
-  name: string;
-  threshold: number;
-  signatories: Signatory[];
-  chainId: ChainId;
-  isEthereumChain: boolean;
-};
-
-const createWalletFx = createEffect(
-  async ({ name, threshold, signatories, chainId, isEthereumChain }: CreateWalletParams) => {
-    const cryptoType = isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519;
-    const accountIds = signatories.map((s) => s.accountId);
-    const accountId = accountUtils.getMultisigAccountId(accountIds, threshold, cryptoType);
-
-    walletModel.events.multisigCreated({
-      wallet: {
-        name,
-        type: WalletType.MULTISIG,
-        signingType: SigningType.MULTISIG,
-      },
-      accounts: [
-        {
-          signatories,
-          chainId,
-          name: name.trim(),
-          accountId: accountId,
-          threshold: threshold,
-          cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
-          chainType: isEthereumChain ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
-          type: AccountType.MULTISIG,
-        },
-      ],
-    });
-  },
-);
-
 const $fakeTx = combine(
   {
     chain: formModel.$createMultisigForm.fields.chain.$value,
@@ -261,7 +224,7 @@ sample({
     step: $step,
   },
   filter: ({ step }, results) => {
-    return submitUtils.isSuccessResult(results[0].result) && isStep(Step.SUBMIT, step);
+    return isStep(Step.SUBMIT, step) && results.some(({ result }) => submitUtils.isSuccessResult(result));
   },
   fn: ({ signatories, chain, name, threshold }) => {
     const sortedSignatories = sortBy(
@@ -269,31 +232,47 @@ sample({
       'accountId',
     );
 
-    return {
-      name,
-      threshold,
-      chainId: chain.chainId,
+    const isEthereumChain = networkUtils.isEthereumBased(chain.options);
+    const cryptoType = isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519;
+    const accountIds = sortedSignatories.map((s) => s.accountId);
+    const accountId = accountUtils.getMultisigAccountId(accountIds, threshold, cryptoType);
+
+    const account: Omit<NoID<MultisigAccount>, 'walletId'> = {
       signatories: sortedSignatories,
-      isEthereumChain: networkUtils.isEthereumBased(chain.options),
+      chainId: chain.chainId,
+      name: name.trim(),
+      accountId: accountId,
+      threshold: threshold,
+      cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
+      chainType: isEthereumChain ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
+      type: AccountType.MULTISIG,
+    };
+
+    return {
+      wallet: {
+        name,
+        type: WalletType.MULTISIG,
+        signingType: SigningType.MULTISIG,
+      },
+      accounts: [account],
     };
   },
-  target: createWalletFx,
+  target: walletModel.events.multisigCreated,
 });
 
 sample({
-  clock: createWalletFx.failData,
-  fn: (error) => error.message,
+  clock: walletModel.events.walletCreationFail,
+  filter: ({ params }) => params.wallet.type === WalletType.MULTISIG,
+  fn: ({ error }) => error.message,
   target: $error,
 });
 
 sample({
-  clock: createWalletFx.doneData,
-  target: proxiesModel.events.workerStarted,
-});
-
-sample({
-  clock: createWalletFx.doneData,
-  target: walletProviderModel.events.completed,
+  clock: walletModel.events.walletCreatedDone,
+  filter: ({ wallet }) => wallet.type === WalletType.MULTISIG,
+  fn: ({ wallet }) => wallet.id,
+  // wallet selection shouldn't be here, but here we are
+  target: [walletModel.events.selectWallet, walletProviderModel.events.completed, proxiesModel.events.workerStarted],
 });
 
 // Submit

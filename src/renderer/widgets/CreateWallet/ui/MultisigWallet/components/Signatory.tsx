@@ -2,14 +2,21 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 
-import { type ChainAccount, type WalletFamily } from '@/shared/core';
+import { type WalletFamily } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
+import {
+  performSearch,
+  toAccountId,
+  toAddress,
+  validateEthereumAddress,
+  validateSubstrateAddress,
+} from '@/shared/lib/utils';
 import { CaptionText, Combobox, IconButton, Identicon } from '@/shared/ui';
 import { type ComboboxOption } from '@/shared/ui/types';
 import { Address } from '@/shared/ui-entities';
 import { Box, Input } from '@/shared/ui-kit';
 import { contactModel } from '@/entities/contact';
+import { networkUtils } from '@/entities/network';
 import { WalletIcon, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { filterModel } from '@/features/contacts';
 import { walletSelectFeature } from '@/features/wallet-select';
@@ -22,7 +29,7 @@ interface Props {
   signatoryName: string;
   signatoryAddress: string;
   signatoryIndex: number;
-  selectedWallet: string;
+  selectedWalletId: string;
   isOwnAccount?: boolean;
   onDelete?: (index: number) => void;
 }
@@ -33,7 +40,7 @@ export const Signatory = ({
   isOwnAccount = false,
   signatoryName,
   signatoryAddress,
-  selectedWallet,
+  selectedWalletId,
 }: Props) => {
   const { t } = useI18n();
 
@@ -56,10 +63,7 @@ export const Signatory = ({
 
   const ownAccountName =
     walletUtils.getWalletsFilteredAccounts(wallets, {
-      walletFn: (w) =>
-        !walletUtils.isWatchOnly(w) &&
-        !walletUtils.isMultisig(w) &&
-        (!selectedWallet || w.id.toString() === selectedWallet),
+      walletFn: (w) => walletUtils.isValidSignatory(w) && (!selectedWalletId || w.id.toString() === selectedWalletId),
       accountFn: (a) =>
         toAccountId(signatoryAddress) === a.accountId && accountUtils.isChainIdMatch(a, chain.value.chainId),
     })?.[0]?.name || '';
@@ -93,8 +97,8 @@ export const Signatory = ({
           wallet.accounts
             .filter(
               (account) =>
-                (account as ChainAccount).chainId === undefined ||
-                (account as ChainAccount).chainId === chain.value.chainId,
+                accountUtils.isChainAndCryptoMatch(account, chain.value) &&
+                accountUtils.isNonBaseVaultAccount(account, wallet),
             )
             .map((account) => {
               const address = toAddress(account.accountId, { prefix: chain.value.addressPrefix });
@@ -121,7 +125,7 @@ export const Signatory = ({
         {
           id: index.toString(),
           element: (
-            <div className="flex items-center gap-x-2" key={walletType}>
+            <div className="flex items-center gap-x-2" key={`${walletType}-${index}`}>
               <WalletIcon type={walletType as WalletFamily} />
               <CaptionText className="font-semibold uppercase text-text-secondary">
                 {t(walletSelectFeature.constants.GROUP_LABELS[walletType as WalletFamily])}
@@ -147,6 +151,7 @@ export const Signatory = ({
   // list of contacts in case of not own account
   useEffect(() => {
     if (isOwnAccount || contacts.length === 0) return;
+
     setOptions(
       contactsFiltered.map(({ name, address }) => {
         const displayAddress = toAddress(address, { prefix: chain.value.addressPrefix });
@@ -165,7 +170,7 @@ export const Signatory = ({
       index: signatoryIndex,
       name: newName,
       address: signatoryAddress,
-      walletId: selectedWallet,
+      walletId: selectedWalletId,
     });
   };
 
@@ -176,7 +181,10 @@ export const Signatory = ({
   }, [displayName]);
 
   const onAddressChange = (data: ComboboxOption) => {
-    const validatedAddress = validateAddress(data.value) ? data.value : '';
+    const isEthereumChain = networkUtils.isEthereumBased(chain.value.options);
+    const validateFn = isEthereumChain ? validateEthereumAddress : validateSubstrateAddress;
+
+    const validatedAddress = validateFn(data.value) ? data.value : '';
     const fixedAddress = toAddress(validatedAddress, { prefix: chain.value.addressPrefix });
 
     signatoryModel.events.changeSignatory({

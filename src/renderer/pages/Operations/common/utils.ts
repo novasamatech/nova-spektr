@@ -83,7 +83,7 @@ export const getSignatoryAccounts = (
       const isChainMatch = accountUtils.isChainIdMatch(a, chainId);
       const wallet = walletsMap.get(a.walletId);
 
-      return isChainMatch && walletUtils.isValidSignSignatory(wallet);
+      return isChainMatch && walletUtils.isValidSignatory(wallet);
     });
 
     if (signatoryAccount) {
@@ -236,7 +236,7 @@ export const getDelegationTracks = (tx: MultisigTransaction): string[] | undefin
 
   if (!coreTxs || coreTxs.length === 0) return;
 
-  return coreTxs.map((tx: Transaction) => tx.args.track.toString());
+  return coreTxs.map((tx: Transaction) => tx.args.track?.toString());
 };
 
 export const getUndelegationData = async (

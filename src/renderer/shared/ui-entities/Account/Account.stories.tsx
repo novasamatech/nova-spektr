@@ -34,3 +34,9 @@ export const WithTitle: Story = {
     title: 'Account with name',
   },
 };
+
+export const Short: Story = {
+  args: {
+    variant: 'short',
+  },
+};

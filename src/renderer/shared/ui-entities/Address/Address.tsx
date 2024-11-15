@@ -14,7 +14,7 @@ type IconProps = XOR<{
 type Props = IconProps & {
   address: AddressType;
   title?: string;
-  variant?: 'full' | 'truncate';
+  variant?: 'full' | 'truncate' | 'short';
   testId?: string;
 };
 

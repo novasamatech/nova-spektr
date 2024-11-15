@@ -25,7 +25,7 @@ export const SelectSignatories = () => {
             isOwnAccount={index === 0}
             signatoryName={value.name}
             signatoryAddress={value.address}
-            selectedWallet={value.walletId}
+            selectedWalletId={value.walletId}
             onDelete={signatoryModel.events.deleteSignatory}
           />
         ))}
