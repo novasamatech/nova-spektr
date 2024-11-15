@@ -224,7 +224,7 @@ export const Signatory = ({
           placeholder={t('addressBook.createContact.namePlaceholder')}
           invalid={false}
           value={signatoryName}
-          disabled={!!ownAccountName || !!contactAccountName}
+          disabled={!!ownAccountName}
           onChange={onNameChange}
         />
       </div>
