@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
-import { type AccountId, type MultisigWallet, type Signatory, type Wallet } from '@/shared/core';
+import { type MultisigWallet, type Signatory, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { RootExplorers } from '@/shared/lib/utils';
@@ -29,7 +29,7 @@ import { ProxiesList } from '../components/ProxiesList';
 
 type Props = {
   wallet: MultisigWallet;
-  signatoryWallets: [AccountId, Wallet][];
+  signatoryWallets: Wallet[];
   signatoryContacts: Signatory[];
   signatoryAccounts: Signatory[];
   onClose: () => void;
@@ -51,10 +51,13 @@ export const MultisigWalletDetails = ({
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
   const multisigAccount = wallet.accounts[0];
+
   const singleChain = multisigAccount.chainId && chains[multisigAccount.chainId];
   const explorers = singleChain?.explorers || RootExplorers;
 
   const multisigChains = useMemo(() => {
+    if (!multisigAccount) return [];
+
     return Object.values(chains).filter((chain) => {
       const isAccountChain = multisigAccount.chainId === chain.chainId;
       const isMultisigSupported = networkUtils.isMultisigSupported(chain.options);
@@ -84,6 +87,10 @@ export const MultisigWalletDetails = ({
 
     return anyProxy && networkUtils.isPureProxySupported(singleChain?.options);
   }, [singleChain]);
+
+  if (!multisigAccount) {
+    return null;
+  }
 
   const Options = [
     {
@@ -152,10 +159,10 @@ export const MultisigWalletDetails = ({
               </FootnoteText>
 
               <ul className="flex flex-col gap-y-2 px-3">
-                {signatoryWallets.map(([accountId, wallet]) => (
+                {signatoryWallets.map((wallet) => (
                   <li key={wallet.id} className="flex items-center gap-x-2 py-1.5">
                     <ExplorersPopover
-                      address={accountId}
+                      address={multisigAccount.accountId}
                       explorers={explorers}
                       button={
                         <WalletCardMd

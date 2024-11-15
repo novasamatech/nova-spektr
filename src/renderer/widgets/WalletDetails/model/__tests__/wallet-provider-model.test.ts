@@ -63,10 +63,7 @@ describe('widgets/WalletDetails/model/wallet-provider-model', () => {
 
     await allSettled(walletSelectModel.events.walletIdSet, { scope, params: multisiigWallet.id });
 
-    expect(scope.getState(walletProviderModel.$signatoryWallets)).toEqual([
-      ['0x01', signatoriesWallets[0]],
-      ['0x02', signatoriesWallets[1]],
-    ]);
+    expect(scope.getState(walletProviderModel.$signatoryWallets)).toEqual(signatoriesWallets);
   });
 
   test('should set $proxyWallet', async () => {
