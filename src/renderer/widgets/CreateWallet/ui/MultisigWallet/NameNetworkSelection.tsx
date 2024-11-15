@@ -29,6 +29,7 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
   } = useForm(formModel.$createMultisigForm);
 
   const isNameError = name.isTouched && !name.value;
+  const asset = chain?.assets.at(0);
 
   return (
     <section className="flex h-full w-modal-lg flex-1 flex-col">
@@ -78,13 +79,8 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
             {t('createMultisigAccount.backButton')}
           </Button>
           <div className="mt-auto flex items-center justify-end">
-            {chain ? (
-              <MultisigCreationFees
-                api={api}
-                asset={chain.assets[0]}
-                threshold={threshold.value}
-                transaction={fakeTx}
-              />
+            {asset ? (
+              <MultisigCreationFees api={api} asset={asset} threshold={threshold.value} transaction={fakeTx} />
             ) : null}
 
             <Button
