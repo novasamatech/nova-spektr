@@ -156,9 +156,8 @@ const $api = combine(
     chainId: formModel.$createMultisigForm.fields.chainId.$value,
   },
   ({ apis, chainId }) => {
-    return apis[chainId] ?? undefined;
+    return apis[chainId] ?? null;
   },
-  { skipVoid: false },
 );
 
 const $isEnoughBalance = combine(

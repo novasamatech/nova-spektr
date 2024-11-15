@@ -68,24 +68,26 @@ export const ConfirmationStep = () => {
           />
         </DetailRow>
         <Separator className="my-4 border-filter-border" />
-        <div className="mb-4 flex flex-1 flex-col gap-y-4">
-          <MultisigDepositWithLabel
-            api={api}
-            asset={chain!.assets[0]}
-            threshold={threshold.value}
-            onDepositChange={flowModel.events.multisigDepositChanged}
-          />
-          <FeeWithLabel
-            api={api}
-            asset={chain!.assets[0]}
-            transaction={fakeTx}
-            onFeeChange={flowModel.events.feeChanged}
-            onFeeLoading={flowModel.events.isFeeLoadingChanged}
-          />
-          <Alert variant="error" title={t('createMultisigAccount.notEnoughTokensTitle')} active={!isEnoughBalance}>
-            <Alert.Item withDot={false}>{t('createMultisigAccount.notEnoughMultisigTokens')}</Alert.Item>
-          </Alert>
-        </div>
+        {chain ? (
+          <div className="mb-4 flex flex-1 flex-col gap-y-4">
+            <MultisigDepositWithLabel
+              api={api}
+              asset={chain.assets[0]}
+              threshold={threshold.value}
+              onDepositChange={flowModel.events.multisigDepositChanged}
+            />
+            <FeeWithLabel
+              api={api}
+              asset={chain.assets[0]}
+              transaction={fakeTx}
+              onFeeChange={flowModel.events.feeChanged}
+              onFeeLoading={flowModel.events.isFeeLoadingChanged}
+            />
+            <Alert variant="error" title={t('createMultisigAccount.notEnoughTokensTitle')} active={!isEnoughBalance}>
+              <Alert.Item withDot={false}>{t('createMultisigAccount.notEnoughMultisigTokens')}</Alert.Item>
+            </Alert>
+          </div>
+        ) : null}
         <div className="mt-3 flex items-center justify-between">
           <Button
             variant="text"

@@ -1,13 +1,13 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 
-import { type ChainAccount, type WalletFamily } from '@/shared/core';
+import { type WalletFamily } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { nullable, performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
+import { performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
 import { CaptionText, Combobox, IconButton, Identicon, Input } from '@/shared/ui';
 import { type ComboboxOption } from '@/shared/ui/types';
 import { contactModel } from '@/entities/contact';
-import { AddressWithName, WalletIcon, walletModel, walletUtils } from '@/entities/wallet';
+import { AddressWithName, WalletIcon, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { filterModel } from '@/features/contacts';
 import { walletSelectUtils } from '@/features/wallets/WalletSelect/lib/wallet-select-utils';
 import { GroupLabels } from '@/features/wallets/WalletSelect/ui/WalletGroup';
@@ -76,22 +76,23 @@ export const Signatory = ({
       const accountOptions = wallets.reduce((acc, wallet) => {
         if (!wallet.accounts.length || !walletUtils.isValidSignatory(wallet)) return acc;
 
-        return acc.concat(
-          wallet.accounts
-            .filter(
-              (account) =>
-                nullable((account as ChainAccount).chainId) || (account as ChainAccount).chainId === chain?.chainId,
-            )
-            .map((account) => {
-              const address = toAddress(account.accountId, { prefix: chain?.addressPrefix });
+        const accounts = wallet.accounts
+          .filter((account) => {
+            if (!accountUtils.isChainAccount(account)) return false;
 
-              return {
-                value: address,
-                element: <AddressWithName name={account.name} address={address} />,
-                id: account.accountId,
-              };
-            }),
-        );
+            return !account.chainId || account.chainId === chain?.chainId;
+          })
+          .map((account) => {
+            const address = toAddress(account.accountId, { prefix: chain?.addressPrefix });
+
+            return {
+              value: address,
+              element: <AddressWithName name={account.name} address={address} />,
+              id: account.accountId,
+            };
+          });
+
+        return acc.concat(accounts);
       }, [] as ComboboxOption[]);
 
       if (accountOptions.length === 0) {

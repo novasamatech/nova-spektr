@@ -1,9 +1,8 @@
 import { combine, createEvent, sample } from 'effector';
 import { createForm } from 'effector-forms';
-import isEmpty from 'lodash/isEmpty';
 
-import { type ChainId, CryptoType, type MultisigAccount, type Wallet } from '@/shared/core';
-import { toAccountId } from '@/shared/lib/utils';
+import { type ChainId, CryptoType, type Wallet } from '@/shared/core';
+import { nonNullable, toAccountId } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { type FormParams } from '../lib/types';
@@ -47,8 +46,6 @@ const $chain = combine(
     chains: networkModel.$chains,
   },
   ({ formValues, chains }) => {
-    if (isEmpty(chains)) return null;
-
     return chains[formValues.chainId] ?? null;
   },
 );
@@ -74,17 +71,21 @@ const $multisigAccountId = combine(
 
 const $multisigAlreadyExists = combine(
   { wallets: walletModel.$wallets, multisigAccountId: $multisigAccountId, formValues: $createMultisigForm.$values },
-  ({ multisigAccountId, wallets, formValues: { chainId } }) =>
-    !!walletUtils.getWalletFilteredAccounts(wallets, {
-      walletFn: (w) => walletUtils.isMultisig(w),
+  ({ multisigAccountId, wallets, formValues: { chainId } }) => {
+    const multisigWallet = walletUtils.getWalletFilteredAccounts(wallets, {
+      walletFn: walletUtils.isMultisig,
       accountFn: (multisigAccount) => {
+        if (!accountUtils.isMultisigAccount(multisigAccount)) return false;
+
         const isSameAccountId = multisigAccount.accountId === multisigAccountId;
-        const accountChainId = (multisigAccount as MultisigAccount).chainId;
-        const isSameChainId = !accountChainId || accountChainId === chainId;
+        const isSameChainId = !multisigAccount.chainId || multisigAccount.chainId === chainId;
 
         return isSameAccountId && isSameChainId;
       },
-    }),
+    });
+
+    return nonNullable(multisigWallet);
+  },
 );
 
 const $hiddenMultisig = combine(
@@ -93,17 +94,19 @@ const $hiddenMultisig = combine(
     multisigAccountId: $multisigAccountId,
     formValues: $createMultisigForm.$values,
   },
-  ({ multisigAccountId, hiddenWallets, formValues: { chainId } }) =>
-    walletUtils.getWalletFilteredAccounts(hiddenWallets, {
-      walletFn: (w) => walletUtils.isMultisig(w),
+  ({ multisigAccountId, hiddenWallets, formValues: { chainId } }) => {
+    return walletUtils.getWalletFilteredAccounts(hiddenWallets, {
+      walletFn: walletUtils.isMultisig,
       accountFn: (multisigAccount) => {
+        if (!accountUtils.isMultisigAccount(multisigAccount)) return false;
+
         const isSameAccountId = multisigAccount.accountId === multisigAccountId;
-        const accountChainId = (multisigAccount as MultisigAccount).chainId;
-        const isSameChainId = !accountChainId || accountChainId === chainId;
+        const isSameChainId = !multisigAccount.chainId || multisigAccount.chainId === chainId;
 
         return isSameAccountId && isSameChainId;
       },
-    }),
+    });
+  },
 );
 
 const $availableAccounts = combine(

@@ -3,7 +3,6 @@ import { useUnit } from 'effector-react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable } from '@/shared/lib/utils';
 import { Button, FootnoteText, Input, InputHint, SmallTitleText } from '@/shared/ui';
 import { Box, Field, Select } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
@@ -59,15 +58,13 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
                 value={chainId.value}
                 onChange={(value) => chainId.onChange(value as ChainId)}
               >
-                <Select.Content>
-                  {Object.values(chains)
-                    .filter((c) => networkUtils.isMultisigSupported(c.options))
-                    .map((chain) => (
-                      <Select.Item key={chain.chainId} value={chain.chainId}>
-                        <ChainTitle chain={chain} fontClass="text-text-primary" />
-                      </Select.Item>
-                    ))}
-                </Select.Content>
+                {Object.values(chains)
+                  .filter((c) => networkUtils.isMultisigSupported(c.options))
+                  .map((chain) => (
+                    <Select.Item key={chain.chainId} value={chain.chainId}>
+                      <ChainTitle className="overflow-hidden" chain={chain} fontClass="text-text-primary truncate" />
+                    </Select.Item>
+                  ))}
               </Select>
             </Field>
           </Box>
@@ -80,7 +77,7 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
             {t('createMultisigAccount.backButton')}
           </Button>
           <div className="mt-auto flex items-center justify-end">
-            {nonNullable(chain) ? (
+            {chain ? (
               <MultisigCreationFees
                 api={api}
                 asset={chain.assets[0]}
