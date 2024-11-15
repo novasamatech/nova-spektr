@@ -29,7 +29,7 @@ interface Props {
   signatoryName: string;
   signatoryAddress: string;
   signatoryIndex: number;
-  selectedWallet: string;
+  selectedWalletId: string;
   isOwnAccount?: boolean;
   onDelete?: (index: number) => void;
 }
@@ -40,7 +40,7 @@ export const Signatory = ({
   isOwnAccount = false,
   signatoryName,
   signatoryAddress,
-  selectedWallet,
+  selectedWalletId,
 }: Props) => {
   const { t } = useI18n();
 
@@ -63,10 +63,7 @@ export const Signatory = ({
 
   const ownAccountName =
     walletUtils.getWalletsFilteredAccounts(wallets, {
-      walletFn: (w) =>
-        !walletUtils.isWatchOnly(w) &&
-        !walletUtils.isMultisig(w) &&
-        (!selectedWallet || w.id.toString() === selectedWallet),
+      walletFn: (w) => walletUtils.isValidSignatory(w) && (!selectedWalletId || w.id.toString() === selectedWalletId),
       accountFn: (a) =>
         toAccountId(signatoryAddress) === a.accountId && accountUtils.isChainIdMatch(a, chain.value.chainId),
     })?.[0]?.name || '';
@@ -98,7 +95,11 @@ export const Signatory = ({
 
         return acc.concat(
           wallet.accounts
-            .filter((account) => accountUtils.isChainAndCryptoMatch(account, chain.value))
+            .filter(
+              (account) =>
+                accountUtils.isChainAndCryptoMatch(account, chain.value) &&
+                accountUtils.isNonBaseVaultAccount(account, wallet),
+            )
             .map((account) => {
               const address = toAddress(account.accountId, { prefix: chain.value.addressPrefix });
 
@@ -124,7 +125,7 @@ export const Signatory = ({
         {
           id: index.toString(),
           element: (
-            <div className="flex items-center gap-x-2" key={walletType}>
+            <div className="flex items-center gap-x-2" key={`${walletType}-${index}`}>
               <WalletIcon type={walletType as WalletFamily} />
               <CaptionText className="font-semibold uppercase text-text-secondary">
                 {t(walletSelectFeature.constants.GROUP_LABELS[walletType as WalletFamily])}
@@ -169,7 +170,7 @@ export const Signatory = ({
       index: signatoryIndex,
       name: newName,
       address: signatoryAddress,
-      walletId: selectedWallet,
+      walletId: selectedWalletId,
     });
   };
 

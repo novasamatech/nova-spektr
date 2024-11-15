@@ -219,6 +219,10 @@ const walletCreatedDone = sample({
   clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData],
 }).filter({ fn: nonNullable });
 
+const walletCreationFail = sample({
+  clock: [walletCreatedFx.fail, multishardCreatedFx.fail],
+}).filter({ fn: nonNullable });
+
 sample({
   clock: [walletConnectCreated, watchOnlyCreated, multisigCreated, singleshardCreated, proxiedCreated],
   target: walletCreatedFx,
@@ -369,6 +373,7 @@ export const walletModel = {
     walletConnectCreated,
     proxiedCreated,
     walletCreatedDone,
+    walletCreationFail,
     selectWallet,
     updateAccounts,
     updateWallet,
