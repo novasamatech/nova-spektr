@@ -17,6 +17,7 @@ import {
   Input,
   InputHint,
   SmallTitleText,
+  TEST_IDS,
 } from '@/shared/ui';
 import { networkModel, networkUtils } from '@/entities/network';
 import { AccountsList, walletModel } from '@/entities/wallet';
@@ -124,6 +125,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
                   placeholder={t('onboarding.walletNamePlaceholder')}
                   invalid={Boolean(errors.walletName)}
                   value={value}
+                  testId={TEST_IDS.ONBOARDING.WALLET_NAME_INPUT}
                   onChange={onChange}
                 />
                 <InputHint variant="error" active={errors.walletName?.type === ErrorType.MAX_LENGTH}>
@@ -153,6 +155,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
                       {isValid ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />}
                     </div>
                   }
+                  testId={TEST_IDS.ONBOARDING.WALLET_ADDRESS_INPUT}
                   onChange={onChange}
                 />
 
@@ -164,11 +167,11 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
           />
 
           <div className="flex flex-1 items-end justify-between">
-            <Button variant="text" onClick={() => closeWowModal()}>
+            <Button variant="text" testId={TEST_IDS.MAIN.BACK_BUTTON} onClick={() => closeWowModal()}>
               {t('onboarding.backButton')}
             </Button>
 
-            <Button type="submit" disabled={!isValid}>
+            <Button type="submit" testId={TEST_IDS.MAIN.CONTINUE_BUTTON} disabled={!isValid}>
               {t('onboarding.continueButton')}
             </Button>
           </div>

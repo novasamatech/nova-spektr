@@ -9,13 +9,15 @@ type Props = {
   iconName: IconNames;
   onClick?: () => void;
   disabled?: boolean;
+  buttonTestId?: string;
 };
 
-export const WelcomeCard = ({ title, description, iconName, disabled, onClick }: Props) => {
+export const WelcomeCard = ({ title, description, iconName, disabled, onClick, buttonTestId }: Props) => {
   const { t } = useI18n();
 
   return (
     <button
+      data-testid={buttonTestId}
       disabled={disabled}
       className={cnTw(
         'flex items-center gap-4 rounded-lg border border-filter-border px-4 py-2 shadow-card-shadow',

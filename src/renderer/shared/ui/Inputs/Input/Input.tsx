@@ -15,6 +15,7 @@ type NewType = {
   theme?: Theme;
   onChange?: (value: string) => void;
   onPaste?: (event: ClipboardEvent) => void;
+  testId?: string;
 };
 
 export type Props = Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> & NewType;
@@ -35,6 +36,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(
       spellCheck = false,
       theme = 'light',
       autoFocus,
+      testId,
       ...props
     },
     ref,
@@ -68,6 +70,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(
           autoFocus={autoFocus}
           disabled={disabled}
           spellCheck={spellCheck}
+          data-testid={testId}
           onChange={(event) => onChange?.(event.target.value)}
           onPaste={(event) => onPaste?.(event)}
           {...props}
