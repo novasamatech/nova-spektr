@@ -3,9 +3,11 @@ import { type PropsWithChildren, memo } from 'react';
 import { type AccountId, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { copyToClipboard, getAccountExplorer, toAddress } from '@/shared/lib/utils';
-import { ExplorerLink, FootnoteText, HelpText, IconButton, Separator, TEST_IDS } from '@/shared/ui';
+import { ExplorerLink, FootnoteText, HelpText, IconButton, Separator } from '@/shared/ui';
 import { Box, Popover } from '@/shared/ui-kit';
 import { Hash } from '../Hash/Hash';
+
+import { TEST_IDS } from 'tests/testIds';
 
 type Props = PropsWithChildren<{
   accountId: AccountId;

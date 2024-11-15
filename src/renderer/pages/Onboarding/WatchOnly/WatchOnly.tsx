@@ -17,12 +17,13 @@ import {
   Input,
   InputHint,
   SmallTitleText,
-  TEST_IDS,
 } from '@/shared/ui';
 import { networkModel, networkUtils } from '@/entities/network';
 import { AccountsList, walletModel } from '@/entities/wallet';
 
 import { EmptyState } from './EmptyState';
+
+import { TEST_IDS } from 'tests/testIds';
 
 type WalletForm = {
   walletName: string;

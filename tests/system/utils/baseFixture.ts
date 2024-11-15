@@ -12,7 +12,8 @@ type BaseFixture = {
 };
 
 export const test = base.extend<BaseFixture>({
-  browser: async (_: any, use: (arg0: Browser) => any) => {
+  // eslint-disable-next-line no-empty-pattern
+  browser: async ({}: any, use: (arg0: Browser) => any) => {
     const browser = await chromium.launch();
     await use(browser);
     await browser.close();

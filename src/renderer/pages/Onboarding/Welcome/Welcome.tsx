@@ -4,11 +4,13 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { Icon, TEST_IDS, TitleText } from '@/shared/ui';
+import { Icon, TitleText } from '@/shared/ui';
 import { walletPairingModel } from '@/features/wallets';
 
 import PrivacyPolicy from './PrivacyPolicy';
 import { WelcomeCard } from './WelcomeCard';
+
+import { TEST_IDS } from 'tests/testIds';
 
 const LOGO_WIDTH = 232;
 const RIGHT_PADDING = 225;

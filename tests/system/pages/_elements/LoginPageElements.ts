@@ -1,4 +1,4 @@
-import { TEST_IDS } from '@/shared/ui';
+import { TEST_IDS } from '../../../testIds';
 
 import { type BasePageElements } from './BasePageElements';
 

@@ -52,7 +52,6 @@ export { Markdown } from './Markdown/Markdown';
 export { BlockExplorer } from './BlockExplorer/BlockExplorer';
 export { EmptyList } from './EmptyList/EmptyList';
 export { Animation } from './Animation/Animation';
-export { TEST_IDS } from './TestIds';
 
 export { type IconNames } from './Icon/data';
 
