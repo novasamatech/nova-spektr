@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
-import { SearchInput } from '@/shared/ui';
+import { SearchInput } from '@/shared/ui-kit';
 import { filterModel } from '../../model/filter';
 
 export const Search = () => {
@@ -12,7 +12,6 @@ export const Search = () => {
     <SearchInput
       value={query}
       placeholder={t('governance.searchPlaceholder')}
-      wrapperClass="w-[230px]"
       onChange={filterModel.events.queryChanged}
     />
   );

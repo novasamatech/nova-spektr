@@ -5,8 +5,6 @@ import { cnTw } from '@/shared/lib/utils';
 import { Identicon } from '@/shared/ui/Identicon/Identicon';
 import { Hash } from '../Hash/Hash';
 
-type AddressVariant = 'full' | 'truncate';
-
 type IconProps = XOR<{
   showIcon: boolean;
   iconSize?: number;
@@ -17,7 +15,7 @@ type Props = IconProps & {
   address: AddressType;
   title?: string;
   replaceAddressWithTitle?: boolean;
-  variant?: AddressVariant;
+  variant?: 'full' | 'truncate' | 'short';
   testId?: string;
 };
 
@@ -35,7 +33,7 @@ export const Address = memo(
     );
 
     return (
-      <span className="flex w-full items-center gap-2 overflow-hidden" data-testid={testId}>
+      <span className="flex w-full min-w-0 items-center gap-2 overflow-hidden" data-testid={testId}>
         {showIcon && <Identicon address={address} size={iconSize} background={false} canCopy={canCopy} />}
         <span className="flex w-full flex-col overflow-hidden">
           {titleNode}

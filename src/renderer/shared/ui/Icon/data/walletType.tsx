@@ -1,5 +1,8 @@
 /* eslint-disable import-x/max-dependencies */
 
+import FlexibleMultisigBackgroundImg, {
+  ReactComponent as FlexibleMultisigBackgroundSvg,
+} from '@/shared/assets/images/walletTypes/flexibleMultisigBackground.svg';
 import LedgerOnboardingImg, {
   ReactComponent as LedgerOnboardingSvg,
 } from '@/shared/assets/images/walletTypes/ledgerOnboarding.svg';
@@ -44,6 +47,7 @@ const WalletTypeImages = {
   watchOnlyBackground: { svg: WatchOnlyBackgroundSvg, img: WatchOnlyBackgroundImg },
   watchOnlyOnboarding: { svg: WatchOnlyOnboardingSvg, img: WatchOnlyOnboardingImg },
   multisigBackground: { svg: MultisigBackgroundSvg, img: MultisigBackgroundImg },
+  flexibleMultisigBackground: { svg: FlexibleMultisigBackgroundSvg, img: FlexibleMultisigBackgroundImg },
   vault: { svg: VaultSvg, img: VaultImg },
   vaultBackground: { svg: VaultBackgroundSvg, img: VaultBackgroundImg },
   vaultOnboarding: { svg: VaultOnboardingSvg, img: VaultOnboardingImg },

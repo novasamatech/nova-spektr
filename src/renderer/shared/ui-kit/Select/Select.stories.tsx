@@ -9,6 +9,9 @@ import { Select } from './Select';
 const meta: Meta<typeof Select> = {
   title: 'Design System/kit/Select',
   component: Select,
+  parameters: {
+    layout: 'centered',
+  },
   render: (params) => {
     const [value, onChange] = useState('');
 

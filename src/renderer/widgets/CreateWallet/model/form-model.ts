@@ -1,7 +1,7 @@
 import { combine, createEvent, sample } from 'effector';
 import { createForm } from 'effector-forms';
 
-import { type ChainId, CryptoType, type Wallet } from '@/shared/core';
+import { type Chain, type ChainId, CryptoType, type Wallet } from '@/shared/core';
 import { nonNullable, toAccountId } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -45,7 +45,7 @@ const $chain = combine(
     formValues: $createMultisigForm.$values,
     chains: networkModel.$chains,
   },
-  ({ formValues, chains }) => {
+  ({ formValues, chains }): Chain | null => {
     return chains[formValues.chainId] ?? null;
   },
 );

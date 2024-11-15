@@ -3,7 +3,8 @@ import { type FormEvent, useEffect } from 'react';
 
 import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { BaseModal, Button, Input, InputHint } from '@/shared/ui';
+import { BaseModal, Button, InputHint } from '@/shared/ui';
+import { Input } from '@/shared/ui-kit';
 import { renameWalletModel } from '../model/rename-wallet-model';
 
 type Props = {
@@ -40,8 +41,6 @@ export const RenameWalletModal = ({ wallet, isOpen, onClose }: Props) => {
         <div className="flex flex-col gap-y-2">
           <Input
             name="name"
-            className="w-full"
-            wrapperClass="h-[42px]"
             label={t('walletDetails.common.renameLabel')}
             invalid={name?.hasError()}
             value={name?.value}

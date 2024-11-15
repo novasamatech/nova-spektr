@@ -7,7 +7,7 @@ import { confirmModel } from '../confirm-model';
 
 import { initiatorWallet, signerWallet, testApi } from './mock';
 
-describe('widgets/CreateWallet/model/confirm-model', () => {
+describe('Create multisig wallet confirm-model', () => {
   beforeEach(() => {
     jest.restoreAllMocks();
   });
@@ -16,7 +16,7 @@ describe('widgets/CreateWallet/model/confirm-model', () => {
     const scope = fork({
       values: new Map()
         .set(networkModel.$apis, { '0x00': testApi })
-        .set(walletModel.$allWallets, [initiatorWallet, signerWallet]),
+        .set(walletModel._test.$allWallets, [initiatorWallet, signerWallet]),
     });
 
     const store = {

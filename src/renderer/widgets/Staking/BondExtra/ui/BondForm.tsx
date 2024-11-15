@@ -4,12 +4,13 @@ import { type FormEvent } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
-import { AmountInput, Button, DetailRow, FootnoteText, Icon, InputHint, MultiSelect, Tooltip } from '@/shared/ui';
+import { Button, DetailRow, FootnoteText, Icon, InputHint, MultiSelect, Tooltip } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { SignatorySelector } from '@/entities/operations';
 import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 import { FeeLoader } from '@/entities/transaction';
 import { AccountAddress, ProxyWalletAlert, accountUtils } from '@/entities/wallet';
+import { AmountInput } from '@/features/assets-balances';
 import { formModel } from '../model/form-model';
 
 type Props = {

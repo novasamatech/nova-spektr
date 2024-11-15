@@ -1,27 +1,27 @@
-import { combine, createEvent, createStore, sample } from 'effector';
+import { combine, createEvent, restore, sample } from 'effector';
 
 import { includes } from '@/shared/lib/utils';
 import { contactModel } from '@/entities/contact';
 
 const formInitiated = createEvent();
-
-const $filterQuery = createStore<string>('');
 const queryChanged = createEvent<string>();
+
+const $query = restore(queryChanged, '');
 
 sample({
   clock: formInitiated,
-  target: $filterQuery.reinit,
+  target: $query.reinit,
 });
 
 sample({
   clock: queryChanged,
-  target: $filterQuery,
+  target: $query,
 });
 
 const $contactsFiltered = combine(
   {
     contacts: contactModel.$contacts,
-    query: $filterQuery,
+    query: $query,
   },
   ({ contacts, query }) => {
     return contacts
@@ -36,6 +36,7 @@ const $contactsFiltered = combine(
 );
 
 export const filterModel = {
+  $query,
   $contactsFiltered,
 
   events: {

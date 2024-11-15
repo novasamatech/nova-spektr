@@ -4,7 +4,8 @@ import { type FormEvent } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { Alert, BaseModal, Button, Input, InputHint } from '@/shared/ui';
+import { Alert, BaseModal, Button, InputHint } from '@/shared/ui';
+import { Input } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
 import { customRpcUtils } from '../lib/custom-rpc-utils';
 import { addCustomRpcModel } from '../model/add-custom-rpc-model';

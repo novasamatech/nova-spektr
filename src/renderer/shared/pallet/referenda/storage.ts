@@ -1,4 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
+import { zipWith } from 'lodash';
 
 import { substrateRpcPool } from '@/shared/api/substrate-helpers';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
@@ -46,7 +47,7 @@ export const storage = {
     if (ids) {
       const schemaWithIds = pjsSchema
         .vec(pjsSchema.optional(referendaReferendumInfoConvictionVotingTally))
-        .transform(items => items.map((item, index) => ({ info: item, id: ids[index]! })));
+        .transform(items => zipWith(ids, items, (id, info) => ({ id, info })));
 
       return substrateRpcPool.call(() => getQuery(type, api, 'referendumInfoFor').multi(ids)).then(schemaWithIds.parse);
     } else {

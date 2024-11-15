@@ -4,10 +4,10 @@ import { useUnit } from 'effector-react';
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
+import { Step } from '@/shared/lib/utils';
 import { Alert, Button, Counter, DetailRow, Icon, IconButton, Separator } from '@/shared/ui';
 import { SignButton } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
-import { Step } from '../../lib/types';
 import { confirmModel } from '../../model/confirm-model';
 import { flowModel } from '../../model/flow-model';
 import { formModel } from '../../model/form-model';
@@ -35,7 +35,7 @@ export const ConfirmationStep = () => {
   const [isSignatoriesModalOpen, toggleSignatoriesModalOpen] = useToggle();
 
   return (
-    <section className="relative flex h-full flex-1 flex-col px-5 py-4">
+    <section className="relative flex h-full w-modal flex-1 flex-col px-5 py-4">
       <div className="flex max-h-full flex-1 flex-col">
         <div className="mb-6 flex flex-col items-center">
           <Icon className="text-icon-default" name="multisigCreationConfirm" size={60} />

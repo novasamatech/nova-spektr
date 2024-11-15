@@ -5,17 +5,7 @@ import { type FormEvent } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { formatAmount, formatBalance } from '@/shared/lib/utils';
-import {
-  AmountInput,
-  BaseModal,
-  Button,
-  DetailRow,
-  FootnoteText,
-  Icon,
-  InputHint,
-  SmallTitleText,
-  Tooltip,
-} from '@/shared/ui';
+import { BaseModal, Button, DetailRow, FootnoteText, Icon, InputHint, SmallTitleText, Tooltip } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { OperationTitle } from '@/entities/chain';
 import { BalanceDiff, LockPeriodDiff, LockValueDiff } from '@/entities/governance';
@@ -23,6 +13,7 @@ import { SignatorySelector } from '@/entities/operations';
 import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 import { FeeLoader } from '@/entities/transaction';
 import { ProxyWalletAlert } from '@/entities/wallet';
+import { AmountInput } from '@/features/assets-balances';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { ConvictionSelect } from '@/widgets/VoteModal';
 import { formModel } from '../model/form-model';

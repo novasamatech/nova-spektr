@@ -19,13 +19,13 @@ type RootProps = PropsWithChildren<
     open?: boolean;
     onToggle?: (value: boolean) => unknown;
     delay?: number;
-    disableHoverableContent?: boolean;
+    enableHover?: boolean;
   }
 >;
 
 const Root = ({
   delay = 100,
-  disableHoverableContent,
+  enableHover,
   open,
   onToggle,
   children,
@@ -42,7 +42,7 @@ const Root = ({
 
   return (
     <Context.Provider value={ctx}>
-      <RadixTooltip.Provider delayDuration={delay} disableHoverableContent={disableHoverableContent}>
+      <RadixTooltip.Provider delayDuration={delay} disableHoverableContent={!enableHover}>
         <RadixTooltip.Root open={open} onOpenChange={onToggle}>
           {children}
         </RadixTooltip.Root>
@@ -62,7 +62,7 @@ const Content = ({ children }: PropsWithChildren) => {
   return (
     <RadixTooltip.Portal container={portalContainer}>
       <RadixTooltip.Content
-        className="h-fit max-h-[var(--radix-tooltip-content-available-height)] w-fit max-w-48 rounded-md bg-switch-background-active px-2 py-1 text-help-text text-white duration-100 animate-in fade-in zoom-in-95"
+        className="z-50 h-fit max-h-[var(--radix-tooltip-content-available-height)] w-fit max-w-48 rounded-md bg-switch-background-active px-2 py-1 text-help-text text-white duration-100 animate-in fade-in zoom-in-95"
         side={side}
         align={align}
         arrowPadding={gridSpaceConverter(3)}

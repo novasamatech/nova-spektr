@@ -4,7 +4,7 @@ import { produce } from 'immer';
 import { type Address, type Wallet } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import { walletModel, walletUtils } from '@/entities/wallet';
-import { balanceSubModel } from '@/features/balances';
+import { balanceSubModel } from '@/features/assets-balances';
 import { type SignatoryInfo } from '../lib/types';
 
 const addSignatory = createEvent<Omit<SignatoryInfo, 'index'>>();
@@ -12,7 +12,7 @@ const changeSignatory = createEvent<SignatoryInfo>();
 const deleteSignatory = createEvent<number>();
 const getSignatoriesBalance = createEvent<Wallet[]>();
 
-const $signatories = createStore<Omit<SignatoryInfo, 'index'>[]>([{ name: '', address: '' }]);
+const $signatories = createStore<Omit<SignatoryInfo, 'index'>[]>([{ name: '', address: '', walletId: '' }]);
 
 const $hasDuplicateSignatories = combine($signatories, (signatories) => {
   const existingKeys: Set<Address> = new Set();
@@ -59,9 +59,9 @@ sample({
 sample({
   clock: addSignatory,
   source: $signatories,
-  fn: (signatories, { name, address }) => {
+  fn: (signatories, { name, address, walletId }) => {
     return produce(signatories, (draft) => {
-      draft.push({ name, address });
+      draft.push({ name, address, walletId });
     });
   },
   target: $signatories,
@@ -70,12 +70,12 @@ sample({
 sample({
   clock: changeSignatory,
   source: $signatories,
-  fn: (signatories, { index, name, address }) => {
+  fn: (signatories, { index, name, address, walletId }) => {
     return produce(signatories, (draft) => {
       if (index >= draft.length) {
-        draft.push({ name, address });
+        draft.push({ name, address, walletId });
       } else {
-        draft[index] = { name, address };
+        draft[index] = { name, address, walletId };
       }
     });
   },

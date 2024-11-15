@@ -3,7 +3,8 @@ import { type BN } from '@polkadot/util';
 import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { fromPrecision, toPrecision } from '@/shared/lib/utils';
-import { AmountInput, InputHint } from '@/shared/ui';
+import { InputHint } from '@/shared/ui';
+import { AmountInput } from '@/features/assets-balances';
 
 type Props = {
   value: BN | null;

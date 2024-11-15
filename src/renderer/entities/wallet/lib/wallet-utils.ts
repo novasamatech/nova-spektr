@@ -1,5 +1,6 @@
 import {
   type Account,
+  type FlexibleMultisigWallet,
   type ID,
   type MultiShardWallet,
   type MultisigWallet,
@@ -20,6 +21,7 @@ export const walletUtils = {
   isMultiShard,
   isSingleShard,
   isMultisig,
+  isFlexibleMultisig,
   isWatchOnly,
   isNovaWallet,
   isWalletConnect,
@@ -33,6 +35,7 @@ export const walletUtils = {
 
   getAccountBy,
   getAccountsBy,
+  getAllAccounts,
   getWalletFilteredAccounts,
   getWalletsFilteredAccounts,
 };
@@ -53,6 +56,10 @@ function isSingleShard(wallet?: Wallet): wallet is SingleShardWallet {
 
 function isMultisig(wallet?: Wallet): wallet is MultisigWallet {
   return wallet?.type === WalletType.MULTISIG;
+}
+
+function isFlexibleMultisig(wallet?: Wallet): wallet is FlexibleMultisigWallet {
+  return wallet?.type === WalletType.FLEXIBLE_MULTISIG;
 }
 
 function isWatchOnly(wallet?: Wallet): wallet is WatchOnlyWallet {
@@ -111,6 +118,10 @@ function getAccountsBy(wallets: Wallet[], accountFn: (account: Account, wallet: 
 
     return acc;
   }, []);
+}
+
+function getAllAccounts(wallets: Wallet[]): Account[] {
+  return wallets.reduce<Account[]>((acc, wallet) => acc.concat(wallet.accounts), []);
 }
 
 function getAccountBy(wallets: Wallet[], accountFn: (account: Account, wallet: Wallet) => boolean): Account | null {

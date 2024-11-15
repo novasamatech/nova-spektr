@@ -14,7 +14,8 @@ import {
   WalletType,
 } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Button, HeaderTitleText, IconButton, Input, InputHint, SmallTitleText } from '@/shared/ui';
+import { Button, HeaderTitleText, IconButton, InputHint, SmallTitleText } from '@/shared/ui';
+import { Input } from '@/shared/ui-kit';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
 import { AccountsList, walletModel } from '@/entities/wallet';
@@ -101,7 +102,6 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
             render={({ field: { onChange, value } }) => (
               <div>
                 <Input
-                  wrapperClass="flex items-center"
                   label={t('onboarding.walletNameLabel')}
                   placeholder={t('onboarding.walletNamePlaceholder')}
                   invalid={Boolean(errors.walletName)}

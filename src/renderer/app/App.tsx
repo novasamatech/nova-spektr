@@ -8,7 +8,6 @@ import { Paths } from '@/shared/routes';
 import { walletModel } from '@/entities/wallet';
 import { navigationModel } from '@/features/navigation';
 import { CreateWalletProvider } from '@/widgets/CreateWallet';
-import { WalletDetailsProvider } from '@/widgets/WalletDetails';
 import { ROUTES_CONFIG } from '@/pages/index';
 
 import { initModel } from './modelInit';
@@ -39,7 +38,6 @@ export const App = () => {
           <GraphqlProvider>
             {appRoutes}
             <CreateWalletProvider />
-            <WalletDetailsProvider />
           </GraphqlProvider>
         </StatusModalProvider>
       </ConfirmDialogProvider>
