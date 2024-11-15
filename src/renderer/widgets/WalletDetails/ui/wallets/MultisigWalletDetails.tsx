@@ -51,6 +51,10 @@ export const MultisigWalletDetails = ({
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
   const multisigAccount = wallet.accounts[0];
+  if (!multisigAccount) {
+    return null;
+  }
+
   const singleChain = multisigAccount.chainId && chains[multisigAccount.chainId];
   const explorers = singleChain?.explorers || RootExplorers;
 
@@ -155,7 +159,7 @@ export const MultisigWalletDetails = ({
                 {signatoryWallets.map((wallet) => (
                   <li key={wallet.id} className="flex items-center gap-x-2 py-1.5">
                     <ExplorersPopover
-                      address={wallet.accounts[0].accountId}
+                      address={multisigAccount.accountId}
                       explorers={explorers}
                       button={
                         <WalletCardMd

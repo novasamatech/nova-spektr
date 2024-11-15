@@ -67,11 +67,11 @@ const $signatoryContacts = combine(
   ({ wallet, wallets, contacts }): Signatory[] => {
     if (!wallet || !walletUtils.isMultisig(wallet)) return [];
     //TODO: remove it when sign with proxy is supported
-    const filtredWallets = wallets.filter((w) => !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w));
+    const filteredWallets = wallets.filter((w) => !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w));
 
     const contactsMap = dictionary(contacts, 'accountId');
     const signatoriesMap = dictionary(wallet.accounts[0].signatories, 'accountId');
-    const allSignatories = walletUtils.getAccountsBy(filtredWallets, ({ accountId }) => signatoriesMap[accountId]);
+    const allSignatories = walletUtils.getAccountsBy(filteredWallets, ({ accountId }) => signatoriesMap[accountId]);
     const signatoriesSet = new Set(allSignatories.map((signatory) => signatory.accountId));
 
     return wallet.accounts[0].signatories
@@ -113,10 +113,10 @@ const $signatoryAccounts = combine(
   },
   ({ wallet, wallets }): Signatory[] => {
     if (!wallet || !walletUtils.isMultisig(wallet)) return [];
-    const filtredWallets = wallets.filter((w) => !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w));
+    const filteredWallets = wallets.filter((w) => !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w));
 
     const signatoriesMap = dictionary(wallet.accounts[0].signatories, 'accountId');
-    const allSignatories = walletUtils.getAccountsBy(filtredWallets, (a) => signatoriesMap[a.accountId]);
+    const allSignatories = walletUtils.getAccountsBy(filteredWallets, (a) => signatoriesMap[a.accountId]);
     const uniqueSignatories = uniqBy(allSignatories, 'accountId');
     const uniqueSignatoriesMap = dictionary(uniqueSignatories, 'accountId');
 
