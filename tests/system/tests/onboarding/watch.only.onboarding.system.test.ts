@@ -18,10 +18,12 @@ test.describe(
 
     test('Link from info button lead to subscan', async ({ loginPage, page, context }) => {
       const watchOnlyPage = await loginPage.gotoOnboarding().then((onboarding) => onboarding.clickWatchOnlyButton());
-      await watchOnlyPage.fillAccountAddress(baseTestConfig.test_address).then((account) => account.clickInfoButton());
+      await watchOnlyPage
+        .fillAccountAddress(baseTestConfig.test_address)
+        .then((account) => account.clickFirstInfoButton());
       const [newPage] = await Promise.all([
         context.waitForEvent('page'),
-        page.getByTestId(watchOnlyPage.pageElements.subscanLabel).click(),
+        page.getByRole('link', { name: watchOnlyPage.pageElements.subscanLabel }).click(),
       ]);
       await newPage.waitForLoadState('load');
 

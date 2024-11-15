@@ -26,8 +26,8 @@ export class WatchOnlyOnboardingPage extends BasePage<OnboardingPageElements> {
     return new WatchOnlyAssetsPage(this.page, new AssetsPageElements());
   }
 
-  public async clickInfoButton(): Promise<WatchOnlyOnboardingPage> {
-    await this.page.getByTestId(this.pageElements.firstInfoButton).getByRole('button').nth(1).click();
+  public async clickFirstInfoButton(): Promise<WatchOnlyOnboardingPage> {
+    await this.page.getByTestId(this.pageElements.firstInfoButton).first().click();
 
     return this;
   }

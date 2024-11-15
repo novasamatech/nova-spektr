@@ -18,24 +18,21 @@ export interface IndexedDBData {
  */
 export async function injectDataInDatabase(page: Page, data: IndexedDBData): Promise<void> {
   await page.evaluate(async (data) => {
-    if (!('indexedDB' in window)) {
-      console.log("This browser doesn't support IndexedDB.");
-    } else {
-      const { database, table, injectingData } = data;
-      const dbPromise = window.indexedDB.open(database);
+    const { database, table, injectingData } = data;
+    // @ts-expect-error linter can't resolve missing window
+    const dbPromise = window.indexedDB.open(database);
 
-      while (dbPromise.readyState == 'pending') {
-        await new Promise((resolve) => {
-          setTimeout(resolve, 1_000);
-        });
-        console.log('waiting');
-      }
-      const tx = dbPromise.result.transaction(table, 'readwrite');
-      console.log(tx);
-      const store = tx.objectStore(table);
-      injectingData.forEach((item) => {
-        store.put(item);
+    while (dbPromise.readyState == 'pending') {
+      await new Promise((resolve) => {
+        setTimeout(resolve, 1_000);
       });
+      console.log('waiting');
+    }
+    const tx = dbPromise.result.transaction(table, 'readwrite');
+    console.log(tx);
+    const store = tx.objectStore(table);
+    for (const item of injectingData) {
+      store.put(item);
     }
   }, data);
 }
