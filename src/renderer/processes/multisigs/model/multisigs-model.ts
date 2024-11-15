@@ -23,6 +23,7 @@ import { nonNullable, nullable, toAddress, toKeysRecord } from '@/shared/lib/uti
 import { multisigService } from '@/entities/multisig';
 import { networkModel, networkUtils } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
+import { proxyModel } from '@/entities/proxy';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { multisigUtils } from '../lib/mulitisigs-utils';
 

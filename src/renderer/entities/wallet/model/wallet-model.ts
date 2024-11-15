@@ -35,7 +35,6 @@ const multishardCreated = createEvent<CreateParams<BaseAccount | ChainAccount | 
 const singleshardCreated = createEvent<CreateParams<BaseAccount>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const flexibleMultisigCreated = createEvent<CreateParams<FlexibleMultisigAccount>>();
-const proxiedCreated = createEvent<CreateParams<ProxiedAccount>>();
 const walletConnectCreated = createEvent<CreateParams<WcAccount>>();
 const proxiedCreated = createEvent<CreateParams<ProxiedAccount>>();
 
