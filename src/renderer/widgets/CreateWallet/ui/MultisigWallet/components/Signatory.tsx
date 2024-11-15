@@ -23,8 +23,6 @@ import { walletSelectFeature } from '@/features/wallet-select';
 import { formModel } from '@/widgets/CreateWallet/model/form-model';
 import { signatoryModel } from '../../../model/signatory-model';
 
-import { AccountBalance } from './AccountBalance';
-
 interface Props {
   signatoryName: string;
   signatoryAddress: string;
@@ -105,12 +103,7 @@ export const Signatory = ({
 
               return {
                 value: address,
-                element: (
-                  <Box direction="row" verticalAlign="center" horizontalAlign="space-between" fitContainer>
-                    <Address showIcon title={account.name} address={address} />
-                    <AccountBalance accountId={account.accountId} chain={chain.value} />
-                  </Box>
-                ),
+                element: <Address showIcon title={account.name} address={address} />,
                 id: account.walletId.toString(),
               };
             }),
