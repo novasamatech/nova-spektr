@@ -6,7 +6,6 @@ import { storageService } from '@/shared/api/storage';
 import { type Wallet } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { walletModel, walletUtils } from '@/entities/wallet';
-import { walletConnectModel } from '@/entities/walletConnect';
 
 export type Callbacks = {
   onSubmit: () => void;
@@ -45,6 +44,7 @@ const $walletForm = createForm({
 
 const renameWalletFx = createEffect(async ({ id, accounts, ...rest }: Wallet): Promise<Wallet> => {
   await storageService.wallets.update(id, rest);
+  await storageService.accounts.updateAll(accounts);
 
   return { id, accounts, ...rest };
 });
@@ -88,18 +88,6 @@ sample({
         : walletToEdit!.accounts?.map((acc) => ({ ...acc, name: form.name })),
   }),
   target: renameWalletFx,
-});
-
-sample({
-  clock: renameWalletFx.doneData,
-  filter: (updatedWallet) => {
-    return !walletUtils.isPolkadotVault(updatedWallet) && !walletUtils.isMultiShard(updatedWallet);
-  },
-  fn: (updatedWallet) => ({
-    walletId: updatedWallet.id,
-    accounts: updatedWallet.accounts,
-  }),
-  target: walletConnectModel.events.accountsUpdated,
 });
 
 sample({
