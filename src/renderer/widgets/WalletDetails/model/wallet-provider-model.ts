@@ -4,7 +4,6 @@ import mapValues from 'lodash/mapValues';
 import uniqBy from 'lodash/uniqBy';
 
 import {
-  type AccountId,
   type BaseAccount,
   type ChainId,
   type ProxyAccount,
@@ -67,10 +66,12 @@ const $signatoryContacts = combine(
   },
   ({ wallet, wallets, contacts }): Signatory[] => {
     if (!wallet || !walletUtils.isMultisig(wallet)) return [];
+    //TODO: remove it when sign with proxy is supported
+    const filteredWallets = wallets.filter((w) => !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w));
 
     const contactsMap = dictionary(contacts, 'accountId');
     const signatoriesMap = dictionary(wallet.accounts[0].signatories, 'accountId');
-    const allSignatories = walletUtils.getAccountsBy(wallets, ({ accountId }) => signatoriesMap[accountId]);
+    const allSignatories = walletUtils.getAccountsBy(filteredWallets, ({ accountId }) => signatoriesMap[accountId]);
     const signatoriesSet = new Set(allSignatories.map((signatory) => signatory.accountId));
 
     return wallet.accounts[0].signatories
@@ -79,26 +80,32 @@ const $signatoryContacts = combine(
   },
 );
 
+// signatoryWallets is used to display details for multi chain multisig
 const $signatoryWallets = combine(
   {
     wallet: walletSelectModel.$walletForDetails,
     wallets: walletModel.$wallets,
   },
-  ({ wallet, wallets }): [AccountId, Wallet][] => {
+  ({ wallet, wallets }): Wallet[] => {
     if (!wallet || !walletUtils.isMultisig(wallet)) return [];
 
     const signatoriesMap = dictionary(wallet.accounts[0].signatories, 'accountId', () => true);
 
     const walletsAndAccounts = walletUtils.getWalletsFilteredAccounts(wallets, {
+      walletFn: (w) =>
+        !walletUtils.isWatchOnly(w) &&
+        !walletUtils.isProxied(w) &&
+        wallet.accounts[0].signatories.some((s) => !s?.id || s.id === w.id),
       accountFn: (a) => signatoriesMap[a.accountId],
     });
 
     if (!walletsAndAccounts) return [];
 
-    return walletsAndAccounts.map((wallet) => [wallet.accounts[0].accountId, wallet]);
+    return walletsAndAccounts;
   },
 );
 
+// signatoryAccounts is used to display details for single chain multisig
 const $signatoryAccounts = combine(
   {
     wallet: walletSelectModel.$walletForDetails,
@@ -106,9 +113,10 @@ const $signatoryAccounts = combine(
   },
   ({ wallet, wallets }): Signatory[] => {
     if (!wallet || !walletUtils.isMultisig(wallet)) return [];
+    const filteredWallets = wallets.filter((w) => !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w));
 
     const signatoriesMap = dictionary(wallet.accounts[0].signatories, 'accountId');
-    const allSignatories = walletUtils.getAccountsBy(wallets, ({ accountId }) => signatoriesMap[accountId]);
+    const allSignatories = walletUtils.getAccountsBy(filteredWallets, (a) => signatoriesMap[a.accountId]);
     const uniqueSignatories = uniqBy(allSignatories, 'accountId');
     const uniqueSignatoriesMap = dictionary(uniqueSignatories, 'accountId');
 
