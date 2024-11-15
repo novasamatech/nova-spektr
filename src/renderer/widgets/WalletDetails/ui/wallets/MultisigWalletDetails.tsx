@@ -51,14 +51,13 @@ export const MultisigWalletDetails = ({
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
   const multisigAccount = wallet.accounts[0];
-  if (!multisigAccount) {
-    return null;
-  }
 
   const singleChain = multisigAccount.chainId && chains[multisigAccount.chainId];
   const explorers = singleChain?.explorers || RootExplorers;
 
   const multisigChains = useMemo(() => {
+    if (!multisigAccount) return [];
+
     return Object.values(chains).filter((chain) => {
       const isAccountChain = multisigAccount.chainId === chain.chainId;
       const isMultisigSupported = networkUtils.isMultisigSupported(chain.options);
@@ -88,6 +87,10 @@ export const MultisigWalletDetails = ({
 
     return anyProxy && networkUtils.isPureProxySupported(singleChain?.options);
   }, [singleChain]);
+
+  if (!multisigAccount) {
+    return null;
+  }
 
   const Options = [
     {
