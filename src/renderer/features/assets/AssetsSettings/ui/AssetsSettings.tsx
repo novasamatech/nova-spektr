@@ -5,6 +5,8 @@ import { FootnoteText, IconButton, MenuPopover, Select, Switch } from '@/shared/
 import { AssetsListView } from '@/entities/asset';
 import { assetsSettingsModel } from '../model/assets-settings-modal';
 
+import { TEST_IDS } from 'tests/testIds';
+
 export const AssetsSettings = () => {
   const { t } = useI18n();
 
@@ -30,6 +32,7 @@ export const AssetsSettings = () => {
       position="top-full right-0"
       buttonClassName="rounded-full"
       offsetPx={0}
+      testId={TEST_IDS.ASSETS.SETTINGS_WIDGET}
       content={
         <>
           <Switch
