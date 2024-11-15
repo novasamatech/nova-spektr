@@ -13,6 +13,7 @@ const deleteSignatory = createEvent<number>();
 const getSignatoriesBalance = createEvent<Wallet[]>();
 
 const $signatories = createStore<Omit<SignatoryInfo, 'index'>[]>([{ name: '', address: '', walletId: '' }]);
+
 const $hasDuplicateSignatories = combine($signatories, (signatories) => {
   const existingKeys: Set<Address> = new Set();
 

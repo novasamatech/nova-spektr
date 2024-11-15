@@ -15,9 +15,8 @@ const $api = combine(
     store: $confirmStore,
   },
   ({ apis, store }) => {
-    return store?.chain ? apis[store.chain.chainId] : undefined;
+    return store ? apis[store.chainId] : null;
   },
-  { skipVoid: false },
 );
 
 const $signerWallet = combine(
