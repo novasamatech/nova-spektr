@@ -29,7 +29,7 @@ export const MultisigWallet = ({ isOpen, onComplete }: Props) => {
 
   const [isModalOpen, closeModal] = useModalClose(isOpen, flowModel.output.flowFinished);
   const {
-    fields: { chain },
+    fields: { chainId },
   } = useForm(formModel.$createMultisigForm);
   const activeStep = useUnit(flowModel.$step);
 
@@ -54,7 +54,7 @@ export const MultisigWallet = ({ isOpen, onComplete }: Props) => {
           <>
             <span className="mx-1">{t('createMultisigAccount.titleOn')}</span>
             <ChainTitle
-              chainId={chain.value.chainId}
+              chainId={chainId.value}
               className="gap-x-1.5"
               fontClass="font-manrope text-header-title text-text-primary truncate"
             />
