@@ -112,7 +112,6 @@ export const Signatory = ({
           });
 
         return acc.concat(accounts);
-
       }, [] as ComboboxOption[]);
 
       if (accountOptions.length === 0) {
