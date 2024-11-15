@@ -34,11 +34,8 @@ $contacts
   .on(populateContactsFx.doneData, (_, contacts) => {
     return contacts;
   })
-  .on(createContactFx.doneData, (state, contact) => {
+  .on([createContactFx.doneData, createContactsFx.doneData], (state, contact) => {
     return contact ? state.concat(contact) : state;
-  })
-  .on(createContactsFx.doneData, (state, contacts) => {
-    return contacts ? state.concat(contacts) : state;
   })
   .on(deleteContactFx.doneData, (state, contactId) => {
     return state.filter((s) => s.id !== contactId);
