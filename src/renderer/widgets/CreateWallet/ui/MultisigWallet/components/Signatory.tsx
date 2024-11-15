@@ -14,7 +14,6 @@ import {
 import { CaptionText, Combobox, IconButton, Identicon, Input } from '@/shared/ui';
 import { type ComboboxOption } from '@/shared/ui/types';
 import { Address } from '@/shared/ui-entities';
-import { Box } from '@/shared/ui-kit';
 import { contactModel } from '@/entities/contact';
 import { networkUtils } from '@/entities/network';
 import { WalletIcon, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -23,8 +22,6 @@ import { walletSelectUtils } from '@/features/wallets/WalletSelect/lib/wallet-se
 import { GroupLabels } from '@/features/wallets/WalletSelect/ui/WalletGroup';
 import { formModel } from '@/widgets/CreateWallet/model/form-model';
 import { signatoryModel } from '../../../model/signatory-model';
-
-import { AccountBalance } from './AccountBalance';
 
 interface Props {
   signatoryName: string;
@@ -109,12 +106,7 @@ export const Signatory = ({
 
               return {
                 value: address,
-                element: (
-                  <Box direction="row" verticalAlign="center" horizontalAlign="space-between" fitContainer>
-                    <Address showIcon title={account.name} address={address} />
-                    <AccountBalance accountId={account.accountId} chain={chain.value} />
-                  </Box>
-                ),
+                element: <Address showIcon title={account.name} address={address} />,
                 id: account.walletId.toString(),
               };
             }),
