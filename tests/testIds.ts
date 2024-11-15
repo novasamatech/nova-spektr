@@ -27,4 +27,10 @@ export const TEST_IDS = {
     CONTINUE_BUTTON: 'main-continue-button',
     INFO_BUTTON: 'main-info-button',
   },
+  TRANSFER: {
+    CONFIRM: {
+      NETWORK_FEE: 'transfer-confirm-network-fee',
+    },
+    ESTIMATE_FEE: 'transfer-estimate-fee',
+  },
 } as const;

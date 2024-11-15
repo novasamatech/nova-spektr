@@ -1,4 +1,4 @@
-import { expect, test } from '../../utils/baseFixture';
+import { expect, test } from '../../utils/baseRegularFixture';
 
 test.describe('Polkadot Vault onboarding', { tag: '@regress' }, () => {
   test('Show access denied if no permissions', async ({ loginPage, page }) => {

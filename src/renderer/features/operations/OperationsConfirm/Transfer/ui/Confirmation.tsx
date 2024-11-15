@@ -12,6 +12,8 @@ import { AddressWithExplorers, accountUtils, walletModel } from '@/entities/wall
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 
+import { TEST_IDS } from 'tests/testIds';
+
 type Props = {
   id?: number;
   secondaryActionButton?: ReactNode;
@@ -123,6 +125,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         <DetailRow
           label={<FootnoteText className="text-text-tertiary">{t('operation.networkFee')}</FootnoteText>}
           className="text-text-primary"
+          testId={TEST_IDS.TRANSFER.CONFIRM.NETWORK_FEE}
         >
           <div className="flex flex-col items-end gap-y-0.5">
             <AssetBalance value={confirmStore.fee} asset={confirmStore.chain.assets[0]} />

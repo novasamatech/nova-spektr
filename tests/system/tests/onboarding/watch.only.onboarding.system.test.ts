@@ -1,5 +1,5 @@
 import { baseTestConfig } from '../../BaseTestConfig';
-import { expect, test } from '../../utils/baseFixture';
+import { expect, test } from '../../utils/baseRegularFixture';
 
 test.describe(
   'Watch only wallet onboarding',

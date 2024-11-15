@@ -5,6 +5,8 @@ import { cnTw } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText } from '@/shared/ui';
 import { Fee } from '../Fee/Fee';
 
+import { TEST_IDS } from 'tests/testIds';
+
 type Props = ComponentProps<typeof Fee> & {
   label?: string;
   wrapperClassName?: string;
@@ -17,6 +19,7 @@ export const FeeWithLabel = ({ label, wrapperClassName, ...feeProps }: Props) =>
     <DetailRow
       label={<FootnoteText className="text-text-tertiary">{label || t('operation.networkFee')}</FootnoteText>}
       className={cnTw('text-text-primary', wrapperClassName)}
+      testId={TEST_IDS.TRANSFER.ESTIMATE_FEE}
     >
       <Fee {...feeProps} />
     </DetailRow>
