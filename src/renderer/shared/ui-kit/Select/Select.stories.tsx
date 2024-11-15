@@ -9,9 +9,6 @@ import { Select } from './Select';
 const meta: Meta<typeof Select> = {
   title: 'Design System/kit/Select',
   component: Select,
-  parameters: {
-    layout: 'centered',
-  },
   render: (params) => {
     const [value, onChange] = useState('');
 
@@ -21,7 +18,7 @@ const meta: Meta<typeof Select> = {
           <Select.Item value="item_1">Apple</Select.Item>
           <Select.Item value="item_2">Orange</Select.Item>
           <Select.Item value="item_3">Watermelon</Select.Item>
-          <Select.Item value="item_4">Banana</Select.Item>
+          <Select.Item value="item_4">Banana-nana-nana-nana-nana-nana</Select.Item>
         </Select>
       </Box>
     );
@@ -34,7 +31,7 @@ type Story = StoryObj<typeof Select>;
 
 export const Default: Story = {};
 
-export const LongText: Story = {
+export const RichContent: Story = {
   render: (args) => {
     const [value, onChange] = useState('item_4');
 

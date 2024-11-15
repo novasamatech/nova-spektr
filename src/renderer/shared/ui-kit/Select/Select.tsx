@@ -139,7 +139,7 @@ const Item = ({ value, children }: PropsWithChildren<ItemProps>) => {
       )}
     >
       <RadixSelect.ItemText asChild>
-        <div className="h-full w-full overflow-hidden whitespace-nowrap">{children}</div>
+        <div className="h-full w-full truncate">{children}</div>
       </RadixSelect.ItemText>
     </RadixSelect.Item>
   );
