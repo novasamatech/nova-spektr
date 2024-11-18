@@ -46,7 +46,7 @@ export const Welcome = () => {
             title={t('onboarding.welcome.polkadotVaultTitle')}
             description={t('onboarding.welcome.polkadotVaultDescription')}
             iconName="vaultOnboarding"
-            buttonTestId={TEST_IDS.ONBOARDING.VAULT_BUTTON}
+            testId={TEST_IDS.ONBOARDING.VAULT_BUTTON}
             onClick={() => walletPairingModel.events.walletTypeSet(WalletType.POLKADOT_VAULT)}
           />
 
@@ -54,7 +54,7 @@ export const Welcome = () => {
             title={t('onboarding.welcome.novaWalletTitle')}
             description={t('onboarding.welcome.novaWalletDescription')}
             iconName="novaWalletOnboarding"
-            buttonTestId={TEST_IDS.ONBOARDING.NOVA_WALLET_BUTTON}
+            testId={TEST_IDS.ONBOARDING.NOVA_WALLET_BUTTON}
             onClick={() => walletPairingModel.events.walletTypeSet(WalletType.NOVA_WALLET)}
           />
 
@@ -62,7 +62,7 @@ export const Welcome = () => {
             title={t('onboarding.welcome.walletConnectTitle')}
             description={t('onboarding.welcome.walletConnectDescription')}
             iconName="walletConnectOnboarding"
-            buttonTestId={TEST_IDS.ONBOARDING.WALLET_CONNECT_BUTTON}
+            testId={TEST_IDS.ONBOARDING.WALLET_CONNECT_BUTTON}
             onClick={() => walletPairingModel.events.walletTypeSet(WalletType.WALLET_CONNECT)}
           />
 
@@ -70,7 +70,7 @@ export const Welcome = () => {
             title={t('onboarding.welcome.watchOnlyTitle')}
             description={t('onboarding.welcome.watchOnlyDescription')}
             iconName="watchOnlyOnboarding"
-            buttonTestId={TEST_IDS.ONBOARDING.WATCH_ONLY_BUTTON}
+            testId={TEST_IDS.ONBOARDING.WATCH_ONLY_BUTTON}
             onClick={() => walletPairingModel.events.walletTypeSet(WalletType.WATCH_ONLY)}
           />
           <WelcomeCard
@@ -78,7 +78,7 @@ export const Welcome = () => {
             description={t('onboarding.welcome.ledgerDescription')}
             iconName="ledgerOnboarding"
             disabled
-            buttonTestId={TEST_IDS.ONBOARDING.LEDGER_BUTTON}
+            testId={TEST_IDS.ONBOARDING.LEDGER_BUTTON}
           />
         </div>
 
