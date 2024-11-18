@@ -102,8 +102,8 @@ const Content = ({ children }: PropsWithChildren) => {
           elevation={1}
           className={cnTw(
             'z-50 flex flex-col',
-            'h-max max-h-[--radix-popper-available-height] max-w-60',
-            'min-w-20 overflow-hidden duration-100 animate-in fade-in zoom-in-95',
+            'h-max max-h-[--radix-popper-available-height] min-w-20',
+            'overflow-hidden duration-100 animate-in fade-in zoom-in-95',
             {
               'border-border-dark bg-background-dark': theme === 'dark',
             },

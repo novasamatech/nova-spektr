@@ -3,14 +3,16 @@ import { useUnit } from 'effector-react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { nonNullable } from '@/shared/lib/utils';
 import { Button, FootnoteText, Input, InputHint, SmallTitleText } from '@/shared/ui';
 import { Box, Field, Select } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel, networkUtils } from '@/entities/network';
-import { MultisigCreationFees } from '@/widgets/CreateWallet/ui/MultisigWallet/components/';
 import { Step } from '../../lib/types';
 import { flowModel } from '../../model/flow-model';
 import { formModel } from '../../model/form-model';
+
+import { MultisigCreationFees } from './components';
 
 interface Props {
   onGoBack: () => void;
@@ -78,7 +80,7 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
             {t('createMultisigAccount.backButton')}
           </Button>
           <div className="mt-auto flex items-center justify-end">
-            {asset ? (
+            {nonNullable(asset) ? (
               <MultisigCreationFees api={api} asset={asset} threshold={threshold.value} transaction={fakeTx} />
             ) : null}
 
