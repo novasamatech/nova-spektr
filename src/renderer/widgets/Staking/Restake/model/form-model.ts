@@ -24,6 +24,7 @@ import {
   toAddress,
   transferableAmount,
   unlockingAmount,
+  withdrawableAmount,
 } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -321,7 +322,7 @@ const $signatories = combine(
       const balancedSignatories = (wrapper as MultisigTxWrapper).signatories.map((signatory) => {
         const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId.toString());
 
-        return { signer: signatory, balance: transferableAmount(balance) };
+        return { signer: signatory, balance: withdrawableAmount(balance) };
       });
 
       acc.push(balancedSignatories);
