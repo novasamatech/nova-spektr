@@ -47,7 +47,7 @@ const Root = ({
     <Context.Provider value={ctx}>
       <RadixSelect.Root open={open} disabled={disabled} value={value} onOpenChange={onToggle} onValueChange={onChange}>
         <Button placeholder={placeholder} />
-        {children}
+        <Content>{children}</Content>
       </RadixSelect.Root>
     </Context.Provider>
   );
@@ -63,7 +63,7 @@ const Button = ({ placeholder }: TriggerProps) => {
   return (
     <RadixSelect.Trigger
       className={cnTw(
-        'w-full px-[11px] py-[7px]',
+        'relative flex w-full items-center py-[7px] pl-[11px] pr-6',
         'rounded border text-footnote outline-offset-1',
         'enabled:hover:shadow-card-shadow',
         'data-[state=open]:border-active-container-border',
@@ -75,10 +75,10 @@ const Button = ({ placeholder }: TriggerProps) => {
         },
       )}
     >
-      <div className="flex items-center justify-between">
+      <div className="overflow-hidden">
         <RadixSelect.Value placeholder={placeholder} />
-        <Icon name="down" size={16} className="shrink-0" />
       </div>
+      <Icon name="down" size={16} className="absolute right-1.5 top-1/2 shrink-0 -translate-y-1/2" />
     </RadixSelect.Trigger>
   );
 };
@@ -102,8 +102,8 @@ const Content = ({ children }: PropsWithChildren) => {
           elevation={1}
           className={cnTw(
             'z-50 flex flex-col',
-            'h-max max-h-[--radix-popper-available-height] max-w-60',
-            'min-w-20 overflow-hidden duration-100 animate-in fade-in zoom-in-95',
+            'h-max max-h-[--radix-popper-available-height] min-w-20',
+            'overflow-hidden duration-100 animate-in fade-in zoom-in-95',
             {
               'border-border-dark bg-background-dark': theme === 'dark',
             },
@@ -131,7 +131,7 @@ const Item = ({ value, children }: PropsWithChildren<ItemProps>) => {
     <RadixSelect.Item
       value={value}
       className={cnTw(
-        'flex cursor-pointer rounded p-2 text-footnote text-text-secondary',
+        'flex w-full cursor-pointer rounded p-2 text-footnote text-text-secondary',
         'focus:bg-action-background-hover focus:outline-none data-[highlighted]:bg-action-background-hover',
         {
           'focus:bg-block-background-hover data-[highlighted]:bg-background-item-hover': theme === 'dark',
@@ -139,13 +139,12 @@ const Item = ({ value, children }: PropsWithChildren<ItemProps>) => {
       )}
     >
       <RadixSelect.ItemText asChild>
-        <div className="h-full w-full">{children}</div>
+        <div className="h-full w-full truncate">{children}</div>
       </RadixSelect.ItemText>
     </RadixSelect.Item>
   );
 };
 
 export const Select = Object.assign(Root, {
-  Content,
   Item,
 });

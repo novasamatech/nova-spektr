@@ -66,6 +66,7 @@ function isNovaWallet(wallet?: Wallet): wallet is NovaWalletWallet {
 function isWalletConnect(wallet?: Wallet): wallet is WalletConnectWallet {
   return wallet?.type === WalletType.WALLET_CONNECT;
 }
+
 function isProxied(wallet?: Wallet): wallet is ProxiedWallet {
   return wallet?.type === WalletType.PROXIED;
 }
@@ -87,6 +88,7 @@ const VALID_SIGNATORY_WALLET_TYPES = [
   WalletType.WALLET_CONNECT,
   WalletType.NOVA_WALLET,
 ];
+
 function isValidSignatory(wallet?: Wallet): boolean {
   if (!wallet) return false;
 
@@ -133,8 +135,8 @@ function getAccountBy(wallets: Wallet[], accountFn: (account: Account, wallet: W
  *   object and its parent Wallet object and returns a boolean indicating
  *   whether it should be included in the result. Defaults to undefined.
  *
- * @returns {Wallet | undefined} - The matching Wallet object, or undefined if
- *   no matching Wallet is found.
+ * @returns {Wallet | null} - The matching Wallet object, or undefined if no
+ *   matching Wallet is found.
  */
 function getWalletFilteredAccounts(
   wallets: Wallet[],
@@ -164,8 +166,8 @@ function getWalletsFilteredAccounts(
     walletFn?: (wallet: Wallet) => boolean;
     accountFn?: (account: Account, wallet: Wallet) => boolean;
   },
-): Wallet[] | undefined {
-  if (!predicates.walletFn && !predicates.accountFn) return undefined;
+): Wallet[] | null {
+  if (!predicates.walletFn && !predicates.accountFn) return null;
 
   const result = wallets.reduce<Wallet[]>((acc, wallet) => {
     if (!predicates.walletFn || predicates.walletFn(wallet)) {
@@ -181,5 +183,5 @@ function getWalletsFilteredAccounts(
     return acc;
   }, []);
 
-  return result.length > 0 ? result : undefined;
+  return result.length > 0 ? result : null;
 }

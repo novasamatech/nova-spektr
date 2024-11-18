@@ -20,7 +20,7 @@ export const SelectSignatories = () => {
       <div className="flex flex-col gap-2">
         {signatories.map((value, index) => (
           <Signatory
-            key={index}
+            key={`${value.name}-${value.address}`}
             signatoryIndex={index}
             isOwnAccount={index === 0}
             signatoryName={value.name}

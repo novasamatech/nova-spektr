@@ -1,55 +1,48 @@
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
-import { type FormEvent, useMemo, useState } from 'react';
+import { type FormEvent, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { Alert, Button, InputHint, Select, SmallTitleText } from '@/shared/ui';
-import { type DropdownOption } from '@/shared/ui/types';
+import { nonNullable } from '@/shared/lib/utils';
+import { Alert, Button, InputHint, SmallTitleText } from '@/shared/ui';
+import { Box, Select } from '@/shared/ui-kit';
 import { walletModel } from '@/entities/wallet';
-import { MultisigCreationFees } from '@/widgets/CreateWallet/ui/MultisigWallet/components';
 import { Step } from '../../lib/types';
 import { flowModel } from '../../model/flow-model';
 import { formModel } from '../../model/form-model';
 import { signatoryModel } from '../../model/signatory-model';
 
-import { SelectSignatories } from './components/SelectSignatories';
+import { MultisigCreationFees, SelectSignatories } from './components';
 
 const MIN_THRESHOLD = 2;
-const getThresholdOptions = (optionsAmount: number): DropdownOption<number>[] => {
-  if (optionsAmount === 0) return [];
-
-  return Array.from({ length: optionsAmount }, (_, index) => {
-    const value = index + 2;
-
-    return {
-      id: value.toString(),
-      element: value,
-      value,
-    };
-  });
-};
 
 export const SelectSignatoriesThreshold = () => {
   const { t } = useI18n();
 
-  const [hasClickedNext, setHasClickedNext] = useState(false);
-  const signatories = useUnit(signatoryModel.$signatories);
-  const fakeTx = useUnit(flowModel.$fakeTx);
   const {
-    fields: { threshold, chain },
+    fields: { threshold },
     submit,
   } = useForm(formModel.$createMultisigForm);
+
+  const chain = useUnit(formModel.$chain);
   const multisigAlreadyExists = useUnit(formModel.$multisigAlreadyExists);
   const hiddenMultisig = useUnit(formModel.$hiddenMultisig);
+  const fakeTx = useUnit(flowModel.$fakeTx);
+
+  const api = useUnit(flowModel.$api);
+  const signatories = useUnit(signatoryModel.$signatories);
   const ownedSignatoriesWallets = useUnit(signatoryModel.$ownedSignatoriesWallets);
   const hasDuplicateSignatories = useUnit(signatoryModel.$hasDuplicateSignatories);
   const hasEmptySignatories = useUnit(signatoryModel.$hasEmptySignatories);
 
-  const thresholdOptions = useMemo(() => getThresholdOptions(signatories.length - 1), [signatories.length]);
+  const [hasClickedNext, setHasClickedNext] = useState(false);
 
   const hasOwnedSignatory = !!ownedSignatoriesWallets && ownedSignatoriesWallets?.length > 0;
   const hasEnoughSignatories = signatories.length >= MIN_THRESHOLD;
   const isThresholdValid = threshold.value >= MIN_THRESHOLD && threshold.value <= signatories.length;
+
+  const asset = chain?.assets.at(0);
+
   const canSubmit =
     hasOwnedSignatory &&
     hasEnoughSignatories &&
@@ -57,8 +50,6 @@ export const SelectSignatoriesThreshold = () => {
     !hasEmptySignatories &&
     isThresholdValid &&
     !hasDuplicateSignatories;
-
-  const api = useUnit(flowModel.$api);
 
   const onSubmit = (event: FormEvent) => {
     if (!hasClickedNext) {
@@ -72,11 +63,11 @@ export const SelectSignatoriesThreshold = () => {
       flowModel.events.stepChanged(Step.SIGNER_SELECTION);
 
       return;
-    } else {
-      flowModel.events.signerSelected(ownedSignatoriesWallets[0].accounts[0]);
-      event.preventDefault();
-      submit();
     }
+
+    flowModel.events.signerSelected(ownedSignatoriesWallets[0].accounts[0]);
+    event.preventDefault();
+    submit();
   };
 
   return (
@@ -113,17 +104,21 @@ export const SelectSignatoriesThreshold = () => {
           </Alert>
         </div>
         <div className="flex items-center gap-x-4">
-          <Select
-            placeholder={t('createMultisigAccount.thresholdPlaceholder')}
-            label={t('createMultisigAccount.thresholdName')}
-            className="w-[300px]"
-            selectedId={threshold.value.toString()}
-            options={thresholdOptions}
-            invalid={threshold.hasError()}
-            disabled={thresholdOptions.length === 0}
-            position={thresholdOptions.length > 2 ? 'up' : 'down'}
-            onChange={({ value }) => threshold.onChange(value)}
-          />
+          <Box width="300px">
+            <Select
+              placeholder={t('createMultisigAccount.thresholdPlaceholder')}
+              value={(threshold.value || '').toString()}
+              invalid={threshold.hasError()}
+              disabled={[0, 1].includes(signatories.length)}
+              onChange={(value) => threshold.onChange(Number(value))}
+            >
+              {Array.from({ length: signatories.length - 1 }, (_, index) => (
+                <Select.Item key={index} value={(index + 2).toString()}>
+                  {index + 2}
+                </Select.Item>
+              ))}
+            </Select>
+          </Box>
           <InputHint className="flex-1 pt-5" active>
             {t('createMultisigAccount.thresholdHint')}
           </InputHint>
@@ -180,12 +175,9 @@ export const SelectSignatoriesThreshold = () => {
             {t('createMultisigAccount.backButton')}
           </Button>
           <div className="mt-auto flex items-center justify-end">
-            <MultisigCreationFees
-              api={api}
-              asset={chain.value.assets[0]}
-              threshold={threshold.value}
-              transaction={fakeTx}
-            />
+            {nonNullable(asset) ? (
+              <MultisigCreationFees api={api} asset={asset} threshold={threshold.value} transaction={fakeTx} />
+            ) : null}
             <Button key="create" type="submit" disabled={hasClickedNext && !canSubmit} onClick={onSubmit}>
               {t('createMultisigAccount.continueButton')}
             </Button>

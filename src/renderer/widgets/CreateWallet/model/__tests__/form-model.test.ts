@@ -77,7 +77,7 @@ describe('widgets/CreateWallet/model/form-model', () => {
     });
 
     await allSettled(formModel.$createMultisigForm.fields.threshold.onChange, { scope, params: 2 });
-    await allSettled(formModel.$createMultisigForm.fields.chain.onChange, { scope, params: testChain });
+    await allSettled(formModel.$createMultisigForm.fields.chainId.onChange, { scope, params: testChain.chainId });
 
     expect(scope.getState(formModel.$multisigAccountId)).toEqual(multisigWallet.accounts[0].accountId);
   });
@@ -91,7 +91,7 @@ describe('widgets/CreateWallet/model/form-model', () => {
         .set(walletModel._test.$allWallets, [initiatorWallet, signerWallet, wrongChainWallet]),
     });
 
-    await allSettled(formModel.$createMultisigForm.fields.chain.onChange, { scope, params: testChain });
+    await allSettled(formModel.$createMultisigForm.fields.chainId.onChange, { scope, params: testChain.chainId });
 
     expect(scope.getState(formModel.$availableAccounts)).toEqual([
       ...initiatorWallet.accounts,
@@ -109,7 +109,7 @@ describe('widgets/CreateWallet/model/form-model', () => {
         .set(signatoryModel.$signatories, []),
     });
 
-    await allSettled(formModel.$createMultisigForm.fields.chain.onChange, { scope, params: testChain });
+    await allSettled(formModel.$createMultisigForm.fields.chainId.onChange, { scope, params: testChain.chainId });
     await allSettled(signatoryModel.events.changeSignatory, {
       scope,
       params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0].accountId), walletId: '1' },
