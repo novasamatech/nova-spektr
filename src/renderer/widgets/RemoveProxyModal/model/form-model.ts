@@ -15,7 +15,14 @@ import {
   type Transaction,
   TransactionType,
 } from '@/shared/core';
-import { TEST_ACCOUNTS, getProxyTypes, isStringsMatchQuery, toAddress, transferableAmount } from '@/shared/lib/utils';
+import {
+  TEST_ACCOUNTS,
+  getProxyTypes,
+  isStringsMatchQuery,
+  toAddress,
+  transferableAmount,
+  withdrawableAmountBN,
+} from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -96,9 +103,7 @@ const $proxyForm = createForm<FormParams>({
               chain.assets[0].assetId.toString(),
             );
 
-            return new BN(params.multisigDeposit)
-              .add(new BN(params.fee))
-              .lte(new BN(transferableAmount(signatoryBalance)));
+            return new BN(params.multisigDeposit).add(new BN(params.fee)).lte(withdrawableAmountBN(signatoryBalance));
           },
         },
       ],

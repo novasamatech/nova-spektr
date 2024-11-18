@@ -1,6 +1,6 @@
 import { allSettled, fork } from 'effector';
 
-import { type Account, type Chain, ConnectionStatus } from '@/shared/core';
+import { type Account, type ChainId, ConnectionStatus } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
@@ -60,14 +60,14 @@ describe('widgets/CreateWallet/model/form-model', () => {
     await allSettled(flowModel.events.signerSelected, { scope, params: signerWallet.accounts[0] });
 
     expect(scope.getState(flowModel.$step)).toEqual(Step.NAME_NETWORK);
-    await allSettled(formModel.$createMultisigForm.fields.chain.onChange, { scope, params: testChain });
+    await allSettled(formModel.$createMultisigForm.fields.chainId.onChange, { scope, params: testChain.chainId });
     await allSettled(formModel.$createMultisigForm.fields.name.onChange, { scope, params: 'some name' });
     await allSettled(formModel.$createMultisigForm.fields.threshold.onChange, { scope, params: 2 });
 
     await allSettled(formModel.$createMultisigForm.submit, { scope });
 
     const store = {
-      chain: { chainId: '0x00' } as unknown as Chain,
+      chainId: '0x00' as ChainId,
       account: { walletId: signerWallet.id } as unknown as Account,
       signer: { walletId: signerWallet.id } as unknown as Account,
       threshold: 2,

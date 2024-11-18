@@ -1,26 +1,18 @@
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 
-import { type Chain } from '@/shared/core';
+import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Button, FootnoteText, Input, InputHint, Select, SmallTitleText } from '@/shared/ui';
-import { type DropdownOption } from '@/shared/ui/types';
+import { nonNullable } from '@/shared/lib/utils';
+import { Button, FootnoteText, Input, InputHint, SmallTitleText } from '@/shared/ui';
+import { Box, Field, Select } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel, networkUtils } from '@/entities/network';
-import { MultisigCreationFees } from '@/widgets/CreateWallet/ui/MultisigWallet/components/';
 import { Step } from '../../lib/types';
 import { flowModel } from '../../model/flow-model';
 import { formModel } from '../../model/form-model';
 
-const getChainOptions = (chains: Chain[]): DropdownOption<Chain>[] => {
-  return chains
-    .filter((c) => networkUtils.isMultisigSupported(c.options))
-    .map((chain) => ({
-      id: chain.chainId.toString(),
-      value: chain,
-      element: <ChainTitle chain={chain} fontClass="text-text-primary" />,
-    }));
-};
+import { MultisigCreationFees } from './components';
 
 interface Props {
   onGoBack: () => void;
@@ -32,13 +24,14 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
   const api = useUnit(flowModel.$api);
   const fakeTx = useUnit(flowModel.$fakeTx);
   const chains = useUnit(networkModel.$chains);
+  const chain = useUnit(formModel.$chain);
 
   const {
-    fields: { name, chain, threshold },
+    fields: { name, chainId, threshold },
   } = useForm(formModel.$createMultisigForm);
 
-  const chainOptions = getChainOptions(Object.values(chains));
   const isNameError = name.isTouched && !name.value;
+  const asset = chain?.assets.at(0);
 
   return (
     <section className="flex h-full flex-1 flex-col">
@@ -61,14 +54,23 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
           </InputHint>
         </div>
         <div className="flex items-end gap-x-4">
-          <Select
-            placeholder={t('createMultisigAccount.chainPlaceholder')}
-            label={t('createMultisigAccount.chainName')}
-            className="w-[386px]"
-            selectedId={chain.value.chainId.toString()}
-            options={chainOptions}
-            onChange={({ value }) => chain.onChange(value)}
-          />
+          <Box width="386px">
+            <Field text={t('createMultisigAccount.chainName')}>
+              <Select
+                placeholder={t('createMultisigAccount.chainPlaceholder')}
+                value={chainId.value}
+                onChange={(value) => chainId.onChange(value as ChainId)}
+              >
+                {Object.values(chains)
+                  .filter((c) => networkUtils.isMultisigSupported(c.options))
+                  .map((chain) => (
+                    <Select.Item key={chain.chainId} value={chain.chainId}>
+                      <ChainTitle className="overflow-hidden" chain={chain} fontClass="text-text-primary truncate" />
+                    </Select.Item>
+                  ))}
+              </Select>
+            </Field>
+          </Box>
           <FootnoteText className="mt-2 text-text-tertiary">
             {t('createMultisigAccount.networkDescription')}
           </FootnoteText>
@@ -78,12 +80,10 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
             {t('createMultisigAccount.backButton')}
           </Button>
           <div className="mt-auto flex items-center justify-end">
-            <MultisigCreationFees
-              api={api}
-              asset={chain.value.assets[0]}
-              threshold={threshold.value}
-              transaction={fakeTx}
-            />
+            {nonNullable(asset) ? (
+              <MultisigCreationFees api={api} asset={asset} threshold={threshold.value} transaction={fakeTx} />
+            ) : null}
+
             <Button
               key="create"
               disabled={isNameError || !name.isTouched}

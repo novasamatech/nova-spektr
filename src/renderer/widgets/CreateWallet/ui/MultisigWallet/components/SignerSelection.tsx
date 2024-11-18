@@ -14,11 +14,11 @@ import { Signer } from './Signer';
 
 export const SignerSelection = () => {
   const { t } = useI18n();
+
+  const chain = useUnit(formModel.$chain);
   const ownedSignatoriesWallets = useUnit(signatoryModel.$ownedSignatoriesWallets) || [];
-  const {
-    fields: { chain },
-    submit,
-  } = useForm(formModel.$createMultisigForm);
+
+  const { submit } = useForm(formModel.$createMultisigForm);
 
   const onSubmit = (event: FormEvent, account: Account) => {
     flowModel.events.signerSelected(account);
@@ -30,13 +30,14 @@ export const SignerSelection = () => {
     <section className="max-h-[660px] w-full overflow-x-hidden px-5 pb-4">
       <ul className="my-4 flex flex-col [overflow-y:overlay]">
         {ownedSignatoriesWallets.map(({ accounts, type, name }) => {
+          if (!chain) return null;
+
           const account =
             accounts[0].type === AccountType.BASE
               ? accounts[0]
-              : accounts.find((account) => (account as ChainAccount).chainId === chain.value.chainId);
-          if (!account) {
-            return null;
-          }
+              : accounts.find((account) => (account as ChainAccount).chainId === chain.chainId);
+
+          if (!account) return null;
 
           return (
             <Signer
@@ -44,7 +45,7 @@ export const SignerSelection = () => {
               account={account}
               walletName={name}
               walletType={type}
-              chain={chain.value}
+              chain={chain}
               onSubmit={onSubmit}
             />
           );
