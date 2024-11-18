@@ -80,6 +80,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
     const isEthereum = isEthereumAccountId(accountId);
 
     walletModel.events.watchOnlyCreated({
+      external: false,
       wallet: {
         name: walletName,
         type: WalletType.WATCH_ONLY,

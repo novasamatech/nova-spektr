@@ -322,6 +322,7 @@ sample({
       return {
         wallet,
         accounts: account ? [account] : [],
+        external: false,
       };
     });
 

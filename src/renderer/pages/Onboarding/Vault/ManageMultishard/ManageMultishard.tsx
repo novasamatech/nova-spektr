@@ -186,6 +186,7 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
         signingType: SigningType.PARITY_SIGNER,
       },
       accounts: accountsToSave,
+      external: false,
     });
 
     onComplete();

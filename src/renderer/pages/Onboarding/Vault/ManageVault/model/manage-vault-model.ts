@@ -128,6 +128,7 @@ sample({
     return {
       wallet,
       accounts: [root, ...accounts],
+      external: false,
     };
   },
   target: walletModel.events.multishardCreated,
