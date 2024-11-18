@@ -25,7 +25,7 @@ import {
   nonNullable,
   toAccountId,
   toAddress,
-  transferableAmount,
+  withdrawableAmountBN,
 } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
@@ -176,7 +176,7 @@ const $isEnoughBalance = combine(
       chain.assets[0].assetId.toString(),
     );
 
-    return new BN(fee).add(new BN(multisigDeposit)).lte(new BN(transferableAmount(balance)));
+    return new BN(fee).add(new BN(multisigDeposit)).lte(withdrawableAmountBN(balance));
   },
 );
 

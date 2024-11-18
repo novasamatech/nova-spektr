@@ -2,7 +2,7 @@ import { BN_ZERO } from '@polkadot/util';
 import { type FormEvent } from 'react';
 
 import { type Account, type Chain, type WalletType } from '@/shared/core';
-import { toAddress, transferableAmount } from '@/shared/lib/utils';
+import { toAddress, withdrawableAmount } from '@/shared/lib/utils';
 import { BodyText, Icon } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { useBalance } from '@/entities/balance';
@@ -37,7 +37,7 @@ export const Signer = ({ account, walletName, walletType, onSubmit, chain }: Pro
       </div>
       {chain.assets[0] && (
         <AssetBalance
-          value={transferableAmount(balance) || BN_ZERO}
+          value={withdrawableAmount(balance) || BN_ZERO}
           asset={chain.assets[0]}
           className="ml-auto mr-6 text-body text-inherit"
         />

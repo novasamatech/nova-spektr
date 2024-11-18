@@ -2,7 +2,7 @@ import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
 
 import { type AccountId, type Chain } from '@/shared/core';
-import { transferableAmount } from '@/shared/lib/utils';
+import { withdrawableAmountBN } from '@/shared/lib/utils';
 import { balanceUtils } from '@/entities/balance';
 import { type SignatoryStore } from '../types/types';
 
@@ -22,7 +22,7 @@ export const RemovePureProxiedRules = {
           form.chain.assets[0].assetId.toString(),
         );
 
-        return new BN(params.multisigDeposit).add(new BN(params.fee)).lte(new BN(transferableAmount(balance)));
+        return new BN(params.multisigDeposit).add(new BN(params.fee)).lte(withdrawableAmountBN(balance));
       },
     }),
   },
@@ -45,7 +45,7 @@ export const RemovePureProxiedRules = {
           form.chain.assets[0].assetId.toString(),
         );
 
-        return new BN(params.multisigDeposit).add(new BN(params.fee)).lte(new BN(transferableAmount(signatoryBalance)));
+        return new BN(params.multisigDeposit).add(new BN(params.fee)).lte(withdrawableAmountBN(signatoryBalance));
       },
     }),
   },
