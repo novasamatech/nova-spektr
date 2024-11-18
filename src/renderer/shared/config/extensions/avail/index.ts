@@ -9,8 +9,6 @@ export const AVAIL_PROVIDER = {
 };
 
 export const AVAIL_TXWRAPPER = {
-  additionalTypes: {
-    AppId: types['AppId'],
-  },
+  additionalTypes: types,
   userExtensions: signedExtensions,
 };
