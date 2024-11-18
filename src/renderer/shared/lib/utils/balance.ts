@@ -216,6 +216,18 @@ export const transferableAmount = <T extends AssetBalance>(balance?: T): string 
   return transferableAmountBN(balance).toString();
 };
 
+export const withdrawableAmountBN = <T extends AssetBalance>(balance?: T): BN => {
+  if (!balance?.free || !balance?.frozen || !balance?.reserved) return BN_ZERO;
+
+  const { free, frozen } = balance;
+
+  return free.gt(frozen) ? free.sub(frozen) : BN_ZERO;
+};
+
+export const withdrawableAmount = <T extends AssetBalance>(balance?: T): string => {
+  return withdrawableAmountBN(balance).toString();
+};
+
 export const stakedAmount = (balance: Balance): string => {
   if (!balance.locked) return ZERO_BALANCE;
 
