@@ -1,6 +1,5 @@
 import { type PropsWithChildren, memo } from 'react';
 
-import { TEST_IDS } from '@/shared/constants';
 import { type AccountId, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { copyToClipboard, getAccountExplorer, toAddress } from '@/shared/lib/utils';
@@ -11,9 +10,10 @@ import { Hash } from '../Hash/Hash';
 type Props = PropsWithChildren<{
   accountId: AccountId;
   chain: Chain;
+  testId?: string;
 }>;
 
-export const AccountExplorers = memo(({ accountId, chain, children }: Props) => {
+export const AccountExplorers = memo(({ accountId, chain, children, testId }: Props) => {
   const { t } = useI18n();
   const { explorers } = chain;
   const address = toAddress(accountId, { prefix: chain.addressPrefix });
@@ -21,12 +21,7 @@ export const AccountExplorers = memo(({ accountId, chain, children }: Props) => 
   return (
     <Popover align="end" dialog testId="AccountExplorers">
       <Popover.Trigger>
-        <IconButton
-          name="details"
-          className="text-icon-default"
-          testId={TEST_IDS.MAIN.INFO_BUTTON}
-          onClick={(e) => e.stopPropagation()}
-        />
+        <IconButton name="details" className="text-icon-default" testId={testId} onClick={(e) => e.stopPropagation()} />
       </Popover.Trigger>
       <Popover.Content>
         <Box gap={2} padding={4} width="230px">
