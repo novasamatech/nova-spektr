@@ -4,7 +4,6 @@ import { GraphQLClient } from 'graphql-request';
 import keyBy from 'lodash/keyBy';
 import { once, spread } from 'patronum';
 
-import { storageService } from '@/shared/api/storage';
 import {
   type Account,
   type AccountId,
@@ -154,66 +153,31 @@ type ProxiedWalletsParams = {
   proxiedAccounts: PartialProxiedAccount[];
   chains: Record<ChainId, Chain>;
 };
-type ProxiedWalletsResult = {
-  wallets: ProxiedWallet[];
-  accounts: ProxiedAccount[];
-};
-const createProxiedWalletsFx = createEffect(
-  async ({ proxiedAccounts, chains }: ProxiedWalletsParams): Promise<ProxiedWalletsResult> => {
-    const proxiedWallets = proxiedAccounts.map((proxied) => {
-      const walletName = proxyUtils.getProxiedName(proxied, chains[proxied.chainId].addressPrefix);
-      const wallet = {
-        name: walletName,
-        type: WalletType.PROXIED,
-        signingType: SigningType.WATCH_ONLY,
-      } as Wallet;
 
-      const isEthereumChain = networkUtils.isEthereumBased(chains[proxied.chainId].options);
+const createProxiedWalletsFx = createEffect(async ({ proxiedAccounts, chains }: ProxiedWalletsParams) => {
+  return proxiedAccounts.map((proxied) => {
+    const walletName = proxyUtils.getProxiedName(proxied, chains[proxied.chainId].addressPrefix);
+    const wallet: Omit<NoID<ProxiedWallet>, 'accounts' | 'isActive'> = {
+      name: walletName,
+      type: WalletType.PROXIED,
+      signingType: SigningType.WATCH_ONLY,
+    };
 
-      const accounts = [
-        {
-          ...proxied,
-          name: walletName,
-          type: AccountType.PROXIED,
-          chainType: isEthereumChain ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
-          cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
-        } as ProxiedAccount,
-      ];
+    const isEthereumChain = networkUtils.isEthereumBased(chains[proxied.chainId].options);
 
-      return { wallet, accounts };
-    });
-
-    const dbWalletsAndAccounts = await Promise.all(
-      proxiedWallets.map(async ({ wallet, accounts }) => {
-        const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
-
-        if (!dbWallet) return undefined;
-
-        const accountsPayload = accounts.map((account) => ({ ...account, walletId: dbWallet.id }));
-        const dbAccounts = await storageService.accounts.createAll(accountsPayload);
-
-        if (!dbAccounts) return undefined;
-
-        return { wallet: dbWallet, accounts: dbAccounts as ProxiedAccount[] };
-      }),
-    );
-
-    return dbWalletsAndAccounts.reduce(
-      (acc, proxiedCreatedResult) => {
-        if (!proxiedCreatedResult) return acc;
-
-        acc.accounts.push(...proxiedCreatedResult.accounts);
-        acc.wallets.push(proxiedCreatedResult.wallet as ProxiedWallet);
-
-        return acc;
-      },
+    const accounts: Omit<NoID<ProxiedAccount>, 'walletId'>[] = [
       {
-        wallets: [] as ProxiedWallet[],
-        accounts: [] as ProxiedAccount[],
+        ...proxied,
+        name: walletName,
+        type: AccountType.PROXIED,
+        chainType: isEthereumChain ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
+        cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
       },
-    );
-  },
-);
+    ];
+
+    return { wallet, accounts, external: true };
+  });
+});
 
 sample({
   clock: workerStarted,
@@ -312,22 +276,6 @@ sample({
 
 sample({
   clock: createProxiedWalletsFx.doneData,
-  filter: ({ wallets, accounts }) => wallets.length > 0 && accounts.length > 0,
-  fn: (data) => {
-    const accountsMap = dictionary(data.accounts, 'walletId');
-
-    const newWallets = data.wallets.map((wallet) => {
-      const account = accountsMap[wallet.id];
-
-      return {
-        wallet,
-        accounts: account ? [account] : [],
-        external: false,
-      };
-    });
-
-    return newWallets;
-  },
   target: series(walletModel.events.proxiedCreated),
 });
 
