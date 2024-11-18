@@ -1,5 +1,6 @@
 import { combine, createEffect, createEvent, sample } from 'effector';
 import { GraphQLClient } from 'graphql-request';
+import { uniq } from 'lodash';
 import { interval } from 'patronum';
 
 import {
@@ -38,12 +39,12 @@ const { tick: pollingRequest } = interval({
 });
 
 const updateRequested = sample({
-  clock: [pollingRequest, networkModel.events.connectionsPopulated, walletModel.$allWallets.updates],
+  clock: [pollingRequest, networkModel.events.connectionsPopulated],
   source: walletModel.$allWallets,
   fn: (wallets) => {
     const filteredWallets =
       walletUtils.getWalletsFilteredAccounts(wallets, {
-        walletFn: (w) => !walletUtils.isMultisig(w) && !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w),
+        walletFn: (w) => !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w),
       }) ?? [];
 
     return walletUtils.getAllAccounts(filteredWallets);
@@ -92,7 +93,7 @@ const getMultisigsFx = createEffect(
       if (nullable(multisigIndexer) || accounts.length === 0) return [];
 
       const client = new GraphQLClient(multisigIndexer.url);
-      const accountIds = accounts.map((account) => account.accountId);
+      const accountIds = uniq(accounts.map((account) => account.accountId));
       const accountsMap = toKeysRecord(accountIds);
 
       const indexedMultisigs = await multisigService.filterMultisigsAccounts(client, accountIds);
