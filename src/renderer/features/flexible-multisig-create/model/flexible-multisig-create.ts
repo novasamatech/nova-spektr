@@ -253,7 +253,7 @@ sample({
         chain: chain!,
         signer: signer!,
         fee: fee.toString(),
-        account: signer, //?
+        account: signer,
         multisigDeposit: multisigDeposit.toString(),
       },
     };
