@@ -124,7 +124,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         <DetailRow
           label={<FootnoteText className="text-text-tertiary">{t('operation.networkFee')}</FootnoteText>}
           className="text-text-primary"
-          testId={TEST_IDS.TRANSFER.CONFIRM.NETWORK_FEE}
+          testId={TEST_IDS.OPERATIONS.CONFIRM_NETWORK_FEE}
         >
           <div className="flex flex-col items-end gap-y-0.5">
             <AssetBalance value={confirmStore.fee} asset={confirmStore.chain.assets[0]} />

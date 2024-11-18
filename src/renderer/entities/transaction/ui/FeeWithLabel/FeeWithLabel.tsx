@@ -18,7 +18,7 @@ export const FeeWithLabel = ({ label, wrapperClassName, ...feeProps }: Props) =>
     <DetailRow
       label={<FootnoteText className="text-text-tertiary">{label || t('operation.networkFee')}</FootnoteText>}
       className={cnTw('text-text-primary', wrapperClassName)}
-      testId={TEST_IDS.TRANSFER.ESTIMATE_FEE}
+      testId={TEST_IDS.OPERATIONS.ESTIMATE_FEE}
     >
       <Fee {...feeProps} />
     </DetailRow>
