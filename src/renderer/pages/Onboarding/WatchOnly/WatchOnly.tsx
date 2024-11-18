@@ -167,11 +167,11 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
           />
 
           <div className="flex flex-1 items-end justify-between">
-            <Button variant="text" testId={TEST_IDS.MAIN.BACK_BUTTON} onClick={() => closeWowModal()}>
+            <Button variant="text" testId={TEST_IDS.COMMON.BACK_BUTTON} onClick={() => closeWowModal()}>
               {t('onboarding.backButton')}
             </Button>
 
-            <Button type="submit" testId={TEST_IDS.MAIN.CONTINUE_BUTTON} disabled={!isValid}>
+            <Button type="submit" testId={TEST_IDS.COMMON.CONTINUE_BUTTON} disabled={!isValid}>
               {t('onboarding.continueButton')}
             </Button>
           </div>

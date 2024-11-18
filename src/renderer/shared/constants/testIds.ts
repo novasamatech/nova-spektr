@@ -11,11 +11,11 @@ export const TEST_IDS = {
   ASSETS: {
     SETTINGS_WIDGET: 'assets-settings-widget',
   },
-  MAIN: {
-    WALLET_BUTTON: 'main-wallet-button',
-    BACK_BUTTON: 'main-back-button',
-    CONTINUE_BUTTON: 'main-continue-button',
-    INFO_BUTTON: 'main-info-button',
+  COMMON: {
+    WALLET_BUTTON: 'common-wallet-button',
+    BACK_BUTTON: 'common-back-button',
+    CONTINUE_BUTTON: 'common-continue-button',
+    INFO_BUTTON: 'common-info-button',
   },
   TRANSFER: {
     CONFIRM: {

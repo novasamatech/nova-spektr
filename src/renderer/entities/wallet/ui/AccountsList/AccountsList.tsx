@@ -36,7 +36,7 @@ export const AccountsList = ({ accountId, chains, className }: Props) => {
                 <FootnoteText className="w-[180px] text-text-secondary">
                   <Address address={toAddress(accountId, { prefix: addressPrefix })} variant="truncate" showIcon />
                 </FootnoteText>
-                <AccountExplorers accountId={accountId} chain={chain} testId={TEST_IDS.MAIN.INFO_BUTTON} />
+                <AccountExplorers accountId={accountId} chain={chain} testId={TEST_IDS.COMMON.INFO_BUTTON} />
               </div>
             </li>
           );
