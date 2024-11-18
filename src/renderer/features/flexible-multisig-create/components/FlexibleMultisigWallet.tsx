@@ -27,7 +27,7 @@ export const FlexibleMultisigWallet = ({ isOpen, onClose, onGoBack }: Props) => 
 
   const activeStep = useUnit(flexibleMultisigModel.$step);
   const {
-    fields: { chain },
+    fields: { chainId },
   } = useForm(formModel.$createMultisigForm);
 
   if (isStep(activeStep, Step.SUBMIT)) {
@@ -43,7 +43,7 @@ export const FlexibleMultisigWallet = ({ isOpen, onClose, onGoBack }: Props) => 
         <>
           <span className="mx-1">{t('createMultisigAccount.titleOn')}</span>
           <ChainTitle
-            chainId={chain.value.chainId}
+            chainId={chainId.value}
             className="gap-x-1.5"
             fontClass="font-manrope text-header-title text-text-primary truncate"
           />
@@ -51,7 +51,6 @@ export const FlexibleMultisigWallet = ({ isOpen, onClose, onGoBack }: Props) => 
       )}
     </div>
   );
-  console.log(activeStep);
 
   return (
     <>

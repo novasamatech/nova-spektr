@@ -23,13 +23,15 @@ export const ConfirmationStep = () => {
   const api = useUnit(flexibleMultisigModel.$api);
   const transaction = useUnit(flexibleMultisigModel.$transaction);
   const isEnoughBalance = useUnit(flexibleMultisigModel.$isEnoughBalance);
-
+  const chain = useUnit(formModel.$chain);
   const signatories = useUnit(signatoryModel.$signatories);
   const ownedSignatories = useUnit(signatoryModel.$ownedSignatoriesWallets);
+
   const {
-    fields: { name, threshold, chain },
+    fields: { name, threshold },
   } = useForm(formModel.$createMultisigForm);
 
+  const asset = chain?.assets?.[0];
   const walletName = signer?.name || (signerWallet?.type === WalletType.POLKADOT_VAULT && signerWallet?.name) || '';
 
   return (
@@ -40,7 +42,7 @@ export const ConfirmationStep = () => {
         </div>
         <DetailRow label={t('createMultisigAccount.walletName')}>{name.value}</DetailRow>
         <DetailRow wrapperClassName="my-4" label={t('createMultisigAccount.signatoriesLabel')}>
-          <SelectedSignatoriesModal signatories={signatories} addressPrefix={chain.value.addressPrefix}>
+          <SelectedSignatoriesModal signatories={signatories} addressPrefix={chain?.addressPrefix}>
             <div className="flex items-center">
               <Counter className="mr-2" variant="neutral">
                 {signatories.length}
@@ -68,27 +70,18 @@ export const ConfirmationStep = () => {
           </div>
         </DetailRow>
         <Separator className="my-4 border-filter-border" />
-        <div className="mb-4 flex flex-1 flex-col gap-y-4">
-          <ProxyDepositWithLabel
-            asset={chain.value.assets[0]}
-            proxyNumber={1}
-            deposit="0"
-            api={api}
-            className="text-footnote"
-          />
-          <MultisigDepositWithLabel
-            className="text-footnote"
-            asset={chain.value.assets[0]}
-            threshold={threshold.value}
-            api={api}
-          />
-          <FeeWithLabel api={api} asset={chain.value.assets[0]} transaction={transaction?.wrappedTx} />
-          <Alert variant="error" title={t('createMultisigAccount.notEnoughTokensTitle')} active={!isEnoughBalance}>
-            <Alert.Item withDot={false}>
-              {t('createMultisigAccount.flexibleMultisig.notEnoughMultisigTokens')}
-            </Alert.Item>
-          </Alert>
-        </div>
+        {chain && asset ? (
+          <div className="mb-4 flex flex-1 flex-col gap-y-4">
+            <ProxyDepositWithLabel asset={asset} proxyNumber={1} deposit="0" api={api} className="text-footnote" />
+            <MultisigDepositWithLabel className="text-footnote" asset={asset} threshold={threshold.value} api={api} />
+            <FeeWithLabel api={api} asset={asset} transaction={transaction} />
+            <Alert variant="error" title={t('createMultisigAccount.notEnoughTokensTitle')} active={!isEnoughBalance}>
+              <Alert.Item withDot={false}>
+                {t('createMultisigAccount.flexibleMultisig.notEnoughMultisigTokens')}
+              </Alert.Item>
+            </Alert>
+          </div>
+        ) : null}
 
         <div className="mt-3 flex items-center justify-between">
           <Button
@@ -102,6 +95,7 @@ export const ConfirmationStep = () => {
             {t('createMultisigAccount.backButton')}
           </Button>
           <SignButton
+            disabled={!isEnoughBalance}
             type={signerWallet?.type || WalletType.POLKADOT_VAULT}
             onClick={confirmModel.output.formSubmitted}
           />

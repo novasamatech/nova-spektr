@@ -1,28 +1,17 @@
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 
-import { type Chain } from '@/shared/core';
+import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Step } from '@/shared/lib/utils';
-import { Button, FootnoteText, InputHint, Select, SmallTitleText } from '@/shared/ui';
-import { type DropdownOption } from '@/shared/ui/types';
-import { Box, Input } from '@/shared/ui-kit';
+import { Button, FootnoteText, InputHint, SmallTitleText } from '@/shared/ui';
+import { Box, Field, Input, Select } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel, networkUtils } from '@/entities/network';
 import { flexibleMultisigModel } from '../model/flexible-multisig-create';
 import { formModel } from '../model/form-model';
 
 import { MultisigFees } from './MultisigFees';
-
-const getChainOptions = (chains: Chain[]): DropdownOption<Chain>[] => {
-  return chains
-    .filter((c) => networkUtils.isMultisigSupported(c.options))
-    .map((chain) => ({
-      id: chain.chainId.toString(),
-      value: chain,
-      element: <ChainTitle chain={chain} fontClass="text-text-primary" />,
-    }));
-};
 
 interface Props {
   onGoBack: () => void;
@@ -32,13 +21,14 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
+  const chain = useUnit(formModel.$chain);
 
   const {
-    fields: { name, chain },
+    fields: { name, chainId },
   } = useForm(formModel.$createMultisigForm);
 
-  const chainOptions = getChainOptions(Object.values(chains));
   const isNameError = name.isTouched && !name.value;
+  const asset = chain?.assets.at(0);
 
   return (
     <section className="flex h-full max-h-[594px] w-modal-lg flex-1 flex-col">
@@ -62,14 +52,23 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
           </InputHint>
         </div>
         <div className="flex items-end gap-x-4">
-          <Select
-            placeholder={t('createMultisigAccount.chainPlaceholder')}
-            label={t('createMultisigAccount.chainName')}
-            className="w-[386px]"
-            selectedId={chain.value.chainId.toString()}
-            options={chainOptions}
-            onChange={({ value }) => chain.onChange(value)}
-          />
+          <Box width="386px">
+            <Field text={t('createMultisigAccount.chainName')}>
+              <Select
+                placeholder={t('createMultisigAccount.chainPlaceholder')}
+                value={chainId.value}
+                onChange={(value) => chainId.onChange(value as ChainId)}
+              >
+                {Object.values(chains)
+                  .filter((c) => networkUtils.isMultisigSupported(c.options))
+                  .map((chain) => (
+                    <Select.Item key={chain.chainId} value={chain.chainId}>
+                      <ChainTitle className="overflow-hidden" chain={chain} fontClass="text-text-primary truncate" />
+                    </Select.Item>
+                  ))}
+              </Select>
+            </Field>
+          </Box>
           <FootnoteText className="mt-2 text-text-tertiary">
             {t('createMultisigAccount.networkDescription')}
           </FootnoteText>
@@ -79,7 +78,7 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
             {t('createMultisigAccount.backButton')}
           </Button>
           <div className="mt-auto flex items-center justify-end">
-            <MultisigFees asset={chain.value.assets[0]} />
+            {asset ? <MultisigFees asset={asset} /> : null}
             <Button
               key="create"
               disabled={isNameError || !name.isTouched}

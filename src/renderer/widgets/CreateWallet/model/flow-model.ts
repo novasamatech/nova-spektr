@@ -394,9 +394,9 @@ sample({
     step: $step,
     hiddenMultisig: formModel.$hiddenMultisig,
   },
-  filter: ({ step }, results) => {
+  filter: ({ step, hiddenMultisig }, results) => {
     const isSubmitStep = isStep(step, Step.SUBMIT);
-    const isNonNullable = nonNullable(formModel.$hiddenMultisig);
+    const isNonNullable = nonNullable(hiddenMultisig);
     const isSuccessResult = results[0]?.result === ExtrinsicResult.SUCCESS;
 
     return isSubmitStep && isNonNullable && isSuccessResult;
