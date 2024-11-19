@@ -119,11 +119,11 @@ sample({
 sample({
   clock: walletModel.events.walletCreatedDone,
   source: walletModel.$wallets,
-  filter: (wallets, { wallet }) => {
+  filter: (wallets, { wallet, external }) => {
     const foundWallet = wallets.find((w) => w.id === wallet.id);
     if (!foundWallet) return false;
 
-    return !walletUtils.isProxied(foundWallet) && !walletUtils.isMultisig(foundWallet);
+    return !walletUtils.isProxied(foundWallet) && !walletUtils.isMultisig(foundWallet) && !external;
   },
   fn: (_, { wallet }) => wallet.id,
   target: walletModel.events.selectWallet,

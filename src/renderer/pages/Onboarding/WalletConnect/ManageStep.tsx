@@ -103,6 +103,7 @@ export const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack,
     });
 
     walletModel.events.walletConnectCreated({
+      external: false,
       wallet: {
         name: walletName.trim(),
         type,

@@ -20,6 +20,7 @@ import { multisigUtils } from '../lib/mulitisigs-utils';
 type SaveMultisigParams = {
   wallet: Omit<NoID<Wallet>, 'isActive' | 'accounts'>;
   accounts: Omit<NoID<MultisigAccount>, 'walletId'>[];
+  external: boolean;
 };
 
 const MULTISIG_DISCOVERY_TIMEOUT = 30000;
@@ -134,7 +135,10 @@ sample({
   fn: ({ indexedMultisigs, chain }) => {
     return indexedMultisigs.map(
       ({ threshold, accountId, signatories }) =>
-        multisigUtils.buildMultisig({ threshold, accountId, signatories, chain }) as SaveMultisigParams,
+        ({
+          ...multisigUtils.buildMultisig({ threshold, accountId, signatories, chain }),
+          external: true,
+        }) as SaveMultisigParams,
     );
   },
   target: saveMultisigFx,
