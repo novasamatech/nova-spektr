@@ -50,7 +50,7 @@ export const SelectSignatoriesThreshold = () => {
       setHasClickedNext(true);
     }
 
-    if (!canSubmit || !ownedSignatoriesWallets[0].accounts[0]) return;
+    if (!canSubmit || !ownedSignatoriesWallets[0]?.accounts[0]) return;
     signatoryModel.events.getSignatoriesBalance(ownedSignatoriesWallets);
 
     if (ownedSignatoriesWallets.length > 1) {
@@ -103,7 +103,7 @@ export const SelectSignatoriesThreshold = () => {
               placeholder={t('createMultisigAccount.thresholdPlaceholder')}
               value={(threshold.value || '').toString()}
               invalid={threshold.hasError()}
-              disabled={[0, 1].includes(signatories.length)}
+              disabled={signatories.length < 2}
               onChange={(value) => threshold.onChange(Number(value))}
             >
               {Array.from({ length: signatories.length - 1 }, (_, index) => (

@@ -2,7 +2,8 @@ import { BN_ZERO } from '@polkadot/util';
 import { type FormEvent } from 'react';
 
 import { type Account, type Chain, type WalletType } from '@/shared/core';
-import { toAddress, transferableAmount } from '@/shared/lib/utils';
+import { nonNullable, toAddress, transferableAmount } from '@/shared/lib/utils';
+import { truncate } from '@/shared/lib/utils/strings';
 import { BodyText, Icon } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { useBalance } from '@/entities/balance';
@@ -20,7 +21,7 @@ export const Signer = ({ account, walletName, walletType, onSubmit, chain }: Pro
   const balance = useBalance({
     accountId: account.accountId,
     chainId: chain.chainId,
-    assetId: chain.assets[0].assetId.toString(),
+    assetId: chain.assets.at(0)?.assetId.toString() || '',
   });
 
   return (
@@ -32,10 +33,10 @@ export const Signer = ({ account, walletName, walletType, onSubmit, chain }: Pro
       <div className="flex flex-col text-text-secondary">
         {walletName && <BodyText className="text-inherit">{walletName}</BodyText>}
         <BodyText className="text-inherit">
-          {toAddress(account.accountId, { prefix: chain.addressPrefix, chunk: 6 })}
+          {truncate(toAddress(account.accountId, { prefix: chain.addressPrefix }), 6)}
         </BodyText>
       </div>
-      {chain.assets[0] && (
+      {nonNullable(chain.assets[0]) && (
         <AssetBalance
           value={transferableAmount(balance) || BN_ZERO}
           asset={chain.assets[0]}
