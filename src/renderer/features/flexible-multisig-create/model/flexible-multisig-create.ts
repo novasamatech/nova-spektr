@@ -427,6 +427,7 @@ const createWalletFx = createEffect(
 
     // TODO implement flexible multisig creation
     walletModel.events.multisigCreated({
+      external: false,
       wallet: {
         name,
         type: WalletType.MULTISIG,

@@ -1,16 +1,20 @@
 import { type ReactNode } from 'react';
 
-import { type MultisigCreated, type Notification, type ProxyAction } from '@/shared/core';
+import { type FlexibleMultisigCreated, type MultisigCreated, type Notification, type ProxyAction } from '@/shared/core';
 import { NotificationType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
 
+import { FlexibleMultisigCreatedNotification } from './notifies/FlexibleMultisigCreatedNotification';
 import { MultisigCreatedNotification } from './notifies/MultisigCreatedNotification';
 import { ProxyCreatedNotification } from './notifies/ProxyCreatedNotification';
 import { ProxyRemovedNotification } from './notifies/ProxyRemovedNotification';
 
 const Notifications: Record<NotificationType, (n: Notification) => ReactNode> = {
   [NotificationType.MULTISIG_CREATED]: (n) => <MultisigCreatedNotification notification={n as MultisigCreated} />,
+  [NotificationType.FLEXIBLE_MULTISIG_CREATED]: (n) => (
+    <FlexibleMultisigCreatedNotification notification={n as FlexibleMultisigCreated} />
+  ),
   [NotificationType.MULTISIG_APPROVED]: () => null,
   [NotificationType.MULTISIG_CANCELLED]: () => null,
   [NotificationType.MULTISIG_EXECUTED]: () => null,
