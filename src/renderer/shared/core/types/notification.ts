@@ -33,6 +33,7 @@ export type MultisigCreated = MultisigBaseNotification & {
 };
 
 export type FlexibleMultisigCreated = MultisigBaseNotification & {
+  walletId: number;
   signatories: AccountId[];
   threshold: number;
   proxyAccountId: AccountId;

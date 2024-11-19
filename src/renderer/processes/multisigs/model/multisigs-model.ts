@@ -25,7 +25,7 @@ import { multisigService } from '@/entities/multisig';
 import { networkModel, networkUtils } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { proxyModel } from '@/entities/proxy';
-import { walletModel, walletUtils } from '@/entities/wallet';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { multisigUtils } from '../lib/mulitisigs-utils';
 
 const MULTISIG_DISCOVERY_TIMEOUT = 30000;
@@ -212,9 +212,10 @@ sample({
 });
 
 sample({
-  clock: populateMultisigWalletFx.doneData,
+  clock: walletModel.events.walletCreatedDone,
+  filter: ({ wallet }) => wallet.type === WalletType.MULTISIG,
   fn: ({ accounts }) => {
-    return accounts.map<NoID<MultisigCreated>>((account) => {
+    return accounts.filter(accountUtils.isMultisigAccount).map<NoID<MultisigCreated>>((account) => {
       return {
         read: false,
         type: NotificationType.MULTISIG_CREATED,
@@ -231,11 +232,13 @@ sample({
 });
 
 sample({
-  clock: populateFlexibleMultisigWalletFx.doneData,
-  fn: ({ accounts }) => {
-    return accounts.map<NoID<FlexibleMultisigCreated>>((account) => {
+  clock: walletModel.events.walletCreatedDone,
+  filter: ({ wallet }) => wallet.type === WalletType.FLEXIBLE_MULTISIG,
+  fn: ({ accounts, wallet }) => {
+    return accounts.filter(accountUtils.isFlexibleMultisigAccount).map<NoID<FlexibleMultisigCreated>>((account) => {
       return {
         read: false,
+        walletId: wallet.id,
         type: NotificationType.FLEXIBLE_MULTISIG_CREATED,
         dateCreated: Date.now(),
         multisigAccountId: account.accountId,
