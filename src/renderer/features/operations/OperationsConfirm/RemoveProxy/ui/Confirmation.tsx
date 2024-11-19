@@ -2,13 +2,13 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { toAddress } from '@/shared/lib/utils';
+import { toAccountId } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { TransactionDetails } from '@/shared/ui-entities';
+import { Account, TransactionDetails } from '@/shared/ui-entities';
 import { SignButton } from '@/entities/operations';
 import { proxyUtils } from '@/entities/proxy';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
-import { AddressWithExplorers, accountUtils, walletModel } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 
@@ -70,18 +70,12 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
         signatory={confirmStore.signatory}
         proxied={confirmStore.proxiedAccount}
       >
-        <DetailRow label={t('proxy.details.accessType')} className="pr-2">
+        <DetailRow label={t('proxy.details.accessType')}>
           <FootnoteText>{t(proxyUtils.getProxyTypeName(confirmStore.proxyType))}</FootnoteText>
         </DetailRow>
 
-        <DetailRow label={t('proxy.details.revokeFor')}>
-          <AddressWithExplorers
-            type="short"
-            explorers={confirmStore.chain?.explorers}
-            addressFont="text-footnote text-inherit"
-            address={toAddress(confirmStore.delegate, { prefix: confirmStore.chain?.addressPrefix })}
-            wrapperClassName="text-text-secondary"
-          />
+        <DetailRow label={t('proxy.details.revokeFor')} className="text-text-secondary">
+          <Account accountId={toAccountId(confirmStore.delegate)} chain={confirmStore.chain} variant="short" />
         </DetailRow>
 
         <hr className="w-full border-filter-border pr-2" />

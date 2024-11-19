@@ -3,13 +3,14 @@ import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
+import { toAccountId } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@/shared/ui';
-import { TransactionDetails } from '@/shared/ui-entities';
+import { Account, TransactionDetails } from '@/shared/ui-entities';
 import { AssetBalance } from '@/entities/asset';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
 import { AccountsModal } from '@/entities/staking';
-import { AddressWithExplorers, accountUtils, walletModel } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 
@@ -68,11 +69,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
         >
           <DetailRow label={t('staking.confirmation.rewardsDestinationLabel')}>
             {confirmStore.destination ? (
-              <AddressWithExplorers
-                address={confirmStore.destination}
-                explorers={confirmStore.chain.explorers}
-                type="short"
-              />
+              <Account accountId={toAccountId(confirmStore.destination)} chain={confirmStore.chain} variant="short" />
             ) : (
               <FootnoteText>{t('staking.confirmation.restakeRewards')}</FootnoteText>
             )}

@@ -4,15 +4,15 @@ import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
-import { formatAmount } from '@/shared/lib/utils';
+import { formatAmount, toAccountId } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, HeadlineText, Icon, LargeTitleText, Loader, Tooltip } from '@/shared/ui';
-import { TransactionDetails } from '@/shared/ui-entities';
+import { Account, TransactionDetails } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { BalanceDiff, LockPeriodDiff, LockValueDiff, TracksDetails, votingService } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
-import { AddressWithExplorers, accountUtils, walletModel } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { type Config } from '../../../OperationsValidation';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
@@ -134,7 +134,7 @@ export const Confirmation = ({
         proxied={confirmStore.proxiedAccount}
       >
         <DetailRow label={t('governance.addDelegation.confirmation.target')}>
-          <AddressWithExplorers address={confirmStore.target} explorers={confirmStore.chain.explorers} type="short" />
+          <Account variant="short" chain={confirmStore.chain} accountId={toAccountId(confirmStore.target)} />
         </DetailRow>
 
         <DetailRow label={t('governance.addDelegation.confirmation.tracks')}>
