@@ -13,13 +13,13 @@ export class WalletModalWindow extends BaseModal<WalletModalElements> {
   }
 
   public async openWalletModelWindow(): Promise<WalletModalWindow> {
-    await this.previousPage.clickOnButton((this.previousPage as any).pageElements.accountButton);
+    await this.previousPage.click(this.previousPage.pageElements.url);
 
     return this;
   }
 
   public async clickOnAddButton(): Promise<WalletModalWindow> {
-    await this.clickOnButton(this.pageElements.addButton);
+    await this.click(this.pageElements.addButton);
 
     return this;
   }
