@@ -23,6 +23,7 @@ import {
   isStringsMatchQuery,
   toAddress,
   transferableAmount,
+  withdrawableAmountBN,
 } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -132,9 +133,7 @@ const $proxyForm = createForm<FormParams>({
               form.chain.assets[0].assetId.toString(),
             );
 
-            return new BN(params.multisigDeposit)
-              .add(new BN(params.fee))
-              .lte(new BN(transferableAmount(signatoryBalance)));
+            return new BN(params.multisigDeposit).add(new BN(params.fee)).lte(withdrawableAmountBN(signatoryBalance));
           },
         },
       ],

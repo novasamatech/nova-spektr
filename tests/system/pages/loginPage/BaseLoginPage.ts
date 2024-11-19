@@ -19,7 +19,7 @@ import { VaultAssetsPage } from '../assetsPage/VaultAssetsPage';
 import { type WatchOnlyAssetsPage } from '../assetsPage/WatchOnlyAssetsPage';
 
 import { PolkadotVaultLoginPage } from './PolkadotVaultLoginPage';
-import { WatchOnlyLoginPage } from './WatchOnlyLoginPage';
+import { WatchOnlyOnboardingPage } from './WatchOnlyLoginPage';
 
 export class BaseLoginPage extends BasePage<LoginPageElements> {
   public async gotoOnboarding(): Promise<BaseLoginPage> {
@@ -29,14 +29,14 @@ export class BaseLoginPage extends BasePage<LoginPageElements> {
     return this;
   }
 
-  public async clickWatchOnlyButton(): Promise<WatchOnlyLoginPage> {
-    await this.clickOnButton(this.pageElements.watchOnlyButton);
+  public async clickWatchOnlyButton(): Promise<WatchOnlyOnboardingPage> {
+    await this.click(this.pageElements.watchOnlyButton);
 
-    return new WatchOnlyLoginPage(this.page, this.pageElements);
+    return new WatchOnlyOnboardingPage(this.page, this.pageElements);
   }
 
   public async clickPolkadotVaultButton(): Promise<PolkadotVaultLoginPage> {
-    await this.clickOnButton(this.pageElements.polkadotVaultButton);
+    await this.click(this.pageElements.polkadotVaultButton);
 
     return new PolkadotVaultLoginPage(this.page, this.pageElements);
   }

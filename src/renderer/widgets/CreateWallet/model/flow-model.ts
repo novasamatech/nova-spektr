@@ -26,7 +26,7 @@ import {
   nonNullable,
   toAccountId,
   toAddress,
-  transferableAmount,
+  withdrawableAmountBN,
 } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
@@ -179,7 +179,7 @@ const $isEnoughBalance = combine(
       chain.assets[0].assetId.toString(),
     );
 
-    return new BN(fee).add(new BN(multisigDeposit)).lte(new BN(transferableAmount(balance)));
+    return new BN(fee).add(new BN(multisigDeposit)).lte(withdrawableAmountBN(balance));
   },
 );
 
@@ -253,6 +253,7 @@ sample({
         signingType: SigningType.MULTISIG,
       },
       accounts: [account],
+      external: false,
     };
   },
   target: walletModel.events.multisigCreated,
@@ -267,7 +268,7 @@ sample({
 
 sample({
   clock: walletModel.events.walletCreatedDone,
-  filter: ({ wallet }) => wallet.type === WalletType.MULTISIG,
+  filter: ({ wallet, external }) => wallet.type === WalletType.MULTISIG && !external,
   fn: ({ wallet }) => wallet.id,
   // wallet selection shouldn't be here, but here we are
   target: [walletModel.events.selectWallet, walletProviderModel.events.completed, proxiesModel.events.workerStarted],

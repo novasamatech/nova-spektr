@@ -1,4 +1,4 @@
-import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { type UnitValue, combine, createEffect, createEvent, createStore, sample } from 'effector';
 import groupBy from 'lodash/groupBy';
 import { combineEvents, readonly } from 'patronum';
 
@@ -23,6 +23,9 @@ type DbWallet = Omit<Wallet, 'accounts'>;
 type CreateParams<T extends Account = Account> = {
   wallet: Omit<NoID<Wallet>, 'isActive' | 'accounts'>;
   accounts: Omit<NoID<T>, 'walletId'>[];
+  // external means wallet was created by someone else and discovered later
+  // TODO this flag is related to multisig creation and should disappear after wallet feature decomposition
+  external: boolean;
 };
 
 const walletStarted = createEvent();
@@ -85,6 +88,7 @@ const fetchAllWalletsFx = createEffect(async (): Promise<DbWallet[]> => {
 type CreateResult = {
   wallet: DbWallet;
   accounts: Account[];
+  external: boolean;
 };
 const walletCreatedFx = createEffect(async ({ wallet, accounts }: CreateParams): Promise<CreateResult | undefined> => {
   const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
@@ -96,14 +100,15 @@ const walletCreatedFx = createEffect(async ({ wallet, accounts }: CreateParams):
 
   if (!dbAccounts) return undefined;
 
-  return { wallet: dbWallet, accounts: dbAccounts };
+  return { wallet: dbWallet, accounts: dbAccounts, external: false };
 });
 
 const multishardCreatedFx = createEffect(
   async ({
     wallet,
     accounts,
-  }: CreateParams<BaseAccount | ChainAccount | ShardAccount>): Promise<CreateResult | undefined> => {
+    external,
+  }: UnitValue<typeof multishardCreated>): Promise<(CreateResult & { external: boolean }) | undefined> => {
     const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
 
     if (!dbWallet) return undefined;
@@ -148,7 +153,7 @@ const multishardCreatedFx = createEffect(
       multishardAccounts.push(...dbChainAccounts);
     }
 
-    return { wallet: dbWallet, accounts: multishardAccounts };
+    return { wallet: dbWallet, accounts: multishardAccounts, external };
   },
 );
 

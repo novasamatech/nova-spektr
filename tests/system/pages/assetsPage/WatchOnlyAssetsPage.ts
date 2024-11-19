@@ -11,7 +11,7 @@ export class WatchOnlyAssetsPage extends BasePage<AssetsPageElements> {
   }
 
   public async openWalletManagement(): Promise<WalletModalWindow> {
-    await this.clickOnButton(this.pageElements.accountButton);
+    await this.click(this.pageElements.accountButton);
 
     return new WalletModalWindow(this.page, new WalletModalElements(), this);
   }
