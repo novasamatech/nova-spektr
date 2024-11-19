@@ -159,6 +159,7 @@ const populateFlexibleMultisigWalletFx = createEffect(({ account, chain }: Flexi
     name: walletName,
     type: WalletType.FLEXIBLE_MULTISIG,
     signingType: SigningType.MULTISIG,
+    activated: false,
   };
 
   return {
