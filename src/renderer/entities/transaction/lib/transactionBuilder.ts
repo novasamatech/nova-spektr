@@ -560,7 +560,7 @@ function buildCreateFlexibleMultisig({
         multisigAccount: {
           accountId: multisigAccountId,
           signatories,
-          threshold: threshold,
+          threshold,
         } as MultisigAccount,
         signatories: signatories.map((s) => ({
           accountId: toAccountId(s.address),
