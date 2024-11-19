@@ -149,6 +149,7 @@ const populateMultisigWalletFx = createEffect(({ account, chain }: MultisigRespo
   return {
     wallet,
     accounts: [account],
+    external: true,
   };
 });
 
@@ -163,6 +164,7 @@ const populateFlexibleMultisigWalletFx = createEffect(({ account, chain }: Flexi
   return {
     wallet,
     accounts: [account],
+    external: true,
   };
 });
 
