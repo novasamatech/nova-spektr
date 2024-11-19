@@ -162,8 +162,13 @@ const logClientIdFx = createEffect(async (client: Client) => {
 const sessionTopicUpdatedFx = createEffect(
   async ({ accounts, topic, client, walletId }: SessionTopicParams & { client: Client }) => {
     const oldSessionTopic = accounts[0]?.signingExtras?.sessionTopic;
+    let oldSession: SessionTypes.Struct | undefined;
 
-    const oldSession = client.session.get(oldSessionTopic);
+    try {
+      oldSession = client.session.get(oldSessionTopic);
+    } catch (e) {
+      console.error(e);
+    }
 
     const updatedAccounts = accounts.map(({ signingExtras, ...rest }) => {
       const newSigningExtras = { ...signingExtras, sessionTopic: topic };
@@ -454,6 +459,7 @@ export const walletConnectModel = {
   $uri,
   $accounts,
   $pairings,
+
   events: {
     connect,
     initConnectFailed: initConnectFx.fail,

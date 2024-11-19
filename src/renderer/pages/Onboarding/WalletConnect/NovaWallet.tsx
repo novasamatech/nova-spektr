@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 import QRCodeStyling from 'qr-code-styling';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { useStatusContext } from '@/app/providers';
 import { chainsService } from '@/shared/api/network';
@@ -8,7 +8,6 @@ import novawallet_onboarding_tutorial from '@/shared/assets/video/novawallet_onb
 import novawallet_onboarding_tutorial_webm from '@/shared/assets/video/novawallet_onboarding_tutorial.webm';
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { usePrevious } from '@/shared/lib/hooks';
 import { BaseModal, Button, HeaderTitleText, Loader, SmallTitleText } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { walletConnectModel, walletConnectUtils } from '@/entities/walletConnect';
@@ -32,13 +31,8 @@ export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
 
   const session = useUnit(walletConnectModel.$session);
   const client = useUnit(walletConnectModel.$client);
-  const pairings = useUnit(walletConnectModel.$pairings);
   const uri = useUnit(walletConnectModel.$uri);
   const step = useUnit(wcOnboardingModel.$step);
-
-  const previousPairings = usePrevious(pairings);
-
-  const [pairingTopic, setPairingTopic] = useState<string>();
 
   const { showStatus } = useStatusContext();
 
@@ -87,14 +81,6 @@ export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
     }
   }, [client, isOpen]);
 
-  useEffect(() => {
-    const newPairing = pairings?.find((p) => !previousPairings?.find((pp) => pp.topic === p.topic));
-
-    if (newPairing) {
-      setPairingTopic(newPairing.topic);
-    }
-  }, [pairings.length]);
-
   const handleClose = () => {
     if (isNeedDisconnect(step)) {
       walletConnectModel.events.disconnectCurrentSessionStarted();
@@ -140,11 +126,11 @@ export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
         </>
       )}
 
-      {step === Step.MANAGE && session && pairingTopic && (
+      {step === Step.MANAGE && session && (
         <ManageStep
           type={WalletType.NOVA_WALLET}
           accounts={session.namespaces.polkadot.accounts}
-          pairingTopic={pairingTopic}
+          pairingTopic={session.pairingTopic}
           sessionTopic={session.topic}
           onBack={walletConnectModel.events.disconnectCurrentSessionStarted}
           onComplete={onComplete}
