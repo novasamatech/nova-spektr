@@ -45,9 +45,11 @@ export const Signatory = ({
   const wallets = useUnit(walletModel.$wallets);
 
   const [query, setQuery] = useState('');
-  const [options, setOptions] = useState<JSX.Element[]>([]);
+  const [accountsGroup, setAccountsGroup] = useState<[WalletFamily, Account[]][]>([]);
 
-  const contactsFiltered = useMemo(() => {
+  const filteredContacts = useMemo(() => {
+    if (isOwnAccount) return [];
+
     return performSearch({
       query,
       records: contacts,
@@ -85,10 +87,10 @@ export const Signatory = ({
     if (!isOwnAccount || wallets.length === 0 || !chain) return;
 
     const walletByGroup = walletSelectFeature.services.walletSelect.getWalletByGroups(wallets, query);
-    const options = [];
+    const options: [WalletFamily, Account[]][] = [];
     const checkedAddresses: Set<AccountAddress> = new Set();
 
-    for (const [walletType, walletsGroup] of Object.entries(walletByGroup)) {
+    for (const [walletFamily, walletsGroup] of Object.entries(walletByGroup)) {
       if (walletsGroup.length === 0) continue;
 
       const accountOptions: Account[] = [];
@@ -110,35 +112,11 @@ export const Signatory = ({
 
       if (accountOptions.length === 0) continue;
 
-      const walletGroup = (
-        <Combobox.Group
-          key={`${walletType}-${options.length}`}
-          title={
-            <div className="flex items-center gap-x-2">
-              <WalletIcon type={walletType as WalletFamily} />
-              <CaptionText className="font-semibold uppercase text-text-secondary">
-                {t(walletSelectFeature.constants.GROUP_LABELS[walletType as WalletFamily])}
-              </CaptionText>
-            </div>
-          }
-        >
-          {accountOptions.map((account) => {
-            const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
-
-            return (
-              <Combobox.Item key={`${account.walletId}-${account.accountId}`} value={address}>
-                <Address showIcon title={account.name} address={address} />
-              </Combobox.Item>
-            );
-          })}
-        </Combobox.Group>
-      );
-
-      options.push(walletGroup);
+      options.push([walletFamily as WalletFamily, accountOptions]);
     }
 
-    setOptions(options);
-  }, [query, wallets, isOwnAccount, t]);
+    setAccountsGroup(options);
+  }, [query, wallets, isOwnAccount]);
 
   // initiate the query form in case of not own account
   useEffect(() => {
@@ -146,25 +124,6 @@ export const Signatory = ({
 
     filterModel.events.formInitiated();
   }, [isOwnAccount, filterModel, contacts]);
-
-  // list of contacts in case of not own account
-  useEffect(() => {
-    if (isOwnAccount || contacts.length === 0) return;
-
-    const options = [];
-
-    for (const contact of contactsFiltered) {
-      const address = toAddress(contact.accountId, { prefix: chain?.addressPrefix });
-
-      options.push(
-        <Combobox.Item key={contact.id} value={address}>
-          <Address showIcon title={contact.name} address={address} />
-        </Combobox.Item>,
-      );
-    }
-
-    setOptions(options);
-  }, [query, isOwnAccount, contacts, contactsFiltered]);
 
   useEffect(() => {
     if (displayName && displayName !== signatoryName) {
@@ -226,7 +185,38 @@ export const Signatory = ({
               onChange={onAddressChange}
               onInput={setQuery}
             >
-              {options.map((option) => option)}
+              {accountsGroup.map(([walletType, accounts]) => (
+                <Combobox.Group
+                  key={walletType}
+                  title={
+                    <div className="flex items-center gap-x-2">
+                      <WalletIcon type={walletType as WalletFamily} />
+                      <CaptionText className="font-semibold uppercase text-text-secondary">
+                        {t(walletSelectFeature.constants.GROUP_LABELS[walletType as WalletFamily])}
+                      </CaptionText>
+                    </div>
+                  }
+                >
+                  {accounts.map((account) => {
+                    const address = toAddress(account.accountId, { prefix: chain?.addressPrefix });
+
+                    return (
+                      <Combobox.Item key={`${account.walletId}-${account.accountId}`} value={address}>
+                        <Address showIcon title={account.name} address={address} />
+                      </Combobox.Item>
+                    );
+                  })}
+                </Combobox.Group>
+              ))}
+              {filteredContacts.map((contact) => {
+                const address = toAddress(contact.accountId, { prefix: chain?.addressPrefix });
+
+                return (
+                  <Combobox.Item key={contact.id} value={address}>
+                    <Address showIcon title={contact.name} address={address} />
+                  </Combobox.Item>
+                );
+              })}
             </Combobox>
           </Field>
         </Box>

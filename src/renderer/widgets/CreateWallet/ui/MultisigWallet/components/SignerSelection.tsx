@@ -41,7 +41,7 @@ export const SignerSelection = () => {
 
           return (
             <Signer
-              key={account.accountId}
+              key={`${account.walletId}_${account.accountId}`}
               account={account}
               walletName={name}
               walletType={type}

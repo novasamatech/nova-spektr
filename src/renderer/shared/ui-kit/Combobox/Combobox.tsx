@@ -139,6 +139,8 @@ type GroupProps = {
   title: ReactNode;
 };
 const Group = ({ title, children }: PropsWithChildren<GroupProps>) => {
+  if (Children.count(children) === 0) return null;
+
   return (
     <Ariakit.ComboboxGroup>
       <Ariakit.ComboboxGroupLabel>
@@ -165,7 +167,7 @@ const Item = ({ value, children }: PropsWithChildren<ItemProps>) => {
       className={cnTw(
         'flex cursor-pointer rounded px-3 py-2 text-footnote text-text-secondary',
         'bg-block-background-default data-[active-item]:bg-block-background-hover',
-        'mb-1 last:mt-0',
+        'mb-1 last:mb-0',
       )}
     >
       {children}
