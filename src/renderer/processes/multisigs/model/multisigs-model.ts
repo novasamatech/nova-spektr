@@ -105,7 +105,8 @@ const getMultisigsFx = createEffect(
           .map(({ threshold, accountId, signatories }): GetMultisigResponse => {
             const proxiesList = proxies[accountId];
             const proxy = nonNullable(proxiesList)
-              ? (proxiesList.find((p) => p.chainId === chain.chainId) ?? null)
+              ? // TODO should we filter out not Any proxy type?
+                (proxiesList.find((p) => p.chainId === chain.chainId) ?? null)
               : null;
 
             if (proxy) {
