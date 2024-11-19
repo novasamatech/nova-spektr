@@ -1,6 +1,6 @@
 import { BN } from '@polkadot/util';
 
-import { formatBalance } from '../balance';
+import { formatBalance, withdrawableAmountBN } from '../balance';
 
 describe('shared/lib/onChainUtils/balance', () => {
   describe('formatBalance', () => {
@@ -69,5 +69,19 @@ describe('shared/lib/onChainUtils/balance', () => {
       expect(suffix).toEqual('K');
       expect(decimalPlaces).toEqual(2);
     });
+  });
+});
+
+describe('withdrawableAmountBN', () => {
+  test('should return free balance', () => {
+    const balance = {
+      free: new BN('47315729310274'),
+      frozen: new BN('46725200939162'),
+      reserved: new BN('27242700000000'),
+    };
+
+    const result = withdrawableAmountBN(balance);
+    expect(result.toString()).toEqual('47315729310274');
+    expect(result instanceof BN).toBe(true);
   });
 });
