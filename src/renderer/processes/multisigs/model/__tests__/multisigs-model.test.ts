@@ -6,7 +6,7 @@ import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { multisigsModel } from '../multisigs-model';
 
-describe('features/multisigs/model/multisigs-model', () => {
+describe('multisigs model', () => {
   beforeEach(() => {
     jest.restoreAllMocks();
     jest.spyOn(multisigService, 'filterMultisigsAccounts').mockResolvedValue([
@@ -47,7 +47,7 @@ describe('features/multisigs/model/multisigs-model', () => {
         },
       },
     });
-    allSettled(multisigsModel.events.multisigsDiscoveryStarted, { scope });
+    allSettled(multisigsModel.events.subscribe, { scope });
 
     expect(multisigCreation).not.toHaveBeenCalled();
   });

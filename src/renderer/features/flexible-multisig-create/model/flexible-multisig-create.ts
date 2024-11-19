@@ -425,11 +425,11 @@ const createWalletFx = createEffect(
     const accountIds = signatories.map((s) => s.accountId);
     const accountId = accountUtils.getMultisigAccountId(accountIds, threshold, cryptoType);
 
-    // TODO implement flexible multisig creation
-    walletModel.events.multisigCreated({
+    walletModel.events.flexibleMultisigCreated({
+      external: false,
       wallet: {
         name,
-        type: WalletType.MULTISIG,
+        type: WalletType.FLEXIBLE_MULTISIG,
         signingType: SigningType.MULTISIG,
       },
       accounts: [
@@ -438,10 +438,12 @@ const createWalletFx = createEffect(
           chainId,
           name: name.trim(),
           accountId: accountId,
+          // TODO get proxy account
+          proxyAccountId: accountId,
           threshold: threshold,
           cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
           chainType: isEthereumChain ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
-          type: AccountType.MULTISIG,
+          type: AccountType.FLEXIBLE_MULTISIG,
         },
       ],
     });

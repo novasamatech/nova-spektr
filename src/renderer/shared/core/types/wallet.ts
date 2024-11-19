@@ -49,6 +49,7 @@ export interface MultisigWallet extends Wallet {
 // TODO: try to move signatories data out of account
 export interface FlexibleMultisigWallet extends Wallet {
   type: WalletType.FLEXIBLE_MULTISIG;
+  activated: boolean;
   accounts: FlexibleMultisigAccount[];
 }
 

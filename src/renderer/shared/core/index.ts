@@ -69,7 +69,13 @@ export type {
 } from './types/proxy';
 export { ProxyVariant } from './types/proxy';
 
-export type { Notification, MultisigCreated, MultisigOperation, ProxyAction } from './types/notification';
+export type {
+  Notification,
+  MultisigCreated,
+  FlexibleMultisigCreated,
+  MultisigOperation,
+  ProxyAction,
+} from './types/notification';
 export { NotificationType } from './types/notification';
 
 export { XcmPallets } from './types/substrate';
