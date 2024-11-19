@@ -11,6 +11,7 @@ type Props = {
   offsetPx?: number;
   position?: string;
   closeOnClick?: boolean;
+  testId?: string;
 };
 
 export const MenuPopover = ({
@@ -22,6 +23,7 @@ export const MenuPopover = ({
   offsetPx = 7,
   position = 'left-0 top-full',
   closeOnClick = false,
+  testId,
 }: PropsWithChildren<Props>) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -34,7 +36,11 @@ export const MenuPopover = ({
     <Menu>
       {({ open, close }) => (
         <div className={cnTw('relative', open && 'z-20', containerClassName)}>
-          <Menu.Button className={cnTw('flex items-center', buttonClassName)} onClick={onMenuClick}>
+          <Menu.Button
+            className={cnTw('flex items-center', buttonClassName)}
+            data-testid={testId}
+            onClick={onMenuClick}
+          >
             {children}
           </Menu.Button>
           <Menu.Items

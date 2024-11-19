@@ -13,6 +13,7 @@ type ContextProps = {
   theme?: 'light' | 'dark';
   invalid?: boolean;
   disabled?: boolean;
+  height?: 'sm' | 'md';
   testId?: string;
 };
 
@@ -34,6 +35,7 @@ const Root = ({
   invalid,
   disabled,
   testId = 'Select',
+  height = 'sm',
   open,
   onToggle,
   placeholder,
@@ -41,7 +43,7 @@ const Root = ({
   onChange,
   children,
 }: RootProps) => {
-  const ctx = useMemo(() => ({ theme, invalid, disabled, testId }), [theme, invalid, disabled, testId]);
+  const ctx = useMemo(() => ({ theme, height, invalid, disabled, testId }), [theme, height, invalid, disabled, testId]);
 
   return (
     <Context.Provider value={ctx}>
@@ -58,16 +60,18 @@ type TriggerProps = {
 };
 
 const Button = ({ placeholder }: TriggerProps) => {
-  const { theme, invalid, disabled } = useContext(Context);
+  const { theme, height, invalid, disabled } = useContext(Context);
 
   return (
     <RadixSelect.Trigger
       className={cnTw(
-        'relative flex w-full items-center py-[7px] pl-[11px] pr-6',
+        'relative flex w-full items-center pl-[11px] pr-6',
         'rounded border text-footnote outline-offset-1',
         'enabled:hover:shadow-card-shadow',
         'data-[state=open]:border-active-container-border',
         {
+          'h-8.5': height === 'sm',
+          'h-10.5': height === 'md',
           'border-filter-border bg-input-background text-text-primary': theme === 'light',
           'border-border-dark text-white': theme === 'dark',
           'bg-input-background-disabled text-text-tertiary': disabled,
@@ -131,7 +135,7 @@ const Item = ({ value, children }: PropsWithChildren<ItemProps>) => {
     <RadixSelect.Item
       value={value}
       className={cnTw(
-        'flex w-full cursor-pointer rounded p-2 text-footnote text-text-secondary',
+        'flex w-full cursor-pointer rounded px-3 py-2 text-footnote text-text-secondary',
         'focus:bg-action-background-hover focus:outline-none data-[highlighted]:bg-action-background-hover',
         {
           'focus:bg-block-background-hover data-[highlighted]:bg-background-item-hover': theme === 'dark',

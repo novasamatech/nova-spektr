@@ -1,3 +1,4 @@
+import { TEST_IDS } from '@/shared/constants';
 import { type AccountId, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, toAddress } from '@/shared/lib/utils';
@@ -35,7 +36,7 @@ export const AccountsList = ({ accountId, chains, className }: Props) => {
                 <FootnoteText className="w-[180px] text-text-secondary">
                   <Address address={toAddress(accountId, { prefix: addressPrefix })} variant="truncate" showIcon />
                 </FootnoteText>
-                <AccountExplorers accountId={accountId} chain={chain} />
+                <AccountExplorers accountId={accountId} chain={chain} testId={TEST_IDS.COMMON.INFO_BUTTON} />
               </div>
             </li>
           );

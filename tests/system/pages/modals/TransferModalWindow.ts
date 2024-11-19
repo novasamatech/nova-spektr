@@ -39,9 +39,8 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
   }
 
   private async expectTransferFeeNotZero(): Promise<void> {
-    const feeRow = this.page.locator(TransferModalElements.feeRowLocator);
-    const feeLocator = feeRow.locator(TransferModalElements.feeLocator);
-    const feeText = await feeLocator.textContent();
+    const feeRow = this.page.getByTestId(TransferModalElements.feeRowLocator);
+    const feeText = await feeRow.textContent();
     expect(feeText).toMatch(TransferModalElements.feePattern);
   }
 

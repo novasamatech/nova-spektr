@@ -24,6 +24,7 @@ type ComponentProps = {
   onChange?: (value: string) => void;
   onChangeEvent?: (event: ChangeEvent<HTMLInputElement>) => void;
   onPaste?: (event: ClipboardEvent) => void;
+  testId?: string;
 };
 
 export type InputProps = Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> & ComponentProps;
@@ -46,6 +47,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       onChange,
       onChangeEvent,
       onPaste,
+      testId = 'Input',
       ...props
     },
     ref,
@@ -99,6 +101,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           autoFocus={autoFocus}
           disabled={disabled}
           spellCheck={spellCheck}
+          data-testid={testId}
           onChange={(event) => {
             onChange?.(event.target.value);
             onChangeEvent?.(event);
