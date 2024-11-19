@@ -3,6 +3,7 @@ import { type ReactNode } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
+import { toAccountId } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@/shared/ui';
 import { Account, TransactionDetails } from '@/shared/ui-entities';
 import { AssetBalance } from '@/entities/asset';
@@ -89,7 +90,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         )}
 
         <DetailRow label={t('operation.details.recipient')} className="text-text-secondary">
-          <Account accountId={confirmStore.account.accountId} chain={confirmStore.chain} variant="short" />
+          <Account accountId={toAccountId(confirmStore.destination)} chain={confirmStore.chain} variant="short" />
         </DetailRow>
 
         <hr className="w-full border-filter-border pr-2" />
