@@ -2,6 +2,7 @@ import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
+import { TEST_IDS } from '@/shared/constants';
 import { type AccountId, type Chain } from '@/shared/core';
 import { AccountType, ChainType, CryptoType, ErrorType, SigningType, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -80,6 +81,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
     const isEthereum = isEthereumAccountId(accountId);
 
     walletModel.events.watchOnlyCreated({
+      external: false,
       wallet: {
         name: walletName,
         type: WalletType.WATCH_ONLY,
@@ -123,6 +125,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
                   placeholder={t('onboarding.walletNamePlaceholder')}
                   invalid={Boolean(errors.walletName)}
                   value={value}
+                  testId={TEST_IDS.ONBOARDING.WALLET_NAME_INPUT}
                   onChange={onChange}
                 />
                 <InputHint variant="error" active={errors.walletName?.type === ErrorType.MAX_LENGTH}>
@@ -149,6 +152,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
                   prefixElement={
                     isValid ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />
                   }
+                  testId={TEST_IDS.ONBOARDING.WALLET_ADDRESS_INPUT}
                   onChange={onChange}
                 />
 
@@ -160,11 +164,11 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
           />
 
           <div className="flex flex-1 items-end justify-between">
-            <Button variant="text" onClick={() => closeWowModal()}>
+            <Button variant="text" testId={TEST_IDS.COMMON.BACK_BUTTON} onClick={() => closeWowModal()}>
               {t('onboarding.backButton')}
             </Button>
 
-            <Button type="submit" disabled={!isValid}>
+            <Button type="submit" testId={TEST_IDS.COMMON.CONTINUE_BUTTON} disabled={!isValid}>
               {t('onboarding.continueButton')}
             </Button>
           </div>

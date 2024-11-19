@@ -1,9 +1,5 @@
-import { expect, test } from '@playwright/test';
-import { type Browser, type BrowserContext, type Page, chromium } from 'playwright';
-
 import { baseTestConfig } from '../../BaseTestConfig';
-import { LoginPageElements } from '../../pages/_elements/LoginPageElements';
-import { BaseLoginPage } from '../../pages/loginPage/BaseLoginPage';
+import { expect, test } from '../../utils/baseRegularFixture';
 
 test.describe(
   'Watch only wallet onboarding',
@@ -11,25 +7,7 @@ test.describe(
     tag: '@regress',
   },
   () => {
-    let browser: Browser;
-    let context: BrowserContext;
-    let page: Page;
-    let loginPage: BaseLoginPage;
-    test.beforeAll(async () => {
-      browser = await chromium.launch();
-    });
-
-    test.afterAll(async () => {
-      await browser.close();
-    });
-
-    test.beforeEach(async () => {
-      context = await browser.newContext({ ignoreHTTPSErrors: true });
-      page = await context.newPage();
-      loginPage = new BaseLoginPage(page, new LoginPageElements());
-    });
-
-    test('Can add watch only wallet', async () => {
+    test('Can add watch only wallet', async ({ loginPage, page }) => {
       const watchOnlyPage = await loginPage.gotoOnboarding().then((onboarding) => onboarding.clickWatchOnlyButton());
       const watchOnlyAssetsPage = await watchOnlyPage.createWatchOnlyAccount(
         baseTestConfig.test_name,
@@ -38,9 +16,11 @@ test.describe(
       expect(await page.isVisible(watchOnlyAssetsPage.pageElements.assetsPageLocator)).toBeTruthy();
     });
 
-    test('Link from info button lead to subscan', async () => {
+    test('Link from info button lead to subscan', async ({ loginPage, page, context }) => {
       const watchOnlyPage = await loginPage.gotoOnboarding().then((onboarding) => onboarding.clickWatchOnlyButton());
-      await watchOnlyPage.fillAccountAddress(baseTestConfig.test_address).then((account) => account.clickInfoButton());
+      await watchOnlyPage
+        .fillAccountAddress(baseTestConfig.test_address)
+        .then((account) => account.clickFirstInfoButton());
       const [newPage] = await Promise.all([
         context.waitForEvent('page'),
         page.getByRole('link', { name: watchOnlyPage.pageElements.subscanLabel }).click(),

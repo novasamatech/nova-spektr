@@ -19,6 +19,7 @@ type HTMLButtonProps = Pick<
 type Props = HTMLButtonProps &
   IconProps & {
     ariaLabel?: string;
+    testId?: string;
   };
 
 export const IconButton = forwardRef<HTMLButtonElement, Props>(
@@ -33,6 +34,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(
       onPointerDown,
       onPointerMove,
       onPointerLeave,
+      testId,
       ...iconProps
     },
     ref,
@@ -43,6 +45,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(
       className={cnTw('spektr-icon-button', IconButtonStyle, className)}
       aria-label={ariaLabel}
       disabled={disabled}
+      data-testid={testId}
       onClick={onClick}
       onMouseDown={onMouseDown}
       onPointerDown={onPointerDown}

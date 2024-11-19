@@ -1,5 +1,6 @@
 import { useUnit } from 'effector-react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, IconButton, MenuPopover, Select, Switch } from '@/shared/ui';
 import { AssetsListView } from '@/entities/asset';
@@ -30,6 +31,7 @@ export const AssetsSettings = () => {
       position="top-full right-0"
       buttonClassName="rounded-full"
       offsetPx={0}
+      testId={TEST_IDS.ASSETS.SETTINGS_WIDGET}
       content={
         <>
           <Switch
