@@ -50,7 +50,7 @@ export const YourDelegation = () => {
           <DetailRow label={t('governance.addDelegation.accountsLabel', { count: activeAccounts.length })}>
             {accounts.length === 1 ? (
               <div className="overflow-hidden text-text-secondary">
-                <Account account={accounts[0]} chain={chain} variant="short" />
+                <Account accountId={accounts?.[0].accountId} chain={chain} variant="short" />
               </div>
             ) : (
               <FootnoteText className="text-text-secondary">{accounts.length}</FootnoteText>
