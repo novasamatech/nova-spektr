@@ -4,6 +4,7 @@ import {
   Children,
   type ComponentProps,
   type PropsWithChildren,
+  type ReactNode,
   type RefObject,
   createContext,
   startTransition,
@@ -33,16 +34,20 @@ type ExpandedContextProps = {
 
 const Context = createContext<ContextProps & ExpandedContextProps>({});
 
-type InputProps = Pick<ComponentProps<typeof Input>, 'disabled' | 'invalid' | 'placeholder' | 'height'>;
+type InputProps = Pick<
+  ComponentProps<typeof Input>,
+  'disabled' | 'invalid' | 'placeholder' | 'height' | 'prefixElement' | 'onChange'
+>;
 
 type ControlledPopoverProps = {
   value: string;
   onChange: (value: string) => void;
+  onInput: (value: string) => void;
 };
 
 type RootProps = PropsWithChildren<ControlledPopoverProps & ContextProps & InputProps>;
 
-const Root = ({ testId = 'Combobox', value, onChange, children, ...inputProps }: RootProps) => {
+const Root = ({ testId = 'Combobox', value, onChange, onInput, children, ...inputProps }: RootProps) => {
   const comboboxRef = useRef<HTMLInputElement>(null);
   const listboxRef = useRef<HTMLDivElement>(null);
 
@@ -61,8 +66,8 @@ const Root = ({ testId = 'Combobox', value, onChange, children, ...inputProps }:
           setSelectedValue={onChange}
           setValue={(value) => startTransition(() => onChange(value))}
         >
-          <Trigger {...inputProps} />
-          {children}
+          <Trigger {...inputProps} onChange={onInput} />
+          <Content>{children}</Content>
         </Ariakit.ComboboxProvider>
       </RadixPopover.Root>
     </Context.Provider>
@@ -115,12 +120,12 @@ const Content = ({ children }: PropsWithChildren) => {
         <Surface
           elevation={1}
           className={cnTw(
-            'flex h-max max-h-[--radix-popper-available-height] flex-col',
+            'z-50 flex h-max max-h-[--radix-popper-available-height] flex-col p-1',
             'overflow-hidden duration-100 animate-in fade-in zoom-in-95',
           )}
         >
           <ScrollArea>
-            <Ariakit.ComboboxList className="flex flex-col gap-y-1 p-1" ref={listboxRef} role="listbox">
+            <Ariakit.ComboboxList ref={listboxRef} role="listbox">
               {children}
             </Ariakit.ComboboxList>
           </ScrollArea>
@@ -130,17 +135,37 @@ const Content = ({ children }: PropsWithChildren) => {
   );
 };
 
+type GroupProps = {
+  title: ReactNode;
+};
+const Group = ({ title, children }: PropsWithChildren<GroupProps>) => {
+  return (
+    <Ariakit.ComboboxGroup>
+      <Ariakit.ComboboxGroupLabel>
+        {typeof title === 'string' ? (
+          <span className="px-3 py-1 text-help-text text-text-secondary">{title}</span>
+        ) : (
+          <div className="px-3 py-1">{title}</div>
+        )}
+      </Ariakit.ComboboxGroupLabel>
+      {children}
+    </Ariakit.ComboboxGroup>
+  );
+};
+
 type ItemProps = {
   value: string;
 };
+
 const Item = ({ value, children }: PropsWithChildren<ItemProps>) => {
   return (
     <Ariakit.ComboboxItem
       focusOnHover
       value={value}
       className={cnTw(
-        'flex cursor-pointer rounded p-2 text-footnote text-text-secondary',
+        'flex cursor-pointer rounded px-3 py-2 text-footnote text-text-secondary',
         'bg-block-background-default data-[active-item]:bg-block-background-hover',
+        'mb-1 last:mt-0',
       )}
     >
       {children}
@@ -149,6 +174,6 @@ const Item = ({ value, children }: PropsWithChildren<ItemProps>) => {
 };
 
 export const Combobox = Object.assign(Root, {
-  Content,
+  Group,
   Item,
 });
