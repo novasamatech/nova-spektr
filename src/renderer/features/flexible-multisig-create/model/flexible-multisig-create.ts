@@ -424,6 +424,7 @@ sample({
         signingType: SigningType.MULTISIG,
       },
       accounts: [account],
+      external: false,
     };
   },
   target: walletModel.events.multisigCreated,
