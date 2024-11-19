@@ -13,6 +13,7 @@ const deleteSignatory = createEvent<number>();
 const getSignatoriesBalance = createEvent<Wallet[]>();
 
 const $signatories = createStore<Omit<SignatoryInfo, 'index'>[]>([{ name: '', address: '', walletId: '' }]);
+
 const $hasDuplicateSignatories = combine($signatories, (signatories) => {
   const existingKeys: Set<Address> = new Set();
 
@@ -39,7 +40,7 @@ const $ownedSignatoriesWallets = combine(
   { wallets: walletModel.$wallets, signatories: $signatories },
   ({ wallets, signatories }) =>
     walletUtils.getWalletsFilteredAccounts(wallets, {
-      walletFn: (w) => !walletUtils.isWatchOnly(w) && !walletUtils.isMultisig(w),
+      walletFn: (w) => walletUtils.isValidSignatory(w),
       accountFn: (a) => signatories.some((s) => toAccountId(s.address) === a.accountId),
     }) || [],
 );

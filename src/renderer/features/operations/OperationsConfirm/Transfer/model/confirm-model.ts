@@ -10,7 +10,7 @@ import {
   type Transaction,
   type Wallet,
 } from '@/shared/core';
-import { nonNullable, transferableAmount } from '@/shared/lib/utils';
+import { nonNullable, transferableAmount, withdrawableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { operationsModel, operationsUtils } from '@/entities/operations';
@@ -98,7 +98,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
         multisigDeposit: store.multisigDeposit,
         balance:
           store.signatory &&
-          transferableAmount(
+          withdrawableAmount(
             balanceUtils.getBalance(
               balances,
               store.signatory.accountId,

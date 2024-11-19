@@ -37,7 +37,7 @@ export const Confirmation = ({ tx, account, chainConnection, signAccount, feeTx,
 
   const wallets = useUnit(walletModel.$wallets);
   const signerWallet = walletUtils.getWalletFilteredAccounts(wallets, {
-    walletFn: walletUtils.isValidSignSignatory,
+    walletFn: walletUtils.isValidSignatory,
     accountFn: (acc) => signAccount?.accountId === acc.accountId,
   });
 

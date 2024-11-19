@@ -9,6 +9,6 @@ function getSignatoryWallet(wallets: Wallet[], accountId: AccountId): Wallet | u
   return wallets.find((wallet) => {
     const hasMatch = wallet.accounts.some((account) => account.accountId === accountId);
 
-    return hasMatch && walletUtils.isValidSignSignatory(wallet);
+    return hasMatch && walletUtils.isValidSignatory(wallet);
   });
 }

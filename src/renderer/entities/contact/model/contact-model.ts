@@ -14,8 +14,8 @@ const createContactFx = createEffect(async (contact: Omit<Contact, 'id'>): Promi
   return storageService.contacts.create(contact);
 });
 
-const createContactsFx = createEffect((contacts: Omit<Contact, 'id'>[]): Promise<Contact | undefined>[] => {
-  return contacts.map(async (contact) => storageService.contacts.create(contact));
+const createContactsFx = createEffect((contacts: Omit<Contact, 'id'>[]): Promise<Contact[] | undefined> => {
+  return storageService.contacts.createAll(contacts);
 });
 
 const updateContactFx = createEffect(async ({ id, ...rest }: Contact): Promise<Contact> => {
@@ -34,7 +34,7 @@ $contacts
   .on(populateContactsFx.doneData, (_, contacts) => {
     return contacts;
   })
-  .on(createContactFx.doneData, (state, contact) => {
+  .on([createContactFx.doneData, createContactsFx.doneData], (state, contact) => {
     return contact ? state.concat(contact) : state;
   })
   .on(deleteContactFx.doneData, (state, contactId) => {
