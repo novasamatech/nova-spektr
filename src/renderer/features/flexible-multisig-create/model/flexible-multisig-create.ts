@@ -12,6 +12,7 @@ import {
   ChainType,
   type Contact,
   CryptoType,
+  type FlexibleMultisigAccount,
   type MultisigAccount,
   type NoID,
   SigningType,
@@ -406,28 +407,30 @@ sample({
     );
 
     const isEthereumChain = networkUtils.isEthereumBased(chain!.options);
-    const account: Omit<NoID<MultisigAccount>, 'walletId'> = {
+    const account: Omit<NoID<FlexibleMultisigAccount>, 'walletId'> = {
       signatories: sortedSignatories,
       chainId: chain!.chainId,
       name: name.trim(),
       accountId: multisigAccoutId!,
       threshold: threshold,
+      // TODO get proxy account
+      proxyAccountId: multisigAccoutId!,
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
       chainType: isEthereumChain ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
-      type: AccountType.MULTISIG,
+      type: AccountType.FLEXIBLE_MULTISIG,
     };
 
     return {
       wallet: {
         name,
-        type: WalletType.MULTISIG,
+        type: WalletType.FLEXIBLE_MULTISIG,
         signingType: SigningType.MULTISIG,
       },
       accounts: [account],
       external: false,
     };
   },
-  target: walletModel.events.multisigCreated,
+  target: walletModel.events.flexibleMultisigCreated,
 });
 
 sample({

@@ -779,7 +779,8 @@
       "proxyCreatedTitle": "New delegated authority wallet added",
       "proxyRemovedDetails": "<chain />  is no longer available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",
       "proxyRemovedTitle": "Delegated authority wallet has been removed",
-      "proxyWalletAction": "<strong>{name}</strong>  with <address><identicon /> {address}</address>"
+      "proxyWalletAction": "<strong>{name}</strong>  with <address><identicon /> {address}</address>",
+      "flexibleMultisigWalletSignAction": "Sign operation"
     },
     "noNotificationsDescription": "You don't have notifications yet",
     "title": "Notifications"

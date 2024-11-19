@@ -16,8 +16,10 @@ import {
   type ProxiedAccount,
   type ProxyAccount,
   type ProxyDeposits,
+  type ProxyType,
   ProxyVariant,
 } from '@/shared/core';
+import { proxyPallet } from '@/shared/pallet/proxy';
 import { proxyWorkerUtils } from '../lib/worker-utils';
 
 export const proxyWorker = {
@@ -26,8 +28,8 @@ export const proxyWorker = {
   disconnect,
 };
 
-export const state = {
-  apis: {} as Record<ChainId, ApiPromise>,
+export const state: { apis: Record<ChainId, ApiPromise> } = {
+  apis: {},
 };
 
 const InitConnectionsResult = {
@@ -110,53 +112,50 @@ async function getProxies({
 }: GetProxiesParams) {
   const api = state.apis[chainId];
 
-  const existingProxies = [] as NoID<ProxyAccount>[];
-  const proxiesToAdd = [] as NoID<ProxyAccount>[];
+  const existingProxies: NoID<ProxyAccount>[] = [];
+  const proxiesToAdd: NoID<ProxyAccount>[] = [];
 
-  const existingProxiedAccounts = [] as PartialProxiedAccount[];
-  const proxiedAccountsToAdd = [] as PartialProxiedAccount[];
+  const existingProxiedAccounts: PartialProxiedAccount[] = [];
+  const proxiedAccountsToAdd: PartialProxiedAccount[] = [];
 
-  const deposits = {
+  const deposits: ProxyDeposits = {
     chainId: chainId,
     deposits: {},
-  } as ProxyDeposits;
+  };
 
   if (!api || !api.query.proxy) {
     return { proxiesToAdd, proxiesToRemove: [], proxiedAccountsToAdd, proxiedAccountsToRemove: [], deposits };
   }
 
   try {
-    const entries = await api.query.proxy.proxies.entries();
+    const entries = await proxyPallet.storage.proxies(api);
 
-    for (const [key, value] of entries) {
+    for (const { account, value } of entries) {
       try {
-        const proxyData = value.toHuman() as any;
-        const proxiedAccountId = key.args[0].toHex();
-
-        const accounts = proxyData[0];
-        if (!accounts) {
+        if (value.accounts.length === 0) {
           continue;
         }
 
-        for (const account of accounts) {
+        for (const delegatedAccount of value.accounts) {
           const newProxy: NoID<ProxyAccount> = {
             chainId,
-            proxiedAccountId,
-            accountId: proxyWorkerUtils.toAccountId(account?.delegate),
-            proxyType: account.proxyType,
-            delay: Number(account.delay),
+            proxiedAccountId: account,
+            accountId: delegatedAccount.delegate,
+            // TODO support all proxy types
+            proxyType: delegatedAccount.proxyType as ProxyType,
+            delay: delegatedAccount.delay,
           };
 
           const needToAddProxiedAccount =
             accountsForProxied[newProxy.accountId] && !proxyWorkerUtils.isDelayedProxy(newProxy);
 
           if (needToAddProxiedAccount) {
-            const proxiedAccount = {
+            const proxiedAccount: PartialProxiedAccount = {
               ...newProxy,
               proxyAccountId: newProxy.accountId,
               accountId: newProxy.proxiedAccountId,
               proxyVariant: ProxyVariant.NONE,
-            } as PartialProxiedAccount;
+            };
 
             const doesProxiedAccountExist = proxiedAccounts.some((oldProxy) =>
               proxyWorkerUtils.isSameProxied(oldProxy, proxiedAccount),
@@ -170,21 +169,22 @@ async function getProxies({
           }
 
           if (needToAddProxiedAccount) {
-            deposits.deposits[proxiedAccountId] = proxyData[1];
+            deposits.deposits[account] = value.deposit.toString();
           }
         }
 
-        for (const account of accounts) {
+        for (const delegatedAccount of value.accounts) {
           const newProxy: NoID<ProxyAccount> = {
             chainId,
-            proxiedAccountId,
-            accountId: proxyWorkerUtils.toAccountId(account?.delegate),
-            proxyType: account.proxyType,
-            delay: Number(account.delay),
+            proxiedAccountId: account,
+            accountId: delegatedAccount.delegate,
+            // TODO support all proxy types
+            proxyType: delegatedAccount.proxyType as ProxyType,
+            delay: delegatedAccount.delay,
           };
 
           const needToAddProxyAccount =
-            accountsForProxy[proxiedAccountId] || proxiedAccountsToAdd.some((p) => p.accountId === proxiedAccountId);
+            accountsForProxy[account] || proxiedAccountsToAdd.some((p) => p.accountId === account);
           const doesProxyExist = proxies.some((oldProxy) => proxyWorkerUtils.isSameProxy(oldProxy, newProxy));
 
           if (needToAddProxyAccount) {
@@ -196,7 +196,7 @@ async function getProxies({
           }
 
           if (needToAddProxyAccount) {
-            deposits.deposits[proxiedAccountId] = proxyData[1];
+            deposits.deposits[account] = value.deposit.toString();
           }
         }
       } catch (e) {

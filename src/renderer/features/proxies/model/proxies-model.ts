@@ -51,7 +51,7 @@ const $endpoint = createStore<Endpoint<any> | null>(null);
 const $deposits = createStore<ProxyDeposits[]>([]);
 
 const startWorkerFx = createEffect(() => {
-  const worker = new Worker(new URL('@/features/proxies/workers/proxy-worker', import.meta.url));
+  const worker = new Worker(new URL('../workers/proxy-worker', import.meta.url));
 
   return createEndpoint(worker, {
     callable: ['initConnection', 'getProxies', 'disconnect'],
@@ -285,22 +285,21 @@ sample({
     groups: proxyModel.$proxyGroups,
     deposits: $deposits,
   },
-  filter: ({ deposits }) => Boolean(deposits),
+  filter: ({ deposits }) => deposits.length > 0,
   fn: ({ groups, deposits }, wallets) => {
-    return deposits.reduce(
-      (acc, deposit) => {
-        const { toAdd, toUpdate } = proxyUtils.createProxyGroups(wallets, groups, deposit);
+    const initial: { toAdd: NoID<ProxyGroup>[]; toUpdate: NoID<ProxyGroup>[] } = {
+      toAdd: [],
+      toUpdate: [],
+    };
 
-        return {
-          toAdd: acc.toAdd.concat(toAdd),
-          toUpdate: acc.toUpdate.concat(toUpdate),
-        };
-      },
-      {
-        toAdd: [] as NoID<ProxyGroup>[],
-        toUpdate: [] as NoID<ProxyGroup>[],
-      },
-    );
+    return deposits.reduce((acc, deposit) => {
+      const { toAdd, toUpdate } = proxyUtils.createProxyGroups(wallets, groups, deposit);
+
+      return {
+        toAdd: acc.toAdd.concat(toAdd),
+        toUpdate: acc.toUpdate.concat(toUpdate),
+      };
+    }, initial);
   },
   target: spread({
     toAdd: proxyModel.events.proxyGroupsAdded,

@@ -10,6 +10,7 @@ import {
   type Chain,
   type ChainAccount,
   type ChainId,
+  type FlexibleMultisigAccount,
   type ID,
   type MultisigAccount,
   type MultisigThreshold,
@@ -28,6 +29,7 @@ export const accountUtils = {
   isBaseAccount,
   isChainAccount,
   isMultisigAccount,
+  isFlexibleMultisigAccount,
   isWcAccount,
   isProxiedAccount,
   isPureProxiedAccount,
@@ -74,6 +76,10 @@ function isShardAccount(account: Partial<Account>): account is ShardAccount {
 
 function isMultisigAccount(account: Partial<Account>): account is MultisigAccount {
   return account.type === AccountType.MULTISIG;
+}
+
+function isFlexibleMultisigAccount(account: Partial<Account>): account is FlexibleMultisigAccount {
+  return account.type === AccountType.FLEXIBLE_MULTISIG;
 }
 
 function isProxiedAccount(account: Partial<Account>): account is ProxiedAccount {
