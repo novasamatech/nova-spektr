@@ -104,12 +104,9 @@ const getMultisigsFx = createEffect(
           .filter((multisigResult) => !(multisigResult.accountId in accountsMap))
           .map(({ threshold, accountId, signatories }): GetMultisigResponse => {
             const proxiesList = proxies[accountId];
-            const proxy =
-              nonNullable(proxiesList) && proxiesList.length > 0
-                ? proxiesList.find((p) => {
-                    return p.chainId === chain.chainId && p.proxyType === 'Any';
-                  })
-                : null;
+            const proxy = nonNullable(proxiesList)
+              ? (proxiesList.find((p) => p.chainId === chain.chainId) ?? null)
+              : null;
 
             if (proxy) {
               return {

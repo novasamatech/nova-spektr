@@ -4,7 +4,6 @@ import { storageService } from '@/shared/api/storage';
 import { type NoID, type Notification } from '@/shared/core';
 
 const notificationsStarted = createEvent();
-const notificationAdded = createEvent<NoID<Notification>>();
 const notificationsAdded = createEvent<NoID<Notification>[]>();
 
 const $notifications = createStore<Notification[]>([]);
@@ -28,12 +27,6 @@ sample({
 });
 
 sample({
-  clock: notificationAdded,
-  fn: (event) => [event],
-  target: addNotificationsFx,
-});
-
-sample({
   clock: notificationsAdded,
   target: addNotificationsFx,
 });
@@ -51,6 +44,5 @@ export const notificationModel = {
   events: {
     notificationsStarted,
     notificationsAdded,
-    notificationAdded,
   },
 };

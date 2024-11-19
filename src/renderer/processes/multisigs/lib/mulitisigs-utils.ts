@@ -23,7 +23,12 @@ function isMultisigSupported(chain: Chain) {
 }
 
 function isFlexibleMultisigSupported(chain: Chain) {
-  return isMultisigSupported(chain) && chain.options?.includes(ChainOptions.PURE_PROXY);
+  const options = chain.options ?? [];
+
+  return (
+    isMultisigSupported(chain) &&
+    (options.includes(ChainOptions.REGULAR_PROXY) || options.includes(ChainOptions.PURE_PROXY))
+  );
 }
 
 type BuildMultisigParams = {
