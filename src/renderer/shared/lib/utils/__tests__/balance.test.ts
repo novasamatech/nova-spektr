@@ -1,6 +1,7 @@
 import { BN } from '@polkadot/util';
 
-import { formatBalance, withdrawableAmountBN } from '../balance';
+import { type AssetBalance } from '@/shared/core';
+import { formatBalance, withdrawableAmount } from '../balance';
 
 describe('shared/lib/onChainUtils/balance', () => {
   describe('formatBalance', () => {
@@ -70,18 +71,58 @@ describe('shared/lib/onChainUtils/balance', () => {
       expect(decimalPlaces).toEqual(2);
     });
   });
-});
 
-describe('withdrawableAmountBN', () => {
-  test('should return free balance', () => {
-    const balance = {
-      free: new BN('47315729310274'),
-      frozen: new BN('46725200939162'),
-      reserved: new BN('27242700000000'),
+  describe('withdrawableAmount', () => {
+    const createBalance = (params: {
+      free?: string | number;
+      frozen?: string | number;
+      reserved?: string | number;
+    }): AssetBalance => {
+      return {
+        free: new BN(params.free || '0'),
+        frozen: new BN(params.frozen || '0'),
+        reserved: new BN(params.reserved || '0'),
+      };
     };
 
-    const result = withdrawableAmountBN(balance);
-    expect(result.toString()).toEqual('47315729310274');
-    expect(result instanceof BN).toBe(true);
+    test.each([
+      {
+        name: 'should return available amount',
+        balance: createBalance({ free: '100', frozen: '10' }),
+        expected: '90',
+      },
+      {
+        name: 'should return 0 when frozen equals free',
+        balance: createBalance({ free: '100', frozen: '100' }),
+        expected: '0',
+      },
+      {
+        name: 'should reserved has no effect',
+        balance: createBalance({ free: '100', frozen: '10', reserved: '20' }),
+        expected: '90',
+      },
+      {
+        name: 'should return 0 when frozen exceeds free',
+        balance: createBalance({ free: '50', frozen: '100' }),
+        expected: '0',
+      },
+      {
+        name: 'should handle large numbers',
+        balance: createBalance({
+          free: '1000000000000000000',
+          frozen: '10000000000000000',
+          reserved: '10000000000000000',
+        }),
+        expected: '990000000000000000',
+      },
+      {
+        name: 'should handle all zero values',
+        balance: createBalance({}),
+        expected: '0',
+      },
+    ])('$name', ({ balance, expected }) => {
+      const result = withdrawableAmount(balance);
+      expect(result).toEqual(expected);
+    });
   });
 });
