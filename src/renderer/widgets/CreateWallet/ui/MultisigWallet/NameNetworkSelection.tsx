@@ -40,15 +40,17 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
       </SmallTitleText>
       <form id="multisigForm" className="flex h-full flex-col gap-y-4 px-5 pb-6">
         <div className="flex items-end gap-x-4">
-          <Input
-            autoFocus
-            className="w-[360px]"
-            placeholder={t('createMultisigAccount.namePlaceholder')}
-            label={t('createMultisigAccount.walletNameLabel')}
-            invalid={isNameError}
-            value={name.value}
-            onChange={name.onChange}
-          />
+          <Box width="360px">
+            <Field text={t('createMultisigAccount.walletNameLabel')}>
+              <Input
+                autoFocus
+                placeholder={t('createMultisigAccount.namePlaceholder')}
+                invalid={isNameError}
+                value={name.value}
+                onChange={name.onChange}
+              />
+            </Field>
+          </Box>
           <InputHint variant="error" active={isNameError}>
             {t('createMultisigAccount.disabledError.emptyName')}
           </InputHint>
