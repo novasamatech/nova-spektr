@@ -34,6 +34,7 @@ export const SelectSignatoriesThreshold = () => {
   const ownedSignatoriesWallets = useUnit(signatoryModel.$ownedSignatoriesWallets);
   const hasDuplicateSignatories = useUnit(signatoryModel.$hasDuplicateSignatories);
   const hasEmptySignatories = useUnit(signatoryModel.$hasEmptySignatories);
+  const hasEmptySignatoryName = useUnit(signatoryModel.$hasEmptySignatoryName);
 
   const [hasClickedNext, setHasClickedNext] = useState(false);
 
@@ -48,6 +49,7 @@ export const SelectSignatoriesThreshold = () => {
     hasEnoughSignatories &&
     !multisigAlreadyExists &&
     !hasEmptySignatories &&
+    !hasEmptySignatoryName &&
     isThresholdValid &&
     !hasDuplicateSignatories;
 
@@ -101,6 +103,14 @@ export const SelectSignatoriesThreshold = () => {
             variant="error"
           >
             <Alert.Item withDot={false}>{t('createMultisigAccount.notEmptySignatory')}</Alert.Item>
+          </Alert>
+
+          <Alert
+            active={hasClickedNext && hasEmptySignatoryName}
+            title={t('createMultisigAccount.notEmptySignatoryNameTitle')}
+            variant="error"
+          >
+            <Alert.Item withDot={false}>{t('createMultisigAccount.notEmptySignatoryName')}</Alert.Item>
           </Alert>
         </div>
         <div className="flex items-center gap-x-4">
