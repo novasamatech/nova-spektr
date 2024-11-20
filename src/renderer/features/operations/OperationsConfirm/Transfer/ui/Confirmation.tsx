@@ -1,14 +1,16 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
+import { toAccountId } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@/shared/ui';
-import { TransactionDetails } from '@/shared/ui-entities';
+import { Account, TransactionDetails } from '@/shared/ui-entities';
 import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
-import { AddressWithExplorers, accountUtils, walletModel } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 
@@ -87,15 +89,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           </DetailRow>
         )}
 
-        <DetailRow label={t('operation.details.recipient')}>
-          <AddressWithExplorers
-            type="short"
-            explorers={confirmStore.chain.explorers}
-            addressFont="text-footnote text-inherit"
-            address={confirmStore.destination}
-            addressPrefix={confirmStore.chain.addressPrefix}
-            wrapperClassName="text-text-secondary"
-          />
+        <DetailRow label={t('operation.details.recipient')} className="text-text-secondary">
+          <Account accountId={toAccountId(confirmStore.destination)} chain={confirmStore.chain} variant="short" />
         </DetailRow>
 
         <hr className="w-full border-filter-border pr-2" />
@@ -123,6 +118,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         <DetailRow
           label={<FootnoteText className="text-text-tertiary">{t('operation.networkFee')}</FootnoteText>}
           className="text-text-primary"
+          testId={TEST_IDS.OPERATIONS.CONFIRM_NETWORK_FEE}
         >
           <div className="flex flex-col items-end gap-y-0.5">
             <AssetBalance value={confirmStore.fee} asset={confirmStore.chain.assets[0]} />

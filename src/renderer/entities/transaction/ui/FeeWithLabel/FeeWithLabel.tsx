@@ -1,5 +1,6 @@
 import { type ComponentProps } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText } from '@/shared/ui';
@@ -17,6 +18,7 @@ export const FeeWithLabel = ({ label, wrapperClassName, ...feeProps }: Props) =>
     <DetailRow
       label={<FootnoteText className="text-text-tertiary">{label || t('operation.networkFee')}</FootnoteText>}
       className={cnTw('text-text-primary', wrapperClassName)}
+      testId={TEST_IDS.OPERATIONS.ESTIMATE_FEE}
     >
       <Fee {...feeProps} />
     </DetailRow>

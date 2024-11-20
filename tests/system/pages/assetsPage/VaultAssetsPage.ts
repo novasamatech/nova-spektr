@@ -1,3 +1,4 @@
+import { TEST_IDS } from '@/shared/constants';
 import { type ChainModel } from '../../data/chains/testChainModel';
 import { readConfig } from '../../utils/readConfig';
 import { BasePage } from '../BasePage';
@@ -17,13 +18,13 @@ export class VaultAssetsPage extends BasePage<AssetsPageElements> {
   }
 
   public async openWalletManagement(): Promise<WalletModalWindow> {
-    await this.clickOnButton(this.pageElements.accountButton);
+    await this.click(this.pageElements.accountButton);
 
     return new WalletModalWindow(this.page, new WalletModalElements(), this);
   }
 
   public async openSettingsWidget(): Promise<AssetsSettingsModalWindow> {
-    await this.page.getByRole('main').getByRole('button').nth(1).click();
+    await this.page.getByTestId(TEST_IDS.ASSETS.SETTINGS_WIDGET).click();
 
     return new AssetsSettingsModalWindow(this.page, new AssetsSettingsModalElements(), this);
   }

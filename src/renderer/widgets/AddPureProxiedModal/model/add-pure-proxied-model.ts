@@ -14,6 +14,7 @@ import {
   ProxyVariant,
   type Timepoint,
   type Transaction,
+  WalletType,
 } from '@/shared/core';
 import { nonNullable, toAddress } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
@@ -307,17 +308,17 @@ sample({
 
 sample({
   clock: combineEvents({
-    events: [getPureProxyFx.doneData, proxiesModel.output.walletsCreated],
+    events: [getPureProxyFx.doneData, walletModel.events.walletCreatedDone],
     reset: flowStarted,
   }),
   source: {
     addProxyStore: $addProxyStore,
     proxyGroups: proxyModel.$proxyGroups,
   },
-  filter: ({ addProxyStore }, [_, wallet]) => Boolean(wallet.wallets[0].id) && Boolean(addProxyStore),
-  fn: ({ addProxyStore, proxyGroups }, [{ accountId }, wallet]) => {
+  filter: ({ addProxyStore }, [_, { wallet }]) => wallet.type === WalletType.PROXIED && nonNullable(addProxyStore),
+  fn: ({ addProxyStore, proxyGroups }, [{ accountId }, { wallet }]) => {
     const newProxyGroup: NoID<ProxyGroup> = {
-      walletId: wallet.wallets[0].id,
+      walletId: wallet.id,
       chainId: addProxyStore!.chain.chainId,
       proxiedAccountId: accountId,
       totalDeposit: addProxyStore!.proxyDeposit,

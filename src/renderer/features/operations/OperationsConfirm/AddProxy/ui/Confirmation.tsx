@@ -2,14 +2,15 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
+import { toAccountId } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@/shared/ui';
-import { TransactionDetails } from '@/shared/ui-entities';
+import { Account, TransactionDetails } from '@/shared/ui-entities';
 import { AssetBalance } from '@/entities/asset';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
 import { proxyUtils } from '@/entities/proxy';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
-import { AddressWithExplorers, accountUtils, walletModel } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 
@@ -75,14 +76,8 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
           <FootnoteText>{t(proxyUtils.getProxyTypeName(confirmStore.proxyType))}</FootnoteText>
         </DetailRow>
 
-        <DetailRow label={t('proxy.details.delegateTo')}>
-          <AddressWithExplorers
-            type="short"
-            explorers={confirmStore.chain.explorers}
-            addressFont="text-footnote text-inherit"
-            address={confirmStore.delegate}
-            wrapperClassName="text-text-secondary"
-          />
+        <DetailRow label={t('proxy.details.delegateTo')} className="text-text-secondary">
+          <Account accountId={toAccountId(confirmStore.delegate)} chain={confirmStore.chain} variant="short" />
         </DetailRow>
 
         <hr className="w-full border-filter-border pr-2" />

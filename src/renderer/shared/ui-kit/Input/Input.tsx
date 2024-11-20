@@ -21,6 +21,7 @@ type ComponentProps = {
   height?: 'sm' | 'md';
   prefixElement?: ReactNode;
   suffixElement?: ReactNode;
+  testId?: string;
   onChange?: (value: string) => void;
   onChangeEvent?: (event: ChangeEvent<HTMLInputElement>) => void;
   onPaste?: (event: ClipboardEvent) => void;
@@ -43,6 +44,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       spellCheck = false,
       prefixElement,
       suffixElement,
+      testId,
       onChange,
       onChangeEvent,
       onPaste,
@@ -99,6 +101,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           autoFocus={autoFocus}
           disabled={disabled}
           spellCheck={spellCheck}
+          data-testid={testId}
           onChange={(event) => {
             onChange?.(event.target.value);
             onChangeEvent?.(event);

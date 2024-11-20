@@ -251,6 +251,7 @@ sample({
         signingType: SigningType.MULTISIG,
       },
       accounts: [account],
+      external: false,
     };
   },
   target: walletModel.events.multisigCreated,
@@ -265,7 +266,7 @@ sample({
 
 sample({
   clock: walletModel.events.walletCreatedDone,
-  filter: ({ wallet }) => wallet.type === WalletType.MULTISIG,
+  filter: ({ wallet, external }) => wallet.type === WalletType.MULTISIG && !external,
   fn: ({ wallet }) => wallet.id,
   // wallet selection shouldn't be here, but here we are
   target: [walletModel.events.selectWallet, walletProviderModel.events.completed],

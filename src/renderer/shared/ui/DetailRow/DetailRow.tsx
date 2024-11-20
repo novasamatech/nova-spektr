@@ -7,10 +7,14 @@ type Props = {
   label: ReactNode;
   className?: string;
   wrapperClassName?: string;
+  testId?: string;
 };
 
-export const DetailRow = ({ label, className, wrapperClassName, children }: PropsWithChildren<Props>) => (
-  <div className={cnTw('flex min-h-6 w-full items-center justify-between gap-2', wrapperClassName)}>
+export const DetailRow = ({ label, className, wrapperClassName, testId, children }: PropsWithChildren<Props>) => (
+  <div
+    className={cnTw('flex min-h-6 w-full items-center justify-between gap-2', wrapperClassName)}
+    data-testid={testId}
+  >
     {typeof label === 'string' ? (
       <FootnoteText as="dt" className="text-text-tertiary">
         {label}
