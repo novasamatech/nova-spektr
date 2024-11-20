@@ -90,18 +90,20 @@ type CreateResult = {
   accounts: Account[];
   external: boolean;
 };
-const walletCreatedFx = createEffect(async ({ wallet, accounts }: CreateParams): Promise<CreateResult | undefined> => {
-  const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
+const walletCreatedFx = createEffect(
+  async ({ wallet, accounts, external }: CreateParams): Promise<CreateResult | undefined> => {
+    const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
 
-  if (!dbWallet) return undefined;
+    if (!dbWallet) return undefined;
 
-  const accountsPayload = accounts.map((account) => ({ ...account, walletId: dbWallet.id }));
-  const dbAccounts = await storageService.accounts.createAll(accountsPayload);
+    const accountsPayload = accounts.map((account) => ({ ...account, walletId: dbWallet.id }));
+    const dbAccounts = await storageService.accounts.createAll(accountsPayload);
 
-  if (!dbAccounts) return undefined;
+    if (!dbAccounts) return undefined;
 
-  return { wallet: dbWallet, accounts: dbAccounts, external: false };
-});
+    return { wallet: dbWallet, accounts: dbAccounts, external };
+  },
+);
 
 const multishardCreatedFx = createEffect(
   async ({
