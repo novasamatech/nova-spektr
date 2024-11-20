@@ -67,7 +67,7 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
                 <CaptionText className="text-white">{initiator.length}</CaptionText>
               </div>
             )}
-            {initiator.length === 1 && <AccountComponent account={initiator[0]!} chain={chain} />}
+            {initiator.length === 1 && <AccountComponent accountId={initiator[0]!.accountId} chain={chain} />}
             {initiator.length > 1 && (
               <button
                 type="button"
@@ -94,7 +94,7 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
           </DetailRow>
 
           <DetailRow label={t('transfer.senderProxiedAccount')}>
-            <AccountComponent account={proxied} chain={chain} />
+            <AccountComponent accountId={proxied.accountId} chain={chain} />
           </DetailRow>
 
           <DetailRow label={t('transfer.signingWallet')}>
@@ -106,7 +106,7 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
 
           <DetailRow label={t('transfer.signingAccount')}>
             {initiator.length === 1 ? (
-              <AccountComponent account={initiator[0]!} chain={chain} />
+              <AccountComponent accountId={initiator[0]!.accountId} chain={chain} />
             ) : (
               <button
                 type="button"
