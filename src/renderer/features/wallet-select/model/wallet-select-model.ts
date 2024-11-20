@@ -1,9 +1,9 @@
 import { default as BigNumber } from 'bignumber.js';
 import { attach, combine, createApi, createEvent, createStore, restore, sample } from 'effector';
-import { once, previous } from 'patronum';
+import { once } from 'patronum';
 
 import { type Account } from '@/shared/core';
-import { dictionary, getRoundedValue, totalAmount } from '@/shared/lib/utils';
+import { dictionary, getRoundedValue, nonNullable, totalAmount } from '@/shared/lib/utils';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { currencyModel, priceProviderModel } from '@/entities/price';
@@ -22,18 +22,6 @@ const callbacksApi = createApi($callbacks, {
 });
 
 const $filterQuery = restore(queryChanged, '');
-
-const $isWalletsRemoved = combine(
-  {
-    prevWallets: previous(walletModel.$wallets),
-    wallets: walletModel.$wallets,
-  },
-  ({ prevWallets, wallets }) => {
-    if (!prevWallets) return false;
-
-    return prevWallets.length > wallets.length;
-  },
-);
 
 const $filteredWalletGroups = combine(
   {
@@ -86,32 +74,21 @@ sample({
   target: $filterQuery,
 });
 
+const select = sample({
+  clock: walletModel.$wallets,
+  filter: (wallets) => wallets.every((wallet) => !wallet.isActive),
+  fn: (wallets) => walletSelectService.getFirstWallet(wallets)?.id ?? null,
+});
+
 sample({
-  clock: $isWalletsRemoved,
-  source: walletModel.$wallets,
-  filter: (wallets, isWalletsRemoved) => {
-    if (!isWalletsRemoved || wallets.length === 0) return false;
-
-    return wallets.every((wallet) => !wallet.isActive);
-  },
-  fn: (wallets) => {
-    const groups = walletSelectService.getWalletByGroups(wallets);
-
-    return Object.values(groups).flat()[0].id;
-  },
+  clock: select.filter({ fn: nonNullable }),
   target: walletModel.events.selectWallet,
 });
 
 sample({
   clock: walletModel.events.walletCreatedDone,
-  source: walletModel.$wallets,
-  filter: (wallets, { wallet, external }) => {
-    const foundWallet = wallets.find((w) => w.id === wallet.id);
-    if (!foundWallet) return false;
-
-    return !walletUtils.isProxied(foundWallet) && !walletUtils.isMultisig(foundWallet) && !external;
-  },
-  fn: (_, { wallet }) => wallet.id,
+  filter: ({ external }) => !external,
+  fn: ({ wallet }) => wallet.id,
   target: walletModel.events.selectWallet,
 });
 
