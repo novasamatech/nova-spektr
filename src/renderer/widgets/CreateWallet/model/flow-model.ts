@@ -264,14 +264,6 @@ sample({
   target: $error,
 });
 
-sample({
-  clock: walletModel.events.walletCreatedDone,
-  filter: ({ wallet, external }) => wallet.type === WalletType.MULTISIG && !external,
-  fn: ({ wallet }) => wallet.id,
-  // wallet selection shouldn't be here, but here we are
-  target: [walletModel.events.selectWallet, walletProviderModel.events.completed],
-});
-
 // Submit
 
 sample({
