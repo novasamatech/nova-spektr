@@ -4,8 +4,8 @@ import { useUnit } from 'effector-react';
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
-import { Button, FootnoteText, Input, InputHint, SmallTitleText } from '@/shared/ui';
-import { Box, Field, Select } from '@/shared/ui-kit';
+import { Button, FootnoteText, InputHint, SmallTitleText } from '@/shared/ui';
+import { Box, Field, Input, Select } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel, networkUtils } from '@/entities/network';
 import { Step } from '../../lib/types';
@@ -44,6 +44,7 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
             <Field text={t('createMultisigAccount.walletNameLabel')}>
               <Input
                 autoFocus
+                height="md"
                 placeholder={t('createMultisigAccount.namePlaceholder')}
                 invalid={isNameError}
                 value={name.value}
