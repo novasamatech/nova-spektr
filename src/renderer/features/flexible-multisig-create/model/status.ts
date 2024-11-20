@@ -6,11 +6,11 @@ import { networkModel } from '@/entities/network';
 
 import { formModel } from './form-model';
 
-const $input = combine(formModel.$createMultisigForm.fields.chain.$value, networkModel.$apis, (chain, apis) => {
-  if (nullable(chain) || nullable(apis[chain.chainId])) return null;
+const $input = combine(formModel.$createMultisigForm.fields.chainId.$value, networkModel.$apis, (chainId, apis) => {
+  if (nullable(apis[chainId])) return null;
 
   return {
-    api: apis[chain.chainId],
+    api: apis[chainId],
   };
 });
 

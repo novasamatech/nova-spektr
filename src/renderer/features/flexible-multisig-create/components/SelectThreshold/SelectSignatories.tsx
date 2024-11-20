@@ -12,7 +12,7 @@ export const SelectSignatories = () => {
   const signatories = useUnit(signatoryModel.$signatories);
 
   const onAddSignatoryClick = () => {
-    signatoryModel.events.addSignatory({ name: '', address: '' });
+    signatoryModel.events.addSignatory({ name: '', address: '', walletId: '' });
   };
 
   return (
@@ -20,11 +20,12 @@ export const SelectSignatories = () => {
       <div className="flex flex-col gap-2">
         {signatories.map((value, index) => (
           <Signatory
-            key={index}
+            key={value.address}
             signatoryIndex={index}
             isOwnAccount={index === 0}
             signatoryName={value.name}
             signatoryAddress={value.address}
+            selectedWalletId={value.walletId}
             onDelete={signatoryModel.events.deleteSignatory}
           />
         ))}

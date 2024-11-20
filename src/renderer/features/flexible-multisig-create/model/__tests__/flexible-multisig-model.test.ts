@@ -1,6 +1,6 @@
 import { allSettled, fork } from 'effector';
 
-import { type Account, type Chain, ConnectionStatus } from '@/shared/core';
+import { type Account, type Chain, type ChainId, ConnectionStatus } from '@/shared/core';
 import { Step, toAddress } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
@@ -49,18 +49,21 @@ describe('Create flexible multisig wallet flexible-multisig', () => {
 
     await allSettled(signatoryModel.events.changeSignatory, {
       scope,
-      params: { index: 0, name: signerWallet.name, address: toAddress(signerWallet.accounts[0].accountId) },
+      params: {
+        index: 0,
+        name: signerWallet.name,
+        address: toAddress(signerWallet.accounts[0].accountId),
+        walletId: '1',
+      },
     });
     await allSettled(signatoryModel.events.changeSignatory, {
       scope,
-      params: { index: 1, name: 'Alice', address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' },
+      params: { index: 1, name: 'Alice', address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY', walletId: '1' },
     });
-    await allSettled(flexibleMultisigModel.events.signerSelected, {
-      scope,
-      params: signerWallet.accounts[0].accountId,
-    });
+    await allSettled(flexibleMultisigModel.events.signerSelected, { scope, params: signerWallet.accounts[0] });
 
-    await allSettled(formModel.$createMultisigForm.fields.chain.onChange, { scope, params: testChain });
+    expect(scope.getState(flexibleMultisigModel.$step)).toEqual(Step.NAME_NETWORK);
+    await allSettled(formModel.$createMultisigForm.fields.chainId.onChange, { scope, params: testChain.chainId });
     await allSettled(formModel.$createMultisigForm.fields.name.onChange, { scope, params: 'some name' });
     await allSettled(formModel.$createMultisigForm.fields.threshold.onChange, { scope, params: 2 });
 
@@ -68,6 +71,7 @@ describe('Create flexible multisig wallet flexible-multisig', () => {
 
     const store = {
       chain: { chainId: '0x00' } as unknown as Chain,
+      chainId: '0x00' as ChainId,
       account: { walletId: signerWallet.id } as unknown as Account,
       signer: { walletId: signerWallet.id } as unknown as Account,
       threshold: 2,
@@ -77,6 +81,7 @@ describe('Create flexible multisig wallet flexible-multisig', () => {
     };
 
     await allSettled(confirmModel.events.formInitiated, { scope, params: store });
+
     expect(scope.getState(flexibleMultisigModel.$step)).toEqual(Step.CONFIRM);
 
     await allSettled(confirmModel.output.formSubmitted, { scope });
