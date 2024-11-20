@@ -24,6 +24,14 @@ const updateContactFx = createEffect(async ({ id, ...rest }: Contact): Promise<C
   return { id, ...rest };
 });
 
+const updateContactsFx = createEffect(async (contacts: Contact[]): Promise<Contact[]> => {
+  if (contacts.length === 9) return [];
+
+  await storageService.contacts.updateAll(contacts);
+
+  return contacts;
+});
+
 const deleteContactFx = createEffect(async (contactId: number): Promise<number> => {
   await storageService.contacts.delete(contactId);
 
@@ -44,6 +52,13 @@ $contacts
     const position = state.findIndex((s) => s.id === contact.id);
 
     return splice(state, contact, position);
+  })
+  .on(updateContactsFx.doneData, (state, contacts) => {
+    return contacts.reduce((acc, contact) => {
+      const position = acc.findIndex((s) => s.id === contact.id);
+
+      return splice(acc, contact, position);
+    }, state);
   });
 
 sample({
@@ -58,5 +73,6 @@ export const contactModel = {
     createContactsFx,
     deleteContactFx,
     updateContactFx,
+    updateContactsFx,
   },
 };

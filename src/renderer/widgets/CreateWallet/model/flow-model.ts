@@ -418,6 +418,29 @@ sample({
     contacts: contactModel.$contacts,
   },
   fn: ({ signatories, contacts }) => {
+    return signatories.slice(1).reduce<Contact[]>((acc, { address, name }) => {
+      const contact = contacts.find((c) => c.accountId === toAccountId(address) && c.name !== name);
+
+      if (contact) {
+        acc.push({
+          ...contact,
+          name: name,
+        });
+      }
+
+      return acc;
+    }, []);
+  },
+  target: contactModel.effects.updateContactsFx,
+});
+
+sample({
+  clock: signModel.output.formSubmitted,
+  source: {
+    signatories: signatoryModel.$signatories,
+    contacts: contactModel.$contacts,
+  },
+  fn: ({ signatories, contacts }) => {
     return signatories
       .slice(1)
       .filter((signatory) => !contacts.some((contact) => contact.accountId === toAccountId(signatory.address)))
