@@ -11,6 +11,7 @@ import {
   type ChainMetadata,
   type Connection,
   type Contact,
+  type FlexibleMultisigTransaction,
   type MultisigEvent,
   type MultisigTransaction,
   type MultisigTransactionKey,
@@ -72,6 +73,7 @@ export type ID = string;
 type WithID<T extends NonNullable<unknown>> = { id?: ID } & T;
 
 export type MultisigTransactionDS = WithID<MultisigTransaction>;
+export type FlexibleMultisigTransactionDS = WithID<FlexibleMultisigTransaction>;
 export type MultisigEventDS = WithID<MultisigEvent>;
 
 export type TWallet = Table<Omit<Wallet, 'accounts'>, Wallet['id']>;

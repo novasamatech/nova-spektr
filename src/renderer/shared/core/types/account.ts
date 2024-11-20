@@ -52,11 +52,11 @@ export type MultisigAccount = GenericAccount & {
 
 export type FlexibleMultisigAccount = GenericAccount & {
   type: AccountType.FLEXIBLE_MULTISIG;
-  proxyAccountId: AccountId;
   signatories: Signatory[];
   threshold: MultisigThreshold;
   chainId: ChainId;
   cryptoType: CryptoType;
+  proxyAccountId?: AccountId; // we have accountId only after proxy is created
 };
 
 export type WcAccount = GenericAccount & {

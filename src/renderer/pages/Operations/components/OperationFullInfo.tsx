@@ -1,8 +1,8 @@
 import { useUnit } from 'effector-react';
 
 import { useMultisigChainContext } from '@/app/providers';
-import { type MultisigTransactionDS } from '@/shared/api/storage';
-import { type CallData, type MultisigAccount } from '@/shared/core';
+import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
+import { type CallData, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { Button, Icon, InfoLink, SmallTitleText } from '@/shared/ui';
@@ -18,8 +18,8 @@ import CallDataModal from './modals/CallDataModal';
 import RejectTxModal from './modals/RejectTx';
 
 type Props = {
-  tx: MultisigTransactionDS;
-  account?: MultisigAccount;
+  tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;
+  account?: MultisigAccount | FlexibleMultisigAccount;
 };
 
 export const OperationFullInfo = ({ tx, account }: Props) => {

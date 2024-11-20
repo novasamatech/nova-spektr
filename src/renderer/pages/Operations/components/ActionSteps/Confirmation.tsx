@@ -1,7 +1,14 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { type Account, type MultisigAccount, type MultisigTransaction, type Transaction } from '@/shared/core';
+import {
+  type Account,
+  type FlexibleMultisigAccount,
+  type FlexibleMultisigTransaction,
+  type MultisigAccount,
+  type MultisigTransaction,
+  type Transaction,
+} from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { getAssetById } from '@/shared/lib/utils';
 import { DetailRow, Icon } from '@/shared/ui';
@@ -23,8 +30,8 @@ import { TransactionAmount } from '@/pages/Operations/components/TransactionAmou
 import { Details } from '../Details';
 
 type Props = {
-  tx: MultisigTransaction;
-  account: MultisigAccount;
+  tx: MultisigTransaction | FlexibleMultisigTransaction;
+  account: MultisigAccount | FlexibleMultisigAccount;
   signAccount?: Account;
   chainConnection: ExtendedChain;
   feeTx?: Transaction;

@@ -2,7 +2,13 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 import { Trans } from 'react-i18next';
 
-import { type AccountId, type Contact, type MultisigWallet, type Wallet } from '@/shared/core';
+import {
+  type AccountId,
+  type Contact,
+  type FlexibleMultisigWallet,
+  type MultisigWallet,
+  type Wallet,
+} from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { toAddress } from '@/shared/lib/utils';
@@ -38,7 +44,7 @@ const {
 } = proxyAddPureFeature;
 
 type Props = {
-  wallet: MultisigWallet;
+  wallet: MultisigWallet | FlexibleMultisigWallet;
   signatoryWallets: [Wallet, AccountId][];
   signatoryContacts: Contact[];
   signatoryPeople: AccountId[];

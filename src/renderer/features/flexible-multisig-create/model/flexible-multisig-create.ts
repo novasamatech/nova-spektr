@@ -29,7 +29,7 @@ import {
   nonNullable,
   toAccountId,
   toAddress,
-  transferableAmount,
+  withdrawableAmountBN,
 } from '@/shared/lib/utils';
 import { createDepositCalculator, createFeeCalculator } from '@/shared/transactions';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -218,7 +218,7 @@ const $isEnoughBalance = combine(
     return fee
       .add(multisigDeposit)
       .add(new BN(proxyDeposit))
-      .lte(new BN(transferableAmount(balance)));
+      .lte(new BN(withdrawableAmountBN(balance)));
   },
 );
 
@@ -413,8 +413,6 @@ sample({
       name: name.trim(),
       accountId: multisigAccoutId!,
       threshold: threshold,
-      // TODO get proxy account
-      proxyAccountId: multisigAccoutId!,
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
       chainType: isEthereumChain ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
       type: AccountType.FLEXIBLE_MULTISIG,

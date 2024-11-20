@@ -75,7 +75,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           signatory={confirmStore.signatory}
           proxied={confirmStore.proxiedAccount}
         >
-          {accountUtils.isMultisigAccount(confirmStore.shards[0]) && (
+          {confirmStore.shards?.[0] && accountUtils.isMultisigAccount(confirmStore.shards[0]) && (
             <DetailRow
               className="text-text-primary"
               label={

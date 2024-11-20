@@ -22,6 +22,7 @@ export const walletUtils = {
   isSingleShard,
   isMultisig,
   isFlexibleMultisig,
+  isRegularMultisig,
   isWatchOnly,
   isNovaWallet,
   isWalletConnect,
@@ -54,12 +55,16 @@ function isSingleShard(wallet?: Wallet): wallet is SingleShardWallet {
   return wallet?.type === WalletType.SINGLE_PARITY_SIGNER;
 }
 
-function isMultisig(wallet?: Wallet): wallet is MultisigWallet {
+function isFlexibleMultisig(wallet?: Wallet): wallet is FlexibleMultisigWallet {
+  return wallet?.type === WalletType.FLEXIBLE_MULTISIG;
+}
+
+function isRegularMultisig(wallet?: Wallet): wallet is FlexibleMultisigWallet {
   return wallet?.type === WalletType.MULTISIG;
 }
 
-function isFlexibleMultisig(wallet?: Wallet): wallet is FlexibleMultisigWallet {
-  return wallet?.type === WalletType.FLEXIBLE_MULTISIG;
+function isMultisig(wallet?: Wallet): wallet is MultisigWallet | FlexibleMultisigWallet {
+  return isFlexibleMultisig(wallet) || isRegularMultisig(wallet);
 }
 
 function isWatchOnly(wallet?: Wallet): wallet is WatchOnlyWallet {
