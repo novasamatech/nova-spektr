@@ -13,16 +13,7 @@ import {
 import { cnTw } from '@/shared/lib/utils';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
 
-type HTMLInputProps =
-  | 'value'
-  | 'required'
-  | 'disabled'
-  | 'placeholder'
-  | 'name'
-  | 'autoFocus'
-  | 'type'
-  | 'tabIndex'
-  | 'spellCheck';
+type HTMLInputProps = 'value' | 'disabled' | 'placeholder' | 'name' | 'autoFocus' | 'type' | 'spellCheck';
 
 type ComponentProps = {
   invalid?: boolean;
@@ -45,6 +36,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     {
       type = 'text',
       height = 'md',
+      name,
+      value,
+      placeholder,
       invalid,
       disabled,
       autoFocus,
@@ -55,7 +49,6 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       onChange,
       onChangeEvent,
       onPaste,
-      ...props
     },
     ref,
   ) => {
@@ -109,12 +102,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           autoFocus={autoFocus}
           disabled={disabled}
           spellCheck={spellCheck}
+          name={name}
+          value={value}
+          placeholder={placeholder}
           onChange={(event) => {
             onChange?.(event.target.value);
             onChangeEvent?.(event);
           }}
           onPaste={(event) => onPaste?.(event)}
-          {...props}
         />
         <div
           ref={suffixRef}
