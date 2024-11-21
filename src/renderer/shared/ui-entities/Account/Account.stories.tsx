@@ -8,7 +8,7 @@ const meta: Meta<typeof Account> = {
   title: 'Design System/entities/Account',
   component: Account,
   args: {
-    account: createBaseAccount(),
+    accountId: createBaseAccount().accountId,
     chain: polkadotChain,
   },
 };

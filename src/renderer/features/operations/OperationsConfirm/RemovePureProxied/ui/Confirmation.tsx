@@ -3,13 +3,12 @@ import { type ReactNode, useState } from 'react';
 
 import { ProxyType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { toAddress } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { TransactionDetails } from '@/shared/ui-entities';
+import { Account, TransactionDetails } from '@/shared/ui-entities';
 import { SignButton } from '@/entities/operations';
 import { proxyUtils } from '@/entities/proxy';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
-import { AddressWithExplorers, accountUtils, walletModel } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 
@@ -75,14 +74,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           <FootnoteText>{t(proxyUtils.getProxyTypeName(ProxyType.ANY))}</FootnoteText>
         </DetailRow>
 
-        <DetailRow label={t('proxy.details.revokeFor')}>
-          <AddressWithExplorers
-            type="short"
-            explorers={confirmStore.chain?.explorers}
-            addressFont="text-footnote text-inherit"
-            address={toAddress(confirmStore.spawner, { prefix: confirmStore.chain?.addressPrefix })}
-            wrapperClassName="text-text-secondary"
-          />
+        <DetailRow label={t('proxy.details.revokeFor')} className="text-text-secondary">
+          <Account accountId={confirmStore.spawner} chain={confirmStore.chain} variant="short" />
         </DetailRow>
 
         <hr className="w-full border-filter-border pr-2" />
