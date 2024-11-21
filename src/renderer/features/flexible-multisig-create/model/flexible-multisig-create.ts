@@ -1,13 +1,15 @@
 import { type ApiPromise } from '@polkadot/api';
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import sortBy from 'lodash/sortBy';
 import { delay, or, spread } from 'patronum';
 
+import { balanceService } from '@/shared/api/balances';
 import { proxyService } from '@/shared/api/proxy';
 import {
   type Account,
   AccountType,
+  type Asset,
   type Chain,
   ChainType,
   type Contact,
@@ -24,7 +26,6 @@ import {
   SS58_DEFAULT_PREFIX,
   Step,
   TEST_ACCOUNTS,
-  ZERO_BALANCE,
   isStep,
   nonNullable,
   toAccountId,
@@ -76,7 +77,7 @@ const walletCreated = createEvent<{
 
 const $step = restore(stepChanged, Step.NAME_NETWORK).reset(flowFinished);
 
-const $proxyDeposit = createStore(ZERO_BALANCE).reset(flowFinished);
+const $proxyDeposit = createStore(BN_ZERO).reset(flowFinished);
 const $error = createStore('').reset(flowFinished);
 const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
@@ -119,7 +120,7 @@ const $transaction = combine(
     proxyDeposit: $proxyDeposit,
   },
   ({ api, form, chain, isConnected, signatories, signer, proxyDeposit, multisigAccountId }) => {
-    if (!isConnected || !chain || !api || !multisigAccountId || !form.threshold || !proxyDeposit || !signer) {
+    if (!isConnected || !chain || !api || !multisigAccountId || !form.threshold || !signer) {
       return null;
     }
 
@@ -132,7 +133,7 @@ const $transaction = combine(
       signatories: signatoriesWrapped,
       multisigAccountId,
       threshold: form.threshold,
-      proxyDeposit,
+      proxyDeposit: proxyDeposit.toString(),
     });
   },
 );
@@ -181,13 +182,23 @@ const { $deposit: $multisigDeposit, $pending: $pendingDeposit } = createDepositC
   $threshold: formModel.$createMultisigForm.fields.threshold.$value,
 });
 
-const getProxyDepositFx = createEffect((api: ApiPromise): string => {
-  return proxyService.getProxyDeposit(api, '0', 1);
+type GetDepositParams = {
+  api: ApiPromise;
+  asset: Asset;
+};
+
+const getProxyDepositFx = createEffect(async ({ api, asset }: GetDepositParams): Promise<BN> => {
+  const minDeposit = await balanceService.getExistentialDeposit(api, asset);
+  const proxyDeposit = new BN(proxyService.getProxyDeposit(api, '0', 1));
+
+  return BN.max(minDeposit, proxyDeposit);
 });
 
 sample({
   clock: $api,
-  filter: nonNullable,
+  source: formModel.$chain,
+  filter: (chain, api) => nonNullable(api) && nonNullable(chain) && nonNullable(chain.assets?.[0]),
+  fn: (chain, api) => ({ api: api!, asset: chain!.assets[0] }),
   target: getProxyDepositFx,
 });
 
