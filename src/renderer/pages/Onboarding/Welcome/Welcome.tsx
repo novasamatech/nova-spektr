@@ -36,7 +36,7 @@ export const Welcome = () => {
   }, []);
 
   return (
-    <div className="flex h-screen w-full animate-in fade-in">
+    <div className="flex h-full w-full animate-in fade-in">
       <div className="flex h-full w-[512px] flex-col p-10">
         <TitleText className="mb-8">{t('onboarding.welcome.title')}</TitleText>
 
