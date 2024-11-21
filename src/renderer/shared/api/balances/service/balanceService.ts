@@ -312,11 +312,14 @@ function subscribeLockOrmlAssetChange(
 
 async function getExistentialDeposit(api: ApiPromise, asset: Asset): Promise<BN> {
   switch (asset.type) {
-    case AssetType.NATIVE:
+    case AssetType.NATIVE: {
       return api.consts.balances.existentialDeposit.toBn();
-    case AssetType.STATEMINE:
+    }
+    case AssetType.STATEMINE: {
       return await api.query.assets.asset(asset.assetId).then((balance) => balance.value.minBalance.toBn());
-    case AssetType.ORML:
+    }
+    case AssetType.ORML: {
       return new BN((asset.typeExtras as OrmlExtras).existentialDeposit);
+    }
   }
 }
