@@ -1,7 +1,7 @@
 import { type Meta, type StoryObj } from '@storybook/react';
 import { expect, within } from '@storybook/test';
 
-import { Icon } from '@/shared/ui';
+import { Icon, IconButton } from '@/shared/ui';
 
 import { Input } from './Input';
 
@@ -78,7 +78,7 @@ export const Prefix: Story = {
 
 export const Suffix: Story = {
   args: {
-    suffixElement: <Icon name="warnCutout" className="text-alert" size={16} />,
+    suffixElement: <IconButton name="btc" size={16} />,
   },
 
   async play({ canvasElement }) {
