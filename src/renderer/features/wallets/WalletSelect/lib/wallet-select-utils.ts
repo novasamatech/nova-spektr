@@ -31,7 +31,7 @@ const getWalletByGroups = (wallets: Wallet[], query = ''): Record<WalletFamily, 
 };
 
 const getFirstWallet = (wallets: Wallet[]) => {
-  return getWalletByGroups(wallets)[WalletType.POLKADOT_VAULT].at(0) ?? null;
+  return Object.values(getWalletByGroups(wallets)).flat().at(0) ?? null;
 };
 
 export const walletSelectUtils = {
