@@ -187,7 +187,7 @@ type GetDepositParams = {
   asset: Asset;
 };
 
-const getDepositFx = createEffect(async ({ api, asset }: GetDepositParams): Promise<BN> => {
+const getProxyDepositFx = createEffect(async ({ api, asset }: GetDepositParams): Promise<BN> => {
   const minDeposit = await balanceService.getExistentialDeposit(api, asset);
   const proxyDeposit = new BN(proxyService.getProxyDeposit(api, '0', 1));
 
@@ -199,11 +199,11 @@ sample({
   source: formModel.$chain,
   filter: (chain, api) => nonNullable(api) && nonNullable(chain) && nonNullable(chain.assets?.[0]),
   fn: (chain, api) => ({ api: api!, asset: chain!.assets[0] }),
-  target: getDepositFx,
+  target: getProxyDepositFx,
 });
 
 sample({
-  clock: getDepositFx.doneData,
+  clock: getProxyDepositFx.doneData,
   target: $proxyDeposit,
 });
 
@@ -519,7 +519,7 @@ export const flexibleMultisigModel = {
   $fee,
   $proxyDeposit,
   $multisigDeposit,
-  $isLoading: or($pendingFee, $pendingDeposit, getDepositFx.pending),
+  $isLoading: or($pendingFee, $pendingDeposit, getProxyDepositFx.pending),
   $isEnoughBalance,
 
   events: {
