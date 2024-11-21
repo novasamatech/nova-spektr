@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { chainsService } from '@/shared/api/network';
 import { type Account, type Chain } from '@/shared/core';
-import { isStringsMatchQuery } from '@/shared/lib/utils';
+import { isStringsMatchQuery, nullable } from '@/shared/lib/utils';
 import { AssetsListView, EmptyAssetsState } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -46,8 +46,10 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
     });
 
     const filteredChains = availableChains.filter((c) => {
-      if (!connections[c.chainId]) return false;
-      if (networkUtils.isDisabledConnection(connections[c.chainId])) return false;
+      const connection = connections[c.chainId];
+
+      if (nullable(connection)) return false;
+      if (networkUtils.isDisabledConnection(connection)) return false;
       if (!isMultisig) return true;
 
       return networkUtils.isMultisigSupported(c.options) || multisigChainToInclude === c.chainId;

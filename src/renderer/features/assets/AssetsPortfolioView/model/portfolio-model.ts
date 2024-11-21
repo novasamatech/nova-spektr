@@ -2,7 +2,7 @@ import { createEffect, createEvent, createStore, restore, sample } from 'effecto
 import { once } from 'patronum';
 
 import { type Account, type AssetByChains, type Balance, type Chain, type ChainId, type Wallet } from '@/shared/core';
-import { includes } from '@/shared/lib/utils';
+import { includes, nullable } from '@/shared/lib/utils';
 import { AssetsListView } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -108,14 +108,18 @@ sample({
   },
   fn: ({ connections, chains, tokens, activeWallet }): AssetByChains[] => {
     const isMultisigWallet = walletUtils.isMultisig(activeWallet);
-    const multisigChainToInclude = isMultisigWallet ? activeWallet.accounts[0].chainId : undefined;
+    const hasAccounts = activeWallet!.accounts.length > 0;
+    const multisigChainToInclude = isMultisigWallet && hasAccounts ? activeWallet.accounts[0].chainId : undefined;
 
     const activeTokens: AssetByChains[] = [];
 
     for (const token of tokens) {
       const filteredChains = token.chains.filter((c) => {
-        if (!connections[c.chainId]) return false;
-        if (networkUtils.isDisabledConnection(connections[c.chainId])) return false;
+        const connection = connections[c.chainId];
+
+        if (nullable(connection)) return false;
+        if (networkUtils.isDisabledConnection(connection)) return false;
+        if (nullable(chains[c.chainId])) return false;
         if (!isMultisigWallet) return true;
 
         return networkUtils.isMultisigSupported(chains[c.chainId].options) || multisigChainToInclude === c.chainId;
