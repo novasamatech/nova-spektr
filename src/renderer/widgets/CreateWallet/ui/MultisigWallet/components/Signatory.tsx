@@ -151,6 +151,7 @@ export const Signatory = ({
     if (!validateFn(address)) return;
 
     const wallet = walletUtils.getWalletFilteredAccounts(wallets, {
+      walletFn: walletUtils.isValidSignatory,
       accountFn: ({ accountId }) => accountId === toAccountId(address),
     });
 
