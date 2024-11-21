@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 
-import { type WalletFamily } from '@/shared/core';
+import { type Account, type Address as AccountAddress, type WalletFamily } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import {
   performSearch,
@@ -10,9 +10,9 @@ import {
   validateEthereumAddress,
   validateSubstrateAddress,
 } from '@/shared/lib/utils';
-import { CaptionText, Combobox, IconButton, Identicon, Input } from '@/shared/ui';
-import { type ComboboxOption } from '@/shared/ui/types';
+import { CaptionText, IconButton, Identicon } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
+import { Box, Combobox, Field, Input } from '@/shared/ui-kit';
 import { contactModel } from '@/entities/contact';
 import { networkUtils } from '@/entities/network';
 import { WalletIcon, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -26,7 +26,7 @@ interface Props {
   signatoryName: string;
   signatoryAddress: string;
   signatoryIndex: number;
-  selectedWalletId: string;
+  selectedWalletId?: string;
   isOwnAccount?: boolean;
   onDelete?: (index: number) => void;
 }
@@ -40,14 +40,17 @@ export const Signatory = ({
   selectedWalletId,
 }: Props) => {
   const { t } = useI18n();
+
   const chain = useUnit(formModel.$chain);
   const contacts = useUnit(contactModel.$contacts);
   const wallets = useUnit(walletModel.$wallets);
 
   const [query, setQuery] = useState('');
-  const [options, setOptions] = useState<ComboboxOption[]>([]);
+  const [accountsGroup, setAccountsGroup] = useState<[WalletFamily, Account[]][]>([]);
 
-  const contactsFiltered = useMemo(() => {
+  const filteredContacts = useMemo(() => {
+    if (isOwnAccount) return [];
+
     return performSearch({
       query,
       records: contacts,
@@ -74,92 +77,61 @@ export const Signatory = ({
   const displayName = useMemo(() => {
     const hasDuplicateName = !!ownAccountName && !!contactAccountName;
     const shouldForceOwnAccountName = hasDuplicateName && isOwnAccount;
-    if (shouldForceOwnAccountName) return ownAccountName;
 
+    if (shouldForceOwnAccountName) return ownAccountName;
     if (hasDuplicateName && !isOwnAccount) return contactAccountName;
 
-    return ownAccountName || contactAccountName || name;
-  }, [isOwnAccount, ownAccountName, contactAccountName, name]);
+    return ownAccountName || contactAccountName;
+  }, [isOwnAccount, ownAccountName, contactAccountName]);
 
   useEffect(() => {
     if (!isOwnAccount || wallets.length === 0 || !chain) return;
 
     const walletByGroup = walletSelectUtils.getWalletByGroups(wallets, query);
-    const opts = Object.entries(walletByGroup).reduce((acc, [walletType, wallets], index) => {
-      if (wallets.length === 0) {
-        return acc;
+
+    const options: [WalletFamily, Account[]][] = [];
+    const checkedAddresses: Set<AccountAddress> = new Set();
+
+    for (const [walletFamily, walletsGroup] of Object.entries(walletByGroup)) {
+      if (walletsGroup.length === 0) continue;
+
+      const accountOptions: Account[] = [];
+      for (const wallet of walletsGroup) {
+        if (!wallet.accounts.length || !walletUtils.isValidSignatory(wallet)) continue;
+
+        for (const account of wallet.accounts) {
+          if (checkedAddresses.has(account.accountId)) continue;
+
+          const isChainMatch = accountUtils.isChainAndCryptoMatch(account, chain);
+          const isCorrectAccount = accountUtils.isNonBaseVaultAccount(account, wallet);
+
+          if (!isChainMatch || !isCorrectAccount) continue;
+
+          accountOptions.push(account);
+          checkedAddresses.add(account.accountId);
+        }
       }
 
-      const accountOptions = wallets.reduce((acc, wallet) => {
-        if (!wallet.accounts.length || !walletUtils.isValidSignatory(wallet)) return acc;
+      if (accountOptions.length === 0) continue;
 
-        const accounts = wallet.accounts
-          .filter((account) => {
-            const isChainMatch = accountUtils.isChainAndCryptoMatch(account, chain);
-            const isCorrectAccount = accountUtils.isNonBaseVaultAccount(account, wallet);
+      options.push([walletFamily as WalletFamily, accountOptions]);
+    }
 
-            return isChainMatch && isCorrectAccount;
-          })
-          .map((account) => {
-            const address = toAddress(account.accountId, { prefix: chain?.addressPrefix });
-
-            return {
-              id: account.walletId.toString(),
-              value: address,
-              element: <Address showIcon title={account.name} address={address} />,
-            };
-          });
-
-        return acc.concat(accounts);
-      }, [] as ComboboxOption[]);
-
-      if (accountOptions.length === 0) {
-        return acc;
-      }
-
-      return acc.concat([
-        {
-          id: index.toString(),
-          element: (
-            <div className="flex items-center gap-x-2" key={`${walletType}-${index}`}>
-              <WalletIcon type={walletType as WalletFamily} />
-              <CaptionText className="font-semibold uppercase text-text-secondary">
-                {t(GroupLabels[walletType as WalletFamily])}
-              </CaptionText>
-            </div>
-          ),
-          value: undefined,
-          disabled: true,
-        },
-        ...accountOptions,
-      ]);
-    }, [] as ComboboxOption[]);
-
-    setOptions(opts);
-  }, [query, wallets, isOwnAccount, t]);
+    setAccountsGroup(options);
+  }, [query, wallets, isOwnAccount]);
 
   // initiate the query form in case of not own account
   useEffect(() => {
     if (isOwnAccount || contacts.length === 0) return;
+
     filterModel.events.formInitiated();
-  }, [isOwnAccount, filterModel, contacts]);
+  }, [isOwnAccount, contacts]);
 
-  // list of contacts in case of not own account
   useEffect(() => {
-    if (isOwnAccount || contacts.length === 0) return;
+    if (!displayName || displayName === signatoryName) return;
 
-    setOptions(
-      contactsFiltered.map(({ name, address }) => {
-        const displayAddress = toAddress(address, { prefix: chain?.addressPrefix });
-
-        return {
-          id: signatoryIndex.toString(),
-          element: <Address title={name} address={displayAddress} />,
-          value: displayAddress,
-        };
-      }),
-    );
-  }, [query, isOwnAccount, contacts, contactsFiltered]);
+    onNameChange(displayName);
+  }, [displayName]);
 
   const onNameChange = (newName: string) => {
     signatoryModel.events.changeSignatory({
@@ -170,74 +142,92 @@ export const Signatory = ({
     });
   };
 
-  useEffect(() => {
-    if (displayName && displayName !== signatoryName) {
-      onNameChange(displayName);
-    }
-  }, [displayName]);
-
-  const onAddressChange = (data: ComboboxOption) => {
+  const onAddressChange = (address: AccountAddress) => {
     if (!chain) return;
 
     const isEthereumChain = networkUtils.isEthereumBased(chain.options);
     const validateFn = isEthereumChain ? validateEthereumAddress : validateSubstrateAddress;
 
-    const validatedAddress = validateFn(data.value) ? data.value : '';
-    const fixedAddress = toAddress(validatedAddress, { prefix: chain?.addressPrefix });
+    if (!validateFn(address)) return;
+
+    const wallet = walletUtils.getWalletFilteredAccounts(wallets, {
+      walletFn: walletUtils.isValidSignatory,
+      accountFn: ({ accountId }) => accountId === toAccountId(address),
+    });
 
     signatoryModel.events.changeSignatory({
+      address,
       index: signatoryIndex,
-      walletId: data.id,
       name: signatoryName,
-      address: fixedAddress,
+      walletId: wallet?.id.toString() ?? undefined,
     });
   };
-
-  const handleQueryChange = (newQuery: string) => {
-    setQuery(newQuery);
-  };
-
-  const prefixElement = (
-    <div className="flex h-auto items-center">
-      <Identicon className="mr-1" address={signatoryAddress} size={20} background={false} canCopy={false} />
-    </div>
-  );
 
   const accountInputLabel = isOwnAccount
     ? t('createMultisigAccount.ownAccountSelection')
     : t('createMultisigAccount.signatoryAddress');
 
   return (
-    <div className="flex gap-x-2">
-      <div className="w-[300px]">
+    <div className="grid grid-cols-[300px,1fr] gap-x-2">
+      <Field text={t('createMultisigAccount.signatoryNameLabel')}>
         <Input
           name={t('createMultisigAccount.signatoryNameLabel')}
-          className=""
-          wrapperClass="h-[36px]"
-          label={t('createMultisigAccount.signatoryNameLabel')}
           placeholder={t('addressBook.createContact.namePlaceholder')}
           invalid={false}
           value={signatoryName}
           disabled={!!ownAccountName}
           onChange={onNameChange}
         />
+      </Field>
+      <div className="flex items-end gap-x-2">
+        <Box width="100%">
+          <Field text={accountInputLabel}>
+            <Combobox
+              placeholder={t('createMultisigAccount.signatorySelection')}
+              prefixElement={<Identicon address={signatoryAddress} size={20} background={false} canCopy={false} />}
+              value={signatoryAddress}
+              onChange={onAddressChange}
+              onInput={setQuery}
+            >
+              {accountsGroup.map(([walletType, accounts]) => (
+                <Combobox.Group
+                  key={walletType}
+                  title={
+                    <div className="flex items-center gap-x-2">
+                      <WalletIcon type={walletType as WalletFamily} />
+                      <CaptionText className="font-semibold uppercase text-text-secondary">
+                        {t(GroupLabels[walletType as WalletFamily])}
+                      </CaptionText>
+                    </div>
+                  }
+                >
+                  {accounts.map((account) => {
+                    const address = toAddress(account.accountId, { prefix: chain?.addressPrefix });
+
+                    return (
+                      <Combobox.Item key={`${account.walletId}-${account.accountId}`} value={address}>
+                        <Address showIcon title={account.name} address={address} />
+                      </Combobox.Item>
+                    );
+                  })}
+                </Combobox.Group>
+              ))}
+              {filteredContacts.map((contact) => {
+                const address = toAddress(contact.accountId, { prefix: chain?.addressPrefix });
+
+                return (
+                  <Combobox.Item key={contact.id} value={address}>
+                    <Address showIcon title={contact.name} address={address} />
+                  </Combobox.Item>
+                );
+              })}
+            </Combobox>
+          </Field>
+        </Box>
+        {!isOwnAccount && onDelete && (
+          <IconButton className="mb-3.5" name="delete" size={16} onClick={() => onDelete(signatoryIndex)} />
+        )}
       </div>
-      <Combobox
-        className="flex-1"
-        label={accountInputLabel}
-        placeholder={t('createMultisigAccount.signatorySelection')}
-        options={options}
-        query={query}
-        value={toAddress(signatoryAddress, { prefix: chain?.addressPrefix })}
-        prefixElement={prefixElement}
-        onChange={(data) => {
-          onAddressChange(data);
-        }}
-        onInput={handleQueryChange}
-      />
-      {!isOwnAccount && onDelete && (
-        <IconButton className="ml-2 mt-6" name="delete" size={16} onClick={() => onDelete(signatoryIndex)} />
-      )}
     </div>
   );
 };
