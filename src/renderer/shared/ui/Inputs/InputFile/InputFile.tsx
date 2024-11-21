@@ -5,10 +5,10 @@ import { Icon } from '../../Icon/Icon';
 import { FootnoteText, TextBase } from '../../Typography';
 import { type HTMLInputFileProps } from '../common/types';
 
-interface Props extends Pick<ComponentPropsWithoutRef<'input'>, HTMLInputFileProps> {
+type Props = Pick<ComponentPropsWithoutRef<'input'>, HTMLInputFileProps> & {
   invalid?: boolean;
   onChange?: (file: File) => void;
-}
+};
 
 export const InputFile = forwardRef<HTMLInputElement, Props>(
   ({ placeholder, className, invalid = false, onChange, ...props }, ref) => {

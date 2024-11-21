@@ -1,47 +1,89 @@
-import { type Meta, type StoryFn } from '@storybook/react';
+import { type Meta, type StoryObj } from '@storybook/react';
+import { expect, within } from '@storybook/test';
 
 import { Icon } from '@/shared/ui';
 
 import { Input } from './Input';
 
-export default {
+const meta: Meta<typeof Input> = {
   title: 'Design System/kit/Input',
   component: Input,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as Meta<typeof Input>;
-
-const Template: StoryFn<typeof Input> = (args) => <Input {...args} />;
-
-export const Primary = Template.bind({});
-Primary.args = {
-  placeholder: 'Test input',
+  args: {
+    testId: 'input',
+    value: 'This is value',
+  },
 };
 
-export const Filled = Template.bind({});
-Filled.args = {
-  value: 'This is value',
+export default meta;
+
+type Story = StoryObj<typeof Input>;
+
+export const Default: Story = {
+  args: {
+    value: '',
+    placeholder: 'Test input',
+  },
+
+  async play({ args, canvasElement }) {
+    const canvas = within(canvasElement);
+    const Input = await canvas.findByTestId<HTMLInputElement>('input');
+    expect(Input.value).toEqual(args.value);
+    expect(Input.placeholder).toEqual(args.placeholder);
+  },
 };
 
-export const Invalid = Template.bind({});
-Invalid.args = {
-  value: 'This is value',
-  invalid: true,
+export const Filled: Story = {
+  async play({ args, canvasElement }) {
+    const canvas = within(canvasElement);
+    const Input = await canvas.findByTestId<HTMLInputElement>('input');
+    expect(Input.value).toEqual(args.value);
+  },
 };
 
-export const Disabled = Template.bind({});
-Disabled.args = {
-  value: 'This is value',
-  disabled: true,
+export const Invalid: Story = {
+  args: {
+    invalid: true,
+  },
+
+  async play({ canvasElement }) {
+    const canvas = within(canvasElement);
+    const Input = await canvas.findByTestId<HTMLInputElement>('input');
+    expect(Input).toHaveClass('border-filter-border-negative');
+  },
 };
 
-export const Prefix = Template.bind({});
-Prefix.args = {
-  value: 'This is value',
-  prefixElement: <Icon name="search" className="text-text-secondary" size={16} />,
+export const Disabled: Story = {
+  args: {
+    disabled: true,
+  },
+
+  async play({ args, canvasElement }) {
+    const canvas = within(canvasElement);
+    const Input = await canvas.findByTestId<HTMLInputElement>('input');
+    expect(Input.disabled).toEqual(args.disabled);
+  },
 };
 
-export const Suffix = Template.bind({});
-Suffix.args = {
-  value: 'This is value',
-  suffixElement: <Icon name="warnCutout" className="text-alert" size={16} />,
+export const Prefix: Story = {
+  args: {
+    prefixElement: <Icon name="search" className="text-text-secondary" size={16} />,
+  },
+
+  async play({ canvasElement }) {
+    const canvas = within(canvasElement);
+    const Prefix = await canvas.findByTestId('search-svg');
+    expect(Prefix).toBeInTheDocument();
+  },
+};
+
+export const Suffix: Story = {
+  args: {
+    suffixElement: <Icon name="warnCutout" className="text-alert" size={16} />,
+  },
+
+  async play({ canvasElement }) {
+    const canvas = within(canvasElement);
+    const Suffix = await canvas.findByTestId('warnCutout-svg');
+    expect(Suffix).toBeInTheDocument();
+  },
 };
