@@ -30,6 +30,7 @@ type ContextProps = {
 type ExpandedContextProps = {
   comboboxRef?: RefObject<HTMLInputElement>;
   listboxRef?: RefObject<HTMLDivElement>;
+  anchorRef?: RefObject<HTMLDivElement>;
 };
 
 const Context = createContext<ContextProps & ExpandedContextProps>({});
@@ -50,10 +51,11 @@ type RootProps = PropsWithChildren<ControlledPopoverProps & ContextProps & Input
 const Root = ({ testId = 'Combobox', value, onChange, onInput, children, ...inputProps }: RootProps) => {
   const comboboxRef = useRef<HTMLInputElement>(null);
   const listboxRef = useRef<HTMLDivElement>(null);
+  const anchorRef = useRef<HTMLDivElement>(null);
 
   const [open, onOpenChange] = useState(false);
 
-  const ctx = useMemo(() => ({ open, onOpenChange, testId, comboboxRef, listboxRef }), [open, testId]);
+  const ctx = useMemo(() => ({ open, onOpenChange, testId, comboboxRef, listboxRef, anchorRef }), [open, testId]);
 
   return (
     <Context.Provider value={ctx}>
@@ -75,7 +77,7 @@ const Root = ({ testId = 'Combobox', value, onChange, onInput, children, ...inpu
 };
 
 const Trigger = ({ placeholder, ...inputProps }: InputProps) => {
-  const { onOpenChange, comboboxRef } = useContext(Context);
+  const { onOpenChange, comboboxRef, anchorRef } = useContext(Context);
 
   return (
     <RadixPopover.Anchor asChild>
@@ -84,7 +86,11 @@ const Trigger = ({ placeholder, ...inputProps }: InputProps) => {
         autoComplete="both"
         ref={comboboxRef}
         placeholder={placeholder}
-        render={({ onChange, ...props }) => <Input {...props} {...inputProps} onChangeEvent={onChange} />}
+        render={({ onChange, ...props }) => (
+          <div ref={anchorRef} className="h-full w-full">
+            <Input {...props} {...inputProps} onChangeEvent={onChange} />
+          </div>
+        )}
         onFocus={() => onOpenChange?.(true)}
         onBlur={() => onOpenChange?.(false)}
       />
@@ -94,19 +100,19 @@ const Trigger = ({ placeholder, ...inputProps }: InputProps) => {
 
 const Content = ({ children }: PropsWithChildren) => {
   const { portalContainer } = useTheme();
-  const { testId, comboboxRef, listboxRef } = useContext(Context);
+  const { testId, comboboxRef, listboxRef, anchorRef } = useContext(Context);
 
-  if (Children.count(children) === 0) return null;
+  if (Children.count(children) === 0 || !anchorRef?.current) return null;
 
   return (
     <RadixPopover.Portal container={portalContainer}>
       <RadixPopover.Content
         asChild
         hideWhenDetached
-        style={{ width: 'var(--radix-popover-trigger-width)' }}
+        data-testid={testId}
+        style={{ width: `${anchorRef.current.getBoundingClientRect().width}px` }}
         collisionPadding={gridSpaceConverter(2)}
         sideOffset={gridSpaceConverter(2)}
-        data-testid={testId}
         onOpenAutoFocus={(e) => e.preventDefault()}
         onInteractOutside={(event) => {
           const target = event.target as Element | null;
