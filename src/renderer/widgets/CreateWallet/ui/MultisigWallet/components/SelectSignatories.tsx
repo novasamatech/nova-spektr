@@ -16,7 +16,7 @@ export const SelectSignatories = () => {
       <div className="flex flex-col gap-y-2">
         {signatories.map((value, index) => (
           <Signatory
-            key={`${value.name}_${value.address}_${index}`}
+            key={`${value.address}_${index}`}
             isOwnAccount={index === 0}
             signatoryIndex={index}
             signatoryName={value.name}
