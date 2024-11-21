@@ -35,7 +35,6 @@ import { transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { ExtrinsicResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
-import { proxiesModel } from '@/features/proxies';
 import { walletPairingModel } from '@/features/wallets';
 import { type AddMultisigStore, type FormSubmitEvent } from '../lib/types';
 
@@ -264,14 +263,6 @@ sample({
   filter: ({ params }) => params.wallet.type === WalletType.MULTISIG,
   fn: ({ error }) => error.message,
   target: $error,
-});
-
-sample({
-  clock: walletModel.events.walletCreatedDone,
-  filter: ({ wallet, external }) => wallet.type === WalletType.MULTISIG && !external,
-  fn: ({ wallet }) => wallet.id,
-  // wallet selection shouldn't be here, but here we are
-  target: [walletModel.events.selectWallet, walletProviderModel.events.completed, proxiesModel.events.workerStarted],
 });
 
 // Submit
