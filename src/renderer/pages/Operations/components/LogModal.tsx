@@ -2,11 +2,12 @@ import { useUnit } from 'effector-react';
 import groupBy from 'lodash/groupBy';
 
 import { chainsService } from '@/shared/api/network';
-import { type MultisigTransactionDS } from '@/shared/api/storage';
+import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
 import {
   type Account,
   type AccountId,
   type Contact,
+  type FlexibleMultisigAccount,
   type MultisigAccount,
   type MultisigEvent,
   type SigningStatus,
@@ -26,8 +27,8 @@ import { getSignatoryName } from '../common/utils';
 import { Status } from './Status';
 
 type Props = {
-  tx: MultisigTransactionDS;
-  account?: MultisigAccount;
+  tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;
+  account?: MultisigAccount | FlexibleMultisigAccount;
   connection?: ExtendedChain;
   contacts: Contact[];
   isOpen: boolean;

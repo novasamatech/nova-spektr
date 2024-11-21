@@ -28,8 +28,9 @@ import { walletUtils } from './wallet-utils';
 export const accountUtils = {
   isBaseAccount,
   isChainAccount,
-  isMultisigAccount,
+  isRegularMultisigAccount,
   isFlexibleMultisigAccount,
+  isMultisigAccount,
   isWcAccount,
   isProxiedAccount,
   isPureProxiedAccount,
@@ -74,12 +75,16 @@ function isShardAccount(account: Partial<Account>): account is ShardAccount {
   return account.type === AccountType.SHARD;
 }
 
-function isMultisigAccount(account: Partial<Account>): account is MultisigAccount {
+function isRegularMultisigAccount(account: Partial<Account>): account is MultisigAccount {
   return account.type === AccountType.MULTISIG;
 }
 
 function isFlexibleMultisigAccount(account: Partial<Account>): account is FlexibleMultisigAccount {
   return account.type === AccountType.FLEXIBLE_MULTISIG;
+}
+
+function isMultisigAccount(account: Partial<Account>): account is MultisigAccount | FlexibleMultisigAccount {
+  return isFlexibleMultisigAccount(account) || isRegularMultisigAccount(account);
 }
 
 function isProxiedAccount(account: Partial<Account>): account is ProxiedAccount {

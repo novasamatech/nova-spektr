@@ -88,6 +88,7 @@ export type {
   DecodedTransaction,
   MultisigEvent,
   MultisigTransaction,
+  FlexibleMultisigTransaction,
   MultisigTransactionKey,
   TxWrapper,
   TxWrappers_OLD,

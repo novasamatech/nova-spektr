@@ -37,6 +37,7 @@ export const WalletDetails = ({ isOpen, wallet, onClose }: Props) => {
     return <MultishardWalletDetails wallet={wallet} accounts={multiShardAccounts} onClose={onClose} />;
   }
 
+  // TODO: Separate wallet details for regular and flexible multisig
   if (walletUtils.isMultisig(wallet)) {
     return (
       <MultisigWalletDetails

@@ -17,7 +17,7 @@ const getWalletByGroups = (wallets: Wallet[], query = ''): Record<WalletFamily, 
     let groupIndex: WalletFamily | undefined;
 
     if (walletUtils.isPolkadotVaultGroup(wallet)) groupIndex = WalletType.POLKADOT_VAULT;
-    if (walletUtils.isMultisig(wallet)) groupIndex = WalletType.MULTISIG;
+    if (walletUtils.isRegularMultisig(wallet)) groupIndex = WalletType.MULTISIG;
     if (walletUtils.isFlexibleMultisig(wallet)) groupIndex = WalletType.FLEXIBLE_MULTISIG;
     if (walletUtils.isWatchOnly(wallet)) groupIndex = WalletType.WATCH_ONLY;
     if (walletUtils.isWalletConnect(wallet)) groupIndex = WalletType.WALLET_CONNECT;

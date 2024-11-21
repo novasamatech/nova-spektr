@@ -213,7 +213,7 @@ sample({
   clock: walletModel.events.walletCreatedDone,
   filter: ({ wallet }) => wallet.type === WalletType.MULTISIG,
   fn: ({ accounts }) => {
-    return accounts.filter(accountUtils.isMultisigAccount).map<NoID<MultisigCreated>>((account) => {
+    return accounts.filter(accountUtils.isRegularMultisigAccount).map<NoID<MultisigCreated>>((account) => {
       return {
         read: false,
         type: NotificationType.MULTISIG_CREATED,
@@ -241,7 +241,6 @@ sample({
         dateCreated: Date.now(),
         multisigAccountId: account.accountId,
         multisigAccountName: account.name,
-        proxyAccountId: account.proxyAccountId,
         chainId: account.chainId,
         signatories: account.signatories.map((signatory) => signatory.accountId),
         threshold: account.threshold,
