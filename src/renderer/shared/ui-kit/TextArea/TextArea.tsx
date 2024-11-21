@@ -4,7 +4,6 @@ import { cnTw } from '@/shared/lib/utils';
 
 type HTMLTextAreaProps =
   | 'value'
-  | 'required'
   | 'disabled'
   | 'placeholder'
   | 'name'
@@ -13,14 +12,15 @@ type HTMLTextAreaProps =
   | 'maxLength'
   | 'spellCheck';
 
-interface Props extends Pick<ComponentPropsWithoutRef<'textarea'>, HTMLTextAreaProps> {
+type Props = Pick<ComponentPropsWithoutRef<'textarea'>, HTMLTextAreaProps> & {
   testId?: string;
   invalid?: boolean;
-  onChange?: (value: string) => void;
-}
+  value: string;
+  onChange: (value: string) => void;
+};
 
 export const TextArea = forwardRef<HTMLTextAreaElement, Props>(
-  ({ invalid, disabled, testId, onChange, ...props }, ref) => {
+  ({ invalid, disabled, testId, value, onChange, ...props }, ref) => {
     return (
       <textarea
         className={cnTw(
@@ -34,8 +34,10 @@ export const TextArea = forwardRef<HTMLTextAreaElement, Props>(
           },
         )}
         ref={ref}
+        value={value}
         data-testid={testId}
-        onChange={(event) => onChange?.(event.target.value)}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.value)}
         {...props}
       />
     );

@@ -3,22 +3,12 @@ import { type ChangeEvent, type ComponentPropsWithoutRef, forwardRef, useState }
 import { cnTw } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
 
-export type HTMLInputFileProps =
-  | 'value'
-  | 'required'
-  | 'disabled'
-  | 'placeholder'
-  | 'name'
-  | 'autoFocus'
-  | 'type'
-  | 'tabIndex'
-  | 'spellCheck'
-  | 'accept';
+export type HTMLInputFileProps = 'required' | 'disabled' | 'accept' | 'placeholder';
 
-interface Props extends Pick<ComponentPropsWithoutRef<'input'>, HTMLInputFileProps> {
+type Props = Pick<ComponentPropsWithoutRef<'input'>, HTMLInputFileProps> & {
   invalid?: boolean;
   onChange?: (file: File) => void;
-}
+};
 
 export const InputFile = forwardRef<HTMLInputElement, Props>(
   ({ placeholder, invalid = false, onChange, ...props }, ref) => {

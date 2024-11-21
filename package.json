@@ -67,6 +67,7 @@
   },
   "dependencies": {
     "@apollo/client": "3.11.8",
+    "@ariakit/react": "0.4.14",
     "@headlessui/react": "^1.7.17",
     "@polkadot/api": "13.1.1",
     "@polkadot/keyring": "13.1.1",

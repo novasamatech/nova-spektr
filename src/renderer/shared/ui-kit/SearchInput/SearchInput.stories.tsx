@@ -1,33 +1,36 @@
-import { type Meta, type StoryFn } from '@storybook/react';
+import { type Meta, type StoryObj } from '@storybook/react';
 
 import { SearchInput } from './SearchInput';
 
-export default {
+const meta: Meta<typeof SearchInput> = {
   title: 'Design System/kit/SearchInput',
   component: SearchInput,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as Meta<typeof SearchInput>;
-
-const Template: StoryFn<typeof SearchInput> = (args) => <SearchInput {...args} />;
-
-export const Primary = Template.bind({});
-Primary.args = {
-  placeholder: 'Test input',
+  args: {
+    value: 'This is value',
+  },
 };
 
-export const Filled = Template.bind({});
-Filled.args = {
-  value: 'This is value',
+export default meta;
+
+type Story = StoryObj<typeof SearchInput>;
+
+export const Default: Story = {
+  args: {
+    value: '',
+    placeholder: 'Test input',
+  },
 };
 
-export const Invalid = Template.bind({});
-Invalid.args = {
-  value: 'This is value',
-  invalid: true,
+export const Filled: Story = {};
+
+export const Invalid: Story = {
+  args: {
+    invalid: true,
+  },
 };
 
-export const Disabled = Template.bind({});
-Disabled.args = {
-  value: 'This is value',
-  disabled: true,
+export const Disabled: Story = {
+  args: {
+    disabled: true,
+  },
 };

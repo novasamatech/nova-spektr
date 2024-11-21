@@ -11,6 +11,9 @@ importers:
       '@apollo/client':
         specifier: 3.11.8
         version: 3.11.8(@types/react@18.0.14)(graphql@16.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@ariakit/react':
+        specifier: 0.4.14
+        version: 0.4.14(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@headlessui/react':
         specifier: ^1.7.17
         version: 1.7.17(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -566,6 +569,21 @@ packages:
         optional: true
       subscriptions-transport-ws:
         optional: true
+
+  '@ariakit/core@0.4.13':
+    resolution: {integrity: sha512-XwHm1OAKZhHkT5z3pSzeRyjUxW2VtPesMP0wa7fiVRXmibRJnJIxffGLZmUy4CHbOtQ46nlT3AlP5hXNQrS0Ow==}
+
+  '@ariakit/react-core@0.4.14':
+    resolution: {integrity: sha512-vRdl3k7Q7Z3oHNbv8Afz3lbvmpqhKlHW22REFIdA/UE7/YsbD3dhMVncGsmsCHSA06PXF3esk7wP0QkZymO1CQ==}
+    peerDependencies:
+      react: ^17.0.0 || ^18.0.0 || ^19.0.0
+      react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
+
+  '@ariakit/react@0.4.14':
+    resolution: {integrity: sha512-UfUf54idAiUvkrnqmr55birSMiJ2+xHWviaKHXX9kdFHV27xL2O2ulNEXvk79wnjrgOlBXOvWe16FrY1VR5Vcw==}
+    peerDependencies:
+      react: ^17.0.0 || ^18.0.0 || ^19.0.0
+      react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
 
   '@babel/code-frame@7.23.5':
     resolution: {integrity: sha512-CgH3s1a96LipHCmSUmYFPwY7MNx8C3avkq7i4Wl3cfa662ldtUe4VM1TPXX70pfmrlWTb6jLqTYrZyT2ZTJBgA==}
@@ -10471,6 +10489,22 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
     transitivePeerDependencies:
       - '@types/react'
+
+  '@ariakit/core@0.4.13': {}
+
+  '@ariakit/react-core@0.4.14(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      '@ariakit/core': 0.4.13
+      '@floating-ui/dom': 1.6.10
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+      use-sync-external-store: 1.2.0(react@18.3.1)
+
+  '@ariakit/react@0.4.14(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      '@ariakit/react-core': 0.4.14(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
 
   '@babel/code-frame@7.23.5':
     dependencies:

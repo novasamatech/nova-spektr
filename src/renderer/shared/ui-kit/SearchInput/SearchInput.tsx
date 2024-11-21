@@ -9,6 +9,7 @@ export const SearchInput = forwardRef<HTMLInputElement, Props>((props, ref) => {
   return (
     <Input
       ref={ref}
+      type="search"
       prefixElement={<Icon name="search" size={16} />}
       suffixElement={Boolean(props.value) && <IconButton name="close" onClick={() => props.onChange?.('')} />}
       {...props}
