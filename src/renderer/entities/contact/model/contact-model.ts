@@ -2,7 +2,7 @@ import { createEffect, createStore, sample } from 'effector';
 
 import { storageService } from '@/shared/api/storage';
 import { type Contact, kernelModel } from '@/shared/core';
-import { splice } from '@/shared/lib/utils';
+import { merge, splice } from '@/shared/lib/utils';
 
 const $contacts = createStore<Contact[]>([]);
 
@@ -22,6 +22,14 @@ const updateContactFx = createEffect(async ({ id, ...rest }: Contact): Promise<C
   await storageService.contacts.update(id, rest);
 
   return { id, ...rest };
+});
+
+const updateContactsFx = createEffect(async (contacts: Contact[]): Promise<Contact[]> => {
+  if (contacts.length === 0) return [];
+
+  await storageService.contacts.updateAll(contacts);
+
+  return contacts;
 });
 
 const deleteContactFx = createEffect(async (contactId: number): Promise<number> => {
@@ -44,6 +52,13 @@ $contacts
     const position = state.findIndex((s) => s.id === contact.id);
 
     return splice(state, contact, position);
+  })
+  .on(updateContactsFx.doneData, (state, contacts) => {
+    return merge({
+      a: state,
+      b: contacts,
+      mergeBy: (c) => c.id,
+    });
   });
 
 sample({
@@ -58,5 +73,6 @@ export const contactModel = {
     createContactsFx,
     deleteContactFx,
     updateContactFx,
+    updateContactsFx,
   },
 };

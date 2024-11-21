@@ -2,7 +2,7 @@ import { createEffect, createEvent, createStore, restore, sample } from 'effecto
 import { once } from 'patronum';
 
 import { type Account, type AssetByChains, type Balance, type Chain, type ChainId, type Wallet } from '@/shared/core';
-import { includes } from '@/shared/lib/utils';
+import { includes, nullable } from '@/shared/lib/utils';
 import { AssetsListView } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -34,8 +34,9 @@ type UpdateTokenParams = {
 
 const getUpdatedTokensFx = createEffect(({ activeWallet, chains }: UpdateTokenParams): AssetByChains[] => {
   const tokens = tokensService.getTokensData();
+  const updatedTokens: AssetByChains[] = [];
 
-  return tokens.reduce((acc, token) => {
+  for (const token of tokens) {
     const filteredChains = token.chains.filter((chain) => {
       return activeWallet?.accounts.some((account) => {
         return (
@@ -45,12 +46,12 @@ const getUpdatedTokensFx = createEffect(({ activeWallet, chains }: UpdateTokenPa
       });
     });
 
-    if (filteredChains.length > 0) {
-      acc.push({ ...token, chains: filteredChains });
-    }
+    if (filteredChains.length === 0) continue;
 
-    return acc;
-  }, [] as AssetByChains[]);
+    updatedTokens.push({ ...token, chains: filteredChains });
+  }
+
+  return updatedTokens;
 });
 
 type PopulateBalanceParams = {
@@ -61,15 +62,17 @@ type PopulateBalanceParams = {
 
 const populateTokensBalanceFx = createEffect(
   ({ activeTokens, balances, accounts }: PopulateBalanceParams): AssetByChains[] => {
-    return activeTokens.reduce<AssetByChains[]>((acc, token) => {
+    const tokens: AssetByChains[] = [];
+
+    for (const token of activeTokens) {
       const [chainsWithBalance, totalBalance] = tokensService.getChainWithBalance(balances, token.chains, accounts);
 
-      if (chainsWithBalance.length > 0) {
-        acc.push({ ...token, chains: chainsWithBalance, totalBalance });
-      }
+      if (chainsWithBalance.length === 0) continue;
 
-      return acc;
-    }, []);
+      tokens.push({ ...token, chains: chainsWithBalance, totalBalance });
+    }
+
+    return tokens;
   },
 );
 
@@ -105,22 +108,29 @@ sample({
   },
   fn: ({ connections, chains, tokens, activeWallet }): AssetByChains[] => {
     const isMultisigWallet = walletUtils.isMultisig(activeWallet);
+    const hasAccounts = activeWallet!.accounts.length > 0;
+    const multisigChainToInclude = isMultisigWallet && hasAccounts ? activeWallet.accounts[0].chainId : undefined;
 
-    return tokens.reduce<AssetByChains[]>((acc, token) => {
+    const activeTokens: AssetByChains[] = [];
+
+    for (const token of tokens) {
       const filteredChains = token.chains.filter((c) => {
-        if (!connections[c.chainId]) return false;
-        const isDisabled = networkUtils.isDisabledConnection(connections[c.chainId]);
-        const hasMultiPallet = networkUtils.isMultisigSupported(chains[c.chainId].options);
+        const connection = connections[c.chainId];
 
-        return !isDisabled && (!isMultisigWallet || hasMultiPallet);
+        if (nullable(connection)) return false;
+        if (networkUtils.isDisabledConnection(connection)) return false;
+        if (nullable(chains[c.chainId])) return false;
+        if (!isMultisigWallet) return true;
+
+        return networkUtils.isMultisigSupported(chains[c.chainId].options) || multisigChainToInclude === c.chainId;
       });
 
-      if (filteredChains.length > 0) {
-        acc.push({ ...token, chains: filteredChains });
-      }
+      if (filteredChains.length === 0) continue;
 
-      return acc;
-    }, []);
+      activeTokens.push({ ...token, chains: filteredChains });
+    }
+
+    return activeTokens;
   },
   target: $activeTokens,
 });
@@ -148,7 +158,9 @@ sample({
   clock: [$activeTokensWithBalance, queryChanged],
   source: { activeTokensWithBalance: $activeTokensWithBalance, query: $query },
   fn: ({ activeTokensWithBalance, query }) => {
-    return activeTokensWithBalance.reduce<AssetByChains[]>((acc, token) => {
+    const filteredTokens: AssetByChains[] = [];
+
+    for (const token of activeTokensWithBalance) {
       const filteredChains = token.chains.filter((chain) => {
         const hasSymbol = includes(chain.assetSymbol, query);
         const hasAssetName = includes(token.name, query);
@@ -157,12 +169,12 @@ sample({
         return hasSymbol || hasAssetName || hasChainName;
       });
 
-      if (filteredChains.length > 0) {
-        acc.push({ ...token, chains: filteredChains });
-      }
+      if (filteredChains.length === 0) continue;
 
-      return acc;
-    }, []);
+      filteredTokens.push({ ...token, chains: filteredChains });
+    }
+
+    return filteredTokens;
   },
   target: $filteredTokens,
 });
