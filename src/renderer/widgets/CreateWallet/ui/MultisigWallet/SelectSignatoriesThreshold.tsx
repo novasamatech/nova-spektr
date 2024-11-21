@@ -50,7 +50,8 @@ export const SelectSignatoriesThreshold = () => {
     !hasEmptySignatories &&
     !hasEmptySignatoryName &&
     isThresholdValid &&
-    !hasDuplicateSignatories;
+    !hasDuplicateSignatories &&
+    !hiddenMultisig;
 
   const onSubmit = (event: FormEvent) => {
     if (!hasClickedNext) {
@@ -156,11 +157,7 @@ export const SelectSignatoriesThreshold = () => {
             </Alert.Item>
           </Alert>
 
-          <Alert
-            active={!multisigAlreadyExists && Boolean(hiddenMultisig)}
-            title={t('createMultisigAccount.multisigExistTitle')}
-            variant="info"
-          >
+          <Alert active={Boolean(hiddenMultisig)} title={t('createMultisigAccount.multisigExistTitle')} variant="error">
             <Alert.Item withDot={false}>{t('createMultisigAccount.multisigHiddenExistText')}</Alert.Item>
             <Alert.Item withDot={false}>
               <Button

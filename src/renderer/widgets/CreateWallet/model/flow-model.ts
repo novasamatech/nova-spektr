@@ -34,7 +34,7 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
-import { ExtrinsicResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { walletPairingModel } from '@/features/wallets';
 import { type AddMultisigStore, type FormSubmitEvent } from '../lib/types';
 
@@ -385,23 +385,6 @@ sample({
     event: submitModel.events.formInitiated,
     step: stepChanged,
   }),
-});
-
-sample({
-  clock: submitModel.output.formSubmitted,
-  source: {
-    step: $step,
-    hiddenMultisig: formModel.$hiddenMultisig,
-  },
-  filter: ({ step, hiddenMultisig }, results) => {
-    const isSubmitStep = isStep(step, Step.SUBMIT);
-    const isNonNullable = nonNullable(hiddenMultisig);
-    const isSuccessResult = results[0]?.result === ExtrinsicResult.SUCCESS;
-
-    return isSubmitStep && isNonNullable && isSuccessResult;
-  },
-  fn: ({ hiddenMultisig }) => hiddenMultisig!.id,
-  target: walletModel.events.walletRemoved,
 });
 
 sample({

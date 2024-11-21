@@ -39,7 +39,7 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { getExtrinsic, transactionBuilder } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
-import { ExtrinsicResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { walletPairingModel } from '@/features/wallets';
 
 import { confirmModel } from './confirm-model';
@@ -378,9 +378,38 @@ sample({
     contacts: contactModel.$contacts,
   },
   fn: ({ signatories, contacts }) => {
+    const signatoriesWithoutSigner = signatories.slice(1);
+    const contactMap = new Map(contacts.map((c) => [c.accountId, c]));
+    const updatedContacts: Contact[] = [];
+
+    for (const { address, name } of signatoriesWithoutSigner) {
+      const contact = contactMap.get(toAccountId(address));
+
+      if (!contact) continue;
+
+      updatedContacts.push({
+        ...contact,
+        name,
+      });
+    }
+
+    return updatedContacts;
+  },
+  target: contactModel.effects.updateContactsFx,
+});
+
+sample({
+  clock: signModel.output.formSubmitted,
+  source: {
+    signatories: signatoryModel.$signatories,
+    contacts: contactModel.$contacts,
+  },
+  fn: ({ signatories, contacts }) => {
+    const contactsSet = new Set(contacts.map((c) => c.accountId));
+
     return signatories
       .slice(1)
-      .filter((signatory) => !contacts.some((contact) => contact.accountId === toAccountId(signatory.address)))
+      .filter((signatory) => !contactsSet.has(toAccountId(signatory.address)))
       .map(
         ({ address, name }) =>
           ({
@@ -427,6 +456,7 @@ sample({
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
       chainType: isEthereumChain ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
       type: AccountType.FLEXIBLE_MULTISIG,
+      withProxy: false,
     };
 
     return {
@@ -450,24 +480,9 @@ sample({
 
 sample({
   clock: walletModel.events.walletCreatedDone,
+  filter: ({ wallet, external }) => wallet.type === WalletType.FLEXIBLE_MULTISIG && !external,
+  fn: ({ wallet }) => wallet.id,
   target: walletProviderModel.events.completed,
-});
-
-sample({
-  clock: submitModel.output.formSubmitted,
-  source: {
-    step: $step,
-    hiddenMultisig: formModel.$hiddenMultisig,
-  },
-  filter: ({ step, hiddenMultisig }, results) => {
-    const isSubmitStep = isStep(step, Step.SUBMIT);
-    const isNonNullable = nonNullable(hiddenMultisig);
-    const isSuccessResult = results[0]?.result === ExtrinsicResult.SUCCESS;
-
-    return isSubmitStep && isNonNullable && isSuccessResult;
-  },
-  fn: ({ hiddenMultisig }) => hiddenMultisig!.id,
-  target: walletModel.events.walletRemoved,
 });
 
 sample({
