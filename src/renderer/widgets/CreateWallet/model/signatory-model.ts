@@ -41,12 +41,18 @@ const $hasEmptySignatoryName = combine($signatories, (signatories) => {
 });
 
 const $ownedSignatoriesWallets = combine(
-  { wallets: walletModel.$wallets, signatories: $signatories },
-  ({ wallets, signatories }) =>
-    walletUtils.getWalletsFilteredAccounts(wallets, {
+  {
+    wallets: walletModel.$wallets,
+    signatories: $signatories,
+  },
+  ({ wallets, signatories }) => {
+    const matchWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
       walletFn: (w) => walletUtils.isValidSignatory(w),
       accountFn: (a) => signatories.some((s) => toAccountId(s.address) === a.accountId),
-    }) || [],
+    });
+
+    return matchWallets || [];
+  },
 );
 
 const populateBalanceFx = createEffect((wallets: Wallet[]) => {

@@ -41,7 +41,7 @@ export const SignerSelection = () => {
 
           return (
             <Signer
-              key={account.accountId}
+              key={`${account.walletId}_${account.accountId}`}
               account={account}
               walletName={name}
               walletType={type}
@@ -52,12 +52,7 @@ export const SignerSelection = () => {
         })}
       </ul>
       <div className="mt-auto flex items-center justify-between">
-        <Button
-          variant="text"
-          onClick={() => {
-            flowModel.events.stepChanged(Step.SIGNATORIES_THRESHOLD);
-          }}
-        >
+        <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.SIGNATORIES_THRESHOLD)}>
           {t('createMultisigAccount.backButton')}
         </Button>
       </div>
