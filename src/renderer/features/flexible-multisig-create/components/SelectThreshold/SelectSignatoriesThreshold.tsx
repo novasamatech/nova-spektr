@@ -99,6 +99,14 @@ export const SelectSignatoriesThreshold = () => {
           >
             <Alert.Item withDot={false}>{t('createMultisigAccount.notEmptySignatory')}</Alert.Item>
           </Alert>
+
+          <Alert
+            active={hasClickedNext && hasEmptySignatoryName}
+            title={t('createMultisigAccount.notEmptySignatoryNameTitle')}
+            variant="error"
+          >
+            <Alert.Item withDot={false}>{t('createMultisigAccount.notEmptySignatoryName')}</Alert.Item>
+          </Alert>
         </div>
         <div className="flex items-center gap-x-4">
           <Box width="300px">
@@ -142,14 +150,6 @@ export const SelectSignatoriesThreshold = () => {
             <Alert.Item withDot={false}>
               {t('createMultisigAccount.thresholdErrorDescription', { minThreshold: MIN_THRESHOLD })}
             </Alert.Item>
-          </Alert>
-
-          <Alert
-            active={hasClickedNext && hasEmptySignatoryName}
-            title={t('createMultisigAccount.notEmptySignatoryNameTitle')}
-            variant="error"
-          >
-            <Alert.Item withDot={false}>{t('createMultisigAccount.notEmptySignatoryName')}</Alert.Item>
           </Alert>
 
           <Alert active={Boolean(hiddenMultisig)} title={t('createMultisigAccount.multisigExistTitle')} variant="error">

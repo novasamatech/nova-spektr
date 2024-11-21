@@ -456,7 +456,6 @@ sample({
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
       chainType: isEthereumChain ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
       type: AccountType.FLEXIBLE_MULTISIG,
-      withProxy: false,
     };
 
     return {
