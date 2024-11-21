@@ -36,6 +36,10 @@ const $hasEmptySignatories = combine($signatories, (signatories) => {
   return signatories.map(({ address }) => address).includes('');
 });
 
+const $hasEmptySignatoryName = combine($signatories, (signatories) => {
+  return signatories.map(({ name }) => name).includes('');
+});
+
 const $ownedSignatoriesWallets = combine(
   { wallets: walletModel.$wallets, signatories: $signatories },
   ({ wallets, signatories }) =>
@@ -99,6 +103,7 @@ export const signatoryModel = {
   $ownedSignatoriesWallets,
   $hasDuplicateSignatories,
   $hasEmptySignatories,
+  $hasEmptySignatoryName,
   events: {
     addSignatory,
     changeSignatory,
