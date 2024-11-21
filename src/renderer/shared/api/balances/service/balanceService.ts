@@ -4,7 +4,7 @@ import { type Vec } from '@polkadot/types';
 import { type AccountData, type Balance as ChainBalance } from '@polkadot/types/interfaces';
 import { type PalletBalancesBalanceLock } from '@polkadot/types/lookup';
 import { type Codec } from '@polkadot/types/types';
-import { type BN, BN_ZERO, hexToU8a } from '@polkadot/util';
+import { BN, BN_ZERO, hexToU8a } from '@polkadot/util';
 import noop from 'lodash/noop';
 import uniq from 'lodash/uniq';
 
@@ -25,6 +25,7 @@ type NoIdBalance = Omit<Balance, 'id'>;
 export const balanceService = {
   subscribeBalances,
   subscribeLockBalances,
+  getExistentialDeposit,
 };
 
 /**
@@ -307,4 +308,15 @@ function subscribeLockOrmlAssetChange(
 
     callback(newLocks);
   });
+}
+
+async function getExistentialDeposit(api: ApiPromise, asset: Asset): Promise<BN> {
+  switch (asset.type) {
+    case AssetType.NATIVE:
+      return api.consts.balances.existentialDeposit.toBn();
+    case AssetType.STATEMINE:
+      return await api.query.assets.asset(asset.assetId).then((balance) => balance.value.minBalance.toBn());
+    case AssetType.ORML:
+      return new BN((asset.typeExtras as OrmlExtras).existentialDeposit);
+  }
 }

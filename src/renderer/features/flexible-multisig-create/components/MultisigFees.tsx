@@ -1,4 +1,3 @@
-import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
@@ -22,7 +21,7 @@ export const MultisigFees = memo(({ asset }: Props) => {
   const proxyDeposit = useUnit(flexibleMultisigModel.$proxyDeposit);
   const isLoading = useUnit(flexibleMultisigModel.$isLoading);
 
-  const totalFee = multisigDeposit.add(fee).add(new BN(proxyDeposit));
+  const totalFee = multisigDeposit.add(fee).add(proxyDeposit);
 
   if (isLoading) {
     return (
