@@ -60,7 +60,7 @@ export const MultisigCreationFees = memo(
           console.info('Error getting fee - ', error);
         })
         .finally(() => setIsNetworkFeeLoading(false));
-    }, []);
+    }, [api]);
 
     if (isLoading) {
       return (
