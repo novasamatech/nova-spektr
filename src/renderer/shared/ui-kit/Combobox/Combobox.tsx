@@ -81,19 +81,17 @@ const Trigger = ({ placeholder, ...inputProps }: InputProps) => {
 
   return (
     <RadixPopover.Anchor asChild>
-      <Ariakit.Combobox
-        autoSelect
-        autoComplete="both"
-        ref={comboboxRef}
-        placeholder={placeholder}
-        render={({ onChange, ...props }) => (
-          <div ref={anchorRef} className="h-full w-full">
-            <Input {...props} {...inputProps} onChangeEvent={onChange} />
-          </div>
-        )}
-        onFocus={() => onOpenChange?.(true)}
-        onBlur={() => onOpenChange?.(false)}
-      />
+      <div ref={anchorRef} className="w-full">
+        <Ariakit.Combobox
+          autoSelect
+          autoComplete="both"
+          ref={comboboxRef}
+          placeholder={placeholder}
+          render={({ onChange, ...props }) => <Input {...props} {...inputProps} onChangeEvent={onChange} />}
+          onFocus={() => onOpenChange?.(true)}
+          onBlur={() => onOpenChange?.(false)}
+        />
+      </div>
     </RadixPopover.Anchor>
   );
 };

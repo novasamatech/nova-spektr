@@ -224,7 +224,7 @@ export const Signatory = ({
           </Field>
         </Box>
         {!isOwnAccount && onDelete && (
-          <IconButton className="ml-2 mt-6" name="delete" size={16} onClick={() => onDelete(signatoryIndex)} />
+          <IconButton className="mb-3.5" name="delete" size={16} onClick={() => onDelete(signatoryIndex)} />
         )}
       </div>
     </div>
