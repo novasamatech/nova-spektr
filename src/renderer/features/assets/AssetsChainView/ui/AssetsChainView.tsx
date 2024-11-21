@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { chainsService } from '@/shared/api/network';
 import { type Account, type Chain } from '@/shared/core';
-import { isStringsMatchQuery } from '@/shared/lib/utils';
+import { isStringsMatchQuery, nullable } from '@/shared/lib/utils';
 import { AssetsListView, EmptyAssetsState } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -34,11 +34,11 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
     if (!activeWallet || assetsView !== AssetsListView.CHAIN_CENTRIC || !activeShards.length) return;
 
     const isMultisig = walletUtils.isMultisig(activeWallet);
+    const multisigChainToInclude = isMultisig ? activeWallet.accounts[0].chainId : undefined;
 
     const availableChains = Object.values(chains).filter((chain) => {
       return activeWallet.accounts.some((account) => {
         return (
-          activeWallet &&
           accountUtils.isNonBaseVaultAccount(account, activeWallet) &&
           accountUtils.isChainAndCryptoMatch(account, chain)
         );
@@ -46,14 +46,13 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
     });
 
     const filteredChains = availableChains.filter((c) => {
-      if (!connections[c.chainId]) {
-        return false;
-      }
+      const connection = connections[c.chainId];
 
-      const isDisabled = networkUtils.isDisabledConnection(connections[c.chainId]);
-      const hasMultiPallet = !isMultisig || networkUtils.isMultisigSupported(c.options);
+      if (nullable(connection)) return false;
+      if (networkUtils.isDisabledConnection(connection)) return false;
+      if (!isMultisig) return true;
 
-      return !isDisabled && hasMultiPallet;
+      return networkUtils.isMultisigSupported(c.options) || multisigChainToInclude === c.chainId;
     });
 
     const sortedChains = chainsService.sortChainsByBalance(

@@ -268,8 +268,7 @@ sample({
   clock: walletModel.events.walletCreatedDone,
   filter: ({ wallet, external }) => wallet.type === WalletType.MULTISIG && !external,
   fn: ({ wallet }) => wallet.id,
-  // wallet selection shouldn't be here, but here we are
-  target: [walletModel.events.selectWallet, walletProviderModel.events.completed],
+  target: walletProviderModel.events.completed,
 });
 
 // Submit
@@ -418,9 +417,38 @@ sample({
     contacts: contactModel.$contacts,
   },
   fn: ({ signatories, contacts }) => {
+    const signatoriesWithoutSigner = signatories.slice(1);
+    const contactMap = new Map(contacts.map((c) => [c.accountId, c]));
+    const updatedContacts: Contact[] = [];
+
+    for (const { address, name } of signatoriesWithoutSigner) {
+      const contact = contactMap.get(toAccountId(address));
+
+      if (!contact) continue;
+
+      updatedContacts.push({
+        ...contact,
+        name,
+      });
+    }
+
+    return updatedContacts;
+  },
+  target: contactModel.effects.updateContactsFx,
+});
+
+sample({
+  clock: signModel.output.formSubmitted,
+  source: {
+    signatories: signatoryModel.$signatories,
+    contacts: contactModel.$contacts,
+  },
+  fn: ({ signatories, contacts }) => {
+    const contactsSet = new Set(contacts.map((c) => c.accountId));
+
     return signatories
       .slice(1)
-      .filter((signatory) => !contacts.some((contact) => contact.accountId === toAccountId(signatory.address)))
+      .filter((signatory) => !contactsSet.has(toAccountId(signatory.address)))
       .map(
         ({ address, name }) =>
           ({
