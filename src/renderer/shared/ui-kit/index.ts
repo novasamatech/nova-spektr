@@ -18,6 +18,6 @@ export { Select } from './Select/Select';
 export { Slider } from './Slider/Slider';
 export { Label } from './Label/Label';
 export { Modal } from './Modal/Modal';
-export { Input } from './Input/Input';
 export { Field } from './Field/Field';
+export { Input } from './Input/Input';
 export { Box } from './Box/Box';

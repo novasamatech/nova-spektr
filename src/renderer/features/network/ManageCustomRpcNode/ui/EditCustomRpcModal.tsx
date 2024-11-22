@@ -5,7 +5,7 @@ import { type FormEvent } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { Alert, BaseModal, Button, InputHint } from '@/shared/ui';
-import { Input } from '@/shared/ui-kit';
+import { Field, Input } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
 import { customRpcUtils } from '../lib/custom-rpc-utils';
 import { editCustomRpcModel } from '../model/edit-custom-rpc-model';
@@ -60,9 +60,8 @@ const NameInput = () => {
   const isLoading = useUnit(editCustomRpcModel.$isLoading);
 
   return (
-    <div className="flex flex-col gap-y-2">
+    <Field text={t('settings.networks.nameLabel')}>
       <Input
-        label={t('settings.networks.nameLabel')}
         placeholder={t('settings.networks.namePlaceholder')}
         invalid={name.hasError()}
         disabled={isLoading}
@@ -72,7 +71,7 @@ const NameInput = () => {
       <InputHint variant="error" active={name.hasError()}>
         {t(name.errorText())}
       </InputHint>
-    </div>
+    </Field>
   );
 };
 
@@ -86,9 +85,8 @@ const UrlInput = () => {
   const isLoading = useUnit(editCustomRpcModel.$isLoading);
 
   return (
-    <div className="flex flex-col gap-y-2">
+    <Field text={t('settings.networks.addressLabel')}>
       <Input
-        label={t('settings.networks.addressLabel')}
         placeholder={t('settings.networks.addressPlaceholder')}
         value={url.value}
         invalid={url.hasError()}
@@ -101,7 +99,7 @@ const UrlInput = () => {
       <InputHint active variant="hint">
         {t('settings.networks.addressHint')}
       </InputHint>
-    </div>
+    </Field>
   );
 };
 

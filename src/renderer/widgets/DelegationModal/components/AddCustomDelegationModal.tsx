@@ -4,7 +4,7 @@ import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { Step, isStep, validateAddress } from '@/shared/lib/utils';
 import { BaseModal, Button, Icon, Identicon, InputHint } from '@/shared/ui';
-import { Input } from '@/shared/ui-kit';
+import { Field, Input } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
 import { networkSelectorModel } from '@/features/governance';
 import { DelegationErrorMessages } from '../common/constants';
@@ -48,18 +48,18 @@ export const AddCustomDelegationModel = () => {
       onClose={closeModal}
     >
       <div className="px-5 pb-4">
-        <Input
-          label={t('governance.addDelegation.customDelegationLabel')}
-          placeholder={t('governance.addDelegation.customDelegationPlaceholder')}
-          invalid={!!customDelegate && !!error}
-          value={customDelegate}
-          prefixElement={prefixElement}
-          onChange={delegationModel.events.customDelegateChanged}
-        />
-
-        <InputHint variant="error" active={!!customDelegate && !!error}>
-          {error && t(DelegationErrorMessages[error])}
-        </InputHint>
+        <Field text={t('governance.addDelegation.customDelegationLabel')}>
+          <Input
+            placeholder={t('governance.addDelegation.customDelegationPlaceholder')}
+            invalid={!!customDelegate && !!error}
+            value={customDelegate}
+            prefixElement={prefixElement}
+            onChange={delegationModel.events.customDelegateChanged}
+          />
+          <InputHint variant="error" active={!!customDelegate && !!error}>
+            {error && t(DelegationErrorMessages[error])}
+          </InputHint>
+        </Field>
       </div>
 
       <div className="flex justify-end px-5 pt-3">

@@ -10,7 +10,7 @@ import { useI18n } from '@/shared/i18n';
 import { RootExplorers, cnTw, toAccountId, toAddress } from '@/shared/lib/utils';
 import { Button, FootnoteText, HeaderTitleText, Icon, IconButton, InputHint, SmallTitleText } from '@/shared/ui';
 import { AccountExplorers, Address } from '@/shared/ui-entities';
-import { Input } from '@/shared/ui-kit';
+import { Field, Input } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { type AddressInfo, type CompactSeedInfo, type SeedInfo } from '@/entities/transaction';
 import { ExplorersPopover, walletModel } from '@/entities/wallet';
@@ -211,13 +211,14 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
               control={control}
               rules={{ required: true, maxLength: 256 }}
               render={({ field: { onChange, value } }) => (
-                <Input
-                  label={t('onboarding.walletNameLabel')}
-                  placeholder={t('onboarding.walletNamePlaceholder')}
-                  invalid={Boolean(errors.walletName)}
-                  value={value}
-                  onChange={onChange}
-                />
+                <Field text={t('onboarding.walletNameLabel')}>
+                  <Input
+                    placeholder={t('onboarding.walletNamePlaceholder')}
+                    invalid={Boolean(errors.walletName)}
+                    value={value}
+                    onChange={onChange}
+                  />
+                </Field>
               )}
             />
             <InputHint variant="error" active={errors.walletName?.type === ErrorType.MAX_LENGTH}>

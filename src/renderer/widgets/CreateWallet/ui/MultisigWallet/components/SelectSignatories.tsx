@@ -11,19 +11,14 @@ export const SelectSignatories = () => {
 
   const signatories = useUnit(signatoryModel.$signatories);
 
-  const onAddSignatoryClick = () => {
-    signatoryModel.events.addSignatory({ name: '', address: '', walletId: '' });
-  };
-
   return (
-    <div className="flex flex-1 flex-col">
-      <div className="flex flex-col gap-2">
+    <div className="flex flex-1 flex-col gap-y-4">
+      <div className="flex flex-col gap-y-2">
         {signatories.map((value, index) => (
           <Signatory
-            // TODO: Address and name maybe not unique by user input
-            key={value.address}
-            signatoryIndex={index}
+            key={`${value.address}_${index}`}
             isOwnAccount={index === 0}
+            signatoryIndex={index}
             signatoryName={value.name}
             signatoryAddress={value.address}
             selectedWalletId={value.walletId}
@@ -31,17 +26,15 @@ export const SelectSignatories = () => {
           />
         ))}
       </div>
-      <div>
-        <Button
-          size="sm"
-          variant="text"
-          className="mt-4 h-8.5 justify-center"
-          suffixElement={<Icon className="text-icon-primary" name="add" size={16} />}
-          onClick={onAddSignatoryClick}
-        >
-          {t('createMultisigAccount.addNewSignatory')}
-        </Button>
-      </div>
+      <Button
+        size="sm"
+        variant="text"
+        className="h-8.5 w-max justify-center"
+        suffixElement={<Icon className="text-icon-primary" name="add" size={16} />}
+        onClick={() => signatoryModel.events.addSignatory({ name: '', address: '', walletId: '' })}
+      >
+        {t('createMultisigAccount.addNewSignatory')}
+      </Button>
     </div>
   );
 };

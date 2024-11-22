@@ -6,7 +6,7 @@ import { type Chain, type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, toAddress, toShortAddress, validateAddress } from '@/shared/lib/utils';
 import { Button, HelpText, Icon, Identicon, InputHint, Select } from '@/shared/ui';
-import { Input } from '@/shared/ui-kit';
+import { Field, Input } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { SignatorySelector } from '@/entities/operations';
@@ -221,9 +221,8 @@ const Destination = () => {
   );
 
   return (
-    <div className="flex flex-col gap-y-2">
+    <Field text={t('transfer.recipientLabel')}>
       <Input
-        label={t('transfer.recipientLabel')}
         placeholder={t('transfer.recipientPlaceholder')}
         invalid={destination.hasError()}
         value={destination.value}
@@ -234,7 +233,7 @@ const Destination = () => {
       <InputHint active={destination.hasError()} variant="error">
         {t(destination.errorText())}
       </InputHint>
-    </div>
+    </Field>
   );
 };
 

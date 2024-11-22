@@ -33,7 +33,7 @@ import {
   SmallTitleText,
 } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
-import { Input } from '@/shared/ui-kit';
+import { Field, Input } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { type SeedInfo } from '@/entities/transaction';
 import { DerivedAccount, RootAccountLg, accountUtils } from '@/entities/wallet';
@@ -178,9 +178,8 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
         <SmallTitleText className="mb-6">{t('onboarding.vault.manageTitle')}</SmallTitleText>
 
         <form className="flex h-full flex-col" onSubmit={submitForm}>
-          <div className="flex flex-col gap-y-2">
+          <Field text={t('onboarding.walletNameLabel')}>
             <Input
-              label={t('onboarding.walletNameLabel')}
               placeholder={t('onboarding.walletNamePlaceholder')}
               invalid={name?.hasError()}
               value={name?.value}
@@ -189,7 +188,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
             <InputHint variant="error" active={name?.hasError()}>
               {t(name.errorText())}
             </InputHint>
-          </div>
+          </Field>
 
           <div className="flex flex-1 items-end justify-between">
             <Button variant="text" onClick={onBack}>

@@ -18,7 +18,7 @@ import {
   InputHint,
   SmallTitleText,
 } from '@/shared/ui';
-import { Input } from '@/shared/ui-kit';
+import { Field, Input } from '@/shared/ui-kit';
 import { networkModel, networkUtils } from '@/entities/network';
 import { AccountsList, walletModel } from '@/entities/wallet';
 
@@ -119,9 +119,8 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
             control={control}
             rules={{ required: true, maxLength: 256 }}
             render={({ field: { onChange, value } }) => (
-              <div>
+              <Field text={t('onboarding.walletNameLabel')}>
                 <Input
-                  label={t('onboarding.walletNameLabel')}
                   placeholder={t('onboarding.walletNamePlaceholder')}
                   invalid={Boolean(errors.walletName)}
                   value={value}
@@ -134,7 +133,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
                 <InputHint variant="error" active={errors.walletName?.type === ErrorType.REQUIRED}>
                   {t('onboarding.watchOnly.walletNameRequiredError')}
                 </InputHint>
-              </div>
+              </Field>
             )}
           />
 
@@ -143,10 +142,9 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
             control={control}
             rules={{ required: true, validate: validateAddress }}
             render={({ field: { onChange, value } }) => (
-              <div>
+              <Field text={t('onboarding.accountAddressLabel')}>
                 <Input
                   invalid={Boolean(errors.address)}
-                  label={t('onboarding.accountAddressLabel')}
                   placeholder={t('onboarding.watchOnly.accountAddressPlaceholder')}
                   value={value}
                   prefixElement={
@@ -159,7 +157,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
                 <InputHint variant="error" active={!!errors.address}>
                   {t('onboarding.watchOnly.accountAddressError')}
                 </InputHint>
-              </div>
+              </Field>
             )}
           />
 
