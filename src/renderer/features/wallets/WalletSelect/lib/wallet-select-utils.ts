@@ -2,12 +2,7 @@ import { type Wallet, type WalletFamily, WalletType } from '@/shared/core';
 import { includes } from '@/shared/lib/utils';
 import { walletUtils } from '@/entities/wallet';
 
-export const walletSelectUtils = {
-  getWalletByGroups,
-  getFirstWallet,
-};
-
-function getWalletByGroups(wallets: Wallet[], query = ''): Record<WalletFamily, Wallet[]> {
+const getWalletByGroups = (wallets: Wallet[], query = ''): Record<WalletFamily, Wallet[]> => {
   const accumulator: Record<WalletFamily, Wallet[]> = {
     [WalletType.POLKADOT_VAULT]: [],
     [WalletType.MULTISIG]: [],
@@ -33,8 +28,13 @@ function getWalletByGroups(wallets: Wallet[], query = ''): Record<WalletFamily, 
 
     return acc;
   }, accumulator);
-}
+};
 
-function getFirstWallet(wallets: Wallet[]): Wallet | null {
+const getFirstWallet = (wallets: Wallet[]): Wallet | null => {
   return Object.values(getWalletByGroups(wallets)).flat().at(0) ?? null;
-}
+};
+
+export const walletSelectUtils = {
+  getWalletByGroups,
+  getFirstWallet,
+};
