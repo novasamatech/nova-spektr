@@ -89,8 +89,6 @@ type ConnectResult = {
 const connectFx = createEffect(async ({ client, approval }: ConnectParams): Promise<ConnectResult | undefined> => {
   const session = await approval();
 
-  console.log('Established session:', session);
-
   return {
     pairings: client.pairing.getAll({ active: true }),
     session: session as SessionTypes.Struct,
@@ -257,7 +255,7 @@ sample({
 sample({
   clock: updateWcAccountsFx.done,
   filter: ({ result: accounts }) => nonNullable(accounts) && accounts.length > 0,
-  fn: ({ params }) => ({ walletId: params.wallet.id, accounts: params.accounts }),
+  fn: ({ params, result: accounts }) => ({ walletId: params.wallet.id, accounts: accounts! }),
   target: walletModel.events.updateAccounts,
 });
 
