@@ -146,9 +146,9 @@ const Group = ({ title, children }: PropsWithChildren<GroupProps>) => {
   if (Children.count(children) === 0) return null;
 
   return (
-    <Ariakit.ComboboxGroup>
+    <Ariakit.ComboboxGroup className="mb-1 last:mb-0">
       <Ariakit.ComboboxGroupLabel>
-        <div className="px-3 py-1 text-help-text text-text-secondary">{title}</div>
+        <div className="mb-1 px-3 py-1 text-help-text text-text-secondary">{title}</div>
       </Ariakit.ComboboxGroupLabel>
       {children}
     </Ariakit.ComboboxGroup>

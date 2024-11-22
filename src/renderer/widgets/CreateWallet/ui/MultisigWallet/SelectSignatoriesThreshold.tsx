@@ -5,7 +5,7 @@ import { type FormEvent, useState } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { Alert, Button, InputHint, SmallTitleText } from '@/shared/ui';
-import { Box, Select } from '@/shared/ui-kit';
+import { Box, Field, Select } from '@/shared/ui-kit';
 import { walletModel } from '@/entities/wallet';
 import { Step } from '../../lib/types';
 import { flowModel } from '../../model/flow-model';
@@ -113,23 +113,25 @@ export const SelectSignatoriesThreshold = () => {
             <Alert.Item withDot={false}>{t('createMultisigAccount.notEmptySignatoryName')}</Alert.Item>
           </Alert>
         </div>
-        <div className="flex items-center gap-x-4">
+        <div className="flex gap-x-4">
           <Box width="300px">
-            <Select
-              placeholder={t('createMultisigAccount.thresholdPlaceholder')}
-              value={(threshold.value || '').toString()}
-              invalid={threshold.hasError()}
-              disabled={[0, 1].includes(signatories.length)}
-              onChange={(value) => threshold.onChange(Number(value))}
-            >
-              {Array.from({ length: signatories.length - 1 }, (_, index) => (
-                <Select.Item key={index} value={(index + 2).toString()}>
-                  {index + 2}
-                </Select.Item>
-              ))}
-            </Select>
+            <Field text={t('createMultisigAccount.thresholdName')}>
+              <Select
+                placeholder={t('createMultisigAccount.thresholdPlaceholder')}
+                value={(threshold.value || '').toString()}
+                invalid={threshold.hasError()}
+                disabled={[0, 1].includes(signatories.length)}
+                onChange={(value) => threshold.onChange(Number(value))}
+              >
+                {Array.from({ length: signatories.length - 1 }, (_, index) => (
+                  <Select.Item key={index} value={(index + 2).toString()}>
+                    {index + 2}
+                  </Select.Item>
+                ))}
+              </Select>
+            </Field>
           </Box>
-          <InputHint className="flex-1 pt-5" active>
+          <InputHint active className="mt-8.5 flex-1">
             {t('createMultisigAccount.thresholdHint')}
           </InputHint>
         </div>
@@ -176,12 +178,7 @@ export const SelectSignatoriesThreshold = () => {
           </Alert>
         </div>
         <div className="mt-auto flex items-center justify-between">
-          <Button
-            variant="text"
-            onClick={() => {
-              flowModel.events.stepChanged(Step.NAME_NETWORK);
-            }}
-          >
+          <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.NAME_NETWORK)}>
             {t('createMultisigAccount.backButton')}
           </Button>
           <div className="mt-auto flex items-center justify-end">
