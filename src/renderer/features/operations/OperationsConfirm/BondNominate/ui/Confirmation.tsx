@@ -9,7 +9,7 @@ import { Account, TransactionDetails } from '@/shared/ui-entities';
 import { AssetBalance } from '@/entities/asset';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
-import { AccountsModal, SelectedValidatorsModal, StakingPopover, UnstakingDuration } from '@/entities/staking';
+import { SelectedValidatorsModal, StakingPopover, UnstakingDuration } from '@/entities/staking';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { type Config } from '../../../OperationsValidation';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
@@ -66,7 +66,6 @@ export const Confirmation = ({
 
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
-  const [isAccountsOpen, toggleAccounts] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
   if (!confirmStore || !initiatorWallet) {
@@ -209,15 +208,6 @@ export const Confirmation = ({
           </div>
         </div>
       </div>
-
-      <AccountsModal
-        isOpen={isAccountsOpen}
-        accounts={confirmStore.shards}
-        chainId={confirmStore.chain.chainId}
-        asset={confirmStore.asset}
-        addressPrefix={confirmStore.chain.addressPrefix}
-        onClose={toggleAccounts}
-      />
 
       <SelectedValidatorsModal
         isOpen={isValidatorsOpen}

@@ -60,6 +60,14 @@ export const Proxied: Story = {
   },
 };
 
+export const ProxiedMultishard: Story = {
+  args: {
+    wallets: [createPolkadotWallet(1, [initiatorAccount, secondAccount]), createProxiedWallet(2, [proxyAccount])],
+    initiator: [initiatorAccount, secondAccount],
+    proxied: proxyAccount,
+  },
+};
+
 export const Signatory: Story = {
   args: {
     wallets: [createPolkadotWallet(1, [initiatorAccount]), createWcWallet(2, [signatoryAccount])],

@@ -2,16 +2,16 @@ import { type PropsWithChildren, memo, useMemo } from 'react';
 
 import { type Account, type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { useToggle } from '@/shared/lib/hooks';
 import { DetailRow } from '@/shared/ui/DetailRow/DetailRow';
 import { Icon } from '@/shared/ui/Icon/Icon';
 import { Separator } from '@/shared/ui/Separator/Separator';
 import { CaptionText, FootnoteText } from '@/shared/ui/Typography/index';
 import { Box } from '@/shared/ui-kit';
-import { AccountsModal } from '@/entities/staking';
 import { WalletIcon, walletUtils } from '@/entities/wallet';
 import { Account as AccountComponent } from '../Account/Account';
 import { AccountExplorers } from '../AccountExplorer/AccountExplorers';
+
+import { AccountsModal } from './AccountsModal';
 
 type Props = PropsWithChildren<{
   wallets: Wallet[];
@@ -23,8 +23,6 @@ type Props = PropsWithChildren<{
 
 export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, signatory, children }: Props) => {
   const { t } = useI18n();
-
-  const [isAccountsOpen, toggleAccounts] = useToggle();
 
   const initiatorWallet = useMemo(() => {
     return walletUtils.getWalletFilteredAccounts(wallets, {
@@ -61,7 +59,7 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
             <FootnoteText>{initiatorWallet.name}</FootnoteText>
           </DetailRow>
 
-          <DetailRow label={t('proxy.details.account')}>
+          <DetailRow label={t('proxy.details.account', { count: initiator.length })}>
             {initiator.length === 0 && (
               <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
                 <CaptionText className="text-white">{initiator.length}</CaptionText>
@@ -69,16 +67,17 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
             )}
             {initiator.length === 1 && <AccountComponent accountId={initiator[0]!.accountId} chain={chain} />}
             {initiator.length > 1 && (
-              <button
-                type="button"
-                className="group flex items-center gap-x-1 rounded px-2 py-1 hover:bg-action-background-hover"
-                onClick={toggleAccounts}
-              >
-                <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
-                  <CaptionText className="text-white">{initiator.length}</CaptionText>
-                </div>
-                <Icon className="group-hover:text-icon-hover" name="info" size={16} />
-              </button>
+              <AccountsModal accounts={initiator} chain={chain}>
+                <button
+                  type="button"
+                  className="group flex items-center gap-x-1 rounded px-2 py-1 hover:bg-action-background-hover"
+                >
+                  <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
+                    <CaptionText className="text-white">{initiator.length}</CaptionText>
+                  </div>
+                  <Icon className="group-hover:text-icon-hover" name="info" size={16} />
+                </button>
+              </AccountsModal>
             )}
           </DetailRow>
         </>
@@ -104,20 +103,21 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
             </Box>
           </DetailRow>
 
-          <DetailRow label={t('transfer.signingAccount')}>
+          <DetailRow label={t('transfer.signingAccount', { count: initiator.length })}>
             {initiator.length === 1 ? (
               <AccountComponent accountId={initiator[0]!.accountId} chain={chain} />
             ) : (
-              <button
-                type="button"
-                className="group flex items-center gap-x-1 rounded px-2 py-1 hover:bg-action-background-hover"
-                onClick={toggleAccounts}
-              >
-                <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
-                  <CaptionText className="text-white">{initiator.length}</CaptionText>
-                </div>
-                <Icon className="group-hover:text-icon-hover" name="info" size={16} />
-              </button>
+              <AccountsModal accounts={initiator} chain={chain}>
+                <button
+                  type="button"
+                  className="group flex items-center gap-x-1 rounded px-2 py-1 hover:bg-action-background-hover"
+                >
+                  <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
+                    <CaptionText className="text-white">{initiator.length}</CaptionText>
+                  </div>
+                  <Icon className="group-hover:text-icon-hover" name="info" size={16} />
+                </button>
+              </AccountsModal>
             )}
           </DetailRow>
         </>
@@ -136,15 +136,6 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
       {children ? <Separator className="border-filter-border" /> : null}
 
       {children}
-
-      <AccountsModal
-        isOpen={isAccountsOpen}
-        accounts={initiator}
-        chainId={chain.chainId}
-        asset={chain.assets[0]!}
-        addressPrefix={chain.addressPrefix}
-        onClose={toggleAccounts}
-      />
     </dl>
   );
 });
