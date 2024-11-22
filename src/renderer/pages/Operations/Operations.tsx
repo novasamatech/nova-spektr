@@ -2,10 +2,11 @@ import { useUnit } from 'effector-react';
 import groupBy from 'lodash/groupBy';
 import { useEffect, useState } from 'react';
 
-import { type MultisigTransactionDS } from '@/shared/api/storage';
-import { type MultisigEvent, type MultisigTransactionKey } from '@/shared/core';
+import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
+import { type MultisigEvent, type MultisigTransactionKey, TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { sortByDateDesc } from '@/shared/lib/utils';
+import { nullable } from '@/shared/lib/utils/functions';
 import { FootnoteText, Header } from '@/shared/ui';
 import { networkModel } from '@/entities/network';
 import { operationsModel } from '@/entities/operations';
@@ -14,6 +15,7 @@ import { accountUtils, walletModel } from '@/entities/wallet';
 import { OperationsFilter } from '@/features/operations';
 
 import EmptyOperations from './components/EmptyState/EmptyOperations';
+import { FlexibleMultisigShell } from './components/FlexibleMultisigShell';
 import Operation from './components/Operation';
 
 export const Operations = () => {
@@ -27,8 +29,8 @@ export const Operations = () => {
   const activeAccount = activeWallet?.accounts.at(0);
   const account = activeAccount && accountUtils.isMultisigAccount(activeAccount) ? activeAccount : undefined;
 
-  const [txs, setTxs] = useState<MultisigTransactionDS[]>([]);
-  const [filteredTxs, setFilteredTxs] = useState<MultisigTransactionDS[]>([]);
+  const [txs, setTxs] = useState<MultisigTransactionDS[] | FlexibleMultisigTransactionDS[]>([]);
+  const [filteredTxs, setFilteredTxs] = useState<MultisigTransactionDS[] | FlexibleMultisigTransactionDS[]>([]);
 
   const getEventsByTransaction = (tx: MultisigTransactionKey): MultisigEvent[] => {
     return events.filter((e) => {
@@ -59,6 +61,16 @@ export const Operations = () => {
   useEffect(() => {
     setFilteredTxs([]);
   }, [activeAccount]);
+
+  if (
+    account &&
+    accountUtils.isFlexibleMultisigAccount(account) &&
+    nullable(account?.proxyAccountId) &&
+    txs.length === 1 &&
+    txs[0]?.transaction?.type === TransactionType.CREATE_PURE_PROXY
+  ) {
+    return <FlexibleMultisigShell tx={txs[0] as FlexibleMultisigTransactionDS} account={account} />;
+  }
 
   return (
     <div className="relative flex h-full flex-col items-center">

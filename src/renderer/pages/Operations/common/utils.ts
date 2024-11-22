@@ -15,6 +15,7 @@ import {
   type MultisigTransaction,
   type ProxyType,
   type Signatory,
+  type SigningStatus,
   type Transaction,
   TransactionType,
   type Wallet,
@@ -290,4 +291,14 @@ const getCoreTx = (tx: MultisigTransaction): Transaction | DecodedTransaction | 
   }
 
   return tx.transaction;
+};
+
+export const getSignatoryStatus = (events: MultisigEvent[], signatory: AccountId): SigningStatus | undefined => {
+  const cancelEvent = events.find((e) => e.status === 'CANCELLED' && e.accountId === signatory);
+  if (cancelEvent) {
+    return cancelEvent.status;
+  }
+  const signedEvent = events.find((e) => e.status === 'SIGNED' && e.accountId === signatory);
+
+  return signedEvent?.status;
 };
