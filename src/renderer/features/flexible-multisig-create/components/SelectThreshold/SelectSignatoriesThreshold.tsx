@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { type FormEvent, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { Step } from '@/shared/lib/utils';
+import { Step, nonNullable } from '@/shared/lib/utils';
 import { Alert, Button, InputHint, SmallTitleText } from '@/shared/ui';
 import { Box, Select } from '@/shared/ui-kit';
 import { walletModel } from '@/entities/wallet';
@@ -32,6 +32,7 @@ export const SelectSignatoriesThreshold = () => {
   const ownedSignatoriesWallets = useUnit(signatoryModel.$ownedSignatoriesWallets);
   const hasDuplicateSignatories = useUnit(signatoryModel.$hasDuplicateSignatories);
   const hasEmptySignatories = useUnit(signatoryModel.$hasEmptySignatories);
+  const hasEmptySignatoryName = useUnit(signatoryModel.$hasEmptySignatoryName);
 
   const hasOwnedSignatory = !!ownedSignatoriesWallets && ownedSignatoriesWallets?.length > 0;
   const hasEnoughSignatories = signatories.length >= MIN_THRESHOLD;
@@ -43,7 +44,9 @@ export const SelectSignatoriesThreshold = () => {
     !multisigAlreadyExists &&
     !hasEmptySignatories &&
     isThresholdValid &&
-    !hasDuplicateSignatories;
+    !hasEmptySignatoryName &&
+    !hasDuplicateSignatories &&
+    !hiddenMultisig;
 
   const onSubmit = (event: FormEvent) => {
     if (!hasClickedNext) {
@@ -96,6 +99,14 @@ export const SelectSignatoriesThreshold = () => {
           >
             <Alert.Item withDot={false}>{t('createMultisigAccount.notEmptySignatory')}</Alert.Item>
           </Alert>
+
+          <Alert
+            active={hasClickedNext && hasEmptySignatoryName}
+            title={t('createMultisigAccount.notEmptySignatoryNameTitle')}
+            variant="error"
+          >
+            <Alert.Item withDot={false}>{t('createMultisigAccount.notEmptySignatoryName')}</Alert.Item>
+          </Alert>
         </div>
         <div className="flex items-center gap-x-4">
           <Box width="300px">
@@ -142,9 +153,9 @@ export const SelectSignatoriesThreshold = () => {
           </Alert>
 
           <Alert
-            active={!multisigAlreadyExists && Boolean(hiddenMultisig)}
+            active={nonNullable(hiddenMultisig)}
             title={t('createMultisigAccount.multisigExistTitle')}
-            variant="info"
+            variant="error"
           >
             <Alert.Item withDot={false}>{t('createMultisigAccount.multisigHiddenExistText')}</Alert.Item>
             <Alert.Item withDot={false}>
