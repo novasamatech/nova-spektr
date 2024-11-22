@@ -10,11 +10,13 @@ type Props = {
   title?: string;
   chain: Chain;
   variant?: 'truncate' | 'short';
+  testId?: string;
+  testIdExplorers?: string;
 };
 
-export const Account = memo(({ accountId, title, variant = 'truncate', chain }: Props) => {
+export const Account = memo(({ accountId, title, variant = 'truncate', testId = 'Account', chain }: Props) => {
   return (
-    <div className="flex w-max min-w-0 max-w-full items-center gap-2">
+    <div className="flex w-max min-w-0 max-w-full items-center gap-2" data-testid={testId}>
       <Address
         showIcon
         variant={variant}

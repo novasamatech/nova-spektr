@@ -13,7 +13,7 @@ type Props = PropsWithChildren<{
   testId?: string;
 }>;
 
-export const AccountExplorers = memo(({ accountId, chain, children, testId }: Props) => {
+export const AccountExplorers = memo(({ accountId, chain, children, testId = 'AccountExplorers' }: Props) => {
   const { t } = useI18n();
 
   const { explorers, addressPrefix } = chain;
