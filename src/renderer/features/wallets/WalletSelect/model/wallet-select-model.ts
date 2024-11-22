@@ -107,6 +107,12 @@ sample({
 });
 
 sample({
+  clock: walletModel.events.walletRestoredSuccess,
+  fn: ({ result }) => result.id,
+  target: walletModel.events.selectWallet,
+});
+
+sample({
   clock: walletModel.events.selectWallet,
   source: walletModel.$activeWallet,
   filter: (wallet, walletId) => walletId !== wallet?.id,
