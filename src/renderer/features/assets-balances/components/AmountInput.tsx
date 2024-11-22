@@ -212,7 +212,17 @@ type InputProps = {
   suffixElement?: ReactNode;
   onChange: (value: string) => void;
 };
-export const Input = ({ label, invalid, disabled, prefixElement, suffixElement, onChange, ...props }: InputProps) => {
+export const Input = ({
+  label,
+  name,
+  value,
+  placeholder,
+  invalid,
+  disabled,
+  prefixElement,
+  suffixElement,
+  onChange,
+}: InputProps) => {
   const id = useId();
 
   const prefixRef = useRef<HTMLDivElement>(null);
@@ -254,11 +264,13 @@ export const Input = ({ label, invalid, disabled, prefixElement, suffixElement, 
               'bg-transparent text-text-tertiary placeholder:text-text-tertiary': disabled,
             },
           )}
-          style={{ paddingLeft }}
           id={id}
+          name={name}
+          value={value}
+          placeholder={placeholder}
+          style={{ paddingLeft }}
           type="text"
           onChange={(event) => onChange?.(event.target.value)}
-          {...props}
         />
         <div className={cnTw(!suffixElement && 'hidden', 'absolute bottom-3 right-3')}>{suffixElement}</div>
       </div>

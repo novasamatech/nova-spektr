@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { type FormEvent, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { Step } from '@/shared/lib/utils';
+import { Step, nonNullable } from '@/shared/lib/utils';
 import { Alert, Button, InputHint, SmallTitleText } from '@/shared/ui';
 import { Box, Select } from '@/shared/ui-kit';
 import { walletModel } from '@/entities/wallet';
@@ -152,7 +152,11 @@ export const SelectSignatoriesThreshold = () => {
             </Alert.Item>
           </Alert>
 
-          <Alert active={Boolean(hiddenMultisig)} title={t('createMultisigAccount.multisigExistTitle')} variant="error">
+          <Alert
+            active={nonNullable(hiddenMultisig)}
+            title={t('createMultisigAccount.multisigExistTitle')}
+            variant="error"
+          >
             <Alert.Item withDot={false}>{t('createMultisigAccount.multisigHiddenExistText')}</Alert.Item>
             <Alert.Item withDot={false}>
               <Button

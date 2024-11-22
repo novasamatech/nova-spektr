@@ -5,7 +5,7 @@ import { type FormEvent, useEffect, useMemo, useRef } from 'react';
 import { KeyType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Button, FootnoteText, InputHint, Select } from '@/shared/ui';
-import { Box, Checkbox, Input } from '@/shared/ui-kit';
+import { Box, Checkbox, Field, Input } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { constructorModel } from '../model/constructor-model';
@@ -121,15 +121,16 @@ export const KeyForm = () => {
         </div>
         <div className="flex flex-col gap-y-2">
           <Box width="80px">
-            <Input
-              height="sm"
-              label={t('dynamicDerivations.constructor.shardsLabel')}
-              placeholder={t('dynamicDerivations.constructor.shardsPlaceholder')}
-              invalid={shards?.hasError()}
-              disabled={!isKeyTypeSharded || !isSharded?.value}
-              value={shards?.value}
-              onChange={shards?.onChange}
-            />
+            <Field text={t('dynamicDerivations.constructor.shardsLabel')}>
+              <Input
+                height="sm"
+                placeholder={t('dynamicDerivations.constructor.shardsPlaceholder')}
+                invalid={shards?.hasError()}
+                disabled={!isKeyTypeSharded || !isSharded?.value}
+                value={shards?.value}
+                onChange={shards?.onChange}
+              />
+            </Field>
           </Box>
           <InputHint variant="error" active={shards?.hasError()}>
             {t(shards?.errorText())}
@@ -139,14 +140,15 @@ export const KeyForm = () => {
       <div className="flex items-start gap-x-6">
         <div className="flex flex-col gap-y-2">
           <Box width="228px">
-            <Input
-              height="sm"
-              label={t('dynamicDerivations.constructor.keyNameLabel')}
-              placeholder={t('dynamicDerivations.constructor.keyNamePlaceholder')}
-              invalid={keyName?.hasError()}
-              value={keyName?.value}
-              onChange={keyName?.onChange}
-            />
+            <Field text={t('dynamicDerivations.constructor.keyNameLabel')}>
+              <Input
+                height="sm"
+                placeholder={t('dynamicDerivations.constructor.keyNamePlaceholder')}
+                invalid={keyName?.hasError()}
+                value={keyName?.value}
+                onChange={keyName?.onChange}
+              />
+            </Field>
           </Box>
           <InputHint variant="error" active={keyName?.hasError()}>
             {t(keyName?.errorText())}
@@ -154,15 +156,16 @@ export const KeyForm = () => {
         </div>
         <div className="flex flex-col gap-y-2">
           <Box width="354px">
-            <Input
-              height="sm"
-              label={t('dynamicDerivations.constructor.derivationLabel')}
-              placeholder={t('dynamicDerivations.constructor.derivationPlaceholder')}
-              invalid={derivationPath?.hasError()}
-              value={derivationPath?.value}
-              disabled={!derivationEnabled}
-              onChange={derivationPath?.onChange}
-            />
+            <Field text={t('dynamicDerivations.constructor.derivationLabel')}>
+              <Input
+                height="sm"
+                placeholder={t('dynamicDerivations.constructor.derivationPlaceholder')}
+                invalid={derivationPath?.hasError()}
+                value={derivationPath?.value}
+                disabled={!derivationEnabled}
+                onChange={derivationPath?.onChange}
+              />
+            </Field>
           </Box>
           <InputHint variant="error" active={derivationPath?.hasError()}>
             {t(derivationPath?.errorText())}

@@ -13,7 +13,7 @@ import {
 import { CaptionText, Combobox, IconButton, Identicon } from '@/shared/ui';
 import { type ComboboxOption } from '@/shared/ui/types';
 import { Address } from '@/shared/ui-entities';
-import { Box, Input } from '@/shared/ui-kit';
+import { Box, Field, Input } from '@/shared/ui-kit';
 import { contactModel } from '@/entities/contact';
 import { networkUtils } from '@/entities/network';
 import { WalletIcon, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -203,27 +203,29 @@ export const Signatory = ({
 
   return (
     <div className="grid grid-cols-[300px,1fr] gap-x-2">
-      <Input
-        name={t('createMultisigAccount.signatoryNameLabel')}
-        label={t('createMultisigAccount.signatoryNameLabel')}
-        placeholder={t('addressBook.createContact.namePlaceholder')}
-        invalid={false}
-        value={signatoryName}
-        disabled={!!ownAccountName || !!contactAccountName}
-        onChange={onNameChange}
-      />
+      <Field text={t('createMultisigAccount.signatoryNameLabel')}>
+        <Input
+          name={t('createMultisigAccount.signatoryNameLabel')}
+          placeholder={t('addressBook.createContact.namePlaceholder')}
+          invalid={false}
+          value={signatoryName}
+          disabled={!!ownAccountName || !!contactAccountName}
+          onChange={onNameChange}
+        />
+      </Field>
       <div className="flex items-end gap-x-2">
         <Box width="100%">
-          <Combobox
-            label={accountInputLabel}
-            placeholder={t('createMultisigAccount.signatorySelection')}
-            options={options}
-            query={query}
-            value={toAddress(signatoryAddress, { prefix: chain?.addressPrefix })}
-            prefixElement={<Identicon address={signatoryAddress} size={20} background={false} canCopy={false} />}
-            onChange={onAddressChange}
-            onInput={handleQueryChange}
-          />
+          <Field text={accountInputLabel}>
+            <Combobox
+              placeholder={t('createMultisigAccount.signatorySelection')}
+              options={options}
+              query={query}
+              value={toAddress(signatoryAddress, { prefix: chain?.addressPrefix })}
+              prefixElement={<Identicon address={signatoryAddress} size={20} background={false} canCopy={false} />}
+              onChange={onAddressChange}
+              onInput={handleQueryChange}
+            />
+          </Field>
         </Box>
         {!isOwnAccount && onDelete && (
           <IconButton className="mb-3.5" name="delete" onClick={() => onDelete(signatoryIndex)} />

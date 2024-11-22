@@ -50,18 +50,9 @@ Primary.args = {
   onChange: () => {},
 };
 
-export const WithLabel = Template.bind({});
-WithLabel.args = {
-  placeholder: 'Select an option',
-  label: 'Payout account',
-  options,
-  onChange: () => {},
-};
-
 export const Custom = Template.bind({});
 Custom.args = {
   placeholder: 'Select an option',
-  label: 'Payout account',
   value: customOptions[2],
   options: customOptions,
   suffixElement: <Icon name="warnCutout" className="absolute right-2 top-[9px] text-alert" size={16} />,

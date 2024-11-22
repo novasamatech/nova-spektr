@@ -6,6 +6,7 @@ import { type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress, toShortAddress, validateAddress } from '@/shared/lib/utils';
 import { Alert, Button, Combobox, Icon, Identicon, InputHint, Select } from '@/shared/ui';
+import { Field } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { SignatorySelector } from '@/entities/operations';
@@ -203,9 +204,8 @@ const ProxyInput = () => {
   );
 
   return (
-    <div className="flex flex-col gap-y-2">
+    <Field text={t('proxy.addProxy.delegateLabel')}>
       <Combobox
-        label={t('proxy.addProxy.delegateLabel')}
         placeholder={t('proxy.addProxy.delegatePlaceholder')}
         query={proxyQuery}
         options={options}
@@ -218,7 +218,7 @@ const ProxyInput = () => {
       <InputHint variant="error" active={delegate.hasError()}>
         {t(delegate.errorText())}
       </InputHint>
-    </div>
+    </Field>
   );
 };
 
