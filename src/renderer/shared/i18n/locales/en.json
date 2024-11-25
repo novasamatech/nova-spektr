@@ -931,8 +931,8 @@
     "contactSignatoriesTitle": "Contacts",
     "continueButton": "Continue",
     "createFlexibleMultisig": {
-      "title": "Creating flexible multisig...",
-      "description": "Please wait for this operation to be signed by other signatories on the multisig. You can see the status of the operation below."
+      "title": "Flexible multisig is creating...",
+      "description": "Wait for the signing of the operation from all the signatories of the wallet. You can see the operation status below."
     },
     "details": {
       "accessType": "Access type",

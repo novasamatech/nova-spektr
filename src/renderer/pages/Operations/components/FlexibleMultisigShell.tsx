@@ -11,6 +11,7 @@ import {
 import { useI18n } from '@/shared/i18n';
 import { Accordion, BodyText, Button, CaptionText, Header, Plate, SmallTitleText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
+import { Box, Progress } from '@/shared/ui-kit';
 import { contactModel } from '@/entities/contact';
 import { useMultisigEvent } from '@/entities/multisig';
 import { type ExtendedChain, useNetworkData } from '@/entities/network';
@@ -47,21 +48,22 @@ export const FlexibleMultisigShell = ({ tx, account }: Props) => {
     <div className="relative flex h-full flex-col items-center">
       <Header title={t('operations.title')} />
 
-      <Plate className="mt-6 flex w-[368px] flex-col rounded-2xl border-filter-border p-6">
-        <div className="flex self-center">
-          <Status status={tx.status} signed={approvals.length} threshold={account.threshold || 0} />
-        </div>
+      <Plate className="mt-6 flex w-92 flex-col gap-6 rounded-2xl border-filter-border p-6">
+        <Box gap={4}>
+          <Box horizontalAlign="center">
+            <Status status={tx.status} signed={approvals.length} threshold={account.threshold ?? approvals.length} />
+          </Box>
 
-        {/* TODO: add proggress line */}
+          <SmallTitleText align="center">{t('operation.createFlexibleMultisig.title')}</SmallTitleText>
 
-        <SmallTitleText className="my-4" align="center">
-          {t('operation.createFlexibleMultisig.title')}
-        </SmallTitleText>
-        <BodyText className="text-text-tertiary" align="center">
-          {t('operation.createFlexibleMultisig.description')}
-        </BodyText>
+          <Progress value={approvals.length} max={account.threshold ?? approvals.length} />
 
-        <div className="my-6 flex items-center">
+          <BodyText className="text-text-tertiary" align="center">
+            {t('operation.createFlexibleMultisig.description')}
+          </BodyText>
+        </Box>
+
+        <div className="flex items-center">
           {connection && isRejectAvailable && (
             <RejectTxModal tx={tx} account={account} connection={extendedChain}>
               <Button pallet="error" variant="fill">
@@ -75,7 +77,7 @@ export const FlexibleMultisigShell = ({ tx, account }: Props) => {
             </ApproveTxModal>
           )}
         </div>
-        {<Signatories signatories={tx.signatories} connection={extendedChain} events={events} />}
+        <Signatories signatories={tx.signatories} connection={extendedChain} events={events} />
 
         {/* TODO: add details */}
       </Plate>
