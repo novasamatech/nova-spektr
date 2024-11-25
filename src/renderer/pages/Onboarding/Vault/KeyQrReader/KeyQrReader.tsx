@@ -214,9 +214,9 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
             value={activeCamera ?? null}
             onChange={setActiveCamera}
           >
-            {availableCameras.map((camera) => (
+            {availableCameras.map((camera, index) => (
               <Select.Item key={camera.value} value={camera.value}>
-                {camera.title}
+                {`${index + 1}. ${camera.title}`}
               </Select.Item>
             ))}
           </Select>
