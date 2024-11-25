@@ -177,5 +177,4 @@ jobs:
             - Linux: ${{ steps.interact_with_storage.outputs.linux_app }}
             - MacOS: ${{ steps.interact_with_storage.outputs.macos_app }}
             - MacOS_arm: ${{ steps.interact_with_storage.outputs.macos_64_app }}
-            - Stage Website: https://spektr-stg.novasama-tech.org
             PR: https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}
