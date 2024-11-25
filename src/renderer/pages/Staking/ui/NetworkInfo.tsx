@@ -63,7 +63,7 @@ export const NetworkInfo = ({
           <FootnoteText className="text-text-secondary">{t('staking.overview.networkLabel')}</FootnoteText>
           <Select
             placeholder={t('staking.overview.networkPlaceholder')}
-            value={chain?.chainId}
+            value={chain?.chainId ?? null}
             onChange={onNetworkChange}
           >
             {Object.values(chains)
@@ -79,8 +79,8 @@ export const NetworkInfo = ({
           isLoading || nullable(asset) ? (
             <div key={title} className="flex flex-col gap-y-1" data-testid="value-loading">
               <FootnoteText className="text-text-secondary">{title}</FootnoteText>
-              <Skeleton width="120px" height="16px" />
-              <Skeleton width="40px" height="16px" />
+              <Skeleton width={30} height={4} />
+              <Skeleton width={10} height={4} />
             </div>
           ) : (
             <div key={title} className="flex flex-col gap-y-0.5 text-left">

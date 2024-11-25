@@ -21,7 +21,7 @@ const Context = createContext<ContextProps>({});
 
 type ControlledSelectProps<T extends string> = {
   placeholder: string;
-  value: T | undefined | null;
+  value: T | null;
   onChange: (value: T) => void;
 } & XOR<{
   open: boolean;
