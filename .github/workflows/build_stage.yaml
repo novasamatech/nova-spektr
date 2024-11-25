@@ -132,12 +132,13 @@ jobs:
       - name: Debug
         run: ls -la
 
-      - name: Replace space by "-"
+      - name: Replace space and underscore by "-"
         run: |
           for file in *; do
             if [ -f "$file" ]; then
-              new_name=$(echo "$file" | tr ' ' '-')
-              if [ "$new_name" != "$file" ]; then # Skip files with no spaces
+              # Replace both spaces and underscores with hyphens
+              new_name=$(echo "$file" | tr ' _' '-')
+              if [ "$new_name" != "$file" ]; then # Skip files with no spaces or underscores
                 mv "$file" "$new_name"
               fi
             fi
@@ -170,13 +171,14 @@ jobs:
         with:
           to: ${{ secrets.TELEGRAM_TO_DEV }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
-          format: html
+          format: markdown
           message: |
             👨‍💻 Stage build was created successfully, URLs to download:
               - Windows: ${{ steps.interact_with_storage.outputs.windows_app }}
               - Linux: ${{ steps.interact_with_storage.outputs.linux_app }}
               - MacOS: ${{ steps.interact_with_storage.outputs.macos_app }}
               - MacOS_arm: ${{ steps.interact_with_storage.outputs.macos_64_app }}
+              - Stage Website: https://spektr-stg.novasama-tech.org
 
               Branch: ${{ github.head_ref }}
               PR: https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}
