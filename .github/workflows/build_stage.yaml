@@ -162,7 +162,7 @@ jobs:
                 s3cmd sync "$artifact" --acl-public --multipart-chunk-size-mb=150 "${{ env.S3_BUCKET }}/pr-${{ github.event.pull_request.number }}/$artifact"
                 url=$(s3cmd signurl "${{ env.S3_BUCKET }}/pr-${{ github.event.pull_request.number }}/$artifact" $(echo "`date +%s` + 3600 * 24 * ${{ env.STORING_DAYS }}" | bc))
                 # Escape the URL and format it differently
-                echo "::set-output name=$artifact_name::[$artifact]($url)"
+                echo "::set-output name=$artifact_name::<a href=\"$url\">$artifact</a>"
               fi
             done
           done
@@ -179,6 +179,7 @@ jobs:
               - Linux: ${{ steps.interact_with_storage.outputs.linux_app }}
               - MacOS: ${{ steps.interact_with_storage.outputs.macos_app }}
               - MacOS_arm: ${{ steps.interact_with_storage.outputs.macos_64_app }}
+              - Stage web: https://spektr-stg.novasama-tech.org/
               Branch: ${{ github.head_ref }}
 
               PR: https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}
