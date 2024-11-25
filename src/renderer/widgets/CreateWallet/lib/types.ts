@@ -34,5 +34,6 @@ export interface SignatoryInfo {
   index: number;
   name: string;
   address: string;
-  walletId: string;
+  // Contact doesn't belong to wallet
+  walletId?: string;
 }

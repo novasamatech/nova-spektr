@@ -1,9 +1,9 @@
 import { type ChangeEvent, type ComponentPropsWithoutRef, forwardRef, useState } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
-import { Icon } from '../../Icon/Icon';
-import { FootnoteText, TextBase } from '../../Typography';
-import { type HTMLInputFileProps } from '../common/types';
+import { Icon } from '@/shared/ui';
+
+export type HTMLInputFileProps = 'required' | 'disabled' | 'accept' | 'placeholder';
 
 type Props = Pick<ComponentPropsWithoutRef<'input'>, HTMLInputFileProps> & {
   invalid?: boolean;
@@ -11,42 +11,45 @@ type Props = Pick<ComponentPropsWithoutRef<'input'>, HTMLInputFileProps> & {
 };
 
 export const InputFile = forwardRef<HTMLInputElement, Props>(
-  ({ placeholder, className, invalid = false, onChange, ...props }, ref) => {
+  ({ placeholder, invalid = false, onChange, ...props }, ref) => {
     const [fileName, setFileName] = useState('');
 
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
       const files = event.target.files;
+      if (!files) return;
 
-      if (!files || !files.length) return;
+      const file = files.item(0);
+      if (!file) return;
 
-      const fileName = files[0].name;
+      const fileName = file.name;
       const fileFormat = fileName.slice(fileName.lastIndexOf('.'), fileName.length);
       const acceptedFormats = props.accept?.split(',');
 
-      if (acceptedFormats && !(acceptedFormats.includes(files[0].type) || acceptedFormats.includes(fileFormat))) return;
+      if (acceptedFormats && !(acceptedFormats.includes(file.type) || acceptedFormats.includes(fileFormat))) return;
 
-      onChange?.(files[0]);
-      setFileName(files[0].name);
+      onChange?.(file);
+      setFileName(file.name);
     };
 
     return (
       <label
         className={cnTw(
-          'flex h-full cursor-pointer items-center justify-center rounded border border-dashed border-filter-border p-3 active:border-active-container-border',
+          'flex h-full w-full items-center justify-center rounded p-3',
+          'cursor-pointer border border-dashed border-filter-border',
+          'focus-within:border-active-container-border hover:border-active-container-border active:border-active-container-border',
           invalid && 'border-filter-border-negative',
-          className,
         )}
       >
         <div className="flex flex-col items-center gap-y-2">
           <Icon name={invalid ? 'refresh' : 'uploadFile'} />
           {fileName ? (
-            <FootnoteText>{fileName}</FootnoteText>
+            <p className="text-footnote">{fileName}</p>
           ) : (
-            <TextBase className="text-button-small text-primary-button-background-default">{placeholder}</TextBase>
+            <p className="text-button-small text-primary-button-background-default">{placeholder}</p>
           )}
         </div>
         <input
-          className="hidden"
+          className="visually-hidden"
           data-testid="file-input"
           spellCheck="false"
           type="file"
