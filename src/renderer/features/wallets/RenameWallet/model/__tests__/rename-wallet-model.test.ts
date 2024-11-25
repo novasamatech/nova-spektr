@@ -11,8 +11,8 @@ jest.mock('@walletconnect/utils', () => ({
   getSdkError: jest.fn(),
 }));
 
-jest.mock('@walletconnect/sign-client', () => ({
-  Client: {},
+jest.mock('@walletconnect/universal-provider', () => ({
+  Provider: {},
 }));
 
 describe('entities/wallet/model/wallet-model', () => {

@@ -77,9 +77,6 @@ importers:
       '@substrate/txwrapper-polkadot':
         specifier: 7.5.2
         version: 7.5.2(@polkadot/util-crypto@13.1.1(@polkadot/util@13.1.1))(@polkadot/util@13.1.1)
-      '@walletconnect/sign-client':
-        specifier: 2.17.2
-        version: 2.17.2
       '@walletconnect/types':
         specifier: 2.17.2
         version: 2.17.2
