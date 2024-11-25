@@ -174,12 +174,13 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           format: html
           message: |
-            👨‍💻 Stage build was created successfully, URLs to download:
-              - Windows: ${{ steps.interact_with_storage.outputs.windows_app }}
-              - Linux: ${{ steps.interact_with_storage.outputs.linux_app }}
-              - MacOS: ${{ steps.interact_with_storage.outputs.macos_app }}
-              - MacOS_arm: ${{ steps.interact_with_storage.outputs.macos_64_app }}
-              - Stage web: https://spektr-stg.novasama-tech.org/
-              Branch: ${{ github.head_ref }}
+            👨‍💻 Stage build was created successfully!
+              <b>Branch:</b> ${{ github.head_ref }}<br>
+              <b>PR:</b> https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}<br>
 
-              PR: https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}
+              - <b>Windows:</b> ${{ steps.interact_with_storage.outputs.windows_app }}<br>
+              - <b>Linux:</b> ${{ steps.interact_with_storage.outputs.linux_app }}<br>
+              - <b>MacOS:</b> ${{ steps.interact_with_storage.outputs.macos_app }}<br>
+              - <b>MacOS_arm:</b> ${{ steps.interact_with_storage.outputs.macos_64_app }}<br>
+              
+              <b>Stage web:</b> https://spektr-stg.novasama-tech.org/
