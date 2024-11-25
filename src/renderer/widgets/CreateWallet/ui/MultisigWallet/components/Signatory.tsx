@@ -199,7 +199,7 @@ export const Signatory = ({
                     const itemValue = `${address}_${account.walletId}`;
 
                     return (
-                      <Combobox.Item key={itemValue} value={itemValue}>
+                      <Combobox.Item key={account.id} value={itemValue}>
                         <div className="pl-7">
                           <Address showIcon canCopy={false} title={account.name} address={address} />
                         </div>
