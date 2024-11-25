@@ -1,5 +1,5 @@
-import type Client from '@walletconnect/sign-client';
 import { type EngineTypes } from '@walletconnect/types';
+import type Provider from '@walletconnect/universal-provider';
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { combineEvents } from 'patronum';
 
@@ -14,7 +14,7 @@ import { ReconnectStep } from '../lib/types';
 import { operationSignModel } from './operation-sign-model';
 
 type SignParams = {
-  client: Client;
+  provider: Provider;
   payload: EngineTypes.RequestParams;
 };
 
@@ -52,9 +52,9 @@ const $isStatusShown = combine(
 const signFx = createEffect(async (signParams: SignParams[]): Promise<SignResponse[]> => {
   const results: SignResponse[] = [];
 
-  for (const { client, payload } of signParams) {
+  for (const { provider, payload } of signParams) {
     // should be signed step by step
-    const response = await client.request<SignResponse>(payload);
+    const response = await provider.client.request<SignResponse>(payload);
 
     results.push(response);
   }

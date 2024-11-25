@@ -12,7 +12,7 @@ import { ForgetStep, ReconnectStep } from '../lib/constants';
 
 const reset = createEvent();
 const confirmReconnectShown = createEvent();
-const reconnectStarted = createEvent<Omit<InitConnectParams, 'client'> & { currentSession: string }>();
+const reconnectStarted = createEvent<Omit<InitConnectParams, 'provider'> & { currentSession: string }>();
 const reconnectAborted = createEvent();
 const sessionTopicUpdated = createEvent();
 const forgetButtonClicked = createEvent<Wallet>();
@@ -130,16 +130,18 @@ sample({
   source: {
     wallet: walletSelectModel.$walletForDetails,
   },
-  filter: ({ wallet }) => Boolean(wallet),
+  filter: ({ wallet }) => {
+    console.log('xcm', wallet);
+
+    return Boolean(wallet);
+  },
   fn: ({ wallet }) => ({
     sessionTopic: wallet!.accounts[0].signingExtras?.sessionTopic,
     pairingTopic: wallet!.accounts[0].signingExtras?.pairingTopic,
   }),
   target: spread({
-    targets: {
-      sessionTopic: walletConnectModel.events.disconnectStarted,
-      pairingTopic: walletConnectModel.events.pairingRemoved,
-    },
+    sessionTopic: walletConnectModel.events.disconnectStarted,
+    pairingTopic: walletConnectModel.events.pairingRemoved,
   }),
 });
 

@@ -30,7 +30,7 @@ export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
 
   const session = useUnit(walletConnectModel.$session);
-  const client = useUnit(walletConnectModel.$client);
+  const provider = useUnit(walletConnectModel.$provider);
   const uri = useUnit(walletConnectModel.$uri);
   const step = useUnit(wcOnboardingModel.$step);
 
@@ -75,11 +75,11 @@ export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
   }, [step]);
 
   useEffect(() => {
-    if (client && isOpen) {
+    if (provider && isOpen) {
       const chains = walletConnectUtils.getWalletConnectChains(chainsService.getChainsData());
       walletConnectModel.events.connect({ chains });
     }
-  }, [client, isOpen]);
+  }, [provider, isOpen]);
 
   const handleClose = () => {
     if (isNeedDisconnect(step)) {

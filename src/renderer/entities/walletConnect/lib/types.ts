@@ -1,7 +1,7 @@
-import type Client from '@walletconnect/sign-client';
+import type Provider from '@walletconnect/universal-provider';
 
 export type InitConnectParams = {
-  client: Client;
+  provider: Provider;
   chains: string[];
   pairing?: any;
 };

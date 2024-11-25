@@ -1,4 +1,4 @@
-import type Client from '@walletconnect/sign-client';
+import type Provider from '@walletconnect/universal-provider';
 
 import { type Chain, type ChainId, type Wallet } from '@/shared/core';
 import { walletUtils } from '@/entities/wallet';
@@ -20,14 +20,14 @@ function getWalletConnectChainId(chainId: ChainId): string {
   return `polkadot:${chainId.slice(FIRST_CHAIN_ID_SYMBOL, LAST_CHAIN_ID_SYMBOL)}`;
 }
 
-function isConnected(client: Client, sessionTopic: string): boolean {
-  const sessions = client.session.getAll() || [];
+function isConnected(provider: Provider, sessionTopic: string): boolean {
+  const sessions = provider.client.session.getAll() || [];
 
   return sessions.some((session) => session.topic === sessionTopic);
 }
 
-function isConnectedByAccounts(client: Client, wallet: Wallet): boolean {
+function isConnectedByAccounts(provider: Provider, wallet: Wallet): boolean {
   if (!walletUtils.isWalletConnectGroup(wallet)) return false;
 
-  return walletConnectUtils.isConnected(client, wallet.accounts[0].signingExtras?.sessionTopic);
+  return walletConnectUtils.isConnected(provider, wallet.accounts[0].signingExtras?.sessionTopic);
 }
