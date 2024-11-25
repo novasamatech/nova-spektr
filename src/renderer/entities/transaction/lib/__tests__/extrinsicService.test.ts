@@ -13,8 +13,6 @@ describe('entities/transaction/lib/extrinsicService', () => {
   let api: ApiPromise;
 
   beforeEach(async (): Promise<void> => {
-    // @ts-expect-error In polkadot.js tests the also use TypeRegistry
-    // https://github.com/polkadot-js/api/blob/master/packages/rpc-core/src/index.spec.ts
     provider = new MockProvider(registry);
 
     const genesisHash = registry.createType('Hash', await provider.send('chain_getBlockHash', [])).toHex();
