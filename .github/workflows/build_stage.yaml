@@ -161,20 +161,24 @@ jobs:
               if [ -f "$artifact" ]; then
                 s3cmd sync "$artifact" --acl-public --multipart-chunk-size-mb=150 "${{ env.S3_BUCKET }}/pr-${{ github.event.pull_request.number }}/$artifact"
                 url=$(s3cmd signurl "${{ env.S3_BUCKET }}/pr-${{ github.event.pull_request.number }}/$artifact" $(echo "`date +%s` + 3600 * 24 * ${{ env.STORING_DAYS }}" | bc))
-                echo "::set-output name=$artifact_name::<a href="$url">$artifact</a>"
+                # Escape the URL and format it differently
+                echo "::set-output name=$artifact_name::[$artifact]($url)"
               fi
             done
           done
 
       - name: Notify Telegram channel
-        uses: appleboy/telegram-action@v1.0.0
+        uses: appleboy/telegram-action@master
         with:
           to: ${{ secrets.TELEGRAM_TO_DEV }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           format: html
           message: |
-            - Windows: ${{ steps.interact_with_storage.outputs.windows_app }}
-            - Linux: ${{ steps.interact_with_storage.outputs.linux_app }}
-            - MacOS: ${{ steps.interact_with_storage.outputs.macos_app }}
-            - MacOS_arm: ${{ steps.interact_with_storage.outputs.macos_64_app }}
-            PR: https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}
+            👨‍💻 Stage build was created successfully, URLs to download:
+              - Windows: ${{ steps.interact_with_storage.outputs.windows_app }}
+              - Linux: ${{ steps.interact_with_storage.outputs.linux_app }}
+              - MacOS: ${{ steps.interact_with_storage.outputs.macos_app }}
+              - MacOS_arm: ${{ steps.interact_with_storage.outputs.macos_64_app }}
+              Branch: ${{ github.head_ref }}
+
+              PR: https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}
