@@ -19,18 +19,18 @@ type ContextProps = {
 
 const Context = createContext<ContextProps>({});
 
-type ControlledSelectProps = {
+type ControlledSelectProps<T extends string> = {
   placeholder: string;
-  value: string;
-  onChange: (value: string) => void;
+  value: T | null;
+  onChange: (value: T) => void;
 } & XOR<{
   open: boolean;
   onToggle: (value: boolean) => void;
 }>;
 
-type RootProps = PropsWithChildren<ControlledSelectProps & ContextProps>;
+type RootProps<T extends string> = PropsWithChildren<ControlledSelectProps<T> & ContextProps>;
 
-const Root = ({
+const Root = <T extends string>({
   theme = 'light',
   invalid,
   disabled,
@@ -42,12 +42,18 @@ const Root = ({
   value,
   onChange,
   children,
-}: RootProps) => {
+}: RootProps<T>) => {
   const ctx = useMemo(() => ({ theme, height, invalid, disabled, testId }), [theme, height, invalid, disabled, testId]);
 
   return (
     <Context.Provider value={ctx}>
-      <RadixSelect.Root open={open} disabled={disabled} value={value} onOpenChange={onToggle} onValueChange={onChange}>
+      <RadixSelect.Root
+        open={open}
+        disabled={disabled}
+        value={value ?? undefined}
+        onOpenChange={onToggle}
+        onValueChange={onChange}
+      >
         <Button placeholder={placeholder} />
         <Content>{children}</Content>
       </RadixSelect.Root>

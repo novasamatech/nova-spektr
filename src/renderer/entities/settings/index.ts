@@ -1,1 +1,0 @@
-export { settingsStorage } from './settingsStorage';

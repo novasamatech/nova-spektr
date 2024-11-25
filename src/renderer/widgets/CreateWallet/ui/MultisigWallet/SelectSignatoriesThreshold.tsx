@@ -162,7 +162,7 @@ export const SelectSignatoriesThreshold = () => {
           <Alert
             active={nonNullable(hiddenMultisig)}
             title={t('createMultisigAccount.multisigExistTitle')}
-            variant="error"
+            variant="info"
           >
             <Alert.Item withDot={false}>{t('createMultisigAccount.multisigHiddenExistText')}</Alert.Item>
             <Alert.Item withDot={false}>

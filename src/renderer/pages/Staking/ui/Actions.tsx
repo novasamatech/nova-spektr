@@ -149,7 +149,7 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
                 {getActionButtonText()}
               </Button>
             </Dropdown.Trigger>
-            <Dropdown.Content>
+            <Dropdown.Content width="trigger">
               {Object.entries(operationsSummary).map(([key, value]) => {
                 if (stakes.length !== value) return null;
 
