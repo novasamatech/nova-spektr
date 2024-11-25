@@ -19,7 +19,7 @@ import RejectTxModal from './modals/RejectTx';
 
 type Props = {
   tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;
-  account?: MultisigAccount | FlexibleMultisigAccount;
+  account: MultisigAccount | FlexibleMultisigAccount | null;
 };
 
 export const OperationFullInfo = ({ tx, account }: Props) => {

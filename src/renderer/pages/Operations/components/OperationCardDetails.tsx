@@ -54,7 +54,7 @@ import {
 
 type Props = {
   tx: MultisigTransaction | FlexibleMultisigTransaction;
-  account?: MultisigAccount | FlexibleMultisigAccount;
+  account: MultisigAccount | FlexibleMultisigAccount | null;
   extendedChain?: ExtendedChain;
 };
 
