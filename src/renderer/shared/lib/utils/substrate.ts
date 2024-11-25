@@ -42,8 +42,8 @@ const UNUSED_LABEL = 'unused';
 export const createTxMetadata = async (address: Address, api: ApiPromise): Promise<TxMetadata> => {
   const chainId = api.genesisHash.toString() as ChainId;
 
-  const [{ block }, blockHash, metadataRpc, nonce, { specVersion, transactionVersion, specName }] = await Promise.all([
-    api.rpc.chain.getBlock(),
+  const [header, blockHash, metadataRpc, nonce, { specVersion, transactionVersion, specName }] = await Promise.all([
+    api.rpc.chain.getHeader(),
     api.rpc.chain.getBlockHash(),
     api.rpc.state.getMetadata(),
     api.rpc.system.accountNextIndex(address),
@@ -61,7 +61,7 @@ export const createTxMetadata = async (address: Address, api: ApiPromise): Promi
   const info: BaseTxInfo = {
     address,
     blockHash: blockHash.toString(),
-    blockNumber: block.header.number.toNumber(),
+    blockNumber: header.number.toNumber(),
     genesisHash: chainId,
     metadataRpc: metadataRpc.toHex(),
     nonce: nonce.toNumber(),
