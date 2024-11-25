@@ -208,7 +208,7 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
           </div>
         </div>
 
-        {availableCameras.length > 0 && (
+        {availableCameras.length > 1 && (
           <Select
             placeholder={t('onboarding.paritySigner.selectCameraLabel')}
             value={activeCamera ?? null}
