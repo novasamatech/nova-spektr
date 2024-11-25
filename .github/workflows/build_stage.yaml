@@ -175,12 +175,12 @@ jobs:
           format: html
           message: |
             👨‍💻 Stage build was created successfully!
-              <b>Branch:</b> ${{ github.head_ref }}<br>
-              <b>PR:</b> https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}<br>
+              <b>Branch:</b> ${{ github.head_ref }}
+              <b>PR:</b> https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}
 
-              - <b>Windows:</b> ${{ steps.interact_with_storage.outputs.windows_app }}<br>
-              - <b>Linux:</b> ${{ steps.interact_with_storage.outputs.linux_app }}<br>
-              - <b>MacOS:</b> ${{ steps.interact_with_storage.outputs.macos_app }}<br>
-              - <b>MacOS_arm:</b> ${{ steps.interact_with_storage.outputs.macos_64_app }}<br>
+              - <b>Windows:</b> ${{ steps.interact_with_storage.outputs.windows_app }}
+              - <b>Linux:</b> ${{ steps.interact_with_storage.outputs.linux_app }}
+              - <b>MacOS:</b> ${{ steps.interact_with_storage.outputs.macos_app }}
+              - <b>MacOS_arm:</b> ${{ steps.interact_with_storage.outputs.macos_64_app }}
               
               <b>Stage web:</b> https://spektr-stg.novasama-tech.org/
