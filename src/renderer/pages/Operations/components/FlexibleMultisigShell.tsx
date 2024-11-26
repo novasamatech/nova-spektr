@@ -13,9 +13,9 @@ import {
   type Wallet,
 } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Accordion, BodyText, Button, CaptionText, Header, Plate, SmallTitleText } from '@/shared/ui';
+import { BodyText, Button, Header, Plate, SmallTitleText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
-import { Box, Progress } from '@/shared/ui-kit';
+import { Accordion, Box, Progress } from '@/shared/ui-kit';
 import { contactModel } from '@/entities/contact';
 import { useMultisigEvent } from '@/entities/multisig';
 import { type ExtendedChain, useNetworkData } from '@/entities/network';
@@ -97,7 +97,7 @@ type SignatoriesParams = {
 };
 type WalletSignatory = Signatory & {
   wallet: Wallet;
-  status: SigningStatus | undefined;
+  status: SigningStatus | null;
 };
 
 const Signatories = memo(({ signatories, connection, events }: SignatoriesParams) => {
@@ -124,13 +124,9 @@ const Signatories = memo(({ signatories, connection, events }: SignatoriesParams
 
   return (
     <Accordion>
-      <Accordion.Button buttonClass="px-2 py-1.5 mb-3">
-        <CaptionText className="uppercase text-text-secondary">
-          {t('operation.signatoriesTitleCount', { count: signatories.length })}
-        </CaptionText>
-      </Accordion.Button>
+      <Accordion.Trigger>{t('operation.signatoriesTitleCount', { count: signatories.length })}</Accordion.Trigger>
       <Accordion.Content>
-        <div className="flex flex-col">
+        <div className="mt-3 flex flex-col">
           {walletSignatories.length > 0 && (
             <ul className="flex flex-col gap-y-2">
               {walletSignatories.map((signatory) => (
@@ -192,11 +188,11 @@ const Details = ({ tx, chain }: { tx: MultisigTransaction | FlexibleMultisigTran
 
   return (
     <Accordion>
-      <Accordion.Button buttonClass="px-2 py-1.5 mb-3">
-        <CaptionText className="uppercase text-text-secondary">{t('operation.detailsTitle')}</CaptionText>
-      </Accordion.Button>
+      <Accordion.Trigger>{t('operation.detailsTitle')}</Accordion.Trigger>
       <Accordion.Content>
-        <OperationAdvancedDetails tx={tx} chain={chain} wallets={wallets} />
+        <div className="mt-3">
+          <OperationAdvancedDetails tx={tx} chain={chain} wallets={wallets} />
+        </div>
       </Accordion.Content>
     </Accordion>
   );

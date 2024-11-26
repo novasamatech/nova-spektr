@@ -19,7 +19,7 @@ type Props = {
   accountId: AccountId;
   explorers?: Explorer[];
   addressPrefix?: number;
-  status?: SigningStatus;
+  status?: SigningStatus | null;
 };
 
 export const SignatoryCard = ({
