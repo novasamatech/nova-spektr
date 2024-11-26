@@ -1,0 +1,35 @@
+name: Upload to s3
+description: That action will setup s3cmd
+inputs:
+  s3_access_key:
+    description: 'Access key to s3'
+    required: true
+  s3_secret_key:
+    description: 'Secret key for s3'
+    required: true
+  s3_region:
+    description: 'Region for s3'
+    required: true
+  s3_bucket:
+    description: 'Bucket name'
+    required: true
+  source:
+    description: 'Directory or file to upload'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up s3cmd cli tool
+      uses: ./.github/workflows/setup-s3cmd
+      with:
+        s3_region: ${{ inputs.s3_region }}
+        s3_secret_key: ${{ inputs.s3_secret_key }}
+        s3_access_key: ${{ inputs.s3_access_key }}
+
+    - name: List available S3 buckets
+      run: s3cmd ls
+
+    - name: Interact with object storage
+      run: s3cmd sync --recursive --acl-public ${{ inputs.source }} ${{ inputs.s3_bucket }}
+
