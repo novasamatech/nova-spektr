@@ -4,15 +4,23 @@ on:
   push:
     branches:
       - dev
-      - stage
     tags:
       - 'v*'
+  pull_request:
+    types: [labeled]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 jobs:
   build-docker-images:
+    if: |
+      github.event_name == 'push' || 
+      (github.event_name == 'pull_request' && contains(github.event.label.name, 'internal-build'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -41,8 +49,12 @@ jobs:
         if: ${{ github.ref_type == 'branch' && github.ref_name == 'dev' }}
         run: |
           echo "IMAGE_LABEL=latest" >> "$GITHUB_ENV"
+      - name: Set image label for release branches
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          echo "IMAGE_LABEL=stage" >> "$GITHUB_ENV"
       - name: Set image label for a tag or other branches
-        if: ${{ github.ref_type == 'tag' || (github.ref_type == 'branch' && github.ref_name != 'dev') }}
+        if: ${{ github.ref_type == 'tag' || (github.ref_type == 'branch' && github.ref_name != 'dev' && github.event_name != 'pull_request') }}
         run: |
           echo "IMAGE_LABEL=${{ github.ref_name }}" >> "$GITHUB_ENV"
       - name: Set full name of the Docker image

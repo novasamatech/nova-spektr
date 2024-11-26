@@ -132,12 +132,13 @@ jobs:
       - name: Debug
         run: ls -la
 
-      - name: Replace space by "-"
+      - name: Replace space and underscore by "-"
         run: |
           for file in *; do
             if [ -f "$file" ]; then
-              new_name=$(echo "$file" | tr ' ' '-')
-              if [ "$new_name" != "$file" ]; then # Skip files with no spaces
+              # Replace both spaces and underscores with hyphens
+              new_name=$(echo "$file" | tr ' _' '-')
+              if [ "$new_name" != "$file" ]; then # Skip files with no spaces or underscores
                 mv "$file" "$new_name"
               fi
             fi
@@ -160,7 +161,8 @@ jobs:
               if [ -f "$artifact" ]; then
                 s3cmd sync "$artifact" --acl-public --multipart-chunk-size-mb=150 "${{ env.S3_BUCKET }}/pr-${{ github.event.pull_request.number }}/$artifact"
                 url=$(s3cmd signurl "${{ env.S3_BUCKET }}/pr-${{ github.event.pull_request.number }}/$artifact" $(echo "`date +%s` + 3600 * 24 * ${{ env.STORING_DAYS }}" | bc))
-                echo "::set-output name=$artifact_name::[$artifact]($url)"
+                # Escape the URL and format it differently
+                echo "::set-output name=$artifact_name::<a href=\"$url\">$artifact</a>"
               fi
             done
           done
@@ -172,11 +174,13 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           format: html
           message: |
-            👨‍💻 Stage build was created successfully, URLs to download:
-              - Windows: ${{ steps.interact_with_storage.outputs.windows_app }}
-              - Linux: ${{ steps.interact_with_storage.outputs.linux_app }}
-              - MacOS: ${{ steps.interact_with_storage.outputs.macos_app }}
-              - MacOS_arm: ${{ steps.interact_with_storage.outputs.macos_64_app }}
+            👨‍💻 Stage build was created successfully!
+              <b>Branch:</b> ${{ github.head_ref }}
+              <b>PR:</b> https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}
 
-              Branch: ${{ github.head_ref }}
-              PR: https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}
+              - <b>Windows:</b> ${{ steps.interact_with_storage.outputs.windows_app }}
+              - <b>Linux:</b> ${{ steps.interact_with_storage.outputs.linux_app }}
+              - <b>MacOS:</b> ${{ steps.interact_with_storage.outputs.macos_app }}
+              - <b>MacOS_arm:</b> ${{ steps.interact_with_storage.outputs.macos_64_app }}
+              
+              <b>Stage web:</b> https://spektr-stg.novasama-tech.org/
