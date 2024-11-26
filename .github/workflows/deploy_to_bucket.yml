@@ -10,6 +10,7 @@ env:
 
 jobs:
   deploy-to-bucket:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout

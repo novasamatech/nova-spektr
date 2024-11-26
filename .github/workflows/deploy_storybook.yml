@@ -3,13 +3,14 @@ name: Deploy storybook to bucket
 on:
   push:
     branches:
-      - dev
+      - test_upload
 
 env:
   S3_BUCKET: s3://spektr-storybook
 
 jobs:
   deploy-to-bucket:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
