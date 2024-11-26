@@ -33,4 +33,5 @@ runs:
 
     - name: Interact with object storage
       run: s3cmd sync --recursive --acl-public ${{ inputs.source }} ${{ inputs.s3_bucket }}
+      shell: bash
 
