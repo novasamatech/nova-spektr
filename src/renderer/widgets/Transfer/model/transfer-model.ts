@@ -74,13 +74,13 @@ sample({
     wrappedTx: transactions.wrappedTx,
     multisigTx: transactions.multisigTx || null,
     coreTx: transactions.coreTx,
-    transferStore: formData,
+    store: formData,
   }),
   target: spread({
     wrappedTx: $wrappedTx,
     multisigTx: $multisigTx,
     coreTx: $coreTx,
-    transferStore: $transferStore,
+    store: $transferStore,
   }),
 });
 

@@ -9,7 +9,7 @@ export type WalletData = {
 
 export type DelegateData = {
   shards: Account[];
-  signatory?: Account;
+  signatory: Account | null;
   tracks: number[];
   target: Address;
   conviction: Conviction;

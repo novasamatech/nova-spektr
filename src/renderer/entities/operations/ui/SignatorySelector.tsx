@@ -1,13 +1,13 @@
 import { type BN } from '@polkadot/util';
-import { useMemo } from 'react';
 
-import { type Account, type Asset } from '@/shared/core';
+import { type Account, type Asset, type ID } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
-import { InputHint, Select } from '@/shared/ui';
-import { type DropdownOption } from '@/shared/ui/types';
+import { InputHint } from '@/shared/ui';
+import { Address } from '@/shared/ui-entities';
+import { Field, Select } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
-import { AccountAddress, accountUtils } from '@/entities/wallet';
+import { accountUtils } from '@/entities/wallet';
 
 type Props = {
   signatory?: Account | null;
@@ -30,42 +30,45 @@ export const SignatorySelector = ({
 }: Props) => {
   const { t } = useI18n();
 
-  const options = useMemo(
-    () =>
-      signatories.map<DropdownOption>(({ signer, balance }) => {
-        const isShard = accountUtils.isShardAccount(signer);
-        const address = toAddress(signer.accountId, { prefix: addressPrefix });
+  const selectSigner = (signerId: ID) => {
+    const selectedSigner = signatories.find(({ signer }) => signer.id === signerId);
+    if (!selectedSigner) return;
 
-        return {
-          id: signer.id.toString(),
-          value: signer,
-          element: (
-            <div className="flex w-full items-center justify-between">
-              <AccountAddress
-                size={20}
-                type="short"
-                address={address}
-                name={isShard ? address : signer.name}
-                canCopy={false}
-              />
-              <AssetBalance value={balance.toString()} asset={asset} />
-            </div>
-          ),
-        };
-      }, []),
-    [signatories],
-  );
+    onChange(selectedSigner.signer);
+  };
 
   return (
     <div className="flex flex-col gap-y-2">
-      <Select
-        label={t('proxy.addProxy.signatoryLabel')}
-        placeholder={t('proxy.addProxy.signatoryPlaceholder')}
-        selectedId={signatory?.id?.toString()}
-        options={options}
-        invalid={hasError}
-        onChange={({ value }) => onChange(value)}
-      />
+      <Field text={t('proxy.addProxy.signatoryLabel')}>
+        <Select
+          placeholder={t('proxy.addProxy.signatoryPlaceholder')}
+          value={signatory?.id.toString() ?? null}
+          invalid={hasError}
+          onChange={(value) => selectSigner(Number(value))}
+        >
+          {signatories.map(({ signer, balance }) => {
+            const isShard = accountUtils.isShardAccount(signer);
+            const address = toAddress(signer.accountId, { prefix: addressPrefix });
+
+            return (
+              <Select.Item key={signer.id} value={signer.id.toString()}>
+                <div className="flex w-full items-center justify-between">
+                  <Address
+                    showIcon
+                    hideAddress
+                    variant="short"
+                    iconSize={20}
+                    address={address}
+                    title={isShard ? address : signer.name}
+                    canCopy={false}
+                  />
+                  <AssetBalance value={balance.toString()} asset={asset} />
+                </div>
+              </Select.Item>
+            );
+          })}
+        </Select>
+      </Field>
       <InputHint variant="error" active={hasError}>
         {errorText}
       </InputHint>

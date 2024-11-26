@@ -25,7 +25,7 @@ type Input = {
   shards: Account[];
   validators: Validator[];
   proxiedAccount?: ProxiedAccount;
-  signatory?: Account;
+  signatory: Account | null;
   amount: string;
   destination: string;
 

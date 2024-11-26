@@ -18,7 +18,7 @@ import { walletUtils } from '@/entities/wallet';
 export type ConfirmInfo = {
   id?: number;
   account: Account;
-  signatory?: Account;
+  signatory: Account | null;
   chain: Chain;
   wrappedTransactions: WrappedTransactions;
 };

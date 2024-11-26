@@ -3,7 +3,6 @@ import { combine, createEffect, createEvent, createStore, restore, sample } from
 import { spread } from 'patronum';
 
 import {
-  type Account,
   type Balance,
   type BasketTransaction,
   type Chain,
@@ -510,19 +509,21 @@ sample({
   },
   filter: ({ transactions }) => Boolean(transactions) && transactions.length > 0,
   fn: ({ transactions, wallets, chains }) => {
+    const signingPayloads = transactions.map((tx: BasketTransaction) => {
+      const accounts = walletUtils.getAccountsBy(wallets, (account, wallet) => {
+        return wallet.id === tx.initiatorWallet && account.accountId === toAccountId(tx.coreTx.address);
+      });
+
+      return {
+        chain: chains[tx.coreTx.chainId],
+        account: accounts[0],
+        transaction: tx.coreTx,
+        signatory: null,
+      };
+    });
+
     return {
-      event: {
-        signingPayloads: transactions.map((tx: BasketTransaction) => ({
-          chain: chains[tx.coreTx.chainId],
-          account: walletUtils.getAccountsBy(
-            wallets,
-            (account: Account, wallet: Wallet) =>
-              wallet.id === tx.initiatorWallet && account.accountId === toAccountId(tx.coreTx.address),
-          )[0],
-          signatory: undefined,
-          transaction: tx.coreTx,
-        })),
-      },
+      event: { signingPayloads },
       step: Step.SIGN,
     };
   },
@@ -543,17 +544,18 @@ sample({
     return Boolean(transactions) && transactions.length > 0;
   },
   fn: ({ transactions, chains, wallets }, signParams) => {
+    const account = walletUtils.getAccountsBy(wallets, (account, wallet) => {
+      return (
+        wallet.id === transactions[0].initiatorWallet &&
+        account.accountId === toAccountId(transactions[0].coreTx.address)
+      );
+    });
+
     return {
       event: {
         ...signParams,
         chain: chains[transactions[0].coreTx.chainId],
-        account: walletUtils.getAccountsBy(
-          wallets,
-          (account: Account, wallet: Wallet) =>
-            wallet.id === transactions[0].initiatorWallet &&
-            account.accountId === toAccountId(transactions[0].coreTx.address),
-        )[0],
-        signatory: undefined,
+        account: account[0],
         description: '',
         coreTxs: transactions.map((tx) => tx.coreTx!),
         wrappedTxs: transactions.map((tx) => tx.coreTx!),

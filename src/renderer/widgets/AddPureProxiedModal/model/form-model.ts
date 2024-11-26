@@ -7,7 +7,6 @@ import {
   type Account,
   type Chain,
   type MultisigTxWrapper,
-  type PartialBy,
   type ProxiedAccount,
   type ProxyTxWrapper,
   ProxyType,
@@ -20,6 +19,7 @@ import {
   dictionary,
   getProxyTypes,
   isStringsMatchQuery,
+  nonNullable,
   toAddress,
   transferableAmount,
   withdrawableAmountBN,
@@ -35,7 +35,7 @@ import { walletSelectModel } from '@/features/wallets';
 type FormParams = {
   chain: Chain;
   account: Account;
-  signatory: Account;
+  signatory: Account | null;
 };
 
 type FormSubmitEvent = {
@@ -44,7 +44,8 @@ type FormSubmitEvent = {
     multisigTx?: Transaction;
     coreTx: Transaction;
   };
-  formData: PartialBy<FormParams, 'signatory'> & {
+  formData: FormParams & {
+    signatory: Account | null;
     proxiedAccount?: ProxiedAccount;
     fee: string;
     multisigDeposit: string;
@@ -107,7 +108,7 @@ const $proxyForm = createForm<FormParams>({
       ],
     },
     signatory: {
-      init: {} as Account,
+      init: null,
       rules: [
         {
           name: 'notEnoughTokens',
@@ -120,7 +121,7 @@ const $proxyForm = createForm<FormParams>({
             isMultisig: $isMultisig,
           }),
           validator: (value, form, { isMultisig, balances, ...params }) => {
-            if (!isMultisig) return true;
+            if (!value || !isMultisig) return true;
 
             const signatoryBalance = balanceUtils.getBalance(
               balances,
@@ -163,9 +164,9 @@ const $txWrappers = combine(
 
     return transactionService.getTxWrappers({
       wallet,
-      wallets: filteredWallets || [],
       account,
-      signatories: signatory ? [signatory] : signatory,
+      wallets: filteredWallets || [],
+      signatories: nonNullable(signatory) ? [signatory] : undefined,
     });
   },
 );
@@ -500,10 +501,10 @@ sample({
     multisigDeposit: $multisigDeposit,
     proxyDeposit: $newProxyDeposit,
   },
-  filter: ({ transaction }) => Boolean(transaction),
+  filter: ({ transaction }, formData) => {
+    return nonNullable(transaction) && nonNullable(formData.signatory);
+  },
   fn: ({ proxyDeposit, multisigDeposit, realAccount, transaction, isProxy, fee }, formData) => {
-    const signatory = formData.signatory.accountId ? formData.signatory : undefined;
-
     return {
       transactions: {
         wrappedTx: transaction!.wrappedTx,
@@ -514,7 +515,6 @@ sample({
         ...formData,
         fee,
         account: realAccount,
-        signatory,
         proxyDeposit,
         multisigDeposit,
         ...(isProxy && { proxiedAccount: formData.account as ProxiedAccount }),

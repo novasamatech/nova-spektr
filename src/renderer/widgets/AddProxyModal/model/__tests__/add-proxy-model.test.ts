@@ -54,6 +54,7 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
         },
         formData: {
           chain: testChain,
+          signatory: null,
           account: { accountId: '0x00' } as unknown as BaseAccount,
           delegate: '0x00',
           proxyType: ProxyType.ANY,
