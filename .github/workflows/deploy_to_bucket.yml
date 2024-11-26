@@ -7,7 +7,6 @@ on:
 
 env:
   S3_BUCKET: s3://spektr-web-dev
-  STORING_DAYS: 60
 
 jobs:
   deploy-to-bucket:
