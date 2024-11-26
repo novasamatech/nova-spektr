@@ -2,8 +2,11 @@ import { useUnit } from 'effector-react';
 
 import { type FlexibleMultisigTransactionDS } from '@/shared/api/storage';
 import {
+  type Chain,
   type FlexibleMultisigAccount,
+  type FlexibleMultisigTransaction,
   type MultisigEvent,
+  type MultisigTransaction,
   type Signatory,
   type SigningStatus,
   type Wallet,
@@ -19,6 +22,7 @@ import { SignatoryCard, signatoryUtils } from '@/entities/signatory';
 import { WalletIcon, permissionUtils, walletModel } from '@/entities/wallet';
 import { getSignatoryName, getSignatoryStatus } from '../common/utils';
 
+import { OperationAdvancedDetails } from './OperationAdvancedDetails';
 import { Status } from './Status';
 import ApproveTxModal from './modals/ApproveTx';
 import RejectTxModal from './modals/RejectTx';
@@ -30,7 +34,7 @@ type Props = {
 
 export const FlexibleMultisigShell = ({ tx, account }: Props) => {
   const { t } = useI18n();
-  const { connection, extendedChain } = useNetworkData(tx.chainId);
+  const { connection, chain, api, extendedChain } = useNetworkData(tx.chainId);
 
   const wallets = useUnit(walletModel.$wallets);
   const { getLiveEventsByKeys } = useMultisigEvent({});
@@ -65,21 +69,21 @@ export const FlexibleMultisigShell = ({ tx, account }: Props) => {
 
         <div className="flex items-center">
           {connection && isRejectAvailable && (
-            <RejectTxModal tx={tx} account={account} connection={extendedChain}>
+            <RejectTxModal api={api} tx={tx} account={account} chain={chain}>
               <Button pallet="error" variant="fill">
                 {t('operation.rejectButton')}
               </Button>
             </RejectTxModal>
           )}
           {connection && (
-            <ApproveTxModal tx={tx} account={account} connection={extendedChain}>
+            <ApproveTxModal api={api} tx={tx} account={account} chain={chain}>
               <Button className="ml-auto">{t('operation.approveButton')}</Button>
             </ApproveTxModal>
           )}
         </div>
         <Signatories signatories={tx.signatories} connection={extendedChain} events={events} />
 
-        {/* TODO: add details */}
+        <Details tx={tx} chain={extendedChain} />
       </Plate>
     </div>
   );
@@ -176,6 +180,22 @@ const Signatories = ({ signatories, connection, events }: SignatoriesParams) => 
             </ul>
           )}
         </div>
+      </Accordion.Content>
+    </Accordion>
+  );
+};
+
+const Details = ({ tx, chain }: { tx: MultisigTransaction | FlexibleMultisigTransaction; chain: Chain }) => {
+  const { t } = useI18n();
+  const wallets = useUnit(walletModel.$wallets);
+
+  return (
+    <Accordion>
+      <Accordion.Button buttonClass="px-2 py-1.5 mb-3">
+        <CaptionText className="uppercase text-text-secondary">{t('operation.detailsTitle')}</CaptionText>
+      </Accordion.Button>
+      <Accordion.Content>
+        <OperationAdvancedDetails tx={tx} chain={chain} wallets={wallets} />
       </Accordion.Content>
     </Accordion>
   );

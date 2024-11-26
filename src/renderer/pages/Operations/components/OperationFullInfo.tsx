@@ -74,14 +74,14 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
 
         <div className="mt-3 flex items-center">
           {connection && isRejectAvailable && account && (
-            <RejectTxModal tx={tx} account={account} connection={extendedChain}>
+            <RejectTxModal api={api} tx={tx} account={account} chain={chain}>
               <Button pallet="error" variant="fill">
                 {t('operation.rejectButton')}
               </Button>
             </RejectTxModal>
           )}
           {account && connection && (
-            <ApproveTxModal tx={tx} account={account} connection={extendedChain}>
+            <ApproveTxModal api={api} tx={tx} account={account} chain={chain}>
               <Button className="ml-auto">{t('operation.approveButton')}</Button>
             </ApproveTxModal>
           )}

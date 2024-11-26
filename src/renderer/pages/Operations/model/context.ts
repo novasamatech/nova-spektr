@@ -13,7 +13,7 @@ const $availableTransaction = combine(operationsModel.$multisigTransactions, net
 const $account = walletModel.$activeWallet.map((x) => x?.accounts.find(accountUtils.isMultisigAccount) ?? null);
 
 const $incompleteFlexibleMultisigTx = combine($account, $availableTransaction, (account, txs) => {
-  if (nonNullable(account) && accountUtils.isFlexibleMultisigAccount(account) && nullable(account?.proxyAccountId)) {
+  if (nonNullable(account) && accountUtils.isFlexibleMultisigAccount(account) && nullable(account.proxyAccountId)) {
     return txs.find((tx) => isCreatePureProxyTransaction(tx.transaction)) ?? null;
   }
 

@@ -15,7 +15,7 @@ import {
 import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { cnTw, copyToClipboard, getAssetById, truncate } from '@/shared/lib/utils';
+import { cnTw, getAssetById, nonNullable } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
@@ -24,7 +24,6 @@ import { TracksDetails, voteTransactionService } from '@/entities/governance';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { type ExtendedChain, networkModel, networkUtils } from '@/entities/network';
 import { proxyUtils } from '@/entities/proxy';
-import { signatoryUtils } from '@/entities/signatory';
 import { ValidatorsModal, useValidatorsMap } from '@/entities/staking';
 import {
   isAddProxyTransaction,
@@ -43,7 +42,6 @@ import {
   getDelegationVotes,
   getDestination,
   getDestinationChain,
-  getMultisigExtrinsicLink,
   getPayee,
   getProxyType,
   getReferendumId,
@@ -51,6 +49,8 @@ import {
   getUndelegationData,
   getVote,
 } from '../common/utils';
+
+import { OperationAdvancedDetails } from './OperationAdvancedDetails';
 
 type Props = {
   tx: MultisigTransaction | FlexibleMultisigTransaction;
@@ -106,8 +106,6 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const [isAdvancedShown, toggleAdvanced] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
-  const { indexCreated, blockCreated, deposit, depositor, callHash, callData } = tx;
-
   const transaction = getTransactionFromMultisigTx(tx);
   const validatorsMap = useValidatorsMap(api, connection && networkUtils.isLightClientConnection(connection));
 
@@ -124,14 +122,10 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const selectedValidatorsAddress = selectedValidators.map((validator) => validator.address);
   const notSelectedValidators = allValidators.filter((v) => !selectedValidatorsAddress.includes(v.address));
 
-  const depositorSignatory = account?.signatories.find((s) => s.accountId === depositor);
-  const extrinsicLink = getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, explorers);
   const validatorsAsset =
     transaction && getAssetById(transaction.args.asset, chainsService.getChainById(tx.chainId)?.assets);
 
   const valueClass = 'text-text-secondary';
-  const depositorWallet =
-    depositorSignatory && signatoryUtils.getSignatoryWallet(wallets, depositorSignatory.accountId);
 
   return (
     <dl className="flex w-full flex-col gap-y-1">
@@ -392,94 +386,8 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         {t('operation.advanced')}
       </Button>
 
-      {isAdvancedShown && (
-        <>
-          {callHash && (
-            <DetailRow label={t('operation.details.callHash')} className={valueClass}>
-              <button
-                type="button"
-                className={cnTw('group flex items-center gap-x-1', InteractionStyle)}
-                onClick={() => copyToClipboard(callHash)}
-              >
-                <FootnoteText className="text-inherit">{truncate(callHash, 7, 8)}</FootnoteText>
-                <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
-              </button>
-            </DetailRow>
-          )}
-
-          {callData && (
-            <DetailRow label={t('operation.details.callData')} className={valueClass}>
-              <button
-                type="button"
-                className={cnTw('group flex items-center gap-x-1', InteractionStyle)}
-                onClick={() => copyToClipboard(callData)}
-              >
-                <FootnoteText className="text-inherit">{truncate(callData, 7, 8)}</FootnoteText>
-                <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
-              </button>
-            </DetailRow>
-          )}
-
-          {deposit && defaultAsset && depositorSignatory && <hr className="border-divider" />}
-
-          {depositorSignatory && (
-            <DetailRow label={t('operation.details.depositor')} className={valueClass}>
-              <div className="-mr-2">
-                {depositorWallet ? (
-                  <ExplorersPopover
-                    button={<WalletCardSm wallet={depositorWallet} />}
-                    address={depositorSignatory.accountId}
-                    explorers={explorers}
-                    addressPrefix={addressPrefix}
-                  />
-                ) : (
-                  <AddressWithExplorers
-                    explorers={explorers}
-                    accountId={depositorSignatory.accountId}
-                    name={depositorSignatory.name}
-                    addressFont={AddressStyle}
-                    addressPrefix={addressPrefix}
-                    wrapperClassName="min-w-min"
-                    type="short"
-                  />
-                )}
-              </div>
-            </DetailRow>
-          )}
-
-          {deposit && defaultAsset && (
-            <DetailRow label={t('operation.details.deposit')} className={valueClass}>
-              <AssetBalance
-                value={deposit}
-                asset={defaultAsset}
-                showIcon={false}
-                className="py-[3px] text-footnote text-text-secondary"
-              />
-            </DetailRow>
-          )}
-
-          {deposit && defaultAsset && depositorSignatory && <hr className="border-divider" />}
-
-          {indexCreated && blockCreated && (
-            <DetailRow label={t('operation.details.timePoint')} className={valueClass}>
-              {extrinsicLink ? (
-                <a
-                  className={cnTw('group flex items-center gap-x-1', InteractionStyle)}
-                  href={extrinsicLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <FootnoteText className="text-text-secondary">
-                    {blockCreated}-{indexCreated}
-                  </FootnoteText>
-                  <Icon name="globe" size={16} className="group-hover:text-icon-hover" />
-                </a>
-              ) : (
-                `${blockCreated}-${indexCreated}`
-              )}
-            </DetailRow>
-          )}
-        </>
+      {isAdvancedShown && nonNullable(account) && nonNullable(extendedChain) && (
+        <OperationAdvancedDetails tx={tx} chain={extendedChain} wallets={wallets} />
       )}
     </dl>
   );

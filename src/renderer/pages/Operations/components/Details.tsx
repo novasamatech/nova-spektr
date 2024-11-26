@@ -1,10 +1,12 @@
-import { useUnit } from 'effector-react';
+import { type ApiPromise } from '@polkadot/api';
+import { useStoreMap, useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import {
   type Account,
   type Address,
+  type Chain,
   type FlexibleMultisigAccount,
   type FlexibleMultisigTransaction,
   type MultisigAccount,
@@ -23,7 +25,7 @@ import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { TracksDetails, voteTransactionService } from '@/entities/governance';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
-import { type ExtendedChain, networkModel, networkUtils } from '@/entities/network';
+import { networkModel, networkUtils } from '@/entities/network';
 import { proxyUtils } from '@/entities/proxy';
 import { SelectedValidatorsModal, useValidatorsMap } from '@/entities/staking';
 import {
@@ -57,12 +59,18 @@ type Props = {
   tx: MultisigTransaction | FlexibleMultisigTransaction;
   account?: MultisigAccount | FlexibleMultisigAccount;
   signatory?: Account;
-  extendedChain?: ExtendedChain;
+  chain: Chain;
+  api: ApiPromise;
 };
 
-export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
+export const Details = ({ api, tx, account, chain, signatory }: Props) => {
   const { t } = useI18n();
 
+  const connection = useStoreMap({
+    store: networkModel.$connections,
+    keys: [chain.chainId],
+    fn: (connections, [chainId]) => connections[chainId] ?? null,
+  });
   const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);
   const chains = useUnit(networkModel.$chains);
@@ -87,8 +95,6 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
 
   const signatoryWallet = wallets.find((w) => w.id === signatory?.walletId);
 
-  const api = extendedChain?.api;
-
   useEffect(() => {
     if (isUndelegateTransaction(transaction)) {
       setIsUndelegationLoading(true);
@@ -103,10 +109,9 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
     });
   }, [api, tx]);
 
-  const connection = extendedChain?.connection;
-  const defaultAsset = extendedChain?.assets[0];
-  const addressPrefix = extendedChain?.addressPrefix;
-  const explorers = extendedChain?.explorers;
+  const defaultAsset = chain?.assets[0];
+  const addressPrefix = chain?.addressPrefix;
+  const explorers = chain?.explorers;
 
   const validatorsMap = useValidatorsMap(api, connection && networkUtils.isLightClientConnection(connection));
 
@@ -198,7 +203,7 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
           <Box direction="row" gap={2}>
             <WalletIcon type={signatoryWallet.type} size={16} />
             <span>{signatoryWallet.name}</span>
-            {extendedChain ? <AccountExplorers accountId={signatory.accountId} chain={extendedChain} /> : null}
+            {chain ? <AccountExplorers accountId={signatory.accountId} chain={chain} /> : null}
           </Box>
         </DetailRow>
       )}
