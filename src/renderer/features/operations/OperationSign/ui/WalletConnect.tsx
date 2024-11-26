@@ -231,8 +231,8 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
 
       <Countdown countdown={txPayloads ? countdown : 0} />
 
-      <div className="relative">
-        <video className="h-[240px] object-contain" autoPlay loop>
+      <div className="relative w-full">
+        <video className="h-[240px] w-full object-cover" autoPlay loop>
           <source src={wallet_connect_confirm_webm} type="video/webm" />
           <source src={wallet_connect_confirm} type="video/mp4" />
         </video>
