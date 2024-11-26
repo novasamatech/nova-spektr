@@ -141,6 +141,7 @@ module.exports = {
       rules: {
         'react/jsx-no-useless-fragment': 'error',
         'react/jsx-no-constructed-context-values': 'error',
+        // TODO make children: never
         'react/jsx-curly-brace-presence': ['error', { props: 'never', children: 'ignore' }],
         'react/no-array-index-key': 'warn',
         'react/display-name': 'off',

@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { memo } from 'react';
 
 import { type FlexibleMultisigTransactionDS } from '@/shared/api/storage';
 import {
@@ -32,7 +33,7 @@ type Props = {
   account: FlexibleMultisigAccount;
 };
 
-export const FlexibleMultisigShell = ({ tx, account }: Props) => {
+export const FlexibleMultisigShell = memo(({ tx, account }: Props) => {
   const { t } = useI18n();
   const { connection, chain, api, extendedChain } = useNetworkData(tx.chainId);
 
@@ -87,7 +88,7 @@ export const FlexibleMultisigShell = ({ tx, account }: Props) => {
       </Plate>
     </div>
   );
-};
+});
 
 type SignatoriesParams = {
   signatories: Signatory[];
@@ -99,7 +100,7 @@ type WalletSignatory = Signatory & {
   status: SigningStatus | undefined;
 };
 
-const Signatories = ({ signatories, connection, events }: SignatoriesParams) => {
+const Signatories = memo(({ signatories, connection, events }: SignatoriesParams) => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
@@ -140,7 +141,7 @@ const Signatories = ({ signatories, connection, events }: SignatoriesParams) => 
                   status={signatory.status}
                   explorers={connection.explorers}
                 >
-                  <div className="flex w-[100px] grow items-center gap-x-2 text-text-secondary">
+                  <div className="flex w-44 grow items-center gap-x-2 text-text-secondary">
                     <WalletIcon type={signatory.wallet.type} size={20} />
                     <Address
                       title={signatory.wallet.name}
@@ -183,7 +184,7 @@ const Signatories = ({ signatories, connection, events }: SignatoriesParams) => 
       </Accordion.Content>
     </Accordion>
   );
-};
+});
 
 const Details = ({ tx, chain }: { tx: MultisigTransaction | FlexibleMultisigTransaction; chain: Chain }) => {
   const { t } = useI18n();
