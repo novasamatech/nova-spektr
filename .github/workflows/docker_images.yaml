@@ -16,6 +16,7 @@ concurrency:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  BUILD_TYPE: production
 jobs:
   build-docker-images:
     if: |
@@ -49,6 +50,7 @@ jobs:
         if: ${{ github.ref_type == 'branch' && github.ref_name == 'dev' }}
         run: |
           echo "IMAGE_LABEL=latest" >> "$GITHUB_ENV"
+          echo "BUILD_TYPE=development" >> "$GITHUB_ENV"
       - name: Set image label for release branches
         if: ${{ github.event_name == 'pull_request' }}
         run: |
@@ -69,4 +71,5 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             NODE_JS_IMAGE_VERSION=${{ matrix.node-js-image-version }}-alpine
+            BUILD_TYPE=${{ env.BUILD_TYPE }}
           tags: ${{ env.FULL_IMAGE_NAME }}
