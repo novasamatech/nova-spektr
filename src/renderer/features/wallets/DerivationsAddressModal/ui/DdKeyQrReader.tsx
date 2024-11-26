@@ -234,22 +234,23 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
             onError={onError}
           />
 
-          <div className="absolute bottom-[138px] z-10 flex h-8.5 w-full justify-center">
-            {/* className="w-[208px]" */}
-            {availableCameras.length > 1 && (
-              <Select
-                theme="dark"
-                placeholder={t('onboarding.paritySigner.selectCameraLabel')}
-                value={activeCamera ?? null}
-                onChange={setActiveCamera}
-              >
-                {availableCameras.map((camera, index) => (
-                  <Select.Item key={camera.value} value={camera.value}>
-                    {`${index + 1}. ${camera.title}`}
-                  </Select.Item>
-                ))}
-              </Select>
-            )}
+          <div className="absolute bottom-[138px] z-10 w-full">
+            <div className="mx-auto w-[208px]">
+              {availableCameras.length > 1 && (
+                <Select
+                  theme="dark"
+                  placeholder={t('onboarding.paritySigner.selectCameraLabel')}
+                  value={activeCamera ?? null}
+                  onChange={setActiveCamera}
+                >
+                  {availableCameras.map((camera, index) => (
+                    <Select.Item key={camera.value} value={camera.value}>
+                      {`${index + 1}. ${camera.title}`}
+                    </Select.Item>
+                  ))}
+                </Select>
+              )}
+            </div>
           </div>
 
           <div className="absolute inset-0 mt-[58px] flex h-full w-full justify-center">
