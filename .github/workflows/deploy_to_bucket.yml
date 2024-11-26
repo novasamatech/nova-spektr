@@ -7,11 +7,10 @@ on:
 
 env:
   S3_BUCKET: s3://spektr-web-dev
-  STORING_DAYS: 60
 
 jobs:
   deploy-to-bucket:
-    runs-on: macos-12
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -20,27 +19,16 @@ jobs:
       - name: ⚙️ Install dependencies
         uses: ./.github/workflows/install-pnpm
 
-      - name: ⚙️ Install s3cmd
-        uses: ./.github/workflows/setup-s3cmd
-        with:
-          s3_region: pl-waw
-          s3_access_key: ${{ secrets.S3_ACCESS_KEY }}
-          s3_secret_key: ${{ secrets.S3_SECRET_KEY }}
-
       - name: Build app
         run: |
           pnpm build
           pnpm postbuild
 
-      - name: List available S3 buckets
-        run: s3cmd ls
-
-      - name: Interact with object storage
-        id: interact_with_storage
-        run: |
-          base_directory="release/build"
-          destination_s3="${{ env.S3_BUCKET }}"
-          find "$base_directory" -type f | while read -r file; do
-            relative_path="${file#$base_directory/}" # Extract the relative path
-            s3cmd sync "$file" "${destination_s3}/${relative_path}" --acl-public
-          done
+      - name: 🤌 Upload to s3
+        uses: ./.github/workflows/upload-to-s3
+        with:
+          s3_region: pl-waw
+          s3_access_key: ${{ secrets.S3_ACCESS_KEY }}
+          s3_secret_key: ${{ secrets.S3_SECRET_KEY }}
+          s3_bucket: ${{ env.S3_BUCKET }}
+          source: "release/build"
