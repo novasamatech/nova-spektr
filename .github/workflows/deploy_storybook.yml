@@ -3,7 +3,7 @@ name: Deploy storybook to bucket
 on:
   push:
     branches:
-      - test_upload
+      - dev
 
 env:
   S3_BUCKET: s3://spektr-storybook
