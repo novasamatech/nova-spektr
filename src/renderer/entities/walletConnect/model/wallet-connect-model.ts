@@ -395,7 +395,7 @@ sample({
 });
 
 sample({
-  clock: [$provider, walletModel.events.walletCreatedDone],
+  clock: [$provider, walletModel.events.walletCreatedDone, updateWcAccountsFx.doneData],
   source: {
     wallets: walletModel.$allWallets,
     provider: $provider,
