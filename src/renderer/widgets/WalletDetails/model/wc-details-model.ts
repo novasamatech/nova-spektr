@@ -57,11 +57,9 @@ sample({
     session: walletConnectModel.$session,
   },
   filter: ({ step, wallet, session }) => {
-    return (
-      (step === ReconnectStep.RECONNECTING || step === ReconnectStep.REFRESH_ACCOUNTS) &&
-      Boolean(wallet) &&
-      Boolean(session?.topic)
-    );
+    const correctStep = step === ReconnectStep.RECONNECTING || step === ReconnectStep.REFRESH_ACCOUNTS;
+
+    return correctStep && nonNullable(wallet) && nonNullable(session?.topic);
   },
   fn: ({ wallet, session }) => ({
     walletId: wallet!.id,
