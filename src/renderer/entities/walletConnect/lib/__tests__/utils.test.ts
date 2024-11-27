@@ -1,4 +1,4 @@
-import type Client from '@walletconnect/sign-client';
+import type Provider from '@walletconnect/universal-provider';
 
 import { type Chain } from '@/shared/core';
 import { walletConnectUtils } from '../utils';
@@ -20,25 +20,29 @@ describe('entities/walletConnect/lib/onChainUtils', () => {
   });
 
   test('should return false if not connected', () => {
-    const client = {
-      session: {
-        getAll: () => [],
+    const provider = {
+      client: {
+        session: {
+          getAll: () => [],
+        },
       },
-    } as unknown as Client;
+    } as unknown as Provider;
 
-    const result = walletConnectUtils.isConnected(client, 'topic');
+    const result = walletConnectUtils.isConnected(provider, 'topic');
 
     expect(result).toEqual(false);
   });
 
   test('should return true if connected', () => {
-    const client = {
-      session: {
-        getAll: () => ['topic'],
+    const provider = {
+      client: {
+        session: {
+          getAll: () => ['topic'],
+        },
       },
-    } as unknown as Client;
+    } as unknown as Provider;
 
-    const result = walletConnectUtils.isConnected(client, 'topic');
+    const result = walletConnectUtils.isConnected(provider, 'topic');
 
     expect(result).toEqual(false);
   });

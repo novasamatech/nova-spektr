@@ -1013,8 +1013,8 @@
         "title": "{ walletName } is not connected"
       },
       "rejected": "Rejected",
-      "failedTitle": "Something went wrong",
-      "failedDescription": "Please try again later or create a new wallet",
+      "failedTitle": "Waiting for Reconnect...",
+      "failedDescription": "Scan with your mobile wallet to connect",
       "signTitle_one": "Confirm the operation on your { walletName } app",
       "signTitle_other": "Confirm { count } operations on your { walletName } app",
       "tryAgainButton": "Try again"
