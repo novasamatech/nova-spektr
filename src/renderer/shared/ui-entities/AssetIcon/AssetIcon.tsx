@@ -9,7 +9,6 @@ type Props = {
   style?: 'monochrome' | 'colored';
 };
 
-// TODO add currency support
 export const AssetIcon = ({ asset, style, size = 36 }: Props) => {
   const { iconStyle } = useTheme();
   const [isImgLoaded, toggleImgLoaded] = useToggle();
@@ -27,10 +26,8 @@ export const AssetIcon = ({ asset, style, size = 36 }: Props) => {
       <img
         src={iconSrc}
         className={cnTw('select-none transition-opacity duration-75', !isImgLoaded && 'opacity-0')}
-        style={{
-          width: iconSize,
-          height: iconSize,
-        }} // using width and height attr doesn't work properly for invisible img. It gets reset by tailwind @base styles
+        // using width and height attr doesn't work properly for invisible img. It gets reset by tailwind @base styles
+        style={{ width: iconSize, height: iconSize }}
         alt={asset.name}
         onLoad={toggleImgLoaded}
       />

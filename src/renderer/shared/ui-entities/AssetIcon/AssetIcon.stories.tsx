@@ -14,10 +14,9 @@ export default meta;
 
 type Story = StoryObj<typeof AssetIcon>;
 
-export const Default: Story = {
+export const Colored: Story = {
   args: {
     asset: dotAsset,
-    size: 32,
     style: 'colored',
   },
 };
@@ -25,7 +24,6 @@ export const Default: Story = {
 export const Monochrome: Story = {
   args: {
     asset: dotAsset,
-    size: 32,
     style: 'monochrome',
   },
 };

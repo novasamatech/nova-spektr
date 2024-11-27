@@ -3,7 +3,7 @@ import { type BN } from '@polkadot/util';
 import { type Asset, type AssetByChains } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, formatBalance } from '@/shared/lib/utils';
-import { AssetIcon } from '../AssetIcon/AssetIcon';
+import { AssetIcon } from '@/shared/ui-entities';
 
 type Props = {
   value: BN | string;
