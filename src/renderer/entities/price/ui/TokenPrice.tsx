@@ -55,7 +55,7 @@ export const TokenPrice = ({ assetId, className, wrapperClassName }: Props) => {
     <div className={cnTw('flex gap-1', wrapperClassName)}>
       <FiatBalance amount={`${balanceValue}${suffix}`} className={className} />
 
-      {Boolean(price.change) && <FootnoteText className={changeStyle}>({changeToShow}%)</FootnoteText>}
+      {Boolean(price.change) && <FootnoteText className={changeStyle}>{changeToShow}%</FootnoteText>}
     </div>
   );
 };
