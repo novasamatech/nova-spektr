@@ -26,19 +26,19 @@ const { pending, subscribe, unsubscribe, received, fulfilled } = createDataSubsc
 >({
   initial: $list,
   fn: ({ api, palletType }, callback) => {
-    let currentAbortController = new AbortController();
+    let abortController = new AbortController();
 
     const fetchPages = createPagesHandler({
       fn: () => referendaPallet.storage.referendumInfoForPaged(palletType, api, 200),
       map: mapReferendums,
     });
 
-    fetchPages(currentAbortController, callback);
+    fetchPages(abortController, callback);
 
     const fn = () => {
-      currentAbortController.abort();
-      currentAbortController = new AbortController();
-      fetchPages(currentAbortController, callback);
+      abortController.abort();
+      abortController = new AbortController();
+      fetchPages(abortController, callback);
     };
 
     /**
@@ -47,7 +47,7 @@ const { pending, subscribe, unsubscribe, received, fulfilled } = createDataSubsc
      * @see https://github.com/paritytech/polkadot-sdk/blob/43cd6fd4370d3043272f64a79aeb9e6dc0edd13f/substrate/frame/collective/src/lib.rs#L459
      */
     return polkadotjsHelpers.subscribeSystemEvents({ api, section: `${palletType}Referenda` }, fn).then(fn => () => {
-      currentAbortController.abort();
+      abortController.abort();
       fn();
     });
   },

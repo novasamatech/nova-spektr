@@ -26,17 +26,17 @@ const {
 } = createDataSubscription<CollectivesStruct<(Member | CoreMember)[]>, RequestParams, (Member | CoreMember)[]>({
   initial: {},
   fn: ({ api, palletType }, callback) => {
-    let currentAbortController = new AbortController();
+    let abortController = new AbortController();
 
     const fn = async () => {
-      currentAbortController.abort();
-      currentAbortController = new AbortController();
+      abortController.abort();
+      abortController = new AbortController();
 
       const collectiveMembers = await collectivePallet.storage.members(palletType, api);
-      if (currentAbortController.signal.aborted) return;
+      if (abortController.signal.aborted) return;
 
       const coreMembers = await collectiveCorePallet.storage.member(palletType, api);
-      if (currentAbortController.signal.aborted) return;
+      if (abortController.signal.aborted) return;
 
       const result: Member[] = [];
 
@@ -71,7 +71,7 @@ const {
 
     // TODO check if section name is correct
     return polkadotjsHelpers.subscribeSystemEvents({ api, section: `${palletType}Core` }, fn).then(fn => () => {
-      currentAbortController.abort();
+      abortController.abort();
       fn();
     });
   },

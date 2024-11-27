@@ -1,4 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
+import { type Event } from '@polkadot/types/interfaces/system';
 import { createStore } from 'effector';
 import { cloneDeep } from 'lodash';
 
@@ -9,6 +10,7 @@ import { multisigPallet } from '@/shared/pallet/multisig';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
+import { MultisigEventFieldIndex } from './constants';
 import { multisigOperationService } from './service';
 import { type Multisig, type MultisigEvent } from './types';
 
@@ -59,13 +61,11 @@ const { request } = createDataSource<Store, RequestParams[], Record<ChainId, Mul
 
     for (const { api, accountId } of params) {
       const chainId = api.genesisHash.toHex();
+      const oldOperations = store[chainId]?.[accountId] || [];
+      const newOperations = result[chainId] || [];
+      const multisigOperations = multisigOperationService.mergeMultisigOperations(oldOperations, newOperations);
 
-      newStore = setNestedValue(
-        store,
-        chainId,
-        accountId,
-        multisigOperationService.mergeMultisigOperations(store[chainId]?.[accountId] || [], result[chainId] || []),
-      );
+      newStore = setNestedValue(store, chainId, accountId, multisigOperations);
     }
 
     return newStore;
@@ -79,58 +79,58 @@ const { subscribe, unsubscribe } = createDataSubscription<
 >({
   initial: $multisigOperations,
   fn: (params, callback) => {
-    const unsubscribe: Promise<void | (() => void)>[] = [];
+    const unsubscribeFns: Promise<void | VoidFunction>[] = [];
 
     for (const { accountId, api } of params) {
-      unsubscribe.push(
-        polkadotjsHelpers
-          .subscribeSystemEvents(
-            {
-              api,
-              section: `multisig`,
-              // TODO: add NewMultisig event
-              methods: ['MultisigApproval', 'MultisigExecuted', 'MultisigCancelled'],
-            },
-            event => {
-              const accountIdId = 0;
-              const timepointId = 1;
-              const multisigId = 2;
-              const callHashId = 3;
+      const subscribeEventCallback = (event: Event) => {
+        if (event.data[MultisigEventFieldIndex.MULTISIG]?.toHex() !== accountId) return;
 
-              if (event.data[multisigId]?.toHex() !== accountId) return;
+        const blockCreated = (event.data[MultisigEventFieldIndex.TIMEPOINT] as any).height.toNumber();
+        const indexCreated = (event.data[MultisigEventFieldIndex.TIMEPOINT] as any).index.toNumber();
 
-              const blockCreated = (event.data[timepointId] as any).height.toNumber();
-              const indexCreated = (event.data[timepointId] as any).index.toNumber();
+        callback({
+          done: true,
+          value: {
+            multisigId: accountId,
+            chainId: api.genesisHash.toHex(),
+            callHash: event.data[MultisigEventFieldIndex.CALL_HASH]!.toHex(),
+            accountId: event.data[MultisigEventFieldIndex.ACCOUNT_ID]!.toHex() as AccountId,
+            status: event.method === 'MultisigCancelled' ? 'rejected' : 'approved',
+            indexCreated,
+            blockCreated,
+          },
+        });
+      };
 
-              callback({
-                done: true,
-                value: {
-                  multisigId: accountId,
-                  chainId: api.genesisHash.toHex(),
-                  callHash: event.data[callHashId]!.toHex(),
-                  accountId: event.data[accountIdId]!.toHex() as AccountId,
-                  status: event.method === 'MultisigCancelled' ? 'rejected' : 'approved',
-                  indexCreated,
-                  blockCreated,
-                },
-              });
-            },
-          )
-          .then(unsubscribe => {
-            unsubscribe();
-          }),
-      );
+      const unsubscribeFn = polkadotjsHelpers
+        .subscribeSystemEvents(
+          {
+            api,
+            section: `multisig`,
+            // TODO: add NewMultisig event
+            methods: ['MultisigApproval', 'MultisigExecuted', 'MultisigCancelled'],
+          },
+          subscribeEventCallback,
+        )
+        .then(unsubscribe => unsubscribe());
+
+      unsubscribeFns.push(unsubscribeFn);
     }
 
     return () => {
-      Promise.all(unsubscribe);
+      Promise.all(unsubscribeFns);
     };
   },
   map: (store, { result: { callHash, multisigId, chainId, ...event } }) => {
     const newStore = cloneDeep(store);
 
-    newStore[chainId] = newStore[chainId] || {};
-    newStore[chainId][multisigId] = newStore[chainId][multisigId] || [];
+    if (!newStore[chainId]) {
+      newStore[chainId] = {};
+    }
+
+    if (!newStore[chainId][multisigId]) {
+      newStore[chainId][multisigId] = [];
+    }
 
     const multisig = newStore[chainId][multisigId].find(
       multisig => multisig.callHash === callHash && multisig.status === 'pending',

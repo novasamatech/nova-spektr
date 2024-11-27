@@ -37,6 +37,6 @@ export const storage = {
       ),
     );
 
-    return substrateRpcPool.call(() => getQuery(api, 'multisigs').entries(accountId)).then(a => schema.parse(a));
+    return substrateRpcPool.call(() => getQuery(api, 'multisigs').entries(accountId)).then(schema.parse);
   },
 };

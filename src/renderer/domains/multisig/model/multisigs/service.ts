@@ -3,42 +3,45 @@ import { cloneDeep } from 'lodash';
 import { type Multisig, type MultisigEvent } from './types';
 
 export const multisigOperationService = {
-  isSameMultisig: (a: Multisig, b: Multisig) => {
-    const isSameCallHash = a.callHash === b.callHash;
-    const isSameTimepoint = a.blockCreated === b.blockCreated && a.indexCreated === b.indexCreated;
-    const isSameAccount = a.accountId === b.accountId;
-
-    return isSameCallHash && isSameTimepoint && isSameAccount;
-  },
-
-  isSameEvent: (a: MultisigEvent, b: MultisigEvent) => {
-    return a.accountId === b.accountId && a.blockCreated === b.blockCreated && a.indexCreated === b.indexCreated;
-  },
-
-  mergeEvents: (oldEvents: MultisigEvent[], newEvents: MultisigEvent[]) => {
-    return [...oldEvents, ...newEvents.filter(e => !oldEvents.find(o => multisigOperationService.isSameEvent(o, e)))];
-  },
-
-  mergeMultisig: (oldMultisig: Multisig, newMultisig: Multisig) => {
-    return {
-      ...oldMultisig,
-      events: multisigOperationService.mergeEvents(oldMultisig.events, newMultisig.events),
-    };
-  },
-
-  mergeMultisigOperations: (oldMultisigs: Multisig[], newMultisigs: Multisig[]): Multisig[] => {
-    const result = cloneDeep(oldMultisigs);
-
-    for (const newMultisig of newMultisigs) {
-      const oldMultisig = result.find(m => multisigOperationService.isSameMultisig(m, newMultisig));
-
-      if (oldMultisig) {
-        oldMultisig.events = multisigOperationService.mergeEvents(oldMultisig.events, newMultisig.events);
-      } else {
-        result.push(newMultisig);
-      }
-    }
-
-    return result;
-  },
+  isSameMultisig,
+  isSameEvent,
+  mergeEvents,
+  mergeMultisigOperations,
 };
+
+function isSameMultisig(a: Multisig, b: Multisig) {
+  const isSameCallHash = a.callHash === b.callHash;
+  const isSameTimepoint = a.blockCreated === b.blockCreated && a.indexCreated === b.indexCreated;
+  const isSameAccount = a.accountId === b.accountId;
+
+  return isSameCallHash && isSameTimepoint && isSameAccount;
+}
+
+function isSameEvent(a: MultisigEvent, b: MultisigEvent) {
+  const isSameAccount = a.accountId === b.accountId;
+  const isSameTimepoint = a.blockCreated === b.blockCreated && a.indexCreated === b.indexCreated;
+
+  return isSameAccount && isSameTimepoint;
+}
+
+function mergeEvents(oldEvents: MultisigEvent[], events: MultisigEvent[]) {
+  const newEvents = events.filter(e => !oldEvents.some(o => isSameEvent(o, e)));
+
+  return [...oldEvents, ...newEvents];
+}
+
+function mergeMultisigOperations(oldMultisigs: Multisig[], newMultisigs: Multisig[]): Multisig[] {
+  const result = cloneDeep(oldMultisigs);
+
+  for (const newMultisig of newMultisigs) {
+    const oldMultisig = result.find(m => isSameMultisig(m, newMultisig));
+
+    if (oldMultisig) {
+      oldMultisig.events = mergeEvents(oldMultisig.events, newMultisig.events);
+    } else {
+      result.push(newMultisig);
+    }
+  }
+
+  return result;
+}

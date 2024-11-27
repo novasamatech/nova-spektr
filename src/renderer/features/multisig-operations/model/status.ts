@@ -17,10 +17,10 @@ sample({
   source: networkModel.$chains,
   fn: (chains, apis) => {
     const multisigChains = Object.values(chains)
-      .filter((chain) => networkUtils.isMultisigSupported(chain.options))
+      .filter((chain) => apis[chain.chainId] && networkUtils.isMultisigSupported(chain.options))
       .map((c) => c.chainId);
 
-    return multisigChains.filter((chainId) => apis[chainId]).join(',');
+    return multisigChains.join(',');
   },
   target: $trigger,
 });
@@ -81,6 +81,6 @@ multisigOperationsFeatureStatus.start();
 
 sample({
   clock: walletModel.$activeWallet,
-  filter: (wallet) => walletUtils.isMultisig(wallet),
+  filter: walletUtils.isMultisig,
   target: multisigOperationsFeatureStatus.restore,
 });

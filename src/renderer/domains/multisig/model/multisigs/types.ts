@@ -1,17 +1,17 @@
 import { type BN } from '@polkadot/util';
 
 import { type CallData, type CallHash, type HexString } from '@/shared/core';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
 
 export type Timepoint = {
-  height: number;
+  height: BlockHeight;
   index: number;
 };
 
 export type MultisigEvent = {
   accountId: AccountId;
   status: 'approved' | 'rejected';
-  blockCreated: number;
+  blockCreated: BlockHeight;
   indexCreated: number;
   extrinsicHash?: HexString;
 };
@@ -23,7 +23,7 @@ export type Multisig = {
   callData?: CallData;
   deposit: BN;
   depositor: AccountId;
-  blockCreated: number;
+  blockCreated: BlockHeight;
   indexCreated: number;
   events: MultisigEvent[];
 };

@@ -8,4 +8,4 @@ export const multisigPallet = {
   storage,
 };
 
-export type { Timepoint, Multisig } from './schema';
+export type { MultisigTimepoint, Multisig } from './schema';
