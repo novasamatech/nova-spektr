@@ -1,8 +1,9 @@
-import { type PairingTypes, type SessionTypes } from '@walletconnect/types';
+import { type SessionTypes } from '@walletconnect/types';
 // eslint-disable-next-line import-x/no-named-as-default
 import Provider from '@walletconnect/universal-provider';
 import { getSdkError } from '@walletconnect/utils';
-import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import { createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
+import isEmpty from 'lodash/isEmpty';
 import keyBy from 'lodash/keyBy';
 
 import { localStorageService } from '@/shared/api/local-storage';
@@ -40,22 +41,19 @@ const disconnectCurrentSessionStarted = createEvent();
 const disconnectStarted = createEvent<string>();
 const reset = createEvent();
 const sessionUpdated = createEvent<SessionTypes.Struct>();
+const uriUpdated = createEvent<string>();
 const connected = createEvent();
 const connectionRejected = createEvent<string>();
-const currentSessionTopicUpdated = createEvent<string>();
 const sessionTopicUpdated = createEvent<SessionTopicParams>();
 const accountsUpdated = createEvent<UpdateAccountsParams>();
 const pairingRemoved = createEvent<string>();
 
 const $provider = createStore<Provider | null>(null).reset(reset);
 const $session = createStore<SessionTypes.Struct | null>(null).reset(reset);
-const $uri = createStore<string>('').reset(disconnectCurrentSessionStarted);
+const $uri = restore(uriUpdated, '').reset(disconnectCurrentSessionStarted);
 const $accounts = createStore<string[]>([]).reset(reset);
-const $pairings = createStore<PairingTypes.Struct[]>([]).reset(reset);
 
 const createProviderFx = createEffect(async (): Promise<Provider | undefined> => {
-  console.log('xcm', 'client init');
-
   return Provider.init({
     logger: DEFAULT_LOGGER,
     relayUrl: DEFAULT_RELAY_URL,
@@ -64,39 +62,19 @@ const createProviderFx = createEffect(async (): Promise<Provider | undefined> =>
   });
 });
 
-type InitConnectResult = {
-  uri?: string;
-  approval: () => Promise<SessionTypes.Struct>;
-};
-const initConnectFx = createEffect(({ provider, chains, pairing }: InitConnectParams): Promise<InitConnectResult> => {
-  const optionalNamespaces = {
-    polkadot: {
-      chains,
-      methods: [DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION],
-      events: [DEFAULT_POLKADOT_EVENTS.CHAIN_CHANGED, DEFAULT_POLKADOT_EVENTS.ACCOUNTS_CHANGED],
-    },
-  };
+const initConnectFx = createEffect(
+  async ({ provider, chains, pairing }: InitConnectParams): Promise<SessionTypes.Struct | undefined> => {
+    const optionalNamespaces = {
+      polkadot: {
+        chains,
+        methods: [DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION],
+        events: [DEFAULT_POLKADOT_EVENTS.CHAIN_CHANGED, DEFAULT_POLKADOT_EVENTS.ACCOUNTS_CHANGED],
+      },
+    };
 
-  return provider.client.connect({ pairingTopic: pairing?.topic, optionalNamespaces });
-});
-
-type ConnectParams = {
-  provider: Provider;
-  approval: () => Promise<unknown>;
-  onConnect?: () => void;
-};
-type ConnectResult = {
-  pairings: PairingTypes.Struct[];
-  session: SessionTypes.Struct;
-};
-const connectFx = createEffect(async ({ provider, approval }: ConnectParams): Promise<ConnectResult | undefined> => {
-  const session = await approval();
-
-  return {
-    pairings: provider.client.pairing.getAll(),
-    session: session as SessionTypes.Struct,
-  };
-});
+    return provider.connect({ pairingTopic: pairing?.topic, optionalNamespaces });
+  },
+);
 
 const extendSessionsFx = createEffect((client: Provider) => {
   const sessions = client.client.session.getAll();
@@ -115,9 +93,17 @@ const extendSessionsFx = createEffect((client: Provider) => {
   }
 });
 
+const subscribeUriFx = createEffect((provider: Provider) => {
+  const boundUriUpdated = scopeBind(uriUpdated, { safe: true });
+
+  provider.on('display_uri', (uri: string) => {
+    boundUriUpdated(uri);
+  });
+});
+
 const subscribeToEventsFx = createEffect(({ client }: Provider) => {
-  const boundSessionUpdated = scopeBind(sessionUpdated);
-  const boundReset = scopeBind(reset);
+  const boundSessionUpdated = scopeBind(sessionUpdated, { safe: true });
+  const boundReset = scopeBind(reset, { safe: true });
 
   client.on('session_update', ({ topic, params }) => {
     console.log('WC EVENT', 'session_update', { topic, params });
@@ -152,7 +138,7 @@ const checkPersistedStateFx = createEffect((client: Provider) => {
 
 const logProviderIdFx = createEffect(async (client: Provider) => {
   try {
-    const clientId = await client.client.core.crypto.name;
+    const clientId = await client.client.core.crypto.getClientId();
     console.log('WalletConnect ProviderID: ', clientId);
     localStorageService.saveToStorage(WALLETCONNECT_CLIENT_ID, clientId);
   } catch (error) {
@@ -201,8 +187,6 @@ const removePairingFx = createEffect(
   async ({ provider, topic }: { provider: Provider; topic: string }): Promise<void> => {
     const reason = getSdkError('USER_DISCONNECTED');
 
-    console.log('xcm', 'remove pairing');
-
     await provider.client.pairing.delete(topic, reason);
   },
 );
@@ -235,8 +219,6 @@ type DisconnectParams = {
 const disconnectFx = createEffect(async ({ provider, session }: DisconnectParams) => {
   const reason = getSdkError('USER_DISCONNECTED');
 
-  console.log('xcm', 'disconnect');
-
   await provider.client.disconnect({
     topic: session.topic,
     reason,
@@ -252,9 +234,16 @@ const removeSessionFx = createEffect(
 );
 
 sample({
+  clock: connect,
+  source: $provider,
+  filter: nonNullable,
+  target: subscribeUriFx,
+});
+
+sample({
   clock: accountsUpdated,
   source: walletModel.$wallets,
-  filter: (_, { accounts }) => accounts?.length > 0,
+  filter: (_, { accounts }) => !isEmpty(accounts),
   fn: (wallets, { accounts, walletId }) => {
     const wallet = wallets.find((wallet) => wallet.id === walletId)!;
 
@@ -307,11 +296,7 @@ sample({
 sample({
   clock: connect,
   source: $provider,
-  filter: (provider, props) => {
-    console.log('xcmPairing', provider?.client.pairing.getAll());
-
-    return provider !== null && props.chains.length > 0;
-  },
+  filter: (provider, props) => provider !== null && !isEmpty(props.chains),
   fn: (provider, props) => ({
     provider: provider!,
     ...props,
@@ -321,52 +306,22 @@ sample({
 
 sample({
   clock: initConnectFx.doneData,
-  source: $provider,
-  filter: (provider, initData) => Boolean(provider) && Boolean(initData?.approval),
-  fn: (provider, initData) => ({
-    provider: provider!,
-    approval: initData!.approval,
-  }),
-  target: connectFx,
-});
-
-sample({
-  clock: initConnectFx.doneData,
-  fn: (data) => data?.uri || '',
-  target: $uri,
-});
-
-sample({
-  clock: connectFx.doneData,
-  filter: (props) => nonNullable(props),
-  fn: (props) => {
-    return Object.values(props!.session.namespaces)
+  filter: nonNullable,
+  fn: (session) =>
+    Object.values(session!.namespaces)
       .map((namespace) => namespace.accounts)
-      .flat();
-  },
+      .flat(),
   target: $accounts,
 });
 
 sample({
-  clock: connectFx.doneData,
-  filter: (props) => nonNullable(props),
-  fn: (props) => props!.session,
+  clock: initConnectFx.doneData,
+  filter: nonNullable,
   target: $session,
 });
 
 sample({
-  clock: connectFx.doneData,
-  filter: (props) => nonNullable(props),
-  fn: (props) => {
-    console.log('xcm', props?.pairings);
-
-    return props!.pairings;
-  },
-  target: $pairings,
-});
-
-sample({
-  clock: connectFx.done,
+  clock: initConnectFx.done,
   target: connected,
 });
 
@@ -381,11 +336,7 @@ sample({
 sample({
   clock: disconnectStarted,
   source: $provider,
-  filter: (provider, sessionTopic) => {
-    console.log('xcm', provider?.client.session.get(sessionTopic), sessionTopic);
-
-    return nonNullable(provider?.client.session.get(sessionTopic));
-  },
+  filter: (provider, sessionTopic) => nonNullable(provider?.client.session.get(sessionTopic)),
   fn: (provider, sessionTopic) => ({
     provider: provider!,
     session: provider!.client.session.get(sessionTopic)!,
@@ -397,19 +348,6 @@ sample({
   clock: disconnectFx.done,
   fn: ({ params }) => params,
   target: removeSessionFx,
-});
-
-sample({
-  clock: currentSessionTopicUpdated,
-  source: { activeWallet: walletModel.$activeWallet, provider: $provider },
-  filter: ({ activeWallet, provider }) => !!activeWallet && !!provider,
-  fn: ({ activeWallet, provider }, topic) => ({
-    walletId: activeWallet!.id,
-    accounts: activeWallet!.accounts,
-    topic,
-    provider: provider!,
-  }),
-  target: sessionTopicUpdatedFx,
 });
 
 sample({
@@ -439,7 +377,7 @@ sample({
 });
 
 sample({
-  clock: connectFx.fail,
+  clock: initConnectFx.fail,
   fn: ({ error }) => {
     console.error('Failed to connect:', error);
 
@@ -479,7 +417,6 @@ export const walletConnectModel = {
   $session,
   $uri,
   $accounts,
-  $pairings,
 
   events: {
     connect,
@@ -489,7 +426,6 @@ export const walletConnectModel = {
     sessionUpdated,
     connected,
     connectionRejected,
-    currentSessionTopicUpdated,
     sessionTopicUpdated,
     sessionTopicUpdateFailed: sessionTopicUpdatedFx.fail,
     sessionTopicUpdateDone: sessionTopicUpdatedFx.doneData,

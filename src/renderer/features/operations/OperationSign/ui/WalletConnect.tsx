@@ -14,6 +14,7 @@ import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { DEFAULT_POLKADOT_METHODS, walletConnectModel, walletConnectUtils } from '@/entities/walletConnect';
+import { WalletConnectQrCode } from '@/features/wallet-connect-pairing';
 import { operationSignUtils } from '../lib/operation-sign-utils';
 import { type InnerSigningProps } from '../lib/types';
 import { operationSignModel } from '../model/operation-sign-model';
@@ -32,6 +33,7 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
   const isSigningRejected = useUnit(signWcModel.$isSigningRejected);
   const signatures = useUnit(signWcModel.$signatures);
   const isStatusShown = useUnit(signWcModel.$isStatusShown);
+  const uri = useUnit(walletConnectModel.$uri);
 
   const chains = useUnit(networkModel.$chains);
 
@@ -194,7 +196,8 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
       return {
         title: t('operation.walletConnect.failedTitle'),
         description: t('operation.walletConnect.failedDescription'),
-        content: <Animation variant="error" />,
+        content: <WalletConnectQrCode uri={uri} type="walletconnect" />,
+        className: 'w-[440px]',
         onClose: () => {
           signWcModel.events.reconnectAborted();
           onGoBack();
