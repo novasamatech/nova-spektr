@@ -5,8 +5,8 @@ import { useState } from 'react';
 import { CryptoTypeString } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { Button, CaptionText, FootnoteText, Icon, Loader, Select } from '@/shared/ui';
-import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
+import { Button, CaptionText, FootnoteText, Icon, Loader } from '@/shared/ui';
+import { Select } from '@/shared/ui-kit';
 import { type ErrorObject, QrError, QrReader, type SeedInfo, type VideoInput } from '@/entities/transaction';
 
 const enum CameraState {
@@ -31,8 +31,8 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
   const { t } = useI18n();
 
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.LOADING);
-  const [activeCamera, setActiveCamera] = useState<DropdownResult<string>>();
-  const [availableCameras, setAvailableCameras] = useState<DropdownOption<string>[]>([]);
+  const [activeCamera, setActiveCamera] = useState<string>();
+  const [availableCameras, setAvailableCameras] = useState<Record<'title' | 'value', string>[]>([]);
 
   const [isScanComplete, setIsScanComplete] = useState(false);
   const [{ decoded, total }, setProgress] = useState({ decoded: 0, total: 0 });
@@ -47,17 +47,15 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
   ].includes(cameraState);
 
   const onCameraList = (cameras: VideoInput[]) => {
-    const formattedCameras = cameras.map((camera, index) => ({
-      //eslint-disable-next-line i18next/no-literal-string
-      element: `${index + 1}. ${camera.label}`,
+    const formattedCameras = cameras.map((camera) => ({
+      title: camera.label,
       value: camera.id,
-      id: camera.id,
     }));
 
     setAvailableCameras(formattedCameras);
 
     if (formattedCameras.length > 0) {
-      setActiveCamera(formattedCameras[0]);
+      setActiveCamera(formattedCameras[0].value);
       setCameraState(CameraState.ACTIVE);
     }
   };
@@ -76,10 +74,8 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
   const onScanResult = (qrPayload: SeedInfo[]) => {
     try {
       for (const qr of qrPayload) {
-        if (qr.multiSigner) {
-          if (qr.multiSigner.MultiSigner !== CryptoTypeString.ECDSA) {
-            encodeAddress(qr.multiSigner.public);
-          }
+        if (qr.multiSigner && qr.multiSigner.MultiSigner !== CryptoTypeString.ECDSA) {
+          encodeAddress(qr.multiSigner.public);
         }
         if (qr.derivedKeys.length === 0) continue;
 
@@ -189,9 +185,9 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
       <div className="flex flex-col gap-4">
         <div className={cnTw('relative overflow-hidden', isCameraPending && 'hidden', className)} style={sizeStyle}>
           <QrReader
+            bgVideo
             size={size}
-            cameraId={activeCamera?.value}
-            bgVideo={true}
+            cameraId={activeCamera}
             className="relative top-[-24px] -scale-x-[1.125] scale-y-[1.125]"
             onStart={() => setCameraState(CameraState.ACTIVE)}
             onCameraList={onCameraList}
@@ -215,10 +211,15 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
         {availableCameras.length > 1 && (
           <Select
             placeholder={t('onboarding.paritySigner.selectCameraLabel')}
-            selectedId={activeCamera?.id}
-            options={availableCameras}
+            value={activeCamera ?? null}
             onChange={setActiveCamera}
-          />
+          >
+            {availableCameras.map((camera, index) => (
+              <Select.Item key={camera.value} value={camera.value}>
+                {`${index + 1}. ${camera.title}`}
+              </Select.Item>
+            ))}
+          </Select>
         )}
 
         {total > 1 && (
