@@ -6,6 +6,7 @@ import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Paths } from '@/shared/routes';
 import { Header, Plate } from '@/shared/ui';
+import { Box, ScrollArea } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
 import {
   Locks,
@@ -60,23 +61,25 @@ export const Governance = () => {
         <Search />
       </Header>
 
-      <div className="h-full w-full overflow-y-auto py-6">
-        <section className="mx-auto flex h-full w-[736px] flex-col">
-          <div className="mb-2 flex gap-x-3">
-            <Plate className="h-[90px] w-[240px] px-4 pb-4.5 pt-3">
-              <NetworkSelector />
-            </Plate>
-            <Locks onClick={unlockAggregate.events.flowStarted} />
-            <TotalDelegation
-              onClick={() =>
-                hasDelegations ? currentDelegationModel.events.flowStarted() : delegationModel.events.flowStarted()
-              }
-            />
-          </div>
+      <ScrollArea>
+        <Box horizontalAlign="center" height="100%" padding={[6, 0]}>
+          <Box width="736px" height="100%" gap={5}>
+            <div className="flex gap-x-3">
+              <Plate className="h-[90px] w-[240px] px-4 pb-4.5 pt-3">
+                <NetworkSelector />
+              </Plate>
+              <Locks onClick={unlockAggregate.events.flowStarted} />
+              <TotalDelegation
+                onClick={() =>
+                  hasDelegations ? currentDelegationModel.events.flowStarted() : delegationModel.events.flowStarted()
+                }
+              />
+            </div>
 
-          <Outlet />
-        </section>
-      </div>
+            <Outlet />
+          </Box>
+        </Box>
+      </ScrollArea>
 
       <CurrentDelegationModal />
       <DelegationModal />

@@ -43,7 +43,7 @@ export const Fellowship = () => {
 
       <ScrollArea>
         <Box horizontalAlign="center" height="100%" padding={[6, 0]}>
-          <Box width="736px" height="100%" gap={3}>
+          <Box width="736px" height="100%" gap={5}>
             <div className="grid grid-cols-3 gap-3">
               <ProfileCard />
               <MembersCard onClick={() => {}} />

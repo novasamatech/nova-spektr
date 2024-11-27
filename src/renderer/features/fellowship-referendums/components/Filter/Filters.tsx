@@ -25,7 +25,7 @@ export const Filters = () => {
   }));
 
   return (
-    <Box direction="row" padding={[4, 0, 2]}>
+    <Box direction="row" horizontalAlign="space-between" verticalAlign="center" shrink={0}>
       <div className="grid grid-cols-[200px,104px] gap-x-4">
         <MultiSelect
           placeholder={t('governance.filters.tracks')}
@@ -47,8 +47,9 @@ export const Filters = () => {
           <Select.Item value="notVoted">{t('governance.filters.notVoted')}</Select.Item>
         </Select>
       </div>
+
       {Boolean(isFiltersSelected) && (
-        <Button variant="text" className="ml-auto h-8.5 py-0" onClick={() => filterModel.events.filtersReset()}>
+        <Button variant="text" className="h-8.5" onClick={() => filterModel.events.filtersReset()}>
           {t('operations.filters.clearAll')}
         </Button>
       )}

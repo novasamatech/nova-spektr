@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { Button, MultiSelect } from '@/shared/ui';
-import { Select } from '@/shared/ui-kit';
+import { Box, Select } from '@/shared/ui-kit';
 import { filterModel } from '../../model/filter';
 
 import { TRACK_OPTIONS } from './constants';
@@ -20,7 +20,7 @@ export const Filters = () => {
   }
 
   return (
-    <div className="flex gap-x-4">
+    <Box direction="row" horizontalAlign="space-between" verticalAlign="center" shrink={0}>
       <div className="grid grid-cols-[200px,104px] gap-x-4">
         <MultiSelect
           placeholder={t('governance.filters.tracks')}
@@ -38,11 +38,12 @@ export const Filters = () => {
           <Select.Item value="notVoted">{t('governance.filters.notVoted')}</Select.Item>
         </Select>
       </div>
+
       {Boolean(isFiltersSelected) && (
-        <Button variant="text" className="ml-auto h-8.5 py-0" onClick={() => filterModel.events.filtersReset()}>
+        <Button variant="text" className="h-8.5" onClick={() => filterModel.events.filtersReset()}>
           {t('operations.filters.clearAll')}
         </Button>
       )}
-    </div>
+    </Box>
   );
 };
