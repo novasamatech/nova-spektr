@@ -2,46 +2,37 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { Button, MultiSelect } from '@/shared/ui';
-import { Box, Select } from '@/shared/ui-kit';
+import { Select } from '@/shared/ui-kit';
 import { filterModel } from '../../model/filter';
+
+import { TRACK_OPTIONS } from './constants';
 
 export const Filters = () => {
   const { t } = useI18n();
 
   const query = useUnit(filterModel.$query);
-  const tracks = useUnit(filterModel.$tracks);
-  const selectedTrackIds = useUnit(filterModel.$selectedTracks);
-  const selectedVoteId = useUnit(filterModel.$selectedVotingStatus);
+  const selectedTrackIds = useUnit(filterModel.$selectedTrackIds);
+  const selectedVoteId = useUnit(filterModel.$selectedVoteId);
   const isFiltersSelected = useUnit(filterModel.$isFiltersSelected);
 
   if (query) {
     return null;
   }
 
-  const trackFilterOptions = tracks.map(({ id, name }) => ({
-    id: id.toString(),
-    value: id,
-    element: name.toString(),
-  }));
-
   return (
-    <Box direction="row" padding={[4, 0, 2]}>
+    <div className="flex gap-x-4">
       <div className="grid grid-cols-[200px,104px] gap-x-4">
         <MultiSelect
           placeholder={t('governance.filters.tracks')}
           multiPlaceholder={t('governance.filters.tracks')}
-          selectedIds={selectedTrackIds.map(x => x.toString())}
-          options={trackFilterOptions}
-          disabled={tracks.length === 0}
-          onChange={value => {
-            filterModel.events.selectTracks(value.map(x => x.value));
-          }}
+          selectedIds={selectedTrackIds}
+          options={TRACK_OPTIONS.map(({ id, value }) => ({ id, value, element: t(value) }))}
+          onChange={(value) => filterModel.events.selectedTracksChanged(value.map(({ id }) => id))}
         />
-
         <Select
           placeholder={t('governance.filters.vote')}
           value={selectedVoteId}
-          onChange={filterModel.events.selectVotingStatus}
+          onChange={filterModel.events.selectedVoteChanged}
         >
           <Select.Item value="voted">{t('governance.voted')}</Select.Item>
           <Select.Item value="notVoted">{t('governance.filters.notVoted')}</Select.Item>
@@ -52,6 +43,6 @@ export const Filters = () => {
           {t('operations.filters.clearAll')}
         </Button>
       )}
-    </Box>
+    </div>
   );
 };

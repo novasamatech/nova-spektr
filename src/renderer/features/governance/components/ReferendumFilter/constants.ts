@@ -1,4 +1,4 @@
-export const trackOptions = [
+export const TRACK_OPTIONS = [
   { id: '0', value: 'governance.referendums.mainAgenda' },
   { id: '1', value: 'governance.referendums.fellowshipWhitelist' },
   { id: '2', value: 'governance.referendums.wishForChange' },
@@ -15,14 +15,4 @@ export const trackOptions = [
   { id: '32', value: 'governance.referendums.treasurySmallSpend' },
   { id: '33', value: 'governance.referendums.treasuryMediumSpend' },
   { id: '34', value: 'governance.referendums.treasuryBigSpend' },
-];
-
-export const enum VoteStatus {
-  VOTED = 'voted',
-  NOT_VOTED = 'notVoted',
-}
-
-export const voteOptions = [
-  { id: VoteStatus.VOTED, value: 'governance.voted' },
-  { id: VoteStatus.NOT_VOTED, value: 'governance.filters.notVoted' },
 ];

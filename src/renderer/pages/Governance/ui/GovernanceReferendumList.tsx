@@ -3,12 +3,7 @@ import { Outlet, generatePath, useParams } from 'react-router-dom';
 
 import { Paths } from '@/shared/routes';
 import { InactiveNetwork } from '@/entities/network';
-import {
-  CompletedReferendums,
-  OngoingReferendums,
-  ReferendumFilters,
-  networkSelectorModel,
-} from '@/features/governance';
+import { CompletedReferendums, Filters, OngoingReferendums, networkSelectorModel } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
 import { governancePageAggregate } from '../aggregates/governancePage';
 
@@ -42,7 +37,7 @@ export const GovernanceReferendumList = () => {
   return (
     <>
       <div className="mb-4 mt-5">
-        <ReferendumFilters />
+        <Filters />
       </div>
 
       {shouldRenderEmptyState && <EmptyGovernance />}

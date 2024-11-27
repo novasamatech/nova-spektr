@@ -23,7 +23,7 @@ export { AccountsMultiSelector } from './components/AccountsMultiSelector/Accoun
 export { TotalDelegation, DelegateBadge, DelegateIcon, DelegateTitle, DelegateName } from './components/Delegations';
 export { NetworkSelector } from './components/NetworkSelector';
 export { ReferendumDetailsModal } from './components/ReferendumDetails/ReferendumDetailsModal';
-export { ReferendumSearch, ReferendumFilters, VoteStatus } from './components/ReferendumFilter';
+export { Search, Filters } from './components/ReferendumFilter';
 export { OffChainDataSource } from './components/OffChainDataSource';
 export { CompletedReferendums, OngoingReferendums } from './components/ReferendumList';
 export { VotingHistoryDialog } from './components/VotingHistory/VotingHistoryDialog';

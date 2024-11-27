@@ -10,7 +10,7 @@ import { networkModel } from '@/entities/network';
 import {
   Locks,
   NetworkSelector,
-  ReferendumSearch,
+  Search,
   TotalDelegation,
   delegationAggregate,
   networkSelectorModel,
@@ -57,7 +57,7 @@ export const Governance = () => {
   return (
     <div className="flex h-full flex-col">
       <Header title={t('governance.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
-        <ReferendumSearch />
+        <Search />
       </Header>
 
       <div className="h-full w-full overflow-y-auto py-6">
