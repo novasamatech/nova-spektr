@@ -47,7 +47,7 @@ export const TokenBalanceList = ({ asset }: Props) => {
         >
           <div className="flex w-full items-center">
             <div className="flex flex-1 items-center gap-x-2">
-              <AssetIcon src={asset.icon} name={asset.name} />
+              <AssetIcon asset={asset} />
               <div className="flex flex-col">
                 <BodyText>{asset.symbol}</BodyText>
                 <div className="flex items-center">
