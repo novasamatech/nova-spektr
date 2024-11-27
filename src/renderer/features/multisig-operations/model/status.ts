@@ -38,12 +38,12 @@ const $input = combine(
     wallet: walletModel.$activeWallet,
   },
   ({ apis, chains, wallet }) => {
-    if (nullable(wallet)) return null;
+    if (nullable(wallet) || !walletUtils.isMultisig(wallet)) return null;
 
     const input = [];
 
     for (const account of wallet.accounts) {
-      if ('chainId' in account && account.chainId) {
+      if (account.chainId) {
         const api = apis[account.chainId];
 
         if (api) {
