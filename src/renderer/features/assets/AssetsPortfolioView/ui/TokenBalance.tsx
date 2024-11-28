@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { memo } from 'react';
 
 import { type AssetByChains } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -14,7 +15,7 @@ type Props = {
   asset: AssetByChains;
 };
 
-export const TokenBalance = ({ asset }: Props) => {
+export const TokenBalance = memo(({ asset }: Props) => {
   const { t } = useI18n();
   const chain = asset.chains[0];
 
@@ -53,4 +54,4 @@ export const TokenBalance = ({ asset }: Props) => {
       <AssetLinks assetId={asset.chains[0].assetId} chainId={chain.chainId} />
     </Plate>
   );
-};
+});

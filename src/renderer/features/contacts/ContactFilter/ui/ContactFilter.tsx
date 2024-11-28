@@ -13,7 +13,7 @@ export const ContactFilter = () => {
 
   return (
     <SearchInput
-      className="w-[230px]"
+      wrapperClass="w-[280px]"
       placeholder={t('addressBook.searchPlaceholder')}
       onChange={filterModel.events.queryChanged}
     />

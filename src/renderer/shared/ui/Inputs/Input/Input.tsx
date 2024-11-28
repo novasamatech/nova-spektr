@@ -46,7 +46,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(
     const inputElement = (
       <div
         className={cnTw(
-          'relative flex object-contain',
+          'relative flex items-center object-contain',
           CommonInputStyles,
           CommonInputStylesTheme[theme],
           !disabled && 'hover:shadow-card-shadow',

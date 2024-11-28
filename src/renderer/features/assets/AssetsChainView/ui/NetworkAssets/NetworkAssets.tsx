@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 import groupBy from 'lodash/groupBy';
-import { useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 
 import { sumBalances } from '@/shared/api/network/service/chainsService';
 import { type Account, type AccountId, type Asset, type Balance, type Chain } from '@/shared/core';
@@ -24,7 +24,7 @@ type Props = {
   hideZeroBalances: boolean;
 };
 
-export const NetworkAssets = ({ chain, accounts, query, hideZeroBalances, searchSymbolOnly }: Props) => {
+export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances, searchSymbolOnly }: Props) => {
   const { t } = useI18n();
 
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
@@ -47,9 +47,12 @@ export const NetworkAssets = ({ chain, accounts, query, hideZeroBalances, search
     }, []);
   }, [chain.chainId, selectedAccountIds]);
 
-  useEffect(() => {
-    const chainBalances = balances.filter((b) => b.chainId === chain.chainId && accountIds.includes(b.accountId));
+  const chainBalances = useMemo(
+    () => balances.filter((b) => b.chainId === chain.chainId && accountIds.includes(b.accountId)),
+    [balances, chain, accountIds],
+  );
 
+  useEffect(() => {
     const newBalancesObject: Record<string, Balance> = {};
     const groupedBalances = Object.values(groupBy(chainBalances, 'assetId'));
 
@@ -64,7 +67,7 @@ export const NetworkAssets = ({ chain, accounts, query, hideZeroBalances, search
     }
 
     setBalancesObject(newBalancesObject);
-  }, [balances, accountIds.join('')]);
+  }, [chainBalances, accountIds.join('')]);
 
   useEffect(() => {
     const filteredAssets = chain.assets.filter((asset) => {
@@ -135,4 +138,4 @@ export const NetworkAssets = ({ chain, accounts, query, hideZeroBalances, search
       </Accordion>
     </li>
   );
-};
+});

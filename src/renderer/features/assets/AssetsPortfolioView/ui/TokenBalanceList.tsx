@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { memo } from 'react';
 
 import { type AssetByChains } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -20,7 +21,7 @@ type Props = {
   asset: AssetByChains;
 };
 
-export const TokenBalanceList = ({ asset }: Props) => {
+export const TokenBalanceList = memo(({ asset }: Props) => {
   const { t } = useI18n();
 
   const activeWallet = useUnit(walletModel.$activeWallet);
@@ -112,4 +113,4 @@ export const TokenBalanceList = ({ asset }: Props) => {
       </Accordion>
     </Plate>
   );
-};
+});
