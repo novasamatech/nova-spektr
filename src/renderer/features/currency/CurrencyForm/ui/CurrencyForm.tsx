@@ -2,11 +2,16 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent, useEffect } from 'react';
 
+import { type CurrencyItem } from '@/shared/api/price-provider';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { Button, FootnoteText, HelpText, Switch } from '@/shared/ui';
 import { Select } from '@/shared/ui-kit';
 import { type Callbacks, currencyFormModel } from '../model/currency-form';
+
+const getCurrencyTitle = (currency: CurrencyItem): string => {
+  return [currency.code, currency.symbol, currency.name].filter(nonNullable).join(' • ');
+};
 
 type Props = Callbacks;
 export const CurrencyForm = ({ onSubmit }: Props) => {
@@ -53,24 +58,21 @@ export const CurrencyForm = ({ onSubmit }: Props) => {
         <Select.Group title={t('settings.currency.cryptocurrenciesLabel')}>
           {cryptoCurrencies.map((currency) => (
             <Select.Item key={currency.id} value={currency.id.toString()}>
-              {/* eslint-disable-next-line i18next/no-literal-string */}
-              {[currency.code, currency.symbol, currency.name].filter(nonNullable).join(' • ')}
+              {getCurrencyTitle(currency)}
             </Select.Item>
           ))}
         </Select.Group>
         <Select.Group title={t('settings.currency.popularFiatLabel')}>
           {popularFiatCurrencies.map((currency) => (
             <Select.Item key={currency.id} value={currency.id.toString()}>
-              {/* eslint-disable-next-line i18next/no-literal-string */}
-              {[currency.code, currency.symbol, currency.name].filter(nonNullable).join(' • ')}
+              {getCurrencyTitle(currency)}
             </Select.Item>
           ))}
         </Select.Group>
         <Select.Group title={t('settings.currency.unpopularFiatLabel')}>
           {unpopularFiatCurrencies.map((currency) => (
             <Select.Item key={currency.id} value={currency.id.toString()}>
-              {/* eslint-disable-next-line i18next/no-literal-string */}
-              {[currency.code, currency.symbol, currency.name].filter(nonNullable).join(' • ')}
+              {getCurrencyTitle(currency)}
             </Select.Item>
           ))}
         </Select.Group>
