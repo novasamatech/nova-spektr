@@ -31,10 +31,6 @@ runs:
       run: s3cmd ls
       shell: bash
 
-    - name: Clean bucket
-      run: s3cmd rm --recursive --force "${{ inputs.s3_bucket }}/*"
-      shell: bash
-
     - name: Interact with object storage
       run: s3cmd sync "${{ inputs.source }}/" "${{ inputs.s3_bucket }}/" --acl-public
       shell: bash
