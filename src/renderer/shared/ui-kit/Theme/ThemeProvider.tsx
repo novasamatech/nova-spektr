@@ -4,16 +4,18 @@ import { ThemeContext, type ThemeContextTheme } from './ThemeContext';
 
 type Props = PropsWithChildren<{
   bodyAsPortalContainer?: boolean;
+  iconStyle: ThemeContextTheme['iconStyle'];
 }>;
 
-export const ThemeProvider = ({ bodyAsPortalContainer, children }: Props) => {
+export const ThemeProvider = ({ bodyAsPortalContainer, iconStyle, children }: Props) => {
   const [portal, setPortal] = useState<HTMLElement | null>(null);
 
   const value = useMemo<ThemeContextTheme>(() => {
     return {
       portalContainer: bodyAsPortalContainer ? null : portal,
+      iconStyle,
     };
-  }, [portal, bodyAsPortalContainer]);
+  }, [portal, iconStyle, bodyAsPortalContainer]);
 
   return (
     <ThemeContext.Provider value={value}>

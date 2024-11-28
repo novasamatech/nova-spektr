@@ -85,7 +85,7 @@ function subscribeLockBalances(
 ): UnsubscribePromise[] {
   const { nativeAsset, ormlAssets } = chain.assets.reduce<{ nativeAsset?: Asset; ormlAssets: Asset[] }>(
     (acc, asset) => {
-      if (!asset.type) acc.nativeAsset = asset;
+      if (asset.type === AssetType.NATIVE) acc.nativeAsset = asset;
       if (asset.type === AssetType.ORML) acc.ormlAssets.push(asset);
 
       return acc;

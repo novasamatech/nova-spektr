@@ -67,7 +67,9 @@ ul:focus-visible {
 
 .logo-background {
   transform: scaleY(-1);
-  background-image: url('../shared/assets/images/misc/bg.webp');
+  /* with color fallback */
+  background: #501acb url('../shared/assets/images/misc/bg.webp');
+  background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
 }
