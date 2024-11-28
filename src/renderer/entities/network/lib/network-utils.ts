@@ -112,7 +112,15 @@ function getMainRelaychains(chains: Chain[]): Chain[] {
 }
 
 function chainNameToUrl(name: string): string {
-  const urlAllowedCharacters = /[^a-zA-Z0-9-]+$/;
+  const filteredCharacters = /[^a-zA-Z0-9-]/g;
+  const multipleDashes = /-{2,}/g;
+  const lastDash = /-$/;
 
-  return name.split(' ').join('-').toLowerCase().replace(urlAllowedCharacters, '').replace(/-{2,}/g, '-');
+  return name
+    .split(' ')
+    .join('-')
+    .toLowerCase()
+    .replace(filteredCharacters, '')
+    .replace(multipleDashes, '-')
+    .replace(lastDash, '');
 }
