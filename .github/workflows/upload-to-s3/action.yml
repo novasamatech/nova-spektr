@@ -34,6 +34,7 @@ runs:
       - name: Clean bucket
       run: |
         s3cmd rm --recursive --force "${{ env.S3_BUCKET }}/*"
+      shell: bash
 
     - name: Deploy to bucket
       id: deploy_to_bucket
