@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - dev
+  pull_request:
 
 concurrency:
   group: "storybook-deploy"
