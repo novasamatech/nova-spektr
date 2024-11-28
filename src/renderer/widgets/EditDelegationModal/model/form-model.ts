@@ -1,13 +1,15 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
+import isEmpty from 'lodash/isEmpty';
 import { spread } from 'patronum';
 
-import { type Account, type Asset, type Chain, type Conviction, type PartialBy } from '@/shared/core';
+import { type Account, type Asset, type Chain, type Conviction } from '@/shared/core';
 import {
   ZERO_BALANCE,
   formatAmount,
   getRelaychainAsset,
+  nonNullable,
   toAddress,
   transferableAmount,
   transferableAmountBN,
@@ -23,7 +25,7 @@ import { type WalletData } from '../lib/types';
 
 type FormParams = {
   shards: Account[];
-  signatory: Account;
+  signatory: Account | null;
   amount: string;
   conviction: Conviction;
   locks: Record<string, BN>;
@@ -31,7 +33,7 @@ type FormParams = {
 
 const formInitiated = createEvent<WalletData & { shards: Account[] }>();
 const formSubmitted = createEvent();
-const formChanged = createEvent<PartialBy<FormParams, 'signatory'>>();
+const formChanged = createEvent<FormParams>();
 const formCleared = createEvent();
 
 const txWrapperChanged = createEvent<{
@@ -132,14 +134,14 @@ const $delegateForm = createForm<FormParams>({
       ],
     },
     signatory: {
-      init: {} as Account,
+      init: null,
       rules: [
         {
           name: 'noSignatorySelected',
           errorText: 'transfer.noSignatoryError',
           source: $isMultisig,
           validator: (signatory, _, isMultisig) => {
-            if (!isMultisig) return true;
+            if (!signatory || !isMultisig) return true;
 
             return Object.keys(signatory).length > 0;
           },
@@ -342,9 +344,11 @@ sample({
 sample({
   clock: $delegateForm.fields.signatory.onChange,
   source: $signatories,
-  filter: (signatories) => signatories.length > 0,
+  filter: (signatories, signatory) => {
+    return !isEmpty(signatories) && nonNullable(signatory);
+  },
   fn: (signatories, signatory) => {
-    const match = signatories[0].find(({ signer }) => signer.id === signatory.id);
+    const match = signatories[0].find(({ signer }) => signer.id === signatory!.id);
 
     return match?.balance || ZERO_BALANCE;
   },
@@ -388,13 +392,17 @@ sample({
 
 sample({
   clock: $delegateForm.$values.updates,
-  source: { networkStore: $networkStore, accounts: $accounts },
-  filter: (networkStore) => Boolean(networkStore),
+  source: {
+    networkStore: $networkStore,
+    accounts: $accounts,
+  },
+  filter: (networkStore, formData) => {
+    return nonNullable(networkStore) && nonNullable(formData.signatory);
+  },
   fn: ({ accounts }, formData) => {
-    const signatory = formData.signatory.accountId ? formData.signatory : undefined;
     const locks = accounts.reduce((acc, val) => ({ ...acc, [val.account.accountId]: val.lock }), {});
 
-    return { ...formData, signatory, locks };
+    return { ...formData, locks };
   },
   target: formChanged,
 });

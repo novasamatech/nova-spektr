@@ -32,7 +32,7 @@ type Input = {
   asset: Asset;
   account: Account;
   proxiedAccount?: ProxiedAccount;
-  signatory?: Account;
+  signatory: Account | null;
   amount: string;
   destination: Address;
 

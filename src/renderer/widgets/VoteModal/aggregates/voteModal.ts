@@ -205,7 +205,7 @@ sample({
         account: accounts.proxy || accounts.initiator,
         chain: meta.chain,
         transaction: meta.wrappedTransactions.wrappedTx,
-        signatory: accounts.signer || undefined,
+        signatory: accounts.signer,
       })),
     };
   },

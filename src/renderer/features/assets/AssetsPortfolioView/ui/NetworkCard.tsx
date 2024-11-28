@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { memo } from 'react';
 
 import { type AssetByChains } from '@/shared/core';
 import { BodyText, FootnoteText } from '@/shared/ui';
@@ -14,7 +15,7 @@ type Props = {
   asset: AssetByChains;
 };
 
-export const NetworkCard = ({ chain, asset }: Props) => {
+export const NetworkCard = memo(({ chain, asset }: Props) => {
   const chains = useUnit(networkModel.$chains);
 
   return (
@@ -34,4 +35,4 @@ export const NetworkCard = ({ chain, asset }: Props) => {
       </div>
     </li>
   );
-};
+});

@@ -8,7 +8,10 @@ export type Asset = {
   staking?: StakingType;
   precision: number;
   priceId?: string;
-  icon: string;
+  icon: {
+    monochrome: string;
+    colored: string;
+  };
   type: AssetType;
   typeExtras?: StatemineExtras | OrmlExtras;
 };
@@ -38,7 +41,10 @@ export type OrmlExtras = {
 export type AssetByChains = {
   name: string;
   precision: number;
-  icon: string;
+  icon: {
+    monochrome: string;
+    colored: string;
+  };
   symbol: string;
   isTestToken?: boolean;
   priceId?: string;

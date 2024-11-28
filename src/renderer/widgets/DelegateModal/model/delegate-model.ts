@@ -297,8 +297,9 @@ sample({
     coreTxs: $coreTxs,
     step: $step,
   },
-  filter: ({ walletData, delegateData, step }) =>
-    Boolean(delegateData) && Boolean(walletData.wallet) && Boolean(walletData.chain) && isStep(step, Step.INIT),
+  filter: ({ walletData, delegateData, step }) => {
+    return Boolean(delegateData) && Boolean(walletData.wallet) && Boolean(walletData.chain) && isStep(step, Step.INIT);
+  },
   fn: ({ feeData, balances, walletData, txWrappers, tracks, target, shards, delegateData, coreTxs }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
     const asset = getRelaychainAsset(walletData.chain!.assets)!;

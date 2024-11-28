@@ -3,7 +3,10 @@
     "name": "Polkadot",
     "precision": 10,
     "priceId": "polkadot",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/DOT.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/DOT.svg"
+    },
     "symbol": "DOT",
     "isTestToken": false,
     "chains": [
@@ -170,7 +173,10 @@
     "name": "Kusama",
     "precision": 12,
     "priceId": "kusama",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Kusama_(KSM).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/KSM.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/KSM.svg"
+    },
     "symbol": "KSM",
     "isTestToken": false,
     "chains": [
@@ -366,7 +372,10 @@
   {
     "name": "Westend",
     "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Westend_(WND).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/WND.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/WND.svg"
+    },
     "symbol": "WND",
     "isTestToken": true,
     "chains": [
@@ -410,7 +419,10 @@
   {
     "name": "Siri",
     "precision": 10,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/Default.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/Default.svg"
+    },
     "symbol": "SIRI",
     "isTestToken": true,
     "chains": [
@@ -429,7 +441,10 @@
   {
     "name": "JOE token",
     "precision": 3,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/Default.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/Default.svg"
+    },
     "symbol": "JOE",
     "isTestToken": true,
     "chains": [
@@ -450,7 +465,10 @@
     "name": "Remark",
     "precision": 10,
     "priceId": "rmrk",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/RMRK.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/RMRK.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/RMRK.svg"
+    },
     "symbol": "RMRK",
     "isTestToken": false,
     "chains": [
@@ -520,7 +538,10 @@
   {
     "name": "Chaos",
     "precision": 10,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/CHAOS.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/CHAOS.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/CHAOS.svg"
+    },
     "symbol": "CHAOS",
     "isTestToken": false,
     "chains": [
@@ -539,7 +560,10 @@
   {
     "name": "Chrwna",
     "precision": 10,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/CHRWNA.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/CHRWNA.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/CHRWNA.svg"
+    },
     "symbol": "CHRWNA",
     "isTestToken": false,
     "chains": [
@@ -558,7 +582,10 @@
   {
     "name": "Shibatales",
     "precision": 0,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/Default.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/Default.svg"
+    },
     "symbol": "SHIBATALES",
     "isTestToken": false,
     "chains": [
@@ -577,7 +604,10 @@
   {
     "name": "Bill Coin",
     "precision": 8,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/BILLCOIN.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/BILLCOIN.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/BILLCOIN.svg"
+    },
     "symbol": "BILLCOIN",
     "isTestToken": false,
     "chains": [
@@ -597,7 +627,10 @@
     "name": "USD Tether",
     "precision": 6,
     "priceId": "tether",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/USDT.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/USDT.svg"
+    },
     "symbol": "USDT",
     "isTestToken": false,
     "chains": [
@@ -838,7 +871,10 @@
     "name": "Karura",
     "precision": 12,
     "priceId": "karura",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Karura_(KAR).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/KAR.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/KAR.svg"
+    },
     "symbol": "KAR",
     "isTestToken": false,
     "chains": [
@@ -925,7 +961,10 @@
     "name": "Acala SEED",
     "precision": 12,
     "priceId": "ausd-seed-karura",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Kusama.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/aSEEDk.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/aSEEDk.svg"
+    },
     "symbol": "aSEEDk",
     "isTestToken": false,
     "chains": [
@@ -1044,7 +1083,10 @@
     "name": "Bifrost",
     "precision": 12,
     "priceId": "bifrost-native-coin",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Bifrost_(BNC).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/BNC.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/BNC.svg"
+    },
     "symbol": "BNC",
     "isTestToken": false,
     "chains": [
@@ -1168,6 +1210,19 @@
           "existentialDeposit": "0",
           "transfersEnabled": true
         }
+      },
+      {
+        "chainId": "0x5d3c298622d5634ed019bf61ea4b71655030015bde9beb0d6a24743714462c86",
+        "name": "Pendulum",
+        "assetId": 16,
+        "assetSymbol": "BNC",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x010b",
+          "currencyIdType": "SpacewalkPrimitivesCurrencyId",
+          "existentialDeposit": "10000000000",
+          "transfersEnabled": true
+        }
       }
     ]
   },
@@ -1175,7 +1230,10 @@
     "name": "Liquid KSM",
     "precision": 12,
     "priceId": "liquid-ksm",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/lKSM.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/LKSM.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/LKSM.svg"
+    },
     "symbol": "LKSM",
     "isTestToken": false,
     "chains": [
@@ -1246,7 +1304,10 @@
     "name": "Phala",
     "precision": 12,
     "priceId": "pha",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Phala_(PHA).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/PHA.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/PHA.svg"
+    },
     "symbol": "PHA",
     "isTestToken": false,
     "chains": [
@@ -1388,7 +1449,10 @@
     "name": "Kintsugi",
     "precision": 12,
     "priceId": "kintsugi",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Kintsugi_(KINT).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/KINT.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/KINT.svg"
+    },
     "symbol": "KINT",
     "isTestToken": false,
     "chains": [
@@ -1470,7 +1534,10 @@
     "name": "KINT Bitcoin",
     "precision": 8,
     "priceId": "bitcoin",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/kBTC.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/kBTC.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/kBTC.svg"
+    },
     "symbol": "kBTC",
     "isTestToken": false,
     "chains": [
@@ -1577,7 +1644,10 @@
   {
     "name": "Taiga",
     "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Taiga_(TAI).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/TAI.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/TAI.svg"
+    },
     "symbol": "TAI",
     "isTestToken": false,
     "chains": [
@@ -1599,7 +1669,10 @@
   {
     "name": "vs Kusama",
     "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vsKSM.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/vsKSM.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/vsKSM.svg"
+    },
     "symbol": "vsKSM",
     "isTestToken": false,
     "chains": [
@@ -1647,7 +1720,10 @@
   {
     "name": "tai Kusama",
     "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/taiKSM.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/taiKSM.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/taiKSM.svg"
+    },
     "symbol": "taiKSM",
     "isTestToken": false,
     "chains": [
@@ -1670,7 +1746,10 @@
     "name": "Quartz",
     "precision": 18,
     "priceId": "quartz",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Quartz_(QTZ).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/QTZ.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/QTZ.svg"
+    },
     "symbol": "QTZ",
     "isTestToken": false,
     "chains": [
@@ -1700,7 +1779,10 @@
     "name": "Moonriver",
     "precision": 18,
     "priceId": "moonriver",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Moonriver_(MOVR).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/MOVR.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/MOVR.svg"
+    },
     "symbol": "MOVR",
     "isTestToken": false,
     "chains": [
@@ -1775,7 +1857,10 @@
   {
     "name": "Parallel Heiko",
     "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/HKO.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/HKO.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/HKO.svg"
+    },
     "symbol": "HKO",
     "isTestToken": false,
     "chains": [
@@ -1840,7 +1925,10 @@
     "name": "Crust Shadow",
     "precision": 12,
     "priceId": "crust-storage-market",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Crust_Shadow_(CSM).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/CSM.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/CSM.svg"
+    },
     "symbol": "CSM",
     "isTestToken": false,
     "chains": [
@@ -1885,7 +1973,10 @@
     "name": "Calamari Network",
     "precision": 12,
     "priceId": "calamari-network",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Calamari_(KMA).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/KMA.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/KMA.svg"
+    },
     "symbol": "KMA",
     "isTestToken": false,
     "chains": [
@@ -1930,7 +2021,10 @@
     "name": "Integritee",
     "precision": 12,
     "priceId": "integritee",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Integritee_Parachain_(TEER).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/TEER.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/TEER.svg"
+    },
     "symbol": "TEER",
     "isTestToken": false,
     "chains": [
@@ -1970,7 +2064,10 @@
   {
     "name": "KICO",
     "precision": 14,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/KICO_(KICO).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/KICO.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/KICO.svg"
+    },
     "symbol": "KICO",
     "isTestToken": false,
     "chains": [
@@ -1993,7 +2090,10 @@
     "name": "Metaverse.Network Pioneer",
     "precision": 18,
     "priceId": "metaverse-network-pioneer",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Bit.Country_Pioneer_(NEER).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/NEER.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/NEER.svg"
+    },
     "symbol": "NEER",
     "isTestToken": false,
     "chains": [
@@ -2027,7 +2127,10 @@
     "name": "Basilisk",
     "precision": 12,
     "priceId": "basilisk",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Basilisk_(BSX).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/BSX.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/BSX.svg"
+    },
     "symbol": "BSX",
     "isTestToken": false,
     "chains": [
@@ -2068,7 +2171,10 @@
     "name": "Altair",
     "precision": 18,
     "priceId": "altair",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Altair_(AIR).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/AIR.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/AIR.svg"
+    },
     "symbol": "AIR",
     "isTestToken": false,
     "chains": [
@@ -2098,7 +2204,10 @@
     "name": "Genshiro",
     "precision": 9,
     "priceId": "genshiro",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Genshiro_(GENS).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/GENS.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/GENS.svg"
+    },
     "symbol": "GENS",
     "isTestToken": false,
     "chains": [
@@ -2131,7 +2240,10 @@
     "name": "Equilibrium USD",
     "precision": 9,
     "priceId": "tether",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/EQD.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/EQD.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/EQD.svg"
+    },
     "symbol": "EQD",
     "isTestToken": false,
     "chains": [
@@ -2176,7 +2288,10 @@
     "name": "Darwinia Crab",
     "precision": 18,
     "priceId": "darwinia-crab-network",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Crab_(CRAB).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/CRAB.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/CRAB.svg"
+    },
     "symbol": "CRAB",
     "isTestToken": false,
     "chains": [
@@ -2210,7 +2325,10 @@
     "name": "Litentry",
     "precision": 12,
     "priceId": "litentry",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Litentry_(LIT).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/LIT.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/LIT.svg"
+    },
     "symbol": "xcLIT",
     "isTestToken": false,
     "chains": [
@@ -2231,7 +2349,10 @@
     "name": "Shiden",
     "precision": 18,
     "priceId": "shiden",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Shiden_(SDN).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/SDN.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/SDN.svg"
+    },
     "symbol": "SDN",
     "isTestToken": false,
     "chains": [
@@ -2270,7 +2391,10 @@
     "name": "Robonomics",
     "precision": 9,
     "priceId": "robonomics-network",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Robonomics_(XRT).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/XRT.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/XRT.svg"
+    },
     "symbol": "XRT",
     "isTestToken": false,
     "chains": [
@@ -2311,7 +2435,10 @@
     "name": "v Kusama",
     "precision": 12,
     "priceId": "voucher-ksm",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vKSM.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/vKSM.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/vKSM.svg"
+    },
     "symbol": "vKSM",
     "isTestToken": false,
     "chains": [
@@ -2368,7 +2495,10 @@
   {
     "name": "vBNC",
     "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vBNC.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/vBNC.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/vBNC.svg"
+    },
     "symbol": "vBNC",
     "isTestToken": false,
     "chains": [
@@ -2401,7 +2531,10 @@
   {
     "name": "vMOVR",
     "precision": 18,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vMOVR.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/vMOVR.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/vMOVR.svg"
+    },
     "symbol": "vMOVR",
     "isTestToken": false,
     "chains": [
@@ -2435,7 +2568,10 @@
     "name": "Mangata X",
     "precision": 18,
     "priceId": "mangata-x",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Mangata_X_(MGX).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/MGX.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/MGX.svg"
+    },
     "symbol": "MGX",
     "isTestToken": false,
     "chains": [
@@ -2469,7 +2605,10 @@
     "name": "Turing",
     "precision": 10,
     "priceId": "turing-network",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Turing_(TUR).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/TUR.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/TUR.svg"
+    },
     "symbol": "TUR",
     "isTestToken": false,
     "chains": [
@@ -2520,7 +2659,10 @@
   {
     "name": "Test token",
     "precision": 18,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/Default.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/Default.svg"
+    },
     "symbol": "DEV",
     "isTestToken": true,
     "chains": [
@@ -2536,7 +2678,10 @@
   {
     "name": "Test token",
     "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Default.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/Default.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/Default.svg"
+    },
     "symbol": "UNIT",
     "isTestToken": true,
     "chains": [
@@ -2564,7 +2709,10 @@
     "name": "Zenlink Network",
     "precision": 18,
     "priceId": "zenlink-network-token",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Zenlink_(ZLK).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/ZLK.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/ZLK.svg"
+    },
     "symbol": "ZLK",
     "isTestToken": false,
     "chains": [
@@ -2610,7 +2758,10 @@
   {
     "name": "Kitsugi KSM",
     "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Kusama_(KSM).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/qKSM.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/qKSM.svg"
+    },
     "symbol": "qKSM",
     "isTestToken": false,
     "chains": [
@@ -2632,7 +2783,10 @@
   {
     "name": "USD Tether",
     "precision": 6,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/qUSDT.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/qUSDT.svg"
+    },
     "symbol": "qUSDT",
     "isTestToken": false,
     "chains": [
@@ -2667,7 +2821,10 @@
   {
     "name": "s Kusama",
     "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/sKSM.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/sKSM.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/sKSM.svg"
+    },
     "symbol": "sKSM",
     "isTestToken": false,
     "chains": [
@@ -2700,7 +2857,10 @@
   {
     "name": "Tinkernet",
     "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Tinkernet_(TNKR).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/TNKR.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/TNKR.svg"
+    },
     "symbol": "TNKR",
     "isTestToken": false,
     "chains": [
@@ -2730,7 +2890,10 @@
     "name": "Darwinia Crab",
     "precision": 18,
     "priceId": "darwinia-network-native-token",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Crab_(CRAB).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/CRAB.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/CRAB.svg"
+    },
     "symbol": "CRAB",
     "isTestToken": false,
     "chains": [
@@ -2750,7 +2913,10 @@
   {
     "name": "Bit.Country Pioneer",
     "precision": 18,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/BIT.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/BIT.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/BIT.svg"
+    },
     "symbol": "BIT",
     "isTestToken": false,
     "chains": [
@@ -2771,7 +2937,10 @@
     "name": "Picasso",
     "precision": 12,
     "priceId": "picasso",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Picasso_(PICA).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/PICA.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/PICA.svg"
+    },
     "symbol": "PICA",
     "isTestToken": false,
     "chains": [
@@ -2792,7 +2961,10 @@
     "name": "KILT Spiritnet",
     "precision": 15,
     "priceId": "kilt-protocol",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Kilt_(KILT).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/KILT.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/KILT.svg"
+    },
     "symbol": "KILT",
     "isTestToken": false,
     "chains": [
@@ -2822,7 +2994,10 @@
     "name": "Acala",
     "precision": 12,
     "priceId": "acala",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Acala_(ACA).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/ACA.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/ACA.svg"
+    },
     "symbol": "ACA",
     "isTestToken": false,
     "chains": [
@@ -2872,7 +3047,10 @@
     "name": "Liquid DOT",
     "precision": 10,
     "priceId": "liquid-staking-dot",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/lDOT.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/LDOT.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/LDOT.svg"
+    },
     "symbol": "LDOT",
     "isTestToken": false,
     "chains": [
@@ -2930,7 +3108,10 @@
     "name": "Acala SEED",
     "precision": 12,
     "priceId": "ausd-seed-acala",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/aSEED-Polkadot.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/aSEEDp.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/aSEEDp.svg"
+    },
     "symbol": "aSEEDp",
     "isTestToken": false,
     "chains": [
@@ -2986,7 +3167,10 @@
     "name": "Moonbeam",
     "precision": 18,
     "priceId": "moonbeam",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Moonbeam_(GLMR).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/GLMR.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/GLMR.svg"
+    },
     "symbol": "GLMR",
     "isTestToken": false,
     "chains": [
@@ -3076,7 +3260,10 @@
   {
     "name": "Parallel Finance",
     "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/PARA.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/PARA.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/PARA.svg"
+    },
     "symbol": "PARA",
     "isTestToken": false,
     "chains": [
@@ -3116,7 +3303,10 @@
   {
     "name": "TAP",
     "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Tapio_(TAP).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/TAP.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/TAP.svg"
+    },
     "symbol": "TAP",
     "isTestToken": false,
     "chains": [
@@ -3138,7 +3328,10 @@
   {
     "name": "tDOT",
     "precision": 10,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/tDOT.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/tDOT.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/tDOT.svg"
+    },
     "symbol": "tDOT",
     "isTestToken": false,
     "chains": [
@@ -3161,7 +3354,10 @@
     "name": "Interlay",
     "precision": 10,
     "priceId": "interlay",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Interlay_(INTR).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/INTR.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/INTR.svg"
+    },
     "symbol": "INTR",
     "isTestToken": false,
     "chains": [
@@ -3243,7 +3439,10 @@
     "name": "Astar",
     "precision": 18,
     "priceId": "astar",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Astar_(ASTR).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/ASTR.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/ASTR.svg"
+    },
     "symbol": "ASTR",
     "isTestToken": false,
     "chains": [
@@ -3314,6 +3513,19 @@
           "existentialDeposit": "10000000000000000",
           "transfersEnabled": true
         }
+      },
+      {
+        "chainId": "0x5d3c298622d5634ed019bf61ea4b71655030015bde9beb0d6a24743714462c86",
+        "name": "Pendulum",
+        "assetId": 14,
+        "assetSymbol": "ASTR",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x0109",
+          "currencyIdType": "SpacewalkPrimitivesCurrencyId",
+          "existentialDeposit": "1000000",
+          "transfersEnabled": true
+        }
       }
     ]
   },
@@ -3321,7 +3533,10 @@
     "name": "Equilibrium",
     "precision": 9,
     "priceId": "equilibrium-token",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Equilibrium_(EQ).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/EQ.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/EQ.svg"
+    },
     "symbol": "EQ",
     "isTestToken": false,
     "chains": [
@@ -3355,7 +3570,10 @@
     "name": "Interlay Bitcoin",
     "precision": 8,
     "priceId": "bitcoin",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/iBTC.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/iBTC.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/iBTC.svg"
+    },
     "symbol": "iBTC",
     "isTestToken": false,
     "chains": [
@@ -3450,7 +3668,10 @@
     "name": "DAI",
     "precision": 18,
     "priceId": "dai",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/DAI.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/DAI.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/DAI.svg"
+    },
     "symbol": "DAI",
     "isTestToken": false,
     "chains": [
@@ -3498,7 +3719,10 @@
   {
     "name": "PINK",
     "precision": 10,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Pink.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/PINK.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/PINK.svg"
+    },
     "symbol": "PINK",
     "isTestToken": false,
     "chains": [
@@ -3557,7 +3781,10 @@
     "name": "Centrifuge",
     "precision": 18,
     "priceId": "centrifuge",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Centrifuge_(CFG).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/CFG.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/CFG.svg"
+    },
     "symbol": "CFG",
     "isTestToken": false,
     "chains": [
@@ -3598,7 +3825,10 @@
     "name": "HydraDX",
     "precision": 12,
     "priceId": "hydradx",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/HydraDX_(HDX).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/HDX.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/HDX.svg"
+    },
     "symbol": "HDX",
     "isTestToken": false,
     "chains": [
@@ -3639,7 +3869,10 @@
     "name": "Nodle",
     "precision": 11,
     "priceId": "nodle-network",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Nodle_(NODL).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/NODL.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/NODL.svg"
+    },
     "symbol": "NODL",
     "isTestToken": false,
     "chains": [
@@ -3673,7 +3906,10 @@
     "name": "Darwinia",
     "precision": 18,
     "priceId": "darwinia-network-native-token",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Darwinia_(RING).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/RING.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/RING.svg"
+    },
     "symbol": "xcRING",
     "isTestToken": false,
     "chains": [
@@ -3693,7 +3929,10 @@
   {
     "name": "OriginTrail",
     "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/OriginTrail_(OTP).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/OTP.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/OTP.svg"
+    },
     "symbol": "xcOTP",
     "isTestToken": false,
     "chains": [
@@ -3714,7 +3953,10 @@
     "name": "vDOT",
     "precision": 10,
     "priceId": "voucher-dot",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vDOT.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/vDOT.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/vDOT.svg"
+    },
     "symbol": "vDOT",
     "isTestToken": false,
     "chains": [
@@ -3765,13 +4007,29 @@
           "existentialDeposit": "1000000",
           "transfersEnabled": true
         }
+      },
+      {
+        "chainId": "0x5d3c298622d5634ed019bf61ea4b71655030015bde9beb0d6a24743714462c86",
+        "name": "Pendulum",
+        "assetId": 15,
+        "assetSymbol": "vDOT",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x010a",
+          "currencyIdType": "SpacewalkPrimitivesCurrencyId",
+          "existentialDeposit": "1000000",
+          "transfersEnabled": true
+        }
       }
     ]
   },
   {
     "name": "vFIL",
     "precision": 18,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vFIL.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/vFIL.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/vFIL.svg"
+    },
     "symbol": "vFIL",
     "isTestToken": false,
     "chains": [
@@ -3805,7 +4063,10 @@
     "name": "vGLMR",
     "precision": 18,
     "priceId": "voucher-glmr",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vGLMR.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/vGLMR.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/vGLMR.svg"
+    },
     "symbol": "vGLMR",
     "isTestToken": false,
     "chains": [
@@ -3839,7 +4100,10 @@
     "name": "Manta token",
     "precision": 18,
     "priceId": "manta-network",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Manta_(MANTA).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/MANTA.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/MANTA.svg"
+    },
     "symbol": "MANTA",
     "isTestToken": false,
     "chains": [
@@ -3873,7 +4137,10 @@
     "name": "USD Coin",
     "precision": 6,
     "priceId": "usd-coin",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/USDC.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/USDC.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/USDC.svg"
+    },
     "symbol": "USDC",
     "isTestToken": false,
     "chains": [
@@ -3944,7 +4211,10 @@
     "name": "UNIQUE",
     "precision": 18,
     "priceId": "unique-network",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Unique_(UNQ).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/UNQ.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/UNQ.svg"
+    },
     "symbol": "UNQ",
     "isTestToken": false,
     "chains": [
@@ -3977,7 +4247,10 @@
   {
     "name": "Clover Finance",
     "precision": 18,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/CLV_(CLV).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/CLV.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/CLV.svg"
+    },
     "symbol": "CLV",
     "isTestToken": false,
     "chains": [
@@ -3998,7 +4271,10 @@
     "name": "DED",
     "precision": 10,
     "priceId": "dot-is-ded",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/DED.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/DED.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/DED.svg"
+    },
     "symbol": "DED",
     "isTestToken": false,
     "chains": [
@@ -4030,7 +4306,10 @@
   {
     "name": "DOTA",
     "precision": 4,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/DOTA.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/DOTA.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/DOTA.svg"
+    },
     "symbol": "DOTA",
     "isTestToken": false,
     "chains": [
@@ -4062,7 +4341,10 @@
   {
     "name": "STINK",
     "precision": 10,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/STINK.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/STINK.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/STINK.svg"
+    },
     "symbol": "STINK",
     "isTestToken": false,
     "chains": [
@@ -4094,7 +4376,10 @@
   {
     "name": "GABE",
     "precision": 20,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/GABE.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/GABE.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/GABE.svg"
+    },
     "symbol": "GABE",
     "isTestToken": false,
     "chains": [
@@ -4126,7 +4411,10 @@
   {
     "name": "WUD",
     "precision": 10,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/WUD.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/WUD.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/WUD.svg"
+    },
     "symbol": "WUD",
     "isTestToken": false,
     "chains": [
@@ -4158,7 +4446,10 @@
   {
     "name": "WIFD",
     "precision": 10,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/WIFD.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/WIFD.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/WIFD.svg"
+    },
     "symbol": "WIFD",
     "isTestToken": false,
     "chains": [
@@ -4190,7 +4481,10 @@
   {
     "name": "BORK",
     "precision": 10,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/BORK.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/BORK.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/BORK.svg"
+    },
     "symbol": "BORK",
     "isTestToken": false,
     "chains": [
@@ -4222,7 +4516,10 @@
   {
     "name": "BUNS",
     "precision": 10,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/BUNS.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/BUNS.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/BUNS.svg"
+    },
     "symbol": "BUNS",
     "isTestToken": false,
     "chains": [
@@ -4254,7 +4551,10 @@
   {
     "name": "KOL",
     "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/KOL.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/KOL.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/KOL.svg"
+    },
     "symbol": "KOL",
     "isTestToken": false,
     "chains": [
@@ -4287,7 +4587,10 @@
     "name": "Zeitgeist",
     "precision": 10,
     "priceId": "zeitgeist",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Zeitgeist_(ZTG).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/ZTG.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/ZTG.svg"
+    },
     "symbol": "ZTG",
     "isTestToken": false,
     "chains": [
@@ -4317,7 +4620,10 @@
     "name": "Subsocial",
     "precision": 10,
     "priceId": "subsocial",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Subsocial_(SUB).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/SUB.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/SUB.svg"
+    },
     "symbol": "SUB",
     "isTestToken": false,
     "chains": [
@@ -4346,7 +4652,10 @@
   {
     "name": "LRNA",
     "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Lerna_(LRNA).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/LRNA.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/LRNA.svg"
+    },
     "symbol": "LRNA",
     "isTestToken": false,
     "chains": [
@@ -4369,7 +4678,10 @@
     "name": "WETH-Acala",
     "precision": 18,
     "priceId": "ethereum-wormhole",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/WETH-Acala.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/WETH-Acala.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/WETH-Acala.svg"
+    },
     "symbol": "WETH-Acala",
     "isTestToken": false,
     "chains": [
@@ -4405,7 +4717,10 @@
     "name": "WBTC-Acala",
     "precision": 8,
     "priceId": "wrapped-bitcoin",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/WBTC-Acala.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/WBTC-Acala.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/WBTC-Acala.svg"
+    },
     "symbol": "WBTC-Acala",
     "isTestToken": false,
     "chains": [
@@ -4441,7 +4756,10 @@
     "name": "Crust",
     "precision": 12,
     "priceId": "crust-network",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Crust_(CRU).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/CRU.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/CRU.svg"
+    },
     "symbol": "CRU",
     "isTestToken": false,
     "chains": [
@@ -4464,7 +4782,10 @@
     "name": "MYTH",
     "precision": 18,
     "priceId": "mythos",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/MYTH.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/MYTH.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/MYTH.svg"
+    },
     "symbol": "MYTH",
     "isTestToken": false,
     "chains": [
@@ -4486,7 +4807,10 @@
   {
     "name": "vASTR",
     "precision": 18,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vASTR.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/vASTR.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/vASTR.svg"
+    },
     "symbol": "vASTR",
     "isTestToken": false,
     "chains": [
@@ -4519,9 +4843,38 @@
     ]
   },
   {
+    "name": "Ajuna",
+    "precision": 12,
+    "priceId": "ajuna-network-2",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/AJUN.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/AJUN.svg"
+    },
+    "symbol": "AJUN",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
+        "name": "Hydration",
+        "assetId": 44,
+        "assetSymbol": "AJUN",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x20000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "100786131828",
+          "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
     "name": "Interlay DOT",
     "precision": 10,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/qDOT.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/qDOT.svg"
+    },
     "symbol": "qDOT",
     "isTestToken": false,
     "chains": [
@@ -4544,7 +4897,10 @@
     "name": "Aleph Zero",
     "precision": 12,
     "priceId": "aleph-zero",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Aleph_Zero_(AZERO).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/AZERO.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/AZERO.svg"
+    },
     "symbol": "AZERO",
     "isTestToken": false,
     "chains": [
@@ -4560,7 +4916,10 @@
   {
     "name": "vsDOT",
     "precision": 10,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vsDOT.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/vsDOT.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/vsDOT.svg"
+    },
     "symbol": "vsDOT",
     "isTestToken": false,
     "chains": [
@@ -4582,7 +4941,10 @@
   {
     "name": "vMANTA",
     "precision": 18,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/vMANTA.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/vMANTA.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/vMANTA.svg"
+    },
     "symbol": "vMANTA",
     "isTestToken": false,
     "chains": [
@@ -4605,7 +4967,10 @@
     "name": "Litentry",
     "precision": 18,
     "priceId": "litentry",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Litentry_(LIT).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/LIT.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/LIT.svg"
+    },
     "symbol": "LIT",
     "isTestToken": false,
     "chains": [
@@ -4622,7 +4987,10 @@
     "name": "Etherium",
     "precision": 18,
     "priceId": "ethereum",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Ethereum_(ETH).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/ETH.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/ETH.svg"
+    },
     "symbol": "ETH",
     "isTestToken": false,
     "chains": [
@@ -4644,7 +5012,10 @@
   {
     "name": "Imbue",
     "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Imbue_(IMBU).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/IMBU.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/IMBU.svg"
+    },
     "symbol": "IMBU",
     "isTestToken": false,
     "chains": [
@@ -4660,7 +5031,10 @@
   {
     "name": "Rococo Testnet",
     "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Rococo_(ROC).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/ROC.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/ROC.svg"
+    },
     "symbol": "ROC",
     "isTestToken": true,
     "chains": [
@@ -4676,7 +5050,10 @@
   {
     "name": "Amplitude",
     "precision": 12,
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Amplitude_(AMPE).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/AMPE.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/AMPE.svg"
+    },
     "symbol": "AMPE",
     "isTestToken": false,
     "chains": [
@@ -4693,7 +5070,10 @@
     "name": "Pendulum token",
     "precision": 12,
     "priceId": "pendulum-chain",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Pendulum_(PEN).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/PEN.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/PEN.svg"
+    },
     "symbol": "PEN",
     "isTestToken": false,
     "chains": [
@@ -4707,10 +5087,39 @@
     ]
   },
   {
+    "name": "Should be included in scripts/data/assetsNameMap",
+    "precision": 6,
+    "priceId": "axlusdc",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/USDCaxl.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/USDCaxl.svg"
+    },
+    "symbol": "USDC.axl",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0x5d3c298622d5634ed019bf61ea4b71655030015bde9beb0d6a24743714462c86",
+        "name": "Pendulum",
+        "assetId": 17,
+        "assetSymbol": "USDC.axl",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x010c",
+          "currencyIdType": "SpacewalkPrimitivesCurrencyId",
+          "existentialDeposit": "1000",
+          "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
     "name": "TAO",
     "precision": 9,
     "priceId": "bittensor",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Bittensor_(TAO).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/TAO_bittensor.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/TAO_bittensor.svg"
+    },
     "symbol": "TAO",
     "isTestToken": false,
     "chains": [
@@ -4727,7 +5136,10 @@
     "name": "Vara",
     "precision": 12,
     "priceId": "vara-network",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Vara.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/VARA.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/VARA.svg"
+    },
     "symbol": "VARA",
     "isTestToken": false,
     "chains": [
@@ -4744,7 +5156,10 @@
     "name": "Polimec token",
     "precision": 10,
     "priceId": "polimec",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/PLMC.svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/PLMC.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/PLMC.svg"
+    },
     "symbol": "PLMC",
     "isTestToken": false,
     "chains": [
@@ -4761,7 +5176,10 @@
     "name": "AVAIL",
     "precision": 18,
     "priceId": "avail",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Avail_(AVAIL).svg",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/AVAIL.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/AVAIL.svg"
+    },
     "symbol": "AVAIL",
     "isTestToken": false,
     "chains": [

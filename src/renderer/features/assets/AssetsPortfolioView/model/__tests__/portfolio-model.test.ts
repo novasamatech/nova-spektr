@@ -10,7 +10,11 @@ const mockTokens: AssetByChains[] = [
     name: 'Polkadot',
     precision: 10,
     priceId: 'polkadot',
-    icon: 'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg',
+    icon: {
+      monochrome:
+        'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/DOT.svg',
+      colored: 'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/DOT.svg',
+    },
     symbol: 'DOT',
     chains: [
       {
@@ -37,7 +41,11 @@ const mockTokens: AssetByChains[] = [
     name: 'Kusama',
     precision: 12,
     priceId: 'kusama',
-    icon: 'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Kusama_(KSM).svg',
+    icon: {
+      monochrome:
+        'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/DOT.svg',
+      colored: 'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/DOT.svg',
+    },
     symbol: 'KSM',
     chains: [
       {

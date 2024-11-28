@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { SearchInput } from '@/shared/ui-kit';
+import { Box, SearchInput } from '@/shared/ui-kit';
 import { filterModel } from '../model/contact-filter';
 
 export const ContactFilter = () => {
@@ -15,10 +15,12 @@ export const ContactFilter = () => {
   }, []);
 
   return (
-    <SearchInput
-      value={query}
-      placeholder={t('addressBook.searchPlaceholder')}
-      onChange={filterModel.events.queryChanged}
-    />
+    <Box width="280px">
+      <SearchInput
+        value={query}
+        placeholder={t('addressBook.searchPlaceholder')}
+        onChange={filterModel.events.queryChanged}
+      />
+    </Box>
   );
 };

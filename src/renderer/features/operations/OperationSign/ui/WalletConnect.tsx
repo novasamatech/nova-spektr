@@ -14,6 +14,7 @@ import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { DEFAULT_POLKADOT_METHODS, walletConnectModel, walletConnectUtils } from '@/entities/walletConnect';
+import { WalletConnectQrCode } from '@/features/wallet-connect-pairing';
 import { operationSignUtils } from '../lib/operation-sign-utils';
 import { type InnerSigningProps } from '../lib/types';
 import { operationSignModel } from '../model/operation-sign-model';
@@ -27,11 +28,12 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
 
   const wallets = useUnit(walletModel.$wallets);
   const session = useUnit(walletConnectModel.$session);
-  const client = useUnit(walletConnectModel.$client);
+  const provider = useUnit(walletConnectModel.$provider);
   const reconnectStep = useUnit(signWcModel.$reconnectStep);
   const isSigningRejected = useUnit(signWcModel.$isSigningRejected);
   const signatures = useUnit(signWcModel.$signatures);
   const isStatusShown = useUnit(signWcModel.$isStatusShown);
+  const uri = useUnit(walletConnectModel.$uri);
 
   const chains = useUnit(networkModel.$chains);
 
@@ -45,9 +47,9 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
   useGate(operationSignModel.SignerGate, account);
 
   useEffect(() => {
-    if (txPayloads || !client) return;
+    if (txPayloads || !provider) return;
 
-    const sessions = client.session.getAll();
+    const sessions = provider.client.session.getAll();
     const storedAccount = walletUtils.getAccountsBy(wallets, (a) => a.walletId === account.walletId)[0];
     const storedSession = sessions.find((s) => s.topic === storedAccount?.signingExtras?.sessionTopic);
 
@@ -114,11 +116,11 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
   };
 
   const signTransaction = async () => {
-    if (!api || !client || !session || !unsignedTxs) return;
+    if (!api || !provider || !session || !unsignedTxs) return;
 
     signWcModel.events.signingStarted(
       unsignedTxs.map(({ metadataRpc: _, ...unsigned }) => ({
-        client,
+        provider,
         payload: {
           // eslint-disable-next-line i18next/no-literal-string
           chainId: walletConnectUtils.getWalletConnectChainId(transaction.chainId),
@@ -194,7 +196,8 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
       return {
         title: t('operation.walletConnect.failedTitle'),
         description: t('operation.walletConnect.failedDescription'),
-        content: <Animation variant="error" />,
+        content: <WalletConnectQrCode uri={uri} type="walletconnect" />,
+        className: 'w-[440px]',
         onClose: () => {
           signWcModel.events.reconnectAborted();
           onGoBack();

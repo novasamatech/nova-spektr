@@ -65,8 +65,8 @@ sample({
 
     return {
       wrappedTxs,
-      multisigTxs: multisigTxs.length === 0 ? null : multisigTxs,
       coreTxs,
+      multisigTxs: multisigTxs.length === 0 ? null : multisigTxs,
       unstakeStore: formData,
     };
   },

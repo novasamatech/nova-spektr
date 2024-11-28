@@ -22,7 +22,6 @@ import { ExtrinsicResult, SubmitStep } from '../lib/types';
 type Input = {
   chain: Chain;
   account: Account;
-  signatory?: Account;
   coreTxs: Transaction[];
   wrappedTxs: Transaction[];
   multisigTxs: Transaction[];

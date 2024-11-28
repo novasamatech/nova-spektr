@@ -31,8 +31,8 @@ export const TransferRules = {
       name: 'noSignatorySelected',
       errorText: 'transfer.noSignatoryError',
       source,
-      validator: (signatory: Account, _: any, isMultisig: boolean) => {
-        if (!isMultisig) return true;
+      validator: (signatory: Account | null, _: any, isMultisig: boolean) => {
+        if (!signatory || !isMultisig) return true;
 
         return Object.keys(signatory).length > 0;
       },

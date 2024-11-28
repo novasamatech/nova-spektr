@@ -217,18 +217,16 @@ sample({
       return [];
     }
 
-    const confirms = accounts.map<RemoveVoteConfirm>((account, index) => ({
+    return accounts.map<RemoveVoteConfirm>((account, index) => ({
       id: index,
       api,
       chain,
       asset,
-      votes: votes.filter((vote) => vote.voter === toAddress(account.accountId, { prefix: chain.addressPrefix })),
       account,
-      signatory: signatory ?? undefined,
+      signatory,
+      votes: votes.filter((vote) => vote.voter === toAddress(account.accountId, { prefix: chain.addressPrefix })),
       wrappedTransactions: wrappedTxs[index],
     }));
-
-    return confirms;
   },
   target: removeVoteConfirmModel.events.fillConfirm,
 });
@@ -246,7 +244,7 @@ sample({
         account: accounts.proxy || accounts.initiator,
         chain: meta.chain,
         transaction: meta.wrappedTransactions.wrappedTx,
-        signatory: accounts.signer || undefined,
+        signatory: accounts.signer,
       })),
     };
   },

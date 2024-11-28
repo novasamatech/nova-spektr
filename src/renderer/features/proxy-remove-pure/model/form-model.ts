@@ -10,7 +10,6 @@ import {
   type Account,
   type Address,
   type Chain,
-  type PartialBy,
   type ProxiedAccount,
   type ProxyType,
   type Transaction,
@@ -21,6 +20,7 @@ import {
   TEST_ACCOUNTS,
   getProxyTypes,
   isStringsMatchQuery,
+  nonNullable,
   toAddress,
   transferableAmount,
   withdrawableAmountBN,
@@ -39,10 +39,9 @@ type ProxyAccounts = {
 };
 
 type FormParams = {
-  signatory: Account;
+  signatory: Account | null;
 };
 
-type FormSubmitEvent = PartialBy<FormParams, 'signatory'>;
 type Input = {
   chain?: Chain;
   account?: Account;
@@ -56,7 +55,7 @@ type Input = {
 const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
 
 const formInitiated = createEvent<Input>();
-const formSubmitted = createEvent<FormSubmitEvent>();
+const formSubmitted = createEvent<FormParams>();
 const proxyQueryChanged = createEvent<string>();
 
 const proxyDepositChanged = createEvent<string>();
@@ -87,7 +86,7 @@ const $signatories = $formStore.map((store) => (store ? store.signatories : null
 const $proxyForm = createForm<FormParams>({
   fields: {
     signatory: {
-      init: {} as Account,
+      init: null,
       rules: [
         {
           name: 'notEnoughTokens',
@@ -98,12 +97,12 @@ const $proxyForm = createForm<FormParams>({
             isMultisig: $isMultisig,
             chain: $chain,
           }),
-          validator: (value, _f, { isMultisig, balances, chain, ...params }) => {
-            if (!isMultisig) return true;
+          validator: (signatory, _f, { isMultisig, balances, chain, ...params }) => {
+            if (!signatory || !isMultisig) return true;
 
             const signatoryBalance = balanceUtils.getBalance(
               balances,
-              value.accountId,
+              signatory.accountId,
               chain.chainId,
               chain.assets[0].assetId.toString(),
             );
@@ -293,12 +292,10 @@ sample({
     isMultisig: $isMultisig,
   },
   filter: ({ isMultisig }) => Boolean(!isMultisig),
-  fn: (formStore) => {
-    return {
-      ...formStore,
-      signatory: undefined,
-    };
-  },
+  fn: (formStore) => ({
+    ...formStore,
+    signatory: null,
+  }),
   target: formSubmitted,
 });
 
@@ -338,14 +335,13 @@ sample({
     chain: $chain,
     account: $account,
   },
-  filter: ({ chain, account }) => Boolean(chain) && Boolean(account),
+  filter: ({ chain, account }, formData) => {
+    return nonNullable(chain) && nonNullable(account) && nonNullable(formData.signatory);
+  },
   fn: (_, formData) => {
-    const signatory = Object.keys(formData.signatory).length > 0 ? formData.signatory : undefined;
+    const signatory = Object.keys(formData.signatory!).length > 0 ? formData.signatory : null;
 
-    return {
-      ...formData,
-      signatory,
-    };
+    return { ...formData, signatory };
   },
   target: formSubmitted,
 });

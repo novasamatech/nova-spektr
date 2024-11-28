@@ -285,7 +285,7 @@ sample({
 
 sample({
   clock: formModel.output.formSubmitted,
-  filter: ({ signatory }) => Boolean(signatory),
+  filter: ({ signatory }) => nonNullable(signatory),
   fn: ({ signatory }) => [signatory!],
   target: $selectedSignatories,
 });

@@ -1,12 +1,14 @@
 import { useUnit } from 'effector-react';
+import { memo } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
-import { FootnoteText, IconButton, MenuPopover, Select, Switch } from '@/shared/ui';
+import { FootnoteText, IconButton, Select, Switch } from '@/shared/ui';
+import { Box, Popover } from '@/shared/ui-kit';
 import { AssetsListView } from '@/entities/asset';
 import { assetsSettingsModel } from '../model/assets-settings-modal';
 
-export const AssetsSettings = () => {
+export const AssetsSettings = memo(() => {
   const { t } = useI18n();
 
   const assetsView = useUnit(assetsSettingsModel.$assetsView);
@@ -26,14 +28,17 @@ export const AssetsSettings = () => {
   ];
 
   return (
-    <MenuPopover
-      className="w-[182px] px-4"
-      position="top-full right-0"
-      buttonClassName="rounded-full"
-      offsetPx={0}
-      testId={TEST_IDS.ASSETS.SETTINGS_WIDGET}
-      content={
-        <>
+    <Popover testId={TEST_IDS.ASSETS.SETTINGS_WIDGET} align="end">
+      <Popover.Trigger>
+        <div className="relative">
+          <IconButton name="settingsLite" className="p-1.5" />
+          {hideZeroBalances && (
+            <span className="absolute right-0 top-0 h-1.5 w-1.5 rounded-full bg-icon-accent duration-100 animate-in fade-in" />
+          )}
+        </div>
+      </Popover.Trigger>
+      <Popover.Content>
+        <Box width="182px" padding={4}>
           <Switch
             checked={hideZeroBalances}
             labelPosition="right"
@@ -50,13 +55,8 @@ export const AssetsSettings = () => {
             options={options}
             onChange={({ value }) => assetsSettingsModel.events.assetsViewChanged(value)}
           />
-        </>
-      }
-    >
-      <div className="relative">
-        <IconButton name="settingsLite" className="p-1.5" />
-        {hideZeroBalances && <span className="absolute right-0 top-0 h-1.5 w-1.5 rounded-full bg-icon-accent" />}
-      </div>
-    </MenuPopover>
+        </Box>
+      </Popover.Content>
+    </Popover>
   );
-};
+});

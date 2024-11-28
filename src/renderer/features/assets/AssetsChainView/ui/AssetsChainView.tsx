@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { chainsService } from '@/shared/api/network';
 import { type Account, type Chain } from '@/shared/core';
+import { useDeferredList } from '@/shared/lib/hooks';
 import { isStringsMatchQuery, nullable } from '@/shared/lib/utils';
 import { AssetsListView, EmptyAssetsState } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
@@ -29,6 +30,8 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
   const chains = useUnit(networkModel.$chains);
 
   const [sortedChains, setSortedChains] = useState<Chain[]>([]);
+
+  const { list } = useDeferredList({ list: sortedChains });
 
   useEffect(() => {
     if (!activeWallet || assetsView !== AssetsListView.CHAIN_CENTRIC || !activeShards.length) return;
@@ -75,8 +78,8 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
 
   return (
     <div className="flex h-full w-full flex-col gap-y-4 overflow-y-scroll">
-      <ul className="flex w-full flex-col items-center gap-y-4 py-4">
-        {sortedChains.map((chain) => (
+      <ul className="flex min-h-full w-full flex-col items-center gap-y-4 py-4">
+        {list.map((chain) => (
           <NetworkAssets
             key={chain.chainId}
             searchSymbolOnly={searchSymbolOnly}

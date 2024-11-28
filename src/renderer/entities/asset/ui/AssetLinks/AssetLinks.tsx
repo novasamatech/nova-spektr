@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 
 import { type ChainId } from '@/shared/core';
@@ -11,7 +12,7 @@ type Props = {
   chainId: ChainId;
 };
 
-export const AssetLinks = ({ assetId, chainId }: Props) => {
+export const AssetLinks = memo(({ assetId, chainId }: Props) => {
   const activeWallet = useUnit(walletModel.$activeWallet);
 
   return (
@@ -34,4 +35,4 @@ export const AssetLinks = ({ assetId, chainId }: Props) => {
       </CheckPermission>
     </div>
   );
-};
+});

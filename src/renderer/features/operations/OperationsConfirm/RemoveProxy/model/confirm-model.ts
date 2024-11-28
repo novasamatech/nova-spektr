@@ -18,7 +18,7 @@ import { walletModel, walletUtils } from '@/entities/wallet';
 
 type Input = {
   id?: number;
-  signatory?: Account;
+  signatory: Account | null;
   transaction: Transaction;
   delegate: Address;
   proxyType: ProxyType;

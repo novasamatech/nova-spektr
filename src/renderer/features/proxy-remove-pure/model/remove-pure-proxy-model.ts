@@ -298,7 +298,7 @@ sample({
 
 sample({
   clock: formModel.output.formSubmitted,
-  filter: ({ signatory }) => Boolean(signatory),
+  filter: ({ signatory }) => nonNullable(signatory),
   fn: ({ signatory }) => [signatory!],
   target: $selectedSignatories,
 });
@@ -355,7 +355,13 @@ sample({
 
 sample({
   clock: formModel.output.formSubmitted,
-  source: { wrappedTx: $wrappedTx, coreTx: $coreTx, chain: $chain, account: $account, realAccount: $realAccount },
+  source: {
+    wrappedTx: $wrappedTx,
+    coreTx: $coreTx,
+    chain: $chain,
+    account: $account,
+    realAccount: $realAccount,
+  },
   filter: ({ wrappedTx, chain, account }) => {
     return Boolean(wrappedTx) && Boolean(chain) && Boolean(account);
   },

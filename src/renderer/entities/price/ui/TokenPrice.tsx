@@ -1,4 +1,5 @@
 import { useStoreMap, useUnit } from 'effector-react';
+import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { ZERO_BALANCE, cnTw, formatFiatBalance } from '@/shared/lib/utils';
@@ -14,7 +15,7 @@ type Props = {
   wrapperClassName?: string;
 };
 
-export const TokenPrice = ({ assetId, className, wrapperClassName }: Props) => {
+export const TokenPrice = memo(({ assetId, className, wrapperClassName }: Props) => {
   const { t } = useI18n();
   const currency = useUnit(currencyModel.$activeCurrency);
   const price = useStoreMap(priceProviderModel.$assetsPrices, (prices) => {
@@ -55,7 +56,7 @@ export const TokenPrice = ({ assetId, className, wrapperClassName }: Props) => {
     <div className={cnTw('flex gap-1', wrapperClassName)}>
       <FiatBalance amount={`${balanceValue}${suffix}`} className={className} />
 
-      {Boolean(price.change) && <FootnoteText className={changeStyle}>({changeToShow}%)</FootnoteText>}
+      {Boolean(price.change) && <FootnoteText className={changeStyle}>{changeToShow}%</FootnoteText>}
     </div>
   );
-};
+});

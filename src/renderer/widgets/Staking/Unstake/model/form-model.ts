@@ -2,6 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { attach, combine, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
 import { createForm } from 'effector-forms';
+import isEmpty from 'lodash/isEmpty';
 import noop from 'lodash/noop';
 import { spread } from 'patronum';
 
@@ -12,7 +13,6 @@ import {
   type Chain,
   type ChainId,
   type MultisigTxWrapper,
-  type PartialBy,
   type ProxiedAccount,
   type ProxyTxWrapper,
   type Transaction,
@@ -21,6 +21,7 @@ import {
   ZERO_BALANCE,
   formatAmount,
   getRelaychainAsset,
+  nonNullable,
   toAddress,
   transferableAmount,
   withdrawableAmount,
@@ -36,7 +37,7 @@ type BalanceMap = { balance: string; stake: string };
 
 type FormParams = {
   shards: Account[];
-  signatory: Account;
+  signatory: Account | null;
   amount: string;
 };
 
@@ -46,7 +47,8 @@ type FormSubmitEvent = {
     multisigTx?: Transaction;
     coreTx: Transaction;
   }[];
-  formData: PartialBy<FormParams, 'signatory'> & {
+  formData: FormParams & {
+    signatory: Account | null;
     proxiedAccount?: ProxiedAccount;
     fee: string;
     totalFee: string;
@@ -122,14 +124,14 @@ const $unstakeForm = createForm<FormParams>({
       ],
     },
     signatory: {
-      init: {} as Account,
+      init: null,
       rules: [
         {
           name: 'noSignatorySelected',
           errorText: 'transfer.noSignatoryError',
           source: $isMultisig,
           validator: (signatory, _, isMultisig) => {
-            if (!isMultisig) return true;
+            if (!signatory || !isMultisig) return true;
 
             return Object.keys(signatory).length > 0;
           },
@@ -531,9 +533,11 @@ sample({
 sample({
   clock: $unstakeForm.fields.signatory.onChange,
   source: $signatories,
-  filter: (signatories) => signatories.length > 0,
+  filter: (signatories, signatory) => {
+    return !isEmpty(signatories) && nonNullable(signatory);
+  },
   fn: (signatories, signatory) => {
-    const match = signatories[0].find(({ signer }) => signer.id === signatory.id);
+    const match = signatories[0].find(({ signer }) => signer.id === signatory!.id);
 
     return match?.balance || ZERO_BALANCE;
   },
@@ -542,6 +546,7 @@ sample({
 
 sample({
   clock: $unstakeForm.fields.signatory.$value,
+  filter: (signatory: Account | null): signatory is Account => nonNullable(signatory),
   fn: (signatory) => [signatory],
   target: $selectedSignatories,
 });
@@ -609,9 +614,6 @@ sample({
   },
   fn: ({ realAccounts, network, transactions, isProxy, ...fee }, formData) => {
     const { shards, ...rest } = formData;
-
-    const signatory = formData.signatory.accountId ? formData.signatory : undefined;
-
     const amount = formatAmount(rest.amount, network!.asset.precision);
 
     return {
@@ -623,9 +625,8 @@ sample({
       formData: {
         ...fee,
         ...rest,
-        shards: realAccounts,
         amount,
-        signatory,
+        shards: realAccounts,
         ...(isProxy && { proxiedAccount: shards[0] as ProxiedAccount }),
       },
     };
