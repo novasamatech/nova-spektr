@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react';
 import { type HexString } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { ValidationErrors, cnTw } from '@/shared/lib/utils';
-import { Button, CaptionText, Countdown, FootnoteText, Select, Shimmering, SmallTitleText } from '@/shared/ui';
-import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
+import { Button, CaptionText, Countdown, FootnoteText, Shimmering, SmallTitleText } from '@/shared/ui';
+import { Select } from '@/shared/ui-kit';
 import { CameraAccessErrors, CameraError, WhiteTextButtonStyle } from '../common/constants';
 import { type ErrorObject, type Progress, QrError, type VideoInput } from '../common/types';
 
@@ -42,8 +42,8 @@ export const QrReaderWrapper = ({ className, onResult, countdown, validationErro
   const [progress, setProgress] = useState<Progress>();
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
 
-  const [activeCamera, setActiveCamera] = useState<DropdownResult<string>>();
-  const [availableCameras, setAvailableCameras] = useState<DropdownOption<string>[]>([]);
+  const [activeCamera, setActiveCamera] = useState<string>();
+  const [availableCameras, setAvailableCameras] = useState<Record<'title' | 'value', string>[]>([]);
 
   useEffect(() => {
     if (validationError) {
@@ -54,18 +54,16 @@ export const QrReaderWrapper = ({ className, onResult, countdown, validationErro
   const isCameraOn = !(error && CameraAccessErrors.includes(error));
 
   const onCameraList = (cameras: VideoInput[]) => {
-    const formattedCameras = cameras.map((camera, index) => ({
-      //eslint-disable-next-line i18next/no-literal-string
-      element: `${index + 1}. ${camera.label}`,
+    const formattedCameras = cameras.map((camera) => ({
+      title: camera.label,
       value: camera.id,
-      id: camera.id,
     }));
 
     setAvailableCameras(formattedCameras);
 
-    if (formattedCameras.length > 1) {
-      // if multiple cameras are available we set first one as active
-      setActiveCamera(formattedCameras[0]);
+    const defaultCamera = formattedCameras.at(0);
+    if (defaultCamera) {
+      setActiveCamera(defaultCamera.value);
       setIsLoading(false);
     }
   };
@@ -113,7 +111,7 @@ export const QrReaderWrapper = ({ className, onResult, countdown, validationErro
       error === CameraError.INVALID_ERROR && 'blur-[13px]',
       className,
     ),
-    cameraId: activeCamera?.value,
+    cameraId: activeCamera,
     onStart: () => setIsLoading(false),
     onCameraList,
     onError,
@@ -160,16 +158,20 @@ export const QrReaderWrapper = ({ className, onResult, countdown, validationErro
         )}
       </div>
 
-      <div className="mb-4 h-8.5">
-        {availableCameras && availableCameras.length > 1 && (
+      <div className="mb-4 w-[208px]">
+        {availableCameras.length > 1 && (
           <Select
             theme="dark"
             placeholder={t('onboarding.paritySigner.selectCameraLabel')}
-            selectedId={activeCamera?.id}
-            options={availableCameras}
-            className="w-[208px]"
+            value={activeCamera ?? null}
             onChange={setActiveCamera}
-          />
+          >
+            {availableCameras.map((camera, index) => (
+              <Select.Item key={camera.value} value={camera.value}>
+                {`${index + 1}. ${camera.title}`}
+              </Select.Item>
+            ))}
+          </Select>
         )}
       </div>
 
