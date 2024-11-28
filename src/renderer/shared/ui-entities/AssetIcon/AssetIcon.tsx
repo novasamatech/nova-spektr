@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 import { type Asset } from '@/shared/core';
 import { useToggle } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
@@ -9,7 +11,7 @@ type Props = {
   style?: 'monochrome' | 'colored';
 };
 
-export const AssetIcon = ({ asset, style, size = 36 }: Props) => {
+export const AssetIcon = memo(({ asset, style, size = 36 }: Props) => {
   const { iconStyle } = useTheme();
   const [isImgLoaded, toggleImgLoaded] = useToggle();
   const computedStyle = style || iconStyle;
@@ -33,4 +35,4 @@ export const AssetIcon = ({ asset, style, size = 36 }: Props) => {
       />
     </div>
   );
-};
+});

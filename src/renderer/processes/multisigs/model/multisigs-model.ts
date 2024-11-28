@@ -11,6 +11,7 @@ import {
   NotificationType,
   type Wallet,
 } from '@/shared/core';
+import { nullable } from '@/shared/lib/utils';
 import { type MultisigResult, multisigService } from '@/entities/multisig';
 import { networkModel, networkUtils } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
@@ -30,9 +31,8 @@ const multisigSaved = createEvent<GetMultisigsResult>();
 
 const $multisigChains = combine(networkModel.$chains, (chains) => {
   return Object.values(chains).filter((chain) => {
-    const isMultisigSupported = multisigUtils.isMultisigSupported(chain);
-    const hasIndexerUrl =
-      networkUtils.isMultisigSupported(chain.options) && chain.externalApi?.[ExternalType.PROXY]?.[0]?.url;
+    const isMultisigSupported = networkUtils.isMultisigSupported(chain.options);
+    const hasIndexerUrl = chain.externalApi?.[ExternalType.PROXY]?.at(0)?.url;
 
     return isMultisigSupported && hasIndexerUrl;
   });
@@ -50,34 +50,37 @@ type GetMultisigsResult = {
 
 const getMultisigsFx = createEffect(({ chains, wallets }: GetMultisigsParams) => {
   for (const chain of chains) {
+    const multisigIndexerUrl = chain.externalApi?.[ExternalType.PROXY]?.at(0)?.url;
+    if (!multisigIndexerUrl) continue;
+
     const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
       walletFn: (w) => !walletUtils.isMultisig(w) && !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w),
+      accountFn: (a) => accountUtils.isChainIdMatch(a, chain.chainId),
     });
-    const accounts = walletUtils.getAccountsBy(filteredWallets || [], (a) =>
-      accountUtils.isChainIdMatch(a, chain.chainId),
-    );
-    const multisigIndexerUrl = chain.externalApi?.[ExternalType.PROXY]?.[0]?.url;
-    const boundMultisigSaved = scopeBind(multisigSaved, { safe: true });
 
-    if (!multisigIndexerUrl || !accounts.length) continue;
+    const accountIds = (filteredWallets || []).flatMap(({ accounts }) => accounts).map(({ accountId }) => accountId);
+    if (accountIds.length === 0) continue;
 
     const client = new GraphQLClient(multisigIndexerUrl);
-    const accountIds = accounts.map((account) => account.accountId);
+    const boundMultisigSaved = scopeBind(multisigSaved, { safe: true });
 
     multisigService
       .filterMultisigsAccounts(client, accountIds)
       .then((indexedMultisigs) => {
-        const multisigsToSave = indexedMultisigs.filter((multisigResult) => {
-          // we filter out the multisigs that we already have
-          const existingWallet = walletUtils.getWalletFilteredAccounts(wallets, {
-            accountFn: (account) => account.accountId === multisigResult.accountId,
+        const multisigWallets = walletUtils.getWalletsFilteredAccounts(wallets, { walletFn: walletUtils.isMultisig });
+        const walletsToSave: MultisigResult[] = [];
+
+        for (const multisig of indexedMultisigs) {
+          const existingWallet = walletUtils.getWalletFilteredAccounts(multisigWallets || [], {
+            accountFn: (a) => a.accountId === multisig.accountId,
           });
+          if (existingWallet) continue;
 
-          return !existingWallet;
-        });
+          walletsToSave.push(multisig);
+        }
 
-        if (multisigsToSave.length > 0) {
-          boundMultisigSaved({ indexedMultisigs: multisigsToSave, chain });
+        if (walletsToSave.length > 0) {
+          boundMultisigSaved({ indexedMultisigs: walletsToSave, chain });
         }
       })
       .catch(console.error);
@@ -118,14 +121,13 @@ sample({
     connections: networkModel.$connections,
   },
   fn: ({ chains, wallets, connections }) => {
-    const filteredChains = chains.filter(
-      (chain) => connections[chain.chainId] && !networkUtils.isDisabledConnection(connections[chain.chainId]),
-    );
+    const filteredChains = chains.filter((chain) => {
+      if (nullable(connections[chain.chainId])) return false;
 
-    return {
-      chains: filteredChains,
-      wallets: wallets,
-    };
+      return !networkUtils.isDisabledConnection(connections[chain.chainId]);
+    });
+
+    return { wallets, chains: filteredChains };
   },
   target: getMultisigsFx,
 });
@@ -147,5 +149,9 @@ sample({
 export const multisigsModel = {
   events: {
     multisigsDiscoveryStarted,
+  },
+
+  _test: {
+    saveMultisigFx,
   },
 };

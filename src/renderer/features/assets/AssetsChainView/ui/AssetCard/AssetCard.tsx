@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { type KeyboardEvent } from 'react';
+import { type KeyboardEvent, memo, useMemo } from 'react';
 
 import { type Asset, type Balance, type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -15,7 +15,7 @@ type Props = {
   balance?: Balance;
 };
 
-export const AssetCard = ({ chainId, asset, balance }: Props) => {
+export const AssetCard = memo(({ chainId, asset, balance }: Props) => {
   const { t } = useI18n();
 
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
@@ -30,7 +30,8 @@ export const AssetCard = ({ chainId, asset, balance }: Props) => {
     }
   };
 
-  const transferableBalance = balance ? transferableAmountBN(balance) : undefined;
+  const transferableBalance = useMemo(() => (balance ? transferableAmountBN(balance) : undefined), [balance]);
+  const totalBalance = useMemo(() => totalAmount(balance), [balance]);
 
   // TODO: move <li> in parent beneath <ul>
   return (
@@ -56,8 +57,8 @@ export const AssetCard = ({ chainId, asset, balance }: Props) => {
         <div className="flex flex-col items-end">
           {balance?.free ? (
             <>
-              <AssetBalance value={totalAmount(balance)} asset={asset} />
-              <AssetFiatBalance amount={totalAmount(balance)} asset={asset} />
+              <AssetBalance value={totalBalance} asset={asset} />
+              <AssetFiatBalance amount={totalBalance} asset={asset} />
             </>
           ) : (
             <div className="flex flex-col items-end gap-y-1">
@@ -78,4 +79,4 @@ export const AssetCard = ({ chainId, asset, balance }: Props) => {
       )}
     </li>
   );
-};
+});

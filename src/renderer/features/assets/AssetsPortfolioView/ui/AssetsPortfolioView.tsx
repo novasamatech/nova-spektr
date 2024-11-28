@@ -2,7 +2,9 @@ import { useUnit } from 'effector-react';
 
 import { type Wallet, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { FootnoteText } from '@/shared/ui';
+import { useDeferredList } from '@/shared/lib/hooks';
+import { FootnoteText, Loader } from '@/shared/ui';
+import { Box } from '@/shared/ui-kit';
 import { AssetsListView, EmptyAssetsState } from '@/entities/asset';
 import { priceProviderModel } from '@/entities/price';
 import { walletModel } from '@/entities/wallet';
@@ -28,9 +30,16 @@ export const AssetsPortfolioView = () => {
 
   const activeView = useUnit(portfolioModel.$activeView);
   const sortedTokens = useUnit(portfolioModel.$sortedTokens);
+  const tokensPopulated = useUnit(portfolioModel.$tokensPopulated);
   const accounts = useUnit(portfolioModel.$accounts);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const wallet = useUnit(walletModel.$activeWallet);
+
+  const { list, isLoading } = useDeferredList({
+    list: sortedTokens,
+    isLoading: !tokensPopulated,
+    forceFirstRender: true,
+  });
 
   if (activeView !== AssetsListView.TOKEN_CENTRIC || accounts.length === 0) {
     return null;
@@ -39,23 +48,31 @@ export const AssetsPortfolioView = () => {
   const colStyle = getColStyle(wallet);
 
   return (
-    <div className="flex w-full flex-col items-center gap-y-2 py-4">
-      <div className={`grid w-[548px] items-center pl-[35px] pr-4 ${colStyle}`}>
-        <FootnoteText className="text-text-tertiary">{t('balances.token')}</FootnoteText>
-        <FootnoteText className="text-text-tertiary" align="right">
-          {fiatFlag && t('balances.price')}
-        </FootnoteText>
-        <FootnoteText className="col-end-4 text-text-tertiary" align="right">
-          {t('balances.balance')}
-        </FootnoteText>
-      </div>
+    <div className="flex min-h-full w-full flex-col items-center gap-y-2 py-4">
+      {list.length > 0 && (
+        <div className={`grid w-[548px] items-center pl-[35px] pr-4 ${colStyle}`}>
+          <FootnoteText className="text-text-tertiary">{t('balances.token')}</FootnoteText>
+          <FootnoteText className="text-text-tertiary" align="right">
+            {fiatFlag && t('balances.price')}
+          </FootnoteText>
+          <FootnoteText className="col-end-4 text-text-tertiary" align="right">
+            {t('balances.balance')}
+          </FootnoteText>
+        </div>
+      )}
 
-      <ul className="flex w-full flex-col items-center gap-y-4">
-        {sortedTokens.map((asset) => (
+      <ul className="flex min-h-full w-full flex-col items-center gap-y-4">
+        {list.map((asset) => (
           <li key={`${asset.priceId || ''}${asset.symbol}`} className="w-[548px]">
             {asset.chains.length === 1 ? <TokenBalance asset={asset} /> : <TokenBalanceList asset={asset} />}
           </li>
         ))}
+
+        {isLoading && (
+          <Box fillContainer verticalAlign="center" horizontalAlign="center">
+            <Loader color="primary" size={32} />
+          </Box>
+        )}
 
         <EmptyAssetsState />
       </ul>

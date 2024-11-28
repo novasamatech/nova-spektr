@@ -2,12 +2,12 @@ import { useGate, useUnit } from 'effector-react';
 import { useEffect, useLayoutEffect } from 'react';
 import { Outlet, generatePath, useParams } from 'react-router-dom';
 
-import { type ChainId } from '@/shared/core';
+import { type Chain, type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Paths } from '@/shared/routes';
 import { Header, Plate } from '@/shared/ui';
 import { Box, ScrollArea } from '@/shared/ui-kit';
-import { networkModel } from '@/entities/network';
+import { networkModel, networkUtils } from '@/entities/network';
 import {
   Locks,
   NetworkSelector,
@@ -23,8 +23,7 @@ import { Delegate } from '@/widgets/DelegateModal';
 import { DelegationModal, delegationModel } from '@/widgets/DelegationModal';
 import { UnlockModal, unlockAggregate } from '@/widgets/UnlockModal';
 import { governancePageAggregate } from '../aggregates/governancePage';
-
-const DEFAULT_GOVERNANCE_CHAIN = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
+import { DEFAULT_GOVERNANCE_CHAIN } from '../lib/constants';
 
 export const Governance = () => {
   useGate(governancePageAggregate.gates.flow);
@@ -34,22 +33,32 @@ export const Governance = () => {
 
   const { chainId, referendumId } = useParams<'chainId' | 'referendumId'>();
 
-  const selectedChainId = useUnit(networkSelectorModel.$governanceChainId);
+  const selectedChain = useUnit(networkSelectorModel.$governanceChain);
 
   useEffect(() => {
-    if (selectedChainId && !referendumId) {
-      navigationModel.events.navigateTo(generatePath(Paths.GOVERNANCE_LIST, { chainId: selectedChainId }));
-    }
-  }, [selectedChainId, referendumId]);
+    if (!selectedChain || referendumId) return;
+
+    const path = generatePath(Paths.GOVERNANCE_LIST, { chainId: networkUtils.chainNameToUrl(selectedChain.name) });
+    navigationModel.events.navigateTo(path);
+  }, [selectedChain, referendumId]);
 
   useLayoutEffect(() => {
-    const newChain = networks[chainId as ChainId];
+    let chain: Chain | undefined;
 
-    if (chainId && chainId.startsWith('0x') && newChain) {
-      networkSelectorModel.events.selectNetwork(newChain.chainId);
+    chain = networks[(chainId as ChainId) || DEFAULT_GOVERNANCE_CHAIN];
+
+    if (!chain) {
+      chain = Object.values(networks).find((chain) => networkUtils.chainNameToUrl(chain.name) === chainId);
+    }
+
+    if (chain) {
+      networkSelectorModel.events.selectNetwork(chain.chainId);
     } else {
       // navigate to default chain
-      navigationModel.events.navigateTo(generatePath(Paths.GOVERNANCE_LIST, { chainId: DEFAULT_GOVERNANCE_CHAIN }));
+      const path = generatePath(Paths.GOVERNANCE_LIST, {
+        chainId: networkUtils.chainNameToUrl(networks[DEFAULT_GOVERNANCE_CHAIN].name),
+      });
+      navigationModel.events.navigateTo(path);
     }
   }, [chainId]);
 

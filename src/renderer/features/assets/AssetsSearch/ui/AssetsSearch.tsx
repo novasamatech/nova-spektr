@@ -13,7 +13,7 @@ export const AssetsSearch = () => {
     <SearchInput
       value={query}
       placeholder={t('balances.searchPlaceholder')}
-      className="w-[230px]"
+      wrapperClass="w-[280px]"
       onChange={assetsSearchModel.events.queryChanged}
     />
   );
