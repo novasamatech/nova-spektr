@@ -31,7 +31,7 @@ runs:
       run: s3cmd ls
       shell: bash
     
-      - name: Clean bucket
+    - name: Clean bucket
       run: |
         s3cmd rm --recursive --force "${{ env.S3_BUCKET }}/*"
       shell: bash
