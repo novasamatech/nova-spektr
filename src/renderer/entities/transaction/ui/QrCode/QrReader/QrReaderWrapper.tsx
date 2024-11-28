@@ -61,8 +61,9 @@ export const QrReaderWrapper = ({ className, onResult, countdown, validationErro
 
     setAvailableCameras(formattedCameras);
 
-    if (formattedCameras.length > 0) {
-      setActiveCamera(formattedCameras[0].value);
+    const defaultCamera = formattedCameras.at(0);
+    if (defaultCamera) {
+      setActiveCamera(defaultCamera.value);
       setIsLoading(false);
     }
   };

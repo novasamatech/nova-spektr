@@ -67,8 +67,9 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
 
     setAvailableCameras(formattedCameras);
 
-    if (formattedCameras.length > 0) {
-      setActiveCamera(formattedCameras[0].value);
+    const defaultCamera = formattedCameras.at(0);
+    if (defaultCamera) {
+      setActiveCamera(defaultCamera.value);
       setCameraState(CameraState.ACTIVE);
     }
   };

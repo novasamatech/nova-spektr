@@ -54,8 +54,9 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
 
     setAvailableCameras(formattedCameras);
 
-    if (formattedCameras.length > 0) {
-      setActiveCamera(formattedCameras[0].value);
+    const defaultCamera = formattedCameras.at(0);
+    if (defaultCamera) {
+      setActiveCamera(defaultCamera.value);
       setCameraState(CameraState.ACTIVE);
     }
   };
