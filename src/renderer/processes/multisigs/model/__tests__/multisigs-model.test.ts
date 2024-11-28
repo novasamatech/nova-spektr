@@ -1,12 +1,31 @@
 import { allSettled, fork } from 'effector';
 
-import { AccountType, ChainOptions, ConnectionType } from '@/shared/core';
+import { AccountType, ChainOptions, ConnectionType, ExternalType, WalletType } from '@/shared/core';
 import { multisigService } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { multisigsModel } from '../multisigs-model';
 
+const mockChains = {
+  '0x01': {
+    chainId: '0x01',
+    options: [ChainOptions.MULTISIG],
+    externalApi: { [ExternalType.PROXY]: [{ url: 'http://mock-url' }] },
+  },
+};
+
+const mockConnections = {
+  '0x01': {
+    chainId: '0x01',
+    connectionType: ConnectionType.AUTO_BALANCE,
+  },
+};
+
 describe('features/multisigs/model/multisigs-model', () => {
+  beforeAll(() => {
+    jest.useFakeTimers();
+  });
+
   beforeEach(() => {
     jest.restoreAllMocks();
     jest.spyOn(multisigService, 'filterMultisigsAccounts').mockResolvedValue([
@@ -18,37 +37,54 @@ describe('features/multisigs/model/multisigs-model', () => {
     ]);
   });
 
-  test('should not create a multisig we already have', async () => {
-    const multisigCreation = jest.spyOn(walletModel.events, 'multisigCreated');
+  test('should add multisig for Nova Wallet', async () => {
+    const spySaveMultisig = jest.fn();
 
     const scope = fork({
       values: new Map()
         .set(walletModel._test.$allWallets, [
-          { id: 1111, accounts: [{ walletId: 1111, accountId: '0x00', type: AccountType.CHAIN, chainId: '0x01' }] },
-        ])
-        .set(networkModel.$chains, {
-          '0x01': {
-            chainId: '0x01',
-            name: 'Westend',
-            options: [ChainOptions.MULTISIG],
-            externalApi: { multisig: [{ url: 'http://mock-url' }] },
+          {
+            id: 1,
+            type: WalletType.NOVA_WALLET,
+            accounts: [{ walletId: 1, accountId: '0x03', type: AccountType.WALLET_CONNECT, chainId: '0x01' }],
           },
-        }),
+        ])
+        .set(networkModel.$chains, mockChains)
+        .set(networkModel.$connections, mockConnections),
+      handlers: new Map().set(multisigsModel._test.saveMultisigFx, spySaveMultisig),
     });
 
-    await allSettled(networkModel.$connections, {
-      scope,
-      params: {
-        '0x01': {
-          id: 1,
-          chainId: '0x01',
-          connectionType: ConnectionType.AUTO_BALANCE,
-          customNodes: [],
-        },
-      },
-    });
     allSettled(multisigsModel.events.multisigsDiscoveryStarted, { scope });
+    await jest.runOnlyPendingTimersAsync();
 
-    expect(multisigCreation).not.toHaveBeenCalled();
+    expect(spySaveMultisig).toHaveBeenCalled();
+  });
+
+  test('should not add multisig we already have', async () => {
+    const spySaveMultisig = jest.fn();
+
+    const scope = fork({
+      values: new Map()
+        .set(walletModel._test.$allWallets, [
+          {
+            id: 1,
+            type: WalletType.NOVA_WALLET,
+            accounts: [{ walletId: 1, accountId: '0x03', type: AccountType.WALLET_CONNECT, chainId: '0x01' }],
+          },
+          {
+            id: 2,
+            type: WalletType.MULTISIG,
+            accounts: [{ walletId: 2, accountId: '0x00', type: AccountType.MULTISIG, chainId: '0x01' }],
+          },
+        ])
+        .set(networkModel.$chains, mockChains)
+        .set(networkModel.$connections, mockConnections),
+      handlers: new Map().set(multisigsModel._test.saveMultisigFx, spySaveMultisig),
+    });
+
+    allSettled(multisigsModel.events.multisigsDiscoveryStarted, { scope });
+    await jest.runOnlyPendingTimersAsync();
+
+    expect(spySaveMultisig).not.toHaveBeenCalled();
   });
 });

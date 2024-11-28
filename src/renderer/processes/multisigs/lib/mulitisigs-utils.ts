@@ -1,14 +1,9 @@
-import { AccountType, type Chain, ChainOptions, ChainType, CryptoType, SigningType, WalletType } from '@/shared/core';
+import { AccountType, type Chain, ChainType, CryptoType, SigningType, WalletType } from '@/shared/core';
 import { isEthereumAccountId, toAddress } from '@/shared/lib/utils';
 
 export const multisigUtils = {
-  isMultisigSupported,
   buildMultisig,
 };
-
-function isMultisigSupported(chain: Chain): boolean {
-  return Boolean(chain.options?.includes(ChainOptions.MULTISIG));
-}
 
 type BuildMultisigParams = {
   threshold: number;
