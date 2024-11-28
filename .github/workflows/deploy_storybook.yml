@@ -1,5 +1,4 @@
 name: Deploy storybook to bucket
-
 on:
   push:
     branches:
@@ -12,6 +11,7 @@ concurrency:
 
 env:
   S3_BUCKET: s3://storybook
+  S3_REGION: pl-waw
 
 jobs:
   deploy-to-bucket:
@@ -31,7 +31,7 @@ jobs:
       - name: 🤌 Upload to s3
         uses: ./.github/workflows/upload-to-s3
         with:
-          s3_region: nl-ams
+          s3_region: ${{ env.S3_REGION }}
           s3_access_key: ${{ secrets.S3_ACCESS_KEY }}
           s3_secret_key: ${{ secrets.S3_SECRET_KEY }}
           s3_bucket: ${{ env.S3_BUCKET }}
