@@ -18,40 +18,50 @@ import { tracksAggregate } from './tracks';
 import { votingAggregate } from './voting';
 
 const $chainReferendums = combine(
-  referendumModel.$referendums,
-  networkSelectorModel.$governanceChain,
-  (referendums, chain) => {
-    if (!chain) {
-      return [];
-    }
+  {
+    referendums: referendumModel.$referendums,
+    chainId: networkSelectorModel.$governanceChainId,
+  },
+  ({ referendums, chainId }) => {
+    if (!chainId) return [];
 
-    return referendums[chain.chainId] ?? [];
+    return referendums[chainId] ?? [];
   },
 );
 
-const $chainTitles = combine(titleModel.$titles, networkSelectorModel.$governanceChain, (titles, chain) => {
-  if (nullable(chain)) return {};
+const $chainTitles = combine(
+  {
+    titles: titleModel.$titles,
+    chainId: networkSelectorModel.$governanceChainId,
+  },
+  ({ titles, chainId }) => {
+    if (nullable(chainId)) return {};
 
-  return titles[chain.chainId] ?? {};
-});
+    return titles[chainId] ?? {};
+  },
+);
 
 const $approvalThresholds = combine(
-  approveThresholdModel.$approvalThresholds,
-  networkSelectorModel.$governanceChain,
-  (approvalThresholds, chain) => {
-    if (nullable(chain)) return {};
+  {
+    thresholds: approveThresholdModel.$approvalThresholds,
+    chainId: networkSelectorModel.$governanceChainId,
+  },
+  ({ thresholds, chainId }) => {
+    if (nullable(chainId)) return {};
 
-    return approvalThresholds[chain.chainId] ?? {};
+    return thresholds[chainId] ?? {};
   },
 );
 
 const $supportThresholds = combine(
-  supportThresholdModel.$supportThresholds,
-  networkSelectorModel.$governanceChain,
-  (supportThresholds, chain) => {
-    if (nullable(chain)) return {};
+  {
+    thresholds: supportThresholdModel.$supportThresholds,
+    chainId: networkSelectorModel.$governanceChainId,
+  },
+  ({ thresholds, chainId }) => {
+    if (nullable(chainId)) return {};
 
-    return supportThresholds[chain.chainId] ?? {};
+    return thresholds[chainId] ?? {};
   },
 );
 
@@ -62,7 +72,7 @@ const $referendums = combine(
     titles: $chainTitles,
     approvalThresholds: $approvalThresholds,
     supportThresholds: $supportThresholds,
-    chain: networkSelectorModel.$governanceChain,
+    chainId: networkSelectorModel.$governanceChainId,
     voting: votingAggregate.$activeWalletVotes,
     tracks: tracksAggregate.$tracks,
     api: networkSelectorModel.$governanceChainApi,
@@ -70,7 +80,7 @@ const $referendums = combine(
   },
   ({
     referendums,
-    chain,
+    chainId,
     titles,
     approvalThresholds,
     supportThresholds,
@@ -80,7 +90,7 @@ const $referendums = combine(
     api,
     accounts,
   }): AggregatedReferendum[] => {
-    if (!chain || !api) {
+    if (!chainId || !api) {
       return [];
     }
 
@@ -115,11 +125,17 @@ const $referendums = combine(
   },
 );
 
-const $isTitlesLoading = combine(titleModel.$loadingTitles, networkSelectorModel.$governanceChain, (titles, chain) => {
-  if (!chain) return false;
+const $isTitlesLoading = combine(
+  {
+    titles: titleModel.$loadingTitles,
+    chainId: networkSelectorModel.$governanceChainId,
+  },
+  ({ titles, chainId }) => {
+    if (!chainId) return false;
 
-  return titles[chain.chainId] ?? false;
-});
+    return titles[chainId] ?? false;
+  },
+);
 
 sample({
   clock: networkSelectorModel.events.networkSelected,

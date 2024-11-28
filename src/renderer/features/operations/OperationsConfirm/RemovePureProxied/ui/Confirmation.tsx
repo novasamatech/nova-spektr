@@ -44,7 +44,11 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const api = useStoreMap({
     store: confirmModel.$apis,
     keys: [confirmStore?.chain?.chainId],
-    fn: (value, [chainId]) => chainId && value?.[chainId],
+    fn: (value, [chainId]) => {
+      if (!chainId || !value) return null;
+
+      return value[chainId] ?? null;
+    },
   });
 
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);

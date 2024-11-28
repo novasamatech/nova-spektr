@@ -75,7 +75,7 @@ sample({
 sample({
   clock: flowStarted,
   source: networkSelectorModel.$governanceChain,
-  filter: (chain) => !!chain,
+  filter: nonNullable,
   target: delegateRegistryAggregate.events.requestDelegateRegistry,
 });
 

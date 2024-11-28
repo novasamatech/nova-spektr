@@ -140,7 +140,7 @@ sample({
   },
   filter: (unlockData) => {
     return (
-      !!isStep(unlockData.step, Step.SIGN) &&
+      isStep(unlockData.step, Step.SIGN) &&
       !!unlockData.unlockData &&
       !!unlockData.wrappedTxs &&
       !!unlockData.coreTxs &&

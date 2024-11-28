@@ -204,9 +204,10 @@ const $api = combine(
     chain: $chain,
   },
   ({ apis, chain }) => {
-    return chain?.chainId ? apis[chain.chainId] : undefined;
+    if (!chain) return null;
+
+    return apis[chain.chainId] ?? null;
   },
-  { skipVoid: false },
 );
 
 const $fakeTx = combine(

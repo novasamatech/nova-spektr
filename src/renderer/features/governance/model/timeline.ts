@@ -14,13 +14,17 @@ const $timelines = createStore<
   Record<ChainId, Record<ReferendumId, { onChain: ReferendumTimelineRecord[]; offChain: ReferendumTimelineRecord[] }>>
 >({});
 
-const $currentChainTimelines = combine($timelines, networkSelectorModel.$governanceChain, (timelines, chain) => {
-  if (!chain) {
-    return {};
-  }
+const $currentChainTimelines = combine(
+  {
+    timelines: $timelines,
+    chainId: networkSelectorModel.$governanceChainId,
+  },
+  ({ timelines, chainId }) => {
+    if (!chainId) return {};
 
-  return timelines[chain.chainId] ?? {};
-});
+    return timelines[chainId] ?? {};
+  },
+);
 
 const requestTimeline = createEvent<{ referendum: Referendum }>();
 
@@ -33,7 +37,9 @@ type RequestOffTimelineParams = {
 };
 
 const requestOffChainTimelineFx = createEffect<RequestOffTimelineParams, ReferendumTimelineRecord[]>(
-  ({ service, chain, referendum }) => service.getReferendumTimeline(chain, referendum.referendumId),
+  ({ service, chain, referendum }) => {
+    return service.getReferendumTimeline(chain, referendum.referendumId);
+  },
 );
 
 sample({
@@ -84,30 +90,30 @@ type RequestOnTimelineParams = {
 
 const requestOnChainTimelineFx = createEffect<RequestOnTimelineParams, ReferendumTimelineRecord[]>(
   ({ api, referendum }) => {
-    if (referendumService.isOngoing(referendum)) {
-      const requests = Promise.all([
-        getCreatedDateFromApi(referendum.submitted, api).then(
-          (time): ReferendumTimelineRecord => ({
-            date: new Date(time),
-            status: 'Submitted',
-          }),
-        ),
-        referendum.deciding
-          ? getCreatedDateFromApi(referendum.deciding.since, api).then(
-              (time): ReferendumTimelineRecord => ({
-                date: new Date(time),
-                status: 'Deciding',
-              }),
-            )
-          : null,
+    if (!referendumService.isOngoing(referendum)) {
+      return getCreatedDateFromApi(referendum.since, api).then((time) => [
+        { date: new Date(time), status: referendum.type },
       ]);
-
-      return requests.then((list) => list.filter(nonNullable));
     }
 
-    return getCreatedDateFromApi(referendum.since, api).then((time) => [
-      { date: new Date(time), status: referendum.type },
+    const requests = Promise.all([
+      getCreatedDateFromApi(referendum.submitted, api).then(
+        (time): ReferendumTimelineRecord => ({
+          date: new Date(time),
+          status: 'Submitted',
+        }),
+      ),
+      referendum.deciding
+        ? getCreatedDateFromApi(referendum.deciding.since, api).then(
+            (time): ReferendumTimelineRecord => ({
+              date: new Date(time),
+              status: 'Deciding',
+            }),
+          )
+        : null,
     ]);
+
+    return requests.then((list) => list.filter(nonNullable));
   },
 );
 

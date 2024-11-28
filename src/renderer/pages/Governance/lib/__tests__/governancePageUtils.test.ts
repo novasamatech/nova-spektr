@@ -1,7 +1,7 @@
 import { BN_ZERO } from '@polkadot/util';
 
 import { type OngoingReferendum } from '@/shared/core';
-import { type AggregatedReferendum, VoteStatus } from '@/features/governance';
+import { type AggregatedReferendum } from '@/features/governance';
 import { governancePageUtils } from '../governancePageUtils';
 
 const someVote = {
@@ -75,14 +75,14 @@ describe('pages/Governance/lib/governancePageUtils', () => {
   });
 
   test.each([
-    { referendum: createVotingReferendum(true, false), selectedVoteId: VoteStatus.VOTED, expected: true },
-    { referendum: createVotingReferendum(true, true), selectedVoteId: VoteStatus.VOTED, expected: true },
-    { referendum: createVotingReferendum(false, true), selectedVoteId: VoteStatus.VOTED, expected: true },
-    { referendum: createVotingReferendum(false, false), selectedVoteId: VoteStatus.VOTED, expected: false },
-    { referendum: createVotingReferendum(true, false), selectedVoteId: VoteStatus.NOT_VOTED, expected: false },
-    { referendum: createVotingReferendum(true, true), selectedVoteId: VoteStatus.NOT_VOTED, expected: false },
-    { referendum: createVotingReferendum(false, true), selectedVoteId: VoteStatus.NOT_VOTED, expected: false },
-    { referendum: createVotingReferendum(false, false), selectedVoteId: VoteStatus.NOT_VOTED, expected: true },
+    { referendum: createVotingReferendum(true, false), selectedVoteId: 'voted' as const, expected: true },
+    { referendum: createVotingReferendum(true, true), selectedVoteId: 'voted' as const, expected: true },
+    { referendum: createVotingReferendum(false, true), selectedVoteId: 'voted' as const, expected: true },
+    { referendum: createVotingReferendum(false, false), selectedVoteId: 'voted' as const, expected: false },
+    { referendum: createVotingReferendum(true, false), selectedVoteId: 'notVoted' as const, expected: false },
+    { referendum: createVotingReferendum(true, true), selectedVoteId: 'notVoted' as const, expected: false },
+    { referendum: createVotingReferendum(false, true), selectedVoteId: 'notVoted' as const, expected: false },
+    { referendum: createVotingReferendum(false, false), selectedVoteId: 'notVoted' as const, expected: true },
   ])(
     'should return $expected if selectedVoteId is $selectedVoteId and referendum.isVoted is $referendum.isVoted',
     ({ referendum, selectedVoteId, expected }) => {

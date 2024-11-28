@@ -34,19 +34,19 @@ export const Governance = () => {
 
   const { chainId, referendumId } = useParams<'chainId' | 'referendumId'>();
 
-  const selectedChain = useUnit(networkSelectorModel.$governanceChain);
+  const selectedChainId = useUnit(networkSelectorModel.$governanceChainId);
 
   useEffect(() => {
-    if (selectedChain && !referendumId) {
-      navigationModel.events.navigateTo(generatePath(Paths.GOVERNANCE_LIST, { chainId: selectedChain.chainId }));
+    if (selectedChainId && !referendumId) {
+      navigationModel.events.navigateTo(generatePath(Paths.GOVERNANCE_LIST, { chainId: selectedChainId }));
     }
-  }, [selectedChain, referendumId]);
+  }, [selectedChainId, referendumId]);
 
   useLayoutEffect(() => {
     const newChain = networks[chainId as ChainId];
 
     if (chainId && chainId.startsWith('0x') && newChain) {
-      networkSelectorModel.events.selectNetwork(newChain);
+      networkSelectorModel.events.selectNetwork(newChain.chainId);
     } else {
       // navigate to default chain
       navigationModel.events.navigateTo(generatePath(Paths.GOVERNANCE_LIST, { chainId: DEFAULT_GOVERNANCE_CHAIN }));

@@ -9,7 +9,7 @@ import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 
 type Props = {
-  api?: ApiPromise;
+  api: ApiPromise | null;
   asset: Asset;
   deposit?: string;
   proxyNumber?: number;
