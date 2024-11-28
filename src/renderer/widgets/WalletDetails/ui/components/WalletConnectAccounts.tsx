@@ -9,6 +9,8 @@ import { useI18n } from '@/shared/i18n';
 import { Button, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { networkModel } from '@/entities/network';
 import { MultiAccountsList } from '@/entities/wallet';
+import { walletConnectModel } from '@/entities/walletConnect';
+import { WalletConnectQrCode } from '@/features/wallet-connect-pairing';
 import { wcDetailsUtils } from '../../lib/utils';
 import { wcDetailsModel } from '../../model/wc-details-model';
 
@@ -26,6 +28,8 @@ export const WalletConnectAccounts = ({ wallet }: Props) => {
 
   const chains = Object.values(useUnit(networkModel.$chains));
   const reconnectStep = useUnit(wcDetailsModel.$reconnectStep);
+
+  const uri = useUnit(walletConnectModel.$uri);
 
   const accountsList = useMemo(() => {
     const accountsMap = keyBy(wallet.accounts, 'chainId');
@@ -68,6 +72,8 @@ export const WalletConnectAccounts = ({ wallet }: Props) => {
           </video>
         </div>
       )}
+
+      {wcDetailsUtils.isRefreshAccounts(reconnectStep) && <WalletConnectQrCode uri={uri} type="walletconnect" />}
     </>
   );
 };

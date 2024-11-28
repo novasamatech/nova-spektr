@@ -24,7 +24,7 @@ export const TokenBalance = ({ asset }: Props) => {
     <Plate className="z-10 flex h-[52px] w-full items-center p-0 pl-[30px] pr-2 transition-shadow hover:shadow-card-shadow focus:shadow-card-shadow">
       <div className="flex flex-1 gap-x-2">
         <div className="flex items-center gap-x-2">
-          <AssetIcon src={asset.icon} name={asset.name} />
+          <AssetIcon asset={asset} />
           <div>
             <BodyText>{chain.assetSymbol}</BodyText>
             <div className="mr-3 flex items-center gap-x-1.5">
