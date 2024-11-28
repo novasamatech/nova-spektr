@@ -1,5 +1,5 @@
 import * as RadixSelect from '@radix-ui/react-select';
-import { type PropsWithChildren, createContext, useContext, useMemo } from 'react';
+import { Children, type PropsWithChildren, type ReactNode, createContext, useContext, useMemo } from 'react';
 
 import { type XOR } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
@@ -130,6 +130,22 @@ const Content = ({ children }: PropsWithChildren) => {
   );
 };
 
+type GroupProps = {
+  title: ReactNode;
+};
+const Group = ({ title, children }: PropsWithChildren<GroupProps>) => {
+  if (Children.count(children) === 0) return null;
+
+  return (
+    <RadixSelect.Group className="mb-1 last:mb-0">
+      <RadixSelect.Label>
+        <div className="mb-1 px-3 py-1 text-help-text text-text-secondary">{title}</div>
+      </RadixSelect.Label>
+      {children}
+    </RadixSelect.Group>
+  );
+};
+
 type ItemProps = {
   value: string;
 };
@@ -156,5 +172,6 @@ const Item = ({ value, children }: PropsWithChildren<ItemProps>) => {
 };
 
 export const Select = Object.assign(Root, {
+  Group,
   Item,
 });

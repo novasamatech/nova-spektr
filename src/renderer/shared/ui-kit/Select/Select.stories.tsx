@@ -9,9 +9,6 @@ import { Select } from './Select';
 const meta: Meta<typeof Select> = {
   title: 'Design System/kit/Select',
   component: Select,
-  parameters: {
-    layout: 'centered',
-  },
   render: (params) => {
     const [value, onChange] = useState('');
 
@@ -80,6 +77,27 @@ export const Invalid: Story = {
 export const Disabled: Story = {
   args: {
     disabled: true,
+  },
+};
+
+export const Groups: Story = {
+  render: (params) => {
+    const [value, onChange] = useState('');
+
+    return (
+      <Box width="200px">
+        <Select {...params} placeholder="Select a fruit" value={value} onChange={onChange}>
+          <Select.Group title="Group 1">
+            <Select.Item value="item_1">Apple</Select.Item>
+            <Select.Item value="item_2">Orange</Select.Item>
+          </Select.Group>
+          <Select.Group title="Group 2">
+            <Select.Item value="item_3">Watermelon</Select.Item>
+            <Select.Item value="item_4">Banana</Select.Item>
+          </Select.Group>
+        </Select>
+      </Box>
+    );
   },
 };
 
