@@ -194,7 +194,7 @@ sample({
       chain: network!.chain,
       asset: network!.asset,
       account: account!,
-      signatory: signatory ?? undefined,
+      signatory,
       existingVote,
       wrappedTransactions: wrappedTransactions!,
     };

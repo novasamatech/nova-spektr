@@ -18,7 +18,7 @@ export type WalletData = {
 
 export type NominateData = {
   shards: Account[];
-  signatory?: Account;
+  signatory: Account | null;
   validators: Validator[];
 };
 

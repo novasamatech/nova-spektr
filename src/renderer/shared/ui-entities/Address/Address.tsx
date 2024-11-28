@@ -14,18 +14,29 @@ type IconProps = XOR<{
 type Props = IconProps & {
   address: AddressType;
   title?: string;
-  replaceAddressWithTitle?: boolean;
+  hideAddress?: boolean;
   variant?: 'full' | 'truncate' | 'short';
   testId?: string;
 };
 
 export const Address = memo(
-  ({ title, variant = 'full', canCopy = true, showIcon, iconSize = 16, address, testId = 'Address' }: Props) => {
+  ({
+    title,
+    variant = 'full',
+    canCopy = true,
+    showIcon,
+    iconSize = 16,
+    address,
+    testId = 'Address',
+    hideAddress,
+  }: Props) => {
     const titleNode = title ? <span className="truncate text-text-primary">{title}</span> : null;
+
     const addressNode = (
       <span
-        className={cnTw('w-full', {
-          'text-help-text text-text-tertiary': title,
+        className={cnTw('w-full text-text-primary', {
+          'text-help-text text-text-tertiary': title && !hideAddress,
+          hidden: title && hideAddress,
         })}
       >
         <Hash value={address} variant={variant} />
@@ -33,7 +44,7 @@ export const Address = memo(
     );
 
     return (
-      <span className="flex w-full min-w-0 items-center gap-2 overflow-hidden" data-testid={testId}>
+      <span className="flex w-full min-w-0 items-center gap-x-2 overflow-hidden" data-testid={testId}>
         {showIcon && <Identicon address={address} size={iconSize} background={false} canCopy={canCopy} />}
         <span className="flex w-full flex-col overflow-hidden">
           {titleNode}

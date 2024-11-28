@@ -37,7 +37,7 @@ export const VotingConfirmation = ({ fee, account, wallets, chain, asset, vote, 
         </span>
       </Box>
 
-      <TransactionDetails wallets={wallets} chain={chain} initiator={[account]}>
+      <TransactionDetails wallets={wallets} chain={chain} initiator={[account]} signatory={null}>
         <DetailRow label={t('fellowship.voting.confirmation.vote')}>{t(`fellowship.voting.${vote}`)}</DetailRow>
         <Separator className="border-filter-border" />
         <DetailRow label={t('fellowship.voting.confirmation.fee')}>{formatAsset(fee, asset)}</DetailRow>

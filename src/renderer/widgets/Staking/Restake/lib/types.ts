@@ -17,7 +17,7 @@ export type NetworkStore = {
 export type RestakeStore = {
   shards: Account[];
   proxiedAccount?: ProxiedAccount;
-  signatory?: Account;
+  signatory: Account | null;
   amount: string;
 
   fee: string;

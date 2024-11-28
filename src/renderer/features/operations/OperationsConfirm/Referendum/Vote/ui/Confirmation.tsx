@@ -109,7 +109,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         chain={confirm.meta.chain}
         wallets={wallets}
         initiator={[confirm.accounts.initiator]}
-        signatory={confirm.accounts.signer || undefined}
+        signatory={confirm.accounts.signer}
         proxied={confirm.accounts.proxy || undefined}
       >
         <DetailRow label={t('governance.vote.field.decision')}>{t(`governance.referendum.${decision}`)}</DetailRow>

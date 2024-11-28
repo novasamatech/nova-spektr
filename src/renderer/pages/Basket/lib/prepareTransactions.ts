@@ -475,17 +475,17 @@ async function prepareUnlockTransaction({ transaction, wallets, chains, apis, fe
   const address = transaction.coreTx.address;
   const totalLock = await governanceService.getTrackLocks(apis[chainId], [address]).then((data) => {
     const lock = data[address];
-    const totalLock = Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
 
-    return totalLock;
+    return Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
   });
 
   return {
+    chain,
     id: transaction.id,
     shards: [account!],
     amount: coreTx.args.value,
-    chain,
     asset: chain.assets[0],
+    signatory: null,
 
     fee,
     totalLock,
@@ -524,9 +524,8 @@ async function prepareDelegateTransaction({ transaction, wallets, chains, apis, 
 
   const locks = await governanceService.getTrackLocks(apis[chainId], [transaction.coreTx.address]).then((data) => {
     const lock = data[transaction.coreTx.address];
-    const totalLock = Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
 
-    return totalLock;
+    return Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
   });
 
   const coreTxs = transaction.coreTx.args.transactions || [transaction.coreTx];
@@ -561,9 +560,8 @@ async function prepareEditDelegationTransaction({ transaction, wallets, chains, 
 
   const locks = await governanceService.getTrackLocks(apis[chainId], [transaction.coreTx.address]).then((data) => {
     const lock = data[transaction.coreTx.address];
-    const totalLock = Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
 
-    return totalLock;
+    return Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
   });
 
   const coreTxs = transaction.coreTx.args.transactions?.filter(
@@ -626,9 +624,8 @@ async function prepareRevokeDelegationTransaction({
   );
   const locks = await governanceService.getTrackLocks(apis[chainId], [transaction.coreTx.address]).then((data) => {
     const lock = data[transaction.coreTx.address];
-    const totalLock = Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
 
-    return totalLock;
+    return Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
   });
 
   const coreTxs = transaction.coreTx.args.transactions || [transaction.coreTx];
@@ -672,6 +669,7 @@ async function prepareVoteTransaction({ transaction, wallets, chains, apis, feeM
     asset: chain.assets[0],
     account: account!,
     existingVote: coreTx.args.vote,
+    signatory: null,
     wrappedTransactions: transactionService.getWrappedTransaction({
       api,
       addressPrefix: chain.addressPrefix,
@@ -687,19 +685,19 @@ async function prepareRemoveVoteTransaction({ transaction, wallets, chains, apis
   const api = apis[chainId];
 
   return {
+    api,
+    chain,
     id: transaction.id,
     account: account!,
-    chain,
+    asset: chain.assets[0],
+    votes: coreTxs.map((t: Transaction) => t.args),
+    signatory: null,
     wrappedTransactions: transactionService.getWrappedTransaction({
       api,
       addressPrefix: chain.addressPrefix,
       transaction: transaction.coreTx,
       txWrappers: transaction.txWrappers,
     }),
-
-    api,
-    asset: chain.assets[0],
-    votes: coreTxs.map((t: Transaction) => t.args),
   } satisfies RemoveVoteConfirm;
 }
 
@@ -711,17 +709,18 @@ async function prepareCollectiveVoteTransaction({ transaction, wallets, chains, 
   const api = apis[chainId];
 
   return {
-    id: transaction.id,
     api,
     chain,
+    wallets,
+    id: transaction.id,
     asset: chain.assets[0],
     account: account!,
     pallet: coreTx.args.pallet as CollectiveVoteConfirm['pallet'],
     aye: coreTx.args.aye,
     poll: coreTx.args.poll,
     rank: coreTx.args.rank,
-    wallets,
     fee: new BN(fee),
+    signatory: null,
     wrappedTransactions: transactionService.getWrappedTransaction({
       api,
       addressPrefix: chain.addressPrefix,

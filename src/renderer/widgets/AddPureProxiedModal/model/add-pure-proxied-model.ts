@@ -167,13 +167,13 @@ sample({
     wrappedTx: transactions.wrappedTx,
     multisigTx: transactions.multisigTx || null,
     coreTx: transactions.coreTx,
-    addProxyStore: formData,
+    store: formData,
   }),
   target: spread({
     wrappedTx: $wrappedTx,
     multisigTx: $multisigTx,
     coreTx: $coreTx,
-    addProxyStore: $addProxyStore,
+    store: $addProxyStore,
   }),
 });
 

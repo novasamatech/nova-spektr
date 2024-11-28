@@ -66,16 +66,16 @@ sample({
 
     return {
       wrappedTxs,
-      multisigTxs: multisigTxs.length === 0 ? null : multisigTxs,
       coreTxs,
-      withdrawData: formData,
+      multisigTxs: multisigTxs.length === 0 ? null : multisigTxs,
+      store: formData,
     };
   },
   target: spread({
     wrappedTxs: $wrappedTxs,
     multisigTxs: $multisigTxs,
     coreTxs: $coreTxs,
-    withdrawData: $withdrawData,
+    store: $withdrawData,
   }),
 });
 
@@ -194,17 +194,14 @@ sample({
     return Boolean(store) && Boolean(coreTxs) && Boolean(txWrappers);
   },
   fn: ({ store, coreTxs, txWrappers }) => {
-    const txs = coreTxs!.map(
-      (coreTx) =>
-        ({
-          initiatorWallet: store!.shards[0].walletId,
-          coreTx,
-          txWrappers,
-          groupId: Date.now(),
-        }) as BasketTransaction,
-    );
-
-    return txs;
+    return coreTxs!.map((coreTx) => {
+      return {
+        initiatorWallet: store!.shards[0].walletId,
+        coreTx,
+        txWrappers,
+        groupId: Date.now(),
+      } as BasketTransaction;
+    });
   },
   target: basketModel.events.transactionsCreated,
 });

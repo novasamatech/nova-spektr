@@ -346,6 +346,7 @@ sample({
           chain: chain!,
           account: signer!,
           transaction: wrappedTx!,
+          signatory: null,
         },
       ],
     },

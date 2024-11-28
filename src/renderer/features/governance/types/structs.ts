@@ -53,7 +53,7 @@ export type UnlockFormData = {
   shards: AccountWithClaim[];
   amount: string;
   proxiedAccount?: ProxiedAccount & ClaimData;
-  signatory?: Account;
+  signatory: Account | null;
   chain: Chain;
   asset: Asset;
   totalLock: BN;

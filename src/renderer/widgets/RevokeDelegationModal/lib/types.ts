@@ -10,7 +10,7 @@ export type WalletData = {
 export type RevokeDelegationData = {
   target: Address;
   account: Account;
-  signatory?: Account;
+  signatory: Account | null;
   tracks: number[];
   locks: Record<string, BN>;
 };

@@ -32,7 +32,7 @@ export type Input = {
   balance: string;
 
   proxiedAccount?: ProxiedAccount;
-  signatory?: Account;
+  signatory: Account | null;
 
   fee: string;
   totalFee: string;

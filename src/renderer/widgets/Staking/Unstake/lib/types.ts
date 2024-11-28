@@ -18,9 +18,8 @@ export type NetworkStore = {
 export type UnstakeStore = {
   shards: Account[];
   proxiedAccount?: ProxiedAccount;
-  signatory?: Account;
+  signatory: Account | null;
   amount: string;
-
   fee: string;
   totalFee: string;
   multisigDeposit: string;

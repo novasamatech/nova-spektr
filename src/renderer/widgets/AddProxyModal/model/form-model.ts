@@ -11,7 +11,6 @@ import {
   type BaseAccount,
   type Chain,
   type MultisigTxWrapper,
-  type PartialBy,
   type ProxiedAccount,
   type ProxyTxWrapper,
   ProxyType,
@@ -24,6 +23,7 @@ import {
   dictionary,
   getProxyTypes,
   isStringsMatchQuery,
+  nonNullable,
   toAddress,
   transferableAmount,
   validateAddress,
@@ -48,7 +48,7 @@ type ProxyAccounts = {
 type FormParams = {
   chain: Chain;
   account: Account;
-  signatory: Account;
+  signatory: Account | null;
   delegate: Address;
   proxyType: ProxyType;
 };
@@ -59,7 +59,8 @@ type FormSubmitEvent = {
     multisigTx?: Transaction;
     coreTx: Transaction;
   };
-  formData: PartialBy<FormParams, 'signatory'> & {
+  formData: FormParams & {
+    signatory: Account | null;
     proxiedAccount?: ProxiedAccount;
     fee: string;
     multisigDeposit: string;
@@ -136,7 +137,7 @@ const $proxyForm = createForm<FormParams>({
       ],
     },
     signatory: {
-      init: {} as BaseAccount,
+      init: null,
       rules: [
         {
           name: 'notEnoughTokens',
@@ -149,7 +150,7 @@ const $proxyForm = createForm<FormParams>({
             isMultisig: $isMultisig,
           }),
           validator: (value, form, { isMultisig, balances, ...params }) => {
-            if (!isMultisig) return true;
+            if (!value || !isMultisig) return true;
 
             const signatoryBalance = balanceUtils.getBalance(
               balances,
@@ -650,12 +651,10 @@ sample({
     proxyDeposit: $newProxyDeposit,
     proxies: $activeProxies,
   },
-  filter: ({ transaction }) => {
-    return Boolean(transaction);
+  filter: ({ transaction }, formData) => {
+    return nonNullable(transaction) && nonNullable(formData.signatory);
   },
   fn: ({ proxyDeposit, multisigDeposit, proxies, realAccount, transaction, isProxy, fee }, formData) => {
-    const signatory = formData.signatory.accountId ? formData.signatory : undefined;
-
     return {
       transactions: {
         wrappedTx: transaction!.wrappedTx,
@@ -666,7 +665,6 @@ sample({
         ...formData,
         fee,
         account: realAccount,
-        signatory,
         proxyDeposit,
         multisigDeposit,
         proxyNumber: proxies.length,

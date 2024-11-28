@@ -85,8 +85,8 @@ const Button = ({ placeholder }: TriggerProps) => {
         },
       )}
     >
-      <div className="overflow-hidden">
-        <RadixSelect.Value placeholder={placeholder} />
+      <div className="flex-1 overflow-hidden text-start">
+        <RadixSelect.Value placeholder={<span className="text-footnote text-text-secondary">{placeholder}</span>} />
       </div>
       <Icon name="down" size={16} className="absolute right-1.5 top-1/2 shrink-0 -translate-y-1/2" />
     </RadixSelect.Trigger>

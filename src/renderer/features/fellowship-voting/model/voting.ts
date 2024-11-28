@@ -66,7 +66,11 @@ const signPayloadCreated = createEvent<SigningPayload | null>();
 
 sample({
   clock: sign,
-  source: { transactions: $wrappedTx, account: votingStatusModel.$votingAccount, chain: $chain },
+  source: {
+    transactions: $wrappedTx,
+    account: votingStatusModel.$votingAccount,
+    chain: $chain,
+  },
   fn: ({ transactions, account, chain }) => {
     if (nullable(transactions) || nullable(account) || nullable(chain)) {
       return null;
@@ -76,6 +80,7 @@ sample({
       chain,
       account,
       transaction: transactions.wrappedTx,
+      signatory: null,
     };
   },
   target: signPayloadCreated,

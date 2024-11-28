@@ -27,5 +27,5 @@ export type SigningPayload = {
   chain: Chain;
   account: Account;
   transaction: Transaction;
-  signatory?: Account;
+  signatory: Account | null;
 };

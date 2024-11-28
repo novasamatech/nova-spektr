@@ -133,17 +133,23 @@ sample({
 
 sample({
   clock: flowStarted,
-  source: { activeTracks: delegationAggregate.$activeTracks, walletData: $walletData },
+  source: {
+    activeTracks: delegationAggregate.$activeTracks,
+    walletData: $walletData,
+  },
   fn: ({ activeTracks, walletData }, { delegate, accounts }) => {
-    return accounts.map((account) => ({
-      account,
-      signatory: undefined,
-      target: delegate,
-      tracks: Object.keys(
-        activeTracks[delegate][toAddress(account.accountId, { prefix: walletData.chain?.addressPrefix })],
-      ).map(Number),
-      locks: { [account.accountId]: new BN(0) },
-    }));
+    return accounts.map((account) => {
+      const address = toAddress(account.accountId, { prefix: walletData.chain?.addressPrefix });
+      const tracksNumber = Object.keys(activeTracks[delegate][address]).map(Number);
+
+      return {
+        account,
+        signatory: null,
+        target: delegate,
+        tracks: tracksNumber,
+        locks: { [account.accountId]: new BN(0) },
+      };
+    });
   },
   target: $revokeDelegationData,
 });
@@ -152,7 +158,7 @@ sample({
   clock: $signatory.updates,
   source: $revokeDelegationData,
   fn: (data, signatory) => {
-    return data.map((d) => ({ ...d, signatory: signatory || undefined }));
+    return data.map((d) => ({ ...d, signatory }));
   },
   target: $revokeDelegationData,
 });
@@ -250,7 +256,10 @@ sample({
 
 // Steps
 
-sample({ clock: stepChanged, target: $step });
+sample({
+  clock: stepChanged,
+  target: $step,
+});
 
 sample({
   clock: [flowStarted, $revokeDelegationData.updates],
@@ -392,20 +401,17 @@ sample({
     txWrappers: $txWrappers,
   },
   filter: ({ walletData, coreTxs, txWrappers }) => {
-    return !!walletData.wallet && !!coreTxs && !!txWrappers;
+    return nonNullable(walletData.wallet) && nonNullable(coreTxs) && nonNullable(txWrappers);
   },
   fn: ({ walletData, coreTxs, txWrappers }) => {
-    const txs = coreTxs!.map(
-      (coreTx) =>
-        ({
-          initiatorWallet: walletData.wallet!.id,
-          coreTx,
-          txWrappers,
-          groupId: Date.now(),
-        }) as BasketTransaction,
-    );
-
-    return txs;
+    return coreTxs!.map((coreTx) => {
+      return {
+        coreTx,
+        txWrappers,
+        groupId: Date.now(),
+        initiatorWallet: walletData.wallet!.id,
+      } as BasketTransaction;
+    });
   },
   target: basketModel.events.transactionsCreated,
 });

@@ -1,13 +1,15 @@
 import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
+import isEmpty from 'lodash/isEmpty';
 import { spread } from 'patronum';
 
-import { type Account, type Asset, type Chain, type PartialBy } from '@/shared/core';
+import { type Account, type Asset, type Chain } from '@/shared/core';
 import {
   ZERO_BALANCE,
   formatAmount,
   getRelaychainAsset,
+  nonNullable,
   stakeableAmount,
   transferableAmount,
   withdrawableAmount,
@@ -19,12 +21,12 @@ import { type WalletData } from '../lib/types';
 
 type FormParams = {
   shards: Account[];
-  signatory: Account;
+  signatory: Account | null;
 };
 
 const formInitiated = createEvent<WalletData>();
 const formSubmitted = createEvent();
-const formChanged = createEvent<PartialBy<FormParams, 'signatory'>>();
+const formChanged = createEvent<FormParams>();
 const formCleared = createEvent();
 
 const txWrapperChanged = createEvent<{
@@ -88,14 +90,14 @@ const $nominateForm = createForm<FormParams>({
       ],
     },
     signatory: {
-      init: {} as Account,
+      init: null,
       rules: [
         {
           name: 'noSignatorySelected',
           errorText: 'transfer.noSignatoryError',
           source: $isMultisig,
           validator: (signatory, _, isMultisig) => {
-            if (!isMultisig) return true;
+            if (!signatory || !isMultisig) return true;
 
             return Object.keys(signatory).length > 0;
           },
@@ -258,9 +260,11 @@ sample({
 sample({
   clock: $nominateForm.fields.signatory.onChange,
   source: $signatories,
-  filter: (signatories) => signatories.length > 0,
+  filter: (signatories, signatory) => {
+    return !isEmpty(signatories) && nonNullable(signatory);
+  },
   fn: (signatories, signatory) => {
-    const match = signatories[0].find(({ signer }) => signer.id === signatory.id);
+    const match = signatories[0].find(({ signer }) => signer.id === signatory!.id);
 
     return match?.balance || ZERO_BALANCE;
   },
@@ -296,11 +300,7 @@ sample({
   clock: $nominateForm.$values.updates,
   source: $networkStore,
   filter: (networkStore) => Boolean(networkStore),
-  fn: (_, formData) => {
-    const signatory = formData.signatory.accountId ? formData.signatory : undefined;
-
-    return { ...formData, signatory };
-  },
+  fn: (_, formData) => formData,
   target: formChanged,
 });
 
