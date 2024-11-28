@@ -28,10 +28,10 @@ export const AssetsSettings = memo(() => {
   ];
 
   return (
-    <Popover testId={TEST_IDS.ASSETS.SETTINGS_WIDGET} align="end">
+    <Popover align="end">
       <Popover.Trigger>
         <div className="relative">
-          <IconButton name="settingsLite" className="p-1.5" />
+          <IconButton name="settingsLite" className="p-1.5" testId={TEST_IDS.ASSETS.SETTINGS_WIDGET} />
           {hideZeroBalances && (
             <span className="absolute right-0 top-0 h-1.5 w-1.5 rounded-full bg-icon-accent duration-100 animate-in fade-in" />
           )}
