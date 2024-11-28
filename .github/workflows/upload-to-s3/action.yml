@@ -32,11 +32,6 @@ runs:
       shell: bash
 
     - name: Interact with object storage
-      run: |
-        base_directory="${{ inputs.source }}"
-        find "$base_directory" -type f | while read -r file; do
-          relative_path="${file#$base_directory/}" # Extract the relative path
-          s3cmd sync "$file" "${{ inputs.s3_bucket }}/${relative_path}" --acl-public
-        done
+      run: s3cmd sync "${{ inputs.source }}/" "${{ inputs.s3_bucket }}/" --acl-public
       shell: bash
 

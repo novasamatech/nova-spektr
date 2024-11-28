@@ -10,6 +10,10 @@ on:
       - 'scripts/**'
       - 'tests/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   JEST_COVERAGE_AUTH: ${{ secrets.PAT_GIST_TOKEN }}
   GIST_ID: 77132f25d05c7e9264cd410aef162a7e
