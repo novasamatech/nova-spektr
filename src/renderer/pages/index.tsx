@@ -68,6 +68,14 @@ export const ROUTES_CONFIG: RouteObject[] = [
         ),
         children: [
           {
+            path: Paths.GOVERNANCE_REFERENDUM_DEFAULT_CHAIN,
+            element: (
+              <Suspense fallback={null}>
+                <GovernanceReferendumDetails />
+              </Suspense>
+            ),
+          },
+          {
             path: Paths.GOVERNANCE_LIST,
             element: (
               <Suspense fallback={<PageLoadingState />}>
