@@ -1,8 +1,12 @@
-import { useDeferredValue } from 'react';
+import { useDeferredValue, useEffect, useState } from 'react';
 
 type Params<T> = {
   list: T[];
   isLoading?: boolean;
+  /**
+   * Render list directly until first deferred value is resolved.
+   */
+  forceFirstRender?: boolean;
 };
 
 /**
@@ -13,9 +17,17 @@ type Params<T> = {
  * @returns {boolean} Field isLoading - isLoading parameter + delay, introduced
  *   by deferred rendering.
  */
-export const useDeferredList = <T>({ list, isLoading }: Params<T>) => {
+export const useDeferredList = <T>({ list, isLoading, forceFirstRender }: Params<T>) => {
+  const [firstRender, setFirstRender] = useState(true);
   const deferred = useDeferredValue(list);
+  const shouldForceRender = firstRender && !!forceFirstRender;
   const isDeferred = deferred.length === 0 && list.length !== 0;
 
-  return { isLoading: isLoading || isDeferred, list: deferred };
+  useEffect(() => {
+    if (deferred.length > 0) {
+      setFirstRender(false);
+    }
+  }, [deferred]);
+
+  return { isLoading: isLoading || (!shouldForceRender && isDeferred), list: shouldForceRender ? list : deferred };
 };

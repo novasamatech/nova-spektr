@@ -5,6 +5,8 @@ import { chainsService } from '@/shared/api/network';
 import { type Account, type Chain } from '@/shared/core';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { isStringsMatchQuery, nullable } from '@/shared/lib/utils';
+import { Loader } from '@/shared/ui';
+import { Box } from '@/shared/ui-kit';
 import { AssetsListView, EmptyAssetsState } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -31,7 +33,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
 
   const [sortedChains, setSortedChains] = useState<Chain[]>([]);
 
-  const { list } = useDeferredList({ list: sortedChains });
+  const { list, isLoading } = useDeferredList({ list: sortedChains, forceFirstRender: true });
 
   useEffect(() => {
     if (!activeWallet || assetsView !== AssetsListView.CHAIN_CENTRIC || !activeShards.length) return;
@@ -72,13 +74,19 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
     return null;
   }
 
-  const searchSymbolOnly = sortedChains.some((chain) => {
+  const searchSymbolOnly = list.some((chain) => {
     return chain.assets.some((asset) => isStringsMatchQuery(query, [asset.symbol, asset.name]));
   });
 
   return (
     <div className="flex h-full w-full flex-col gap-y-4 overflow-y-scroll">
       <ul className="flex min-h-full w-full flex-col items-center gap-y-4 py-4">
+        {isLoading && (
+          <Box fillContainer verticalAlign="center" horizontalAlign="center">
+            <Loader color="primary" size={32} />
+          </Box>
+        )}
+
         {list.map((chain) => (
           <NetworkAssets
             key={chain.chainId}
