@@ -47,7 +47,7 @@ export const AssetCard = ({ chainId, asset, balance }: Props) => {
     >
       <div className="flex items-center px-2 py-1.5">
         <div className="mr-auto flex items-center gap-x-2 px-2 py-1">
-          <AssetIcon src={asset.icon} name={asset.name} />
+          <AssetIcon asset={asset} />
           <div>
             <BodyText>{asset.name}</BodyText>
             <TokenPrice assetId={asset.priceId} />

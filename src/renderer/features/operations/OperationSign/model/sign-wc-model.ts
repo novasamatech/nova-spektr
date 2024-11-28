@@ -1,9 +1,9 @@
-import type Client from '@walletconnect/sign-client';
 import { type EngineTypes } from '@walletconnect/types';
+import type Provider from '@walletconnect/universal-provider';
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { combineEvents } from 'patronum';
 
-import { AccountType, type ChainId, type HexString, type WcAccount } from '@/shared/core';
+import { AccountType, type HexString, type WcAccount } from '@/shared/core';
 import { nonNullable, toAccountId } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
@@ -14,7 +14,7 @@ import { ReconnectStep } from '../lib/types';
 import { operationSignModel } from './operation-sign-model';
 
 type SignParams = {
-  client: Client;
+  provider: Provider;
   payload: EngineTypes.RequestParams;
 };
 
@@ -52,9 +52,9 @@ const $isStatusShown = combine(
 const signFx = createEffect(async (signParams: SignParams[]): Promise<SignResponse[]> => {
   const results: SignResponse[] = [];
 
-  for (const { client, payload } of signParams) {
+  for (const { provider, payload } of signParams) {
     // should be signed step by step
-    const response = await client.request<SignResponse>(payload);
+    const response = await provider.client.request<SignResponse>(payload);
 
     results.push(response);
   }
@@ -113,11 +113,12 @@ sample({
     session: walletConnectModel.$session,
   },
   filter: ({ step, session, signer }) => {
-    return (
-      (operationSignUtils.isReconnectingStep(step) || operationSignUtils.isConnectedStep(step)) &&
-      operationSignUtils.isTopicExist(session) &&
-      nonNullable(signer)
-    );
+    const isCorrectStep =
+      operationSignUtils.isReconnectingStep(step) ||
+      operationSignUtils.isFailedStep(step) ||
+      operationSignUtils.isConnectedStep(step);
+
+    return isCorrectStep && operationSignUtils.isTopicExist(session) && nonNullable(signer);
   },
   fn: ({ wallets, signer, session }) => ({
     walletId: signer!.walletId,
@@ -141,13 +142,12 @@ sample({
   filter: ({ signer }) => Boolean(signer?.walletId),
   fn: ({ signer, wallets, newAccounts, chains }) => {
     const oldAccount = walletUtils.getAccountBy(wallets, (a) => a.walletId === signer?.walletId);
-
     const updatedAccounts: WcAccount[] = [];
 
     for (const account of newAccounts) {
       const [_, chainId, address] = account.split(':');
       const accountId = toAccountId(address);
-      const chain = chains[chainId as ChainId];
+      const chain = Object.values(chains).find((chain) => chain.chainId.includes(chainId));
 
       if (!chain || !oldAccount) continue;
 
