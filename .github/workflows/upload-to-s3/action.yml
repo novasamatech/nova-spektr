@@ -30,13 +30,38 @@ runs:
     - name: List available S3 buckets
       run: s3cmd ls
       shell: bash
+    
+      - name: Clean bucket
+      run: |
+        s3cmd rm --recursive --force "${{ env.S3_BUCKET }}/*"
 
-    - name: Interact with object storage
+    - name: Deploy to bucket
+      id: deploy_to_bucket
       run: |
         base_directory="${{ inputs.source }}"
+        destination_s3="${{ env.S3_BUCKET }}"
+        
+        # Function to get mime type based on file extension
+        get_mime_type() {
+          case "$1" in
+            *.html) echo "text/html";;
+            *.css) echo "text/css";;
+            *.js) echo "application/javascript";;
+            *.mjs) echo "application/javascript";;
+            *.json) echo "application/json";;
+            *.png) echo "image/png";;
+            *.jpg|*.jpeg) echo "image/jpeg";;
+            *.svg) echo "image/svg+xml";;
+            *.woff2) echo "font/woff2";;
+            *) echo "text/plain";;
+          esac
+        }
+        
+        # Upload files with appropriate mime types
         find "$base_directory" -type f | while read -r file; do
-          relative_path="${file#$base_directory/}" # Extract the relative path
-          s3cmd sync "$file" "${{ inputs.s3_bucket }}/${relative_path}" --acl-public
+          relative_path="${file#$base_directory/}"
+          mime_type=$(get_mime_type "$file")
+          s3cmd sync "$file" "${destination_s3}/${relative_path}" --acl-public --mime-type="$mime_type"
         done
       shell: bash
 
