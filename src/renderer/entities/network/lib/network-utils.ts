@@ -31,6 +31,7 @@ export const networkUtils = {
   getLightClientChains,
 
   getMainRelaychains,
+  chainNameToUrl,
 };
 
 function isConnectedStatus(status: ConnectionStatus): boolean {
@@ -108,4 +109,10 @@ function getMainRelaychains(chains: Chain[]): Chain[] {
   const MainRelaychains = [RelayChains.POLKADOT, RelayChains.KUSAMA, RelayChains.WESTEND];
 
   return chains.filter(({ chainId }) => MainRelaychains.includes(chainId));
+}
+
+function chainNameToUrl(name: string): string {
+  const urlAllowedCharacters = /[^a-zA-Z0-9-]+$/;
+
+  return name.split(' ').join('-').toLowerCase().replace(urlAllowedCharacters, '').replace(/-{2,}/g, '-');
 }

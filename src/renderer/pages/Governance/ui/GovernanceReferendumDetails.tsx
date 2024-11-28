@@ -11,6 +11,7 @@ import { navigationModel } from '@/features/navigation';
 import { RemoveVotesModal } from '@/widgets/RemoveVotesModal';
 import { RevoteModal, VoteModal } from '@/widgets/VoteModal';
 import { governancePageAggregate } from '../aggregates/governancePage';
+import { DEFAULT_GOVERNANCE_CHAIN } from '../lib/constants';
 
 export const GovernanceReferendumDetails = () => {
   useGate(governancePageAggregate.gates.flow);
@@ -23,7 +24,7 @@ export const GovernanceReferendumDetails = () => {
   const network = useUnit(networkSelectorModel.$network);
   const all = useUnit(governancePageAggregate.$all);
 
-  if (!chainId || !referendumId) {
+  if (!referendumId) {
     return null;
   }
 
@@ -57,7 +58,9 @@ export const GovernanceReferendumDetails = () => {
             setShowVoteModal(false);
             setShowRevoteModal(false);
             setShowRemoveVoteModal(false);
-            navigationModel.events.navigateTo(generatePath(Paths.GOVERNANCE_LIST, { chainId }));
+            navigationModel.events.navigateTo(
+              generatePath(Paths.GOVERNANCE_LIST, { chainId: chainId || DEFAULT_GOVERNANCE_CHAIN }),
+            );
           }}
           onVoteRequest={() => {
             setShowVoteModal(true);
