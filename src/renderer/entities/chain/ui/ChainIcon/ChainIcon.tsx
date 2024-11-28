@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 import { useToggle } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
 import { Shimmering } from '@/shared/ui';
@@ -9,7 +11,7 @@ type Props = {
   className?: string;
 };
 
-export const ChainIcon = ({ src, name, size = 16, className }: Props) => {
+export const ChainIcon = memo(({ src, name, size = 16, className }: Props) => {
   const [isImgLoaded, toggleImgLoaded] = useToggle();
 
   return (
@@ -25,4 +27,4 @@ export const ChainIcon = ({ src, name, size = 16, className }: Props) => {
       />
     </>
   );
-};
+});
