@@ -1,10 +1,6 @@
 import { networkUtils } from '../network-utils';
 
 describe('entities/network/lib/network-utils', () => {
-  beforeEach(() => {
-    jest.restoreAllMocks();
-  });
-
   test.each([
     ['Polkadot', 'polkadot'],
     ['Kusama', 'kusama'],
