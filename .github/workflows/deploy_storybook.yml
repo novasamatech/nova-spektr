@@ -5,8 +5,12 @@ on:
     branches:
       - dev
 
+concurrency:
+  group: "storybook-deploy"
+  cancel-in-progress: false
+
 env:
-  S3_BUCKET: s3://spektr-storybook
+  S3_BUCKET: s3://storybook
 
 jobs:
   deploy-to-bucket:
