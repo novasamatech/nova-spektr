@@ -49,8 +49,8 @@ export const Address = memo(
         <span className="flex w-full flex-col overflow-hidden">
           {titleNode}
           {addressNode}
-        </div>
-      </div>
+        </span>
+      </span>
     );
   },
 );
