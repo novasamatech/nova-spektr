@@ -1,6 +1,6 @@
 import { type Meta, type StoryFn } from '@storybook/react';
 
-import { AssetType } from '@/shared/core';
+import { dotAsset } from '@/shared/mocks';
 
 import { AssetBalance } from './AssetBalance';
 
@@ -10,21 +10,11 @@ export default {
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof AssetBalance>;
 
-const assetDot = {
-  assetId: 3,
-  symbol: 'DOT',
-  precision: 10,
-  priceId: 'polkadot',
-  type: AssetType.NATIVE,
-  icon: 'https://raw.githubusercontent.com/novasamatech/nova-utils/master/icons/chains/white/Polkadot.svg',
-  name: 'Polkadot',
-};
-
 const Template: StoryFn<typeof AssetBalance> = (args) => <AssetBalance {...args} />;
 
 export const Default = Template.bind({});
 Default.args = {
-  asset: assetDot,
+  asset: dotAsset,
   value: '10000000',
   showIcon: true,
 };

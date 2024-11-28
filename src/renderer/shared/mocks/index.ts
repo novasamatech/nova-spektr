@@ -30,10 +30,14 @@ export const polkadotChainId: ChainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e2
 export const dotAsset: Asset = {
   assetId: 0,
   symbol: 'DOT',
+  name: 'Polkadot',
   precision: 10,
   type: AssetType.NATIVE,
-  icon: 'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg',
-  name: 'Polkadot',
+  icon: {
+    monochrome:
+      'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/DOT.svg',
+    colored: 'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/DOT.svg',
+  },
 };
 
 export const polkadotChain: Chain = {

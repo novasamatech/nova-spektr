@@ -2,17 +2,17 @@ import { createEvent, createStore, sample } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
 import { AccountType, type ChainId, type Wallet, type WcAccount } from '@/shared/core';
-import { toAccountId } from '@/shared/lib/utils';
+import { nonNullable, toAccountId } from '@/shared/lib/utils';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
-import { type InitConnectParams, walletConnectModel } from '@/entities/walletConnect';
+import { type InitConnectParams, walletConnectModel, walletConnectUtils } from '@/entities/walletConnect';
 import { walletSelectModel } from '@/features/wallets';
 import { ForgetStep, ReconnectStep } from '../lib/constants';
 
 const reset = createEvent();
 const confirmReconnectShown = createEvent();
-const reconnectStarted = createEvent<Omit<InitConnectParams, 'client'> & { currentSession: string }>();
+const reconnectStarted = createEvent<Omit<InitConnectParams, 'provider'> & { currentSession: string }>();
 const reconnectAborted = createEvent();
 const sessionTopicUpdated = createEvent();
 const forgetButtonClicked = createEvent<Wallet>();
@@ -57,7 +57,9 @@ sample({
     session: walletConnectModel.$session,
   },
   filter: ({ step, wallet, session }) => {
-    return step === ReconnectStep.RECONNECTING && Boolean(wallet) && Boolean(session?.topic);
+    const correctStep = step === ReconnectStep.RECONNECTING || step === ReconnectStep.REFRESH_ACCOUNTS;
+
+    return correctStep && nonNullable(wallet) && nonNullable(session?.topic);
   },
   fn: ({ wallet, session }) => ({
     walletId: wallet!.id,
@@ -114,9 +116,15 @@ sample({
 sample({
   clock: [walletConnectModel.events.initConnectFailed, walletConnectModel.events.sessionTopicUpdateFailed],
   source: $reconnectStep,
-  filter: (step) => step === ReconnectStep.RECONNECTING,
-  fn: () => ReconnectStep.FAILED,
+  fn: () => ReconnectStep.REFRESH_ACCOUNTS,
   target: $reconnectStep,
+});
+
+sample({
+  clock: [walletConnectModel.events.initConnectFailed, walletConnectModel.events.sessionTopicUpdateFailed],
+  source: networkModel.$chains,
+  fn: (chains) => ({ chains: walletConnectUtils.getWalletConnectChains(Object.values(chains)) }),
+  target: walletConnectModel.events.connect,
 });
 
 sample({
@@ -130,16 +138,14 @@ sample({
   source: {
     wallet: walletSelectModel.$walletForDetails,
   },
-  filter: ({ wallet }) => Boolean(wallet),
+  filter: ({ wallet }) => nonNullable(wallet),
   fn: ({ wallet }) => ({
     sessionTopic: wallet!.accounts[0].signingExtras?.sessionTopic,
     pairingTopic: wallet!.accounts[0].signingExtras?.pairingTopic,
   }),
   target: spread({
-    targets: {
-      sessionTopic: walletConnectModel.events.disconnectStarted,
-      pairingTopic: walletConnectModel.events.pairingRemoved,
-    },
+    sessionTopic: walletConnectModel.events.disconnectStarted,
+    pairingTopic: walletConnectModel.events.pairingRemoved,
   }),
 });
 

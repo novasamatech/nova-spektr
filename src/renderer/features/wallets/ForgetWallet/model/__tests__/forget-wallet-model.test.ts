@@ -26,8 +26,8 @@ jest.mock('@/entities/balance', () => ({
   useBalanceService: () => ({ deleteBalance: jest.fn() }),
 }));
 
-jest.mock('@walletconnect/sign-client', () => ({
-  Client: {},
+jest.mock('@walletconnect/universal-provider', () => ({
+  Provider: {},
 }));
 
 jest.mock('@walletconnect/utils', () => ({
