@@ -15,7 +15,7 @@ env:
 
 jobs:
   deploy-to-bucket:
-    runs-on: ubuntu-latest
+    runs-on: macos-14
 
     steps:
       - name: Checkout
