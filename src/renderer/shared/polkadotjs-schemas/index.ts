@@ -58,6 +58,7 @@ export const pjsSchema = {
   structHex: structHexSchema,
   dataString: dataStringSchema,
   hex: hexSchema,
+  u8Array: hexSchema,
 
   object: objectSchema,
   optional: optionalSchema,
