@@ -13,11 +13,13 @@ const $maxRank = fellowshipModel.$store.map(x => x?.maxRank ?? 0);
 const $members = fellowshipModel.$store.map(x => x?.members ?? []);
 
 const $thresholds = combine(
-  $referendums,
-  $maxRank,
-  $members,
-  tracksModel.$list,
-  (referendums, maxRank, members, tracks) => {
+  {
+    referendums: $referendums,
+    maxRank: $maxRank,
+    members: $members,
+    tracks: tracksModel.$list,
+  },
+  ({ referendums, maxRank, members, tracks }) => {
     const result: Thresholds = {};
 
     for (const referendum of referendums) {
