@@ -398,7 +398,7 @@ module.exports = {
           },
           {
             message: '`combine` must be called with not more than 3 arguments.',
-            selector: 'CallExpression[callee.name="combine"][arguments.length>=3]',
+            selector: 'CallExpression[callee.name="combine"][arguments.length>3]',
           },
         ],
       },
