@@ -177,6 +177,7 @@ module.exports = {
         createDefaultProgram: true,
       },
       rules: {
+        'local-rules/restrict-combine-args': 'error',
         'local-rules/no-self-import': [
           'error',
           {
