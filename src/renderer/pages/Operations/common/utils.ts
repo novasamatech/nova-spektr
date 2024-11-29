@@ -122,8 +122,7 @@ export const getPayee = (tx: MultisigTransaction): { Account: Address } | string
 
   const args = isProxyTransaction(tx.transaction) ? tx.transaction.args.transaction.args : tx.transaction.args;
 
-  // Bond + Nominate
-  if (args.transactions?.at(0)) {
+  if (tx.transaction.type === TransactionType.BATCH_ALL) {
     return args.transactions.at(0).args.payee;
   }
 

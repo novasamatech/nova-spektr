@@ -411,7 +411,7 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
               value={delegationVotes}
               asset={defaultAsset}
               showSymbol={false}
-            ></AssetBalance>
+            />
           </FootnoteText>
         </DetailRow>
       )}
@@ -424,7 +424,7 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
               value={undelegationVotes}
               asset={defaultAsset}
               showSymbol={false}
-            ></AssetBalance>
+            />
           </FootnoteText>
         </DetailRow>
       )}
