@@ -36,13 +36,20 @@ const $votingAccount = combine(votingFeatureStatus.input, $currentMember, (input
   return collectiveDomain.membersService.findMachingAccount(input.wallet, member);
 });
 
-const $hasRequiredRank = combine($currentMember, $referendum, $maxRank, (member, referendum, maxRank) => {
-  if (nullable(member) || nullable(referendum) || collectiveDomain.referendumService.isCompleted(referendum)) {
-    return false;
-  }
+const $hasRequiredRank = combine(
+  {
+    member: $currentMember,
+    referendum: $referendum,
+    maxRank: $maxRank,
+  },
+  ({ member, referendum, maxRank }) => {
+    if (nullable(member) || nullable(referendum) || collectiveDomain.referendumService.isCompleted(referendum)) {
+      return false;
+    }
 
-  return collectiveDomain.tracksService.rankSatisfiesVotingThreshold(member.rank, maxRank, referendum.track);
-});
+    return collectiveDomain.tracksService.rankSatisfiesVotingThreshold(member.rank, maxRank, referendum.track);
+  },
+);
 
 const $canVote = $currentMember.map(nonNullable);
 

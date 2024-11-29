@@ -4,7 +4,7 @@ import { combine, createEffect, createEvent, createStore, sample } from 'effecto
 
 import { delegationService, votingsService } from '@/shared/api/governance';
 import { type Address, type Chain, type ChainId } from '@/shared/core';
-import { MONTH, getBlockTimeAgo, nonNullable, setNestedValue } from '@/shared/lib/utils';
+import { MONTH, getBlockTimeAgo, nonNullable, nullable, setNestedValue } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
 import {
   type AggregatedReferendum,
@@ -158,16 +158,16 @@ const $currentDelegations = combine(
 
 const $votedReferendums = combine(
   {
-    referedumsList: $referedumsList,
+    referendumsList: $referedumsList,
     chain: delegateDetailsModel.$chain,
     delegate: delegateDetailsModel.$delegate,
   },
-  ({ referedumsList, chain, delegate }) => {
-    if (!nonNullable(chain) || !nonNullable(delegate)) {
+  ({ referendumsList, chain, delegate }) => {
+    if (nullable(chain) || nullable(delegate)) {
       return [];
     }
 
-    return referedumsList[chain.chainId]?.[delegate.accountId] ?? [];
+    return referendumsList[chain.chainId]?.[delegate.accountId] ?? [];
   },
 );
 

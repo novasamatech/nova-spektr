@@ -2,6 +2,7 @@ import { combine, createEvent, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type Referendum, type ReferendumId } from '@/shared/core';
+import { nonNullable } from '@/shared/lib/utils';
 import { voteHistoryModel } from '@/entities/governance';
 import { votingListService } from '../lib/votingListService';
 import { networkSelectorModel } from '../model/networkSelector';
@@ -15,23 +16,25 @@ import { proposerIdentityAggregate } from './proposerIdentity';
 const flow = createGate<{ referendum: Referendum }>();
 
 const $chainVoteHistory = combine(
-  voteHistoryModel.$voteHistory,
-  networkSelectorModel.$governanceChain,
-  (history, chain) => {
-    if (!chain) return {};
+  {
+    history: voteHistoryModel.$voteHistory,
+    chainId: networkSelectorModel.$governanceChainId,
+  },
+  ({ history, chainId }) => {
+    if (!chainId) return {};
 
-    return history[chain.chainId] ?? {};
+    return history[chainId] ?? {};
   },
 );
 
 const $voteHistory = combine(
   {
     history: $chainVoteHistory,
-    chain: networkSelectorModel.$governanceChain,
+    chainId: networkSelectorModel.$governanceChainId,
     proposers: proposerIdentityAggregate.$proposers,
   },
-  ({ history, proposers, chain }) => {
-    if (!chain) return {};
+  ({ history, proposers, chainId }) => {
+    if (!chainId) return {};
 
     const acc: Record<ReferendumId, AggregatedVoteHistory[]> = {};
 
@@ -61,7 +64,7 @@ const requestVoteHistory = createEvent<{ referendum: Referendum }>();
 sample({
   clock: requestVoteHistory,
   source: networkSelectorModel.$governanceChain,
-  filter: (chain) => !!chain,
+  filter: nonNullable,
   fn: (chain, { referendum }) => ({
     referendum,
     chain: chain!,

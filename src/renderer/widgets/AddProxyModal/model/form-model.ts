@@ -406,9 +406,10 @@ const $api = combine(
     form: $proxyForm.$values,
   },
   ({ apis, form }) => {
-    return form.chain.chainId ? apis[form.chain.chainId] : undefined;
+    if (!form.chain.chainId) return null;
+
+    return apis[form.chain.chainId] ?? null;
   },
-  { skipVoid: false },
 );
 
 const $pureTx = combine(

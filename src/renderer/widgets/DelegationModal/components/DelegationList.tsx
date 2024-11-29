@@ -2,7 +2,8 @@ import { useUnit } from 'effector-react';
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { useI18n } from '@/shared/i18n';
-import { Button, Loader, SearchInput, Select } from '@/shared/ui';
+import { Button, Loader, SearchInput } from '@/shared/ui';
+import { Box, Select } from '@/shared/ui-kit';
 import { SortType } from '../common/constants';
 import { delegationModel } from '../model/delegation-model';
 
@@ -18,28 +19,10 @@ type Props = {
 export const DelegationList = ({ onClick, onAddCustomClick }: Props) => {
   const { t } = useI18n();
 
+  const query = useUnit(delegationModel.$query);
   const delegationList = useUnit(delegationModel.$delegateList);
   const isListLoading = useUnit(delegationModel.$isListLoading);
-  const query = useUnit(delegationModel.$query);
   const sortType = useUnit(delegationModel.$sortType);
-
-  const options = [
-    {
-      id: SortType.DELEGATIONS,
-      value: SortType.DELEGATIONS,
-      element: t('governance.addDelegation.sort.delegations'),
-    },
-    {
-      id: SortType.VOTES,
-      value: SortType.VOTES,
-      element: t('governance.addDelegation.sort.votes'),
-    },
-    {
-      id: SortType.VOTED,
-      value: SortType.VOTED,
-      element: t('governance.addDelegation.sort.voted'),
-    },
-  ];
 
   return (
     <div className="flex h-full flex-col">
@@ -63,13 +46,17 @@ export const DelegationList = ({ onClick, onAddCustomClick }: Props) => {
           </div>
 
           <div className="mx-5 mb-6 flex items-center justify-between">
-            <Select
-              className="w-[152px]"
-              placeholder={t('governance.addDelegation.sort.placeholder')}
-              selectedId={sortType || undefined}
-              options={options}
-              onChange={({ value }) => delegationModel.events.sortTypeChanged(value)}
-            />
+            <Box width="152px">
+              <Select
+                placeholder={t('governance.addDelegation.sort.placeholder')}
+                value={sortType}
+                onChange={delegationModel.events.sortTypeChanged}
+              >
+                <Select.Item value={SortType.DELEGATIONS}>{t('governance.addDelegation.sort.delegations')}</Select.Item>
+                <Select.Item value={SortType.VOTES}>{t('governance.addDelegation.sort.votes')}</Select.Item>
+                <Select.Item value={SortType.VOTED}>{t('governance.addDelegation.sort.voted')}</Select.Item>
+              </Select>
+            </Box>
 
             {sortType && (
               <Button className="h-8" variant="text" onClick={() => delegationModel.events.sortTypeReset()}>

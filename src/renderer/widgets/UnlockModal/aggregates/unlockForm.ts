@@ -171,10 +171,10 @@ const $unlockForm = createForm<FormParams>({
 const $shards = combine(
   {
     activeWallet: walletModel.$activeWallet,
-    chain: networkSelectorModel.$governanceChain,
+    chainId: networkSelectorModel.$governanceChainId,
   },
-  ({ activeWallet, chain }) => {
-    if (!chain || !activeWallet) return [];
+  ({ activeWallet, chainId }) => {
+    if (!chainId || !activeWallet) return [];
 
     return (
       activeWallet.accounts.filter((account, _, collection) => {
@@ -186,7 +186,7 @@ const $shards = combine(
           return false;
         }
 
-        return accountUtils.isChainIdMatch(account, chain.chainId);
+        return accountUtils.isChainIdMatch(account, chainId);
       }) || []
     );
   },
@@ -255,13 +255,13 @@ const $proxyWallet = combine(
 
 const $signatories = combine(
   {
-    chain: networkSelectorModel.$governanceChain,
+    chainId: networkSelectorModel.$governanceChainId,
     network: networkSelectorModel.$network,
     txWrappers: $txWrappers,
     balances: balanceModel.$balances,
   },
-  ({ chain, network, txWrappers, balances }) => {
-    if (!chain || !network || !txWrappers) return [];
+  ({ chainId, network, txWrappers, balances }) => {
+    if (!chainId || !network || !txWrappers) return [];
 
     return txWrappers.reduce<{ signer: Account; balance: string }[][]>((acc, wrapper) => {
       if (!transactionService.hasMultisig([wrapper])) return acc;
@@ -270,7 +270,7 @@ const $signatories = combine(
         const balance = balanceUtils.getBalance(
           balances,
           signatory.accountId,
-          chain.chainId,
+          chainId,
           network.asset.assetId.toString(),
         );
 
@@ -286,13 +286,13 @@ const $signatories = combine(
 
 const $isChainConnected = combine(
   {
-    chain: networkSelectorModel.$governanceChain,
+    chainId: networkSelectorModel.$governanceChainId,
     statuses: networkModel.$connectionStatuses,
   },
-  ({ chain, statuses }) => {
-    if (!chain) return false;
+  ({ chainId, statuses }) => {
+    if (!chainId) return false;
 
-    return networkUtils.isConnectedStatus(statuses[chain.chainId]);
+    return networkUtils.isConnectedStatus(statuses[chainId]);
   },
 );
 
@@ -342,12 +342,11 @@ const $transactions = combine(
 const $api = combine(
   {
     apis: networkModel.$apis,
-    chain: networkSelectorModel.$governanceChain,
+    chainId: networkSelectorModel.$governanceChainId,
   },
-  ({ apis, chain }) => {
-    return chain ? apis[chain.chainId] : undefined;
+  ({ apis, chainId }) => {
+    return chainId ? apis[chainId] : null;
   },
-  { skipVoid: false },
 );
 
 // Form's fields
@@ -366,7 +365,10 @@ sample({
 
 sample({
   clock: formInitiated,
-  source: { shards: $shards, chain: networkSelectorModel.$governanceChain },
+  source: {
+    shards: $shards,
+    chain: networkSelectorModel.$governanceChain,
+  },
   filter: ({ shards, chain }) => shards.length > 0 && !!chain,
   fn: ({ shards, chain }, claims) => {
     return claims.reduce<AccountWithClaim[]>((acc, claim) => {
@@ -385,20 +387,15 @@ sample({
 sample({
   clock: formInitiated,
   source: {
-    chain: networkSelectorModel.$governanceChain,
+    chainId: networkSelectorModel.$governanceChainId,
     network: networkSelectorModel.$network,
     shards: $unlockForm.fields.shards.$value,
     balances: balanceModel.$balances,
   },
-  filter: ({ chain, network, shards }) => !!chain || !!network || shards.length > 0,
-  fn: ({ chain, network, shards, balances }) => {
+  filter: ({ chainId, network, shards }) => !!chainId || !!network || shards.length > 0,
+  fn: ({ chainId, network, shards, balances }) => {
     return shards.map((shard) => {
-      const balance = balanceUtils.getBalance(
-        balances,
-        shard.accountId,
-        chain!.chainId,
-        network!.asset.assetId.toString(),
-      );
+      const balance = balanceUtils.getBalance(balances, shard.accountId, chainId!, network!.asset.assetId.toString());
 
       return {
         account: shard,

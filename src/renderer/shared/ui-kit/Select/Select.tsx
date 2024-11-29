@@ -50,7 +50,7 @@ const Root = <T extends string>({
       <RadixSelect.Root
         open={open}
         disabled={disabled}
-        value={value ?? undefined}
+        value={value || ''}
         onOpenChange={onToggle}
         onValueChange={onChange}
       >
@@ -59,6 +59,9 @@ const Root = <T extends string>({
       </RadixSelect.Root>
     </Context.Provider>
   );
+
+  // value = '' resets RadixSelect to default and forces placeholder to appear again
+  // https://github.com/radix-ui/primitives/issues/1569
 };
 
 type TriggerProps = {

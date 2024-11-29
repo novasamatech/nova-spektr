@@ -2,13 +2,9 @@ import { useGate, useUnit } from 'effector-react';
 import { Outlet, generatePath, useParams } from 'react-router-dom';
 
 import { Paths } from '@/shared/routes';
+import { Box } from '@/shared/ui-kit';
 import { InactiveNetwork } from '@/entities/network';
-import {
-  CompletedReferendums,
-  OngoingReferendums,
-  ReferendumFilters,
-  networkSelectorModel,
-} from '@/features/governance';
+import { CompletedReferendums, Filters, OngoingReferendums, networkSelectorModel } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
 import { governancePageAggregate } from '../aggregates/governancePage';
 
@@ -40,10 +36,8 @@ export const GovernanceReferendumList = () => {
   const shouldRenderList = shouldShowLoadingState || (!shouldRenderEmptyState && !shouldNetworkDisabledError);
 
   return (
-    <>
-      <div className="mb-4 mt-5">
-        <ReferendumFilters />
-      </div>
+    <Box gap={4} grow={1}>
+      <Filters />
 
       {shouldRenderEmptyState && <EmptyGovernance />}
       {shouldNetworkDisabledError && <InactiveNetwork active className="grow" />}
@@ -83,6 +77,6 @@ export const GovernanceReferendumList = () => {
       )}
 
       <Outlet />
-    </>
+    </Box>
   );
 };

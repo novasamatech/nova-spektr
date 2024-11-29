@@ -9,7 +9,7 @@ import { transactionService } from '../../lib';
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 
 type Props = {
-  api?: ApiPromise;
+  api: ApiPromise | null;
   asset: Asset;
   threshold: MultisigThreshold;
   className?: string;

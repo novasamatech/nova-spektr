@@ -6,11 +6,12 @@ import { type Chain, type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Paths } from '@/shared/routes';
 import { Header, Plate } from '@/shared/ui';
+import { Box, ScrollArea } from '@/shared/ui-kit';
 import { networkModel, networkUtils } from '@/entities/network';
 import {
   Locks,
   NetworkSelector,
-  ReferendumSearch,
+  Search,
   TotalDelegation,
   delegationAggregate,
   networkSelectorModel,
@@ -35,11 +36,10 @@ export const Governance = () => {
   const selectedChain = useUnit(networkSelectorModel.$governanceChain);
 
   useEffect(() => {
-    if (selectedChain && !referendumId) {
-      navigationModel.events.navigateTo(
-        generatePath(Paths.GOVERNANCE_LIST, { chainId: networkUtils.chainNameToUrl(selectedChain.name) }),
-      );
-    }
+    if (!selectedChain || referendumId) return;
+
+    const path = generatePath(Paths.GOVERNANCE_LIST, { chainId: networkUtils.chainNameToUrl(selectedChain.name) });
+    navigationModel.events.navigateTo(path);
   }, [selectedChain, referendumId]);
 
   useLayoutEffect(() => {
@@ -52,14 +52,13 @@ export const Governance = () => {
     }
 
     if (chain) {
-      networkSelectorModel.events.selectNetwork(chain);
+      networkSelectorModel.events.selectNetwork(chain.chainId);
     } else {
       // navigate to default chain
-      navigationModel.events.navigateTo(
-        generatePath(Paths.GOVERNANCE_LIST, {
-          chainId: networkUtils.chainNameToUrl(networks[DEFAULT_GOVERNANCE_CHAIN].name),
-        }),
-      );
+      const path = generatePath(Paths.GOVERNANCE_LIST, {
+        chainId: networkUtils.chainNameToUrl(networks[DEFAULT_GOVERNANCE_CHAIN].name),
+      });
+      navigationModel.events.navigateTo(path);
     }
   }, [chainId]);
 
@@ -68,26 +67,28 @@ export const Governance = () => {
   return (
     <div className="flex h-full flex-col">
       <Header title={t('governance.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
-        <ReferendumSearch />
+        <Search />
       </Header>
 
-      <div className="h-full w-full overflow-y-auto py-6">
-        <section className="mx-auto flex h-full w-[736px] flex-col">
-          <div className="mb-2 flex gap-x-3">
-            <Plate className="h-[90px] w-[240px] px-4 pb-4.5 pt-3">
-              <NetworkSelector />
-            </Plate>
-            <Locks onClick={unlockAggregate.events.flowStarted} />
-            <TotalDelegation
-              onClick={() =>
-                hasDelegations ? currentDelegationModel.events.flowStarted() : delegationModel.events.flowStarted()
-              }
-            />
-          </div>
+      <ScrollArea>
+        <Box horizontalAlign="center" height="100%" padding={[6, 0]}>
+          <Box width="736px" height="100%" gap={5}>
+            <div className="flex gap-x-3">
+              <Plate className="h-[90px] w-[240px] px-4 pb-4.5 pt-3">
+                <NetworkSelector />
+              </Plate>
+              <Locks onClick={unlockAggregate.events.flowStarted} />
+              <TotalDelegation
+                onClick={() =>
+                  hasDelegations ? currentDelegationModel.events.flowStarted() : delegationModel.events.flowStarted()
+                }
+              />
+            </div>
 
-          <Outlet />
-        </section>
-      </div>
+            <Outlet />
+          </Box>
+        </Box>
+      </ScrollArea>
 
       <CurrentDelegationModal />
       <DelegationModal />

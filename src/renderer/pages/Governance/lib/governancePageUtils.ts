@@ -1,7 +1,7 @@
 import { type CompletedReferendum, type OngoingReferendum } from '@/shared/core';
 import { nonNullable, nullable, performSearch } from '@/shared/lib/utils';
 import { referendumService } from '@/entities/governance';
-import { type AggregatedReferendum, VoteStatus } from '@/features/governance';
+import { type AggregatedReferendum } from '@/features/governance';
 
 export const governancePageUtils = {
   filteredByQuery,
@@ -32,7 +32,7 @@ function filteredByQuery<T extends AggregatedReferendum>({ referendums, query }:
 
 type FilterByVoteParams = {
   referendum: AggregatedReferendum;
-  selectedVoteId: string;
+  selectedVoteId: null | 'voted' | 'notVoted';
 };
 
 function isReferendumVoted({ selectedVoteId, referendum }: FilterByVoteParams) {
@@ -40,7 +40,7 @@ function isReferendumVoted({ selectedVoteId, referendum }: FilterByVoteParams) {
     return true;
   }
 
-  if (selectedVoteId === VoteStatus.VOTED) {
+  if (selectedVoteId === 'voted') {
     return referendum.voting.votes.length > 0 || nonNullable(referendum.votedByDelegate);
   }
 
