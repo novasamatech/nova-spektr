@@ -120,11 +120,14 @@ export const getDestination = (
 export const getPayee = (tx: MultisigTransaction): { Account: Address } | string | undefined => {
   if (!tx.transaction) return undefined;
 
-  if (isProxyTransaction(tx.transaction)) {
-    return tx.transaction.args.transaction.args.payee;
+  const args = isProxyTransaction(tx.transaction) ? tx.transaction.args.transaction.args : tx.transaction.args;
+
+  // Bond + Nominate
+  if (args.transactions?.at(0)) {
+    return args.transactions.at(0).args.payee;
   }
 
-  return tx.transaction.args.payee;
+  return args.payee;
 };
 
 export const getDelegate = (tx: MultisigTransaction): Address | undefined => {
