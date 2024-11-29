@@ -315,10 +315,10 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
       {payee && (
         <DetailRow
           label={t('operation.details.payee')}
-          className={typeof payee === 'string' ? 'pr-0' : 'text-text-secondary'}
+          className={cnTw('text-text-secondary', { 'pr-0': typeof payee === 'string' })}
         >
           {typeof payee === 'string' ? (
-            payee
+            t('staking.confirmation.restakeRewards')
           ) : (
             <AddressWithExplorers
               explorers={explorers}
@@ -411,7 +411,7 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
               value={delegationVotes}
               asset={defaultAsset}
               showSymbol={false}
-            ></AssetBalance>
+            />
           </FootnoteText>
         </DetailRow>
       )}
@@ -424,7 +424,7 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
               value={undelegationVotes}
               asset={defaultAsset}
               showSymbol={false}
-            ></AssetBalance>
+            />
           </FootnoteText>
         </DetailRow>
       )}

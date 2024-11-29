@@ -116,6 +116,7 @@ export const Confirmation = ({
           </DetailRow>
 
           <hr className="w-full border-filter-border pr-2" />
+
           <DetailRow label={t('staking.confirmation.rewardsDestinationLabel')}>
             {confirmStore.destination ? (
               <Account accountId={toAccountId(confirmStore.destination)} chain={confirmStore.chain} variant="short" />

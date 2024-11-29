@@ -360,9 +360,12 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
       )}
 
       {payee && (
-        <DetailRow label={t('operation.details.payee')} className={valueClass}>
+        <DetailRow
+          label={t('operation.details.payee')}
+          className={cnTw(valueClass, { 'pr-0': typeof payee === 'string' })}
+        >
           {typeof payee === 'string' ? (
-            payee
+            t('staking.confirmation.restakeRewards')
           ) : (
             <AddressWithExplorers
               type="short"
