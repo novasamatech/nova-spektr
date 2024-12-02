@@ -1,9 +1,10 @@
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
+import { type ComponentProps } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { DEFAULT_TRANSITION, isStep } from '@/shared/lib/utils';
+import { DEFAULT_TRANSITION, cnTw, isStep } from '@/shared/lib/utils';
 import { HeaderTitleText } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
@@ -17,6 +18,15 @@ import { ConfirmationStep } from './ConfirmationStep';
 import { NameNetworkSelection } from './NameNetworkSelection';
 import { SelectSignatoriesThreshold } from './SelectSignatoriesThreshold';
 import { SignerSelection } from './components/SignerSelection';
+
+const MODAL_SIZE: Record<Step, Pick<ComponentProps<typeof Modal>, 'size' | 'height'>> = {
+  [Step.NAME_NETWORK]: { size: 'lg', height: 'full' },
+  [Step.SIGNATORIES_THRESHOLD]: { size: 'lg', height: 'full' },
+  [Step.SIGNER_SELECTION]: { size: 'sm', height: 'fit' },
+  [Step.SIGN]: { size: 'md', height: 'fit' },
+  [Step.CONFIRM]: { size: 'md', height: 'fit' },
+  [Step.SUBMIT]: { size: 'md', height: 'fit' },
+};
 
 type Props = {
   isOpen: boolean;
@@ -45,7 +55,7 @@ export const MultisigWallet = ({ isOpen, onComplete }: Props) => {
   }
 
   const modalTitle = (
-    <div className="flex w-[464px] items-center justify-between rounded-tl-lg rounded-tr-lg bg-white py-3">
+    <div className="flex w-[464px] items-center justify-between rounded-tl-lg rounded-tr-lg bg-white">
       <HeaderTitleText className="flex py-[3px]">
         {isStep(activeStep, Step.SIGNER_SELECTION)
           ? t('createMultisigAccount.selectSigner')
@@ -64,21 +74,25 @@ export const MultisigWallet = ({ isOpen, onComplete }: Props) => {
     </div>
   );
 
-  const modalSize =
-    isStep(activeStep, Step.SIGN) || isStep(activeStep, Step.CONFIRM) || isStep(activeStep, Step.SIGNER_SELECTION)
-      ? 'md'
-      : 'lg';
-
   return (
-    <Modal size={modalSize} height="fit" isOpen={isModalOpen} onToggle={handleClose}>
-      <Modal.Title close>{modalTitle}</Modal.Title>
-      <Modal.Content>
-        {isStep(activeStep, Step.NAME_NETWORK) && <NameNetworkSelection onGoBack={() => handleClose(false)} />}
-        {isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold />}
-        {isStep(activeStep, Step.SIGNER_SELECTION) && <SignerSelection />}
-        {isStep(activeStep, Step.CONFIRM) && <ConfirmationStep />}
-        {isStep(activeStep, Step.SIGN) && <OperationSign onGoBack={() => flowModel.events.stepChanged(Step.CONFIRM)} />}
-      </Modal.Content>
+    <Modal
+      size={MODAL_SIZE[activeStep].size}
+      height={MODAL_SIZE[activeStep].height}
+      isOpen={isModalOpen}
+      onToggle={handleClose}
+    >
+      <div className={cnTw({ 'mb-4': !isStep(activeStep, Step.SIGN) })}>
+        <Modal.Title close>{modalTitle}</Modal.Title>
+      </div>
+      {isStep(activeStep, Step.NAME_NETWORK) && <NameNetworkSelection onGoBack={() => handleClose(false)} />}
+      {isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold />}
+      {isStep(activeStep, Step.SIGNER_SELECTION) && <SignerSelection />}
+      {isStep(activeStep, Step.CONFIRM) && <ConfirmationStep />}
+      {isStep(activeStep, Step.SIGN) && (
+        <Modal.Content>
+          <OperationSign onGoBack={() => flowModel.events.stepChanged(Step.CONFIRM)} />
+        </Modal.Content>
+      )}
     </Modal>
   );
 };

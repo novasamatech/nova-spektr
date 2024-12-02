@@ -156,12 +156,8 @@ export const Signatory = ({
     });
   };
 
-  const accountInputLabel = isOwnAccount
-    ? t('createMultisigAccount.ownAccountSelection')
-    : t('createMultisigAccount.signatoryAddress');
-
   return (
-    <div className="grid grid-cols-[300px,1fr] gap-x-2">
+    <div className="grid grid-cols-[232px,1fr] gap-x-6">
       <Field text={t('createMultisigAccount.signatoryNameLabel')}>
         <Input
           name={t('createMultisigAccount.signatoryNameLabel')}
@@ -172,9 +168,9 @@ export const Signatory = ({
           onChange={onNameChange}
         />
       </Field>
-      <div className="flex items-end gap-x-2">
+      <div className="grid grid-cols-[444px,28px] gap-x-4">
         <Box width="100%">
-          <Field text={accountInputLabel}>
+          <Field text={t('createMultisigAccount.signatoryAddress')}>
             <Combobox
               placeholder={t('createMultisigAccount.signatorySelection')}
               prefixElement={<Identicon address={signatoryAddress} size={20} background={false} canCopy={false} />}
@@ -221,7 +217,12 @@ export const Signatory = ({
           </Field>
         </Box>
         {!isOwnAccount && onDelete && (
-          <IconButton className="mb-3.5" name="delete" size={16} onClick={() => onDelete(signatoryIndex)} />
+          <IconButton
+            className="mb-3.5 self-end justify-self-center"
+            name="delete"
+            size={16}
+            onClick={() => onDelete(signatoryIndex)}
+          />
         )}
       </div>
     </div>

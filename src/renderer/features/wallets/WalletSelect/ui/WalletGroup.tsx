@@ -1,6 +1,6 @@
 import { type Wallet, type WalletFamily, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Accordion, CaptionText, Icon } from '@/shared/ui';
+import { Accordion, CaptionText, Icon, IconButton } from '@/shared/ui';
 import { WalletCardMd, WalletIcon, walletUtils } from '@/entities/wallet';
 import { walletSelectModel } from '../model/wallet-select-model';
 
@@ -37,7 +37,7 @@ export const WalletGroup = ({ type, wallets }: Props) => {
         </div>
       </Accordion.Button>
       <Accordion.Content>
-        <ul>
+        <ul className="flex flex-col">
           {wallets.map((wallet) => (
             <li key={wallet.id} className="mb-2">
               <WalletCardMd
@@ -54,8 +54,9 @@ export const WalletGroup = ({ type, wallets }: Props) => {
                   )
                 }
                 onClick={() => walletSelectModel.events.walletSelected(wallet.id)}
-                onInfoClick={() => walletSelectModel.events.walletIdSet(wallet.id)}
-              />
+              >
+                <IconButton name="details" onClick={() => walletSelectModel.events.walletIdSet(wallet.id)} />
+              </WalletCardMd>
             </li>
           ))}
         </ul>
