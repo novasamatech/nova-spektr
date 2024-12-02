@@ -2,6 +2,15 @@ name: Run system tests
 
 on:
   workflow_dispatch:
+    inputs:
+      ALLURE_JOB_RUN_ID:
+        type: string
+        description: ALLURE_JOB_RUN_ID service parameter. Leave blank.
+        required: false
+      ALLURE_USERNAME:
+        type: string
+        description: ALLURE_USERNAME service parameter. Leave blank.
+        required: false
   push:
     branches:
       - 'dev'
@@ -17,6 +26,11 @@ concurrency:
 
 env:
   CI: true
+  ALLURE_ENDPOINT: https://nova.testops.cloud/
+  ALLURE_PROJECT_ID: 1
+  ALLURE_TOKEN: ${{ secrets.ALLURE_TOKEN }}
+  ALLURE_JOB_RUN_ID: ${{ github.event.inputs.ALLURE_JOB_RUN_ID }}
+  ALLURE_RESULTS: allure-results
 
 jobs:
   system-tests:
@@ -44,14 +58,17 @@ jobs:
           key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
       - run: npx playwright install --with-deps
         if: steps.playwright-cache.outputs.cache-hit != 'true'
+      
+      - name: Install allurectl
+        uses: allure-framework/setup-allurectl@v1
 
       - name: Run Playwright tests
         if: github.event_name != 'schedule'
-        run: npx playwright test --grep @regress
+        run: allurectl watch -- npx playwright test --grep @regress
 
       - name: Run Playwright tests for schedule event
         if: github.event_name == 'schedule'
-        run: npx playwright test --grep @fee-test
+        run: allurectl watch -- npx playwright test --grep @fee-test
 
       - uses: actions/upload-artifact@v4
         if: always()
