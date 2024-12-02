@@ -14,6 +14,7 @@ import {
   useState,
 } from 'react';
 
+import { type XOR } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
 import { Input } from '../Input/Input';
 import { ScrollArea } from '../ScrollArea/ScrollArea';
@@ -41,14 +42,24 @@ type InputProps = Pick<
 >;
 
 type ControlledPopoverProps = {
-  value: string;
+  selectedValue: string;
   onChange: (value: string) => void;
+} & XOR<{
+  inputValue: string;
   onInput: (value: string) => void;
-};
+}>;
 
 type RootProps = PropsWithChildren<ControlledPopoverProps & ContextProps & InputProps>;
 
-const Root = ({ testId = 'Combobox', value, onChange, onInput, children, ...inputProps }: RootProps) => {
+const Root = ({
+  testId = 'Combobox',
+  inputValue,
+  selectedValue,
+  onChange,
+  onInput,
+  children,
+  ...inputProps
+}: RootProps) => {
   const comboboxRef = useRef<HTMLInputElement>(null);
   const listboxRef = useRef<HTMLDivElement>(null);
   const anchorRef = useRef<HTMLDivElement>(null);
@@ -63,8 +74,8 @@ const Root = ({ testId = 'Combobox', value, onChange, onInput, children, ...inpu
         <Ariakit.ComboboxProvider
           open={open}
           setOpen={onOpenChange}
-          defaultValue={value}
-          defaultSelectedValue={value}
+          value={inputValue}
+          selectedValue={selectedValue}
           setSelectedValue={onChange}
           setValue={(value) => startTransition(() => onChange(value))}
         >
@@ -84,7 +95,6 @@ const Trigger = ({ placeholder, ...inputProps }: InputProps) => {
       <div ref={anchorRef} className="w-full">
         <Ariakit.Combobox
           autoSelect
-          autoComplete="both"
           ref={comboboxRef}
           placeholder={placeholder}
           render={({ onChange, ...props }) => <Input {...props} {...inputProps} onChangeEvent={onChange} />}

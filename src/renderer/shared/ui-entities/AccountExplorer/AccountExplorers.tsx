@@ -1,6 +1,6 @@
 import { type PropsWithChildren, memo } from 'react';
 
-import { type AccountId, type Chain } from '@/shared/core';
+import { type AccountId, type Address, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { copyToClipboard, getAccountExplorer, toAddress } from '@/shared/lib/utils';
 import { ExplorerLink, FootnoteText, HelpText, IconButton, Separator } from '@/shared/ui';
@@ -8,7 +8,7 @@ import { Box, Popover } from '@/shared/ui-kit';
 import { Hash } from '../Hash/Hash';
 
 type Props = PropsWithChildren<{
-  accountId: AccountId;
+  accountId: Address | AccountId;
   chain: Chain;
   testId?: string;
 }>;

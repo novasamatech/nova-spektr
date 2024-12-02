@@ -142,7 +142,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
           <Controller
             name="address"
             control={control}
-            rules={{ required: true, validate: validateAddress }}
+            rules={{ required: true, validate: (address) => validateAddress(address) }}
             render={({ field: { onChange, value } }) => (
               <div>
                 <Input

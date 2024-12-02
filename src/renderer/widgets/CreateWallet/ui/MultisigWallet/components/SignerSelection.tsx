@@ -29,7 +29,7 @@ export const SignerSelection = () => {
   return (
     <>
       <Modal.Content>
-        <ul className="my-1 flex max-h-[660px] w-full flex-col px-3">
+        <ul className="my-1 flex max-h-[660px] w-full flex-col gap-y-2 px-3">
           {ownedSignatoriesWallets.map((wallet) => {
             if (!chain) return null;
 

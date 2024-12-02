@@ -14,30 +14,32 @@ const getSignatoriesBalance = createEvent<Wallet[]>();
 
 const $signatories = createStore<Omit<SignatoryInfo, 'index'>[]>([{ name: '', address: '', walletId: '' }]);
 
-const $hasDuplicateSignatories = combine($signatories, (signatories) => {
-  const existingKeys: Set<Address> = new Set();
+const $duplicateSignatories = combine($signatories, (signatories) => {
+  const duplicates: Record<Address, number[]> = {};
 
-  for (const signatory of signatories) {
-    if (signatory.address.length === 0) {
-      continue;
+  for (const [index, signer] of signatories.entries()) {
+    if (!signer.address) continue;
+
+    if (duplicates[signer.address]) {
+      duplicates[signer.address].push(index);
+    } else {
+      duplicates[signer.address] = [];
     }
-
-    if (existingKeys.has(signatory.address)) {
-      return true;
-    }
-
-    existingKeys.add(signatory.address);
   }
 
-  return false;
+  return duplicates;
 });
 
-const $hasEmptySignatories = combine($signatories, (signatories) => {
-  return signatories.map(({ address }) => address).includes('');
+const $hasDuplicateSignatories = $duplicateSignatories.map((signatories) => {
+  return Object.values(signatories).some((duplicates) => duplicates.length > 0);
 });
 
-const $hasEmptySignatoryName = combine($signatories, (signatories) => {
-  return signatories.map(({ name }) => name).includes('');
+const $hasEmptySignatories = $signatories.map((signatories) => {
+  return signatories.some(({ address }) => !address.trim());
+});
+
+const $hasEmptySignatoryName = $signatories.map((signatories) => {
+  return signatories.some(({ name }) => !name.trim());
 });
 
 const $ownedSignatoriesWallets = combine(
@@ -107,9 +109,11 @@ sample({
 export const signatoryModel = {
   $signatories,
   $ownedSignatoriesWallets,
-  $hasDuplicateSignatories,
+  $duplicateSignatories,
   $hasEmptySignatories,
   $hasEmptySignatoryName,
+  $hasDuplicateSignatories,
+
   events: {
     addSignatory,
     changeSignatory,

@@ -3,19 +3,11 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { type Account, type Address as AccountAddress, type ID, type WalletFamily } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import {
-  includesMultiple,
-  performSearch,
-  toAccountId,
-  toAddress,
-  validateEthereumAddress,
-  validateSubstrateAddress,
-} from '@/shared/lib/utils';
-import { CaptionText, IconButton, Identicon } from '@/shared/ui';
+import { includesMultiple, performSearch, toAccountId, toAddress } from '@/shared/lib/utils';
+import { CaptionText, IconButton, Identicon, InputHint } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Input } from '@/shared/ui-kit';
 import { contactModel } from '@/entities/contact';
-import { networkUtils } from '@/entities/network';
 import { WalletIcon, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { filterModel } from '@/features/contacts';
 import { walletSelectUtils } from '@/features/wallets/WalletSelect/lib/wallet-select-utils';
@@ -23,23 +15,28 @@ import { GroupLabels } from '@/features/wallets/WalletSelect/ui/WalletGroup';
 import { formModel } from '@/widgets/CreateWallet/model/form-model';
 import { signatoryModel } from '../../../model/signatory-model';
 
-interface Props {
+type Props = {
+  isOwnAccount?: boolean;
+  isDuplicate: boolean;
+  isInvalidAddress: boolean;
   signatoryName: string;
   signatoryAddress: AccountAddress;
   signatoryIndex: number;
   selectedWalletId?: string;
-  isOwnAccount?: boolean;
   onDelete?: (index: number) => void;
-}
+};
 
 export const Signatory = ({
   signatoryIndex,
-  onDelete,
+  isDuplicate,
+  isInvalidAddress,
   isOwnAccount = false,
   signatoryName,
   signatoryAddress,
   selectedWalletId,
+  onDelete,
 }: Props) => {
+  console.log('signatoryAddress', signatoryAddress);
   const { t } = useI18n();
 
   const chain = useUnit(formModel.$chain);
@@ -140,18 +137,12 @@ export const Signatory = ({
   };
 
   const onAddressChange = <T extends string = `${AccountAddress}_${ID}`>(address: T) => {
-    if (!chain) return;
-
     const [accountAddress, walletId] = address.split('_');
-    const isEthereumChain = networkUtils.isEthereumBased(chain.options);
-    const validateFn = isEthereumChain ? validateEthereumAddress : validateSubstrateAddress;
-
-    if (!validateFn(accountAddress)) return;
 
     signatoryModel.events.changeSignatory({
-      address: accountAddress,
       index: signatoryIndex,
       name: signatoryName,
+      address: accountAddress,
       walletId: walletId, // will be undefined for contact
     });
   };
@@ -173,8 +164,17 @@ export const Signatory = ({
           <Field text={t('createMultisigAccount.signatoryAddress')}>
             <Combobox
               placeholder={t('createMultisigAccount.signatorySelection')}
-              prefixElement={<Identicon address={signatoryAddress} size={20} background={false} canCopy={false} />}
-              value={signatoryAddress}
+              prefixElement={
+                <Identicon
+                  address={isInvalidAddress ? '' : signatoryAddress}
+                  size={20}
+                  background={false}
+                  canCopy={false}
+                />
+              }
+              inputValue={signatoryAddress}
+              selectedValue={`${signatoryAddress}_${selectedWalletId}`}
+              invalid={isDuplicate}
               onChange={onAddressChange}
               onInput={setQuery}
             >
@@ -214,11 +214,15 @@ export const Signatory = ({
                 );
               })}
             </Combobox>
+
+            <InputHint active={isDuplicate} variant="error">
+              {t('createMultisigAccount.duplicateSignatoryAddress')}
+            </InputHint>
           </Field>
         </Box>
         {!isOwnAccount && onDelete && (
           <IconButton
-            className="mb-3.5 self-end justify-self-center"
+            className="mt-9 self-start justify-self-center"
             name="delete"
             size={16}
             onClick={() => onDelete(signatoryIndex)}

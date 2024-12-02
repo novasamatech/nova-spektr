@@ -4,6 +4,7 @@ import { useUnit } from 'effector-react';
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
+import { nonNullable } from '@/shared/lib/utils';
 import { Alert, Button, Counter, DetailRow, Icon, IconButton, Separator } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
@@ -96,12 +97,6 @@ export const ConfirmationStep = () => {
               </div>
             ) : null}
           </div>
-          <SelectedSignatoriesModal
-            isOpen={isSignatoriesModalOpen}
-            signatories={signatories}
-            addressPrefix={chain?.addressPrefix}
-            onClose={toggleSignatoriesModalOpen}
-          />
         </section>
       </Modal.Content>
       <Modal.Footer>
@@ -126,6 +121,15 @@ export const ConfirmationStep = () => {
           />
         </Box>
       </Modal.Footer>
+
+      {nonNullable(chain) ? (
+        <SelectedSignatoriesModal
+          chain={chain}
+          isOpen={isSignatoriesModalOpen}
+          signatories={signatories}
+          onClose={toggleSignatoriesModalOpen}
+        />
+      ) : null}
     </>
   );
 };

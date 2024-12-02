@@ -1,5 +1,4 @@
 import { type Meta, type StoryObj } from '@storybook/react';
-import { noop } from 'lodash';
 import { useState } from 'react';
 
 import { Icon } from '@/shared/ui';
@@ -13,7 +12,7 @@ const meta: Meta<typeof Combobox> = {
     const [value, setValue] = useState('');
 
     return (
-      <Combobox {...params} placeholder="Type something ..." value={value} onChange={setValue}>
+      <Combobox {...params} placeholder="Type something ..." selectedValue={value} onChange={setValue}>
         {[
           { text: '🍎 Apple', value: 'Apple' },
           { text: '🍇 Grape', value: 'Grape' },
@@ -59,7 +58,7 @@ export const Groups: Story = {
     const [value, setValue] = useState('');
 
     return (
-      <Combobox placeholder="Type something ..." value={value} onChange={setValue} onInput={noop}>
+      <Combobox placeholder="Type something ..." selectedValue={value} onChange={setValue}>
         <Combobox.Group title="Group 1">
           {[
             { text: '🍎 Apple', value: 'Apple' },
@@ -91,7 +90,7 @@ export const NestedGroups: Story = {
     const [value, setValue] = useState('');
 
     return (
-      <Combobox placeholder="Type something ..." value={value} onChange={setValue} onInput={noop}>
+      <Combobox placeholder="Type something ..." selectedValue={value} onChange={setValue}>
         <Combobox.Group title="Group 1">
           <Combobox.Group
             title={
