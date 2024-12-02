@@ -20,7 +20,7 @@ type Input = {
   id?: number;
   chain: Chain;
   account: Account;
-  signatory?: Account;
+  signatory: Account | null;
   proxyType: ProxyType;
   delegate: Address;
   transaction: Transaction;

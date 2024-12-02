@@ -32,7 +32,7 @@ describe('widgets/AddPureProxyModal/model/form-model', () => {
     expect(scope.getState(formModel.$proxyForm.$values)).toEqual({
       account: {},
       chain: testChain,
-      signatory: {},
+      signatory: null,
     });
     expect(scope.getState(formModel.$api)).toEqual(testApi);
   });

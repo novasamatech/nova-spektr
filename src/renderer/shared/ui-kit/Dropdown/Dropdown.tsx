@@ -64,9 +64,14 @@ const Separator = () => {
   );
 };
 
-const Content = ({ children }: PropsWithChildren) => {
+type ContentProps = {
+  width?: 'auto' | 'trigger';
+};
+const Content = ({ width = 'auto', children }: PropsWithChildren<ContentProps>) => {
   const { portalContainer } = useTheme();
   const { side, sideOffset, align, alignOffset, testId } = useContext(Context);
+
+  const calculatedWidth = width === 'trigger' ? 'var(--radix-dropdown-menu-trigger-width)' : undefined;
 
   return (
     <DropdownMenu.Portal container={portalContainer}>
@@ -76,6 +81,7 @@ const Content = ({ children }: PropsWithChildren) => {
         avoidCollisions={false}
         side={side}
         align={align}
+        style={{ width: calculatedWidth }}
         collisionPadding={gridSpaceConverter(2)}
         alignOffset={alignOffset && gridSpaceConverter(alignOffset)}
         sideOffset={sideOffset && gridSpaceConverter(sideOffset)}
@@ -85,8 +91,11 @@ const Content = ({ children }: PropsWithChildren) => {
           elevation={1}
           className={cnTw(
             'z-50 flex flex-col',
-            'h-max max-h-[--radix-popper-available-height] max-w-60',
-            'min-w-20 overflow-hidden duration-100 animate-in fade-in zoom-in-95',
+            'h-max max-h-[--radix-popper-available-height] min-w-20',
+            'overflow-hidden duration-100 animate-in fade-in zoom-in-95',
+            {
+              'max-w-60': width === 'auto',
+            },
           )}
         >
           <ScrollArea>

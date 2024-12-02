@@ -1,6 +1,5 @@
 import { useUnit } from 'effector-react';
-import QRCodeStyling from 'qr-code-styling';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
 
 import { useStatusContext } from '@/app/providers';
 import { chainsService } from '@/shared/api/network';
@@ -8,14 +7,14 @@ import novawallet_onboarding_tutorial from '@/shared/assets/video/novawallet_onb
 import novawallet_onboarding_tutorial_webm from '@/shared/assets/video/novawallet_onboarding_tutorial.webm';
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { usePrevious } from '@/shared/lib/hooks';
-import { BaseModal, Button, HeaderTitleText, Loader, SmallTitleText } from '@/shared/ui';
+import { BaseModal, Button, HeaderTitleText, SmallTitleText } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { walletConnectModel, walletConnectUtils } from '@/entities/walletConnect';
+import { WalletConnectQrCode } from '@/features/wallet-connect-pairing';
 import { wcOnboardingModel } from '@/pages/Onboarding/WalletConnect/model/wc-onboarding-model';
 
 import { ManageStep } from './ManageStep';
-import { EXPIRE_TIMEOUT, NWQRConfig, Step } from './lib/constants';
+import { EXPIRE_TIMEOUT, Step } from './lib/constants';
 import { isNeedDisconnect } from './lib/utils';
 
 type Props = {
@@ -25,36 +24,15 @@ type Props = {
   onComplete: () => void;
 };
 
-const qrCode = new QRCodeStyling(NWQRConfig);
-
 export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
 
   const session = useUnit(walletConnectModel.$session);
-  const client = useUnit(walletConnectModel.$client);
-  const pairings = useUnit(walletConnectModel.$pairings);
+  const provider = useUnit(walletConnectModel.$provider);
   const uri = useUnit(walletConnectModel.$uri);
   const step = useUnit(wcOnboardingModel.$step);
 
-  const previousPairings = usePrevious(pairings);
-
-  const [pairingTopic, setPairingTopic] = useState<string>();
-
   const { showStatus } = useStatusContext();
-
-  const ref = useRef(null);
-
-  useEffect(() => {
-    if (ref.current) {
-      qrCode.append(ref.current);
-    }
-  }, [ref.current]);
-
-  useEffect(() => {
-    qrCode.update({
-      data: uri,
-    });
-  }, [uri]);
 
   useEffect(() => {
     if (isOpen) {
@@ -81,19 +59,11 @@ export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
   }, [step]);
 
   useEffect(() => {
-    if (client && isOpen) {
+    if (provider && isOpen) {
       const chains = walletConnectUtils.getWalletConnectChains(chainsService.getChainsData());
       walletConnectModel.events.connect({ chains });
     }
-  }, [client, isOpen]);
-
-  useEffect(() => {
-    const newPairing = pairings?.find((p) => !previousPairings?.find((pp) => pp.topic === p.topic));
-
-    if (newPairing) {
-      setPairingTopic(newPairing.topic);
-    }
-  }, [pairings.length]);
+  }, [provider, isOpen]);
 
   const handleClose = () => {
     if (isNeedDisconnect(step)) {
@@ -110,19 +80,13 @@ export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
       panelClass="w-modal-xl h-modal overflow-hidden"
       onClose={handleClose}
     >
-      {step === Step.SCAN && qrCode && (
+      {step === Step.SCAN && (
         <>
           <div className="flex w-full min-w-96 max-w-[472px] flex-col rounded-l-lg bg-white px-5 py-4">
             <HeaderTitleText className="mb-10">{t('onboarding.novaWallet.title')}</HeaderTitleText>
             <SmallTitleText className="mb-6">{t('onboarding.novaWallet.scanTitle')}</SmallTitleText>
 
-            <div className="relative flex flex-1 items-center justify-center">
-              <div className="absolute left-[50%] top-[50%] z-0 -translate-x-1/2 -translate-y-1/2">
-                <Loader color="primary" />
-              </div>
-
-              <div key="nova-wallet" className="z-10" ref={ref}></div>
-            </div>
+            <WalletConnectQrCode uri={uri} type="novawallet" />
 
             <div className="flex items-end justify-between">
               <Button variant="text" onClick={handleClose}>
@@ -140,11 +104,11 @@ export const NovaWallet = ({ isOpen, onClose, onComplete }: Props) => {
         </>
       )}
 
-      {step === Step.MANAGE && session && pairingTopic && (
+      {step === Step.MANAGE && session && (
         <ManageStep
           type={WalletType.NOVA_WALLET}
           accounts={session.namespaces.polkadot.accounts}
-          pairingTopic={pairingTopic}
+          pairingTopic={session.pairingTopic}
           sessionTopic={session.topic}
           onBack={walletConnectModel.events.disconnectCurrentSessionStarted}
           onComplete={onComplete}

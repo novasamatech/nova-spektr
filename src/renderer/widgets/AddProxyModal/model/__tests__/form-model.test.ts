@@ -33,7 +33,7 @@ describe('widgets/AddPureProxyModal/model/form-model', () => {
       account: {},
       chain: testChain,
       delegate: '',
-      signatory: {},
+      signatory: null,
       proxyType: 'Any',
     });
     expect(scope.getState(formModel.$api)).toEqual(testApi);

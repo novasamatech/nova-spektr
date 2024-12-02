@@ -1,5 +1,6 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
+import isEmpty from 'lodash/isEmpty';
 import { spread } from 'patronum';
 
 import {
@@ -9,7 +10,6 @@ import {
   type Chain,
   type ChainId,
   type MultisigTxWrapper,
-  type PartialBy,
   type ProxiedAccount,
   type ProxyTxWrapper,
   type Transaction,
@@ -18,6 +18,7 @@ import {
   ZERO_BALANCE,
   formatAmount,
   getAssetId,
+  nonNullable,
   toAccountId,
   toAddress,
   transferableAmount,
@@ -37,7 +38,7 @@ type BalanceMap = Record<'balance' | 'native', string>;
 type FormParams = {
   account: Account;
   xcmChain: Chain;
-  signatory: Account;
+  signatory: Account | null;
   destination: Address;
   amount: string;
 };
@@ -48,7 +49,8 @@ type FormSubmitEvent = {
     multisigTx?: Transaction;
     coreTx: Transaction;
   };
-  formData: PartialBy<FormParams, 'signatory'> & {
+  formData: FormParams & {
+    signatory: Account | null;
     proxiedAccount?: ProxiedAccount;
     fee: string;
     xcmFee: string;
@@ -100,7 +102,7 @@ const $transferForm = createForm<FormParams>({
       ],
     },
     signatory: {
-      init: {} as Account,
+      init: null,
       rules: [
         TransferRules.signatory.noSignatorySelected($isMultisig),
         TransferRules.signatory.notEnoughTokens(
@@ -323,9 +325,10 @@ const $api = combine(
     network: $networkStore,
   },
   ({ apis, network }) => {
-    return network ? apis[network.chain.chainId] : undefined;
+    if (!network) return null;
+
+    return apis[network.chain.chainId] ?? null;
   },
-  { skipVoid: false },
 );
 
 const $pureTx = combine(
@@ -510,9 +513,11 @@ sample({
 sample({
   clock: $transferForm.fields.signatory.$value,
   source: $signatories,
-  filter: (signatories) => signatories.length > 0,
+  filter: (signatories, signatory) => {
+    return !isEmpty(signatories) && nonNullable(signatory);
+  },
   fn: (signatories, signatory) => {
-    const match = signatories[0].find(({ signer }) => signer.id === signatory.id);
+    const match = signatories[0].find(({ signer }) => signer.id === signatory!.id);
 
     return match?.balance || ZERO_BALANCE;
   },
@@ -521,6 +526,7 @@ sample({
 
 sample({
   clock: $transferForm.fields.signatory.$value,
+  filter: (signatory: Account | null): signatory is Account => nonNullable(signatory),
   fn: (signatory) => [signatory],
   target: $selectedSignatories,
 });
@@ -601,8 +607,6 @@ sample({
     return Boolean(network) && Boolean(transaction);
   },
   fn: ({ realAccount, network, transaction, isProxy, ...fee }, formData) => {
-    const signatory = formData.signatory.accountId ? formData.signatory : undefined;
-
     const amount = formatAmount(formData.amount, network!.asset.precision);
 
     return {
@@ -614,9 +618,8 @@ sample({
       formData: {
         ...fee,
         ...formData,
-        account: realAccount,
         amount,
-        signatory,
+        account: realAccount,
         ...(isProxy && { proxiedAccount: formData.account as ProxiedAccount }),
       },
     };

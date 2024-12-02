@@ -1,13 +1,15 @@
 import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
+import isEmpty from 'lodash/isEmpty';
 import { spread } from 'patronum';
 
-import { type Account, type Address, type Asset, type Chain, type PartialBy, RewardsDestination } from '@/shared/core';
+import { type Account, type Address, type Asset, type Chain, RewardsDestination } from '@/shared/core';
 import {
   formatAmount,
   getRelaychainAsset,
   isStringsMatchQuery,
+  nonNullable,
   stakeableAmount,
   toAddress,
   transferableAmount,
@@ -21,13 +23,13 @@ import { type WalletData } from '../lib/types';
 
 type FormParams = {
   shards: Account[];
-  signatory: Account;
+  signatory: Account | null;
   destination: Address;
 };
 
 const formInitiated = createEvent<WalletData>();
 const formSubmitted = createEvent();
-const formChanged = createEvent<PartialBy<FormParams, 'signatory'>>();
+const formChanged = createEvent<FormParams>();
 const formCleared = createEvent();
 const destinationQueryChanged = createEvent<string>();
 const destinationTypeChanged = createEvent<RewardsDestination>();
@@ -97,14 +99,14 @@ const $payeeForm = createForm<FormParams>({
       ],
     },
     signatory: {
-      init: {} as Account,
+      init: null,
       rules: [
         {
           name: 'noSignatorySelected',
           errorText: 'transfer.noSignatoryError',
           source: $isMultisig,
           validator: (signatory, _, isMultisig) => {
-            if (!isMultisig) return true;
+            if (!signatory || !isMultisig) return true;
 
             return Object.keys(signatory).length > 0;
           },
@@ -321,9 +323,11 @@ sample({
 sample({
   clock: $payeeForm.fields.signatory.onChange,
   source: $signatories,
-  filter: (signatories) => signatories.length > 0,
+  filter: (signatories, signatory) => {
+    return !isEmpty(signatories) && nonNullable(signatory);
+  },
   fn: (signatories, signatory) => {
-    const match = signatories[0].find(({ signer }) => signer.id === signatory.id);
+    const match = signatories[0].find(({ signer }) => signer.id === signatory!.id);
 
     return match?.balance || '0';
   },
@@ -360,14 +364,9 @@ sample({
   source: $networkStore,
   filter: (networkStore) => Boolean(networkStore),
   fn: (networkStore, formData) => {
-    const signatory = formData.signatory.accountId ? formData.signatory : undefined;
-    const destinationAddress = toAddress(formData.destination, { prefix: networkStore!.chain.addressPrefix });
+    const destination = toAddress(formData.destination, { prefix: networkStore!.chain.addressPrefix });
 
-    return {
-      ...formData,
-      destination: destinationAddress,
-      signatory,
-    };
+    return { ...formData, destination };
   },
   target: formChanged,
 });

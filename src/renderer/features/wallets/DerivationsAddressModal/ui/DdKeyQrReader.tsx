@@ -5,8 +5,8 @@ import { useState } from 'react';
 import { CryptoType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { Button, CaptionText, FootnoteText, Icon, Loader, Select, SmallTitleText } from '@/shared/ui';
-import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
+import { Button, CaptionText, FootnoteText, Icon, Loader, SmallTitleText } from '@/shared/ui';
+import { Select } from '@/shared/ui-kit';
 import {
   type DdAddressInfoDecoded,
   type DdSeedInfo,
@@ -42,8 +42,9 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
   const { t } = useI18n();
 
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.LOADING);
-  const [activeCamera, setActiveCamera] = useState<DropdownResult<string>>();
-  const [availableCameras, setAvailableCameras] = useState<DropdownOption<string>[]>([]);
+
+  const [activeCamera, setActiveCamera] = useState<string>();
+  const [availableCameras, setAvailableCameras] = useState<Record<'title' | 'value', string>[]>([]);
 
   const [isScanComplete, setIsScanComplete] = useState(false);
   const [{ decoded, total }, setProgress] = useState({ decoded: 0, total: 0 });
@@ -59,17 +60,16 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
   ].includes(cameraState);
 
   const onCameraList = (cameras: VideoInput[]) => {
-    const formattedCameras = cameras.map((camera, index) => ({
-      //eslint-disable-next-line i18next/no-literal-string
-      element: `${index + 1}. ${camera.label}`,
+    const formattedCameras = cameras.map((camera) => ({
+      title: camera.label,
       value: camera.id,
-      id: camera.id,
     }));
 
     setAvailableCameras(formattedCameras);
 
-    if (formattedCameras.length > 0) {
-      setActiveCamera(formattedCameras[0]);
+    const defaultCamera = formattedCameras.at(0);
+    if (defaultCamera) {
+      setActiveCamera(defaultCamera.value);
       setCameraState(CameraState.ACTIVE);
     }
   };
@@ -222,10 +222,10 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
             {t('onboarding.vault.scanTitle')}
           </SmallTitleText>
           <QrReader
-            size={size}
-            cameraId={activeCamera?.value}
-            isDynamicDerivations
             bgVideo
+            size={size}
+            cameraId={activeCamera}
+            isDynamicDerivations
             className="relative top-[-24px] -scale-x-[1.125] scale-y-[1.125]"
             wrapperClassName="translate-y-[-84px]"
             onStart={() => setCameraState(CameraState.ACTIVE)}
@@ -235,17 +235,23 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
             onError={onError}
           />
 
-          <div className="absolute bottom-[138px] z-10 flex h-8.5 w-full justify-center">
-            {availableCameras && availableCameras.length > 1 && (
-              <Select
-                theme="dark"
-                placeholder={t('onboarding.paritySigner.selectCameraLabel')}
-                selectedId={activeCamera?.id}
-                options={availableCameras}
-                className="w-[208px]"
-                onChange={setActiveCamera}
-              />
-            )}
+          <div className="absolute bottom-[138px] z-10 w-full">
+            <div className="mx-auto w-[208px]">
+              {availableCameras.length > 1 && (
+                <Select
+                  theme="dark"
+                  placeholder={t('onboarding.paritySigner.selectCameraLabel')}
+                  value={activeCamera ?? null}
+                  onChange={setActiveCamera}
+                >
+                  {availableCameras.map((camera, index) => (
+                    <Select.Item key={camera.value} value={camera.value}>
+                      {`${index + 1}. ${camera.title}`}
+                    </Select.Item>
+                  ))}
+                </Select>
+              )}
+            </div>
           </div>
 
           <div className="absolute inset-0 mt-[58px] flex h-full w-full justify-center">

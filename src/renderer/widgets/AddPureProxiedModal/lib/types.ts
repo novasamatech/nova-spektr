@@ -12,6 +12,6 @@ export const enum Step {
 export type AddPureProxiedStore = {
   chain: Chain;
   account: Account;
-  signatory?: Account;
+  signatory: Account | null;
   proxyDeposit: string;
 };

@@ -10,7 +10,7 @@ import { transactionService } from '../../lib';
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 
 type Props = {
-  api?: ApiPromise;
+  api: ApiPromise | null;
   multiply?: number;
   asset: Asset;
   transaction?: Transaction;

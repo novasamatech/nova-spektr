@@ -1,5 +1,6 @@
 import { default as BigNumber } from 'bignumber.js';
 import { useUnit } from 'effector-react';
+import { memo } from 'react';
 
 import { type Asset, type AssetByChains } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -16,7 +17,7 @@ type Props = {
   className?: string;
 };
 
-export const AssetFiatBalance = ({ asset, amount, className }: Props) => {
+export const AssetFiatBalance = memo(({ asset, amount, className }: Props) => {
   const { t } = useI18n();
 
   const currency = useUnit(currencyModel.$activeCurrency);
@@ -50,4 +51,4 @@ export const AssetFiatBalance = ({ asset, amount, className }: Props) => {
   });
 
   return <FiatBalance amount={`${balanceValue}${suffix}`} className={className} />;
-};
+});

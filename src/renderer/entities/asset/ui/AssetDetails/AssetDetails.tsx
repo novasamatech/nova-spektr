@@ -1,5 +1,6 @@
 import { type BN } from '@polkadot/util';
 import { BigNumber } from 'bignumber.js';
+import { memo } from 'react';
 
 import { type Asset } from '@/shared/core';
 import { HelpText, Shimmering } from '@/shared/ui';
@@ -12,7 +13,7 @@ type Props = {
   value?: BN;
 };
 
-export const AssetDetails = ({ asset, value, label }: Props) => {
+export const AssetDetails = memo(({ asset, value, label }: Props) => {
   return (
     <div className="flex flex-1 flex-col gap-y-0.5 pl-4">
       <HelpText as="dt" className="text-text-tertiary">
@@ -28,4 +29,4 @@ export const AssetDetails = ({ asset, value, label }: Props) => {
       </dd>
     </div>
   );
-};
+});

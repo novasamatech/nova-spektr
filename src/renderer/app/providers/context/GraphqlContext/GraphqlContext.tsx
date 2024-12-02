@@ -18,9 +18,10 @@ import {
   useState,
 } from 'react';
 
+import { localStorageService } from '@/shared/api/local-storage';
 import { chainsService } from '@/shared/api/network';
 import { type ChainId, ExternalType } from '@/shared/core';
-import { settingsStorage } from '@/entities/settings';
+import { DEFAULT_STAKING_CHAIN, STAKING_NETWORK } from '@/entities/staking';
 
 type GraphqlContextProps = {
   changeClient: (chainId: ChainId) => void;
@@ -61,22 +62,24 @@ export const GraphqlProvider = ({ children }: PropsWithChildren) => {
 
   useEffect(() => {
     const chainsData = chainsService.getStakingChainsData();
-    const stakingChainId = settingsStorage.getStakingNetwork();
 
-    chainUrls.current = chainsData.reduce((acc, chain) => {
+    const result: Record<ChainId, string> = {};
+
+    for (const chain of chainsData) {
       const subqueryMatch = chain.externalApi?.[ExternalType.STAKING]?.find((api) => api.type === 'subquery');
+      if (!subqueryMatch) continue;
 
-      if (subqueryMatch) {
-        return { ...acc, [chain.chainId]: subqueryMatch.url };
-      }
+      result[chain.chainId] = subqueryMatch.url;
+    }
 
-      return acc;
-    }, {});
-
-    changeClient(stakingChainId);
+    chainUrls.current = result;
   }, []);
 
-  const value = useMemo(() => ({ changeClient }), [changeClient]);
+  useEffect(() => {
+    changeClient(localStorageService.getFromStorage(STAKING_NETWORK, DEFAULT_STAKING_CHAIN));
+  }, []);
+
+  const value = useMemo(() => ({ changeClient }), []);
 
   if (!apolloClient) {
     return null;

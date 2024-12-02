@@ -4,20 +4,18 @@ import { type FormEvent, useEffect } from 'react';
 
 import { type CurrencyItem } from '@/shared/api/price-provider';
 import { useI18n } from '@/shared/i18n';
-import { Button, FootnoteText, HelpText, Select, Switch } from '@/shared/ui';
-import { type DropdownOption } from '@/shared/ui/types';
+import { nonNullable } from '@/shared/lib/utils';
+import { Button, FootnoteText, HelpText, Switch } from '@/shared/ui';
+import { Select } from '@/shared/ui-kit';
 import { type Callbacks, currencyFormModel } from '../model/currency-form';
 
-const getCurrencyOption = (currency: CurrencyItem): DropdownOption<CurrencyItem> => ({
-  id: currency.id.toString(),
-  value: currency,
-  element: [currency.code, currency.symbol, currency.name].filter(Boolean).join(' • '),
-});
+const getCurrencyTitle = (currency: CurrencyItem): string => {
+  return [currency.code, currency.symbol, currency.name].filter(nonNullable).join(' • ');
+};
 
 type Props = Callbacks;
 export const CurrencyForm = ({ onSubmit }: Props) => {
   const { t } = useI18n();
-  const isFormValid = useUnit(currencyFormModel.$isFormValid);
 
   useEffect(() => {
     currencyFormModel.events.callbacksChanged({ onSubmit });
@@ -32,33 +30,10 @@ export const CurrencyForm = ({ onSubmit }: Props) => {
     fields: { fiatFlag, currency },
   } = useForm(currencyFormModel.$currencyForm);
 
+  const isFormValid = useUnit(currencyFormModel.$isFormValid);
   const cryptoCurrencies = useUnit(currencyFormModel.$cryptoCurrencies);
   const popularFiatCurrencies = useUnit(currencyFormModel.$popularFiatCurrencies);
   const unpopularFiatCurrencies = useUnit(currencyFormModel.$unpopularFiatCurrencies);
-
-  const currenciesOptions: DropdownOption<CurrencyItem>[] = [
-    {
-      id: 'crypto',
-      element: <HelpText className="text-text-secondary">{t('settings.currency.cryptocurrenciesLabel')}</HelpText>,
-      value: {} as CurrencyItem,
-      disabled: true,
-    },
-    ...cryptoCurrencies.map(getCurrencyOption),
-    {
-      id: 'popular',
-      element: <HelpText className="text-text-secondary">{t('settings.currency.popularFiatLabel')}</HelpText>,
-      value: {} as CurrencyItem,
-      disabled: true,
-    },
-    ...popularFiatCurrencies.map(getCurrencyOption),
-    {
-      id: 'unpopular',
-      element: <HelpText className="text-text-secondary">{t('settings.currency.unpopularFiatLabel')}</HelpText>,
-      value: {} as CurrencyItem,
-      disabled: true,
-    },
-    ...unpopularFiatCurrencies.map(getCurrencyOption),
-  ];
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -76,11 +51,32 @@ export const CurrencyForm = ({ onSubmit }: Props) => {
 
       <Select
         placeholder={t('settings.currency.selectPlaceholder')}
-        disabled={!fiatFlag?.value}
-        options={currenciesOptions}
-        selectedId={currency?.value.toString()}
-        onChange={({ value }) => currency?.onChange(value.id)}
-      />
+        disabled={!fiatFlag.value}
+        value={currency.value.toString()}
+        onChange={(value) => currency.onChange(Number(value))}
+      >
+        <Select.Group title={t('settings.currency.cryptocurrenciesLabel')}>
+          {cryptoCurrencies.map((currency) => (
+            <Select.Item key={currency.id} value={currency.id.toString()}>
+              {getCurrencyTitle(currency)}
+            </Select.Item>
+          ))}
+        </Select.Group>
+        <Select.Group title={t('settings.currency.popularFiatLabel')}>
+          {popularFiatCurrencies.map((currency) => (
+            <Select.Item key={currency.id} value={currency.id.toString()}>
+              {getCurrencyTitle(currency)}
+            </Select.Item>
+          ))}
+        </Select.Group>
+        <Select.Group title={t('settings.currency.unpopularFiatLabel')}>
+          {unpopularFiatCurrencies.map((currency) => (
+            <Select.Item key={currency.id} value={currency.id.toString()}>
+              {getCurrencyTitle(currency)}
+            </Select.Item>
+          ))}
+        </Select.Group>
+      </Select>
 
       <Button className="ml-auto w-fit" type="submit" disabled={!isFormValid}>
         {t('settings.currency.save')}

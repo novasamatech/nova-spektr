@@ -22,7 +22,7 @@ type Input = {
   shards: Account[];
   validators: Validator[];
   proxiedAccount?: ProxiedAccount;
-  signatory?: Account;
+  signatory: Account | null;
 
   fee: string;
   totalFee: string;

@@ -27,6 +27,8 @@ const $activeTokensWithBalance = createStore<AssetByChains[]>([]);
 const $filteredTokens = createStore<AssetByChains[]>([]);
 const $sortedTokens = createStore<AssetByChains[]>([]);
 
+const $tokensPopulated = createStore(false).on(once($sortedTokens.updates), () => true);
+
 type UpdateTokenParams = {
   activeWallet?: Wallet;
   chains: Record<ChainId, Chain>;
@@ -204,6 +206,7 @@ export const portfolioModel = {
   $activeView,
   $accounts,
   $sortedTokens,
+  $tokensPopulated,
   events: {
     activeViewChanged,
     accountsChanged,

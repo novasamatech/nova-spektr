@@ -6,13 +6,17 @@ const $votingAssets = networkSelectorModel.$governanceChains.map((chains) => {
   return Object.fromEntries(chains.map((chain) => [chain.chainId, chain.assets.at(0) ?? null]));
 });
 
-const $votingAsset = combine($votingAssets, networkSelectorModel.$governanceChain, (assets, chain) => {
-  if (!chain) {
-    return null;
-  }
+const $votingAsset = combine(
+  {
+    assets: $votingAssets,
+    chainId: networkSelectorModel.$governanceChainId,
+  },
+  ({ assets, chainId }) => {
+    if (!chainId) return null;
 
-  return assets[chain.chainId] ?? null;
-});
+    return assets[chainId] ?? null;
+  },
+);
 
 /**
  * @deprecated Use `networkSelectorModel.$network` instead

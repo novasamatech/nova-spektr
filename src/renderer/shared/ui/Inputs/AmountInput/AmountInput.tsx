@@ -156,7 +156,7 @@ export const AmountInput = ({
 
   const prefixElement = (
     <div className="flex min-w-fit items-center gap-x-1">
-      <AssetIcon src={asset.icon} name={asset.name} size={28} className="flex" />
+      <AssetIcon asset={asset} size={32} />
       <TitleText>{asset.symbol}</TitleText>
     </div>
   );

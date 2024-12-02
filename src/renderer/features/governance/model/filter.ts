@@ -1,39 +1,20 @@
-import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { combine, createEvent, restore, sample } from 'effector';
 import { debounce } from 'patronum';
 
-import { type DropdownResult } from '@/shared/ui/types';
+import { nonNullable } from '@/shared/lib/utils';
 
 const queryChanged = createEvent<string>();
-const selectedTracksChanged = createEvent<DropdownResult[]>();
-const selectedVoteChanged = createEvent<DropdownResult>();
+const selectedTracksChanged = createEvent<string[]>();
+const selectedVoteChanged = createEvent<null | 'voted' | 'notVoted'>();
 const filtersReset = createEvent();
 
-const $selectedTrackIds = createStore<string[]>([]);
-const $selectedVoteId = createStore<string>('');
-const $query = restore<string>(queryChanged, '');
-const $debouncedQuery = restore<string>(debounce(queryChanged, 100), '');
+const $query = restore(queryChanged, '');
+const $selectedTrackIds = restore(selectedTracksChanged, []);
+const $selectedVoteId = restore(selectedVoteChanged, null);
+const $debouncedQuery = restore(debounce(queryChanged, 100), '');
 
 const $isFiltersSelected = combine($selectedTrackIds, $selectedVoteId, (tracks, voteId) => {
-  return tracks.length > 0 || voteId !== '';
-});
-
-sample({
-  clock: selectedTracksChanged,
-  fn: (data) => data.map(({ id }) => id),
-  target: $selectedTrackIds,
-});
-
-sample({
-  clock: selectedVoteChanged,
-  source: $selectedVoteId,
-  fn: (selectedVoteId, { id }) => {
-    if (selectedVoteId === id) {
-      return '';
-    }
-
-    return id;
-  },
-  target: $selectedVoteId,
+  return tracks.length > 0 || nonNullable(voteId);
 });
 
 sample({

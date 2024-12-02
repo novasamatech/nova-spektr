@@ -11,7 +11,7 @@ type Input = {
   chain: Chain;
   account: Account;
   proxiedAccount?: ProxiedAccount;
-  signatory?: Account;
+  signatory: Account | null;
 
   proxyDeposit: string;
   fee: string;

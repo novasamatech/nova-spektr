@@ -19,7 +19,7 @@ type Input = {
   asset: Asset;
   shards: Account[];
   proxiedAccount?: ProxiedAccount;
-  signatory?: Account;
+  signatory: Account | null;
   amount: string;
 
   fee: string;

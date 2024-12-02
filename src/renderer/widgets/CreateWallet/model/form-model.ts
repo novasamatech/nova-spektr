@@ -1,7 +1,7 @@
-import { combine, createEvent, sample } from 'effector';
+import { combine, sample } from 'effector';
 import { createForm } from 'effector-forms';
 
-import { type Chain, type ChainId, CryptoType, type Wallet } from '@/shared/core';
+import { type Chain, type ChainId, CryptoType } from '@/shared/core';
 import { nonNullable, toAccountId } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -10,8 +10,6 @@ import { type FormParams } from '../lib/types';
 import { signatoryModel } from './signatory-model';
 
 const DEFAULT_CHAIN: ChainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3'; // Polkadot
-
-const restoreWallet = createEvent<Wallet>();
 
 const $createMultisigForm = createForm<FormParams>({
   fields: {
@@ -137,11 +135,6 @@ const $availableAccounts = combine(
 sample({
   clock: signatoryModel.events.deleteSignatory,
   target: $createMultisigForm.fields.threshold.reset,
-});
-
-sample({
-  clock: restoreWallet,
-  target: walletModel.events.walletRestored,
 });
 
 export const formModel = {

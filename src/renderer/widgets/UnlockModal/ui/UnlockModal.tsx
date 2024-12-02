@@ -19,7 +19,7 @@ export const UnlockModal = () => {
   const { t } = useI18n();
 
   const step = useUnit(unlockAggregate.$step);
-  const governanceChain = useUnit(networkSelectorModel.$governanceChain);
+  const chainId = useUnit(networkSelectorModel.$governanceChainId);
 
   const [isModalOpen, closeModal] = useModalClose(!isStep(step, Step.NONE), unlockAggregate.output.flowFinished);
   const [isBasketModalOpen, closeBasketModal] = useModalClose(
@@ -27,7 +27,7 @@ export const UnlockModal = () => {
     unlockAggregate.output.flowFinished,
   );
 
-  if (!governanceChain) {
+  if (!chainId) {
     return null;
   }
 
@@ -50,7 +50,7 @@ export const UnlockModal = () => {
   const title = isStep(step, Step.INIT) ? (
     <HeaderTitleText> {t('governance.locks.governanceLock')}</HeaderTitleText>
   ) : (
-    <OperationTitle title={t('governance.locks.title')} chainId={governanceChain.chainId} />
+    <OperationTitle title={t('governance.locks.title')} chainId={chainId} />
   );
 
   return (

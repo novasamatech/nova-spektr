@@ -1,6 +1,7 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
+import isEmpty from 'lodash/isEmpty';
 import { spread } from 'patronum';
 
 import { type ClaimChunkWithAddress } from '@/shared/api/governance';
@@ -9,7 +10,6 @@ import {
   type Asset,
   type Chain,
   type MultisigTxWrapper,
-  type PartialBy,
   type ProxiedAccount,
   type ProxyTxWrapper,
   type Transaction,
@@ -31,7 +31,7 @@ type Accounts = {
 
 type FormParams = {
   shards: AccountWithClaim[];
-  signatory: Account;
+  signatory: Account | null;
   amount: string;
 };
 
@@ -41,7 +41,8 @@ type FormSubmitEvent = {
     multisigTx?: Transaction;
     coreTx: Transaction;
   }[];
-  formData: PartialBy<FormParams, 'signatory'> & {
+  formData: FormParams & {
+    signatory: Account | null;
     chain: Chain;
     asset: Asset;
     fee: string;
@@ -95,14 +96,14 @@ const $unlockForm = createForm<FormParams>({
       ],
     },
     signatory: {
-      init: {} as Account,
+      init: null,
       rules: [
         {
           name: 'noSignatorySelected',
           errorText: 'transfer.noSignatoryError',
           source: $isMultisig,
           validator: (signatory, _, isMultisig) => {
-            if (!isMultisig) return true;
+            if (!signatory || !isMultisig) return true;
 
             return Object.keys(signatory).length > 0;
           },
@@ -170,10 +171,10 @@ const $unlockForm = createForm<FormParams>({
 const $shards = combine(
   {
     activeWallet: walletModel.$activeWallet,
-    chain: networkSelectorModel.$governanceChain,
+    chainId: networkSelectorModel.$governanceChainId,
   },
-  ({ activeWallet, chain }) => {
-    if (!chain || !activeWallet) return [];
+  ({ activeWallet, chainId }) => {
+    if (!chainId || !activeWallet) return [];
 
     return (
       activeWallet.accounts.filter((account, _, collection) => {
@@ -185,7 +186,7 @@ const $shards = combine(
           return false;
         }
 
-        return accountUtils.isChainIdMatch(account, chain.chainId);
+        return accountUtils.isChainIdMatch(account, chainId);
       }) || []
     );
   },
@@ -254,13 +255,13 @@ const $proxyWallet = combine(
 
 const $signatories = combine(
   {
-    chain: networkSelectorModel.$governanceChain,
+    chainId: networkSelectorModel.$governanceChainId,
     network: networkSelectorModel.$network,
     txWrappers: $txWrappers,
     balances: balanceModel.$balances,
   },
-  ({ chain, network, txWrappers, balances }) => {
-    if (!chain || !network || !txWrappers) return [];
+  ({ chainId, network, txWrappers, balances }) => {
+    if (!chainId || !network || !txWrappers) return [];
 
     return txWrappers.reduce<{ signer: Account; balance: string }[][]>((acc, wrapper) => {
       if (!transactionService.hasMultisig([wrapper])) return acc;
@@ -269,7 +270,7 @@ const $signatories = combine(
         const balance = balanceUtils.getBalance(
           balances,
           signatory.accountId,
-          chain.chainId,
+          chainId,
           network.asset.assetId.toString(),
         );
 
@@ -285,13 +286,13 @@ const $signatories = combine(
 
 const $isChainConnected = combine(
   {
-    chain: networkSelectorModel.$governanceChain,
+    chainId: networkSelectorModel.$governanceChainId,
     statuses: networkModel.$connectionStatuses,
   },
-  ({ chain, statuses }) => {
-    if (!chain) return false;
+  ({ chainId, statuses }) => {
+    if (!chainId) return false;
 
-    return networkUtils.isConnectedStatus(statuses[chain.chainId]);
+    return networkUtils.isConnectedStatus(statuses[chainId]);
   },
 );
 
@@ -341,12 +342,11 @@ const $transactions = combine(
 const $api = combine(
   {
     apis: networkModel.$apis,
-    chain: networkSelectorModel.$governanceChain,
+    chainId: networkSelectorModel.$governanceChainId,
   },
-  ({ apis, chain }) => {
-    return chain ? apis[chain.chainId] : undefined;
+  ({ apis, chainId }) => {
+    return chainId ? apis[chainId] : null;
   },
-  { skipVoid: false },
 );
 
 // Form's fields
@@ -365,7 +365,10 @@ sample({
 
 sample({
   clock: formInitiated,
-  source: { shards: $shards, chain: networkSelectorModel.$governanceChain },
+  source: {
+    shards: $shards,
+    chain: networkSelectorModel.$governanceChain,
+  },
   filter: ({ shards, chain }) => shards.length > 0 && !!chain,
   fn: ({ shards, chain }, claims) => {
     return claims.reduce<AccountWithClaim[]>((acc, claim) => {
@@ -384,20 +387,15 @@ sample({
 sample({
   clock: formInitiated,
   source: {
-    chain: networkSelectorModel.$governanceChain,
+    chainId: networkSelectorModel.$governanceChainId,
     network: networkSelectorModel.$network,
     shards: $unlockForm.fields.shards.$value,
     balances: balanceModel.$balances,
   },
-  filter: ({ chain, network, shards }) => !!chain || !!network || shards.length > 0,
-  fn: ({ chain, network, shards, balances }) => {
+  filter: ({ chainId, network, shards }) => !!chainId || !!network || shards.length > 0,
+  fn: ({ chainId, network, shards, balances }) => {
     return shards.map((shard) => {
-      const balance = balanceUtils.getBalance(
-        balances,
-        shard.accountId,
-        chain!.chainId,
-        network!.asset.assetId.toString(),
-      );
+      const balance = balanceUtils.getBalance(balances, shard.accountId, chainId!, network!.asset.assetId.toString());
 
       return {
         account: shard,
@@ -411,9 +409,11 @@ sample({
 sample({
   clock: $unlockForm.fields.signatory.onChange,
   source: $signatories,
-  filter: (signatories) => signatories.length > 0,
+  filter: (signatories, signatory) => {
+    return !isEmpty(signatories) && nonNullable(signatory);
+  },
   fn: (signatories, signatory) => {
-    const match = signatories[0].find(({ signer }) => signer.id === signatory.id);
+    const match = signatories[0].find(({ signer }) => signer.id === signatory!.id);
 
     return match?.balance || ZERO_BALANCE;
   },
@@ -422,6 +422,7 @@ sample({
 
 sample({
   clock: $unlockForm.fields.signatory.$value,
+  filter: (signatory: Account | null): signatory is Account => nonNullable(signatory),
   fn: (signatory) => [signatory],
   target: $selectedSignatories,
 });
@@ -503,8 +504,6 @@ sample({
   fn: ({ realAccounts, network, transactions, totalLock, isProxy, ...fee }, formData) => {
     const { shards, ...rest } = formData;
 
-    const signatory = formData.signatory.accountId ? formData.signatory : undefined;
-
     return {
       transactions: transactions!.map((tx) => ({
         wrappedTx: tx.wrappedTx,
@@ -516,7 +515,6 @@ sample({
         ...rest,
         shards: realAccounts,
         amount: formData.amount,
-        signatory,
         chain: network!.chain,
         asset: network!.asset,
         totalLock,

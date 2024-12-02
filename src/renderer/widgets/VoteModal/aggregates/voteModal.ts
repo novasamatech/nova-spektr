@@ -34,11 +34,13 @@ const flow = createGate<{
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flow.open);
 
 const $hasDelegatedTrack = combine(
-  voteFormAggregate.$referendum,
-  voteFormAggregate.transactionForm.form.fields.account.$value,
-  networkSelectorModel.$network,
-  delegationAggregate.$activeTracks,
-  (referendum, account, network, tracks) => {
+  {
+    referendum: voteFormAggregate.$referendum,
+    account: voteFormAggregate.transactionForm.form.fields.account.$value,
+    network: networkSelectorModel.$network,
+    tracks: delegationAggregate.$activeTracks,
+  },
+  ({ referendum, account, network, tracks }) => {
     if (nullable(account) || nullable(referendum) || nullable(network)) {
       return false;
     }
@@ -205,7 +207,7 @@ sample({
         account: accounts.proxy || accounts.initiator,
         chain: meta.chain,
         transaction: meta.wrappedTransactions.wrappedTx,
-        signatory: accounts.signer || undefined,
+        signatory: accounts.signer,
       })),
     };
   },

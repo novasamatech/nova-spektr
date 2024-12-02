@@ -3,6 +3,7 @@ export const enum ReconnectStep {
   CONFIRMATION,
   RECONNECTING,
   FAILED,
+  REFRESH_ACCOUNTS,
   REJECTED,
 }
 

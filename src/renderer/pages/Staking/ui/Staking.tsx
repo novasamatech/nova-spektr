@@ -3,14 +3,17 @@ import uniqBy from 'lodash/uniqBy';
 import { useEffect, useMemo, useState } from 'react';
 
 import { useGraphql } from '@/app/providers';
-import { type Account, type Address, type Chain, type ChainId, type Stake, type Validator } from '@/shared/core';
+import { localStorageService } from '@/shared/api/local-storage';
+import { type Account, type Address, type ChainId, type Stake, type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { getRelaychainAsset, toAddress } from '@/shared/lib/utils';
 import { Button, EmptyList, Header } from '@/shared/ui';
-import { InactiveNetwork, networkUtils, useNetworkData } from '@/entities/network';
+import { InactiveNetwork, networkModel, networkUtils, useNetworkData } from '@/entities/network';
 import { priceProviderModel } from '@/entities/price';
 import {
+  DEFAULT_STAKING_CHAIN,
+  STAKING_NETWORK,
   type StakingMap,
   type ValidatorMap,
   ValidatorsModal,
@@ -28,11 +31,14 @@ import { type NominatorInfo, Operations as StakeOperations } from '../lib/types'
 import { AboutStaking } from './AboutStaking';
 import { Actions } from './Actions';
 import { NetworkInfo } from './NetworkInfo';
+// TODO: will be much simpler when we refactor staking page
+// eslint-disable-next-line import-x/max-dependencies
 import { NominatorsList } from './NominatorsList';
 
 export const Staking = () => {
   const { t } = useI18n();
 
+  const chains = useUnit(networkModel.$chains);
   const activeWallet = useUnit(walletModel.$activeWallet);
 
   const { changeClient } = useGraphql();
@@ -47,21 +53,22 @@ export const Staking = () => {
   const [validators, setValidators] = useState<ValidatorMap>({});
   const [nominators, setNominators] = useState<Validator[]>([]);
 
-  const [activeChain, setActiveChain] = useState<Chain>();
+  const [chainId, setChainId] = useState<ChainId | null>(null);
   const [networkIsActive, setNetworkIsActive] = useState(true);
 
   const [selectedNominators, setSelectedNominators] = useState<Address[]>([]);
   const [selectedStash, setSelectedStash] = useState<Address>('');
 
-  const chainId = (activeChain?.chainId || '') as ChainId;
+  const { api, connection, connectionStatus } = useNetworkData(chainId || undefined);
 
-  const { api, connection, connectionStatus } = useNetworkData(chainId);
-
+  const activeChain = chainId && chains[chainId] ? chains[chainId] : null;
   const addressPrefix = activeChain?.addressPrefix;
   const explorers = activeChain?.explorers;
 
   const accounts =
     activeWallet?.accounts.filter((account, _, collection) => {
+      if (!chainId) return false;
+
       const isBaseAccount = accountUtils.isBaseAccount(account);
       const isPolkadotVault = walletUtils.isPolkadotVault(activeWallet);
       const hasManyAccounts = collection.length > 1;
@@ -76,6 +83,10 @@ export const Staking = () => {
   const addresses = accounts.map((a) => toAddress(a.accountId, { prefix: addressPrefix }));
 
   const { rewards, isRewardsLoading } = useStakingRewards(addresses);
+
+  useEffect(() => {
+    setChainId(localStorageService.getFromStorage(STAKING_NETWORK, DEFAULT_STAKING_CHAIN));
+  }, []);
 
   useEffect(() => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });
@@ -149,14 +160,13 @@ export const Staking = () => {
       });
   }, [api, selectedStash]);
 
-  const changeNetwork = (chain: Chain) => {
-    if (chain.chainId === chainId) return;
-
-    changeClient(chain.chainId);
-    setActiveChain(chain);
+  const changeNetwork = (chainId: ChainId) => {
+    changeClient(chainId);
+    setChainId(chainId);
     setStaking({});
     setSelectedNominators([]);
     setValidators({});
+    localStorageService.saveToStorage(STAKING_NETWORK, chainId);
   };
 
   const openSelectedValidators = (stash?: Address) => {
@@ -283,6 +293,7 @@ export const Staking = () => {
         <div className="mt-6 h-full w-full overflow-y-auto">
           <section className="mx-auto flex h-full w-[546px] flex-col gap-y-6">
             <NetworkInfo
+              chain={activeChain}
               rewards={Object.values(rewards)}
               isRewardsLoading={isRewardsLoading}
               isStakingLoading={isStakingLoading}
@@ -291,7 +302,7 @@ export const Staking = () => {
             >
               <AboutStaking
                 api={api}
-                era={chainEra[chainId]}
+                era={chainId ? chainEra[chainId] : undefined}
                 validators={Object.values(validators)}
                 asset={relaychainAsset}
               />
@@ -308,7 +319,7 @@ export const Staking = () => {
 
                 <NominatorsList
                   api={api}
-                  era={chainEra[chainId]}
+                  era={chainId ? chainEra[chainId] : undefined}
                   nominators={nominatorsInfo}
                   asset={relaychainAsset}
                   explorers={activeChain?.explorers}

@@ -3,10 +3,8 @@ import { type PropsWithChildren, memo, useMemo } from 'react';
 import { type Account, type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
+import { CaptionText, FootnoteText, Icon, Separator } from '@/shared/ui';
 import { DetailRow } from '@/shared/ui/DetailRow/DetailRow';
-import { Icon } from '@/shared/ui/Icon/Icon';
-import { Separator } from '@/shared/ui/Separator/Separator';
-import { CaptionText, FootnoteText } from '@/shared/ui/Typography/index';
 import { Box } from '@/shared/ui-kit';
 import { AccountsModal } from '@/entities/staking';
 import { WalletIcon, walletUtils } from '@/entities/wallet';
@@ -17,7 +15,7 @@ type Props = PropsWithChildren<{
   wallets: Wallet[];
   chain: Chain;
   initiator: Account[];
-  signatory?: Account;
+  signatory: Account | null;
   proxied?: Account;
 }>;
 

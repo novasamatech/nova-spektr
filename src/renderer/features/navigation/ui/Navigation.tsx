@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { memo } from 'react';
 
 import { MultisigTxInitStatus } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -12,7 +13,7 @@ import { basketUtils } from '@/features/operations/OperationsConfirm';
 
 import { NavItem, type Props as NavItemProps } from './NavItem';
 
-export const Navigation = () => {
+export const Navigation = memo(() => {
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
@@ -73,4 +74,4 @@ export const Navigation = () => {
       </ul>
     </nav>
   );
-};
+});

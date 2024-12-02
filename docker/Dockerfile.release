@@ -1,14 +1,18 @@
 ARG NODE_JS_IMAGE_VERSION=20-alpine
+ARG BUILD_TYPE=production
 
 FROM node:${NODE_JS_IMAGE_VERSION} AS build
-
+ARG BUILD_TYPE
 ADD . /project
 WORKDIR /project
 
 RUN npm install -g pnpm
 RUN pnpm install
-RUN pnpm build
-RUN pnpm postbuild
+RUN if [ "$BUILD_TYPE" = "development" ]; then \
+        pnpm build:stage && pnpm postbuild:stage; \
+    else\
+        pnpm build && pnpm postbuild; \
+    fi
 
 FROM nginx:stable-alpine
 

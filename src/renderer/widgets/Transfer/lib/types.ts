@@ -18,7 +18,7 @@ export type TransferStore = {
   xcmChain: Chain;
   account: Account;
   proxiedAccount?: ProxiedAccount;
-  signatory?: Account;
+  signatory: Account | null;
   amount: string;
   destination: Address;
 

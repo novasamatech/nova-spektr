@@ -218,18 +218,6 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
             {t('walletDetails.walletConnect.abortRejectButton')}
           </Button>
         </StatusModal>
-
-        <StatusModal
-          isOpen={wcDetailsUtils.isFailed(reconnectStep)}
-          title={t('walletDetails.walletConnect.failedTitle')}
-          description={t('walletDetails.walletConnect.failedDescription')}
-          content={<Animation variant="error" />}
-          onClose={wcDetailsModel.events.reconnectAborted}
-        >
-          <Button onClick={() => wcDetailsModel.events.reconnectAborted()}>
-            {t('walletDetails.walletConnect.abortRejectButton')}
-          </Button>
-        </StatusModal>
       </div>
 
       <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />

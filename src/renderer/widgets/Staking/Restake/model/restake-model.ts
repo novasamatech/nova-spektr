@@ -65,16 +65,16 @@ sample({
 
     return {
       wrappedTxs,
-      multisigTxs: multisigTxs.length === 0 ? null : multisigTxs,
       coreTxs,
-      restakeStore: formData,
+      multisigTxs: multisigTxs.length === 0 ? null : multisigTxs,
+      store: formData,
     };
   },
   target: spread({
     wrappedTxs: $wrappedTxs,
     multisigTxs: $multisigTxs,
     coreTxs: $coreTxs,
-    restakeStore: $restakeStore,
+    store: $restakeStore,
   }),
 });
 
@@ -193,17 +193,14 @@ sample({
     return Boolean(store) && Boolean(coreTxs) && Boolean(txWrappers);
   },
   fn: ({ store, coreTxs, txWrappers }) => {
-    const txs = coreTxs!.map(
-      (coreTx) =>
-        ({
-          initiatorWallet: store!.shards[0].walletId,
-          coreTx,
-          txWrappers,
-          groupId: Date.now(),
-        }) as BasketTransaction,
-    );
-
-    return txs;
+    return coreTxs!.map((coreTx) => {
+      return {
+        coreTx,
+        txWrappers,
+        groupId: Date.now(),
+        initiatorWallet: store!.shards[0].walletId,
+      } as BasketTransaction;
+    });
   },
   target: basketModel.events.transactionsCreated,
 });

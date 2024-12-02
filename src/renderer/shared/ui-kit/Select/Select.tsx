@@ -1,5 +1,5 @@
 import * as RadixSelect from '@radix-ui/react-select';
-import { type PropsWithChildren, createContext, useContext, useMemo } from 'react';
+import { Children, type PropsWithChildren, type ReactNode, createContext, useContext, useMemo } from 'react';
 
 import { type XOR } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
@@ -19,18 +19,18 @@ type ContextProps = {
 
 const Context = createContext<ContextProps>({});
 
-type ControlledSelectProps = {
+type ControlledSelectProps<T extends string> = {
   placeholder: string;
-  value: string;
-  onChange: (value: string) => void;
+  value: T | null;
+  onChange: (value: T) => void;
 } & XOR<{
   open: boolean;
   onToggle: (value: boolean) => void;
 }>;
 
-type RootProps = PropsWithChildren<ControlledSelectProps & ContextProps>;
+type RootProps<T extends string> = PropsWithChildren<ControlledSelectProps<T> & ContextProps>;
 
-const Root = ({
+const Root = <T extends string>({
   theme = 'light',
   invalid,
   disabled,
@@ -42,17 +42,26 @@ const Root = ({
   value,
   onChange,
   children,
-}: RootProps) => {
+}: RootProps<T>) => {
   const ctx = useMemo(() => ({ theme, height, invalid, disabled, testId }), [theme, height, invalid, disabled, testId]);
 
   return (
     <Context.Provider value={ctx}>
-      <RadixSelect.Root open={open} disabled={disabled} value={value} onOpenChange={onToggle} onValueChange={onChange}>
+      <RadixSelect.Root
+        open={open}
+        disabled={disabled}
+        value={value || ''}
+        onOpenChange={onToggle}
+        onValueChange={onChange}
+      >
         <Button placeholder={placeholder} />
         <Content>{children}</Content>
       </RadixSelect.Root>
     </Context.Provider>
   );
+
+  // value = '' resets RadixSelect to default and forces placeholder to appear again
+  // https://github.com/radix-ui/primitives/issues/1569
 };
 
 type TriggerProps = {
@@ -79,8 +88,8 @@ const Button = ({ placeholder }: TriggerProps) => {
         },
       )}
     >
-      <div className="overflow-hidden">
-        <RadixSelect.Value placeholder={placeholder} />
+      <div className="flex-1 overflow-hidden text-start">
+        <RadixSelect.Value placeholder={<span className="text-footnote text-text-secondary">{placeholder}</span>} />
       </div>
       <Icon name="down" size={16} className="absolute right-1.5 top-1/2 shrink-0 -translate-y-1/2" />
     </RadixSelect.Trigger>
@@ -124,6 +133,22 @@ const Content = ({ children }: PropsWithChildren) => {
   );
 };
 
+type GroupProps = {
+  title: ReactNode;
+};
+const Group = ({ title, children }: PropsWithChildren<GroupProps>) => {
+  if (Children.count(children) === 0) return null;
+
+  return (
+    <RadixSelect.Group className="mb-1 last:mb-0">
+      <RadixSelect.Label>
+        <div className="mb-1 px-3 py-1 text-help-text text-text-secondary">{title}</div>
+      </RadixSelect.Label>
+      {children}
+    </RadixSelect.Group>
+  );
+};
+
 type ItemProps = {
   value: string;
 };
@@ -150,5 +175,6 @@ const Item = ({ value, children }: PropsWithChildren<ItemProps>) => {
 };
 
 export const Select = Object.assign(Root, {
+  Group,
   Item,
 });
