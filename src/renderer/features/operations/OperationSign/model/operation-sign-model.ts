@@ -3,7 +3,7 @@ import { createGate } from 'effector-react';
 
 import { type Account } from '@/shared/core';
 
-const SignerGate = createGate<Account>('signer');
+const SignerGate = createGate<Account | null>({ defaultState: null });
 
 const $signer = createStore<Account | null>(null);
 
