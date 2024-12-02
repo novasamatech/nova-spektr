@@ -139,7 +139,7 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
       <div className="flex items-center justify-between">
         <SmallTitleText>{t('staking.overview.actionsTitle')}</SmallTitleText>
         <div className="min-w-[228px]">
-          <Dropdown open={isActionsOpen} onToggle={toggleIsActionsOpen}>
+          <Dropdown width="trigger" open={isActionsOpen} onToggle={toggleIsActionsOpen}>
             <Dropdown.Trigger>
               <Button
                 disabled={isStakingLoading || noStakes || wrongOverlaps}
@@ -149,7 +149,7 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
                 {getActionButtonText()}
               </Button>
             </Dropdown.Trigger>
-            <Dropdown.Content width="trigger">
+            <Dropdown.Content>
               {Object.entries(operationsSummary).map(([key, value]) => {
                 if (stakes.length !== value) return null;
 
@@ -158,7 +158,7 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
 
                 return (
                   <Dropdown.Item key={key} onSelect={() => onClickAction(typedKey, option.path)}>
-                    <div className="flex w-full items-center gap-x-1.5">
+                    <div className="flex w-full items-center gap-2">
                       <Icon name={option.icon} size={20} className="shrink-0 text-icon-accent" />
                       {t(option.title)}
                     </div>

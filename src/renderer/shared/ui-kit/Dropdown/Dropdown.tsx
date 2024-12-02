@@ -10,11 +10,11 @@ import { useTheme } from '../Theme/useTheme';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
 
 type ContextProps = {
-  preventClosing?: boolean;
   side?: 'top' | 'right' | 'bottom' | 'left';
   sideOffset?: number;
   align?: 'start' | 'center' | 'end';
   alignOffset?: number;
+  width?: 'auto' | 'trigger';
   testId?: string;
 };
 
@@ -30,17 +30,17 @@ type RootProps = PropsWithChildren<ControlledDropdownProps & ContextProps>;
 const Root = ({
   open,
   onToggle,
-  preventClosing = false,
   side = 'bottom',
   sideOffset = 2,
   align = 'center',
   alignOffset = 0,
+  width = 'auto',
   testId = 'Dropdown',
   children,
 }: RootProps) => {
   const ctx = useMemo(
-    () => ({ preventClosing, side, sideOffset, align, alignOffset, testId }),
-    [preventClosing, side, sideOffset, align, alignOffset, testId],
+    () => ({ side, sideOffset, align, alignOffset, width, testId }),
+    [side, sideOffset, align, alignOffset, width, testId],
   );
 
   return (
@@ -64,12 +64,9 @@ const Separator = () => {
   );
 };
 
-type ContentProps = {
-  width?: 'auto' | 'trigger';
-};
-const Content = ({ width = 'auto', children }: PropsWithChildren<ContentProps>) => {
+const Content = ({ children }: PropsWithChildren) => {
   const { portalContainer } = useTheme();
-  const { side, sideOffset, align, alignOffset, testId } = useContext(Context);
+  const { side, sideOffset, align, alignOffset, width, testId } = useContext(Context);
 
   const calculatedWidth = width === 'trigger' ? 'var(--radix-dropdown-menu-trigger-width)' : undefined;
 
@@ -115,7 +112,7 @@ const Group = ({ label, children }: GroupProps) => {
   return (
     <DropdownMenu.Group className="flex flex-col gap-1">
       {label ? (
-        <DropdownMenu.Label className="px-3 py-1 text-footnote text-text-tertiary">{label}</DropdownMenu.Label>
+        <DropdownMenu.Label className="px-3 py-1 text-help-text text-text-secondary">{label}</DropdownMenu.Label>
       ) : null}
       {children}
     </DropdownMenu.Group>
@@ -123,16 +120,18 @@ const Group = ({ label, children }: GroupProps) => {
 };
 
 type ItemProps = PropsWithChildren<{
+  disabled?: boolean;
   onSelect?: VoidFunction;
 }>;
 
-const Item = ({ onSelect, children }: ItemProps) => {
+const Item = ({ onSelect, disabled, children }: ItemProps) => {
   return (
     <DropdownMenu.Item
       className={cnTw(
-        'flex rounded p-2 text-footnote text-text-secondary',
+        'flex rounded px-3 py-2 text-footnote text-text-secondary',
         'cursor-pointer bg-block-background-default hover:bg-block-background-hover',
       )}
+      disabled={disabled}
       onSelect={onSelect}
     >
       {children}
@@ -142,17 +141,14 @@ const Item = ({ onSelect, children }: ItemProps) => {
 
 type CheckboxItemProps = PropsWithChildren<{
   checked: boolean;
+  disabled?: boolean;
   onChange?: (value: boolean) => void;
   onSelect?: VoidFunction;
 }>;
 
-const CheckboxItem = ({ checked, onChange, onSelect, children }: CheckboxItemProps) => {
-  const { preventClosing } = useContext(Context);
-
+const CheckboxItem = ({ checked, onChange, onSelect, disabled, children }: CheckboxItemProps) => {
   const handleSelect = (event: Event) => {
-    if (preventClosing) {
-      event.preventDefault();
-    }
+    event.preventDefault();
     onSelect?.();
   };
 
@@ -160,17 +156,18 @@ const CheckboxItem = ({ checked, onChange, onSelect, children }: CheckboxItemPro
     <DropdownMenu.CheckboxItem
       checked={checked}
       className={cnTw(
-        'flex justify-center gap-2 rounded-md px-3 py-2 text-footnote text-text-secondary',
+        'flex items-center gap-2 rounded-md px-3 py-2 text-start text-footnote text-text-secondary',
         'cursor-pointer',
         {
           'bg-selected-background text-text-primary': checked,
           'bg-block-background-default hover:bg-block-background-hover': !checked,
         },
       )}
+      disabled={disabled}
       onCheckedChange={onChange}
       onSelect={handleSelect}
     >
-      <Checkbox checked={checked} />
+      <Checkbox checked={checked} disabled={disabled} />
       {children}
     </DropdownMenu.CheckboxItem>
   );

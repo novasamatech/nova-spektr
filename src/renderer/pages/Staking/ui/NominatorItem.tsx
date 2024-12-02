@@ -1,24 +1,24 @@
 import { useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
-import { type Account, type Address, type Asset, type Explorer } from '@/shared/core';
+import { type Account, type Address, type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw } from '@/shared/lib/utils';
-import { FootnoteText, Icon, IconButton, Plate, Shimmering } from '@/shared/ui';
+import { cnTw, nonNullable } from '@/shared/lib/utils';
+import { FootnoteText, Icon, Plate, Shimmering } from '@/shared/ui';
+import { AccountExplorers } from '@/shared/ui-entities';
 import { Checkbox } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { AssetFiatBalance } from '@/entities/price';
-import { ExplorersPopover, walletModel, walletUtils } from '@/entities/wallet';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { type NominatorInfo } from '../lib/types';
 
 type Props = {
   nominatorsLength: number;
   asset?: Asset;
-  explorers?: Explorer[];
+  chain: Chain;
   isStakingLoading: boolean;
   stake: NominatorInfo<Account>;
   content: ReactNode;
-  addressPrefix?: number;
   onToggleNominator: (nominator: Address, boolean: boolean) => void;
   onCheckValidators: (stash?: Address) => void;
 };
@@ -26,11 +26,11 @@ type Props = {
 export const NominatorsItem = ({
   nominatorsLength,
   asset,
-  explorers = [],
+  chain,
   stake,
   content,
   isStakingLoading,
-  addressPrefix,
+
   onToggleNominator,
   onCheckValidators,
 }: Props) => {
@@ -79,17 +79,12 @@ export const NominatorsItem = ({
           </>
         )}
       </div>
-      <ExplorersPopover
-        button={<IconButton name="details" />}
-        address={stake.address}
-        addressPrefix={addressPrefix}
-        explorers={explorers}
-      >
-        <ExplorersPopover.Group active={Boolean(stake.stash)}>
+      <AccountExplorers accountId={stake.account.accountId} chain={chain}>
+        {nonNullable(stake.stash) && (
           <button
             type="button"
             className={cnTw(
-              'group flex h-full w-full items-center gap-x-2 rounded-md px-2 py-1 transition-colors',
+              'group -mx-2 flex select-none items-center gap-x-1.5 rounded-md px-1.5 py-[3px] transition-colors',
               'hover:bg-action-background-hover focus:bg-action-background-hover',
             )}
             onClick={() => onCheckValidators(stake.stash)}
@@ -97,13 +92,16 @@ export const NominatorsItem = ({
             <Icon name="viewValidators" size={16} />
             <FootnoteText
               as="span"
-              className="text-text-secondary transition-colors group-hover:text-text-primary group-focus:text-text-primary"
+              className={cnTw(
+                'text-text-secondary transition-colors',
+                'group-hover:text-text-primary group-focus:text-text-primary',
+              )}
             >
               {t('staking.overview.viewValidatorsOption')}
             </FootnoteText>
           </button>
-        </ExplorersPopover.Group>
-      </ExplorersPopover>
+        )}
+      </AccountExplorers>
     </Plate>
   );
 };

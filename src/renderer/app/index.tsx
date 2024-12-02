@@ -1,4 +1,5 @@
 import './index.css';
+import './document.css';
 import './styles/theme/default.css';
 
 import { Suspense, useEffect, useMemo, useState } from 'react';

@@ -2,14 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
-import {
-  type Account,
-  type Address,
-  type Asset,
-  type BaseAccount,
-  type Explorer,
-  type ShardAccount,
-} from '@/shared/core';
+import { type Account, type Address, type Asset, type BaseAccount, type Chain, type ShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, HelpText, Icon, Tooltip } from '@/shared/ui';
@@ -27,8 +20,7 @@ type Props = {
   api?: ApiPromise;
   era?: number;
   asset?: Asset;
-  explorers?: Explorer[];
-  addressPrefix?: number;
+  chain: Chain;
   onCheckValidators: (stash?: Address) => void;
   onToggleNominator: (nominator: Address, value?: boolean) => void;
 };
@@ -38,9 +30,8 @@ export const NominatorsList = ({
   era,
   nominators,
   asset,
-  explorers,
+  chain,
   isStakingLoading,
-  addressPrefix,
   onCheckValidators,
   onToggleNominator,
 }: Props) => {
@@ -107,8 +98,7 @@ export const NominatorsList = ({
                   shardsStake={stake}
                   era={era}
                   asset={asset}
-                  explorers={explorers}
-                  addressPrefix={addressPrefix}
+                  chain={chain}
                   getContent={getContent}
                   onToggleNominator={onToggleNominator}
                   onCheckValidators={onCheckValidators}
@@ -125,8 +115,7 @@ export const NominatorsList = ({
                 stake={stake}
                 nominatorsLength={nominators.length}
                 asset={asset}
-                explorers={explorers}
-                addressPrefix={addressPrefix}
+                chain={chain}
                 onToggleNominator={onToggleNominator}
                 onCheckValidators={onCheckValidators}
               />

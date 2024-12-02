@@ -308,7 +308,7 @@ export const Staking = () => {
               />
             </NetworkInfo>
 
-            {networkIsActive && accounts.length > 0 && (
+            {networkIsActive && accounts.length > 0 && activeChain && (
               <>
                 <Actions
                   canInteract={!!activeWallet && permissionUtils.canStake(activeWallet)}
@@ -322,9 +322,8 @@ export const Staking = () => {
                   era={chainId ? chainEra[chainId] : undefined}
                   nominators={nominatorsInfo}
                   asset={relaychainAsset}
-                  explorers={activeChain?.explorers}
+                  chain={activeChain}
                   isStakingLoading={isStakingLoading}
-                  addressPrefix={addressPrefix}
                   onCheckValidators={openSelectedValidators}
                   onToggleNominator={toggleSelectedNominators}
                 />
