@@ -4,7 +4,7 @@ import { test } from '../../utils/feeFixture';
 test.describe(
   'Load Transfer fee as ethereum_based polkadot Vault wallet',
   {
-    tag: '@fee-test',
+    tag: ['@fee-test', '@eth-test'],
   },
   () => {
     ethChains.forEach((chain) => {
