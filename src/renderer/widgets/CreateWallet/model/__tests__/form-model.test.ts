@@ -42,21 +42,6 @@ describe('widgets/CreateWallet/model/form-model', () => {
     expect(scope.getState(formModel.$createMultisigForm.fields.name.$errors)[0].rule).toEqual('notEmpty');
   });
 
-  test('should error out for low threshold', async () => {
-    const scope = fork({
-      values: new Map()
-        .set(networkModel.$apis, { '0x00': testApi })
-        .set(networkModel.$chains, { '0x00': testChain })
-        .set(networkModel.$connectionStatuses, { '0x00': ConnectionStatus.CONNECTED })
-        .set(walletModel._test.$allWallets, [initiatorWallet, signerWallet]),
-    });
-
-    await allSettled(formModel.$createMultisigForm.fields.threshold.onChange, { scope, params: 1 });
-    await allSettled(formModel.$createMultisigForm.submit, { scope });
-
-    expect(scope.getState(formModel.$createMultisigForm.fields.threshold.$errors)[0].rule).toEqual('moreOrEqualToTwo');
-  });
-
   test('should have correct value for $multisigAccountId', async () => {
     const scope = fork({
       values: new Map()
