@@ -1,10 +1,10 @@
 import { skipAction } from './constants';
-import { type AnyIdentifier, type DefaultHandlerFn, type Handler } from './types';
+import { type AnyIdentifier, type DefaultHandlerBody, type Handler } from './types';
 
 type PostprocessParams<Input, Output> = {
   input: Input;
   output: Output;
-  handlers: Handler<DefaultHandlerFn<Input, Output>>[];
+  handlers: Handler<DefaultHandlerBody<Input, Output>>[];
 };
 
 type Params<Input, Output> = {

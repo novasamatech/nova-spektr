@@ -5,4 +5,4 @@ export { skipAction } from './constants';
 
 export { usePipeline, useSlot } from './reactIntegration';
 
-export type { AnyIdentifier, InferHandlerFn, InferInput, InferOutput, HandlerInput } from './types';
+export type { AnyIdentifier, InferHandlerBody, InferInput, InferOutput, HandlerInput } from './types';

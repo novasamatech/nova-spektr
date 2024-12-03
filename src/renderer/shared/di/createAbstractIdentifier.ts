@@ -1,28 +1,28 @@
 import { createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
-import { type DefaultHandlerFn, type Handler, type Identifier } from './types';
+import { type DefaultHandlerBody, type Handler, type Identifier } from './types';
 
-type Params<HandlerFn, ProcessedHandlerFn> = {
+type Params<HandlerBody, ProcessedHandlerBody> = {
   type: string;
   name: string;
-  processHandler(handler: Handler<HandlerFn>): Handler<ProcessedHandlerFn>;
+  processHandler(handler: Handler<HandlerBody>): Handler<ProcessedHandlerBody>;
 };
 
 export const createAbstractIdentifier = <
   Input,
   Output,
-  HandlerFn = DefaultHandlerFn<Input, Output>,
-  ProcessedHandlerFn = DefaultHandlerFn<Input, Output>,
+  HandlerBody = DefaultHandlerBody<Input, Output>,
+  ProcessedHandlerBody = DefaultHandlerBody<Input, Output>,
 >({
   type,
   name,
   processHandler,
-}: Params<HandlerFn, ProcessedHandlerFn>) => {
-  type ResultIdentifier = Identifier<Input, Output, HandlerFn, ProcessedHandlerFn>;
+}: Params<HandlerBody, ProcessedHandlerBody>) => {
+  type ResultIdentifier = Identifier<Input, Output, HandlerBody, ProcessedHandlerBody>;
 
-  const $handlers = createStore<Handler<ProcessedHandlerFn>[]>([]);
-  const registerHandler = createEvent<Handler<ProcessedHandlerFn>>();
+  const $handlers = createStore<Handler<ProcessedHandlerBody>[]>([]);
+  const registerHandler = createEvent<Handler<ProcessedHandlerBody>>();
   const forceUpdate = createEvent();
 
   sample({
