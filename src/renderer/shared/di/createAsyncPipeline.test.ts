@@ -30,4 +30,17 @@ describe('createAsyncPipeline', () => {
 
     expect(res).toEqual(['0', '01', '02']);
   });
+
+  it('should postprocess', async () => {
+    const asyncPipeline = createAsyncPipeline<string[]>({
+      postprocess: (v) => Array.from(v).reverse(),
+    });
+
+    asyncPipeline.registerHandler({ body: (v) => [...v, '1'], available: () => true });
+    asyncPipeline.registerHandler({ body: (v) => [...v, '2'], available: () => true });
+
+    const res = await asyncPipeline.apply(['0']);
+
+    expect(res).toEqual(['2', '1', '0']);
+  });
 });
