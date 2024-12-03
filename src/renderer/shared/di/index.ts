@@ -1,6 +1,6 @@
 export { createAsyncPipeline } from './createAsyncPipeline';
-export { createPipeline } from './createPipeline';
-export { createSlot } from './createSlot';
+export { createPipeline, isPipelineIdentifier } from './createPipeline';
+export { createSlot, isSlotIdentifier, normalizeSlotHandler } from './createSlot';
 export { skipAction } from './constants';
 
 export { usePipeline, useSlot } from './reactIntegration';

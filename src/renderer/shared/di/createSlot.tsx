@@ -1,40 +1,39 @@
-import { type ComponentType, type ReactNode, memo } from 'react';
+import { isFunction, isNumber } from 'lodash';
+import { type ComponentType, type FunctionComponent, type ReactNode, memo } from 'react';
 
 import { createAbstractIdentifier } from './createAbstractIdentifier';
+import { isIdentifier } from './helpers';
 import { shallowEqual } from './lib/shallowEqual';
-import { syncApplyImpl } from './syncApplyImpl';
 import { type Identifier } from './types';
 
-// TODO maybe it should be used instead of plain render function in handler
-// export type SlotInjected<Props extends SlotProps> = {
-//   id: string;
-//   order?: number;
-//   fn: FunctionComponent<Props>;
-//   fallback?: FunctionComponent<Props>;
-//   error?: FunctionComponent<Props & { error: Error; retry: VoidFunction }>;
-// };
-
 // Public interface
-type SlotHandler<Props> = ComponentType<Props>;
+type SlotHandler<Props> = FunctionComponent<Props> | SlotHandlerExtended<Props>;
 
-export type SlotIdentifier<Props> = Identifier<Props, ReactNode[], SlotHandler<Props>> & {
-  render: (props: Props) => ReactNode;
+type SlotHandlerExtended<Props> = {
+  order?: number;
+  render: FunctionComponent<Props>;
+};
+
+export type SlotIdentifier<Props> = Identifier<Props, ReactNode[], SlotHandler<Props>, SlotHandlerExtended<Props>> & {
+  render: (props: Props) => ReactNode[];
 };
 
 export type SlotProps = Record<string, unknown> | void;
 
+export const isSlotIdentifier = (v: unknown): v is SlotIdentifier<any> => isIdentifier(v) && v.type === 'slot';
+
+export const normalizeSlotHandler = <Props,>(body: SlotHandler<Props>): SlotHandlerExtended<Props> => {
+  return isFunction(body) ? { render: body } : body;
+};
+
 export const createSlot = <Props extends SlotProps = void>(config?: { name: string }): SlotIdentifier<Props> => {
-  const identifier = createAbstractIdentifier<Props, ReactNode[], SlotHandler<Props>>({
+  const identifier = createAbstractIdentifier<Props, ReactNode[], SlotHandler<Props>, SlotHandlerExtended<Props>>({
     type: 'slot',
     name: config?.name ?? 'unknownSlot',
-    processHandler(handler) {
+    processHandler: (handler) => {
       return {
         available: handler.available,
-        fn: ({ acc, input: props, index }) => {
-          acc.push(<SlotWrapper key={index} component={handler.fn} props={props} />);
-
-          return acc;
-        },
+        body: normalizeSlotHandler(handler.body),
       };
     },
   });
@@ -42,7 +41,46 @@ export const createSlot = <Props extends SlotProps = void>(config?: { name: stri
   return {
     ...identifier,
     render(props: Props) {
-      return syncApplyImpl({ identifier, input: props, acc: [] });
+      // Implementation is similar to syncApplyImpl but have additional login inside for loop,
+      //   so it's better to keep it separated
+
+      // eslint-disable-next-line effector/no-getState
+      const handlers = identifier.$handlers.getState();
+      const result: ReactNode[] = [];
+      const order = new Map<ReactNode, number>();
+      let shouldReorder = false;
+
+      for (let index = 0; index < handlers.length; index++) {
+        const handler = handlers[index];
+        if (!handler) {
+          continue;
+        }
+
+        try {
+          if (handler.available()) {
+            const node = <SlotWrapper key={index} component={handler.body.render} props={props} />;
+            result.push(node);
+
+            order.set(node, handler.body.order ?? index);
+
+            if (isNumber(handler.body.order)) {
+              shouldReorder = true;
+            }
+          }
+        } catch (error) {
+          // TODO handle error
+          console.error(error);
+
+          // Skip handler and move on
+          continue;
+        }
+      }
+
+      if (shouldReorder) {
+        return result.sort((a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0));
+      }
+
+      return result;
     },
   };
 };

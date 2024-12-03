@@ -13,7 +13,7 @@ export const createAsyncPipeline = <Value, Meta = void>(config?: {
     name: config?.name ?? 'unknownAsyncPipeline',
     processHandler: (handler) => ({
       available: handler.available,
-      fn: ({ acc, input }) => acc.then((value) => handler.fn(value, input)),
+      body: ({ acc, input }) => acc.then((value) => handler.body(value, input)),
     }),
   });
 
