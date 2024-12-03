@@ -29,8 +29,8 @@ export const TokenBalance = memo(({ asset }: Props) => {
           <div>
             <BodyText>{chain.assetSymbol}</BodyText>
             <div className="mr-3 flex items-center gap-x-1.5">
-              <FootnoteText className="text-text-tertiary">{chain.name}</FootnoteText>
               <ChainIcon src={chains[chain.chainId].icon} name={chain.name} size={18} />
+              <FootnoteText className="text-text-tertiary">{chain.name}</FootnoteText>
               {chain.balance?.verified && (
                 <div className="flex items-center gap-x-2 text-text-warning">
                   <Tooltip content={t('balances.verificationTooltip')} pointer="up">

@@ -52,27 +52,19 @@ export const TokenBalanceList = memo(({ asset }: Props) => {
               <div className="flex flex-col">
                 <BodyText>{asset.symbol}</BodyText>
                 <div className="flex items-center">
-                  <FootnoteText className="mr-1.5 text-text-tertiary">
+                  <div className="flex items-center gap-x-0.5">
+                    {asset.chains.slice(0, asset.chains.length === 3 ? 3 : 2).map(({ chainId, name, assetSymbol }) => (
+                      <ChainIcon key={`${chainId}-${assetSymbol}`} src={chains[chainId].icon} name={name} size={18} />
+                    ))}
+                    {asset.chains.length > 3 && (
+                      <div className="b-r-2 flex w-6 items-center justify-center rounded bg-token-background p-0.5">
+                        <HelpText className="text-white">+{asset.chains.length - 3}</HelpText>
+                      </div>
+                    )}
+                  </div>
+                  <FootnoteText className="ml-1.5 text-text-tertiary">
                     {t('balances.availableNetworks', { count: asset.chains.length })}
                   </FootnoteText>
-                  <ChainIcon
-                    key={`${asset.chains[0].chainId}-${asset.chains[0].assetSymbol}`}
-                    src={chains[asset.chains[0].chainId].icon}
-                    name={asset.chains[0].name}
-                    size={18}
-                  />
-                  <ChainIcon
-                    key={`${asset.chains[1].chainId}-${asset.chains[1].assetSymbol}`}
-                    className="mx-[-8px]"
-                    src={chains[asset.chains[1].chainId].icon}
-                    name={asset.chains[1].name}
-                    size={18}
-                  />
-                  {asset.chains.length > 2 && (
-                    <div className="b-r-2 flex w-6 items-center justify-center rounded bg-token-background p-0.5">
-                      <HelpText className="text-white">+{asset.chains.length - 2}</HelpText>
-                    </div>
-                  )}
                   {asset.totalBalance?.verified && (
                     <div className="ml-2.5 flex items-center gap-x-2 text-text-warning">
                       <Tooltip content={t('balances.verificationTooltip')} pointer="up">
@@ -104,7 +96,7 @@ export const TokenBalanceList = memo(({ asset }: Props) => {
         </Accordion.Button>
 
         <Accordion.Content className="mt-1">
-          <ul className="flex flex-col gap-y-1.5 pl-6">
+          <ul className="flex flex-col gap-y-1.5 pl-4">
             {asset.chains.map((chain) => (
               <NetworkCard key={`${chain.chainId}-${chain.assetId}`} chain={chain} asset={asset} />
             ))}

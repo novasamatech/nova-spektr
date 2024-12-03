@@ -5,6 +5,7 @@ export { SearchInput } from './SearchInput/SearchInput';
 export { ThemeProvider } from './Theme/ThemeProvider';
 export { ScrollArea } from './ScrollArea/ScrollArea';
 export { InputFile } from './InputFile/InputFile';
+export { Accordion } from './Accordion/Accordion';
 export { Checkbox } from './Checkbox/Checkbox';
 export { Combobox } from './Combobox/Combobox';
 export { Dropdown } from './Dropdown/Dropdown';
