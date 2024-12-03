@@ -2,7 +2,7 @@ import { combine, sample } from 'effector';
 import { createForm } from 'effector-forms';
 
 import { type Address, type Chain, type ChainId, CryptoType } from '@/shared/core';
-import { nonNullable, nullable, toAccountId, validateAddress } from '@/shared/lib/utils';
+import { addUnique, nonNullable, nullable, toAccountId, validateAddress } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { type FormParams } from '../lib/types';
@@ -133,14 +133,14 @@ const $invalidAddresses = combine(
     signatories: signatoryModel.$signatories,
   },
   ({ chain, signatories }) => {
-    if (!chain) return new Set();
+    if (!chain) return [];
 
-    const badSignatories: Set<Address> = new Set();
+    let badSignatories: Address[] = [];
 
     for (const signer of signatories) {
       if (!signer.address || validateAddress(signer.address, chain)) continue;
 
-      badSignatories.add(signer.address);
+      badSignatories = addUnique(badSignatories, signer.address);
     }
 
     return badSignatories;
@@ -158,8 +158,7 @@ const $canSubmit = combine(
     threshold: $createMultisigForm.fields.threshold.$value,
   },
   ({ invalidAddresses, threshold, ...params }) => {
-    if (invalidAddresses.size > 0) return false;
-    if (threshold < MIN_THRESHOLD) return false;
+    if (invalidAddresses.length > 0 || threshold < MIN_THRESHOLD) return false;
 
     return Object.values(params).every((param) => nullable(param) || !param);
   },

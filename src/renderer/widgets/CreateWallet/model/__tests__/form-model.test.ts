@@ -121,6 +121,6 @@ describe('widgets/CreateWallet/model/form-model', () => {
 
     await allSettled(formModel.$createMultisigForm.fields.chainId.onChange, { scope, params: '0x00' });
 
-    expect(scope.getState(formModel.$invalidAddresses)).toEqual(new Set([badAddress]));
+    expect(scope.getState(formModel.$invalidAddresses)).toEqual([badAddress]);
   });
 });

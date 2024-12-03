@@ -8,19 +8,19 @@ import { Box, Popover } from '@/shared/ui-kit';
 import { Hash } from '../Hash/Hash';
 
 type Props = PropsWithChildren<{
-  accountId: Address | AccountId;
+  address: Address | AccountId;
   chain: Chain;
   testId?: string;
 }>;
 
-export const AccountExplorers = memo(({ accountId, chain, children, testId }: Props) => {
+export const AddressExplorers = memo(({ address, chain, children, testId }: Props) => {
   const { t } = useI18n();
 
   const { explorers, addressPrefix } = chain;
-  const address = toAddress(accountId, { prefix: addressPrefix });
+  const chainAddress = toAddress(address, { prefix: addressPrefix });
 
   return (
-    <Popover align="end" dialog testId="AccountExplorers">
+    <Popover align="end" dialog testId="AddressExplorer">
       <Popover.Trigger>
         <IconButton name="details" className="text-icon-default" testId={testId} onClick={(e) => e.stopPropagation()} />
       </Popover.Trigger>
@@ -30,9 +30,13 @@ export const AccountExplorers = memo(({ accountId, chain, children, testId }: Pr
             <FootnoteText className="text-text-tertiary">{t('general.explorers.addressTitle')}</FootnoteText>
             <Box direction="row" verticalAlign="center" gap={3}>
               <HelpText className="text-text-secondary">
-                <Hash value={address} variant="full" />
+                <Hash value={chainAddress} variant="full" />
               </HelpText>
-              <IconButton className="shrink-0 text-icon-default" name="copy" onClick={() => copyToClipboard(address)} />
+              <IconButton
+                className="shrink-0 text-icon-default"
+                name="copy"
+                onClick={() => copyToClipboard(chainAddress)}
+              />
             </Box>
           </Box>
 
@@ -51,7 +55,7 @@ export const AccountExplorers = memo(({ accountId, chain, children, testId }: Pr
                   <ExplorerLink
                     key={explorer.name}
                     name={explorer.name}
-                    href={getAccountExplorer(explorer, { address })}
+                    href={getAccountExplorer(explorer, { address: chainAddress })}
                   />
                 ))}
               </div>

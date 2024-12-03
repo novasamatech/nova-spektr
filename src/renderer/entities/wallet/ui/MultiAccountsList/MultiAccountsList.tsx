@@ -2,7 +2,7 @@ import { type AccountId, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
-import { AccountExplorers, Address } from '@/shared/ui-entities';
+import { Address, AddressExplorers } from '@/shared/ui-entities';
 import { ChainTitle } from '@/entities/chain';
 
 type Props = {
@@ -38,7 +38,7 @@ export const MultiAccountsList = ({ accounts, className, headerClassName }: Prop
                 <FootnoteText className="w-[180px] text-text-secondary">
                   <Address address={toAddress(accountId, { prefix: addressPrefix })} variant="truncate" showIcon />
                 </FootnoteText>
-                <AccountExplorers accountId={accountId} chain={chain} />
+                <AddressExplorers address={accountId} chain={chain} />
               </div>
             </li>
           );

@@ -9,7 +9,7 @@ import { AccountType, ChainType, CryptoType, ErrorType, KeyType, SigningType, Wa
 import { useI18n } from '@/shared/i18n';
 import { RootExplorers, cnTw, toAccountId, toAddress } from '@/shared/lib/utils';
 import { Button, FootnoteText, HeaderTitleText, Icon, IconButton, Input, InputHint, SmallTitleText } from '@/shared/ui';
-import { AccountExplorers, Address } from '@/shared/ui-entities';
+import { Address, AddressExplorers } from '@/shared/ui-entities';
 import { ChainTitle } from '@/entities/chain';
 import { type AddressInfo, type CompactSeedInfo, type SeedInfo } from '@/entities/transaction';
 import { ExplorersPopover, walletModel } from '@/entities/wallet';
@@ -310,7 +310,7 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
                               <FootnoteText className="w-[150px] text-text-secondary">
                                 <Address address={address} variant="truncate" showIcon />
                               </FootnoteText>
-                              <AccountExplorers accountId={toAccountId(address)} chain={chain} />
+                              <AddressExplorers address={toAccountId(address)} chain={chain} />
                             </div>
                           </div>
                           <div className="flex items-center gap-2">

@@ -5,7 +5,7 @@ import { type Account } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
-import { AccountExplorers } from '@/shared/ui-entities';
+import { AddressExplorers } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
 import { WalletCardMd, accountUtils } from '@/entities/wallet';
 import { Step } from '@/widgets/CreateWallet/lib/types';
@@ -46,7 +46,7 @@ export const SignerSelection = () => {
                   description={toAddress(account.accountId, { prefix: chain.addressPrefix, chunk: 12 })}
                   onClick={() => onSubmit(account)}
                 >
-                  <AccountExplorers accountId={account.accountId} chain={chain} />
+                  <AddressExplorers address={account.accountId} chain={chain} />
                 </WalletCardMd>
               </li>
             );

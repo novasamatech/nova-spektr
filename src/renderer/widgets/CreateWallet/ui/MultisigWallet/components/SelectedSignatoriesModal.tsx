@@ -4,7 +4,7 @@ import { type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toShortAddress } from '@/shared/lib/utils';
 import { HeaderTitleText, HelpText } from '@/shared/ui';
-import { AccountExplorers } from '@/shared/ui-entities';
+import { AddressExplorers } from '@/shared/ui-entities';
 import { Modal } from '@/shared/ui-kit';
 import { ContactItem, WalletCardMd, walletModel, walletUtils } from '@/entities/wallet';
 import { type SignatoryInfo } from '@/widgets/CreateWallet/lib/types';
@@ -33,7 +33,7 @@ export const SelectedSignatoriesModal = ({ chain, isOpen, signatories, onClose }
               return (
                 <li key={address} className="flex items-center justify-between">
                   <ContactItem name={name} address={address}>
-                    <AccountExplorers accountId={address} chain={chain} />
+                    <AddressExplorers address={address} chain={chain} />
                   </ContactItem>
                 </li>
               );
@@ -50,7 +50,7 @@ export const SelectedSignatoriesModal = ({ chain, isOpen, signatories, onClose }
                     <HelpText className="truncate text-text-tertiary">{toShortAddress(address, 12)}</HelpText>
                   }
                 >
-                  <AccountExplorers accountId={address} chain={chain} />
+                  <AddressExplorers address={address} chain={chain} />
                 </WalletCardMd>
               </li>
             );
