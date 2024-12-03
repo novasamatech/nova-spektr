@@ -29,6 +29,7 @@ export const Paths = {
   // Governance
   GOVERNANCE: '/governance',
   GOVERNANCE_LIST: '/governance/:chainId',
+  GOVERNANCE_REFERENDUM_DEFAULT_CHAIN: '/governance/referendum/:referendumId',
   GOVERNANCE_REFERENDUM: '/governance/:chainId/referendum/:referendumId',
 
   // Fellowship

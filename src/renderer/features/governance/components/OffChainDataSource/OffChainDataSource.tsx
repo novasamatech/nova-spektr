@@ -4,10 +4,9 @@ import { type FormEvent, useEffect } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { BaseModal, Button, FootnoteText, HelpText, Icon, InputHint, Select } from '@/shared/ui';
+import { BaseModal, Button, FootnoteText, HelpText, Icon, InputHint } from '@/shared/ui';
+import { Select } from '@/shared/ui-kit';
 import { offChainModel } from '../../model/offChain';
-
-import { Sources } from './constants';
 
 export const OffChainDataSource = () => {
   const { t } = useI18n();
@@ -48,26 +47,29 @@ const DataSourceSelector = () => {
     fields: { source },
   } = useForm(offChainModel.$offChainForm);
 
-  const options = Object.entries(Sources).map(([type, value]) => ({
-    id: type,
-    value: type,
-    element: (
-      <div className="flex items-center gap-x-1">
-        <Icon size={16} name={value.icon} />
-        <FootnoteText>{value.title}</FootnoteText>
-      </div>
-    ),
-  }));
-
   return (
     <div className="flex flex-col gap-y-2">
       <Select
         placeholder={t('governance.offChainDataSource.selectPlaceholder')}
-        options={options}
         invalid={source.hasError()}
-        selectedId={source.value}
-        onChange={({ value }) => source.onChange(value)}
-      />
+        value={source.value}
+        onChange={source.onChange}
+      >
+        {/* eslint-disable i18next/no-literal-string */}
+        <Select.Item value="polkassembly">
+          <div className="flex items-center gap-x-1">
+            <Icon size={16} name="polkassembly" />
+            <FootnoteText>Polkassembly</FootnoteText>
+          </div>
+        </Select.Item>
+        <Select.Item value="subsquare">
+          <div className="flex items-center gap-x-1">
+            <Icon size={16} name="subsquare" />
+            <FootnoteText>Subsquare</FootnoteText>
+          </div>
+        </Select.Item>
+        {/* eslint-enable i18next/no-literal-string */}
+      </Select>
       <InputHint active={source.hasError()} variant="error">
         {t(source.errorText())}
       </InputHint>

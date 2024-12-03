@@ -5,7 +5,7 @@ import { u32 } from '@polkadot/types';
 import { type Weight } from '@polkadot/types/interfaces';
 import { BN, BN_ZERO, hexToU8a } from '@polkadot/util';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
-import { type UnsignedTransaction, construct } from '@substrate/txwrapper-polkadot';
+import { construct } from '@substrate/txwrapper-polkadot';
 
 import {
   type Account,
@@ -53,6 +53,8 @@ export const transactionService = {
   getTxWeight,
   verifySignature,
   splitTxsByWeight,
+
+  logPayload,
 };
 
 async function getTransactionFee(
@@ -292,26 +294,13 @@ function getWrappedTransaction({ api, addressPrefix, transaction, txWrappers }: 
   );
 }
 
-async function createPayload(
-  transaction: Transaction,
-  api: ApiPromise,
-): Promise<{
-  unsigned: UnsignedTransaction;
-  payload: Uint8Array;
-}> {
+async function createPayload(transaction: Transaction, api: ApiPromise) {
   const metadata = await createTxMetadata(transaction.address, api);
 
   return createPayloadWithMetadata(transaction, api, metadata);
 }
 
-function createPayloadWithMetadata(
-  transaction: Transaction,
-  api: ApiPromise,
-  { info, options, registry }: TxMetadata,
-): {
-  unsigned: UnsignedTransaction;
-  payload: Uint8Array;
-} {
+function createPayloadWithMetadata(transaction: Transaction, api: ApiPromise, { info, options, registry }: TxMetadata) {
   const unsigned = getUnsignedTransaction[transaction.type](transaction, info, options, api);
   if (options.signedExtensions?.includes('ChargeAssetTxPayment')) {
     unsigned.assetId = undefined;
@@ -320,8 +309,12 @@ function createPayloadWithMetadata(
   const signingPayloadHex = construct.signingPayload(unsigned, { registry });
 
   return {
+    type: transaction.type,
+    args: transaction.args,
     unsigned,
+    hexPayload: signingPayloadHex,
     payload: hexToU8a(signingPayloadHex),
+    info,
   };
 }
 
@@ -406,4 +399,30 @@ async function splitTxsByWeight(api: ApiPromise, txs: Transaction[], options?: P
   }
 
   return result;
+}
+
+function logPayload(info: Awaited<ReturnType<typeof createPayload>>[]) {
+  console.groupCollapsed('transaction log');
+  for (const log of info) {
+    console.info('operation type:', log.type);
+
+    console.table({
+      address: log.info.address,
+      chain: log.info.genesisHash,
+      nonce: log.info.nonce,
+    });
+
+    console.group('args');
+    console.table(log.args);
+    console.groupEnd();
+
+    console.groupCollapsed('unsigned');
+    console.info(log.unsigned);
+    console.groupEnd();
+
+    console.groupCollapsed('signed');
+    console.info(log.hexPayload);
+    console.groupEnd();
+  }
+  console.groupEnd();
 }

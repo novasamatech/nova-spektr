@@ -10,12 +10,14 @@ import { networkSelectorModel } from '../model/networkSelector';
 import { proposerIdentityAggregate } from './proposerIdentity';
 
 const $delegatedVotesInChain = combine(
-  delegatedVotesModel.$delegatedVotes,
-  networkSelectorModel.$governanceChain,
-  (votes, chain) => {
-    if (!chain) return {};
+  {
+    votes: delegatedVotesModel.$delegatedVotes,
+    chainId: networkSelectorModel.$governanceChainId,
+  },
+  ({ votes, chainId }) => {
+    if (!chainId) return {};
 
-    return votes[chain.chainId] ?? {};
+    return votes[chainId] ?? {};
   },
 );
 

@@ -316,6 +316,7 @@ sample({
           chain: addMultisigStore!.chain,
           account: signer!,
           transaction: wrappedTx!,
+          signatory: null,
         },
       ],
     },

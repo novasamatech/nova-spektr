@@ -7,6 +7,7 @@ import {
   type Account,
   type Chain,
   type ChainId,
+  ExternalType,
   type FlexibleMultisigAccount,
   type FlexibleMultisigCreated,
   type FlexibleMultisigWallet,
@@ -51,19 +52,14 @@ const updateRequested = sample({
   },
 });
 
-const $multisigChains = combine(
-  { chains: networkModel.$chains, connections: networkModel.$connections },
-  ({ chains, connections }) => {
-    const possibleChains = Object.values(chains).filter((chain) =>
-      nonNullable(networkUtils.getProxyExternalApi(chain)),
-    );
-    const connectedChains = possibleChains.filter(
-      (chain) => connections[chain.chainId] && !networkUtils.isDisabledConnection(connections[chain.chainId]),
-    );
+const $multisigChains = combine(networkModel.$chains, (chains) => {
+  return Object.values(chains).filter((chain) => {
+    const isMultisigSupported = networkUtils.isMultisigSupported(chain.options);
+    const hasIndexerUrl = chain.externalApi?.[ExternalType.PROXY]?.at(0)?.url;
 
-    return connectedChains;
-  },
-);
+    return isMultisigSupported && hasIndexerUrl;
+  });
+});
 
 type GetMultisigsParams = {
   chains: Chain[];
@@ -93,7 +89,9 @@ const getMultisigsFx = createEffect(
       if (nullable(multisigIndexer) || accounts.length === 0) return [];
 
       const client = new GraphQLClient(multisigIndexer.url);
-      const accountIds = uniq(accounts.map((account) => account.accountId));
+      const accountIds = uniq(
+        accounts.filter((a) => accountUtils.isChainIdMatch(a, chain.chainId)).map((account) => account.accountId),
+      );
       const accountsMap = toKeysRecord(accountIds);
 
       const indexedMultisigs = await multisigService.filterMultisigsAccounts(client, accountIds);
@@ -169,8 +167,24 @@ const populateFlexibleMultisigWalletFx = createEffect(({ account, chain }: Flexi
 
 sample({
   clock: [updateRequested, request],
-  source: { chains: $multisigChains, proxies: proxyModel.$proxies },
-  fn: ({ chains, proxies }, accounts) => ({ chains, accounts, proxies }),
+  source: {
+    chains: $multisigChains,
+    proxies: proxyModel.$proxies,
+    connections: networkModel.$connections,
+  },
+  fn: ({ chains, proxies, connections }, accounts) => {
+    const filteredChains = chains.filter((chain) => {
+      if (nullable(connections[chain.chainId])) return false;
+
+      return !networkUtils.isDisabledConnection(connections[chain.chainId]);
+    });
+
+    return {
+      chains: filteredChains,
+      accounts,
+      proxies,
+    };
+  },
   target: getMultisigsFx,
 });
 

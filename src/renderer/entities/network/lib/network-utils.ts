@@ -33,6 +33,7 @@ export const networkUtils = {
   getProxyExternalApi,
 
   getMainRelaychains,
+  chainNameToUrl,
 };
 
 function isConnectedStatus(status: ConnectionStatus): boolean {
@@ -122,4 +123,18 @@ function getMainRelaychains(chains: Chain[]): Chain[] {
   const MainRelaychains = [RelayChains.POLKADOT, RelayChains.KUSAMA, RelayChains.WESTEND];
 
   return chains.filter(({ chainId }) => MainRelaychains.includes(chainId));
+}
+
+function chainNameToUrl(name: string): string {
+  const filteredCharacters = /[^a-zA-Z0-9-]/g;
+  const multipleDashes = /-{2,}/g;
+  const lastDash = /-$/;
+
+  return name
+    .split(' ')
+    .join('-')
+    .toLowerCase()
+    .replace(filteredCharacters, '')
+    .replace(multipleDashes, '-')
+    .replace(lastDash, '');
 }

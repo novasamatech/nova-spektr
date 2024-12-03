@@ -331,9 +331,10 @@ const $api = combine(
     network: $networkStore,
   },
   ({ apis, network }) => {
-    return network ? apis[network.chain.chainId] : undefined;
+    if (!network) return null;
+
+    return apis[network.chain.chainId] ?? null;
   },
-  { skipVoid: false },
 );
 
 const $pureTxs = combine(

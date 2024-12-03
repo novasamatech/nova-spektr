@@ -11,6 +11,10 @@ on:
   schedule:
     - cron: '0 8 * * 1'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   update-files:
     runs-on: ubuntu-latest

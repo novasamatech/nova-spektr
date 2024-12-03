@@ -6,7 +6,7 @@ import { useEffect, useRef } from 'react';
  * @param value Arbitrary value
  */
 export function usePrevious<T>(value: T): T {
-  const ref = useRef<T>();
+  const ref = useRef<T>(value);
 
   useEffect(() => {
     ref.current = value;

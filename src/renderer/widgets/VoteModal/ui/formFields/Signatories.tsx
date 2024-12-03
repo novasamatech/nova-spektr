@@ -18,6 +18,7 @@ type Props = {
 
 export const Signatories = ({ value, asset, chain, signatories, hasError, errorText, onChange }: Props) => {
   const { t } = useI18n();
+
   const fixedSignatories = useMemo(() => {
     return signatories.map(({ account, balance }) => {
       const availableBalance = balance ? locksService.getAvailableBalance(balance) : BN_ZERO;

@@ -32,7 +32,10 @@ const $totalDelegations = combine(
 );
 
 const $activeDelegations = combine(
-  { activeVotes: votingAggregate.$activeWalletVotes, chain: networkSelectorModel.$governanceChain },
+  {
+    activeVotes: votingAggregate.$activeWalletVotes,
+    chain: networkSelectorModel.$governanceChain,
+  },
   ({ activeVotes, chain }) => {
     const activeBalances: DelegationBalanceMap = {};
 
@@ -58,7 +61,10 @@ const $activeDelegations = combine(
 );
 
 const $activeTracks = combine(
-  { activeVotes: votingAggregate.$activeWalletVotes, chain: networkSelectorModel.$governanceChain },
+  {
+    activeVotes: votingAggregate.$activeWalletVotes,
+    chain: networkSelectorModel.$governanceChain,
+  },
   ({ activeVotes, chain }) => {
     const activeTracks: DelegationTracksMap = {};
 

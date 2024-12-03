@@ -28,7 +28,10 @@ export const Skeleton = ({ width, height, circle, fullWidth, minWidth, active, c
   if (!children) {
     return (
       <span
-        className={cnTw('spektr-shimmer block h-full w-full', circle ? 'rounded-full' : 'rounded-2lg')}
+        className={cnTw(
+          'spektr-shimmer block h-full max-h-full w-full max-w-full',
+          circle ? 'rounded-full' : 'rounded-2lg',
+        )}
         style={{
           width: formattedWidth,
           height: circle ? formattedWidth : formattedHeight,

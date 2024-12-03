@@ -5,7 +5,7 @@ import { combineEvents, readonly } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { type Address } from '@/shared/core';
-import { Step, includesMultiple, isStep, toAccountId, validateAddress } from '@/shared/lib/utils';
+import { Step, includesMultiple, isStep, nonNullable, toAccountId, validateAddress } from '@/shared/lib/utils';
 import { walletModel } from '@/entities/wallet';
 import { delegateRegistryAggregate, delegationAggregate, networkSelectorModel } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
@@ -84,7 +84,7 @@ const $customError = combine(
 sample({
   clock: flowStarted,
   source: networkSelectorModel.$governanceChain,
-  filter: (chain) => !!chain,
+  filter: nonNullable,
   target: delegateRegistryAggregate.events.requestDelegateRegistry,
 });
 

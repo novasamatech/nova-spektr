@@ -405,5 +405,6 @@ export const walletModel = {
 
   _test: {
     $allWallets,
+    walletCreatedFx,
   },
 };

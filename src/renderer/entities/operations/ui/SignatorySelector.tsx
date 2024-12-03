@@ -38,40 +38,39 @@ export const SignatorySelector = ({
   };
 
   return (
-    <div className="flex flex-col gap-y-2">
-      <Field text={t('proxy.addProxy.signatoryLabel')}>
-        <Select
-          placeholder={t('proxy.addProxy.signatoryPlaceholder')}
-          value={signatory?.id.toString() ?? null}
-          invalid={hasError}
-          onChange={(value) => selectSigner(Number(value))}
-        >
-          {signatories.map(({ signer, balance }) => {
-            const isShard = accountUtils.isShardAccount(signer);
-            const address = toAddress(signer.accountId, { prefix: addressPrefix });
+    <Field text={t('proxy.addProxy.signatoryLabel')}>
+      <Select
+        placeholder={t('proxy.addProxy.signatoryPlaceholder')}
+        value={signatory?.id.toString() ?? null}
+        invalid={hasError}
+        onChange={(value) => selectSigner(Number(value))}
+      >
+        {signatories.map(({ signer, balance }) => {
+          const isShard = accountUtils.isShardAccount(signer);
+          const address = toAddress(signer.accountId, { prefix: addressPrefix });
 
-            return (
-              <Select.Item key={signer.id} value={signer.id.toString()}>
-                <div className="flex w-full items-center justify-between">
-                  <Address
-                    showIcon
-                    hideAddress
-                    variant="short"
-                    iconSize={20}
-                    address={address}
-                    title={isShard ? address : signer.name}
-                    canCopy={false}
-                  />
-                  <AssetBalance value={balance.toString()} asset={asset} />
-                </div>
-              </Select.Item>
-            );
-          })}
-        </Select>
-      </Field>
+          return (
+            <Select.Item key={signer.id} value={signer.id.toString()}>
+              <div className="flex w-full items-center justify-between">
+                <Address
+                  showIcon
+                  hideAddress
+                  variant="short"
+                  iconSize={20}
+                  address={address}
+                  title={isShard ? address : signer.name}
+                  canCopy={false}
+                />
+                <AssetBalance value={balance.toString()} asset={asset} />
+              </div>
+            </Select.Item>
+          );
+        })}
+      </Select>
+
       <InputHint variant="error" active={hasError}>
         {errorText}
       </InputHint>
-    </div>
+    </Field>
   );
 };

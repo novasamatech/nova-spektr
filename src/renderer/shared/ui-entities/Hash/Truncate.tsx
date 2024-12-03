@@ -1,6 +1,6 @@
 import { type CSSProperties, memo, useEffect, useRef, useState } from 'react';
 
-import { Skeleton, useResizeObserver } from '@/shared/ui-kit';
+import { Box, Skeleton, useResizeObserver } from '@/shared/ui-kit';
 
 const divWithPrecision = (a: number, b: number) => {
   return (a * 100_000) / b / 100_000;
@@ -93,7 +93,13 @@ export const Truncate = memo(({ text, ellipsis = '...' }: Props) => {
         {ellipsis}
       </span>
       <span className="absolute inset-0">
-        {gotFirstCalculation ? truncatedText : <Skeleton width="100%" height="100%" />}
+        {gotFirstCalculation ? (
+          truncatedText
+        ) : (
+          <Box fillContainer verticalAlign="center">
+            <Skeleton width={`${text.length}ch`} height="1em" />
+          </Box>
+        )}
       </span>
     </span>
   );

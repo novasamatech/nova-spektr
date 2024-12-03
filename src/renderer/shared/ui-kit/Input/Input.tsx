@@ -66,7 +66,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {prefixElement}
         <input
           className={cnTw(
-            'h-full w-full placeholder:text-text-secondary focus:outline-none',
+            'h-full w-full appearance-none placeholder:text-text-secondary focus:outline-none',
             'text-footnote text-text-primary outline-offset-1',
             {
               'bg-transparent text-text-tertiary placeholder:text-text-tertiary': disabled,

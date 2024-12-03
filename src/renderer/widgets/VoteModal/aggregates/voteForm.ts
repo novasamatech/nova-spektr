@@ -156,7 +156,7 @@ sample({
     not(transaction.$pendingFee),
     not(empty(transaction.$wrappedTx)),
     not(empty(votingAssetModel.$votingAsset)),
-    not(empty(networkSelectorModel.$governanceChain)),
+    not(empty(networkSelectorModel.$governanceChainId)),
   ),
   target: $canSubmit,
 });

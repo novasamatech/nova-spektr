@@ -14,6 +14,7 @@
   "jsdocPreferCodeFences": true,
   "jsdocSeparateTagGroups": true,
   "jsdocPrintWidth": 80,
+  "proseWrap": "always",
   "overrides": [
     {
       "files": ["./src/renderer/domains/**/*.ts", "./src/renderer/shared/pallet/**/*.ts", "./src/renderer/features/fellowship-*/**/*.{ts,tsx}"],

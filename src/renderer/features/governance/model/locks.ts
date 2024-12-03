@@ -17,31 +17,43 @@ const $trackLocks = createStore<Record<ChainId, Record<Address, Record<TrackId, 
   walletModel.$activeWallet,
 );
 
-const $totalLock = combine(networkSelectorModel.$governanceChain, $trackLocks, (chain, trackLocks) => {
-  if (!chain) return BN_ZERO;
+const $totalLock = combine(
+  {
+    chainId: networkSelectorModel.$governanceChainId,
+    trackLocks: $trackLocks,
+  },
+  ({ chainId, trackLocks }) => {
+    if (nullable(chainId)) return BN_ZERO;
 
-  let maxLockTotal = new BN(0);
-  const tracksLocksForChain = trackLocks[chain.chainId];
+    let maxLockTotal = new BN(0);
+    const tracksLocksForChain = trackLocks[chainId];
 
-  if (!tracksLocksForChain) {
+    if (!tracksLocksForChain) {
+      return maxLockTotal;
+    }
+
+    for (const lock of Object.values(tracksLocksForChain)) {
+      const totalLock = Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
+      maxLockTotal = maxLockTotal.iadd(totalLock);
+    }
+
     return maxLockTotal;
-  }
-
-  for (const lock of Object.values(tracksLocksForChain)) {
-    const totalLock = Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
-    maxLockTotal = maxLockTotal.iadd(totalLock);
-  }
-
-  return maxLockTotal;
-});
+  },
+);
 
 const $isLoading = createStore(true);
 
-const $walletAddresses = combine(walletModel.$activeWallet, networkSelectorModel.$governanceChain, (wallet, chain) => {
-  if (!wallet || !chain) return [];
+const $walletAddresses = combine(
+  {
+    wallet: walletModel.$activeWallet,
+    chain: networkSelectorModel.$governanceChain,
+  },
+  ({ wallet, chain }) => {
+    if (!wallet || !chain) return [];
 
-  return accountUtils.getAddressesForWallet(wallet, chain);
-});
+    return accountUtils.getAddressesForWallet(wallet, chain);
+  },
+);
 
 type RequestParams = {
   api: ApiPromise;

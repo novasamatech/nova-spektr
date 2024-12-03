@@ -6,10 +6,12 @@ import { walletModel } from '@/entities/wallet';
 import { fellowshipNetworkFeature } from '@/features/fellowship-network';
 
 const $input = combine(
-  fellowshipNetworkFeature.model.network.$network,
-  walletModel.$wallets,
-  walletModel.$activeWallet,
-  (network, wallets, wallet) => {
+  {
+    network: fellowshipNetworkFeature.model.network.$network,
+    wallets: walletModel.$wallets,
+    wallet: walletModel.$activeWallet,
+  },
+  ({ network, wallets, wallet }) => {
     if (nullable(network) || nullable(wallet)) return null;
 
     return {

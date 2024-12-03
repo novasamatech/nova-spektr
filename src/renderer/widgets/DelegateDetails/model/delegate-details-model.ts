@@ -29,7 +29,11 @@ const closeModal = $isModalOpen.reinit;
 const closeDelegationsModal = $isDelegationsOpen.reinit;
 
 const $activeTracks = combine(
-  { votes: votingAggregate.$activeWalletVotes, delegate: $delegate, chain: networkSelectorModel.$governanceChain },
+  {
+    votes: votingAggregate.$activeWalletVotes,
+    delegate: $delegate,
+    chain: networkSelectorModel.$governanceChain,
+  },
   ({ votes, delegate, chain }) => {
     const activeTracks: Record<Address, Set<string>> = {};
 
