@@ -107,7 +107,7 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(
           'flex-row-reverse': direction === 'row-reverse',
           'max-h-full w-full': fitContainer,
           'min-h-full min-w-full': fillContainer,
-          wrap: wrap,
+          'flex-wrap': wrap,
         })}
         style={style}
         data-testid={testId}

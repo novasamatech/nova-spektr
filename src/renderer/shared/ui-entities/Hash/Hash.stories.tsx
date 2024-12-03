@@ -51,7 +51,7 @@ export const Truncate: Story = {
     const canvas = within(canvasElement);
     const Hash = await canvas.findByTestId('Hash');
     await new Promise((resolve) => setTimeout(resolve, 500));
-    expect(Hash.innerText).toBe('0x91b171bb1...a7a70ce90c3');
+    expect(Hash.innerText).toBe('0x91b171bb15...da7a70ce90c3');
   },
 };
 

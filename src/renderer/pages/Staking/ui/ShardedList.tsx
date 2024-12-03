@@ -1,7 +1,7 @@
 import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
-import { type Address, type Asset, type Explorer } from '@/shared/core';
+import { type Address, type Asset, type Chain, type Explorer } from '@/shared/core';
 import { type ShardAccount } from '@/shared/core/types/account';
 import { useI18n } from '@/shared/i18n';
 import { Accordion, FootnoteText, Plate, Shimmering, Tooltip } from '@/shared/ui';
@@ -18,6 +18,7 @@ type Props = {
   isStakingLoading: boolean;
   era?: number;
   asset?: Asset;
+  chain: Chain;
   explorers?: Explorer[];
   addressPrefix?: number;
   onCheckValidators: (stash?: Address) => void;
@@ -29,9 +30,8 @@ export const ShardedList = ({
   shardsStake,
   era,
   asset,
-  explorers,
+  chain,
   isStakingLoading,
-  addressPrefix,
   onCheckValidators,
   onToggleNominator,
   getContent,
@@ -141,8 +141,7 @@ export const ShardedList = ({
                   stake={shard}
                   nominatorsLength={shardsStake.length}
                   asset={asset}
-                  explorers={explorers}
-                  addressPrefix={addressPrefix}
+                  chain={chain}
                   onToggleNominator={onToggleNominator}
                   onCheckValidators={onCheckValidators}
                 />

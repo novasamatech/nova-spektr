@@ -1,7 +1,6 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 
 import { type Asset } from '@/shared/core';
-import { useToggle } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
 import { useTheme } from '@/shared/ui-kit';
 
@@ -11,13 +10,16 @@ type Props = {
   style?: 'monochrome' | 'colored';
 };
 
+const loaded: Set<string> = new Set();
+
 export const AssetIcon = memo(({ asset, style, size = 36 }: Props) => {
   const { iconStyle } = useTheme();
-  const [isImgLoaded, toggleImgLoaded] = useToggle();
-  const computedStyle = style || iconStyle;
 
+  const computedStyle = style || iconStyle;
   const iconSrc = asset.icon[computedStyle];
   const iconSize = computedStyle === 'monochrome' ? size - 4 : size;
+
+  const [isImgLoaded, setImgLoaded] = useState(() => loaded.has(iconSrc));
 
   return (
     <div
@@ -31,7 +33,10 @@ export const AssetIcon = memo(({ asset, style, size = 36 }: Props) => {
         // using width and height attr doesn't work properly for invisible img. It gets reset by tailwind @base styles
         style={{ width: iconSize, height: iconSize }}
         alt={asset.name}
-        onLoad={toggleImgLoaded}
+        onLoad={(e) => {
+          loaded.add(e.currentTarget.src);
+          setImgLoaded(true);
+        }}
       />
     </div>
   );

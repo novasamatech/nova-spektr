@@ -65,7 +65,7 @@ export const Truncate: Story = {
     const canvas = within(canvasElement);
     const address = await canvas.findByTestId('Address');
     await new Promise((resolve) => setTimeout(resolve, 500));
-    expect(address.innerText).toBe('1ChFWeNRLarA...ueWz7jX7iTVZ');
+    expect(address.innerText).toBe('1ChFWeNRLarA...eWz7jX7iTVZ');
   },
 };
 
@@ -84,6 +84,21 @@ export const WithTitle: Story = {
   args: {
     title: 'John Doe',
     variant: 'truncate',
+  },
+  decorators: [
+    (Story) => (
+      <Box width="200px">
+        <Story />
+      </Box>
+    ),
+  ],
+};
+
+export const ReplaceAddressWithTitle: Story = {
+  args: {
+    title: 'John Doe',
+    hideAddress: true,
+    showIcon: true,
   },
   decorators: [
     (Story) => (

@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { type ClipboardEvent, memo } from 'react';
 
 import { truncate } from '@/shared/lib/utils';
 
@@ -11,8 +11,13 @@ type Props = {
 };
 
 export const Hash = memo(({ value, variant, testId = 'Hash' }: Props) => {
+  const handleCopy = (e: ClipboardEvent) => {
+    e.clipboardData.setData('text', value);
+    e.preventDefault();
+  };
+
   return (
-    <span className="w-full text-inherit transition-colors" data-testid={testId}>
+    <span className="w-full min-w-[8ch] text-inherit transition-colors" data-testid={testId} onCopy={handleCopy}>
       {getVariant(variant, value)}
     </span>
   );

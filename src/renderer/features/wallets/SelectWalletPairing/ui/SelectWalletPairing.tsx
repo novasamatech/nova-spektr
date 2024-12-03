@@ -36,7 +36,7 @@ export const SelectWalletPairing = () => {
       <Dropdown.Content>
         {getDropdownOptions(t).map(({ title, walletType }) => (
           <Dropdown.Item key={title} onSelect={() => walletPairingModel.events.walletTypeSet(walletType)}>
-            <div className="flex items-center gap-x-1.5">
+            <div className="flex items-center gap-2">
               <WalletIcon type={walletType} />
               {title}
             </div>
