@@ -107,11 +107,11 @@ export const validateAddress = (address: Address | AccountId, chain?: Chain): bo
 };
 
 const validateSubstrateAddress = (address: Address | AccountId): boolean => {
-  try {
-    if (isU8a(address) || isHex(address)) {
-      return u8aToU8a(address).length === PUBLIC_KEY_LENGTH_BYTES;
-    }
+  if (isU8a(address) || isHex(address)) {
+    return u8aToU8a(address).length === PUBLIC_KEY_LENGTH_BYTES;
+  }
 
+  try {
     const decoded = base58Decode(address);
     if (!ADDRESS_ALLOWED_ENCODED_LENGTHS.includes(decoded.length)) return false;
 
@@ -124,11 +124,7 @@ const validateSubstrateAddress = (address: Address | AccountId): boolean => {
 };
 
 const validateEvmAddress = (address: Address | AccountId): boolean => {
-  try {
-    if (!isU8a(address) && !isHex(address)) return false;
+  if (!isU8a(address) && !isHex(address)) return false;
 
-    return u8aToU8a(address).length === ETHEREUM_PUBLIC_KEY_LENGTH_BYTES;
-  } catch {
-    return false;
-  }
+  return u8aToU8a(address).length === ETHEREUM_PUBLIC_KEY_LENGTH_BYTES;
 };

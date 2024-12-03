@@ -77,5 +77,5 @@ export function getKnownChain(chainId: ChainId): WellKnownChain | undefined {
  * @returns {Boolean}
  */
 export function isEvmChain(chain: Chain): boolean {
-  return Boolean(chain.options?.includes(ChainOptions.ETHEREUM_BASED));
+  return chain.options?.includes(ChainOptions.ETHEREUM_BASED) ?? false;
 }

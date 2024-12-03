@@ -36,7 +36,6 @@ export const Signatory = ({
   selectedWalletId,
   onDelete,
 }: Props) => {
-  console.log('signatoryAddress', signatoryAddress);
   const { t } = useI18n();
 
   const chain = useUnit(formModel.$chain);

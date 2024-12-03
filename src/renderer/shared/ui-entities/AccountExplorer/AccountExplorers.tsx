@@ -15,8 +15,9 @@ type Props = PropsWithChildren<{
 
 export const AccountExplorers = memo(({ accountId, chain, children, testId }: Props) => {
   const { t } = useI18n();
-  const { explorers } = chain;
-  const address = toAddress(accountId, { prefix: chain.addressPrefix });
+
+  const { explorers, addressPrefix } = chain;
+  const address = toAddress(accountId, { prefix: addressPrefix });
 
   return (
     <Popover align="end" dialog testId="AccountExplorers">

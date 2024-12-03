@@ -2,7 +2,7 @@ import { type Chain, ChainOptions } from '@/shared/core';
 import { toAddress, validateAddress } from '../address';
 import { TEST_ACCOUNTS, TEST_ADDRESS } from '../constants';
 
-describe('shared/lib/address#toAddress', () => {
+describe('toAddress', () => {
   test('should convert address to Polkadot', () => {
     const address = toAddress(TEST_ACCOUNTS[0], { prefix: 0 });
     expect(address).toEqual(TEST_ADDRESS);
@@ -24,7 +24,7 @@ describe('shared/lib/address#toAddress', () => {
   });
 });
 
-describe('shared/lib/address#validateAddress', () => {
+describe('validateAddress', () => {
   const substrateChain = {} as Chain;
   const evmChain = { options: [ChainOptions.ETHEREUM_BASED] } as Chain;
 
