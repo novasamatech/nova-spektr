@@ -5,7 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { formatAsset, formatBalance, performSearch, toAccountId } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, SearchInput } from '@/shared/ui';
-import { Address, AddressExplorers } from '@/shared/ui-entities';
+import { AccountExplorers, Address } from '@/shared/ui-entities';
 import { type AggregatedVoteHistory } from '../../types/structs';
 
 import { VotingHistoryListEmptyState } from './VotingHistoryListEmptyState';
@@ -56,7 +56,7 @@ export const VotingHistoryList = memo(({ items, asset, chain, loading }: Props) 
                   <div key={`${voter}-${balance.toString()}-${conviction}`} className="flex gap-3 px-2 text-body">
                     <div className="flex min-w-0 shrink grow items-center gap-1">
                       <Address address={voter} title={name ?? ''} variant="truncate" showIcon />
-                      <AddressExplorers address={toAccountId(voter)} chain={chain} />
+                      <AccountExplorers accountId={toAccountId(voter)} chain={chain} />
                     </div>
                     <div className="flex shrink-0 basis-28 flex-col items-end gap-0.5">
                       <BodyText className="whitespace-nowrap">

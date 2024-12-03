@@ -9,7 +9,7 @@ import { Box } from '@/shared/ui-kit';
 import { AccountsModal } from '@/entities/staking';
 import { WalletIcon, walletUtils } from '@/entities/wallet';
 import { Account as AccountComponent } from '../Account/Account';
-import { AddressExplorers } from '../AddressExplorers/AddressExplorers';
+import { AccountExplorers } from '../AccountExplorers/AccountExplorers';
 
 type Props = PropsWithChildren<{
   wallets: Wallet[];
@@ -126,7 +126,7 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
           <Box direction="row" gap={2}>
             <WalletIcon type={signatoryWallet.type} size={16} />
             <span>{signatoryWallet.name}</span>
-            <AddressExplorers address={signatory.accountId} chain={chain} />
+            <AccountExplorers accountId={signatory.accountId} chain={chain} />
           </Box>
         </DetailRow>
       )}

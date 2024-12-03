@@ -15,7 +15,7 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { cnTw, toAccountId } from '@/shared/lib/utils';
 import { CaptionText, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { AddressExplorers } from '@/shared/ui-entities';
+import { AccountExplorers } from '@/shared/ui-entities';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
@@ -196,7 +196,7 @@ export const Details = ({ tx, account, extendedChain, signatory }: Props) => {
           <Box direction="row" gap={2}>
             <WalletIcon type={signatoryWallet.type} size={16} />
             <span>{signatoryWallet.name}</span>
-            {extendedChain ? <AddressExplorers address={signatory.accountId} chain={extendedChain} /> : null}
+            {extendedChain ? <AccountExplorers accountId={signatory.accountId} chain={extendedChain} /> : null}
           </Box>
         </DetailRow>
       )}

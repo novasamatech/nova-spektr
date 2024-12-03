@@ -2,8 +2,8 @@ import { memo } from 'react';
 
 import { type AccountId, type Chain } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
+import { AccountExplorers } from '../AccountExplorers/AccountExplorers';
 import { Address } from '../Address/Address';
-import { AddressExplorers } from '../AddressExplorers/AddressExplorers';
 
 type Props = {
   accountId: AccountId;
@@ -21,7 +21,7 @@ export const Account = memo(({ accountId, title, variant = 'truncate', chain }: 
         title={title}
         address={toAddress(accountId, { prefix: chain.addressPrefix })}
       />
-      <AddressExplorers address={accountId} chain={chain} />
+      <AccountExplorers accountId={accountId} chain={chain} />
     </div>
   );
 });

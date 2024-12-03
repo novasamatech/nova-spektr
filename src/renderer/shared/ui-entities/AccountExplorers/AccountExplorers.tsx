@@ -1,6 +1,6 @@
 import { type PropsWithChildren, memo } from 'react';
 
-import { type AccountId, type Address, type Chain } from '@/shared/core';
+import { type AccountId, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { copyToClipboard, getAccountExplorer, toAddress } from '@/shared/lib/utils';
 import { ExplorerLink, FootnoteText, HelpText, IconButton, Separator } from '@/shared/ui';
@@ -8,16 +8,16 @@ import { Box, Popover } from '@/shared/ui-kit';
 import { Hash } from '../Hash/Hash';
 
 type Props = PropsWithChildren<{
-  address: Address | AccountId;
+  accountId: AccountId;
   chain: Chain;
   testId?: string;
 }>;
 
-export const AddressExplorers = memo(({ address, chain, children, testId }: Props) => {
+export const AccountExplorers = memo(({ accountId, chain, children, testId }: Props) => {
   const { t } = useI18n();
 
   const { explorers, addressPrefix } = chain;
-  const chainAddress = toAddress(address, { prefix: addressPrefix });
+  const address = toAddress(accountId, { prefix: addressPrefix });
 
   return (
     <Popover align="end" dialog testId="AddressExplorer">
@@ -30,13 +30,9 @@ export const AddressExplorers = memo(({ address, chain, children, testId }: Prop
             <FootnoteText className="text-text-tertiary">{t('general.explorers.addressTitle')}</FootnoteText>
             <Box direction="row" verticalAlign="center" gap={3}>
               <HelpText className="text-text-secondary">
-                <Hash value={chainAddress} variant="full" />
+                <Hash value={address} variant="full" />
               </HelpText>
-              <IconButton
-                className="shrink-0 text-icon-default"
-                name="copy"
-                onClick={() => copyToClipboard(chainAddress)}
-              />
+              <IconButton className="shrink-0 text-icon-default" name="copy" onClick={() => copyToClipboard(address)} />
             </Box>
           </Box>
 
@@ -55,7 +51,7 @@ export const AddressExplorers = memo(({ address, chain, children, testId }: Prop
                   <ExplorerLink
                     key={explorer.name}
                     name={explorer.name}
-                    href={getAccountExplorer(explorer, { address: chainAddress })}
+                    href={getAccountExplorer(explorer, { address })}
                   />
                 ))}
               </div>

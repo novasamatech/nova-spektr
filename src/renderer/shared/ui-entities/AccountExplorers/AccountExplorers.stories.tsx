@@ -3,7 +3,7 @@ import { type Meta, type StoryObj } from '@storybook/react';
 import { type Chain } from '@/shared/core';
 import { FootnoteText } from '@/shared/ui';
 
-import { AddressExplorers } from './AddressExplorers';
+import { AccountExplorers } from './AccountExplorers';
 
 const testAccountId = '0xd180LUV5yfqBC9i8Lfssufw2434ef24f3f7AhBDDcaHEF03a8';
 const testChain: Chain = {
@@ -29,11 +29,11 @@ const testChain: Chain = {
   ],
 };
 
-const meta: Meta<typeof AddressExplorers> = {
+const meta: Meta<typeof AccountExplorers> = {
   title: 'Design System/entities/AccountExplorers',
-  component: AddressExplorers,
+  component: AccountExplorers,
   args: {
-    address: testAccountId,
+    accountId: testAccountId,
     chain: testChain,
   },
   parameters: {
@@ -43,7 +43,7 @@ const meta: Meta<typeof AddressExplorers> = {
 
 export default meta;
 
-type Story = StoryObj<typeof AddressExplorers>;
+type Story = StoryObj<typeof AccountExplorers>;
 
 export const Default: Story = {};
 

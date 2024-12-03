@@ -2,9 +2,9 @@ import { useUnit } from 'effector-react';
 
 import { type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { toShortAddress } from '@/shared/lib/utils';
+import { toAccountId, toShortAddress } from '@/shared/lib/utils';
 import { HeaderTitleText, HelpText } from '@/shared/ui';
-import { AddressExplorers } from '@/shared/ui-entities';
+import { AccountExplorers } from '@/shared/ui-entities';
 import { Modal } from '@/shared/ui-kit';
 import { ContactItem, WalletCardMd, walletModel, walletUtils } from '@/entities/wallet';
 import { type SignatoryInfo } from '@/widgets/CreateWallet/lib/types';
@@ -33,7 +33,7 @@ export const SelectedSignatoriesModal = ({ chain, isOpen, signatories, onClose }
               return (
                 <li key={address} className="flex items-center justify-between">
                   <ContactItem name={name} address={address}>
-                    <AddressExplorers address={address} chain={chain} />
+                    <AccountExplorers accountId={toAccountId(address)} chain={chain} />
                   </ContactItem>
                 </li>
               );
@@ -50,7 +50,7 @@ export const SelectedSignatoriesModal = ({ chain, isOpen, signatories, onClose }
                     <HelpText className="truncate text-text-tertiary">{toShortAddress(address, 12)}</HelpText>
                   }
                 >
-                  <AddressExplorers address={address} chain={chain} />
+                  <AccountExplorers accountId={toAccountId(address)} chain={chain} />
                 </WalletCardMd>
               </li>
             );

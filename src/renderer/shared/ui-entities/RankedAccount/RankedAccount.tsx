@@ -4,8 +4,8 @@ import { type AccountId, type Chain } from '@/shared/core';
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { Identicon } from '@/shared/ui';
 import { Label } from '@/shared/ui-kit';
+import { AccountExplorers } from '../AccountExplorers/AccountExplorers';
 import { Address } from '../Address/Address';
-import { AddressExplorers } from '../AddressExplorers/AddressExplorers';
 
 type Props = {
   name?: string;
@@ -33,7 +33,7 @@ export const RankedAccount = ({ name, rank, isActive, accountId, chain, children
             <Indicator active={isActive} />
           </div>
         </div>
-        <AddressExplorers address={accountId} chain={chain} />
+        <AccountExplorers accountId={accountId} chain={chain} />
       </div>
       {children}
     </div>

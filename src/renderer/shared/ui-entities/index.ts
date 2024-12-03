@@ -4,6 +4,6 @@ export { Address } from './Address/Address';
 export { Account } from './Account/Account';
 export { AssetIcon } from './AssetIcon/AssetIcon';
 export { AccountSelectModal } from './AccountSelectModal/AccountSelectModal';
-export { AddressExplorers } from './AddressExplorers/AddressExplorers';
+export { AccountExplorers } from './AccountExplorers/AccountExplorers';
 export { TransactionDetails } from './TransactionDetails/TransactionDetails';
 export { RankedAccount } from './RankedAccount/RankedAccount';
