@@ -16,10 +16,10 @@ const Root = ({ initialOpen = false, children }: RootProps) => {
   const id = useId();
   const [open, setOpen] = useState(initialOpen);
 
-  const value = useMemo(() => ({ open }), [open]);
+  const ctx = useMemo(() => ({ open }), [open]);
 
   return (
-    <Context.Provider value={value}>
+    <Context.Provider value={ctx}>
       <RadixAccordion.Root
         collapsible
         type="single"
