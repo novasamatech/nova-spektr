@@ -86,7 +86,7 @@ const Content = ({ children }: PropsWithChildren) => {
     <RadixAccordion.Content forceMount ref={contentRef} className="card-stack-content group relative overflow-hidden">
       <div
         className={cnTw(
-          'card-stack-plate shadow-shards absolute left-1/2 top-0 h-full -translate-x-1/2 rounded-b-md bg-white',
+          'card-stack-plate shadow-shards absolute left-1/2 top-0 h-full w-full -translate-x-1/2 rounded-b-md bg-white',
           'group-data-[state=open]:border-t group-data-[state=open]:border-divider group-data-[state=open]:shadow-none',
         )}
       />
