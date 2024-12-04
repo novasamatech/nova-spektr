@@ -171,7 +171,7 @@ export const sumValues = (firstValue?: BN, secondValue?: BN): BN => {
     return firstValue.add(secondValue);
   }
 
-  return firstValue || BN_ZERO;
+  return firstValue ?? secondValue ?? BN_ZERO;
 };
 
 export const sumBalances = <T extends AssetBalance>(firstBalance: T, secondBalance?: T): T => {

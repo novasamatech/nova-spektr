@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { type AssetByChains } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -8,6 +8,7 @@ import { AssetIcon } from '@/shared/ui-entities';
 import { networkModel } from '@/entities/network';
 import { TokenPrice } from '@/entities/price';
 import { CheckPermission, OperationType, walletModel } from '@/entities/wallet';
+import { tokensService } from '../lib/tokensService';
 import { portfolioModel } from '../model/portfolio-model';
 
 import { AssembledAssetAmount } from './AssembledAssetAmount';
@@ -37,6 +38,8 @@ export const TokenBalanceList = memo(({ asset }: Props) => {
     portfolioModel.events.receiveStarted(asset);
   };
 
+  const totalBalance = useMemo(() => tokensService.calculateTotalBalance(asset.chains), [asset.chains]);
+
   return (
     <Plate className="z-10 border-b-4 border-double p-0 shadow-shards">
       <Accordion>
@@ -56,7 +59,7 @@ export const TokenBalanceList = memo(({ asset }: Props) => {
                   <FootnoteText className="ml-1.5 text-text-tertiary">
                     {t('balances.availableNetworks', { count: asset.chains.length })}
                   </FootnoteText>
-                  {asset.totalBalance?.verified && (
+                  {totalBalance.verified && (
                     <div className="ml-2.5 flex items-center gap-x-2 text-text-warning">
                       <Tooltip content={t('balances.verificationTooltip')} pointer="up">
                         <Icon name="warn" className="cursor-pointer text-inherit" size={14} />
@@ -72,7 +75,7 @@ export const TokenBalanceList = memo(({ asset }: Props) => {
               className="text-text-primar text-right"
             />
             <div className="flex w-[100px] flex-col items-end">
-              <AssembledAssetAmount asset={asset} balance={asset.totalBalance} />
+              <AssembledAssetAmount asset={asset} balance={totalBalance} />
             </div>
 
             <div className="ml-3 flex gap-x-2">
