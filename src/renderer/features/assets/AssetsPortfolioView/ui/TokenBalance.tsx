@@ -4,7 +4,8 @@ import { memo } from 'react';
 import { type AssetByChains } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, CaptionText, FootnoteText, Icon, Plate, Tooltip } from '@/shared/ui';
-import { AssetIcon, AssetLinks } from '@/entities/asset';
+import { AssetIcon } from '@/shared/ui-entities';
+import { AssetLinks } from '@/entities/asset';
 import { ChainIcon } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { TokenPrice } from '@/entities/price';
@@ -29,8 +30,8 @@ export const TokenBalance = memo(({ asset }: Props) => {
           <div>
             <BodyText>{chain.assetSymbol}</BodyText>
             <div className="mr-3 flex items-center gap-x-1.5">
-              <FootnoteText className="text-text-tertiary">{chain.name}</FootnoteText>
               <ChainIcon src={chains[chain.chainId].icon} name={chain.name} size={18} />
+              <FootnoteText className="text-text-tertiary">{chain.name}</FootnoteText>
               {chain.balance?.verified && (
                 <div className="flex items-center gap-x-2 text-text-warning">
                   <Tooltip content={t('balances.verificationTooltip')} pointer="up">
