@@ -1,0 +1,23 @@
+.card-stack-content {
+  transition: height 0.3s ease-in-out !important;
+}
+
+.card-stack-content[data-state="closed"] {
+  height: 6px;
+}
+
+.card-stack-content[data-state="open"] {
+  height: var(--radix-accordion-content-height);
+}
+
+.card-stack-plate {
+  transition: width 0.3s ease-in-out;
+}
+
+.card-stack-content[data-state="closed"] .card-stack-plate {
+  width: calc(100% - 8px);
+}
+
+.card-stack-content[data-state="open"] .card-stack-plate {
+  width: 100%;
+}
