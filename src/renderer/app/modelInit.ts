@@ -12,6 +12,7 @@ import { contactsNavigationFeature } from '@/features/contacts-navigation';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
 import { notificationsNavigationFeature } from '@/features/notifications-navigation';
+import * as operationDetails from '@/features/operation-details';
 import { operationsNavigationFeature } from '@/features/operations-navigation';
 import { proxiesModel } from '@/features/proxies';
 import { settingsNavigationFeature } from '@/features/settings-navigation';
@@ -27,6 +28,10 @@ export const initModel = () => {
   contactsNavigationFeature.start();
   notificationsNavigationFeature.start();
   settingsNavigationFeature.start();
+  // TODO: should run automatically
+  operationDetails.transferOperationDetailFeature.start();
+  operationDetails.bondOperationDetailFeature.start();
+  operationDetails.walletOperationDetailsFeature.start();
 
   walletSelectFeature.feature.start();
 

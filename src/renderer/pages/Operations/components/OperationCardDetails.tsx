@@ -13,6 +13,7 @@ import {
   type Validator,
 } from '@/shared/core';
 import { TransactionType } from '@/shared/core';
+import { useSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { cnTw, copyToClipboard, getAssetById, truncate } from '@/shared/lib/utils';
@@ -22,7 +23,7 @@ import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { TracksDetails, voteTransactionService } from '@/entities/governance';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
-import { type ExtendedChain, networkModel, networkUtils } from '@/entities/network';
+import { type ExtendedChain, networkUtils } from '@/entities/network';
 import { proxyUtils } from '@/entities/proxy';
 import { signatoryUtils } from '@/entities/signatory';
 import { ValidatorsModal, useValidatorsMap } from '@/entities/staking';
@@ -35,13 +36,13 @@ import {
   isXcmTransaction,
 } from '@/entities/transaction';
 import { AddressWithExplorers, ExplorersPopover, WalletCardSm, walletModel } from '@/entities/wallet';
+import { multisigOperationsFeature } from '@/features/multisig-operations';
 import { AddressStyle, InteractionStyle } from '../common/constants';
 import {
   getDelegate,
   getDelegationTarget,
   getDelegationTracks,
   getDelegationVotes,
-  getDestination,
   getDestinationChain,
   getMultisigExtrinsicLink,
   getPayee,
@@ -61,16 +62,13 @@ type Props = {
 export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const { t } = useI18n();
 
-  const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);
-  const chains = useUnit(networkModel.$chains);
 
   const payee = getPayee(tx);
   const sender = getSender(tx);
   const delegate = getDelegate(tx);
   const proxyType = getProxyType(tx);
   const destinationChain = getDestinationChain(tx);
-  const destination = getDestination(tx, chains, destinationChain);
 
   const delegationTarget = getDelegationTarget(tx);
   const delegationTracks = getDelegationTracks(tx);
@@ -133,20 +131,15 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const depositorWallet =
     depositorSignatory && signatoryUtils.getSignatoryWallet(wallets, depositorSignatory.accountId);
 
+  const operationDetails = useSlot(multisigOperationsFeature.slots.operationDetails, {
+    props: {
+      operation: tx,
+    },
+  });
+
   return (
     <dl className="flex w-full flex-col gap-y-1">
-      {account && activeWallet && (
-        <DetailRow label={t('operation.details.multisigWallet')} className={valueClass}>
-          <div className="-mr-2">
-            <ExplorersPopover
-              button={<WalletCardSm wallet={activeWallet} />}
-              address={account.accountId}
-              explorers={explorers}
-              addressPrefix={addressPrefix}
-            />
-          </div>
-        </DetailRow>
-      )}
+      {operationDetails}
 
       {isXcmTransaction(transaction) && (
         <>
@@ -173,19 +166,6 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
             </DetailRow>
           )}
         </>
-      )}
-
-      {destination && (
-        <DetailRow label={t('operation.details.recipient')} className={valueClass}>
-          <AddressWithExplorers
-            type="short"
-            explorers={explorers}
-            addressFont={AddressStyle}
-            address={destination}
-            addressPrefix={addressPrefix}
-            wrapperClassName="-mr-2 min-w-min"
-          />
-        </DetailRow>
       )}
 
       {isAddProxyTransaction(transaction) && delegate && (

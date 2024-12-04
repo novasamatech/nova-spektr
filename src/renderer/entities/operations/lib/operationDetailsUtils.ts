@@ -1,4 +1,3 @@
-// TODO: Remove this file, use from entities/operations
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 
@@ -116,6 +115,16 @@ export const getDestination = (
   }
 
   return toAddress(tx.transaction.args.dest, { prefix: chain.addressPrefix });
+};
+
+export const getDestinationAccountId = (tx: MultisigTransaction): AccountId | undefined => {
+  if (!tx.transaction) return undefined;
+
+  if (isProxyTransaction(tx.transaction)) {
+    return tx.transaction.args.transaction.args.dest;
+  }
+
+  return tx.transaction.args.dest;
 };
 
 export const getPayee = (tx: MultisigTransaction): { Account: Address } | string | undefined => {
