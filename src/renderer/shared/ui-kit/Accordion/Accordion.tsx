@@ -50,9 +50,9 @@ const Trigger = ({ sticky, children }: TriggerProps) => {
         >
           <div className="flex min-w-0 grow gap-2 truncate text-start">{children}</div>
           <Icon
+            className="shrink-0 text-icon-default transition-colors duration-100 group-hover:text-icon-hover"
             name={open ? 'up' : 'down'}
             size={16}
-            className="shrink-0 text-icon-default transition-colors duration-100 group-hover:text-icon-hover"
           />
         </RadixAccordion.Trigger>
       </div>
